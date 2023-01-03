@@ -3,6 +3,7 @@
 namespace RZP\Tests\P2p\Service\UpiAxisOlive;
 
 use RZP\Tests\P2p\Service;
+use RZP\Gateway\P2p\Upi\AxisOlive\Mock\Callback;
 use RZP\Tests\P2p\Service\Base\Fixtures\Fixtures;
 
 class TestCase extends Service\TestCase
@@ -12,7 +13,7 @@ class TestCase extends Service\TestCase
     protected $gateway = 'p2p_upi_axis_olive';
 
     protected $deviceSetMap = [
-        Fixtures::DEVICE_1 => [ 
+        Fixtures::DEVICE_1 => [
             'merchant'      => Fixtures::TEST_MERCHANT,
             'customer'      => Fixtures::RZP_LOCAL_CUSTOMER_1,
             'device'        => Fixtures::CUSTOMER_1_DEVICE_1,
@@ -30,8 +31,8 @@ class TestCase extends Service\TestCase
         ],
     ];
 
-    protected function mockSdk($gateway = null): Server
+    protected function mockCallback($gateway = null): Callback
     {
-        return parent::mockSdk($gateway);
+        return parent::mockCallback($gateway);
     }
 }

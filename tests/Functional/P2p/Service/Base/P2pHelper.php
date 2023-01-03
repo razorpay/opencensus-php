@@ -106,6 +106,28 @@ class P2pHelper
     }
 
 
+    /******************************* Turbo Functions ******************************/
+
+    public function turboCallback(string $gateway, array $options = [])
+    {
+        $this->shouldValidateJsonSchema = false;
+
+        // This API work on direct auth
+        $this->setMerchantInContext(false);
+        $this->setCustomerInContext(false);
+        $this->setDeviceInContext(false);
+
+        $request = $this->request('turbo/%s/callback', [$gateway]);
+
+        $this->resetContexts();
+
+        $request->server($options['server'] ?? []);
+
+        $request->json($options['content']);
+
+        return $this->post($request);
+    }
+
     /**
      * Enable or disable Merchant Context
      *

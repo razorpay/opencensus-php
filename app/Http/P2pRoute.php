@@ -50,7 +50,7 @@ final class P2pRoute
                 'post',
                 '/turbo/preferences',
                 'PreferencesController@getPreferences'
-            ],    
+            ],
         Requests::P2P_TURBO_GATEWAY_CONFIG =>
             [
                 'post',
@@ -298,6 +298,13 @@ final class P2pRoute
                 'UpiController@gatewayCallback'
             ],
 
+        Requests::P2P_TURBO_GATEWAY_CALLBACK                  =>
+            [
+                'post',
+                'turbo/{gateway}/callback',
+                'TurboController@turboGatewayCallback'
+            ],
+
         /*************** Merchant **************/
         Requests::P2P_MERCHANT_BENEFICIARY_VALIDATE           =>
             [
@@ -464,6 +471,7 @@ final class P2pRoute
 
     public static $direct = [
         Requests::P2P_GATEWAY_CALLBACK,
+        Requests::P2P_TURBO_GATEWAY_CALLBACK,
     ];
 
     public static $private = [

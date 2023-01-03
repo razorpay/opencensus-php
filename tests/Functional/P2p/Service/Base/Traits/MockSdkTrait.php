@@ -8,6 +8,7 @@ use RZP\Gateway\P2p\Base\Factory;
 trait MockSdkTrait
 {
     protected $mockedSdk;
+    protected $mockedCallback;
 
     protected function mockSdk($gateway = null)
     {
@@ -21,6 +22,20 @@ trait MockSdkTrait
         }
 
         return $this->mockedSdk;
+    }
+
+    protected function mockCallback($gateway = null)
+    {
+        if ($this->mockedCallback === null)
+        {
+            $gateway = $gateway ?: $this->gateway;
+
+            $class = Factory::getGatewayClass($gateway, 'Mock\\Callback');
+
+            $this->mockedCallback = Mockery::mock($class, [])->makePartial();
+        }
+
+        return $this->mockedCallback;
     }
 
     /*

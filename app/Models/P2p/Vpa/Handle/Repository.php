@@ -13,4 +13,12 @@ class Repository extends Base\Repository
     {
         $query->orderBy(Entity::CREATED_AT, 'desc');
     }
+
+    public function findByAcquirer(string $acquirer , bool $active)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::ACQUIRER, $acquirer)->where(Entity::ACTIVE, $active);
+
+        return $query->first();
+    }
 }

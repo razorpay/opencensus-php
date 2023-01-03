@@ -13,16 +13,18 @@ use RZP\Gateway\P2p\Upi\AxisOlive\S2sMozart;
 
 class ClientAction extends Action
 {
-    const GET_GATEWAY_CONFIG = 'GET_GATEWAY_CONFIG';
+    const GET_GATEWAY_CONFIG   = 'GET_GATEWAY_CONFIG';
 
-    const GATEWAY_CONFIG = 'GATEWAY_CONFIG';
+    const GATEWAY_CONFIG       = 'GATEWAY_CONFIG';
+
+    const SERVER_TOKEN         = 'server_token';
 
     const MAP = [
         self::GET_GATEWAY_CONFIG => [
             self::SOURCE    => self::MOZART,
             self::MOZART    => [
                 S2sMozart::METHOD       => 'post',
-                S2sMozart::RESOURCE     => self::GATEWAY_CONFIG,
+                S2sMozart::RESOURCE     => self::SERVER_TOKEN,
             ],
         ]
     ];

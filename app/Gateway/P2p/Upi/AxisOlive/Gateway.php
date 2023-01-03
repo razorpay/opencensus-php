@@ -5,6 +5,7 @@ namespace RZP\Gateway\P2p\Upi\AxisOlive;
 use RZP\Constants\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\P2p\Upi;
+use RZP\Gateway\P2p\Upi\AxisOlive\ErrorMap;
 use RZP\Models\P2p\Base\Libraries\ArrayBag;
 use RZP\Models\Customer\Entity as CustomerEntity;
 use RZP\Gateway\P2p\Upi\AxisOlive\S2sDirect;
@@ -194,5 +195,18 @@ class Gateway extends Upi\Gateway
         $request['content'] = $masked;
 
         return $request;
+    }
+
+    protected function p2pGatewayException(
+        string $gatewayCode,
+        array $data = [],
+        string $gatewayDesc = null)
+    {
+        $code = ErrorMap::map($gatewayCode);
+
+        $data[Fields::ENTITY] = $this->getEntity();
+        $data[Fields::ACTION] = $this->getAction();
+
+        return new GatewayErrorException($code, $gatewayCode, $gatewayDesc, $data);
     }
 }

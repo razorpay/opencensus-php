@@ -42,4 +42,9 @@ class Core extends Base\Core
             return $handle;
         });
     }
+
+    public function findByAcquirer(string $acquirer, bool $active)
+    {
+        return $this->repo->findByAcquirer($acquirer, $active);
+    }
 }

@@ -109,6 +109,9 @@ class EventServiceProvider extends ServiceProvider
         P2p\DeviceCooldownCompleted::class => [
             Listeners\P2pNotificationListener::class,
         ],
+        P2p\MerchantComplaintNotification::class => [
+            Listeners\P2pWebhookListener::class,
+        ],
         AccessMap\EventSaved::class => [
             Listeners\AccessMapListener::class . '@onSaved',
         ],

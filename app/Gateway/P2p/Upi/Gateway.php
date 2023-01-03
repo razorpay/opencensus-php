@@ -63,6 +63,15 @@ class Gateway extends Base\Gateway
         return $gateway->response();
     }
 
+    public function turbo(Context $context)
+    {
+        $gateway = Factory::make($context, Contracts\TurboGateway::class);
+
+        $this->handleGatewaySwitch($gateway, __FUNCTION__);
+
+        return $gateway->response();
+    }
+
     public function client(Context $context)
     {
         $gateway = Factory::make($context, Contracts\ClientGateway::class);

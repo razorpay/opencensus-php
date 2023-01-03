@@ -433,7 +433,7 @@ class P2pSeeder extends Seeder
                 'code'                  => Constants::RZP_AXIS_OLIVE,
                 'acquirer'              => Constants::P2P_UPI_AXIS_OLIVE,
                 'bank'                  => 'BRZP',
-                'active'                => true,
+                'active'                => false,
             ]);
 
         P2p\Vpa\Handle\Entity::factory()->create(

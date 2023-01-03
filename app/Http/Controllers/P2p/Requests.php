@@ -52,7 +52,8 @@ class Requests
     const P2P_CUSTOMER_CONCERNS_TRANSACTION_FETCH_ALL      = 'p2p_customer_concerns_transaction_fetch_all';
     const P2P_CUSTOMER_CONCERNS_TRANSACTION_STATUS         = 'p2p_customer_concerns_transaction_status';
 
-    const P2P_GATEWAY_CALLBACK                              = 'p2p_gateway_callback';
+    const P2P_GATEWAY_CALLBACK                             = 'p2p_gateway_callback';
+    const P2P_TURBO_GATEWAY_CALLBACK                       = 'p2p_turbo_gateway_callback';
 
     const P2P_MERCHANT_BENEFICIARY_VALIDATE                = 'p2p_merchant_beneficiary_validate';
     const P2P_MERCHANT_DEVICE_UPDATE_WITH_ACTION           = 'p2p_merchant_device_update_with_action';
