@@ -207,6 +207,13 @@ class GatewayController extends Controller
             ];
         }
 
+        $redirectToDark = $this->redirectCallbackIfRequired($input, $gatewayDriver, $gateway);
+
+        if(empty($redirectToDark) === false)
+        {
+            return $redirectToDark;
+        }
+
         $input = $this->preProcessServerCallback($gateway, $input, $gatewayDriver);
 
         if ((isset($input['upi_mandate']) === true) and
@@ -305,6 +312,59 @@ class GatewayController extends Controller
         }
 
         return $response;
+    }
+
+    protected function redirectCallbackIfRequired($input, $gatewayDriver, $gateway)
+    {
+        try {
+            // TODO : will remove this once hybrid encryption will go live for recurring
+            if ($gatewayDriver !== Gateway::UPI_ICICI) {
+                return null;
+            }
+
+            $feature = 'upi_autopay_hybrid_encryption_redirection';
+
+            $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+                $feature, Mode::LIVE);
+
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                'message' => 'Hybrid callback redirection feature variant',
+                'body' => $input,
+                'feature' => $variant,
+            ]);
+
+            if ($variant !== 'on') {
+                return null;
+            }
+
+            $decoded = json_decode($input, true);
+
+            $this->trace->info(TraceCode::MISC_TRACE_CODE, [
+                'message' => 'Hybrid callback redirection',
+                'body' => $input,
+                'decode_body' => $decoded,
+            ]);
+
+            if (($decoded !== null) and
+                (isset($decoded["encryptedData"]) === true) and
+                (isset($decoded["encryptedKey"]) === true) and
+                (isset($decoded["oaepHashingAlgorithm"]) === true))
+            {
+                $headers = Request::header();
+                $content = Request::getContent();
+                $input['merchantTranId'] = "KywMY8tvoTRgk91notify1";
+                $input['data']['version'] = 'v4';
+
+                $response =  $gateway->redirectCallbackIfRequired($input, $content, $headers);
+                unset($input['merchantTranId']);
+                unset($input['data']['version']);
+                return $response;
+
+            }
+        } catch (\Exception $exception)
+        {
+            return null;
+        }
     }
 
     /**

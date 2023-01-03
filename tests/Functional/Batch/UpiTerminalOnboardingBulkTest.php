@@ -43,6 +43,8 @@ class UpiTerminalCreationBulkTest extends TestCase
                 Batch\Header::UPI_TERMINAL_ONBOARDING_EXPECTED             => 1,
                 Batch\Header::UPI_TERMINAL_ONBOARDING_VPA_HANDLE           => '',
                 Batch\Header::UPI_TERMINAL_ONBOARDING_RECURRING            => '',
+                Batch\Header::UPI_TERMINAL_ONBOARDING_MCC                  => '',
+                Batch\Header::UPI_TERMINAL_ONBOARDING_CATEGORY2            => '',
             ],
         ];
     }

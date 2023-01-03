@@ -2801,8 +2801,19 @@ class Gateway extends Base\Gateway
         if ((isset($input['payment']['method']) === true) and
             ($this->isUpiRecurringPayment($input['payment']) === true))
         {
+            $category = $input['merchant']->getCategory();
+
+            // if dedicated terminal pick MCC/Category from Terminal table
+            if((isset($input['terminal'])) and
+                (isset($input['terminal']['category'])) and
+                (empty($input['terminal']['category']) === false) and
+                ($this->isUpiIciciRecurringSharedTerminal($input['terminal']['merchant_id']) === false))
+            {
+                $category = $input['terminal']['category'];
+            }
+
             $content['entities']['merchant'] = [
-                'category'      =>  $input['merchant']->getCategory(),
+                'category'      =>  $category,
                 'billing_label' =>  $input['merchant']->getBillingLabel(),
                 'feature' => [
                     'tpv' => $input['merchant']->isTPVRequired()
@@ -3123,6 +3134,12 @@ class Gateway extends Base\Gateway
     {
         return (($payment['method'] === Payment\Method::UPI) and
                 ($payment['recurring'] === true));
+    }
+
+    private function isUpiIciciRecurringSharedTerminal($merchantId): bool
+    {
+        $razorpaySharedMerchantId = ['100000Razorpay'];
+        return (in_array($merchantId, $razorpaySharedMerchantId, true));
     }
 
     public static function isDebitWallet($wallet)

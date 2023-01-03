@@ -999,7 +999,8 @@ class Header
     const UPI_TERMINAL_ONBOARDING_EXPECTED             = 'Expected';
     const UPI_TERMINAL_ONBOARDING_VPA_HANDLE           = 'Vpa Handle';
     const UPI_TERMINAL_ONBOARDING_RECURRING            = 'Recurring';
-
+    const UPI_TERMINAL_ONBOARDING_MCC                  = 'Mcc';
+    const UPI_TERMINAL_ONBOARDING_CATEGORY2            = 'Category2';
 
     // Pricing Rules Addition Headers
     const PRICING_RULE_PLAN_NAME                = 'plan_name';
@@ -1715,7 +1716,9 @@ class Header
                 self::UPI_TERMINAL_ONBOARDING_GATEWAY_ACCESS_CODE,
                 self::UPI_TERMINAL_ONBOARDING_EXPECTED,
                 self::UPI_TERMINAL_ONBOARDING_VPA_HANDLE,
-                self::UPI_TERMINAL_ONBOARDING_RECURRING
+                self::UPI_TERMINAL_ONBOARDING_RECURRING,
+                self::UPI_TERMINAL_ONBOARDING_MCC,
+                self::UPI_TERMINAL_ONBOARDING_CATEGORY2
             ],
             self::OUTPUT => [
                 self::UPI_TERMINAL_ONBOARDING_MERCHANT_ID,

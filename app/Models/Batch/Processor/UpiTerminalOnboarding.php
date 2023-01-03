@@ -8,6 +8,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Batch\Entity;
 use RZP\Exception\BaseException;
+use RZP\Exception\LogicException;
 use RZP\Models\Batch\Processor\AESCrypto;
 
 class UpiTerminalOnboarding extends Base
@@ -22,6 +23,8 @@ class UpiTerminalOnboarding extends Base
         $expected           = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_EXPECTED];
         $vpaHandle          = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_VPA_HANDLE];
         $recurring          = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_RECURRING] ?? false;
+        $mcc                = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_MCC] ?? null;
+        $category2          = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_CATEGORY2] ?? null;
 
         $identifiers = [
             Terminal\Entity::VPA                  => $vpa,
@@ -49,6 +52,20 @@ class UpiTerminalOnboarding extends Base
 
             $identifiers[Terminal\Entity::NETWORK_CATEGORY] = $merchant->getCategory2() ?? "";
 
+            if((empty($mcc) === true) xor
+               (empty($category2) === true))
+            {
+                throw new LogicException("Mcc and Category2 should be both sent together and can't be sent seperately");
+            }
+
+            if((empty($category2) === false) and
+               (empty($mcc) === false))
+            {
+                $identifiers[Terminal\Entity::CATEGORY] = $mcc;
+
+                $identifiers[Terminal\Entity::NETWORK_CATEGORY] = $category2;
+            }
+
             $otherInputs[Terminal\Entity::SECRETS] = [Terminal\Entity::GATEWAY_TERMINAL_PASSWORD => app('config')->get("gateway.upi_icici.live_recurring_onboarding_api_key")];
         }
 
@@ -60,7 +77,7 @@ class UpiTerminalOnboarding extends Base
 
             $entry[Batch\Header::TERMINAL_ID]       = $response['terminal'][Terminal\Entity::ID];
         }
-        
+
         if (isset($response['terminal'][Terminal\Entity::GATEWAY_VPA_WHITELISTED]) === true)
         {
             $entry[Batch\Header::VPA_WHITELISTED]       = $response['terminal'][Terminal\Entity::GATEWAY_VPA_WHITELISTED];

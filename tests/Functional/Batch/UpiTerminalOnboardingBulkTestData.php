@@ -25,7 +25,9 @@ return [
                         Header::UPI_TERMINAL_ONBOARDING_GATEWAY_ACCESS_CODE  => 'parentChannelId',
                         Header::UPI_TERMINAL_ONBOARDING_EXPECTED             => 1,
                         Header::UPI_TERMINAL_ONBOARDING_VPA_HANDLE           => NULL,
-                        Header::UPI_TERMINAL_ONBOARDING_RECURRING            => NULL
+                        Header::UPI_TERMINAL_ONBOARDING_RECURRING            => NULL,
+                        Header::UPI_TERMINAL_ONBOARDING_MCC                  => NULL,
+                        Header::UPI_TERMINAL_ONBOARDING_CATEGORY2            => NULL
                     ],
                 ],
             ],
@@ -91,7 +93,9 @@ return [
                 'Gateway Access Code',
                 'Expected',
                 'Vpa Handle',
-                'Recurring'
+                'Recurring',
+                'Mcc',
+                'Category2'
             ],
             [
                 "10NodalAccount",
@@ -100,6 +104,8 @@ return [
                 "parentMerchantId",
                 "parentChannelId",
                 '1',
+                '',
+                '',
                 '',
                 '',
             ]
@@ -121,6 +127,8 @@ return [
                     Header::UPI_TERMINAL_ONBOARDING_EXPECTED             => 1,
                     Header::UPI_TERMINAL_ONBOARDING_VPA_HANDLE           => '',
                     Header::UPI_TERMINAL_ONBOARDING_RECURRING            => '',
+                    Header::UPI_TERMINAL_ONBOARDING_MCC                  => '',
+                    Header::UPI_TERMINAL_ONBOARDING_CATEGORY2            => '',
                 ],
             ]
         ],
