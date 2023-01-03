@@ -45,6 +45,7 @@ class UpiTerminalCreationBulkTest extends TestCase
                 Batch\Header::UPI_TERMINAL_ONBOARDING_RECURRING            => '',
                 Batch\Header::UPI_TERMINAL_ONBOARDING_MCC                  => '',
                 Batch\Header::UPI_TERMINAL_ONBOARDING_CATEGORY2            => '',
+                Batch\Header::UPI_TERMINAL_ONBOARDING_MERCHANT_TYPE        => 'online',
             ],
         ];
     }

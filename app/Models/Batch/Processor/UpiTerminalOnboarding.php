@@ -25,6 +25,7 @@ class UpiTerminalOnboarding extends Base
         $recurring          = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_RECURRING] ?? false;
         $mcc                = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_MCC] ?? null;
         $category2          = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_CATEGORY2] ?? null;
+        $merchantType       = $entry[Batch\Header::UPI_TERMINAL_ONBOARDING_MERCHANT_TYPE];
 
         $identifiers = [
             Terminal\Entity::VPA                  => $vpa,
@@ -34,7 +35,8 @@ class UpiTerminalOnboarding extends Base
         ];
 
         $features = [
-            Terminal\Entity::EXPECTED   =>  $expected
+            Terminal\Entity::EXPECTED   =>  $expected,
+            Terminal\Entity::UPI_FEATURES_TYPE => $merchantType,
         ];
 
         $otherInputs = [];

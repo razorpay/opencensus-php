@@ -1001,6 +1001,7 @@ class Header
     const UPI_TERMINAL_ONBOARDING_RECURRING            = 'Recurring';
     const UPI_TERMINAL_ONBOARDING_MCC                  = 'Mcc';
     const UPI_TERMINAL_ONBOARDING_CATEGORY2            = 'Category2';
+    const UPI_TERMINAL_ONBOARDING_MERCHANT_TYPE        = 'Merchant Type';
 
     // Pricing Rules Addition Headers
     const PRICING_RULE_PLAN_NAME                = 'plan_name';
@@ -1718,7 +1719,8 @@ class Header
                 self::UPI_TERMINAL_ONBOARDING_VPA_HANDLE,
                 self::UPI_TERMINAL_ONBOARDING_RECURRING,
                 self::UPI_TERMINAL_ONBOARDING_MCC,
-                self::UPI_TERMINAL_ONBOARDING_CATEGORY2
+                self::UPI_TERMINAL_ONBOARDING_CATEGORY2,
+                self::UPI_TERMINAL_ONBOARDING_MERCHANT_TYPE
             ],
             self::OUTPUT => [
                 self::UPI_TERMINAL_ONBOARDING_MERCHANT_ID,

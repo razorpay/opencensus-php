@@ -155,6 +155,8 @@ class Entity extends Base\PublicEntity
 
     const CATEGORY_LENGTH               = 4;
 
+    const UPI_FEATURES_TYPE             = 'type';
+
     protected static $sign              = 'term';
 
     protected $fillable = [

@@ -27,7 +27,8 @@ return [
                         Header::UPI_TERMINAL_ONBOARDING_VPA_HANDLE           => NULL,
                         Header::UPI_TERMINAL_ONBOARDING_RECURRING            => NULL,
                         Header::UPI_TERMINAL_ONBOARDING_MCC                  => NULL,
-                        Header::UPI_TERMINAL_ONBOARDING_CATEGORY2            => NULL
+                        Header::UPI_TERMINAL_ONBOARDING_CATEGORY2            => NULL,
+                        Header::UPI_TERMINAL_ONBOARDING_MERCHANT_TYPE        => 'online',
                     ],
                 ],
             ],
@@ -95,7 +96,8 @@ return [
                 'Vpa Handle',
                 'Recurring',
                 'Mcc',
-                'Category2'
+                'Category2',
+                'Merchant Type'
             ],
             [
                 "10NodalAccount",
@@ -108,6 +110,7 @@ return [
                 '',
                 '',
                 '',
+                'online',
             ]
         ],
     ],
@@ -129,6 +132,7 @@ return [
                     Header::UPI_TERMINAL_ONBOARDING_RECURRING            => '',
                     Header::UPI_TERMINAL_ONBOARDING_MCC                  => '',
                     Header::UPI_TERMINAL_ONBOARDING_CATEGORY2            => '',
+                    Header::UPI_TERMINAL_ONBOARDING_MERCHANT_TYPE        => 'online',
                 ],
             ]
         ],
