@@ -397,15 +397,24 @@ class GatewayController extends Controller
         {
             $this->app['basicauth']->setModeAndDbConnection($mode);
 
-            $qrCode = $qrRepo->findByMerchantReference($paymentId);
-
-            if (($isQrV2Payment === false) and
-                ($qrCode !== null) and
-                ($qrCode->getReference() !== $qrCode->getId()))
+            if ($isQrV2Payment === false)
             {
-                $isQrV2Payment = true;
-            }
+                $gatewayClass = $this->app['gateway']->gateway($gatewayDriver);
+                $data         = $gatewayClass->getParsedDataFromUnexpectedCallback($input);
 
+                $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData($gatewayDriver, $data['terminal']);
+
+                if ($terminal === null)
+                {
+                    throw new Exception\LogicException('No terminal found for QR Code Payment', $data);
+                }
+
+                if ($terminal->isQrV2Terminal() === true)
+                {
+                    $isQrV2Payment = true;
+                }
+            }
+            
             if ($isQrV2Payment === true)
             {
                 $this->trace->info(TraceCode::QR_PAYMENT_GATEWAY_CALLBACK, $input);

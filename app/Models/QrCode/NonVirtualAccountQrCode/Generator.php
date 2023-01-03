@@ -88,7 +88,7 @@ class Generator extends QrCode\Generator
                 (empty($terminal->getGatewayMerchantId2()) === false))
             {
                 $this->terminalId = $terminal->getId();
-                
+
                 return $terminal->getGatewayMerchantId2();
             }
         }
@@ -142,7 +142,7 @@ class Generator extends QrCode\Generator
         $input = [
             'qr_code'  => $qrCode->toArray(),
             'terminal' => $terminal->toArray(),
-            'merchant' => $qrCode->merchant->toArray()
+            'merchant' => $qrCode->merchant
         ];
 
         $gatewayClass = $this->app['gateway']->gateway($terminal->getGateway());
@@ -151,9 +151,9 @@ class Generator extends QrCode\Generator
         {
             try
             {
-                $refId = $gatewayClass->getQrRefId($input);
+                $gatewayClass->setGatewayParams($input, $this->mode, $terminal);
 
-                $qrCode->setReference($refId);
+                $refId = $gatewayClass->getQrRefId($input);
             }
             catch(\Exception $ex)
             {

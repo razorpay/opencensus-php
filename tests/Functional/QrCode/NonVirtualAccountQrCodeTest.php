@@ -1895,8 +1895,6 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->assertEquals($qrCodeEntity['id'], $qrCode['id']);
 
-        $this->assertEquals($qrCodeEntity['reference'],'icicirefID');
-
         $this->assertStringContainsString('icicirefID', $qrCodeEntity['qr_string']);
     }
 
@@ -1932,5 +1930,40 @@ class NonVirtualAccountQrCodeTest extends TestCase
                 }
                 return 'control';
             });
+    }
+
+    public function testProcessPaymentForDynamicQrWithDedicatedTerminal()
+    {
+        $this->fixtures->create('terminal:dedicated_upi_icici_terminal');
+
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $this->createQrCode(['usage'          => 'multiple_use',
+                             'type'           => 'upi_qr',
+                             'fixed_amount'   => true,
+                             'payment_amount' => 10000
+                            ],
+                            'live',
+                            'LiveAccountMer');
+
+        $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+
+        $rrn = '000011100101';
+        $request['content']['BankRRN'] = $rrn;
+        $request['content']['merchantTranId'] = $qrCodeEntity['reference'];
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getLastEntity('qr_payment', true);
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('upi', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(4000, $payment['amount']);
+        $this->assertEquals('pay_' . $qrPayment['payment_id'], $payment['id']);
+        $this->assertEquals(1, $qrPayment['expected']);
+        $this->assertEquals($rrn, $payment['acquirer_data']['rrn']);
+        $this->assertEquals($rrn, $payment['reference16']);
     }
 }

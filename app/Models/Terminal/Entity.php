@@ -1934,6 +1934,12 @@ class Entity extends Base\PublicEntity
                 (strcasecmp(substr($virtualVpa, -strlen($handle), strlen($virtualVpa)), $handle) === 0));
     }
 
+    public function isQrV2Terminal()
+    {
+        return (($this->isOnline() === true) or
+                ($this->isOffline() === true));
+    }
+
     /**
      * This is being overridden because, we don't always want to add sub merchants
      * to the serialized data as it involves a db call. Only when serializing

@@ -150,7 +150,8 @@ class Service extends Base\Service
 
         $isQrCodeV2 = $this->isNonVAQrCodePayment($gatewayResponse);
 
-        if ($isQrCodeV2 === true)
+        if (($isQrCodeV2 === true) or
+            ($terminal->isQrV2Terminal() === true))
         {
             $valid = (new QrPayment\Core())->processPayment($gatewayResponse, $terminal, $qrPaymentRequest);
         }
