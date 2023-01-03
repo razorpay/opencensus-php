@@ -514,6 +514,8 @@ class Processor
 
     private function canRouteThroughRearchFlow(array & $input)
     {
+        $this->verifyMerchantIsLiveForLiveRequest();
+        
         try
         {
             $result = '';
