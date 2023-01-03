@@ -1382,7 +1382,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->getUsersWithFilters($input);
+        $data = $this->service()->getMerchantUsers($input);
 
         return ApiResponse::json($data);
     }

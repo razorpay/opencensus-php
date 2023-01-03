@@ -11,6 +11,7 @@ use Crypt;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Table;
+use RZP\Constants\Product;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Services\Mock;
@@ -501,6 +502,74 @@ class MerchantTest extends TestCase
         $this->assertTrue(in_array('owner', $roles));
 
         $this->assertTrue(in_array('manager', $roles));
+    }
+
+    public function testGetSubmerchantUsersForPrimaryProduct()
+    {
+        $this->getSubmerchantUsers(Product::PRIMARY, 1);
+    }
+
+    public function testGetSubMerchantUsersForBankingProduct()
+    {
+        $this->getSubmerchantUsers(Product::BANKING, 2);
+    }
+
+    protected function getSubmerchantUsers(string $product, int $expectedNoOfUsers)
+    {
+        $partnerMerchant = $this->fixtures->create('merchant');
+
+        $partnerUser = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($partnerUser['id'], $partnerMerchant['id'], 'owner');
+
+        $appAttributes = [
+            'merchant_id' => $partnerMerchant['id'],
+            'partner_type'=> 'aggregator',
+        ];
+
+        $application = $this->fixtures->merchant->createDummyPartnerApp($appAttributes);
+
+        $submerchantDetails = $this->createSubMerchant($partnerMerchant, $application, ['id' => '10000000000111']);
+
+        $submerchantUser = $this->fixtures->create('user');
+
+        $this->createUserMerchantMapping($partnerUser['id'], $submerchantDetails[0]->getId(), 'owner', 'test', $product);
+        $this->createUserMerchantMapping($submerchantUser['id'], $submerchantDetails[0]->getId(), 'owner', 'test', $product);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $this->ba->proxyAuth('rzp_test_' . $submerchantDetails[0]->getId(), $submerchantUser->getId());
+
+        $testData = & $this->testData['testGetMerchantUsers'];
+
+        $testData['request']['url'] = '/merchants-users';
+
+        if ($product === Product::BANKING)
+        {
+            $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+        }
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $userIds = array_column($response, 'id');
+
+        $this->assertEquals($expectedNoOfUsers, count($userIds));
+
+        $this->assertTrue(in_array($submerchantUser['id'], $userIds));
+
+        if ($product === Product::BANKING)
+        {
+            $this->assertTrue(in_array($partnerUser['id'], $userIds));
+        }
+        $this->assertEquals($product, $this->app['basicauth']->getRequestOriginProduct());
     }
 
     public function testGetMerchantUsersByRole()

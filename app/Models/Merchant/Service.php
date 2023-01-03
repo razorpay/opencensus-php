@@ -5089,6 +5089,15 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getMerchantUsers($input)
+    {
+        $users = $this->getUsersWithFilters($input);
+
+        $filteredUsers =  $this->removePartnerUsers($users);
+
+        return $filteredUsers;
+    }
+
     public function getUsersWithFilters($input)
     {
         if(array_key_exists(Constants::ROLE, $input))
@@ -11218,5 +11227,59 @@ class Service extends Base\Service
             ]);
 
         return ['nc_count' => $ncCount];
+    }
+
+    private function removePartnerUsers($users)
+    {
+        $merchantId = $this->merchant->getId();
+
+        if ($this->auth->getRequestOriginProduct() !== Product::PRIMARY)
+        {
+            return $users;
+        }
+
+        $affiliatedPartnerIds = $this->repo->merchant_access_map->fetchAffiliatedPartnersForSubmerchant($merchantId)->pluck(AccessMap\Entity::ENTITY_OWNER_ID)->toArray();
+
+        if (empty($affiliatedPartnerIds) === true)
+        {
+            return $users;
+        }
+
+        $isSplitzExperimentEnabled = $this->isRemovePartnerUserExperimentEnabled($affiliatedPartnerIds);
+
+        if ($isSplitzExperimentEnabled === true)
+        {
+            $submerchantUserIds = array_column($users, User\Entity::ID);
+            $partnerMerchantsUserIds = $this->repo->merchant_user->fetchMerchantUsersIdsByMerchantIds($affiliatedPartnerIds);
+
+            $filteredUserIds = array_values(array_diff($submerchantUserIds, $partnerMerchantsUserIds));
+
+            $users = array_values(array_filter($users, function($user) use ($filteredUserIds) {
+                return (in_array($user[User\Entity::ID], $filteredUserIds) === true);
+            }));
+        }
+
+        return $users;
+    }
+
+
+    private function isRemovePartnerUserExperimentEnabled($partnerIds)
+    {
+        $isSplitzExperimentEnabled = false;
+
+        foreach ($partnerIds as $partnerId)
+        {
+            $properties = [
+                'id'            => $partnerId,
+                'experiment_id' => $this->app['config']->get('app.remove_partner_user_from_merchant_manage_team_experiment_id'),
+            ];
+
+            $isSplitzExperimentEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
+            if ($isSplitzExperimentEnabled === true) {
+                break;
+            }
+        }
+
+        return $isSplitzExperimentEnabled;
     }
 }

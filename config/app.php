@@ -397,6 +397,8 @@ return array(
 
     'submerchant_ownership_transfer_experiment_id' => env('SUBMERCHANT_OWNERSHIP_TRANSFER_EXPERIMENT_ID'),
 
+    'remove_partner_user_from_merchant_manage_team_experiment_id' => env('REMOVE_PARTNER_USER_FROM_MERCHANT_MANAGE_TEAM_EXPERIMENT_ID'),
+
     '1cc_splitz_experiment_id' => env('MAGIC_CHECKOUT_SPLITZ_EXPERIMENT_ID'),
 
     '1cc_city_autopopulate_splitz_experiment_id' => env('MAGIC_CHECKOUT_DISABLE_AUTOPOPULATE_EXP_ID'),

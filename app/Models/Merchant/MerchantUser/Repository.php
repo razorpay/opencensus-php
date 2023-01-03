@@ -374,4 +374,15 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
+
+    public function fetchMerchantUsersIdsByMerchantIds(array $merchantIds, string $mode = null)
+    {
+        $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
+
+        return $query->select(Entity::USER_ID)
+                     ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                     ->get()
+                     ->pluck(Entity::USER_ID)
+                     ->toArray();
+    }
 }
