@@ -19,7 +19,7 @@ class NachCiti extends Base
     {
         $row = array_map('trim', $row);
 
-        $paymentId       = substr($row[Headings::TRANSACTION_REFERENCE], 10, 14);
+        $paymentId       = substr($row[Headings::TRANSACTION_REFERENCE], -14);;
         $accountNumber   = $row[Headings::BENEFICIARY_BANK_ACCOUNT_NUMBER];
         $rejectionCode   = $row[Headings::REASON_CODE];
         $status          = $row[Headings::FLAG];
