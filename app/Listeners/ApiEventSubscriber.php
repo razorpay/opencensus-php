@@ -434,6 +434,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onAccountMappedToPartner($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onPaymentAuthorized($payment)
     {
         $payload = $this->getPaymentPayload($payment);

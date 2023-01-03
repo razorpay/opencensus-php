@@ -94,6 +94,7 @@ class Event
     const ACCOUNT_UPDATED                   = 'account.updated';
     const ACCOUNT_PAYMENTS_ENABLED          = 'account.payments_enabled';
     const ACCOUNT_PAYMENTS_DISABLED         = 'account.payments_disabled';
+    const ACCOUNT_MAPPED_TO_PARTNER         = 'account.mapped_to_partner';
     const PAYOUT_LINK_ISSUED                = 'payout_link.issued';
     const PAYOUT_LINK_PROCESSING            = 'payout_link.processing';
     const PAYOUT_LINK_ATTEMPTED             = 'payout_link.attempted';
@@ -232,6 +233,7 @@ class Event
         self::ACCOUNT_UPDATED,
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
+        self::ACCOUNT_MAPPED_TO_PARTNER,
         self::PAYMENT_CREATED,
         self::PAYOUT_LINK_ISSUED,
         self::PAYOUT_LINK_PROCESSING,
@@ -368,6 +370,7 @@ class Event
         self::ACCOUNT_UPDATED,
         self::ACCOUNT_PAYMENTS_ENABLED,
         self::ACCOUNT_PAYMENTS_DISABLED,
+        self::ACCOUNT_MAPPED_TO_PARTNER,
         self::PAYOUT_LINK_ISSUED,
         self::PAYOUT_LINK_ISSUED,
         self::PAYOUT_LINK_PROCESSING,
@@ -554,6 +557,8 @@ class Event
         self::ROUTE_PRODUCT_ACTIVATED                     => 58,
         self::ROUTE_PRODUCT_NEEDS_CLARIFICATION           => 59,
         self::ROUTE_PRODUCT_REJECTED                      => 60,
+
+        self::ACCOUNT_MAPPED_TO_PARTNER                   => 61,
     ];
 
     /**
@@ -634,6 +639,7 @@ class Event
         self::ACCOUNT_UPDATED                   => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_ENABLED          => [Product::PRIMARY],
         self::ACCOUNT_PAYMENTS_DISABLED         => [Product::PRIMARY],
+        self::ACCOUNT_MAPPED_TO_PARTNER         => [Product::PRIMARY],
         self::PAYOUT_UPDATED                    => [Product::PRIMARY, Product::BANKING],
         self::PAYOUT_REJECTED                   => [Product::PRIMARY, Product::BANKING],
         self::PAYMENT_CREATED                   => [Product::PRIMARY],
@@ -768,6 +774,7 @@ class Event
         self::ACCOUNT_UPDATED                   => Entity::ACCOUNT,
         self::ACCOUNT_PAYMENTS_ENABLED          => Entity::MERCHANT,
         self::ACCOUNT_PAYMENTS_DISABLED         => Entity::MERCHANT,
+        self::ACCOUNT_MAPPED_TO_PARTNER         => Entity::MERCHANT,
         self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING => Entity::MERCHANT,
         self::PAYOUT_LINK_ISSUED                => Entity::PAYOUT_LINK,
         self::PAYOUT_LINK_PROCESSED             => Entity::PAYOUT_LINK,
@@ -862,6 +869,7 @@ class Event
         self::ACCOUNT_REJECTED                  => [Feature\Constants::SUBMERCHANT_ONBOARDING, Feature\Constants::MARKETPLACE],
         self::ACCOUNT_PAYMENTS_ENABLED          => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_PAYMENTS_DISABLED         => Feature\Constants::SUBMERCHANT_ONBOARDING,
+        self::ACCOUNT_MAPPED_TO_PARTNER         => Feature\Constants::SUBMERCHANT_ONBOARDING,
         self::ACCOUNT_UPDATED                   => [Feature\Constants::MARKETPLACE, Feature\Constants::LA_BANK_ACCOUNT_UPDATE],
         self::PAYOUT_PENDING                    => Feature\Constants::PAYOUT,
         self::PAYMENT_CREATED                   => Feature\Constants::PAYMENT_CREATED_WEBHOOK,

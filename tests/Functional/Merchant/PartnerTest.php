@@ -15,6 +15,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\User\BankingRole;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Metric as MerchantMetric;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -46,6 +47,7 @@ class PartnerTest extends OAuthTestCase
     use MocksSplitz;
     use PartnerTrait;
     use BatchTestTrait;
+    use TestsWebhookEvents;
 
     const PARTNER                = 'partner';
     const ACTIVATION             = 'activation';

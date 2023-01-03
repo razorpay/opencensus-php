@@ -4006,6 +4006,8 @@ class Core extends Base\Core
             return $accessMap;
         });
 
+        $this->sendAccountMappedToPartnerWebhook($submerchant);
+
         return $accessMap->toArrayPublic();
     }
 
@@ -8742,5 +8744,14 @@ class Core extends Base\Core
                 ]
             );
         }
+    }
+
+    private function sendAccountMappedToPartnerWebhook($merchant)
+    {
+        $eventPayload = [
+            ApiEventSubscriber::MAIN        => $merchant
+        ];
+
+        $this->app['events']->dispatch('api.account.mapped_to_partner', $eventPayload);
     }
 }

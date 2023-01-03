@@ -15,6 +15,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Http\OAuthScopes;
 use RZP\Constants\HyperTrace;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\MerchantApplications;
 
 use Razorpay\OAuth\Token;
