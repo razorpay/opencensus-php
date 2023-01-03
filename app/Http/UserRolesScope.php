@@ -249,6 +249,9 @@ class UserRolesScope
             'partner_kyc_access_request'  => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'partner_kyc_revoke_access'   => [Role::OWNER, Role::MANAGER, Role::ADMIN],
             'fetch_partner_first_user_experience' => [Role::OWNER],
+            'partner_config_fetch'        => [Role::OWNER, Role::ADMIN],
+            'partner_config_edit'         => [Role::OWNER, Role::ADMIN],
+            'partner_config_edit_logo'    => [Role::OWNER, Role::ADMIN],
 
             'loc_service'                 => [Role::OWNER, Role::ADMIN],
             'capital_cards_service'       => [Role::OWNER, Role::ADMIN],

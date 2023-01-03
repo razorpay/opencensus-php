@@ -7133,3 +7133,6 @@ ALTER TABLE merchant_banks
 ALTER TABLE tokens
     ADD COLUMN internal_error_code varchar(255);
     ADD COLUMN error_description TEXT;
+
+ALTER TABLE partner_configs
+    ADD COLUMN partner_metadata JSON DEFAULT NULL;

@@ -137,15 +137,18 @@ class Core extends Base\Core
 
     /**
      * @param string $id
-     * @param array  $input
+     * @param array $input
      *
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     public function edit(string $id, array $input) : Entity
     {
         $this->validatePricingPlans($input);
 
         $config = $this->repo->partner_config->findOrFailPublic($id);
+
+        $this->buildPartnerMetadata($config, $input);
 
         list($application, $submerchant) = $this->getEntitiesFromConfig($config);
 
@@ -539,5 +542,67 @@ class Core extends Base\Core
         return [
             'audit_log'             => json_decode(json_encode($auditLog)),
         ];
+    }
+
+    /**
+     * @param array $input
+     * @return  void
+     *
+     * @throws Exception\BadRequestException
+     * @throws Exception\BaseException
+     */
+    public function uploadLogo(array &$input): void
+    {
+        if (isset($input[Constants::LOGO]) === false)
+        {
+            return;
+        }
+
+        try
+        {
+            // Store the logo in AWS S3 bucket
+            $logoUrl = (new Merchant\Logo())->setUpMerchantLogo($input);
+
+            $input[Entity::PARTNER_METADATA][Constants::LOGO_URL] = $logoUrl;
+
+            unset($input[Constants::LOGO]);
+        }
+        catch(Exception\BadRequestException $exception)
+        {
+            $errorCode = $exception->getCode();
+
+            $mappedErrorCode = Constants::PARTNER_CONFIG_LOGO_ERROR_MAP[$errorCode] ?? null;
+
+            if (empty($mappedErrorCode) === true)
+            {
+                throw $exception;
+            }
+
+            throw new Exception\BadRequestException($mappedErrorCode);
+        }
+    }
+
+    /**
+     * Append the existing partner_metadata in the input to avoid overwriting
+     * Common fields will be updated based on the input
+     *
+     * @param Entity $partnerConfig
+     * @param array $input
+     *
+     * @return  void
+     */
+    protected function buildPartnerMetadata(Entity $partnerConfig, array & $input): void
+    {
+        if (empty($input[Entity::PARTNER_METADATA]) === true)
+        {
+            return;
+        }
+
+        $existingMetadata = $partnerConfig->getPartnerMetadata();
+
+        if (empty($existingMetadata) === false)
+        {
+            $input[Entity::PARTNER_METADATA] = array_merge($existingMetadata, $input[Entity::PARTNER_METADATA]);
+        }
     }
 }

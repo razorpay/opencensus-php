@@ -2835,10 +2835,14 @@ class Route
         'backfill_merchant_applications'           => ['post',     'merchant/backfill_merchant_apps',                'MerchantController@backFillMerchantApplications'                   ],
         'backfill_referred_application'            => ['post',     'merchant/backfill_referred_app',                 'MerchantController@backFillReferredApplication'                    ],
         'fetch_merchant_products'                  => ['get',      'merchant/merchant_products',                     'MerchantController@fetchProductUsedByMerchants'                    ],
-        'partner_config_create'                    => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
         'partner_config_bulk_upsert'               => ['post',     'partner_configs/bulk',                           'PartnerConfigController@bulkUpsert'                                ],
-        'partner_config_fetch'                     => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
-        'partner_config_edit'                      => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
+        'partner_config_create_admin'              => ['post',     'partner_configs',                                'PartnerConfigController@create'                                    ],
+        'partner_config_fetch_admin'               => ['get',      'partner_configs',                                'PartnerConfigController@getConfig'                                 ],
+        'partner_config_edit_admin'                => ['put',      'partner_configs/{id}',                           'PartnerConfigController@update'                                    ],
+        'partner_config_fetch'                     => ['get',      'partner_config',                                 'PartnerConfigController@getConfig'                                 ],
+        'partner_config_edit'                      => ['put',      'partner_config/{id}',                            'PartnerConfigController@update'                                     ],
+        'partner_config_edit_logo'                 => ['post',     'partner_config/{id}/logo',                       'PartnerConfigController@uploadLogo'                                ],
+        'partner_config_fetch_guest'               => ['get',      'partner_config_guest',                           'PartnerConfigController@getConfig'                                 ],
         'create_partner_sub_merchant_config'       => ['post',     'partner_configs/submerchant/config',             'PartnerConfigController@createPartnersSubMerchantConfig'                     ],
         'update_partner_sub_merchant_config'       => ['put',      'partner_configs/submerchant/config',             'PartnerConfigController@updatePartnersSubMerchantConfig'                     ],
         'fetch_partner_first_user_experience'      => ['get',      'partner/first_user_experience',                  'MerchantController@getFUXDetailsForPartner'              ],
@@ -5526,6 +5530,7 @@ class Route
         'internal_1cc_configs_get',
         'internal_1cc_shopify_customer_addresses_get',
         'raw_address_create_bulk',
+        'partner_config_fetch_guest',
         'terminal_toggle_internal',
     ];
 
@@ -6514,7 +6519,9 @@ class Route
         'workflow_config_delete',
         'payouts_bulk_reject_owner',
         'payout_links_bulk_reject_owner',
-
+        'partner_config_fetch',
+        'partner_config_edit',
+        'partner_config_edit_logo',
     ];
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
@@ -7117,11 +7124,11 @@ class Route
         'set_gateway_downtime_conf',
         'get_gateway_downtime_conf',
 
-        'partner_config_create',
-        'partner_config_fetch',
+        'partner_config_create_admin',
+        'partner_config_fetch_admin',
+        'partner_config_edit_admin',
         'create_partner_sub_merchant_config',
         'update_partner_sub_merchant_config',
-        'partner_config_edit',
         'partner_bulk_update_onboarding_source',
 
         'vault_token_create',
@@ -8476,9 +8483,12 @@ class Route
         'set_gateway_downtime_conf'                => Permission::CREATE_GATEWAY_DOWNTIME,
         'get_gateway_downtime_conf'                => Permission::VIEW_GATEWAY_DOWNTIME,
         'partner_activation_migrate'               => Permission::ADMIN_MANAGE_PARTNERS,
-        'partner_config_create'                    => Permission::EDIT_PARTNERS,
+        'partner_config_create_admin'              => Permission::EDIT_PARTNERS,
+        'partner_config_fetch_admin'               => Permission::VIEW_PARTNERS,
+        'partner_config_edit_admin'                => Permission::EDIT_PARTNERS,
         'partner_config_fetch'                     => Permission::VIEW_PARTNERS,
         'partner_config_edit'                      => Permission::EDIT_PARTNERS,
+        'partner_config_edit_logo'                 => Permission::EDIT_PARTNERS,
         'create_partner_sub_merchant_config'       => Permission::EDIT_PARTNERS,
         'update_partner_sub_merchant_config'       => Permission::EDIT_PARTNERS,
         'partner_bulk_update_onboarding_source'    => Permission::EDIT_PARTNERS,
@@ -11255,6 +11265,9 @@ class Route
             'workflow_config_delete',
             'payouts_bulk_reject_owner',
             'payout_links_bulk_reject_owner',
+            'partner_config_fetch',
+            'partner_config_edit',
+            'partner_config_edit_logo'
         ],
 
         'admin_dashboard' => [
@@ -12385,9 +12398,12 @@ class Route
             'pages_view_by_slug_empty',
             'paper_nach_approve_failure',
             'paper_nach_fetch_failure',
-            'partner_config_create',
-            'partner_config_edit',
+            'partner_config_create_admin',
+            'partner_config_fetch_admin',
+            'partner_config_edit_admin',
             'partner_config_fetch',
+            'partner_config_edit',
+            'partner_config_edit_logo',
             'create_partner_sub_merchant_config',
             'update_partner_sub_merchant_config',
             'partner_bulk_update_onboarding_source',
@@ -13516,6 +13532,7 @@ class Route
             'admin_reset_password',
             'user_confirm_by_data',
             'guest_pincode_get',
+            'partner_config_fetch_guest'
         ],
 
         'dashboard_internal' => [
@@ -14239,7 +14256,6 @@ class Route
             'partner_config_bulk_upsert',
             'scrooge_refunds_retry_custom_fund_transfers',
             'scrooge_refunds_retry_custom_fund_transfers_batch',
-            'partner_config_bulk_upsert',
             'payout_links_batch_process',
             'nach_batch_process',
             'emandate_batch_process',

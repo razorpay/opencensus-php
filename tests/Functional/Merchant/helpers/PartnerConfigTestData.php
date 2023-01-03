@@ -683,15 +683,7 @@ return [
                 'count' => 1,
                 'items' => [
                     [
-                        'entity_id'              => '8ckeirnw84ifke',
-                        'default_plan_id'        => '1hDYlICobzOCYt',
                         'commission_model'       => 'commission',
-                        'commissions_enabled'    => true,
-                        'implicit_plan_id'       => null,
-                        'explicit_plan_id'       => null,
-                        'implicit_expiry_at'     => null,
-                        'explicit_refund_fees'   => false,
-                        'explicit_should_charge' => false,
                     ]
                 ],
             ],
@@ -1052,6 +1044,139 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testFetchConfigByPartner' => [
+        'request'  => [
+            'url'     => '/partner_config',
+            'method'  => 'GET',
+            'content' => [
+                'partner_id'     => 'DefaultPartner',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'partner_metadata' => [
+                    'brand_color' => '0000FF',
+                    'text_color'  => '000FFF',
+                    'brand_name'  => 'apple'
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerConfigByInternalAppAuth' => [
+        'request'  => [
+            'url'     => '/partner_config_guest',
+            'method'  => 'GET',
+            'content' => [
+                'partner_id'     => 'DefaultPartner',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'partner_metadata' => [
+                    'brand_color' => '0000FF',
+                    'text_color'  => '000FFF',
+                    'brand_name'  => 'google'
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchConfigByInvalidPartner' => [
+        'request'  => [
+            'url'     => '/partner_config',
+            'method'  => 'GET',
+            'content' => [
+                'partner_id'    => 'DefaultPartner',
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_PARTNER_ACTION,
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testUpdateAllowedConfigByPartner' => [
+        'request'  => [
+            'url'     => '/partner_config/{id}',
+            'method'  => 'PUT',
+            'content' => [
+                'partner_metadata' => [
+                    'brand_name' => 'samsung',
+                    'brand_color' => '0000FF'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'partner_metadata' => [
+                    'brand_color' => '0000FF',
+                    'brand_name'  => 'samsung'
+                ]
+            ],
+        ],
+    ],
+
+    'testUpdateDisallowedConfigByPartner' => [
+        'request'  => [
+            'url'     => '/partner_config/{id}',
+            'method'  => 'PUT',
+            'content' => [
+                'default_plan_id' => Pricing::DEFAULT_PRICING_PLAN_ID,
+                'partner_metadata' => [
+                    'brand_color' => '0000FF',
+                ],
+                'commissions_enabled'     => 1,
+                'implicit_plan_id'        => null,
+            ],
+        ],
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "default_plan_id, commissions_enabled, implicit_plan_id is/are not required and should not be sent",
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\\Exception\\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testUploadBrandLogoByPartner' => [
+        'request'  => [
+            'url'     => '/partner_config/{id}/logo',
+            'method'  => 'POST',
+            'files' => [
+
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'partner_metadata' => [
+                    'brand_color' => '0000FF',
+                    'text_color'  => '000FFF',
+                    'brand_name'  => 'google'
+                ]
+            ],
         ],
     ],
 ];

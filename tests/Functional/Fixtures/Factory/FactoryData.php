@@ -1330,6 +1330,7 @@ final class FactoryData
                                                              'entity_id'           => '10000000000App',
                                                              'revisit_at'          => Carbon::now()->addYear(1)->getTimestamp(),
                                                              'commissions_enabled' => 0,
+                                                             'partner_metadata'    => null
                                                          ]
         );
 

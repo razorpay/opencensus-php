@@ -4,6 +4,8 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 
 class PartnerConfigController extends Controller
 {
@@ -69,4 +71,25 @@ class PartnerConfigController extends Controller
         return  ApiResponse::json($response);
     }
 
+    /**
+     * @param string $id
+     * @return mixed
+     *
+     * @throws BadRequestException
+     */
+    public function uploadLogo(string $id)
+    {
+        if (Request::hasFile('logo'))
+        {
+            $input['logo'] = Request::file('logo');
+
+            $response = $this->service()->uploadLogo($id, $input);
+
+            return ApiResponse::json($response);
+        }
+        else
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_LOGO_NOT_PRESENT);
+        }
+    }
 }

@@ -72,6 +72,9 @@ class CreatePartnerConfigsTable extends Migration
 
             $table->integer(Entity::REVISIT_AT);
 
+            $table->json(Entity::PARTNER_METADATA)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
             $table->integer(Entity::DELETED_AT)

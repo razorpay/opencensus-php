@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Partner\Config;
 
+use App;
+use Config;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -31,6 +33,7 @@ class Entity extends PublicEntity
     const EXPLICIT_SHOULD_CHARGE  = 'explicit_should_charge';
     const DEFAULT_PAYMENT_METHODS = 'default_payment_methods';
     const SUB_MERCHANT_CONFIG     = 'sub_merchant_config';
+    const PARTNER_METADATA        = 'partner_metadata';
 
     const DEFAULT_TDS_PERCENTAGE             = 500;
     const TDS_PERCENTAGE_FOR_MISSING_DETAILS = 2000;
@@ -53,7 +56,8 @@ class Entity extends PublicEntity
         self::TDS_PERCENTAGE,
         self::HAS_GST_CERTIFICATE,
         self::REVISIT_AT,
-        self::SUB_MERCHANT_CONFIG
+        self::SUB_MERCHANT_CONFIG,
+        self::PARTNER_METADATA
     ];
 
     protected $public = [
@@ -76,7 +80,8 @@ class Entity extends PublicEntity
         self::HAS_GST_CERTIFICATE,
         self::REVISIT_AT,
         self::CREATED_AT,
-        self::SUB_MERCHANT_CONFIG
+        self::SUB_MERCHANT_CONFIG,
+        self::PARTNER_METADATA
     ];
 
     protected $dates = [
@@ -95,6 +100,7 @@ class Entity extends PublicEntity
         self::HAS_GST_CERTIFICATE     => 0,
         self::DEFAULT_PAYMENT_METHODS => null,
         self::SUB_MERCHANT_CONFIG     => null,
+        self::PARTNER_METADATA        => null
     ];
 
     protected $casts = [
@@ -105,7 +111,12 @@ class Entity extends PublicEntity
         self::SETTLE_TO_PARTNER       => 'bool',
         self::TDS_PERCENTAGE          => 'int',
         self::HAS_GST_CERTIFICATE     => 'bool',
-        self::SUB_MERCHANT_CONFIG     => 'array'
+        self::SUB_MERCHANT_CONFIG     => 'array',
+        self::PARTNER_METADATA        => 'array'
+    ];
+
+    protected $publicSetters = [
+        self::PARTNER_METADATA,
     ];
 
     protected static $unsetCreateInput = [Constants::APPLICATION_ID, Constants::PARTNER_ID];
@@ -194,6 +205,13 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::TDS_PERCENTAGE);
     }
 
+    public function getLogoUrl()
+    {
+        $metadata = $this->getPartnerMetadata();
+
+        return empty($metadata) ? null : $metadata[Constants::LOGO_URL];
+    }
+
     public function shouldCreditGst(): bool
     {
         return ($this->getAttribute(self::HAS_GST_CERTIFICATE) === false);
@@ -202,6 +220,11 @@ class Entity extends PublicEntity
     public function isDefaultConfig(): bool
     {
         return ($this->getAttribute(self::ENTITY_TYPE) === AccessMap\Entity::APPLICATION);
+    }
+
+    public function getPartnerMetadata(): array|null
+    {
+        return $this->getAttribute(self::PARTNER_METADATA);
     }
 
     // --------------------- SETTERS ---------------------
@@ -229,6 +252,7 @@ class Entity extends PublicEntity
     {
         return $this->setAttribute(self::SUB_MERCHANT_CONFIG, $subMerchantConfig);
     }
+
     // --------------------- GENERATORS ---------------------
     public function generateRevisitAt(array $input)
     {
@@ -265,5 +289,62 @@ class Entity extends PublicEntity
     public function isExplicitRecordOnly(): bool
     {
         return ($this->getAttribute(self::EXPLICIT_SHOULD_CHARGE) === false);
+    }
+
+    public function toArrayPublic(): array
+    {
+        $app = App::getFacadeRoot();
+
+        $response = parent::toArrayPublic();
+
+        // Don't return the whole entity if the request is not from admin for confidentiality
+        if ($app['basicauth']->isAdminAuth() === false and $app['basicauth']->isDashboardApp() === true)
+        {
+            $response = array_only($response, Constants::PARTNER_CONFIG_PUBLIC);
+        }
+
+        return $response;
+    }
+
+    protected function setPublicPartnerMetadataAttribute(array & $array)
+    {
+        if (empty($array[Entity::PARTNER_METADATA][Constants::LOGO_URL]) === false)
+        {
+            $array[Entity::PARTNER_METADATA][Constants::LOGO_URL] = $this->getFullLogoUrlWithSize();
+
+        }
+    }
+
+    private function getLogoUrlBasedOnSize(string $logoUrl, string $size): string
+    {
+        // Gets the position of last dot.
+        // Gets the substring until before the last dot.
+        // Appends '_size' to the substring.
+        // Appends the substring from the last dot to the end of url.
+
+        $extension_pos = strrpos($logoUrl, '.');
+
+        return substr($logoUrl, 0, $extension_pos) . '_' . $size . substr($logoUrl, $extension_pos);
+    }
+
+    private function getFullLogoUrlWithSize($size = Constants::ORIGINAL_SIZE): ?string
+    {
+        $relativeLogoUrl = $this->getLogoUrl();
+
+        if ($relativeLogoUrl === null)
+        {
+            return null;
+        }
+
+        // Different cdn urls for different contexts.
+        $context = Config::get('app.context');
+        $cdnUrl = Config::get('url.cdn')[$context];
+
+        // Sample base URL : 'https://cdn.razorpay.com' + '/logos/a.png'
+        // Sample actual URL : 'https://cdn.razorpay.com' + 'logos/' + 'a_medium.png'
+        $baseLogoUrl = $cdnUrl . $relativeLogoUrl;
+
+        // In DB, we are storing the base URL. The actual URL has the respective size appended to it.
+        return $this->getLogoUrlBasedOnSize($baseLogoUrl, $size);
     }
 }

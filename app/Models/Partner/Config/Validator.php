@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Partner\Config;
 
+use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Partner;
@@ -28,7 +29,8 @@ class Validator extends Base\Validator
         Entity::TDS_PERCENTAGE          => 'sometimes|integer',
         Entity::HAS_GST_CERTIFICATE     => 'sometimes|boolean',
         Entity::DEFAULT_PAYMENT_METHODS => 'sometimes|array|custom',
-        Entity::SUB_MERCHANT_CONFIG     => 'nullable|array'
+        Entity::SUB_MERCHANT_CONFIG     => 'nullable|array',
+        Entity::PARTNER_METADATA        => 'nullable|array|custom'
     ];
 
     protected static $editRules = [
@@ -46,6 +48,18 @@ class Validator extends Base\Validator
         Entity::HAS_GST_CERTIFICATE     => 'sometimes|boolean',
         Entity::DEFAULT_PAYMENT_METHODS => 'sometimes|array|custom',
         Entity::SUB_MERCHANT_CONFIG     => 'sometimes|string',
+        Entity::PARTNER_METADATA        => 'sometimes|array|custom'
+    ];
+
+    protected static $partnerUpsertRules = [
+        Entity::PARTNER_METADATA => 'sometimes|array|custom'
+    ];
+
+    protected static $partnerMetadataSettingsRules = [
+        Constants::BRAND_NAME              => 'sometimes|string|max:255',
+        Constants::BRAND_COLOR             => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
+        Constants::TEXT_COLOR              => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
+        Constants::LOGO_URL                => 'sometimes|max:2000'
     ];
 
     protected static $createValidators = [
@@ -154,4 +168,93 @@ class Validator extends Base\Validator
         (new Methods\Validator())->validateInput('set_methods', $value);
     }
 
+    /**
+     * if the request is coming from partner dashboard then
+     *  1. check if the exp is enabled
+     *  2. check if the merchant is an aggregator partner
+     *  3. check if the mid from request and from auth are same
+     *  4. validate the request input if present
+     *
+     * if the request is coming from dashboard guest app then
+     *  1. check if the exp is enabled
+     *  2. check if the merchant is an aggregator partner
+     *
+     * @param array|null $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateRequestOrigin(array $input = null)
+    {
+        $app = App::getFacadeRoot();
+
+        if ($app['basicauth']->isProxyAuth() === true and $app['basicauth']->isAdminAuth() === false)
+        {
+            $merchantId = $app['basicauth']->getMerchantId();
+
+            $this->validateSubmerchantWhitelabelOnboardingExpEnabled($merchantId);
+
+            (new Merchant\Validator())->validateIsAggregatorPartner($app['basicauth']->getMerchant());
+
+            if (isset($input[Constants::PARTNER_ID]) === true and $input[Constants::PARTNER_ID] !== $merchantId)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
+            }
+
+            unset($input[Constants::PARTNER_ID]);
+
+            if (empty($input) === false)
+            {
+                $this->validateInput('partner_upsert', $input);
+            }
+        }
+        else if ($app['request.ctx']->isDashboardGuest() === true)
+        {
+            $merchantId = $input[Constants::PARTNER_ID] ?? null;
+
+            if (empty($merchantId) === true)
+            {
+                return;
+            }
+
+            $this->validateSubmerchantWhitelabelOnboardingExpEnabled($merchantId);
+
+            $merchant = (new Merchant\Service())->getMerchantFromMid($merchantId);
+
+            (new Merchant\Validator())->validateIsAggregatorPartner($merchant);
+        }
+    }
+
+    public function validatePartnerMetadata(string $attribute, $value)
+    {
+        if (isset($value) == false)
+        {
+            return;
+        }
+
+        $this->validateInput('partner_metadata_settings', $value);
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    private function validateSubmerchantWhitelabelOnboardingExpEnabled(string $merchantId)
+    {
+        $app = App::getFacadeRoot();
+
+        $properties = [
+            'id'            => $merchantId,
+            'experiment_id' => $app['config']->get('app.partner_submerchant_whitelabel_onboarding')
+        ];
+
+        $expEnabled = (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+
+        if ($expEnabled !== true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_WHITELABEL_ONBOARDING_EXP_NOT_ENABLED,
+                null,
+                ['partner_id' => $merchantId]
+            );
+        }
+    }
 }

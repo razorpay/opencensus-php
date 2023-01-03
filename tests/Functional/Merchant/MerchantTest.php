@@ -8008,7 +8008,7 @@ IFSC Code  ICIC0001206
         return $content;
     }
 
-    protected function createUploadedFile($file)
+    public function createUploadedFile($file)
     {
         $this->assertFileExists($file);
 

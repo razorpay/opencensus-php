@@ -1066,6 +1066,12 @@ class PublicErrorDescription
     const BAD_REQUEST_MARK_AS_PARTNER_ALREADY_IN_PROGRESS                       = 'Mark as partner is in progress for the merchant';
     const BAD_REQUEST_ACCESS_NOT_ALLOWED_FOR_RESELLER                           = 'Reseller partner is not allowed the requested access';
     const BAD_REQUEST_LINKED_ACCOUNT_CANNOT_BE_PARTNER                          = 'Linked account cannot be a partner';
+    const BAD_REQUEST_PARTNER_SUBMERCHANT_WHITELABEL_ONBOARDING_EXP_NOT_ENABLED = 'Sub-merchant whitelabel onboarding feature not enabled for partner';
+    const BAD_REQUEST_PARTNER_LOGO_TOO_BIG                                      = 'Size of the logo is too big. Upload a smaller file size';
+    const BAD_REQUEST_PARTNER_LOGO_NOT_SQUARE                                   = 'The height and width of the logo are not the same. Upload a square image';
+    const BAD_REQUEST_PARTNER_LOGO_NOT_IMAGE                                    = 'The image type is not jpg, jpeg or png';
+    const BAD_REQUEST_PARTNER_LOGO_TOO_SMALL                                    = 'The dimensions of the image are too small. Minimum dimensions should be 256x256';
+
     const BAD_REQUEST_PAYMENT_MDR_UPDATE_IN_PROGRESS                            = 'Payments MDR backfill job is currently in progress';
     const BAD_REQUEST_CANNOT_ADD_MERCHANT_USER                                  = 'Cannot add sub-merchant user with given details';
     const BAD_REQUEST_CARD_ISSUER_INVALID                                       = 'Your payment could not be completed due to incorrect card details. Try another payment method or contact your bank for details. ';

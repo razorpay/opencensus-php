@@ -2,21 +2,19 @@
 
 namespace RZP\Models\Partner\Config;
 
-use RZP\Constants\Entity as CE;
+use Razorpay\OAuth\Application as OAuthApp;
+
 use RZP\Exception;
-use RZP\Exception\BaseException;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Partner\Metric;
-use RZP\Models\Feature as Feature;
+use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Account;
-
-use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Models\Merchant\Constants;
-use RZP\Models\Partner\Config\Validator;
-use RZP\Models\Partner\Config\Constants as ConfigConstants;
+use RZP\Models\Feature as Feature;
+use RZP\Models\Partner\Config\Constants as PartnerConfigConstants;
 
 class Service extends Base\Service
 {
@@ -25,11 +23,15 @@ class Service extends Base\Service
      */
     private $applicationRepo;
 
+    private $validator;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->applicationRepo = new OAuthApp\Repository;
+
+        $this->validator = new Validator();
     }
 
     /**
@@ -121,7 +123,7 @@ class Service extends Base\Service
 
     /**
      * If only the partner_id or application_id is passed in the input,
-     * an array of configurations are returned which includes the default application config and
+     * an array of configurations is returned which includes the default application config and
      * all the overridden configs for that partner/application.
      *
      * If the submerchant_id is sent along with partner_id or application id,
@@ -130,17 +132,19 @@ class Service extends Base\Service
      * @param array $input
      *
      * @return array|null
-     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestException|Exception\LogicException
      */
-    public function fetch(array $input)
+    public function fetch(array $input): ?array
     {
+        (new Validator())->validateRequestOrigin($input);
+
         $application = $this->getApplicationFromInput($input);
         $subMerchant = $this->getSubMerchantFromInput($input);
 
         $core       = new Core;
         $configData = null;
 
-        if (empty($subMerchant) === true)
+        if (empty($subMerchant) === true and $this->app['basicauth']->isAdminAuth() === true)
         {
             $configs    = $core->fetchAllConfigForApp($application);
             $configData = $configs->toArrayPublicEmbedded();
@@ -154,9 +158,20 @@ class Service extends Base\Service
         return $configData;
     }
 
+    /**
+     * @param string $id
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
     public function update(string $id, array $input): array
     {
-        $config = (new Core)->edit($id, $input);
+        (new Validator())->validateRequestOrigin($input);
+
+        $core = (new Core);
+
+        $config = $core->edit($id, $input);
 
         return $config->toArrayPublic();
     }
@@ -293,7 +308,7 @@ class Service extends Base\Service
                 $this->trace->count(Metric::PARTNER_CONFIG_ACTION_SUCCESS_TOTAL);
 
             }
-            catch (Exception\BaseException $exception)
+            catch (BaseException $exception)
             {
                 $record['status'] = Constants::FAILURE;
 
@@ -404,7 +419,6 @@ class Service extends Base\Service
      */
     protected function validatePartnerRelationshipAndGetEntities($input)
     {
-
         $partnerId  = $input[Constants::PARTNER_ID] ?? null;
         $merchantId = $input[Constants::MERCHANT_ID] ?? null;
 
@@ -470,5 +484,31 @@ class Service extends Base\Service
         }
 
         return ["message"=> "success"];
+    }
+
+    /**
+     * @param string $id
+     * @param array $input
+     *
+     * @return array
+     * @throws BaseException
+     * @throws Exception\BadRequestException
+     */
+    public function uploadLogo(string $id, array $input): array
+    {
+        $this->validator->validateRequestOrigin();
+
+        if (empty($input[PartnerConfigConstants::LOGO_URL]) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_INPUT_LOGO_URL);
+        }
+
+        $core = (new Core());
+
+        $core->uploadLogo($input);
+
+        $config = $core->edit($id, $input);
+
+        return $config->toArrayPublic();
     }
 }
