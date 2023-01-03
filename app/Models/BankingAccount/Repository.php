@@ -12,10 +12,18 @@ use RZP\Models\Merchant\Preferences;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\BankingAccount\State as BankingAccountState;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
+use RZP\Models\Base\PublicEntity;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'banking_account';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->setMerchantIdRequiredForMultipleFetch(false);
+    }
 
     protected $expands = [
         Entity::BANKING_ACCOUNT_DETAILS,
@@ -194,6 +202,59 @@ class Repository extends Base\Repository
                     ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
                     ->where($balanceAccountTypeColumn, '=', $accountType)
                     ->get();
+    }
+
+    public function addQueryParamStatus($query, $params)
+    {
+        $status = $params[Entity::STATUS];
+
+        $statusColumn = $this->repo->banking_account->dbColumn(Entity::STATUS);
+
+        if (is_array($status) === true)
+        {
+            $query->whereIn($statusColumn, $status);
+        }
+        else if (is_string($status) === true)
+        {
+            $query->where($statusColumn, '=', $status);
+        }
+    }
+
+    public function addQueryParamFilterMerchants($query, $params)
+    {
+        $merchantId = $this->repo->banking_account->dbColumn(PublicEntity::MERCHANT_ID);
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $filterMerchantIds = $params[Entity::FILTER_MERCHANTS];
+
+        $query->whereIn($merchantId, $filterMerchantIds);
+    }
+
+    public function addQueryParamBankPocUserId($query, $params)
+    {
+        $bankPocUserId = $this->repo->banking_account_activation_detail->dbColumn(Activation\Detail\Entity::BANK_POC_USER_ID);
+
+        $this->joinQueryActivationDetail($query);
+
+        $query->select($this->dbColumn('*'));
+
+        $filterBankPocUserId = $params[Entity::BANK_POC_USER_ID];
+
+        $query->where($bankPocUserId, $filterBankPocUserId);
+    }
+
+    public function addQueryParamActivationAccountType($query, $params)
+    {
+        $bankingAccountStateStatusColumn = $this->repo->banking_account_activation_detail->dbColumn(Activation\Detail\Entity::ACCOUNT_TYPE);
+        $filterActivationAccountType = $params[Constants::ACTIVATION_ACCOUNT_TYPE];
+        
+        $this->joinQueryActivationDetail($query);
+        $query->select($this->dbColumn('*'));
+
+        return $query->where($bankingAccountStateStatusColumn, $filterActivationAccountType);
     }
 
     public function addQueryParamReviewerId($query, $params)

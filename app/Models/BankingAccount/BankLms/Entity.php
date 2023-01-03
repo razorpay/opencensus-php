@@ -230,4 +230,24 @@ class Entity extends BankingAccount\Entity
 
         $array[self::REVIEWERS] = $reviewers->get()->toArrayPublic();
     }
+
+    public function reviewers()
+    {
+        $id = $this->getPublicId();
+        $bankingAccount = (new BankingAccount\Repository())->findByPublicId($id);
+        return $bankingAccount->morphToMany(Admin\Entity::class, self::ENTITY, Table::ADMIN_AUDIT_MAP, self::ENTITY_ID, Entity::ADMIN_ID)
+                ->withPivot(Entity::AUDITOR_TYPE)
+                ->where(Entity::AUDITOR_TYPE, '=', 'reviewer');
+    }
+
+    // Sales POCs
+    public function spocs()
+    {
+        $id = $this->getPublicId();
+        $bankingAccount = (new BankingAccount\Repository())->findByPublicId($id);
+        return $bankingAccount->morphToMany(Admin\Entity::class, self::ENTITY, Table::ADMIN_AUDIT_MAP, self::ENTITY_ID, Entity::ADMIN_ID)
+                ->withPivot(Entity::AUDITOR_TYPE)
+                ->where(Entity::AUDITOR_TYPE, '=', 'spoc');
+    }
+
 }

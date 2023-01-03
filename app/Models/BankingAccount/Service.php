@@ -18,6 +18,7 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Mode;
 use RZP\Models\BankingAccountService;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
@@ -26,6 +27,7 @@ use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Models\BankingAccount\Gateway\Rbl\Fields;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Jobs\BankingAccount\BankingAccountRblMisReport;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
@@ -840,6 +842,20 @@ class Service extends Base\Service
 
         return [
             'status' => 'success'
+        ];
+    }
+
+    public function requestActivationMisReport(array $input)
+    {
+        array_pull($input, 'mis_type');
+
+        $admin = $this->auth->getAdmin()->toArray();
+
+        BankingAccountRblMisReport::dispatch(Mode::LIVE, $input, $admin);
+
+        return [
+            'status' => 'success',
+            'message' => 'Report will be sent over email in a few mins.'
         ];
     }
 

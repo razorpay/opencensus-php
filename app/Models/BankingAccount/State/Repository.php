@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankingAccount\State;
 
+use Closure;
+use Illuminate\Support\Facades\DB;
 use RZP\Base;
 use RZP\Models\BankingAccount\Status;
 
@@ -61,4 +63,42 @@ class Repository extends Base\Repository
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
+
+    /**
+     * Given an array for bankingAccountIds  
+     * Aggregate using created_at in a specific order grouping by banking_account_id  
+     * Join with the same table with Subquery to filter a specific status change log
+     * 
+     * @param $bankingAccountIds
+     * @param $order
+     * @param $attributes
+     * @param $modifyQuery
+     */
+    public function getStateChangeLogForMultipleBankingAccounts($bankingAccountIds, string $order = 'last', $attributes = [], Closure $modifyQuery = null)
+    {
+        $aggregationFunc = 'MAX';
+
+        if ($order === 'first') {
+            $aggregationFunc = 'MIN';
+        }
+
+        $query = $this->newQuery()
+            ->select(DB::raw(Entity::BANKING_ACCOUNT_ID.' as banking_account_id, '.$aggregationFunc.'(created_at) as created_at'))
+            ->whereIn(Entity::BANKING_ACCOUNT_ID, $bankingAccountIds);
+
+        foreach ($attributes as $key => $value)
+        {
+            $query->where($key, '=', $value);
+        }
+
+        $query->groupBy(Entity::BANKING_ACCOUNT_ID);
+
+        if ($modifyQuery != null && $modifyQuery instanceof Closure)
+        {
+            $modifyQuery($query);
+        }
+    
+        return $query->get();
+    }
+
 }

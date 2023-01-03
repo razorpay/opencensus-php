@@ -3,6 +3,8 @@
 
 namespace RZP\Models\BankingAccount\Activation\Comment;
 
+use Closure;
+use Illuminate\Support\Facades\DB;
 use RZP\Base;
 use RZP\Models\Base as BaseModels;
 
@@ -115,6 +117,51 @@ class Repository extends BaseModels\Repository
                 ->orWhereRaw('( '.$commentSourceTeamTypeCol.' = \''.$otherSourceTeamType.'\' AND '.$commentTypeCol.' IN (\'external\', \'external_resolved\') )');
             }
         );
-
     }
+
+    /**
+     * Given an array for bankingAccountIds  
+     * Aggregate using created_at in a specific order grouping by banking_account_id  
+     * Join with the same table with Subquery to filter a specific comment
+     * 
+     * @param $bankingAccountIds
+     * @param $order
+     * @param $attributes
+     * @param $modifyQuery
+     */
+    public function getCommentForMultipleBankingAccounts($bankingAccountIds, string $order = 'last', $attributes = [], Closure $modifyQuery = null)
+    {
+        $aggregationFunc = 'MAX';
+
+        if ($order === 'first') {
+            $aggregationFunc = 'MIN';
+        }
+
+        $subquery = $this->newQuery()
+            ->select(DB::raw(Entity::BANKING_ACCOUNT_ID.' as baid, '.$aggregationFunc.'(created_at) as SubQueryDate'))
+            ->whereIn(Entity::BANKING_ACCOUNT_ID, $bankingAccountIds);
+
+        foreach ($attributes as $key => $value)
+        {
+            $subquery->where($key, '=', $value);
+        }
+
+        $subquery->groupBy(Entity::BANKING_ACCOUNT_ID);
+
+        $query = $this->newQuery()
+                ->joinSub($subquery, 'SubQuery', function ($join) {
+                    $join
+                        ->on($this->getTableName().'.'.Entity::BANKING_ACCOUNT_ID, '=', 'SubQuery.baid')
+                        ->on($this->getTableName().'.'.Entity::CREATED_AT, '=', 'SubQuery.SubQueryDate');
+                })
+                ->whereIn(Entity::BANKING_ACCOUNT_ID, $bankingAccountIds);
+
+        if ($modifyQuery != null && $modifyQuery instanceof Closure)
+        {
+            $modifyQuery($query);
+        }
+    
+        return $query->get();
+    }
+
 }

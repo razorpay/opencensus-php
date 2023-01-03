@@ -269,45 +269,96 @@ class Leads extends Base
         return null;
     }
 
-    public function getFileInput()
+    protected function updateCommentMap(array $bankingAccountIds, &$commentsMap)
+    {
+        
+        $commentRepo = (new BankingAccount\Activation\Comment\Repository());
+
+        /** @var  BankingAccount\Activation\Comment\Entity[] $lastExternalComments */
+        $lastExternalComments = $commentRepo->getCommentForMultipleBankingAccounts(
+                $bankingAccountIds,
+                'last',
+                [
+                    BankingAccount\Activation\Comment\Entity::TYPE => 'external',
+                    BankingAccount\Activation\Comment\Entity::SOURCE_TEAM => 'bank'
+                ]
+            );
+
+        foreach($lastExternalComments as $lastExternalComment)
+        {
+            $commentsMap[$lastExternalComment->getBankingAccountId()] = $lastExternalComment->getComment();
+        }
+    }
+
+    protected function updateStateMap(array $bankingAccountIds, &$sentToBankTimestampMap)
+    {
+        $stateRepo = (new BankingAccount\State\Repository());
+
+        /** @var  BankingAccount\State\Entity[] $lastSentToBankLogs */
+        $lastSentToBankLogs = $stateRepo->getStateChangeLogForMultipleBankingAccounts(
+                $bankingAccountIds,
+                'last',
+                [
+                    BankingAccount\State\Entity::STATUS => Status::INITIATED
+                ]
+            );
+
+        foreach($lastSentToBankLogs as $lastSentToBankLog)
+        {
+            $sentToBankTimestampMap[$lastSentToBankLog[BankingAccount\State\Entity::BANKING_ACCOUNT_ID]] = $lastSentToBankLog[BankingAccount\State\Entity::CREATED_AT];
+        }
+    }
+
+    protected function getData(): array
     {
         $entity = $this->entity;
+        /** ============== PREPARE DATA ================ */
 
+        // /** @var  BankingAccount\Entity[] $bankingAccounts */
         $bankingAccounts = $this->repo->$entity->fetch($this->input);
+
+        $bankingAccountIds = array_map(function ($bankingAccount) {
+            return $bankingAccount['id'];
+        }, $bankingAccounts->toArray());
+
+        $commentsMap = [];
+        $this->updateCommentMap($bankingAccountIds, $commentsMap);
+
+        $sentToBankTimestampMap = [];
+        $this->updateStateMap($bankingAccountIds, $sentToBankTimestampMap);
+
+        return [$bankingAccounts, $commentsMap, $sentToBankTimestampMap];
+    }
+
+    public function getFileInput()
+    {
+        [$bankingAccounts, $commentsMap, $sentToBankTimestampMap] = $this->getData();
+    
+        /** ============== PREPARE FILE INPUT ================ */ 
 
         $fileInput = [];
 
         foreach ($bankingAccounts as $bankingAccount)
         {
-            $bankingAccountId = $bankingAccount->getPublicId();
+            $comment = $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::COMMENT] ?? '';
 
-            if (get_parent_class($bankingAccount) === BankingAccount\Entity::Class)
+            if (isset($commentsMap[$bankingAccount->getId()]))
             {
-                $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccountId);
+                $comment = $commentsMap[$bankingAccount->getId()];
             }
 
-            $comment = $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::COMMENT];
+            // Replace HTML tags in comment field, if any
+            $pattern = '/<(.|\n\t)*?>/';
+            $comment = preg_replace($pattern, '', $comment);
+            $comment = preg_replace('/\s+/', ' ', $comment);
+            $comment = str_replace(array("\r", "\n", "\t"), '', $comment);
 
-            $lastExternalComment = (new \RZP\Models\BankingAccount\Activation\Comment\Repository())->fetchLatestComment($bankingAccount->getId(), 'external', 'bank');
+            $sentToBankTimestamp = null;
 
-            if (is_null($lastExternalComment) === false)
+            if (isset($sentToBankTimestampMap[$bankingAccount->getId()]))
             {
-                $comment = $lastExternalComment->getComment();
-
-                // TODO: Find a more reliable method as this is a basic solution
-                $pattern = '/<(.|\n\t)*?>/';
-                $comment = preg_replace($pattern, '', $comment);
-                $comment = preg_replace('/\s+/', ' ', $comment);
-                $comment = str_replace(array("\r", "\n", "\t"), '', $comment);
+                $sentToBankTimestamp = $sentToBankTimestampMap[$bankingAccount->getId()];
             }
-
-            $bankAccountType = $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_TYPE];
-
-            // TODO:
-            // This is not optimized, doing this now for the lack of better method
-            // We will revert this when we move it to reports
-            $sentToBankLog = $bankingAccount->activationStates->where(BankingAccount\Entity::STATUS, '=', BankingAccount\Status::INITIATED);
-            $sentToBankTimestamp = $sentToBankLog->pluck(BankingAccount\Entity::CREATED_AT)->first();
 
             $sentToBankDate = '';
             $sentToBankTime = '';
@@ -318,8 +369,6 @@ class Leads extends Base
                 $sentToBankDate = Carbon::createFromTimestamp($sentToBankTimestamp, Timezone::IST)->format('Y-m-d') ?? '';
                 $sentToBankTime = Carbon::createFromTimestamp($sentToBankTimestamp, Timezone::IST)->format('h:i A') ?? '';;
             }
-
-            $zeroAmb = ($bankAccountType === ActivationDetail\Validator::ZERO_BALANCE) ? 'Yes' : 'No';
 
             $bankingAccountActivationDetails = $bankingAccount->bankingAccountActivationDetails;
 
@@ -372,11 +421,15 @@ class Leads extends Base
             }
 
             $bankPocUserName = '';
-            $bankPocUser = $bankingAccount->bankingAccountActivationDetails->getBankPOCUser();
 
-            if(empty($bankPocUser) === false)
+            if (empty($bankingAccount->bankingAccountActivationDetails) === false)
             {
-                $bankPocUserName = $bankPocUser->getName();
+                $bankPocUser = $bankingAccount->bankingAccountActivationDetails->getBankPOCUser();
+
+                if(empty($bankPocUser) === false)
+                {
+                    $bankPocUserName = $bankPocUser->getName();
+                }
             }
 
             $opsPOC = $bankingAccount->reviewers->first();
@@ -389,20 +442,9 @@ class Leads extends Base
                 $opsPOCEmail = $opsPOC['email'];
             }
 
-            $leadReceivedDate = null;
-
-            $sentToBankLog = $bankingAccount->activationStates()
-                ->where(self::STATUS, '=', BankingAccount\Status::INITIATED)
-                ->whereRaw('( `sub_status` IS NULL or `sub_status` = \'none\' )');
-
-            if(empty($sentToBankLog) === false)
-            {
-                $leadReceivedDate = $sentToBankLog->pluck(BankingAccount\Entity::CREATED_AT)->last();
-            }
-
             $customerAppointmentDate = $bankingAccountActivationDetails[ActivationDetail\Entity::CUSTOMER_APPOINTMENT_DATE];
 
-            $appointmentTAT = $this->calculateTATInDays($leadReceivedDate, $customerAppointmentDate);
+            $appointmentTAT = $this->calculateTATInDays($sentToBankTimestamp, $customerAppointmentDate);
 
             $docCollectionDate = $bankingAccountActivationDetails[ActivationDetail\Entity::DOC_COLLECTION_DATE];
 
@@ -423,24 +465,24 @@ class Leads extends Base
             $apiRequestProcessingTAT = $this->calculateTATInDays($apiOnboardingLoginDate, $apiIRClosedDate);
 
             $fileInput[] = [
-                self::RZP_REF_NO => $bankingAccount[BankingAccount\Entity::BANK_REFERENCE_NUMBER],
-                self::MERCHANT_NAME => $bankingAccount->merchant[Merchant\Entity::NAME],
-                self::MERCHANT_POC_NAME => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_NAME],
-                self::MERCHANT_POC_DESIGNATION => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_DESIGNATION],
-                self::MERCHANT_POC_EMAIL => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_EMAIL],
-                self::MERCHANT_POC_PHONE => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_PHONE_NUMBER],
-                self::PINCODE => $bankingAccount[BankingAccount\Entity::PINCODE],
-                self::MERCHANT_CITY => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_CITY],
-                self::CONSTITUTION_TYPE => $this->toPublic(self::CONSTITUTION_TYPE, $bankingAccountActivationDetails[ActivationDetail\Entity::BUSINESS_CATEGORY]),
-                self::MERCHANT_ICV => $bankingAccountActivationDetails[ActivationDetail\Entity::INITIAL_CHEQUE_VALUE],
-                self::APPLICATION_SUBMISSION_DATE => $sentToBankDate,
-                self::TIMESTAMP => $sentToBankTime,
-                self::BUSINESS_MODEL =>  $this->toPublic(self::BUSINESS_MODEL, $bankingAccount->merchant->merchantDetail[Merchant\Detail\Entity::BUSINESS_CATEGORY]),
-                self::ACCOUNT_TYPE => $this->toPublic(self::ACCOUNT_TYPE, $bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_TYPE]),
-                self::COMMENT => $comment,
-                self::EXPECTED_MONTHLY_GMV => $bankingAccountActivationDetails[ActivationDetail\Entity::EXPECTED_MONTHLY_GMV],
-                self::SALES_POC => $bankingAccount->spocs->first()['name'],
-                self::SALES_POC_PHONE_NUMBER => $bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER],
+                self::RZP_REF_NO                       => $bankingAccount[BankingAccount\Entity::BANK_REFERENCE_NUMBER],
+                self::MERCHANT_NAME                    => $bankingAccount->merchant[Merchant\Entity::NAME],
+                self::MERCHANT_POC_NAME                => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_NAME],
+                self::MERCHANT_POC_DESIGNATION         => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_DESIGNATION],
+                self::MERCHANT_POC_EMAIL               => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_EMAIL],
+                self::MERCHANT_POC_PHONE               => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_POC_PHONE_NUMBER],
+                self::PINCODE                          => $bankingAccount[BankingAccount\Entity::PINCODE],
+                self::MERCHANT_CITY                    => $bankingAccountActivationDetails[ActivationDetail\Entity::MERCHANT_CITY],
+                self::CONSTITUTION_TYPE                => $this->toPublic(self::CONSTITUTION_TYPE, $bankingAccountActivationDetails[ActivationDetail\Entity::BUSINESS_CATEGORY]),
+                self::MERCHANT_ICV                     => $bankingAccountActivationDetails[ActivationDetail\Entity::INITIAL_CHEQUE_VALUE],
+                self::APPLICATION_SUBMISSION_DATE      => $sentToBankDate,
+                self::TIMESTAMP                        => $sentToBankTime,
+                self::BUSINESS_MODEL                   => $this->toPublic(self::BUSINESS_MODEL, $bankingAccount->merchant->merchantDetail[Merchant\Detail\Entity::BUSINESS_CATEGORY]),
+                self::ACCOUNT_TYPE                     => $this->toPublic(self::ACCOUNT_TYPE, $bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_TYPE]),
+                self::COMMENT                          => $comment,
+                self::EXPECTED_MONTHLY_GMV             => $bankingAccountActivationDetails[ActivationDetail\Entity::EXPECTED_MONTHLY_GMV],
+                self::SALES_POC                        => $bankingAccount->spocs->first() ? $bankingAccount->spocs->first()['name'] : '',
+                self::SALES_POC_PHONE_NUMBER           => $bankingAccountActivationDetails[ActivationDetail\Entity::SALES_POC_PHONE_NUMBER],
                 self::GREEN_CHANNEL                    => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::GREEN_CHANNEL)),
                 self::FOS                              => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::FEET_ON_STREET)),
                 self::REVIVED_LEAD                     => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($additionalDetails, ActivationDetail\Entity::REVIVED_LEAD)),

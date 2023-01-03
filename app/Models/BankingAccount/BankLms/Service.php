@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankingAccount\BankLms;
 
+use RZP\Constants\Mode;
 use RZP\Exception\LogicException;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\Activation\Comment;
@@ -9,6 +10,7 @@ use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Jobs\BankingAccount\BankingAccountRblMisReport;
 use \RZP\Models\Merchant;
 use \RZP\Models\User;
 use RZP\Trace\TraceCode;
@@ -380,6 +382,37 @@ class Service extends BankingAccount\Service
         $this->validator->validateInput(Validator::DOWNLOAD_MIS_FROM_PARTNER_BANK, $input);
 
         return $this->core->downloadActivationMis($this->partnerBankMerchant, $input);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws BadRequestException|BadRequestValidationFailureException
+     */
+    public function requestActivationMisReport(array $input): array
+    {
+        $this->validator->validateInput(Validator::REQUEST_MIS_FROM_PARTNER_BANK, $input);
+
+        $user = $this->auth->getUser()->toArray();
+
+        BankingAccountRblMisReport::dispatch(Mode::LIVE, $input, $user);
+
+        return [
+            'status' => 'success',
+            'message' => 'Report will be sent over email in a few mins.'
+        ];
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws BadRequestException|BadRequestValidationFailureException
+     */
+    public function sendActivationMisReport(array $input)
+    {
+        return $this->core->sendActivationMisReport($this->partnerBankMerchant, $input);
     }
 
 }

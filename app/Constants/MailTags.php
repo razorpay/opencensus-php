@@ -218,6 +218,8 @@ class MailTags
 
     const BANKING_ACCOUNT_STATUS_UPDATED_TO_SPOC   = 'banking_account_status_updated_to_spoc';
 
+    const BANKING_ACCOUNT_REPORT   = 'banking_account_report';
+
     const EXPERIAN_REPORT                  = 'D2C_experian_csv_report';
 
     const BANKING_ACCOUNT_X_PRO_ACTIVATION = 'banking_account_x_pro_activation';

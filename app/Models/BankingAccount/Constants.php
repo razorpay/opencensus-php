@@ -22,4 +22,6 @@ class Constants
 // will be used for feet on street lead filter
     const FOS_CITIES = ['Noida', 'Gurgaon', 'Mumbai', 'Pune', 'Bengaluru'];
 
+    const ACTIVATION_ACCOUNT_TYPE = 'activation_account_type';
+
 }

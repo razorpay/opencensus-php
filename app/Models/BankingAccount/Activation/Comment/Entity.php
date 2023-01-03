@@ -190,6 +190,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::COMMENT);
     }
 
+    public function getBankingAccountId()
+    {
+        return $this->getAttribute(self::BANKING_ACCOUNT_ID);
+    }
+
     public function toArrayCaPartnerBankPoc(): array
     {
         $result = parent::toArrayAdmin();

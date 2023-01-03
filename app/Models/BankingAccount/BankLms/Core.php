@@ -144,6 +144,23 @@ class Core extends BankingAccount\Core
         return $misProcessor->generate();
     }
 
+    /**
+     * @param Merchant\Entity $partnerBank
+     * @param array           $input
+     *
+     * @return array
+     * @throws BadRequestException
+     * @throws BadRequestValidationFailureException
+     */
+    public function sendActivationMisReport(Merchant\Entity $partnerBank, array $input)
+    {
+        $input =  $this->addMandatoryFilters($partnerBank, $input);
+
+        $misProcessor = BankingAccount\Activation\MIS\Factory::getProcessor(BankingAccount\Activation\MIS\Factory::LEADS_REPORT, $input);
+
+        return $misProcessor->generate();
+    }
+
     public function assignBankPartnerPocToApplication(BankingAccount\Entity $bankingAccount, $bankPocUserId)
     {
         (new BankingAccount\Activation\Detail\Core())->assignBankPartnerPocToApplication($bankingAccount->bankingAccountActivationDetails, $bankPocUserId);

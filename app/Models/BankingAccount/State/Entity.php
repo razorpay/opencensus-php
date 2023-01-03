@@ -93,6 +93,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo(Merchant\Entity::class);
     }
 
+    public function getBankingAccountId()
+    {
+        return $this->getAttribute(self::BANKING_ACCOUNT_ID);
+    }
+
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);

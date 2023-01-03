@@ -9947,6 +9947,8 @@ class BankingAccountTest extends TestCase
 
         $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
 
+        $this->ba->addXBankLMSOriginHeader();
+
         $setupResponse = [
             'bankingAccount' => $response,
             'user' => $user,
@@ -9956,6 +9958,15 @@ class BankingAccountTest extends TestCase
         $this->bankLMSSetupResponse = $setupResponse;
 
         return $setupResponse;
+    }
+
+    public function testBankingAccountLeadsMISRequestByBank()
+    {
+        $this->setupBankLMSTest();
+
+        $this->startTest();
+
+        Mail::assertQueued(ActivationMails\BankPartnerAssigned::class);
     }
 
     public function testBankingAccountLeadsMISDownloadByBank()
@@ -10007,7 +10018,20 @@ class BankingAccountTest extends TestCase
             ],
         ]);
 
-        (new BankingAccount\BankLms\Service())->attachCaApplicationMerchantToBankPartner(['banking_account_id' => $bankingAccountEntity->getPublicId()]);
+        // Attach Submerchant to RBl Merchant
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::PICKED, Status::INITIATED,
+            null, null,
+            null, null,
+            $bankingAccount);
+
+        $spocId = DB::table('admin_audit_map')->where('entity_id','=',$bankingAccount['id'])->value('admin_id');
+
+        $stateLog = $this->fixtures->create('banking_account_state', [
+            BankingAccount\State\Entity::BANKING_ACCOUNT_ID => $bankingAccountEntity->getId(),
+            BankingAccount\State\Entity::STATUS => Status::INITIATED,
+            BankingAccount\State\Entity::ADMIN_ID => $spocId
+        ]);
 
         $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
 
@@ -10067,10 +10091,20 @@ class BankingAccountTest extends TestCase
 
         $this->fixtures->edit('user', $user->getId(), ['name' => 'Umakant Vashishtha']);
 
-        $misProcessor = new MIS\Leads([RZP\Models\BankingAccount\BankLms\Entity::BANK_POC_USER_ID => $user->getId()], 'banking_account_bank_lms');
+        $misProcessor = new MIS\Leads(
+            [
+                RZP\Models\BankingAccount\BankLms\Entity::BANK_POC_USER_ID => $user->getId()
+            ],
+            'banking_account_bank_lms'
+        );
 
         // Assigning first value of array to fileinput to test with the input we created
         $fileInput[0] = $misProcessor->getFileInput()[0];
+
+        $sentToBankTimestamp = $stateLog['created_at'];
+
+        $sentToBankDate = Carbon::createFromTimestamp($sentToBankTimestamp, Timezone::IST)->format('Y-m-d') ?? '';
+        $sentToBankTime = Carbon::createFromTimestamp($sentToBankTimestamp, Timezone::IST)->format('h:i A') ?? '';;
 
         $expectedFileInput = [
             [
@@ -10084,8 +10118,8 @@ class BankingAccountTest extends TestCase
                 Leads::MERCHANT_CITY => 'Bangalore',
                 Leads::CONSTITUTION_TYPE => 'Partnership',
                 Leads::MERCHANT_ICV => 222,
-                Leads::APPLICATION_SUBMISSION_DATE => '',
-                Leads::TIMESTAMP => '',
+                Leads::APPLICATION_SUBMISSION_DATE => $sentToBankDate,
+                Leads::TIMESTAMP => $sentToBankTime,
                 Leads::BUSINESS_MODEL => null,
                 Leads::ACCOUNT_TYPE => 'Insignia',
                 Leads::COMMENT => 'Sample comment',
@@ -10098,8 +10132,8 @@ class BankingAccountTest extends TestCase
                 Leads::OPS_POC_NAME => '',
                 Leads::OPS_POC_EMAIL => '',
                 Leads::DOCKET_DELIVERY_DATE => '2022-10-09',
-                Leads::STATUS => 'ApplicationReceived',
-                Leads::SUB_STATUS => '',
+                Leads::STATUS => 'VerificationCall',
+                Leads::SUB_STATUS => 'In Processing',
                 Leads::ASSIGNEE => 'Bank',
                 Leads::MID_OFFICE_POC => 'Umakant Vashishtha',
                 Leads::LEAD_REFERRED_BY_RBL_STAFF => 'Yes',
@@ -10128,7 +10162,7 @@ class BankingAccountTest extends TestCase
                 Leads::PROMO_CODE => 'RZP123',
                 Leads::CASE_LOGIN => '',
                 Leads::SR_NO => 'SR101',
-                Leads::ACCOUNT_OPEN_DATE => '',
+                Leads::ACCOUNT_OPEN_DATE => '2019-07-10',
                 Leads::ACCOUNT_IR_CLOSED_DATE => '2022-10-14',
                 Leads::AO_FTNR => 'Yes',
                 Leads::AO_FTNR_REASONS => 'Reason 1,Reason 2',
@@ -10137,7 +10171,7 @@ class BankingAccountTest extends TestCase
                 Leads::API_IR_NO => 'IR103',
                 Leads::API_IR_LOGIN_DATE => '2022-10-14',
                 Leads::LDAP_ID_MAIL_DATE => '',
-                Leads::API_REQUEST_TAT => null,
+                Leads::API_REQUEST_TAT => 852,
                 Leads::API_IR_CLOSED_DATE => '2022-10-15',
                 Leads::API_REQUEST_PROCESSING_TAT => 1.0,
                 Leads::API_FTNR => 'Yes',

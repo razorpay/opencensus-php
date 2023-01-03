@@ -30,6 +30,8 @@ class Validator extends BankingAccount\Validator
 
     const DOWNLOAD_MIS_FROM_PARTNER_BANK = 'download_mis_from_partner_bank';
 
+    const REQUEST_MIS_FROM_PARTNER_BANK = 'request_mis_from_partner_bank';
+
     const PARTNER_LMS_EDIT = 'partner_lms_edit';
 
     const EDIT_ACTIVATION_DETAIL_BY_BANK = 'edit_activation_detail_by_bank';
@@ -76,7 +78,25 @@ class Validator extends BankingAccount\Validator
         BankingAccount\Activation\Detail\Entity::ACCOUNT_OPENING_FTNR    => 'sometimes|in:0,1',
         Constants::DUE_ON               => 'sometimes|epoch',
         Constants::IS_OVERDUE           => 'sometimes|epoch',
-        Constants::FEET_ON_STREET                => 'sometimes|in:yes,no',
+        Constants::FEET_ON_STREET       => 'sometimes|in:yes,no',
+    ];
+
+    protected static $requestMisFromPartnerBankRules = [
+        Fetch::EXPAND                            => 'sometimes|array',
+        BankingAccount\Activation\Detail\Entity::BANK_POC_USER_ID => 'sometimes|alpha_num|size:14',
+        Entity::BUSINESS_CATEGORY                => 'sometimes|string',
+        BankingAccount\Entity::BANK_ACCOUNT_TYPE => 'sometimes|string',
+        Constants::LEAD_RECEIVED_FROM_DATE       => 'required_with:lead_received_to_date|integer',
+        Constants::LEAD_RECEIVED_TO_DATE         => 'required_with:lead_received_from_date|integer',
+        Constants::IS_GREEN_CHANNEL              => 'sometimes|in:yes,no',
+        BankingAccount\Activation\Detail\Entity::REVIVED_LEAD => 'sometimes|in:yes,no',
+        BankingAccount\ENTITY::ASSIGNEE_TEAM                => 'sometimes|in:rzp,bank',
+        BankingAccount\Activation\Detail\Entity::RM_NAME    => 'sometimes|string',
+        BankingAccount\Activation\Detail\Entity::API_ONBOARDING_FTNR     => 'sometimes|in:0,1',
+        BankingAccount\Activation\Detail\Entity::ACCOUNT_OPENING_FTNR    => 'sometimes|in:0,1',
+        Constants::DUE_ON               => 'sometimes|epoch',
+        Constants::IS_OVERDUE           => 'sometimes|epoch',
+        Constants::FEET_ON_STREET       => 'sometimes|in:yes,no',
     ];
 
     protected static $partnerLmsEditRules = [
@@ -117,9 +137,6 @@ class Validator extends BankingAccount\Validator
         ActivationDetail::ASSIGNEE_TEAM                           => 'sometimes|alpha_dash|nullable|in:ops,bank,sales',
         ActivationDetail::RM_NAME                                 => 'sometimes|regex:/^[\pL\s\-]+$/u|max:255',
         ActivationDetail::RM_PHONE_NUMBER                         => 'sometimes|alpha_dash|max:255',
-        ActivationDetail::ACCOUNT_OPEN_DATE                       => 'sometimes|epoch|nullable',
-        ActivationDetail::ACCOUNT_LOGIN_DATE                      => 'sometimes|epoch|nullable',
-        ActivationDetail::MERCHANT_CITY                           => 'sometimes|alpha_dash|max:255',
     ];
 
     protected static $rblActivationDetailsRules = [

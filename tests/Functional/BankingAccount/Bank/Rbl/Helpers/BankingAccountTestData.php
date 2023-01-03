@@ -4683,6 +4683,22 @@ return [
         ],
     ],
 
+    'testBankingAccountLeadsMISRequestByBank' => [
+        'request' => [
+            'url'     => '/banking_accounts/rbl/lms/activation/mis/send_report',
+            'method'  => 'GET',
+            'content' => [
+                'assignee_team' => 'bank'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'success',
+                'message' => 'Report will be sent over email in a few mins.'
+            ]
+        ],
+    ],
+
     'testArchiveAccount' => [
         'request' => [
             'url'      => '/banking_account/{id}/archive',

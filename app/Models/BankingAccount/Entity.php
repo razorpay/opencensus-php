@@ -184,6 +184,10 @@ class Entity extends Base\PublicEntity
     const FROM_DOCKET_ESTIMATED_DELIVERY_DATE = 'from_docket_estimated_delivery_date';
     const TO_DOCKET_ESTIMATED_DELIVERY_DATE = 'to_docket_estimated_delivery_date';
 
+    // Fields to apply filters common for admin dashboard and partner LMS
+    const FILTER_MERCHANTS = 'filter_merchants';
+    const BANK_POC_USER_ID = 'bank_poc_user_id';
+
     // For experimentation - resolved from merchant preferences - group x_merchant_current_accounts
     const USING_NEW_STATES = 'using_new_states';
     const OLD_STATE_MACHINE = 'old';
@@ -721,7 +725,7 @@ class Entity extends Base\PublicEntity
     public function getActivationComments(): PublicCollection
     {
         return $this->activationComments()
-                    ->orderBy(Comment\Entity::ADDED_AT)
+                    ->orderBy(Activation\Comment\Entity::ADDED_AT)
                     ->get();
     }
 

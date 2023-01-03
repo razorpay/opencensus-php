@@ -3,6 +3,7 @@
 namespace RZP\Models\BankingAccount;
 
 use RZP\Base\Fetch as BaseFetch;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Http\BasicAuth\Type as AuthType;
 
 class Fetch extends BaseFetch
@@ -10,7 +11,7 @@ class Fetch extends BaseFetch
     const RULES = [
         self::DEFAULTS => [
             Entity::MERCHANT_ID           => 'sometimes|unsigned_id',
-            Entity::STATUS                => 'sometimes|string|custom',
+            Entity::STATUS                => 'sometimes|custom',
             Entity::SUB_STATUS            => 'sometimes|string|custom',
             Entity::ACCOUNT_NUMBER        => 'sometimes|alpha_num|max:40',
             Entity::CHANNEL               => 'sometimes|string|custom',
@@ -20,6 +21,9 @@ class Fetch extends BaseFetch
             Entity::FTS_FUND_ACCOUNT_ID   => 'sometimes|unsigned_id',
             Entity::ACCOUNT_TYPE          => 'sometimes|string',
             Entity::REVIEWER_ID           => 'sometimes|string',
+            Entity::FILTER_MERCHANTS      => 'sometimes|array',
+            self::COUNT                   => 'filled|integer|min:1|max:1000',
+            self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,reviewers,spocs,banking_account_activation_details',
         ],
         AuthType::PRIVILEGE_AUTH => [
             self::EXPAND_EACH             => 'filled|string|in:merchant,merchant.merchantDetail,merchant.promotions.promotion,banking_account_details,reviewers,spocs,banking_account_activation_details,activationCallLog,activationComments,opsMxPocs',
@@ -56,6 +60,14 @@ class Fetch extends BaseFetch
     ];
 
     const ACCESSES = [
+        self::DEFAULTS => [
+            self::EXPAND_EACH,
+            Entity::FILTER_MERCHANTS,
+            Entity::STATUS,
+            Entity::CHANNEL,
+            Entity::ACCOUNT_TYPE,
+            self::COUNT,
+        ],
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
             Entity::STATUS,
@@ -99,6 +111,14 @@ class Fetch extends BaseFetch
             Entity::FROM_DOCKET_ESTIMATED_DELIVERY_DATE,
             Entity::TO_DOCKET_ESTIMATED_DELIVERY_DATE,
             self::EXPAND_EACH,
+        ],
+        AuthType::PROXY_AUTH => [
+            self::EXPAND_EACH,
+            Entity::FILTER_MERCHANTS,
+            Entity::STATUS,
+            Entity::CHANNEL,
+            Entity::ACCOUNT_TYPE,
+            self::COUNT,
         ]
     ];
 
@@ -107,9 +127,28 @@ class Fetch extends BaseFetch
         Status::validateSubStatus($subStatus);
     }
 
-    public function validateStatus(string $attribute, string $status)
+    public function validateStatus(string $attribute, $status)
     {
-        Status::validate($status);
+        if (is_array($status))
+        {
+            foreach ($status as $s)
+            {
+                Status::validate($s);
+            }
+        }
+        else if (is_string($status))
+        {
+            Status::validate($status);
+        }
+        else
+        {
+            throw new BadRequestValidationFailureException(
+                'Not a valid Razorpay Banking status ' . $status,
+                Entity::STATUS,
+                [
+                    Entity::STATUS => $status
+                ]);
+        }
     }
 
     public function validateChannel(string $attribute, string $channel)

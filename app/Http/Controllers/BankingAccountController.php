@@ -146,6 +146,15 @@ class BankingAccountController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function requestActivationMisForBank()
+    {
+        $input = Request::all();
+
+        $data = $this->bankLmsService->requestActivationMisReport($input);
+
+        return ApiResponse::json($data);
+    }
+
     // End Of Bank LMS
 
     public function updateDashboard(string $id)
@@ -305,6 +314,15 @@ class BankingAccountController extends Controller
         $input = Request::all();
 
         $response = $this->service()->downloadActivationMis($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function requestActivationMisReport()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->requestActivationMisReport($input);
 
         return ApiResponse::json($response);
     }

@@ -837,7 +837,7 @@ class Status
             self::CA_ACTIVATED_SUB_STATUS => Activation\Detail\Entity::OPS,
         ],
         self::ACTIVATED => [
-            self::UPI_CREDS_PENDING => Activation\Detail\Entity::OPS,
+            self::UPI_CREDS_PENDING => Activation\Detail\Entity::BANK,
             self::UPI_ACTIVATED => null,
         ],
         self::ARCHIVED => [

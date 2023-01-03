@@ -97,41 +97,4 @@ class Repository extends BankingAccount\Repository
     {
         return $this->fetchSubMerchantForPartnerBank($partnerBank, [PublicEntity::MERCHANT_ID => [$subMerchant->getId()]]);
     }
-
-    public function addQueryParamFilterMerchants($query, $params)
-    {
-        $merchantId = $this->repo->banking_account->dbColumn(PublicEntity::MERCHANT_ID);
-
-        $this->joinQueryActivationDetail($query);
-
-        $query->select($this->dbColumn('*'));
-
-        $filterMerchantIds = $params[Entity::FILTER_MERCHANTS];
-
-        $query->whereIn($merchantId, $filterMerchantIds);
-    }
-
-    public function addQueryParamBankPocUserId($query, $params)
-    {
-        $bankPocUserId = $this->repo->banking_account_activation_detail->dbColumn(BankingAccount\Activation\Detail\Entity::BANK_POC_USER_ID);
-
-        $this->joinQueryActivationDetail($query);
-
-        $query->select($this->dbColumn('*'));
-
-        $filterBankPocUserId = $params[Entity::BANK_POC_USER_ID];
-
-        $query->where($bankPocUserId, $filterBankPocUserId);
-    }
-
-    public function addQueryParamActivationAccountType($query, $params)
-    {
-        $bankingAccountStateStatusColumn = $this->repo->banking_account_activation_detail->dbColumn(BankingAccount\Activation\Detail\Entity::ACCOUNT_TYPE);
-        $filterActivationAccountType = $params[Constants::ACTIVATION_ACCOUNT_TYPE];
-        
-        $this->joinQueryActivationDetail($query);
-        $query->select($this->dbColumn('*'));
-
-        return $query->where($bankingAccountStateStatusColumn, $filterActivationAccountType);
-    }
 }
