@@ -1194,6 +1194,37 @@ class CoreTest extends TestCase
 
         $this->assertFalse($response['showMtuPopup']);
     }
+
+    public function testBlockMerchantActivation()
+    {
+        $core = new DetailCore();
+
+        $merchant_id = '1X4hRFHFx4UiXt';
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => $merchant_id
+        ]);
+
+        $splitzInput = [
+            "experiment_id" => "KxkO63MKPtxKy9",
+            "id"            => $merchant->getId(),
+        ];
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
+        $response = $core->blockMerchantActivations($merchant);
+
+        $this->assertFalse($response);
+
+    }
     public function testGetSegmentEventPropertiesForActivationStatusChangeTrue()
     {
         $core = new DetailCore();

@@ -2854,6 +2854,48 @@ class Core extends Base\Core
     public function blockMerchantActivations($merchant)
     {
 
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest([
+                                                                         'id'            => $merchant->getId(),
+                                                                         'experiment_id' => $this->app['config']->get('app.merchant_activation_manual_override'),
+                                                                     ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, ['id' => $properties['id'] ?? null]);
+
+        }
+
+        $variant = $response['response']['variant']['name'] ?? null;
+
+        $result = false;
+
+        if (empty($response['response']['variant']['variables']) === false)
+        {
+            foreach ($response['response']['variant']['variables'] as $variables)
+            {
+
+                if ($variables['key'] === 'result')
+                {
+                    $result = $variables['value'] === 'on';
+                }
+
+            }
+        }
+
+        $result = ($result or ($variant === 'enable'));
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'Variant' => $variant,
+            'Result'  => $result
+        ]);
+
+
+        if ($result === true)
+        {
+            return false;
+        }
         // activations allowed for linked accounts
         if ($merchant->isLinkedAccount() === true)
         {
