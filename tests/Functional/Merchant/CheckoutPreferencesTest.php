@@ -41,6 +41,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
 use RZP\Models\Admin;
+use RZP\Services\Dcs;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -3335,6 +3336,98 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->assertNotNull($response['methods']['intl_bank_transfer']);
         $this->assertEquals(0, count($response['methods']['intl_bank_transfer']));
+    }
+
+    public function testGetPreferencesWhenEmailOptionalOnCheckoutAndShowEmailOnCheckoutFeaturesEnabledExpectsBothTheFeatureFlagsInPreferencesResponse()
+    {
+        $this->fixtures->merchant->addFeatures([
+            Dcs\Features\Constants::ShowEmailOnCheckout,
+            Dcs\Features\Constants::EmailOptionalOnCheckout
+        ]);
+
+        $this->enableEmailLessCheckoutExperiment();
+
+        $response = $this->getPreferences();
+
+        $this->assertTrue($response['features'][Dcs\Features\Constants::ShowEmailOnCheckout]);
+        $this->assertTrue($response['features'][Dcs\Features\Constants::EmailOptionalOnCheckout]);
+    }
+
+    public function testGetPreferencesWhenShowEmailOnCheckoutFeaturesEnabledExpectsShowEmailOnCheckoutFeatureFlagInPreferencesResponse()
+    {
+        $this->fixtures->merchant->addFeatures([
+            Dcs\Features\Constants::ShowEmailOnCheckout
+        ]);
+
+        $this->enableEmailLessCheckoutExperiment();
+
+        $response = $this->getPreferences();
+
+        $this->assertTrue($response['features'][Dcs\Features\Constants::ShowEmailOnCheckout]);
+        $this->assertArrayHasKey(Dcs\Features\Constants::ShowEmailOnCheckout, $response['features']);
+        $this->assertArrayNotHasKey(Dcs\Features\Constants::EmailOptionalOnCheckout, $response['features']);
+    }
+
+    public function testGetPreferencesWhenEmailOptionalOnCheckoutFeatureEnabledExpectsEmailOptionalOnCheckoutFeatureFlagInPreferencesResponse()
+    {
+        $this->fixtures->merchant->addFeatures([
+            Dcs\Features\Constants::EmailOptionalOnCheckout
+        ]);
+
+        $this->enableEmailLessCheckoutExperiment();
+
+        $response = $this->getPreferences();
+
+        $this->assertTrue($response['features'][Dcs\Features\Constants::EmailOptionalOnCheckout]);
+        $this->assertArrayHasKey(Dcs\Features\Constants::EmailOptionalOnCheckout, $response['features']);
+        $this->assertArrayNotHasKey(Dcs\Features\Constants::ShowEmailOnCheckout, $response['features']);
+    }
+
+    public function testGetPreferencesWhenEmailOptionalOnCheckoutAndShowEmailOnCheckoutFeaturesNotEnabledExpectsBothFeatureFlagsNotInPreferencesResponse()
+    {
+        $this->enableEmailLessCheckoutExperiment();
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayNotHasKey(Dcs\Features\Constants::EmailOptionalOnCheckout, $response['features']);
+        $this->assertArrayNotHasKey(Dcs\Features\Constants::ShowEmailOnCheckout, $response['features']);
+    }
+
+    public function testGetPreferencesWhenEmailLessCheckoutExperimentDisabledExpectsShowEmailOnCheckoutFeatureFlagInPreferencesResponse()
+    {
+        $this->enableEmailLessCheckoutExperiment("variant_off");
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayHasKey(Dcs\Features\Constants::ShowEmailOnCheckout, $response['features']);
+        $this->assertArrayNotHasKey(Dcs\Features\Constants::EmailOptionalOnCheckout, $response['features']);
+    }
+
+    protected function enableEmailLessCheckoutExperiment($result = "variant_on")
+    {
+        $output = [
+            [
+                "experiment" => [
+                    "id" => $this->app['config']->get('app.email_less_checkout_experiment_id'),
+                ],
+                "variant"    => [
+                    "name" => $result,
+                ],
+            ],
+        ];
+
+        $this->mockSplitzTreatmentBulkRequest($output);
+    }
+
+    protected function mockSplitzTreatmentBulkRequest($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('bulkCallsToSplitz')
+            ->andReturn($output);
     }
 
     private function getBankAccountMockData($va_currency = "USD") : string{

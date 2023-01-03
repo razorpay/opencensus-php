@@ -276,6 +276,28 @@ return [
         ],
     ],
 
+    'testAdminDashboardPaymentsFetchWhenContactIsPassedExpectsPaymentsAssociatedWithContact' => [
+        'request' => [
+            'url'     => '/admin/payment',
+            'method'  => 'get',
+            'content' => [
+                'contact' => '+919876543210',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'contact' => '+919876543210',
+                        'entity' => 'payment',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testFetchCardQueryParams' => [
         'request' => [
             'url'     => '/admin/payment',

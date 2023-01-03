@@ -108,6 +108,30 @@ class PaymentRetrieveTest extends TestCase
         $this->assertEquals($email, $payment['items'][0]['email']);
     }
 
+    public function testRetrievePaymentsOnMerchantDashboardWhenInputContactIsGivenExpectsPaymentsWithGivenContact()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('payment', [
+            'contact'    => '+919876543210',
+        ]);
+
+        $this->fixtures->create('payment', [
+            'contact'    => '+918888888888',
+        ]);
+
+        $contact = '+919876543210';
+
+        $request = $this->request;
+        $request['content'] = array('contact' => $contact);
+
+        $payment = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $payment['count']);
+        $this->assertEquals($contact, $payment['items'][0]['contact']);
+        $this->assertEquals('payment', $payment['items'][0]['entity']);
+    }
+
     public function testRetrievePaymentHavingNullContact()
     {
         $payment = $this->fixtures->create('payment:captured', ['contact' => null]);

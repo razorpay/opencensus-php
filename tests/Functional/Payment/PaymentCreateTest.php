@@ -10359,10 +10359,27 @@ class PaymentCreateTest extends TestCase
         $this->doPaymentCreateAndCalculateFees('checkoutjs', true, $input);
     }
 
+    public function testPaymentCreateWhenInputEmailIsNotPresentAndCheckoutEmailLessMerchantAndS2SPaymentExpectsPaymentCreationFailureWithEmailRequiredException()
+    {
+        $this->ba->privateAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        unset($payment['email']);
+
+        $this->fixtures->merchant->addFeatures(['s2s']);
+
+        $this->makeRequestAndCatchException(
+            function () use ($payment) {
+                $this->doS2SPrivateAuthPayment($payment);
+            },
+            BadRequestValidationFailureException::class,
+            'The email field is required.'
+        );
+    }
+
     protected function doPaymentCreateAndCalculateFees($library, $expectsSuccessfulPayment = true, $input = [])
     {
-        $this->ba->publicAuth();
-
         $payment = $this->getDefaultPaymentArray();
 
         unset($payment['email']);
@@ -10377,10 +10394,10 @@ class PaymentCreateTest extends TestCase
 
         $paymentCreatUrls = ['/payments/create/ajax', '/payments/create/checkout', '/payments/create/fees'];
 
-        foreach($paymentCreatUrls as $url)
-        {
-            if ($url === '/payments/create/fees')
-            {
+        foreach ($paymentCreatUrls as $url) {
+            $this->ba->publicAuth();
+
+            if ($url === '/payments/create/fees') {
                 $this->fixtures->merchant->enableConvenienceFeeModel();
                 $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => FeeBearer::CUSTOMER]);
             }
@@ -10391,28 +10408,33 @@ class PaymentCreateTest extends TestCase
                 'content' => $payment,
             ];
 
-            if ($expectsSuccessfulPayment)
-            {
+            if ($expectsSuccessfulPayment) {
                 $response = $this->makeRequestAndGetContent($request);
 
-                if ($url === '/payments/create/fees')
-                {
-                    $this->assertEquals($response['display']['fees'], 10);
+                if ($url === '/payments/create/fees') {
+                    $this->assertEquals(10, $response['display']['fees']);
                 }
-                else
-                {
+                else {
                     $this->assertNotEmpty($response['razorpay_payment_id']);
+
                     $currentPayment = $this->getDbEntityById('payment', $response['razorpay_payment_id']);
 
+                    $this->assertEquals('authorized', $currentPayment['status']);
+
+                    $this->capturePayment($response['razorpay_payment_id'], $payment['amount'], $payment['currency']);
+
+                    $currentPayment = $this->getDbEntityById('payment', $response['razorpay_payment_id']);
+
+                    $this->assertEquals('captured', $currentPayment['status']);
+
                     if (isset($input['email'])) {
-                        $this->assertEquals($currentPayment['email'], $input['email']);
+                        $this->assertEquals($input['email'], $currentPayment['email']);
                     }
                 }
             }
-            else
-            {
+            else {
                 $this->makeRequestAndCatchException(
-                    function() use ($request) {
+                    function () use ($request) {
                         $this->makeRequestAndGetContent($request);
                     },
                     BadRequestValidationFailureException::class,

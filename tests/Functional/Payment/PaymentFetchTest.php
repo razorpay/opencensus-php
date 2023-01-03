@@ -386,6 +386,21 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
+    public function testAdminDashboardPaymentsFetchWhenContactIsPassedExpectsPaymentsAssociatedWithContact()
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('payment', [
+            'contact'    => '+919876543210',
+        ]);
+
+        $this->fixtures->create('payment', [
+            'contact'    => '+918888888888',
+        ]);
+
+        $this->startTest();
+    }
+
     public function testAxisAdminAuthPaymentFetch()
     {
         $card = $this->fixtures->create('card', ['name' => 'Test Name']);

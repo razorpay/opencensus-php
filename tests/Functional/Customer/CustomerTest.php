@@ -7,8 +7,10 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Payout;
 use RZP\Models\Reversal;
+use RZP\Models\Merchant;
 use RZP\Models\Settlement\Channel;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\FundTransfer\AttemptTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\FundTransfer\AttemptReconcileTrait;
@@ -987,6 +989,399 @@ class customerTest extends TestCase
         $customer = $this->getLastEntity('customer', true);
         $this->ba->appAuthTest($this->config['applications.consumer_app.secret']);
         $res = $this->startTest();
+    }
+
+    public function testSupportPageOTPVerifyWhenValidInputIsPassedExpectsOTPVerificationAndCustomerPayments()
+    {
+        $this->ba->directAuth();
+
+        $this->mockRaven();
+
+        $contact = '+919988776666';
+
+        // send OTP
+        $response = $this->sendOtp($contact);
+
+        $content = [
+            'contact' => $contact,
+            'mode' => 'test',
+            'otp' => '0007',
+        ];
+
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+        $this->fixtures->create('merchant', ['id' => Merchant\Account::DEMO_PAGE_ACCOUNT]);
+
+        $request = array(
+            'url' => '/support/otp/verify',
+            'method' => 'post',
+            'content' => $content
+        );
+
+        // Current Customer payments
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776666',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $payment2 = $this->fixtures->create('payment', [
+            'contact'    => '9988776666',
+            'merchant_id' => '10000000000001',
+        ]);
+
+        // Other Customer payments
+        $payment3 = $this->fixtures->create('payment', [
+            'contact'    => '+918888888888',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $payment4 = $this->fixtures->create('payment', [
+            'contact'    => '8888888888',
+            'merchant_id' => '10000000000001',
+        ]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $response['success']);
+
+        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        $this->assertContains($payment1->getPublicId(), $paymentIds);
+
+        $this->assertContains($payment2->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment3->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment4->getPublicId(), $paymentIds);
+    }
+
+    public function testSupportPageOTPVerifyWhenInvalidInputIsPassedExpectsOTPVerificationFailureWithIncorrectOTPException()
+    {
+        $this->ba->directAuth();
+
+        $this->mockRaven();
+
+        $contact = '+919988776666';
+
+        // send OTP
+        $response = $this->sendOtp($contact);
+
+        $content = [
+            'contact' => $contact,
+            'mode' => 'test',
+            'otp' => '0008',
+        ];
+
+        $this->fixtures->create('merchant', ['id' => Merchant\Account::DEMO_PAGE_ACCOUNT]);
+
+        $request = array(
+            'url' => '/support/otp/verify',
+            'method' => 'post',
+            'content' => $content
+        );
+
+        // Current Customer payment
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776666',
+        ]);
+
+        $this->makeRequestAndCatchException(
+            function () use ($request) {
+                $this->makeRequestAndGetContent($request);
+            },
+            BadRequestException::class,
+            'Verification failed because of incorrect OTP.'
+        );
+    }
+
+    public function testFetchPaymentByContactOnSupportPageWhenUserLoggedInExpectsPaymentsWithCustomerContact()
+    {
+        $this->ba->directAuth();
+
+        $this->mockSession();
+
+        $request = array(
+            'url' => '/apps/payments?mode=test',
+            'method' => 'get',
+        );
+
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
+        // Current Customer payments
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $payment2 = $this->fixtures->create('payment', [
+            'contact'    => '9988776655',
+            'merchant_id' => '10000000000001',
+        ]);
+
+        // Other Customer payments
+        $payment3 = $this->fixtures->create('payment', [
+            'contact'    => '+918888888888',
+            'merchant_id' => '10000000000000',
+        ]);
+
+        $payment4 = $this->fixtures->create('payment', [
+            'contact'    => '8888888888',
+            'merchant_id' => '10000000000001',
+        ]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        $this->assertContains($payment1->getPublicId(), $paymentIds);
+
+        $this->assertContains($payment2->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment3->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment4->getPublicId(), $paymentIds);
+    }
+
+    public function testFetchPaymentByContactOnSupportPageWhenUserNotLoggedInExpectsFailureWithUnauthorizedException()
+    {
+        $this->ba->directAuth();
+
+        $request = array(
+            'url' => '/apps/payments?mode=test',
+            'method' => 'get',
+        );
+
+        // Current Customer payments
+        $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+        ]);
+
+        $this->makeRequestAndCatchException(
+            function () use ($request) {
+                $this->makeRequestAndGetContent($request);
+            },
+            BadRequestException::class,
+            'The user is not authenticated'
+        );
+    }
+
+    public function testFetchPaymentByContactOnSupportPageWhenUserLoggedInAndLoggedOutExpectsFailureWithUnauthorizedException()
+    {
+        $this->ba->directAuth();
+
+        $this->mockSession();
+
+        $request = array(
+            'url' => '/apps/payments?mode=test',
+            'method' => 'get',
+        );
+
+        // Current Customer payments
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+        ]);
+
+        $this->makeRequestAndGetContent($request);
+
+        $logoutRequest = array(
+            'url' => '/apps/logout',
+            'method' => 'delete',
+            'content' => [
+                'logout' => 'app',
+                'app_token' => 'capp_1000000custapp',
+                'device_token' => '1000custdevice',
+            ],
+        );
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestAndGetContent($logoutRequest);
+
+        $this->ba->directAuth();
+
+        $this->makeRequestAndCatchException(
+            function () use ($request) {
+                $this->makeRequestAndGetContent($request);
+            },
+            BadRequestException::class,
+            'The user is not authenticated'
+        );
+    }
+
+    public function testFetchPaymentByContactOnSupportPageWhenUserLoggedInExpectsCustomerPaymentsWhichAreCreatedLessThan6Months()
+    {
+        $this->ba->directAuth();
+
+        $this->mockSession();
+
+        $request = array(
+            'url' => '/apps/payments?mode=test',
+            'method' => 'get',
+        );
+
+        // Logged-in Customer payments
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+        ]);
+
+        $nowMinus7Months = Carbon::now()->subMonths(7)->getTimestamp();
+
+        $payment2 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+            'created_at' => $nowMinus7Months,
+        ]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        $this->assertContains($payment1->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment2->getPublicId(), $paymentIds);
+    }
+
+    public function testFetchPaymentByContactOnSupportPageWhenUserLoggedInExpectsPaymentsOrderByCreatedAt()
+    {
+        $this->ba->directAuth();
+
+        $this->mockSession();
+
+        $request = array(
+            'url' => '/apps/payments?mode=test',
+            'method' => 'get',
+        );
+
+        // Logged-in Customer payments
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp(),
+        ]);
+
+        $payment2 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+            'created_at' => Carbon::now()->subDays(2)->getTimestamp(),
+        ]);
+
+        $payment3 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+            'created_at' => Carbon::now()->subDays(3)->getTimestamp(),
+        ]);
+
+        $payment4 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+            'created_at' => Carbon::now()->subDays(4)->getTimestamp(),
+        ]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        // Payments ordered by created_at
+        $this->assertEquals(
+            [$payment1->getPublicId(), $payment2->getPublicId(), $payment3->getPublicId(), $payment4->getPublicId()],
+            $paymentIds
+        );
+
+        // Payments not ordered by created_at
+        $this->assertNotEquals(
+            [$payment2->getPublicId(), $payment1->getPublicId(), $payment3->getPublicId(), $payment4->getPublicId()],
+            $paymentIds
+        );
+    }
+
+    public function testFetchPaymentByContactOnSupportPageWhenInputSkipAndCountIsPassedExpectsPaymentsRespectingCountAndSkip()
+    {
+        $this->ba->directAuth();
+
+        $this->mockSession();
+
+        $request = array(
+            'url' => '/apps/payments?mode=test&skip=1&count=2',
+            'method' => 'get',
+        );
+
+        // Logged-in Customer payments
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp(),
+        ]);
+
+        $payment2 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+            'created_at' => Carbon::now()->subDays(2)->getTimestamp(),
+        ]);
+
+        $payment3 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+            'created_at' => Carbon::now()->subDays(3)->getTimestamp(),
+        ]);
+
+        $payment4 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+            'created_at' => Carbon::now()->subDays(4)->getTimestamp(),
+        ]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        $this->assertEquals(2, count($paymentIds));
+
+        $this->assertEquals(true, $response['has_more']);
+
+        $this->assertNotContains($payment1->getPublicId(), $paymentIds);
+
+        $this->assertContains($payment2->getPublicId(), $paymentIds);
+
+        $this->assertContains($payment3->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment4->getPublicId(), $paymentIds);
+    }
+
+    public function testFetchPaymentByContactOnSupportPageWhenAllThePaymentAreFetchedExpectsPaymentsAndHasMoreAsFalse()
+    {
+        $this->ba->directAuth();
+
+        $this->mockSession();
+
+        $request = array(
+            'url' => '/apps/payments?mode=test&skip=1&count=2',
+            'method' => 'get',
+        );
+
+        // Logged-in Customer payments
+        $payment1 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp(),
+        ]);
+
+        $payment2 = $this->fixtures->create('payment', [
+            'contact'    => '+919988776655',
+            'created_at' => Carbon::now()->subDays(2)->getTimestamp(),
+        ]);
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
+
+        $this->assertEquals(false, $response['has_more']);
+
+        $this->assertNotContains($payment1->getPublicId(), $paymentIds);
+
+        $this->assertContains($payment2->getPublicId(), $paymentIds);
+    }
+
+    protected function getPaymentIdsFromSupportPageFetchPaymentResponse(array $response): array
+    {
+        $payments = $response['payments'];
+
+        $paymentIds = [];
+
+        foreach ($payments as $payment)
+        {
+            $paymentIds[] = $payment['payment']['id'];
+        }
+
+        return $paymentIds;
     }
 
     protected function editGlobalCustomer(array $content)
