@@ -652,4 +652,123 @@ class CustomerFeeBearerInternationalPaymentTest extends TestCase
 
     }
 
+    public function testOrderCreationEntityCheckCFBMCCPayments()
+    {
+        // CALLING FLOWS API TO FETCH DCC RATES AND CURRENCY REQUEST ID
+
+        $flowsRequest = [
+            'content' => ['amount' => self::AMOUNT, 'currency' => 'EUR', 'iin' => '401201'],
+            'method'  => 'GET',
+            'url'     => '/payment/flows',
+        ];
+
+        $flowsResponse = $this->makeRequestAndGetContent($flowsRequest);
+
+        $cardCurrency = $flowsResponse['card_currency'];
+        $currencyRequestId = $flowsResponse['currency_request_id'];
+        $forexRate = $flowsResponse['all_currencies'][$cardCurrency]['forex_rate'];
+        $markUp = $flowsResponse['all_currencies'][$cardCurrency]['conversion_percentage']/100;
+
+        // CALLING CALCULATE FEES API TO VERIFY DISPLAY AMOUNTS AND MCC CALCULATIONS
+
+        $calculateFeesRequest = [
+            'url'     => '/payments/calculate/fees',
+            'method'  => 'POST',
+            'content' => [
+                'amount'                => self::AMOUNT,
+                'currency'              => 'EUR',
+                'method'                => 'card',
+                'email'                 => 'qa.testing@razorpay.com',
+                'contact'               => '+918888888888',
+                'card'                  => ['number' => '4012010000000007', 'cvv' => 566, 'name' => 'Harshil', 'expiry_month' => 12, 'expiry_year' => 24],
+                'dcc_currency'          => $cardCurrency,
+                'currency_request_id'   => $currencyRequestId,
+            ],
+        ];
+
+        // MCC CALCULATIONS
+
+        $mccAmount = self::AMOUNT;
+        $mccFee = (int) ceil(self::FEE * self::MCC_MARKDOWN);
+        $mccTax = (int) ceil(self::TAX * self::MCC_MARKDOWN);
+        $mccTotalAmount = $mccAmount + $mccFee;
+
+        $dccAmount = ceil($mccAmount * $forexRate * (1 + $markUp));
+        $dccFee = ceil($mccFee * $forexRate * (1 + $markUp));
+        $dccTax = ceil($mccTax * $forexRate * (1 + $markUp));
+        $dccTotalAmount = ceil($mccTotalAmount * $forexRate * (1 + $markUp));
+
+        $calculateFeesResponse = $this->makeRequestAndGetContent($calculateFeesRequest);
+
+        self::assertEquals($mccTotalAmount, $calculateFeesResponse['input']['amount']);
+        self::assertEquals($mccFee, $calculateFeesResponse['input']['fee']);
+        self::assertEquals($mccTax, $calculateFeesResponse['input']['tax']);
+        self::assertEquals($dccAmount/100, $calculateFeesResponse['display']['original_amount']);
+        self::assertEquals($dccFee/100, $calculateFeesResponse['display']['fees']);
+        self::assertEquals($dccTax/100, $calculateFeesResponse['display']['tax']);
+        self::assertEquals($dccTotalAmount/100, $calculateFeesResponse['display']['amount']);
+        self::assertEquals('USD', $calculateFeesResponse['display']['currency']);
+
+        $order = $this->fixtures->create('order', ['amount' => $mccAmount,'currency' => 'EUR']);
+
+        $paymentCreateRequest = [
+            'currency'              => 'EUR',
+            'method'                => 'card',
+            'email'                 => 'qa.testing@razorpay.com',
+            'contact'               => '+918888888888',
+            'card'                  => ['number' => '4012010000000007', 'cvv' => 566, 'name' => 'Harshil', 'expiry_month' => 12, 'expiry_year' => 24],
+            'amount'                => $mccTotalAmount,
+            'fee'                   => $mccFee,
+            'mcc_request_id'        => $calculateFeesResponse['input']['mcc_request_id'],
+            'dcc_currency'          => $cardCurrency,
+            'currency_request_id'   => $currencyRequestId,
+            'order_id'              => $order->getPublicId(),
+            '_'                     => ['library' => 'checkoutjs']
+        ];
+
+        // REFRESH RATES TO VERIFY NO RATE REVISION THROUGHOUT PAYMENT UX JOURNEY
+
+        $currencyRefreshRequest = [
+            'url'     => '/currency/USD/rates',
+            'method'  => 'POST',
+        ];
+
+        $this->ba->cronAuth();
+        $currencyRefreshResponse = $this->makeRequestAndGetContent($currencyRefreshRequest);
+
+        self::assertNotEmpty($currencyRefreshResponse['INR']);
+
+        // CALLING PAYMENT CREATE API VIA AJAX ROUTE
+
+        $this->ba->publicAuth();
+        $paymentCreateResponse = $this->doAuthPaymentViaAjaxRoute($paymentCreateRequest);
+
+
+        // CALLING FETCH PAYMENT CALL TO CHECK THE FEE_BASE_AMOUNT
+
+        $paymentArray = $this->fetchPayment($paymentCreateResponse['razorpay_payment_id']);
+
+        self::assertNotNull($paymentArray['fee_currency_amount']);
+        self::assertEquals($mccFee*10,$paymentArray['fee_currency_amount']);
+
+        // CHECK FOR PAYMENT_META TABLE ENTRY
+
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        self::assertEquals(true,$paymentMeta['mcc_applied']);
+        self::assertEquals(10,$paymentMeta['mcc_forex_rate']);
+        self::assertEquals(number_format((1-self::MCC_MARKDOWN)*100,2),$paymentMeta['mcc_mark_down_percent']);
+        self::assertEquals(true,$paymentMeta['dcc_offered']);
+        self::assertEquals($forexRate,$paymentMeta['forex_rate']);
+        self::assertEquals($markUp*100,$paymentMeta['dcc_mark_up_percent']);
+
+        $this->capturePayment($paymentCreateResponse['razorpay_payment_id'],
+            self::AMOUNT, 'EUR', $mccTotalAmount);
+
+        $order = $this->getLastEntity('order', true);
+
+        self::assertEquals($mccAmount,$order['amount_paid']);
+        self::assertEquals('paid', $order['status']);
+    }
+
 }

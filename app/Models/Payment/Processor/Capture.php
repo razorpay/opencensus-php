@@ -855,6 +855,8 @@ trait Capture
                 $payment->setLateBalanceUpdate();
             }
 
+            $originalPaymentFee = $payment->getFee();
+
             list($txn, $merchantBalance) = $this->createTransactionFromCapturedPayment($payment);
 
             $this->updateVirtualAccountStatusIfApplicable($payment);
@@ -886,7 +888,7 @@ trait Capture
             // Please keep this function at the end of transaction block, as
             // we are updating orders which lies in PG Router service now.
             // This has been done to temporarily handle the distributed transaction failures.
-            $this->updateOrderAfterCapture($payment);
+            $this->updateOrderAfterCapture($payment,$originalPaymentFee);
         });
 
         $this->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
@@ -1271,7 +1273,9 @@ trait Capture
             ]
         );
 
-        if ($payment->isFeeBearerCustomer() === true and $payment->merchant->isCustomerFeeBearerAllowedOnInternational())
+        if ($payment->isFeeBearerCustomer() === true and
+            $payment->merchant->isCustomerFeeBearerAllowedOnInternational() and
+            $payment->isInternational() === true)
         {
             //set and fee values from txn
             $payment->setFee($txn->getFee());
@@ -1347,7 +1351,7 @@ trait Capture
      *
      * @param Payment\Entity $payment
      */
-    protected function updateOrderAfterCapture(Payment\Entity $payment)
+    protected function updateOrderAfterCapture(Payment\Entity $payment, $originalPaymentFee)
     {
         if ($payment->hasOrder() === false)
         {
@@ -1356,7 +1360,7 @@ trait Capture
 
         $order = $payment->order;
 
-        $paidAmount = $payment->getAdjustedAmountWrtCustFeeBearer();
+        $paidAmount = $payment->getAdjustedAmountWrtMCCCustFeeBearer($originalPaymentFee);
 
         $paidAmount = $payment->getAmountWithoutConvenienceFeeIfApplicable($paidAmount, $order);
 

@@ -3040,6 +3040,32 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return $amount;
     }
 
+    /**
+     * @param $originalPaymentFee
+     * @return int
+     * Gets Adjusted amount with respect to CFB merchants.
+     * This amount is compared against the requested capture amount and
+     * used in order entity update
+     */
+    public function getAdjustedAmountWrtMCCCustFeeBearer($originalPaymentFee): int
+    {
+        $amount = $this->getAmount();
+
+        if ($this->isFeeBearerCustomer() === true and
+            $this->getCurrency()!== Currency\Currency::INR and
+            $this->isInternational() and
+            $this->merchant->isCustomerFeeBearerAllowedOnInternational() and
+            $originalPaymentFee!=null)
+        {
+            $amount -= $originalPaymentFee;
+        }
+        else if ($this->isFeeBearerCustomer() === true)
+        {
+            $amount -= $this->getFee();
+        }
+        return $amount;
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
