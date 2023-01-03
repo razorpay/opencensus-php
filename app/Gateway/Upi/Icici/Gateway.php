@@ -1748,11 +1748,11 @@ class Gateway extends Base\Gateway
                 $payment['id'],
                 $payment['gateway'],
                 [
-                    'gateway_payment_id',
+                    'customer_reference',
                     'merchant_reference',
                 ]);
 
-            $bankRrn            = $fiscalEntity['gateway_payment_id'];
+            $bankRrn            = $fiscalEntity['customer_reference'];
             $merchantReference  = $fiscalEntity['merchant_reference'] ?? $payment['id'];
 
         } else {

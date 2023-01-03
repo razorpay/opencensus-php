@@ -3087,9 +3087,10 @@ class Processor
             return;
         }
 
-        // Service does not support Bharat QR and UPI QR.
+        // Service does not support Bharat QR, UPI QR and Recurring.
         if (($payment->isBharatQr() === true) or
-            ($payment->isUpiQr() === true))
+            ($payment->isUpiQr() === true) or
+            ($payment->isRecurring() === true))
         {
             return;
         }

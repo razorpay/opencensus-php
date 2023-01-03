@@ -38,6 +38,28 @@ class UpiInitialRecurringTestCase extends TestCase
      */
     protected $terminal;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // set the pre-processing through mozart as true
+        // we are testing if the recurring flows works even if icici normal
+        // payments pre-processing is set do through mozart
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
+        });
+
+        // enable payment initiate through UPS
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_icici_v1', 'upips');
+        });
+
+        // Enable UPI payment service in config
+        $this->app['config']->set(['applications.upi_payment_service.enabled' => true]);
+    }
+
     public function testRecurringMandateCreate($encrypted=false, $tpv=false, $bankAccount=[])
     {
         // If $tpv flag set to true then create order for TPV with bank_account details

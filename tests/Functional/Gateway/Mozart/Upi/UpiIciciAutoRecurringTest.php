@@ -54,6 +54,15 @@ class UpiIciciAutoRecurringTest extends TestCase
         {
             return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
         });
+
+         // enable payment initiate through UPS
+         $this->setRazorxMock(function ($mid, $feature, $mode)
+         {
+             return $this->getRazoxVariant($feature, 'api_upi_icici_v1', 'upips');
+         });
+
+         // Enable UPI payment service in config
+         $this->app['config']->set(['applications.upi_payment_service.enabled' => true]);
     }
 
     public function testAutoRecurringPaymentSuccess()
@@ -75,6 +84,7 @@ class UpiIciciAutoRecurringTest extends TestCase
 
         $payment = $this->assertUpiDbLastEntity('payment', [
             'gateway' => 'upi_icici',
+            'cps_route' => 0,
         ]);
 
         $this->assertArraySubset([

@@ -437,9 +437,7 @@ class Service
 
         if (isset($input[Entity::ORDER]) === true)
         {
-            $content[Entity::ORDER] = [
-                Order\Entity::ACCOUNT_NUMBER => $input[Entity::ORDER][Order\Entity::ACCOUNT_NUMBER] ?? null,
-            ];
+            $content[Entity::ORDER] = $input[Entity::ORDER];
         }
 
         return $content;
@@ -790,7 +788,7 @@ class Service
         }
     }
 
-    protected function findByPaymentIdAndGatewayOrFail(string $paymentId, string $gateway, array $requiredFields)
+    public function findByPaymentIdAndGatewayOrFail(string $paymentId, string $gateway, array $requiredFields)
     {
         $input = [
             Request::MODEL              => Payment\Action::AUTHORIZE,
