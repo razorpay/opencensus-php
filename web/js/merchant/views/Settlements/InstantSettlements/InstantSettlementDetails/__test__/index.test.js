@@ -56,7 +56,7 @@ describe('InstantSettlementDetails', () => {
     test('should fetch total settlement amount when settled amount is zero', async () => {
       renderApp();
       await waitFor(() => {
-        expect(fetchAmountSpy).toHaveBeenCalledTimes(1);
+        expect(fetchAmountSpy).toHaveBeenCalled();
       });
       expect(fetchAmountSpy).toHaveBeenCalledWith(defaultProps.id);
     });

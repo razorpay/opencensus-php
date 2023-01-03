@@ -31,10 +31,8 @@ describe('InstantSettlementListFilter', () => {
       expect(field).toHaveAttribute('name', 'id');
 
       const settlementId = 'setlodp_InXEtJ23TyveQt';
-      userEvent.type(field, settlementId);
-      await waitFor(() => {
-        expect(field).toHaveAttribute('value', settlementId);
-      });
+      await userEvent.type(field, settlementId);
+      expect(field).toHaveAttribute('value', settlementId);
     });
 
     test('should render settlement status dropdown filter', async () => {
