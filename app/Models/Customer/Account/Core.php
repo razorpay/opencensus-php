@@ -563,11 +563,34 @@ class Core extends Base\Core
                 [
                     'request' =>  $this->maskVerificationDetailsDetails($input),
                     'response'=>  $response,
-                    'exception'=> $ex->getTrace()
+                    'exception'=> $this->getExceptionTraceDetails($ex)
                 ]
             );
         }
     }
+
+    public function getExceptionTraceDetails($exception)
+    {
+        if ($exception === null)
+        {
+            return null;
+        }
+
+        $previous = $this->getExceptionTraceDetails($exception->getPrevious());
+
+        $stack = array_slice(explode("\n", $exception->getTraceAsString()), 0, 20);
+
+        $trace = [
+            'class'     => get_class($exception),
+            'code'      => $exception->getCode(),
+            'message'   => $exception->getMessage(),
+            'stack'     => $stack,
+            'previous'  => $previous,
+        ];
+
+        return $trace;
+    }
+
 
     /**
      * Verifies OTP on support page,
