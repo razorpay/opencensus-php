@@ -272,6 +272,8 @@ class SubReconciliate extends Base\Core
 
         $this->messenger->batchId = $this->batchId;
 
+        $this->preProcess($fileContents);
+
         try
         {
             foreach ($fileContents as $row)
@@ -300,7 +302,7 @@ class SubReconciliate extends Base\Core
                         //
                         if ((empty(static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG]) === true) or
                             ((empty(static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] === false) and
-                             (static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] !== InfoCode::RECON_RECORD_GATEWAY_FEE_TRANSACTION_ABSENT))))
+                                (static::$reconOutputData[static::$currentRowNumber][self::RECON_ERROR_MSG] !== InfoCode::RECON_RECORD_GATEWAY_FEE_TRANSACTION_ABSENT))))
                         {
                             throw $ex;
                         }
@@ -365,6 +367,11 @@ class SubReconciliate extends Base\Core
                 $this->updateBatchWithSummary($batch);
             }
         }
+    }
+
+    protected function preProcess(array & $rows)
+    {
+        return null;
     }
 
     /**
@@ -605,7 +612,7 @@ class SubReconciliate extends Base\Core
             {
                 return;
             }
-                // (str_contains($card->getVaultToken(), self::TEMP_VAULT_KMS_TOKEN_PREFIX) === true) add for pay_2 token after it is live\
+            // (str_contains($card->getVaultToken(), self::TEMP_VAULT_KMS_TOKEN_PREFIX) === true) add for pay_2 token after it is live\
             if (($entity->isMethodCardOrEmi() === true) and
                 (str_contains($entity->card->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX) === true)) {
 

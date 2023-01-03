@@ -5,8 +5,6 @@ use RZP\Models\Payment;
 use RZP\Reconciliator\Base\SubReconciliator;
 use RZP\Reconciliator\Base;
 use App;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
@@ -18,33 +16,7 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 
     public function getPaymentId(array $row)
     {
-        if(isset($row[ReconciliationFields::ORDER_ID] ))
-        {
-            $verificationFields = [
-                'gateway' => self::KOTAK_DEBIT_EMI,
-                'gateway_reference_id2' => $row[ReconciliationFields::ORDER_ID]
-            ];
-
-            $response = App::getFacadeRoot()['card.payments']->fetchPaymentIdFromVerificationFields($verificationFields);
-
-            if (empty($response) === false)
-            {
-                return $response;
-            }
-            else {
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND,
-                    [
-                        'gateway' => $this->gateway,
-                        'trace_id' => $row[ReconciliationFields::ORDER_ID],
-                        'authorization' => $response['authorization'],
-                    ]);
-            }
-        }
-        else
-        {
-            return null;
-        }
+        return $row[ReconciliationFields::ORDER_ID] ?? null;
     }
 
     public function getReferenceNumber($row)
@@ -111,5 +83,26 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 'reference2' => $this->getGatewayTransactionId($row),
             ]
         ];
+    }
+
+    protected function preProcess(array & $rows)
+    {
+        for($curr = 0; $curr < count($rows); $curr = $curr + 1)
+        {
+            if(isset($rows[$curr][ReconciliationFields::ORDER_ID]))
+            {
+                $verificationFields = [
+                    'gateway' => self::KOTAK_DEBIT_EMI,
+                    'gateway_reference_id2' => $rows[$curr][ReconciliationFields::ORDER_ID]
+                ];
+
+                $response = App::getFacadeRoot()['card.payments']->fetchPaymentIdFromVerificationFields($verificationFields);
+
+                if (empty($response) === false)
+                {
+                    $rows[$curr][ReconciliationFields::ORDER_ID] = $response;
+                }
+            }
+        }
     }
 }
