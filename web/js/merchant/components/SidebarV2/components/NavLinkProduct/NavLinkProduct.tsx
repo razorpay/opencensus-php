@@ -13,6 +13,10 @@ import {
 import { PromotedReservationState } from 'merchant/components/SidebarV2/constants/constants';
 import { swapElements } from 'merchant/components/SidebarV2/utils/utils';
 import Divider from 'merchant/components/SidebarV2/components/Divider';
+import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
+import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
+import { withRouter } from 'react-router';
 
 const NavLinkProduct = ({
   heading,
@@ -22,10 +26,27 @@ const NavLinkProduct = ({
   loading,
   user,
   section_id,
+  location,
 }: NavLinkProductPropsInterface): JSX.Element | null => {
   const [sectionProducts, setSectionProducts] = useState<ProductsStateInterface>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const handleToggle = (): void => setIsOpen((prevState) => !prevState);
+
+  const handleToggle = (): void => {
+    analyticsTrack({
+      objectName: 'sidebar',
+      actionName: 'clicked',
+      screen: titleCase(getActiveTab(location)),
+      toCleverTap: true,
+      properties: {
+        clickedElement: isOpen ? 'show less' : 'show all',
+        section: titleCase(heading),
+        location: 'sidebar',
+        sidebar: 'v2',
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+    setIsOpen((prevState) => !prevState);
+  };
 
   useEffect(() => {
     const reservationState = PromotedReservationState[section_id];
@@ -119,4 +140,4 @@ const NavLinkProduct = ({
   ) : null;
 };
 
-export default NavLinkProduct;
+export default withRouter(NavLinkProduct);

@@ -56,7 +56,7 @@ export interface NavLinkItemInterface extends RouteComponentProps {
   section?: string;
 }
 
-export interface NavLinkProductPropsInterface {
+export interface NavLinkProductPropsInterface extends RouteComponentProps {
   heading: string;
   products: Products[];
   routes: Record<string, string>;
