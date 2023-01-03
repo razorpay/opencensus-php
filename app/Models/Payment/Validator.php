@@ -32,6 +32,7 @@ use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Currency\Core as CurrencyCore;
 use Illuminate\Validation\Concerns;
+use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -1266,6 +1267,13 @@ class Validator extends Base\Validator
         // For few axis org merchants who need to support commercial card, cvv is optional
         if ($this->entity->skipCvvCheck() === true)
         {
+            return;
+        }
+
+        // cvv optional for amex tokenized payments
+        if ($this->entity->card->isAmex() && empty($input['card']['cvv']) && $this->entity->card->getTrivia() === '1')
+        {
+            $this->trace->info(traceCode::CVV_OPTIONAL, []);
             return;
         }
 

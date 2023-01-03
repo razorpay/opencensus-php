@@ -8687,6 +8687,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DEDUCT_OD_FROM_GATEWAY_BALANCE      = 'DEDUCT_OD_FROM_GATEWAY_BALANCE';
 
+    // cvv optional for amex
+    const CVV_OPTIONAL = "CVV_OPTIONAL";
+
     // ------------------------------ Truecaller Authentication Tracecodes ------------------------------
     // Truecaller - request id traces
     const CREATE_TRUECALLER_ENTITY_REQUEST                            = 'CREATE_TRUECALLER_ENTITY_REQUEST';
