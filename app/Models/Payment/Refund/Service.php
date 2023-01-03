@@ -602,11 +602,11 @@ class Service extends Base\Service
 
                     if ($apiRefundArray[RefundEntity::ID] === $scroogeRefundId)
                     {
-                        $diffKeys = $this->differenceKeysOfRefunds($apiRefundArray, $scroogeRefundArray);
+                        $diff = $this->differenceKeysOfRefunds($apiRefundArray, $scroogeRefundArray);
 
-                        if (empty($diffKeys) === false)
+                        if (empty($diff) === false)
                         {
-                            $inconsistentParams[$apiRefundArray[RefundEntity::ID]] = $diffKeys;
+                            $inconsistentParams[$apiRefundArray[RefundEntity::ID]] = $diff;
                         }
 
                         break;
@@ -652,7 +652,8 @@ class Service extends Base\Service
             {
                 if ($scroogeRefundArray[$key] != $value)
                 {
-                    $responseDiff[$key] = $value;
+                    $responseDiff[$key]["scrooge"] = $scroogeRefundArray[$key];
+                    $responseDiff[$key]["api"] = $value;
                 }
 
                 continue;
@@ -668,7 +669,8 @@ class Service extends Base\Service
             {
                 if ($scroogeRefundArray[$key] != $value)
                 {
-                    $responseDiff[$key] = $value;
+                    $responseDiff[$key]["scrooge"] = $scroogeRefundArray[$key];
+                    $responseDiff[$key]["api"] = $value;
                 }
 
                 continue;
@@ -676,11 +678,12 @@ class Service extends Base\Service
 
             if ((isset($scroogeRefundArray[$key]) === true) and ($scroogeRefundArray[$key] !== $value))
             {
-                $responseDiff[$key] = $value;
+                $responseDiff[$key]["scrooge"] = $scroogeRefundArray[$key];
+                $responseDiff[$key]["api"] = $value;
             }
         }
 
-        return array_keys($responseDiff);
+        return $responseDiff;
     }
 
     public function compareThrowableAndLogDifference(\Throwable $apiException, $scroogeException, array $extraTrace = [])
