@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Customer;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Payout;
 use RZP\Models\Reversal;
 use RZP\Models\Settlement\Channel;
@@ -203,6 +205,64 @@ class customerTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
+    }
+
+    public function testUpdateGlobalCustomerWithValidEmail(): void
+    {
+        $this->mockSession();
+
+        $this->ba->publicAuth();
+
+        $input = $this->testData[__FUNCTION__];
+
+        $response = $this->editGlobalCustomer($input['request']['content']);
+
+        $this->assertEquals([], $response);
+    }
+
+    public function testUpdateGlobalCustomerWithInvalidEmail(): void
+    {
+        $this->mockSession();
+
+        $this->ba->publicAuth();
+
+        $input = $this->testData[__FUNCTION__];
+
+        $this->expectException(Exception\BadRequestValidationFailureException::class);
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE);
+        $this->expectExceptionMessage('The email must be a valid email address.');
+
+        $this->editGlobalCustomer($input['request']['content']);
+    }
+
+    public function testUpdateGlobalCustomerWithInvalidInput(): void
+    {
+        $this->mockSession();
+
+        $this->ba->publicAuth();
+
+        $input = $this->testData[__FUNCTION__];
+
+        $this->expectException(Exception\ExtraFieldsException::class);
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED);
+        $this->expectExceptionMessage('other is/are not required and should not be sent');
+
+        $this->editGlobalCustomer($input['request']['content']);
+    }
+
+    public function testUpdateGlobalCustomerWithInvalidSession(): void
+    {
+        // we havent mocked session.
+
+        $this->ba->publicAuth();
+
+        $input = $this->testData[__FUNCTION__];
+
+        $this->expectException(Exception\BadRequestException::class);
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
+        $this->expectExceptionMessage('The user is not authenticated');
+
+        $this->editGlobalCustomer($input['request']['content']);
     }
 
     public function testUpdateCustomerEmail()
@@ -927,5 +987,16 @@ class customerTest extends TestCase
         $customer = $this->getLastEntity('customer', true);
         $this->ba->appAuthTest($this->config['applications.consumer_app.secret']);
         $res = $this->startTest();
+    }
+
+    protected function editGlobalCustomer(array $content)
+    {
+        $request = array(
+            'url' => '/customers',
+            'method' => 'patch',
+            'content' => $content,
+        );
+
+        return $this->makeRequestAndGetContent($request);
     }
 }

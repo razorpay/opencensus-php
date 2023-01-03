@@ -40,6 +40,10 @@ class Validator extends Base\Validator
         Entity::GSTIN           => 'nullable|gstin',
     ];
 
+    protected static $editGlobalCustomerRules = [
+        Entity::EMAIL           => 'required|email',
+    ];
+
     protected static $globalCreateRules = [
         Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
         Entity::EMAIL           => 'sometimes|email',
@@ -302,4 +306,9 @@ class Validator extends Base\Validator
     {
         (new static)->validateInput('addressConsent', $input);
     }
+    public static function validateEditGlobalCustomer($input)
+    {
+        (new static)->validateInput('editGlobalCustomer', $input);
+    }
+
 }

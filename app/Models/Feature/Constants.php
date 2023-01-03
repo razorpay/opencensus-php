@@ -1719,6 +1719,18 @@ class Constants
      * Main use case is to enable NBFCs integrate with FinTech's on X post RBI's lending guidelines.
      */
     const SUB_VA_FOR_DIRECT_BANKING = 'sub_va_for_direct_banking';
+    /**
+     * Truecaller Login Feature Flags. purpose of having these at different levels is due to compliance reasons.
+     * We may have to disable this feature on specific screen for specific merchant on specific platform.
+     * having this feature as true lets user login/prefill their contact, email on checkout without OTP.
+     */
+    const DISABLE_TRUECALLER_LOGIN                     = 'dis_truecaller';
+    const DISABLE_TRUECALLER_LOGIN_MWEB                = 'dis_truecaller_mweb';
+    const DISABLE_TRUECALLER_LOGIN_SDK                 = 'dis_truecaller_sdk';
+    const DISABLE_TRUECALLER_LOGIN_HOME_SCREEN         = 'dis_truecaller_home';
+    const DISABLE_TRUECALLER_LOGIN_CONTACT_SCREEN      = 'dis_truecaller_contact';
+    const DISABLE_TRUECALLER_LOGIN_SAVED_CARDS_SCREEN  = 'dis_truecaller_saved_card';
+    const DISABLE_TRUECALLER_LOGIN_ADD_NEW_CARD_SCREEN = 'dis_truecaller_add_card';
 
     /**
      * Feature flag to block VA payouts from master merchant on account <> sub account flow.
@@ -1809,6 +1821,16 @@ class Constants
         self::ONE_CC_COUPON_DISABLE_COD,
         self::ONE_CC_DISABLE_EMAIL_COOKIE,
         self::ONE_CC_ADDRESS_SYNC_OFF,
+    ];
+
+    const TRUECALLER_FEATURES = [
+        self::DISABLE_TRUECALLER_LOGIN,
+        self::DISABLE_TRUECALLER_LOGIN_CONTACT_SCREEN,
+        self::DISABLE_TRUECALLER_LOGIN_HOME_SCREEN,
+        self::DISABLE_TRUECALLER_LOGIN_MWEB,
+        self::DISABLE_TRUECALLER_LOGIN_SDK,
+        self::DISABLE_TRUECALLER_LOGIN_ADD_NEW_CARD_SCREEN,
+        self::DISABLE_TRUECALLER_LOGIN_SAVED_CARDS_SCREEN,
     ];
 
     // TODO: Use this instead of allFeatures once in final code change pr
@@ -2378,7 +2400,14 @@ class Constants
         DcsConstants::ShowEmailOnCheckout => true,
         self::ONE_CC_ADDRESS_SYNC_OFF         => true,
         self::REDUCE_OD_BALANCE_FOR_CA        => true,
-        self::PUSH_PROVISIONING_LIVE          => true
+        self::PUSH_PROVISIONING_LIVE          => true,
+        self::DISABLE_TRUECALLER_LOGIN => true,
+        self::DISABLE_TRUECALLER_LOGIN_CONTACT_SCREEN => true,
+        self::DISABLE_TRUECALLER_LOGIN_HOME_SCREEN => true,
+        self::DISABLE_TRUECALLER_LOGIN_MWEB => true,
+        self::DISABLE_TRUECALLER_LOGIN_SDK => true,
+        self::DISABLE_TRUECALLER_LOGIN_ADD_NEW_CARD_SCREEN => true,
+        self::DISABLE_TRUECALLER_LOGIN_SAVED_CARDS_SCREEN => true,
     ];
 
     // Entity type constants

@@ -131,6 +131,7 @@ class Entity
     const TERMINAL_ACTION            = 'terminal_action';
     const PAYMENT_DOWNTIME           = 'payment.downtime';
     const MERCHANT_REQUEST           = 'merchant_request';
+    const TRUECALLER_AUTH_REQUEST    = 'truecaller_auth_request';
     const CUSTOMER_BALANCE           = 'customer_balance';
     const GATEWAY_DOWNTIME           = 'gateway_downtime';
     const GATEWAY_DOWNTIME_ARCHIVE   = 'gateway_downtime_archive';
@@ -1458,6 +1459,8 @@ class Entity
         self::PAYMENT_LIMIT => \RZP\Models\Merchant\PaymentLimit::class,
 
         self::CUSTOMER_CONSENT_1CC          => \RZP\Models\Customer\CustomerConsent1cc::class,
+
+        self::TRUECALLER_AUTH_REQUEST => \RZP\Models\Customer\Truecaller\AuthRequest::class,
     ];
 
     protected static $repository = [

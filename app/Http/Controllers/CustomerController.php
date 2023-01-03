@@ -40,6 +40,15 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateGlobalCustomer()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->editGlobalCustomer($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getCustomer($id)
     {
         $data = $this->service()->fetch($id);
@@ -499,5 +508,32 @@ class CustomerController extends Controller
         $response = $this->service()->recordCustomerConsent1cc($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function handleTruecallerCallback()
+    {
+        $input = Request::all();
+
+        $this->service(E::TRUECALLER_AUTH_REQUEST)->handleTruecallerCallback($input);
+
+        return ApiResponse::json([]);
+    }
+
+    public function verifyTruecallerAuthRequest()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyTrueCallerAuthRequest($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function verifyOneCCTruecallerAuthRequest()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->verifyOneCCTrueCallerAuthRequest($input);
+
+        return ApiResponse::json($data);
     }
 }
