@@ -138,9 +138,9 @@ class Shipping extends Base\Core
         {
             $handle = $rate['handle'];
             $title = $rate['title'];
-            $priceV2 = $rate['priceV2'];
-            $amount = $priceV2['amount'];
-            $currencyCode = $priceV2['currencyCode'];
+            $price = $rate['price'];
+            $amount = $price['amount'];
+            $currencyCode = $price['currencyCode'];
 
             if ($this->isMaybeCod($rate) === true)
             {

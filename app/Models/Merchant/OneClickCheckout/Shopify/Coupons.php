@@ -177,7 +177,7 @@ class Coupons extends Base\Core
             return $this->getInvalidCouponApplicationResponse($input, $response, self::APPLY_COUPON_NOT_APPLICABLE);
         }
 
-        $value = (new Utils)->formatNumber($checkout['lineItemsSubtotalPrice']['amount'] - $checkout['subtotalPrice']) * 100;
+        $value = (new Utils)->formatNumber($checkout['lineItemsSubtotalPrice']['amount'] - $checkout['subtotalPrice']['amount']) * 100;
 
         return [
             'response' => [

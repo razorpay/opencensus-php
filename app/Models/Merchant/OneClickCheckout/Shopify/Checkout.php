@@ -475,7 +475,13 @@ class Checkout extends Base\Core
 
     protected function getCartTokenFromCheckoutId(string $checkoutId): string
     {
-        $gid = explode('?', base64_decode($checkoutId))[0];
+        // To support backward compatibility of Shopify API version update from 2022-01 to 2022-10
+        if(substr($checkoutId, 0, 3) != "gid")
+        {
+            $checkoutId = base64_decode($checkoutId);
+        }
+
+        $gid = explode('?', $checkoutId)[0];
 
         return str_replace(self::GID_CHECKOUT, '', $gid);
     }

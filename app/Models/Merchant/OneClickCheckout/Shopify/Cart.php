@@ -7,6 +7,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
+use RZP\Models\Merchant\Metric;
 
 class Cart extends Base\Core
 {

@@ -29,8 +29,7 @@ class Mutations
                 key
                 value
               }
-              paymentDue
-              paymentDueV2 {
+              paymentDue {
                 amount
                 currencyCode
               }
@@ -39,8 +38,7 @@ class Mutations
               taxExempt
               taxesIncluded
               currencyCode
-              totalTax
-              totalTaxV2 {
+              totalTax {
                 amount
                 currencyCode
               }
@@ -48,13 +46,11 @@ class Mutations
                 amount
                 currencyCode
               }
-              subtotalPrice
-              subtotalPriceV2 {
+              subtotalPrice {
                 amount
                 currencyCode
               }
-              totalPrice
-              totalPriceV2 {
+              totalPrice {
                 amount
                 currencyCode
               }
@@ -100,8 +96,7 @@ class Mutations
               }
               shippingLine {
                 handle
-                price
-                priceV2 {
+                price {
                   amount
                   currencyCode
                 }
@@ -125,7 +120,7 @@ class Mutations
                     variant {
                       id
                       title
-                      priceV2 {
+                      price {
                         amount
                         currencyCode
                       }
@@ -194,7 +189,7 @@ class Mutations
                 shippingRates {
                   handle
                   title
-                  priceV2 {
+                  price {
                     amount
                     currencyCode
                   }
@@ -208,8 +203,8 @@ class Mutations
      public function checkoutAttributesUpdateMutation()
      {
         return $this->sanitizeMutation('
-            mutation checkoutAttributesUpdate($checkoutId: ID!, $input: CheckoutAttributesUpdateInput!) {
-                checkoutAttributesUpdate(checkoutId: $checkoutId, input: $input) {
+            mutation checkoutAttributesUpdateV2($checkoutId: ID!, $input: CheckoutAttributesUpdateV2Input!) {
+                checkoutAttributesUpdateV2(checkoutId: $checkoutId, input: $input) {
                   checkout {
                     id
                     customAttributes {
@@ -330,8 +325,7 @@ class Mutations
             ready
             requiresShipping
             note
-            paymentDue
-            paymentDueV2 {
+            paymentDue {
               amount
               currencyCode
             }
@@ -340,8 +334,7 @@ class Mutations
             taxExempt
             taxesIncluded
             currencyCode
-            totalTax
-            totalTaxV2 {
+            totalTax {
               amount
               currencyCode
             }
@@ -349,13 +342,11 @@ class Mutations
               amount
               currencyCode
             }
-            subtotalPrice
-            subtotalPriceV2 {
+            subtotalPrice {
               amount
               currencyCode
             }
-            totalPrice
-            totalPriceV2 {
+            totalPrice {
               amount
               currencyCode
             }
@@ -401,8 +392,7 @@ class Mutations
             }
             shippingLine {
               handle
-              price
-              priceV2 {
+              price {
                 amount
                 currencyCode
               }
@@ -416,29 +406,24 @@ class Mutations
               id
               processedAt
               orderNumber
-              subtotalPrice
-              subtotalPriceV2 {
+              subtotalPrice {
                 amount
                 currencyCode
               }
-              totalShippingPrice
-              totalShippingPriceV2 {
+              totalShippingPrice {
                 amount
                 currencyCode
               }
-              totalTax
-              totalTaxV2 {
+              totalTax {
                 amount
                 currencyCode
               }
-              totalPrice
-              totalPriceV2 {
+              totalPrice {
                 amount
                 currencyCode
               }
               currencyCode
-              totalRefunded
-              totalRefundedV2 {
+              totalRefunded {
                 amount
                 currencyCode
               }
@@ -531,7 +516,10 @@ class Mutations
         checkoutDiscountCodeRemove(checkoutId: $checkoutId) {
           checkout {
             id
-            totalPrice
+            totalPrice {
+              amount
+              currencyCode
+            }
           }
           checkoutUserErrors {
             code
@@ -552,13 +540,16 @@ class Mutations
         ) {
           checkout {
             id
-            totalPrice
+            totalPrice {
+              amount
+              currencyCode
+            }
             availableShippingRates {
               ready
               shippingRates {
                 handle
                 title
-                priceV2 {
+                price {
                   amount
                   currencyCode
                 }
@@ -656,8 +647,7 @@ class Mutations
             ready
             requiresShipping
             note
-            paymentDue
-            paymentDueV2 {
+            paymentDue {
               amount
               currencyCode
             }
@@ -666,8 +656,7 @@ class Mutations
             taxExempt
             taxesIncluded
             currencyCode
-            totalTax
-            totalTaxV2 {
+            totalTax {
               amount
               currencyCode
             }
@@ -675,13 +664,11 @@ class Mutations
               amount
               currencyCode
             }
-            subtotalPrice
-            subtotalPriceV2 {
+            subtotalPrice {
               amount
               currencyCode
             }
-            totalPrice
-            totalPriceV2 {
+            totalPrice {
               amount
               currencyCode
             }
@@ -727,8 +714,7 @@ class Mutations
             }
             shippingLine {
               handle
-              price
-              priceV2 {
+              price {
                 amount
                 currencyCode
               }
@@ -742,29 +728,24 @@ class Mutations
               id
               processedAt
               orderNumber
-              subtotalPrice
-              subtotalPriceV2 {
+              subtotalPrice {
                 amount
                 currencyCode
               }
-              totalShippingPrice
-              totalShippingPriceV2 {
+              totalShippingPrice {
                 amount
                 currencyCode
               }
-              totalTax
-              totalTaxV2 {
+              totalTax {
                 amount
                 currencyCode
               }
-              totalPrice
-              totalPriceV2 {
+              totalPrice {
                 amount
                 currencyCode
               }
               currencyCode
-              totalRefunded
-              totalRefundedV2 {
+              totalRefunded {
                 amount
                 currencyCode
               }
@@ -801,14 +782,13 @@ class Mutations
                   variant {
                     id
                     weight
-                    price
                     image {
                       id
                       url
                     }
                     sku
                     title
-                    priceV2 {
+                    price {
                       amount
                       currencyCode
                     }

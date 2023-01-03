@@ -79,11 +79,11 @@ class Service extends Base\Service
         {
             $item=$item['node'];
 
-            $offerPrice = round(floatval($item['variant']['price']) * 100);
+            $offerPrice = round(floatval($item['variant']['price']['amount']) * 100);
 
             if (empty($item['discountAllocations']) === false)
             {
-                $offerPrice = round(floatval($item['variant']['price']) * 100) - round(floatval($item['discountAllocations'][0]['allocatedAmount']['amount']) * 100);
+                $offerPrice = round(floatval($item['variant']['price']['amount']) * 100) - round(floatval($item['discountAllocations'][0]['allocatedAmount']['amount']) * 100);
 
                 if ($offerPrice < 0)
                 {
@@ -97,7 +97,7 @@ class Service extends Base\Service
                 'variant_id'        => mb_substr(strval($item['variant']['id']), 0, 128, 'UTF-8'),
                 'tax_amount'        => 0,
                 'sku'               => mb_substr(strval($item['variant']['sku']), 0, 128, 'UTF-8'),
-                'price'             => round(floatval($item['variant']['price']) * 100),
+                'price'             => round(floatval($item['variant']['price']['amount']) * 100),
                 'offer_price'       => $offerPrice,
                 'quantity'          => (int)floatval($item['quantity']),
                 'name'              => mb_substr(strval($item['title']), 0, 128, 'UTF-8'),
@@ -144,7 +144,15 @@ class Service extends Base\Service
 
                 $lineItem = $lineItem['node'];
 
-                $variantIdFromCheckout = str_replace('gid://shopify/ProductVariant/', '', base64_decode($lineItem['variant']['id']));
+                // To support backward compatibility of Shopify API version update from 2022-01 to 2022-10
+                if(substr($lineItem['variant']['id'], 0, 3) != "gid")
+                {
+                    $variantIdFromCheckout = str_replace('gid://shopify/ProductVariant/', '', base64_decode($lineItem['variant']['id']));
+                }
+                else
+                {
+                    $variantIdFromCheckout = $lineItem['variant']['id'];
+                }
 
                 if ($item['variant_id'] == $variantIdFromCheckout)
                 {
@@ -203,6 +211,9 @@ class Service extends Base\Service
      */
     public function createOrderAndGetPreferences(array $input): array
     {
+        // To support backward compatibility of Shopify API version update from 2022-01 to 2022-10
+        $input = $this->versionBasedInput($input);
+
         (new Validator)->validateInput('createShopifyOrderAndPreferences', $input);
 
         // Set Merchant basic auth
@@ -227,6 +238,29 @@ class Service extends Base\Service
         ];
     }
 
+    protected function versionBasedInput(array $input)
+    {
+        if(isset($input['checkout']['totalPriceV2']) === true)
+        {
+            $input['checkout']['totalPrice'] = $input['checkout']['totalPriceV2'];
+        }
+
+        $lineItems = $input['checkout']['lineItems']['edges'];
+
+        foreach ($lineItems as $key => $item)
+        {
+            $item=$item['node'];
+
+            if(is_array($item['variant']['price']) === false)
+            {
+                $price['amount'] = $item['variant']['price'];
+                $input['checkout']['lineItems']['edges'][$key]['node']['variant']['price'] = $price;
+            }
+        }
+
+        return $input;
+    }
+
     protected function createOrderAndGetCheckoutPreferences(
         array $checkout,
         array $cart,
@@ -235,7 +269,7 @@ class Service extends Base\Service
     {
         $cartId = $cart['token'];
 
-        $checkoutAmount = round(floatval($checkout['totalPriceV2']['amount']) * 100);
+        $checkoutAmount = round(floatval($checkout['totalPrice']['amount']) * 100);
 
         $isAutoDiscountApplied = $this->isScriptDiscountApplied($cart);
 
@@ -336,7 +370,7 @@ class Service extends Base\Service
      */
     protected function getScriptData($cartId, $cartPrice, $checkout)
     {
-        $checkoutAmount = round(floatval($checkout['totalPriceV2']['amount']) * 100);
+        $checkoutAmount = round(floatval($checkout['totalPrice']['amount']) * 100);
 
         $cart = (new Cart)->getCartData($cartId);
 
@@ -657,7 +691,7 @@ class Service extends Base\Service
         }
 
 
-        $input['amount'] = $checkoutNode['subtotalPrice'];
+        $input['amount'] = $checkoutNode['subtotalPrice']['amount'];
 
         $countryCode = $checkoutNode['currencyCode'];
 

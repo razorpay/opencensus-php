@@ -17,9 +17,9 @@ use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
 class Client
 {
     // current version supported
-    const STOREFRONT_API_ENDPOINT     = '/api/2022-01/graphql.json';
-    const ADMIN_GRAPHQL_API_ENDPOINT  = '/admin/api/2022-01/graphql.json';
-    const ADMIN_REST_API_ENDPOINT     = '/admin/api/2022-01';
+    const STOREFRONT_API_ENDPOINT     = '/api/2022-10/graphql.json';
+    const ADMIN_GRAPHQL_API_ENDPOINT  = '/admin/api/2022-10/graphql.json';
+    const ADMIN_REST_API_ENDPOINT     = '/admin/api/2022-10';
     const MY_SHOPIFY                  = '.myshopify.com';
     const POST                        = 'POST';
     const GET                         = 'GET';

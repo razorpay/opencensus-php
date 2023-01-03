@@ -402,9 +402,9 @@ class Core extends Base\Core
         {
             $handle = $rate['handle'];
             $title = $rate['title'];
-            $priceV2 = $rate['priceV2'];
-            $amount = $priceV2['amount'];
-            $currencyCode = $priceV2['currencyCode'];
+            $price = $rate['price'];
+            $amount = $price['amount'];
+            $currencyCode = $price['currencyCode'];
 
             if ($this->isMaybeCod($rate) === true)
             {
@@ -950,9 +950,9 @@ class Core extends Base\Core
 
         $shopifyCustomerEmail = $order['order']['customer']['email'];
 
-        $emailMarketing = isset($order['order']['customer']['email_marketing_consent']['state']) ?? null;
+        $emailMarketing = isset($order['order']['customer']['email_marketing_consent']['state']) ? $order['order']['customer']['email_marketing_consent']['state'] : null;
 
-        $smsMarketing = isset($order['order']['customer']['sms_marketing_consent']['state']) ?? null;
+        $smsMarketing = isset($order['order']['customer']['sms_marketing_consent']['state']) ? $order['order']['customer']['sms_marketing_consent']['state'] : null;
 
         $start = millitime();
 
@@ -1422,9 +1422,9 @@ class Core extends Base\Core
     {
         $order = [
             'currency'               => $checkout['currencyCode'],
-            'current_subtotal_price' => $checkout['subtotalPrice'],
+            'current_subtotal_price' => $checkout['subtotalPrice']['amount'],
             'taxes_included'         => $checkout['taxesIncluded'],
-            'total_tax'              => $checkout['totalTax'],
+            'total_tax'              => $checkout['totalTax']['amount'],
             'inventory_behaviour'    => 'decrement_obeying_policy',
             'send_receipt'           => false,
             'note_attributes'        => [
@@ -1462,7 +1462,7 @@ class Core extends Base\Core
                 }
 
                 $lineItems[] = [
-                    'variant_id' => str_replace('gid://shopify/ProductVariant/', '', base64_decode($item['node']['variant']['id'])),
+                    'variant_id' => str_replace('gid://shopify/ProductVariant/', '', $item['node']['variant']['id']),
                     'quantity'   => $item['node']['quantity'],
                     'properties' => $properties
                   ];

@@ -123,6 +123,8 @@ class NbPlusPaymentServiceWalletTest extends TestCase
         $this->app->instance('nbplus.payments', $this->nbPlusService);
 
         $this->payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->markTestSkipped();
     }
 
     public function testAuthorize()

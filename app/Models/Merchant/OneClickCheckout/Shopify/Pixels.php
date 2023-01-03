@@ -41,7 +41,7 @@ class Pixels
                 'id'         => $lineItem['product_id'],
                 'variant_id' => $lineItem['variant_id'],
                 'name'       => $lineItem['title'],
-                'value'      => $lineItem['price'],
+                'value'      => $lineItem['price']['amount'],
                 'quantity'   => $lineItem['quantity'],
             ];
         }
@@ -67,17 +67,17 @@ class Pixels
             $variant = $item['variant'];
 
             $items[] = [
-                'id'         => $this->getContentId($variant['product']['id'], self::PRODUCT),
-                'variant_id' => $this->getContentId($variant['id'], self::VARIANT),
+                'id'         => $variant['product']['id'],
+                'variant_id' => $variant['id'],
                 'name'       => $item['title'],
-                'value'      => $variant['priceV2']['amount'],
+                'value'      => $variant['price']['amount'],
                 'quantity'   => $item['quantity'],
             ];
         }
 
         return [
             'currency'     => $checkout['currencyCode'],
-            'value'        => $checkout['totalPriceV2']['amount'],
+            'value'        => $checkout['totalPrice']['amount'],
             'content_type' => self::PRODUCT,
             'contents'     => $items,
         ];
