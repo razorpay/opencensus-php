@@ -678,6 +678,10 @@ class Core extends Base\Core
             );
         }
 
+        $order = $this->repo->order->findByPublicIdAndMerchant(
+                $input[Payment\Entity::ORDER_ID],
+                $this->merchant);
+
         $paymentLinkId = $input[Payment\Entity::PAYMENT_LINK_ID];
 
         $this->trace->info(
@@ -690,7 +694,7 @@ class Core extends Base\Core
 
         // 3. Validates payment link is active and has payment slots available
         if (($paymentLink->isPayable() === false) or
-            ($this->hasPaymentSlots($paymentLink, $this->order) === false))
+            ($this->hasPaymentSlots($paymentLink, $order) === false))
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_LINK_NOT_PAYABLE,
