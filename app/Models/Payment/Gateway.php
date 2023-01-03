@@ -4702,6 +4702,7 @@ class Gateway
             self::UPI_SBI,
             self::UPI_ICICI,
             self::UPI_AXIS,
+            self::UPI_MINDGATE,
         ];
 
         return (in_array($gateway, $gateways, true));
