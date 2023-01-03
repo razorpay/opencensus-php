@@ -721,11 +721,11 @@ class Service extends Base\Service
         $this->validateFetchAgentDetailResponse($agentDetail);
 
         // replacing the below implementation by findByOrgIdAndEmail since one email can be part of multiple orgs
-        // using Razorpay Org id as default org for now, 
+        // using Razorpay Org id as default org for now,
         // TODO: this needs to be fixed by the code owner to get the right org for the email based on the flow
         // $admin =  (new \RZP\Models\Admin\Admin\Repository)->findByEmail($agentDetail[Constants::CONTACT][Constants::EMAIL]);
         $admin = $this->repo->admin->findByOrgIdAndEmail(
-            Org\Entity::RAZORPAY_ORG_ID, 
+            Org\Entity::RAZORPAY_ORG_ID,
             $agentDetail[Constants::CONTACT][Constants::EMAIL]);
 
         return [
@@ -837,6 +837,29 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+
+    public function insertIntoDB($input)
+    {
+        (new Validator)->validateInput('insert_into_db', $input);
+
+        $ticketEntity = new Entity;
+
+        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $ticketEntity->merchant()->associate($merchant);
+
+        $ticketEntity->setId($input[Entity::ID]);
+
+        $ticketEntity->setTicketId($input[Entity::TICKET_ID]);
+
+        $ticketEntity->setTicketType($input[Entity::TYPE]);
+
+        $ticketEntity->setTicketDetails($input[Entity::TICKET_DETAILS]);
+
+        $this->repo->saveOrFail($ticketEntity);
+
+        return ['success' => true];
     }
 
     public function postTicketV2($type, $input, $keepHtmlTags = false)

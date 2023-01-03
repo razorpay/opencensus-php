@@ -521,6 +521,7 @@ class Entity extends Base\PublicEntity
         self::SIGNUP_SOURCE,
         self::DCC_MARKUP_PERCENTAGE,
         self::PURPOSE_CODE,
+        self::SIGNUP_VIA_EMAIL,
         self::COUNTRY_CODE,
         self::CURRENCY
      ];

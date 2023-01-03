@@ -332,6 +332,28 @@ return [
         ],
     ],
 
+    'testInsertIntoDB' => [
+        'request' => [
+            'url'     => '/fd/insert_into_db',
+            'method'  => 'POST',
+            'content' => [
+                "id"=> "KyvhWca25YAvF8",
+                "merchant_id"=> "10000000000000",
+                "ticket_id"=>"349",
+                "type"=> "support_dashboard",
+                "ticket_details"=> [
+                    "fr_due_by"=> "2022-12-24T08:18:45Z",
+                    "fd_instance"=> "rzpind",
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success'        => true,
+            ],
+        ],
+    ],
+
     'testReplyToTicket' => [
         'request' => [
             'url'     => '/fd/support_dashboard/ticket/razorpayid0012/reply',

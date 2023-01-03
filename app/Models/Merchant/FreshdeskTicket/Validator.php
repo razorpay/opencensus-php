@@ -136,6 +136,14 @@ class Validator extends Base\Validator
         Constants::PER_PAGE     => 'required|integer|max:100',
     ];
 
+    protected static $insertIntoDbRules = [
+        Entity::ID             => 'required|string',
+        Entity::TICKET_ID      => 'required|string',
+        Entity::TYPE           => 'required|string',
+        Entity::MERCHANT_ID    => 'required|string',
+        Entity::TICKET_DETAILS => 'required|array',
+    ];
+
     protected static $createSupportDashboardTicketRules = [
         'name'                                                   => 'sometimes|string',
         'email'                                                  => 'required|email',

@@ -3380,6 +3380,7 @@ class Route
         'dispute_automation'                      => ['post',      'dispute/chargeback_automation/{gateway}',                   'DisputeController@postBatchChargebackAutomation',                                ],
 
         'fd_create_ticket'                        => ['post',      'fd/{type}/ticket',                                          'FreshdeskTicketController@postTicketV2',                      ],
+        'fd_insert_into_db'                       => ['post',      'fd/insert_into_db',                                         'FreshdeskTicketController@insertIntoDB',                      ],
         'internal_fd_create_ticket'               => ['post',      'internal/fd/ticket',                                        'FreshdeskTicketController@internalPostTicketV2',              ],
         'internal_fd_add_note'                    => ['post',      'internal/fd/ticket/{id}/note',                              'FreshdeskTicketController@addNoteToTicket',                  ],
         'internal_fd_fetch_agent_detail_for_ticket' => ['get',     'fd/ticket/{id}/agent',                                      'FreshdeskTicketController@getAgentDetailForFreshdeskTicket'   ],
@@ -5254,6 +5255,7 @@ class Route
         'internal_order_update',
 
         // care
+        'fd_insert_into_db',
         'merchant_ids_fetch_for_user_contact',
         'user_fetch_primary_user_contact',
         'internal_workflow_action_get_multiple',
@@ -14438,6 +14440,7 @@ class Route
         ],
 
         'care' => [
+            'fd_insert_into_db',
             'merchant_ids_fetch_for_user_contact',
             'user_fetch_primary_user_contact',
             'internal_workflow_action_get_multiple',

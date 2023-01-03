@@ -244,6 +244,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -259,6 +260,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -274,6 +276,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -289,6 +292,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -304,6 +308,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -319,6 +324,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -334,6 +340,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -349,6 +356,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -394,6 +402,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -409,6 +418,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -424,6 +434,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -439,6 +450,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -920,6 +932,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -1054,6 +1067,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -1070,6 +1084,7 @@ class CareServiceTest extends TestCase
                     'merchant' => [
                         'id' => '10000000000000',
                         'user_id' => User::MERCHANT_USER_ID,
+                        'user_email' => 'merchantuser01@razorpay.com'
                     ],
                 ],
                 self::ACTUAL_CARE_SERVICE_RESPONSE_BODY   => [
@@ -1116,7 +1131,7 @@ class CareServiceTest extends TestCase
             switch ($testCase[self::AUTH])
             {
                 case 'proxy':
-                    $this->ba->proxyAuth('rzp_live_10000000000000', User::MERCHANT_USER_ID);
+                    $this->ba->proxyAuth('rzp_test_10000000000000', User::MERCHANT_USER_ID);
                     break;
                 case 'cron':
                     $this->ba->cronAuth();
@@ -1167,6 +1182,7 @@ class CareServiceTest extends TestCase
                 'merchant' => [
                     'id' => '10000000000000',
                     'user_id' => User::MERCHANT_USER_ID,
+                    'user_email' => 'merchantuser01@razorpay.com'
                     ],
             ],
             [
@@ -1189,6 +1205,7 @@ class CareServiceTest extends TestCase
                 'merchant' => [
                     'id' => '10000000000000',
                     'user_id' => User::MERCHANT_USER_ID,
+                    'user_email' => 'merchantuser01@razorpay.com'
                 ],
             ],
             [

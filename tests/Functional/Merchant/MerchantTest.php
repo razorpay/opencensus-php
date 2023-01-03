@@ -13397,6 +13397,7 @@ IFSC Code  ICIC0001206
                             'merchant' => [
                                 'id' => '10000000000000',
                                 'user_id' => User::MERCHANT_USER_ID,
+                                'user_email' => 'merchantuser01@razorpay.com',
                             ]
                         ],
                         [

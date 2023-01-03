@@ -295,6 +295,10 @@ class CareServiceClient
         if (empty($user) === false && empty($user->getId()) === false)
         {
             $input['merchant']['user_id']  = $user->getId();
+
+            if ($user->isSignupViaEmail() === true) {
+                $input['merchant']['user_email'] = $user->getEmail();
+            }
         }
 
         return $input;

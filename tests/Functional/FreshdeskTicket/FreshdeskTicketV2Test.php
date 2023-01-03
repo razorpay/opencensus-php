@@ -206,6 +206,17 @@ class FreshdeskTicketV2Test extends TestCase
         $this->startTest();
     }
 
+    public function testInsertIntoDB()
+    {
+        $this->ba->careAppAuth();
+
+        $this->startTest();
+
+        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+
+        $this->assertEquals('KyvhWca25YAvF8', $ticket['id']);
+    }
+
     public function testGetByIdProhibitedShouldFail()
     {
         $this->shouldNotReceiveFresdeskRequest();
