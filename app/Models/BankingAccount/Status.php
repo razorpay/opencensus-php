@@ -793,7 +793,7 @@ class Status
         self::VERIFICATION_CALL => [
             self::IN_PROCESSING => Activation\Detail\Entity::BANK,
             self::CUSTOMER_CALL_ATTEMPTED => Activation\Detail\Entity::BANK,
-            self::CUSTOMER_NOT_RESPONDING => Activation\Detail\Entity::SALES,
+            self::CUSTOMER_NOT_RESPONDING =>  Entity::OPS_MX_POC,
             self::CUSTOMER_NOT_INTERESTED => Activation\Detail\Entity::SALES,
             self::NEEDS_CLARIFICATION_FROM_RZP => Activation\Detail\Entity::SALES,
             self::FOLLOW_UP_REQUESTED_BY_MERCHANT => Activation\Detail\Entity::BANK,
@@ -802,17 +802,15 @@ class Status
             self::ASSIGNED_TO_INSIGNIA => Activation\Detail\Entity::BANK,
             self::ASSIGNED_TO_PCARM => Activation\Detail\Entity::BANK,
             self::ASSIGNED_TO_BRANCH => Activation\Detail\Entity::BANK,
-            self::CUSTOMER_NOT_RESPONDING_EXTERNAL => Entity::OPS_MX_POC,
         ],
         self::DOC_COLLECTION => [
             self::VISIT_DUE => Activation\Detail\Entity::BANK,
-            self::CUSTOMER_NOT_RESPONDING => Activation\Detail\Entity::SALES,
+            self::CUSTOMER_NOT_RESPONDING => Entity::OPS_MX_POC,
             self::VISIT_RESCHEDULED => Activation\Detail\Entity::BANK,
             self::FOLLOW_UP_REQUESTED_BY_MERCHANT => Activation\Detail\Entity::BANK,
             self::FOLLOW_UP_PARTIAL_AC_DOCS_AVAILABLE => Activation\Detail\Entity::BANK,
             self::FOLLOW_UP_API_DOCS_UNAVAILABLE => Activation\Detail\Entity::BANK,
             self::PICKED_UP_DOCS => Activation\Detail\Entity::BANK,
-            self::CUSTOMER_NOT_RESPONDING_EXTERNAL => Entity::OPS_MX_POC,
         ],
         self::ACCOUNT_OPENING => [
             self::IN_REVIEW => Activation\Detail\Entity::BANK,

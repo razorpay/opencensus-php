@@ -11521,6 +11521,8 @@ class BankingAccountTest extends TestCase
             'activation_detail' => [
                 BankingAccount\Entity::OPS_MX_POC_ID => $adminId,
             ],
+            BankingAccount\Entity::STATUS     => Status::ARCHIVED,
+            BankingAccount\Entity::SUB_STATUS => Status::IN_PROCESS,
         ];
 
         $this->updateBankingAccount($bankingAccount, $bankingAccountData);
@@ -11532,6 +11534,9 @@ class BankingAccountTest extends TestCase
             'response' => [
                 'content' => [
                     'id' => 'bacc_' . $bankingAccount->getId(),
+                    'banking_account_activation_details' => [
+                        'assignee_team' => BankingAccount\Entity::OPS_MX_POC
+                    ]
                 ],
             ]
         ];
