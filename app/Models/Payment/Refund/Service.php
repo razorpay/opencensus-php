@@ -1159,6 +1159,11 @@ class Service extends Base\Service
         return $payment->merchant->getEnabledFeatures();
     }
 
+    protected function getPaymentExtraDataOrgFeatures(Payment\Entity $payment)
+    {
+        return $payment->merchant->org->getEnabledFeatures();
+    }
+
     protected function getPaymentExtraDataPayerBankAccount(Payment\Entity $payment)
     {
         if ($payment->isBankTransfer() === true)
