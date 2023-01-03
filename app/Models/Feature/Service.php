@@ -1079,16 +1079,21 @@ class Service extends Base\Service
     {
         $featureParams = new Base\Collection;
 
+        $featureNames = $input[Constants::NAMES];
+
         //
         // Allow only the admins to provide the entity_type and entity_id from the input.
         // If the merchant is hitting the route directly, only allow him to update his own account features.
         //Allowing Banking account service to add the feature
+
+        // temp: Currently have to allow enabling of ONLY_DS flag for unauthenticated merchants to stick with compliance
         if (($this->app['basicauth']->isAdminAuth() === true) or
             ($this->app['basicauth']->isWorkflowsServiceApp() === true) or
             ($this->app['basicauth']->isBankingAccountServiceApp() === true) or
             ($this->app['basicauth']->isCapitalCollectionsApp() === true) or
             ($this->app['basicauth']->isCapitalCardsApp() === true) or
-            ($this->app['basicauth']->isCapitalLOCApp() === true))
+            ($this->app['basicauth']->isCapitalLOCApp() === true) or
+            (in_array( Constants::ONLY_DS, $featureNames) === true))
         {
             $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
 
@@ -1100,8 +1105,6 @@ class Service extends Base\Service
 
             $entityId = $this->merchant->getId();
         }
-
-        $featureNames = $input[Constants::NAMES];
 
         foreach ($featureNames as $featureName)
         {

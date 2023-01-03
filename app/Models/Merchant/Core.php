@@ -146,7 +146,25 @@ class Core extends Base\Core
 
     public function create($input, $merchantDetailInputData = [])
     {
+        $isOnlyDsMerchant = false;
+
+        if (isset($merchantDetailInputData['token_data']) === true)
+        {
+            $input['token_data'] = $merchantDetailInputData['token_data'];
+
+            if ((isset($merchantDetailInputData['token_data']['form_data']['ds']) === true) and
+                ($merchantDetailInputData['token_data']['form_data']['ds'] === true))
+            {
+                $isOnlyDsMerchant = true;
+            }
+        }
+
+
         (new UserCore())->validateActivation($input);
+
+        unset($input['token_data']);
+
+        unset($merchantDetailInputData['token_data']);
 
         $merchant = (new Merchant\Entity)->build($input);
 
@@ -201,6 +219,18 @@ class Core extends Base\Core
         $this->upsertLegalEntity($merchant, []);
 
         $this->addToDefaultUnclaimedGroup($merchant);
+
+        if ($isOnlyDsMerchant === true)
+        {
+            $featureParams = [
+                Feature\Entity::ENTITY_ID    => $merchant['id'],
+                Feature\Entity::ENTITY_TYPE  => 'merchant',
+                Feature\Entity::NAMES        => ['only_ds'],
+                Feature\Entity::SHOULD_SYNC  => false
+            ];
+
+            (new Feature\Service)->addFeatures($featureParams);
+        }
 
         // Updating the existing customer info and setting activated to false
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);

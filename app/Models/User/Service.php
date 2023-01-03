@@ -540,6 +540,8 @@ class Service extends Base\Service
             $merchantInputData[Merchant\Entity::ORG_ID] = $heimdallTokenData[AdminLead\Entity::ORG_ID];
             // Map merchant to the admin that generated his lead (invited merchant to sign up)
             $merchantInputData[Merchant\Entity::ADMINS] = [$heimdallTokenData[AdminLead\Entity::ADMIN_ID]];
+            // set token data as we need it to validate merchant signup
+            $merchantDetailInputData['token_data'] = $heimdallTokenData;
         }
 
         $sendOtpEmail = filter_var($this->app['request']->header(RequestHeader::X_SEND_EMAIL_OTP, false),
@@ -778,6 +780,8 @@ class Service extends Base\Service
     )
     {
         $merchantData = $this->merchantService->create($merchantInputData, $merchantDetailInputData);
+
+        unset($merchantDetailInputData['token_data']);
 
         if (empty($referrer) === false)
         {

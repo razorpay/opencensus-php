@@ -351,6 +351,15 @@ class Core extends Base\Core
                 Entity::SHOULD_SYNC => $shouldSync
             ]);
 
+        // Merchant shouldn't be able to remove this feature for compliance of DS only merchants
+        if ($feature->toArrayPublic()['name'] === 'only_ds')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+                null
+            );
+        }
+
         // Workflow
         list($original, $dirty) = [
             ['feature' => $feature->getName()],

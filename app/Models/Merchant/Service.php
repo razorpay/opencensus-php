@@ -278,6 +278,8 @@ class Service extends Base\Service
         /** @var Entity $merchant */
         $merchant = $this->core()->create($input, $merchantDetailInputData);
 
+        unset($merchantDetailInputData['token_data']);
+
         // merchant info
         $merchant_org = $merchant->org;
 
