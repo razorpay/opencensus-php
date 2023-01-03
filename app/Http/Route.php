@@ -523,6 +523,7 @@ class Route
         'terminal_edit_external_org'               => ['put',      'terminals/{id}/external_org',                    'TerminalController@putTerminal'                                    ],
         'terminal_restore'                         => ['put',      'terminals/{id}/restore',                         'TerminalController@restoreTerminal',                               ],
         'terminal_toggle'                          => ['put',      'terminals/{id}/toggle',                          'TerminalController@toggleTerminal'                                 ],
+        'terminal_toggle_internal'                 => ['post' ,    'terminals/{id}/{action}',                        'TerminalController@toggleTerminalInternal'                         ],
         'terminal_fill_enabled_wallets'            => ['patch',    'terminals/fill/enabled_wallets',                 'TerminalController@fillEnabledWallets',                           ],
         'terminal_update_bulk'                     => ['patch',    'terminals/bulk',                                 'TerminalController@updateTerminalsBulk',                           ],
         'terminal_add_merchant'                    => ['put',      'terminals/{id}/merchants/{mid}',                 'TerminalController@addMerchant'                                    ],
@@ -5514,6 +5515,7 @@ class Route
         'internal_1cc_configs_get',
         'internal_1cc_shopify_customer_addresses_get',
         'raw_address_create_bulk',
+        'terminal_toggle_internal',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.

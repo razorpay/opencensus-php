@@ -833,6 +833,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_BOOST_INVALID                                = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                                  = 'TERMINAL_USED_BEFORE';
     const TERMINAL_BANK_FILTER_DIFF                             = 'TERMINAL_BANK_FILTER_DIFF';
+    const TERMINAL_QUEUE_DATA                                   = 'TERMINAL_QUEUE_DATA';
+    const TERMINAL_QUEUE_DISPATCH_FAILURE                       = 'TERMINAL_QUEUE_DISPATCH_FAILURE';
+    const TERMINAL_ENABLE_REMINDER_FAILURE                      = 'TERMINAL_ENABLE_REMINDER_FAILURE';
+    const TERMINAL_ENABLE_REMINDER_SUCCESS                      = 'TERMINAL_ENABLE_REMINDER_SUCCESS';
+    const TERMINAL_QUEUE_DISABLE_SUCCESS                        = 'TERMINAL_QUEUE_DISABLE_SUCCESS';
+    const TERMINAL_QUEUE_DISABLE_FAILURE                        = 'TERMINAL_QUEUE_DISABLE_FAILURE';
+    const TERMINAL_QUEUE_DISABLE_DELETE                         = 'TERMINAL_QUEUE_DISABLE_DELETE';
 
     const THROTTLE_REQUEST_THROTTLED                            = 'THROTTLE_REQUEST_THROTTLED';
     const THROTTLE_REQUEST_BLOCKED                              = 'THROTTLE_REQUEST_BLOCKED';

@@ -16,6 +16,7 @@ use RZP\Exception;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Http\RequestHeader;
+use RZP\Jobs\TerminalDisable;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
@@ -4512,6 +4513,77 @@ class Processor
                     ]
                 );
             }
+        }
+
+        if ($this->shouldDisableUpiTerminal($payment, $error) === true)
+        {
+            $this->disableUpiTerminalIfRequired($payment);
+        }
+    }
+
+    protected function shouldDisableUpiTerminal(Payment\Entity $payment, $error)
+    {
+        if ($payment->getMethod() !== Payment\Method::UPI)
+        {
+            return false;
+        }
+
+        if ($error === null)
+        {
+            return false;
+        }
+
+        $disableErrorCodes = [
+            'U16',
+        ];
+
+        $gatewayErrorCode = $error->getGatewayErrorCode();
+
+        $shouldDisable = in_array($gatewayErrorCode, $disableErrorCodes, true);
+
+        // Return after gateway error code check for non-prod envs
+        if (app()->isEnvironmentProduction() === false)
+        {
+            return $shouldDisable;
+        }
+
+        $variant = $this->app['razorx']->getTreatment(
+            $this->app['request']->getTaskId(),
+            Merchant\RazorxTreatment::DISABLE_UPI_TERMINAL,
+            $this->app['rzp.mode']);
+
+        return (($variant === 'on') and $shouldDisable);
+    }
+
+    protected function disableUpiTerminalIfRequired(Payment\Entity $payment)
+    {
+        if ($payment->getMethod() !== Payment\Method::UPI)
+        {
+            return ;
+        }
+
+        $dispatchData = [
+            'mode'          =>  $this->mode,
+            'terminal_id'   =>  $payment->getTerminalId(),
+            'payment_id'    =>  $payment->getId(),
+        ];
+
+        $this->trace->info(
+            TraceCode::TERMINAL_QUEUE_DATA,
+            $dispatchData
+        );
+
+        try
+        {
+            TerminalDisable::dispatch($dispatchData);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TERMINAL_QUEUE_DISPATCH_FAILURE
+            );
         }
     }
 

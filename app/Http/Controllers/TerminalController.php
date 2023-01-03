@@ -93,6 +93,17 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function toggleTerminalInternal(string $id, string $action)
+    {
+        $input = [
+            'toggle' => ($action == 'disable') ? 0 : 1
+        ];
+
+        $data = $this->service()->toggleTerminal($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function addMerchant(string $id, string $mid)
     {
         $data = $this->service()->addMerchantToTerminal($id, $mid);
