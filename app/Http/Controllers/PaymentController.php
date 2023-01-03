@@ -14,6 +14,7 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 use RZP\Services\CredcaseSigner;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Analytics\Service as PaymentAnalyticsService;
 
 class PaymentController extends Controller
@@ -24,7 +25,10 @@ class PaymentController extends Controller
 
     const PUBLIC_KEY = 'public_key';
 
-    public function getPayment($id)
+    const BARRICADE_ACTION = 'merchant_integration_fetch_verify';
+    const BARRICADE_MERCHANT_INTEGRATION_FETCH_ID_FLOW = 'barricade_merchant_integration_fetch_id_flow';
+
+        public function getPayment($id)
     {
         $input = Request::all();
 
@@ -44,6 +48,7 @@ class PaymentController extends Controller
         {
             $this->trace->info(TraceCode::PAYMENT_SEGMENT_EVENT_PUSH_FAILED, []);
         }
+        $this->pushForBarricade($payment, $id);
 
         return ApiResponse::json($payment);
     }
@@ -284,6 +289,8 @@ class PaymentController extends Controller
     public function getPaymentStatusForAsyncPayments($id)
     {
         $data = $this->service()->fetchStatus($id);
+
+        $this->pushForBarricade($data, $id);
 
         return ApiResponse::json($data);
     }
@@ -866,5 +873,42 @@ class PaymentController extends Controller
         $data = $this->service()->updateB2BInvoiceDetails($id,$input);
 
         return ApiResponse::json($data);
+    }
+
+    protected function pushForBarricade($data, $id): void
+    {
+        $sqsPush = $this->app->razorx->getTreatment($id, self::BARRICADE_MERCHANT_INTEGRATION_FETCH_ID_FLOW, 'live');
+
+        if ($sqsPush === 'on') {
+
+            $data['payment_details'] = [
+                'id' => $id,
+            ];
+            $data['action'] = [
+                'action' => self::BARRICADE_ACTION
+            ];
+
+            try {
+                $waitTime = 600;
+                $queueName = $this->app['config']->get('queue.barricade_verify.' . 'live');
+                $this->app['queue']->connection('sqs')->later($waitTime, "Barricade Queue Push", json_encode($data), $queueName);
+
+
+                $this->trace->info(TraceCode::BARRICADE_SQS_PUSH_SUCCESS,
+                    [
+                        'queueName' => $queueName,
+                        'data' => $data,
+                    ]);
+
+            } catch (\Throwable $ex) {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::CRITICAL,
+                    TraceCode::BARRICADE_SQS_PUSH_FAILURE,
+                    [
+                        'Data' => $data,
+                    ]);
+            }
+        }
     }
 }
