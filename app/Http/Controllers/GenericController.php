@@ -31,6 +31,11 @@ class GenericController extends Controller
         '^invoices\/inv_[[:alnum:]]{14}\/cancel$'
     ];
 
+    const EPOS_BLOCKED_ROUTES_REGEX = [
+        '^invoices$',
+        '^invoices\/inv_[[:alnum:]]{14}\/notify_by\/sms$',
+    ];
+
     const USERS_LOGIN_SIGNUP_ROUTES = [
         'users/login',
         'users/register',
@@ -77,6 +82,25 @@ class GenericController extends Controller
 
     public function handleAny($mode, $path)
     {
+        // Epos App Deprecated. Blocking Signin for Epos App Users
+        $mobileApp = \Request::header('X-Razorpay-App');
+
+        $eposBlockedRoutesRegex = implode('|', self::EPOS_BLOCKED_ROUTES_REGEX);
+
+        if ((empty($mobileApp) === false) and
+            ($mobileApp === 'Epos') and
+            (preg_match('/' . $eposBlockedRoutesRegex . '/', $path, $pathMatches) == true))
+        {
+            $response = [
+                [
+                    "" => " APP DEPRECATED. Download Razorpay App from Play store.",
+                    "internal_error_code" => "0",
+                ]
+            ];
+
+            return AppResponse::jsonResponse($response);
+        }
+
         $allRequestHeaders = Request::header();
         $input = Input::all();
 

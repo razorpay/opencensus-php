@@ -673,6 +673,22 @@ class UserController extends Controller
      */
     public function postSignin()
     {
+        // Epos App Deprecated. Blocking Signin for Epos App Users
+        $mobileApp = \Request::header('X-Razorpay-App');
+
+        if ((empty($mobileApp) === false) and
+            ($mobileApp === 'Epos'))
+        {
+            $response = [
+                [
+                    "" => " APP DEPRECATED. Download Razorpay App from Play store.",
+                    "internal_error_code" => "0",
+                ]
+            ];
+
+            return AppResponse::jsonResponse($response);
+        }
+
         $timeStart = microtime(true);
 
         $input = Input::all();
