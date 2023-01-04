@@ -176,6 +176,7 @@ class ProviderCode
     const OKCREDIT           = 'axb';
     const YESG               = 'yesg';
     const AXB                = 'axb';
+    const FAM                = 'fam';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -343,6 +344,7 @@ class ProviderCode
         self::OKCREDIT           => IFSC::UTIB,
         self::YESG               => IFSC::YESB,
         self::AXB                => IFSC::UTIB,
+        self::FAM                => self::PPIW,
     ];
 
     /**

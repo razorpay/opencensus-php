@@ -3610,6 +3610,7 @@ trait PaymentTrait
             "equitasbank",
             "yesg",
             "axb",
+            "fam",
         ];
 
         return $vpaHandles;
