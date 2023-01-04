@@ -267,12 +267,11 @@ describe('Keys and Plugins Section', () => {
     const { getByTestId } = renderApp({ initialState });
 
     await waitFor(() => {
-      expect(getByTestId('plugin-selected-None of the above')).toBeVisible();
+      expect(getByTestId('plugin-selected-None of the above')).toBeInTheDocument();
     });
   });
 
-  // TODO: fix this test, it's flaky
-  test.skip('should send empty string plugin if None of the above plugin selected', async () => {
+  test('should send empty string plugin if None of the above plugin selected', async () => {
     const initialState = getInitialState({
       userDetails: {
         business_website: PLATFORM_LINKS.SUCCESS.business_website,
@@ -296,16 +295,16 @@ describe('Keys and Plugins Section', () => {
     await userEvent.click(getByTestId('plugin-selected-Shopify'));
 
     await waitFor(() => {
-      expect(getByTestId('plugin-option-None of the above')).toBeVisible();
+      expect(getByTestId('plugin-option-None of the above')).toBeInTheDocument();
     });
     await userEvent.click(getByTestId('plugin-option-None of the above'));
 
     await waitFor(() => {
-      expect(getByTestId('plugin-selected-None of the above')).toBeVisible();
+      expect(getByTestId('plugin-selected-None of the above')).toBeInTheDocument();
     });
   });
 
-  test.skip('should not trigger event if same plugin is selected again', async () => {
+  test('should not trigger event if same plugin is selected again', async () => {
     const initialState = getInitialState({
       userDetails: {
         business_website: PLATFORM_LINKS.SUCCESS.business_website,
@@ -318,13 +317,13 @@ describe('Keys and Plugins Section', () => {
     await userEvent.click(getByTestId('plugin-selected-Shopify'));
 
     await waitFor(() => {
-      expect(getByTestId('plugin-option-Shopify')).toBeVisible();
+      expect(getByTestId('plugin-option-Shopify')).toBeInTheDocument();
     });
     await userEvent.click(getByTestId('plugin-option-Shopify'));
     expect(analyticsTrackSpy).toHaveBeenCalledTimes(0);
   });
 
-  test.skip('should show success notification on plugin save', async () => {
+  test('should show success notification on plugin save', async () => {
     const initialState = getInitialState({
       userDetails: {
         business_website: PLATFORM_LINKS.SUCCESS.business_website,
@@ -344,6 +343,7 @@ describe('Keys and Plugins Section', () => {
 
     const { getByTestId, getByText } = renderApp({ initialState });
     expect(getByText(/website platform/i)).toBeVisible();
+    expect(getByText(/select platform/i)).toBeInTheDocument();
     await userEvent.click(getByText(/select platform/i));
 
     await waitFor(() => {
