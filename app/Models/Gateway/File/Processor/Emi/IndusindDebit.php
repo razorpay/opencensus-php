@@ -210,6 +210,7 @@ class IndusindDebit extends Base
                 'Store City'                   => '',
                 'Store State'                  => '',
                 'Card Pan'                     => '',
+                'Partner Name'                 => 'Razorpay',
             ];
 
             $totalTransactions++;
