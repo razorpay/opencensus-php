@@ -212,6 +212,8 @@ class Checkout
 
         $this->fill1ccCouponDropOffExperiment($merchant, $data);
 
+        $this->fill1ccMultipleShippingExperiment($merchant, $data);
+
         return $data;
     }
     protected function fillMerchantPolicyPage(Entity $merchant, array & $data): void
@@ -2228,4 +2230,28 @@ class Checkout
             $data['1cc_coupon_drop_off_exp'] = null;
         }
     }
+
+    protected function fill1ccMultipleShippingExperiment(Entity $merchant, array &$data): void
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return;
+        }
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.1cc_multiple_shipping_splitz_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $data['1cc_multiple_shipping'] = $response['response']['variant']['name'] ?? null;
+        }
+        catch (\Throwable $e)
+        {
+            $data['1cc_multiple_shipping'] = null;
+        }
+    }
+
 }
