@@ -347,6 +347,41 @@ class SalesForceServiceTest extends OAuthTestCase {
         $this->salesForceService->raiseEvent($merchant, $salesForceRequestDTO);
     }
 
+    public function testSalesforceRequestWithBankingWidgetCampaignId() {
+        //Given
+        $merchantData = $this->getMerchantData();
+        $merchant = $this->createConfiguredMock(Entity::class, $merchantData);
+
+        $salesForceRequestDTO = new SalesForceEventRequestDTO();
+        $salesForceRequestDTO->setEventType(new SalesForceEventRequestType('CURRENT_ACCOUNT_INTEREST'));
+        $salesForceRequestDTO->setEventProperties(
+            array_merge($this->getEventProperties() , [
+                'Campaign_ID' => 'abced_PG_X_Banking_Widget_abcde'
+            ]));
+
+        $expectedPayload = [
+            'merchant_id' => '1DefeDEQE',
+            'name' => 'Aditya',
+            'email' => 'aditya@example.com',
+            'activated' => 1,
+            'signup_date' => '2020-08-19',
+            'event_submission_date' => date('Y-m-d'),
+            'interested_in_current_account' => 1,
+            'pin_code' => '560079',
+            'average_monthly_balance' => '5000',
+            'current_ca' => 'HDFC',
+            'use_case' => 'Salary',
+            'Campaign_ID' => 'abced_PG_X_Banking_Widget_abcde',
+            'source_detail' => 'x_dashboard',
+            'X_Channel' => 'PG',
+            'X_Subchannel' => 'Banking_Widget',
+        ];
+
+        $this->salesForceClient->expects($this->once())->method('sendEventToSalesForce')->with($expectedPayload);
+
+        $this->salesForceService->raiseEvent($merchant, $salesForceRequestDTO);
+    }
+
     private function createTraceMock() :\Razorpay\Trace\Logger
     {
         $webProcessor = $this->app['trace']->processor('web');

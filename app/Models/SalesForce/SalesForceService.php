@@ -220,7 +220,7 @@ class SalesForceService extends Base\Service {
                     $eventPayload['X_Channel']    = XChannelDefinition\Channels::PG;
                     $eventPayload['X_Subchannel'] = XChannelDefinition\Channels::PG_NITRO;
                 }
-                elseif ($campaignId === XChannelDefinition\Constants::SF_CAMPAIGN_ID_BANKING_WIDGET)
+                elseif (str_contains($campaignId, XChannelDefinition\Constants::SF_CAMPAIGN_ID_BANKING_WIDGET))
                 {
                     $this->xChannelDefinitionService->storeChannelAndSubchannel($merchant, XChannelDefinition\Channels::PG, XChannelDefinition\Channels::PG_BANKING_WIDGET);
                     $eventPayload['X_Channel']    = XChannelDefinition\Channels::PG;

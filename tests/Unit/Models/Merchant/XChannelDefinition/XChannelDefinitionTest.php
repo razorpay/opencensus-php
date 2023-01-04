@@ -44,7 +44,7 @@ class XChannelDefinitionTest extends TestCase
         $testDataset = [
             [
                 'input'          => [
-                    'website'          => 'razorpay.com/x/current-accounts/',
+                    'website'          => 'xproduct.razorpay.com/current-account-for-startups/',
                     'final_utm_source' => 'blog',
                     'final_utm_medium' => 'cta',
                 ],
@@ -71,6 +71,17 @@ class XChannelDefinitionTest extends TestCase
                 'expectedResult' => [
                     Constants::CHANNEL    => Channels::PG,
                     Constants::SUBCHANNEL => Channels::PG_APP_SWITCHER,
+                ]
+            ],
+            [
+                'input'          => [
+                    'website'          => 'razorpay.com/current-account-for-startups/',
+                    'final_utm_source' => 'blog',
+                    'final_utm_medium' => 'cta',
+                ],
+                'expectedResult' => [
+                    Constants::CHANNEL    => Channels::PG,
+                    Constants::SUBCHANNEL => Channels::SUB_CHANNEL_BLOG,
                 ]
             ],
             [

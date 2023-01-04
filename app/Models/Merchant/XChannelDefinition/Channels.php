@@ -135,6 +135,27 @@ class Channels
         self::UNMAPPED           => [],
     ];
 
+    // defining this separately since PG doesn't have same websites for all sub-channels
+    // matching has to be strict on start & end of str.
+    public static $refWebsitesForPG = [
+        '/^razorpay.com\/x\/current-accounts\/$/',
+        '/^razorpay.com\/x\/$/',
+        '/^razorpay.com\/x\/payout-links\/$/',
+        '/^razorpay.com\/x\/tax-payments\/$/',
+        '/^razorpay.com\/x\/mobile-app\/$/',
+        '/^razorpay.com\/x\/accounting-payouts\/$/',
+        '/^razorpay.com\/x\/accounting-payouts\/quickbooks\/$/',
+        '/^razorpay.com\/x\/accounting-payouts\/tally-payouts\/$/',
+        '/^razorpay.com\/docs\/x\/$/',
+        '/^razorpay.com\/blog\/category\/business-banking\/$/',
+        '/^razorpay.com\/x\/tds-online-payment\/$/',
+        '/^razorpay.com\/watch-banking\/$/',
+        '/^razorpay.com\/current-account-for-startups\/$/',
+        '/^razorpay.com\/x\/neobank-report-for-smes-in-india\/$/',
+        '/^razorpay.com\/x\/for-yc-startups\/$/',
+        '/^razorpay.com\/demo\/$/',
+    ];
+
     // Mapping of default subchannels and their criteria
     public static $defaultSubChannels = [
         self::SUB_CHANNEL_BANNER           => [
@@ -192,6 +213,18 @@ class Channels
             Constants::SUBCHANNEL_PRIORITY        => 1,
         ],
     ];
+
+    // returns defaultSubchannels array after adding $refWebsites to each member
+    public static function getDefaultSubChannelsWithRefWebsiteList(array $refWebsites) : array
+    {
+        $subChannelsWithRefWebsites =  self::$defaultSubChannels;
+
+        foreach ($subChannelsWithRefWebsites as $subChannel => $properties) {
+            $subChannelsWithRefWebsites[$subChannel][Constants::REF_WEBSITE] = $refWebsites;
+        }
+
+        return $subChannelsWithRefWebsites;
+    }
 
     /**
      * Mapping of channels to sub-channels and their criteria. Only certain channels have been added here which are
@@ -262,6 +295,7 @@ class Channels
                     Constants::REF_WEBSITE                => [],
                     Constants::SUBCHANNEL_PRIORITY        => 6,
                 ],
+                ...self::getDefaultSubChannelsWithRefWebsiteList(self::$refWebsitesForPG)
             ],
             self::DIRECTX         => self::$defaultSubChannels,
             self::DIRECTX_CA      => self::$defaultSubChannels,
@@ -271,5 +305,6 @@ class Channels
             self::OTHERS          => self::$defaultSubChannels,
             self::UNMAPPED        => self::$defaultSubChannels,
         ];
+
     }
 }
