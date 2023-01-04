@@ -88,7 +88,6 @@ class Curl implements IntegrationInterface
             'time_to_sslhandshake_in_secs'      => 'appconnect_time',
             'primary_ip'                        => 'primary_ip',
             'uri'                               => 'url'
-            'uri'                               => 'url'
         ];
 
         $attrs = [];
