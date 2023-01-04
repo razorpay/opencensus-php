@@ -85,6 +85,7 @@ class Curl implements IntegrationInterface
             'time_to_namelookup_in_secs'        => 'namelookup_time',
             'time_to_pretransfer_in_secs'       => 'pretransfer_time',
             'time_to_starttransfer_in_secs'     => 'starttransfer_time',
+            'time_to_sslhandshake_in_secs'      => 'appconnect_time',
             'primary_ip'                        => 'primary_ip',
             'uri'                               => 'url'
         ];
