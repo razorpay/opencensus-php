@@ -617,23 +617,10 @@ class Processor
                 return false;
             }
 
+            //While enabling this flow make sure to move this after tokenised payment flow for testing fee bearer
             if ($merchant->isFeeBearerCustomerOrDynamic() === true )
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                return ($result === 'on');
-            }
-
-            if ($merchant->isFeatureEnabled('openwallet') === true)
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::OPEN_WALLET_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
-
-                return ($result === 'on');
-            }
-
-            if (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false)
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
                 return ($result === 'on');
             }
@@ -764,10 +751,25 @@ class Processor
                 }
             }
 
+
             if ((app()->runningUnitTests() === true) and
                 ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false))
             {
                 return false;
+            }
+
+            if ($merchant->isFeatureEnabled('openwallet') === true)
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::OPEN_WALLET_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
+            }
+
+            if (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false)
+            {
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
             }
 
             if ($merchant->isFeatureEnabled('raas') === true)
