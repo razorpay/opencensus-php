@@ -16,6 +16,7 @@ use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Models\Merchant\Balance\Type as ProductType;
+use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Wallet;
@@ -89,6 +90,7 @@ use Razorpay\Spine\DataTypes\Dictionary;
 use Razorpay\OAuth\Client as OAuthClient;
 use RZP\Models\Partner\RateLimitConstants;
 use RZP\Models\Comment\Core as CommentCore;
+use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Settlement\SettlementTrait;
 use RZP\Models\Batch\Header as BatchHeader;
 use RZP\Models\Batch\Status as BatchStatus;
@@ -617,6 +619,13 @@ class Service extends Base\Service
             throw $e;
         }
     }
+
+    public function invalidateAffectedOwnersCache(string $merchantId)
+    {
+        (new Stork('live'))->invalidateAffectedOwnersCache($merchantId);
+        (new Stork('test'))->invalidateAffectedOwnersCache($merchantId);
+    }
+
 
     public function setPaymentConfigForSubM(string $partnerId): bool
     {
@@ -6586,6 +6595,20 @@ class Service extends Base\Service
                 $this->communicateSubMerchantCreation($subMerchant, $merchant, $product, $newUser, $createdNew);
             }
         });
+
+        /**
+         *  Slack thread - https://razorpay.slack.com/archives/C021KESTRLH/p1671430073261459
+         *  Jira - https://razorpay.atlassian.net/browse/PRTS-2171 and
+         *  https://razorpay.atlassian.net/browse/PRTS-1085
+         *  Sometime stork calls api for cache even before db parent transaction finished. So sending cache invalidation
+         *  request again to stork.
+         */
+
+        \Event::dispatch(new TransactionalClosureEvent(function () use ($subMerchant) {
+            Tracer::inspan(['name' => HyperTrace::SUBMERCHANT_STORK_INVALIDATE_CACHE_REQUEST], function() use ($subMerchant) {
+                $this->invalidateAffectedOwnersCache($subMerchant->getId());
+            });
+        }));
 
         return $this->getSubMerchantResponseArray($merchant, $subMerchant, $product);
     }

@@ -146,10 +146,6 @@ class Core extends Merchant\Core
             }
         });
 
-        // since response from Stork during affected owners cache invalidation can come even before the above DB transaction
-        // completion, send cache invalidation request again. Jira - https://razorpay.atlassian.net/browse/PRTS-1085
-        $this->invalidateAffectedOwnersCache($subMerchant->getId());
-
         $subMerchantDetails = (new Detail\Core)->getMerchantDetails($subMerchant);
 
         $currentActivationStatus = $subMerchantDetails->getActivationStatus();
@@ -319,12 +315,6 @@ class Core extends Merchant\Core
         return $this->repo
                     ->merchant
                     ->fetchSubmerchantsByAppIds($appIds, $input, $relations);
-    }
-
-    public function invalidateAffectedOwnersCache(string $merchantId)
-    {
-        (new Stork('live'))->invalidateAffectedOwnersCache($merchantId);
-        (new Stork('test'))->invalidateAffectedOwnersCache($merchantId);
     }
 
     public function createAMCLinkedAccountViaAdmin(array $merchantIds)

@@ -61,12 +61,6 @@ class Core extends Merchant\Core
             return $account;
         });
 
-        Tracer::inspan(['name' => HyperTrace::ACCOUNT_V2_INVALIDATE_CACHE], function () use ($accountCoreV1, $account) {
-        // since response from Stork during affected owners cache invalidation can come even before the above DB transaction
-        // completion, send cache invalidation request again. Jira - https://razorpay.atlassian.net/browse/PRTS-1085
-        $accountCoreV1->invalidateAffectedOwnersCache($account->getId());
-        });
-
         $merchantDetails = $account->merchantDetail;
         $dimensions = $this->getDimensionsForAccountV2Metrics($merchantDetails, $partner);
 

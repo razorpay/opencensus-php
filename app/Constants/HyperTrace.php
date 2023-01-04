@@ -255,4 +255,6 @@ class HyperTrace
     const MAILABLE_SEND_VIA_STORK        = 'mailable.send_via_stork';
     const MAILABLE_MAILER_SEND           = 'mailable.mailer_send';
     const MAILABLE_SHOULD_SEND_VIA_STORK = 'mailable.should_send_via_stork';
+
+    const SUBMERCHANT_STORK_INVALIDATE_CACHE_REQUEST                          = 'submerchant.stork.invalidate_cache_request';
 }
