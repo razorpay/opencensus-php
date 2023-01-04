@@ -240,6 +240,16 @@ export const formatFromNow = (unixSeconds) => moment(unixSeconds * 1e3).fromNow(
 export const daysFromToday = (date) =>
   Math.ceil((Number(date) - new Date().getTime() / 1000) / 86400);
 
+export const getCurrentFinancialYear = () => {
+  const today = new Date();
+  const currentMonth = today.getMonth() + 1;
+  if (currentMonth <= 3) {
+    return today.getFullYear() - 1;
+  } else {
+    return today.getFullYear();
+  }
+};
+
 export const normalizeBoolean = (bool) => {
   if (bool === undefined) {
     return bool;

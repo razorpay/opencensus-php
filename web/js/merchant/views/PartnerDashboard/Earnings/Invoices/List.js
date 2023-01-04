@@ -2,7 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { Field } from 'redux-form';
 import { Link } from 'react-router-dom';
-import moment from 'moment';
 
 import ListContainer from 'merchant/containers/ListContainer';
 import ListFilter from 'merchant/components/ListFilter';
@@ -19,6 +18,7 @@ import ProcessInvoice from './ProcessInvoice';
 import store from 'merchant/store';
 
 import { fetchCommissionInvoices } from 'merchant/reducers/commissionInvoices/list';
+import { getCurrentFinancialYear } from 'common/utils/rzp-utils';
 
 const Columns = {
   invoiceId: {
@@ -68,10 +68,12 @@ class CommissionInvoicesList extends ListContainer {
     const user = store.getState().session.user;
     const { isShowInvoiceCurrentFY } = user;
     const newParams = { ...params };
+
     // range for a financial year (excluding April)
     if (isShowInvoiceCurrentFY) {
-      newParams.from = moment().month('May').startOf('month').unix();
-      newParams.to = moment().add(1, 'year').month('March').endOf('month').unix();
+      const currentFinancialYear = getCurrentFinancialYear();
+      newParams.from = new Date(currentFinancialYear, 4, 1).getTime() / 1000;
+      newParams.to = new Date(currentFinancialYear + 1, 2, 31).getTime() / 1000;
     }
 
     return newParams;
