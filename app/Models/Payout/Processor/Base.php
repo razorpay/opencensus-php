@@ -2433,14 +2433,21 @@ class Base extends BaseCore
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
         }
 
-        $this->blockVaPayoutsOnShadowBalance();
+        $this->blockBankingVaPayoutsIfApplicable();
     }
 
-    /* This function only blocks payout from the master shadow VA balance.This is a temporary block.
-     * Todo: Remove this code after proper solution is live
+    /*
+     * This function checks if the merchant has the feature block_va_payouts enabled and blocks payout
+     * creation. Currently it is being used to block payouts initiated from shared banking balance ONLY.
      */
-    protected function blockVaPayoutsOnShadowBalance()
+    protected function blockBankingVaPayoutsIfApplicable()
     {
+        if (($this->balance->isTypeBanking() === false) or
+            ($this->balance->isAccountTypeShared() === false))
+        {
+            return;
+        }
+
         if ($this->merchant->isFeatureEnabled(Feature::BLOCK_VA_PAYOUTS) === true)
         {
             throw new BadRequestValidationFailureException("Payouts not supported for the debit account");

@@ -32319,5 +32319,26 @@ class PayoutTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testPayoutsNotBlockedFromDirectAccountIfBlockVaPayoutsFeatureEnabled()
+    {
+        $this->fixtures->merchant->addFeatures(Feature\Constants::BLOCK_VA_PAYOUTS);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])
+                       ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive('shouldAllowTransfersViaFts')
+             ->andReturn([true, 'Dummy']);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $this->createDirectAccountPayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('initiated', $payout->getStatus());
+    }
  }
 
