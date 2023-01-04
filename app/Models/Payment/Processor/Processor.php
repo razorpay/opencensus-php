@@ -516,7 +516,7 @@ class Processor
     private function canRouteThroughRearchFlow(array & $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
-        
+
         try
         {
             $result = '';
@@ -4131,7 +4131,8 @@ class Processor
             'method'        => $payment->getMethod(),
             'base_amount'   => $payment->getBaseAmount(),
             'currency'      => $payment->getCurrency(),
-            'created_at'   => $payment->getCreatedAt(),
+            'created_at'    => $payment->getCreatedAt(),
+            'cps_route'     => $payment->getCpsRoute(),
         ];
 
         $terminal = $payment->terminal;
