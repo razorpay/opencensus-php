@@ -1840,13 +1840,13 @@ class BankingAccountTest extends TestCase
 
     public function testResetWebhookDataCase()
     {
-        $this->testUpdatedStatusFromInitiatedToProcessing();
+        $this->testUpdatedStatusFromInitiatedToAccountOpening();
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->updateBankingAccount($bankingAccount, [
-            Entity::STATUS                         => Status::PROCESSED,
-            Entity::SUB_STATUS                     => Status::API_ONBOARDING_IN_PROGRESS,
+            Entity::STATUS                         => Status::API_ONBOARDING,
+            Entity::SUB_STATUS                     => Status::IN_REVIEW,
             Entity::BANK_INTERNAL_STATUS           => Rbl\Status::API_ONBOARDING_IN_PROGRESS,
             Entity::ACCOUNT_IFSC                   => 'RATN0000156',
             Entity::ACCOUNT_NUMBER                 => '309002180853',
@@ -1885,7 +1885,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertNull($bankingAccount->getBeneficiaryName());
 
-        $this->assertEquals(RZP\Models\BankingAccount\Status::PROCESSING, $bankingAccount->getStatus());
+        $this->assertEquals(RZP\Models\BankingAccount\Status::ACCOUNT_OPENING, $bankingAccount->getStatus());
 
         $statusChangeLogsArray = $statusChangeLogs['items'];
 
@@ -5039,7 +5039,7 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(Cancelled::class);
     }
 
-    public function testUpdatedStatusFromInitiatedToProcessing()
+    public function testUpdatedStatusFromInitiatedToAccountOpening()
     {
         Mail::fake();
 
@@ -5057,14 +5057,14 @@ class BankingAccountTest extends TestCase
         $this->fixtures->edit('banking_account',
                               $bankingAccount['id'] ,
                               [
-                                  'status' => 'initiated',
+                                  'status' => BankingAccount\Status::VERIFICATION_CALL,
                               ]);
 
         $this->startTest($dataToReplace);
 
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
-        $this->assertEquals(RZP\Models\BankingAccount\Status::PROCESSING, $bankingAccount->getStatus());
+        $this->assertEquals(RZP\Models\BankingAccount\Status::ACCOUNT_OPENING, $bankingAccount->getStatus());
 
         Mail::assertQueued(Processing::class);
     }

@@ -1086,7 +1086,12 @@ class Service extends Base\Service
                 'channel' => $channel,
             ]);
 
-        if($bankingAccount->getStatus() !== Status::PROCESSED)
+        if(in_array($bankingAccount->getStatus(), [
+                Status::API_ONBOARDING,
+                Status::ACCOUNT_ACTIVATION,
+                Status::ARCHIVED,
+            ]) === false
+        )
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_BANKING_ACCOUNT_WEBHOOK_RESET_NOT_ALLOWED_FOR_CURRENT_STATUS);

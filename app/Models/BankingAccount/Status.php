@@ -433,6 +433,8 @@ class Status
             self::INITIATED,
             self::PROCESSING,
             self::PROCESSED,
+            self::ACCOUNT_OPENING,
+            self::API_ONBOARDING,
         ]
     ];
 
