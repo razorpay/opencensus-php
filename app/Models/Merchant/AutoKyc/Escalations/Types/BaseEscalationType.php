@@ -45,7 +45,7 @@ abstract class BaseEscalationType
     {
         foreach ($merchants as $merchant)
         {
-            $this->createEscalationV1ForMerchant($merchant,$type,$level,$escalationMethod);
+            $this->createEscalationV1ForMerchant($merchant, $type, $level, $escalationMethod);
         }
     }
 
@@ -82,12 +82,15 @@ abstract class BaseEscalationType
     public function createEscalationV2ForMerchant($merchant, $amount, string $type, int $level)
     {
         $milestone = Utils::getEscalationMilestone($type, $level);
+
         if (empty($milestone) === false)
         {
             $threshold = ($type == Constants::SOFT_LIMIT) ? env(Constants::SOFT_LIMIT_MCC_PENDING_THRESHOLD) : env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD);
 
-            $merchantId          = $merchant->getId();
-            $merchantDetails     = $this->repo->merchant_detail->getByMerchantId($merchantId);
+            $merchantId = $merchant->getId();
+
+            $merchantDetails = $this->repo->merchant_detail->getByMerchantId($merchantId);
+
             $isExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable($merchantId,
                                                                                   RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
             if ($isExperimentEnabled === true)
@@ -96,19 +99,24 @@ abstract class BaseEscalationType
 
                 if (empty($escalationConfig) === false)
                 {
-                    (new NewEscalation\Handler)->triggerEscalation(
-                        $merchantId, $amount, $threshold, $escalationConfig, NewEscalation\Constants::PAYMENT_BREACH
-                    );
-                    $this->app[MConstants::TRACE]->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
-                        'type'        => $type,
-                        'level'       => $level,
-                        'merchant_id' => $merchant->getId(),
-                        'mileStone'   => $milestone,
-                        'threshold'   => $threshold
-                    ]);
+                    if ((new NewEscalation\Handler)->canTriggerEscalation($merchantDetails, $escalationConfig) === true)
+                    {
+                        (new NewEscalation\Handler)->triggerEscalation($merchantId,
+                                                                       $amount,
+                                                                       $threshold,
+                                                                       $escalationConfig,
+                                                                       NewEscalation\Constants::PAYMENT_BREACH);
+
+                        $this->app[MConstants::TRACE]->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
+                            'type'        => $type,
+                            'level'       => $level,
+                            'merchant_id' => $merchant->getId(),
+                            'mileStone'   => $milestone,
+                            'threshold'   => $threshold
+                        ]);
+                    }
                 }
             }
         }
     }
-
 }

@@ -101,4 +101,27 @@ class Repository extends Base\Repository
             ->pluck(Entity::ENTITY_ID)
             ->toArray();
     }
+
+    public function isEntryPresentForNameAndEntityId($name, $entityId): bool
+    {
+        $result = $this->newQueryWithConnection($this->getMasterReplicaConnection())
+            ->where(Entity::ENTITY_ID, '=', $entityId)
+            ->where(Entity::ENTITY_TYPE, '=', 'merchant_detail')
+            ->where(Entity::NAME, '=', $name)
+            ->first();
+
+        return empty($result) === false;
+    }
+
+    public function getEntityIdsWithName($name)
+    {
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+            ->select(Entity::ENTITY_ID)
+            ->where(Entity::ENTITY_TYPE, '=', 'merchant_detail')
+            ->where(Entity::NAME, '=', $name)
+            ->distinct()
+            ->get()
+            ->pluck(Entity::ENTITY_ID)
+            ->toArray();
+    }
 }

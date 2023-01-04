@@ -221,7 +221,7 @@ class Constants
                 self::DESCRIPTION => "hard limit breach on activated mcc pending",
                 self::TO          => self::ADMIN,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING
+                    DEntity::ACTIVATION_STATUS => Status::MERCHANT_L2_OPEN_STATUSES
                 ],
                 self::MILESTONE   => 'hard_limit_level_1',
                 self::ACTIONS     => [],  // This is getting escalated from v1 so disabling actions from here.
@@ -231,7 +231,7 @@ class Constants
                 self::DESCRIPTION => "1 days after hard limit breach on activated mcc pending",
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING,
+                    DEntity::ACTIVATION_STATUS => Status::MERCHANT_L2_OPEN_STATUSES,
                 ],
                 self::MILESTONE   => 'hard_limit_level_2',
                 self::ACTIONS     => [
@@ -248,24 +248,17 @@ class Constants
                 self::DESCRIPTION => "funds on hold on activated mcc pending",
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING,
+                    DEntity::ACTIVATION_STATUS => Status::MERCHANT_L2_OPEN_STATUSES,
                 ],
                 self::MILESTONE   => 'hard_limit_level_4',
-                self::ACTIONS     => [
-                    [
-                        self::HANDLER => CommunicationHandler::class,
-                        self::PARAMS  => [
-                            'event' => Events::FUNDS_ON_HOLD
-                        ]
-                    ],
-                ],
+                self::ACTIONS     => [],
                 self::ENABLE      => false
             ],
             [
                 self::DESCRIPTION => "reminder funds on hold for activated mcc pending",
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING,
+                    DEntity::ACTIVATION_STATUS => Status::NEEDS_CLARIFICATION,
                 ],
                 self::MILESTONE   => 'funds_on_hold_reminder',
                 self::ACTIONS     => [
@@ -279,12 +272,13 @@ class Constants
                 self::ENABLE      => false
             ],
         ],
-        10000000 => [
+        5000000 => [
             [
                 self::DESCRIPTION => "funds on hold on activated mcc pending",
                 self::TO          => self::MERCHANT,
                 self::CONDITIONS  => [
-                    DEntity::ACTIVATION_STATUS         => Status::ACTIVATED_MCC_PENDING,
+                    DEntity::ACTIVATION_STATUS  => Status::MERCHANT_L2_OPEN_STATUSES,
+                    'action_state'              => Status::ACTIVATED_MCC_PENDING
                 ],
                 self::MILESTONE   => 'hard_limit_level_4',
                 self::ACTIONS     => [

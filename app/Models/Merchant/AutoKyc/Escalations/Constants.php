@@ -65,6 +65,7 @@ class Constants
                 'method'   => self::EMAIL,
                 'duration' => 1440 // in minutes [48 hrs after 1st escalation]
             ],
+            // ineffective
             4 => [
                 'method'    => self::ESCALATION_V2,
                 'milestone' => 'hard_limit_level_4',//funds on hold

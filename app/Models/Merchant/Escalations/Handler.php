@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Base\RepositoryManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\lib\ConditionParser\Parser;
+use RZP\Models\Merchant\Detail\Status;
 use Illuminate\Foundation\Application;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -105,18 +106,24 @@ class Handler
     {
         $conditions = $escalationConfig[Constants::CONDITIONS];
 
-        return (new Parser)->parse($conditions, function ($key, $value) use ($merchantDetails){
-            if($value === Constants::IS_NOT_NULL)
+        return (new Parser)->parse($conditions, function ($key, $value) use ($merchantDetails)
+        {
+            if ($value === Constants::IS_NOT_NULL)
             {
                 return empty($merchantDetails->getAttribute($key))===false and is_null($merchantDetails->getAttribute($key))===false;
             }
-            else if($value === Constants::IS_NULL)
+            else if ($value === Constants::IS_NULL)
             {
                 return empty($merchantDetails->getAttribute($key))===true or is_null($merchantDetails->getAttribute($key))===true;
             }
-            else if(is_array($value) === true)
+            else if (is_array($value) === true)
             {
                 return in_array($merchantDetails->getAttribute($key), $value, true);
+            }
+            else if ($key === 'action_state')
+            {
+                // check in action_state if there was AMP ever.
+                return $this->repo->state->isEntryPresentForNameAndEntityId($value, $merchantDetails->getId());
             }
             else if ($key === FeatureConstants::FEATURE)
             {

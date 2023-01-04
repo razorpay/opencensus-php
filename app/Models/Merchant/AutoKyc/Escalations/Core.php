@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Partner\Core as PartnerCore;
@@ -262,17 +263,6 @@ class Core extends Base\Core
 
             (new Handler)->handleEscalations($merchants, $merchantsGmvList, $type, $level);
 
-            if ($type === Constants::HARD_LIMIT and $level === 4)
-            {
-                // disable settlements for merchants
-                foreach ($merchants as $merchant)
-                {
-                    $merchant->setHoldFunds(true);
-                    $merchant->setHoldFundsReason('GMV hard limit breached for the merchant.');
-                    $this->repo->merchant->saveOrFail($merchant);
-                }
-
-            }
         }
     }
 

@@ -6,6 +6,7 @@ namespace Unit\Models\Merchant\Escalations;
 use DB;
 use Mail;
 use Queue;
+use RZP\Models\State;
 use RZP\Constants\Mode;
 use RZP\Services\Mock\HarvesterClient;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
@@ -139,8 +140,10 @@ class CoreTest extends TestCase
         $this->verifyEscalationAndAction('L1', 1500000);
     }
 
-    public function testEscalation_1lakh_FOH()
+    public function testEscalationHardLimitLevel4()
     {
+        $limit = 50000;
+
         $this->app->instance("rzp.mode", Mode::LIVE);
 
         Mail::fake();
@@ -149,10 +152,16 @@ class CoreTest extends TestCase
 
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
 
-        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 100000);
+        $this->createTransaction($merchantDetail->getMerchantId(), 'payment', $limit);
         $this->createTransaction($merchantDetail->getMerchantId(), 'payment', 200);
 
-        $this->mockPinot($merchantDetail->getMerchantId(), 100200);
+        $this->fixtures->create('state', [
+            State\Entity::ENTITY_ID     => $merchantDetail->getMerchantId(),
+            State\Entity::NAME          => MerchantDetail\Status::ACTIVATED_MCC_PENDING,
+            State\Entity::ENTITY_TYPE   => 'merchant_detail'
+        ]);
+
+        $this->mockPinot($merchantDetail->getMerchantId(), $limit + 200);
 
         (new Escalations\Core)->triggerPaymentEscalations(false);
 
@@ -160,7 +169,91 @@ class CoreTest extends TestCase
 
         $this->assertTrue($merchant->getAttribute(MerchantEntity::HOLD_FUNDS));
 
-        $this->verifyEscalationAndAction('hard_limit_level_4', 10000000);
+        $this->verifyEscalationAndAction('hard_limit_level_4', $limit * 100);
+    }
+
+    public function testEscalationNeedsClarificationHardLimitLevel4()
+    {
+        $limit = 50000;
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        Mail::fake();
+
+        $this->createAndFetchMocks(true);
+
+        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->createTransaction($merchantId, 'payment', $limit);
+        $this->createTransaction($merchantId, 'payment', 1);
+
+        $this->fixtures->create('state', [
+            State\Entity::ENTITY_ID     => $merchantId,
+            State\Entity::NAME          => MerchantDetail\Status::ACTIVATED_MCC_PENDING,
+            State\Entity::ENTITY_TYPE   => 'merchant_detail'
+        ]);
+
+        $this->mockPinot($merchantId, $limit + 1);
+
+        $this->fixtures->edit('merchant_detail', $merchantId, [
+            MerchantDetail\Entity::ACTIVATION_STATUS => MerchantDetail\Status::NEEDS_CLARIFICATION
+        ]);
+
+        (new Escalations\Core)->triggerPaymentEscalations(false);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertTrue($merchant->getAttribute(MerchantEntity::HOLD_FUNDS));
+
+        $this->assertEquals(MerchantDetail\Status::NEEDS_CLARIFICATION, $merchantDetail->getAttribute(MerchantDetail\Entity::ACTIVATION_STATUS));
+
+        $this->verifyEscalationAndAction('hard_limit_level_4', $limit * 100);
+    }
+
+    public function testEscalationUnderReviewHardLimitLevel4()
+    {
+        $limit = 50000;
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        Mail::fake();
+
+        $this->createAndFetchMocks(true);
+
+        [$merchantDetail] = $this->createAndFetchFixturesForMilestone('hard_limit');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $this->createTransaction($merchantId, 'payment', $limit);
+        $this->createTransaction($merchantId, 'payment', 200);
+
+        $this->fixtures->create('state', [
+            State\Entity::ENTITY_ID     => $merchantId,
+            State\Entity::NAME          => MerchantDetail\Status::ACTIVATED_MCC_PENDING,
+            State\Entity::ENTITY_TYPE   => 'merchant_detail'
+        ]);
+
+        $this->mockPinot($merchantId, $limit + 200);
+
+        $this->fixtures->edit('merchant_detail', $merchantId, [
+            MerchantDetail\Entity::ACTIVATION_STATUS => MerchantDetail\Status::UNDER_REVIEW
+        ]);
+
+        (new Escalations\Core)->triggerPaymentEscalations(false);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $merchantDetail = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertTrue($merchant->getAttribute(MerchantEntity::HOLD_FUNDS));
+
+        $this->assertEquals(MerchantDetail\Status::UNDER_REVIEW, $merchantDetail->getAttribute(MerchantDetail\Entity::ACTIVATION_STATUS));
+
+        $this->verifyEscalationAndAction('hard_limit_level_4', $limit * 100);
     }
 
     public function testEscalation10kMilestoneTimeBoundFalseFilterLinkedAccount()

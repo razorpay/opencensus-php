@@ -4707,6 +4707,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testHardLimitEmailSent()
     {
+        $this->markTestSkipped('Emails will be not be sent at this level due to change in threshold limit');
+
         Mail::fake();
 
         $merchantId = '1cXSLlUU8V9sXl';
