@@ -3551,6 +3551,7 @@ class Route
 
         'merchant_verify_attributes'              => ['post',    'merchant/verify/{verificationType}',                      'MerchantController@postVerifyMerchantAttributes'              ],
         'checkout_personalisation'                => ['get',     'personalisation',                                         'MerchantController@getPersonalisedMethods'                    ],
+        'checkout_personalisation_internal'       => ['get',     'internal/personalisation',                                'MerchantController@getPersonalisedMethods'                    ],
         'update_payout_status'                    => ['patch',   'payouts/{id}/manual/status',                              'PayoutController@updatePayoutStatusManually'                  ],
         'update_payout_status_batch'              => ['patch',   'payouts/manual/status_update/batch',                       'PayoutController@updatePayoutStatusManuallyInBatch'          ],
         'salesforce_event'                        => ['post',    'merchant/{mid}/salesforce_event',                         'SalesForceController@sendSalesForceEvent'                     ],
@@ -6519,6 +6520,8 @@ class Route
         'workflow_config_delete',
         'payouts_bulk_reject_owner',
         'payout_links_bulk_reject_owner',
+
+        'checkout_personalisation_internal',
         'partner_config_fetch',
         'partner_config_edit',
         'partner_config_edit_logo',
@@ -9853,6 +9856,7 @@ class Route
         '1cc_apply_gift_card',
         '1cc_remove_gift_card',
         '1cc_shopify_order',
+        'checkout_personalisation_internal',
     ];
 
     /**
@@ -14603,6 +14607,7 @@ class Route
             'internal_1cc_configs_get',
             'fetch_trusted_badge_status',
             'merchant_fetch_config_for_checkout_internal',
+            'checkout_personalisation_internal',
         ],
 
         'trusted_badge' => [

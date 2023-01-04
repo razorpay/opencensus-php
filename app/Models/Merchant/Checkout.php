@@ -1765,9 +1765,16 @@ class Checkout
 
         $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
 
+        /**
+         * Input contact takes precedence over session contact
+         * Session is logged out if input and session contacts are different
+         */
         $this->checkGivenContactIsDiffFromLogInContact($input, $merchant);
 
         $data = [];
+
+        /** Below code is not necessary, need to be removed */
+        /** START of unnecessary code */
 
         // The below code is required for ensuring that the disabled
         // tokens are removed for the logged in users
@@ -1782,6 +1789,8 @@ class Checkout
         $this->checkAndAddDetailsForOrder($input, $merchant, $data);
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data, $mode);
+
+        /** END of unnecessary code */
 
         $this->fillPreferredMethods($merchant, $input, $data);
 

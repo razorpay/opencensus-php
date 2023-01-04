@@ -1783,6 +1783,17 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayHasKey('preferred_methods', $response);
     }
 
+    public function testGetCheckoutPersonalisationWithCustomerIdInternal()
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertArrayHasKey('preferred_methods', $response);
+    }
+
     public function testGetCheckoutPersonalisation()
     {
         $this->ba->publicAuth();
@@ -1903,6 +1914,15 @@ class CheckoutPreferencesTest extends TestCase
         $response = $this->runRequestResponseFlow($testData);
     }
 
+    public function testGetCheckoutPersonalisationForContactInternal()
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->runRequestResponseFlow($testData);
+    }
+
     public function testGetCheckoutPersonalisationForCustomerId()
     {
         $this->ba->publicAuth();
@@ -1950,6 +1970,19 @@ class CheckoutPreferencesTest extends TestCase
         $testData['request']['content']['order_id'] = $order->getPublicId();
 
         $response = $this->runRequestResponseFlow($testData);
+    }
+
+    public function testGetCheckoutPersonalisationForLoogedInUserInternal()
+    {
+        $appToken = 'capp_1000000custapp';
+
+        $this->mockSession($appToken);
+
+        $this->ba->checkoutServiceProxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData);
     }
 
     // Scenario for below test case is:
