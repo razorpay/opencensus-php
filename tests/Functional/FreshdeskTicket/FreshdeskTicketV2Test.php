@@ -212,9 +212,9 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->startTest();
 
-        $ticket = $this->getLastEntity('merchant_freshdesk_tickets', true);
+        $ticket = $this->getEntityById('merchant_freshdesk_tickets', 'KyvhWca25YAvF8', true);
 
-        $this->assertEquals('KyvhWca25YAvF8', $ticket['id']);
+        $this->assertEquals('349', $ticket['ticket_id']);
     }
 
     public function testGetByIdProhibitedShouldFail()
