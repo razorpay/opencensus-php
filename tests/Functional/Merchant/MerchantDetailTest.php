@@ -6185,6 +6185,22 @@ Team Razorpay',
 
         [$merchantId, $userId] = $this->setupMerchantUserAndWorkflow(['contact_mobile' => "8722627189"]);
 
+        $userDb1 = $this->getDbEntityById('user',  $userId);
+
+        $primaryMids = $userDb1->getPrimaryMerchantIds();
+
+        for ($i = 0; $i < sizeof($primaryMids); $i++)
+        {
+            if ($primaryMids[$i] != $merchantId)
+            {
+                $merchantDetail =  $this->fixtures->merchant_detail->createAssociateMerchant([
+                    'merchant_id' => $primaryMids[$i],
+                    'contact_mobile' => '123456789' . $i,
+                    'contact_email' => 'user'. $i. '@email.com',
+                ]);
+            }
+        }
+
         $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['url'] = "/merchants/$merchantId/mobile";
@@ -6200,6 +6216,13 @@ Team Razorpay',
         $this->updateMerchantContactWorkflowApproveAndAssertData($merchantId, $userId, $workflowActionId);
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        foreach ($primaryMids as $mid)
+        {
+            $merchantDetailDb = $this->getDbEntityById('merchant_detail', $mid);
+
+            $this->assertEquals($merchantDetailDb->getContactMobile(), "+918722627189");
+        }
 
         Mail::assertQueued(MerchantDashboardEmail::class, function ($mail) use($merchant)
         {
@@ -6223,6 +6246,22 @@ Team Razorpay',
 
         [$merchantId, $userId] = $this->setupMerchantUserAndWorkflow(['contact_mobile' => "1234567890"]);
 
+        $userDb1 = $this->getDbEntityById('user',  $userId);
+
+        $primaryMids = $userDb1->getPrimaryMerchantIds();
+
+        for ($i = 0; $i < sizeof($primaryMids); $i++)
+        {
+            if ($primaryMids[$i] != $merchantId)
+            {
+                $merchantDetail =  $this->fixtures->merchant_detail->createAssociateMerchant([
+                    'merchant_id' => $primaryMids[$i],
+                    'contact_mobile' => '123456789' . $i,
+                    'contact_email' => 'user'. $i. '@email.com',
+                ]);
+            }
+        }
+
         $testData = &$this->testData[__FUNCTION__];
 
         $testData['request']['url'] = "/merchants/$merchantId/mobile";
@@ -6238,6 +6277,13 @@ Team Razorpay',
         $this->updateMerchantContactWorkflowApproveAndAssertData($merchantId, $userId, $workflowActionId);
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        foreach ($primaryMids as $mid)
+        {
+            $merchantDetailDb = $this->getDbEntityById('merchant_detail', $mid);
+
+            $this->assertEquals($merchantDetailDb->getContactMobile(), "+918722627189");
+        }
 
         Mail::assertQueued(MerchantDashboardEmail::class, function ($mail) use($merchant)
         {
@@ -6260,6 +6306,22 @@ Team Razorpay',
         Mail::fake();
 
         [$merchantId, $userId] = $this->setupMerchantUserAndWorkflow(['contact_mobile' => "1234567890"]);
+
+        $userDb1 = $this->getDbEntityById('user',  $userId);
+
+        $primaryMids = $userDb1->getPrimaryMerchantIds();
+
+        for ($i = 0; $i < sizeof($primaryMids); $i++)
+        {
+            if ($primaryMids[$i] != $merchantId)
+            {
+                $merchantDetail =  $this->fixtures->merchant_detail->createAssociateMerchant([
+                    'merchant_id' => $primaryMids[$i],
+                    'contact_mobile' => '123456789' . $i,
+                    'contact_email' => 'user'. $i. '@email.com',
+                ]);
+            }
+        }
 
         $this->fixtures->user->createUserMerchantMapping([
             'user_id'     => $userId,
@@ -6285,6 +6347,13 @@ Team Razorpay',
         $this->updateMerchantContactWorkflowApproveAndAssertData($merchantId, $userId, $workflowActionId);
 
         $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        foreach ($primaryMids as $mid)
+        {
+            $merchantDetailDb = $this->getDbEntityById('merchant_detail', $mid);
+
+            $this->assertEquals($merchantDetailDb->getContactMobile(), "+918722627189");
+        }
 
         Mail::assertQueued(MerchantDashboardEmail::class, function ($mail) use($merchant)
         {
@@ -7799,6 +7868,22 @@ We look forward to transacting with you!
 
         [$merchantId, $userId] = $this->setupMerchantUserAndWorkflow(['contact_mobile' => '1234567890']);
 
+        $userDb1 = $this->getDbEntityById('user',  $userId);
+
+        $primaryMids = $userDb1->getPrimaryMerchantIds();
+
+        for ($i = 0; $i < sizeof($primaryMids); $i++)
+        {
+            if ($primaryMids[$i] != $merchantId)
+            {
+                $merchantDetail =  $this->fixtures->merchant_detail->createAssociateMerchant([
+                    'merchant_id' => $primaryMids[$i],
+                    'contact_mobile' => '123456789' . $i,
+                    'contact_email' => 'user'. $i. '@email.com',
+                ]);
+            }
+        }
+
         $user = $this->getDbEntityById('user', $userId);
 
         $user->setAttribute(Entity::CONTACT_MOBILE, '1234567890');
@@ -7830,6 +7915,13 @@ We look forward to transacting with you!
         $this->assertEquals('+919876543210', $merchantDetails->getContactMobile());
 
         $this->assertEquals('9876543210', $user->getContactMobile());
+
+        foreach ($primaryMids as $mid)
+        {
+            $merchantDetailDb = $this->getDbEntityById('merchant_detail', $mid);
+
+            $this->assertEquals($merchantDetailDb->getContactMobile(), "+919876543210");
+        }
 
         Mail::assertQueued(MerchantDashboardEmail::class, function ($mail) use($merchant)
         {

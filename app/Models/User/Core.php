@@ -59,6 +59,7 @@ use RZP\Models\Merchant\Escalations as MerchantEscalation;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
 use RZP\Models\OAuthApplication\Constants as OAuthApplicationConstants;
@@ -2741,6 +2742,35 @@ class Core extends Base\Core
             $user->setContactMobileVerified(true);
 
             $this->repo->saveOrFail($user);
+
+            $primaryOwnerMerchantIdList = $user->getPrimaryMerchantIds();
+
+            $this->trace->info(TraceCode::PRIMARY_OWNER_MERCHANT_IDS_LIST, [
+                'merchant_ids'   => $primaryOwnerMerchantIdList,
+            ]);
+
+            $affectedMerchantIdList = [];
+
+            foreach ($primaryOwnerMerchantIdList as $ownerMerchantId)
+            {
+                $merchant = $this->repo->merchant->findOrFailPublic($ownerMerchantId);
+
+                if ($merchant->users()
+                        ->where(MerchantDetailEntity::ROLE, '=', Role::OWNER)
+                        ->where(Entity::PRODUCT, '=', Product::PRIMARY)
+                        ->count() === 1)
+                {
+                    $affectedMerchantIdList[] = $ownerMerchantId;
+
+                    $merchant->merchantDetail->setAttribute(Entity::CONTACT_MOBILE, $contact);
+
+                    $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+                }
+            }
+
+            $this->trace->info(TraceCode::AFFECTED_MERCHANT_IDS_LIST, [
+                'merchant_ids' => $affectedMerchantIdList,
+            ]);
         });
 
         [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();

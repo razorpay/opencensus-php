@@ -72,6 +72,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Services\ApachePinotClient;
 use RZP\Models\Merchant\LegalEntity;
 use RZP\Models\Merchant\Stakeholder;
+use RZP\Models\User\Role as UserRole;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\lib\ConditionParser\Operator;
 use RZP\Exception\BadRequestException;
@@ -7340,6 +7341,35 @@ class Core extends Base\Core
         $user->setContactMobile($input[DetailConstants::NEW_CONTACT_NUMBER]);
 
         $this->repo->saveOrFail($user);
+
+        $primaryOwnerMerchantIdList = $user->getPrimaryMerchantIds();
+
+        $this->trace->info(TraceCode::PRIMARY_OWNER_MERCHANT_IDS_LIST, [
+            'merchant_ids' => $primaryOwnerMerchantIdList,
+        ]);
+
+        $affectedMerchantIdList = [];
+
+        foreach ($primaryOwnerMerchantIdList as $ownerMerchantId)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($ownerMerchantId);
+
+            if ($merchant->users()
+                    ->where(DetailEntity::ROLE, '=', UserRole::OWNER)
+                    ->where(UserEntity::PRODUCT, '=', Product::PRIMARY)
+                    ->count() === 1)
+            {
+                $affectedMerchantIdList[] = $ownerMerchantId;
+
+                $merchant->merchantDetail->setAttribute(Entity::CONTACT_MOBILE, $input[DetailConstants::NEW_CONTACT_NUMBER]);
+
+                $this->repo->merchant_detail->saveOrFail($merchant->merchantDetail);
+            }
+        }
+
+        $this->trace->info(TraceCode::AFFECTED_MERCHANT_IDS_LIST, [
+            'merchant_ids' => $affectedMerchantIdList,
+        ]);
     }
 
     /**

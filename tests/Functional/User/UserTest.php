@@ -6652,6 +6652,69 @@ class UserTest extends TestCase
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
 
+        $userDb1 = $this->getDbEntityById('user',  UserFixture::MERCHANT_USER_ID);
+
+        $primaryMids = $userDb1->getPrimaryMerchantIds();
+
+        for ($i = 0; $i < sizeof($primaryMids); $i++)
+        {
+            $merchantDetail =  $this->fixtures->merchant_detail->createAssociateMerchant([
+                'merchant_id' => $primaryMids[$i],
+                'contact_mobile' => '123456789' . $i,
+                'contact_email' => 'user'. $i. '@email.com',
+            ]);
+        }
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', UserFixture::MERCHANT_USER_ID);
+
+        $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $this->assertTrue($userDb->isContactMobileVerified());
+
+        $this->assertEquals($userDb->getContactMobile(), "9123456789");
+
+        foreach ($primaryMids as $mid)
+        {
+            $merchantDetailDb = $this->getDbEntityById('merchant_detail', $mid);
+
+            $this->assertEquals($merchantDetailDb->getContactMobile(), "+919123456789");
+        }
+
+        $this->assertCacheDataForUserContactMobileUpdate($userDb['id'], 1);
+    }
+
+    public function testVerifyOtpAndUpdateContactMobileWhenOwnerUserAssociatedWithMultipleMerchants()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
+        $mappingData = [
+            'user_id'     => UserFixture::MERCHANT_USER_ID,
+            'merchant_id' => '10000000000001',
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->user->createUserMerchantMapping($mappingData, 'test');
+
+        $this->fixtures->user->createUserMerchantMapping($mappingData, 'live');
+
+        $userDb1 = $this->getDbEntityById('user',  UserFixture::MERCHANT_USER_ID);
+
+        $primaryMids = $userDb1->getPrimaryMerchantIds();
+
+        for ($i = 0; $i < sizeof($primaryMids); $i++)
+        {
+            $merchantDetail =  $this->fixtures->merchant_detail->createAssociateMerchant([
+                'merchant_id' => $primaryMids[$i],
+                'contact_mobile' => '123456789' . $i,
+                'contact_email' => 'user'. $i. '@email.com',
+            ]);
+        }
+
         $this->ba->proxyAuth();
 
         $this->startTest();
@@ -6660,11 +6723,210 @@ class UserTest extends TestCase
 
         $this->assertTrue($userDb->isContactMobileVerified());
 
-        $this->assertEquals($userDb->getContactMobile(),"9123456789");
+        $this->assertEquals($userDb->getContactMobile(), "9123456789");
+
+        foreach ($primaryMids as $mid)
+        {
+            $merchantDetailDb = $this->getDbEntityById('merchant_detail', $mid);
+
+            $this->assertEquals($merchantDetailDb->getContactMobile(), "+919123456789");
+        }
 
         $this->assertCacheDataForUserContactMobileUpdate($userDb['id'], 1);
     }
 
+    public function testVerifyOtpAndUpdateContactMobileWhenUserOwnerOfMerchantwithMultipleOwnerUsers()
+    {
+        $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
+        $mappingData = [
+            'user_id'     => UserFixture::MERCHANT_USER_ID,
+            'merchant_id' => '10000000000001',
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->user->createUserMerchantMapping($mappingData, 'test');
+
+        $this->fixtures->user->createUserMerchantMapping($mappingData, 'live');
+
+        $this->fixtures->create('user', ['id' => 'MerchantUser02', UserEntity::CONTACT_MOBILE => '1234567890']);
+
+        $mappingData = [
+            'user_id'     => 'MerchantUser02',
+            'merchant_id' => '10000000000001',
+            'role'        => 'owner',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->user->createUserMerchantMapping($mappingData, 'test');
+
+        $this->fixtures->user->createUserMerchantMapping($mappingData, 'live');
+
+        $userDb = $this->getDbEntityById('user',  UserFixture::MERCHANT_USER_ID);
+
+        $primaryMids = $userDb->getPrimaryMerchantIds();
+
+        for ($i = 0; $i < sizeof($primaryMids); $i++)
+        {
+            $merchantDetail =  $this->fixtures->merchant_detail->createAssociateMerchant([
+                'merchant_id' => $primaryMids[$i],
+                'contact_mobile' => '123456789' . $i,
+                'contact_email' => 'user'. $i. '@email.com',
+            ]);
+        }
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $userDb1 = $this->getDbEntityById('user', UserFixture::MERCHANT_USER_ID);
+
+        $userDb2 = $this->getDbEntityById('user', 'MerchantUser02');
+
+        $this->assertTrue($userDb1->isContactMobileVerified());
+
+        $this->assertEquals($userDb1->getContactMobile(), "9123456789");
+
+        $this->assertEquals($userDb2->getContactMobile(), "1234567890");
+
+        foreach ($primaryMids as $mid)
+        {
+            $merchantDetailDb = $this->getDbEntityById('merchant_detail', $mid);
+
+            if ($mid === '10000000000001')
+            {
+                $this->assertNotEquals($merchantDetailDb->getContactMobile(), "+919123456789");
+
+                $this->assertEquals($merchantDetailDb->getContactMobile(), "+911234567891");
+            }
+
+            else
+            {
+                $this->assertEquals($merchantDetailDb->getContactMobile(), "+919123456789");
+            }
+        }
+
+        $this->assertCacheDataForUserContactMobileUpdate($userDb1['id'], 1);
+    }
+
+    public function testVerifyOtpAndUpdateContactMobileWhenNotOwnerRoleOfMerchant()
+    {
+        $user = $this->fixtures->create('user', [
+            UserEntity::CONTACT_MOBILE          => '1234567890',
+            UserEntity::CONTACT_MOBILE_VERIFIED => true,
+        ]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['response']['content']['id'] = $user['id'];
+
+        $merchantIds = $user->merchants()->get()->pluck('id')->toArray();
+
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000001']);
+
+        $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant([
+            'merchant_id' => '10000000000001',
+            'contact_mobile' => '1234567891',
+            'contact_email' => 'user10@email.com',
+        ]);
+
+        $mappingData = [
+            'user_id'     => $user['id'],
+            'merchant_id' => '10000000000001',
+            'role'        => 'manager',
+            'product'     => 'primary',
+        ];
+
+        $this->fixtures->user->createUserMerchantMapping($mappingData, 'test');
+
+        $this->fixtures->user->createUserMerchantMapping($mappingData, 'live');
+
+        $userDb1 = $this->getDbEntityById('user', $user['id']);
+
+        $primaryMids = $userDb1->getPrimaryMerchantIds();
+
+        for ($i = 0; $i < sizeof($primaryMids); $i++)
+        {
+            $merchantDetail = $this->fixtures->merchant_detail->createAssociateMerchant([
+                'merchant_id' => $primaryMids[$i],
+                'contact_mobile' => '123456789' . $i,
+                'contact_email' => 'user'. $i. '@email.com',
+            ]);
+        }
+
+        $this->ba->proxyAuth(
+            'rzp_test_' . $merchantIds[0],
+            $user['id']);
+
+        $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertTrue($userDb->isContactMobileVerified());
+
+        $this->assertEquals($userDb->getContactMobile(), "9123456789");
+
+        foreach ($primaryMids as $mid)
+        {
+            $merchantDetailDb = $this->getDbEntityById('merchant_detail', $mid);
+
+            $this->assertEquals($merchantDetailDb->getContactMobile(), "+919123456789");
+        }
+
+        $merchantDetailDb = $this->getDbEntityById('merchant_detail', '10000000000001');
+
+        $this->assertNotEquals($merchantDetailDb->getContactMobile(), "+919123456789");
+
+        $this->assertEquals($merchantDetailDb->getContactMobile(), "+911234567891");
+
+        $this->assertCacheDataForUserContactMobileUpdate($user['id'], 1);
+    }
+
+    public function testVerifyUpdateCacheValueForUpdateContactMobile()
+    {
+        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
+
+        $userDb1 = $this->getDbEntityById('user',  UserFixture::MERCHANT_USER_ID);
+
+        $primaryMids = $userDb1->getPrimaryMerchantIds();
+
+        for ($i = 0; $i < sizeof($primaryMids); $i++)
+        {
+            $merchantDetail =  $this->fixtures->merchant_detail->createAssociateMerchant([
+                'merchant_id' => $primaryMids[$i],
+                'contact_mobile' => '123456789' . $i,
+                'contact_email' => 'user'. $i. '@email.com',
+            ]);
+        }
+
+        $cacheKey = $this->getThrottleContactMobileCacheKey($user['id']);
+
+        $app = App::getFacadeRoot();
+
+        $this->app['cache']->put($cacheKey, 1);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $this->startTest();
+
+        $userDb = $this->getDbEntityById('user', $user['id']);
+
+        $this->assertTrue($userDb->isContactMobileVerified());
+
+        $this->assertEquals($userDb->getContactMobile(),"9123456789");
+
+        foreach ($primaryMids as $mid)
+        {
+            $merchantDetailDb = $this->getDbEntityById('merchant_detail', $mid);
+
+            $this->assertEquals($merchantDetailDb->getContactMobile(), "+919123456789");
+        }
+
+        $this->assertCacheDataForUserContactMobileUpdate($userDb['id'], 2);
+    }
     protected function assertCacheDataForUserContactMobileUpdate($userId, $expectedCacheData)
     {
         $app = App::getFacadeRoot();
@@ -6679,29 +6941,6 @@ class UserTest extends TestCase
     protected function getThrottleContactMobileCacheKey($userId)
     {
         return sprintf(Constants::THROTTLE_UPDATE_CONTACT_MOBILE_CACHE_KEY_PREFIX, $userId);
-    }
-
-    public function testVerifyUpdateCacheValueForUpdateContactMobile()
-    {
-        $user = $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID, [UserEntity::CONTACT_MOBILE => '123456789']);
-
-        $cacheKey = $this->getThrottleContactMobileCacheKey($user['id']);
-
-        $app = App::getFacadeRoot();
-
-        $this->app['cache']->put($cacheKey, 1);
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-
-        $userDb = $this->getDbEntityById('user', $user['id']);
-
-        $this->assertTrue($userDb->isContactMobileVerified());
-
-        $this->assertEquals($userDb->getContactMobile(),"9123456789");
-
-        $this->assertCacheDataForUserContactMobileUpdate($userDb['id'], 2);
     }
 
     public function testSendOtpLimitForUpdateContactMobileExceeded()
