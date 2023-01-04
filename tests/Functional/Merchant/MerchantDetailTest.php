@@ -24,6 +24,7 @@ use RZP\Services\KafkaProducerClient;
 use RZP\Services\FreshdeskTicketClient;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
+use RZP\Services\SplitzService;
 use RZP\Mail\Merchant\Rejection;
 use Functional\Helpers\BvsTrait;
 use RZP\Tests\Traits\MocksSplitz;
@@ -3650,7 +3651,7 @@ Team Razorpay', '+911234567890');
         $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $merchantUser['id']);
         $this->ba->addXOriginHeader();
 
-        $this->mockSplitzEvaluation();
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
 
         $this->startTest($testData);
 
@@ -8232,5 +8233,169 @@ We look forward to transacting with you!
         $businessDetail = $this->getDbLastEntity('merchant_business_detail', 'live');
 
         $this->assertNull($businessDetail);
+    }
+
+    public function testPutPreSignUpDetailsWithPartnerIdForAggregator()
+    {
+        list($merchant, $subMerchantUser, $managedApp) = $this->setUpAggregatorPartnerAndSubMerchant();
+
+        $referrerId = self::DEFAULT_MERCHANT_ID;
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $appType = \RZP\Models\Merchant\MerchantApplications\Entity::MANAGED;
+
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $subMerchantUser['id']);
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $referredSubMerchantId
+                                               ], 'test')
+                                 ->toArray();
+
+        $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
+
+        $merchantUser = $merchant->primaryOwner();
+
+        $merchantApp = $this->getDbEntity('merchant_application', ['application_id' => $managedApp->getId()]);
+
+        $mappings = DB::table('merchant_users')->where('merchant_id', '=', $referredSubMerchantId)
+                     ->get()->pluck('user_id')->toArray();
+
+        $this->assertEqualsCanonicalizing([$merchantUser->getId(), $subMerchantUser['id']], $mappings);
+
+        $this->assertEquals($merchantApp->type, $appType);
+
+        $this->assertEquals($referredSubMerchant->getPricingPlanId(), self::DEFAULT_MERCHANT_ID);
+
+        $this->assertSame($referredSubMerchantId, $merchantAcessMap['merchant_id']);
+
+        $this->assertSame($referrerId, $merchantAcessMap['entity_owner_id']);
+
+        $this->assertSame($managedApp->getId(), $merchantAcessMap['entity_id']);
+    }
+
+    public function testPutPreSignUpDetailsWithPartnerIdAndDisabledExperiment()
+    {
+        list($merchant, $subMerchantUser) = $this->setUpAggregatorPartnerAndSubMerchant();
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $subMerchantUser['id']);
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $referredSubMerchantId
+                                               ], 'test');
+
+        $this->assertEmpty($merchantAcessMap);
+
+        $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
+
+        $mappings = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_SUBMERCHANT_ID)
+                      ->where('merchant_id', '=', $referredSubMerchantId)
+                      ->get();
+
+        $this->assertEquals([$subMerchantUser['id']], $mappings->pluck('user_id')->toArray());
+
+        $this->assertNotEquals($referredSubMerchant->getPricingPlanId(), self::DEFAULT_MERCHANT_ID);
+    }
+
+    public function testPutPreSignUpDetailsWithPartnerReferralAttributes()
+    {
+        list($merchant, $subMerchantUser, $managedApp) = $this->setUpAggregatorPartnerAndSubMerchant();
+
+        $referrerId = self::DEFAULT_MERCHANT_ID;
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $appType = \RZP\Models\Merchant\MerchantApplications\Entity::MANAGED;
+
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $subMerchantUser['id']);
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
+        $this->fixtures->create('referrals');
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $referredSubMerchantId
+                                               ], 'test')
+                                 ->toArray();
+
+        $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
+
+        $merchantUser = $merchant->primaryOwner();
+
+        $merchantApp = $this->getDbEntity('merchant_application', ['application_id' => $managedApp->getId()]);
+
+        $mappings = DB::table('merchant_users')->where('merchant_id', '=', $referredSubMerchantId)
+                      ->get()->pluck('user_id')->toArray();
+
+        $this->assertEqualsCanonicalizing([$merchantUser->getId(), $subMerchantUser['id']], $mappings);
+
+        $this->assertEquals($merchantApp->type, $appType);
+
+        $this->assertEquals($referredSubMerchant->getPricingPlanId(), self::DEFAULT_MERCHANT_ID);
+
+        $this->assertSame($referredSubMerchantId, $merchantAcessMap['merchant_id']);
+
+        $this->assertSame($referrerId, $merchantAcessMap['entity_owner_id']);
+
+        $this->assertSame($managedApp->getId(), $merchantAcessMap['entity_id']);
+
+        $this->assertEquals($referredSubMerchant->tagNames(), array('Ref-' . $referrerId));
+    }
+
+    private function mockSplitzExperiment($output)
+    {
+        $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->byDefault()
+            ->andReturn($output);
+    }
+
+    private function setUpAggregatorPartnerAndSubMerchant($merchantId = self::DEFAULT_MERCHANT_ID, $subMerchantId = self::DEFAULT_SUBMERCHANT_ID)
+    {
+        $merchant = $this->fixtures->merchant->edit($merchantId, ['partner_type' => 'aggregator']);
+
+        $this->fixtures->merchant->create(['id' => $subMerchantId]);
+
+        $managedApp = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
+
+        $this->fixtures->create('pricing:two_percent_pricing_plan', [
+            'plan_id' => $merchantId,
+            'type'    => 'pricing',
+        ]);
+
+        $configAttributes = [
+            'default_plan_id' => $merchantId,
+            'entity_id'       => $managedApp->getId(),
+            'entity_type'     => 'application',
+        ];
+
+        $this->fixtures->create('partner_config', $configAttributes);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $subMerchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $subMerchantUser = $this->fixtures->user->createUserForMerchant($subMerchantId);
+
+        return [$merchant, $subMerchantUser, $managedApp];
     }
 }

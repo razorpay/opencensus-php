@@ -6480,4 +6480,144 @@ return [
             'status_code' => 400,
         ]
     ],
+
+    'testMobileVerifyOtpForLoginWithPartnerId' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com'
+            ],
+            'content' => [
+                'otp'            => '0007',
+                'token'          => '10000000000000',
+                'contact_mobile' => '+918766776666',
+                'captcha'        => 'faked',
+                'partner_id'     => '10000000000000'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testMobileVerifyOtpForLoginWithPartnerIdAndExperimentDisabled' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Request-Origin' => 'https://dashboard.razorpay.com'
+            ],
+            'content' => [
+                'otp'            => '0007',
+                'token'          => '10000000000000',
+                'contact_mobile' => '+918766776666',
+                'captcha'        => 'faked',
+                'partner_id'     => '10000000000000'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'confirmed'               => true,
+                'merchants'               => [
+                    [
+                        'activated'    => false,
+                        'archived_at'  => null,
+                        'suspended_at' => null,
+                        'role'         => 'owner'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testMobileVerifyOtpForLoginWithUnverifiedContactAndPartnerId' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '1234',
+                'token'          => 'token',
+                'contact_mobile' => '+918766776666',
+                'captcha'        => 'faked',
+                'partner_id'     => '10000000000000'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CONTACT_MOBILE_NOT_VERIFIED,
+        ],
+    ],
+
+    'testMobileVerifyOtpForLoginWithInCorrectAndPartnerId' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '1234',
+                'token'          => 'token',
+                'contact_mobile' => '+918766776666',
+                'captcha'        => 'faked',
+                'partner_id'     => '10000000000000'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_OTP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ],
+    ],
+
+    'testMobileVerifyOtpForLoginWithInvalidPartnerId' => [
+        'request' => [
+            'url'     => '/users/login/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'otp'            => '0007',
+                'token'          => '10000000000000',
+                'contact_mobile' => '+918766776666',
+                'captcha'        => 'faked',
+                'partner_id'     => '1000000000000'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_INCORRECT_PARTNER_MAP,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_PARTNER_MAP,
+        ],
+    ],
 ];

@@ -1676,11 +1676,22 @@ class Service extends Base\Service
         // Referrer merchant doesn't need to complete presignup details.
         $referrerMerchant = $this->merchant->getReferrer();
 
+        $isReferrerMerchantFromPhantom = false;
+
+        if (!empty($referrerMerchant)) {
+            $properties = [
+                'id'            => $referrerMerchant,
+                'experiment_id' => $this->app['config']->get('app.partner_submerchant_whitelabel_onboarding'),
+            ];
+            $isReferrerMerchantFromPhantom = (new Merchant\Core)->isSplitzExperimentEnable($properties, 'enable');
+        }
+
         $presignupDetails = [];
 
         // Referrer Merchant check for presignup details.
         if ((empty($referrerMerchant) === true) or
-            (Merchant\Entity::verifyUniqueId($referrerMerchant, false) === 0))
+            (Merchant\Entity::verifyUniqueId($referrerMerchant, false) === 0) or
+            ($isReferrerMerchantFromPhantom === true))
         {
             $merchantDetails = $this->fetchMerchantDetails();
 
@@ -1738,6 +1749,8 @@ class Service extends Base\Service
             }
 
             $this->applyReferralPartner($input);
+
+            $this->addPartnerSubMerchantMappingIfApplicable($merchant, $input);
 
             $this->saveMerchantDetailForPreSignUp($input);
 
@@ -1871,78 +1884,115 @@ class Service extends Base\Service
         if (empty($referral) === false and
             ($referralProduct === $requestProduct))
         {
-            $partnerId = $referral[Referral\Entity::MERCHANT_ID];
-
-            $partner = $this->repo->merchant->findOrFailPublic($partnerId);
-
-            $merchantCore = new Merchant\Core;
-
-            $role = null;
-
-            if ($referralProduct === Product::BANKING)
-            {
-                // In current system when subM is coming via referral link, we assign referred application.
-		        // And in the current system for 'referred' applications partner user is not added to subM for banking product for aggregator / fully managed partners, but is added for PG
-		        // Now going forward, we will only use one type of app for subM for a given partner type, which will be 'managed' applications for aggregator / fully managed partners.
-		        // To maintain current behaviour, we will not create user for X by default.
-		        // But also with the migration to view_only role for banking product, we will have to attach a view_only role to user going forward and to keep things sync and for phased rollout, we are reusing the same experiment with which we are changing the role to view_only, when subM is created via partner dashboard
-                $properties = [
-                    'id'            => $partner->getId(),
-                    'experiment_id' => $this->app['config']->get('app.attach_view_only_role_banking_account_exp_id'),
-                ];
-
-                $isExpEnabled = $merchantCore->isSplitzExperimentEnable($properties, 'enable');
-
-                if ($isExpEnabled === true)
-                {
-                    $role = User\Role::VIEW_ONLY;
-                }
-                else
-                {
-                    \Request::instance()->request->add([Merchant\Entity::ALLOW_USER_CREATION => false]);
-                }
-            }
-
-            $merchantCore->createPartnerSubmerchantAccessMap($partner, $subMerchant, null, $role);
-
-            $linkedAccount = false;
-
-            // update merchant pricing plan to the one specified by partner in partner config if applicable
-            $merchantCore->assignSubMerchantPricingPlan($partner, $subMerchant, $linkedAccount);
-
-            $data = [
-                'status'       => 'success',
-                'merchant_id'  => $subMerchant->getId(),
-                'partner_id'   => $partnerId,
-                'source'       => PartnerConstants::REFERRAL,
-                'product_group'=> $referralProduct,
+            $mappingInput = [
+                'partner_id' => $referral[Referral\Entity::MERCHANT_ID],
+                'source' => PartnerConstants::REFERRAL
             ];
 
-            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
-                $partner, null,
-                $data);
-
-            if ($partner->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
-            {
-                $this->app->hubspot->skipMerchantOnboardingComm($subMerchant->getEmail());
-            }
-
-            $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
-
-            $dimension = [
-                'partner_type' => $partner->getPartnerType(),
-                'source'       => PartnerConstants::REFERRAL
-            ];
-
-            $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
-            $merchantCore->pushSettleToPartnerSubmerchantMetrics($partner->getId(), $subMerchant->getId());
-
-            $merchantCore->sendPartnerLeadInfoToSalesforce($subMerchant->getId(), $partnerId, $referralProduct);
+            $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, $referralProduct);
         }
 
         unset($input[Entity::REFERRAL_CODE]);
     }
 
+    private function applyPartnerSubMerchantMapping($subMerchant, $input, $product)
+    {
+        $partnerId = $input['partner_id'];
+
+        $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+        $merchantCore = new Merchant\Core;
+
+        $role = null;
+
+        if ($product === Product::BANKING)
+        {
+            // In current system when subM is coming via referral link, we assign referred application.
+            // And in the current system for 'referred' applications partner user is not added to subM for banking product for aggregator / fully managed partners, but is added for PG
+            // Now going forward, we will only use one type of app for subM for a given partner type, which will be 'managed' applications for aggregator / fully managed partners.
+            // To maintain current behaviour, we will not create user for X by default.
+            // But also with the migration to view_only role for banking product, we will have to attach a view_only role to user going forward and to keep things sync and for phased rollout, we are reusing the same experiment with which we are changing the role to view_only, when subM is created via partner dashboard
+            $properties = [
+                'id'            => $partner->getId(),
+                'experiment_id' => $this->app['config']->get('app.attach_view_only_role_banking_account_exp_id'),
+            ];
+
+            $isExpEnabled = $merchantCore->isSplitzExperimentEnable($properties, 'enable');
+
+            if ($isExpEnabled === true)
+            {
+                $role = User\Role::VIEW_ONLY;
+            }
+            else
+            {
+                \Request::instance()->request->add([Merchant\Entity::ALLOW_USER_CREATION => false]);
+            }
+        }
+
+        $merchantCore->createPartnerSubmerchantAccessMap($partner, $subMerchant, null, $role);
+
+        $linkedAccount = false;
+
+        // update merchant pricing plan to the one specified by partner in partner config if applicable
+        $merchantCore->assignSubMerchantPricingPlan($partner, $subMerchant, $linkedAccount);
+
+        $data = [
+            'status'       => 'success',
+            'merchant_id'  => $subMerchant->getId(),
+            'partner_id'   => $partnerId,
+            'source'       => $input['source'],
+            'product_group'=> $product,
+        ];
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
+                                                 $partner, null,
+                                                 $data);
+
+        if ($partner->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
+        {
+            $this->app->hubspot->skipMerchantOnboardingComm($subMerchant->getEmail());
+        }
+
+        $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
+
+        $dimension = [
+            'partner_type' => $partner->getPartnerType(),
+            'source'       => $input['source']
+        ];
+
+        $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
+        $merchantCore->pushSettleToPartnerSubmerchantMetrics($partner->getId(), $subMerchant->getId());
+
+        $merchantCore->sendPartnerLeadInfoToSalesforce($subMerchant->getId(), $partnerId, $product);
+    }
+
+    public function addPartnerSubMerchantMappingIfApplicable($subMerchant, array &$input)
+    {
+        if ((isset($input[Merchant\Constants::PARTNER_ID]) === false) or
+            (empty($input[Merchant\Constants::PARTNER_ID]) === true))
+        {
+            return;
+        }
+
+        $properties = [
+            'id'            => $input[Merchant\Constants::PARTNER_ID],
+            'experiment_id' => $this->app['config']->get('app.partner_submerchant_whitelabel_onboarding'),
+        ];
+
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable($properties, 'enable');
+
+        if ($isExpEnabled)
+        {
+            $mappingInput = [
+                'partner_id' => $input['partner_id'],
+                'source' => PartnerConstants::PHANTOM
+            ];
+
+            $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, Product::PRIMARY);
+        }
+
+        unset($input[Merchant\Constants::PARTNER_ID]);
+    }
     /**
      * This function is used to get zapier data for activation
      *

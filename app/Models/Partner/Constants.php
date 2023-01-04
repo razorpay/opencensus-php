@@ -33,6 +33,7 @@ class Constants
     const ADD_ACCOUNT_V1_ACCOUNTS_API   = 'add_account_v1_accounts_api';
     const ADD_ACCOUNT_V2_ONBOARDING_API = 'add_account_v2_onboarding_api';
     const ADD_MULTIPLE_ACCOUNT          = 'add_multiple_accounts';
+    const PHANTOM                       = 'phantom';
 
     /**
      * List of partner types that can get a settlement on behalf of a submerchant

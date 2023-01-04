@@ -31,6 +31,7 @@ use RZP\Mail\User\OtpSignup;
 use RZP\Services\Mock\Raven;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
+use RZP\Services\SplitzService;
 use RZP\Mail\User\PasswordReset;
 use RZP\Models\Admin\Permission;
 use RZP\Services\Mock\AuthToken;
@@ -10278,5 +10279,234 @@ class UserTest extends TestCase
         $this->ba->addXOriginHeader();
 
         $this->startTest();
+    }
+
+    public function testMobileVerifyOtpForLoginWithPartnerId()
+    {
+        list($partner, $app) = $this->setUpPartnerContext();
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
+        $user = $this->fixtures->create('user', [
+            'id'                      => '10000000000000',
+            'password'                => 'hello123',
+            'contact_mobile'          => '+918766776666',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->mockVerifyOtpRavenRequestResponse();
+
+        $subMerchant = $user->merchants->first();
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $subMerchant->getId()
+                                               ], 'test')
+                                 ->toArray();
+
+        $this->assertSame($partner->getId(), $merchantAcessMap['entity_owner_id']);
+
+        $this->assertSame($app->getId(), $merchantAcessMap['entity_id']);
+
+        $mappings = DB::table('merchant_users')
+                      ->where('merchant_id', '=', $subMerchant->getId())
+                      ->get();
+
+        $partnerUser = $partner->primaryOwner();
+
+        $this->assertEquals([$user->getId(), $partnerUser->getId()], $mappings->pluck('user_id')->toArray());
+    }
+
+    public function testMobileVerifyOtpForLoginWithPartnerIdAndExperimentDisabled()
+    {
+        list($partner, $app) = $this->setUpPartnerContext();
+
+        $user = $this->fixtures->create('user', [
+            'id'                      => '10000000000000',
+            'password'                => 'hello123',
+            'contact_mobile'          => '+918766776666',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $subMerchant = $user->merchants->first();
+
+        $this->ba->appAuth();
+
+        $this->mockVerifyOtpRavenRequestResponse();
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $subMerchant->getId()
+                                               ], 'test');
+
+        $this->assertEmpty($merchantAcessMap);
+
+        $mappings = DB::table('merchant_users')
+                      ->where('merchant_id', '=', $subMerchant->getId())
+                      ->get();
+
+        $this->assertEquals([$user->getId()], $mappings->pluck('user_id')->toArray());
+    }
+
+    public function testMobileVerifyOtpForLoginWithUnverifiedContactAndPartnerId()
+    {
+        list($partner, $app) = $this->setUpPartnerContext();
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
+        $user = $this->fixtures->create('user', [
+            'id'                      => '10000000000000',
+            'password'                => 'hello123',
+            'contact_mobile'          => '+918766776666',
+            'contact_mobile_verified' => false,
+        ]);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $subMerchant = $user->merchants()->first();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $subMerchant->getId()
+                                               ], 'test');
+
+        $this->assertEmpty($merchantAcessMap);
+
+        $mappings = DB::table('merchant_users')
+                      ->where('merchant_id', '=', $subMerchant->getId())
+                      ->get();
+
+        $this->assertEquals([$user->getId()], $mappings->pluck('user_id')->toArray());
+    }
+
+    public function testMobileVerifyOtpForLoginWithInCorrectAndPartnerId()
+    {
+        list($partner, $app) = $this->setUpPartnerContext();
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
+        $user = $this->fixtures->create('user', [
+            'id'                      => '10000000000000',
+            'password'                => 'hello123',
+            'contact_mobile'          => '+918766776666',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->ba->appAuth();
+
+        $ravenMock = $this->mockVerifyOtpRavenMethod();
+
+        $this->app['raven']->method('verifyOtp')->willThrowException(
+            new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP)
+        );
+
+        $this->startTest();
+
+        $subMerchant = $user->merchants()->first();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $subMerchant->getId()
+                                               ], 'test');
+
+        $this->assertEmpty($merchantAcessMap);
+
+        $mappings = DB::table('merchant_users')
+                      ->where('merchant_id', '=', $subMerchant->getId())
+                      ->get();
+
+        $this->assertEquals([$user->getId()], $mappings->pluck('user_id')->toArray());
+    }
+
+    public function testMobileVerifyOtpForLoginWithInvalidPartnerId()
+    {
+        $user = $this->fixtures->create('user', [
+            'id'                      => '10000000000000',
+            'password'                => 'hello123',
+            'contact_mobile'          => '+918766776666',
+            'contact_mobile_verified' => true,
+        ]);
+
+        $this->ba->appAuth();
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
+        $this->mockVerifyOtpRavenRequestResponse();
+
+        $this->startTest();
+
+        $subMerchant = $user->merchants()->first();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $subMerchant->getId()
+                                               ], 'test');
+
+        $this->assertEmpty($merchantAcessMap);
+
+        $mappings = DB::table('merchant_users')
+                      ->where('merchant_id', '=', $subMerchant->getId())
+                      ->get();
+
+        $this->assertEquals([$user->getId()], $mappings->pluck('user_id')->toArray());
+    }
+
+    private function mockSplitzExperiment($output)
+    {
+        $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->byDefault()
+            ->andReturn($output);
+    }
+
+    private function setUpPartnerContext()
+    {
+        $partner = $this->fixtures->merchant->edit('10000000000000', ['partner_type' => 'aggregator']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['merchant_id' => $partner->getId(),
+                                                                 'partner_type' => $partner->getPartnerType()]);
+
+        return [$partner, $app];
+    }
+
+    private function mockVerifyOtpRavenMethod()
+    {
+        $ravenMock = $this->getMockBuilder(Raven::class)
+                          ->setConstructorArgs([$this->app])
+                          ->onlyMethods(['verifyOtp'])
+                          ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        return $ravenMock;
+    }
+
+    private function mockVerifyOtpRavenRequestResponse()
+    {
+        $smsPayload = [
+            'success'    => true,
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => 'user_id:login_otp_v2:token',
+            'origin'     => '@dashboard.razorpay.com'
+        ];
+
+        $ravenMock = $this->mockVerifyOtpRavenMethod();
+
+        $ravenMock->expects($this->once())->method('verifyOtp')->with([
+                                                                          'receiver'  => '+918766776666',
+                                                                          'context'   => '10000000000000:login_otp_v2:10000000000000',
+                                                                          'source'    => 'api.user.login_otp_v2',
+                                                                          'otp'       => '0007'
+                                                                      ])->willReturn($smsPayload);
     }
 }

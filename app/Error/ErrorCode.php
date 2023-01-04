@@ -2862,7 +2862,7 @@ class ErrorCode
     const SERVER_ERROR_DCS_SERVICE_FAILURE                                         = 'SERVER_ERROR_DCS_SERVICE_FAILURE';
     const SERVER_ERROR_DCS_SERVICE_TIMEOUT                                         = 'SERVER_ERROR_DCS_SERVICE_TIMEOUT';
     const BAD_REQUEST_CRYPTOGRAM_NOT_SUPPORTED                                     = 'BAD_REQUEST_CRYPTOGRAM_NOT_SUPPORTED';
-
+    const BAD_REQUEST_INCORRECT_PARTNER_MAP                                        = 'BAD_REQUEST_INCORRECT_PARTNER_MAP';
 
     static function getConstants()
     {

@@ -8724,6 +8724,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRUECALLER_VERIFY_REQUEST_NOT_FOUND                         = 'TRUECALLER_VERIFY_REQUEST_NOT_FOUND';
     const TRUECALLER_INTERNATIONAL_NUMBER_USED                        = 'TRUECALLER_INTERNATIONAL_NUMBER_USED';
 
+    const LOGIN_PARTNER_MAPPING_FAILURE                               = 'LOGIN_PARTNER_MAPPING_FAILURE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
