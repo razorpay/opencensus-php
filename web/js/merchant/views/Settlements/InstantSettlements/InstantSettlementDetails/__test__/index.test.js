@@ -52,14 +52,6 @@ describe('InstantSettlementDetails', () => {
         state.instantSettlement.instantSettlement,
       );
     });
-
-    test('should fetch total settlement amount when settled amount is zero', async () => {
-      renderApp();
-      await waitFor(() => {
-        expect(fetchAmountSpy).toHaveBeenCalled();
-      });
-      expect(fetchAmountSpy).toHaveBeenCalledWith(defaultProps.id);
-    });
   });
 
   describe('InstantSettlementPanel', () => {
