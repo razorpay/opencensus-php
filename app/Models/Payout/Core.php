@@ -6204,6 +6204,12 @@ class Core extends Base\Core
 
     public function checkIfBeneBankIsDown(Entity $payout)
     {
+        // This is to avoid using on hold payouts feature for Non-IMPS feature
+        if ($payout->getMode() !== Mode::IMPS)
+        {
+            return false;
+        }
+
         $beneIfsc = substr($payout->fundAccount->account->getIfscCode(), 0, 4);
 
         $beneBankStatus = self::DEFAULT_BENE_BANK_STATUS;

@@ -1412,7 +1412,8 @@ class ScheduledPayoutTest extends TestCase
 
         $this->createPayoutWithOtpWithWorkflow(
             [
-                'scheduled_at' => $scheduledAtTime
+                'scheduled_at' => $scheduledAtTime,
+                'mode' => 'IMPS',
             ],
             'rzp_test_10000000000000');
 

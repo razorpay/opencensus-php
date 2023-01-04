@@ -366,7 +366,7 @@ trait PayoutTrait
             'currency'              => 'INR',
             'purpose'               => $attributes['purpose'] ?? 'refund',
             'fund_account_id'       => $attributes['fund_account_id'] ?? 'fa_100000000000fa',
-            'mode'                  => 'NEFT',
+            'mode'                  => $attributes['mode'] ?? 'NEFT',
             'queue_if_low_balance'  => $attributes['queue_if_low_balance'] ?? 0,
         ];
 
@@ -410,7 +410,7 @@ trait PayoutTrait
             'currency'              => 'INR',
             'purpose'               => 'refund',
             'fund_account_id'       => $attributes['fund_account_id'] ?? 'fa_100000000000fa',
-            'mode'                  => 'NEFT',
+            'mode'                  => $attributes['mode'] ?? 'NEFT',
             'queue_if_low_balance'  => $attributes['queue_if_low_balance'] ?? 0,
             'otp'                   => '0007',
             'token'                 => 'BUIj3m2Nx2VvVj',
@@ -665,7 +665,7 @@ trait PayoutTrait
         return $response;
     }
 
-    protected function createOnHoldPayoutWhenBeneBankIsDown()
+    protected function createOnHoldPayoutWhenBeneBankIsDown($attributes = ['mode' => 'IMPS'])
     {
         $this->ba->privateAuth();
 
@@ -682,12 +682,7 @@ trait PayoutTrait
                 ]
             ];
 
-        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT =>$benebankConfig]);
-
-        $request = [
-        'method'  => 'POST',
-        'url'     => '/payouts',
-        'content' => [
+        $defaultContents = [
             'account_number'  => '2224440041626905',
             'amount'          => 2000000,
             'currency'        => 'INR',
@@ -697,11 +692,22 @@ trait PayoutTrait
             'fund_account_id' => 'fa_100000000000fa',
             'notes'           => [
                 'abc' => 'xyz',
-            ],
-        ],
+            ]
+        ];
+
+        $content = array_merge($defaultContents, $attributes);
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT =>$benebankConfig]);
+
+        $request = [
+        'method'  => 'POST',
+        'url'     => '/payouts',
+        'content' => $content,
     ];
 
-        $this->expectWebhookEvent('payout.queued');
+        if ($content['mode'] === 'IMPS') {
+            $this->expectWebhookEvent('payout.queued');
+        }
 
         $this->makeRequestAndGetContent($request);
     }

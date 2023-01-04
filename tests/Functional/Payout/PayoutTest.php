@@ -21594,6 +21594,29 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('beneficiary_bank_down', $payout['queued_reason']);
     }
 
+    public function testOnHoldPayoutsForNonImpsPayouts()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
+
+        $balanceId = $this->bankingBalance->getId();
+
+        $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
+
+        $this->fixtures->balance->edit($balanceId, ['balance' => 100000000000000]);
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown(['mode' => 'NEFT', 'amount' => 100000]);
+
+        $payout1 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->assertEquals(Payout\Status::CREATED, $payout1['status']);
+
+        $this->createOnHoldPayoutWhenBeneBankIsDown(['mode' => 'RTGS', 'amount' => 1000000000]);
+
+        $payout2 = $this->getDbLastEntity('payout')->toArray();
+
+        $this->assertEquals(Payout\Status::CREATED, $payout2['status']);
+    }
+
     public function testOnHoldPayoutForFeatureEnabledMerchantWithNoTestTransactionsAndBeneDown()
     {
         $this->ba->privateAuth();
@@ -21858,6 +21881,8 @@ class PayoutTest extends OAuthTestCase
 
     public function testBatchSubmittedToOnHoldAndProcessing()
     {
+        $this->markTestSkipped("Onhold payouts won't be used for NEFT and RTGS payouts anymore");
+
         $this->fixtures->create('feature', [
             'name'        => Feature\Constants::PAYOUTS_ON_HOLD,
             'entity_id'   => 10000000000000,
@@ -21918,7 +21943,7 @@ class PayoutTest extends OAuthTestCase
 
         $this->createPayoutWorkflowWithBankingUsersLiveMode();
 
-        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout = $this->createPayoutWithWorkflow(['mode' => 'IMPS'], 'rzp_live_TheLiveAuthKey');
 
         $benebankConfig =
             [
