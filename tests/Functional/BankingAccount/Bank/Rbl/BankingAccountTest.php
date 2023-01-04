@@ -9286,7 +9286,7 @@ class BankingAccountTest extends TestCase
         $result = $this->getDbEntityById(RZP\Constants\Entity::BANKING_ACCOUNT_ACTIVATION_DETAIL ,
             $activationDetailId
         );
-        $this->assertEquals(ActivationDetail\Entity::SALES, $result[ActivationDetail\Entity::ASSIGNEE_TEAM]);
+        $this->assertEquals(BankingAccount\Entity::OPS_MX_POC, $result[ActivationDetail\Entity::ASSIGNEE_TEAM]);
 
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::DOC_COLLECTION, Status::DOC_COLLECTION,
@@ -9410,7 +9410,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($bankDueDate, $activationDetailsResponse[ActivationDetail\Entity::RBL_ACTIVATION_DETAILS][ActivationDetail\Entity::BANK_DUE_DATE]);
 
         // Automatic Assignee Team change
-        $this->assertEquals(ActivationDetail\Entity::SALES,
+        $this->assertEquals(BankingAccount\Entity::OPS_MX_POC,
             $bankingAccountResponse[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ASSIGNEE_TEAM]);
 
 
