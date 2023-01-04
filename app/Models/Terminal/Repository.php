@@ -371,6 +371,19 @@ class Repository extends Base\Repository
 
         $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'find', 'route_name' => $this->fetchRouteName()]);
 
+
+        /*
+         * For Fpx downtime cron, we need to pass the terminal in term_<terminal_id> format. In test and live mode in production,
+         * terminal data is being fetched from terminal service, hence this format works for that. But in test cases,
+         * Data is being fetched from api db and it is not able to fetch the data from db with the above format. Hence we
+         * need to strip this id before making a db call.
+         */
+        if ( strlen($id) === 19 &&
+            (strpos($id, "_") !== false))
+        {
+            Entity::verifyIdAndStripSign($id);
+        }
+
         return parent::find($id, $columns, $connectionType);
     }
 

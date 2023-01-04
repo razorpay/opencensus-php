@@ -2173,6 +2173,34 @@ class PaymentDowntimeTest extends TestCase
         $this->assertNotNull($paymentDowntime['end']);
     }
 
+    public function testFPXDowntime()
+    {
+        $this->terminal = $this->fixtures->create('terminal:shared_FPX_banking_terminal');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/gateway/downtimes/fpx/cron',
+            'content' => [
+                'terminal_id' => $this->terminal->getPublicId()
+            ]
+        ];
+
+        $this->ba->cronAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $gatewayDowntime = $this->getLastEntity('gateway_downtime', true);
+
+        $this->assertEquals('fpx', $gatewayDowntime['method']);
+        $this->assertEquals('PAYNET', $gatewayDowntime['source']);
+        $this->assertNull($gatewayDowntime['end']);
+
+        $paymentDowntime = $this->getLastEntity('payment.downtime', true);
+
+        $this->assertEquals('fpx', $paymentDowntime['method']);
+        $this->assertNull($paymentDowntime['end']);
+    }
+
     public function testPhonePeAPIIssuerDowntime()
     {
         $this->enablePhonePeDowntime();

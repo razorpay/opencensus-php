@@ -16,6 +16,7 @@ class Source
     const DOWNTIME_SERVICE  = 'DOWNTIME_SERVICE';
     const PHONEPE           = 'PHONEPE';
     const OTHER             = 'OTHER';
+    const PAYNET            = 'PAYNET';
 
     const DUMMY             = 'dummy';
 
@@ -30,6 +31,7 @@ class Source
         Source::DOWNTIME_SERVICE,
         Source::PHONEPE,
         Source::OTHER,
+        Source::PAYNET,
     ];
 
     public static function isValid($source)

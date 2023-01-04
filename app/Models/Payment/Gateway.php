@@ -42,6 +42,7 @@ class Gateway
     const MPI_BLADE              = 'mpi_blade';
     const MPI_ENSTAGE            = 'mpi_enstage';
     const CYBERSOURCE            = 'cybersource';
+    const FPX                    = 'fpx';
     const EBS                    = 'ebs';
     const ICICI                  = 'icici';
     const ICICI_EMI              = 'icici_emi';
@@ -130,7 +131,6 @@ class Gateway
     const BILLDESK_SIHUB         = 'billdesk_sihub';
     const MANDATE_HQ             = 'mandate_hq';
     const RUPAY_SIHUB            = 'rupay_sihub';
-    const FPX                    = 'fpx';
 
     const CARD_FSS               = 'card_fss';
     const CHECKOUT_DOT_COM       = 'checkout_dot_com';
@@ -1679,6 +1679,9 @@ class Gateway
             self::TWID,
             self::EMERCHANTPAY,
         ],
+        Method::FPX => [
+            self::FPX
+        ]
     ];
 
     const CARD_GATEWAYS_LIVE = [

@@ -9,6 +9,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Processor;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -236,9 +237,31 @@ class Validator extends Base\Validator
 
                 break;
 
+            case Method::FPX:
+
+                $this->validateFPXIssuer($issuer);
+
+                break;
+
             default:
                 throw new Exception\BadRequestValidationFailureException(
                     'Method ' . $method . ' is not supported');
+        }
+    }
+
+    protected function validateFPXIssuer($issuer)
+    {
+        if (empty($issuer) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+            'Issuer cannot be empty for FPX');
+        }
+
+        if ((in_array($issuer, Processor\Fpx::getB2CBanks()) === false) &&
+            (in_array($issuer, Processor\Fpx::getB2BBanks()) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+            'Issuer is not Valid');
         }
     }
 

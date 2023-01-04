@@ -4707,6 +4707,25 @@ class Terminal extends Base
 
     }
 
+    public function createSharedFPXBankingTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;
+
+        $defaultValues = [
+            'merchant_id' => $merchantId,
+            'gateway' => Gateway::FPX,
+            'gateway_merchant_id' => 'netbanking_dlb_merchant_id',
+            'netbanking' => 1,
+            'shared' => 1,
+            'gateway_secure_secret'      => Crypt::encrypt('test_secure_secret'),
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->create($attributes);
+
+    }
+
     public function createSharedNetbankingUcoTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::TEST_ACCOUNT;

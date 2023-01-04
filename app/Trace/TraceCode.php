@@ -2993,6 +2993,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const STATUSCAKE_CRON_FAILED                                = 'STATUSCAKE_CRON_FAILED';
     const PHONEPE_DOWNTIME_CREATE                               = 'PHONEPE_DOWNTIME_CREATE';
     const PHONEPE_DOWNTIME_RESOLVE                              = 'PHONEPE_DOWNTIME_RESOLVE';
+    const FPX_DOWNTIME_CREATE                                   = 'FPX_DOWNTIME_CREATE';
+    const FPX_DOWNTIME_RESOLVE                                  = 'FPX_DOWNTIME_RESOLVE';
 
     // Trace code for Merchant Details
     const MERCHANT_DETAIL_DOES_NOT_EXIST                        = 'MERCHANT_DETAIL_DOES_NOT_EXIST';

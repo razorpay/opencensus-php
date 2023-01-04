@@ -104,49 +104,51 @@ class Fpx
         self::UOVB_C,
     ];
 
-    protected static $fpxBankCodeMapping = [
-        // FPX bank code
-        self::PHBM      => 'ABB0233',
+    public static $fpxB2BBankCodeMapping = [
         self::PHBM_C    => 'ABB0235',
         self::MFBB_C    => 'ABMB0213',
-        self::MFBB      => 'ABMB0212',
-        self::ARBK      => 'AMBB0209',
         self::ARBK_C    => 'AMBB0208',
-        self::AGOB      => 'AGRO01',
         self::AGOB_C    => 'AGRO02',
         self::BNPA_C    => 'BNP003',
         self::BIMB_C    => 'BIMB0340',
-        self::BIMB      => 'BIMB0340',
         self::BKRM_C    => 'BKRM0602',
-        self::BKRM      => 'BKRM0602',
         self::BMMB_C    => 'BMMB0342',
-        self::BMMB      => 'BMMB0341',
-        self::BKCH      => 'BOCM01',
-        self::BSNA      => 'BSN0601',
         self::CIBB_C    => 'BCBB0235',
-        self::CIBB      => 'BCBB0235',
         self::CITI_C    => 'CIT0218',
         self::DEUT_C    => 'DBB0219',
         self::HSBC_C    => 'HSBC0223',
-        self::HSBC      => 'HSBC0223',
         self::HLBB_C    => 'HLB0224',
-        self::HLBB      => 'HLB0224',
         self::KFHO_C    => 'KFH0346',
-        self::KFHO      => 'KFH0346',
         self::MBBE_C    => 'MBB0228',
-        self::MBBE      => 'MBB0228',
-        self::MB2U      => 'MB2U0227',
         self::OCBC_C    => 'OCBC0229',
-        self::OCBC      => 'OCBC0229',
         self::PBBE_C    => 'PBB0233',
-        self::PBBE      => 'PBB0233',
         self::PBBN_C    => 'PBB0234',
         self::RHBB_C    => 'RHB0218',
-        self::RHBB      => 'RHB0218',
         self::SCBL_C    => 'SCB0215',
+        self::UOVB_C    => 'UOB0228'
+    ];
+
+    public static $fpxB2CBankCodeMapping = [
+        self::PHBM      => 'ABB0233',
+        self::MFBB      => 'ABMB0212',
+        self::ARBK      => 'AMBB0209',
+        self::AGOB      => 'AGRO01',
+        self::BIMB      => 'BIMB0340',
+        self::BKRM      => 'BKRM0602',
+        self::BMMB      => 'BMMB0341',
+        self::BKCH      => 'BOCM01',
+        self::BSNA      => 'BSN0601',
+        self::CIBB      => 'BCBB0235',
+        self::HSBC      => 'HSBC0223',
+        self::HLBB      => 'HLB0224',
+        self::KFHO      => 'KFH0346',
+        self::MBBE      => 'MBB0228',
+        self::MB2U      => 'MB2U0227',
+        self::OCBC      => 'OCBC0229',
+        self::PBBE      => 'PBB0233',
+        self::RHBB      => 'RHB0218',
         self::SCBL      => 'SCB0216',
-        self::UOVB      => 'UOB0226',
-        self::UOVB_C    => 'UOB0228',
+        self::UOVB      => 'UOB0226'
     ];
 
     // FPX bank name
@@ -256,6 +258,16 @@ class Fpx
         return array_values(array_unique(array_merge(self::$b2cBanks, self::$b2bBanks)));
     }
 
+    public static function getB2CBanks(): array
+    {
+        return self::$b2cBanks;
+    }
+
+    public static function getB2BBanks(): array
+    {
+        return self::$b2bBanks;
+    }
+
     public static function getName($bankCode)
     {
         return self::$names[$bankCode];
@@ -278,13 +290,17 @@ class Fpx
 
     public static function getFpxBankCode($bankCode)
     {
-        return self::$fpxBankCodeMapping[$bankCode];
+        $fpxBankCodeMapping = array_merge(self::$fpxB2BBankCodeMapping, self::$fpxB2CBankCodeMapping);
+
+        return $fpxBankCodeMapping[$bankCode];
     }
 
     // return fpx bank codes respectively to rzp bank code
     public static function getFpxBankCodes($bankCodes): array
     {
-        return array_intersect_key(self::$fpxBankCodeMapping, array_flip($bankCodes));
+        $fpxBankCodeMapping = array_merge(self::$fpxB2BBankCodeMapping, self::$fpxB2CBankCodeMapping);
+
+        return array_intersect_key($fpxBankCodeMapping, array_flip($bankCodes));
     }
 
 }

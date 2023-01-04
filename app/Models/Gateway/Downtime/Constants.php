@@ -73,6 +73,15 @@ class Constants
 
     const TO = 'to';
 
+    // These Constants are used for FPX Downtime Creation
+    const ACTIVE = "Active";
+
+    const RETAIL = "Retail";
+
+    const CORPORATE = "Corporate";
+
+    const TRANSACTION_TYPE = "transaction_type";
+
     protected static $lookerDashboardForMethod = [
         Constants::CARD           => Constants::CARD_LOOKER_DASHBOARD,
         Constants::UPI            => Constants::UPI_LOOKER_DASHBOARD,

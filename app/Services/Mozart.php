@@ -3,9 +3,10 @@
 namespace RZP\Services;
 
 use RZP\Http\Request\Requests;
+use RZP\Models\Gateway\Downtime\Core;
+use RZP\Models\Payment;
 use Throwable;
 use \WpOrg\Requests\Exception as Requests_Exception;
-
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -22,6 +23,10 @@ class Mozart
     const CONNECT_TIMEOUT = 10;
 
     const DEFAULT_MOZART_VERSION = 'v1';
+
+    const FPX_PAYMENT_NAMESPACE = "fpxPayments";
+
+    const FPX = "fpx";
 
     // Mozart constants
     const HEADERS = 'headers';
@@ -255,6 +260,17 @@ class Mozart
 
             throw $ex;
         }
+    }
+
+    public function getDowntimeIssuerData($input, $gateway)
+    {
+        switch ($gateway)
+        {
+            case self::FPX:
+                $response = $this->sendMozartRequest(self::FPX_PAYMENT_NAMESPACE, $gateway, Core::MOZART_GET_DOWNTIME_ACTION, $input);
+        }
+
+        return $response;
     }
 
     protected function sendRequest(array $request)

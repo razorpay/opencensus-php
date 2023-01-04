@@ -1859,4 +1859,16 @@ class GatewayController extends Controller
 
         return false;
     }
+
+    // Using this Controller, we will be hitting an external api
+    // to get the downtime data for the fpx banks and using that data
+    // downtime will be created and resolved
+    protected function createFpxDowntimes(Downtime\Service $service)
+    {
+        $input = Request::all();
+
+        $data = $service->createFpxDowntimes($input);
+
+        return ApiResponse::json($data);
+    }
 }

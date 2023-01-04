@@ -154,6 +154,7 @@ class Entity extends Base\PublicEntity
 
             case Method::NETBANKING:
             case Method::EMANDATE:
+            case Method::FPX:
                 $instrument[self::BANK] = $this->getIssuer();
                 break;
 
@@ -179,6 +180,7 @@ class Entity extends Base\PublicEntity
                     $instrument[self::ISSUER] = $issuer;
                 }
                 break;
+
 
             default:
                 break;

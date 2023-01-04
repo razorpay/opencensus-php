@@ -71,6 +71,7 @@ class ConfigKey
     const ENABLE_PAYMENT_DOWNTIME_CARD_ISSUER   = self::PREFIX . 'enable_payment_downtimes_card_issuer';
     const ENABLE_PAYMENT_DOWNTIME_CARD_NETWORK  = self::PREFIX . 'enable_payment_downtimes_card_network';
     const ENABLE_PAYMENT_DOWNTIME_NETBANKING    = self::PREFIX . 'enable_payment_downtimes_netbanking';
+    const ENABLE_PAYMENT_DOWNTIME_FPX           = self::PREFIX . 'enable_payment_downtimes_fpx';
     const ENABLE_PAYMENT_DOWNTIME_UPI           = self::PREFIX . 'enable_payment_downtimes_upi';
     const ENABLE_PAYMENT_DOWNTIME_WALLET        = self::PREFIX . 'enable_payment_downtimes_wallet';
     const ENABLE_PAYMENT_DOWNTIME_PHONEPE       = self::PREFIX . 'enable_payment_downtime_phonepe';

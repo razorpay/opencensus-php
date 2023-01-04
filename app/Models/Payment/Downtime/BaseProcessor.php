@@ -39,7 +39,7 @@ class BaseProcessor extends Base\Core
 
         /**
          * Filter out all the downtimes which should be resolved by checking the unavailable list
-         * `issuer` in case of nebanking and wallet
+         * `issuer` in case of nebanking, fpx and wallet
          * `network` in case of card
          *
          * This insures that downtime for `issuers` which are available now i.e which are not in unavailable list

@@ -187,6 +187,21 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function createFpxDowntimes($input)
+    {
+        $this->setMode();
+
+        $processor = new Webhook\Processor(Source::PAYNET);
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_WEBHOOK, []);
+
+        $processor->validate($input);
+
+        $data = $processor->process($input);
+
+        return $data;
+    }
+
     private function notifyOnSlack(array $input): void
     {
         try

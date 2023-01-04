@@ -1461,7 +1461,7 @@ class Route
         'cps_downtime_vajra_webhook'               => ['post',     'gateway/cps/webhook/vajra',                      'GatewayController@postCpsDowntimeVajraWebhook'                     ],
         'gateway_downtime_source_webhook'          => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'gateway_downtime_service_webhook'         => ['post',     'gateway/downtimes/webhook/downtime_service',     'GatewayController@postGatewayDowntimeServiceWebhook'               ],
-        'add_downtime_slack_merchant_names'            => ['post',     'gateway/downtimes/notifications/merchantNames',  'GatewayController@postDowntimeSlackNotificationMerchants'          ],
+        'add_downtime_slack_merchant_names'        => ['post',     'gateway/downtimes/notifications/merchantNames',  'GatewayController@postDowntimeSlackNotificationMerchants'          ],
         'gateway_downtime_detection_purge_keys'    => ['post',     'gateway/downtimes/detection/keys/purge',         'GatewayController@purgeGatewayDowntimeDetectionKeys'               ],
         'downtime_manager_admin'                   => ['any',      'downtime_manager/admin/{path?}',                 'DowntimeManagerController@downtimeManagerAdmin'                    ],
         'fetch_merchant_sr'                        => ['post',      'success-rate/merchant/{path?}',                  'DowntimeManagerController@FetchSRForMerchant'                    ],
@@ -1471,6 +1471,7 @@ class Route
         'gateway_update_rule'                      => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
         'gateway_delete_rule'                      => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
         'gateway_file_create'                      => ['post',     'gateway/files',                                  'GatewayFileController@createGatewayFile'                           ],
+        'fpx_downtime_detection_cron'              => ['post',     'gateway/downtimes/fpx/cron',                     'GatewayController@createFpxDowntimes'                           ],
         'gateway_file_retry'                       => ['post',     'gateway/files/{id}/retry',                       'GatewayFileController@retryGatewayFile'                            ],
         'gateway_file_acknowledge'                 => ['post',     'gateway/files/{id}/acknowledge',                 'GatewayFileController@acknowledgeGatewayFile'                      ],
         //Below route is for uploading bank refund file through admin dashboard
@@ -4670,6 +4671,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'fpx_downtime_detection_cron',
         'retry_store_legal_documents_cron',
         'merchant_popular_products_cron',
         '1cc_shipping_service_merchant_config_create',
@@ -13590,6 +13592,7 @@ class Route
         ],
 
         'cron' => [
+            'fpx_downtime_detection_cron',
             'payment_page_cds_billing_update_cron',
             'merchant_popular_products_cron',
             'capture_cron_for_b2b_payments',

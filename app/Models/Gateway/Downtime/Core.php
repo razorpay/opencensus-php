@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Error\Error;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -23,6 +24,8 @@ class Core extends Base\Core
     const DEFAULT_DOWNTIME_DURATION = 600;
 
     const GATEWAY_EXCEPTION_DOWNTIME = 'gateway_exception_downtime_';
+
+    const MOZART_GET_DOWNTIME_ACTION = "downtime";
 
     public function __construct()
     {
