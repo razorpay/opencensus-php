@@ -1064,6 +1064,7 @@ class Terminal extends Base
             'type'                      => [
                     Type::PAY               => '1',
                     Type::NON_RECURRING     => '1',
+                    Type::ONLINE            => '1',
             ],
         ];
 
