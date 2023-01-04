@@ -318,6 +318,11 @@ class Validator extends Base\Validator
         'provider'           => 'sometimes|string'
     ];
 
+    protected static $paymentsDualWriteSyncRules = [
+        'payment_ids'                => 'sometimes|sequential_array|max:1000',
+        'payment_ids.*'              => 'sometimes|public_id',
+    ];
+
     protected static $pspAmountLimit = [
         'upi'       => 20000000, // Changing limit for @upi handle
     ];

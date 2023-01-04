@@ -184,6 +184,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postPaymentsDualWriteSync()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->paymentsDualWriteSync($input);
+
+        return ApiResponse::json($response);
+    }
+
     /**
      * Refund a payment.
      * @param $id

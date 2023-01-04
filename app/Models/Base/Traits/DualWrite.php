@@ -115,7 +115,27 @@ trait DualWrite
                 'action' => $actionType,
             ]);
 
-            parent::saveOrFail($options);
+            try
+            {
+                parent::saveOrFail($options);
+            }
+            catch(\Throwable $ex)
+            {
+                // SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry
+                // Retrying above case as a concurrent upsert might have just happened
+                if (($ex->getCode() === '23000') and (str_contains($ex->getMessage(), '1062') === true))
+                {
+                    // Marking dual entity as exists so that an update will be performed with saveOrFail
+                    $this->exists     = true;
+                    $dualEntityExists = true;
+
+                    parent::saveOrFail($options);
+                }
+                else
+                {
+                    throw $ex;
+                }
+            }
         }
         catch(\Throwable $ex)
         {

@@ -14,6 +14,11 @@ class Observer extends BaseObserver
 {
     public function created(Entity $payment)
     {
+        if ((method_exists($payment, 'dualWrite') === true) and ($payment->dualWrite() === true))
+        {
+            return;
+        }
+
         $this->saveRelatedEntitiesFromMetaData($payment);
 
         (new Metric)->pushCreateMetrics($payment);
@@ -26,6 +31,11 @@ class Observer extends BaseObserver
      */
     public function updated($payment)
     {
+        if ((method_exists($payment, 'dualWrite') === true) and ($payment->dualWrite() === true))
+        {
+            return;
+        }
+
         $this->validateEntity($payment);
 
         if ($payment->isUpi() === true)

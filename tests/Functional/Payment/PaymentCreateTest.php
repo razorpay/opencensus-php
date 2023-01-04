@@ -10279,6 +10279,99 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals($billingAddress['postal_code'], $addressEntity['zipcode']);
     }
 
+    public function testPaymentCreateDualWrite()
+    {
+        $paymentData = $this->getDefaultPaymentArray();
+
+        $content = $this->doAuthAndCapturePayment($paymentData);
+
+        $payment = $this->getDbEntityById('payment', $content['id']);
+
+        $paymentsNew = \DB::table('payments_new')->select(\DB::raw("*"))->where('id', '=', $payment['id'])->get()->first();
+
+        $this->assertNotNull($paymentsNew);
+
+        $paymentsNewArray = (array) $paymentsNew;
+
+        // dual write assertions
+        $this->assertEquals($paymentsNewArray['id'], $payment['id']);
+        $this->assertEquals($paymentsNewArray['merchant_id'], $payment['merchant_id']);
+        $this->assertEquals($paymentsNewArray['amount'], $payment['amount']);
+        $this->assertEquals($paymentsNewArray['currency'], $payment['currency']);
+        $this->assertEquals($paymentsNewArray['status'], $payment['status']);
+        $this->assertEquals($paymentsNewArray['disputed'], $payment['disputed']);
+        $this->assertEquals($paymentsNewArray['refund_status'], $payment['refund_status']);
+        $this->assertEquals($paymentsNewArray['created_at'], $payment['created_at']);
+        $this->assertEquals($paymentsNewArray['updated_at'], $payment['updated_at']);
+    }
+
+    public function testPaymentDualWriteSyncRoute()
+    {
+        $paymentData = $this->getDefaultPaymentArray();
+
+        $content = $this->doAuthAndCapturePayment($paymentData);
+
+        $payment = $this->getDbEntityById('payment', $content['id']);
+
+        \DB::table('payments_new')->where('id', '=', $payment['id'])->delete();
+
+        $paymentsNew = \DB::table('payments_new')->select(\DB::raw("*"))->where('id', '=', $payment['id'])->get()->first();
+
+        $this->assertNull($paymentsNew);
+
+        $this->ba->cronAuth();
+
+        $testData = [
+            'request' => [
+                'method'  => 'POST',
+                'url'     => '/payments/dual_write/sync',
+                'content' => [
+                    'payment_ids' => ['pay_' . $payment['id']]
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    'synced_payment_ids' => [$payment['id']]
+                ]
+            ]
+        ];
+
+        $this->runRequestResponseFlow($testData);
+
+        $paymentsNew = \DB::table('payments_new')->select(\DB::raw("*"))->where('id', '=', $payment['id'])->get()->first();
+
+        $this->assertNotNull($paymentsNew);
+
+        $paymentsNewArray = (array) $paymentsNew;
+
+        $this->assertEquals($paymentsNewArray['id'], $payment['id']);
+        $this->assertEquals($paymentsNewArray['merchant_id'], $payment['merchant_id']);
+        $this->assertEquals($paymentsNewArray['amount'], $payment['amount']);
+        $this->assertEquals($paymentsNewArray['created_at'], $payment['created_at']);
+        $this->assertEquals($paymentsNewArray['updated_at'], $payment['updated_at']);
+
+        \DB::table('payments_new')->where('id', '=', $payment['id'])->update(['amount' => 87793]);
+
+        $paymentsNew = \DB::table('payments_new')->select(\DB::raw("*"))->where('id', '=', $payment['id'])->get()->first();
+
+        $paymentsNewArray = (array) $paymentsNew;
+
+        $this->assertEquals('87793', $paymentsNewArray['amount']);
+
+        $this->runRequestResponseFlow($testData);
+
+        $paymentsNew = \DB::table('payments_new')->select(\DB::raw("*"))->where('id', '=', $payment['id'])->get()->first();
+
+        $this->assertNotNull($paymentsNew);
+
+        $paymentsNewArray = (array) $paymentsNew;
+
+        $this->assertEquals($paymentsNewArray['id'], $payment['id']);
+        $this->assertEquals($paymentsNewArray['amount'], $payment['amount']);
+        $this->assertEquals($paymentsNewArray['created_at'], $payment['created_at']);
+        $this->assertEquals($paymentsNewArray['updated_at'], $payment['updated_at']);
+    }
+
     public function testPaymentCreateWhenInputEmailIsNotPresentAndWithStandardCheckoutLibraryExpectsSuccessfulPaymentCreation(): void
     {
         $this->doPaymentCreateAndCalculateFees('checkoutjs');

@@ -4655,7 +4655,7 @@ class Service extends Base\Service
             case "payment":
                 $payment = $this->repo->payment->findByPublicId($entityId);
                 $this->merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
-                
+
                 $processor = $this->getNewProcessor($this->merchant);
                 $data = $processor->processAndReturnPaymentFees($payment);
                 break;
@@ -5773,6 +5773,46 @@ class Service extends Base\Service
 
         return $library;
 
+    }
+
+    public function paymentsDualWriteSync($input)
+    {
+        $response = [];
+
+        try
+        {
+            $this->trace->info(TraceCode::PAYMENTS_DUAL_WRITE_SYNC, $input);
+
+            (new Payment\Validator)->validateInput(__FUNCTION__, $input);
+
+            if (empty($input['payment_ids']) === false)
+            {
+                $paymentIds = $input['payment_ids'];
+
+                foreach ($paymentIds as $paymentId)
+                {
+                    $payment = $this->repo->payment->findByPublicId($paymentId);
+
+                    $this->repo->saveOrFail($payment);
+
+                    $response['synced_payment_ids'][] = $payment->getId();
+                }
+            }
+            else
+            {
+                // ToDo : Implement fetch from cache and update if needed later
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENTS_DUAL_WRITE_SYNC_FAILURE,
+            );
+        }
+
+        return $response;
     }
 
     public function paymentsCardEsSyncCron($input)
