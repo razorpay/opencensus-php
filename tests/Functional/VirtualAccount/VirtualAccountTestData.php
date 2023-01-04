@@ -1550,12 +1550,12 @@ return [
             'url' =>'/merchant/virtual_accounts/{id}',
             'method' => 'patch',
             'content' => [
-                'close_by' => '31-12-2022 23:00',
+                'close_by' => '31-12-2028 23:00',
             ]
         ],
         'response' => [
             'content' => [
-                'close_by' => 1672507800,
+                'close_by' => 1861896600,
             ],
             'status_code' => 200,
         ]
@@ -1635,7 +1635,7 @@ return [
             'url' =>'/merchant/virtual_accounts/{id}',
             'method' => 'patch',
             'content' => [
-                'close_by' => '31-12-2022',
+                'close_by' => '31-12-2028',
             ]
         ],
         'response' => [
@@ -1658,7 +1658,7 @@ return [
             'url' =>'/merchant/virtual_accounts/{id}',
             'method' => 'patch',
             'content' => [
-                'close_by' => '1-2-2023',
+                'close_by' => '1-2-2028',
             ]
         ],
         'response' => [
