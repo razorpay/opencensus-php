@@ -3310,6 +3310,10 @@ class Core extends Base\Core
 
         $properties = $this->getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails, $currentActivationStatus);
 
+        // Sending Product Led Event To Hubspot
+
+        $this->pushProductLedHubspotEvent($merchant, $properties);
+
         if($currentActivationStatus === Status::INSTANTLY_ACTIVATED){
 
             $this->app['segment-analytics']->pushTrackEvent(
@@ -3421,7 +3425,42 @@ class Core extends Base\Core
             $merchant, $properties, SegmentEvent::PAYMENTS_ENABLED);
 
     }
+    protected function pushProductLedHubspotEvent($merchant, $properties)
+    {
+        try
+        {
+            if (empty($merchant->getEmail()) === true)
+            {
+                return;
+            }
 
+            if (array_key_exists('product_led', $properties))
+            {
+
+                $value = $properties['product_led'];
+
+                $values = [
+                    'product_led' => 'TRUE',
+                    'PG'          => ($value === 'PG') ? 'TRUE' : 'FALSE'
+                ];
+
+                $this->trace->info(TraceCode::PUSHED_EVENT_TO_HUBSPOT, [
+                    'Properties' => $values
+                ]);
+
+                $this->app->hubspot->trackHubspotEvent($merchant->getEmail(), $values);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            $this->trace->error(TraceCode::HUBSPOT_JOB_REQUEST, [
+                'Error' => 'Event push to hubspot failed'
+            ]);
+        }
+
+    }
     protected function pushHubspotEvent($merchant, $merchantDetails)
     {
         if (empty($merchant->getEmail()) === true)
