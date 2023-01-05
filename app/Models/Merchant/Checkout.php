@@ -198,6 +198,8 @@ class Checkout
 
         $this->fill1ccAddressOptExperiment($merchant, $data);
 
+        $this->disableFeaturesBasedOnMerchantType($merchant, $input);
+
         $this->fillCheckoutExperiments($input, $data, $merchant->getId());
 
         $this->fillEmailRequiredOnCheckoutIfApplicable($data);
@@ -1692,6 +1694,24 @@ class Checkout
         //adding this here because there are condition at checkout so we have to return this feature always true
         $data['features'][Feature\Constants::REDIRECT_TO_ZESTMONEY] = true;
 
+    }
+
+    /**
+     * This function is used for disabling the features based on merchant types
+     * like optimizer merchants, other orgs merchants etc...
+     *
+     * @param Entity $merchant
+     * @param array  $input
+     *
+     * @return void
+     */
+    protected function disableFeaturesBasedOnMerchantType(Entity $merchant, array &$input): void
+    {
+        // Check if the merchant is optimizer merchant
+        if ($merchant->isFeatureEnabled(Feature\Constants::RAAS)) {
+            // Disable qr code for optimizer merchant
+            $input['qr_required'] = false;
+        }
     }
 
     /**
