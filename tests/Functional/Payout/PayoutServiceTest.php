@@ -45,6 +45,7 @@ use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Services\PayoutService\DataConsistencyChecker;
 use RZP\Services\PayoutService\Get as PayoutServiceGet;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
+use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 use RZP\Models\Merchant\Balance\AccountType as AccountType;
 use RZP\Services\PayoutService\Retry as PayoutServiceRetry;
 use RZP\Services\PayoutService\Fetch as PayoutServiceFetch;
@@ -2126,6 +2127,43 @@ class PayoutServiceTest extends TestCase
         Queue::assertPushed(PayoutSourceUpdaterJob::class);
     }
 
+    public function testPayoutSetStatusHandleWithVendorPaymentAsSource()
+    {
+        $payout = $this->testCreatePayoutEntry('IMPS', true);
+
+        $payoutID = $payout['id'];
+
+        $strippedPayoutID = $payoutID;
+        $strippedPayoutID = Entity::verifyIdAndStripSign($strippedPayoutID);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => $strippedPayoutID,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'vendor_payments',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        $vpMock = Mockery::mock('RZP\Services\VendorPayment');
+
+        $vpMock->shouldReceive('pushPayoutStatusUpdate');
+
+        $this->app->instance('vendor-payment', $vpMock);
+
+        (new PayoutSourceUpdaterJob('live',
+                                    $payoutID,
+                                    null,
+                                    Status::CREATE_REQUEST_SUBMITTED))->handle();
+
+        // assert that the Payout Update Status was called when feature was enabled
+        $vpMock->shouldHaveReceived('pushPayoutStatusUpdate');
+    }
 
     public function testCreatePayoutWithNewBankingError(): array
     {

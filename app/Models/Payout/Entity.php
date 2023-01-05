@@ -2065,7 +2065,13 @@ class Entity extends Base\PublicEntity
 
             foreach ($details as $key => $value)
             {
-                $sourceDetails->push($value);
+                $payoutSource = new PayoutSource\Entity;
+
+                $payoutSource->setSourceType($value->source_type);
+                $payoutSource->setSourceId($value->source_id);
+                $payoutSource->setPriority($value->priority);
+
+                $sourceDetails->push($payoutSource);
             }
         }
 
