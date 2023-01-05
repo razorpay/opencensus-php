@@ -339,16 +339,23 @@ class CardVault extends Base\Core
         {
             if($isRzpX === false)
             {
-                if (empty($input['trivia']) === false) {
-                    $buNamespace = 'payments_token_pan';
+                if (empty($input['trivia']) === false)
+                {
+                    if (empty($input['network']) === true || $input['network'] !== NetworkName::DICL)
+                    {
+                        $buNamespace = 'payments_token_pan';
+                    }
                 }
-                else if (empty($input['international']) === false) {
+                else if (empty($input['international']) === false)
+                {
                     $buNamespace = 'payments_international';
                 }
-                else if (empty($input['network']) === false and $input['network'] === 'Bajaj Finserv'){
+                else if (empty($input['network']) === false and $input['network'] === 'Bajaj Finserv')
+                {
                     $buNamespace = 'payments_bajajfinserv';
                 }
-                else if (isset($gateway) === true and $gateway === 'paysecure'){
+                else if (isset($gateway) === true and $gateway === 'paysecure')
+                {
                     $buNamespace = 'payments_paysecure';
                 }
             }
