@@ -2188,7 +2188,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($counter['balance_id'], $balance['id']);
         $this->assertEquals($counter['account_type'], $balance['account_type']);
 
-        Mail::assertQueued(Activated::class);
+        Mail::assertNotQueued(Activated::class);
 
         Mail::assertQueued(ActivationMails\StatusChange::class, function ($mail) use($bankingAccount)
         {
@@ -2349,7 +2349,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($counter['balance_id'], $balance['id']);
         $this->assertEquals($counter['account_type'], $balance['account_type']);
 
-        Mail::assertQueued(Activated::class);
+        Mail::assertNotQueued(Activated::class);
 
         Mail::assertQueued(ActivationMails\StatusChange::class, function ($mail) use($bankingAccount)
         {
@@ -2588,7 +2588,7 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($counter['balance_id'], $balance['id']);
         $this->assertEquals($counter['account_type'], $balance['account_type']);
 
-        Mail::assertQueued(Activated::class);
+        Mail::assertNotQueued(Activated::class);
 
         Mail::assertQueued(ActivationMails\StatusChange::class, function ($mail) use($bankingAccount)
         {
@@ -3178,9 +3178,11 @@ class BankingAccountTest extends TestCase
             ])
         ))
         {
-            $mailableClass = RZP\Mail\BankingAccount\StatusNotifications\Factory::getMailer($updatedBankingAccount);
-
-            Mail::assertQueued(get_class($mailableClass));
+            // Check notifyMerchantAboutUpdatedStatus
+//            $mailableClass = RZP\Mail\BankingAccount\StatusNotifications\Factory::getMailer($updatedBankingAccount);
+//
+//            Mail::assertQueued(get_class($mailableClass));
+            Mail::assertNothingSent();
         }
         else
         {
@@ -3758,7 +3760,7 @@ class BankingAccountTest extends TestCase
 
         $this->startTest($dataToReplace);
 
-        Mail::assertQueued(Processed::class);
+        Mail::assertNotQueued(Processed::class);
 
         $bankingAccountEntity = $this->getDbLastEntity('banking_account');
 
@@ -3867,7 +3869,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::UNSERVICEABLE, $bankingAccount->getStatus());
 
-        Mail::assertQueued(Unserviceable::class);
+        Mail::assertNotQueued(Unserviceable::class);
     }
 
     public function testUpdateBankingAccountToInitiated()
@@ -4990,7 +4992,7 @@ class BankingAccountTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(Created::class);
+        Mail::assertNotQueued(Created::class);
     }
 
     public function testUpdatedStatusFromCreatedToPicked()
@@ -5036,7 +5038,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::CANCELLED, $bankingAccount->getStatus());
 
-        Mail::assertQueued(Cancelled::class);
+        Mail::assertNotQueued(Cancelled::class);
     }
 
     public function testUpdatedStatusFromInitiatedToAccountOpening()
@@ -5066,7 +5068,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::ACCOUNT_OPENING, $bankingAccount->getStatus());
 
-        Mail::assertQueued(Processing::class);
+        Mail::assertNotQueued(Processing::class);
     }
 
     public function testUpdatedStatusFromProcessingToProcessed()
@@ -5243,7 +5245,7 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals(RZP\Models\BankingAccount\Status::REJECTED, $bankingAccount->getStatus());
 
-        Mail::assertQueued(Rejected::class);
+        Mail::assertNotQueued(Rejected::class);
     }
 
     public function testUpdateBankingAccountDetails()

@@ -377,34 +377,36 @@ class Core extends Base\Core
 
     public function notifyMerchantAboutUpdatedStatus(Entity $bankingAccount)
     {
-        try
-        {
-            $mailer = StatusUpdateMailerFactory::getMailer($bankingAccount);
+        // Product has asked to pause merchant notifications
 
-            Mail::queue($mailer);
-
-            $this->trace->info(
-                TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION,
-                [
-                    'banking_account_id' => $bankingAccount->getId(),
-                    'merchant_id'        => $bankingAccount->merchant->getId(),
-                    'status'             => $bankingAccount->getStatus(),
-                    'message'            => 'Mail Sent'
-                ]);
-        }
-        catch(\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION_FAILED,
-                [
-                    'banking_account_id' => $bankingAccount->getId(),
-                    'merchant_id'        => $bankingAccount->merchant->getId(),
-                    'status'             => $bankingAccount->getStatus(),
-                    'error'              => $e->getMessage(),
-                ]);
-        }
+//        try
+//        {
+//            $mailer = StatusUpdateMailerFactory::getMailer($bankingAccount);
+//
+//            Mail::queue($mailer);
+//
+//            $this->trace->info(
+//                TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION,
+//                [
+//                    'banking_account_id' => $bankingAccount->getId(),
+//                    'merchant_id'        => $bankingAccount->merchant->getId(),
+//                    'status'             => $bankingAccount->getStatus(),
+//                    'message'            => 'Mail Sent'
+//                ]);
+//        }
+//        catch(\Exception $e)
+//        {
+//            $this->trace->traceException(
+//                $e,
+//                Trace::ERROR,
+//                TraceCode::BANKING_ACCOUNT_UPDATE_NOTIFICATION_FAILED,
+//                [
+//                    'banking_account_id' => $bankingAccount->getId(),
+//                    'merchant_id'        => $bankingAccount->merchant->getId(),
+//                    'status'             => $bankingAccount->getStatus(),
+//                    'error'              => $e->getMessage(),
+//                ]);
+//        }
     }
 
     public function notifyMerchantAboutUpdatedStatusOnMobileViaPushNotification(Entity $bankingAccount)
