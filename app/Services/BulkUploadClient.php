@@ -165,6 +165,11 @@ class BulkUploadClient extends Job
             {
                 (new KafkaProducer(self::ADDRESS_DEDUPE_REQUEST, stringify($requestStructure)))->Produce();
                 $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["kafkaPushSuccess:167" => $this->getCurrentTimeInMillis() - $kafkaStart]);
+
+                $sleepStart = $this->getCurrentTimeInMillis();
+                $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["KafkaSleepStartAfterAddressPublish" => $sleepStart]);
+                usleep(50000);
+                $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["KafkaSleepEndAfterAddressPublish" => $this->getCurrentTimeInMillis() - $sleepStart]);
             }
             catch (\Exception $e)
             {
