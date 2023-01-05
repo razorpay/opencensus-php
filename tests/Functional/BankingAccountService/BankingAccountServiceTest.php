@@ -1184,7 +1184,10 @@ class BankingAccountServiceTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(CurrentAccount::class);
+        Mail::assertQueued(CurrentAccount::class, function ($mail) {
+            $mail->build();
+            return $mail->subject === 'RazorpayX | Current Account [10000000000000 | test merchant]';
+        });
 
     }
 

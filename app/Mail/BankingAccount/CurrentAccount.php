@@ -15,7 +15,7 @@ class CurrentAccount extends Base
 
     const MAIL_TAG = MailTags::ICICI_CURRENT_ACCOUNT;
 
-    const SUBJECT = 'Merchant with MID: %s has requested ICICI CA on %s';
+    const SUBJECT       = 'RazorpayX | Current Account [%s | %s]';
 
     /**
      * This email is sent to ops to notify them about the interest merchant has shown in
@@ -36,11 +36,9 @@ class CurrentAccount extends Base
     {
         $merchantId = $this->data['merchant_id'];
 
-        $now = Carbon::now()->getTimestamp();
+        $merchantName = $this->data['merchant_name'] ?? "";
 
-        $dateTime = Carbon::createFromTimestamp($now, Timezone::IST)->format('d-M-y H:i');
-
-        return sprintf(self::SUBJECT, $merchantId, $dateTime);
+        return sprintf(self::SUBJECT, $merchantId, $merchantName);
     }
 
     protected function getMailData()
