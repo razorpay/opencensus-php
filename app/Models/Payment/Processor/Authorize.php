@@ -10360,27 +10360,9 @@ trait Authorize
             return false;
         }
 
-        if (($payment->isNetbanking() === true) and
-            (Gateway::isNetbankingS2SRedirectGateway($payment->getGateway()) === true))
-        {
-            return true;
-        }
-
         if ($payment->isNetbanking() === true)
         {
-            $razorxResult = $this->app->razorx->getTreatment($payment->getId(), 'netbanking_s2s_redirect', $this->mode);
-
-            if ($razorxResult === 's2s_on')
-            {
-                $this->trace->info(
-                    TraceCode::PAYMENT_CREATED_IN_REDIRECT_TO_AUTHORIZE_NETBANKING,
-                    [
-                        'payment_id' => $payment->getId(),
-                    ]
-                );
-
-                return true;
-            }
+            return true;
         }
 
         if ((($payment->isMethodCardOrEmi() === false) and

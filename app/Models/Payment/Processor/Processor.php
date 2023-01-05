@@ -2866,6 +2866,12 @@ class Processor
 
     protected function validateTokenisedPayment(& $input)
     {
+        if (isset($input[Payment\Entity::METHOD]) and
+            ($input[Payment\Entity::METHOD] !== Payment\Method::CARD))
+        {
+            return;
+        }
+
         $experimentVariable = UniqueIdEntity::generateUniqueId();
 
         $variant = $this->app->razorx->getTreatment($experimentVariable, Merchant\RazorxTreatment::DISABLE_RZP_TOKENISED_PAYMENT, $this->mode);
@@ -7668,6 +7674,11 @@ class Processor
      */
     private function validate1CCFlow(array $input)
     {
+        if ($this->merchant->isFeatureEnabled(Features::ONE_CLICK_CHECKOUT) === false)
+        {
+            return;
+        }
+
         if (isset($input['order_id']) === true)
         {
             $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
