@@ -4428,6 +4428,25 @@ return [
         ],
     ],
 
+    'testBankLmsBankAccountFetchWithFromDocketEstimatedDeliveryDateFilter' => [
+        'request' => [
+            'url'     => '/banking_accounts/rbl/lms/banking_account',
+            'method'  => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ],
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testBankLmsEndToEndPartnerChangeAssignee' => [
         'request' => [
             'url' => '/banking_accounts/rbl/lms/banking_account',

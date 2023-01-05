@@ -9269,6 +9269,83 @@ class BankingAccountTest extends TestCase
         $this->startTest($dataToReplace);
     }
 
+    public function testBankLmsBankAccountFetchWithFromDocketEstimatedDeliveryDateFilter()
+    {
+        // Make merchant as Bank CA Onboarding Partner
+        $response = $this->makeMerchantAsBankCAOnboardingPartner();
+
+        // Add Feature to the Merchant
+        $response = $this->addBankLmsFeatureToTheMerchant();
+
+        // Invite new user to join RBL merchant
+        $this->inviteNewUserToJoinRBLMerchant();
+
+        // Accept invitation
+        $response = $this->acceptInvitation();
+
+        $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
+
+        $ba1 = $this->createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc('10000000000111',$user->getId());
+
+        $this->fixtures->edit('banking_account_activation_detail', $ba1['banking_account_activation_details']['id'],
+            [
+                'banking_account_id' => substr($ba1['id'],5),
+                'additional_details'        => json_encode([
+                    'docket_estimated_delivery_date' => '1667346201'
+                ])
+            ]);
+
+        $ba2 = $this->createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc('10000000000112',$user->getId());
+
+        $this->fixtures->edit('banking_account_activation_detail', $ba2['banking_account_activation_details']['id'],
+            [
+                'banking_account_id' => substr($ba2['id'],5),
+                'additional_details'        => json_encode([
+                    'docket_estimated_delivery_date' => '1667346101'
+                ])
+            ]);
+
+        $ba3 = $this->createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc('10000000000113',$user->getId());
+
+        $this->fixtures->edit('banking_account_activation_detail', $ba3['banking_account_activation_details']['id'],
+            [
+                'banking_account_id' => substr($ba3['id'],5),
+                'additional_details'        => json_encode([
+                    'docket_estimated_delivery_date' => '1667349200'
+                ])
+            ]);
+
+        $this->createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc('10000000000114',$user->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/rbl/lms/banking_account?from_docket_estimated_delivery_date=1667346200&to_docket_estimated_delivery_date=1667348200',
+            ]
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
+    protected function createMerchantAndApplyForCurrentAccountAndAttachToBankPartnerAndAssignBankPartnerPoc(string $merchantId, string $bankPocUserId): array
+    {
+        $this->fixtures->create('merchant', ['id' => $merchantId]);
+        $this->fixtures->merchant_detail->createAssociateMerchant([
+            'merchant_id' => $merchantId]);
+
+        // New Merchant Apply for Current Account
+        $response = $this->MerchantApplyForCurrentAccount($merchantId);
+
+        (new BankingAccount\BankLms\Service())->attachCaApplicationMerchantToBankPartner(['banking_account_id' => $response['id']]);
+
+        (new BankingAccount\BankLms\Service())->assignBankPartnerPocToApplication($response['id'], ['bank_poc_user_id' => $bankPocUserId]);
+
+        return $response;
+    }
+
     public function testBankLmsEndToEndChangeAssigneeByStatusSubStatusChange()
     {
 
@@ -11225,114 +11302,6 @@ class BankingAccountTest extends TestCase
                     'entity' => 'collection',
                     'count' => 1,
                     'items' => [
-                    ],
-                ],
-            ]
-        ];
-
-        $this->startTest($dataToReplace);
-    }
-
-    public function testFilterFromDocketEstimatedDeliveryDateAndToDocketEstimatedDeliveryDate()
-    {
-        $ba1 = $this->fixtures->create('banking_account', [
-            'id'                    => '01234567890123',
-            'account_number'        => '2224440041626905',
-            'account_type'          => 'current',
-            'merchant_id'           => '10000000000000',
-            'channel'               => 'rbl',
-            'status'                => 'created',
-            'pincode'               => '1',
-            'bank_reference_number' => '',
-            'account_ifsc'          => 'RATN0000156',
-        ]);
-
-        $this->fixtures->create('banking_account_activation_detail', [
-            'banking_account_id' => $ba1->getId(),
-            'additional_details'        => json_encode([
-                'docket_estimated_delivery_date' => '1667346201'
-            ])
-        ]);
-
-        $ba2 = $this->fixtures->create('banking_account', [
-            'id'                    => '01234567890124',
-            'account_number'        => '2224440041626906',
-            'account_type'          => 'current',
-            'merchant_id'           => '10000000000001',
-            'channel'               => 'rbl',
-            'status'                => 'created',
-            'pincode'               => '1',
-            'bank_reference_number' => '',
-            'account_ifsc'          => 'RATN0000156',
-        ]);
-
-        $this->fixtures->create('banking_account_activation_detail', [
-            'banking_account_id' => $ba2->getId(),
-            'additional_details'        => json_encode([
-                'docket_estimated_delivery_date' => '1667346100'
-            ])
-        ]);
-
-        $ba3 = $this->fixtures->create('banking_account', [
-            'id'                    => '01234567890125',
-            'account_number'        => '2224440041626907',
-            'account_type'          => 'current',
-            'merchant_id'           => '10000000000003',
-            'channel'               => 'rbl',
-            'status'                => 'created',
-            'pincode'               => '1',
-            'bank_reference_number' => '',
-            'account_ifsc'          => 'RATN0000156',
-        ]);
-
-        $this->fixtures->create('banking_account_activation_detail', [
-            'banking_account_id' => $ba3->getId(),
-            'additional_details'        => json_encode([
-                'docket_estimated_delivery_date' => '1667348220'
-            ])
-        ]);
-
-        $ba4 = $this->fixtures->create('banking_account', [
-            'id'                    => '01234567890126',
-            'account_number'        => '2224440041626910',
-            'account_type'          => 'current',
-            'merchant_id'           => '10000000000004',
-            'channel'               => 'rbl',
-            'status'                => 'created',
-            'pincode'               => '1',
-            'bank_reference_number' => '',
-            'account_ifsc'          => 'RATN0000156',
-        ]);
-
-        $this->fixtures->create('banking_account_activation_detail', [
-            'banking_account_id' => $ba4->getId(),
-            'additional_details'        => json_encode([
-                'docket_estimated_delivery_date' => '1667348220'
-            ])
-        ]);
-
-        $this->ba->adminAuth();
-
-        $dataToReplace = [
-            'request' => [
-                'url'     => '/admin/banking_account?count=20&skip=0&account_type=current&from_docket_estimated_delivery_date=1667346200&to_docket_estimated_delivery_date=1667348200',
-                'method'  => 'GET',
-                'content' => [
-                    'expand' => ['merchant','merchant.merchantDetail'],
-                ],
-            ],
-            'response' => [
-                'content' => [
-                    'entity' => 'collection',
-                    'count' => 1,
-                    'items' => [
-                        [
-                            'banking_account_activation_details' => [
-                                'additional_details' => [
-                                    'docket_estimated_delivery_date' => '1667346201'
-                                ]
-                            ]
-                        ]
                     ],
                 ],
             ]

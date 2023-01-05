@@ -49,6 +49,8 @@ class Fetch extends BankingAccount\Fetch
             Constants::DUE_ON               => 'sometimes|epoch',
             Constants::IS_OVERDUE           => 'sometimes|in:0,1',
             Constants::FEET_ON_STREET                => 'sometimes|in:yes,no',
+            BankingAccount\Entity::FROM_DOCKET_ESTIMATED_DELIVERY_DATE => 'sometimes|epoch',
+            BankingAccount\Entity::TO_DOCKET_ESTIMATED_DELIVERY_DATE   => 'sometimes|epoch',
         ],
         AuthType::PRIVILEGE_AUTH => [
             self::EXPAND_EACH                                        => 'filled|string|in:merchant,merchant.merchantDetail,merchant.promotions.promotion,banking_account_details,reviewers,spocs,banking_account_activation_details,activationCallLog,activationComments',
@@ -71,7 +73,7 @@ class Fetch extends BankingAccount\Fetch
             BankingAccount\Entity::FROM_FOLLOW_UP_DATE               => 'sometimes|epoch',
             BankingAccount\Entity::TO_FOLLOW_UP_DATE                 => 'sometimes|epoch',
             BankingAccount\Entity::SORT_FOLLOW_UP_DATE               => 'sometimes|in:asc,desc',
-            BankingAccount\Entity::APPLICATION_TYPE                  => 'sometimes|string'
+            BankingAccount\Entity::APPLICATION_TYPE                  => 'sometimes|string',
         ],
     ];
 
@@ -137,6 +139,8 @@ class Fetch extends BankingAccount\Fetch
             BankingAccount\Entity::BANK_ACCOUNT_TYPE,
             ActivationDetail\Entity::REVIVED_LEAD,
             Constants::FEET_ON_STREET,
+            BankingAccount\Entity::FROM_DOCKET_ESTIMATED_DELIVERY_DATE,
+            BankingAccount\Entity::TO_DOCKET_ESTIMATED_DELIVERY_DATE,
             self::EXPAND_EACH,
         ],
     ];
