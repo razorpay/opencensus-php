@@ -1054,6 +1054,33 @@ class PaymentFetchTest extends TestCase
         $this->assertArrayHasKey('authentication_reference_number', $paymentFetchResponse['acquirer_data']);
     }
 
+    public function testFetchPaymentWithAuthenticationObject()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $this->fixtures->merchant->addFeatures(['enable_3ds2']);
+        $payment['card']['number'] = '6073849700004947';
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $paymentId = $payment['id'];
+
+        $this->mockCps(null, "entity_fetch", $paymentId);
+
+        $request = array(
+            'url'     => '/payments/authentication/'.$paymentId,
+            'method'  => 'get',
+        );
+
+        $this->ba->expressAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $paymentFetchResponse = $this->fetchPaymentWithCpsResponse($paymentId, $response);
+
+        $this->assertArrayHasKey('authentication_channel', $paymentFetchResponse['authentication']);
+        $this->assertArrayHasKey('version', $paymentFetchResponse['authentication']);
+    }
+
     protected function mockCps($terminal, $responder, $paymentId)
     {
         $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();

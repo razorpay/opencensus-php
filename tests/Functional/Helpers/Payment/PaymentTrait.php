@@ -1611,6 +1611,8 @@ trait PaymentTrait
         $paymentFetchResponse = $this->makeRequestAndGetContent($request);
 
         $paymentFetchResponse['acquirer_data']['authentication_reference_number'] = $CpsResponse['gateway_reference_id2'];
+        $paymentFetchResponse['authentication']['version'] = $CpsResponse['protocol_version'];
+        $paymentFetchResponse['authentication']['authentication_channel'] = $CpsResponse['notes'];
 
         return $paymentFetchResponse;
     }

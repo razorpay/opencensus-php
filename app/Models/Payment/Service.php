@@ -2099,6 +2099,11 @@ class Service extends Base\Service
             $this->addDashboardFlags($entity, $payment, $input);
         }
 
+        if (isset($entity['card']) and ($this->merchant->Is3dsDetailsRequiredEnabled() === true)){
+            $authenticationData = (new Payment\Service)->getAuthenticationEntity($payment->getPublicId());
+            $this->addAuthenticationObject($entity, $authenticationData);
+        }
+
         if (isset($entity['card']) && ($payment->card->isInternational() === false))
         {
             $entity['card']['name'] = "";
@@ -6134,6 +6139,19 @@ class Service extends Base\Service
 
         }
 
+    }
+
+    public function addAuthenticationObject( &$entity, $authenticationData)
+    {
+        if (isset($authenticationData['protocol_version'])) {
+            $entity['authentication']['version'] = $authenticationData['protocol_version'];
+        }
+        if(isset($authenticationData['notes'])){
+            $data = json_decode($authenticationData['notes'], true);
+            if(isset($data["authentication_channel"])) {
+                $entity['authentication']['authentication_channel'] = $data['authentication_channel'];
+            }
+        }
     }
 
 }
