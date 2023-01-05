@@ -253,7 +253,7 @@ class TrustedBadgeTest extends TestCase
             'merchant_id' => Account::TEST_ACCOUNT,
             'business_type' => 4,
             'activation_status' => 'activated',
-            'fraud_type' => null,
+            'fraud_type' => '',
         ]);
         $demoMerchantDetail = $this->fixtures->merchant_detail->createEntity('merchant_detail',[
             'merchant_id' => Account::DEMO_ACCOUNT,

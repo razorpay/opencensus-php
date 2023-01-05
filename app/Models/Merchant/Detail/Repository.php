@@ -601,7 +601,11 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getSlaveConnection())
             ->select(Entity::MERCHANT_ID)
             ->whereIn(Entity::MERCHANT_ID, $merchantIds)
-            ->whereNull(Entity::FRAUD_TYPE)
+            ->where(static function ($query)
+            {
+                $query->whereNull(Entity::FRAUD_TYPE)
+                    ->orWhere(Entity::FRAUD_TYPE, '');
+            })
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
     }
