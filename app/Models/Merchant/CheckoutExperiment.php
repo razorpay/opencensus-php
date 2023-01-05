@@ -56,6 +56,7 @@ class CheckoutExperiment
             'truecaller_1cc_for_prefill'                         => 'control',
             'truecaller_1cc_for_non_prefill'                     => 'control',
             'email_less_checkout'                                => false,
+            'enable_rudderstack_plugin'                          => false,
         ];
 
         $this->input = $input;
@@ -240,6 +241,14 @@ class CheckoutExperiment
             'email_less_checkout',
             ['merchant_id' => $this->merchantId]
         );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_enable_rudderstack_plugin_splitz_experiment_id',
+            'EnableRudderstackPlugin',
+            'enable_rudderstack_plugin',
+            ['merchant_id' => $this->merchantId]
+        );
     }
 
     private function fillExperimentData(
@@ -394,6 +403,13 @@ class CheckoutExperiment
     }
 
     private function handleEmailLessCheckoutResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
+    }
+
+    private function handleEnableRudderstackPluginResponse($response): bool
     {
         $variant = $response['variant']['name'] ?? '';
 
