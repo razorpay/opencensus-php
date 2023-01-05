@@ -50,6 +50,8 @@ class M2MReferralTest extends TestCase
 
         parent::setUp();
         $this->enableRazorXTreatmentForRazorX();
+        $this->markTestSkipped('M2M referral program is terminated');
+
     }
 
 

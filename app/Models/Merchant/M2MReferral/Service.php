@@ -541,6 +541,9 @@ class Service extends Base\Service
      */
     public function fetchPublicReferralDetails(): array
     {
+        return [];
+
+        /*
         $this->app['rzp.mode'] = Mode::LIVE;
         $this->core()->setModeAndDefaultConnection(Mode::LIVE);
 
@@ -552,7 +555,7 @@ class Service extends Base\Service
         $response[Constants::REFEREE_DETAILS][Constants::REFERRAL_AMOUNT]          = $referralAmount;
         $response[Constants::REFEREE_DETAILS][Constants::REFERRAL_AMOUNT_CURRENCY] = Constants::INR;
 
-        return $response;
+        return $response;*/
     }
 
     /**
@@ -562,12 +565,16 @@ class Service extends Base\Service
      */
     public function fetchReferralDetails($merchant=null): array
     {
+        $response[Constants::CAN_REFER] = false;
+
+        //terminating m2m referral program
+        return $response;
+
+        /*
         $this->app['rzp.mode'] = Mode::LIVE;
         $this->core()->setModeAndDefaultConnection(Mode::LIVE);
 
         $referralLink = null;
-
-        $response[Constants::CAN_REFER] = false;
 
         $merchant = $merchant??$this->merchant;
 
@@ -650,6 +657,6 @@ class Service extends Base\Service
 
         }
 
-        return $response;
+        return $response;*/
     }
 }

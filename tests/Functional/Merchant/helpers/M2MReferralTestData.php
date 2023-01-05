@@ -593,10 +593,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'can_refer'=>true,
-                "max_allowed_referrals"=>'5',
-                "referral_amount_currency"=> "INR",
-                "referral_amount" =>20000000
+                'can_refer'=>false
             ]
         ],
         'status_code' => 200,
@@ -618,11 +615,7 @@ return [
         ],
         'response' => [
             'content' => [
-                "max_allowed_referrals"=>'5',
-                'can_refer'=>true,
-                "referral_link"=> "https://fbuy.io/05c3a537-257c-48ae-a0f6-319bff3ac55f/x4skwckp?share=c4ea645a-b50d-44c4-8dea-a6ce8305b824",
-                "referral_amount_currency"=> "INR",
-                "referral_amount" =>20000000
+                'can_refer'=>false,
             ]
         ],
         'status_code' => 200,
@@ -634,10 +627,6 @@ return [
         ],
         'response' => [
             'content' => [
-                "referee"=>[
-                    "referral_amount_currency"=> "INR",
-                    "referral_amount" =>20000000
-                ]
             ]
         ],
         'status_code' => 200,
