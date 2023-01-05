@@ -12,4 +12,7 @@ class Validator extends Base\Validator
         'merchant_ids'       => 'required|array|min:1|max:50',
         'type'               => 'required|string|in:create,switch',
     ];
+    protected static $disableShopifyRules = [
+        'merchant_ids'       => 'required|array|min:1|max:50',
+    ];
 }
