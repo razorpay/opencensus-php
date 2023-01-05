@@ -701,6 +701,10 @@ class ScheduleTest extends TestCase
             ],
         ];
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $this->ba->adminAuth();
 
         $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchantId);

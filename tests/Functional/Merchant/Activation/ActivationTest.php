@@ -491,6 +491,10 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail', $data);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
@@ -570,6 +574,10 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
@@ -644,6 +652,10 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail', $data);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
@@ -712,6 +724,10 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail', $data);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
@@ -779,6 +795,10 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail', $data);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
@@ -845,6 +865,10 @@ class ActivationTest extends OAuthTestCase
         $this->app->instance('stork_service', $storkMock);
 
         $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
 
         $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
 
@@ -914,6 +938,10 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail', $data);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
@@ -981,6 +1009,10 @@ class ActivationTest extends OAuthTestCase
         $this->app->instance('stork_service', $storkMock);
 
         $this->fixtures->create('merchant_detail', $data);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
 
         $this->fixtures->on('live')->create('methods:default_methods', ['merchant_id' => '1cXSLlUU8V9sXl']);
 
@@ -1070,6 +1102,10 @@ class ActivationTest extends OAuthTestCase
             'pricing_plan_id' => $planId
         ]);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $data = $this->getKycSubmittedMerchantDetailData($merchantId);
 
         $this->fixtures->create('merchant_detail', $data);
@@ -1146,6 +1182,10 @@ class ActivationTest extends OAuthTestCase
         // create pricing plan for org
 
         $this->fixtures->pricing->createStandardPricingPlanForDifferentOrg($planId, $orgId);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
 
         $authToken = $this->getAuthTokenForOrg($org);
 
@@ -1237,6 +1277,11 @@ class ActivationTest extends OAuthTestCase
             'pricing_plan_id' => $planId
         ]);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
+
         $data = $this->getKycSubmittedMerchantDetailData($merchantId);
 
         $this->fixtures->create('merchant_detail', $data);
@@ -1319,6 +1364,10 @@ class ActivationTest extends OAuthTestCase
         $this->fixtures->edit('merchant', $merchantId, [
             'org_id' => $orgId,
             'pricing_plan_id' => $planId
+        ]);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
         ]);
 
         $data = $this->getKycSubmittedMerchantDetailData($merchantId);
@@ -1410,6 +1459,10 @@ class ActivationTest extends OAuthTestCase
         $this->fixtures->create('merchant_detail', $data);
 
         $this->fixtures->create('methods:default_methods', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
 
         $methods = $this->fixtures->edit('methods', $merchantId, ['bank_transfer' => 0]);
 
@@ -2094,6 +2147,10 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_access_map', ['merchant_id' => $merchantId,]);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
 
         $testData                   = $this->testData['changeActivationStatus'];
@@ -2731,6 +2788,10 @@ class ActivationTest extends OAuthTestCase
             'merchant_id' => '1cXSLlUU8V9sXl'
         ]);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
@@ -3230,6 +3291,10 @@ class ActivationTest extends OAuthTestCase
 
         $this->fixtures->edit('merchant', $merchantId, ['international' => 0, 'org_id' => Org::HDFC_ORG]);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $activationRequest = [
             'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
             'method'  => 'patch',
@@ -3269,6 +3334,10 @@ class ActivationTest extends OAuthTestCase
         $this->fixtures->edit('merchant',
                               $merchantId,
                               ['activated' => 1, 'international' => 0, 'org_id' => Org::HDFC_ORG]);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
 
         $activationRequest = [
             'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
@@ -3607,6 +3676,10 @@ class ActivationTest extends OAuthTestCase
             ],
         ];
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $this->ba->adminAuth();
 
         $this->makeRequestAndGetContent($activationRequest);
@@ -3632,6 +3705,10 @@ class ActivationTest extends OAuthTestCase
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $data);
 
         $merchantId = $merchantDetail->getMerchantId();
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
 
         $this->fixtures->edit('merchant', $merchantId, ['activated' => 1, 'international' => 0]);
 
@@ -3670,6 +3747,10 @@ class ActivationTest extends OAuthTestCase
         $merchantId = $merchantDetail->getMerchantId();
 
         $this->fixtures->edit('merchant', $merchantId, ['international' => 0]);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
 
         $activationRequest = [
             'url'     => '/merchant/activation/' . $merchantId . '/activation_status',

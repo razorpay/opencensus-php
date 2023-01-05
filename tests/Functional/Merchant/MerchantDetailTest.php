@@ -288,6 +288,10 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->fixtures->edit('merchant', $merchantId, ['linked_account_kyc' => 0, 'parent_id' => '10000000000000']);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
 
         $this->ba->proxyAuth('rzp_test_' .$merchantId, $merchantUser['id']);
@@ -539,6 +543,9 @@ class MerchantDetailTest extends OAuthTestCase
             'merchant_id' => '1cXSLlUU8V9sXl'
         ]);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
 
         $testData = & $this->testData[__FUNCTION__];
 
@@ -7471,6 +7478,10 @@ We look forward to transacting with you!
             'activated'        => false,
             'international'    => 0,
             'category2'        => null
+        ]);
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id' => '10000000000000',
         ]);
 
         $testData = & $this->testData['testPgKycActivation'];

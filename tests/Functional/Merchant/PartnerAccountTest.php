@@ -472,6 +472,10 @@ class PartnerAccountTest extends TestCase
         // testUpdateKYCClarificationReason
         $subMerchant = $this->createUnderReviewAccount();
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id' => $subMerchant->getId()
+        ]);
+
         $this->ba->adminAuth();
 
         $this->changeActivationStatus($subMerchant->getId(), 'activated');

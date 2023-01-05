@@ -817,7 +817,11 @@ class Service extends Base\Service
                 'WebsiteDetails' => $websiteDetail
             ]);
 
-            // Check For Website Null todo
+            if(empty($websiteDetail) === true and ($this->auth->isAdminAuth() === true))
+            {
+                throw new BadRequestValidationFailureException(
+                    'Please fill in the website details');
+            }
 
             foreach (Constants::MANDATORY_ADMIN_SECTIONS as $sectionName)
             {

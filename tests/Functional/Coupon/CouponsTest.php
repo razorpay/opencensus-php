@@ -269,6 +269,10 @@ class CouponsTest extends TestCase
                  'entity_id'   => $merchantId,
                  'type'        => 'merchant']);
 
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
         $response = $this->makeRequestAndGetContent($activationRequest);
 
         $credits = $this->getLastEntity('credits', true);

@@ -897,6 +897,45 @@ final class FactoryData
 
         $factory(\RZP\Models\Merchant\Website\Entity::class, [
                                                            'id'            => $faker->uniqueid,
+                                                           'merchant_id'   => '10000000000000',
+                                                           "merchant_website_details" => [
+                                                               "contact_us" => [
+                                                                   "section_status" => 3,
+                                                                   "status"         => "submitted",
+                                                                   "published_url"  => 'https://sme-dashboard.dev.razorpay.in/policy/K6G5sXGcqym5OQ/contact_us'
+                                                               ],
+                                                               "terms" => [
+                                                                   "section_status" => 3,
+                                                                   "status"         => "submitted",
+                                                                   "published_url"  => 'https://sme-dashboard.dev.razorpay.in/policy/K6G5sXGcqym5OQ/terms'
+                                                               ],
+                                                               "refund" => [
+                                                                   "section_status" => 3,
+                                                                   "status"         => "submitted",
+                                                                   "published_url"  => 'https://sme-dashboard.dev.razorpay.in/policy/K6G5sXGcqym5OQ/refund'
+                                                               ],
+                                                               "privacy" => [
+                                                                   "section_status" => 3,
+                                                                   "status"         => "submitted",
+                                                                   "published_url"  => 'https://sme-dashboard.dev.razorpay.in/policy/K6G5sXGcqym5OQ/contact_us'
+                                                               ],
+                                                               "shipping" => [
+                                                                   "section_status" => 3,
+                                                                   "status"         => "submitted",
+                                                                   "published_url"  => 'https://sme-dashboard.dev.razorpay.in/policy/K6G5sXGcqym5OQ/contact_us'
+                                                               ],
+                                                               "pricing" => [
+                                                                   "section_status" => 3,
+                                                                   "status"         => "submitted",
+                                                                   "published_url"  => 'https://sme-dashboard.dev.razorpay.in/policy/K6G5sXGcqym5OQ/contact_us'
+                                                               ],
+                                                               "cancellation" => [
+                                                                   "section_status" => 3,
+                                                                   "status"         => "submitted",
+                                                                   "published_url"  => 'https://sme-dashboard.dev.razorpay.in/policy/K6G5sXGcqym5OQ/contact_us'
+                                                               ],
+                                                           ],
+                                                           'grace_period' => 1,
                                                        ]
         );
 
