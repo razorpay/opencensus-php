@@ -59,4 +59,7 @@ web/js/coverage
 
 web/test-results
 web/e2e/storageState/*
-!web/e2e/storageState/.gitkeep 
+!web/e2e/storageState/.gitkeep
+
+# Sonar
+.scannerwork

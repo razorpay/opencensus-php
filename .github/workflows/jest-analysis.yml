@@ -1,4 +1,4 @@
-name: "Code Coverage"
+name: "Jest Analysis"
 
 on: [pull_request]
 
@@ -44,6 +44,7 @@ jobs:
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Code coverage
+        id: coverage
         uses: artiomtr/jest-coverage-report-action@v2.1.2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}

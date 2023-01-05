@@ -1,4 +1,4 @@
-name: Sonar Scanner
+name: Sonar Scanner Upload Master Code Coverage
 on:
   push:
     branches:
@@ -26,7 +26,7 @@ jobs:
       - name: Install libraries for webp conversion
         run: |
           apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
-      
+
       - name: Setup yarn
         run: npm install -g yarn
 

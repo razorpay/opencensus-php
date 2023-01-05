@@ -1,0 +1,80 @@
+name: "Sonar Code Coverage PR Analysis"
+
+on:
+  pull_request:
+    branches:
+      - master
+
+env:
+  NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+  GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+  APP_NAME: dashboard
+  HOME: /actions-runner/_work
+
+jobs:
+  coverage:
+    runs-on: self-hosted
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.CI_BOT_TOKEN }}
+      - name: Use Node v16.13.1
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.13.1
+
+      - name: Install libraries for webp conversion
+        run: |
+          apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
+
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      - name: Install Dependencies
+        run: |
+          npm config set unsafe-perm true
+          HUSKY=0 npm ci
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Test Codebase
+        run: |
+          npm run test
+          npm run test:jest
+        env:
+          NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
+          GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
+
+      - name: Run SonarQube PR analysis on Dev Project
+        id: pr_sonarqube_analysis
+        uses: sonarsource/sonarcloud-github-action@v1.6
+        if: ${{ github.ref != 'refs/heads/master' }}
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          SONARCLOUD_URL: ${{ secrets.SONARQUBE_HOST }}
+        with:
+          args: >
+            -Dsonar.projectKey=DashboardDev
+            -Dsonar.projectName=DashboardDev
+            -Dsonar.projectVersion=${{ github.sha }}
+
+      # Perform code coverage check on PR changes vs master
+      - name: PR code coverage check
+        id: pr-code-coverage-check
+        if: ${{ github.ref != 'refs/heads/master' }}
+        run: ./scripts/sonar-analysis.sh
+        continue-on-error: true
+        env:
+          SONAR_HOST: ${{ secrets.SONARQUBE_HOST }}
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+          PROJECT_KEY_DEV: DashboardDev
+          PROJECT_KEY_PROD: dashboard
+
+      - name: Update Sonar Analysis Comment
+        if: ${{ github.ref != 'refs/heads/master' }}
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: comment.txt
