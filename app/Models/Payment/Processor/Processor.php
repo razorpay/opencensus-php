@@ -92,6 +92,7 @@ use RZP\Models\UpiMandate\RecurringType as UPIMandateRecurringType;
 use RZP\Models\Payment\Method;
 
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Customer\Token\Core as TokenCore;
 
 class Processor
 {
@@ -869,6 +870,73 @@ class Processor
         {
             $input["cvv"] = $cryptogram["cvv"];
         }
+
+        if (($this->merchant->isFeatureEnabled(Feature::RAAS)) === true) {
+            $input = $this->getAdditionalOptimizerCardInputForRearch($card, $input);
+        }
+
+        return $input;
+    }
+
+    /* Optimizer gateways required additional network token details, like
+     * PAR, TRN, TRID for payment processing
+     */
+    protected function getAdditionalOptimizerCardInputForRearch($card, $input)
+    {
+        if (((isset($input[E::CARD][E::TOKENISED]) === false) or ($input[E::CARD][E::TOKENISED] === false)) or
+            ((isset($input[E::TOKEN]) === false) or (isset($input[E::TOKEN]['id']) === false))) 
+        {
+            return $input;
+        }
+
+        if (empty($this->app) === true) 
+        {
+            $this->app = App::getFacadeRoot();
+        }
+
+        $cardInput = $input[E::CARD];
+
+        // fetch network token associated with payment
+        $token = (new Repository())->find($input[E::TOKEN]['id']);
+        $networkToken = (new TokenCore())->fetchToken($token, false);
+
+        assertTrue(empty($networkToken) === false);
+
+        $tokenisedTerminalId = $networkToken[0][E::TOKENISED_TERMINAL_ID] ?? '';
+        $tokenisedTerminal = $this->app['terminals_service']->fetchTerminalById($tokenisedTerminalId);
+
+        $trid = '';
+
+        assertTrue(empty($tokenisedTerminal) === false);
+
+        if (empty($tokenisedTerminal) === false)
+        {
+            switch ($cardInput[E::NETWORK_CODE])
+            {
+                case Card\Network::MC:
+                    $trid = $tokenisedTerminal[E::GATEWAY_MERCHANT_ID];
+                    break;
+
+                case Card\Network::RUPAY:
+                    $trid = $tokenisedTerminal[E::GATEWAY_MERCHANT_ID2];
+                    break;
+
+                case Card\Network::VISA:
+                    $trid = $tokenisedTerminal[E::GATEWAY_TERMINAL_ID];
+                    break;
+
+                default:
+                    break;
+            }
+        }
+        $par = $networkToken[0][E::PROVIDER_DATA][E::PAYMENT_ACCOUNT_REFERENCE] ?? '';
+        $trn = $networkToken[0][E::PROVIDER_DATA][E::TOKEN_REFERENCE_NUMBER] ?? '';
+        $nri = $networkToken[0][E::PROVIDER_DATA][E::NETWORK_REFERENCE_ID] ?? '';
+
+        $input[E::CARD][E::PAYMENT_ACCOUNT_REFERENCE] = $par;
+        $input[E::CARD][E::TOKEN_REFERENCE_NUMBER] = $trn;
+        $input[E::CARD][E::TOKEN_REFERENCE_ID] = $trid;
+        $input[E::CARD][E::NETWORK_REFERENCE_ID] = $nri;
 
         return $input;
     }
