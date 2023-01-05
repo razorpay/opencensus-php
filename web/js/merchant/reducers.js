@@ -131,6 +131,7 @@ import apiLogsReducer from 'merchant/reducers/developers/apiLogs';
 import apiStatsReducer from 'merchant/reducers/developers/apiStats';
 import websiteComplianceReducer from 'merchant/reducers/websitecompliance';
 import pluginReducer from 'merchant/reducers/plugins';
+import { paymentUploadInvoiceReducer } from 'merchant/reducers/paymentUploadInvoice';
 
 export default combineReducers({
   modal: modalReducer,
@@ -256,5 +257,6 @@ export default combineReducers({
   apiStats: apiStatsReducer,
   websiteCompliance: websiteComplianceReducer,
   plugins: pluginReducer,
+  paymentUploadInvoice: paymentUploadInvoiceReducer,
   leftNav: leftNavReducer,
 });

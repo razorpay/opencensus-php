@@ -12,6 +12,7 @@ import BatchPaymentsList from 'merchant/views/Transactions/BatchPayments/List';
 import BatchRefundsList from 'merchant/views/Transactions/BatchRefunds/List';
 import BatchRefundsUpload from 'merchant/views/Transactions/BatchRefunds/BatchUpload';
 import B2bPaymentsList from 'merchant/views/Transactions/B2bPayments/List';
+import UploadInvoice from 'merchant/views/Transactions/UploadInvoice';
 import SuccessRate from 'merchant/views/Transactions/SuccessRate';
 import { fetchSettlementAmount as fnFetchSettlementAmount } from 'merchant/reducers/home';
 import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
@@ -316,6 +317,27 @@ class TransactionsContainer extends Component {
                 Upload Invoices
               </NavLink>
             </ShowWhen>
+            <ShowWhen
+              featureEnabled="opgsp_import_flow"
+              additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}
+            >
+              <NavLink
+                to="/payments/invoices"
+                onClick={() => {
+                  analyticsTrack({
+                    objectName: 'transactions tab',
+                    actionName: 'clicked',
+                    screen: 'transactions',
+                    properties: {
+                      tabName: 'opgsp upload invoice',
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                }}
+              >
+                Invoices
+              </NavLink>
+            </ShowWhen>
             {no_settlement &&
             (pathname === '/payments' || pathname === '/refunds' || pathname === '/orders') &&
             mode === 'live' &&
@@ -422,6 +444,11 @@ class TransactionsContainer extends Component {
                 />
                 <ShowWhenRoute path="/payments/batchuploads/:mode" component={BatchPaymentsList} />
                 <ShowWhenRoute path="/payments/batchuploads" component={BatchPaymentsList} />
+                <ShowWhenRoute
+                  path="/payments/invoices"
+                  component={UploadInvoice}
+                  additionalCondition={(usr) => usr.isAllowedView('b2b_payments')}
+                />
                 <ShowWhenRoute
                   path="/payments/b2b-exports"
                   component={B2bPaymentsList}

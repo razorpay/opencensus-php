@@ -156,6 +156,7 @@ export const RoutesConfig = {
   '/announcements': Teams.PLATFORM_GROWTH,
 
   '/payments/b2b-exports': Teams.CROSS_BORDER,
+  '/payments/invoices': Teams.CROSS_BORDER,
 
   '/payroll': Teams.XPAYROLL,
 };

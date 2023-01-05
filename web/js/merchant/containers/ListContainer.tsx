@@ -1,17 +1,48 @@
+// core
 import { Component } from 'react';
 import PropTypes from 'prop-types';
+
+// utils
+import moment from 'moment';
 import { getURLQueryParams, stringifyQueryParams } from 'common/utils/rzp-utils';
 import { trimDeep } from 'common/utils/validators';
-import moment from 'moment';
 
-export default class ListContainer extends Component {
+// types
+type ListContainerProps<P> = {
+  blacklistQueryParams: string[];
+  location: {
+    search: string;
+    pathname: string;
+  };
+  resetFA: () => Promise<unknown>;
+  fetchAll?: (params?: Params) => Promise<unknown>;
+  fetchFA?: (params?: Params) => Promise<unknown>;
+} & P;
+
+type ListContainerStates = {
+  skip?: number;
+  count?: number;
+  status?: {
+    type?: string;
+    message?: string | null;
+  };
+};
+
+type Params<V = string | number | boolean | undefined | null> = Record<string, V>;
+
+export default class ListContainer<P = Record<string, unknown>> extends Component<
+  ListContainerProps<P>,
+  ListContainerStates
+> {
   static SKIP = 0;
   static COUNT = 25;
   static contextTypes = {
     confirm: PropTypes.func,
   };
+  searchFilters: Params = {};
+  fetchList: ((params: Params) => Promise<unknown>) | undefined;
 
-  constructor(props, ...args) {
+  constructor(props: ListContainerProps<P>, ...args: unknown[]) {
     super(props, ...args);
     this.searchFilters = {};
 
@@ -33,7 +64,7 @@ export default class ListContainer extends Component {
     };
   }
 
-  removeBlacklistedParams(params, props = this.props) {
+  removeBlacklistedParams(params: Params, props: ListContainerProps<P> = this.props): Params {
     const { blacklistQueryParams = [] } = props;
     const hasBlacklistQueryParams = blacklistQueryParams.length > 0;
 
@@ -42,7 +73,7 @@ export default class ListContainer extends Component {
     }
 
     return Object.keys(params).reduce((result, paramKey) => {
-      const isParamBlacklisted = blacklistQueryParams.indexOf(paramKey) >= 0;
+      const isParamBlacklisted = (blacklistQueryParams as string[]).indexOf(paramKey) >= 0;
 
       if (!isParamBlacklisted) {
         result[paramKey] = params[paramKey];
@@ -52,39 +83,42 @@ export default class ListContainer extends Component {
     }, {});
   }
 
-  defaultSearch(queryString) {
-    let params = null;
+  defaultSearch(queryString: string): void {
+    let params: Params | null = null;
 
     if (queryString) {
       params = getURLQueryParams(queryString);
-      params = this.removeBlacklistedParams(params);
+      if (params) {
+        params = this.removeBlacklistedParams(params);
+      }
     }
 
     this.fetchAll(params);
   }
 
   // Do default search based on query params
-  UNSAFE_componentWillMount() {
+  UNSAFE_componentWillMount(): void {
     this.defaultSearch(this.props.location.search);
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps) {
+  UNSAFE_componentWillReceiveProps(nextProps: ListContainerProps<P>): void {
     if (decodeURI(this.props.location.search) !== decodeURI(nextProps.location.search)) {
       this.defaultSearch(nextProps.location.search);
     }
   }
 
-  fetchAll = (params = {}, fetchFA) => {
+  fetchAll = (
+    params: Params | null = {},
+    fetchFA?: boolean,
+  ): Promise<unknown> | null | undefined => {
     params = { ...this.getDefaultPageParams(), ...params };
     params = this.removeBlacklistedParams(params);
 
     // HOTFIX: temporary, default to 7 days for loading payments if there is no from and to in the URL
-    if (
-      (this.props.location.pathname === '/payments' ||
-        this.props.location.pathname === '/payments/b2b-exports') &&
-      !params?.from &&
-      !params?.to
-    ) {
+    const isPathIncluded = ['/payments', '/payments/b2b-exports', '/payments/invoices'].includes(
+      this.props.location.pathname,
+    );
+    if (isPathIncluded && !params?.from && !params?.to) {
       params.from = moment().add(-7, 'd').startOf('day').unix();
       params.to = moment().endOf('day').unix();
     }
@@ -102,7 +136,7 @@ export default class ListContainer extends Component {
 
     for (const k in params) {
       if (params.hasOwnProperty(k)) {
-        params[k] = decodeURI(params[k]);
+        params[k] = decodeURI(params[k] as string);
       }
     }
 
@@ -112,8 +146,8 @@ export default class ListContainer extends Component {
       if (params) {
         delete params?.count; // api don't support this params
         delete params?.skip; // api don't support this params
-        const fromDate = moment(parseInt(params.from, 10) * 1000);
-        const toDate = moment(parseInt(params.to, 10) * 1000);
+        const fromDate = moment(parseInt(params.from as string, 10) * 1000);
+        const toDate = moment(parseInt(params.to as string, 10) * 1000);
         const dateDiff = toDate.diff(fromDate, 'days');
         if (dateDiff <= 90) {
           return this.fetchFA(params);
@@ -129,7 +163,7 @@ export default class ListContainer extends Component {
     } else if (this.props.fetchAll || this.fetchEntityList) {
       const promise = this.fetchEntityList(params);
 
-      if (promise.then) {
+      if (promise?.then) {
         promise
           .then(() => {
             this.setState({
@@ -165,7 +199,7 @@ export default class ListContainer extends Component {
     return null;
   };
 
-  search = (params) => {
+  search = (params: Params): Promise<unknown> | null | undefined => {
     this.searchFilters = trimDeep(params);
     return this.fetchAll({
       ...this.getDefaultPageParams(),
@@ -173,7 +207,7 @@ export default class ListContainer extends Component {
     });
   };
 
-  analizeFailure = (params) => {
+  analizeFailure = (params: Params): Promise<unknown> | null | undefined => {
     const failureAnalysisFilter = trimDeep(params);
     return this.fetchAll(
       {
@@ -183,7 +217,7 @@ export default class ListContainer extends Component {
     );
   };
 
-  paginate = (params) => {
+  paginate = (params: Params): Promise<unknown> | null | undefined => {
     const filters = {
       ...this.searchFilters,
       ...params,
@@ -195,19 +229,19 @@ export default class ListContainer extends Component {
     });
   };
 
-  getDefaultPageParams() {
+  getDefaultPageParams(): { skip: number; count: number } {
     return {
       skip: ListContainer.SKIP,
       count: ListContainer.COUNT,
     };
   }
 
-  fetchEntityList(params) {
-    return this.props.fetchAll(params);
+  fetchEntityList(params: Params): Promise<unknown> | undefined {
+    return this.props.fetchAll?.(params);
   }
 
-  fetchFA(params) {
-    return this.props.fetchFA({
+  fetchFA(params: Params): Promise<unknown> | undefined {
+    return this.props.fetchFA?.({
       url: `merchants/payments/failure_analysis${stringifyQueryParams(params)}`,
     });
   }

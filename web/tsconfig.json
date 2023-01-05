@@ -48,6 +48,9 @@
     "js/merchant/views/Settings/PaymentMethods",
     "js/merchant/views/Account/Profile/components/FIRC/HSCode",
     "js/merchant/components/StatusTracker",
+    "js/merchant/models/PaymentUploadInvoice.ts",
+    "js/merchant/views/Transactions",
+    "js/merchant/containers/ListContainer.tsx",
     "js/merchant/components/SidebarV2"
   ],
   "exclude": ["node_modules", "js/common/utils"],
