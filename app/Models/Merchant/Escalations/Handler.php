@@ -157,14 +157,6 @@ class Handler
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
         $merchantDetails = $merchant->merchantDetail;
 
-        $experimentEnabled = (new Merchant\Core)->isRazorxExperimentEnable(
-            $merchantDetails->getMerchantId(), RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
-
-        if($experimentEnabled === false)
-        {
-            return [false, "experiment not enabled for merchant"];
-        }
-
         [$breachedThreshold, $nextEscalation] = $this->getNextPossibleEscalation(
             $breachedAmount, $existingEscalations, $merchantDetails);
 

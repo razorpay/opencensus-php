@@ -281,17 +281,12 @@ class Core extends Base\Core
             $amount     = $data['total'];
             $threshold  = env(Constants::HARD_LIMIT_MCC_PENDING_THRESHOLD);
 
-            $isExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable($merchantId,
-                                                                                  RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
+            (new NewEscalation\Handler)->triggerEscalation(
+                $merchantId, $amount, $threshold,
+                (new NewEscalation\Core)->getEscalationConfigForThresholdAndMilestone($threshold, $milestone),
+                NewEscalation\Constants::PAYMENT_BREACH
+            );
 
-            if ($isExperimentEnabled === true)
-            {
-                (new NewEscalation\Handler)->triggerEscalation(
-                    $merchantId, $amount, $threshold,
-                    (new NewEscalation\Core)->getEscalationConfigForThresholdAndMilestone($threshold, $milestone),
-                    NewEscalation\Constants::PAYMENT_BREACH
-                );
-            }
         }
     }
 

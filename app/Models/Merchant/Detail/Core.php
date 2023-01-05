@@ -5875,7 +5875,7 @@ class Core extends Base\Core
 
         [$validationFields, $validationSelectiveRequiredFields, $validationOptionalFields] = $this->getValidationFields($merchantDetails, $addMissingValidationFields);
 
-        if($merchant->isNoDocOnboardingEnabled() === true and $isNoDocEnabledAndGmvLimitExhausted === false)
+        if ($merchant->isNoDocOnboardingEnabled() === true and $isNoDocEnabledAndGmvLimitExhausted === false)
         {
             $totalFields = count($validationFields);
         }
@@ -5960,7 +5960,7 @@ class Core extends Base\Core
                 'activation_progress' => 100,
             ];
 
-            if($merchant->isNoDocOnboardingEnabled() === true and $isNoDocEnabledAndGmvLimitExhausted === false)
+            if ($merchant->isNoDocOnboardingEnabled() === true and $isNoDocEnabledAndGmvLimitExhausted === false)
             {
                 $response['verification']['optional_fields'] = $optionalFields;
             }
@@ -5968,13 +5968,7 @@ class Core extends Base\Core
             $response['can_submit'] = true;
         }
 
-        $isExperimentEnabled = (new Merchant\Core())->isRazorxExperimentEnable($merchant->getId(),
-                                                                               RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
-
-        if ($isExperimentEnabled === true)
-        {
-            $response['verification']['activation_progress'] = $this->getActivationProgress($merchantDetails);
-        }
+        $response['verification']['activation_progress'] = $this->getActivationProgress($merchantDetails);
 
         return $response;
     }

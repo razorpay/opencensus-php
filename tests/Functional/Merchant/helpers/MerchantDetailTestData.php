@@ -2189,7 +2189,7 @@ return [
             'content'     => [
                 'verification' => [
                     'status'              => 'pending',
-                    'activation_progress' => 100,
+                    'activation_progress' => 80,
                 ],
                 'can_submit'   => true,
             ],

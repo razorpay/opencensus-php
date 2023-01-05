@@ -91,32 +91,29 @@ abstract class BaseEscalationType
 
             $merchantDetails = $this->repo->merchant_detail->getByMerchantId($merchantId);
 
-            $isExperimentEnabled = (new MerchantCore())->isRazorxExperimentEnable($merchantId,
-                                                                                  RazorxTreatment::INSTANT_ACTIVATION_FUNCTIONALITY);
-            if ($isExperimentEnabled === true)
+            $escalationConfig = (new NewEscalation\Core)->getEscalationConfigForThresholdAndMilestone($merchantDetails, $threshold, $milestone);
+
+            if (empty($escalationConfig) === false)
             {
-                $escalationConfig = (new NewEscalation\Core)->getEscalationConfigForThresholdAndMilestone($merchantDetails, $threshold, $milestone);
-
-                if (empty($escalationConfig) === false)
+                if ((new NewEscalation\Handler)->canTriggerEscalation($merchantDetails, $escalationConfig) === true)
                 {
-                    if ((new NewEscalation\Handler)->canTriggerEscalation($merchantDetails, $escalationConfig) === true)
-                    {
-                        (new NewEscalation\Handler)->triggerEscalation($merchantId,
-                                                                       $amount,
-                                                                       $threshold,
-                                                                       $escalationConfig,
-                                                                       NewEscalation\Constants::PAYMENT_BREACH);
+                    (new NewEscalation\Handler)->triggerEscalation($merchantId,
+                                                                   $amount,
+                                                                   $threshold,
+                                                                   $escalationConfig,
+                                                                   NewEscalation\Constants::PAYMENT_BREACH);
 
-                        $this->app[MConstants::TRACE]->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
-                            'type'        => $type,
-                            'level'       => $level,
-                            'merchant_id' => $merchant->getId(),
-                            'mileStone'   => $milestone,
-                            'threshold'   => $threshold
-                        ]);
-                    }
+                    $this->app[MConstants::TRACE]->info(TraceCode::SELF_SERVE_ESCALATION_SUCCESS, [
+                        'type'        => $type,
+                        'level'       => $level,
+                        'merchant_id' => $merchant->getId(),
+                        'mileStone'   => $milestone,
+                        'threshold'   => $threshold
+                    ]);
                 }
             }
+
         }
+
     }
 }
