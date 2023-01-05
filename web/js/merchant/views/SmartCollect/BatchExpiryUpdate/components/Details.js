@@ -76,7 +76,7 @@ class VABatchDetails extends React.Component {
               <div class="panel-body">
                 <div class="download-report-card">
                   <span class="drc-label">
-                    Download the report containing Virtual Accounts data for this batch.
+                    Download the report containing Customer Identifiers data for this batch.
                   </span>
                   <span className="cta-container">
                     <button
@@ -133,7 +133,7 @@ class VABatchDetails extends React.Component {
                       >
                         download the report
                       </strong>{' '}
-                      containing accounts data for this batch,
+                      containing customer identifiers data for this batch,
                     </p>
                   )}
                 </div>

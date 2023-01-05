@@ -81,9 +81,9 @@ export default class VirtualAccountDetailsContainer extends Component {
   closeAccount = (virtualaccount) => {
     this.track('close.initiated');
     this.context.confirm({
-      header: 'Close account?',
+      header: 'Close customer identifier?',
       message:
-        'The account will be closed and your customers will no longer be able to transfer money to this virtual account.',
+        'The customer identifier will be closed and your customers will no longer be able to transfer money to this customer identifier.',
       affirmativeLabel: 'Yes',
       abortLabel: 'No',
       action: () =>
@@ -106,7 +106,7 @@ export default class VirtualAccountDetailsContainer extends Component {
 
             this.props.showNotification({
               type: 'success',
-              message: 'Account closed successfully',
+              message: 'Customer identifier closed successfully',
             });
           })
           .catch(({ errors }) => {

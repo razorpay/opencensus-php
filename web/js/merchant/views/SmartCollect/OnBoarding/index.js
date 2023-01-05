@@ -98,7 +98,7 @@ export default class InvoicesOnBoarding extends React.Component {
               feature={RZPFeatures.VA}
               title="Smart Collect"
               imageUrl={ImgSmartCollect}
-              desc="Automate reconciliation by generating unlimited Virtual Accounts and Virtual UPI IDs on demand. Accept payments via NEFT, RTGS and IMPS."
+              desc="Automate reconciliation by generating unlimited Customer Identifiers and Virtual UPI IDs on demand. Accept payments via NEFT, RTGS and IMPS."
               pros={PROS}
               next={(...args) => {
                 this.track('screen-1');

@@ -160,9 +160,9 @@ const s3 = (props) => {
                 <li>
                   <p>
                     “Razorpay Smart Collect” shall mean a software product developed and owned by
-                    Razorpay which assists in creation of virtual accounts and accepts payments via
-                    NEFT, RTGS and IMPS. The software sends notification for each incoming payment
-                    and automates the reconciliation process.
+                    Razorpay which assists in creation of customer identifiers and accepts payments
+                    via NEFT, RTGS and IMPS. The software sends notification for each incoming
+                    payment and automates the reconciliation process.
                   </p>
                 </li>
                 <li>

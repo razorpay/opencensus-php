@@ -27,7 +27,7 @@ import {
 
 import CustomerCreation from 'merchant/views/Customers/New';
 
-import AccountDetailsSummary from '../components/Modals/AccountDetailsSummary';
+import AccountDetailsSummary from 'merchant/views/SmartCollect/VirtualAccounts/components/Modals/AccountDetailsSummary';
 
 import {
   DESCRIPTOR_LENGTH_BANK_ACCOUNT,
@@ -182,7 +182,7 @@ export default class CreateVirtualAccount extends Component {
           className: 'VirtualAccountSummary',
           component: (
             <AccountDetailsSummary
-              modalTitle="Virtual Account Created"
+              modalTitle="Customer Identifier Created"
               closeModal={this.props.closeModal}
               virtualAccount={virtualAccount}
               onCopy={this.onCopyAccountDetailsSummary}
@@ -278,12 +278,12 @@ export default class CreateVirtualAccount extends Component {
           ref={this.setRefForm}
         >
           <main>
-            <div class="form-title">Create Virtual Account</div>
+            <div class="form-title">Create Customer Identifier</div>
 
             {user.isVACreationBankAccountDisabled && (
               <Banner>
-                Bank transfer is temporarily unavailable. Use UPI transfer option to create Virtual
-                UPI ID to accept payments.{' '}
+                Customer Identifier transfer is temporarily unavailable. Use UPI transfer option to
+                create Virtual UPI ID to accept payments.{' '}
                 <a
                   class="highlight"
                   target="_blank"
@@ -317,7 +317,9 @@ export default class CreateVirtualAccount extends Component {
                   {!!descriptorLimit_BankAccount && (
                     <Input
                       name="descriptorBankAccount"
-                      label={() => <span style={{ fontWeight: 'normal' }}>Account Descriptor</span>}
+                      label={() => (
+                        <span style={{ fontWeight: 'normal' }}>Customer Identifier Descriptor</span>
+                      )}
                       size="vpa_custom"
                       validator={(val) => {
                         if (!validateAlphanumericWithMaxLength(val, descriptorLimit_BankAccount)) {
@@ -335,7 +337,7 @@ export default class CreateVirtualAccount extends Component {
                       }}
                       description={
                         _internals.hasBankAccount
-                          ? 'If left blank, an account number will be auto generated'
+                          ? 'If left blank, a customer identifier number will be auto generated'
                           : null
                       }
                       disabled={!_internals.hasBankAccount}
@@ -431,7 +433,7 @@ export default class CreateVirtualAccount extends Component {
               <Input.TextareaAutoResize
                 class="Input--vTop"
                 name="description"
-                label="Account Description"
+                label="Customer Identifier Description"
                 description="Description is shown only on the dashboard and not to customers"
               />
 
@@ -464,7 +466,7 @@ export default class CreateVirtualAccount extends Component {
 
             {/* Action Button 2 */}
             <Button.Primary type="submit" disabled={disableSubmit}>
-              Create Virtual Account
+              Create Customer Identifier
             </Button.Primary>
           </footer>
         </Form>

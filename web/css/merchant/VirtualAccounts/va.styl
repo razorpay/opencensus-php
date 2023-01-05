@@ -1,9 +1,9 @@
 .VirtualAccountDetails
   margin: -4px
   padding: 4px
-  border: 1px solid #eaeff0
+  border: 1px solid #EAEFF0
   border-radius: 4px
-  background: #fdfdfd
+  background: #FDFDFD
   width: 90%
   max-width: 500px
 
@@ -11,46 +11,45 @@
     .panel-body
       .redirect-text
         display: inline
-        color: #2a86f3
+        color: #2A86F3
 
   .pair-group-item:first-child
     .pair-label
       color: inherit
 
   .divider
-    border-top: 1px solid #eaeff0
+    border-top: 1px solid #EAEFF0
 
   .divider--dotted
-    border-top: 1px dashed #eaeff0
+    border-top: 1px dashed #EAEFF0
 
 .VirtualAccountSummary
   max-width: 98%
   width: 384px
 
+  // stylelint-disable-next-line no-descending-specificity
   .pair-label
     color: inherit
 
   .ClipboardCustom
     display: block
 
-
 $max-width = 640px
 
 .Modal-container--VirtualAccount
-    width: 90%
-    max-width: $max-width
-    min-height: 560px
-    max-height: 690px
-    height: 85vh
+  width: 90%
+  max-width: $max-width
+  min-height: 560px
+  max-height: 690px
+  height: 85vh
 
-
-/* PaymentLinks wizard screen */
+// PaymentLinks wizard screen
 .VirtualAccount--Create
   max-width: $max-width
   height: 85vh
   min-height: 560px
   max-height: 690px
-  background: #fafafa
+  background: #FAFAFA
   position: relative
 
   .form-title
@@ -90,7 +89,7 @@ $max-width = 640px
     bottom: 0
     padding: 20px
     background: #F6F6F6
-    border-top: 1px solid #e0e0e0
+    border-top: 1px solid #E0E0E0
     text-align: right
 
     button
@@ -102,14 +101,6 @@ $max-width = 640px
   max-height: 526px
   height: 85vh
 
-.StandAloneContainer
-  .VirtualAccount--CreateV2
-    max-height: 588px
-    background: white
-    position: relative
-    height: 80vh
-    max-width: 400px
-
 .VirtualAccount--CreateV2
   .form-title
     padding: 24px
@@ -118,7 +109,7 @@ $max-width = 640px
     position: absolute
     top: 0
     left: 0
-    background: white
+    background: #FFF
     z-index: 1
     width: 100%
 
@@ -134,9 +125,10 @@ $max-width = 640px
       top: 42px
       right: 0
 
+  // stylelint-disable-next-line no-descending-specificity
   main
     height: 100%
-    padding: 70px 24px 96px 24px
+    padding: 70px 24px 96px
     overflow: auto
 
     .form-container
@@ -171,10 +163,10 @@ $max-width = 640px
     cursor pointer
     padding: 12px 0
     margin-top: 20px
-    border-top: 1px solid #eee
+    border-top: 1px solid #EEE
 
     &.btn-hide
-      border-bottom: 1px solid #eee
+      border-bottom: 1px solid #EEE
 
     .heading
       color: #586663
@@ -201,6 +193,7 @@ $max-width = 640px
 
   .third-party-validation
     margin-top: 24px
+
     .description
       display: flex
       align-items: center
@@ -222,12 +215,13 @@ $max-width = 640px
     bottom: 0
     padding: 24px
     background: #F6F6F6
-    border-top: 1px solid #e0e0e0
+    border-top: 1px solid #E0E0E0
     text-align: right
 
     .Button
       width: 168px
-      padding: 9px 12px
+      padding: 8px
+      font-size: 12px
 
       &:first-child
         margin: 0 16px 0 0
@@ -237,11 +231,19 @@ $max-width = 640px
 
   .SelectBox
     .Input
-      margin: 12px 0 0 0
+      margin: 12px 0 0
 
     img
       height: 16px
       vertical-align: text-bottom
+
+.StandAloneContainer
+  .VirtualAccount--CreateV2
+    max-height: 588px
+    background: #FFF
+    position: relative
+    height: 80vh
+    max-width: 400px
 
 .VPAPrefixModal
   max-width: 432px
@@ -250,15 +252,17 @@ $max-width = 640px
   top: 50%
   transform: translateY(-100%)
 
+  // stylelint-disable-next-line no-descending-specificity
   img
     width: 16px
     margin-right: 4px
     vertical-align: text-top
 
+  // stylelint-disable-next-line no-descending-specificity
   .Input
     margin-top: 0
     display: flex
-    align-times: baseline
+
     .Input-label
       width: 100px
 
@@ -271,20 +275,24 @@ $max-width = 640px
 
   .upi-example
     margin: 12px 0
-    span
-      color: black
 
+    // stylelint-disable-next-line no-descending-specificity
+    span
+      color: #000
+
+  // stylelint-disable-next-line no-descending-specificity
   .remaining-count
     position: absolute
     top: 42px
     right: 0
 
 .EnableTransferModeModal
-
+  // stylelint-disable-next-line no-descending-specificity
   .Input-error
     position absolute
     top: 40px
 
+  // stylelint-disable-next-line no-descending-specificity
   .remaining-count
     position: absolute
     top: 40px
@@ -292,10 +300,12 @@ $max-width = 640px
 
 .VA-test-payment
   margin-top: 24px
+
   .rzp-banner-text
     display: flex
     align-items: center
 
+    // stylelint-disable-next-line no-descending-specificity
     .Button
       min-width: 175px
 
@@ -315,6 +325,7 @@ $max-width = 640px
     justify-content: space-between
     margin: 0
     padding-right: 16px
+
     &:not(:first-child)
       margin-top: 12px
 
@@ -328,6 +339,7 @@ $max-width = 640px
     .Input-error
       font-size: 12px
 
+  // stylelint-disable-next-line no-descending-specificity
   .actions
     font-size: 12px
     margin-top: 16px
@@ -351,12 +363,14 @@ $max-width = 640px
     position: absolute
     right: 0
     top: 30px
+
     &:hover
       opacity: 0.7
 
 .VirtualAccount--Details
   .allowed-payers-list
     width: 100%
+
     th
       background: #EAEFF0
       padding: 4px 8px
@@ -367,10 +381,13 @@ $max-width = 640px
       padding: 8px
 
     tbody tr
-      border-bottom: 1px solid #DDDDDD
+      border-bottom: 1px solid #DDD
 
 .list-filter-item.account-number-filter
-  flex-basis: 190px
+  flex-basis: 270px
+
+.list-filter-item.description-filter
+  flex-basis: 200px
 
 .SmartCollect--Block
   display: flex
@@ -382,29 +399,34 @@ $max-width = 640px
   max-height: 612px
   min-height: 540px
 
-  @media (max-width: 1024px)
+  @media (max-width 1024px)
     height: 100%
     max-height: 70vh
     display: block
     padding-top: 62px
 
+  // stylelint-disable-next-line no-descending-specificity
   > div
     width: 50%
-    @media (max-width: 1024px)
+
+    @media (max-width 1024px)
       width: 100%
 
   .info
     display: flex
     justify-content: flex-end
     align-items: center
-    @media (max-width: 1024px)
+
+    @media (max-width 1024px)
       justify-content: center
+
       > div
         text-align: center
 
       .divider
         margin: 24px auto
 
+  // stylelint-disable-next-line no-descending-specificity
   .heading
     font-weight: bold
     font-size: 24px
@@ -429,7 +451,8 @@ $max-width = 640px
     height: 100%
     display: flex
     align-items: center
-    @media (max-width: 768px)
+
+    @media (max-width 768px)
       justify-content: center
 
     img
@@ -448,7 +471,7 @@ $max-width = 640px
       margin-right: 40px
 
   .batch-process-details
-    margin: 5px 0px 15px 0px
+    margin: 5px 0 15px
     width: 100%
     font-size: 13px
     color: #515978
@@ -469,8 +492,6 @@ $max-width = 640px
       .expiry-date-update-failed
         font-size: 16px
         color: #F05050
-
-
 
 .close-by-value
   padding-right: 10px

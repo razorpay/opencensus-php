@@ -134,7 +134,7 @@ export const rzpPaymentOrder = (orders) => mapValues(orders)(rzpOrderId.title);
 
 // Virtual Accounts
 export const virtualAccountId = {
-  title: 'Virtual Account Id',
+  title: 'Customer Identifier Id',
   value: makeIdLink('virtual_account'),
 };
 export const accountDescription = {

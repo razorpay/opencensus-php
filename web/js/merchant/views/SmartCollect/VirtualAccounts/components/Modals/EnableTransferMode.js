@@ -1,21 +1,16 @@
+import React from 'react';
+
 import { connect } from 'react-redux';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import ModalHeader from 'common/ui/ModalHeader';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
-import { AsyncBtn } from 'common/new-ui/Button';
 
 import { fetchConfigForVirtualAccount } from 'merchant/reducers/virtualaccounts';
 
 import Spinner from 'common/ui/Spinner';
 
-import {
-  isBlank,
-  rupeesToPaise,
-  paiseToRupees,
-  titleCase,
-  classList,
-} from 'common/utils/rzp-utils';
+import { classList } from 'common/utils/rzp-utils';
 
 import {
   validateAlphanumericWithMaxLength,
@@ -62,16 +57,16 @@ export default class EnableTransferMode extends React.Component {
       payload.types.push('vpa');
 
       if (descriptor) {
-        payload['vpa'] = {
-          descriptor: descriptor,
+        payload.vpa = {
+          descriptor,
         };
       }
     } else if (isForBankAccount) {
       payload.types.push('bank_account');
 
       if (descriptor) {
-        payload['bank_account'] = {
-          descriptor: descriptor,
+        payload.bank_account = {
+          descriptor,
         };
       }
     }
@@ -90,9 +85,12 @@ export default class EnableTransferMode extends React.Component {
       );
     }
 
-    let formTitle, buttonLabel, field;
-    let toAutoCreateDescriptor;
-    let descriptorLimit_BankAccount, descriptorLimit_VPA;
+    let formTitle,
+      buttonLabel,
+      field,
+      toAutoCreateDescriptor,
+      descriptorLimit_BankAccount,
+      descriptorLimit_VPA;
 
     if (isForUPIAddress) {
       if (
@@ -101,7 +99,7 @@ export default class EnableTransferMode extends React.Component {
         va_config.vpa.isDescriptorEnabled &&
         va_config.vpa.prefix
       ) {
-        let vpaHandle = va_config.vpa.prefix && va_config.vpa.prefix.split('.')[1];
+        const vpaHandle = va_config.vpa.prefix && va_config.vpa.prefix.split('.')[1];
 
         descriptorLimit_VPA = DESCRIPTOR_LENGTH_VPA - vpaHandle.length;
       } else {
@@ -135,9 +133,10 @@ export default class EnableTransferMode extends React.Component {
               if (!validateAlphanumericWithStrictLength(val, descriptorLimit_VPA)) {
                 return `Enter only Alphanumeric, ${descriptorLimit_VPA} characters`;
               }
+              return '';
             }}
             onChange={(e) => {
-              let val = e.target.value;
+              const val = e.target.value;
               this.setState({ descriptorLength: val.length });
             }}
             style={getStyle_DescriptorInput_VPA(va_config)}
@@ -156,22 +155,24 @@ export default class EnableTransferMode extends React.Component {
         va_config.hasOwnProperty('bank_account') &&
         va_config.bank_account.isDescriptorEnabled
       ) {
-        let bankAccountHandle = va_config.bank_account.prefix;
+        const bankAccountHandle = va_config.bank_account.prefix;
         descriptorLimit_BankAccount = DESCRIPTOR_LENGTH_BANK_ACCOUNT - bankAccountHandle.length;
       } else {
         toAutoCreateDescriptor = true;
       }
 
-      formTitle = 'Enable Account Transfer';
+      formTitle = 'Enable Customer Identifier Transfer';
 
       if (toAutoCreateDescriptor) {
         buttonLabel = 'Yes, Enable';
 
         field = (
-          <div>An account number will be auto generated. Are you sure you want to proceed?</div>
+          <div>
+            A customer identifier number will be auto generated. Are you sure you want to proceed?
+          </div>
         );
       } else {
-        buttonLabel = 'Enable Account Transfer';
+        buttonLabel = 'Enable Customer Identifier Transfer';
 
         field = (
           <Input
@@ -184,17 +185,18 @@ export default class EnableTransferMode extends React.Component {
                   {this.state.descriptorLength}/{descriptorLimit_BankAccount}
                 </div>
                 <br />
-                If left blank, an account number will be auto generated
+                If left blank, a customer identifier number will be auto generated
               </>
             }
             validator={(val) => {
               if (!validateAlphanumericWithMaxLength(val, descriptorLimit_BankAccount)) {
                 return `Enter only Alphanumeric, upto ${descriptorLimit_BankAccount} characters`;
               }
+              return '';
             }}
             style={getStyle_DescriptorInput_BankAccount(va_config)}
             onChange={(e) => {
-              let val = e.target.value;
+              const val = e.target.value;
               this.setState({ descriptorLength: val.length });
 
               if (validateAlphanumericWithMaxLength(val, descriptorLimit_BankAccount)) {

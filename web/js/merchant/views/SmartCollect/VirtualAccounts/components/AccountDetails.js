@@ -1,12 +1,13 @@
+import React from 'react';
+
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import { classList } from 'common/utils/rzp-utils';
 
 export default function VirtualAccountDetails({ bankAccount1, bankAccount2, upiAddress }) {
   return (
     <React.Fragment>
       {bankAccount1 && (
         <>
-          <EntityDetailRow label="Account Number">
+          <EntityDetailRow label="Customer Identifier Number">
             <b>{bankAccount1.account_number}</b>
           </EntityDetailRow>
 
@@ -24,7 +25,7 @@ export default function VirtualAccountDetails({ bankAccount1, bankAccount2, upiA
 
       {bankAccount2 && (
         <>
-          <EntityDetailRow label="Account Number">
+          <EntityDetailRow label="Customer Identifier Number">
             <b>{bankAccount2.account_number}</b>
           </EntityDetailRow>
 
@@ -60,7 +61,7 @@ export function getVirtualAccountDetailsToCopy({ bankAccount1, bankAccount2, upi
   const divider = '---------------------------------';
 
   if (bankAccount1) {
-    const bankAccountDetails = `Account Number: ${bankAccount1.account_number}\nBeneficiary Name: ${bankAccount1.name}\nIFSC: ${bankAccount1.ifsc}`;
+    const bankAccountDetails = `Customer Identifier: ${bankAccount1.account_number}\nBeneficiary Name: ${bankAccount1.name}\nIFSC: ${bankAccount1.ifsc}`;
     valueToCopy.push(bankAccountDetails);
   }
 
@@ -69,7 +70,7 @@ export function getVirtualAccountDetailsToCopy({ bankAccount1, bankAccount2, upi
   }
 
   if (bankAccount2) {
-    const bankAccountDetails = `Account Number: ${bankAccount2.account_number}\nBeneficiary Name: ${bankAccount2.name}\nIFSC: ${bankAccount2.ifsc}`;
+    const bankAccountDetails = `Customer Identifier: ${bankAccount2.account_number}\nBeneficiary Name: ${bankAccount2.name}\nIFSC: ${bankAccount2.ifsc}`;
     valueToCopy.push(bankAccountDetails);
   }
 

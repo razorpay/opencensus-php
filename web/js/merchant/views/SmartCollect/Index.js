@@ -92,12 +92,12 @@ export default class SmartCollectContainer extends React.Component {
             <AnnouncementBanner
               class="rewards-anc"
               theme="danger"
-              title="Virtual Account Expiring"
+              title="Customer Identifier Expiring"
               card_id="sc-yes-bank-monotorium"
             >
               <span class="display-inline">
-                As per new RBI guidelines, your Virtual Account details have been updated. Share the
-                new account details with your customers
+                As per new RBI guidelines, your Customer Identifier details have been updated. Share
+                the new customer identifier details with your customers
               </span>{' '}
             </AnnouncementBanner>
           </div>
@@ -108,7 +108,7 @@ export default class SmartCollectContainer extends React.Component {
 
           <header id="smart-collect-header">
             <NavLink to="/smartcollect/virtualaccounts" class={className}>
-              Virtual Accounts
+              Customer Identifiers
             </NavLink>
             <NavLink to="/smartcollect/payments">Payments</NavLink>
             {this.state.isVaEditBulkMid && (

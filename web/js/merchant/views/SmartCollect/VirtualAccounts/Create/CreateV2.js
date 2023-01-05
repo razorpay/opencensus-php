@@ -261,7 +261,7 @@ export default class CreateVirtualAccount extends React.Component {
         this.track('advance.notes.submit.success');
 
         selfServeTrackSuccess({
-          selfServeAction: 'Virtual Account Created',
+          selfServeAction: 'Customer Identifier Created',
           page: 'Virtualaccounts',
           screen: 'Smart Collect',
         });
@@ -271,7 +271,7 @@ export default class CreateVirtualAccount extends React.Component {
           className: 'VirtualAccountSummary',
           component: (
             <AccountDetailsSummary
-              modalTitle="Virtual Account Created"
+              modalTitle="Customer Identifier Created"
               closeModal={() => {
                 this.props.closeModal();
 
@@ -485,7 +485,7 @@ export default class CreateVirtualAccount extends React.Component {
     this.context.confirm({
       header: 'Remove Third Party Validation?',
       message:
-        'Authorised account(s) linked to this virtual account will be removed and payments will be accepted from all accounts.',
+        'Authorised account(s) linked to this customer identifier will be removed and payments will be accepted from all accounts.',
       abortLabel: 'No, Dont’t',
       affirmativeLabel: 'Yes, Remove',
       affirmativePendingLabel: 'Removing...',
@@ -543,7 +543,7 @@ export default class CreateVirtualAccount extends React.Component {
         <Form onChange={this.props.onChange} onSubmit={this.handleSubmit} ref={this.setRefForm}>
           <main>
             <div class="form-container">
-              <div class="form-title">Create Virtual Account</div>
+              <div class="form-title">Create Customer Identifier</div>
 
               {isLoading ? (
                 <div class="page-spinner-container">
@@ -552,7 +552,7 @@ export default class CreateVirtualAccount extends React.Component {
               ) : (
                 <>
                   <label class="payment-method-label">
-                    Methods to accept payments in this account
+                    Methods to accept payments in this customer identifier
                   </label>
 
                   <SelectBox
@@ -568,7 +568,7 @@ export default class CreateVirtualAccount extends React.Component {
                     }
                     description={
                       !_internals.hasBankAccount &&
-                      'Get bank account details to accept fund transfers.'
+                      'Get customer identifier details to accept fund transfers.'
                     }
                   >
                     {showBankAccountDescriptor && (
@@ -581,7 +581,7 @@ export default class CreateVirtualAccount extends React.Component {
                               {descriptors.bank_account.length} / {bankAccountLengthCheck}
                             </div>
                             <br />
-                            If left blank, an account number will be auto generated
+                            If left blank, a customer identifier number will be auto generated
                           </>
                         }
                         style={getStyle_DescriptorInput_BankAccount(va_config)}
@@ -751,7 +751,7 @@ export default class CreateVirtualAccount extends React.Component {
                               >
                                 <PopoverBody>
                                   Only authorised accounts will be able to make payments to this
-                                  virtual account.
+                                  customer identifier.
                                 </PopoverBody>
                               </Popover>
                             </span>
@@ -805,7 +805,7 @@ export default class CreateVirtualAccount extends React.Component {
                       <Input.TextareaAutoResize
                         class="Input--vTop"
                         name="description"
-                        label="Account Description"
+                        label="Customer Identifier Description"
                         description="Description is shown only on the dashboard and not to customers"
                         onBlur={() => {
                           this.track('advance.description');
@@ -857,7 +857,7 @@ export default class CreateVirtualAccount extends React.Component {
               onClick={this.saveVirtualAccount}
               disabled={disableSubmit}
             >
-              Create Virtual Account
+              Create Customer Identifier
             </Button.Primary>
           </footer>
         </Form>

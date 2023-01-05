@@ -95,7 +95,7 @@ export default class extends React.Component {
           modalTitle = 'UPI Transfer Enabled';
           showUPIAddressDetails = true;
         } else if (payload.types && payload.types.indexOf('bank_account') > -1) {
-          modalTitle = 'Account Transfer Enabled';
+          modalTitle = 'Customer Identifier Transfer Enabled';
           showBankAccountDetails = true;
         }
 
@@ -195,8 +195,8 @@ export default class extends React.Component {
               <div class="panel-body">
                 {isYesBankorICICI && (
                   <Alert.Warning iconBefore="i-warning">
-                    Share new account details with your customers to accept payments. Your older
-                    account will not accept payments from 31 Jan 2022.
+                    Share new customer identifier details with your customers to accept payments.
+                    Your older customer identifiers will not accept payments from 31 Jan 2022.
                     <a
                       class="redirect-text"
                       alt="yes bank moratorium razorpay"
@@ -211,7 +211,13 @@ export default class extends React.Component {
                 )}
                 <div class="VirtualAccountDetails">
                   <EntityDetailRow
-                    label={<b>{bankAccount2 ? 'Old Account Details' : 'Account Details'}</b>}
+                    label={
+                      <b>
+                        {bankAccount2
+                          ? 'Old Customer Identifier Details'
+                          : 'Customer Identifier Details'}
+                      </b>
+                    }
                   >
                     {isYesBankorICICI ? (
                       <CustomClipboard
@@ -246,7 +252,9 @@ export default class extends React.Component {
                       <div class="divider" />
                       <EntityDetailRow
                         label={
-                          <b style={{ color: '#58666e', fontSize: '14px' }}>New Account Details</b>
+                          <b style={{ color: '#58666e', fontSize: '14px' }}>
+                            New Customer Identifier Details
+                          </b>
                         }
                       >
                         <CustomClipboard
@@ -268,7 +276,7 @@ export default class extends React.Component {
                     <br />
 
                     <button class="btn btn-default" onClick={this.openEnableTransferModeModal}>
-                      Enable Account Transfer
+                      Enable Customer Identifier Transfer
                     </button>
                   </>
                 )}
@@ -298,7 +306,10 @@ export default class extends React.Component {
                     </EntityDetailRow>
                   )}
 
-                  <EntityDetailRow label="Account Description" value={virtualaccount.description} />
+                  <EntityDetailRow
+                    label="Customer Identifier Description"
+                    value={virtualaccount.description}
+                  />
 
                   <EntityDetailRow label="Customer Id" value={virtualaccount.customer_id} />
 
@@ -330,7 +341,7 @@ export default class extends React.Component {
 
                 {virtualaccount.status !== 'closed' ? (
                   <button class="btn btn-default" onClick={() => onClose(virtualaccount)}>
-                    Close Account
+                    Close Customer Identifier
                   </button>
                 ) : null}
 
@@ -339,7 +350,7 @@ export default class extends React.Component {
                     <Button onClick={onMakeTestPaymentClick}>Make a Test Payment</Button>
 
                     <div>
-                      <strong>Test Mode:</strong> Make a test payment to this virtual acocunt.
+                      <strong>Test Mode:</strong> Make a test payment to this customer identifier.
                     </div>
                   </Banner>
                 )}
@@ -348,7 +359,7 @@ export default class extends React.Component {
 
                 <div>
                   <p class="text-muted" style={{ lineHeight: '35px' }}>
-                    Payments to this account - {va_payments.length} payments
+                    Payments to this customer identifier - {va_payments.length} payments
                     <Link
                       class="pull-right"
                       to={`/smartcollect/payments/?virtual_account_id=${virtualaccount.id}`}

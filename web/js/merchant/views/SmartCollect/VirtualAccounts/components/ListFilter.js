@@ -5,7 +5,7 @@ export default (props) => {
   return (
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
-        <label>Virtual Account Id</label>
+        <label>Customer Identifier Id</label>
         <Field
           name="id"
           component="input"
@@ -15,7 +15,7 @@ export default (props) => {
       </div>
       <>
         <div class="form-group list-filter-item account-number-filter">
-          <label>Account Number/UPI Address</label>
+          <label>Customer Identifier Number/UPI Address</label>
           <Field
             name="payee_account"
             component="input"
@@ -45,7 +45,7 @@ export default (props) => {
         </div>
 
         <div class="form-group list-filter-item">
-          <label>Email</label>
+          <label>Customer Email</label>
           <Field
             name="email"
             component="input"
@@ -55,8 +55,8 @@ export default (props) => {
           />
         </div>
 
-        <div class="form-group list-filter-item">
-          <label>Account Description</label>
+        <div class="form-group list-filter-item description-filter">
+          <label>Customer Identifier Description</label>
           <Field
             name="description"
             component="input"

@@ -31,9 +31,9 @@ import VirtualAccountsListFilter from 'merchant/views/SmartCollect/VirtualAccoun
 
 import ListContainer from 'merchant/containers/ListContainer';
 
-import { getIsAllowedResetVAOnBoarding } from '../OnBoarding';
+import { getIsAllowedResetVAOnBoarding } from 'merchant/views/SmartCollect/OnBoarding';
 
-import { getVAQuickGuideIsClosed } from '../QuickGuide';
+import { getVAQuickGuideIsClosed } from 'merchant/views/SmartCollect/QuickGuide';
 
 import EmptyList from 'merchant/components/EmptyList';
 
@@ -41,8 +41,8 @@ const EmptyComponent = () => (
   <EmptyList
     description={
       <React.Fragment>
-        <div>There are no virtual accounts yet!!</div>
-        <div>Start creating new account now.</div>
+        <div>There are no customer identifiers yet!!</div>
+        <div>Start creating a new customer identifier now.</div>
       </React.Fragment>
     }
   />
@@ -68,6 +68,7 @@ const EmptyComponent = () => (
 export default class VirtualAccountsListContainer extends ListContainer {
   UNSAFE_componentWillMount() {
     // TODO: Don't call below when feature is disbaled
+    //eslint-disable-next-line
     super.UNSAFE_componentWillMount();
 
     this.initVAOnboarding();
@@ -213,7 +214,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
                 }}
               >
                 <i class="i i-plus" />
-                <span>Create Virtual Account</span>
+                <span>Create Customer Identifier</span>
               </NavLink>
             </ShowWhen>
           </div>
@@ -229,7 +230,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
         />
 
         <DataTable
-          title="Virtual Accounts"
+          title="Customer Identifiers"
           columns={[virtualAccountId, accountDescription, amountPaid, status, createdAt]}
           count={this.state.count}
           skip={this.state.skip}

@@ -3,22 +3,22 @@ import { PossibleStatuses } from 'merchant/helpers/data';
 const { done } = PossibleStatuses;
 
 export const getQuickGuideData = {
-  PaymentPage: status => {
+  PaymentPage: (status) => {
     if (status === done) {
       return {
-        title: '1. Virtual account created',
+        title: '1. Customer Identifier created',
         content:
-          'Create as many virtual accounts required and share the account details with others.',
+          'Create as many Customer Identifiers required and share the Customer Identifier details with others.',
       };
     }
 
     return {
-      title: '1. Create Virtual account',
+      title: '1. Create Customer Identifier',
       content:
-        'Create as many virtual accounts required and share the account details with others.',
+        'Create as many Customer Identifiers required and share the Customer Identifier details with others.',
     };
   },
-  ReceivePayments: status => {
+  ReceivePayments: (status) => {
     if (status === done) {
       return {
         title: '2. Payments Received',
@@ -28,8 +28,7 @@ export const getQuickGuideData = {
 
     return {
       title: '2. Receive Payments',
-      content:
-        'People can pay to a virtual account by adding it as a beneficiary.',
+      content: 'People can pay to a Customer Identifier by adding it as a beneficiary.',
     };
   },
 };

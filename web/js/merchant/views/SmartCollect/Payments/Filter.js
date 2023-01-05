@@ -14,7 +14,7 @@ export default ({ ...props }) => {
         />
       </div>
       <div class="form-group list-filter-item">
-        <label>Virtual Account Id</label>
+        <label>Customer Identifier Id</label>
         <Field
           name="virtual_account_id"
           component="input"

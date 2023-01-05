@@ -203,8 +203,8 @@ class BatchValidateModal extends Component {
                 ) : (
                   <ol class="validate-modal-ul">
                     <li>
-                      Each row must contain a unique Virtual Account ID and it should not already be
-                      in expired or closed state.
+                      Each row must contain a unique Customer Identifier ID and it should not
+                      already be in expired or closed state.
                     </li>
                     <li>
                       Each row must contain an expiry date in dd-mm-yyyy hh:mm format (e.g.

@@ -4,7 +4,7 @@ import ModalHeader from 'common/ui/ModalHeader';
 import AccountDetails, {
   getVirtualAccountDetails,
   getVirtualAccountDetailsToCopy,
-} from '../AccountDetails';
+} from 'merchant/views/SmartCollect/VirtualAccounts/components/AccountDetails';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 const AccountDetailsSummary = ({
@@ -56,7 +56,7 @@ const AccountDetailsSummary = ({
           }}
         >
           <button type="button" class="btn btn-primary btn-block m-t">
-            Copy Account Details
+            Copy Customer Identifier Details
           </button>
         </CustomClipboard>
       </div>
