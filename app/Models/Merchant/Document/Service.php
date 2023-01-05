@@ -460,7 +460,8 @@ class Service extends Base\Service
                     'merchant_id'   => $merchantId,
                     'month'         => $month,
                     'year'          => $year,
-                    'force_create'  => true
+                    'force_create'  => true,
+                    'mode'          => $this->mode,
                 ];
 
                 // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period
@@ -534,7 +535,8 @@ class Service extends Base\Service
                     'merchant_id'   => $merchantId,
                     'month'         => $month,
                     'year'          => $year,
-                    'force_create'  => false
+                    'force_create'  => false,
+                    'mode'          => $this->mode,
                 ];
 
                 // Assign a delay between 0 & 900 so that tasks are distributed over 15 minute period

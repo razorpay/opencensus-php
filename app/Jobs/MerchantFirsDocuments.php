@@ -52,7 +52,7 @@ class MerchantFirsDocuments extends Job
                 'request'  => $this->request,
             ]);
 
-            $response = (new Lambda\Service)->processLambdaFIRS($this->request);
+            $response = (new Lambda\Service)->processLambdaFIRS($this->request, $this->mode);
 
             $this->trace->info(TraceCode::FIRS_DOCUMENT_PROCESSOR_JOB_COMPLETED,[
                 'response' => $response,
@@ -118,14 +118,14 @@ class MerchantFirsDocuments extends Job
     protected function getFirsDocumentData(array $payload)
     {
         $key = $payload['Records'][0]['s3']['object']['key'];
-        
+
         /* Sample Key For Different Gateway
             rbl     - rbl/FIRS/filename.pdf
             icici   - icici/FIRS/filename.pdf
         */
-        
+
         $gateway = explode('/',$key)[0];
-        
+
         return [
             'source'  => 'lambda',
             'gateway' => $gateway,

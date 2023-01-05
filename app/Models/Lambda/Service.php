@@ -5,6 +5,7 @@ namespace RZP\Models\Lambda;
 use File;
 use Request;
 use RZP\Base\RuntimeManager;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Jobs\MerchantCrossborderEmail;
@@ -277,7 +278,7 @@ class Service extends Base\Service
         return File::allFiles($unzippedFolderPath);
     }
 
-    public function processLambdaFIRS(array $input)
+    public function processLambdaFIRS(array $input, $mode = Mode::LIVE)
     {
         $this->trace->info(TraceCode::LAMBDA_REQUEST,
             [
@@ -292,7 +293,7 @@ class Service extends Base\Service
 
         $file = new HttpFoundation\File\UploadedFile($fileDetails['file_path'],$this->fileProcessor->getFileName($file),$fileDetails['mime_type'],null,true);
 
-        $document = $this->uploadFileAndSaveInMerchantDocument($file,$input);
+        $document = $this->uploadFileAndSaveInMerchantDocument($file, $input, $mode);
 
         $documentMetaData = [
             Entity::ID => $document->getId(),
@@ -330,7 +331,7 @@ class Service extends Base\Service
         return false;
     }
 
-    protected function uploadFileAndSaveInMerchantDocument(HttpFoundation\File\UploadedFile $file, array $input)
+    protected function uploadFileAndSaveInMerchantDocument(HttpFoundation\File\UploadedFile $file, array $input, string $mode = Mode::LIVE)
     {
         $filename = $file->getClientOriginalName();
 
@@ -365,13 +366,40 @@ class Service extends Base\Service
 
             $document = (new Document\Core)->saveInMerchantDocument($response,$merchantId,$type,$documentDate);
 
-            $data = [
-               'document_id' => $document->getId(),
-                'action' => MerchantCrossborderEmail::FIRS_AVAILABLE_NOTIFICATION,
-            ];
-            if ($this->shouldSendFIRSAvailableEmail()){
-               // adding delay of 1 to 10 minutes to distribute load
-                MerchantCrossborderEmail::dispatch($data)->delay(rand(60,1000) % 601);
+            try
+            {
+                // set the mode
+                if (isset($this->app['rzp.mode']) === false)
+                {
+                    $this->app['rzp.mode'] = $mode;
+                }
+                // check experiment
+                $isSendEmail = $this->shouldSendFIRSAvailableEmail();
+                if ($isSendEmail === true)
+                {
+                    $data = [
+                       'document_id' => $document->getId(),
+                       'action'      => MerchantCrossborderEmail::FIRS_AVAILABLE_NOTIFICATION,
+                       'mode'        => $this->app['rzp.mode'],
+                    ];
+                    $this->trace->info(TraceCode::FIRS_SEND_EMAIL_MESSAGE_DISPATCHED,
+                        [
+                            '$data' => $data,
+                        ]
+                    );
+                    // adding delay of 1 to 10 minutes to distribute load
+                    MerchantCrossborderEmail::dispatch($data)->delay(rand(60,1000) % 601);
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    null,
+                    TraceCode::FIRS_SEND_EMAIL_MESSAGE_DISPATCH_FAILED,
+                    [
+                        'document_id' => $document->getId()
+                    ]);
             }
        }
 
