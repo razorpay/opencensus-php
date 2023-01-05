@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transfer;
 
+use RZP\Models\Feature\Constants as Feature;
+
 final class Constant
 {
     // Source types
@@ -25,4 +27,10 @@ final class Constant
     const MUTEX_LOCK_ON_LINKED_ACCOUNT_ID_NOT_ACQUIRED = 'mutex_lock_on_linked_account_id_not_acquired';
 
     const BALANCE_UPDATE_WITH_OLD_BALANCE_CHECK_FAILED = 'balance_update_with_old_balance_check_failed';
+
+    public static $keyMerchantFeatureIdentifiers = [
+        Feature::ROUTE_KEY_MERCHANTS_QUEUE,
+        Feature::CAPITAL_FLOAT_ROUTE_MERCHANT,
+        Feature::SLICE_ROUTE_MERCHANT,
+    ];
 }

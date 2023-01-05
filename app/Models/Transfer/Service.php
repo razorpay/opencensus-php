@@ -365,12 +365,40 @@ class Service extends Base\Service
 
     public function processPendingOrderTransfers(array $input)
     {
-        $orderIds = $this->repo->transfer->fetchPendingOrderTransfersToRetry($input['limit'] ?? 300);
+        $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
+
+        $startTime = microtime();
+
+        $orderIds = $this->repo->transfer->fetchPendingOrderTransfers($keyMerchantIds, $input['limit'] ?? 300);
+
+        $endTime = microtime();
 
         $this->trace->info(
-            TraceCode::PENDING_ORDER_TRANSFER_PROCESS,
+            TraceCode::PENDING_ORDER_TRANSFERS_FETCHED,
             [
                 'order_ids' => $orderIds,
+                'time_take' => ($endTime - $startTime),
+            ]
+        );
+
+        return $this->processOrderTransfers($orderIds);
+    }
+
+    public function processPendingOrderTransfersForKeyMerchants(array $input)
+    {
+        $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
+
+        $startTime = microtime();
+
+        $orderIds = $this->repo->transfer->fetchPendingOrderTransfersForKeyMerchants($keyMerchantIds, $input['limit'] ?? 300);
+
+        $endTime = microtime();
+
+        $this->trace->info(
+            TraceCode::PENDING_ORDER_TRANSFERS_FOR_KEY_MERCHANTS_FETCHED,
+            [
+                'order_ids' => $orderIds,
+                'time_take' => ($endTime - $startTime),
             ]
         );
 
@@ -410,12 +438,40 @@ class Service extends Base\Service
 
     public function processPendingPaymentTransfers(array $input)
     {
-        $paymentIds = $this->repo->transfer->fetchPendingTransfersToRetry(EntityConstant::PAYMENT, $input['limit'] ?? 300);
+        $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
+
+        $startTime = microtime();
+
+        $paymentIds = $this->repo->transfer->fetchPendingTransfers(EntityConstant::PAYMENT, $keyMerchantIds, $input['limit'] ?? 300);
+
+        $endTime = microtime();
 
         $this->trace->info(
-            TraceCode::PENDING_ORDER_TRANSFER_PROCESS_CRON,
+            TraceCode::PENDING_PAYMENT_TRANSFERS_FETCHED,
             [
-                'payement_ids' => $paymentIds,
+                'payment_ids'   => $paymentIds,
+                'time_taken'    => ($endTime - $startTime),
+            ]
+        );
+
+        return $this->processPaymentTransfers($paymentIds);
+    }
+
+    public function processPendingPaymentTransfersForKeyMerchants(array $input)
+    {
+        $keyMerchantIds = $this->repo->feature->findMerchantIdsHavingFeatures(Constant::$keyMerchantFeatureIdentifiers);
+
+        $startTime = microtime();
+
+        $paymentIds = $this->repo->transfer->fetchPendingTransfersForKeyMerchants(EntityConstant::PAYMENT, $keyMerchantIds, $input['limit'] ?? 300);
+
+        $endTime = microtime();
+
+        $this->trace->info(
+            TraceCode::PENDING_PAYMENT_TRANSFERS_FOR_KEY_MERCHANTS_FETCHED,
+            [
+                'payment_ids'   => $paymentIds,
+                'time_taken'    => ($endTime - $startTime),
             ]
         );
 

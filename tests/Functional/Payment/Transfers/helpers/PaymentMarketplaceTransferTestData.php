@@ -319,7 +319,7 @@ return [
     'testCronProcessPendingPaymentTransfers' => [
         'request'   => [
             'method'    => 'POST',
-            'url'       => '/transfers/process_payment_pending',
+            'url'       => '/payment_transfers/process_pending',
             'content'   => [],
         ],
         'response'  => [
