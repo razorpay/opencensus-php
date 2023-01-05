@@ -866,6 +866,11 @@ class MindgateVirtualAccountTest extends TestCase
             'entity_type'   => 'org',
         ]);
 
+        $this->fixtures->create('org_hostname', [
+            'org_id' => $org->getId(),
+            'hostname' => 'hdfcupicollect.razorpay.com',
+        ]);
+
         return $org;
     }
 

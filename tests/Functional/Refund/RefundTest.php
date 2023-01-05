@@ -5093,6 +5093,10 @@ class RefundTest extends TestCase
     public function testInstantRefundsSupportedOnNonRZPOrg()
     {
         $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
+        $this->fixtures->create('org_hostname',[
+            'org_id' => $dummyOrg->getId(),
+            'hostname' => 'refund.razorpay.com',
+        ]);
 
         $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $dummyOrg['id']]);
 
@@ -5115,6 +5119,10 @@ class RefundTest extends TestCase
     public function testInstantRefundsSupportedOnNonRZPOrgWithDefaultPricing()
     {
         $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
+        $this->fixtures->create('org_hostname',[
+            'org_id' => $dummyOrg->getId(),
+            'hostname' => 'refund.razorpay.com',
+        ]);
 
         $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $dummyOrg['id']]);
 

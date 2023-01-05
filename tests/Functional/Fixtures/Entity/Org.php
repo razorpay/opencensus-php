@@ -63,6 +63,9 @@ class Org extends Base
     public function setUp()
     {
         $this->fixtures->create('org:razorpay_org');
+
+        // setup live later since in live we dont create org again
+        $this->fixtures->create('org:razorpay_org_live');
     }
 
     public function createDefaultTestOrganization()
@@ -226,12 +229,77 @@ class Org extends Base
         return $org;
     }
 
+    public function createCurlecOrg()
+    {
+        $permissions = (new PermissionEntity)->getAllPermissions();
+
+        // Default organisation to be used for tests
+        $org = $this->fixtures->create('org', [
+            'email'                   => 'admin@curlec.com',
+            'from_email'              => 'noreplay@curlec.com',
+            'cross_org_access'        => true,
+            'default_pricing_plan_id' => 'BAJq6FJDNJ4ZqD',
+            'custom_code'             => 'curlec',
+            'display_name'            => "Curlec",
+        ]);
+
+        $org->permissions()->attach($permissions);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => $org->getId(),
+            'hostname'  => 'curlec.com'
+        ]);
+
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => $org->getId(),
+            'hostname'  => 'curlec.in'
+        ]);
+
+        $this->fixtures->create('group', [
+            'id'     => '1CurlecGroupId',
+            'name'   => 'curlec_group',
+            'org_id' => $org->getId(),
+        ]);
+
+        $adminRole = $this->fixtures->create('role', [
+            'id'     => 'CurlecAdRoleId',
+            'org_id' => $org->getId(),
+            'name'   => Config::get('heimdall.default_role_name'),
+        ]);
+
+        $this->fixtures->create('role', [
+            'id'     => 'CurMngerRoleId',
+            'org_id' => $org->getId(),
+            'name'   => 'Admin',
+        ]);
+
+        $adminRole->permissions()->attach($permissions);
+
+        $admin = $this->fixtures->create('admin', [
+            'id'     => 'CurleSprAdmnId',
+            'org_id' => $org->getId(),
+            'email'  => 'superadmin@curlec.com'
+        ]);
+
+        $admin->roles()->attach($adminRole);
+
+        $this->fixtures->create('admin_token', [
+            'id'         => 'SuprCurleToken',
+            'admin_id'   => 'CurleSprAdmnId',
+            'token'      => Hash::make(self::DEFAULT_TOKEN),
+            'created_at' => Carbon::now()->getTimestamp(),
+            'expires_at' => Carbon::now()->addYears(10)->timestamp,
+        ]);
+
+        return $org;
+    }
 
     public function createRazorpayOrg()
     {
         $permissions = $this->fixtures->create('permission:default_permissions');
 
         // Default organisation to be used for tests
+        // org is synced in test and live dbs 
         $org = $this->fixtures->create('org', [
             'id'                      => self::RZP_ORG,
             'email'                   => 'admin@razorpay.com',
@@ -247,6 +315,8 @@ class Org extends Base
             'hostname'  => 'dashboard.razorpay.in'
         ]);
 
+        // hostname is not synced in test and live by default
+        // create test record
         $this->fixtures->create('org_hostname', [
             'org_id'    => self::RZP_ORG,
             'hostname'  => 'dashboard.razorpay.com'
@@ -428,8 +498,9 @@ class Org extends Base
 
         foreach ((array) $featureNames as $featureName) {
             $attributes = [
-                'name'      => $featureName,
-                'entity_id' => $id
+                'name'          => $featureName,
+                'entity_type'   => 'org',
+                'entity_id'     => $id
             ];
             $features->push($this->fixtures->create('feature', $attributes));
         }

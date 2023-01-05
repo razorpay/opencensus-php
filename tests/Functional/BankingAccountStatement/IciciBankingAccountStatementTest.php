@@ -57,8 +57,6 @@ class IciciBankingAccountStatementTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('org:razorpay_org_live');
-
         $this->fixtures->on('test')->create('contact', ['id' => '1000001contact', 'active' => 1]);
 
         $this->fixtures->on('test')->create(

@@ -1185,6 +1185,11 @@ class PaymentCreateTest extends TestCase
     {
         $dummyOrg = $this->fixtures->create('org', ['custom_code' => 'dummy']);
 
+        $this->fixtures->create('org_hostname', [
+            'org_id' => $dummyOrg->getId(),
+            'hostname' => 'test.razorpay.com',
+        ]);
+
         $this->fixtures->edit('merchant', '10000000000000', ['org_id' => $dummyOrg['id']]);
 
         $this->fixtures->merchant->addFeatures(['dummy']);

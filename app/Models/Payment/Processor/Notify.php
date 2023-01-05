@@ -17,6 +17,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\Utility;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Base\OrgWiseConfig;
 use RZP\Mail\Payment as PaymentMail;
 use RZP\Models\Invoice\ViewDataSerializer;
 use RZP\Models\Merchant\Email as MerchantEmail;
@@ -50,6 +51,7 @@ class Notify
      */
     protected $refund;
     protected $merchant;
+    protected $org;
     protected $mode;
     protected $trace;
     protected $template;
@@ -77,6 +79,8 @@ class Notify
         $this->fetchReward = $fetchReward;
 
         $this->merchant = $this->payment->merchant;
+
+        $this->org = $this->merchant->org;
 
         if ($this->payment->hasInvoice())
         {
@@ -577,9 +581,19 @@ class Notify
                 'gateway_amount_spread'=> $this->payment->getAmountComponents($this->payment->isDCC()),
             ],
             'org'       => [
-                'id'                   => $this->merchant->getOrgId(),
+                'id'                   => $this->org->getId(),
+                'custom_code'          => $this->org->getCustomCode(),
+                "display_name"         => $this->org->getDisplayName(),
+                'hostname'             => $this->org->getPrimaryHostName(),
+                'logo_url'             => $this->org->getMainLogo(),
             ],
         ];
+
+        // Add Org Data from commit 1dad91cb6e6e here instead of doing in Payment/Base constructor, 
+        // that was wrong implementation since child class has power to override not parent
+        $orgData = OrgWiseConfig::getOrgDataForEmail($this->merchant);
+
+        $data = array_merge($data, $orgData);
 
         // add merchant support details
         try

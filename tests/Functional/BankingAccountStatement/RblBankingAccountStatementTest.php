@@ -141,8 +141,6 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
 
-        $this->fixtures->create('org:razorpay_org_live');
-
         $this->fixtures->base->connection('test');
     }
 

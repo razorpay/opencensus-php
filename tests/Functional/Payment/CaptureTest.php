@@ -8,6 +8,7 @@ use Mockery;
 use Carbon\Carbon;
 use RZP\Exception;
 use Dashboard\Payment;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
@@ -112,6 +113,41 @@ class CaptureTest extends TestCase
         Queue::assertPushedOn('capture_test', CaptureJob::class);
 
         Mail::assertQueued(CapturedMail::class);
+    }
+
+    public function testCapturedMailForCurlecMerchant()
+    {
+        Mail::fake();
+
+        $org = $this->fixtures->create('org:curlec_org');
+        $this->fixtures->org->addFeatures([FeatureConstants::ORG_CUSTOM_BRANDING],$org->getId());
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'org_id'    => $org->getId()
+        ]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        Mail::assertQueued(CapturedMail::class, function ($mail)
+        {
+            $this->assertEquals($mail->view, 'emails.payment.merchant');
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
+            $this->assertEquals('no-reply@curlec.com', $mail->replyTo[0]['address']);
+
+            $this->assertEquals('no-reply@curlec.com', $mail->from[0]['address']);
+
+            return true;
+        });
     }
 
     public function testAsyncCaptureWithQueue()

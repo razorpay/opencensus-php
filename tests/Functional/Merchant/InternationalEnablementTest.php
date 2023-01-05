@@ -70,27 +70,10 @@ class InternationalEnablementTest extends TestCase
 
     protected function setupWorkflows()
     {
-        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
-
         $permissionWorkflowNameMap = [
             Permission\Name::EDIT_MERCHANT_PG_INTERNATIONAL      => 'PG International',
             Permission\Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL => 'Product 2.0 International',
         ];
-
-        $permissionNames = array_keys($permissionWorkflowNameMap);
-
-        foreach ($permissionNames as $permissionName)
-        {
-            $permission = $this->getDbEntity('permission', ['name' => $permissionName], 'live');
-
-            DB::connection('live')->table('permission_map')->insert(
-                [
-                    'entity_id'     => Org::RZP_ORG,
-                    'entity_type'   => 'org',
-                    'permission_id' => $permission->getId(),
-                ]);
-        }
-
 
         $org = (new OrgRepository)->getRazorpayOrg();
 

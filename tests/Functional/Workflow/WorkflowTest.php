@@ -841,7 +841,7 @@ class WorkflowTest extends TestCase
 
     public function testWorkflowSyncFlowForConfigCreation()
     {
-        $this->org = $this->fixtures->org->createRazorpayOrgLive();
+        $this->org = $this->getDbEntity('org', ['id' => '100000razorpay'], 'live');
 
         $this->input = [
             'org_id'      => $this->org->getId(),

@@ -122,8 +122,10 @@ class CustomerFailed extends Base
                 // of getting orgs from basic auth is figured
                 // out while sending the email
                 'org'       => [
-                    'name'                 => 'Razorpay Software Private Ltd',
-                    'logo_url'             => 'https://cdn.razorpay.com/logo.png',
+                    'name'                 => $data['org']['display_name'],
+                    'logo_url'             => $data['org']['logo_url'],
+                    'custom_code'          => $data['org']['custom_code'],
+                    'hostname'             => $data['org']['hostname'],
                 ],
             ],
         ];

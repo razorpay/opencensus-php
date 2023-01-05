@@ -137,6 +137,19 @@ class Constants
         self::DEVOPS_BEAM               => 'devops+beam@razorpay.com',
     ];
 
+    const CURLEC_MAIL_ADDRESSES = [
+        self::NOREPLY                   => 'no-reply@curlec.com',
+    ];
+
+    const DEFAULT_MAIL_ADDRESSES = self::MAIL_ADDRESSES;
+
+    // this map stores the mail addresses used by org, this is required only if a org uses custom
+    // mail addresses, by deafult rzp mail org addresses are used
+    const ORG_MAIL_ADDRESSES_MAP = [
+        'rzp'           => self::MAIL_ADDRESSES,
+        'curlec'        => self::CURLEC_MAIL_ADDRESSES,
+    ];
+
     const MERCHANT_CUSTOM_MAIL_ADDRESSES = [
         Preferences::MID_BOB_FIN => 'noreply@bobfinancial.com',
     ];
@@ -180,4 +193,32 @@ class Constants
         self::SECURITY_ALERTS         => 'Team Razorpay',
         self::PARTNER_COMMISSIONS     => 'Razorpay Partnerships',
     ];
+
+    const CURLEC_HEADERS = [
+        self::NOREPLY                 => 'Team Curlec',
+    ];
+
+    const DEFAULT_HEADERS = self::HEADERS;
+
+    // this map stores the headers for the mail addresses used by org, 
+    // this is required only if a org uses custom branding 
+    // by deafult rzp mail org mail addresses and headers are used
+    const ORG_HEADERS_MAP = [
+        'rzp'       => self::MAIL_ADDRESSES,
+        'curlec'    => self::CURLEC_HEADERS,
+    ];
+
+    public static function getSenderEmailForOrg(string $orgCode, string $type) : string
+    {
+        $mailAddresses = self::ORG_MAIL_ADDRESSES_MAP[$orgCode] ?? self::DEFAULT_MAIL_ADDRESSES;
+
+        return $mailAddresses[$type];
+    }
+
+    public static function getSenderNameForOrg(string $orgCode, string $type) : string
+    {
+        $headers = self::ORG_HEADERS_MAP[$orgCode] ?? self::DEFAULT_HEADERS;
+
+        return $headers[$type];
+    }
 }

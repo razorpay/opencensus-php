@@ -717,7 +717,6 @@ class Mailable extends BaseMailable
 
         $orgCode = $merchant->org->getCustomCode();
 
-
         $res = OrgWiseConfig::getEmailEnabledForOrg($orgCode, $class, $merchant);
 
         if ($res === false)

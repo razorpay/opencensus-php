@@ -688,11 +688,6 @@ class CoreTest extends TestCase
 
         $this->app['basicauth']->setOrgId('100000razorpay');
 
-        $this->fixtures->on('live')->create('org_hostname', [
-            'org_id'    => '100000razorpay',
-            'hostname'  => 'dashboard.razorpay.com'
-        ]);
-
         $merchant = $this->fixtures->on('live')->create('merchant', [
             'live'       => true,
             'activated'  => 1,
@@ -714,11 +709,6 @@ class CoreTest extends TestCase
         $this->app->instance("rzp.mode", Mode::LIVE);
 
         $this->app['basicauth']->setOrgId('100000razorpay');
-
-        $this->fixtures->on('live')->create('org_hostname', [
-            'org_id'    => '100000razorpay',
-            'hostname'  => 'dashboard.razorpay.com'
-        ]);
 
         $escalationCoreMock = $this->getMockBuilder(Escalations\Core::class)
             ->setMethods(['canTriggerIAWebhookEscalation'])
@@ -761,11 +751,6 @@ class CoreTest extends TestCase
 
         $this->app['basicauth']->setOrgId('100000razorpay');
 
-        $this->fixtures->on('live')->create('org_hostname', [
-            'org_id'    => '100000razorpay',
-            'hostname'  => 'dashboard.razorpay.com'
-        ]);
-
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('L1');
 
         $merchantId = $merchantDetail->getId();
@@ -805,11 +790,6 @@ class CoreTest extends TestCase
         $this->app->instance("rzp.mode", Mode::LIVE);
 
         $this->app['basicauth']->setOrgId('100000razorpay');
-
-        $this->fixtures->on('live')->create('org_hostname', [
-            'org_id'    => '100000razorpay',
-            'hostname'  => 'dashboard.razorpay.com'
-        ]);
 
         [$merchantDetail] = $this->createAndFetchFixturesForMilestone('L1');
 

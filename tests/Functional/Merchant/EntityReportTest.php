@@ -79,6 +79,11 @@ class EntityReportTest extends TestCase
 
         $org = $this->fixtures->create('org');
 
+        $this->fixtures->create('org_hostname', [
+            'org_id' => $org->getId(),
+            'hostname' => 'rfnd.razorpay.com',
+        ]);
+
         $this->fixtures->feature->create([
             'entity_type'   => 'org',
             'entity_id'     => $org->getId(),
@@ -129,6 +134,11 @@ class EntityReportTest extends TestCase
         $this->app->instance('scrooge', $scroogeMock);
 
         $org = $this->fixtures->create('org');
+
+        $this->fixtures->create('org_hostname', [
+            'org_id' => $org->getId(),
+            'hostname' => 'rfnd.razorpay.com',
+        ]);
 
         $this->fixtures->feature->create([
             'entity_type'   => 'org',

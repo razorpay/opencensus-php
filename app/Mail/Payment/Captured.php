@@ -36,6 +36,12 @@ class Captured extends Base
                 'amount_subunits'           => $data['payment']['amount_spread'][2],
                 'customer_email'            => $data['customer']['email'],
                 'customer_contact_mobile'   => $data['customer']['phone'],
+                'org'       => [
+                    'name'                 => $data['org']['display_name'],
+                    'logo_url'             => $data['org']['logo_url'],
+                    'custom_code'          => $data['org']['custom_code'],
+                    'hostname'             => $data['org']['hostname'],
+                ],
             ],
         ];
 

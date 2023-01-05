@@ -35,6 +35,11 @@ class AxisCaptureFileTest extends TestCase
         ];
         $this->fixtures->org->create($orgAttr);
 
+        $this->fixtures->create('org_hostname', [
+            'org_id' => $orgAttr['id'],
+            'hostname' => 'test.axis.com',
+        ]);
+
         $this->fixtures->edit('merchant', '10000000000000', ['org_id' => 'CLTnQqDj9Si8bx']);
 
         $this->mockCardVault();

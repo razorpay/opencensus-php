@@ -65,16 +65,6 @@ class FeaturesTest extends OAuthTestCase
 
         parent::setUp();
 
-        //
-        // testOnboardingRequestStatus creates an action_state in the live mode which requires an admin to
-        // exist due to a foreign key constraint. Admin fixture is created in test and not in live, hence creating it
-        // here.
-        //
-        $this->fixtures->on('live')->create('admin', [
-            'id'     => Org::SUPER_ADMIN,
-            'org_id' => Org::RZP_ORG,
-        ]);
-
         $this->ba->adminAuth();
     }
 

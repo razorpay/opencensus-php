@@ -12,13 +12,16 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Services\RazorXClient;
 use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Exception\GatewayErrorException;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Mail\Payment\Failed as PaymentFailedMail;
+use RZP\Mail\Payment\FailedToAuthorized as FailedToAuthorizedMail;
 use RZP\Mail\Payment\Authorized as AuthorizedMail;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 
@@ -26,6 +29,7 @@ use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 class AuthorizeTest extends TestCase
 {
     use PaymentTrait;
+    use DbEntityFetchTrait;
 
     /**
      * The payment array
@@ -154,6 +158,41 @@ class AuthorizeTest extends TestCase
 
     }
 
+    public function testAuthorisedMailForCurlecCustomer()
+    {
+        Mail::fake();
+
+        $org = $this->fixtures->create('org:curlec_org');
+        $this->fixtures->org->addFeatures([FeatureConstants::ORG_CUSTOM_BRANDING],$org->getId());
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'org_id'    => $org->getId()
+        ]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->doAuthAndCapturePayment($paymentArray);
+
+        Mail::assertQueued(AuthorizedMail::class, function ($mail)
+        {
+            $this->assertEquals($mail->view, 'emails.mjml.customer.payment');
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
+            $this->assertEquals('no-reply@curlec.com', $mail->replyTo[0]['address']);
+
+            $this->assertEquals('no-reply@curlec.com', $mail->from[0]['address']);
+
+            return true;
+        });
+    }
+
     protected function failAuthorizePayment(array $replace = array())
     {
         $server = $this->mockServer()
@@ -208,7 +247,112 @@ class AuthorizeTest extends TestCase
 
             return true;
         });
+    }
 
+    public function testFailedMailCurlecCustomer()
+    {
+        Mail::fake();
+
+        $org = $this->fixtures->create('org:curlec_org');
+        $this->fixtures->org->addFeatures([FeatureConstants::ORG_CUSTOM_BRANDING], $org->getId());
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'org_id'    => $org->getId()
+        ]);
+
+        $this->fixtures->merchant->addFeatures([FeatureConstants::PAYMENT_FAILURE_EMAIL], '10000000000000');
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $this->fixtures->create('terminal:shared_migs_recurring_terminals');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'axis_migs';
+
+        $this->failAuthorizePayment();
+
+        Mail::assertQueued(CustomerFailed::class, function ($mail)
+        {
+            $this->assertEquals($mail->view, 'emails.mjml.customer.failure');
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
+            $this->assertEquals('no-reply@curlec.com', $mail->replyTo[0]['address']);
+
+            return true;
+        });
+
+        Mail::assertQueued(PaymentFailedMail::class, function ($mail)
+        {
+            $this->assertEquals($mail->view, 'emails.payment.merchant_failure');
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
+            $this->assertEquals('no-reply@curlec.com', $mail->replyTo[0]['address']);
+
+            return true;
+        });
+    }
+
+    public function testFailedToAuthorizedCurlecOrg()
+    {
+        Mail::fake();
+
+        $org = $this->fixtures->create('org:curlec_org');
+
+        $this->fixtures->org->addFeatures([FeatureConstants::ORG_CUSTOM_BRANDING], $org->getId());
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'org_id'    => $org->getId()
+        ]);
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->gateway = 'axis_migs';
+
+        $this->failAuthorizePayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->resetMockServer();
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        Mail::assertQueued(FailedToAuthorizedMail::class, function ($mail)
+        {
+            $this->assertContains($mail->view, ['emails.payment.failed_to_authorized', 'emails.mjml.customer.payment']);
+
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
+            $this->assertEquals('no-reply@curlec.com', $mail->replyTo[0]['address']);
+
+            return true;
+        });
     }
 
     public function testFailedMailWithoutMerchantSupportEmail()

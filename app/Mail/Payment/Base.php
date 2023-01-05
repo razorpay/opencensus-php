@@ -18,9 +18,7 @@ class Base extends Mailable
     {
         parent::__construct();
 
-        parent::addMailData();
-
-        $this->data = array_merge($this->data, $data);
+        $this->data = $data;
 
         $this->isMerchantEmail = $isMerchantEmail;
 
@@ -42,7 +40,9 @@ class Base extends Mailable
 
     protected function addReplyTo()
     {
-        $email = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+        $orgCode = $this->data['org']['custom_code'] ?? '';
+
+        $email = Constants::getSenderEmailForOrg($orgCode, Constants::NOREPLY);
 
         $this->replyTo($email);
 
@@ -111,7 +111,17 @@ class Base extends Mailable
 
         if ($this->isMerchantEmail === true)
         {
-            $subject = "Razorpay | $subject";
+            $orgName = "Razorpay";
+
+            if ((isset($this->data['custom_branding']) === true) and 
+                ($this->data['custom_branding'] === true) and
+                (isset($this->data['org']['custom_code']) === true) and  
+                ($this->data['org']['custom_code'] == 'curlec'))
+            {
+                $orgName = $this->data['org_name'];
+            }
+
+            $subject = $orgName . " | $subject";
         }
 
         $this->subject($subject);
@@ -166,12 +176,16 @@ class Base extends Mailable
 
     protected function getSenderEmail(): string
     {
-        return Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+        $orgCode = $this->data['org']['custom_code'] ?? '';
+
+        return Constants::getSenderEmailForOrg($orgCode, Constants::NOREPLY);
     }
 
     protected function getSenderHeader(): string
     {
-        return Constants::HEADERS[Constants::NOREPLY];
+        $orgCode = $this->data['org']['custom_code'] ?? '';
+
+        return Constants::getSenderNameForOrg($orgCode, Constants::NOREPLY);
     }
 
     protected function getCustomerSupportText()
@@ -245,14 +259,18 @@ class Base extends Mailable
             return 'team@koinex.in';
         }
 
-        else if($isMerchantEmail === false and
+        else if ($isMerchantEmail === false and
             isset($this->data['merchant']['support_details']) and
             isset($this->data['merchant']['support_details']['email']))
         {
             return $this->data['merchant']['support_details']['email'];
         }
 
-        return Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+        $orgCode = $this->data['org']['custom_code'] ?? '';
+
+        $email = Constants::getSenderEmailForOrg($orgCode, Constants::NOREPLY);
+
+        return $email;
 
     }
 

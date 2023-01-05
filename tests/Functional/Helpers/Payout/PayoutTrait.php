@@ -204,7 +204,7 @@ trait PayoutTrait
         $this->fixtures->on('live')->create('role', [
             'id'     => Org::BANKING_ADMIN_ROLE,
             'org_id' => Org::RZP_ORG,
-            'name'   => 'Admin',
+            'name'   => 'Banking Admin',
         ]);
 
         // Creating Finance L1 role corresponding to banking finance_l1 role
@@ -310,7 +310,7 @@ trait PayoutTrait
         $this->fixtures->on('live')->create('role', [
             'id'     => Org::BANKING_ADMIN_ROLE,
             'org_id' => Org::RZP_ORG,
-            'name'   => 'Admin',
+            'name'   => 'Banking Admin',
         ]);
 
         // Creating Finance L1 role corresponding to banking finance_l1 role
@@ -472,28 +472,28 @@ trait PayoutTrait
                     return 'control';
                 }));
 
-        $permission = $this->fixtures->on('live')->create('permission',
-            [
-                'name'      => 'create_payout',
-                'category'  => 'payouts'
-            ]
-        );
+        // $permission = $this->fixtures->on('live')->create('permission',
+        //     [
+        //         'name'      => 'create_payout',
+        //         'category'  => 'payouts'
+        //     ]
+        // );
 
-        DB::connection('live')->table('permission_map')->insert(
-        // maker role
-            [
-                'entity_id'     => Org::RZP_ORG,
-                'entity_type'   => 'org',
-                'permission_id' => $permission->getId(),
-            ]);
+        // DB::connection('live')->table('permission_map')->insert(
+        // // maker role
+        //     [
+        //         'entity_id'     => Org::RZP_ORG,
+        //         'entity_type'   => 'org',
+        //         'permission_id' => $permission->getId(),
+        //     ]);
 
         $org = (new OrgRepository)->getRazorpayOrg();
 
-        $this->fixtures->create('role', [
-            'id'     => Org::ADMIN_ROLE,
-            'org_id' => Org::RZP_ORG,
-            'name'   => Config::get('heimdall.default_role_name'),
-        ]);
+        // $this->fixtures->create('role', [
+        //     'id'     => Org::ADMIN_ROLE,
+        //     'org_id' => Org::RZP_ORG,
+        //     'name'   => Config::get('heimdall.default_role_name'),
+        // ]);
 
         $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
 

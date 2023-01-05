@@ -23,11 +23,6 @@ class WebsiteCheckerTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->on('live')->create('org_hostname', [
-            'org_id' => '100000razorpay',
-            'hostname' => 'dashboard.razorpay.in'
-        ]);
-
         $this->ba->appAuth();
     }
 

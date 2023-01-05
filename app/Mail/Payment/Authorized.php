@@ -26,9 +26,9 @@ class Authorized extends Base
 
     protected function addMailData()
     {
-        parent::addMailData();
-
         $this->data['data'] = $this->getCustomerSupportText();
+
+        $this->with($this->data);
 
         return $this;
     }
@@ -49,12 +49,16 @@ class Authorized extends Base
 
     protected function getSenderEmail(): string
     {
-        return Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+        $orgCode = $this->data['org']['custom_code'] ?? '';
+
+        return Constants::getSenderEmailForOrg($orgCode, Constants::NOREPLY);
     }
 
     protected function getSenderHeader(): string
     {
-        return Constants::HEADERS[Constants::NOREPLY];
+        $orgCode = $this->data['org']['custom_code'] ?? '';
+
+        return Constants::getSenderNameForOrg($orgCode, Constants::NOREPLY);
     }
 
     protected function shouldSendEmailViaStork(): bool
@@ -108,8 +112,10 @@ class Authorized extends Base
                 // of getting orgs from basic auth is figured
                 // out while sending the email
                 'org'       => [
-                    'name'                 => 'Razorpay Software Private Ltd',
-                    'logo_url'             => 'https://cdn.razorpay.com/logo.png',
+                    'name'                 => $data['org']['display_name'],
+                    'logo_url'             => $data['org']['logo_url'],
+                    'custom_code'          => $data['org']['custom_code'],
+                    'hostname'             => $data['org']['hostname'],
                 ],
             ],
         ];

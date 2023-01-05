@@ -4746,11 +4746,6 @@ class ActivationTest extends OAuthTestCase
             ],
         ];
 
-        $this->fixtures->on('live')->create('org_hostname', [
-            'org_id'   => self::RZP_ORG,
-            'hostname' => 'dashboard.razorpay.com'
-        ]);
-
         $this->makeRequestAndGetContent($testData);
 
         //verify email has been sent
@@ -4794,12 +4789,6 @@ class ActivationTest extends OAuthTestCase
 
             ],
         ];
-
-        $this->fixtures->create('org_hostname', [
-            'org_id'    => self::RZP_ORG,
-            'hostname'  => 'dashboard.razorpay.com'
-        ]);
-
 
         $this->fixtures->create('merchant', [
             'id'     => '10000000000040',

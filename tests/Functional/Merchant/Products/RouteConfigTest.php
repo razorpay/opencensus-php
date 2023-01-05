@@ -368,8 +368,6 @@ class RouteConfigTest extends TestCase
 
         $updateResponse = $this->runRequestResponseFlow($testData);
 
-        s($updateResponse);
-
         $this->mockBVSResponse($linkedAccountId, BvsConstants::PERSONAL_PAN);
 
         sleep(10);

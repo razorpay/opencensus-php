@@ -402,13 +402,6 @@ trait PartnerTrait
 
         $this->fixtures->merchant->editPricingPlanId('1hDYlICobzOCYt');
 
-        $orgHostName = $this->fixtures->org->build('org_hostname', [
-            'org_id'    => self::RZP_ORG,
-            'hostname'  => 'dashboard.razorpay.in'
-        ]);
-
-        $orgHostName->setConnection('live')->saveOrFail();
-
         // Merchant needs to be activated to make live requests
         $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
 

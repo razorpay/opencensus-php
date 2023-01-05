@@ -1491,13 +1491,6 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->fixtures->user->createUserForMerchant($partner->getId(), [], Role::OWNER, Mode::LIVE);
 
-        $orgHostName = $this->fixtures->org->build('org_hostname', [
-            'org_id'   => self::RZP_ORG,
-            'hostname' => 'dashboard.razorpay.in'
-        ]);
-
-        $orgHostName->setConnection('live')->saveOrFail();
-
         $key = $this->fixtures->on(Mode::LIVE)->create('key', ['merchant_id' => $partner->getId()]);
         $key = 'rzp_live_' . $key->getKey();
 

@@ -262,11 +262,6 @@ class CreditLogsTest extends TestCase
 
         $this->ba->batchAppAuth('rzp_live');
 
-        $admin = $this->fixtures->on('live')->create('admin', [
-            'id'     => Org::SUPER_ADMIN,
-            'org_id' => Org::RZP_ORG,
-        ]);
-
         $headers = [
             'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
             'HTTP_X_Creator_Id'        => 'RzrpySprAdmnId',
@@ -323,11 +318,6 @@ class CreditLogsTest extends TestCase
         ]);
 
         $this->ba->batchAppAuth('rzp_live');
-
-        $admin = $this->fixtures->on('live')->create('admin', [
-            'id'     => Org::SUPER_ADMIN,
-            'org_id' => Org::RZP_ORG,
-        ]);
 
         $headers = [
             'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
@@ -409,11 +399,6 @@ class CreditLogsTest extends TestCase
 
         $this->ba->batchAppAuth('rzp_live');
 
-        $admin = $this->fixtures->on('live')->create('admin', [
-            'id'     => Org::SUPER_ADMIN,
-            'org_id' => Org::RZP_ORG,
-        ]);
-
         $headers = [
             'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',
             'HTTP_X_Creator_Id'        => 'RzrpySprAdmnId',
@@ -494,11 +479,6 @@ class CreditLogsTest extends TestCase
 
         $this->ba->batchAppAuth('rzp_live');
 
-        $admin = $this->fixtures->on('live')->create('admin', [
-            'id'     => Org::SUPER_ADMIN,
-            'org_id' => Org::RZP_ORG,
-        ]);
-
         $headers = [
             'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiAa',
             'HTTP_X_Creator_Id'        => 'RzrpySprAdmnId',
@@ -546,11 +526,6 @@ class CreditLogsTest extends TestCase
         Mail::fake();
 
         $this->ba->batchAppAuth('rzp_live');
-
-        $admin = $this->fixtures->on('live')->create('admin', [
-            'id'     => Org::SUPER_ADMIN,
-            'org_id' => Org::RZP_ORG,
-        ]);
 
         $headers = [
             'HTTP_X_Batch_Id'          => 'C0zv9I46W4wiOq',

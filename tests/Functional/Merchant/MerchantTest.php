@@ -13280,17 +13280,6 @@ IFSC Code  ICIC0001206
 
     private function setupWorkflowForBankAccountUpdate(): void
     {
-        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
-
-        $permission = $this->getDbEntity('permission', ['name' => 'edit_merchant_bank_detail'], 'live');
-
-        DB::connection('live')->table('permission_map')->insert(
-            [
-                'entity_id' => Org::RZP_ORG,
-                'entity_type' => 'org',
-                'permission_id' => $permission->getId(),
-            ]);
-
         $org = (new OrgRepository)->getRazorpayOrg();
 
         $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
@@ -13734,17 +13723,6 @@ IFSC Code  ICIC0001206
 
     protected function setupWorkflow($workflowName, $permissionName, $mode ='live'): void
     {
-        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
-
-        $permission = $this->getDbEntity('permission', ['name' => $permissionName], 'live');
-
-        DB::connection('live')->table('permission_map')->insert(
-            [
-                'entity_id' => Org::RZP_ORG,
-                'entity_type' => 'org',
-                'permission_id' => $permission->getId(),
-            ]);
-
         $org = (new OrgRepository)->getRazorpayOrg();
 
         $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
@@ -15318,23 +15296,6 @@ IFSC Code  ICIC0001206
 
     protected function setupWorkflows($permissionWorkflowNameMap)
     {
-        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
-
-        $permissionNames = array_keys($permissionWorkflowNameMap);
-
-        foreach ($permissionNames as $permissionName)
-        {
-            $permission = $this->getDbEntity('permission', ['name' => $permissionName], 'live');
-
-            DB::connection('live')->table('permission_map')->insert(
-                [
-                    'entity_id'     => Org::RZP_ORG,
-                    'entity_type'   => 'org',
-                    'permission_id' => $permission->getId(),
-                ]);
-        }
-
-
         $org = (new OrgRepository)->getRazorpayOrg();
 
         $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);

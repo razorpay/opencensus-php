@@ -316,17 +316,6 @@ class WorkflowActionTest extends TestCase
     {
         $this->addPermissionEditActionToAdmins();
 
-        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
-
-        $permission = $this->getDbEntity('permission', ['name' => 'edit_admin'], 'live');
-
-        DB::connection('live')->table('permission_map')->insert(
-            [
-                'entity_id'     => Org::RZP_ORG,
-                'entity_type'   => 'org',
-                'permission_id' => $permission->getId(),
-            ]);
-
         $org = (new OrgRepository)->getRazorpayOrg();
         $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
 
@@ -363,16 +352,7 @@ class WorkflowActionTest extends TestCase
     {
         $this->addPermissionEditActionToAdmins();
 
-        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
-
         $permission = $this->getDbEntity('permission', ['name' => 'add_merchant_credits'], 'live');
-
-        DB::connection('live')->table('permission_map')->insert(
-            [
-                'entity_id'     => Org::RZP_ORG,
-                'entity_type'   => 'org',
-                'permission_id' => $permission->getId(),
-            ]);
 
         $balance = $this->getDbEntities('balance', ['merchant_id' => Account::TEST_ACCOUNT], 'live')->first();
 
@@ -446,18 +426,7 @@ class WorkflowActionTest extends TestCase
 
     public function testWorkflowActionSuperAdminApprove()
     {
-        $this->fixtures->on('live')->create('org:admin_for_razorpay_org');
-
-        $permission = $this->getDbEntity('permission', ['name' => 'edit_admin'], 'live');
-
-        DB::connection('live')->table('permission_map')->insert(
-            [
-                'entity_id'     => Org::RZP_ORG,
-                'entity_type'   => 'org',
-                'permission_id' => $permission->getId(),
-            ]);
-
-        $org = (new OrgRepository)->getRazorpayOrg();
+      $org = (new OrgRepository)->getRazorpayOrg();
         $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
 
         $this->createWorkflow([
