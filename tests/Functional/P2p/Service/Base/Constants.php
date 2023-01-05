@@ -41,7 +41,7 @@ class Constants
 
     const P2P_UPI_SHARP                                     = 'p2p_upi_sharp';
     const P2P_UPI_AXIS                                      = 'p2p_upi_axis';
-    const P2P_UPI_AXIS_OLIVE                                = 'p2p_upi_axis_olive';
+    const P2M_UPI_AXIS_OLIVE                                = 'p2m_upi_axis_olive';
 
     // ------------------ DEVICE TOKEN ------------------
 

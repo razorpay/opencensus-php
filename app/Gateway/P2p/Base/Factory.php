@@ -38,7 +38,7 @@ class Factory
                 $namespace = Upi\Axis::class;
                 break;
 
-            case 'p2p_upi_axis_olive':
+            case 'p2m_upi_axis_olive':
                 $namespace = Upi\AxisOlive::class;
                 break;
         }

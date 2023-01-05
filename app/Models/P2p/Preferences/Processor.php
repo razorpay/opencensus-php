@@ -42,8 +42,8 @@ class Processor extends Base\Processor
         return[
             Entity::GATEWAYS => [
                 [
-                    Entity::PRIORITY => '0',
-                    Entity::GATEWAY => substr($this->getGateway(), 4),
+                    Entity::PRIORITY   => '0',
+                    Entity::GATEWAY    => $this->getGateway(),
                 ],
             ],
         ];

@@ -423,7 +423,7 @@ class P2pSeeder extends Seeder
         P2p\Vpa\Handle\Entity::factory()->create(
             [
                 'code'                  => Constants::RAZOR_AXIS_OLIVE,
-                'acquirer'              => Constants::P2P_UPI_AXIS_OLIVE,
+                'acquirer'              => Constants::P2M_UPI_AXIS_OLIVE,
                 'bank'                  => 'ARZP',
                 'active'                => true,
             ]);
@@ -431,7 +431,7 @@ class P2pSeeder extends Seeder
         P2p\Vpa\Handle\Entity::factory()->create(
             [
                 'code'                  => Constants::RZP_AXIS_OLIVE,
-                'acquirer'              => Constants::P2P_UPI_AXIS_OLIVE,
+                'acquirer'              => Constants::P2M_UPI_AXIS_OLIVE,
                 'bank'                  => 'BRZP',
                 'active'                => false,
             ]);
@@ -439,7 +439,7 @@ class P2pSeeder extends Seeder
         P2p\Vpa\Handle\Entity::factory()->create(
             [
                 'code'                  => Constants::NORZP_AXIS_OLIVE,
-                'acquirer'              => Constants::P2P_UPI_AXIS_OLIVE,
+                'acquirer'              => Constants::P2M_UPI_AXIS_OLIVE,
                 'bank'                  => 'CRZP',
                 'active'                => false,
             ]);

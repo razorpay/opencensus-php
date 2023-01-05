@@ -20,7 +20,7 @@ class Gateway extends Upi\Gateway
 {
     protected $actionMap                    = [];
 
-    protected $gateway                      = Entity::P2P_UPI_AXIS_OLIVE;
+    protected $gateway                      = Entity::P2M_UPI_AXIS_OLIVE;
 
     protected $mozart_gateway_resource      = Entity::UPI_AXIS;
 

@@ -23,7 +23,7 @@ class PreferencesTest extends TestCase
         $helper->withSchemaValidated();
 
         $response = $helper->getGatewayPreferences($this->gateway, []);
-
+        
         $this->assertArrayHasKey('customer', $response);
 
         $this->assertArrayHasKey('gateways', $response);

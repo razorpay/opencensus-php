@@ -10,7 +10,7 @@ class TestCase extends Service\TestCase
 {
     use Service\Base\Traits\NpciClTrait;
 
-    protected $gateway = 'p2p_upi_axis_olive';
+    protected $gateway = 'p2m_upi_axis_olive';
 
     protected $deviceSetMap = [
         Fixtures::DEVICE_1 => [

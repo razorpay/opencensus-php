@@ -569,7 +569,7 @@ class P2pHelper
         {
             $prefix .= 'customer/';
         }
-
+        
         return $prefix . sprintf($uri, ...$parameters);
     }
 
