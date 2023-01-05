@@ -172,6 +172,9 @@ final class RazorxTreatment
     // Onboard direct accounting merchant on Ledger with reverse shadow
     const DA_LEDGER_ONBOARDING_REVERSE_SHADOW = 'da_ledger_onboarding_reverse_shadow';
 
+    // Expt to use transactions table if count is 1
+    const LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE = 'ledger_reverse_shadow_latest_txn_balance';
+
     // Fetch balance from ledger TiDB
     const LEDGER_BALANCE_FETCH_FROM_TIDB = 'ledger_balance_fetch_from_tidb';
 
