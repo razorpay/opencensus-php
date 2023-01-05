@@ -18,8 +18,10 @@ class SendPartnerWeeklyActivationSummary extends Job
      * @var string
      */
     protected $queueConfigKey = 'commission';
-    
-    protected $experimentId = null;
+
+    protected $metricsEnabled = true;
+
+    protected $experimentId   = null;
 
     public    $timeout        = 1000;
 
@@ -28,7 +30,7 @@ class SendPartnerWeeklyActivationSummary extends Job
     public function __construct(string $mode, array $partnerBatchIds)
     {
         parent::__construct($mode);
-        
+
         $app = App::getFacadeRoot();
 
         $this->experimentId = $app['config']->get('app.send_weekly_activation_summary_to_partner_exp_id');
@@ -82,13 +84,15 @@ class SendPartnerWeeklyActivationSummary extends Job
                 ]
             );
 
-            $this->checkRetry();
+            $this->checkRetry($e);
         }
     }
 
 
-    protected function checkRetry()
+    protected function checkRetry(\Throwable $e)
     {
+        $this->countJobException($e);
+
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->error(TraceCode::WEEKLY_ACTIVATION_SUMMARY_QUEUE_DELETE, [

@@ -19,6 +19,8 @@ class SkipOnboardingCommFromHubSpot extends Job
      */
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     public $timeout = 1000;
 
     private $partnerId;
@@ -77,12 +79,14 @@ class SkipOnboardingCommFromHubSpot extends Job
                 ]
             );
 
-            $this->checkRetry();
+            $this->checkRetry($e);
         }
     }
 
-    protected function checkRetry()
+    protected function checkRetry(\Throwable $e)
     {
+        $this->countJobException($e);
+
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT) {
             $this->trace->error(TraceCode::SKIP_HUBSPOT_ONBOARDING_COMM_QUEUE_DELETE, [
                 'merchant_ids' => $this->subMerchantEmails,

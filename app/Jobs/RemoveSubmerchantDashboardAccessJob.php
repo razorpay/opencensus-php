@@ -16,6 +16,8 @@ class RemoveSubmerchantDashboardAccessJob extends Job
 
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     protected $partnerIds;
 
     public function __construct(array $partnerIds)
@@ -46,6 +48,8 @@ class RemoveSubmerchantDashboardAccessJob extends Job
                 $core->removeSubmerchantDashboardAccessOfPartner($partnerId);
             }
             catch (\Throwable $e) {
+                $this->countJobException($e);
+
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,

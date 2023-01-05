@@ -21,6 +21,8 @@ class CommissionInvoiceAction extends Job
      */
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     protected $id;
     protected $event;
     protected $invoiceData;
@@ -69,7 +71,7 @@ class CommissionInvoiceAction extends Job
                 ]
             );
 
-            $this->checkRetry();
+            $this->checkRetry($e);
         }
     }
 
@@ -121,8 +123,10 @@ class CommissionInvoiceAction extends Job
         return $handler;
     }
 
-    protected function checkRetry()
+    protected function checkRetry(\Throwable $e)
     {
+        $this->countJobException($e);
+
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->error(

@@ -20,6 +20,8 @@ class SendSubMerchantActivatedEventsToSegment extends Job
 
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     protected $merchantId;
 
     protected $currentActivationStatus;
@@ -81,13 +83,15 @@ class SendSubMerchantActivatedEventsToSegment extends Job
                 [
                     'merchant_id' => $this->merchantId,
                 ]);
-            $this->checkRetry();
+            $this->checkRetry($e);
         }
 
     }
 
-    protected function checkRetry()
+    protected function checkRetry(\Throwable $e)
     {
+        $this->countJobException($e);
+
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->error(TraceCode::SEND_SUBMERCHANT_ACTIVATED_EVENTS_JOB_DELETE, [

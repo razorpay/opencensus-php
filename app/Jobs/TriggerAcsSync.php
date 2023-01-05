@@ -11,6 +11,8 @@ class TriggerAcsSync extends Job
 {
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     public $timeout = 1000;
 
     protected $merchantIds;
@@ -49,6 +51,8 @@ class TriggerAcsSync extends Job
         }
         catch (\Throwable $e)
         {
+            $this->countJobException($e);
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,

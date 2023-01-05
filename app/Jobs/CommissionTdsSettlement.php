@@ -25,6 +25,8 @@ class CommissionTdsSettlement extends Job
      */
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     /**
      * @var Mutex
      */
@@ -184,6 +186,9 @@ class CommissionTdsSettlement extends Job
                 ]
             );
 
+            $this->countJobException($e);
+
+            // TODO can be removed after grafan boards are updated to use new metric
             $this->trace->count(PartnerMetric::COMMISSION_TDS_SETTLEMENT_JOB_FAILURE_TOTAL);
 
             $this->delete();

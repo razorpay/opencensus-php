@@ -113,4 +113,8 @@ class Metric
     // Additional label values
     const TYPE_QUERY_CACHE                      = 'query_cache';
     const TYPE_UPI_POLLING                      = 'upi_polling';
+
+    const QUEUE_JOB_ATTEMPT_COUNT               = 'queue_job_attempt_count';
+    const QUEUE_JOB_WORKER_TIMEOUT              = 'queue_job_worker_timeout';
+    const QUEUE_JOB_WORKER_EXCEPTION            = 'queue_job_worker_exception';
 }

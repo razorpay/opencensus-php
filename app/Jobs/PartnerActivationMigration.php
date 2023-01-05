@@ -16,6 +16,8 @@ class PartnerActivationMigration extends Job
 
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     protected $merchantIds;
 
     public function __construct(string $mode, $merchantIds)
@@ -53,12 +55,14 @@ class PartnerActivationMigration extends Job
                 ]
             );
 
-            $this->checkRetry();
+            $this->checkRetry($e);
         }
     }
 
-    protected function checkRetry()
+    protected function checkRetry(\Throwable $e)
     {
+        $this->countJobException($e);
+
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->error(TraceCode::PARTNER_ACTIVATION_MIGRATION_JOB_DELETE, [

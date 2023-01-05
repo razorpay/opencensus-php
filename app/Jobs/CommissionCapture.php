@@ -19,6 +19,8 @@ class CommissionCapture extends Job
      */
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     protected $commissionIds;
 
     public function __construct(string $mode, $commissionId)
@@ -63,6 +65,7 @@ class CommissionCapture extends Job
                 }
                 catch (\Throwable $e)
                 {
+                    $this->countJobException($e);
                     $this->trace->traceException(
                         $e,
                         Trace::ERROR,
@@ -88,7 +91,7 @@ class CommissionCapture extends Job
                 ]
             );
 
-            $this->checkRetry();
+            $this->checkRetry($e);
         }
 
         $timeTaken = millitime() - $startTime;
@@ -96,8 +99,10 @@ class CommissionCapture extends Job
         $this->trace->histogram(Metric::COMMISSION_CAPTURE_JOB_PROCESSING_IN_MS, $timeTaken);
     }
 
-    protected function checkRetry()
+    protected function checkRetry(\Throwable $e)
     {
+        $this->countJobException($e);
+
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->error(TraceCode::COMMISSION_TRANSACTION_QUEUE_DELETE, [

@@ -17,6 +17,8 @@ class MerchantProductsConfig Extends Job
      */
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     protected $merchantProductRequestId;
 
     protected $input;
@@ -59,12 +61,14 @@ class MerchantProductsConfig Extends Job
                 ]
             );
 
-            $this->checkRetry();
+            $this->checkRetry($e);
         }
     }
 
-    protected function checkRetry()
+    protected function checkRetry(\Throwable $e)
     {
+        $this->countJobException($e);
+
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->error(TraceCode::MERCHANT_PRODUCT_CONFIG_REQUEST_DELETE, [

@@ -20,6 +20,8 @@ class PartnerConfigAuditLogger extends Job
      */
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     protected $params;
 
     public function __construct(array $params, string $mode = null)
@@ -55,15 +57,17 @@ class PartnerConfigAuditLogger extends Job
                     'message' => $e->getMessage(),
                 ]
             );
-            $this->checkRetry();
+            $this->checkRetry($e);
         }
 
         $timeTaken = millitime() - $startTime;
         $this->trace->histogram(PartnerMetric::PARTNER_CONFIG_AUDIT_LATENCY_IN_MS, $timeTaken);
     }
 
-    protected function checkRetry()
+    protected function checkRetry(\Throwable $e)
     {
+        $this->countJobException($e);
+
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->error(TraceCode::PARTNER_CONFIG_AUDIT_QUEUE_DELETE, [

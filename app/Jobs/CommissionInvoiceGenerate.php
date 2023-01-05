@@ -19,6 +19,8 @@ class CommissionInvoiceGenerate extends Job
      */
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     public $timeout = 1000;
 
     /**
@@ -73,7 +75,7 @@ class CommissionInvoiceGenerate extends Job
                 ]
             );
 
-            $this->checkRetry();
+            $this->checkRetry($e);
         }
 
         $timeTaken = millitime() - $startTime;
@@ -81,8 +83,13 @@ class CommissionInvoiceGenerate extends Job
         $this->trace->histogram(Metric::COMMISSION_INVOICE_GENERATION_JOB_PROCESSING_IN_MS, $timeTaken);
     }
 
-    protected function checkRetry()
+    protected function checkRetry(\Throwable $e = null)
     {
+        if ($e !== null)
+        {
+            $this->countJobException($e);
+        }
+
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->error(

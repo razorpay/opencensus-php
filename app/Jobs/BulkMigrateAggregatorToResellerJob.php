@@ -16,6 +16,8 @@ class BulkMigrateAggregatorToResellerJob extends Job
 
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     protected $merchantIds;
     protected $retry;
 
@@ -55,6 +57,8 @@ class BulkMigrateAggregatorToResellerJob extends Job
                 $core->migrateAggregatorToResellerPartner($merchantId);
             }
             catch (\Throwable $e) {
+                $this->countJobException($e);
+
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,

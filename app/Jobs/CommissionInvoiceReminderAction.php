@@ -13,6 +13,8 @@ class CommissionInvoiceReminderAction extends Job
 {
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     const RETRY_INTERVAL    = 300;
 
     const MAX_RETRY_ATTEMPT = 1;
@@ -76,6 +78,8 @@ class CommissionInvoiceReminderAction extends Job
             catch (\Throwable $e)
             {
                 $failedIds[] = $partnerId;
+
+                $this->countJobException($e);
                 $this->trace->traceException(
                     $e,
                     Trace::ERROR,

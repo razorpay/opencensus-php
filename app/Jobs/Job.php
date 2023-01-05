@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use RZP\Constants\Mode;
+use RZP\Constants\Metric;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -20,6 +21,7 @@ class Job implements ShouldQueue
 {
     use Extended\Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    protected const MAX_RETRY_ATTEMPT = 1;
     /**
      * If specified, it's value would be used from config/queue.php to choose proper queue connection and name.
      * By default the same would be looked up by snake cased class name, finally fall backs to default connection.
@@ -34,6 +36,11 @@ class Job implements ShouldQueue
      * @var string|null
      */
     protected $mode;
+
+    /**
+     * @var bool Whether to push metrics for this job, default is false
+     */
+    protected $metricsEnabled = false;
 
     /**
      * @var bool|null Whether application's http auth type was app when job was pushed
@@ -145,6 +152,15 @@ class Job implements ShouldQueue
         Tracer::inSpan(['name' => 'SQS/init', 'attributes' => $attrs], function() {
            $this->init();
         });
+
+        if ($this->isMetricsEnabled())
+        {
+            $this->trace->gauge(Metric::QUEUE_JOB_ATTEMPT_COUNT, $this->attempts(), [
+                'job_name'         => $this->jobName,
+                'mode'             => $mode,
+                'origin_product'   => $this->originProduct,
+            ]);
+        }
     }
 
     /**
@@ -288,12 +304,20 @@ class Job implements ShouldQueue
                     $this->trace->traceException($e);
                 }
 
-                $this->trace->error(
-                    TraceCode::QUEUE_JOB_TIMEOUT,
-                    [
-                        'job'     => $this->getJobName(),
-                        'timeout' => $this->timeout,
+                $this->trace->error(TraceCode::QUEUE_JOB_TIMEOUT, [
+                    'job'     => $this->getJobName(),
+                    'timeout' => $this->timeout,
+                ]);
+
+                if ($this->isMetricsEnabled())
+                {
+                    $this->trace->count(Metric::QUEUE_JOB_WORKER_TIMEOUT, [
+                        'mode'               => $this->mode ?? MODE::LIVE,
+                        'job_name'           => $this->jobName,
+                        'origin_product'     => $this->originProduct,
+                        'attempts_exhausted' => $this->attempts() > static::MAX_RETRY_ATTEMPT,
                     ]);
+                }
 
                 $app['queue.worker']->kill(1);
             });
@@ -303,6 +327,30 @@ class Job implements ShouldQueue
     protected function beforeJobKillCleanUp()
     {
         $this->mutex->releaseAllAcquired();
+    }
+
+    /**
+     * This function is introduced to enable metrics for a job
+     * By default, metrics are disabled for all jobs.
+     * Override this function to enable metrics for a job
+     */
+    protected function isMetricsEnabled()
+    {
+        return $this->metricsEnabled;
+    }
+
+    protected function countJobException(\Throwable $e)
+    {
+        if ($this->isMetricsEnabled())
+        {
+            $this->trace->count(Metric::QUEUE_JOB_WORKER_EXCEPTION, [
+                'mode'               => $this->mode ?? MODE::LIVE,
+                'job_name'           => $this->jobName,
+                'error_code'         => $e->getCode(),
+                'origin_product'     => $this->originProduct,
+                'attempts_exhausted' => $this->attempts() > static::MAX_RETRY_ATTEMPT,
+            ]);
+        }
     }
 
     /**

@@ -10,6 +10,8 @@ class TriggerAcsFullSync extends Job
 {
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
+
     public $timeout = 1800;
 
     protected $input = array();
@@ -50,6 +52,8 @@ class TriggerAcsFullSync extends Job
 
             $this->delete();
         } catch (\Throwable $e) {
+            $this->countJobException($e);
+
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,

@@ -19,6 +19,7 @@ class CommissionOnHoldClear extends Job
      */
     protected $queueConfigKey = 'commission';
 
+    protected $metricsEnabled = true;
 
     public $timeout = 1800;
 
@@ -68,6 +69,8 @@ class CommissionOnHoldClear extends Job
                     $summary['failed_count']++;
                     $summary['failed_ids'][] = $transactionId;
 
+                    $this->countJobException($e);
+
                     $this->trace->traceException(
                         $e,
                         Trace::ERROR,
@@ -102,12 +105,14 @@ class CommissionOnHoldClear extends Job
                 ]
             );
 
-            $this->checkRetry();
+            $this->checkRetry($e);
         }
     }
 
-    protected function checkRetry()
+    protected function checkRetry(\Throwable $e)
     {
+        $this->countJobException($e);
+
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->error(TraceCode::COMMISSION_TRANSACTION_ON_HOLD_QUEUE_DELETE, [
