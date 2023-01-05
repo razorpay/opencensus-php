@@ -10763,9 +10763,9 @@ class BankingAccountTest extends TestCase
             'gstin_prefilled_address' => 1,
             'rbl_new_onboarding_flow_declarations' => [
                 'available_at_preferred_address_to_collect_docs' => 1,
-                'seal_available' => 1,
+                'seal_available' => 0,
                 'signatories_available_at_preferred_address' => 1,
-                'signboard_available' => 1
+                'signboard_available' => 0
             ]
         ];
 

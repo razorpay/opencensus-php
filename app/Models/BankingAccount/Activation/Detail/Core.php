@@ -131,17 +131,11 @@ class Core extends Base\Core
 
         $availableAtPreferredAddressToCollectDocs = $rblNewOnboardingDeclarations[Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS] ?? null;
 
-        $sealAvailable = $rblNewOnboardingDeclarations[Entity::SEAL_AVAILABLE] ?? null;
-
         $signatoriesAvailableAtPreferredAddress = $rblNewOnboardingDeclarations[Entity::SIGNATORIES_AVAILABLE_AT_PREFERRED_ADDRESS] ?? null;
-
-        $signboardAvailable = $rblNewOnboardingDeclarations[Entity::SIGNBOARD_AVAILABLE] ?? null;
 
         if (is_null($gstinPrefilledAddress) ||
             is_null($availableAtPreferredAddressToCollectDocs) ||
-            is_null($sealAvailable) ||
-            is_null($signatoriesAvailableAtPreferredAddress) ||
-            is_null($signboardAvailable)
+            is_null($signatoriesAvailableAtPreferredAddress)
         )
         {
             throw new LogicException('Declarations cannot be null if merchant is eligible for SKIP_DWT experiment',
@@ -149,9 +143,7 @@ class Core extends Base\Core
                 [
                     'gstin_prefilled_address'                           => $gstinPrefilledAddress,
                     'available_at_preferred_address_to_collect_docs'    => $availableAtPreferredAddressToCollectDocs,
-                    'seal_available'                                    => $sealAvailable,
                     'signatories_available_at_preferred_address'        => $signatoriesAvailableAtPreferredAddress,
-                    'signboard_available'                               => $signboardAvailable
                 ]);
         }
 
@@ -159,9 +151,7 @@ class Core extends Base\Core
 
         if ($gstinPrefilledAddress === 1 &&
             $availableAtPreferredAddressToCollectDocs === 1 &&
-            $sealAvailable === 1 &&
-            $signatoriesAvailableAtPreferredAddress === 1 &&
-            $signboardAvailable === 1)
+            $signatoriesAvailableAtPreferredAddress === 1)
         {
             $skipDwt = 1;
         }
@@ -172,9 +162,7 @@ class Core extends Base\Core
                 'skip_dwt'                                          => $skipDwt,
                 'gstin_prefilled_address'                           => $gstinPrefilledAddress,
                 'available_at_preferred_address_to_collect_docs'    => $availableAtPreferredAddressToCollectDocs,
-                'seal_available'                                    => $sealAvailable,
                 'signatories_available_at_preferred_address'        => $signatoriesAvailableAtPreferredAddress,
-                'signboard_available'                               => $signboardAvailable
             ]);
 
         return $skipDwt;
