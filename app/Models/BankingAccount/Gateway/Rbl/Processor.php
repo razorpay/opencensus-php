@@ -156,8 +156,9 @@ class Processor extends BankingAccount\Gateway\Processor
             Entity::BANK_INTERNAL_STATUS=> $stateChangeLogBeforeProcessedState['bank_status'],
             Entity::ACTIVATION_DETAIL => [
                 Entity::ASSIGNEE_TEAM => $stateChangeLogBeforeProcessedState['assignee_team'],
-                [BankingAccount\Activation\Detail\Entity::ADDITIONAL_DETAILS]
-                    [BankingAccount\Activation\Detail\Entity::ACCOUNT_OPENING_WEBHOOK_DATE] => null,
+                BankingAccount\Activation\Detail\Entity::ADDITIONAL_DETAILS => [
+                    BankingAccount\Activation\Detail\Entity::ACCOUNT_OPENING_WEBHOOK_DATE => null,
+                ],
                 Comment\Entity::COMMENT => [
                     Comment\Entity::COMMENT            => Constants::BANKING_ACCOUNT_RESET_WEBHOOK_COMMENT,
                     Comment\Entity::SOURCE_TEAM_TYPE   => Constants::BANKING_ACCOUNT_SOURCE_TEAM_OR_TYPE_AS_INTERNAL,
