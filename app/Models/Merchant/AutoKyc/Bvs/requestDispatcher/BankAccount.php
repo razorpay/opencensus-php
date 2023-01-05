@@ -87,7 +87,9 @@ class BankAccount extends Base
             case BusinessType::PUBLIC_LIMITED:
             case BusinessType::LLP:
             case BusinessType::PARTNERSHIP:
-            case BusinessType::HUF:
+            case BusinessType::NGO:
+            case BusinessType::TRUST:
+            case BusinessType::SOCIETY:
 
                 return Constant::BANK_ACCOUNT_WITH_BUSINESS_PAN;
 

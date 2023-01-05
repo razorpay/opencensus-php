@@ -782,8 +782,10 @@ class PennyTesting extends Base\Core
             case BusinessType::PRIVATE_LIMITED:
             case BusinessType::PUBLIC_LIMITED:
             case BusinessType::PARTNERSHIP:
-            case BusinessType::HUF:
             case BusinessType::LLP:
+            case BusinessType::NGO:
+            case BusinessType::SOCIETY:
+            case BusinessType::TRUST:
 
                 return [
                     Constants::COMPANY_PAN_NAME  => $merchantDetails->getBusinessName()
