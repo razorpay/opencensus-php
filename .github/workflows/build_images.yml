@@ -209,7 +209,7 @@ jobs:
                    "chart_values": {
                       "replicas": 2,
                       "web_requests_cpu": "150m",
-                      "web_requests_memory": "500Mi"
+                      "web_requests_memory": "200Mi"
                    }
                },
                "dependencies": [
@@ -273,7 +273,7 @@ jobs:
                    "chart_values": {
                       "replicas": 2,
                       "web_requests_cpu": "150m",
-                      "web_requests_memory": "500Mi"
+                      "web_requests_memory": "200Mi"
                    }
                },
                "dependencies": []
