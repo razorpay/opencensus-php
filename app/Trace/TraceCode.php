@@ -8702,6 +8702,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DEDUCT_OD_FROM_GATEWAY_BALANCE      = 'DEDUCT_OD_FROM_GATEWAY_BALANCE';
     const SOFT_LIMIT_BREACH_STATE_AMP_LATENCY = 'SOFT_LIMIT_BREACH_STATE_AMP_LATENCY';
 
+    const ONE_CC_SPLITZ_EXPERIMENT_ERROR                = 'ONE_CC_SPLITZ_EXPERIMENT_ERROR';
+
     // cvv optional for amex
     const CVV_OPTIONAL = "CVV_OPTIONAL";
 
