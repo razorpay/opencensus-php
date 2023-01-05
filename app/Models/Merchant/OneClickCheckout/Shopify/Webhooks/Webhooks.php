@@ -180,7 +180,7 @@ class Webhooks extends Base\Core
         }
 
         // amount will always have 2 decimals as string
-        $refundFromTxn = floatval($txn['amount']) * 100;
+        $refundFromTxn = $this->formatAmountStringToPaise($txn['amount']);
 
         $keys = explode('|', $txn['authorization']);
 
@@ -212,7 +212,7 @@ class Webhooks extends Base\Core
                 ]);
             return;
         }
-        $refundFromWebhook = floatval($input['transactions'][0]['amount']) * 100;
+        $refundFromWebhook = $this->formatAmountStringToPaise($input['transactions'][0]['amount']);
 
         $payment = $this->findPaymentAndSetMode(substr($paymentId, 4));
 
@@ -544,5 +544,12 @@ protected function processFulfillmentUpdateEvent(array $data)
 
             return;
         }
+    }
+
+    // Accepts a string as a decimal and safely converts it to a string
+    // numnber_format ensures clean truncation of the float and int typecasting
+    // safely rounds the number. This is used across API for parsing amounts from Gateways.
+    protected function formatAmountStringToPaise(string $amount): int {
+      return (int)number_format($amount * 100, 2, '.', '');
     }
 }
