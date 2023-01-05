@@ -582,7 +582,11 @@ class BankingAccountTest extends TestCase
 
         if ($oldSalesPitchCompleted !== null)
         {
-            $baDetails += ['additional_details' => json_encode(['sales_pitch_completed' => $oldSalesPitchCompleted])];
+            $baDetails += ['additional_details' => json_encode(
+                [
+                    'sales_pitch_completed' => $oldSalesPitchCompleted,
+                    'skip_dwt'              => 0
+                ])];
         }
 
         $this->fixtures->edit('banking_account_activation_detail', $baActivationDetailId, $baDetails);
@@ -629,6 +633,7 @@ class BankingAccountTest extends TestCase
             Mail::assertQueued(XProActivation::class, function ($mail)
             {
                 $mail->build();
+                $this->assertArraySelectiveEquals(['skip_dwt_status' => 'PROCEED_WITH_DWT'],$mail->viewData);
                 return $mail->hasTo('x.support@razorpay.com');
             });
         }
