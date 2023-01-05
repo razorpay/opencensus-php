@@ -3,13 +3,16 @@ import rzpLogo from 'assets/rzpLogo.svg';
 export const config = {
   id: 'JI2nCsLmGJRQVE',
   commission_model: 'commission',
-  brand_name: 'Amazon Web Services',
-  brand_color: '518691',
-  text_color: 'FFFFFF',
-  logo_url: 'https://betacdn.np.razorpay.in/logos/KuVwuta5ybMfQi_original.png',
+  partner_metadata: {
+    brand_name: 'Amazon Web Services',
+    brand_color: '518691',
+    text_color: 'FFFFFF',
+    logo_url: 'https://betacdn.np.razorpay.in/logos/KuVwuta5ybMfQi_original.png',
+  },
 };
 
 export const errorResponse = {
+  code: 'UNKNOWN_ERROR_CODE',
   status_code: 400,
   success: false,
   errors: ['Sorry, We couldn’t save your changes', 'Status Code: 400'],

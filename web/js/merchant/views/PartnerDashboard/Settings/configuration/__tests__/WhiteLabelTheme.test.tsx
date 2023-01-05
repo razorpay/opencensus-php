@@ -57,23 +57,21 @@ describe('WhiteLableTheme', () => {
   // skipping this for now.
   test.skip('should render an error message, when API throws error and show default values', async () => {
     server.use(
-      rest.get('*/merchant/api/test/partner_config/*', (req, res, ctx) => {
+      rest.get('*/merchant/api/test/partner_config', (req, res, ctx) => {
         return res(
-          ctx.status(500),
           ctx.json({
             ...errorResponseFetch,
           }),
-          ctx.delay(50),
         );
       }),
     );
-
     render(<App />);
 
     await waitFor(() => {
       expect(showNotificationSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           type: 'error',
+          message: ['There was an error', 'Status Code: 400'],
         }),
       );
     });
@@ -98,16 +96,16 @@ describe('WhiteLableTheme', () => {
     const colorInputs = await screen.findAllByLabelText('brand_color');
     expect(colorInputs[0]).toBeInTheDocument();
     expect(colorInputs[1]).toBeInTheDocument();
-    expect(colorInputs[0]).toHaveValue(`#${responseData.brand_color}`);
-    expect(colorInputs[1]).toHaveValue(`#${responseData.brand_color}`);
+    expect(colorInputs[0]).toHaveValue(`#${responseData.partner_metadata.brand_color}`);
+    expect(colorInputs[1]).toHaveValue(`#${responseData.partner_metadata.brand_color}`);
 
     const brandName = await screen.findByLabelText('brand_name');
     expect(brandName).toBeInTheDocument();
-    expect(brandName).toHaveValue(responseData.brand_name);
+    expect(brandName).toHaveValue(responseData.partner_metadata.brand_name);
 
     const brandLogo = await screen.findByAltText('upload Logo');
     expect(brandLogo).toBeInTheDocument();
-    expect(brandLogo).toHaveAttribute('src', responseData.logo_url);
+    expect(brandLogo).toHaveAttribute('src', responseData.partner_metadata.logo_url);
   });
 
   test('should successfully uploads the logo', async () => {

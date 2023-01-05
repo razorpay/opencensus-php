@@ -13,10 +13,12 @@ import { MobilePreviewWelcome } from './MobilePreviewWelcome';
 import { DesktopPreviewDetails } from './DesktopPreviewDetails';
 import { DesktopPreviewWelcome } from './DesktopPreviewWelcome';
 import { Carousel } from './Carousel';
-import { useFetchConfig, useSaveLogo, useSaveConfig } from './useQueries';
+import { useFetchConfig, useSaveConfig } from './useQueries';
 import { classList } from 'common/utils/rzp-utils';
 import Spinner from 'common/ui/Spinner';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare/index';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { getInitialState } from './utils';
 
 declare global {
   interface Window {
@@ -29,12 +31,11 @@ interface WhiteLabelThemePropsT {
 }
 
 const WhiteLabelTheme = ({ user, showNotification }: WhiteLabelThemePropsT): JSX.Element => {
-  const [isMobilepreview, setIsMobilePreview] = useState<boolean>(false);
+  const [isMobilePreview, setIsMobilePreview] = useState<boolean>(false);
   const { id } = user;
 
   const { data, isLoading, isError, refetch } = useFetchConfig(id, showNotification);
   const { saveConfig } = useSaveConfig(refetch, showNotification);
-  const { saveLogo } = useSaveLogo(refetch, showNotification);
 
   const validationSchema = Yup.object().shape({
     brand_color: Yup.string()
@@ -47,15 +48,7 @@ const WhiteLabelTheme = ({ user, showNotification }: WhiteLabelThemePropsT): JSX
   });
 
   const formik = useFormik({
-    initialValues: {
-      config_id: !isError && data?.data.id ? data.data.id : '',
-      brand_color:
-        !isError && data?.data.brand_color ? `#${data.data.brand_color.toUpperCase()}` : '#528FF0',
-      text_color:
-        !isError && data?.data.text_color ? `#${data?.data.text_color.toUpperCase()}` : '#FFFFFF',
-      brand_name: !isError && data?.data.brand_name ? data?.data.brand_name : '',
-      brand_logo: !isError && data?.data.logo_url ? data?.data.logo_url : '',
-    },
+    initialValues: getInitialState({ isError, data }),
     enableReinitialize: true,
     validationSchema,
     validateOnChange: false,
@@ -87,6 +80,40 @@ const WhiteLabelTheme = ({ user, showNotification }: WhiteLabelThemePropsT): JSX
       setIsMobilePreview(false);
     }
   };
+
+  const handleUploadLogo = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    if (event?.target?.files && event?.target?.files.length > 0) {
+      const configId = formik.values.config_id;
+      const file = event.target.files[0];
+
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      try {
+        const response = await merchantFetch({
+          url: `partner_config/${configId}/logo`,
+          method: 'post',
+          data: formData,
+        });
+        if (response?.success) {
+          const { data } = response;
+          if (data?.partner_metadata?.logo_url) {
+            formik.setFieldValue('brand_logo', data.partner_metadata.logo_url);
+            showNotification?.({
+              type: 'success',
+              message: 'Logo Uploaded Successfully',
+            });
+          }
+        }
+      } catch ({ errors }) {
+        showNotification?.({
+          type: 'error',
+          message: errors,
+        });
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="page-spinner-container">
@@ -172,9 +199,7 @@ const WhiteLabelTheme = ({ user, showNotification }: WhiteLabelThemePropsT): JSX
                     data-testId="upInput"
                     accept="image/jpeg,image/jpg,image/png"
                     maxSize="1048576"
-                    onChange={(event) => {
-                      saveLogo({ event, configId: formik.values.config_id });
-                    }}
+                    onChange={handleUploadLogo}
                   />
                 </div>
               </div>
@@ -219,7 +244,7 @@ const WhiteLabelTheme = ({ user, showNotification }: WhiteLabelThemePropsT): JSX
       <div className="preview-section">
         <div id="preview-label">Preview</div>
         <div className="carouselDiv">
-          {isMobilepreview ? (
+          {isMobilePreview ? (
             <Carousel
               carouselItems={[
                 <MobilePreviewWelcome
@@ -265,7 +290,7 @@ const WhiteLabelTheme = ({ user, showNotification }: WhiteLabelThemePropsT): JSX
             <div
               className={classList(
                 'button-text',
-                isMobilepreview ? 'transparant-button' : 'white-button',
+                isMobilePreview ? 'transparant-button' : 'white-button',
               )}
               onClick={() => {
                 handlePreviewSwitch('desktop');
@@ -276,7 +301,7 @@ const WhiteLabelTheme = ({ user, showNotification }: WhiteLabelThemePropsT): JSX
             <div
               className={classList(
                 'button-text',
-                isMobilepreview ? 'white-button' : 'transparant-button',
+                isMobilePreview ? 'white-button' : 'transparant-button',
               )}
               onClick={() => {
                 handlePreviewSwitch('mobile');
