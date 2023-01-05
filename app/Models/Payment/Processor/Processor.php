@@ -25,6 +25,7 @@ use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Merchant\Entity;
 use RZP\Jobs\Order\OrderUpdate;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
+use RZP\Models\Order\ProductType;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Risk;
 use RZP\Models\Admin;
@@ -581,6 +582,7 @@ class Processor
                 return false;
             }
 
+            $order = null;
             if (empty($input[Payment\Entity::ORDER_ID]) === false)
             {
                 $order = $this->fetchOrderFromInput($input);
@@ -592,7 +594,7 @@ class Processor
                 if ((empty($order) === false) and
                     (($order->hasOffers() === true) or
                         ($order->isDiscountApplicable() === true) or
-                        ($order->getProductId() !== null) or
+                        ($order->getProductId() !== null and $order->getProductType() !== ProductType::PAYMENT_LINK_V2) or
                         ($order->getFeeConfigId() !== null) or
                         ($order->invoice !== null)))
                 {
@@ -766,7 +768,7 @@ class Processor
                 return ($result === 'on');
             }
 
-            if (empty($input[Payment\Entity::PAYMENT_LINK_ID]) === false)
+            if (empty($order) === false and $order->getProductType() === ProductType::PAYMENT_LINK_V2)
             {
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::PAYMENT_LINKS_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
 
