@@ -135,7 +135,7 @@ class Server extends Base\Mock\Server
             Fields::GATEWAY_TRANSACTION_ID      => $upiEntity['upi_txn_id'] ?? 'AXIS00090439839',
             Fields::GATEWAY_RESPONSE_CODE       => $status,
             Fields::GATEWAY_RESPONSE_MESSAGE    => $result,
-            Fields::RRN                         => '714513318376',
+            Fields::RRN                         => $upiEntity['npci_reference_id'] ?? '714513318376',
             Fields::CHECKSUM                    => 'CHECKSUM NOT REQUIRED'
         ];
 
@@ -203,8 +203,8 @@ class Server extends Base\Mock\Server
     protected function getDefaultVerifyRefundResponse(array $input, $payment): array
     {
         return [
-            Fields::CODE => "000",
-            Fields::RESULT => "REFUND REQUEST SUCCESSFUL",
+            Fields::CODE => '000',
+            Fields::RESULT => 'REFUND REQUEST SUCCESSFUL',
             Fields::DATA => [
                 Fields::VERIFY_REFUND_ORDER_ID => $payment['id'],
                 Fields::TXN_REFUND_ID => $input['txnRefundId']

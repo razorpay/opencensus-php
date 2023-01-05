@@ -215,8 +215,13 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
         $upiEntity['payment_id'] = $payment['id'];
 
         $this->mockServerContentFunction(
-            function (&$error)
+            function (&$error, $action)
             {
+                if ($action != 'callback')
+                {
+                    return;
+                }
+
                 $responseError = [
                 'internal' => [
                     'code'          => 'GATEWAY_ERROR_DEBIT_FAILED',

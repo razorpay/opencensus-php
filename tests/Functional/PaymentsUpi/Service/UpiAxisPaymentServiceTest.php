@@ -8,14 +8,59 @@ use RZP\Models\Payment\Status;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 
 class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
 {
+    use BatchTestTrait;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->gateway = 'upi_axis';
+
+        $this->testData['upiAxis'] = [
+            'RRN'                  => '822012050352',
+            'TXNID'                => 'AXIS00090439839',
+            'ORDER_ID'             => 'AiuZGLBpFIMuT3',
+            'AMOUNT'               => '500.00',
+            'MOBILE_NO'            => '',
+            'BANKNAME'             => '',
+            'MASKEDACCOUNTNUMBER'  => '',
+            'IFSC'                 => '',
+            'VPA'                  => 'vishnu@icici',
+            'ACCOUNT_CUST_NAME'    => 'SANDIP SURESH NIKAM',
+            'RESPCODE'             => '00',
+            'RESPONSE'             => 'Success',
+            'TRANSACTION_DATE'     => '08-AUG-18 12:29',
+            'CREDITVPA'            => 'razaorpay@axis',
+            'REMARKS'              => 'A',
+        ];
+
+        $this->testData['upi_axis_payment_format_v2'] = [
+            'RRN'                  => '822012050352',
+            'TXNID'                => 'AXIS00090439839',
+            'ORDERID'              => 'AiuZGLBpFIMuT3',
+            'AMOUNT'               => '500.00',
+            'MOBILE_NO'            => '',
+            'BANKNAME'             => '',
+            'MASKEDACCOUNTNUMBER'  => '',
+            'IFSC'                 => '',
+            'VPA'                  => 'vishnu@icici',
+            'ACCOUNT_CUST_NAME'    => 'SANDIP SURESH NIKAM',
+            'RESPCODE'             => '00',
+            'RESPONSE'             => 'Success',
+            'TXN_DATE'             => '08-AUG-18 12:29',
+            'CREDITVPA'            => 'razaorpay@axis',
+            'REMARKS'              => 'A',
+            'SURCHARGE'            => '',
+            'TAX'                  => '',
+            'DEBIT_AMOUNT'         => '500.00',
+            'MDR_TAX'              => '',
+            'MERCHANT_ID'          => 'AIRTELPROD0010999999',
+            'UNQ_CUST_ID'          => '',
+        ];
     }
 
     public function testPaymentSuccess()
@@ -53,6 +98,7 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
         $upiEntity['vpa'] =  'vishnu@icici';
         $upiEntity['payment_id'] = $payment['id'];
         $upiEntity['amount'] = $payment['amount'];
+        $upiEntity['npci_reference_id'] = '227121351902';
 
         $content = $this->mockServer('upi_axis')->getAsyncCallbackContent($upiEntity, $payment);
 
@@ -179,7 +225,7 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
             'gateway_merchant_id'   => '123456',
             'vpa'                   => 'vishnu@icici',
             'payment_id'            => $payment['id'],
-            'amount' =>             $payment['amount'],
+            'amount'                => $payment['amount'],
         ];
 
         $content = $this->mockServer('upi_axis')->getAsyncCallbackContent($upiEntity, $payment);
@@ -238,7 +284,7 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
             'gateway_merchant_id'   => '123456',
             'vpa'                   => 'vishnu@icici',
             'payment_id'            => $payment['id'],
-            'amount' =>             $payment['amount'],
+            'amount'                => $payment['amount'],
         ];
         $this->mockServerContentFunction(
             function (&$error)
@@ -260,7 +306,11 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
             }
         );
 
-        $content = $this->mockServer('upi_axis')->getAsyncCallbackContent($upiEntity, $payment, 'U30', 'DEBIT HAS FAILED');
+        $content = $this->mockServer('upi_axis')->getAsyncCallbackContent(
+            $upiEntity,
+            $payment,
+            'U30',
+            'DEBIT HAS FAILED');
 
         $response = $this->makeS2SCallbackAndGetContent($content, 'upi_axis');
 
@@ -454,6 +504,201 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
         }
     }
 
+    public function testUpiAxisPaymentReconcilliation()
+    {
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $upiEntity = $this->getNewAxisUpiEntity('10000000000000', 'upi_axis');
+
+        $entries[] = $this->overrideNewUpiAxisPayment($upiEntity, 'upi_axis_payment_format_v2');
+
+        $this->createFileAndReconcile('Razorpay Software Pvt Ltd.xlsx', $entries);
+    }
+
+    public function testUpiAxisUnexpectedPaymentFile()
+    {
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNull($payment['reference16']);
+        }
+        $upiEntity = $this->getNewAxisUpiEntity('10000000000000', 'upi_axis');
+
+        $paymentId = $upiEntity['payment_id'];
+
+        $upiEntity['payment_id'] = 'BB31121900923519425756';
+
+        $entries[] = $this->overrideUpiAxisPayment($upiEntity);
+
+        $this->mockServerContentFunction(function(&$content, $action) use ($paymentId)
+        {
+            if ($action === 'entity_fetch')
+            {
+                $content['entity']['payment_id'] = $paymentId;
+            }
+        });
+
+        $this->createFileAndReconcile('Razorpay Software Pvt Ltd.xlsx', $entries);
+
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNotNull($payment['reference16']);
+
+            $this->assertEquals($entries[0]['RRN'], $payment['reference16']);
+        }
+    }
+
+    public function testUpiAxisForceAuthorizeFailedPayment()
+    {
+        $upiEntity = $this->getNewAxisUpiEntity('10000000000000', 'upi_axis');
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals(4, $payment['cps_route']);
+
+        $entries[] = $this->overrideNewUpiAxisPayment($upiEntity);
+
+        $file = $this->writeToExcelFile($entries, 'Razorpay Software Pvt Ltd');
+
+        $uploadedFile = $this->createUploadedFile($file, 'Razorpay Software Pvt Ltd.xlsx');
+
+        // set the payment status to 'failed' and try to reconcile it with force authorise
+        $this->fixtures->edit('payment', $upiEntity['payment_id'], ['status' => 'failed']);
+
+        $this->reconcile($uploadedFile, 'UpiAxis', ['pay_' . $upiEntity['payment_id']]);
+
+        $this->assertBatchStatus('processed');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+
+        $updatedPayment = $this->getDbEntityById('payment', $upiEntity['payment_id']);
+
+        $this->assertNotNull($updatedPayment['reference16']);
+
+        $this->assertEquals(4, $updatedPayment['cps_route']);
+
+        $this->assertEquals($entries[0]['VPA'], $updatedPayment['vpa']);
+
+        $this->assertEquals('authorized', $updatedPayment['status']);
+    }
+
+    public function testUpiAxisDirectSettlementPaymentFileForceCreate()
+    {
+        $this->fixtures->terminal->disableTerminal($this->terminal->getID());
+
+        $this->terminal = $this->fixtures->create('terminal:shared_upi_axis_terminal');
+
+        $this->gateway = 'upi_axis';
+
+        $this->terminal->fill([
+            'gateway_merchant_id' => 'shared_merchant',
+        ])->saveOrFail();
+
+        $terminal = $this->fixtures->create('terminal:direct_settlement_upi_axis_terminal');
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $upiEntity = [
+            'payment_id'                => 'SomeUnexpectedOrderId',
+            'npci_reference_id'         => '000100010001',
+        ];
+
+        $this->mockServerContentFunction(function(&$content, $action)
+        {
+            if ($action === 'entity_fetch')
+            {
+                $content = [];
+            }
+        });
+
+        $entries[] = $this->overrideUpiAxisPayment($upiEntity);
+
+        $entries[0]['amount']                       = '600.00';
+
+        // Adds additional columns as needed for unexpected payment creation
+        $entries[0]['unexpected_payment_ref_id']    = '000100010001';
+        $entries[0]['upi_merchant_id']              = 'TSTMERCHI';
+        $entries[0]['upi_merchant_channel_id']      = 'TSTMERCHIAPP';
+
+        $this->createFileAndReconcile('Razorpay Software Private Limited.xlsx', $entries);
+
+        $payment = $this->getDbLastEntity('payment');
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertArraySubset([
+            'status'            => 'captured',
+            'reference16'       => '000100010001',
+            'cps_route'         => 0,
+            'amount'            => $transaction['amount'],
+            'transaction_id'    => substr($transaction['id'], 4),
+        ], $payment->toArray());
+    }
+
+    protected function getNewAxisUpiEntity($merchantId, $gateway)
+    {
+        $this->testPaymentSuccess();
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals(4, $payment['cps_route']);
+
+        $this->gateway = 'upi_axis';
+
+        $upiEntity['npci_reference_id'] = $payment['reference16'];
+
+        $upiEntity['payment_id'] = $payment['id'];
+
+        return $upiEntity;
+    }
+
+    protected function overrideUpiAxisPayment(array $upiEntity)
+    {
+        $facade = $this->testData['upiAxis'];
+
+        $facade['ORDER_ID'] = $upiEntity['payment_id'];
+
+        $facade['RRN'] = $upiEntity['npci_reference_id'];
+
+        return $facade;
+    }
+
+    protected function overrideNewUpiAxisPayment(array $upiEntity)
+    {
+        $facade = $this->testData['upi_axis_payment_format_v2'];
+
+        $facade['ORDERID'] = $upiEntity['payment_id'];
+
+        $facade['RRN'] = $upiEntity['npci_reference_id'];
+
+        return $facade;
+    }
+
+    protected function createFileAndReconcile($fileName = '', $entries = [])
+    {
+        $file = $this->writeToExcelFile($entries, $fileName);
+
+        $uploadedFile = $this->createUploadedFile($file, $fileName);
+
+        $this->reconcile($uploadedFile, 'UpiAxis');
+
+        $this->assertBatchStatus('processed');
+
+        $transactionEntity = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transactionEntity['reconciled_at']);
+    }
+
+    /****************************** helpers  ******************************/
+
     protected function unexpectedPaymentContent(string $id)
     {
         $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
@@ -600,5 +845,10 @@ class UpiAxisPaymentServiceTest extends UpiPaymentServiceTest
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals('processed', $refund['status']);
+    }
+
+    protected function mockServerContentFunction($closure)
+    {
+        $this->upiPaymentService->shouldReceive('content')->andReturnUsing($closure);
     }
 }

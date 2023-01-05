@@ -211,7 +211,7 @@ class Service extends UpiPaymentService
 
     protected function callback(array $content): array
     {
-        // d($content);
+        assertTrue($content['data']['data'] != null);
         $data = $content['data']['data'];
         $error = $content['data']['error'] ?? null;
         $gateway = $content['gateway'];
@@ -234,7 +234,7 @@ class Service extends UpiPaymentService
             $responseData['acquirer']['reference1'] = 'IBL3aa942ae75214480b73704d09b3c1f69';
         }
 
-        $responseError = $this->content($error);
+        $responseError = $this->content($error, $this->action);
 
         $response = [
             'data'      => $responseData,
@@ -278,7 +278,7 @@ class Service extends UpiPaymentService
             'error'     => null,
         ];
 
-        $this->content($response);
+        $this->content($response, $this->action);
 
         return [$response, 200];
     }
@@ -287,7 +287,12 @@ class Service extends UpiPaymentService
     {
         $response['entity'] = [];
 
-        $this->request($content);
+        if ($this->app['config']->get('applications.upi_payment_service.enabled') === false)
+        {
+            return [[], 200];
+        }
+
+        $this->request($content, $this->action);
 
         //mock ups entity to return only one field
         if  ((isset($content['entity_fetch_failure']) === true) and
@@ -337,19 +342,25 @@ class Service extends UpiPaymentService
             $response['entity']['flow'] = 'intent';
         }
 
+        if ((isset($content['required_fields']) === true) and
+            (in_array('payment_id',$content['required_fields']) === true))
+        {
+            $response['entity']['payment_id']   = 'KqyBFV0Cu0yEgG';
+        }
+
         if (empty($content['reconciled_at']) === false)
         {
             $response['entity']['reconciled_at'] = $content['reconciled_at'];
         }
 
-        $this->content($response);
+        $this->content($response, $this->action);
 
         return [$response, 200];
     }
 
     protected function multipleEntityFetch(array $content)
     {
-        $this->request($content);
+        $this->request($content, $this->action);
 
         $response['success'] = 200;
 
@@ -366,7 +377,7 @@ class Service extends UpiPaymentService
 
         $response['entities'] = $entities;
 
-        $this->content($response);
+        $this->content($response, $this->action);
 
         return [$response, 200];
     }
@@ -380,12 +391,12 @@ class Service extends UpiPaymentService
         return [$response, 200];
     }
 
-    public function content(&$content)
+    public function content(&$content, $action)
     {
         return $content;
     }
 
-    public function request(&$content)
+    public function request(&$content, $action)
     {
         return $content;
     }

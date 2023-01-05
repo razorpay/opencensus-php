@@ -395,32 +395,4 @@ class PaymentReconciliate extends Upi\UpiPaymentServiceReconciliate
 
         return $callbackData;
     }
-
-    protected function fetchUpsGatewayEntityByRrn(string $referenceNumber, string $gateway)
-    {
-        try
-        {
-            $requiredFields = [
-                    Constants::GATEWAY_REFERENCE,
-                    Constants::NPCI_TXN_ID,
-                    Constants::PAYMENT_ID,
-                    Constants::GATEWAY,
-                    Constants::RECONCILED_AT,
-            ];
-
-            return $this->getUpsGatewayEntityByColumn(Constants::CUSTOMER_REFERENCE ,$referenceNumber, $gateway, $requiredFields);
-        }
-        catch (Exception\BadRequestException $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                Trace::INFO,
-                TraceCode::UPI_PAYMENT_SERVICE_RECORD_NOT_FOUND,
-                [
-                    'gateway' => $gateway,
-                ]
-            );
-            return [];
-        }
-    }
 }

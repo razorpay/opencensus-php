@@ -448,7 +448,7 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
         return Base\SubReconciliator\Helper::getIntegerFormattedAmount($row[self::AMOUNT]);
     }
 
-    private final function isPaymentStatusFailed(string $status)
+    private function isPaymentStatusFailed(string $status)
     {
         return (($status === UpiStatus::REJECT) or ($status === UpiStatus::FAILURE));
     }

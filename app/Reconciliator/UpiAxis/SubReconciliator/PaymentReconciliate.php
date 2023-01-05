@@ -14,8 +14,9 @@ use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\Reconciliate;
 use Razorpay\Spine\Exception\DbQueryException;
+use RZP\Reconciliator\Base\SubReconciliator\Upi\UpiPaymentServiceReconciliate;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends UpiPaymentServiceReconciliate
 {
     const RRN                     = 'rrn';
     const VPA                     = 'vpa';
@@ -106,38 +107,40 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
      */
     protected function getPaymentIdForUnexpectedPayment($row)
     {
-        $paymentId = null;
-
         $referenceNumber = $this->getReferenceNumber($row);
 
         $this->formatUpiRrn($referenceNumber);
 
-        $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndGateway($referenceNumber, $gateway = Gateway::UPI_AXIS);
+        $upiEntity = $this->repo->upi->fetchByNpciReferenceIdAndGateway($referenceNumber, Gateway::UPI_AXIS);
 
-        if (empty($upiEntity) === true)
+        if (empty($upiEntity) === false)
         {
-            if (empty($row[self::UNEXPECTED_PAYMENT_REF_ID]) === false)
-            {
-                $paymentId = $this->attemptToCreateUnexpectedPayment($referenceNumber, $row);
-            }
-            else
-            {
-                $this->trace->info(
-                    TraceCode::RECON_INFO_ALERT,
-                    [
-                        'info_code'            => Base\InfoCode::UNEXPECTED_PAYMENT,
-                        'payment_reference_id' => $referenceNumber,
-                        'gateway'              => $this->gateway,
-                        'batch_id'             => $this->batchId,
-                    ]);
-            }
-        }
-        else
-        {
-            $paymentId = $upiEntity->getPaymentId();
+            return $upiEntity->getPaymentId();
         }
 
-        return $paymentId;
+        // Fetch ups gateway entity if present
+        $upsEntity = $this->fetchUpsGatewayEntityByRrn($referenceNumber, Gateway::UPI_AXIS);
+
+        if (empty($upsEntity) === false)
+        {
+            return $upsEntity['payment_id'];
+        }
+
+        if (empty($row[self::UNEXPECTED_PAYMENT_REF_ID]) === true)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'info_code'            => Base\InfoCode::UNEXPECTED_PAYMENT,
+                    'payment_reference_id' => $referenceNumber,
+                    'gateway'              => $this->gateway,
+                    'batch_id'             => $this->batchId,
+                ]);
+
+                return null;
+        }
+
+        return $this->attemptToCreateUnexpectedPayment($referenceNumber, $row);
     }
 
     /**
@@ -158,8 +161,10 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             'customerVpa'            => $input[self::VPA],
             'merchantId'             => $input[self::UPI_MERCHANT_ID] ?? null,
             'merchantChannelId'      => $input[self::UPI_MERCHANT_CHANNEL_ID] ?? null,
-            'merchantTransactionId'  => $input[self::COLUMN_PAYMENT_ID[0]] ?? ($input[self::COLUMN_PAYMENT_ID[1]] ?? null),
-            'transactionTimestamp'   => $input[self::COLUMN_TRANSACTION_DATE[0]] ?? ($input[self::COLUMN_TRANSACTION_DATE[1]] ?? null),
+            'merchantTransactionId'  => $input[self::COLUMN_PAYMENT_ID[0]] ??
+                ($input[self::COLUMN_PAYMENT_ID[1]] ?? null),
+            'transactionTimestamp'   => $input[self::COLUMN_TRANSACTION_DATE[0]] ??
+                ($input[self::COLUMN_TRANSACTION_DATE[1]] ?? null),
             'transactionAmount'      => $input[self::COLUMN_PAYMENT_AMOUNT],
             'gatewayTransactionId'   => $input[self::TXN_ID],
             'gatewayResponseCode'    => $input[self::RESPCODE],
@@ -178,10 +183,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                 'gateway'                   => $this->gateway,
                 'batch_id'                  => $this->batchId,
             ]);
-
         try
         {
-            $response = (new Payment\Service)->unexpectedCallback($callbackInput, $callbackInput['merchantTransactionId'], Gateway::UPI_AXIS);
+            $response = (new Payment\Service)->unexpectedCallback(
+                $callbackInput,
+                $callbackInput['merchantTransactionId'],
+                Gateway::UPI_AXIS);
 
             if (empty($response['payment_id']) === false)
             {
@@ -424,6 +431,12 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
             'acquirer' => [
                 Payment\Entity::VPA         => $this->getReconVpa($row),
                 Payment\Entity::REFERENCE16 => $this->payment->getReference16()
+            ],
+            'upi' => [
+                'customer_reference'    => $this->getReferenceNumber($row),
+                'customer_vpa'          => $this->getReconVpa($row),
+                'npci_reference_id'     => $this->getReferenceNumber($row),
+                'vpa'                   => $this->getReconVpa($row),
             ]
         ];
     }
