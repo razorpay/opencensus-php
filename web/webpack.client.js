@@ -252,6 +252,7 @@ module.exports = ({ config, project }) => {
             },
           },
         ],
+        strict: isProd,
       }),
     );
   }
