@@ -2471,6 +2471,7 @@ class Route
         'scrooge_refunds_retry_custom_fund_transfers' => ['post',     'scrooge/refunds/retry/custom_fund_transfers',        'ScroogeController@retryRefundsViaCustomFundTransfers'       ],
         'scrooge_refunds_retry_custom_fund_transfers_batch' => ['post',     'scrooge/refunds/retry/custom_fund_transfers/batch',        'RefundController@retryRefundsViaCustomFundTransfersBatch'       ],
         'scrooge_refunds_retry_with_attempt_appended_id' => ['post',     'scrooge/refunds/retry/with_attempt_appended_id',                  'ScroogeController@retryRefundsWithAppend'                   ],
+        'scrooge_refunds_bulk_verify'                 => ['post',     'scrooge/refunds/bulk_verify',                             'ScroogeController@refundsVerifyBulk'                        ],
         // Scrooge - Instant Refunds Mode Config related routes
         'scrooge_refresh_fta_modes_cache'            => ['post',     'scrooge/fta_modes_refresh',                                 'ScroogeController@refreshFtaModes'                           ],
         'scrooge_set_instant_refund_mode_config'     => ['post',     'scrooge/instant_refunds_mode',                              'ScroogeController@setInstantRefundsMode'                     ],
@@ -7095,6 +7096,7 @@ class Route
         'scrooge_refunds_retry_with_attempt_appended_id',
         'scrooge_refunds_retry_source_fund_transfers',
         'scrooge_refunds_retry_custom_fund_transfers',
+        'scrooge_refunds_bulk_verify',
 
         // Reporting
         'reporting_config_create_admin',
@@ -8314,7 +8316,7 @@ class Route
         'scrooge_refunds_retry_source_fund_transfers' => Permission::PAYMENTS_REFUNDS_RETRY_FUND_TRANSFERS_SCROOGE_SOURCE,
         'scrooge_refunds_retry_with_attempt_appended_id'=> Permission::RETRY_REFUNDS_WITH_APPENDED_ID,
         'scrooge_refunds_retry_custom_fund_transfers' => Permission::PAYMENTS_REFUNDS_RETRY_FUND_TRANSFERS_SCROOGE_CUSTOM,
-
+        'scrooge_refunds_bulk_verify'              => Permission::VERIFY_REFUND,
         'send_newsletter'                          => Permission::SEND_NEWSLETTER,
         'send_test_newsletter'                     => Permission::SEND_NEWSLETTER,
         'schedule_fetch'                           => Permission::SCHEDULE_FETCH,
@@ -12851,6 +12853,7 @@ class Route
             'scrooge_refunds_retry_without_verify',
             'scrooge_refunds_update',
             'scrooge_refunds_update_multiple',
+            'scrooge_refunds_bulk_verify',
             'scrooge_reports_get_multiple',
             'scrooge_set_instant_refund_mode_config',
             'scrooge_set_merchant_mode_config',

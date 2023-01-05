@@ -85,6 +85,7 @@ class Scrooge
         'refund_internal_fetch'                => 'internal/fetch',
         // Currently only table `gateway_keys` is supported for bulk entities
         'bulk_gateway_keys'                    => 'entities/gateway_keys',
+        'verify_refunds'                       => 'bulk_verify'
     ];
 
     // Headers
@@ -1133,6 +1134,18 @@ class Scrooge
         $dataToSend = $this->getDataFromPayout($payout);
 
         $this->sendStatusUpdate($dataToSend, $mode);
+    }
+
+    /**
+     * @param array $input
+     * @return array
+     */
+    public function verifyRefunds(array $input): array
+    {
+        return $this->sendRequest(
+            self::RefundsBaseURL . '/' . self::URLS['verify_refunds'],
+            Requests::POST,
+            $input);
     }
 
     //TODO: add payload for refunds update

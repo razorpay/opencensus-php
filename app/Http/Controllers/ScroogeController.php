@@ -202,4 +202,10 @@ class ScroogeController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function refundsVerifyBulk() {
+        $response = $this->app['scrooge']->verifyRefunds($this->input);
+
+        return ApiResponse::json($response['body'], $response['code']);
+    }
 }
