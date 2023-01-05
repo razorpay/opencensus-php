@@ -148,6 +148,8 @@ class Constants
     const CASE_TYPE              = 'case_type';
     const CASE_TYPE_ACTIVATION   = 'activation';
     const CLARIFICATION_DATA     = 'clarification_data';
+    const AGENT_ID               = 'agent_id';
+    const AGENT_NAME             = 'agent_name';
 
     //gstin integration constants
     const COMPANY_NAME        = 'company_name';

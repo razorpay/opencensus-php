@@ -119,6 +119,7 @@ use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use RZP\Models\Merchant\Request\Constants as RequestConstants;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
+use RZP\Models\Workflow\Observer\Constants as ObserverConstants;
 use RZP\Mail\Merchant\NeedsClarificationEmail as ClarificationEmail;
 use RZP\Mail\Merchant\SubMerchantNCStatusChanged as SubMerchantNCStatusChangedEmail;
 use RZP\Notifications\Dashboard\Events as DashboardNotificationEvent;
@@ -3651,6 +3652,8 @@ class Core extends Base\Core
                     DetailConstants::ENTITY_ID => $merchant->getId(),
                     DetailConstants::CASE_TYPE => DetailConstants::CASE_TYPE_ACTIVATION,
                     DetailConstants::CLARIFICATION_DATA => $clarificationReasons,
+                    DetailConstants::AGENT_ID => optional($this->app['basicauth']->getAdmin())->getId() ?? ObserverConstants::UNDEFINED_AGENT,
+                    DetailConstants::AGENT_NAME => optional($this->app['basicauth']->getAdmin())->getName() ?? ObserverConstants::UNDEFINED_AGENT,
                 ])
             ];
 
