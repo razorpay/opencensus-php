@@ -206,7 +206,7 @@ class Core extends Base\Core
         $this->repo->saveOrFail($config);
     }
 
-    public function getFormattedConfigForCheckout($configId, $merchantId, & $data)
+    public function getFormattedConfigForCheckout($configId, $merchantId, & $data = [])
     {
         $config = null;
 
@@ -221,7 +221,11 @@ class Core extends Base\Core
         if (isset($config) === true)
         {
             $data['checkout_config'] = json_decode($config->config, true);
+
+            return $data['checkout_config'];
         }
+
+        return null;
     }
 
     private function isDefaultConfig($input)

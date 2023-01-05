@@ -107,7 +107,7 @@ class Validator extends Base\Validator
     protected static $dccConfigRules = [
         self::DCC_MARKUP_PERCENTAGE   => 'required|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
     ];
-    
+
     protected static $dccRecurringConfigRules = [
         self::DCC_RECURRING_MARKUP_PERCENTAGE   => 'required|numeric|between:0,99.99|regex:/^\d+(\.\d{1,2})?$/',
     ];
@@ -166,6 +166,10 @@ class Validator extends Base\Validator
     protected static $paylaterRestrictionRules = [
         self::METHOD              =>  'required',
         self::PROVIDERS           =>  'sometimes|custom:providersForPaylater',
+    ];
+
+    protected static array $fetchPaymentConfigForCheckoutRules = [
+      'config_id'   => 'sometimes|filled|public_id',
     ];
 
     const PROPERTIES_TO_VALIDATE_FOR_CARD = [

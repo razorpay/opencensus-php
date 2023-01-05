@@ -58,6 +58,7 @@ class Route
         'checkout_public'                          => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
         'checkout_public_canary'                   => ['get',      'checkout/public/canary',                         'MerchantController@getCheckoutPublic'                              ],
         'fetch_payment_config'                     => ['get',      'payment/config/{type}',                          'ConfigController@fetchPaymentConfig'                               ],
+        'fetch_payment_config_checkout_internal'   => ['get',      'internal/payment/config/checkout',               'ConfigController@fetchPaymentConfigForCheckout'                    ],
         'fetch_payment_config_admin'               => ['get',      'admin/payment/config/{type}',                    'ConfigController@fetchPaymentConfig'                               ],
         'create_payment_config'                    => ['post',     'payment/config',                                 'ConfigController@createPaymentConfig'                              ],
         'create_payment_config_bulk'               => ['post',     'payment/config/bulk',                            'ConfigController@createPaymentConfigBulk'                          ],
@@ -6537,6 +6538,7 @@ class Route
         'partner_config_fetch',
         'partner_config_edit',
         'partner_config_edit_logo',
+        'fetch_payment_config_checkout_internal',
     ];
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
@@ -14617,6 +14619,7 @@ class Route
         ],
 
         'checkout_service' => [
+            'fetch_payment_config_checkout_internal',
             'payments_downtime',
             'feature_get_all_internal',
             'internal_1cc_configs_get',

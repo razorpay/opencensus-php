@@ -5,6 +5,7 @@ namespace RZP\Models\Payment\Config;
 
 use RZP\Diag\EventCode;
 use RZP\Models\Base;
+use RZP\Models\Order\Entity as OrderEntity;
 use RZP\Trace\TraceCode;
 
 
@@ -28,6 +29,17 @@ class Service extends Base\Service
         $configs = $this->repo->config->fetchConfigByMerchantIdAndType($this->merchant->getId(), $type, $input);
 
         return $configs->toArrayPublic();
+    }
+
+    public function fetchPaymentConfigForCheckout($input)
+    {
+        (new Validator())->validateInput('fetch_payment_config_for_checkout', $input);
+
+        $configId = $input['config_id'] ?? null;
+
+        $checkoutConfig = $this->core->getFormattedConfigForCheckout($configId, $this->merchant->getId());
+
+        return $checkoutConfig ?? [];
     }
 
     public function internalFetchById($id)
