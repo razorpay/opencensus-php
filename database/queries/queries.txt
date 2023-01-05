@@ -7136,3 +7136,7 @@ ALTER TABLE tokens
 
 ALTER TABLE partner_configs
     ADD COLUMN partner_metadata JSON DEFAULT NULL;
+
+ALTER TABLE tokens
+    ADD COLUMN source enum(`merchant`, `issuer`) NOT NULL DEFAULT `merchant`;
+

@@ -20,4 +20,7 @@ class Constants
     const INITIATED     = 'initiated';
     const ACTIVE        = 'active';
     const DEACTIVATED   = 'deactivated';
+
+    const MERCHANT = 'merchant';
+    const ISSUER = 'issuer';
 }

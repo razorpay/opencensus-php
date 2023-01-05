@@ -147,6 +147,11 @@ class Entity extends Base\PublicEntity
     const AUTHENTICATION_DATA   = 'authentication_data';
     const AUTHENTICATION        = 'authentication';
 
+    /*
+     * Specifies source In case of push token provisioning
+     */
+    const SOURCE = 'source';
+
     /**
      * Signifies whether user consent has been taken for a saved card for tokenisation
      * This will be used by checkout to identify consent taken saved cards
@@ -271,7 +276,8 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::NOTES,
         self::ERROR_DESCRIPTION,
-        self::INTERNAL_ERROR_CODE
+        self::INTERNAL_ERROR_CODE,
+        self::SOURCE
     ];
 
     protected $public = [
@@ -299,7 +305,8 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::NOTES,
         self::ERROR_DESCRIPTION,
-        self::INTERNAL_ERROR_CODE
+        self::INTERNAL_ERROR_CODE,
+        self::SOURCE
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
@@ -330,7 +337,8 @@ class Entity extends Base\PublicEntity
         self::STATUS                    => null,
         self::NOTES                     => null,
         self::INTERNAL_ERROR_CODE       => null,
-        self::ERROR_DESCRIPTION         => null
+        self::ERROR_DESCRIPTION         => null,
+        self::SOURCE                    => Constants::MERCHANT
     ];
 
     protected $publicSetters = [
@@ -507,6 +515,16 @@ class Entity extends Base\PublicEntity
     public function getMethod()
     {
         return $this->getAttribute(self::METHOD);
+    }
+
+    public function getSource()
+    {
+        return $this->getAttribute(self::SOURCE);
+    }
+
+    public function setSource($source)
+    {
+        return $this->setAttribute(self::SOURCE, $source);
     }
 
     public function getGatewayToken()
