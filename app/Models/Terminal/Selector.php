@@ -330,7 +330,8 @@ class Selector extends Base\Core
 
                 $sortedTerminals = [];
 
-                if (($merchant->isFeatureEnabled(Features::RAAS) === false) and ($fetchApiTerminals === true))
+                if (($merchant->isFeatureEnabled(Features::RAAS) === false) and ($fetchApiTerminals === true)
+                    and ($merchant->isFeatureEnabled(Features::ONLY_DS) === false))
                 {
                     $sortedTerminals = $this->filterAndSortTerminals($allTerminals, $verbose);
                 }

@@ -4142,4 +4142,45 @@ class TerminalTest extends TestCase
         $this->startTest($this->testData[__FUNCTION__]);
     }
 
+    public function testUnassignTheOnlyNonDSTerminalOfMerchantWithOnlyDs()
+    {
+        $this->ba->adminAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'enabled'             => true,
+            'gateway'             => 'worldline',
+            'merchant_id'         => '10000000000000',
+            'gateway_merchant_id' => '90000000001',
+            'status'              => 'activated',
+            'visa_mpan'           => '4234564890123456',
+            'gateway_terminal_id' => 'tid12345',
+            'type'    => [
+                'direct_settlement_with_refund' => '1'
+            ],
+        ]);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '10000000000000',
+            'name'   => 'only_ds',
+            'entity_type' => 'merchant',
+        ]);
+
+        $url = '/terminals/' . $terminal['id'] . '/reassign';
+
+        $requestContent = ['merchant_id' => $merchant['id']];
+
+        $request = [
+            'url'    => $url,
+            'method' => 'PUT',
+            'content' => $requestContent,
+        ];
+
+        $this->testData[__FUNCTION__]['request'] = $request;
+
+        $this->startTest($this->testData[__FUNCTION__]);
+
+    }
+
 }

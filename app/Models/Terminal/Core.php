@@ -251,6 +251,13 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED);
         }
 
+        if($terminal->isDirectSettlement() === true)
+        {
+            $this->validateDsActivated($terminal);
+        }
+
+        $this->validateNonDSRestriction($merchant,$terminal);
+
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
         $variantFlag = $this->app->razorx->getTreatment($terminal->getId(), "TERMINAL_REASSIGN_MERCHANT_PROXY", $mode);
