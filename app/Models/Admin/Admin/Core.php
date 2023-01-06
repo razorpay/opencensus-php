@@ -324,7 +324,6 @@ class Core extends Base\Core
 
         unset($input['otp']);
 
-        $this->trace->info(TraceCode::OTP,['otp'=>$otp]);
         //Unset OTP for logging
         $this->trace->info(TraceCode::ADMINS_VERIFY_OTP_FOR_ACTION, compact('input'));
 
@@ -333,8 +332,6 @@ class Core extends Base\Core
         $payload = $this->getTokenAndRavenOtpReqParams($input, $admin);
 
         $payload = array_only($payload, ['context', 'receiver', 'source']) + array_only($input, 'otp');
-
-        $this->trace->info(TraceCode::PAYLOAD,['payload'=> $payload]);
 
         return $this->app->raven->verifyOtp($payload, $mock);
     }
@@ -488,10 +485,7 @@ class Core extends Base\Core
 
         $token = array_pull($payload, 'token');
 
-        $this->trace->info(TraceCode::PAYLOAD, ['payload' => $payload]);
         $otp = $this->app->raven->generateOtp($payload);
-
-        $this->trace->info(TraceCode::OTP, ['OTP' => $otp]);
 
         return $otp + compact('token');
     }
