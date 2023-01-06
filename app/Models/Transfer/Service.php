@@ -377,7 +377,7 @@ class Service extends Base\Service
             TraceCode::PENDING_ORDER_TRANSFERS_FETCHED,
             [
                 'order_ids' => $orderIds,
-                'time_take' => ($endTime - $startTime),
+                'time_taken' => ($endTime - $startTime),
             ]
         );
 
@@ -398,7 +398,7 @@ class Service extends Base\Service
             TraceCode::PENDING_ORDER_TRANSFERS_FOR_KEY_MERCHANTS_FETCHED,
             [
                 'order_ids' => $orderIds,
-                'time_take' => ($endTime - $startTime),
+                'time_taken' => ($endTime - $startTime),
             ]
         );
 

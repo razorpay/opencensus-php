@@ -143,6 +143,7 @@ class Repository extends Base\Repository
     {
         $orderId        = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
         $paymentStatus  = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+        $merchantId     = $this->repo->transfer->dbColumn(Entity::MERCHANT_ID);
         $sourceId       = $this->repo->transfer->dbColumn(Entity::SOURCE_ID);
         $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
         $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
@@ -150,7 +151,7 @@ class Repository extends Base\Repository
         return $this->newQueryOnSlave()
                     ->join(Table::PAYMENT, $sourceId, '=', $orderId)
                     ->select(Entity::SOURCE_ID)
-                    ->whereNotIn(Entity::MERCHANT_ID, $excludeMerchantIds)
+                    ->whereNotIn($merchantId, $excludeMerchantIds)
                     ->where(Entity::SOURCE_TYPE, Constant::ORDER)
                     ->where($transferStatus, Status::PENDING)
                     ->where($paymentStatus, Payment\Status::CAPTURED)
@@ -165,6 +166,7 @@ class Repository extends Base\Repository
     {
         $orderId        = $this->repo->payment->dbColumn(Payment\Entity::ORDER_ID);
         $paymentStatus  = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+        $merchantId     = $this->repo->transfer->dbColumn(Entity::MERCHANT_ID);
         $sourceId       = $this->repo->transfer->dbColumn(Entity::SOURCE_ID);
         $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
         $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
@@ -172,7 +174,7 @@ class Repository extends Base\Repository
         return $this->newQueryOnSlave()
                     ->join(Table::PAYMENT, $sourceId, '=', $orderId)
                     ->select(Entity::SOURCE_ID)
-                    ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+                    ->whereIn($merchantId, $merchantIds)
                     ->where(Entity::SOURCE_TYPE, Constant::ORDER)
                     ->where($transferStatus, Status::PENDING)
                     ->where($paymentStatus, Payment\Status::CAPTURED)
