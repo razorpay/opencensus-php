@@ -482,20 +482,23 @@ class Core extends Base\Core
                 break;
 
             case Type::CARD:
+                $isScroogeRequest = false;
+
                 if (isset($accountInput[Card\Entity::TOKEN]) === true)
                 {
+                    $isScroogeRequest = true;
                     // we will fetch the card details from vault token and modify the input so that rest of the
                     // account creation flow can be used same as account creation with card number.
-                    $accountInput = (new Card\Core)->fillCardDetailsWithVaultToken($accountInput);
+                    $accountInput = (new Card\Core)->fillCardDetailsWithVaultToken($accountInput, $merchant);
                 }
 
                 $this->transformAccountInputForCard($accountInput);
 
-                $traceRequest = $this->unsetSensitiveDetails($accountInput);
+                $traceRequest = $this->unsetSensitiveDetailsForTracing($accountInput, $isScroogeRequest);
 
                 $this->trace->info(TraceCode::TRANSFORM_INPUT_FOR_CARD_FUND_ACCOUNT_CREATION, $traceRequest);
 
-                $this->checkIfTokenPanIsValid($accountInput, $merchant);
+                $this->checkIfTokenPanIsValid($accountInput);
 
                 if ((isset($accountInput[Card\Entity::TOKEN_ID]) === true) and
                     ($merchant->isFeatureEnabled(Feature\Constants::ALLOW_NON_SAVED_CARDS) === true))
@@ -506,7 +509,7 @@ class Core extends Base\Core
                     $account = $token->card;
 
                     // For now, we are blocking the saved card flow if the token entity is created by a different merchant
-                    // or if the card characteristics don't match with that of a networkTokenisedCard
+                    // or if the card characteristics don't match with that of a network Tokenised Card
                     $this->checkIfSavedCardFlowWithTokenIdIsAllowed($token, $account, $merchant);
 
                     (new Card\Core)->checkIfCardIsSupportedAndEnqueueForBeneficiaryRegistration($account, $merchant);
@@ -514,24 +517,7 @@ class Core extends Base\Core
                     break;
                 }
 
-                // Card number is validated as part of fund_account create validator itself.
-                $network = Card\Network::detectNetwork(substr($accountInput[Card\Entity::NUMBER], 0, 6));
-
-                // cvv needs to be passed otherwise card creation will fail if it's
-                // not present, hence passing a dummy value. It's not stored anyways.
-                $accountInput[Card\Entity::CVV] = $accountInput[Card\Entity::CVV] ?? Card\Entity::getDummyCvv($network);
-
-                // If the expiry is sent, we use that to validate and such.
-                // If the expiry is not sent, we use a dummy expiry.
-                // We do not expose expiry in either way.
-                // Expiry is mandatory for card creation.
-                $accountInput[Card\Entity::EXPIRY_MONTH] = $accountInput[Card\Entity::EXPIRY_MONTH] ?? Card\Entity::DUMMY_EXPIRY_MONTH;
-                $accountInput[Card\Entity::EXPIRY_YEAR] = $accountInput[Card\Entity::EXPIRY_YEAR] ?? Card\Entity::DUMMY_EXPIRY_YEAR;
-
-                // If name is sent, we use that. We also expose it.
-                // If name is not sent, we use a dummy name. We do not expose it.
-                // Name is mandatory for card creation.
-                $accountInput[Card\Entity::NAME] = $accountInput[Card\Entity::NAME] ?? Card\Entity::DUMMY_NAME;
+                $this->setDummyValuesForCardIfNeeded($accountInput);
 
                 $account = (new Card\Core)->createForFundAccount($accountInput, $merchant, $compositePayoutSaveOrFail);
                 break;
@@ -545,6 +531,39 @@ class Core extends Base\Core
         }
 
         return $account;
+    }
+
+    protected function setDummyValuesForCardIfNeeded(&$accountInput)
+    {
+        // Card number is validated as part of fund_account create validator itself.
+        $network = Card\Network::detectNetwork(substr($accountInput[Card\Entity::NUMBER], 0, 6));
+
+        // cvv needs to be passed otherwise card creation will fail if it's
+        // not present, hence passing a dummy value. It's not stored anyways.
+        $accountInput[Card\Entity::CVV] = $accountInput[Card\Entity::CVV] ?? Card\Entity::getDummyCvv($network);
+
+        // If the expiry is sent, we use that to validate and such.
+        // If the expiry is not sent, we use a dummy expiry.
+        // We do not expose expiry in either way.
+        // Expiry is mandatory for card creation for non tokenised flow.
+        // For tokenised = true, the expiry dates actually correspond to token expiry dates and
+        // hence can be set to null
+        if ((isset($accountInput[Card\Entity::TOKENISED]) === true) and
+            (boolval($accountInput[Card\Entity::TOKENISED]) === true))
+        {
+            $accountInput[Card\Entity::EXPIRY_MONTH] = $accountInput[Card\Entity::EXPIRY_MONTH] ?? null;
+            $accountInput[Card\Entity::EXPIRY_YEAR]  = $accountInput[Card\Entity::EXPIRY_YEAR] ?? null;
+        }
+        else
+        {
+            $accountInput[Card\Entity::EXPIRY_MONTH] = $accountInput[Card\Entity::EXPIRY_MONTH] ?? Card\Entity::DUMMY_EXPIRY_MONTH;
+            $accountInput[Card\Entity::EXPIRY_YEAR]  = $accountInput[Card\Entity::EXPIRY_YEAR] ?? Card\Entity::DUMMY_EXPIRY_YEAR;
+        }
+
+        // If name is sent, we use that. We also expose it.
+        // If name is not sent, we use a dummy name. We do not expose it.
+        // Name is mandatory for card creation.
+        $accountInput[Card\Entity::NAME] = $accountInput[Card\Entity::NAME] ?? Card\Entity::DUMMY_NAME;
     }
 
     public function transformAccountInputForCard(&$accountInput)
@@ -577,9 +596,9 @@ class Core extends Base\Core
         unset($accountInput[Card\Entity::INPUT_TYPE]);
     }
 
-    public function checkIfTokenPanIsValid($accountInput, $merchant)
+    public function checkIfTokenPanIsValid($accountInput)
     {
-        if ((empty($accountInput[Card\Entity::TOKENISED]) === false) and
+        if ((isset($accountInput[Card\Entity::TOKENISED]) === true) and
             (boolval($accountInput[Card\Entity::TOKENISED]) === true) and
             (array_key_exists(Card\Entity::NUMBER, $accountInput) === true))
         {
@@ -1375,7 +1394,7 @@ class Core extends Base\Core
         }
     }
 
-    public function unsetSensitiveDetails($accountInput)
+    public function unsetSensitiveDetailsForTracing($accountInput, $isScroogeRequest = false)
     {
         if (empty($accountInput[Card\Entity::NUMBER]) === false)
         {
@@ -1384,9 +1403,14 @@ class Core extends Base\Core
 
         unset($accountInput[Card\Entity::CVV]);
         unset($accountInput[Card\Entity::NUMBER]);
-        unset($accountInput[Card\Entity::NAME]);
+
+        $accountInput['is_expiry_month_set'] = (isset($accountInput[Card\Entity::EXPIRY_MONTH]) === true);
         unset($accountInput[Card\Entity::EXPIRY_MONTH]);
+
+        $accountInput['is_expiry_year_set'] = (isset($accountInput[Card\Entity::EXPIRY_YEAR]) === true);
         unset($accountInput[Card\Entity::EXPIRY_YEAR]);
+
+        $accountInput['is_scrooge_request'] = $isScroogeRequest;
 
         return $accountInput;
     }

@@ -31,6 +31,9 @@ class Channel
     // Exclusively for Internal VA to VA transfers in razorpayX using creditTransfer entity
     const RZPX = 'rzpx';
 
+    // This channel signifies transfer initiated through masterCard send
+    const MCS  = 'mcs';
+
 
     public static $gateways = [
         self::KOTAK => [
@@ -85,6 +88,7 @@ class Channel
             self::ICICI_OPGSP_EXPORT,
             self::AXIS3,
             self::RZPX,
+            self::MCS,
         ];
     }
 
@@ -287,7 +291,8 @@ class Channel
             self::YESBANK,
             self::AXIS,
             self::AMAZONPAY_FTS,
-            self::M2P
+            self::M2P,
+            self::MCS
         ];
     }
 
@@ -380,6 +385,11 @@ class Channel
                 ]
             ],
             self::M2P       => [
+                Constants\Entity::CARD          =>  [
+                    Mode::CT,
+                ]
+            ],
+            self::MCS       => [
                 Constants\Entity::CARD          =>  [
                     Mode::CT,
                 ]

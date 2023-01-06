@@ -72,6 +72,7 @@ use RZP\Models\Payout\ErrorCodeMapping;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Jobs\PayoutServiceDataMigration;
+use RZP\Models\Card\Entity as CardEntity;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance as Balance;
@@ -84,6 +85,7 @@ use RZP\Mail\Transaction\Payout as PayoutMail;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Models\BankingAccountStatement\Details;
+use RZP\Services\FTS\Constants as FTSConstants;
 use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
@@ -7974,17 +7976,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->appAuthTest($this->config['applications.settlements_service.secret']);
 
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::S2S,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
         $this->mockCardVault();
 
@@ -7995,17 +7987,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
 
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::S2S,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
         $this->mockCardVault();
 
@@ -8016,17 +7998,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
 
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::S2S,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
         $this->mockCardVault(null, true, [
             'iin'          => '340169',
@@ -8039,23 +8011,13 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
 
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::S2S,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
         $this->mockCardVault(null, true, [
             'iin'          => '340169',
         ]);
 
-        $testData = &$this->testData['testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp'];
+        $testData = $this->testData['testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp'];
 
         $testData['request']['content']['fund_account']['card']['international'] = true;
 
@@ -8066,25 +8028,804 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
 
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::S2S,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
         $this->mockCardVault(null, true, [
             'iin'          => '340169',
         ]);
 
-        $testData = &$this->testData['testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp'];
+        $testData = $this->testData['testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp'];
 
         $testData['request']['content']['fund_account']['card']['network'] = 'BAJAJ';
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateCardPayoutWithoutTokenForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $this->startTest();
+    }
+
+    public function testCreatePayoutToCardHavingCardInputTypeForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        (new AdminService)->setConfigKeys([ConfigKey::SET_CARD_METADATA_NULL => true]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 551479,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => \RZP\Models\Card\Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    self::assertEquals('razorpayx_non_saved_cards', $input['bu_namespace']);
+
+                    $response['token']       = 'pay_44f3d176b38b4cd2a588f243e3ff7b20';
+                    $response['fingerprint'] = null;
+                    $response['scheme']      = '0';
+                    break;
+
+                case 'detokenize':
+                    self::assertArrayNotHasKey('bu_namespace', $input);
+                    self::assertEquals('pay_11f3d177b38b5cd22588f243e3ff7b20', $input['token']);
+
+                    $response['value']       = '5514790138556539';
+                    break;
+                case 'cards/metadata/fetch':
+                    $response['token']        = $input['token'];
+                    $response['iin']          = '551479';
+                    $response['expiry_month'] = '08';
+                    $response['expiry_year']  = '2025';
+                    $response['name']         = 'chirag';
+                    break;
+
+                case 'cards/metadata':
+                    self::assertArrayKeysExist($input, [
+                        CardEntity::TOKEN,
+                        CardEntity::NAME,
+                        CardEntity::EXPIRY_YEAR,
+                        CardEntity::EXPIRY_MONTH,
+                        CardEntity::IIN
+                    ]);
+
+                    self::assertEquals(5, count($input));
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->fixtures->create('card', [
+            'token_iin'          => null,
+            'token_expiry_month' => null,
+            'token_expiry_year'  => null,
+            'trivia'             => null,
+            'vault'              => 'rzpencryption',
+            'token_last4'        => null,
+            'vault_token'        => 'pay_11f3d177b38b5cd22588f243e3ff7b20',
+            'name'               => null,
+            'expiry_month'       => null,
+            'expiry_year'        => null,
+            'iin'                => null,
+        ]);
+
+        $this->mockCardVault($callable);
+
+        $testData = $this->testData['testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp'];
+
+        $testData['request']['content']['fund_account']['card'] = [
+            'international' => false,
+            'network'       => Network::VISA,
+            'trivia'        => null,
+            'token'         => 'pay_11f3d177b38b5cd22588f243e3ff7b20',
+            'input_type'    => 'card',
+        ];
+
+        $testData['request']['content']['mode'] = Payout\Mode::CARD;
+        $testData['response']['content']['mode'] = Payout\Mode::CARD;
+
+        $testData['response']['content']['fund_account']['card'] = [
+            "iin"           =>  "999999",
+            "last4"         =>  "6539",
+            "network"       =>  "MasterCard",
+            "type"          =>  "credit",
+            "issuer"        =>  "YESB",
+            "sub_type"      =>  "consumer",
+            'input_type'    =>  "card",
+        ];
+
+        $response = $this->startTest($testData);
+
+        $this->fixtures->stripSign($response['fund_account_id']);
+
+        $cardAttributes = $this->getDbEntity('fund_account', ['id' => $response['fund_account_id']])
+            ->account->getAttributes();
+
+        // Assert that card meta data is null (default value in cards table)
+        $this->assertNull($cardAttributes['iin']);
+        $this->assertNull($cardAttributes['name']);
+        $this->assertNull($cardAttributes['expiry_month']);
+        $this->assertNull($cardAttributes['expiry_year']);
+
+        $this->assertEquals(null, $cardAttributes['trivia']);
+        $this->assertEquals(null, $cardAttributes['token_expiry_month']);
+        $this->assertEquals(null, $cardAttributes['token_expiry_year']);
+        $this->assertEquals('6539', $cardAttributes['last4']);
+        $this->assertEquals(null, $cardAttributes['token_last4']);
+        $this->assertEquals(null, $cardAttributes['token_iin']);
+        $this->assertEquals('pay_44f3d176b38b4cd2a588f243e3ff7b20', $cardAttributes['vault_token']);
+
+        return $response;
+    }
+
+    protected function mockFtsForMasterCardSend($mockRequestMetaFTSBlock)
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::ENABLE_MCS_TRANSFER => 'on']);
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $ftsMock);
+
+        $ftsMock->shouldReceive('shouldAllowTransfersViaFts')
+                ->andReturn([true, 'Dummy']);
+
+        $ftsMock->shouldReceive('createAndSendRequest')
+                ->andReturnUsing(function(string $endpoint, string $method, array $input) use($mockRequestMetaFTSBlock) {
+
+                    self::assertEquals('/transfer', $endpoint);
+                    self::assertEquals('POST', $method);
+
+                    self::assertEquals('payout_refund', $input[FTSConstants::PRODUCT]);
+                    self::assertEquals('m2p', $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_CHANNEL]);
+                    self::assertArrayHasKey(FTSConstants::REQUEST_META, $input[FTSConstants::TRANSFER]);
+                    self::assertArraySubset($mockRequestMetaFTSBlock, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
+                    self::assertCount(3, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
+
+                    return [
+                        FTSConstants::BODY => [
+                            FTSConstants::STATUS           => FTSConstants::STATUS_CREATED,
+                            FTSConstants::MESSAGE          => 'fund transfer sent to fts.',
+                            FTSConstants::FUND_TRANSFER_ID => random_integer(2),
+                            FTSConstants::FUND_ACCOUNT_ID  => random_integer(2),
+                        ]
+                    ];
+                })->once();
+
+        $this->fixtures->create('merchant', [
+            'id'            => '10000000000002',
+            'name'          => 'test_merchant_1',
+            'billing_label' => null
+        ]);
+
+        $this->fixtures->create('refund', [
+            'id'          => 'HYKmlGHHyEhZuM',
+            'merchant_id' => '10000000000002',
+            'payment_id'  => 'pay00000000002',
+        ]);
+    }
+
+    public function testCreatePayoutToCardHavingCardInputTypeForRefundsAppAndReceivedProcessedWebhookOnMCS()
+    {
+        $mockRequestMetaFTSBlock = [
+            FTSConstants::TRANSACTION_PURPOSE => '08',
+            FTSConstants::PAYMENT_TYPE        => FTSConstants::BDB,
+            FTSConstants::MERCHANT_NAME       => 'testmerchant1'
+        ];
+
+        $this->mockFtsForMasterCardSend($mockRequestMetaFTSBlock);
+
+        $response = $this->testCreatePayoutToCardHavingCardInputTypeForRefundsApp();
+
+        $this->fixtures->stripSign($response['id']);
+
+        $payoutId = $response['id'];
+
+        $this->ba->ftsAuth();
+
+        // Processed Webhook sent from FTS
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'NODAL',
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'MCS',
+            'extra_info'          => [
+                'beneficiary_name' => 'Chirag',
+                'cms_ref_no'       => '',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => 327798418,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'CT',
+            'narration'           => 'Card Payment',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 15691231,
+            'source_id'           => $payoutId,
+            'source_type'         => 'payout',
+            'status'              => 'PROCESSED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->expectWebhookEvent('payout.processed');
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
+        $this->assertEquals($updatedPayout[Payout\Entity::CHANNEL], Channel::MCS);
+        $this->assertNotNull($updatedPayout[Payout\Entity::PROCESSED_AT]);
+    }
+
+    public function testCreatePayoutToCardHavingServiceProviderTokenInputTypeForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        (new AdminService)->setConfigKeys([ConfigKey::SET_CARD_METADATA_NULL => true]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 416021,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => \RZP\Models\Card\Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    self::assertEquals('razorpayx_token_pan', $input['bu_namespace']);
+
+                    $response['token']       = '0c0e7db24cce4512bc9c71f2dbec7075';
+                    $response['fingerprint'] = '5707cebd2f17c9cb2154ecc42bd7e0c0';
+                    $response['scheme']      = '0';
+                    break;
+
+                case 'detokenize':
+                    self::assertEquals('payments_token_pan', $input['bu_namespace']);
+
+                    $response['value']       = '4610151724696781';
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->fixtures->create('card', [
+            'token_iin'          => '461015',
+            'token_expiry_month' => '08',
+            'token_expiry_year'  => '2030',
+            'trivia'             => null,
+            'vault'              => 'rzpvault',
+            'token_last4'        => '6781',
+            'vault_token'        => '0c0e7db24cce4512bc9c71f2dbec7075',
+            'name'               => null,
+            'expiry_month'       => null,
+            'expiry_year'        => null,
+            'iin'                => null,
+        ]);
+
+        $this->mockCardVault($callable);
+
+        $testData = $this->testData['testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp'];
+
+        $testData['request']['content']['purpose'] = Payout\Purpose::BUSINESS_DISBURSAL;
+        $testData['response']['content']['purpose'] = Payout\Purpose::BUSINESS_DISBURSAL;
+
+        $testData['request']['content']['fund_account']['card'] = [
+            'international' => false,
+            'network'       => Network::MC,
+            'trivia'        => "1",
+            'token'         => '0c0e7db24cce4512bc9c71f2dbec7075',
+            'input_type'    => 'service_provider_token',
+        ];
+
+        $testData['request']['content']['mode'] = Payout\Mode::CARD;
+        $testData['response']['content']['mode'] = Payout\Mode::CARD;
+
+        $testData['response']['content']['fund_account']['card'] = [
+            "iin"           =>  "999999",
+            "last4"         =>  "6781",
+            "network"       =>  "MasterCard",
+            "type"          =>  "credit",
+            "issuer"        =>  "YESB",
+            "sub_type"      =>  "consumer",
+            'input_type'    => 'service_provider_token'
+        ];
+
+        $response = $this->startTest($testData);
+
+        $this->fixtures->stripSign($response['fund_account_id']);
+
+        $cardAttributes = $this->getDbEntity('fund_account', ['id' => $response['fund_account_id']])
+            ->account->getAttributes();
+
+        // Assert that card meta data is null (default value in cards table)
+        $this->assertNull($cardAttributes['iin']);
+        $this->assertNull($cardAttributes['name']);
+        $this->assertNull($cardAttributes['expiry_month']);
+        $this->assertNull($cardAttributes['expiry_year']);
+
+        $this->assertEquals('1', $cardAttributes['trivia']);
+        $this->assertEquals(8, $cardAttributes['token_expiry_month']);
+        $this->assertEquals(2030, $cardAttributes['token_expiry_year']);
+        $this->assertEquals('xxxx', $cardAttributes['last4']);
+        $this->assertEquals('6781', $cardAttributes['token_last4']);
+        $this->assertEquals('461015172', $cardAttributes['token_iin']);
+        $this->assertEquals('0c0e7db24cce4512bc9c71f2dbec7075', $cardAttributes['vault_token']);
+
+        return $response;
+    }
+
+    public function testCreateCardPayoutWithServiceProviderTokenInputTypeForRefundsAppAndReceivedProcessedWebhookOnMCS()
+    {
+        $mockRequestMetaFTSBlock = [
+            FTSConstants::TRANSACTION_PURPOSE => '08',
+            FTSConstants::PAYMENT_TYPE        => FTSConstants::BDB,
+            FTSConstants::MERCHANT_NAME       => 'testmerchant1'
+        ];
+
+        $this->mockFtsForMasterCardSend($mockRequestMetaFTSBlock);
+
+        $response = $this->testCreatePayoutToCardHavingServiceProviderTokenInputTypeForRefundsApp();
+
+        $this->fixtures->stripSign($response['id']);
+
+        $payoutId = $response['id'];
+
+        $this->ba->ftsAuth();
+
+        // Processed Webhook sent from FTS
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'NODAL',
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'MCS',
+            'extra_info'          => [
+                'beneficiary_name' => 'Chirag',
+                'cms_ref_no'       => '',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => 327798418,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'CT',
+            'narration'           => 'Card Payment',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 15691231,
+            'source_id'           => $payoutId,
+            'source_type'         => 'payout',
+            'status'              => 'PROCESSED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->expectWebhookEvent('payout.processed');
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::PROCESSED_AT]);
+        $this->assertEquals($updatedPayout[Payout\Entity::CHANNEL], Channel::MCS);
+    }
+
+    public function testCreatePayoutToCardHavingRazorpayTokenInputTypeForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        (new AdminService)->setConfigKeys([ConfigKey::SET_CARD_METADATA_NULL => true]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 416021,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => \RZP\Models\Card\Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    self::assertEquals('razorpayx_token_pan', $input['bu_namespace']);
+
+                    $response['token']       = '0c0e7db24cce4512bc9c71f2dbec7075';
+                    $response['fingerprint'] = '5707cebd2f17c9cb2154ecc42bd7e0c0';
+                    $response['scheme']      = '0';
+                    break;
+
+                case 'tokens/cryptogram':
+                    $response['service_provider_tokens'] = [
+                        [
+                            'type'          => 'network',
+                            'name'          => 'Visa',
+                            'interoperable' => true,
+                            'provider_data' => [
+                                'token_number'       => '4610151724696781',
+                                'cryptogram_value'   => 'test',
+                                'token_expiry_month' => 8,
+                                'token_expiry_year'  => 2029,
+                            ],
+                        ]
+                    ];
+
+                    self::assertEquals('JDzXk6S3CAjUn8', $input['service_provider_token']);
+                    self::assertEquals(true, $input['internal_service_request']);
+
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->fixtures->create('card', [
+            'token_iin'          => '461015',
+            'token_expiry_month' => '08',
+            'token_expiry_year'  => '2028',
+            'trivia'             => null,
+            'vault'              => 'mastercard',
+            'token_last4'        => null,
+            'vault_token'        => 'JDzXk6S3CAjUn8',
+            'name'               => null,
+            'expiry_month'       => null,
+            'expiry_year'        => null,
+            'iin'                => null,
+        ]);
+
+        $this->mockCardVault($callable);
+
+        $testData = $this->testData['testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp'];
+
+        $testData['request']['content']['fund_account']['card'] = [
+            'international' => false,
+            'network'       => Network::MC,
+            'trivia'        => null,
+            'token'         => 'JDzXk6S3CAjUn8',
+            'input_type'    => 'razorpay_token',
+        ];
+
+        $testData['request']['content']['mode'] = Payout\Mode::CARD;
+        $testData['response']['content']['mode'] = Payout\Mode::CARD;
+
+        $testData['response']['content']['fund_account']['card'] = [
+            "iin"           =>  "999999",
+            "last4"         =>  "6781",
+            "network"       =>  "MasterCard",
+            "type"          =>  "credit",
+            "issuer"        =>  "YESB",
+            "sub_type"      =>  "consumer",
+            'input_type'    => 'service_provider_token'
+        ];
+
+        $response = $this->startTest($testData);
+
+        $this->fixtures->stripSign($response['fund_account_id']);
+
+        $cardAttributes = $this->getDbEntity('fund_account', ['id' => $response['fund_account_id']])
+            ->account->getAttributes();
+
+        // Assert that card meta data is null (default value in cards table)
+        $this->assertNull($cardAttributes['iin']);
+        $this->assertNull($cardAttributes['name']);
+        $this->assertNull($cardAttributes['expiry_month']);
+        $this->assertNull($cardAttributes['expiry_year']);
+
+        $this->assertEquals('1', $cardAttributes['trivia']);
+        $this->assertEquals(8, $cardAttributes['token_expiry_month']);
+        $this->assertEquals(2029, $cardAttributes['token_expiry_year']);
+        $this->assertEquals('xxxx', $cardAttributes['last4']);
+        $this->assertEquals('6781', $cardAttributes['token_last4']);
+        $this->assertEquals('461015172', $cardAttributes['token_iin']);
+        $this->assertEquals('0c0e7db24cce4512bc9c71f2dbec7075', $cardAttributes['vault_token']);
+
+        return $response;
+    }
+
+    public function testCreateCardPayoutWithRazorpayTokenInputTypeForRefundsAppAndReceivedProcessedWebhookOnMCS()
+    {
+        $mockRequestMetaFTSBlock = [
+            FTSConstants::TRANSACTION_PURPOSE => '08',
+            FTSConstants::PAYMENT_TYPE        => FTSConstants::BDB,
+            FTSConstants::MERCHANT_NAME       => 'testmerchant1'
+        ];
+
+        $this->mockFtsForMasterCardSend($mockRequestMetaFTSBlock);
+
+        $response = $this->testCreatePayoutToCardHavingRazorpayTokenInputTypeForRefundsApp();
+
+        $this->fixtures->stripSign($response['id']);
+
+        $payoutId = $response['id'];
+
+        $this->ba->ftsAuth();
+
+        // Processed Webhook sent from FTS
+        $ftsWebhook = [
+            'bank_processed_time' => '',
+            'bank_account_type'   => 'NODAL',
+            'bank_status_code'    => 'SUCCESS',
+            'channel'             => 'MCS',
+            'extra_info'          => [
+                'beneficiary_name' => 'Chirag',
+                'cms_ref_no'       => '',
+                'internal_error'   => false,
+                'ponum'            => '',
+            ],
+            'failure_reason'      => '',
+            'fund_transfer_id'    => 327798418,
+            'gateway_error_code'  => '',
+            'gateway_ref_no'      => 'JKjdVokXZ2KMcP',
+            'mode'                => 'CT',
+            'narration'           => 'Card Payment',
+            'remarks'             => '',
+            'return_utr'          => '',
+            'source_account_id'   => 15691231,
+            'source_id'           => $payoutId,
+            'source_type'         => 'payout',
+            'status'              => 'PROCESSED',
+            'utr'                 => '231456121234458',
+            'status_details'      => null,
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/update_fts_fund_transfer',
+            'content' => $ftsWebhook,
+        ];
+
+        $this->expectWebhookEvent('payout.processed');
+
+        $this->makeRequestAndGetContent($request);
+
+        $updatedPayout = $this->getDbEntityById('payout', $payoutId)->toArray();
+
+        $this->assertEquals($updatedPayout[Payout\Entity::STATUS], Payout\Status::PROCESSED);
+        $this->assertNotNull($updatedPayout[Payout\Entity::PROCESSED_AT]);
+        $this->assertEquals($updatedPayout[Payout\Entity::CHANNEL], Channel::MCS);
+    }
+
+    /**
+     * Here since, expiry month is found to be null in FetchCryptogram API, we try to fetch the token expiry
+     * dates from card entity.
+     */
+    public function testCreatePayoutToCardWithRazorpayTokenInputTypeAndExpiryMonthAsNullForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        (new AdminService)->setConfigKeys([ConfigKey::SET_CARD_METADATA_NULL => true]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $this->fixtures->create('iin', [
+            'iin'     => 416021,
+            'network' => Network::$fullName[Network::MC],
+            'type'    => \RZP\Models\Card\Type::CREDIT,
+            'issuer'  => Issuer::YESB
+        ]);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokenize':
+                    self::assertEquals('razorpayx_token_pan', $input['bu_namespace']);
+
+                    $response['token']       = '0c0e7db24cce4512bc9c71f2dbec7075';
+                    $response['fingerprint'] = '5707cebd2f17c9cb2154ecc42bd7e0c0';
+                    $response['scheme']      = '0';
+                    break;
+
+                case 'tokens/cryptogram':
+                    $response['service_provider_tokens'] = [
+                        [
+                            'type'          => 'network',
+                            'name'          => 'Visa',
+                            'interoperable' => true,
+                            'provider_data' => [
+                                'token_number'       => '4610151724696781',
+                                'cryptogram_value'   => 'test',
+                                'token_expiry_month' => null,
+                                'token_expiry_year'  => 2029,
+                            ],
+                        ]
+                    ];
+
+                    self::assertEquals('JDzXk6S3CAjUn8', $input['service_provider_token']);
+                    self::assertEquals(true, $input['internal_service_request']);
+
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->fixtures->create('card', [
+            'token_iin'          => '461015',
+            'token_expiry_month' => null,
+            'token_expiry_year'  => '2028',
+            'trivia'             => null,
+            'vault'              => 'mastercard',
+            'token_last4'        => null,
+            'vault_token'        => 'JDzXk6S3CAjUn8',
+            'name'               => null,
+            'expiry_month'       => null,
+            'expiry_year'        => null,
+            'iin'                => null,
+        ]);
+
+        $this->mockCardVault($callable);
+
+        $testData = $this->testData['testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp'];
+
+        $testData['request']['content']['fund_account']['card'] = [
+            'international' => false,
+            'network'       => Network::MC,
+            'trivia'        => null,
+            'token'         => 'JDzXk6S3CAjUn8',
+            'input_type'    => 'razorpay_token',
+        ];
+
+        $testData['request']['content']['mode'] = Payout\Mode::CARD;
+        $testData['response']['content']['mode'] = Payout\Mode::CARD;
+
+        $testData['response']['content']['fund_account']['card'] = [
+            "iin"           =>  "999999",
+            "last4"         =>  "6781",
+            "network"       =>  "MasterCard",
+            "type"          =>  "credit",
+            "issuer"        =>  "YESB",
+            "sub_type"      =>  "consumer",
+            'input_type'    => 'service_provider_token'
+        ];
+
+        $response = $this->startTest($testData);
+
+        $this->fixtures->stripSign($response['fund_account_id']);
+
+        $cardAttributes = $this->getDbEntity('fund_account', ['id' => $response['fund_account_id']])
+            ->account->getAttributes();
+
+        // Assert that card meta data is null (default value in cards table)
+        $this->assertNull($cardAttributes['iin']);
+        $this->assertNull($cardAttributes['name']);
+        $this->assertNull($cardAttributes['expiry_month']);
+        $this->assertNull($cardAttributes['expiry_year']);
+
+        $this->assertEquals('1', $cardAttributes['trivia']);
+        $this->assertEquals(null, $cardAttributes['token_expiry_month']);
+        $this->assertEquals(2028, $cardAttributes['token_expiry_year']);
+        $this->assertEquals('xxxx', $cardAttributes['last4']);
+        $this->assertEquals('6781', $cardAttributes['token_last4']);
+        $this->assertEquals('461015172', $cardAttributes['token_iin']);
+        $this->assertEquals('0c0e7db24cce4512bc9c71f2dbec7075', $cardAttributes['vault_token']);
+    }
+
+    public function testCreateNeftPayoutWithPgMerchantIdForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['pg_merchant_id'] = 'FgRwk6E3CAjUn8';
+
+        $this->startTest($testData);
+    }
+
+    public function testCreatePayoutWithWithCardHavingRazorpayTokenInputTypeWithInvalidProviderDataForRefundsApp()
+    {
+        $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS,
+                                                Feature\Constants::S2S,
+                                                Feature\Constants::ALLOW_NON_SAVED_CARDS]);
+
+        $callable = function($route, $method, $input) {
+            $response = [
+                'error'   => '',
+                'success' => true,
+            ];
+
+            switch ($route)
+            {
+                case 'tokens/cryptogram':
+                    $response['service_provider_tokens'] = [
+                        [
+                            'type'          => 'network',
+                            'name'          => 'Visa',
+                            'interoperable' => true,
+                            'provider_data' => [
+                                'cryptogram_value'   => 'test',
+                                'token_expiry_month' => 8,
+                                'token_expiry_year'  => 2029,
+                            ],
+                        ]
+                    ];
+
+                    break;
+            }
+
+            return $response;
+        };
+
+        $this->mockCardVault($callable);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['fund_account']['card'] = [
+            'international' => false,
+            'network'       => Network::MC,
+            'trivia'        => null,
+            'token'         => 'JDzXk6S3CAjUn8',
+            'input_type'    => 'razorpay_token',
+        ];
+
+        $testData['request']['content']['mode'] = Payout\Mode::CARD;
 
         $this->startTest($testData);
     }
@@ -8093,17 +8834,7 @@ class PayoutTest extends OAuthTestCase
     {
         $this->ba->appAuthTest($this->config['applications.scrooge.secret']);
 
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::S2S,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
-
-        $this->fixtures->create('feature', [
-            'name'        => Feature\Constants::PAYOUT_TO_CARDS,
-            'entity_id'   => 10000000000000,
-            'entity_type' => 'merchant',
-        ]);
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS, Feature\Constants::S2S]);
 
         $this->mockCardVault();
 
@@ -12036,6 +12767,76 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(($existing_purposes_count + 1), $response['count']);
 
         return $this->testData[__FUNCTION__]['request']['content']['purpose'];
+    }
+
+    public function testCreateMasterCardSendPayoutPurpose()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS]);
+
+        $this->ba->privateAuth();
+
+        $request = [
+            'method'  => 'get',
+            'url'     => '/payouts/purposes',
+            'content' => [
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $masterCardSendPurposes = [
+            [
+                'purpose'      => Payout\Purpose::BUSINESS_DISBURSAL,
+                'purpose_type' => Attempt\Purpose::REFUND
+            ],
+            [
+                'purpose'      => Payout\Purpose::CREDIT_CARD_BILL,
+                'purpose_type' => Attempt\Purpose::REFUND
+            ]
+        ];
+
+        $existingPurposesCount = $response['count'];
+
+        $purposesEncode = array_map('json_encode', $response['items']);
+        $masterCardSendPurposesEncode = array_map('json_encode', $masterCardSendPurposes);
+
+        $this->assertEmpty(array_diff($masterCardSendPurposesEncode, $purposesEncode));
+
+        $this->startTest();
+
+        $this->assertEquals($existingPurposesCount, $response['count']);
+    }
+
+    public function addCustomPayoutBulkPurposeForMasterCardSend()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_TO_CARDS]);
+
+        $existingPurposesCount = $this->getPayoutPurposesCount();
+
+        $request        = [
+            'method'  => 'POST',
+            'url'     => '/payouts/purposes/10000000000000',
+            'content' => [
+                [
+                    'purpose'      => Payout\Purpose::CREDIT_CARD_BILL,
+                    'purpose_type' => Attempt\Purpose::REFUND,
+                ],
+                [
+                    'purpose'      => Payout\Purpose::BUSINESS_DISBURSAL,
+                    'purpose_type' => Attempt\Purpose::REFUND,
+                ],
+                [
+                    'purpose'      => Payout\Purpose::REFUND,
+                    'purpose_type' => Attempt\Purpose::REFUND,
+                ]
+            ]
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(($existingPurposesCount+1), $response['count']);
     }
 
     public function testCreatePayoutPurposeWithInvalidPurpose()

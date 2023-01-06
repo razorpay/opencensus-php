@@ -8,6 +8,7 @@ use RZP\Models\Settings;
 use RZP\Traits\TrimSpace;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Attempt\Purpose as FTAPurpose;
@@ -21,6 +22,8 @@ class Purpose
     const SALARY               = 'salary';
     const UTILITY_BILL         = 'utility bill';
     const VENDOR_BILL          = 'vendor bill';
+    const BUSINESS_DISBURSAL   = 'business disbursal';
+    const CREDIT_CARD_BILL     = 'credit card bill';
     const PAYOUT               = 'payout';
     const INTER_ACCOUNT_PAYOUT = 'inter_account_payout';
     const RZP_FEES             = 'rzp_fees';
@@ -54,6 +57,11 @@ class Purpose
         self::INTER_ACCOUNT_PAYOUT => FTAPurpose::INTER_ACCOUNT_PAYOUT,
     ];
 
+    protected static $masterCardSendPurposeTypeMap = [
+        self::BUSINESS_DISBURSAL => FTAPurpose::REFUND,
+        self::CREDIT_CARD_BILL   => FTAPurpose::REFUND,
+    ];
+
     public static function isInDefaults(string $purpose): bool
     {
         return (in_array($purpose, array_keys(self::$defaultPurposeTypeMap), true) === true);
@@ -67,6 +75,11 @@ class Purpose
     public static function isInInternal(string $purpose = null): bool
     {
         return (in_array($purpose, array_keys(self::$internalPurposeTypeMap), true) === true);
+    }
+
+    public static function isInMasterCardSend(string $purpose = null): bool
+    {
+        return (in_array($purpose, array_keys(self::$masterCardSendPurposeTypeMap), true) === true);
     }
 
     public function setPurposeAndTypeForPayout(Entity $payout,
@@ -114,6 +127,16 @@ class Purpose
             return;
         }
 
+        // These purposes are only available to merchants enabled on payout to cards feature flag.
+        if(($merchant->isFeatureEnabled(Features::PAYOUT_TO_CARDS) === true) and
+           (self::isInMasterCardSend($trimmedPurpose) === true))
+        {
+            $payout->setPurpose($trimmedPurpose);
+            $payout->setPurposeType(self::$masterCardSendPurposeTypeMap[$trimmedPurpose]);
+
+            return;
+        }
+
         // If payout is an internally generated payout and purpose is part of internal purpose, set and return
         if (($isInternal === true) and
             (self::isInInternal($trimmedPurpose) === true))
@@ -150,6 +173,7 @@ class Purpose
             ['payout_id' => $payout->getId()]);
     }
 
+    // Todo: To decide if MCS purposes need to be supported here
     public function setPurposeAndTypeForNewCompositePayoutFlow(Entity $payout, string $purpose)
     {
         if (self::isInDefaults($purpose) === false)
@@ -174,6 +198,12 @@ class Purpose
         }
 
         if (self::isInFinops($trimPurpose) === true)
+        {
+            return;
+        }
+
+        if(($merchant->isFeatureEnabled(Features::PAYOUT_TO_CARDS) === true) and
+           (self::isInMasterCardSend($trimPurpose) === true))
         {
             return;
         }
@@ -229,8 +259,16 @@ class Purpose
         if (in_array($merchantId, $rzpInternalMerchantIds, true) === true)
         {
             $all = $custom + $default + $finops;
-        } else {
+        }
+        else
+        {
             $all = $custom + $default;
+        }
+
+        // Add MasterCard Send purposes if payout to cards feature is enabled.
+        if ($merchant->isFeatureEnabled(Features::PAYOUT_TO_CARDS) === true)
+        {
+            $all = $all + self::$masterCardSendPurposeTypeMap;
         }
 
         $purposes = new PublicCollection;
@@ -286,6 +324,14 @@ class Purpose
                 Entity::PURPOSE);
         }
 
+        if(($merchant->isFeatureEnabled(Features::PAYOUT_TO_CARDS) === true) and
+           (self::isInMasterCardSend(strtolower($trimmedPurpose)) === true))
+        {
+            throw new BadRequestValidationFailureException(
+                "Purpose '$trimmedPurpose' is an internal purpose used for payout to cards and cannot be added.",
+                Entity::PURPOSE);
+        }
+
         $data = [
             $trimmedPurpose => $this->trimSpaces($type)
         ];
@@ -298,6 +344,8 @@ class Purpose
     public function addNewBulkCustom(array $input, Merchant\Entity $merchant)
     {
         $allCustomKeys = array_keys($this->getSettingsAccessor($merchant)->all()->toArray());
+
+        $isPayoutToCardsFeatureEnabled = $merchant->isFeatureEnabled(Features::PAYOUT_TO_CARDS);
 
         $allCustomKeysTrimmed = $this->trimSpaces($allCustomKeys);
 
@@ -312,6 +360,12 @@ class Purpose
             }
             if ((self::isInDefaults(strtolower($trimmedPurpose))) or
                 (array_search_ci($trimmedPurpose, $allCustomKeysTrimmed) !== false)) {
+                continue;
+            }
+
+            if(($isPayoutToCardsFeatureEnabled === true) and
+               (self::isInMasterCardSend(strtolower($trimmedPurpose)) === true))
+            {
                 continue;
             }
 

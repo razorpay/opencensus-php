@@ -187,7 +187,8 @@ class Validator extends Base\Validator
         Entity::SOURCE_DETAILS . '.*.' . PayoutSource::PRIORITY    => 'required|integer|min:1',
         PayoutDetailsEntity::TDS                                   => 'sometimes|filled|array',
         PayoutDetailsEntity::ATTACHMENTS                           => 'sometimes|filled|array',
-        PayoutDetailsEntity::SUBTOTAL_AMOUNT                       => 'sometimes|integer'
+        PayoutDetailsEntity::SUBTOTAL_AMOUNT                       => 'sometimes|integer',
+        Entity::PG_MERCHANT_ID                                     => 'sometimes|unsigned_id',
     ];
 
     protected static $payoutServiceDataMigrationInputRules = [
@@ -1291,17 +1292,31 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateIfCardTokenReceivedForScroogeAppOnly(array $input)
+    protected function validateIfCardDetailsReceivedForScroogeAppOnly(array $input)
     {
+        $isScroogeApp = (new Service)->isScroogeApp();
+
         //For instant refunds migration vault token will be received instead of card details.
         //Allowing vault token only for refund service for now.
         if ((isset($input[Entity::FUND_ACCOUNT]) === true) and
             (isset($input[Entity::FUND_ACCOUNT][Entity::CARD]) === true) and
             (isset($input[Entity::FUND_ACCOUNT][Entity::CARD][Card\Entity::TOKEN]) === true) and
-            ((new Service)->isScroogeApp() === false)) {
+            ($isScroogeApp === false)) {
 
             throw new Exception\BadRequestValidationFailureException(
                 Entity::CARD . '.' . Card\Entity::TOKEN . " is/are not required and should not be sent"
+            );
+        }
+
+        // For instant refunds FTA migration and MasterCard Send integration PG merchant id will be passed
+        // in internal payout creation request for accessing the sub_merchant_id mapping for M2p payouts
+        // that is payout with card mode only.
+        if ((isset($input[Entity::PG_MERCHANT_ID]) === true) and
+            (($input[Entity::MODE] !== Mode::CARD) or
+             ($isScroogeApp === false)))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                Entity::PG_MERCHANT_ID . " is/are not required and should not be sent"
             );
         }
     }
@@ -1332,7 +1347,7 @@ class Validator extends Base\Validator
 
             $this->validatePrioritySequence($input[Entity::SOURCE_DETAILS]);
 
-            $this->validateIfCardTokenReceivedForScroogeAppOnly($input);
+            $this->validateIfCardDetailsReceivedForScroogeAppOnly($input);
         }
     }
 

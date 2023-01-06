@@ -61,6 +61,13 @@ class Validator extends Base\Validator
         Entity::TOKEN_EXPIRY_YEAR  => 'required|integer|digits:4|non_past_year',
     ];
 
+    protected static $fetchCryptogramProviderDataRules = [
+        Entity::TOKEN_NUMBER       => 'required|numeric|luhn|digits_between:12,19',
+        Entity::CRYPTOGRAM_VALUE   => 'sometimes|string|nullable',
+        Entity::TOKEN_EXPIRY_MONTH => 'sometimes|integer|digits_between:1,2|max:12|min:0|nullable',
+        Entity::TOKEN_EXPIRY_YEAR  => 'sometimes|integer|digits:4|non_past_year|nullable',
+    ];
+
     protected static $recurringRules = [
         Entity::IIN                => 'required|numeric|digits:6'
     ];

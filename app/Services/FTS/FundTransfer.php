@@ -4,6 +4,8 @@ namespace RZP\Services\FTS;
 
 use App;
 use Carbon\Carbon;
+use Razorpay\Trace\Logger;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -27,6 +29,7 @@ use RZP\Models\Card\Entity as CardVault;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\BankAccount\Core as BankAccountCore;
+use RZP\Models\PayoutSource\Entity as PayoutSources;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Holidays as TransferHoliday;
 use RZP\Models\Settlement\Holidays as SettlementHoliday;
@@ -402,6 +405,21 @@ class FundTransfer extends Base
             {
                 $this->addRequestMetaToTransferBlock($request, $source);
             }
+
+            if (($source->getMode() === Mode::CARD) and
+                (optional($this->fta->card)->getNetworkCode() === Card\Network::MC))
+            {
+                $variant = $this->app->razorx->getTreatment(
+                    $this->fta->merchant->getId(),
+                    RazorxTreatment::ENABLE_MCS_TRANSFER,
+                    $this->mode,
+                    2);
+
+                if ($variant === 'on')
+                {
+                    $this->addRequestMetaForMasterCardSend($request, $source);
+                }
+            }
         }
 
         if (method_exists($source, 'hasBatch'))
@@ -414,7 +432,89 @@ class FundTransfer extends Base
         return $request;
     }
 
-    protected function addRequestMetaToTransferBlock(array & $request, Payout\Entity $payout) {
+    protected function addRequestMetaForMasterCardSend(&$request, Payout\Entity $payout)
+    {
+        $requestMeta = [];
+
+        // Add MasterCardSend specific parameters to requestMeta block
+        if (in_array($payout->getPurpose(), array_keys(Constants::$mcsPurposeMapping), true) === true)
+        {
+            $requestMeta = Constants::$mcsPurposeMapping[$payout->getPurpose()];
+        }
+        else
+        {
+            $requestMeta = Constants::$mcsPurposeMapping[Constants::OTHERS];
+        }
+
+        $merchantName = $this->getMerchantIdAndNameForMasterCardSend($payout);
+
+        $requestMeta[Constants::MERCHANT_NAME] = $merchantName;
+
+        if (isset($request[Constants::TRANSFER][Constants::REQUEST_META]) === true)
+        {
+            $request[Constants::TRANSFER][Constants::REQUEST_META] += $requestMeta;
+        }
+        else
+        {
+            $request[Constants::TRANSFER][Constants::REQUEST_META] = $requestMeta;
+        }
+    }
+
+    protected function getMerchantIdAndNameForMasterCardSend(Payout\Entity $payout)
+    {
+        $payoutSourceDetails = $payout->getSourceDetails()->toArray();
+
+        $sourceDetails = (empty($payoutSourceDetails) === false) ? end($payoutSourceDetails) : [];
+
+        $merchant = $payout->merchant;
+
+        if ((isset($sourceDetails[PayoutEntity::SOURCE_TYPE]) === true) and
+            ($sourceDetails[PayoutEntity::SOURCE_TYPE] === PayoutSources::REFUND))
+        {
+            try
+            {
+                /** @var \RZP\Models\Payment\Refund\Entity $refund */
+                $refund = $this->repo->refund->findOrFail($sourceDetails[PayoutSources::SOURCE_ID]);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Logger::ERROR,
+                    TraceCode::FETCH_REFUND_ENTITY_FOR_MCS_TRANSFER_FAILED,
+                    [
+                        'payout_source_details' => $sourceDetails,
+                        'payout_id'             => $payout->getId()
+                    ]);
+
+                throw $ex;
+            }
+
+            $merchant = $refund->merchant;
+        }
+
+        $merchantBillingLabel = $merchant->getBillingLabel();
+
+        // Remove all characters other than a-z, A-Z, 0-9 and space
+        $formattedLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $merchantBillingLabel);
+
+        // If formattedLabel is non-empty, pick the first 120 chars, else fallback to 'Razorpay'
+        $formattedLabel = ($formattedLabel ? $formattedLabel : 'Razorpay');
+
+        $merchantName = str_limit($formattedLabel, 120, '');
+
+        $this->trace->info(TraceCode::FETCH_MERCHANT_DATA_FOR_MASTER_CARD_SEND, [
+            'refund_id '  => $sourceDetails[PayoutSources::SOURCE_ID] ?? null,
+            'payout_id'   => $payout->getId(),
+            'merchant_id' => $merchant->getId(),
+            'name'        => $merchantName,
+        ]);
+
+        return $merchantName;
+    }
+
+    protected function addRequestMetaToTransferBlock(array &$request, Payout\Entity $payout)
+    {
 
         if($payout === null)
         {

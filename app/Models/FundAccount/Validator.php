@@ -61,6 +61,7 @@ class Validator extends Base\Validator
         // bajaj finserv cards
         Entity::CARD . '.' . Card\Entity::NETWORK        => 'sometimes:card|string',
         Entity::CARD . '.' . Card\Entity::INTERNATIONAL  => 'sometimes:card|bool',
+        Entity::CARD . '.' . Card\Entity::TRIVIA         => 'sometimes:card|string|nullable',
         Entity::BATCH_ID                                 => 'sometimes|string',
     ];
 
@@ -202,18 +203,20 @@ class Validator extends Base\Validator
         }
 
         if (((isset($value[Card\Entity::INTERNATIONAL]) === true) or
-            (isset($value[Card\Entity::NETWORK]) === true)) and
+             (isset($value[Card\Entity::NETWORK]) === true) or
+             (isset($value[Card\Entity::TRIVIA]) === true)) and
             (isset($value[Card\Entity::TOKEN]) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'card.token should be sent if card.network or card.international is passed.'
+                'card.token should be sent if card.network/card.international/card.trivia is passed.'
             );
         }
     }
 
     public function validateInputTypeForCard($attribute, $value)
     {
-        if (isset($value[Card\Entity::INPUT_TYPE]) === true)
+        if ((isset($value[Card\Entity::INPUT_TYPE]) === true) and
+            (app('basicauth')->isScroogeApp() === false))
         {
             $inputType = $value[Card\Entity::INPUT_TYPE];
 

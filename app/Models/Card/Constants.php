@@ -16,4 +16,7 @@ class Constants
     const FETCH_PAR_VAL       = 'cards/fingerprints';
     const TOKENS_MIGRATE_BULK = 'token/migrate/namespace';
     const FETCH_FINGERPRINTS  = 'card_fingerprints';
+
+    // Token Provider
+    const REFUNDS             = 'refunds';
 }

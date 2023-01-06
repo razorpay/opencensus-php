@@ -269,6 +269,10 @@ class Entity extends Base\PublicEntity
     const CARD_ID     = 'card_id';
     const VAULT_TOKEN = 'vault_token';
 
+    // The parameter is passed by Scrooge to us for M2p payouts, to access the sub_merchant_id
+    // mapping at FTS for M2p.
+    const PG_MERCHANT_ID = 'pg_merchant_id';
+
     // internal
     const IS_INTERNAL = "is_internal";
 

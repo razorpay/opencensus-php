@@ -1025,6 +1025,69 @@ return [
         ],
     ],
 
+    'testCreateCompositePayoutForNonSavedCardFlowAndReceiveProcessedWebhookForMCS' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number' => '2224440041626905',
+                'amount'         => 20000,
+                'currency'       => 'INR',
+                'purpose'        => 'business disbursal',
+                'narration'      => 'Batman',
+                'mode'           => 'card',
+                'notes'          => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account'   => [
+                    'account_type' => 'card',
+                    'card'         => [
+                        'name'         => 'Prashanth YV',
+                        'number'       => '340169570990137',
+                        'cvv'          => '123',
+                        'expiry_month' => 8,
+                        'expiry_year'  => 2025,
+                        'input_type'   => 'card'
+                    ],
+                    'contact'      => [
+                        'name'    => 'Prashanth 98',
+                        'email'   => 'prashanth@razorpay.com',
+                        'contact' => '9999999999',
+                        'type'    => 'employee',
+                        'notes'   => [
+                            'note_key' => 'note_value'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'       => 'payout',
+                'amount'       => 20000,
+                'currency'     => 'INR',
+                'narration'    => 'Batman',
+                'purpose'      => 'business disbursal',
+                'status'       => 'processing',
+                'mode'         => 'card',
+                'notes'        => [
+                    'abc' => 'xyz',
+                ],
+                'fund_account' => [
+                    'entity'       => 'fund_account',
+                    'account_type' => 'card',
+                    'card'         => [
+                        'last4'      => '0137',
+                        'network'    => 'MasterCard',
+                        'type'       => 'credit',
+                        'issuer'     => 'YESB',
+                        'input_type' => 'card',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testCreateCompositePayoutToThirdPartyTokenisedCardThroughBankRails' => [
         'request'   => [
             'method'  => 'POST',

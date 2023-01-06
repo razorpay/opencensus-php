@@ -4364,6 +4364,70 @@ return [
         ],
     ],
 
+    'testCreateCardPayoutWithoutTokenForRefundsApp' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                "account_number"    => '2224440041626905',
+                "amount"            => 1000000,
+                "currency"          => "INR",
+                "mode"              => "NEFT",
+                "purpose"           => "refund",
+                "fund_account"  => [
+                    "account_type"  => "card",
+                    "card" => [
+                        'international' => false,
+                        'network'       => 'MC',
+                        'trivia'        => null,
+                        'input_type'    => 'card',
+                    ],
+                    "contact"  => [
+                        "name"      => "Gaurav Kumar",
+                        "email"     => "gaurav.kumar@example.com",
+                        "contact"   => "9876543210",
+                        "type"      => "employee",
+                        "reference_id"  => "188181269",
+                        "notes"  => [
+                            "notes_key_1"  => "Tea, Earl Grey, Hot",
+                            "notes_key_2"  => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "source_details"  =>  [
+                    [
+                        "source_id"     =>  "HYKmlGHHyEhZuM", // refund id
+                        "source_type"   =>  "refund",
+                        "priority"      =>  1
+                    ]
+                ],
+                "queue_if_low_balance"  => true,
+                "reference_id"          => "can be use to store refund id",
+                "narration"             => "Acme Corp Fund Transfer",
+                "notes"  => [
+                    "notes_key_1"  => "Beam me up Scotty",
+                    "notes_key_2"  => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'card.token should be sent if card.network/card.international/card.trivia is passed.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePayoutWithCardNumberForRefundsApp' => [
         'request' => [
             'method'  => 'POST',
@@ -4468,6 +4532,66 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testCreatePayoutWithWithCardHavingRazorpayTokenInputTypeWithInvalidProviderDataForRefundsApp' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                "account_number"    => '2224440041626905',
+                "amount"            => 1000000,
+                "currency"          => "INR",
+                "mode"              => "NEFT",
+                "purpose"           => "refund",
+                "fund_account"  => [
+                    "account_type"  => "card",
+                    "card" => [],
+                    "contact"  => [
+                        "name"          => "Gaurav Kumar",
+                        "email"         => "gaurav.kumar@example.com",
+                        "contact"       => "9876543210",
+                        "type"          => "employee",
+                        "reference_id"  => "188181269",
+                        "notes"  => [
+                            "notes_key_1"  => "Tea, Earl Grey, Hot",
+                            "notes_key_2"  => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "source_details"  =>  [
+                    [
+                        "source_id"     =>  "HYKmlGHHyEhZuM", // refund id
+                        "source_type"   =>  "refund",
+                        "priority"      =>  1
+                    ]
+                ],
+                "queue_if_low_balance"  => true,
+                "reference_id"          => "can be use to store refund id",
+                "narration"             => "Acme Corp Fund Transfer",
+                "notes"  => [
+                    "notes_key_1"  => "Beam me up Scotty",
+                    "notes_key_2"  => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The token number field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreatePayoutWithVaultTokenAndDummyNameForRefundsApp' => [
         'request' => [
             'method'  => 'POST',
@@ -4570,6 +4694,71 @@ return [
                 "cancellation_user"     =>  []
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testCreateNeftPayoutWithPgMerchantIdForRefundsApp' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payouts_internal',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'content' => [
+                "account_number"    => '2224440041626905',
+                "amount"            => 1000000,
+                "currency"          => "INR",
+                "mode"              => "NEFT",
+                "purpose"           => "refund",
+                "fund_account"  => [
+                    "account_type"  => "card",
+                    "card" => [
+                        'international' => false,
+                        'network'       => 'MC',
+                        'trivia'        => null,
+                        'token'         => 'JDzXk6S3CAjUn8',
+                        'input_type'    => 'razorpay_token',
+                    ],
+                    "contact"  => [
+                        "name"          => "Gaurav Kumar",
+                        "email"         => "gaurav.kumar@example.com",
+                        "contact"       => "9876543210",
+                        "type"          => "employee",
+                        "reference_id"  => "188181269",
+                        "notes"  => [
+                            "notes_key_1"  => "Tea, Earl Grey, Hot",
+                            "notes_key_2"  => "Tea, Earl Grey... decaf."
+                        ]
+                    ]
+                ],
+                "source_details"  =>  [
+                    [
+                        "source_id"     =>  "HYKmlGHHyEhZuM", // refund id
+                        "source_type"   =>  "refund",
+                        "priority"      =>  1
+                    ]
+                ],
+                "queue_if_low_balance"  => true,
+                "reference_id"          => "can be use to store refund id",
+                "narration"             => "Acme Corp Fund Transfer",
+                "notes"  => [
+                    "notes_key_1"  => "Beam me up Scotty",
+                    "notes_key_2"  => "Engage"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'pg_merchant_id is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -10575,6 +10764,31 @@ return [
                 'entity' => 'collection'
             ],
             'status_code' => 200,
+        ],
+    ],
+
+    'testCreateMasterCardSendPayoutPurpose' => [
+        'request' => [
+            'method'  => 'post',
+            'url'     => '/payouts/purposes',
+            'content' => [
+                'purpose'   => 'business disbursal',
+                'purpose_type'  => 'refund'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Purpose 'business disbursal' is an internal purpose used " .
+                                     "for payout to cards and cannot be added.",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 

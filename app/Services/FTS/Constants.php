@@ -2,6 +2,8 @@
 
 namespace RZP\Services\FTS;
 
+use RZP\Models\Payout\Purpose;
+
 final class Constants
 {
     const ID                             = 'id';
@@ -218,6 +220,19 @@ final class Constants
 
     const OTP                            = "otp";
 
+    const TRANSACTION_PURPOSE            = "transaction_purpose";
+
+    const PAYMENT_TYPE                   = "payment_type";
+
+    const MERCHANT_NAME                  = "merchant_name";
+
+    const OTHERS                          = "others";
+
+    // Payment Types for Master Card Send
+    const BDB                            = "BDB";
+
+    const CBP                            = "CBP";
+
     public static function getProducts(): array
     {
         return [
@@ -230,4 +245,30 @@ final class Constants
             Constants::CA_PAYOUT,
         ];
     }
+
+    /**
+     * We are associating the purpose of the payout with transaction purpose and payment type
+     * parameters, which are sent in MasterCardSend transfer request.
+     */
+    public static $mcsPurposeMapping = [
+        Purpose::BUSINESS_DISBURSAL => [
+            self::TRANSACTION_PURPOSE => '08',
+            self::PAYMENT_TYPE        => self::BDB
+        ],
+        Purpose::CREDIT_CARD_BILL   => [
+            self::TRANSACTION_PURPOSE => '08',
+            self::PAYMENT_TYPE        => self::CBP
+        ],
+        // This will change after MasterCard direct integration supports Refunds
+        Purpose::REFUND             => [
+            self::TRANSACTION_PURPOSE => '08',
+            self::PAYMENT_TYPE        => self::BDB
+        ],
+        // Keeping it as BDB for all other purposes which merchants select while
+        // initiating a payout
+        Constants::OTHERS           => [
+            self::TRANSACTION_PURPOSE => '08',
+            self::PAYMENT_TYPE        => self::BDB
+        ]
+    ];
 }

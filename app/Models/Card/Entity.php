@@ -102,7 +102,7 @@ class Entity extends Base\PublicEntity
     const TOKEN                  = 'token';
     const TOKEN_ID               = 'token_id';
     const INPUT_TYPE             = 'input_type';
-    const BU_NAMESPACE           = 'bu_namespace';
+    const TOKEN_NUMBER           = 'token_number';
 
     const RELATION_GLOBAL_CARD = 'globalCard';
 

@@ -233,6 +233,9 @@ class Base extends BaseCore
 
         $this->isWorkflowEnabled = $this->isWorkflowApplicable($skipWorkflow, $enableWorkflowForInternalContact);
 
+        // Todo:: To use this parameter in PS for Scrooge FTA Deprecation
+        unset($input[Entity::PG_MERCHANT_ID]);
+
         $payoutViaMicroservice = $this->createPayoutViaMicroservice($input);
 
         unset($input[Entity::SKIP_WORKFLOW]);

@@ -522,6 +522,9 @@ final class RazorxTreatment
     // Experiment to use secure context for OTP generation
     const SECURE_OTP_CONTEXT = 'secure_otp_context';
 
+    // Experiment to add request metaData in FTS request for MasterCard Send
+    const ENABLE_MCS_TRANSFER = 'enable_mcs_transfer';
+
     // Experiment to block pan details in html code
     const BLOCK_PAN_DETAIL_IN_AUTHLINK_HTML = 'block_pan_detail_in_authlink_html';
 

@@ -1040,24 +1040,60 @@ class Core extends Base\Core
         return $input;
     }
 
-    public function fillCardDetailsWithVaultToken($input): array
+    public function fillCardDetailsWithVaultToken($input, $merchant): array
     {
-        $cardNumber = null;
-
         $vaultToken = $input[Entity::TOKEN];
+
+        $inputType = $input[Entity::INPUT_TYPE] ?? Card\InputType::CARD;
 
         $network = (isset($input[Entity::NETWORK]) === true) ? Network::getFullName($input[Entity::NETWORK]) : null;
 
         $additionalInput = [
             Card\Entity::NETWORK       => $network,
-            Card\Entity::INTERNATIONAL => $input[Entity::INTERNATIONAL] ?? null
+            Card\Entity::INTERNATIONAL => $input[Entity::INTERNATIONAL] ?? null,
+            Card\Entity::TRIVIA        => $input[Entity::TRIVIA] ?? null
         ];
+
+        return $this->getCardInputBasedOnInputType($inputType, $vaultToken, $merchant, $additionalInput);
+    }
+
+    public function getCardInputBasedOnInputType($inputType, $vaultToken, $merchant, $additionalInput)
+    {
+        $cardInput = [];
+
+        switch ($inputType)
+        {
+            case Card\InputType::CARD:
+                $cardInput = $this->getCardInputForCardInputType($vaultToken, $additionalInput, $inputType);
+
+                break;
+
+            case Card\InputType::SERVICE_PROVIDER_TOKEN:
+                $cardInput = $this->getCardInputForServiceProviderTokenInputType($vaultToken, $additionalInput, $inputType);
+
+                break;
+
+            case Card\InputType::RAZORPAY_TOKEN:
+                $cardInput = $this->getCardInputForRazorpayTokenInputType($vaultToken, $merchant, $inputType);
+
+                break;
+
+            default:
+                throw new Exception\LogicException('Invalid Input type');
+        }
+
+        $this->fillAdditionalDetailsFromCardEntity($cardInput, $vaultToken);
+
+        return $cardInput;
+    }
+
+    protected function getCardInputForCardInputType($vaultToken, $additionalInput, $inputType)
+    {
+        $cardNumber = null;
 
         try
         {
-            $cardVault = (new Card\CardVault);
-
-            $cardNumber = $cardVault->getCardNumber($vaultToken, $additionalInput);
+            $cardNumber = (new Card\CardVault)->getCardNumber($vaultToken, $additionalInput);
         }
         catch (\Throwable $e)
         {
@@ -1067,21 +1103,98 @@ class Core extends Base\Core
                 TraceCode::CARD_VAULT_REQUEST,
                 [
                     'token'         => $vaultToken,
-                    'message'       => 'failed to get card number from vault token'
+                    'message'       => 'failed to get card number from vault token',
+                    'input_type'    => $inputType
                 ]
             );
 
             throw $e;
         }
 
-        //Add card number
-        $input[Entity::NUMBER] = $cardNumber;
+        return [
+            Card\Entity::NUMBER     => $cardNumber,
+            Card\Entity::INPUT_TYPE => $inputType
+        ];
+    }
 
-        //Unset vault token, network and international as we have fetched card number
-        unset($input[Entity::TOKEN]);
-        unset($input[Entity::INTERNATIONAL]);
-        unset($input[Entity::NETWORK]);
+    protected function getCardInputForServiceProviderTokenInputType($vaultToken, $additionalInput, $inputType)
+    {
+        $tokenNumber = null;
 
+        try
+        {
+            $tokenNumber = (new Card\CardVault)->getCardNumber($vaultToken, $additionalInput);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::CARD_VAULT_REQUEST,
+                [
+                    'token'         => $vaultToken,
+                    'message'       => 'failed to get token number from vault token',
+                    'input_type'    => $inputType
+                ]
+            );
+
+            throw $e;
+        }
+
+        return [
+            Card\Entity::NUMBER         => $tokenNumber,
+            Card\Entity::INPUT_TYPE     => $inputType,
+            Card\Entity::TOKEN_PROVIDER => Constants::REFUNDS
+        ];
+    }
+
+    protected function getCardInputForRazorpayTokenInputType($vaultToken, $merchant, $inputType)
+    {
+        $response = null;
+
+        try
+        {
+            $response = (new Card\CardVault)->fetchCryptogram($vaultToken, $merchant, true);
+
+            $this->validateProviderFields($response);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::CRITICAL,
+                TraceCode::CARD_VAULT_REQUEST,
+                [
+                    'token'         => $vaultToken,
+                    'message'       => 'failed to get token number from vault token',
+                    'input_type'    => $inputType
+                ]
+            );
+
+            throw $e;
+        }
+
+        $providerData = $response[Token\Entity::SERVICE_PROVIDER_TOKENS][0][Token\Entity::PROVIDER_DATA];
+
+        $cardInput = [
+            Card\Entity::NUMBER         => $providerData[Token\Entity::TOKEN_NUMBER],
+            Card\Entity::INPUT_TYPE     => Card\InputType::SERVICE_PROVIDER_TOKEN,
+            Card\Entity::TOKEN_PROVIDER => Constants::REFUNDS
+        ];
+
+        // Consume token_expiry dates from fetchCryptogram API if and only both are present in the response.
+        if ((isset($providerData[Card\Entity::TOKEN_EXPIRY_MONTH]) === true) and
+            (isset($providerData[Card\Entity::TOKEN_EXPIRY_YEAR]) === true))
+        {
+            $cardInput[Card\Entity::EXPIRY_MONTH] = $providerData[Card\Entity::TOKEN_EXPIRY_MONTH];
+            $cardInput[Card\Entity::EXPIRY_YEAR]  = $providerData[Card\Entity::TOKEN_EXPIRY_YEAR];
+        }
+
+        return $cardInput;
+    }
+
+    protected function fillAdditionalDetailsFromCardEntity(&$cardInput, $vaultToken)
+    {
         //fetch other card details like expiry month/year etc. from vault token.
         $card = $this->repo->card->fetchLatestCardWithVaultTokenOnly($vaultToken);
 
@@ -1095,26 +1208,73 @@ class Core extends Base\Core
                 ]
             );
 
-            return $input;
+            return;
         }
 
         //fill card details into input array
-        if (isset($card[Card\Entity::NAME]) === true)
+        if (empty($card[Card\Entity::NAME]) === false)
         {
-            $input[Card\Entity::NAME] = $card[Card\Entity::NAME];
+            $cardInput[Card\Entity::NAME] = $card[Card\Entity::NAME];
         }
 
-        if (isset($card[Card\Entity::EXPIRY_MONTH]) === true)
+        // Rerouting all the Scrooge flows to either card or Service_provider_token input_type flow.
+        switch($cardInput[Card\Entity::INPUT_TYPE])
         {
-            $input[Card\Entity::EXPIRY_MONTH] = $card[Card\Entity::EXPIRY_MONTH];
-        }
+            case Card\InputType::CARD:
+                if (isset($card[Card\Entity::EXPIRY_MONTH]) === true)
+                {
+                    $cardInput[Card\Entity::EXPIRY_MONTH] = $card[Card\Entity::EXPIRY_MONTH];
+                }
 
-        if (isset($card[Card\Entity::EXPIRY_YEAR]) === true)
+                if (isset($card[Card\Entity::EXPIRY_YEAR]) === true)
+                {
+                    $cardInput[Card\Entity::EXPIRY_YEAR] = $card[Card\Entity::EXPIRY_YEAR];
+                }
+
+                break;
+
+            case Card\InputType::SERVICE_PROVIDER_TOKEN:
+                if ((isset($card[Card\Entity::TOKEN_EXPIRY_MONTH]) === true) and
+                    (isset($cardInput[Card\Entity::EXPIRY_MONTH]) === false))
+                {
+                    $cardInput[Card\Entity::EXPIRY_MONTH] = $card[Card\Entity::TOKEN_EXPIRY_MONTH];
+                }
+
+                if ((isset($card[Card\Entity::TOKEN_EXPIRY_YEAR]) === true) and
+                    (isset($cardInput[Card\Entity::EXPIRY_YEAR]) === false))
+                {
+                    $cardInput[Card\Entity::EXPIRY_YEAR] = $card[Card\Entity::TOKEN_EXPIRY_YEAR];
+                }
+
+            break;
+        }
+    }
+
+    protected function validateProviderFields($response)
+    {
+        if ((empty($response) === false) and
+            (isset($response[Token\Entity::SERVICE_PROVIDER_TOKENS]) === true))
         {
-            $input[Card\Entity::EXPIRY_YEAR] = $card[Card\Entity::EXPIRY_YEAR];
-        }
+            $serviceProviderTokens = $response[Token\Entity::SERVICE_PROVIDER_TOKENS];
 
-        return $input;
+            if (isset($serviceProviderTokens[0]['provider_data']) === true)
+            {
+                (new Validator())->setStrictFalse()->validateInput(
+                    'fetch_cryptogram_provider_data', $serviceProviderTokens[0]['provider_data']);
+            }
+            else
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Provider Data is missing from service_provider_tokens.'
+                );
+            }
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Received invalid response from fetch Cryptogram API.'
+            );
+        }
     }
 
     protected function getTokenizedCardResponseFromVault($input, $merchant)
