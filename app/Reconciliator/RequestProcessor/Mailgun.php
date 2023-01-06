@@ -149,11 +149,13 @@ class Mailgun extends Base
 
         $gateway = $this->gateway;
 
+        $emailRecipient = $this->inputDetails[self::TO];
+
         /**
          * if gateway is added in the config then fetch details of file and call the s3 bucket upload flow
          */
 
-        if($this->validator->isAutomaticFetchingEnabledForGateway($gateway)){
+        if($this->validator->isAutomaticFetchingEnabledForGateway($gateway, $emailRecipient)){
 
             $date = new DateTime();
             $result = $date->modify("-1 days")->format('Y-m-d');

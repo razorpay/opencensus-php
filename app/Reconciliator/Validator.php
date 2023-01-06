@@ -205,6 +205,8 @@ class Validator extends Base\Core
 
     const AUTOMATIC_FETCHING_ENABLED_GATEWAYS = [RequestProcessor\Base::NETBANKING_SBI];
 
+    const WHITELISTED_EMAIL_FOR_ART = ["finances.recon@mg.razorpay.com"];
+
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
     const SUPPORTED_ZIP_EXTENSIONS = ['zip', '7z'];
 
@@ -1147,8 +1149,8 @@ class Validator extends Base\Core
         $this->$func($attribute, $value, $parameters);
     }
 
-    public function isAutomaticFetchingEnabledForGateway($gateway){
-        if(in_array($gateway, self::AUTOMATIC_FETCHING_ENABLED_GATEWAYS)){
+    public function isAutomaticFetchingEnabledForGateway($gateway, $emailRecipient){
+        if(in_array($gateway, self::AUTOMATIC_FETCHING_ENABLED_GATEWAYS) && in_array($emailRecipient, self::WHITELISTED_EMAIL_FOR_ART)){
             return true;
         }
         return false;

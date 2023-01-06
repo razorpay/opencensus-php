@@ -62,6 +62,8 @@ class Service extends Base\Service
 
     const NAME = 'name';
 
+    const BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN = ["finances.recon@mg.razorpay.com"];
+
     protected $core;
 
     protected $messenger;
@@ -1265,6 +1267,13 @@ class Service extends Base\Service
         $gatewayReconciliator = $requestProcessor->getGatewayReconciliator();
 
         $orchestrator = new Orchestrator($gateway, $gatewayReconciliator);
+
+        $recipient = $reconDetails[RequestProcessor\Base::INPUT_DETAILS]['to'] ?? [];
+
+        if($source === RequestProcessor\Base::MAILGUN && in_array($recipient, self::BLACKLISTED_EMAIL_FOR_API_AUTO_RECON_VIA_MAILGUN))
+        {
+            return;
+        }
 
         //
         // This is a temporary logic. Plan is to move all gateway reconciliation
