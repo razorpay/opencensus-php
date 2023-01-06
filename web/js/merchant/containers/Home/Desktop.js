@@ -1064,17 +1064,18 @@ class AnalyticsDesktop extends Component {
                 <div className="activity-container">
                   <p className="content-title section-title">{recentActivityTitle}</p>
                   <div className="content">
-                    <LazyLoad height={100} offset={50} once>
-                      <RecentActivity
-                        startDate={startDate}
-                        endDate={endDate}
-                        sectionTitle={recentActivityTitle}
-                        onFetchPayments={onFetchPayments}
-                        user={this.props.user}
-                        currentBalance={current_balance}
-                        onSelect={this.showOndemandSettlementForm}
-                      />
-                    </LazyLoad>
+                    {/* <LazyLoad height={100} offset={50} once> */}
+                    {/* TODO: Load lazy once onFetchPayments api resolve for Onboarding card */}
+                    <RecentActivity
+                      startDate={startDate}
+                      endDate={endDate}
+                      sectionTitle={recentActivityTitle}
+                      onFetchPayments={onFetchPayments}
+                      user={this.props.user}
+                      currentBalance={current_balance}
+                      onSelect={this.showOndemandSettlementForm}
+                    />
+                    {/* </LazyLoad> */}
                   </div>
                 </div>
               )}
