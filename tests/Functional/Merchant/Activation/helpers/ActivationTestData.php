@@ -3845,6 +3845,42 @@ return [
         'status_code' => 200,
     ],
 
+    'testMerchantActivationOtpSendBanking'  => [
+        'request'  => [
+            'url'     => '/merchant/activation/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'hello123@c.com',
+                'token'                 => 'MOCK_TOKEN1234'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin' =>  config('applications.banking_service_url')
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+        'status_code' => 200
+    ],
+
+
+
+    'testMerchantActivationOtpSendPrimary'  => [
+        'request'  => [
+            'url'     => '/merchant/activation/otp/send',
+            'method'  => 'POST',
+            'content' => [
+                'email'                 => 'hello123@c.com',
+                'token'                 => 'MOCK_TOKEN1234'
+            ],
+        ],
+        'response' => [
+            'content' => []
+        ],
+        'status_code' => 200
+    ],
+
+
     'testInstantActivationWithInvalidActivationFormMilestone' => [
         'request'     => [
             'method'  => 'POST',

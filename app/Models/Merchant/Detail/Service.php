@@ -371,7 +371,13 @@ class Service extends Base\Service
             $this->app['segment-analytics']->pushIdentifyEvent($merchant, $properties);
         }
 
-        return (new User\Service())->sendOtpEmailVerification($this->merchant, $this->user, $input);
+        $requestOriginProduct = $this->auth->getRequestOriginProduct();
+
+        $isProductBanking = ($requestOriginProduct === Product::BANKING);
+
+        $inputData = ["isRequestFromXVerifyEmail" => $isProductBanking];
+
+        return (new User\Service())->sendOtpEmailVerification($this->merchant, $this->user, $input, $inputData);
     }
 
     public function saveMerchantDetailsForActivation(array $input)

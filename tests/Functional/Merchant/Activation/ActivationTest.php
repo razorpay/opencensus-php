@@ -21,6 +21,7 @@ use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Models\Merchant\Store\Core as StoreCore;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail;
+use RZP\Services\Mock\Raven;
 use RZP\Services\RazorXClient;
 use RZP\Services\HubspotClient;
 use RZP\Models\Currency\Currency;
@@ -4994,6 +4995,97 @@ class ActivationTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testMerchantActivationOtpSendBanking()
+    {
+        $smsPayload = [
+            'success'    => true,
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => '10000000000000:10000000000000:x_verify_email:MOCK_TOKEN1234',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')->with([
+            'receiver'  => 'hello123@c.com',
+            'context'   => '10000000000000:10000000000000:x_verify_email:MOCK_TOKEN1234',
+            'source'    => 'api',
+            'expires_at' => 20
+        ])->willReturn($smsPayload);
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+            'id' => '10000000000000',
+            'email' => null,
+        ]);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'activation_status' => 'activated'
+            ]);
+
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            ['activated' => true, 'business_banking' => true,'email' => null, 'signup_source' => 'banking']);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+        $this->ba->addXOriginHeader();
+
+        $response = $this->startTest();
+        $this->assertNotEmpty($response['token']);
+    }
+
+
+    public function testMerchantActivationOtpSendPrimary()
+    {
+        $smsPayload = [
+            'success'    => true,
+            'otp'        => '0007',
+            'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            'context'    => '10000000000000:10000000000000:verify_email:MOCK_TOKEN1234',
+        ];
+
+        $ravenMock = $this->getMockBuilder(Raven::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['generateOtp'])
+            ->getMock();
+
+        $this->app->instance('raven', $ravenMock);
+
+        $this->app['raven']->method('generateOtp')->with([
+            'receiver'  => 'hello123@c.com',
+            'context'   => '10000000000000:10000000000000:verify_email:MOCK_TOKEN1234',
+            'source'    => 'api',
+            'expires_at' => 20
+        ])->willReturn($smsPayload);
+
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
+            'contact_mobile' => '8888888888',
+            'id' => '10000000000000',
+            'email' => null,
+        ]);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'activation_status' => 'activated'
+            ]);
+
+        $this->fixtures->edit('merchant',
+            '10000000000000',
+            ['activated' => true, 'business_banking' => false,'email' => null, 'signup_source' => 'primary']);
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000', $user['id']);
+        $response = $this->startTest();
+        $this->assertNotEmpty($response['token']);
+
+    }
+
     protected function getExpectedArraysForWorkflowObserverTestCases($arrayType) : array
     {
         if ($arrayType === self::MERCHANT_ACTIVATED_WORKFLOW_DATA)
@@ -5242,6 +5334,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->assertEquals('success', $consentDetail['status']);
     }
+
 
     public function testKafkaFailureForLegalDocument()
     {
