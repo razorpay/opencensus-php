@@ -699,11 +699,14 @@ class IciciBankingAccountStatementTest extends TestCase
     /**
      * Case where the response from ICICI is success
      */
-    public function testIciciAccountStatementCase1()
+    public function testIciciAccountStatementCase1($mockedResponse = null)
     {
-        $mockedResponse = $this->getIciciDataResponse();
+        if ($mockedResponse === null)
+        {
+            $mockedResponse = $this->getIciciDataResponse();
 
-        $this->setMozartMockResponse($mockedResponse);
+            $this->setMozartMockResponse($mockedResponse);
+        }
 
         $basdBeforeTest = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
 
@@ -3086,7 +3089,38 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->app->instance('banking_account_service', $mock);
 
-        $this->testIciciAccountStatementCase1();
+        //mock Mozart
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $partialMozartRequest = [
+            F::SOURCE_ACCOUNT => [
+                F::ACCOUNT_NUMBER => '2224440041626905',
+                F::CREDENTIALS => [
+                    //For BaaS merchants, all creds are to be used from BAS response
+                    F::CORP_ID                  => 'RAZORPAY12345',
+                    F::USER_ID                  => 'USER12345',
+                    F::AGGR_ID                  => 'BAAS0123',
+                    F::URN                      => 'URN12345',
+                    F::ACCOUNT_STATEMENT_APIKEY => 'wfeg34t34t34t3r43t34GG',
+                ]
+            ],
+            F::MERCHANT_ID => '10000000000000',
+        ];
+
+        $mozartResponse = $this->getIciciDataResponse();
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+                   ->withArgs(function($namespace, $gateway, $action, $input) use ($partialMozartRequest)
+                   {
+                       $this->assertArraySelectiveEquals($partialMozartRequest, $input);
+
+                       return true;
+
+                   })->andReturn($mozartResponse);
+
+        $this->app->instance('mozart', $mozartServiceMock);
+
+        $this->testIciciAccountStatementCase1($mozartResponse);
     }
 
     public function testICICIStatementShouldNotFetchForBaasMerchantsWhenCredentialsIsNotReturnedByBas()
@@ -3135,6 +3169,41 @@ class IciciBankingAccountStatementTest extends TestCase
     {
         (new AdminService)->setConfigKeys([ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA => false]);
 
-        $this->testIciciAccountStatementCase1();
+        //Only mocking Mozart as default mock for BAS is enough for non-BaaS flow
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $aggrId = $this->app['config']['banking_account']['icici']['aggr_id'];
+        $accountStatementApiKey = $this->app['config']['banking_account']['icici']['beneficiary_api_key'];
+
+        $partialMozartRequest = [
+            F::SOURCE_ACCOUNT => [
+                F::ACCOUNT_NUMBER => '2224440041626905',
+                F::CREDENTIALS => [
+                    //First three creds are from the method fetchBankingCredentials() in Mock/BankingAccountService.php
+                    F::CORP_ID                  => 'RAZORPAY12345',
+                    F::USER_ID                  => 'USER12345',
+                    F::URN                      => 'URN12345',
+                    F::AGGR_ID                  => $aggrId,
+                    F::ACCOUNT_STATEMENT_APIKEY => $accountStatementApiKey,
+                ],
+            ],
+        ];
+
+        $mozartResponse = $this->getIciciDataResponse();
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+                   ->withArgs(function($namespace, $gateway, $action, $input) use ($partialMozartRequest)
+                   {
+                       $this->assertArraySelectiveEquals($partialMozartRequest, $input);
+
+                       $this->assertArrayNotHasKey(F::MERCHANT_ID, $input);
+
+                       return true;
+
+                   })->andReturn($mozartResponse);
+
+        $this->app->instance('mozart', $mozartServiceMock);
+
+        $this->testIciciAccountStatementCase1($mozartResponse);
     }
 }

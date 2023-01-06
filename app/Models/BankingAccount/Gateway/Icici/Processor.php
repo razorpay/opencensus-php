@@ -77,14 +77,6 @@ class Processor extends BaseProcessor
         $aggrName          = $this->config['banking_account']['icici'][Fields::AGGR_NAME_CONFIG];
         $beneficiaryApikey = $this->config['banking_account']['icici'][Fields::BENEFICIARY_API_KEY_CONFIG];
 
-        if ((array_key_exists(Icici\Fields::CREDENTIALS, $this->accountCredentials) === true) and
-            ($this->accountCredentials[Icici\Fields::CREDENTIALS] !== null))
-        {
-            $aggrId            = $this->accountCredentials[Icici\Fields::CREDENTIALS][Icici\Fields::AGGR_ID];
-            $aggrName          = $this->accountCredentials[Icici\Fields::CREDENTIALS][Icici\Fields::AGGR_NAME];
-            $beneficiaryApikey = $this->accountCredentials[Icici\Fields::CREDENTIALS][Icici\Fields::BENEFICIARY_API_KEY];
-        }
-
         $data = [
             Fields::SOURCE_ACCOUNT => [
                 Fields::SOURCE_ACCOUNT_NUMBER => $this->accountNumber,
@@ -97,8 +89,13 @@ class Processor extends BaseProcessor
                     Fields::BENEFICIARY_API_KEY => $beneficiaryApikey,
                 ],
             ],
-            Fields::MERCHANT_ID => $this->merchantId
         ];
+
+        if ((array_key_exists(Icici\Fields::CREDENTIALS, $this->accountCredentials) === true) and
+            ($this->accountCredentials[Icici\Fields::CREDENTIALS] !== null))
+        {
+            $this->modifyRequestForMerchantsOnBaasFlow($data);
+        }
 
         return $data;
     }
@@ -320,5 +317,20 @@ class Processor extends BaseProcessor
                 ]
             );
         }
+    }
+
+    public function modifyRequestForMerchantsOnBaasFlow(&$data)
+    {
+        //Use aggrId, aggrName and beneficiaryApikey from BAS instead of credstash
+        $aggrId            = $this->accountCredentials[Icici\Fields::CREDENTIALS][Icici\Fields::AGGR_ID];
+        $aggrName          = $this->accountCredentials[Icici\Fields::CREDENTIALS][Icici\Fields::AGGR_NAME];
+        $beneficiaryApikey = $this->accountCredentials[Icici\Fields::CREDENTIALS][Icici\Fields::BENEFICIARY_API_KEY];
+
+        $data[Fields::SOURCE_ACCOUNT][Fields::CREDENTIALS][Fields::AGGR_ID]             = $aggrId;
+        $data[Fields::SOURCE_ACCOUNT][Fields::CREDENTIALS][Fields::AGGR_NAME]           = $aggrName;
+        $data[Fields::SOURCE_ACCOUNT][Fields::CREDENTIALS][Fields::BENEFICIARY_API_KEY] = $beneficiaryApikey;
+
+        //append merchant_id in the request as well
+        $data[Fields::MERCHANT_ID] = $this->merchantId;
     }
 }

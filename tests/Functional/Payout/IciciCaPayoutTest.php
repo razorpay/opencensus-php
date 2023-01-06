@@ -3286,6 +3286,52 @@ class IciciCaPayoutTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testCorrectRequestPayloadIsSentToMozartForBaaSMerchantsDuringBalanceFetch()
+    {
+        $this->mockBASCredentialsFetchForBaaSMerchants();
+
+        $this->mockMozartForBaaSMerchants(100);
+
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                       ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
+
+        $this->setupIciciDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                      ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(10000, $basDetailsAfterCronRuns->getGatewayBalance());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getGatewayBalanceChangeAt());
+    }
+
+    public function testCorrectRequestPayloadIsSentToMozartForNonBaaSMerchantsDuringBalanceFetch()
+    {
+        $this->mockMozartForNonBaaSMerchants(2000);
+
+        $basDetailsBeforeCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                       ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(0, $basDetailsBeforeCronRuns->getBalanceLastFetchedAt());
+
+        $this->setupIciciDispatchGatewayBalanceUpdateForMerchants();
+
+        /** @var Details\Entity $basDetailsAfterCronRuns */
+        $basDetailsAfterCronRuns = $this->getDbEntity('banking_account_statement_details',
+                                                      ['account_number' => 2224440041626905]);
+
+        $this->assertEquals(200000, $basDetailsAfterCronRuns->getGatewayBalance());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getBalanceLastFetchedAt());
+
+        $this->assertNotNull($basDetailsAfterCronRuns->getGatewayBalanceChangeAt());
+    }
+
     public function mockFTSFundTransfer()
     {
         $ftsMock = Mockery::mock('RZP\Services\FTS\FundTransfer', [$this->app])->makePartial();
@@ -3314,4 +3360,97 @@ class IciciCaPayoutTest extends TestCase
 
         $this->app->instance('banking_account_service', $basMock);
     }
+
+    public function mockMozartForBaaSMerchants($balanceToReturn)
+    {
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $partialMozartRequest = [
+            Fields::SOURCE_ACCOUNT => [
+                Fields::SOURCE_ACCOUNT_NUMBER => '2224440041626905',
+                Icici\Fields::CREDENTIALS     => [
+                    Icici\Fields::CORP_ID             => 'RAZORPAY12345',
+                    Icici\Fields::CORP_USER           => 'USER12345',
+                    Icici\Fields::URN                 => 'URN12345',
+                    Icici\Fields::AGGR_ID             => 'BAAS0123',
+                    Icici\Fields::AGGR_NAME           => 'ACMECORP',
+                    Icici\Fields::BENEFICIARY_API_KEY => 'wfeg34t34t34t3r43t34GG',
+                ],
+            ],
+            Icici\Fields::MERCHANT_ID => '10000000000000',
+        ];
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+                          ->withArgs(function($namespace,
+                                              $gateway,
+                                              $action,
+                                              $input,
+                                              $version,
+                                              $useMozartMappedInternalErrorCode,
+                                              $timeout,
+                                              $connectTimeout) use ($partialMozartRequest)
+                          {
+
+                              $this->assertArraySelectiveEquals($partialMozartRequest, $input);
+
+                              return true;
+
+                          })->andReturn([
+                                            Icici\Fields::DATA => [
+
+                                                Icici\Fields::BALANCE => $balanceToReturn
+                                            ]
+                                        ]);
+
+        $this->app->instance('mozart', $mozartServiceMock);
+    }
+
+    public function mockMozartForNonBaaSMerchants($balanceToReturn)
+    {
+        $aggrId            = $this->app['config']['banking_account']['icici']['aggr_id'];
+        $aggrName          = $this->app['config']['banking_account']['icici']['aggr_name'];
+        $beneficiaryApikey = $this->app['config']['banking_account']['icici']['beneficiary_api_key'];
+
+        $mozartServiceMock = Mockery::mock(Mozart::class, [$this->app])->makePartial();
+
+        $partialMozartRequest = [
+            Fields::SOURCE_ACCOUNT => [
+                Fields::SOURCE_ACCOUNT_NUMBER => '2224440041626905',
+                Icici\Fields::CREDENTIALS     => [
+                    Icici\Fields::CORP_ID             => 'RAZORPAY12345',
+                    Icici\Fields::CORP_USER           => 'USER12345',
+                    Icici\Fields::URN                 => 'URN12345',
+                    Icici\Fields::AGGR_ID             => $aggrId,
+                    Icici\Fields::AGGR_NAME           => $aggrName,
+                    Icici\Fields::BENEFICIARY_API_KEY => $beneficiaryApikey,
+                ],
+            ],
+        ];
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+                          ->withArgs(function($namespace,
+                                              $gateway,
+                                              $action,
+                                              $input,
+                                              $version,
+                                              $useMozartMappedInternalErrorCode,
+                                              $timeout,
+                                              $connectTimeout) use ($partialMozartRequest)
+                          {
+
+                              $this->assertArraySelectiveEquals($partialMozartRequest, $input);
+
+                              $this->assertArrayNotHasKey(Icici\Fields::MERCHANT_ID, $input);
+
+                              return true;
+
+                          })->andReturn([
+                                            Icici\Fields::DATA => [
+                                                Icici\Fields::BALANCE => $balanceToReturn
+                                            ]
+                                        ]);
+
+        $this->app->instance('mozart', $mozartServiceMock);
+    }
+
 }

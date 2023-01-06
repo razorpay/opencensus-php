@@ -572,15 +572,8 @@ class Gateway extends BaseProcessor
             min($endTime, $startTime + $allowedDateDiff),
             self::DATE_FORMAT);
 
-        $aggrId = $this->config['banking_account']['icici'][Fields::AGGR_ID_CONFIG];
+        $aggrId            = $this->config['banking_account']['icici'][Fields::AGGR_ID_CONFIG];
         $beneficiaryApikey = $this->config['banking_account']['icici'][Fields::ACCOUNT_STATEMENT_API_KEY_CONFIG];
-
-        if ((array_key_exists(Icici\Fields::CREDENTIALS, $credentials) === true) and
-            ($credentials[Icici\Fields::CREDENTIALS] !== null))
-        {
-            $aggrId            = $credentials[Icici\Fields::CREDENTIALS][Icici\Fields::AGGR_ID];
-            $beneficiaryApikey = $credentials[Icici\Fields::CREDENTIALS][Icici\Fields::BENEFICIARY_API_KEY];
-        }
 
         $data = [
             Fields::ATTEMPT => [
@@ -601,8 +594,13 @@ class Gateway extends BaseProcessor
             Fields::LAST_TRANSACTION => [
                 Fields::LASTTRID => ''
             ],
-            Fields::MERCHANT_ID => $merchantId
         ];
+
+        if ((array_key_exists(Icici\Fields::CREDENTIALS, $credentials) === true) and
+            ($credentials[Icici\Fields::CREDENTIALS] !== null))
+        {
+            $this->modifyRequestForMerchantsOnBaasFlow($data, $credentials[Icici\Fields::CREDENTIALS], $merchantId);
+        }
 
         if ($previousLasttrid === null)
         {
@@ -1223,5 +1221,15 @@ class Gateway extends BaseProcessor
             }
         }
         return null;
+    }
+
+    protected function modifyRequestForMerchantsOnBaasFlow(&$data, $credentials, $merchantId)
+    {
+        /*
+         * Replace aggr_id and accountStatementApiKey with values from BAS, append merchant_id in request as well
+         */
+        $data[Fields::MERCHANT_ID] = $merchantId;
+        $data[Fields::SOURCE_ACCOUNT][Fields::CREDENTIALS][Fields::AGGR_ID] = $credentials[Icici\Fields::AGGR_ID];
+        $data[Fields::SOURCE_ACCOUNT][Fields::CREDENTIALS][Fields::ACCOUNT_STATEMENT_APIKEY] = $credentials[Icici\Fields::BENEFICIARY_API_KEY];
     }
 }
