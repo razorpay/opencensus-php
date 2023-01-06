@@ -2,8 +2,11 @@
 
 namespace RZP\Models\Payout\Processor;
 
+use Razorpay\Trace\Logger;
+
 use RZP\Models\Payout;
 use RZP\Models\Contact;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\FundAccount;
@@ -20,7 +23,6 @@ use RZP\Models\Feature\Constants as Features;
 use RZP\Models\FundTransfer\Mode as FundTransferMode;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
-
 
 class FundAccountPayout extends Base
 {
@@ -316,6 +318,18 @@ class FundAccountPayout extends Base
             $balanceId = $input[Balance\Entity::BALANCE_ID];
 
             (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
+
+            $this->trace->traceException(
+                $throwable,
+                Logger::CRITICAL,
+                TraceCode::CREATE_BANKING_PAYOUT_EXCEPTION,
+                [
+                    'balance_id'           => $balance->getId(),
+                    'balance_channel'      => $balance->getChannel(),
+                    'balance_type'         => $balance->getType(),
+                    'account_account_type' => $balance->getAccountType(),
+                ]
+            );
 
             throw $throwable;
         }

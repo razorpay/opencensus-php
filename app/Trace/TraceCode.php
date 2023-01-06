@@ -8745,6 +8745,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const LOGIN_PARTNER_MAPPING_FAILURE                               = 'LOGIN_PARTNER_MAPPING_FAILURE';
 
+    //Exception trace codes while processing a payout via various flows
+    const ON_HOLD_PAYOUT_PROCESS_EXCEPTION         = 'ON_HOLD_PAYOUT_PROCESSING_EXCEPTION';
+    const CREATE_BANKING_PAYOUT_EXCEPTION          = 'CREATE_BANKING_PAYOUT_EXCEPTION';
+    const SCHEDULED_PAYOUT_PROCESS_EXCEPTION       = 'SCHEDULED_PAYOUT_PROCESS_EXCEPTION';
+    const PENDING_PAYOUT_PROCESS_EXCEPTION         = 'PENDING_PAYOUT_PROCESS_EXCEPTION';
+    const QUEUED_PAYOUT_PROCESS_EXCEPTION          = 'QUEUED_PAYOUT_PROCESS_EXCEPTION';
+    const BATCH_SUBMITTED_PAYOUT_PROCESS_EXCEPTION = 'BATCH_SUBMITTED_PAYOUT_EXCEPTION';
+
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

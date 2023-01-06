@@ -767,6 +767,19 @@ class Base extends BaseCore
 
             (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
 
+            $this->trace->traceException(
+                $throwable,
+                Logger::CRITICAL,
+                TraceCode::QUEUED_PAYOUT_PROCESS_EXCEPTION,
+                [
+                    'payout_id'            => $payout->getId(),
+                    'balance_id'           => $balanceId,
+                    'balance_channel'      => optional($payout->balance)->getChannel() ?? null,
+                    'balance_type'         => optional($payout->balance)->getType() ?? null,
+                    'balance_account_type' => optional($payout->balance)->getAccountType() ?? null
+                ]
+            );
+
             throw $throwable;
         }
 
@@ -901,6 +914,17 @@ class Base extends BaseCore
 
             (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
 
+            $this->trace->info(
+                TraceCode::ON_HOLD_PAYOUT_PROCESS_EXCEPTION,
+                [
+                    'payout_id'            => $payout->getId(),
+                    'balance_id'           => optional($payout->balance)->getId() ?? null,
+                    'balance_type'         => optional($payout->balance)->getType() ?? null,
+                    'balance_channel'      => optional($payout->balance)->getChannel() ?? null,
+                    'balance_account_type' => optional($payout->balance)->getAccountType() ?? null,
+                ]
+            );
+
             throw $throwable;
         }
 
@@ -1033,6 +1057,19 @@ class Base extends BaseCore
             $balanceId = $payout->getBalanceId();
 
             (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
+
+            $this->trace->traceException(
+                $throwable,
+                Logger::CRITICAL,
+                TraceCode::BATCH_SUBMITTED_PAYOUT_PROCESS_EXCEPTION,
+                [
+                    'payout_id'            => $payout->getId(),
+                    'balance_id'           => $balanceId,
+                    'balance_channel'      => optional($payout->balance)->getChannel() ?? null,
+                    'balance_type'         => optional($payout->balance)->getType() ?? null,
+                    'balance_account_type' => optional($payout->balance)->getAccountType() ?? null
+                ]
+            );
 
             throw $throwable;
         }
@@ -1575,6 +1612,19 @@ class Base extends BaseCore
 
             (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
 
+            $this->trace->traceException(
+                $throwable,
+                Logger::CRITICAL,
+                TraceCode::SCHEDULED_PAYOUT_PROCESS_EXCEPTION,
+                [
+                    'payout_id'            => $payout->getId(),
+                    'balance_id'           => $balanceId,
+                    'balance_type'         => optional($payout->balance)->getType() ?? null,
+                    'balance_channel'      => optional($payout->balance)->getChannel() ?? null,
+                    'balance_account_type' => optional($payout->balance)->getAccountType() ?? null
+                ]
+            );
+
             throw $throwable;
         }
 
@@ -1750,6 +1800,19 @@ class Base extends BaseCore
             $balanceId = $payout->getBalanceId();
 
             (new Payout\Core)->decreaseFreePayoutsConsumedInCaseOfTransactionFailureIfApplicable($balanceId, $feeType);
+
+            $this->trace->traceException(
+                $throwable,
+                Logger::CRITICAL,
+                TraceCode::PENDING_PAYOUT_PROCESS_EXCEPTION,
+                [
+                    'payout_id'            => $payout->getId(),
+                    'balance_id'           => $balanceId,
+                    'balance_channel'      => optional($payout->balance)->getChannel() ?? null,
+                    'balance_type'         => optional($payout->balance)->getType() ?? null,
+                    'balance_account_type' => optional($payout->balance)->getAccountType() ?? null
+                ]
+            );
 
             throw $throwable;
         }
