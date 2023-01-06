@@ -225,6 +225,7 @@ class Service extends Base\Service
                     {
                         // Sending array for backward compatibility (bulk api)
                         $response = $this->sendMerchantShippingInfoRequest(
+                            $orderId,
                             $merchantOrderId,
                             [array_merge($address, [self::SHIPPING_INFO_ID => 0])],
                             $serviceabilityUrl,
@@ -522,7 +523,7 @@ class Service extends Base\Service
      * @return mixed
      * @throws Exception\ServerErrorException
      */
-    protected function sendMerchantShippingInfoRequest(string $merchantOrderId, array $addresses, string $serviceabilityUrl, array $mockResponse = null, array $dimensions = [])
+    protected function sendMerchantShippingInfoRequest(string $razorpayOrderId, string $merchantOrderId, array $addresses, string $serviceabilityUrl, array $mockResponse = null, array $dimensions = [])
     {
         if (!is_null($mockResponse))
         {
@@ -536,7 +537,7 @@ class Service extends Base\Service
             'url' => $serviceabilityUrl,
             'method' => Requests::POST,
             'headers' => $headers,
-            'content' => json_encode(['order_id' => $merchantOrderId, 'addresses' => $addresses])
+            'content' => json_encode(['order_id' => $merchantOrderId, 'addresses' => $addresses, 'razorpay_order_id' => $razorpayOrderId])
         );
         $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_COUNT, $dimensions);
         $externalRequeststartTime = millitime();
