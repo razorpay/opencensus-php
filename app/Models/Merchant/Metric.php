@@ -250,4 +250,6 @@ final class Metric
     const SHOPIFY_1CC_APPLY_COUPON_FAILURE_COUNT             = 'shopify_1cc_apply_coupon_failure_count';
     const SHOPIFY_1CC_UPDATE_EMAIL_FAILURE_COUNT             = 'shopify_1cc_update_email_failure_count';
     const SHOPIFY_1CC_ANALYTICS_COUNT                        = 'shopify_1cc_analytics_count';
+
+    const SHOPIFY_1CC_RTO_LABEL_MISSING_COUNT              = 'shopify_1cc_rto_label_missing_count';
 }

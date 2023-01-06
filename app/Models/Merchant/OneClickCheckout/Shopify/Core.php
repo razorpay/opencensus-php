@@ -1193,6 +1193,65 @@ class Core extends Base\Core
                 'title' => 'Standard Shipping'
             ]
         ];
+
+        $body['tags'] = 'Magic, '.$paymentMethod;
+
+        if (empty($rzpOrder['notes']['gstin']) === false)
+        {
+            $body['tags'] = $body['tags'].', GSTIN';
+        }
+
+        if (empty($rzpOrder['notes']['order_instructions']) === false)
+        {
+            $body['tags'] = $body['tags'].', Additional Notes';
+        }
+
+        $order = (new RzpOrders())->findOrderByIdAndMerchant($rzpOrder['id']);
+
+        $orderMeta = array_first($order->orderMetas ?? [], function ($orderMeta)
+        {
+            return $orderMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;
+        });
+
+        if(empty($orderMeta) === false)
+        {
+            $value = $orderMeta->getValue();
+
+            if (empty($value['cod_intelligence']['risk_tier']) === false)
+            {
+                $body['tags'] = $body['tags'].', RTO Risk - '.$value['cod_intelligence']['risk_tier'];
+            }
+    
+            $rtoReasons = $value['cod_intelligence']['rto_reasons'] ?? [];
+    
+            if (empty($rtoReasons) === false)
+            {
+                $noteAttributes = $body['note_attributes'];
+    
+                $rtoLabels = [];
+    
+                foreach ($rtoReasons as $rtoReason)
+                {
+                    $rtoLabel = (new RtoReasons)->getRtoReasons($rtoReason);
+    
+                    if(!empty($rtoLabel))
+                    {
+                        array_push($rtoLabels, $rtoLabel);
+                    }
+                }
+    
+                $rtoString = implode(', ', $rtoLabels);
+    
+                array_push($noteAttributes,
+                [   
+                    'name'  => 'RTO Reasons',
+                    'value' => $rtoString
+                ]);
+    
+                $body['note_attributes'] = $noteAttributes;
+            }   
+        }
+
         return $body;
     }
 
