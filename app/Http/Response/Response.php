@@ -485,6 +485,7 @@ class Response
             'splitz_preflight',
             'splitz_preflight_bulk_evaluate',
             'splitz_evaluate',
+            'splitz_evaluate_bulk',
             'customer_flagging_post_grievance',
             'customer_flagging_post_grievance_options',
             'customer_flagging_entity_details',

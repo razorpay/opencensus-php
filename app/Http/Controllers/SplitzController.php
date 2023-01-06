@@ -100,7 +100,9 @@ class SplitzController extends Controller
     {
         $parameters = Request::all();
 
-        return $this->app->splitzService->bulkCallsToSplitz($parameters);
+        $response = $this->app->splitzService->bulkCallsToSplitz($parameters);
+
+        return ApiResponse::json($response);
     }
 
     public function evaluateRequest()
