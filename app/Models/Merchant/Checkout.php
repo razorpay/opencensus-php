@@ -198,7 +198,7 @@ class Checkout
 
         $this->fill1ccAddressOptExperiment($merchant, $data);
 
-        $this->disableFeaturesBasedOnMerchantType($merchant, $input);
+        $this->disableFeaturesBasedOnMerchantType($merchant, $input, $data);
 
         $this->fillCheckoutExperiments($input, $data, $merchant->getId());
 
@@ -1702,15 +1702,21 @@ class Checkout
      *
      * @param Entity $merchant
      * @param array  $input
+     * @param array  $data
      *
      * @return void
      */
-    protected function disableFeaturesBasedOnMerchantType(Entity $merchant, array &$input): void
+    protected function disableFeaturesBasedOnMerchantType(Entity $merchant, array &$input, array &$data): void
     {
         // Check if the merchant is optimizer merchant
         if ($merchant->isFeatureEnabled(Feature\Constants::RAAS)) {
             // Disable qr code for optimizer merchant
             $input['qr_required'] = false;
+
+            // Disable email-less checkout for optimizer merchant
+            // Show email on checkout - true and Email optional on checkout - false => Email mandatory on checkout
+            $data['features'][Dcs\Features\Constants::ShowEmailOnCheckout] = true;
+            $data['features'][Dcs\Features\Constants::EmailOptionalOnCheckout] = false;
         }
     }
 

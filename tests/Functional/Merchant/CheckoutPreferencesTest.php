@@ -3426,6 +3426,39 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayNotHasKey(Dcs\Features\Constants::ShowEmailOnCheckout, $response['features']);
     }
 
+    public function testGetPreferencesWhenOptimizerMerchantAndEmailOptionalOnCheckoutAndShowEmailOnCheckoutFeaturesNotEnabledExpectsShowEmailOnCheckoutFeatureFlagInPreferencesResponse()
+    {
+        $this->enableEmailLessCheckoutExperiment();
+
+        // Enabling optimizer on the merchant
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::RAAS,
+        ]);
+
+        $response = $this->getPreferences();
+
+        // Email mandatory on checkout
+        $this->assertTrue($response['features'][Dcs\Features\Constants::ShowEmailOnCheckout]);
+        $this->assertFalse($response['features'][Dcs\Features\Constants::EmailOptionalOnCheckout]);
+    }
+
+    public function testGetPreferencesWhenOptimizerMerchantAndEmailOptionalOnCheckoutEnabledExpectsShowEmailOnCheckoutFeatureFlagInPreferencesResponse()
+    {
+        $this->enableEmailLessCheckoutExperiment();
+
+        // Enabling optimizer on the merchant
+        $this->fixtures->merchant->addFeatures([
+            Dcs\Features\Constants::EmailOptionalOnCheckout,
+            Feature\Constants::RAAS,
+        ]);
+
+        $response = $this->getPreferences();
+
+        // Email mandatory on checkout
+        $this->assertTrue($response['features'][Dcs\Features\Constants::ShowEmailOnCheckout]);
+        $this->assertFalse($response['features'][Dcs\Features\Constants::EmailOptionalOnCheckout]);
+    }
+
     public function testGetPreferencesWhenEmailLessCheckoutExperimentDisabledExpectsShowEmailOnCheckoutFeatureFlagInPreferencesResponse()
     {
         $this->enableEmailLessCheckoutExperiment("variant_off");

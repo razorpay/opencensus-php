@@ -10407,6 +10407,13 @@ class PaymentCreateTest extends TestCase
         $this->doPaymentCreateAndCalculateFees('checkoutjs', false);
     }
 
+    public function testPaymentCreateWhenInputEmailIsNotPresentAndOptimizerMerchantExpectsPaymentCreationFailureWithEmailRequiredException()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::RAAS]);
+
+        $this->doPaymentCreateAndCalculateFees('checkoutjs', false);
+    }
+
     public function testPaymentCreateWhenInputEmailIsNotPresentAndNonINRCurrencyExpectsPaymentCreationFailureWithEmailRequiredException()
     {
         $input['currency'] = 'USD';

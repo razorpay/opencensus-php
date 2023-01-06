@@ -2039,6 +2039,7 @@ class PaymentCreateController extends Controller
      *
      * Based on following conditions -
      * Standard/hosted checkout library and email empty and international payment check and
+     * not optimizer merchant i.e. 'raas' feature flag disabled on the merchant and
      * (no show_email_on_checkout feature  or email_optional_on_checkout) => email required
      * Email customizations on std/hosted checkout based on feature flags -
      * show_email_on_checkout => false and email_optional_on_checkout => false ==> email-less checkout
@@ -2059,12 +2060,13 @@ class PaymentCreateController extends Controller
             (!$merchant->isEmailShownOnCheckout() || $merchant->isEmailOptionalOnCheckout()) &&
             !isset($input['email']) &&
             $merchant->isRazorpayOrgId() &&
-            (!isset($input['currency']) || ($input['currency'] === Currency::INR)))
+            (!isset($input['currency']) || ($input['currency'] === Currency::INR)) &&
+            !$merchant->isFeatureEnabled(Feature::RAAS))
         {
             $input['email'] = Payment\Entity::DUMMY_EMAIL;
 
             $request = Request::instance();
-            
+
             $request->merge(['email' => Payment\Entity::DUMMY_EMAIL]);
         }
     }
