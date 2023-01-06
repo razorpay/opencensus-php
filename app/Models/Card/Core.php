@@ -180,7 +180,7 @@ class Core extends Base\Core
         if ($noOfTokens > 1){
             // fetching providerReferenceId from token entity
             foreach ($response['service_provider_tokens'] as $token) {
-                if ($token['type'] === "network" && empty($token['providerReferenceId'] === false)) {
+                if ($token['provider_type'] === "network" && empty($token['providerReferenceId'] === false)) {
                     $providerReferenceId = $token['providerReferenceId'];
                 }
             }
