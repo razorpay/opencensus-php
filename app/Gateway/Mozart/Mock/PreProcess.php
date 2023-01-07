@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Mozart\Mock;
 
+use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -336,7 +337,34 @@ class PreProcess extends Base\Mock\Server
 
         $payload = $entities['gateway']['payload'];
 
-        $data = (new Mindgate())->decryptGatewayResponse($payload['meRes']);
+        try
+        {
+            $gateway = new Mindgate();
+
+            $gateway->setTerminal($entities['terminal']);
+
+            $data = $gateway->decryptGatewayResponse($payload['meRes']);
+        }
+        catch (Exception\GatewayErrorException $e)
+        {
+            $response = MozartUpiResponse::getDefaultInstanceForV2();
+
+            $response->setSuccess(false);
+
+            $response->setError([
+                'description'               => 'Decryption Failed',
+                'gateway_error_code'        => 'dFailed',
+                'gateway_error_description' => 'Decryption Failed',
+                'gateway_status_code'       =>  200,
+                'internal_error_code'       => 'BAD_REQUEST_DECRYPTION_FAILED',
+            ]);
+
+            $response = $response->toArray();
+
+            unset($response['next']);
+
+            return $response;
+        }
 
         $response = MozartUpiResponse::getDefaultInstanceForV2();
 
@@ -350,7 +378,7 @@ class PreProcess extends Base\Mock\Server
 
         $response->setPayment([
             Payment\Entity::CURRENCY          => 'INR',
-            Payment\Entity::AMOUNT_AUTHORIZED => $data['amount']*100,
+            Payment\Entity::AMOUNT_AUTHORIZED => round(floatval($data['amount']) * 100),
         ]);
 
         $response->setTerminal([
@@ -368,6 +396,18 @@ class PreProcess extends Base\Mock\Server
                 'gateway_error_description' => 'Payment Declined',
                 'gateway_status_code'       =>  200,
                 'internal_error_code'       => 'BAD_REQUEST_PAYMENT_DECLINED_BY_CUSTOMER',
+            ]);
+        }
+        else if ($data['respcode'] === 'noTerminal')
+        {
+            $response->setSuccess(false);
+
+            $response->setError([
+                'description'               => 'Decryption Failed',
+                'gateway_error_code'        => 'dFailed',
+                'gateway_error_description' => 'Decryption Failed',
+                'gateway_status_code'       =>  200,
+                'internal_error_code'       => 'BAD_REQUEST_DECRYPTION_FAILED',
             ]);
         }
 

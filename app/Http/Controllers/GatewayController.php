@@ -414,7 +414,7 @@ class GatewayController extends Controller
                     $isQrV2Payment = true;
                 }
             }
-            
+
             if ($isQrV2Payment === true)
             {
                 $this->trace->info(TraceCode::QR_PAYMENT_GATEWAY_CALLBACK, $input);

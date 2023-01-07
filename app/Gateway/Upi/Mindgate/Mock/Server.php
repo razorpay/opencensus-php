@@ -394,6 +394,16 @@ class Server extends Base\Mock\Server
                 $status = Status::FAILED;
                 $respCode = '8';
                 break;
+
+            case 'noTerminal@hdfcbank':
+                $status = Status::FAILED;
+                $respCode = 'noTerminal';
+                break;
+
+            case 'decryptionFailed@hdfcbank':
+                $status = Status::FAILED;
+                $respCode = 'dFailed';
+                break;
         }
 
         return [

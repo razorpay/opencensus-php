@@ -400,6 +400,55 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * It checks if decryption failed at mozart due to
+     * different terminal secret
+     *
+     * @param  array $response Response from mozart
+     * @return bool
+     */
+    protected function isDecryptionFailure($response)
+    {
+        $success = $response['success'] ?? '';
+
+        if ($success === true)
+        {
+            return false;
+        }
+
+        $error = $response['error']['internal_error_code'] ?? '';
+
+        if ($error === ErrorCode::BAD_REQUEST_DECRYPTION_FAILED)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * It will create input for pre-process through mozart
+     *
+     * @param  array
+     * @return array
+     */
+    protected function getInputForMozartPreProcess($input)
+    {
+        $data = [
+            'payload'       => $input,
+            'gateway'       => Payment\Gateway::UPI_MINDGATE,
+            'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
+        ];
+
+        // If it's a vas merchant, this will execute during preprocess fallback
+        if (empty($this->terminal[Terminal\Entity::GATEWAY_SECURE_SECRET]) === false)
+        {
+            $data['terminal'] = $this->terminal;
+        }
+
+        return $data;
+    }
+
+    /**
      * Takes in S2S request input array
      * and returns the parsed response as an array
      *
@@ -421,13 +470,24 @@ class Gateway extends Base\Gateway
         if (($isBharatQr !== true) and
             ($this->shouldUseUpiPreProcess(Payment\Gateway::UPI_MINDGATE) === true))
         {
-            $data = [
-                'payload'       => $input,
-                'gateway'       => Payment\Gateway::UPI_MINDGATE,
-                'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
-            ];
+            $data = $this->getInputForMozartPreProcess($input);
 
-            return $this->upiPreProcess($data);
+            $response = $this->upiPreProcess($data);
+
+            if ($this->isDecryptionFailure($response) === true)
+            {
+                $e = new Exception\GatewayErrorException(
+                    ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED,
+                    null,
+                    null
+                );
+
+                $e->markSafeRetryTrue();
+
+                throw $e;
+            }
+
+            return $response;
         }
 
         $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY];
@@ -1544,6 +1604,12 @@ class Gateway extends Base\Gateway
 
     public function getParsedDataFromUnexpectedCallback($callbackData)
     {
+        if ((isset($callbackData['data']['version']) === true)
+            and ($callbackData['data']['version']) === 'v2')
+        {
+            return $this->upiGetParsedDataFromUnexpectedCallback($callbackData);
+        }
+
         $payment = [
             'method'   => 'upi',
             'amount'   => $this->getIntegerFormattedAmount($callbackData[ResponseFields::AMOUNT]),
@@ -1572,6 +1638,17 @@ class Gateway extends Base\Gateway
     {
         parent::action($input, Action::VALIDATE_PUSH);
 
+        // It checks if pre process happened through common gateway trait contracts
+        if ((isset($input['data']['version']) === true) and
+            ($input['data']['version'] === 'v2'))
+        {
+            $this->upiIsDuplicateUnexpectedPayment($input);
+
+            $this->isValidUnexpectedPayment($input);
+
+            return ;
+        }
+
         $this->isDuplicateUnexpectedPayment($input);
 
         $this->isValidUnexpectedPayment($input);
@@ -1580,6 +1657,13 @@ class Gateway extends Base\Gateway
     public function authorizePush($input)
     {
         list($paymentId , $callbackData) = $input;
+
+        // To handle if callback data was preprocessed through mozart config with v2 contracts
+        if ((isset($callbackData['data']['version']) === true) and
+            ($callbackData['data']['version'] === 'v2'))
+        {
+            return $this->upiAuthorizePush($input);
+        }
 
         $gatewayInput = [
             'payment' => [
