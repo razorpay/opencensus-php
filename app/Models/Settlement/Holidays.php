@@ -328,6 +328,56 @@ class Holidays
                 8 => 'Guru Nanak jayanti',
             ],
         ],
+
+        2023 => [
+            1 => [
+                26 => 'Republic Day',
+            ],
+            2 => [
+                18 => 'Mahashivratri (Maha Vad-14)/Sivarathri',
+            ],
+            3 => [
+                7 => 'Holi/Holi (Second Day)/Holika Dahan/Dhulandi/Dol Jatra',
+                22 => 'Gudi Padwa/Ugadi Festival/Bihar Divas/Sajibu Nongmapanba (Cheiraoba)',
+                30 => 'Shree Ram Navami (Chaite Dashain)',
+            ],
+            4 => [
+                1 => 'Annual closing of banks',
+                4 => 'Mahavir Jayanti',
+                7 => 'Good Friday',
+                14 => 'Dr. Babasaheb Ambedkar Jayanti/Bohag Bihu/Cheiraoba',
+                22 => 'Ramzan Eid (Eid-Ul-Fitr)',
+            ],
+            5 => [
+                1 => 'Maharashtra Day/May Day',
+                5 => 'Buddha Purnima',
+            ],
+            6 => [
+                28 => 'Bakri Eid (Eid-Ul-Zuha)',
+            ],
+            7 => [
+                29 => 'Muharram (Tajiya)',
+            ],
+            8 => [
+                15 => 'Independence Day',
+                16 => 'Parsi New Year (Shahenshahi)',
+            ],
+            9 => [
+                19 => 'Ganesh Chaturthi/Samvatsari (Chaturthi Paksha)',
+                28 => 'Eid-E-Milad/Eid-e-Meeladunnabi - (Prophet Mohammad’s Birthday) (Bara Vafat)',
+            ],
+            10 => [
+                2 => 'Mahatma Gandhi Jayanti',
+                24 => 'Dussehra/Dusshera (Vijaya Dashmi)/Durga Puja',
+            ],
+            11 => [
+                14 => 'Diwali (Bali Pratipada)/Deepavali/Vikram Samvant New Year Day/Laxmi Puja',
+                27 => 'Guru Nanak Jayanti/Karthika Purnima',
+            ],
+            12 => [
+                25 => 'Christmas',
+            ],
+        ],
     ];
 
     /**
