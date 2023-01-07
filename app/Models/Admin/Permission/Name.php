@@ -822,6 +822,9 @@ class Name
 
     const ADMIN_FETCH_FUND_ACCOUNT_VALIDATION           = 'admin_fetch_fund_account_validation';
 
+    const MERCHANT_IP_WHITELIST                    = 'merchant_ip_whitelist';
+    const ADMIN_MERCHANT_IP_WHITELIST              = 'admin_merchant_ip_whitelist';
+
     const APP_REGISTRATION                              = 'app_registration';
     const APP_MAPPING                                   = 'app_mapping';
 

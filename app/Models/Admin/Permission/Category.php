@@ -76,4 +76,5 @@ class Category
     const NOCODE                       = 'nocode';
     const CMMA                         = 'cmma';
     const X_DASHBOARD_FE               = 'x_dashboard_fe';
+    const IP_WHITELIST                 = 'ip_whitelist';
 }

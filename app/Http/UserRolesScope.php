@@ -115,6 +115,9 @@ class UserRolesScope
             'merchant_user_app_incr_product_session'=> Role::ALL_ROLES,
             'merchant_recent_trans_with_source'     => Role::ALL_ROLES,
 
+            'merchant_ip_config_fetch'  => [Role::OWNER, Role::ADMIN],
+            'merchant_ip_config_create' => [Role::OWNER, Role::ADMIN],
+
             // Merchant user routes
             'user_merchant_mapping_action' => [Role::OWNER, Role::LINKED_ACCOUNT_OWNER, Role::RBL_SUPERVISOR],
 

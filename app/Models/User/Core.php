@@ -4682,6 +4682,18 @@ class Core extends Base\Core
                 $context = $this->getContextFromActionForPayoutLinkCreation($merchant, $user, $input, $token);
                 break;
 
+            case Constants::IP_WHITELIST:
+                $context = sprintf('%s:%s:%s:%s:%s',
+                    $merchant->getId(),
+                    $user->getId(),
+                    $action,
+                    $token,
+                    json_encode($input['whitelisted_ips']));
+
+                $context = hash('sha3-512', $context);
+
+                break;
+
             default:
                 // Fallback to default context
                 $context = $this->getDefaultContextFromActionWithMerchant($merchant, $user, $action, $token);

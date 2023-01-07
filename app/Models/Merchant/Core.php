@@ -11,6 +11,7 @@ use Throwable;
 use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
+use RZP\Http\Route;
 use RZP\Constants\HyperTrace;
 use RZP\Models\VirtualAccount;
 use RZP\Jobs\SyncStakeholder;
@@ -124,6 +125,9 @@ class Core extends Base\Core
     const LAST_MONTH_GMV = 'last_month_gmv';
     const CUSTOMER_COUNT = 'customer_count';
 
+    const OPTED_OUT = 'opted_out';
+    const OPT_OUT = 'opt_out';
+
 
     // This is used in case for
     // IRCTC for sending payout
@@ -139,10 +143,14 @@ class Core extends Base\Core
 
     const FUND_ADDITION_DESCRIPTION_MUTEX_TIMEOUT = 10;
 
+    const MAX_NO_OF_IPS_ALLOWED = 20;
+
     const VAS_MERCHANT      = 'VAS_MERCHANT';
     const SUB_MERCHANT      = 'SUB_MERCHANT';
     const PARTNER_MERCHANT  = 'PARTNER_MERCHANT';
     const LINKED_ACCOUNT    = 'LINKED_ACCOUNT';
+
+    const DEFAULT_IP_WHITELIST = '*';
 
     public function create($input, $merchantDetailInputData = [])
     {
@@ -8732,15 +8740,256 @@ class Core extends Base\Core
         return false;
     }
 
+    public function createOrEditMerchantIpConfig(array $input)
+    {
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+        }
+
+        $accessor = Settings\Accessor::for($this->merchant, Settings\Module::IP_WHITELIST_CONFIG);
+
+        if ($accessor->exists(self::OPT_OUT) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                'IP whitelisting is not allowed when you have opted out',
+                null);
+        }
+
+        $whitelistedIps = $input['whitelisted_ips'];
+
+        $errorIps = [];
+
+        foreach ($whitelistedIps as $ipv)
+        {
+            if ((filter_var($ipv, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false) and
+                (filter_var($ipv, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false))
+            {
+                array_push($errorIps, $ipv);
+            }
+        }
+
+        if (empty($errorIps) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                'One or more ips are not valid as per IPv4 nd IPv6',
+                $errorIps);
+        }
+
+        $this->updateIpConfigForService($input, $accessor);
+
+        return $this->fetchMerchantIpConfig();
+    }
+
+    private function updateIpConfigForService(array $input, $accessor)
+    {
+        $whitelistedIps = $input['whitelisted_ips'];
+
+        $defaultServices = Route::getDefaultServicesEligibleForIpWhitelist();
+
+        if (isset($input['service']) === true)
+        {
+            if ($this->checkIfIpCountAcrossServiceExhausted($defaultServices, $accessor, $whitelistedIps, $input['service']) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                    'Max No of Ips allowed is' . self::MAX_NO_OF_IPS_ALLOWED
+                );
+            }
+
+            $service = $input['service'];
+
+            $this->updateIPConfigRedisKeyAndTable($this->merchant, $service, $whitelistedIps, $accessor);
+        }
+        else
+        {
+            foreach ($defaultServices as $service)
+            {
+                $this->updateIPConfigRedisKeyAndTable($this->merchant, $service, $whitelistedIps, $accessor);
+            }
+        }
+    }
+
+    protected function checkIfIpCountAcrossServiceExhausted(array $defaultServices, $accessor, array $whitelistedIps, string $inputService)
+    {
+        $totalWhitelisted = [];
+
+        $whitelistRequestedCount = count($whitelistedIps);
+
+        foreach ($defaultServices as $service)
+        {
+            if ($inputService === $service)
+            {
+                continue;
+            }
+            $ipList = json_decode($accessor->get($service), true);
+
+            if (in_array(self::DEFAULT_IP_WHITELIST, $ipList, true) === true)
+            {
+                $ipList = [];
+            }
+
+            $totalWhitelisted = array_unique(array_merge($ipList, $totalWhitelisted));
+        }
+
+        if (in_array(self::DEFAULT_IP_WHITELIST, $whitelistedIps, true) === true)
+        {
+            $whitelistRequestedCount = 0;
+        }
+
+        return (count($totalWhitelisted) + $whitelistRequestedCount > self::MAX_NO_OF_IPS_ALLOWED);
+    }
+
+    private function updateIPConfigRedisKeyAndTable(Merchant\Entity $merchant, string $service, array $whitelistedIps, $accessor)
+    {
+        $redisKey = 'ip_config' . '_' . $merchant->getId() . '_' . $service;
+
+        $this->app['redis']->del($redisKey);
+
+        $this->app['redis']->sadd($redisKey, $whitelistedIps);
+
+        $whitelistedIpsUnique = array_unique($whitelistedIps);
+
+        $accessor->upsert($service, json_encode($whitelistedIpsUnique))->save();
+    }
+
+    public function editOptStatusForMerchantIPConfig(array $input)
+    {
+        (new Validator)->validateInput('ipConfigOptStatusEdit', $input);
+
+        $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $optedOut = false;
+
+        $accessor = Settings\Accessor::for($this->merchant, Settings\Module::IP_WHITELIST_CONFIG);
+
+        if ($accessor->exists(self::OPT_OUT) === true)
+        {
+            $optedOut = true;
+        }
+
+        if (boolval($input[self::OPT_OUT]) === $optedOut)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+                null,
+                null);
+        }
+
+        if (boolval($input[self::OPT_OUT]) === true)
+        {
+            $input['whitelisted_ips'] = ['*'];
+
+            $this->updateIpConfigForService($input, $accessor);
+
+            // if opt out is not service specific then only mark the overall opt out status for merchant
+            if (isset($input['service']) === false)
+            {
+                $accessor->upsert(self::OPT_OUT, 'true')->save();
+            }
+        }
+        else
+        {
+            $accessor->delete(self::OPT_OUT)->save();
+
+            $this->updateIpConfigForService($input, $accessor);
+        }
+
+        return $this->fetchMerchantIpConfig();
+    }
+
+    public function fetchMerchantIpConfig()
+    {
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            return $this->fetchMerchantIpConfigForAdmin($this->merchant->getId());
+        }
+
+        $response = [];
+
+        $response[self::OPTED_OUT] = false;
+
+        $accessor = Settings\Accessor::for($this->merchant, Settings\Module::IP_WHITELIST_CONFIG);
+
+        $whitelistedIpConfigs = $accessor->all();
+
+        $totalWhitelistedIps = [];
+
+        foreach ($whitelistedIpConfigs as $key => $value)
+        {
+            $value = json_decode($value, true);
+
+            if (($key === self::OPT_OUT) and
+                ($value === true))
+            {
+                $response[self::OPTED_OUT] = true;
+
+                $totalWhitelistedIps = [];
+
+                break;
+            }
+
+            if (in_array(self::DEFAULT_IP_WHITELIST, $value, true) === true)
+            {
+                continue;
+            }
+
+            $totalWhitelistedIps = array_unique(array_merge($totalWhitelistedIps, $value));
+        }
+
+        $response['whitelisted_ips'] = $totalWhitelistedIps;
+
+        $response['allowed_ips_count'] = self::MAX_NO_OF_IPS_ALLOWED;
+
+        return $response;
+    }
+
+    public function fetchMerchantIpConfigForAdmin(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $response = [];
+
+        $response[self::OPTED_OUT] = false;
+
+        $accessor = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG);
+
+        $whitelistedIpConfigs = $accessor->all();
+
+        $whitelistedIps = [];
+
+        foreach ($whitelistedIpConfigs as $key => $value)
+        {
+            $value = json_decode($value, true);
+
+            if (($key === self::OPT_OUT) and
+                ($value === true))
+            {
+                $response[self::OPTED_OUT] = true;
+            }
+            else
+            {
+                $whitelistedIps[$key] = $value;
+            }
+        }
+
+        $response['whitelisted_ips'] = $whitelistedIps;
+
+        $response['allowed_ips_count'] = self::MAX_NO_OF_IPS_ALLOWED;
+
+        return $response;
+    }
+
     public function blockLinkedAccountCreationIfApplicable(Entity $merchant)
     {
-        if (in_array($merchant->getId(), Preferences::BLOCK_LINKED_ACCOUNT_CREATION_MIDS) === true)
-        {
+        if (in_array($merchant->getId(), Preferences::BLOCK_LINKED_ACCOUNT_CREATION_MIDS) === true) {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_BLOCKED,
                 null,
                 [
-                    'parent_merchant_id'    => $merchant->getId(),
+                    'parent_merchant_id' => $merchant->getId(),
                 ]
             );
         }
@@ -8749,7 +8998,7 @@ class Core extends Base\Core
     private function sendAccountMappedToPartnerWebhook($merchant)
     {
         $eventPayload = [
-            ApiEventSubscriber::MAIN        => $merchant
+            ApiEventSubscriber::MAIN => $merchant
         ];
 
         $this->app['events']->dispatch('api.account.mapped_to_partner', $eventPayload);

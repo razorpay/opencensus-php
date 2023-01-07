@@ -13875,4 +13875,470 @@ return [
         ],
     ],
 
+    'testCreateIpConfigForMerchant' => [
+        'request' => [
+            'url'    => '/merchant/ip_whitelist',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+
+            'content' =>[
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3']
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'opted_out' => false,
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3'],
+                'allowed_ips_count' => 20,
+            ],
+        ],
+        'status_code' => 200
+    ],
+
+    'testCreateIpConfigWithDuplicateIpsForMerchant' => [
+        'request' => [
+            'url'    => '/merchant/ip_whitelist',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+
+            'content' =>[
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3','3.3.3.3','2.2.2.2']
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'opted_out' => false,
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3'],
+                'allowed_ips_count' => 20,
+            ],
+        ],
+        'status_code' => 200
+    ],
+
+    'testCreateIpConfigForGreaterThan20Ips' => [
+        'request' => [
+            'url'    => '/merchant/ip_whitelist',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' =>[
+                'otp' => '0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3','2.2.2.2','3.3.3.3','2.2.2.2','3.3.3.3','2.2.2.2','3.3.3.3','2.2.2.2',
+                '2.2.2.2','3.3.3.3','2.2.2.2','3.3.3.3','2.2.2.2','3.3.3.3','2.2.2.2','3.3.3.3','2.2.2.2','3.3.3.3','2.2.2.2','3.3.3.3'],
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The whitelisted ips may not have more than 20 items.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateIpConfigWithNoIps' => [
+        'request' => [
+            'url'    => '/merchant/ip_whitelist',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+
+            'content' =>[
+                'otp' => '0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'whitelisted_ips' => [],
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The whitelisted ips field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateIpConfigErrorInAbsenceOfOtp' => [
+        'request' => [
+            'url'    => '/merchant/ip_whitelist',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+
+            'content' =>[
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3']
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'One or more fields are invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateIpConfigForMerchantWithInvalidIPFormat' => [
+        'request' => [
+            'url'    => '/merchant/ip_whitelist',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+
+            'content' =>[
+                'otp' => '0007',
+                'whitelisted_ips' => ['2.2.2.2','3.3.3'],
+                'token' => 'BUIj3m2Nx2VvVj'
+            ]
+        ],
+
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_VALIDATION_FAILURE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+
+    ],
+
+    'testCreateIpConfigFromMerchantDashboardForOptedOut' => [
+        'request' => [
+            'url'    => '/merchant/ip_whitelist',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+
+            'content' =>[
+                'otp' => '0007',
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3'],
+                'token' => 'BUIj3m2Nx2VvVj'
+            ]
+        ],
+
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_VALIDATION_FAILURE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+
+    ],
+
+    'testGetNewIpConfigForMerchant' => [
+        'request' => [
+            'url'    => '/merchant/ip_whitelist',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'opted_out' => false,
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3'],
+                'allowed_ips_count' => 20,
+            ],
+        ],
+        'status_code' => 200
+       ],
+
+    'testFetchIpConfigFromMerchantDashboardForOptedOut' => [
+    'request' => [
+        'url'    => '/merchant/ip_whitelist',
+        'method' => 'GET',
+        'server' => [
+            'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+        ],
+        'content' => []
+    ],
+    'response' => [
+        'content' => [
+            'opted_out' => true,
+            'whitelisted_ips' => [],
+            'allowed_ips_count' => 20,
+        ],
+    ],
+    'status_code' => 200
+    ],
+
+    'testCreateIpConfigWithOtpWithSecureContext' => [
+        'request' => [
+            'url'    => '/merchant/ip_whitelist',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+
+            'content' =>[
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3']
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'opted_out' => false,
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3'],
+                'allowed_ips_count' => 20,
+            ],
+        ],
+        'status_code' => 200
+    ],
+
+    'testMerchantIpConfigOptOutWhenAlreadyOptedOut' => [
+        'request' => [
+            'url'     => '/admin/merchant/ip_whitelist/opt_status',
+            'method'  => 'post',
+            'content' => [
+                "opt_out" => true,
+                'merchant_id' => '10000000000000',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_VALIDATION_FAILURE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testMerchantIpConfigOptInWhenAlreadyOptedIn' => [
+        'request' => [
+            'url'     => '/admin/merchant/ip_whitelist/opt_status',
+            'method'  => 'post',
+            'content' => [
+                "opt_out" => 0,
+                'merchant_id' => '10000000000000',
+                'whitelisted_ips' => ['2.2.2.2'],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_VALIDATION_FAILURE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateIpConfigForMerchantFromAdmin' => [
+        'request' => [
+            'url'    => '/admin/merchant/ip_whitelist',
+            'method' => 'POST',
+            'content' =>[
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3'],
+                'merchant_id'    => '10000000000000',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'opted_out' => false,
+                'whitelisted_ips' => [
+                  'api_payouts' =>  ['2.2.2.2','3.3.3.3'],
+                  'api_fund_account_validation' =>  ['2.2.2.2','3.3.3.3'],
+                ],
+                'allowed_ips_count' => 20,
+            ],
+        ],
+        'status_code' => 200
+    ],
+
+    'testMerchantIpConfigOptOutForAService' => [
+        'request' => [
+            'url'    => '/admin/merchant/ip_whitelist/opt_status',
+            'method' => 'POST',
+            'content' =>
+                [
+                'merchant_id'     => '10000000000000',
+                'opt_out'         => true,
+                'service'         => 'api_fund_account_validation'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'opted_out' => false,
+                'whitelisted_ips' => [
+                    'api_payouts' =>  ['2.2.2.2','3.3.3.3'],
+                    'api_fund_account_validation' =>  ['*'],
+                ],
+                'allowed_ips_count' => 20
+            ],
+        ],
+        'status_code' => 200
+    ],
+
+    'testMerchantIpConfigOptOut' => [
+        'request' => [
+            'url'     => '/admin/merchant/ip_whitelist/opt_status',
+            'method'  => 'post',
+            'content' => [
+                'opt_out' => true,
+                'merchant_id' => '10000000000000'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'opted_out' => true,
+                'whitelisted_ips' =>
+                [
+                    'api_payouts'                 =>  ['*'],
+                    'api_fund_account_validation' =>  ['*'],
+                ],
+                'allowed_ips_count' => 20,
+            ],
+        ],
+    ],
+
+    'testMerchantIpConfigOptIn' => [
+        'request' => [
+            'url'     => '/admin/merchant/ip_whitelist/opt_status',
+            'method'  => 'post',
+            'content' => [
+                'opt_out' => 0,
+                'merchant_id' => '10000000000000',
+                "whitelisted_ips" => ['2.2.2.2','3.3.3.3']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'opted_out' => false,
+                'whitelisted_ips' => [
+                    'api_payouts' =>  ['2.2.2.2','3.3.3.3'],
+                    'api_fund_account_validation' =>  ['2.2.2.2','3.3.3.3'],
+                ],
+                'allowed_ips_count' => 20,
+            ],
+        ],
+        ],
+
+        'testMerchantIpConfigFetchFromAdmin' => [
+            'request' => [
+                'url'    => '/admin/merchant/10000000000000/ip_whitelist',
+                'method' => 'GET',
+                'content' => []
+            ],
+            'response' => [
+                'content' => [
+                    'opted_out' => false,
+                    'whitelisted_ips' => [
+                        'api_payouts' =>  ['2.2.2.2','3.3.3.3'],
+                        'api_fund_account_validation' =>  ['2.2.2.2','3.3.3.3'],
+                    ],
+                    'allowed_ips_count' => 20,
+                ],
+            ],
+            'status_code' => 200
+        ],
+
+    'testCreateIpConfigForMerchantForSpecificService' => [
+        'request' => [
+            'url'    => '/admin/merchant/ip_whitelist',
+            'method' => 'POST',
+
+            'content' =>[
+                "merchant_id"     => "10000000000000",
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3','3.3.3.3'],
+                'service'         => 'api_payouts',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'opted_out' => false,
+                'whitelisted_ips' => [
+                    'api_payouts' => ['2.2.2.2','3.3.3.3'],
+                    ],
+                'allowed_ips_count' => 20,
+            ],
+        ],
+        'status_code' => 200
+    ],
+
+    'testMaxIpsAllowedAcrossServicesFromAdmin' => [
+        'request' => [
+            'url'    => '/admin/merchant/ip_whitelist',
+            'method' => 'POST',
+
+            'content' =>
+             [
+                "merchant_id"     => "10000000000000",
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3','2.3.2.2','3.3.4.3','2.8.2.2','3.3.9.3','2.2.0.2','3.0.3.3','2.2.22.2','3.73.3.3','29.2.2.2','3.39.3.3','2.99.2.2','3.33.3.3',
+                                      '4.2.2.2','5.3.3.3','7.3.2.2','6.3.4.3','9.8.2.2','8.3.9.3'],
+                'service'         => 'api_fund_account_validation',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_VALIDATION_FAILURE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
 ];

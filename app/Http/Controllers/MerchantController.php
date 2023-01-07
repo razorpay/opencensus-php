@@ -3666,7 +3666,6 @@ class MerchantController extends Controller
         $response = (new Merchant\MerchantGiftCardPromotions\Service())->applyGiftCard($orderId, $input);
 
         return ApiResponse::json($response['data'], $response['status_code']);
-
     }
 
     public function removeGiftCard(string $orderId) {
@@ -3677,7 +3676,6 @@ class MerchantController extends Controller
 
         return ApiResponse::json([], 200);
     }
-
 
     public function getMerchantConsents(string $merchantId)
     {
@@ -3743,6 +3741,38 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = (new Merchant\OneClickCheckout\Config\Service())->updateShippingProviderConfig($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchMerchantIpConfig()
+    {
+        $response = $this->service()->fetchMerchantIpConfig();
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchMerchantIpConfigForAdmin(string $id)
+    {
+        $response = $this->service()->fetchMerchantIpConfigForAdmin($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createMerchantIpConfig()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createOrEditMerchantIpConfig($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function editOptStatusForMerchantIPConfig()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->editOptStatusForMerchantIPConfig($input);
 
         return ApiResponse::json($response);
     }

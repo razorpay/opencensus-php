@@ -51,8 +51,8 @@ use RZP\Models\Settlement;
 use RZP\Http\CheckoutView;
 use RZP\Base\JitValidator;
 use RZP\Http\RequestHeader;
-use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
+use RZP\Constants\Timezone;
 use RZP\Models\Application;
 use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
@@ -68,6 +68,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Modules\Migrate\Migrate;
 use RZP\Exception\BaseException;
 use RZP\Models\Merchant\Methods;
+use RZP\Constants\Mode as Modes;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Admin as MainAdmin;
 use RZP\Jobs\MerchantHoldFundsSync;
@@ -11233,6 +11234,37 @@ class Service extends Base\Service
             "coupon visibility and disable payment method configs",
             $config
         );
+    }
+
+    public function fetchMerchantIpConfig()
+    {
+        return (new Core)->fetchMerchantIpConfig();
+    }
+
+    public function fetchMerchantIpConfigForAdmin(string $merchantId)
+    {
+        return (new Core)->fetchMerchantIpConfigForAdmin($merchantId);
+    }
+
+    public function createOrEditMerchantIpConfig(array $input)
+    {
+        (new Validator)->validateInput('ipConfigCreateOrEdit', $input);
+
+        if ($this->app['basicauth']->isProxyAuth() === true)
+        {
+            // if proxy auth then only use this.
+            (new User\Core)->verifyOtp($input + ['action' => 'ip_whitelist'],
+                $this->merchant,
+                $this->user,
+                $this->mode === Modes::TEST);
+        }
+
+        return (new Core)->createOrEditMerchantIpConfig($input);
+    }
+
+    public function editOptStatusForMerchantIPConfig(array $input)
+    {
+        return (new Core)->editOptStatusForMerchantIPConfig($input);
     }
 
     public function getMerchantNcCount($merchantId)

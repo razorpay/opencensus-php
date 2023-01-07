@@ -378,7 +378,8 @@ class Validator extends Base\Validator
                                  . 'apple_watch_token,'
                                  . 'create_workflow_config,'
                                  . 'update_workflow_config,'
-                                 . 'delete_workflow_config',
+                                 . 'delete_workflow_config,'
+                                 . 'ip_whitelist',
         Entity::TOKEN         => 'sometimes|filled',
 
         // Applicable to select actions: Need to send these payloads for raven's sms content.
@@ -399,6 +400,7 @@ class Validator extends Base\Validator
         'vpa'                     => 'required_if:action,create_composite_payout_with_otp|string|max:100|custom',
         'contact'                 => 'sometimes_if:action,create_payout_link',
         'total_payout_link_amount'=> 'required_if:action,create_bulk_payout_link|integer',
+        'whitelisted_ips'         => 'required_if:action,ip_whitelist|array|min:1|max:20',
     ];
 
     protected static $sendOtpWithContactRules = [

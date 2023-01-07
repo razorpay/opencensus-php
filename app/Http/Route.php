@@ -471,6 +471,11 @@ class Route
         'merchant_schedule_reset'                  => ['post',     'merchants/schedule/reset',                       'MerchantController@resetSettlementSchedule'                        ],
         'merchant_bulk_update_pricing_cron'        => ['post',     'merchants/pricing/bulk/update',                  'MerchantController@bulkUpdatePricingPlanOnEligibilityCron' ],
         'merchant_pricing_bulk'                    => ['post',     'merchants/pricing/bulk',                         'MerchantController@bulkAssignPricing'                              ],
+        'merchant_ip_config_fetch'                 => ['get',      'merchant/ip_whitelist',                          'MerchantController@fetchMerchantIpConfig'                          ],
+        'merchant_ip_config_create'                => ['post',     'merchant/ip_whitelist',                          'MerchantController@createMerchantIpConfig'                         ],
+        'merchant_ip_config_fetch_admin'           => ['get',      'admin/merchant/{id}/ip_whitelist',               'MerchantController@fetchMerchantIpConfigForAdmin'                  ],
+        'merchant_ip_config_create_admin'          => ['post',     'admin/merchant/ip_whitelist',                    'MerchantController@createMerchantIpConfig'                         ],
+        'merchant_ip_config_opt_status_admin'      => ['post',     'admin/merchant/ip_whitelist/opt_status',         'MerchantController@editOptStatusForMerchantIPConfig'               ],
         'create_submerchant_user'                  => ['post',     'submerchant/user/{id}',                          'MerchantController@postSubMerchantUser'                            ],
         'collect_info_merchant_details_internal'   => ['post',     'internal/collect_info/merchant/{id}/details',    'MerchantController@CollectInfoMerchantDetailsPatch'                ],
         'collect_info_merchant_details_patch'      => ['post',     'terminals/proxy/collect_info/merchant/details',          'TerminalController@proxyV2TerminalService'                 ],
@@ -5606,6 +5611,8 @@ class Route
         'bank_transfer_process_hdfc_ecms',
         //FTS holiday Details
         'payout_get_holiday_details',
+        'merchant_ip_config_create',
+        'merchant_ip_config_fetch',
     ];
 
     // The below routes can be used with partner credentials without X-Razorpay-Account header,
@@ -6534,7 +6541,11 @@ class Route
         'payouts_bulk_reject_owner',
         'payout_links_bulk_reject_owner',
 
+        'merchant_ip_config_fetch',
+        'merchant_ip_config_create',
+        
         'checkout_personalisation_internal',
+
         'partner_config_fetch',
         'partner_config_edit',
         'partner_config_edit_logo',
@@ -6544,6 +6555,9 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_ip_config_opt_status_admin',
+        'merchant_ip_config_fetch_admin',
+        'merchant_ip_config_create_admin',
         'salesforce_event_admin',
         'merchant_create_lead_to_salesforce_admin',
         'payment_page_cds_create_plans',
@@ -7754,6 +7768,9 @@ class Route
     ];
 
     public static $routePermission = [
+        'merchant_ip_config_opt_status_admin'             => Permission::ADMIN_MERCHANT_IP_WHITELIST,
+        'merchant_ip_config_fetch_admin'                  => Permission::ADMIN_MERCHANT_IP_WHITELIST,
+        'merchant_ip_config_create_admin'                 => Permission::ADMIN_MERCHANT_IP_WHITELIST,
         'merchant_razorx_evaluate'                        => Permission::ADMIN_GET_APP_AUTH,
         'merchant_create_lead_to_salesforce_admin'        => Permission::VIEW_ACTIVATION_FORM,
         'merchant_website_section_action'                 => Permission::EDIT_MERCHANT,
@@ -8850,7 +8867,7 @@ class Route
         'fetch_internal_instrument_requests'          => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'patch_internal_instrument_requests'          => Permission::UPDATE_INTERNAL_INSTRUMENT_REQUEST,
         'pause_internal_instrument_request_by_id'     => Permission::UPDATE_KAM_INTERNAL_INSTRUMENT_REQUEST,
-        'bulk_cancel_internal_instrument_requests'         => Permission::CANCEL_INTERNAL_INSTRUMENT_REQUEST,
+        'bulk_cancel_internal_instrument_requests'    => Permission::CANCEL_INTERNAL_INSTRUMENT_REQUEST,
         'instrument_request_razorx_admin'             => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'fetch_instrument_comment_list'               => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
         'fetch_instrument_previous_status'            => Permission::VIEW_INTERNAL_INSTRUMENT_REQUEST,
@@ -9154,6 +9171,8 @@ class Route
     ];
 
     public static $bankingRoutePermissions = [
+        'merchant_ip_config_create'                    => Permission::MERCHANT_IP_WHITELIST,
+        'merchant_ip_config_fetch'                     => Permission::MERCHANT_IP_WHITELIST,
         'user_check_has_set_password'                  => '*',
         'mob_fetch_multiple_intents'                   => '*',
         'mob_fetch_intent'                             => '*',
@@ -9979,6 +9998,8 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_ip_config_fetch',
+            'merchant_ip_config_create',
             'merchant_website_plugin_save',
             'payment_links_subscription_activate',
             'payment_links_subscription_deactivate',
@@ -11429,6 +11450,9 @@ class Route
             'admin_fetch_all_entities_axis',
             'admin_fetch_tpvs',
             'admin_fund_account_validate',
+            'merchant_ip_config_opt_status_admin',
+            'merchant_ip_config_fetch_admin',
+            'merchant_ip_config_create_admin',
             'admin_get',
             'admin_get_app_auth',
             'admin_get_file',
@@ -15005,7 +15029,6 @@ class Route
             IdempotencyKey\Entity::HEADER_KEY  => RequestHeader::X_TRANSFER_IDEMPOTENCY,
         ],
     ];
-
     /**
      * Config array which contains Idempotency Routes
      * for which 409 Conflict http status is thrown when duplicate
@@ -15027,6 +15050,34 @@ class Route
         'admin_logout',
         'admin_get_app_auth',
     ];
+
+    public static $serviceEligibleForIPWhitelist = [
+        'api_payouts',
+        'api_fund_account_validation'
+    ];
+
+    public static $routeServiceMappingForIpWhitelisting = [
+
+        'contact_create'        => 'api_payouts',
+        'contact_list'          => 'api_payouts',
+        'contact_get'           => 'api_payouts',
+        'contact_update'        => 'api_payouts',
+        'fund_account_create'   => 'api_payouts',
+        'fund_account_list'     => 'api_payouts',
+        'fund_account_get'      => 'api_payouts',
+        'payout_create'         => 'api_payouts',
+        'payout_validate'       => 'api_payouts',
+        'payouts_batch_create'  => 'api_payouts',
+        'payout_fetch_multiple' => 'api_payouts',
+        'payout_fetch_by_id'    => 'api_payouts',
+        'payout_cancel'         => 'api_payouts',
+
+        'fund_account_validate'             => 'api_fund_account_validation',
+        'fund_account_validate_fetch'       => 'api_fund_account_validation',
+        'fund_account_validate_fetch_by_id' => 'api_fund_account_validation'
+    ];
+
+
 
     // Sets TRACE level to CRITICAL for these routes
     const CRITICAL_ROUTES = [
@@ -15287,6 +15338,8 @@ class Route
         'payout_reject_bulk',
         'payout_approve',
         'payout_2fa_approve',
+        'merchant_ip_config_create',
+        'merchant_ip_config_fetch',
         'payout_reject',
         'user_mobile_oauth_refresh_token',
         'payout_fetch_by_id',
@@ -16264,6 +16317,29 @@ class Route
         }
 
         return in_array($route, self::CRITICAL_ROUTES, true);
+    }
+
+    /**
+     * Check if provided route has a service mapping for ip whitelist.
+     * If null then check for current route
+     *
+     * @param  string  $route
+     * @return boolean
+     */
+    public static function getServiceMappingForIpWhitelist($route = null)
+    {
+        if((empty($route) === true) or
+            (array_key_exists($route, self::$routeServiceMappingForIpWhitelisting) === false))
+        {
+            return null;
+        }
+
+         return self::$routeServiceMappingForIpWhitelisting[$route];
+    }
+
+    public static function getDefaultServicesEligibleForIpWhitelist()
+    {
+        return self::$serviceEligibleForIPWhitelist;
     }
 
     public function getUrl($routeName, array $parameters = [], $key = '', $secret = '')

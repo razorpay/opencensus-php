@@ -6405,6 +6405,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const REQUEST_LOG_HANDLER_UNEXPECTED_EXCEPTION                = 'REQUEST_LOG_HANDLER_UNEXPECTED_EXCEPTION';
     const REQUEST_LOG_SKIPPED                                     = 'REQUEST_LOG_SKIPPED';
 
+    //IP whitelist
+    const REQUEST_FAILED_FROM_NON_WHITELIST_IP                    = 'REQUEST_FAILED_FROM_NON_WHITELIST_IP';
+    const IP_CONFIG_REDIS_GET_FAILED                              = 'IP_CONFIG_REDIS_GET_FAILED';
+    const NEW_IP_WHITELIST_APPLICABLE                             = 'NEW_IP_WHITELIST_APPLICABLE';
+
     const CREDIT_BALANCE_CREATE_REQUEST = 'CREDIT_BALANCE_CREATE_REQUEST';
 
     const SET_LOCALE_TRACE               = 'SET_LOCALE_TRACE';

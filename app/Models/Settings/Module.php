@@ -42,6 +42,8 @@ class Module
 
     const PAYMENT_LINK_COMPUTED = 'payment_link_computed';
 
+    const IP_WHITELIST_CONFIG  = 'ip_whitelist_config';
+
 
     /**
      * @param string $module

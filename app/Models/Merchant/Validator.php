@@ -716,6 +716,47 @@ class Validator extends Base\Validator
         'batch_size'       => 'required|int|min:1',
     ];
 
+    protected static $ipConfigCreateOrEditRules = [
+        'whitelisted_ips'   => 'required|array|min:1|max:20',
+        'service'           => 'sometimes|string',
+        User\Entity::TOKEN  => 'sometimes|string',
+        User\Entity::OTP    => 'sometimes|string|between:4,6',
+        Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
+    ];
+
+    protected static $ipConfigOptStatusEditRules = [
+        'opt_out'           => 'required|boolean',
+        'whitelisted_ips'   => 'required_if:opt_out,false|array|min:1|max:20',
+        'service'           => 'sometimes|string',
+        Entity::MERCHANT_ID => 'required|alpha_num|size:14',
+    ];
+
+    protected static $ipConfigCreateOrEditValidators = [
+        'ip_whitelist_input'
+    ];
+
+    public function validateIpWhitelistInput(array $input)
+    {
+        $proxyAuthAttributes = ((isset($input[User\Entity::OTP]) === true) and
+                                (isset($input[User\Entity::TOKEN]) === true) and
+                                (isset($input[Entity::MERCHANT_ID]) === false) and
+                                (isset($input['service']) === false));
+
+        if ((app('basicauth')->isProxyAuth() === true) and
+            ($proxyAuthAttributes === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'One or more fields are invalid');
+        }
+
+        if ((app('basicauth')->isAdminAuth() === true) and
+            (isset($input[Entity::MERCHANT_ID]) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The merchant_id field is required.');
+        }
+    }
+
     public function validateSmartDashboardMerchantEditInput(array $input)
     {
         foreach ($input as $key => $value)

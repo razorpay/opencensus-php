@@ -2003,6 +2003,13 @@ return [
             ],
         ],
 
+        PermissionCategory::IP_WHITELIST => [
+            Permission::ADMIN_MERCHANT_IP_WHITELIST => [
+                'description'   => 'Admin IP whitelist',
+                'assignable'    => true,
+            ],
+        ],
+
         PermissionCategory::MERCHANT_NOTIFICATION_CONFIG => [
             Permission::MERCHANT_NOTIFICATION_CONFIG_ADMIN  => 'Merchant Notification Config Admin Permissions',
         ],

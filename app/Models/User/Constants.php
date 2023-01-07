@@ -103,6 +103,8 @@ class Constants
 
     const CREATE_COMPOSITE_PAYOUT_WITH_OTP              = 'create_composite_payout_with_otp';
 
+    const IP_WHITELIST  =  'ip_whitelist';
+
     // oauth constants end
 
     const INCORRECT_LOGIN_TTL = 7200; // 2 hours

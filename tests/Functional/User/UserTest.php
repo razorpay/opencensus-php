@@ -6565,6 +6565,47 @@ class UserTest extends TestCase
 
         $this->assertNotEmpty($response['token']);
     }
+    
+    public function testSendOtpForIpWhitelistWithSecureOTP()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        $user = $this->getDbLastEntity('user');
+
+        $this->fixtures->edit(
+            'user',
+            $user->getId(),
+            [
+                UserEntity::CONTACT_MOBILE          => '123456789',
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData['testSendOtpForCreatePayoutWithoutMobileNumberInReceiver'];
+
+        $testData['request']['content'] = [
+            'action'         => Constants::IP_WHITELIST,
+            'whitelisted_ips'      => ['1.1.1.1','2.2.2.2'],
+        ];
+
+        $testData['request']['content']['token'] = 'QtrxYjsbrs';
+
+        $expectedContext = sprintf('%s:%s:%s:%s:%s',
+            10000000000000,
+            $user->getId(),
+            Constants::IP_WHITELIST,
+            'QtrxYjsbrs',
+            json_encode(['1.1.1.1','2.2.2.2']));
+
+        $expectedContext = hash('sha3-512', $expectedContext);
+
+        $this->mockRaven($expectedContext, '123456789');
+
+        $response = $this->startTest($testData);
+
+        $this->assertNotEmpty($response['token']);
+    }
 
     public function testSendOtpWithReplaceKeyAction()
     {

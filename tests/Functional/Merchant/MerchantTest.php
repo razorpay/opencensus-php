@@ -10,6 +10,7 @@ use Redis;
 use Crypt;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Models\Admin;
 use RZP\Constants\Table;
 use RZP\Constants\Product;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
@@ -68,7 +69,6 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use \RZP\Models\Workflow\Observer\Constants as ObserverConstants;
 use RZP\Models\Key;
 use RZP\Jobs\EsSync;
-use RZP\Models\Admin;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
@@ -17251,5 +17251,538 @@ The same has been enabled for the account.
         $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
 
         $this->startTest();
+    }
+
+    //Merchant dashboard proxy auth tests for ip whitelisting
+
+    protected function resetRedisKeysForIpWhitelist($isReset = true)
+    {
+        if($isReset === true)
+        {
+            $redisKey = 'ip_config_10000000000000_api_payouts';
+            $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+            $this->app['redis']->del($redisKey);
+            $this->app['redis']->del($redisKey2);
+        }
+    }
+
+    public function testCreateIpConfigForMerchant($isReset = true)
+    {
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $whitelistedIps1 = $this->app['redis']->smembers($redisKey);
+        $whitelistedIps2 = $this->app['redis']->smembers($redisKey2);
+
+        $this->assertEqualsCanonicalizing($whitelistedIps1, ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing($whitelistedIps2, ['2.2.2.2', '3.3.3.3']);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['2.2.2.2', '3.3.3.3']);
+
+        $this->resetRedisKeysForIpWhitelist($isReset);
+
+    }
+
+    public function testCreateIpConfigWithDuplicateIpsForMerchant()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $whitelistedIps1 = $this->app['redis']->smembers($redisKey);
+
+        $whitelistedIps2 = $this->app['redis']->smembers($redisKey2);
+
+        $this->assertEqualsCanonicalizing($whitelistedIps1, ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing($whitelistedIps2, ['2.2.2.2', '3.3.3.3']);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['2.2.2.2', '3.3.3.3']);
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testCreateIpConfigForGreaterThan20Ips()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testCreateIpConfigWithNoIps()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testCreateIpConfigErrorInAbsenceOfOtp()
+    {
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testGetNewIpConfigForMerchant()
+    {
+        $this->testCreateIpConfigForMerchant();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testUpdateIpConfigFromMerchantDashboard()
+    {
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $ipList = ['1.1.1.1', '2.2.2.2'];
+
+        $this->app['redis']->sadd($redisKey, $ipList);
+
+        $this->app['redis']->sadd($redisKey2, $ipList);
+
+        $this->testCreateIpConfigForMerchant(false);
+
+        $whitelistedIps1 = $this->app['redis']->smembers($redisKey);
+        $whitelistedIps2 = $this->app['redis']->smembers($redisKey2);
+
+        $this->assertEqualsCanonicalizing($whitelistedIps1, ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing($whitelistedIps2, ['2.2.2.2', '3.3.3.3']);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['2.2.2.2', '3.3.3.3']);
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testCreateIpConfigForMerchantWithInvalidIPFormat()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testCreateIpConfigFromMerchantDashboardForOptedOut()
+    {
+        $ipList = ['*'];
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $accessor = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG, 'live');
+
+        $accessor->upsert('api_payouts', json_encode($ipList))->save();
+
+        $accessor->upsert('api_fund_account_validation', json_encode($ipList))->save();
+
+        $accessor->upsert('opt_out', json_encode(true))->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testFetchIpConfigFromMerchantDashboardForOptedOut()
+    {
+        $ipList = ['*'];
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $accessor = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG, 'live');
+
+        $accessor->upsert('api_payouts', json_encode($ipList))->save();
+
+        $accessor->upsert('api_fund_account_validation', json_encode($ipList))->save();
+
+        $accessor->upsert('opt_out', json_encode(true))->save();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['*']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['*']);
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testCreateIpConfigWithOtpWithSecureContext()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on',
+            RazorxTreatment::IMPS_MODE_PAYOUT_FILTER => 'control']);
+
+        $user = $this->getDbLastEntity('user');
+
+        $this->fixtures->edit(
+            'user',
+            $user->getId(),
+            [
+                UserEntity::CONTACT_MOBILE => '123456789',
+                UserEntity::CONTACT_MOBILE_VERIFIED => 1,
+            ]);
+
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist']);
+
+        $expectedContext = sprintf('%s:%s:%s:%s:%s',
+            10000000000000,
+            $user->getId(),
+            UserConstants::IP_WHITELIST,
+            'BUIj3m2Nx2VvVj',
+            json_encode(['2.2.2.2', '3.3.3.3']));
+
+        $expectedContext = hash('sha3-512', $expectedContext);
+
+        $this->mockRavenVerifyOtp($expectedContext, '123456789');
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $whitelistedIps1 = $this->app['redis']->smembers($redisKey);
+        $whitelistedIps2 = $this->app['redis']->smembers($redisKey2);
+
+        $this->assertEqualsCanonicalizing($whitelistedIps1, ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing($whitelistedIps2, ['2.2.2.2', '3.3.3.3']);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['2.2.2.2', '3.3.3.3']);
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function mockRavenVerifyOtp($expectedContext, $receiver = null, $source = 'api')
+    {
+        $ravenMock = Mockery::mock(\RZP\Services\Raven::class, [$this->app])->makePartial();
+
+        $ravenMock->shouldReceive('verifyOtp')
+            ->andReturnUsing(function (array $request) use ($expectedContext, $receiver, $source) {
+                try {
+                    self::assertEquals($request['receiver'], $receiver);
+                    self::assertEquals($request['context'], $expectedContext);
+                    self::assertEquals($request['source'], $source);
+                } catch (\Exception $e) {
+                    throw new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+                }
+
+                return [
+                    'success' => true
+                ];
+            })->times(1);
+
+        $this->app->instance('raven', $ravenMock);
+    }
+
+    //Admin dashboard admin auth tests for ip whitelisting
+
+    public function testCreateIpConfigForMerchantFromAdmin($isReset = true)
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $whitelistedIps1 = $this->app['redis']->smembers($redisKey);
+        $whitelistedIps2 = $this->app['redis']->smembers($redisKey2);
+
+        $this->assertEqualsCanonicalizing($whitelistedIps1, ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing($whitelistedIps2, ['2.2.2.2', '3.3.3.3']);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['2.2.2.2', '3.3.3.3']);
+
+        $this->resetRedisKeysForIpWhitelist($isReset);
+    }
+
+    public function testFetchIpConfigForMerchantFromAdmin()
+    {
+        $this->testCreateIpConfigForMerchantFromAdmin();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testUpdateIpConfigForMerchantFromAdmin()
+    {
+        $ipList = ['1.1.1.1', '2.2.2.2'];
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $this->app['redis']->sadd($redisKey, $ipList);
+
+        $this->app['redis']->sadd($redisKey2, $ipList);
+
+        $this->testCreateIpConfigForMerchantFromAdmin(false);
+
+        $whitelistedIps1 = $this->app['redis']->smembers($redisKey);
+        $whitelistedIps2 = $this->app['redis']->smembers($redisKey2);
+
+        $this->assertEqualsCanonicalizing($whitelistedIps1, ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing($whitelistedIps2, ['2.2.2.2', '3.3.3.3']);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['2.2.2.2', '3.3.3.3']);
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    //tests when merchant is already opted in and again tried to opt in, should throw error.
+    public function testMerchantIpConfigOptInWhenAlreadyOptedIn()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testMerchantIpConfigOptOut()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $whitelistedIps1 = $this->app['redis']->smembers($redisKey);
+        $whitelistedIps2 = $this->app['redis']->smembers($redisKey2);
+
+        $this->assertEqualsCanonicalizing($whitelistedIps1, ['*']);
+        $this->assertEqualsCanonicalizing($whitelistedIps2, ['*']);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+
+        $optOut= Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('opt_out');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['*']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['*']);
+        $this->assertEqualsCanonicalizing(json_decode($optOut), true);
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testMerchantIpConfigOptIn()
+    {
+        $this->ba->adminAuth();
+
+        $ipList = ['*'];
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $accessor = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG, 'live');
+        $accessor->upsert('api_payouts', json_encode($ipList))->save();
+        $accessor->upsert('api_fund_account_validation', json_encode($ipList))->save();
+        $accessor->upsert('opt_out', json_encode(true))->save();
+
+        $this->startTest();
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $whitelistedIps1 = $this->app['redis']->smembers($redisKey);
+        $whitelistedIps2 = $this->app['redis']->smembers($redisKey2);
+
+        $this->assertEqualsCanonicalizing($whitelistedIps1, ['2.2.2.2','3.3.3.3']);
+        $this->assertEqualsCanonicalizing($whitelistedIps2, ['2.2.2.2','3.3.3.3']);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+        $optOut= Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('opt_out');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['2.2.2.2','3.3.3.3']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['2.2.2.2','3.3.3.3']);
+        $this->assertEqualsCanonicalizing(json_decode($optOut,true), []);
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testMerchantIpConfigOptOutWhenAlreadyOptedOut()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testMerchantIpConfigOptOutForAService()
+    {
+        $ipList = ['2.2.2.2', '3.3.3.3'];
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $this->app['redis']->sadd($redisKey, $ipList);
+
+        $this->app['redis']->sadd($redisKey2, $ipList);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000,true);
+
+        $accessor = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG,'live');
+
+        $accessor->upsert('api_payouts', json_encode($ipList))->save();
+
+        $accessor->upsert('api_fund_account_validation', json_encode($ipList))->save();
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $whitelistedIps1 = $this->app['redis']->smembers($redisKey);
+        $whitelistedIps2 = $this->app['redis']->smembers($redisKey2);
+
+        $this->assertEqualsCanonicalizing($whitelistedIps1, ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing($whitelistedIps2, ['*']);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['*']);
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testCreateIpConfigForMerchantForSpecificService($isReset = true)
+    {
+        $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $whitelistedIps1 = $this->app['redis']->smembers($redisKey);
+        $whitelistedIps2 = $this->app['redis']->smembers($redisKey2);
+
+        $this->assertEqualsCanonicalizing($whitelistedIps1, ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing($whitelistedIps2, []);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2, true), []);
+
+        $this->resetRedisKeysForIpWhitelist($isReset);
+    }
+
+    public function testMerchantIpConfigFetchFromAdmin()
+    {
+        $this->testCreateIpConfigForMerchant(false);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testMaxIpsAllowedAcrossServicesFromAdmin()
+    {
+        $this->testCreateIpConfigForMerchantForSpecificService(false);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
     }
 }
