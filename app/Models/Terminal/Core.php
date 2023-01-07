@@ -1064,7 +1064,7 @@ class Core extends Base\Core
         if (empty($config) === true)
         {
             // In case of redis failure, usr ICICI Pool VA series prefix
-            return '3434';
+            return '456456';
         }
 
         if (array_key_exists($merchantId, $config) === true)

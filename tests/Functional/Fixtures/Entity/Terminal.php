@@ -2398,7 +2398,7 @@ class Terminal extends Base
             'id'                         => $termId,
             'merchant_id'                => '100000Razorpay',
             'gateway'                    => Gateway::BT_YESBANK,
-            'gateway_merchant_id'        => '3434',
+            'gateway_merchant_id'        => '456456',
             'gateway_terminal_id'        => 'abcde',
             'gateway_terminal_password'  => 'abcdef',
             'gateway_terminal_password2' => 'abcdef',

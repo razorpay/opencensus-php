@@ -7489,13 +7489,13 @@ We look forward to transacting with you!
         $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
 
         $this->fixtures->on('live')->edit('terminal','BANKACC3DSN3DT',
-            ['gateway_merchant_id' => '3434']);
+            ['gateway_merchant_id' => '456456']);
 
         $this->fixtures->on('live')->edit('terminal','BANKACC3DSN3DZ',
             ['gateway_merchant_id' => '232323']);
 
         $this->fixtures->on('test')->edit('terminal','BANKACC3DSN3DT',
-            ['gateway_merchant_id' => '3434']);
+            ['gateway_merchant_id' => '456456']);
 
         $this->fixtures->on('test')->edit('terminal','BANKACC3DSN3DZ',
             ['gateway_merchant_id' => '232323']);
