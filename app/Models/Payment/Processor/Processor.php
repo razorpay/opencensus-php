@@ -1262,8 +1262,6 @@ class Processor
 
         if (empty($input[Payment\Entity::ORDER_ID]) === false)
         {
-            $this->order = $this->fetchOrderFromInput($input);
-
             $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($this->order->getId());
 
             $input[Payment\Entity::ORDER] = $this->order;
@@ -1421,6 +1419,8 @@ class Processor
             $this->setMethodForSubscription($input);
 
             $this->appendMetadataForPayment($input);
+
+            $this->fetchAndSetOrdertoCurrentContext($input);
 
             $this->preProcessForUpiIfApplicable($input);
 
@@ -1860,6 +1860,8 @@ class Processor
 
                     $order = (new Order\Core)->create($orderPayLoad, $this->merchant);
 
+                    $this->order = $order;
+
                     $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($order->getId());
                 }
 
@@ -1876,6 +1878,8 @@ class Processor
                     ];
 
                     $order = (new Order\Core)->create($orderPayLoad, $this->merchant);
+
+                    $this->order = $order;
 
                     $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($order->getId());
                 }
@@ -1900,6 +1904,8 @@ class Processor
 
             $order = (new Order\Core)->create($orderPayLoad, $this->merchant);
 
+            $this->order = $order;
+
             $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($order->getId());
         }
 
@@ -1909,6 +1915,8 @@ class Processor
             $currentInvoiceId = $this->subscription->getCurrentInvoiceId();
 
             $invoice = $this->repo->invoice->findOrFailPublic($currentInvoiceId);
+
+            $this->order = $this->repo->order->findByPublicId(Order\Entity::getSignedId($invoice->getOrderId()));
 
             $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($invoice->getOrderId());
         }
@@ -1926,6 +1934,8 @@ class Processor
             ];
 
             $order = (new Order\Core)->create($orderPayLoad, $this->merchant);
+
+            $this->order = $order;
 
             $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($order->getId());
         }
@@ -3411,14 +3421,12 @@ class Processor
             return;
         }
 
-        $order = $this->fetchOrderFromInput($input);
-
         $this->setOfferForPaymentFromOrderOrInput($payment, $input);
 
         if (($this->offer !== null) and
             ($this->offer->getOfferType() === Offer\Constants::INSTANT_OFFER))
         {
-            $orderAmount = $order->getAmount();
+            $orderAmount = $this->order->getAmount();
 
             $discountedAmount = $this->offer->getDiscountedAmountForPayment($orderAmount, $payment);
 
@@ -5318,9 +5326,7 @@ class Processor
 
             $orderId = $input['order_id'];
 
-            $order = $this->repo->order->findOrFailPublic(Order\Entity::verifyIdAndStripSign($orderId));
-
-            $this->upiMandate = $core->create($upitoken, $order, null);
+            $this->upiMandate = $core->create($upitoken, $this->order, null);
         }
 
         if (($this->subscription === null) or ($this->subscription->isExternal() === true))
@@ -5431,6 +5437,8 @@ class Processor
         $payment->setPublicKey($this->ba->getPublicKey());
 
         $this->payment = $payment;
+
+        $this->payment->order()->associate($this->order);
 
         return $payment;
     }
@@ -5590,8 +5598,6 @@ class Processor
 
             return;
         }
-
-        $this->order = $this->fetchOrderFromInput($input);
 
         if ($payment->isNach() === true)
         {
@@ -7749,11 +7755,11 @@ class Processor
             return;
         }
 
-        if (isset($input['order_id']) === true)
+        if (isset($this->order) === true)
         {
-            $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
             $orderMeta = null;
-            foreach ($order->orderMetas as $oMeta)
+
+            foreach ($this->order->orderMetas as $oMeta)
             {
                 if ($oMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT)
                 {
@@ -7883,6 +7889,14 @@ class Processor
                 (new Merchant\MerchantGiftCardPromotions\Service())->adjustCodFeeIfGiftCardBalanceAvailable($orderId, $orderMeta, $method);
             }
 
+        }
+    }
+
+    private function fetchAndSetOrdertoCurrentContext(array $input)
+    {
+        if (isset($input['order_id']) === true)
+        {
+            $this->order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
         }
     }
 
