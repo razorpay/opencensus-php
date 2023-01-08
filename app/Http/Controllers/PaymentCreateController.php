@@ -1024,17 +1024,15 @@ class PaymentCreateController extends Controller
 
         assertTrue ($data !== null);
 
-        $this->pushForBarricade($data);
-
         return $this->returnCheckoutCallbackView($data);
     }
     protected function pushForBarricade($data): void
     {
         $barricade_action = 'merchant_integration_s2s_callback';
         $barricade_merchant_integration = 'barricade_merchant_integration_s2s_callback';
-        $sqsPush = $this->app->razorx->getTreatment($data['razorpay_payment_id'], $barricade_merchant_integration, 'live');
+        $sqsPush = $this->app->razorx->getTreatment($barricade_action, $barricade_merchant_integration, 'live');
 
-        if ($sqsPush === 'control') {
+        if ($sqsPush === 'on') {
 
             $data['action'] = [
                 'action' => $barricade_action
@@ -1829,6 +1827,8 @@ class PaymentCreateController extends Controller
      */
     protected function returnMerchantFullRedirectView($data)
     {
+        $this->pushForBarricade($data);
+
         if (Payment\Gateway::isNachNbResponseFlow($data) === true)
         {
             return $this->returnNachNbRedirectView($data);
