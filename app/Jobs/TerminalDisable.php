@@ -84,7 +84,7 @@ class TerminalDisable extends Job
 
         $paymentId = $this->data['payment_id'];
 
-        $callbackUrl = sprintf('terminals/%s/%s',$terminalId, 'enable');
+        $callbackUrl = sprintf('terminals/toggle/%s/%s',$terminalId, 'enable');
 
         $timeZone = new DateTimeZone('Asia/Kolkata');
 
