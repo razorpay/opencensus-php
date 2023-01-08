@@ -42,6 +42,7 @@ use RZP\Models\Admin\Permission\Name as Permission;
 use \RZP\Models\Workflow\Action\Core as ActionCore;
 use RZP\Exception\BadRequestValidationFailureException;
 use \RZP\Models\Workflow\Action\Entity as ActionEntity;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\ActivationFlow as ActivationFlow;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
@@ -529,6 +530,7 @@ class Validator extends Base\Validator
 
     protected static $updatePartnerTypeRules = [
         Entity::PARTNER_TYPE    => 'required|string|custom:partner_type_for_update',
+        DEConstants::CONSENT    => 'sometimes|boolean',
     ];
 
     protected static $preferencesRules = [

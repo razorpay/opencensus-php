@@ -7,6 +7,7 @@ use RZP\Models\Partner;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 
 class Validator extends Detail\Validator
 {
@@ -53,6 +54,8 @@ class Validator extends Detail\Validator
         Detail\Entity::GSTIN                       => 'sometimes|string|size:15|nullable',
         Detail\Entity::KYC_CLARIFICATION_REASONS   => 'sometimes|array|custom',
         Detail\Entity::SUBMIT                      => 'sometimes|boolean',
+        DEConstants::CONSENT                       => 'sometimes|boolean',
+        DEConstants::DOCUMENTS_DETAIL              => 'sometimes|array',
     ];
 
     protected static $actionRules = [
