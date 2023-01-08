@@ -36,6 +36,7 @@ class ApiUrl
             'https://k8s-prod-api.razorpay.com/v1/',
             'https://api-kong.razorpay.com/v1/',
             'https://api-whatsapp.razopay.com/v1/',
+            'https://api-merchant-proxy.razorpay.com./v1/',  // for testing
         ],
     ];
 
