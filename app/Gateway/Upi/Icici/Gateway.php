@@ -333,8 +333,7 @@ class Gateway extends Base\Gateway
 
         // do not pre-process if it is upiTransfer, bharatQR or recurring callback
         if (($isUpiTransfer === true) or
-            ($isBharatQr === true) or
-            ($routeName === 'gateway_payment_callback_recurring'))
+            ($isBharatQr === true))
         {
             return false;
         }
@@ -1320,14 +1319,15 @@ class Gateway extends Base\Gateway
             $response = $this->preProcessThroughMozart($body);
 
             // In some cases the callback for recurring payments is received on callback/{gateway} route instead of
-            // callback/recurring/{gateway} route. Hence adding this check to ensure recurring callbacks are not
-            // processed via the UPS preProcess flow that is meant for non-recurring callbacks only.
+            // callback/recurring/{gateway} route and vice versa. Hence adding this check to ensure recurring
+            // callbacks are not processed via the UPS preProcess flow that is meant for non-recurring callbacks only.
             //
             // merchantReference in case of non-recurring payments is the payment id and hence will always have
             // the length as 14. While for recurring payments the merchant reference always has length > 14
             // Example - Hv4iga1CmfWU3F0execte1 (<payment_id><env><action><attempt>)
             $merchantReference = $response['data']['upi']['merchant_reference'] ?? '';
 
+            // return if it a actual payment id and not composite payment id.
             if (UniqueIdEntity::verifyUniqueId($merchantReference, false) === true)
             {
                 return $response;

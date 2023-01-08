@@ -50,14 +50,12 @@ class UpiInitialRecurringTestCase extends TestCase
             return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
         });
 
-        // enable payment initiate through UPS
-        $this->setRazorxMock(function ($mid, $feature, $mode)
-        {
-            return $this->getRazoxVariant($feature, 'api_upi_icici_v1', 'upips');
-        });
-
         // Enable UPI payment service in config
         $this->app['config']->set(['applications.upi_payment_service.enabled' => true]);
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
     }
 
     public function testRecurringMandateCreate($encrypted=false, $tpv=false, $bankAccount=[])
