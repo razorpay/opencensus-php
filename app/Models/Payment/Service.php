@@ -5654,7 +5654,7 @@ class Service extends Base\Service
             }
 
             return [
-                'success'        => ($payment->getStatus() === Payment\Status::AUTHORIZED),
+                'success'        => (($payment->getStatus() === Payment\Status::AUTHORIZED) or ($payment->getStatus() === Payment\Status::CAPTURED)),
                 'payment_id'     => $payment->getId(),
                 'amount'         => $payment->getAmount(),
                 'status'         => $payment->getStatus(),
