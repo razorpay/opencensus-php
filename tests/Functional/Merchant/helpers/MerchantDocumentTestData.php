@@ -183,6 +183,26 @@ return [
         ]
     ],
 
+    'testDocumentUploadForPartnerKyc' => [
+        'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type'  => 'promoter_address_url',
+                'is_partner_kyc' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'documents' => [
+                    'promoter_address_url' => [
+
+                    ]
+                ],
+            ]
+        ]
+    ],
+
     'testUploadFilesByAgent' => [
         'request' => [
             'url'     => '/merchant_document',

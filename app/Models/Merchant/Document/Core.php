@@ -11,6 +11,7 @@ use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Gateway\File\Constants as GatewayConstants;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Partner;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\AutoKyc;
 use RZP\Models\Merchant\Stakeholder;
@@ -158,6 +159,13 @@ class Core extends Base\Core
         $entity = $entity ?? $merchant;
 
         $this->saveMerchantDocument($merchant, $documentType, $fileAttributes[$documentType], $entity, $validateLock, $document);
+
+        if (empty($input['is_partner_kyc']) === false)
+        {
+            $partnerDetailCore = new Partner\Core();
+
+            return $partnerDetailCore->createPartnerResponse($merchantDetails);
+        }
 
         return $merchantDetailCore->createResponse($merchantDetails);
 

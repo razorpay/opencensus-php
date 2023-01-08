@@ -22,6 +22,7 @@ class DocumentController extends Controller
         return ApiResponse::json($response);
     }
 
+
     /**
      * @Todo add comments
      * @return mixed

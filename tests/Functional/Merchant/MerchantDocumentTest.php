@@ -99,6 +99,38 @@ class MerchantDocumentTest Extends TestCase
         $this->assertArrayNotHasKey('promoter_address_url',$content['verification']['required_fields']);
     }
 
+    public function testDocumentUploadForPartnerKyc()
+    {
+        $merchantUser = $this->fixtures->user->createUserForMerchant('1cXSLlUU8V9sXl');
+
+        $this->ba->proxyAuth('rzp_test_' . '1cXSLlUU8V9sXl', $merchantUser['id']);
+
+        //Merchant detail entity for default test merchant
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '1cXSLlUU8V9sXl',
+                'promoter_pan_name' => 'XYZ',
+            ]);
+
+        $this->fixtures->create(
+            'partner_activation',
+            [
+                'merchant_id' => '1cXSLlUU8V9sXl',
+                'locked'      => false,
+            ]);
+
+        $this->updateUploadDocumentData(__FUNCTION__);
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertArrayNotHasKey('promoter_address_url',$content['partner_activation']['verification']['required_fields']);
+    }
+
     public function testUploadFilesByAgent()
     {
         $this->ba->adminAuth();
