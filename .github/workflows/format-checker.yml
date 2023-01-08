@@ -62,7 +62,6 @@ jobs:
           )
         run: |
           echo 'PR Branch: ${{ steps.branch-name.outputs.current_branch }}'
-          npm ci
           base=$base npm run validate-lint
           npx eslint \
           --output-file eslint_report.json --format json \
@@ -107,7 +106,6 @@ jobs:
           steps.changed-stylus-files.outputs.all_modified_files != ''
         run: |
           echo 'PR Branch: ${{ steps.branch-name.outputs.current_branch }}'
-          npm ci
           npx stylelint \
           --custom-formatter stylelint-formatter.js \
           --config .stylelintrc-stylus.js \
