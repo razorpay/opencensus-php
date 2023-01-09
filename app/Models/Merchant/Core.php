@@ -4503,6 +4503,8 @@ class Core extends Base\Core
 
         $tags = $input['tags'];
 
+        (new Validator)->validateTagsForOnlyDSMerchants($merchant, $tags);
+
         $merchant->retag($tags);
 
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);

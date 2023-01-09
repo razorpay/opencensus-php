@@ -5429,6 +5429,15 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    public function testvalidateTagsForOnlyDSMerchants()
+    {
+        $this->fixtures->merchant->addFeatures(['only_ds']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchEsScheduledPricing()
     {
         $this->fixtures->create('pricing:standard_plan');
