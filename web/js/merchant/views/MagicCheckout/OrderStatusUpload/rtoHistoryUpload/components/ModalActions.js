@@ -8,6 +8,7 @@ import {
 } from 'merchant/reducers/magicCheckout/rtoHistoryUpload/action';
 import { closeModal as closeModalAction } from 'merchant_common/reducers/modals';
 import { showNotification as displayNotification } from 'merchant_common/reducers/notifications';
+import { NOTIFICATION_MESSAGES } from 'merchant/views/MagicCheckout/OrderStatusUpload/rtoHistoryUpload/constants';
 
 const ModalActions = (props) => {
   const { fileId, provider, createBatch, closeModal, resetFileId, showNotification } = props;
@@ -25,15 +26,18 @@ const ModalActions = (props) => {
         resetFileId(null);
         showNotification({
           type: 'success',
-          message: 'RTO history file uploaded successfully.',
+          message: NOTIFICATION_MESSAGES.success,
         });
         closeModal();
       })
-      .catch(() => {
+      .catch((err) => {
         setIsCtaDisabled(false);
         showNotification({
           type: 'error',
-          message: 'RTO history file upload unsuccessful. Please Try again.',
+          message:
+            err?.errors?.[0]?.indexOf('merchant_upload_time_period_expired_error') > -1
+              ? NOTIFICATION_MESSAGES.error.time_expired
+              : NOTIFICATION_MESSAGES.error.default,
         });
       });
   }, [fileId, provider, setIsCtaDisabled, resetFileId, showNotification]);

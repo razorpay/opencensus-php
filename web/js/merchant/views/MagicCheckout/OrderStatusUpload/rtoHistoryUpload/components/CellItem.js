@@ -1,8 +1,10 @@
+import { SHIPPING_PROVIDERS_MAPPING } from 'merchant/views/MagicCheckout/OrderStatusUpload/rtoHistoryUpload/constants';
+
 export const fileId = { title: 'File Id', value: (item) => item.file_id || '-' };
 
 export const shippingProvider = {
   title: 'Shipping Provider',
-  value: (item) => item.shipping_provider || '-',
+  value: (item) => SHIPPING_PROVIDERS_MAPPING[item?.shipping_provider?.toLowerCase()] || '-',
 };
 
 export const createdAt = {

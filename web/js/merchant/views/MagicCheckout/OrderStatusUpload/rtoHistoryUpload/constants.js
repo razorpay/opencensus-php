@@ -7,7 +7,26 @@ export const DISPLAY_MESSAGES = {
 
 export const SHIPPING_PROVIDERS = [
   { label: 'Select Provider', name: '' },
-  { label: 'Shiprocket', name: 'Shiprocket' },
-  { label: 'Delhivery', name: 'Delhivery' },
-  { label: 'Pickrr', name: 'Pickrr' },
+  { label: 'Shiprocket', name: 'shiprocket' },
+  { label: 'Delhivery', name: 'delhivery' },
+  { label: 'Pickrr', name: 'pickrr' },
+  { label: 'Other providers', name: 'generic' },
 ];
+
+export const SAMPLE_FILE_URL =
+  'https://cdn.razorpay.com/static/assets/magic-checkout/sample_order_history_file.csv';
+
+export const NOTIFICATION_MESSAGES = {
+  success: 'Order history file uploaded successfully.',
+  error: {
+    time_expired: "Order history can't be uploaded after 30 days.",
+    default: 'Order history file upload unsuccessful. Please Try again.',
+  },
+};
+
+export const SHIPPING_PROVIDERS_MAPPING = {
+  shiprocket: 'Shiprocket',
+  pickrr: 'Pickrr',
+  delhivery: 'Delhivery',
+  generic: 'Other Providers',
+};

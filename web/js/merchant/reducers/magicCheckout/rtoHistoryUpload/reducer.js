@@ -6,6 +6,7 @@ export const initialState = {
   loading: false,
   items: [],
   error: null,
+  isUploadAllowed: true,
 };
 
 export const rtoHistoryUploadReducer = (state = initialState, action) => {
@@ -16,6 +17,7 @@ export const rtoHistoryUploadReducer = (state = initialState, action) => {
       return merge(state, {
         loading: false,
         items: action.payload.data.merchant_file_upload_audits || action.payload.data,
+        isUploadAllowed: action.payload?.data?.create_allowed,
       });
     case ACTIONS.FETCH_RTO_HISTORY_ERROR:
       return merge(state, { error: action.payload.error, loading: false });

@@ -18,6 +18,7 @@ import {
 import {
   DISPLAY_MESSAGES,
   SHIPPING_PROVIDERS,
+  SAMPLE_FILE_URL,
 } from 'merchant/views/MagicCheckout/OrderStatusUpload/rtoHistoryUpload/constants';
 
 const CLOSE_URL = '/magic/order-status';
@@ -35,7 +36,7 @@ const openFileUpload = (validateBatch, openModal, provider, setProvider) => {
         validateBatch={validateBatch}
         processFile
         displayMsgs={DISPLAY_MESSAGES}
-        validateModalInfo={<ValidateModalInfo />}
+        validateModalInfo={<ValidateModalInfo sampleUrl={SAMPLE_FILE_URL} />}
         maxFileSize={52428800} // 50MB
         batchListClass="rto-history-upload"
         disabled={!provider}
@@ -50,7 +51,7 @@ const openFileUpload = (validateBatch, openModal, provider, setProvider) => {
   });
 };
 const RTOHistoryUpload = ({ openModal, validateBatch, rtoHistoryData, fetchAll }) => {
-  const { error, loading, items } = rtoHistoryData;
+  const { error, loading, items, isUploadAllowed } = rtoHistoryData;
 
   const [provider, setProvider] = useState(null);
 
@@ -76,12 +77,16 @@ const RTOHistoryUpload = ({ openModal, validateBatch, rtoHistoryData, fetchAll }
   ) : (
     <div className="rto-history-container content-wrapper">
       <div className="tab-header">
-        <span className="heading">Return to origin history</span>
-        {!items.length && (
-          <span className="pull-right upload-cta">
-            <button className="btn btn-primary" onClick={onUploadClick}>
+        <span className="heading">Order history</span>
+        {isUploadAllowed && (
+          <span className="pull-right upload-cta" data-testid="upload-order-history-cta">
+            <button
+              className="btn btn-primary"
+              onClick={onUploadClick}
+              name="upload-order-history-cta"
+            >
               <i className="i i-plus" />
-              Upload RTO History
+              Upload Order History
             </button>
           </span>
         )}
@@ -90,7 +95,11 @@ const RTOHistoryUpload = ({ openModal, validateBatch, rtoHistoryData, fetchAll }
           intelligence and RTO protection from Day 1.
         </p>
       </div>
-      {!items.length ? <EmptyComponent /> : <RTOHistoryTable items={items} error={error} />}
+      {!items.length ? (
+        <EmptyComponent sampleUrl={SAMPLE_FILE_URL} />
+      ) : (
+        <RTOHistoryTable items={items} error={error} />
+      )}
     </div>
   );
 };

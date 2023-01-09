@@ -9,7 +9,7 @@ export const NAV_ITEM = [
   },
   {
     id: 'rtoHistoryUpload',
-    title: 'RTO History',
+    title: 'Order History',
     component: <RTOHistoryUpload />,
   },
 ];
