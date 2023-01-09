@@ -380,7 +380,8 @@ function MerchantNavLinks(props) {
         additionalCondition={(currentUser) =>
           !isMobileResolution() &&
           currentUser.isAllowedView('developers_console') &&
-          currentUser.isDeveloperConsoleEnabled
+          (currentUser.isDeveloperConsoleEnabled ||
+            currentUser.isDeveloperConsoleWebhooksTabEnabled)
         }
         isNew
       />

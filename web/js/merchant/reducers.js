@@ -129,6 +129,9 @@ import { b2bReducers } from 'merchant/reducers/b2bExports';
 import non3dsCardsActivationReducer from 'merchant/reducers/non3dsCardsActivation';
 import apiLogsReducer from 'merchant/reducers/developers/apiLogs';
 import apiStatsReducer from 'merchant/reducers/developers/apiStats';
+import webhookEventsListReducer from 'merchant/reducers/developers/webhookEventsList';
+import webhooksLogsReducer from 'merchant/reducers/developers/webhookLogs';
+import webhookStatsReducer from 'merchant/reducers/developers/webhookStats';
 import websiteComplianceReducer from 'merchant/reducers/websitecompliance';
 import pluginReducer from 'merchant/reducers/plugins';
 import { paymentUploadInvoiceReducer } from 'merchant/reducers/paymentUploadInvoice';
@@ -255,6 +258,9 @@ export default combineReducers({
   non3dsCardsActivation: non3dsCardsActivationReducer,
   apiLogs: apiLogsReducer,
   apiStats: apiStatsReducer,
+  webhookEventsList: webhookEventsListReducer,
+  webhookLogs: webhooksLogsReducer,
+  webhookStats: webhookStatsReducer,
   websiteCompliance: websiteComplianceReducer,
   plugins: pluginReducer,
   paymentUploadInvoice: paymentUploadInvoiceReducer,

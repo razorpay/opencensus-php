@@ -380,6 +380,13 @@ export default {
     // prod experiment ids
     'Jhk9i7jzGtL2OT',
   ],
+  developer_console_webhooks_tab: [
+    // beta experiment ids
+    'KUpz5tL5Acjm1Z',
+
+    // prod experiment ids
+    'KaHGZHjePU5XLxs',
+  ],
   website_compliance_flow_exp: [
     // stage
     'K2hFpyVAkZomaH',

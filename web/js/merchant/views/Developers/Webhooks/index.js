@@ -1,13 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import moment from 'moment';
+import { connect } from 'react-redux';
+import { compose } from 'redux';
 import DateRangePicker from 'common/ui/DateRangePicker';
+import { TypeAhead } from 'react-power-select';
+import { NavLink, withRouter } from 'react-router-dom';
+import * as WebListActions from 'merchant/reducers/developers/webhookEventsList';
 import RequestLogs from './RequestLogs/RequestLogs';
 import RequestChart from './RequestChart/RequestChart';
 import {
-  trackApiLogsSearched,
-  trackApiTabOpened,
-  trackDateChange,
-  trackDurationChange,
+  trackWebhookLogsSearched,
+  trackWebhookTabDateChange,
+  trackWebhookTabDurationChange,
+  trackWebhookTabEventTypeChange,
+  trackWebhookTabOpened,
 } from 'merchant/views/Developers/events';
 
 const PAST_3_HOURS = 'Past 3 Hours';
@@ -21,10 +27,11 @@ const dateRangePresets = [
   [PAST_3_DAYS, -3, 'days'],
   [PAST_7_DAYS, -7, 'days'],
 ];
+
 const endDate = moment();
 const startDate = endDate.clone().subtract(10800, 'seconds');
 
-const Api = () => {
+const Webhooks = ({ loading, fetchWebhookEventList, items, match }) => {
   const [dateRange, setDateRange] = useState();
   const [selectedFilters, setSelectedFilter] = useState({
     dateRange: PAST_3_HOURS,
@@ -32,10 +39,17 @@ const Api = () => {
       from: startDate.valueOf(),
       to: endDate.valueOf(),
     },
+    eventType: null,
   });
 
   useEffect(() => {
-    trackApiTabOpened();
+    trackWebhookTabOpened();
+
+    fetchWebhookEventList({
+      webhookId: match.params.id,
+      from: selectedFilters.duration.from,
+      to: selectedFilters.duration.to,
+    });
   }, []);
 
   const onDatesChange = (from, to) => {
@@ -60,14 +74,21 @@ const Api = () => {
 
     setSelectedFilter((prevState) => ({
       ...prevState,
+      eventType: null,
       duration: {
         from: fromTimeStamp.valueOf(),
         to: toTimeStamp.valueOf(),
       },
     }));
 
-    trackDateChange();
-    trackApiLogsSearched();
+    fetchWebhookEventList({
+      webhookId: match.params.id,
+      from: fromTimeStamp.valueOf(),
+      to: toTimeStamp.valueOf(),
+    });
+
+    trackWebhookTabDateChange();
+    trackWebhookLogsSearched();
   };
 
   const onSelectPreset = (preset) => {
@@ -78,7 +99,7 @@ const Api = () => {
     }));
 
     if (!preset.name.includes('Custom')) {
-      trackDurationChange();
+      trackWebhookTabDurationChange();
     }
   };
 
@@ -89,11 +110,25 @@ const Api = () => {
     );
   };
 
+  const onEventTypeChange = (data) => {
+    setSelectedFilter((prevState) => ({
+      ...prevState,
+      eventType: data.option?.route_name,
+    }));
+
+    trackWebhookTabEventTypeChange();
+  };
+
   return (
-    <div className="developers-container">
-      <p className="api-logs-title content-wrapper">API Logs</p>
+    <div className="developers-container" style={{ padding: 20 }}>
+      <div className="mb-20">
+        <NavLink to="/developers/webhooks">
+          <i class="i i-arrow-back" />
+          Webhooks
+        </NavLink>
+      </div>
       <div className="filters-container content-wrapper mb-20">
-        <div className="form-group datepicker-group">
+        <div class="form-group datepicker-group">
           <label>Duration (can only be fetched for max. past 14 days)</label>
           <DateRangePicker
             presets={dateRangePresets}
@@ -103,11 +138,36 @@ const Api = () => {
             callPresetChangeOnCustomOption
           />
         </div>
+        <div class="form-group list-filter-item">
+          <label>Event Type</label>
+          <TypeAhead
+            options={items}
+            disabled={loading}
+            placeholder={`${loading ? 'Loading...' : 'payment.create'}`}
+            showClear={true}
+            selected={selectedFilters.eventType}
+            optionLabelPath="route_name"
+            onChange={onEventTypeChange}
+            optionComponent={({ option }) => (
+              <p style={{ paddingTop: 5, paddingBottom: 5 }}>{option.route_name}</p>
+            )}
+          />
+        </div>
       </div>
-      <RequestChart selectedFilters={selectedFilters} />
-      <RequestLogs selectedFilters={selectedFilters} />
+      <RequestChart selectedFilters={selectedFilters} webhookId={match.params.id} />
+      <RequestLogs selectedFilters={selectedFilters} webhookId={match.params.id} />
     </div>
   );
 };
 
-export default Api;
+export default compose(
+  withRouter,
+  connect(
+    (state) => ({
+      ...state.webhookEventsList,
+    }),
+    {
+      ...WebListActions,
+    },
+  ),
+)(Webhooks);

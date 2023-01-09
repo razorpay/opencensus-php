@@ -1,39 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import * as ApiStatsActions from 'merchant/reducers/developers/apiStats';
+import * as WebhookStatsActions from 'merchant/reducers/developers/webhookStats';
 import Footer from 'merchant/views/Developers/components/RequestChartFooter';
 import RequestChartBody from './RequestChartBody';
 import RequestChartToolbar, { aggregations } from './RequestChartToolbar';
-import {
-  trackApiChartDurationChanged,
-  trackApiChartStatusChanged,
-} from 'merchant/views/Developers/events';
 
-function RequestChart(props) {
-  const { selectedFilters, fetchStats, loading, data, error } = props;
+function RequestChart({ selectedFilters, fetchStats, loading, data, error, webhookId }) {
   const { duration } = selectedFilters;
-  const [selectedAggregation, setSelectedAggregation] = React.useState(aggregations[0]);
-  const [filteredStatusCodeList, setFilteredStatusCodeList] = React.useState([]);
-  // if we didn't get data or we got error inside data then no chart data is available
+  const [selectedAggregation, setSelectedAggregation] = useState(aggregations[0]);
+  const [filteredStatusCodeList, setFilteredStatusCodeList] = useState([]);
   const isDataNotAvailable = !data || !data?.stats?.length || error;
 
-  React.useEffect(() => {
-    fetchStats(selectedFilters);
+  useEffect(() => {
+    fetchStats({ ...selectedFilters, webhookId });
     const aggregation = aggregations.find((aggr) =>
       aggr.isEnabled(selectedFilters.duration.from, selectedFilters.duration.to),
     );
     if (aggregation) {
       setSelectedAggregation(aggregation);
     }
-  }, [selectedFilters.duration.from, selectedFilters.duration.to]);
+  }, [selectedFilters.eventType, selectedFilters.duration.from, selectedFilters.duration.to]);
 
   const handleAggregateChange = (aggregation) => {
     const newlySelectedAggregation = aggregations.find((agg) => agg.value === aggregation);
     if (newlySelectedAggregation) {
       setSelectedAggregation(newlySelectedAggregation);
     }
-    trackApiChartDurationChanged(aggregation);
   };
 
   const handleFilteredStatusCodeChange = (statusCode) => {
@@ -49,7 +42,6 @@ function RequestChart(props) {
       newFilteredStatusCodeList = [...filteredStatusCodeList, statusCode];
     }
     setFilteredStatusCodeList(newFilteredStatusCodeList);
-    trackApiChartStatusChanged();
   };
 
   return (
@@ -82,10 +74,10 @@ function RequestChart(props) {
 export default compose(
   connect(
     (state) => ({
-      ...state.apiStats,
+      ...state.webhookStats,
     }),
     {
-      ...ApiStatsActions,
+      ...WebhookStatsActions,
     },
   ),
 )(RequestChart);

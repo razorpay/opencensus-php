@@ -7,26 +7,26 @@ import TableBody from 'common/ui/TableBody';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import Time from 'common/ui/Time';
 import Pager from 'common/ui/Pager';
-import * as ApiLogsActions from 'merchant/reducers/developers/apiLogs';
+import * as WebHooksLogsActions from 'merchant/reducers/developers/webhookLogs';
 import ListContainer from 'merchant/containers/ListContainer';
-import {
-  trackApiLogsSearchHttpStatusChanged,
-  trackApiLogsSearched,
-  trackApiLogsSearchKeywordChanged,
-} from 'merchant/views/Developers/events';
 import StatusLabel from 'merchant/views/Developers/components/StatusLabel';
+import {
+  trackWebhookLogsSearchHttpStatusChanged,
+  trackWebhookLogsSearchKeywordChanged,
+  trackWebhookLogsSearched,
+} from 'merchant/views/Developers/events';
 import { HTTP_STATUS_CODE_LIST } from 'merchant/views/Developers/constants';
 
 @withRouter
-@connect((state) => ({ ...state.apiLogs }), {
-  ...ApiLogsActions,
+@connect((state) => ({ ...state.webhookLogs }), {
+  ...WebHooksLogsActions,
 })
 export default class RequestLogs extends ListContainer {
   constructor(props) {
     super(props);
     this.state = {
       ...super.state,
-      status: {},
+      shouldCtasBeDisabled: false,
     };
   }
 
@@ -34,8 +34,12 @@ export default class RequestLogs extends ListContainer {
     const { from: prevPropsFrom, to: prevPropsTo } = prevProps.selectedFilters.duration;
     const { from, to } = this.props.selectedFilters.duration;
 
-    if (prevPropsFrom !== from || prevPropsTo !== to) {
-      /* eslint-disable-next-line react/no-did-update-set-state */
+    if (
+      prevPropsFrom !== from ||
+      prevPropsTo !== to ||
+      prevProps.selectedFilters.eventType !== this.props.selectedFilters.eventType
+    ) {
+      // eslint-disable-next-line react/no-did-update-set-state
       this.setState(
         {
           httpStatus: '',
@@ -54,34 +58,34 @@ export default class RequestLogs extends ListContainer {
   fetchEntityList(params) {
     const requestData = {
       ...params,
+      ...this.props.selectedFilters,
       httpStatus: this.state.httpStatus,
       searchField: this.state.searchField,
-      from: params.from || this.props.selectedFilters.duration.from,
-      to: params.to || this.props.selectedFilters.duration.to,
+      webhookId: this.props.webhookId,
     };
 
-    return this.props.fetchApiLogs(requestData);
+    return this.props.fetchWebhookLogs(requestData);
   }
 
   handleSearchClick = (e) => {
     if (e && e.code && e?.code !== 'Enter') return;
 
     this.search();
-    trackApiLogsSearched();
+    trackWebhookLogsSearched();
   };
 
   render() {
-    const { loading, items: apiLogs, selectedFilters } = this.props;
+    const { loading, items: webhookLogs, selectedFilters, match } = this.props;
     const { duration, dateRange } = selectedFilters;
     const fromDate = moment(duration.from).format('DD MMM');
     const toDate = moment(duration.to).format('DD MMM');
-    const { status } = this.state;
+    const { status, shouldCtasBeDisabled } = this.state;
 
     return (
-      <div className="api-logs-container content-wrapper" style={{ marginTop: 20 }}>
-        <h5 className="mb-20">
-          API logs {dateRange ? `in ${dateRange}` : ''} ({fromDate} - {toDate})
-        </h5>
+      <div className="webhook-logs-container content-wrapper" style={{ marginTop: 20 }}>
+        <h4 className="title mb-20">
+          Webhook logs {dateRange ? `in ${dateRange}` : ''} ({fromDate} - {toDate})
+        </h4>
         <div className="list-filter-container">
           <div className="form-group list-filter-item">
             <label>Search</label>
@@ -89,23 +93,23 @@ export default class RequestLogs extends ListContainer {
               type="text"
               name="searchField"
               placeholder="Search for any keyword from request, response or headers"
-              className="form-control input-sm"
+              class="form-control input-sm"
               style={{ width: 345 }}
               value={this.state.searchField}
               onChange={(e) => this.setState({ searchField: e.target.value })}
-              onBlur={() => trackApiLogsSearchKeywordChanged()}
+              onBlur={() => trackWebhookLogsSearchKeywordChanged()}
               onKeyDown={this.handleSearchClick}
             />
           </div>
           <div className="form-group list-filter-item">
             <label>Response Code</label>
             <select
-              className="form-control input-sm"
+              class="form-control input-sm"
               value={this.state.httpStatus}
               onChange={(e) =>
                 this.setState({ httpStatus: e.target.value === 'all' ? '' : e.target.value })
               }
-              onBlur={() => trackApiLogsSearchHttpStatusChanged()}
+              onBlur={() => trackWebhookLogsSearchHttpStatusChanged()}
             >
               {HTTP_STATUS_CODE_LIST.map((code) => (
                 <option key={code.value} value={code.value}>
@@ -114,12 +118,8 @@ export default class RequestLogs extends ListContainer {
               ))}
             </select>
           </div>
-          <div className="form-group list-filter-item btn-toolbar">
-            <button
-              className="btn btn-primary btn-sm"
-              type="button"
-              onClick={this.handleSearchClick}
-            >
+          <div class="form-group list-filter-item btn-toolbar">
+            <button class="btn btn-primary btn-sm" type="button" onClick={this.handleSearchClick}>
               Search
             </button>
             <button
@@ -128,50 +128,52 @@ export default class RequestLogs extends ListContainer {
               onClick={() => {
                 this.setState({ searchField: '', httpStatus: '' }, () => this.search());
               }}
+              disabled={shouldCtasBeDisabled}
             >
               Clear
             </button>
           </div>
         </div>
-        <Alert type={status.type} message={status.message} />
-        <div className="table-responsive">
-          <table className="table table-hover">
+        {status?.type && status?.message ? (
+          <Alert type={status.type} message={status.message} />
+        ) : null}
+        <div class="table-responsive">
+          <table class="table table-hover">
             <thead>
               <tr>
-                <th>Log ID</th>
-                <th>Method & Endpoint</th>
+                <th>Event ID</th>
+                <th>Event Type</th>
                 <th>Date and Time</th>
-                <th>Response Code</th>
+                <th>Status</th>
               </tr>
             </thead>
             <TableBody
               isLoading={loading}
               colSpan={8}
-              rows={apiLogs}
+              rows={webhookLogs}
               emptyTableRow={() => (
                 <tr>
-                  <td className="text-center empty-table" colSpan={4}>
-                    <p>No request logs found for selected time range</p>
+                  <td class="text-center empty-table" colSpan={4}>
+                    <p>No webhook logs found for selected time range</p>
                   </td>
                 </tr>
               )}
             >
-              {apiLogs.map((log) => (
-                <EntityItemRow key={log.request_id} id={log.request_id}>
+              {webhookLogs.map((webhookLog) => (
+                <EntityItemRow key={webhookLog.request_id} id={webhookLog.request_id}>
                   <td>
-                    <NavLink to={`/developers/apis/${log.request_id}`}>
-                      <code>{log.request_id}</code>
+                    <NavLink
+                      to={`/developers/webhooks/${match.params.id}/event/${webhookLog.request_id}`}
+                    >
+                      <code>{webhookLog.request_id}</code>
                     </NavLink>
                   </td>
+                  <td>{webhookLog.request.route_name}</td>
                   <td>
-                    <strong>{log.request.method.toUpperCase()}</strong>{' '}
-                    <span>{log.request.url.split('/v1')[1]}</span>
+                    <Time value={webhookLog.timestamp} format="DD MMM YYYY, hh:mm:ss a" />
                   </td>
                   <td>
-                    <Time value={log.timestamp} format="DD MMM YYYY, hh:mm:ss a" />
-                  </td>
-                  <td>
-                    <StatusLabel statusCode={log.response.http_status_code} />
+                    <StatusLabel statusCode={webhookLog.response.http_status_code} />
                   </td>
                 </EntityItemRow>
               ))}
@@ -181,7 +183,7 @@ export default class RequestLogs extends ListContainer {
         <Pager
           count={this.state.count}
           skip={this.state.skip}
-          length={apiLogs.length}
+          length={webhookLogs.length}
           onClick={this.paginate}
         />
       </div>

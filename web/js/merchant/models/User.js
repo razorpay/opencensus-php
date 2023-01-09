@@ -560,6 +560,10 @@ export default class User {
     return getSplitzExperimentVariant('developer_console')?.variables?.result === 'on';
   }
 
+  get isDeveloperConsoleWebhooksTabEnabled() {
+    return getSplitzExperimentVariant('developer_console_webhooks_tab')?.variables?.result === 'on';
+  }
+
   get isProjectKeystoneCorporateCardsEnabled() {
     return (
       getSplitzExperimentVariant('keystone_corporate_cards_experiment')?.variables?.result === 'on'

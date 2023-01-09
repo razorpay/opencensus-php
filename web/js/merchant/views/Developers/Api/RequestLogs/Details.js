@@ -8,7 +8,7 @@ import RequestResponseDetails from 'merchant/views/Developers/components/Request
 import {
   trackApiLogDetailsOpened,
   trackApiLogRequestResponseDetailsOpened,
-} from 'merchant/views/Developers/Api/events';
+} from 'merchant/views/Developers/events';
 import StatusLabel from 'merchant/views/Developers/components/StatusLabel';
 
 const syntaxHighlighterCustomStyles = {

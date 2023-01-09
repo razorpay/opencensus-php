@@ -289,6 +289,12 @@ const RequestLogDetails = lazy(() =>
   ),
 );
 
+const WebhookEventDetails = lazy(() =>
+  import(
+    /* webpackChunkName: "WebhookEventDetails" */ 'merchant/views/Developers/Webhooks/RequestLogs/EventDetails'
+  ),
+);
+
 const AppSupport = lazy(() =>
   import(/* webpackChunkName: "AppSupport" */ 'merchant/views/AppSupport'),
 );
@@ -450,6 +456,13 @@ const entityDetailsMap = {
       !isMobileResolution() &&
       user.isAllowedView('developers_console') &&
       user.isDeveloperConsoleEnabled,
+  },
+  '/developers/webhooks/:id/event/:id': {
+    component: WebhookEventDetails,
+    additionalCondition: (user) =>
+      !isMobileResolution() &&
+      user.isAllowedView('developers_console') &&
+      user.isDeveloperConsoleWebhooksTabEnabled,
   },
 };
 

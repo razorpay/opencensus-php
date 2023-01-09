@@ -7,13 +7,25 @@
     margin-left: 0
     width: fit-content
 
+  .PowerSelect__Trigger,
+  .PowerSelect__TriggerLabel,
+  .PowerSelect__TriggerStatus,
+  .PowerSelect__TriggerInputContainer
+    height: 30px
+
+  .PowerSelect__TriggerInputContainer
+    vertical-align: initial
+
+    input
+      height: 30px
+
   .api-logs-container,
+  .webhook-logs-container,
   .filters-container
     background: #FFF
 
-  .api-logs-container
-    h5
-      font-weight: bold
+  .filters-container
+    display: flex
 
   .api-logs-title
     font-size: 16px
@@ -22,6 +34,18 @@
     background: #FFF
     border-bottom: 1px solid #E3E8EA
     padding-bottom: 10px
+
+  .api-keys-container
+    background: #FFF
+    margin: 20px 0
+
+.webhook-details
+  .content-wrapper
+    background: #FFF
+    border-bottom: 1px solid #EEE
+
+  a.btn
+    padding: 0
 
 .developers-sidebar-icon
   font-size: 12px

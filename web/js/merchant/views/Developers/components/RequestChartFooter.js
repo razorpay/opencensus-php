@@ -4,12 +4,14 @@ import Time from 'common/ui/Time';
 function Footer({ updatedAt }) {
   if (updatedAt) {
     return (
-      <small>
-        <i className="far fa-clock" />
+      <p>
+        <i className="i i-clock" />
         <span>
-          Last updated on <Time value={Math.floor(updatedAt / 1000)} />
+          {' '}
+          Last updated on{' '}
+          <Time format="DD-MMM, YYYY, hh:mm a" value={Math.floor(updatedAt / 1000)} />
         </span>
-      </small>
+      </p>
     );
   }
   return null;

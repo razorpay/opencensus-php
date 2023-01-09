@@ -157,6 +157,9 @@ const MagicCheckout = lazy(() =>
 const Developers = lazy(() =>
   import(/* webpackChunkName: "Developers" */ 'merchant/views/Developers'),
 );
+const DevelopersWebhooks = lazy(() =>
+  import(/* webpackChunkName: "DevelopersWebhooks" */ 'merchant/views/Developers/Webhooks'),
+);
 
 const Support = lazy(() =>
   import(/* webpackChunkName: "Support-section" */ 'merchant/components/Support'),
@@ -619,12 +622,20 @@ export default class Content extends Component {
             additionalCondition={(user) => user.isAllowedTeamManagement}
           />
           <ShowWhenRoute
+            path="/developers/webhooks/:id"
+            exact
+            component={DevelopersWebhooks}
+            additionalCondition={(user) =>
+              user.isAllowedView('developers_console') && user.isDeveloperConsoleWebhooksTabEnabled
+            }
+          />
+          <ShowWhenRoute
             path="/developers"
             component={Developers}
             additionalCondition={(user) =>
               !isMobileResolution() &&
               user.isAllowedView('developers_console') &&
-              user.isDeveloperConsoleEnabled
+              (user.isDeveloperConsoleEnabled || user.isDeveloperConsoleWebhooksTabEnabled)
             }
           />
           <ShowWhenRoute

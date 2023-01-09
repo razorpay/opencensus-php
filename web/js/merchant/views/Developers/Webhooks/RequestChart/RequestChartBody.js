@@ -5,9 +5,12 @@ import { timeScale } from './axes';
 import { getChartData } from './getChartData';
 import NoDataMessage from 'merchant/views/Developers/components/RequestChartNoDataMessage';
 
-export default function RequestChartBody(props) {
-  const { data, selectedAggregation, duration, filteredStatusCodeList } = props;
-
+export default function RequestChartBody({
+  data,
+  selectedAggregation,
+  duration,
+  filteredStatusCodeList,
+}) {
   const chartOptions = {
     ...timeScale({ breakdown: selectedAggregation.value }),
     maintainAspectRatio: false,
@@ -62,7 +65,7 @@ export default function RequestChartBody(props) {
       ) : null}
       {data.error ? <NoDataMessage title="Oh snap! Couldn’t load graph data." /> : null}
       {!data.loading && !data.error && !data.data?.stats?.length ? (
-        <NoDataMessage title="No request logs found for selected time range" />
+        <NoDataMessage title="No requests found for selected time range" />
       ) : null}
       {!data.loading && !data.error && data.data?.stats?.length ? (
         <Line

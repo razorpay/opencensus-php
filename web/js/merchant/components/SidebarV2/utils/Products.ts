@@ -25,7 +25,7 @@ export const PRODUCTS_DATA = {
     additionalCondition: (user: any): boolean =>
       !isMobileResolution() &&
       user.isAllowedView('developers_console') &&
-      user.isDeveloperConsoleEnabled,
+      (user.isDeveloperConsoleEnabled || user.isDeveloperConsoleWebhooksTabEnabled),
   },
   my_account: {
     icon: 'i-account',

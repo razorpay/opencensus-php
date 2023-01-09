@@ -76,6 +76,7 @@ export function getChartData(data, aggregation, duration, filteredStatusCodeList
 
       labelToDataMap[label] = updatedDataForLabel;
     });
+
     const labels = Object.keys(labelToDataMap);
 
     Object.values(labelToDataMap).forEach((statData) => {

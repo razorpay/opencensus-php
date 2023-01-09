@@ -4,11 +4,18 @@ import Time from 'common/ui/Time';
 import DataTable from 'common/ui/Table/DataTable';
 const ClickableUrl = {
   title: 'URL',
-  value: (item) => (
-    <NavLink to={`/webhooks/${item.id}`}>
-      <code>{item.url}</code>
-    </NavLink>
-  ),
+  value: (item) => {
+    let url = `/webhooks/${item.id}`;
+    if (window?.location?.pathname?.includes('developers')) {
+      url = `/developers/webhooks/${item.id}`;
+    }
+
+    return (
+      <NavLink to={url}>
+        <code>{item.url}</code>
+      </NavLink>
+    );
+  },
 };
 
 const Status = {
