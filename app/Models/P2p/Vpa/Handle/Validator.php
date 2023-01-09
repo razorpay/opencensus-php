@@ -16,7 +16,7 @@ class Validator extends Base\Validator
         $rules = [
             Entity::CODE         => 'string|',
             Entity::MERCHANT_ID  => 'string|size:14',
-            Entity::ACQUIRER     => 'string|in:p2p_upi_axis,p2p_upi_sharp',
+            Entity::ACQUIRER     => 'string|in:p2p_upi_axis,p2p_upi_sharp,p2m_upi_axis_olive',
             Entity::ACTIVE       => 'boolean',
             Entity::BANK         => 'string|size:4',
         ];
