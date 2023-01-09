@@ -2016,120 +2016,40 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
     public function testCreateLegalDocsForMerchantConsentOnSubmitActivation()
     {
-        Mail::fake();
+        $bvsMock = $this->mockCreateLegalDocument();
 
-        $this->setupPrivateAuthForPartner();
+        $bvsMock->expects($this->never())->method('createLegalDocument')->withAnyParameters();
 
-        $this->mockTerminalServiceResponse();
+        $merchantId = $this->createLegalDocsForMerchantConsentOnSubmitActivation(false, false);
 
+        $merchantConsents = $this->getDbEntities('merchant_consents',  ['merchant_id' => $merchantId], Mode::LIVE)->toArray();
+
+        $this->assertCount(0, $merchantConsents);
+    }
+
+    public function testCreateLegalDocsForMerchantConsentOnSubmitActivationForNoDocMerchant()
+    {
         $bvsMock = $this->mockCreateLegalDocument();
 
         $bvsMock->expects($this->once())->method('createLegalDocument')->withAnyParameters();
 
-        $testData = $this->testData['createRegisteredBusinessTypeAccount'];
+        $merchantId = $this->createLegalDocsForMerchantConsentOnSubmitActivation(true, false);
 
-        $accountResponse = $this->runRequestResponseFlow($testData);
-
-        $accountId = $accountResponse['id'];
-
-        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
-
-        $response = $this->runRequestResponseFlow($testData);
-
-        $merchantProductId = $response['id'];
-
-        $testData = $this->testData['testRequirementsForRegisteredBusiness'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
-
-        $this->runRequestResponseFlow($testData);
-
-        $testData = $this->testData['updateSettlementFieldsForRegisteredBusiness'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
-
-        $this->runRequestResponseFlow($testData);
-
-        $testData = $this->testData['testCreateStakeholderForThinRequest'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders';
-
-        $stakeholderResponse = $this->runRequestResponseFlow($testData);
-
-        $stakeholderId = $stakeholderResponse['id'];
-
-        $testData = $this->testData['testUpdateStakeholderDetails'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId;
-
-        $this->runRequestResponseFlow($testData);
-
-        $testData = $this->testData['testRequirementsForRegisteredBusinessAfterStakeholderDetailsSubmission'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
-
-        $this->runRequestResponseFlow($testData);
-
-        $this->updateUploadDocumentData('testPostStakeholderDocumentAadharFront');
-
-        $testData = $this->testData['testPostStakeholderDocumentAadharFront'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId . '/documents';
-
-        $this->runRequestResponseFlow($testData);
-
-        $this->updateUploadDocumentData('testPostStakeholderDocumentAadharBack');
-
-        $testData = $this->testData['testPostStakeholderDocumentAadharBack'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId . '/documents';
-
-        $this->runRequestResponseFlow($testData);
-
-        $testData = $this->testData['updateBusinessProofDetails'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId;
-
-        $this->runRequestResponseFlow($testData);
-
-        $this->updateUploadDocumentData('testPostBusinessProofDocument');
-
-        $testData = $this->testData['testPostBusinessProofDocument'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/documents';
-
-        $this->runRequestResponseFlow($testData);
-
-        $this->updateUploadDocumentData('testPostBusinessPanDocument');
-
-        $testData = $this->testData['testPostBusinessPanDocument'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/documents';
-
-        $this->runRequestResponseFlow($testData);
-
-        $testData = $this->testData['acceptAccountTnc'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
-
-        $this->runRequestResponseFlow($testData);
-
-        $testData = $this->testData['testEmptyRequirements'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
-
-        $this->runRequestResponseFlow($testData);
-
-        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
-
-        $merchantConsents = $this->getDbEntities('merchant_consents',  ['merchant_id' => $accountId], Mode::LIVE)->toArray();
+        $merchantConsents = $this->getDbEntities('merchant_consents',  ['merchant_id' => $merchantId], Mode::LIVE)->toArray();
 
         $this->assertCount(1, $merchantConsents);
     }
 
-    public function testCreateLegalDocsForMerchantConsentOnSubmitActivationConsentsAlreadyPresent()
+    public function testCreateLegalDocsForMerchantConsentOnSubmitActivationForNoDocMerchantConsentsAlreadyPresent()
+    {
+        $bvsMock = $this->mockCreateLegalDocument();
+
+        $bvsMock->expects($this->never())->method('createLegalDocument')->withAnyParameters();
+
+        $this->createLegalDocsForMerchantConsentOnSubmitActivation(true, true);
+    }
+
+    protected function createLegalDocsForMerchantConsentOnSubmitActivation(bool $isSubmerchantNoDocEnabled, bool $isConsentAlreadyPresent)
     {
         Mail::fake();
 
@@ -2137,11 +2057,22 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->mockTerminalServiceResponse();
 
-        $bvsMock = $this->mockCreateLegalDocument();
-
-        $bvsMock->expects($this->never())->method('createLegalDocument')->withAnyParameters();
-
         $testData = $this->testData['createRegisteredBusinessTypeAccount'];
+
+        if($isSubmerchantNoDocEnabled === true)
+        {
+            $testData = $this->testData['createUnregisteredBusinessTypeAccountForNoDocWithPan'];
+
+            $featureParams = [
+                Entity::ENTITY_ID   => 'DefaultPartner',
+                Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                Entity::NAME        => 'subm_no_doc_onboarding',
+            ];
+
+            (new Core())->create($featureParams, true);
+
+            $testData['request']['content']['no_doc_onboarding'] = true;
+        }
 
         $accountResponse = $this->runRequestResponseFlow($testData);
 
@@ -2151,30 +2082,13 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         Account\Entity::verifyIdAndSilentlyStripSign($merchantId);
 
-        $this->fixtures->create('merchant_consents',
-            [
-                'merchant_id' => $merchantId
-            ]);
-
-        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
-
-        $response = $this->runRequestResponseFlow($testData);
-
-        $merchantProductId = $response['id'];
-
-        $testData = $this->testData['testRequirementsForRegisteredBusiness'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
-
-        $this->runRequestResponseFlow($testData);
-
-        $testData = $this->testData['updateSettlementFieldsForRegisteredBusiness'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
-
-        $this->runRequestResponseFlow($testData);
+        if($isConsentAlreadyPresent === true)
+        {
+            $this->fixtures->create('merchant_consents',
+                [
+                    'merchant_id' => $merchantId
+                ]);
+        }
 
         $testData = $this->testData['testCreateStakeholderForThinRequest'];
 
@@ -2190,61 +2104,78 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $this->runRequestResponseFlow($testData);
 
-        $testData = $this->testData['testRequirementsForRegisteredBusinessAfterStakeholderDetailsSubmission'];
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        if($isSubmerchantNoDocEnabled === true)
+        {
+            $testData = $this->testData['productConfigCreateForNoDocWithTnc'];
+        }
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData['testUpdateSettlementDetailsForRegisteredBusiness'];
+
+        if($isSubmerchantNoDocEnabled === true)
+        {
+            $testData = $this->testData['testUpdatePaymentGatewayConfigForNoDoc'];
+        }
 
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
 
         $this->runRequestResponseFlow($testData);
 
-        $this->updateUploadDocumentData('testPostStakeholderDocumentAadharFront');
+        if($isSubmerchantNoDocEnabled === false)
+        {
+            $this->updateUploadDocumentData('testPostStakeholderDocumentAadharFront');
 
-        $testData = $this->testData['testPostStakeholderDocumentAadharFront'];
+            $testData = $this->testData['testPostStakeholderDocumentAadharFront'];
 
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId . '/documents';
+            $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId . '/documents';
 
-        $this->runRequestResponseFlow($testData);
+            $this->runRequestResponseFlow($testData);
 
-        $this->updateUploadDocumentData('testPostStakeholderDocumentAadharBack');
+            $this->updateUploadDocumentData('testPostStakeholderDocumentAadharBack');
 
-        $testData = $this->testData['testPostStakeholderDocumentAadharBack'];
+            $testData = $this->testData['testPostStakeholderDocumentAadharBack'];
 
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId . '/documents';
+            $testData['request']['url'] = '/v2/accounts/' . $accountId . '/stakeholders/' . $stakeholderId . '/documents';
 
-        $this->runRequestResponseFlow($testData);
+            $this->runRequestResponseFlow($testData);
 
-        $testData = $this->testData['updateBusinessProofDetails'];
+            $testData = $this->testData['updateBusinessProofDetails'];
 
-        $testData['request']['url'] = '/v2/accounts/' . $accountId;
+            $testData['request']['url'] = '/v2/accounts/' . $accountId;
 
-        $this->runRequestResponseFlow($testData);
+            $this->runRequestResponseFlow($testData);
 
-        $this->updateUploadDocumentData('testPostBusinessProofDocument');
+            $this->updateUploadDocumentData('testPostBusinessProofDocument');
 
-        $testData = $this->testData['testPostBusinessProofDocument'];
+            $testData = $this->testData['testPostBusinessProofDocument'];
 
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/documents';
+            $testData['request']['url'] = '/v2/accounts/' . $accountId . '/documents';
 
-        $this->runRequestResponseFlow($testData);
+            $this->runRequestResponseFlow($testData);
 
-        $this->updateUploadDocumentData('testPostBusinessPanDocument');
+            $this->updateUploadDocumentData('testPostBusinessPanDocument');
 
-        $testData = $this->testData['testPostBusinessPanDocument'];
+            $testData = $this->testData['testPostBusinessPanDocument'];
 
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/documents';
+            $testData['request']['url'] = '/v2/accounts/' . $accountId . '/documents';
 
-        $this->runRequestResponseFlow($testData);
+            $this->runRequestResponseFlow($testData);
 
-        $testData = $this->testData['acceptAccountTnc'];
+            $testData = $this->testData['acceptAccountTnc'];
 
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
+            $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
 
-        $this->runRequestResponseFlow($testData);
+            $this->runRequestResponseFlow($testData);
+        }
 
-        $testData = $this->testData['testEmptyRequirements'];
-
-        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
-
-        $this->runRequestResponseFlow($testData);
+        return $merchantId;
     }
 }
 

@@ -813,6 +813,84 @@ return [
         ],
     ],
 
+    'testUpdateSettlementDetailsForRegisteredBusiness' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'settlements' => [
+                    'account_number'   => '123576432234',
+                    'ifsc_code'        => 'HDFC0000317',
+                    'beneficiary_name' => 'bank account name'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'active_configuration' => [
+                    'payment_capture' => [
+                        'mode'                    => 'automatic',
+                        'refund_speed'            => 'normal',
+                        'automatic_expiry_period' => 7200
+                    ],
+                    'notifications'   => [
+                        'sms'      => false,
+                        'whatsapp' => false
+                    ],
+                    'checkout'        => [
+                        'theme_color' => '#000000'
+                    ],
+                    'refund'        => [
+                        'default_refund_speed' => 'normal'
+                    ],
+                    'settlements'     => [
+                        'account_number'   => '123576432234',
+                        'ifsc_code'        => 'HDFC0000317',
+                        'beneficiary_name' => 'bank account name'
+                    ],
+                ],
+                'requirements'         => [
+                    [
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_pan_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_proof_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'legal_info.pan',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'legal_info.cin',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'acceptTncUsingPostProductConfig' => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}/products',

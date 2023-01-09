@@ -58,6 +58,14 @@ class ConsentDocumentsBaseService extends Base\Service
         {
             $startTime = microtime(true);
 
+            if($merchant->isNoDocOnboardingEnabled() === false)
+            {
+                $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
+                    'message' => 'Consents not created as no doc onboarding is not enabled for the merchant'
+                ]);
+                return;
+            }
+
             if ($this->merchantDetailService->checkIfConsentsPresent($merchant->getId()) === true)
             {
                 $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
