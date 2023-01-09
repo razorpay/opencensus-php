@@ -6,6 +6,7 @@ use App;
 use Illuminate\Support\Str;
 use Mail;
 use Config;
+use RZP\Constants\Entity as E;
 use RZP\Models\Base\UniqueIdEntity;
 use Throwable;
 use ApiResponse;
@@ -51,7 +52,6 @@ use RZP\Models\Admin\Admin;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Admin\Action;
 use RZP\Constants\BankingDemo;
-use RZP\Constants\Entity as E;
 use RZP\Constants\Entity as CE;
 use RZP\Jobs\MailingListUpdate;
 use RZP\Models\Admin\AdminLead;
@@ -154,23 +154,11 @@ class Core extends Base\Core
 
     public function create($input, $merchantDetailInputData = [])
     {
-        $isOnlyDsMerchant = false;
-
-        if (isset($merchantDetailInputData['token_data']) === true)
-        {
-            $input['token_data'] = $merchantDetailInputData['token_data'];
-
-            if ((isset($merchantDetailInputData['token_data']['form_data']['ds']) === true) and
-                ($merchantDetailInputData['token_data']['form_data']['ds'] === true))
-            {
-                $isOnlyDsMerchant = true;
-            }
-        }
-
-
-        (new UserCore())->validateActivation($input);
+        (new UserCore())->validateAccountCreation(array_merge($input,$merchantDetailInputData));
 
         unset($input['token_data']);
+
+        $tokenData=$merchantDetailInputData['token_data'];
 
         unset($merchantDetailInputData['token_data']);
 
@@ -228,17 +216,7 @@ class Core extends Base\Core
 
         $this->addToDefaultUnclaimedGroup($merchant);
 
-        if ($isOnlyDsMerchant === true)
-        {
-            $featureParams = [
-                Feature\Entity::ENTITY_ID    => $merchant['id'],
-                Feature\Entity::ENTITY_TYPE  => 'merchant',
-                Feature\Entity::NAMES        => ['only_ds'],
-                Feature\Entity::SHOULD_SYNC  => false
-            ];
-
-            (new Feature\Service)->addFeatures($featureParams);
-        }
+        $this->addMerchantRelevantFeatures($merchant,$tokenData);
 
         // Updating the existing customer info and setting activated to false
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
@@ -246,6 +224,29 @@ class Core extends Base\Core
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::CREATED, $merchant->toArrayEvent());
 
         return $merchant;
+    }
+
+    private function addMerchantRelevantFeatures($merchant,$tokenData)
+    {
+        if ($tokenData !== null)
+        {
+            $merchantType = $tokenData[AdminLead\Constants::FORM_DATA][AdminLead\Constants::MERCHANT_TYPE] ?? null;
+
+            if (empty($merchantType) === false)
+            {
+                if (array_key_exists($merchantType, AdminLead\Constants::ALLOWED_MERCHANT_TYPE_FEATURE_MAPPING) === true)
+                {
+                    $featureParams = [
+                        Feature\Entity::ENTITY_ID   => $merchant['id'],
+                        Feature\Entity::ENTITY_TYPE => 'merchant',
+                        Feature\Entity::NAMES       => AdminLead\Constants::ALLOWED_MERCHANT_TYPE_FEATURE_MAPPING[$merchantType],
+                        Feature\Entity::SHOULD_SYNC => false
+                    ];
+
+                    (new Feature\Service)->addFeatures($featureParams);
+                }
+            }
+        }
     }
 
     public function syncStakeholderFromMerchant(array $input)

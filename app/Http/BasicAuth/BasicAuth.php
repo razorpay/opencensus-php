@@ -1927,6 +1927,11 @@ class BasicAuth
         return ($this->getInternalApp() === 'loc');
     }
 
+    public function isDashboardGuest(): bool
+    {
+        return ($this->getInternalApp() === 'dashboard_guest');
+    }
+
     public function isCapitalLOSApp(): bool
     {
         return ($this->getInternalApp() === 'los');

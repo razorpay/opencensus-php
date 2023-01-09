@@ -145,6 +145,126 @@ class UserTest extends TestCase
         $this->assertNotNull($row);
     }
 
+    public function testRegisterRegularTestMerchant()
+    {
+        Mail::fake();
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname",
+                "merchant_type":"Regular Test Merchant"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $featuresArray = $this->getDbEntity('feature',
+                                            [
+                                                'entity_id'   => $merchant['id'],
+                                                'entity_type' => 'merchant'
+                                            ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::REGULAR_TEST_MERCHANT, $featuresArray);
+    }
+
+    public function testRegisterOptimiserMerchant()
+    {
+        Mail::fake();
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname",
+                "merchant_type":"Optimizer Only Merchant"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $featuresArray = $this->getDbEntity('feature',
+                                            [
+                                                'entity_id'   => $merchant['id'],
+                                                'entity_type' => 'merchant'
+                                            ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::OPTIMIZER_ONLY_MERCHANT, $featuresArray);
+    }
+
+    public function testRegisterDsMerchant()
+    {
+        Mail::fake();
+
+        $adminId = Org::MAKER_ADMIN;
+
+        $formData = json_decode(
+            '{
+                "merchant_name":"name",
+                "contact_name":"contact",
+                "contact_email":"leademail@razorpay.com",
+                "dba_name":"dbaname",
+                "merchant_type":"DS Only Merchant"
+            }',
+            true
+        );
+
+        $adminLead = $this->fixtures->create('admin_lead', ['admin_id' => $adminId, 'form_data' => $formData]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_invitation'] = $adminLead['token'];
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockHubSpotClient('trackSignupEvent');
+
+        $this->startTest();
+
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $featuresArray = $this->getDbEntity('feature',
+                                            [
+                                                'entity_id'   => $merchant['id'],
+                                                'entity_type' => 'merchant'
+                                            ])->pluck('name')->toArray();
+
+        $this->assertContains(Features::ONLY_DS, $featuresArray);
+    }
+
     public function testRegisterWithDuplicateEmail()
     {
         $user = $this->fixtures->create('user', ['email' => 'hello123@c.com', 'password' => 'hello123']);
@@ -6565,7 +6685,7 @@ class UserTest extends TestCase
 
         $this->assertNotEmpty($response['token']);
     }
-    
+
     public function testSendOtpForIpWhitelistWithSecureOTP()
     {
         $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);

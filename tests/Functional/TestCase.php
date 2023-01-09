@@ -72,7 +72,7 @@ class TestCase extends ParentTestCase
 
         $this->es->setEsClient(['hosts' => [$host]]);
 
-        Config::set('applications.block.activations', false);
+        Config::set('applications.test_case.execution', true);
 
     }
 

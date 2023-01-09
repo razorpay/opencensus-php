@@ -1093,7 +1093,7 @@ class Service extends Base\Service
             ($this->app['basicauth']->isCapitalCollectionsApp() === true) or
             ($this->app['basicauth']->isCapitalCardsApp() === true) or
             ($this->app['basicauth']->isCapitalLOCApp() === true) or
-            (in_array( Constants::ONLY_DS, $featureNames) === true))
+            $this->canCreateWithoutMerchantAuth($featureNames) === true)
         {
             $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
 
@@ -1118,6 +1118,18 @@ class Service extends Base\Service
         return $featureParams;
     }
 
+    private function canCreateWithoutMerchantAuth($featureNames)
+    {
+        foreach ($featureNames as $featureName)
+        {
+            if (in_array($featureName, Constants::FEATURES_WITHOUT_MERCHANT_AUTHENTICATION) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
     /**
      * @deprecated by getFeatureOnboardingRequests()
      *

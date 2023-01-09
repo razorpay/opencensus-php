@@ -2903,8 +2903,16 @@ class Core extends Base\Core
         {
             return false;
         }
+
+        // unblock linked account merchants
+        // ref - https://razorpay.slack.com/archives/C04FDHUCE49/p1672127563183959
+        if(empty($this->merchant) === false and $this->merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
         //activations allowed for lower environments
-        if ($this->shouldBlockActivation() === false)
+        if ($this->isProductionEnvironment() === false)
         {
             return false;
         }
@@ -5097,13 +5105,13 @@ class Core extends Base\Core
         return $autoKycDone;
     }
 
-    public function shouldBlockActivation()
+    public function isProductionEnvironment()
     {
-        $shouldBlockActivation = $this->app['config']['applications.block.activations'] ?? true;
-        // To-Do : Introduced applications.block.activations which is only set false for test cases.
+        $testCaseExecution = $this->app['config']['applications.test_case.execution'] ?? false;
+        // To-Do : Introduced applications.test_case.execution which is only set false for test cases.
         // This is done to avoid test cases from failing. Config should be removed once onboarding is enabled again.
 
-        if ($shouldBlockActivation === false)
+        if ($testCaseExecution === true)
         {
             return false;
         }
@@ -5113,13 +5121,6 @@ class Core extends Base\Core
         // unblocking lower and test environments
         // This is done to avoid test cases from failing on automation and bvt
         if (Environment::isEnvironmentQA($env) || Environment::isLowerEnvironment($env))
-        {
-            return false;
-        }
-
-        // unblock linked account merchants
-        // ref - https://razorpay.slack.com/archives/C04FDHUCE49/p1672127563183959
-        if(empty($this->merchant) === false and $this->merchant->isLinkedAccount() === true)
         {
             return false;
         }

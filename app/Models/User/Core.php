@@ -488,7 +488,7 @@ class Core extends Base\Core
     {
         if($isLinkedAccountUser === false)
         {
-            $this->validateActivation($input);
+            $this->validateAccountCreation($input);
         }
 
         unset($input[MerchantEntity::SIGNUP_SOURCE]);
@@ -511,14 +511,16 @@ class Core extends Base\Core
     }
 
     //block pg merchants signup
-    public function validateActivation(array $input)
+    public function validateAccountCreation(array $input)
     {
-        $merchantToken = $input['token_data'];
+        $merchantToken = $input[AdminLead\Constants::TOKEN_DATA];
 
         if ($merchantToken !== null)
         {
-            if ((isset($merchantToken['form_data']) === true) and (isset($merchantToken['form_data']['ds']) === true) and
-                ($merchantToken['form_data']['ds'] === true))
+            $merchantType = $merchantToken[AdminLead\Constants::FORM_DATA][AdminLead\Constants::MERCHANT_TYPE] ?? null;
+
+            if (empty($merchantType) === false and
+                array_key_exists($merchantType, AdminLead\Constants::ALLOWED_MERCHANT_TYPE_FEATURE_MAPPING) === true)
             {
                 return;
             }
@@ -569,9 +571,9 @@ class Core extends Base\Core
             return;
         }
 
-        $shouldBlockActivation = (new Merchant\Detail\Core())->shouldBlockActivation();
+        $isProductionEnvironment = (new Merchant\Detail\Core())->isProductionEnvironment();
 
-        if ($shouldBlockActivation === false)
+        if ($isProductionEnvironment === false)
         {
             return;
         }

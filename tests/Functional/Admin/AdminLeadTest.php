@@ -56,6 +56,22 @@ class AdminLeadTest extends TestCase
             $fields, $this->authToken);
 
         $this->startTest();
+    }
+
+    public function testCreateAllowedAdminLead()
+    {
+        Mail::fake();
+
+        $fields = $this->getDefaultFields();
+
+        $role = $this->ba->getAdmin()->roles()->get()[0];
+
+        $this->storeFieldsForEntity(
+            $this->org->getPublicId(),
+            'admin_lead',
+            $fields, $this->authToken);
+
+        $this->startTest();
 
         Mail::assertQueued(MerchantInvitationMail::class, function ($mail)
         {
@@ -92,7 +108,7 @@ class AdminLeadTest extends TestCase
 
     public function testVerifyAdminLead()
     {
-        $adminLead = $this->testCreateAdminLead();
+        $adminLead = $this->testCreateAllowedAdminLead();
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -107,7 +123,7 @@ class AdminLeadTest extends TestCase
 
     public function testPutAdminLead()
     {
-        $adminLead = $this->testCreateAdminLead();
+        $adminLead = $this->testCreateAllowedAdminLead();
 
         $orgId = $adminLead['org_id'];
 

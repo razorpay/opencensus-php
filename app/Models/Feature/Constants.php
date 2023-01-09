@@ -1746,6 +1746,9 @@ class Constants
 
     const ORG_PROGRAM_DS_CHECK = 'program_ds_check';
 
+    const OPTIMIZER_ONLY_MERCHANT   = 'optimizer_only_merchant';
+    const REGULAR_TEST_MERCHANT     = 'regular_test_merchant';
+
     /**
      * Reduces OD balance from available balance for CA payouts
      */
@@ -2071,8 +2074,6 @@ class Constants
         self::REDIRECT_TO_EARLYSALARY         => true,
         self::LOAN                            => true,
         self::LOC                             => true,
-        self::ONLY_DS                         => true,
-        self::ORG_PROGRAM_DS_CHECK            => true,
         self::LOS                             => true,
         self::CAPITAL_CARDS_ELIGIBLE          => true,
         self::CARDS_TRANSACTION_LIMIT_1       => true,
@@ -2408,6 +2409,10 @@ class Constants
         self::DISABLE_TRUECALLER_LOGIN_SDK => true,
         self::DISABLE_TRUECALLER_LOGIN_ADD_NEW_CARD_SCREEN => true,
         self::DISABLE_TRUECALLER_LOGIN_SAVED_CARDS_SCREEN => true,
+        self::ONLY_DS                         => true,
+        self::ORG_PROGRAM_DS_CHECK            => true,
+        self::OPTIMIZER_ONLY_MERCHANT         => true,
+        self::REGULAR_TEST_MERCHANT           => true,
     ];
 
     // Entity type constants
@@ -3059,6 +3064,16 @@ class Constants
             'display_name'  => 'M2M Referrals',
             'documentation' => '',
         ],
+        self::OPTIMIZER_ONLY_MERCHANT =>[
+            'feature'       => self::OPTIMIZER_ONLY_MERCHANT,
+            'display_name'  => 'Optimizer Only Merchant',
+            'documentation' => '',
+        ],
+        self::REGULAR_TEST_MERCHANT =>[
+            'feature'       => self::REGULAR_TEST_MERCHANT,
+            'display_name'  => 'Regular Test Merchant',
+            'documentation' => '',
+        ],
         self::API_BULK_APPROVALS => [
             'feature'       => self::API_BULK_APPROVALS,
             'display_name'  => 'Enable API bulk Approvals for the merchant',
@@ -3521,4 +3536,10 @@ class Constants
     {
         return self::$featureValueMap[$featureName];
     }
+
+    public const FEATURES_WITHOUT_MERCHANT_AUTHENTICATION = [
+        self::ONLY_DS,
+        self::REGULAR_TEST_MERCHANT,
+        self::OPTIMIZER_ONLY_MERCHANT
+    ];
 }

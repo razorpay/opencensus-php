@@ -6667,7 +6667,7 @@ class Service extends Base\Service
 
             $inputCopy[Entity::SIGNUP_SOURCE] = $product;
 
-            (new UserCore())->validateActivation($inputCopy);
+            (new UserCore())->validateAccountCreation($inputCopy);
         }
 
         // TODO: Remove when dashboard stops sending

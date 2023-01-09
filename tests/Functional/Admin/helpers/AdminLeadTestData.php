@@ -12,7 +12,33 @@ return [
             'content' => [
                 'channel_code'  => 'RZP001',
                 'contact_email' => 'abc@xyz.com',
+                'contact_name'  => 'test user'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+            'error_description' => PublicErrorDescription::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testCreateAllowedAdminLead' => [
+        'request' => [
+            'url' => '/admin-lead',
+            'method' => 'post',
+            'content' => [
+                'channel_code'  => 'RZP001',
+                'contact_email' => 'abc@xyz.com',
                 'contact_name'  => 'test user',
+                "merchant_type"  => "Regular Test Merchant"
             ],
         ],
         'response' => [
@@ -21,7 +47,8 @@ return [
                 'form_data' => [
                     "channel_code"  => "RZP001",
                     "contact_email" => "abc@xyz.com",
-                    "contact_name"  => "test user"
+                    "contact_name"  => "test user",
+                    "merchant_type"  => "Regular Test Merchant"
                 ],
             ],
             'status_code' => 200,
@@ -35,6 +62,7 @@ return [
             'content' => [
                 'channel_code'  => 'RZP001',
                 'contact_name'  => 'test user',
+                "merchant_type"  => "Regular Test Merchant"
             ],
         ],
         'response' => [
