@@ -2445,7 +2445,7 @@ class Core extends Base\Core
     protected function isPresent($array, $param)
     {
         if(array_key_exists($param, $array) &&
-            !($array[$param] !== null || $array[$param] === 0 || $array[$param] === ''))
+            !($array[$param] === null || $array[$param] === 0 || $array[$param] === ''))
         {
             return true;
         }
