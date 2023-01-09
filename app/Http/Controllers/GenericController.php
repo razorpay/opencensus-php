@@ -10,6 +10,7 @@ use Config;
 use Request;
 use App\Admin;
 
+use App\User;
 use App\Generic;
 use App\Http\AppResponse;
 use App\Session\Entity as AppSession;
@@ -91,12 +92,7 @@ class GenericController extends Controller
             ($mobileApp === 'Epos') and
             (preg_match('/' . $eposBlockedRoutesRegex . '/', $path, $pathMatches) == true))
         {
-            $response = [
-                [
-                    "" => " APP DEPRECATED. Download Razorpay App from Play store.",
-                    "internal_error_code" => "0",
-                ]
-            ];
+            $response =  User\Constants::EPOS_APP_DEPRECATED_MESSAGE;
 
             return AppResponse::jsonResponse($response);
         }

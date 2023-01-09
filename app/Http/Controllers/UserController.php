@@ -679,12 +679,7 @@ class UserController extends Controller
         if ((empty($mobileApp) === false) and
             ($mobileApp === 'Epos'))
         {
-            $response = [
-                [
-                    "" => " APP DEPRECATED. Download Razorpay App from Play store.",
-                    "internal_error_code" => "0",
-                ]
-            ];
+            $response = User\Constants::EPOS_APP_DEPRECATED_MESSAGE;
 
             return AppResponse::jsonResponse($response);
         }

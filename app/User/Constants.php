@@ -193,6 +193,13 @@ class Constants
         'BAD_REQUEST_USER_LOGIN_2FA_SETUP_REQUIRED',
     ];
 
+    const EPOS_APP_DEPRECATED_MESSAGE = [
+        [
+            "" => "App no longer supported. Download Razorpay app from Play Store",
+            "internal_error_code" => "0",
+        ]
+    ];
+
     // PG routes called while rendering. These routes are specific to PG and not called by X.
     const PG_DASHBOARD_RENDER_ROUTES = [
         self::DASHBOARD,
