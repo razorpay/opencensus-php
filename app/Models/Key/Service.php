@@ -41,22 +41,30 @@ class Service extends Base\Service
     public function createKeyWithOtp(array $input)
     {
         $merchant = $this->merchant;
+
         $validator = new Validator();
 
         $validator->checkHasKeyAccess($merchant, $this->mode);
 
-        if (isset($input['otp']) === false) {
+        if (isset($input['otp']) === false)
+        {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_OTP_REQUIRED);
         }
+
         $validator->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
+        $input['medium'] = array_pull($input, 'medium', 'sms_and_email');
+
         (new User\Core)->verifyOtp($input + ['action' => 'replace_key'],
             $this->merchant,
             $this->user,
             $this->mode === Mode::TEST);
+
         return $this->createKeyData($merchant, $this->mode);
     }
 
-    private function createKeyData($merchant, $mode) {
+    private function createKeyData($merchant, $mode)
+    {
         $keyData = (new Core)->createFirstKey($merchant, $mode);
 
         if ($mode === Mode::LIVE)
@@ -106,7 +114,8 @@ class Service extends Base\Service
         $validator->checkHasKeyAccess($this->merchant, $this->mode);
 
         $merchantId = $this->merchant->getId();
-        if (isset($input['otp']) === false) {
+        if (isset($input['otp']) === false)
+        {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_USER_OTP_REQUIRED);
         }
         $validator->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
@@ -158,7 +167,8 @@ class Service extends Base\Service
 
         $keys = $this->repo->key->getKeysForMerchant($merchantId);
 
-        if( count($keys) > 1 ){
+        if( count($keys) > 1 )
+        {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_KEYS_REGENERATED_PREVIOUSLY, null);
         }
