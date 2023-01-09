@@ -7788,6 +7788,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKEN_FETCH_EXCEPTION                               = 'TOKEN_FETCH_EXCEPTION';
     const TOKEN_DELETE_EXCEPTION                              = 'TOKEN_DELETE_EXCEPTION';
 
+    //Push Token Provisioning
+    const TOKEN_PUSH_INFO                                     = 'TOKEN_PUSH_INFO';
+    const TOKEN_PUSH_EXCEPTION                                = 'TOKEN_PUSH_EXCEPTION';
+
     const TRANSACTION_LIMIT_CTS_RATIO_NOT_FOUND               = 'TRANSACTION_LIMIT_CTS_RATIO_NOT_FOUND';
     const TRANSACTION_LIMIT_FTS_RATIO_NOT_FOUND               = 'TRANSACTION_LIMIT_FTS_RATIO_NOT_FOUND';
 

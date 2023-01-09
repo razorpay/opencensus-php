@@ -12,6 +12,7 @@ use RZP\Models\QrCode;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
@@ -2118,6 +2119,10 @@ class ApiEventSubscriber extends Base\Core
 
         $publicToken = $token->toArrayPublicTokenizedCard($serviceProviderTokens);
 
+        $customerId = $token->getCustomerId();
+
+        $customer = $this->repo->customer->findById($customerId);
+
         $partialPayload[Constants\Entity::TOKEN] = [
             'entity' => $publicToken,
         ];
@@ -2125,6 +2130,17 @@ class ApiEventSubscriber extends Base\Core
         $partialPayload[Constants\Entity::SERVICE_PROVIDER_TOKEN] = [
             'entity' => $serviceProviderTokens,
         ];
+
+        if($token->getSource() === Token\Constants::ISSUER && isset($customer) === true)
+        {
+            $partialPayload[Constants\Entity::CUSTOMER] = [
+                'entity' => [
+                    Base\UniqueIdEntity::ID  => $customer->getId(),
+                    Customer\Entity::EMAIL   => $customer->getEmail(),
+                    Customer\Entity::CONTACT => $customer->getContact()
+                ],
+            ];
+        }
 
         return $partialPayload;
     }

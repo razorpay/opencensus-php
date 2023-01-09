@@ -433,6 +433,8 @@ class CardVault extends Base\Core
         $input['card']     = $tokenInput['card'];
         $input['iin']      = $iinInfo;
 
+        $input['via_push_provisioning'] = $tokenInput['via_push_provisioning'] ?? null;
+
         if (empty($tokenInput['authentication']) === false && $this->shouldPanSourceChange($tokenInput, $merchant)==true)
         {
             $this->trace->info(TraceCode::PANSOURCE_CHANGE_RAZORX_VARIANT, [

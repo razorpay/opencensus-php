@@ -31,12 +31,20 @@ class Validator extends Base\Validator
     const GET_STATUS                                    = 'get_status';
     const FETCH_PAR_VALUE                               = 'fetch_par_value';
     const FETCH_MERCHANTS_WITH_TOKEN_PRESENT            = 'fetch_merchants_with_token_present';
+    const TOKEN_PUSH                                    = 'token_push';
 
     /**
      * token epoch constrains :
      * min : Sat Jan  1 05:30:00 IST 2000
      * max : 17 August 292278994 - max for 64 bit signed int
     **/
+
+    protected static $tokenPushRules = [
+        Entity::CUSTOMER_ID          => 'required|public_id',
+        Entity::METHOD               => 'required|in:card',
+        Entity::CARD                 => 'required|array',
+        'merchant_offers'            => 'required|array'
+    ];
 
     protected static $fetchParValueRules = [
         Card\Entity::NUMBER          => 'required_without:vault|numeric|luhn|digits_between:12,19',
@@ -92,6 +100,7 @@ class Validator extends Base\Validator
         Entity::METHOD               => 'required|in:card',
         Entity::AUTHENTICATION       => 'sometimes',
         Entity::NOTES                => 'sometimes|notes',
+        'via_push_provisioning'      => 'sometimes|boolean'
     ];
 
     protected static $createNetworkTokenRupayRules = [
@@ -100,6 +109,7 @@ class Validator extends Base\Validator
         Entity::METHOD               => 'required|in:card',
         Entity::AUTHENTICATION       => 'sometimes',
         Entity::NOTES                => 'sometimes|notes',
+        'via_push_provisioning'      => 'sometimes|boolean'
     ];
 
     protected static $createNetworkCardRules = [

@@ -3901,12 +3901,15 @@ class Route
         'token_status'                            => ['post',        'internal/tokens/status',                                   'TokenController@updateStatus'                             ],
         'update_token_on_authorized'              => ['post',        'internal/tokens/update_on_authorized',                     'TokenController@updateTokenOnAuthorized'                  ],
         'par_api'                                 => ['post',        'cards/fingerprints',                                       'TokenController@fetchParValue'                            ],
-        'tokens_fetch_merchants'                  => ['post',        'tokens/fetch_merchants',                                   'TokenController@fetchMerchants'                           ],
 
         'vault_migrate_token_bulk'                => ['post',        'tokens/vault/migrate/namespace',                           'TokenController@migrateVaultTokenViaBatch'                ],
 
 
        'token_pause_not_supported_card_tokens'    => ['post',        'tokens/pause_not_supported/card',                          'TokenController@pauseNotSupportedCardTokens'                                                         ],
+
+        //Push Token Provisioning
+        'token_push'                              => ['post',          'tokens/push',                                          'TokenController@tokenPush'                                ],
+        'tokens_fetch_merchants'                  => ['post',          'tokens/fetch_merchants',                               'TokenController@fetchMerchants'                           ],
 
         // Async tokenisation
         'tokenisation_local_cards'                => ['post',        'tokenisation/local_cards',                                 'TokenController@localSavedCardAsyncTokenisation'          ],
@@ -4659,6 +4662,7 @@ class Route
 
         // tokenization push provisioning routes
         'tokens_fetch_merchants',
+        'token_push',
 
         // 1CC Routes
         'update_shipping_slabs',
@@ -6548,7 +6552,7 @@ class Route
 
         'merchant_ip_config_fetch',
         'merchant_ip_config_create',
-        
+
         // checkout service routes
         'invoice_fetch_for_checkout_internal',
         'checkout_personalisation_internal',

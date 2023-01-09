@@ -15,4 +15,5 @@ class Action
     const PAR_API           = 'par_api';
     const FETCH_FINGERPRINT = 'fetch_fingerprint';
     const FETCH_MERCHANTS   = 'fetch_merchants';
+    const TOKEN_PUSH        = 'token_push';
 }

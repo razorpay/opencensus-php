@@ -367,6 +367,92 @@ class Service extends Base\Service
         ];
     }
 
+    public function tokenPush(& $input, $internalServiceRequest = false)
+    {
+        $startTime = microtime(true);
+
+        try
+        {
+            $response = [
+                'success' => true,
+                'data' => [],
+                'errors' => []
+            ];
+
+            $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+            (new Validator)->validateInput(Validator::TOKEN_PUSH, $input);
+
+            $this->trace->info(
+                TraceCode::TOKEN_PUSH_INFO,
+                ['mode' => $this->app['rzp.mode'],
+                    'features' => $this->merchant->getEnabledFeatures()]);
+
+            // validate merchant flag to check if this is issuer.
+            // throw error otherwise
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::PUSH_PROVISIONING_LIVE) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "push provisioning is not enabled for merchant");
+            }
+
+            if (($mode === Mode::LIVE) || app()->isEnvironmentQA() === true)
+            {
+
+                if (empty($input['card']['number']) === false)
+                {
+                    $input['card']['number'] = trim(str_replace(" ", "", $input['card']['number']));
+                }
+
+                $customer = $this->repo->customer->findByPublicIdAndMerchant($input['customer_id'], $this->merchant);
+
+                //Should be in an async function
+                foreach ($input['merchant_offers'] as $merchant_offer)
+                {
+                    $merchantId =  trim(str_replace("acc_", "", $merchant_offer));
+
+                    $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($merchantId);
+
+                    $this->merchant = $merchantPushProvisioning;
+
+                    $localCustomer =  (new Customer\Core)->createLocalCustomer([
+                        Customer\Entity::CONTACT       => $customer->getContact(),
+                        Customer\Entity::EMAIL         => $customer->getEmail(),
+                    ], $this->merchant, false);
+
+                    $inputSingleMerchant = [
+                        'customer_id' => $localCustomer->getPublicId(),
+                        'method' => $input['method'],
+                        'card' => [
+                            'number' => $input['card']['number'],
+                            'expiry_month' => $input['card']['expiry_month'],
+                            'expiry_year' => $input['card']['expiry_year']
+                        ],
+                        'via_push_provisioning' => true
+                    ];
+
+                    $this -> createNetworkToken($inputSingleMerchant, $this->merchant);
+
+                    (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::TOKEN_PUSH);
+
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::TOKEN_PUSH_EXCEPTION);
+
+            (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::TOKEN_PUSH);
+
+            throw $e;
+
+        }
+
+        return $response;
+    }
+
     public function migrateToGatewayTokens(array $input = [])
     {
         $failureCount = $total = $successCount = 0;
@@ -611,7 +697,7 @@ class Service extends Base\Service
     }
 
     // todo Rename this to createTokenAndTokenizeCard
-    public function createNetworkToken($input)
+    public function createNetworkToken($input, $merchantPushProvisioning = null)
     {
         $startTime = microtime(true);
 
@@ -625,7 +711,7 @@ class Service extends Base\Service
 
             if ($this->merchant->isTokenizationEnabled() === true)
             {
-                list($token, $serviceProviderTokens) = $this->core->createTokenAndTokenizedCard($input);
+                list($token, $serviceProviderTokens) = $this->core->createTokenAndTokenizedCard($input, $merchantPushProvisioning);
 
                 (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::CREATE);
 

@@ -1895,8 +1895,11 @@ class Core extends Base\Core
         }
     }
 
-    public function createTokenAndTokenizedCard($input)
+    public function createTokenAndTokenizedCard($input, $merchantPushProvisioning)
     {
+        if($merchantPushProvisioning !== null) {
+            $this->merchant = $merchantPushProvisioning;
+        }
         $customer = null;
 
         $this->trace->info(
@@ -1968,6 +1971,11 @@ class Core extends Base\Core
         if (empty($customer) === false)
         {
             $token->customer()->associate($customer);
+        }
+
+        if($input['via_push_provisioning'] === true)
+        {
+            $token->setSource(TokenConstants::ISSUER);
         }
 
         $this->trace->info(
