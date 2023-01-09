@@ -1581,6 +1581,13 @@ class Core extends Base\Core
 
         $oldRecurringStatus = $token->getRecurringStatus();
 
+        if ($token->getRecurringStatus() !== RecurringStatus::CONFIRMED) {
+            throw new Exception\BadRequestValidationFailureException(
+                'token is not in appropriate state to pause', null, [
+                'token_id' => $token->getId(),
+            ]);
+        }
+
         $token->setRecurringStatus(RecurringStatus::PAUSED);
 
         $token->saveOrFail();
@@ -1748,8 +1755,16 @@ class Core extends Base\Core
 
         $oldRecurringStatus = $token->getRecurringStatus();
 
-        $token->setRecurringStatus(RecurringStatus::CONFIRMED);
+        if ($oldRecurringStatus !== RecurringStatus::PAUSED)
+           {
+            throw new Exception\BadRequestValidationFailureException(
+                'token is not in appropriate state to resume', null, [
+                'token_id' => $token->getId(),
+            ]);
+        }
 
+        $token->setRecurringStatus(RecurringStatus::CONFIRMED);
+        
         $token->saveOrFail();
 
         $this->eventUpiRecurringTokenStatus($token, $oldRecurringStatus);
