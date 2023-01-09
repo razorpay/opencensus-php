@@ -2288,4 +2288,24 @@ class TokenTest extends TestCase
 
         $this->assertEquals($card['vault'], 'rzpvault');
     }
+
+    public function testFetchMerchantsWithTokenPresent()
+    {
+
+        $this->setUpMockPar();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->addFeatures(['push_provisioning_live']);
+
+        $createPayload = $this->testData['testFetchMerchantsWithToken'];
+
+        $response = $this->startTest($createPayload);
+
+        $this->assertTrue($response['success']);
+
+        $this->assertEquals('acc_J312gerdk2aaaa', $response['data']['account_ids'][0]);
+        $this->assertEquals('acc_10000000000000', $response['data']['account_ids'][1]);
+
+    }
 }

@@ -30,6 +30,7 @@ class Validator extends Base\Validator
     const DELETE_TOKEN                                  = 'delete_token';
     const GET_STATUS                                    = 'get_status';
     const FETCH_PAR_VALUE                               = 'fetch_par_value';
+    const FETCH_MERCHANTS_WITH_TOKEN_PRESENT            = 'fetch_merchants_with_token_present';
 
     /**
      * token epoch constrains :
@@ -41,7 +42,8 @@ class Validator extends Base\Validator
         Card\Entity::NUMBER          => 'required_without:vault|numeric|luhn|digits_between:12,19',
         Card\Entity::TOKENISED       => 'sometimes|boolean',
         Card\Entity::VAULT           => 'required_without:number|string',
-        Card\Entity::NETWORK         => 'sometimes|string'
+        Card\Entity::NETWORK         => 'sometimes|string',
+        'via_push_provisioning'      => 'sometimes|boolean'
     ];
 
     protected static $createRules = [
@@ -105,6 +107,14 @@ class Validator extends Base\Validator
         'expiry_month' => 'required|numeric|digits_between:1,2|max:12|min:1',
         'expiry_year'  => 'required|numeric|digits_between:2,4',
         'cvv'          => 'sometimes|numeric|digits_between:3,4|nullable',
+    ];
+
+    protected static $fetchMerchantsWithTokenPresentRules = [
+        Entity::METHOD               => 'required|in:card',
+        Entity::CARD                 => 'required|array',
+        Entity::NOTES                => 'sometimes|notes',
+        'account_ids'                => 'required|array|max:' . Entity::PUSH_PROVISIONING_FETCH_MERCHANTS_WITH_TOKEN_LIMIT,
+        'account_ids.*'              => 'sometimes|public_id'
     ];
 
     protected static $createNetworkTokenAuthenticationDataRules = [

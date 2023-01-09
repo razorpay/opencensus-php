@@ -3900,6 +3900,7 @@ class Route
         'token_status'                            => ['post',        'internal/tokens/status',                                   'TokenController@updateStatus'                             ],
         'update_token_on_authorized'              => ['post',        'internal/tokens/update_on_authorized',                     'TokenController@updateTokenOnAuthorized'                  ],
         'par_api'                                 => ['post',        'cards/fingerprints',                                       'TokenController@fetchParValue'                            ],
+        'tokens_fetch_merchants'                  => ['post',        'tokens/fetch_merchants',                                   'TokenController@fetchMerchants'                           ],
 
         'vault_migrate_token_bulk'                => ['post',        'tokens/vault/migrate/namespace',                           'TokenController@migrateVaultTokenViaBatch'                ],
 
@@ -4654,6 +4655,9 @@ class Route
         'token_fetch',
         'token_fetch_cryptogram',
         'token_delete',
+
+        // tokenization push provisioning routes
+        'tokens_fetch_merchants',
 
         // 1CC Routes
         'update_shipping_slabs',

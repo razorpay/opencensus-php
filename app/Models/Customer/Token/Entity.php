@@ -166,6 +166,8 @@ class Entity extends Base\PublicEntity
     /** @var int Number of tokens to fetch for global merchant in one SQL query. */
     public const GLOBAL_MERCHANT_ASYNC_TOKENISATION_QUERY_LIMIT = 1000;
 
+    public const PUSH_PROVISIONING_FETCH_MERCHANTS_WITH_TOKEN_LIMIT = 50;
+
     /*
      * service provider tokens attributes
      */

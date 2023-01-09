@@ -150,4 +150,13 @@ class TokenController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function fetchMerchants()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchMerchantsWithTokenPresent($input);
+
+        return ApiResponse::json($data);
+    }
 }

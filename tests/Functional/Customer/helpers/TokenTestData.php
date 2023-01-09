@@ -749,4 +749,36 @@ return [
             'internal_error_code'   => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
+
+    'testFetchMerchantsWithToken' => [
+        'request' => [
+            'url' => '/tokens/fetch_merchants',
+            'method' => 'post',
+            'content' => [
+                "method" => "card",
+                "card"=> [
+                  "number" => "6070760101451996",
+                  "expiry_month" => "12",
+                  "expiry_year" => "21",
+                  "cvv" => "123"
+                ],
+                "notes" => [],
+                "account_ids" => [
+                    "acc_J312gerdk2aaaa",
+                    "acc_10000000000000"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+                'data' => [
+                    'account_ids' => [
+                        "acc_J312gerdk2aaaa",
+                        "acc_10000000000000"
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];

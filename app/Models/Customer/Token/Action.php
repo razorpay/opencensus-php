@@ -14,4 +14,5 @@ class Action
     const UPDATE            = 'update';
     const PAR_API           = 'par_api';
     const FETCH_FINGERPRINT = 'fetch_fingerprint';
+    const FETCH_MERCHANTS   = 'fetch_merchants';
 }

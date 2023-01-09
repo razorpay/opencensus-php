@@ -15,6 +15,7 @@ class Metric extends Base\Core
     // Labels for Token Metrics
     const TOKEN_HQ                              = 'token_hq';
     const TOKEN_HQ_RT                           = 'token_hq_rt';
+    const PUSH_PROVISIONING_RT                  = 'push_provisioning_rt';
     const LABEL_CARD_TYPE                       = 'card_type';
     const LABEL_CARD_IIN                        = 'card_iin';
     const LABEL_CARD_CATEGORY                   = 'card_category';
@@ -32,6 +33,7 @@ class Metric extends Base\Core
     const LABEL_TRACE_FIELD                     = 'field';
     const LABEL_TRACE_SOURCE                    = 'source';
     const LABEL_TRACE_EXCEPTION_CLASS           = 'exception_class';
+    const LABEL_PUSH_PROVISIONING               = 'via_push_provisioning';
 
 
     public function pushTokenHQDimensions($input, $status, $statusCode = null, $action = null, $exe = null)
@@ -49,6 +51,8 @@ class Metric extends Base\Core
             $dimensions[self::LABEL_INTERNAL_SERVICE_REQUEST] = isset($input[self::LABEL_INTERNAL_SERVICE_REQUEST]) ? $input[self::LABEL_INTERNAL_SERVICE_REQUEST] : null;
 
             $dimensions[self::LABEL_ASYNC] = isset($input[self::LABEL_ASYNC]) ? $input[self::LABEL_ASYNC] : null;
+
+            $dimensions[self::LABEL_PUSH_PROVISIONING] = $input[self::LABEL_PUSH_PROVISIONING] ?? null;
 
             if ($exe !== null)
             {
@@ -90,6 +94,28 @@ class Metric extends Base\Core
                 $e,
                 Trace::ERROR,
                 TraceCode::TOKEN_HQ_RESPONSE_TIME_DIMENSION_PUSH_FAILED
+            );
+        }
+    }
+
+    public function pushTokenProvisioningResponseTimeMetrics(int $startTime, $status, $action = null)
+    {
+        try
+        {
+            $dimensions[self::LABEL_STATUS] = $status;
+
+            $dimensions[self::LABEL_ACTION] = $action;
+
+            $responseTime = get_diff_in_millisecond($startTime);
+
+            $this->trace->histogram(self::PUSH_PROVISIONING_RT, $responseTime, $dimensions);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PUSH_PROVISIONING_RESPONSE_TIME_DIMENSION_PUSH_FAILED
             );
         }
     }

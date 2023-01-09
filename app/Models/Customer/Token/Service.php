@@ -878,6 +878,90 @@ class Service extends Base\Service
         }
     }
 
+    public function fetchMerchantsWithTokenPresent(& $input, $internalServiceRequest = false)
+    {
+
+        $startTime = microtime(true);
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        try
+        {
+
+            (new Validator)->validateInput(Validator::FETCH_MERCHANTS_WITH_TOKEN_PRESENT, $input);
+
+            $this->trace->info(TraceCode::PUSH_PROVISIONING_FETCH_MERCHANTS_REQUEST, [
+                'mode'          => $this->app['rzp.mode'],
+                'account_ids'   => $input['account_ids']
+            ]);
+
+            // validate merchant flag to check if this is issuer.
+            // throw error otherwise
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::PUSH_PROVISIONING_LIVE) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "push provisioing is not enabled for merchant");
+            }
+
+            if (($mode === Mode::LIVE) || app()->isEnvironmentQA() === true)
+            {
+
+                if (empty($input['card']['number']) === false)
+                {
+                    $input['card']['number'] = trim(str_replace(" ", "", $input['card']['number']));
+                }
+
+                $card = [
+                    'number'                => $input['card']['number'],
+                    'via_push_provisioning' => true
+                ];
+
+                if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_FINGERPRINTS) === false)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "card_fingerprints feature is not enabled for this merchant");
+                }
+
+                list($network, $data) = $this->core->fetchParValue($card, $internalServiceRequest);
+
+                if(isset($data["service_provider_tokens"][0]["provider_data"]) === true)
+                {
+                    $fingerprint = $data["service_provider_tokens"][0]["provider_data"]["payment_account_reference"] ??
+                        $data["service_provider_tokens"][0]["provider_data"]["network_reference_id"];
+                }
+
+                if(empty($fingerprint))
+                {
+                    throw new Exception\BadRequestException(ErrorCode::SERVER_ERROR, null, null, "card fingerprint could not be fetched for identification");
+                }
+
+                $data = $this->core->fetchCardMerchantListByFingerprint($fingerprint, $input['account_ids']);
+
+                $response = [
+                    'success' => true,
+                    'data' => [
+                        'account_ids' => $data
+                    ],
+                ];
+
+                (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::FETCH_MERCHANTS);
+
+                return $response;
+            }
+
+            return $this->generateFetchMerchantsWithTokenMockResponse($input);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::FETCH_MERCHANTS_WITH_TOKEN_EXEPTION);
+
+            (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::FETCH_MERCHANTS);
+
+            throw $e;
+        }
+    }
+
     public function deleteNetworkToken($input)
     {
         $startTime = microtime(true);
@@ -1567,5 +1651,25 @@ class Service extends Base\Service
         }
 
         return $validTokenIds;
+    }
+
+    public function generateFetchMerchantsWithTokenMockResponse($input)
+    {
+        unset($input['card']);
+
+        $response = [
+            'success' => false,
+            'data' => []
+        ];
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_FINGERPRINTS) === true)
+        {
+            $response['success'] = true;
+
+            $response['data']['account_ids'] = $input['account_ids'];
+
+        }
+
+        return $response;
     }
 }

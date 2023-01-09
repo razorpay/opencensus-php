@@ -202,6 +202,20 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findCardMerchantIdsByFingerprint(string $fingerprint,  array $merchant_ids)
+    {
+        $createdAt  = $this->dbColumn(Entity::CREATED_AT);
+
+        $globalFingerprint = $this->dbColumn(Entity::GLOBAL_FINGERPRINT);
+        return $this->newQuery()
+            ->select(Entity::MERCHANT_ID)
+            ->whereNotNull($globalFingerprint)
+            ->where($globalFingerprint, '=', $fingerprint)
+            ->whereIn(Entity::MERCHANT_ID, $merchant_ids)
+            ->orderBy($createdAt, 'desc')
+            ->pluck(Entity::MERCHANT_ID)->toArray();
+    }
+
     public function findCardsWithoutFingerprint(int $limit, int $timestamp, int $timeWindow)
     {
         $window = 1200;

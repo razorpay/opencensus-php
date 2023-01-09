@@ -2264,6 +2264,34 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function fetchCardMerchantListByFingerprint($fingerprint, $account_ids)
+    {
+        $this->trace->info(
+            TraceCode::FETCH_MERCHANT_WITH_TOKEN_LIST
+        );
+
+        try
+        {
+            $merchant_ids = Merchant\Account\Entity::verifyIdAndStripSignMultiple($account_ids);
+
+            // find card entities by fingerprint
+            $cardMerchantIdsWithTokenPresent = array_values(array_unique($this->repo->card->findCardMerchantIdsByFingerprint($fingerprint, $merchant_ids)));
+
+            return array_map(
+                function ($ele){
+                    return 'acc_' . $ele;
+                },
+                $cardMerchantIdsWithTokenPresent
+            );
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::SAVED_CARD_TOKEN_NOT_FOUND, []);
+
+            return false;
+        }
+    }
+
     /**
      * @param Merchant\Entity $merchant             The Merchant to onboard onto self::TokenizationGateways
      * @param array           $tokenizationGateways Optional. Specific tokenization gateways the merchant needs to be onboarded onto.
