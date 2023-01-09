@@ -644,32 +644,19 @@ class Core extends Base\Core
      */
     public function pushToKafka($payment, mixed $topic, array $message, string $producerKey, $startTime): void
     {
-        $variant = $this->app->razorx->getTreatment(
-            $this->app['request']->getTaskId(),
-            Merchant\RazorxTreatment::PUSH_PAYMENT_TO_KAFKA_VIA_QUEUE,
-            $this->mode
+        $this->trace->info(
+            TraceCode::PAYMENT_KAFKA_PUSH_VIA_SQS,
+            [
+                'payment_id' => $payment->getId(),
+                'topic'      => $topic,
+            ]
         );
 
-        if (strtolower($variant) === 'on')
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_KAFKA_PUSH_VIA_SQS,
-                [
-                    'payment_id' => $payment->getId(),
-                    'topic' => $topic,
-                ]
-            );
-
-            PaymentReminder::dispatch([
-                'topic' => $topic,
-                'message' => stringify($message),
-                'producer_key' => $producerKey,
-                'start_time' => $startTime
-            ], $this->mode);
-        }
-        else
-        {
-            (new KafkaProducer($topic, stringify($message), $producerKey))->Produce();
-        }
+        PaymentReminder::dispatch([
+            'topic' => $topic,
+            'message' => stringify($message),
+            'producer_key' => $producerKey,
+            'start_time' => $startTime
+        ], $this->mode);
     }
 }

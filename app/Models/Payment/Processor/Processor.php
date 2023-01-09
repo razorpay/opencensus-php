@@ -886,12 +886,12 @@ class Processor
     protected function getAdditionalOptimizerCardInputForRearch($card, $input)
     {
         if (((isset($input[E::CARD][E::TOKENISED]) === false) or ($input[E::CARD][E::TOKENISED] === false)) or
-            ((isset($input[E::TOKEN]) === false) or (isset($input[E::TOKEN]['id']) === false))) 
+            ((isset($input[E::TOKEN]) === false) or (isset($input[E::TOKEN]['id']) === false)))
         {
             return $input;
         }
 
-        if (empty($this->app) === true) 
+        if (empty($this->app) === true)
         {
             $this->app = App::getFacadeRoot();
         }
@@ -7521,17 +7521,16 @@ class Processor
     {
         $startTime = microtime(true);
         $gateway = $payment->getGateway();
-        $method = $payment->getMethod();
 
         if (empty($payment->getGooglePayMethods()) === false)
         {
             $gateway = Payment\Entity::GOOGLE_PAY;
         }
 
-        $isReminderVerifyPayment = false;
-        $isReminderTimeoutPayment = false;
+        $isReminderVerifyPayment = true;
+        $isReminderTimeoutPayment = true;
 
-        if((in_array($payment->getGateway(),Payment\Gateway::$fileBasedEMandateDebitGateways)=== true) and
+        if ((in_array($gateway, Payment\Gateway::$fileBasedEMandateDebitGateways) === true) and
             ($payment->getRecurringType() === Payment\RecurringType::AUTO))
         {
             $this->trace->info(
@@ -7544,44 +7543,23 @@ class Processor
             $isReminderTimeoutPayment = false;
         }
 
-        if ((($gateway !== null) and
-            (array_search($gateway, Payment\Gateway::$verifyDisabled) === false)))
+        if (in_array($gateway, Payment\Gateway::$verifyDisabled) === true)
         {
-            $variant = $this->app->razorx->getTreatment(
-                $gateway,
-                Merchant\RazorxTreatment::GATEWAY_SCHEDULER_VERIFY_EXPERIMENT,
-                $this->mode
-            );
-            // for Gpay, we have to push to kafka always
-            // irrespective of the experiment variant
-            if (((str_starts_with($variant, 'on') === true) or
-                ($gateway === Payment\Entity::GOOGLE_PAY)) and
-                ($this->app->runningUnitTests() === false))
-            {
-                $isReminderVerifyPayment = true;
-            }
+            $isReminderVerifyPayment = false;
         }
 
-        // need to introduce the GATEWAY_SCHEDULER_TIMEOUT_EXPERIMENT in razorx
-        $variant = $this->app->razorx->getTreatment(
-            $method,
-            Merchant\RazorxTreatment::GATEWAY_SCHEDULER_TIMEOUT_EXPERIMENT,
-            $this->mode
-        );
-
-        if((str_starts_with($variant, 'on') === true) and
-            ($this->app->runningUnitTests() === false))
+        if (($this->app->runningUnitTests() === true) or ($this->mode !== Mode::LIVE) or (empty($gateway) === true))
         {
-            $isReminderTimeoutPayment = true;
+            $isReminderVerifyPayment = false;
+            $isReminderTimeoutPayment = false;
         }
-
 
         $this->trace->info(
             TraceCode::PAYMENT_KAFKA_PUSH_INITIATED,
             [
-                'payment_id' => $payment->getId(),
+                'payment_id'               => $payment->getId(),
                 'isReminderTimeoutPayment' => $isReminderTimeoutPayment ,
-                'isReminderVerifyPayment' => $isReminderVerifyPayment,
+                'isReminderVerifyPayment'  => $isReminderVerifyPayment,
             ]
         );
 

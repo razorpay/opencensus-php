@@ -365,9 +365,6 @@ final class RazorxTreatment
 
     // to a/b test between offer tile vs subtext for cred
     const CRED_OFFER_SUBTEXT = 'cred_offer_subtext';
-    //razorx experiment for using scheduler
-    const GATEWAY_SCHEDULER_VERIFY_EXPERIMENT           = 'gateway_scheduler_verify_experiment';
-    const GATEWAY_SCHEDULER_TIMEOUT_EXPERIMENT          = 'gateway_scheduler_timeout_experiment';
     // controls %age of the mail to be sent via stork
     const API_STORK_MAIL_PAYMENT_CAPTURE        = 'api_stork_mail_payment_capture';
     const API_STORK_MAIL_PAYMENT_FAILURE        = 'api_stork_mail_payment_failure';
@@ -704,9 +701,6 @@ final class RazorxTreatment
 
     // Experiment to migrate disputes routes from API to disputes service
     const DISPUTES_DECOMP = 'disputes_decomp';
-
-    // Experiment to push the failed payment to kafka via sqs queue
-    const PUSH_PAYMENT_TO_KAFKA_VIA_QUEUE = 'push_payment_to_kafka_via_queue';
 
     // Experiment to use card number from input to use dummy cvv in payment
     const USE_DETECT_NETWORK_FOR_DUMMY_CVV = 'use_detect_network_for_dummy_cvv';
