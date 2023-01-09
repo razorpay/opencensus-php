@@ -41,7 +41,7 @@ const ViewInsight = ({ closeModal, isProPlan = false, insights }) => {
 
   return (
     <div className="mopl-insights-container">
-      <ModalHeader title="Re-Marketer insights" onCloseClick={closeModal} />
+      <ModalHeader title="Insights" onCloseClick={closeModal} />
       <div className="content">
         <div className="heading flex">
           <div>Showing insights for</div>

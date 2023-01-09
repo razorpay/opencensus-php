@@ -1,3 +1,5 @@
+$screen-xs-max = 767px
+
 #missed-order-plan-title
   font-size: 18px
   font-weight: 700
@@ -66,7 +68,6 @@
 
   .heading-title
     display: flex
-    margin-right: 84px
     align-items: baseline
     justify-content: center
 
@@ -402,6 +403,9 @@
     justify-content: space-between
     align-items: baseline
 
+    @media screen and (max-width $screen-xs-max)
+      padding: 0
+
   .charge-info
     font-size: 12px
     color: #5B666D
@@ -424,8 +428,16 @@
     display: flex
     align-items: center
 
+    @media screen and (max-width $screen-xs-max)
+      align-items: start
+      flex-direction: column
+      gap: 10px
+
   .active-wrapper
     padding-left: 8px
+
+    @media screen and (max-width $screen-xs-max)
+      padding-left: 0
 
   .active-content
     display: flex
@@ -472,6 +484,10 @@
   .free-bill-date
     color: #C28533
 
+    @media screen and (max-width $screen-xs-max)
+      list-style-type: none;
+      padding-left: 0
+
   .billing-date
     color: #9BA6AC
 
@@ -488,6 +504,9 @@
     background: #FAFCFF
     justify-content: space-between
     border: 1px solid rgba(11 112 231 0.1)
+
+    @media screen and (max-width $screen-xs-max)
+      width: 100%
 
   .insight-image-wrapper
     margin-right: 8px

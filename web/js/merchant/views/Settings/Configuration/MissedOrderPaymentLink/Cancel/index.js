@@ -76,8 +76,8 @@ const Cancel = ({ closeModal, showNotification, isFreeTrial, fetchMerchantMOPLSu
             hideIcon
             onClick={stopReMarketer}
             loading={stopReMarketerloading}
-            buttonText="Stop Re-Marketer"
-            pendingState="Stop Re-Marketer"
+            buttonText="Stop Payments Recovery"
+            pendingState="Processing..."
           />
         </div>
       </div>

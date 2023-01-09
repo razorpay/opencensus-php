@@ -95,7 +95,7 @@ const FeaturesModal = ({ missed_order_payment_link, openModal, closeModal }) => 
   const plans = missed_order_payment_link?.plans?.data?.plans;
   return (
     <div className="missedorder-features-container">
-      <ModalHeader title="Re-Marketer" onCloseClick={closeModal} />
+      <ModalHeader title="Failed Payments Recovery" onCloseClick={closeModal} />
       <div className="content">
         <div>
           <b>Pick a monthly Plan</b> (change or cancel anytime later)

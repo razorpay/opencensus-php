@@ -52,7 +52,7 @@ const Settings = ({ closeModal, openModal, missed_order_payment_link }) => {
       <div className="modal-header header-wrapper">
         <div className="heading-title">
           <i className="i i-settings-outline mr-8" />
-          <h3 className="modal-title">Re-Marketer settings</h3>
+          <h3 className="modal-title">Failed Payments Recovery Settings</h3>
         </div>
         {closeModal && (
           <div>

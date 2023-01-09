@@ -32,7 +32,7 @@ const Header = ({ closeModal, planStatus }) => {
   ) : (
     <div class="modal-header header-wrapper">
       <i class="i i-done text-success icon-wrapper" />
-      <h3 className="modal-title">You have activated Re-Marketer</h3>
+      <h3 className="modal-title">You have activated Failed Payments Recovery</h3>
       {closeModal && (
         <button type="button" class="close" onClick={closeModal}>
           <i class="i i-close" />
