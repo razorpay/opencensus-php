@@ -5,6 +5,7 @@ namespace RZP\Services\Dcs\Features;
 use Razorpay\Dcs\Kv\V1\ApiException;
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\Feature\Metric as FeatureMetric;
 use RZP\Services\Dcs\ExternalService;
 use RZP\Services\Dcs\ExternalService\Constants;
 use RZP\Trace\TraceCode;
@@ -41,8 +42,26 @@ class Service extends Base
      */
     public function editFeature(Entity $entity, string $variant, bool $isAssignment, $mode = Mode::TEST)
     {
+        if ($isAssignment === true)
+        {
+            $action  = 'assign';
+        }
+        else
+        {
+            $action  = 'remove';
+        }
+        $dimension = [
+            Entity::ENTITY_TYPE     => $entity->getEntity(),
+            Entity::NAME            => $entity->getName(),
+            'variant'               => $variant,
+            'mode'                  => $mode,
+            'action'                => $action
+        ];
+
         // if there is any exception will be thrown to caller
         try {
+            $this->trace->count(Metric::DCS_FEATURE_EDIT_TOTAL, $dimension);
+
             if (str_starts_with($variant, 'on_direct_dcs'))
             {
                 $key = DCSConstants::$featureToDCSKeyMapping[$entity->getName()];
@@ -84,6 +103,7 @@ class Service extends Base
         }
         catch (\Exception $e)
         {
+            $this->trace->count(Metric::DCS_FEATURE_EDIT_FAILURE_TOTAL, $dimension);
             if (self::isDcsNewFeature($entity->getName()) === true)
             {
                 throw $e;

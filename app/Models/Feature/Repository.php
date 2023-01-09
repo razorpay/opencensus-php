@@ -3,9 +3,11 @@
 namespace RZP\Models\Feature;
 
 use Razorpay\Trace\Logger;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Constants\Table;
+use RZP\Models\Feature\Metric as FeatureMetric;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use Illuminate\Support\Collection;
@@ -37,9 +39,15 @@ class Repository extends Base\Repository
         $cacheTags = Entity::getCacheTagsForEntities($entityType, $entityId);
 
         $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
+        $dimension = [
+            'feature_name' => 'many',
+            'mode' => $this->getAppMode(),
+            'function' => __FUNCTION__
+        ];
 
         try
         {
+            $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
             $dcs = $this->app['dcs'];
             $dcsFeatures = array_keys(DcsFeaturesConstants::$dcsNewFeatures);
             $response = $dcs->fetchByEntityIdAndFeatureNames($entityId, $dcsFeatures, ($mode === null) ? $this->getAppMode() : $mode);
@@ -47,6 +55,7 @@ class Repository extends Base\Repository
         }
         catch(\Exception $e)
         {
+            $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
         }
 
@@ -63,13 +72,20 @@ class Repository extends Base\Repository
     {
         if (key_exists($featureName, DcsFeaturesConstants::$dcsNewFeatures))
         {
+            $dimension = [
+                'feature_name' => $featureName,
+                'mode' => $this->getAppMode(),
+                'function' => __FUNCTION__
+            ];
             try
             {
+                $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
                 return $dcs->fetchByEntityIdAndName($entityId, $featureName, $this->getAppMode());
             }
             catch(\Exception $e)
             {
+                $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
             }
         }
@@ -85,13 +101,21 @@ class Repository extends Base\Repository
     {
         if (key_exists($featureName, DcsFeaturesConstants::$dcsNewFeatures))
         {
+            $dimension = [
+                'feature_name' => $featureName,
+                'mode' => $this->getAppMode(),
+                'function' => __FUNCTION__
+            ];
+
             try
             {
+                $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
                 return $dcs->fetchByEntityIdAndName($entityId, $featureName, $this->getAppMode());
             }
             catch(\Exception $e)
             {
+                $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
             }
         }
@@ -107,13 +131,21 @@ class Repository extends Base\Repository
     {
         if (key_exists($featureName, DcsFeaturesConstants::$dcsNewFeatures))
         {
+            $dimension = [
+                'feature_name' => $featureName,
+                'mode' => $this->getAppMode(),
+                'function' => __FUNCTION__
+            ];
+
             try
             {
+                $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
                 return $dcs->fetchByEntityIdAndName($entityId, $featureName, $this->getAppMode());
             }
             catch(\Exception $e)
             {
+                $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
             }
         }
@@ -148,10 +180,17 @@ class Repository extends Base\Repository
     {
         $dcsRes = collect();
         $apiFeatures = $featureNames;
+        $dimension = [
+            'feature_name' => 'many',
+            'mode' => $this->getAppMode(),
+            'function' => __FUNCTION__
+        ];
+
         try
         {
             $dcsFeatures = array_intersect($featureNames, array_keys(DcsFeaturesConstants::$dcsNewFeatures));
             if (sizeof($dcsFeatures) !== 0) {
+                $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
                 $response = $dcs->fetchByEntityIdAndFeatureNames($merchantId, $dcsFeatures, $this->getAppMode());
                 $dcsRes = collect($response);
@@ -164,6 +203,7 @@ class Repository extends Base\Repository
         }
         catch(\Exception $e)
         {
+            $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
         }
 
@@ -181,10 +221,17 @@ class Repository extends Base\Repository
     {
         $dcsRes = [];
         $apiFeatures = $featureNames;
+        $dimension = [
+            'feature_name' => 'many',
+            'mode' => $this->getAppMode(),
+            'function' => __FUNCTION__
+        ];
+
         try
         {
             $dcsFeatures = array_intersect($featureNames, array_keys(DcsFeaturesConstants::$dcsNewFeatures));
             if (sizeof($dcsFeatures) !== 0) {
+                $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
                 $response = $dcs->fetchByEntityIdAndFeatureNames($merchantId, $dcsFeatures, $mode);
                 $dcsRes = collect($response)->pluck(Entity::NAME)->toArray();
@@ -196,6 +243,7 @@ class Repository extends Base\Repository
         }
         catch(\Exception $e)
         {
+            $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
         }
 
@@ -280,13 +328,21 @@ class Repository extends Base\Repository
     {
         if (key_exists($featureName, DcsFeaturesConstants::$dcsNewFeatures))
         {
+            $dimension = [
+                'feature_name' => $featureName,
+                'mode' => $this->getAppMode(),
+                'function' => __FUNCTION__
+            ];
+
             try
             {
+                $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
                 return $dcs->fetchByEntityIdsAndName($merchantIds, $featureName, $this->getAppMode());
             }
             catch(\Exception $e)
             {
+                $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
             }
         }
