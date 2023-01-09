@@ -3342,4 +3342,21 @@ class InvoiceTest extends TestCase
             $this->createInvoice($attribute['invoiceAttributes'], $attribute['orderAttributes']);
         }
     }
+
+    public function testGetInvoiceDetailsForCheckout(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $order = $this->fixtures->create('order');
+
+        $invoice = $this->fixtures->create('invoice', ["order_id" => $order->getId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/internal/invoices/checkout/' . $invoice->getPublicId();
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals($order->getPublicId(), $response['invoice']['order_id']);
+    }
 }

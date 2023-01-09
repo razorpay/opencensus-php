@@ -1246,6 +1246,7 @@ class Route
         'invoice_create'                           => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
         'bulk_invoice_create'                      => ['post',     'invoices/bulk',                                  'InvoiceController@createInvoiceBulk'                               ],
         'invoice_fetch'                            => ['get',      'invoices/{id}',                                  'InvoiceController@getInvoice'                                      ],
+        'invoice_fetch_for_checkout_internal'      => ['get',      'internal/invoices/checkout/{id}',                'InvoiceController@getInvoiceDetailsForCheckout'                    ],
         'invoice_get_count'                        => ['get',      'invoices-count',                                 'InvoiceController@getInvoicesCount'                                ],
         'invoice_fetch_multiple'                   => ['get',      'invoices',                                       'InvoiceController@getInvoices'                                     ],
         'invoice_update'                           => ['patch',    'invoices/{id}',                                  'InvoiceController@updateInvoice'                                   ],
@@ -6548,12 +6549,14 @@ class Route
         'merchant_ip_config_fetch',
         'merchant_ip_config_create',
         
+        // checkout service routes
+        'invoice_fetch_for_checkout_internal',
         'checkout_personalisation_internal',
+        'fetch_payment_config_checkout_internal',
 
         'partner_config_fetch',
         'partner_config_edit',
         'partner_config_edit_logo',
-        'fetch_payment_config_checkout_internal',
     ];
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
@@ -14652,6 +14655,7 @@ class Route
             'feature_get_all_internal',
             'internal_1cc_configs_get',
             'fetch_trusted_badge_status',
+            'invoice_fetch_for_checkout_internal',
             'merchant_fetch_config_for_checkout_internal',
             'checkout_personalisation_internal',
         ],

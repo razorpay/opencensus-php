@@ -121,6 +121,13 @@ class InvoiceController extends Controller
         return ApiResponse::json($invoices);
     }
 
+    public function getInvoiceDetailsForCheckout($id)
+    {
+        $data = $this->service()->getInvoiceDetailsForCheckout($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function getInvoicesCount()
     {
         $input = Request::all();

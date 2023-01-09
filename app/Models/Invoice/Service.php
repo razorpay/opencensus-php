@@ -144,6 +144,11 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
+    public function getInvoiceDetailsForCheckout(string $invoiceId): array
+    {
+        return $this->core->getFormattedInvoiceData($invoiceId, $this->merchant);
+    }
+
     public function checkForInvoiceTypeForPlServiceForwarding(string $id, array $input): bool
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUser(
