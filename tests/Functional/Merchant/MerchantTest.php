@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use RZP\Models\Admin;
 use RZP\Constants\Table;
 use RZP\Constants\Product;
+use RZP\Models\BankingAccount\Gateway\Fields;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Services\Mock;
@@ -21,6 +22,8 @@ use RZP\Diag\EventCode;
 use RZP\Models\User\Role;
 use RZP\Services\Aws\Sns;
 use RZP\Models\Base\EsDao;
+use RZP\Services\Mock\BankingAccountService;
+use RZP\Services\Mock\Mozart;
 use RZP\Services\Mock\Raven;
 use RZP\Services\UfhService;
 use RZP\Error\PublicErrorCode;
@@ -17251,6 +17254,560 @@ The same has been enabled for the account.
         $this->ba->adminProxyAuth('10000000000000', 'rzp_test_' . '10000000000000');
 
         $this->startTest();
+    }
+
+    // all balances of type banking will be returned
+    public function testGetBalancesTypeBanking()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $this->setUpMerchantForGetBalances();
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $response = $this->startTest();
+        $this->assertEquals(2, $response['count']);
+        $this->assertEquals('banking', $response['items'][0]['type']);
+        $this->assertEquals('shared', $response['items'][0]['account_type']);
+        $this->assertEquals('banking', $response['items'][1]['type']);
+        $this->assertEquals('direct', $response['items'][1]['account_type']);
+    }
+
+    // all balances of type banking will be returned . this will be applicable when merchant
+    // switches from one tab to another and comes back to home page
+    // or when merchant refreshes the browser
+    public function testGetBalancesTypeBankingCachedTrue()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $this->setUpMerchantForGetBalances();
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $response = $this->startTest();
+
+        $this->assertEquals(2, $response['count']);
+        $this->assertEquals('banking', $response['items'][0]['type']);
+        $this->assertEquals('banking', $response['items'][1]['type']);
+    }
+
+    // VA balance will be returned . when merchant clicks on VA balance refresh button then it is applicable
+    public function testGetBalancesTypeBankingCachedTrueVABalanceId()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $this->setUpMerchantForGetBalances();
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $response = $this->startTest();
+
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals('banking', $response['items'][0]['type']);
+        $this->assertEquals('100abc000abcd0', $response['items'][0]['id']);
+        $this->assertEquals('shared', $response['items'][0]['account_type']);
+    }
+
+    public function testGetBalancesTypeBankingCachedFalseExpOff()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'off']);
+
+        $this->setUpMerchantForGetBalances();
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $response = $this->startTest();
+
+        $this->assertEquals(2, $response['count']);
+        $this->assertEquals('banking', $response['items'][0]['type']);
+        $this->assertEquals('banking', $response['items'][1]['type']);
+        $this->assertEquals('100abc000abcd0', $response['items'][0]['id']);
+        $this->assertEquals('100abc000abc00', $response['items'][1]['id']);
+        $this->assertEquals('shared', $response['items'][0]['account_type']);
+        $this->assertEquals('direct', $response['items'][1]['account_type']);
+    }
+
+    public function testGetBalancesTypeBankingCachedFalseExpOn()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'on']);
+
+        $this->setUpMerchantForGetBalances();
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $response = $this->startTest();
+
+        $this->assertEquals(2, $response['count']);
+        $this->assertEquals('banking', $response['items'][0]['type']);
+        $this->assertEquals('banking', $response['items'][1]['type']);
+        $this->assertEquals('100abc000abcd0', $response['items'][0]['id']);
+        $this->assertEquals('100abc000abc00', $response['items'][1]['id']);
+        $this->assertEquals('shared', $response['items'][0]['account_type']);
+        $this->assertEquals('direct', $response['items'][1]['account_type']);
+    }
+
+    // CA balance will be returned . it is applicable when merchant clicks on CA balance refresh button .
+    public function testGetBalancesTypeBankingCachedFalseCABalanceId()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'on']);
+
+        $this->setUpMerchantForGetBalances();
+
+        $balance = $this->getDbEntity('balance', ['type' => 'banking', 'account_type' => 'direct']);
+
+        $mozartServiceMock = $this->getMockBuilder(Mozart::class)
+                                  ->setConstructorArgs([$this->app])
+                                  ->setMethods(['sendMozartRequest'])
+                                  ->getMock();
+
+        $mozartServiceMock->method('sendMozartRequest')
+                          ->willReturn([
+                                           'data' => [
+                                               'success'   => true,
+                                               'PayGenRes' => [
+                                                   'Body' => [
+                                                       'BalAmt' => [
+                                                           'amountValue' => 230,
+                                                       ]
+                                                   ]
+                                               ]
+                                           ]
+                                       ]);
+
+        $this->app->instance('mozart', $mozartServiceMock);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $startTimeStamp = Carbon::now()->getTimestamp();
+
+        $response = $this->startTest();
+
+        $this->assertEquals(100, $balance->getBalance());
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals('banking', $response['items'][0]['type']);
+        $this->assertEquals('100abc000abc00', $response['items'][0]['id']);
+        $this->assertEquals('direct', $response['items'][0]['account_type']);
+        $this->assertEquals(23000, $response['items'][0]['balance']);
+        $this->assertGreaterThanOrEqual($startTimeStamp,$response['items'][0]['last_fetched_at']);
+    }
+
+    public function testGetBalancesTypeBankingCachedFalseCABalanceIdExpOff()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'off']);
+
+        $this->setUpMerchantForGetBalances();
+
+        $balance = $this->getDbEntity('balance', ['type' => 'banking', 'account_type' => 'direct']);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $response = $this->startTest();
+        $this->assertEquals(100, $balance->getBalance());
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals('banking', $response['items'][0]['type']);
+        $this->assertEquals('100abc000abc00', $response['items'][0]['id']);
+        $this->assertEquals('direct', $response['items'][0]['account_type']);
+        $this->assertEquals(100, $response['items'][0]['balance']);
+    }
+
+    // CA balance will be returned . it is applicable when merchant's last
+    //  fetched balance was beyond recency threshold(10sec)
+    public function testGetBalancesLastFetchedBeyondRecencyThreshold()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'on', RazorxTreatment::USE_GATEWAY_BALANCE => 'on']);
+
+        $this->setUpMerchantForGetBalances();
+
+        $balance = $this->getDbEntity('balance', ['type' => 'banking', 'account_type' => 'direct']);
+
+        $lastFetchedTime = Carbon::now(Timezone::IST)->subMinutes(5)->getTimestamp();
+
+        $basd = $this->getDbLastEntity('banking_account_statement_details');
+
+        $this->fixtures->edit('banking_account_statement_details', $basd['id'], ['balance_last_fetched_at' => $lastFetchedTime]);
+
+        $mozartServiceMock = $this->getMockBuilder(Mozart::class)
+                                  ->setConstructorArgs([$this->app])
+                                  ->setMethods(['sendMozartRequest'])
+                                  ->getMock();
+
+        $mozartServiceMock->method('sendMozartRequest')
+                          ->willReturn([
+                                           'data' => [
+                                               'success'   => true,
+                                               'PayGenRes' => [
+                                                   'Body' => [
+                                                       'BalAmt' => [
+                                                           'amountValue' => 230,
+                                                       ]
+                                                   ]
+                                               ]
+                                           ]
+                                       ]);
+
+        $this->app->instance('mozart', $mozartServiceMock);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $response = $this->startTest();
+        $this->assertEquals(100, $balance->getBalance());
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals('banking', $response['items'][0]['type']);
+        $this->assertEquals('100abc000abc00', $response['items'][0]['id']);
+        $this->assertEquals('direct', $response['items'][0]['account_type']);
+        $this->assertEquals(23000, $response['items'][0]['balance']);
+    }
+
+    // CA balance will be returned . No sync call will be done . last fetched balance was
+    // within recency threshold
+    public function testGetBalancesLastFetchedWithinRecencyThreshold()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'on', RazorxTreatment::USE_GATEWAY_BALANCE => 'on']);
+
+        $this->setUpMerchantForGetBalances();
+
+        $balance = $this->getDbEntity('balance', ['type' => 'banking', 'account_type' => 'direct']);
+
+        $lastFetchedTime = Carbon::now(Timezone::IST)->subSeconds(5)->getTimestamp();
+
+        $basd = $this->getDbLastEntity('banking_account_statement_details');
+
+        $this->fixtures->edit('banking_account_statement_details', $basd['id'], ['balance_last_fetched_at' => $lastFetchedTime, 'gateway_balance' => 100]);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $response = $this->startTest();
+        $this->assertEquals(100, $balance->getBalance());
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals('banking', $response['items'][0]['type']);
+        $this->assertEquals('100abc000abc00', $response['items'][0]['id']);
+        $this->assertEquals('direct', $response['items'][0]['account_type']);
+        $this->assertEquals(100, $response['items'][0]['balance']);
+    }
+
+    // CA balance will be returned . No sync call will be done . last fetched balance was
+    // within recency threshold (10 sec)
+    public function testGetBalancesSecondRequestWithinRecencyThreshold()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'on']);
+
+        $this->setUpMerchantForGetBalances();
+
+        $balance = $this->getDbEntity('balance', ['type' => 'banking', 'account_type' => 'direct']);
+
+        $mozartServiceMock = $this->getMockBuilder(Mozart::class)
+                                  ->setConstructorArgs([$this->app])
+                                  ->setMethods(['sendMozartRequest'])
+                                  ->getMock();
+
+        $mozartServiceMock->method('sendMozartRequest')
+                          ->willReturn([
+                                           'data' => [
+                                               'success'   => true,
+                                               'PayGenRes' => [
+                                                   'Body' => [
+                                                       'BalAmt' => [
+                                                           'amountValue' => 230,
+                                                       ]
+                                                   ]
+                                               ]
+                                           ]
+                                       ]);
+
+        $this->app->instance('mozart', $mozartServiceMock);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $response = $this->startTest();
+        $this->assertEquals(100, $balance->getBalance());
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals('banking', $response['items'][0]['type']);
+        $this->assertEquals('100abc000abc00', $response['items'][0]['id']);
+        $this->assertEquals('direct', $response['items'][0]['account_type']);
+        $this->assertEquals(23000, $response['items'][0]['balance']);
+
+        $response1 = $this->startTest();
+        $this->assertEquals(1, $response1['count']);
+        $this->assertEquals('banking', $response1['items'][0]['type']);
+        $this->assertEquals('100abc000abc00', $response1['items'][0]['id']);
+        $this->assertEquals('direct', $response1['items'][0]['account_type']);
+        $this->assertEquals(23000, $response1['items'][0]['balance']);
+        $this->assertEquals($response['items'][0]['balance'], $response1['items'][0]['balance']);
+        $this->assertEquals($response['items'][0]['last_fetched_at'], $response1['items'][0]['last_fetched_at']);
+    }
+
+    public function testGetBalancesSyncCallUnsuccessfulCase()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'on']);
+
+        $this->setUpMerchantForGetBalances();
+
+        $balance = $this->getDbEntity('balance', ['type' => 'banking', 'account_type' => 'direct']);
+
+        $lastFetchedTime = Carbon::now(Timezone::IST)->subMinutes(5)->getTimestamp();
+
+        $basd = $this->getDbLastEntity('banking_account_statement_details');
+
+        $this->fixtures->edit('banking_account_statement_details', $basd['id'], ['balance_last_fetched_at' => $lastFetchedTime, 'gateway_balance' => 100]);
+
+        $mozartServiceMock = $this->getMockBuilder(Mozart::class)
+                                  ->setConstructorArgs([$this->app])
+                                  ->setMethods(['sendMozartRequest'])
+                                  ->getMock();
+
+        $exception = new GatewayErrorException("GATEWAY_ERROR_UNKNOWN_ERROR",
+                                               "Failure",
+                                               "(No error description was mapped for this error code)");
+
+        $mozartServiceMock->method('sendMozartRequest')
+                          ->willReturn([
+                                           'data' => [
+                                               'success'   => true,
+                                               'PayGenRes' => [
+                                                   'Body' => [
+                                                       'BalAmt' => [
+                                                           'amountValue' => null,
+                                                       ]
+                                                   ]
+                                               ]
+                                           ]
+                                       ]);
+
+        $mozartServiceMock->method('sendMozartRequest')
+                          ->willThrowException($exception);
+
+        $this->app->instance('mozart', $mozartServiceMock);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $response = $this->startTest();
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals('banking', $response['items'][0]['type']);
+        $this->assertEquals('100abc000abc00', $response['items'][0]['id']);
+        $this->assertEquals('direct', $response['items'][0]['account_type']);
+        $this->assertEquals(100, $response['items'][0]['balance']);
+        $this->assertEquals('balance_fetch_sync_call_was_not_successful', $response['items'][0]['error_info']);
+    }
+
+    public function testGetBalancesTypeBankingCachedFalseCABalanceIdIcici()
+    {
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'on']);
+
+        $balanceData1 = [
+            'id'             => '100abc000abc00',
+            'merchant_id'    => '100ghi000ghi00',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 100,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626905',
+            'account_type'   => 'direct',
+            'channel'        => 'icici',
+            'updated_at'     => 1,
+        ];
+
+        $this->fixtures->create('balance', $balanceData1);
+
+        $balance = $this->getDbEntity('balance', ['type' => 'banking', 'account_type' => 'direct']);
+
+        $basDetails = [
+            'id'             => 'xbas0000000002',
+            'merchant_id'    => '100ghi000ghi00',
+            'balance_id'     => '100abc000abc00',
+            'account_number' => '2224440041626905',
+            'channel'        => 'icici',
+            'status'         => 'active',
+        ];
+
+        $bankingAccount = [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '100ghi000ghi00',
+            'channel'               => 'icici',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => '100abc000abc00'
+        ];
+
+        $this->fixtures->create('banking_account_statement_details', $basDetails);
+
+        $this->fixtures->create('banking_account', $bankingAccount);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => '100ghi000ghi00',
+            'business_name'     => 'Test Name liability company pvt pvt. llp llp. llc llc. ',
+            'activation_status' => 'activated',
+            'business_type'     => '2',
+            'bas_business_id'   => '100ghi000ghi00',
+        ]);
+
+        $mozartServiceMock = $this->getMockBuilder(Mozart::class)
+                                  ->setConstructorArgs([$this->app])
+                                  ->setMethods(['sendMozartRequest'])
+                                  ->getMock();
+
+        $mozartServiceMock->method('sendMozartRequest')
+                          ->willReturn([
+                                           'data' => [
+                                               'balance' => 230,
+                                           ]
+                                       ]);
+        $this->app->instance('mozart', $mozartServiceMock);
+
+        $basMock = Mockery::mock(BankingAccountService::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $basMock->shouldReceive('fetchBankingCredentials')
+                ->andReturn([
+                                'CrpId'       => 'RAZORPAY12345',
+                                'CrpUsr'      => 'USER12345',
+                                'URN'         => 'URN12345',
+                                'credentials' => [
+                                    "AGGR_ID"           => "BAAS0123",
+                                    "AGGR_NAME"         => "ACMECORP",
+                                    "beneficiaryApikey" => "wfeg34t34t34t3r43t34GG"
+                                ]
+                            ]);
+
+        $this->app->instance('banking_account_service', $basMock);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $response = $this->startTest();
+        $this->assertEquals(100, $balance->getBalance());
+        $this->assertEquals(1, $response['count']);
+        $this->assertEquals('banking', $response['items'][0]['type']);
+        $this->assertEquals('100abc000abc00', $response['items'][0]['id']);
+        $this->assertEquals('direct', $response['items'][0]['account_type']);
+        $this->assertEquals(23000, $response['items'][0]['balance']);
+    }
+
+    public function setUpMerchantForGetBalances()
+    {
+        $balanceData1 = [
+            'id'                => '100abc000abc00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'banking',
+            'currency'          => 'INR',
+            'name'              => null,
+            'balance'           => 100,
+            'credits'           => 0,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => '2224440041626905',
+            'account_type'      => 'direct',
+            'channel'           => 'rbl',
+            'updated_at'        => 1,
+        ];
+
+        $balanceData2 = [
+            'id'                => '100def000def00',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'primary',
+            'currency'          => null,
+            'name'              => null,
+            'balance'           => 100000,
+            'credits'           => 50000,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => null,
+            'account_type'      => null,
+            'channel'           => 'shared',
+            'updated_at'        => 1
+        ];
+
+        $balanceData3 = [
+            'id'                => '100abc000abcd0',
+            'merchant_id'       => '100ghi000ghi00',
+            'type'              => 'banking',
+            'currency'          => 'INR',
+            'name'              => null,
+            'balance'           => 200,
+            'credits'           => 0,
+            'fee_credits'       => 0,
+            'refund_credits'    => 0,
+            'account_number'    => '2224440041626907',
+            'account_type'      => 'shared',
+            'channel'           => 'yesb',
+            'updated_at'        => 1,
+        ];
+
+        $basDetails = [
+            'id'            => 'xbas0000000002',
+            'merchant_id'    => '100ghi000ghi00',
+            'balance_id'     => '100abc000abc00',
+            'account_number' => '2224440041626905',
+            'channel'        => 'rbl',
+            'status'        => 'active',
+        ];
+
+        $bankingAccount = [
+            'account_number'        => '2224440041626905',
+            'account_type'          => 'current',
+            'merchant_id'           => '100ghi000ghi00',
+            'channel'               => 'rbl',
+            'status'                => 'created',
+            'pincode'               => '560038',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+            'balance_id'            => '100abc000abc00'
+        ];
+
+        $this->fixtures->create('balance',$balanceData1);
+
+        $this->fixtures->create('balance',$balanceData2);
+
+        $this->fixtures->create('balance',$balanceData3);
+
+        $this->fixtures->create('banking_account_statement_details', $basDetails);
+
+        $this->fixtures->create('banking_account',$bankingAccount);
     }
 
     //Merchant dashboard proxy auth tests for ip whitelisting

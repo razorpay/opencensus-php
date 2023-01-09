@@ -501,6 +501,9 @@ final class RazorxTreatment
     //Experiment for enabling dcc on various libraries
     const DCC_ON_INTERNATIONAL = 'dcc_on_international';
 
+    //Experiment for making a sync call to bank api for fetching balance
+    const SYNC_CALL_FOR_FRESH_BALANCE = 'sync_call_for_fresh_balance';
+
     // experiment to send uploaded signed form nach payment in fetch token api
     const SEND_NACH_SIGNED_FORM_TO_MERCHANT_IN_RESPONSE_AUTHLINK = 'send_nach_signed_form_to_merchant_in_response_authlink';
 

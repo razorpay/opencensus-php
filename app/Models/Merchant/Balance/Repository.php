@@ -18,11 +18,11 @@ class Repository extends Base\Repository
 
     // These are proxy allowed params to search on.
     protected $proxyFetchParamRules = [
-        Entity::ACCOUNT_NUMBER  => 'sometimes|alpha_num',
+        Entity::ACCOUNT_NUMBER => 'sometimes|alpha_num',
     ];
 
     protected $appFetchParamRules = [
-        Entity::MERCHANT_ID     => 'sometimes|unsigned_id|size:14',
+        Entity::MERCHANT_ID => 'sometimes|unsigned_id|size:14',
     ];
 
     public function findOrFailById($id)
@@ -38,8 +38,8 @@ class Repository extends Base\Repository
             $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
 
         return $query
-                    ->merchantIdAndType($id)
-                    ->firstOrFail();
+            ->merchantIdAndType($id)
+            ->firstOrFail();
     }
 
     public function getBankingBalanceWithMerchantIdAndAccountNumberOrFail($merchantId, $accountNumber)
@@ -58,23 +58,23 @@ class Repository extends Base\Repository
             $this->newQuery() : $this->newQueryWithConnection($this->getConnectionFromType($connectionType));
 
         return $query
-                    ->merchantIdAndType($id)
-                    ->firstOrFailPublic();
+            ->merchantIdAndType($id)
+            ->firstOrFailPublic();
     }
 
     public function getBalanceLockForUpdate($id)
     {
-        assertTrue ($this->isTransactionActive());
+        assertTrue($this->isTransactionActive());
 
         return Entity::lockForUpdate()->newQuery()
-                                      ->merchantIdAndType($id)
-                                      ->firstOrFail();
+                     ->merchantIdAndType($id)
+                     ->firstOrFail();
     }
 
     // not in use
     public function getMerchantBalanceLockForUpdate($merchant)
     {
-        assertTrue ($this->isTransactionActive());
+        assertTrue($this->isTransactionActive());
 
         return $this->getBalanceLockForUpdate($merchant->getKey());
     }
@@ -88,11 +88,11 @@ class Repository extends Base\Repository
         return $balance;
     }
 
-    public function getMerchantBalances(string $merchantId) : Base\PublicCollection
+    public function getMerchantBalances(string $merchantId): Base\PublicCollection
     {
         $balances = $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->get();
+                         ->where(Entity::MERCHANT_ID, $merchantId)
+                         ->get();
 
         return $balances;
     }
@@ -101,7 +101,7 @@ class Repository extends Base\Repository
     {
         $channel = $merchant->getChannel();
 
-        return $this->transaction(function () use ($merchant, $amountCredits, $channel)
+        return $this->transaction(function() use ($merchant, $amountCredits, $channel)
         {
             return $this->editMerchantAmountCreditsInTransaction($merchant, $amountCredits, $channel);
         });
@@ -109,7 +109,7 @@ class Repository extends Base\Repository
 
     private function editMerchantAmountCreditsInTransaction($merchant, $amountCredits, $channel)
     {
-        assertTrue ($this->isTransactionActive());
+        assertTrue($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
 
@@ -134,7 +134,7 @@ class Repository extends Base\Repository
     {
         $channel = $merchant->getChannel();
 
-        return $this->transaction(function () use ($merchant, $feeCredits, $channel)
+        return $this->transaction(function() use ($merchant, $feeCredits, $channel)
         {
             return $this->editMerchantFeeCreditsInTransaction($merchant, $feeCredits, $channel);
         });
@@ -144,7 +144,7 @@ class Repository extends Base\Repository
     {
         $channel = $merchant->getChannel();
 
-        return $this->transaction(function () use ($merchant, $credits, $channel)
+        return $this->transaction(function() use ($merchant, $credits, $channel)
         {
             return $this->editMerchantRefundCreditsInTransaction($merchant, $credits, $channel);
         });
@@ -152,7 +152,7 @@ class Repository extends Base\Repository
 
     private function editMerchantFeeCreditsInTransaction($merchant, $feeCredits, $channel)
     {
-        assertTrue ($this->isTransactionActive());
+        assertTrue($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
 
@@ -165,7 +165,7 @@ class Repository extends Base\Repository
 
     private function editMerchantRefundCreditsInTransaction($merchant, $credits, $channel)
     {
-        assertTrue ($this->isTransactionActive());
+        assertTrue($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
 
@@ -178,14 +178,14 @@ class Repository extends Base\Repository
 
     public function updateBalance($balance)
     {
-        assertTrue ($this->isTransactionActive());
+        assertTrue($this->isTransactionActive());
 
         $balance->saveOrFail();
     }
 
     public function updateBalanceWithOldBalanceCheck($balance, $oldBalance)
     {
-        assertTrue ($this->isTransactionActive());
+        assertTrue($this->isTransactionActive());
 
         return $this->newQuery()
                     ->where(Entity::ID, $balance->getId())
@@ -200,42 +200,42 @@ class Repository extends Base\Repository
 
     public function createBalance($balance)
     {
-        assertTrue ($balance->exists === false);
+        assertTrue($balance->exists === false);
 
         $balance->saveOrFail();
     }
 
     public function getNodalBalance($channel)
     {
-        $func = 'get'.ucfirst($channel).'Balance';
+        $func = 'get' . ucfirst($channel) . 'Balance';
 
         return $this->$func();
     }
 
     public function getKotakBalance()
     {
-        assertTrue ($this->isTransactionActive());
+        assertTrue($this->isTransactionActive());
 
         return $this->findOrFail(Merchant\Account::NODAL_ACCOUNT);
     }
 
     public function getNodalBalanceLockForUpdate($channel)
     {
-        $func = 'get'.ucfirst($channel).'BalanceLockForUpdate';
+        $func = 'get' . ucfirst($channel) . 'BalanceLockForUpdate';
 
         return $this->$func();
     }
 
     public function getKotakBalanceLockForUpdate()
     {
-        assertTrue ($this->isTransactionActive());
+        assertTrue($this->isTransactionActive());
 
         return $this->getBalanceLockForUpdate(Merchant\Account::NODAL_ACCOUNT);
     }
 
     public function getAtomBalanceLockForUpdate()
     {
-        assertTrue ($this->isTransactionActive());
+        assertTrue($this->isTransactionActive());
 
         return $this->getBalanceLockForUpdate(Merchant\Account::ATOM_ACCOUNT);
     }
@@ -266,7 +266,7 @@ class Repository extends Base\Repository
     public function getBalances($limit)
     {
         return $this->newQuery()
-                    ->whereRaw(Entity::ID. '=' . Entity::MERCHANT_ID)
+                    ->whereRaw(Entity::ID . '=' . Entity::MERCHANT_ID)
                     ->limit($limit)
                     ->get();
     }
@@ -328,12 +328,12 @@ class Repository extends Base\Repository
         string $accType,
         string $connection = null)
     {
-        assertTrue ($this->isTransactionActive());
+        assertTrue($this->isTransactionActive());
 
         return Entity::lockForUpdate()->newQuery()
-            ->merchantIdAndType($merchantId, $balanceType)
-            ->where(Entity::ACCOUNT_TYPE, $accType)
-            ->firstOrFail();
+                     ->merchantIdAndType($merchantId, $balanceType)
+                     ->where(Entity::ACCOUNT_TYPE, $accType)
+                     ->firstOrFail();
     }
 
     public function getMerchantBalancesByTypeAndAccountType(
@@ -345,15 +345,15 @@ class Repository extends Base\Repository
         $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
 
         return $query->merchantIdAndType($merchantId, $balanceType)
-            ->where(Entity::ACCOUNT_TYPE, $accType)
-            ->get();
+                     ->where(Entity::ACCOUNT_TYPE, $accType)
+                     ->get();
     }
 
     public function getMerchantBalancesByTypeAndAccountTypeAndBalanceIds(
         string $merchantId,
         string $balanceType,
         string $accType,
-        array  $balanceIds,
+        array $balanceIds,
         string $connection = null)
     {
         $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
@@ -402,9 +402,9 @@ class Repository extends Base\Repository
     public function getBalanceByAccountNumberAndMerchantIDOrFail(string $accountNumber, $merchantId): Entity
     {
         return $this->newQuery()
-            ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
-            ->merchantIdAndType($merchantId, Type::BANKING)
-            ->firstOrFailPublic();
+                    ->where(Entity::ACCOUNT_NUMBER, $accountNumber)
+                    ->merchantIdAndType($merchantId, Type::BANKING)
+                    ->firstOrFailPublic();
     }
 
     public function getBalanceByMerchantIdAccountNumberAndChannelOrFail(
@@ -428,8 +428,8 @@ class Repository extends Base\Repository
      */
     public function getBankingBalanceIdsWhereBalanceUpdatedRecently(array $balanceIdList)
     {
-        $idColumn = $this->dbColumn(Entity::ID);
-        $typeColumn = $this->dbColumn(Entity::TYPE);
+        $idColumn        = $this->dbColumn(Entity::ID);
+        $typeColumn      = $this->dbColumn(Entity::TYPE);
         $updatedAtColumn = $this->dbColumn(Entity::UPDATED_AT);
 
         $sixHourEarlierTimeStamp = Carbon::now(Timezone::IST)->subHours(6)->getTimestamp();
@@ -447,19 +447,19 @@ class Repository extends Base\Repository
 
     public function getBalancesForBalanceIds(array $balanceIdList)
     {
-        $idColumn = $this->dbColumn(Entity::ID);
-        $balanceColumn = $this->dbColumn(Entity::BALANCE);
+        $idColumn        = $this->dbColumn(Entity::ID);
+        $balanceColumn   = $this->dbColumn(Entity::BALANCE);
         $updatedAtColumn = $this->dbColumn(Entity::UPDATED_AT);
 
         $sixHourEarlierTimeStamp = Carbon::now(Timezone::IST)->subHours(6)->getTimestamp();
 
         return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->select($idColumn, $balanceColumn)
-            ->whereIn($idColumn, $balanceIdList)
-            ->where($updatedAtColumn, '>=', $sixHourEarlierTimeStamp)
-            ->get()
-            ->pluck(Entity::BALANCE, Entity::ID)
-            ->toArray();
+                    ->select($idColumn, $balanceColumn)
+                    ->whereIn($idColumn, $balanceIdList)
+                    ->where($updatedAtColumn, '>=', $sixHourEarlierTimeStamp)
+                    ->get()
+                    ->pluck(Entity::BALANCE, Entity::ID)
+                    ->toArray();
     }
 
     public function getBalancesForMerchantIds(array $merchantIds, $balanceType)
@@ -500,24 +500,24 @@ class Repository extends Base\Repository
 
     public function getCANpsCohortList(int $startTime, int $endTime)
     {
-        $balanceIdColumn                    = $this->dbColumn(Entity::ID);
-        $balanceCreatedColumn               = $this->dbColumn(Entity::CREATED_AT);
-        $bankingAccountsBalanceIdColumn     = $this->repo->banking_account->dbColumn(BankingAccount\Entity::BALANCE_ID);
-        $activationStatus                   = $this->repo->banking_account->dbColumn(BankingAccount\Entity::STATUS);
-        $accountTypeColumn                  = $this->repo->banking_account->dbColumn(BankingAccount\Entity::ACCOUNT_TYPE);
+        $balanceIdColumn                = $this->dbColumn(Entity::ID);
+        $balanceCreatedColumn           = $this->dbColumn(Entity::CREATED_AT);
+        $bankingAccountsBalanceIdColumn = $this->repo->banking_account->dbColumn(BankingAccount\Entity::BALANCE_ID);
+        $activationStatus               = $this->repo->banking_account->dbColumn(BankingAccount\Entity::STATUS);
+        $accountTypeColumn              = $this->repo->banking_account->dbColumn(BankingAccount\Entity::ACCOUNT_TYPE);
 
-        $selectAttr                 = [
+        $selectAttr = [
             $this->dbColumn(Entity::MERCHANT_ID),
         ];
 
         return $this->newQuery()
-            ->select($selectAttr)
-            ->join(Table::BANKING_ACCOUNT, $balanceIdColumn, '=', $bankingAccountsBalanceIdColumn)
-            ->where($accountTypeColumn, '=', BankingAccount\AccountType::CURRENT)
-            ->where($activationStatus, '=', BankingAccount\Status::ACTIVATED)
-            ->whereBetween($balanceCreatedColumn, [$startTime, $endTime])
-            ->groupBy(Entity::MERCHANT_ID)
-            ->get();
+                    ->select($selectAttr)
+                    ->join(Table::BANKING_ACCOUNT, $balanceIdColumn, '=', $bankingAccountsBalanceIdColumn)
+                    ->where($accountTypeColumn, '=', BankingAccount\AccountType::CURRENT)
+                    ->where($activationStatus, '=', BankingAccount\Status::ACTIVATED)
+                    ->whereBetween($balanceCreatedColumn, [$startTime, $endTime])
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->get();
     }
 
     /**
@@ -541,10 +541,10 @@ class Repository extends Base\Repository
         $query = $connection !== null ? $this->newQueryWithConnection($connection) : $this->newQuery();
 
         return $query->where(Entity::ACCOUNT_NUMBER, $accountNumber)
-                    ->where(Entity::CHANNEL, $channel)
-                    ->where(Entity::ACCOUNT_TYPE, $accountType)
-                    ->merchantIdAndType($merchantId, Type::BANKING)
-                    ->first();
+                     ->where(Entity::CHANNEL, $channel)
+                     ->where(Entity::ACCOUNT_TYPE, $accountType)
+                     ->merchantIdAndType($merchantId, Type::BANKING)
+                     ->first();
     }
 
     public function getBalanceByMerchantIdChannelsAndAccountType(string $merchantId,
@@ -573,14 +573,14 @@ class Repository extends Base\Repository
     {
         $startTime = microtime(true);
 
-        $result =  $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
-            ->select(Entity::MERCHANT_ID)
-            ->where(Entity::TYPE, '=', Type::PRIMARY)
-            ->where(Entity::UPDATED_AT, '>', $from)
-            ->where(Entity::UPDATED_AT, '<=', $to)
-            ->groupBy(Entity::MERCHANT_ID)
-            ->pluck(Entity::MERCHANT_ID)
-            ->toArray();
+        $result = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
+                       ->select(Entity::MERCHANT_ID)
+                       ->where(Entity::TYPE, '=', Type::PRIMARY)
+                       ->where(Entity::UPDATED_AT, '>', $from)
+                       ->where(Entity::UPDATED_AT, '<=', $to)
+                       ->groupBy(Entity::MERCHANT_ID)
+                       ->pluck(Entity::MERCHANT_ID)
+                       ->toArray();
 
         $this->trace->info(
             TraceCode::SETTLEMENT_DEBUGGING_FRAMEWORK_MERCHANT_FETCH_TIME_TAKEN,
@@ -621,9 +621,9 @@ class Repository extends Base\Repository
 
     public function addQueryParamAccountNumberSuffix($query, $param)
     {
-        $accountNumber          = $this->dbColumn(Entity::ACCOUNT_NUMBER);
-        $accountNumberSuffix    = $param[Entity::ACCOUNT_NUMBER_SUFFIX];
+        $accountNumber       = $this->dbColumn(Entity::ACCOUNT_NUMBER);
+        $accountNumberSuffix = $param[Entity::ACCOUNT_NUMBER_SUFFIX];
 
-        $query->where($accountNumber, 'like', '%'.$accountNumberSuffix);
+        $query->where($accountNumber, 'like', '%' . $accountNumberSuffix);
     }
 }

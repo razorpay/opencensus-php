@@ -16,6 +16,7 @@ use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Models\Merchant\Balance\Type as ProductType;
+use RZP\Models\Merchant\RazorxTreatment as Experiment;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\PayLater;
@@ -1835,6 +1836,20 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
+        $cached = 'true';
+
+        $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST,
+                           [
+                               'input' =>  $input,
+                               'merchant_id'  =>  $merchantId,
+                           ]);
+
+        if (empty($input['cached']) === false)
+        {
+            $cached = $input['cached'];
+            unset($input['cached']);
+        }
+
         $balance = $this->repo->balance->fetch($input, $merchantId)->toArrayPublic();
 
         foreach ($balance['items'] as &$b)
@@ -1860,6 +1875,105 @@ class Service extends Base\Service
                     }
 
                     break;
+                }
+            }
+        }
+
+        foreach ($balance['items'] as &$b)
+        {
+            if(($b[Balance\Entity::TYPE] === Balance\Type::BANKING) &&
+               ($b[Balance\Entity::ACCOUNT_TYPE] === Balance\AccountType::DIRECT))
+            {
+                $variant = $this->app['razorx']->getTreatment($merchantId,
+                                                              Experiment::SYNC_CALL_FOR_FRESH_BALANCE, $app['rzp.mode'] ?? Mode::LIVE);
+
+                $this->trace->info(TraceCode::SYNC_CALL_FOR_FRESH_BALANCE_VARIANT_STATUS,
+                                    [
+                                       'variant_status' => $variant,
+                                    ]);
+
+                $dimension = [
+                    'merchant_id' => $merchantId,
+                ];
+
+                // if cached is false and variant is on and balance last fetched is beyond recency threshold (10 sec)
+                // then only , we make sync call for balance fetch
+                if (($cached === 'false') and ($variant === 'on'))
+                {
+                    $thresholdTimestamp = Carbon::now(Timezone::IST)->subSeconds(10)->getTimestamp();
+
+                    if (($b[Balance\Entity::LAST_FETCHED_AT] === null) or
+                        ($b[Balance\Entity::LAST_FETCHED_AT] <= $thresholdTimestamp))
+                    {
+                        $inputArray = [
+                            Balance\Entity::CHANNEL     => $b[Balance\Entity::CHANNEL],
+                            Balance\Entity::MERCHANT_ID => $merchantId,
+                        ];
+
+                        $startTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+                        $startTime = millitime();
+
+                        $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_SYNC_CALL_STARTED,
+                                           [
+                                               'input'                  => $input,
+                                               'thresholdTimestamp'  => $thresholdTimestamp,
+                                               'last_fetched_at'     => $b[Balance\Entity::LAST_FETCHED_AT],
+                                               'start_time'          => $startTimeStamp,
+                                           ]);
+
+                        $basDetails = (new \RZP\Models\BankingAccount\Core())->fetchAndUpdateGatewayBalanceWrapper($inputArray);
+
+                        $timeTaken = millitime() - $startTime;
+
+                        if(empty($basDetails) === false)
+                        {
+                            $b[Balance\Entity::BALANCE] = $basDetails->getGatewayBalance();
+                            $b[Balance\Entity::LAST_FETCHED_AT] = $basDetails->getBalanceLastFetchedAt();
+
+                            if ($basDetails->getBalanceLastFetchedAt() < $startTimeStamp)
+                            {
+                                $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_SYNC_CALL_UNSUCCESSFUL,
+                                                   [
+                                                       'balance'         => $basDetails->getGatewayBalance(),
+                                                       'last_fetched_at' => $basDetails->getBalanceLastFetchedAt(),
+                                                       'merchant_id'     => $merchantId,
+                                                   ]);
+
+                                $b[Balance\Entity::ERROR_INFO] = 'balance_fetch_sync_call_was_not_successful';
+
+                                $this->trace->count(Metric::BALANCE_FETCH_REQUEST_SYNC_CALL_UNSUCCESSFUL_COUNT, $dimension);
+                            }
+
+                            else
+                            {
+                                $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_SYNC_CALL_SUCCESSFUL,
+                                                   [
+                                                       'balance'         => $basDetails->getGatewayBalance(),
+                                                       'last_fetched_at' => $basDetails->getBalanceLastFetchedAt(),
+                                                       'merchant_id'     => $merchantId,
+                                                   ]);
+
+                                $this->trace->count(Metric::BALANCE_FETCH_REQUEST_SYNC_CALL_SUCCESSFUL_COUNT, $dimension);
+                            }
+                        }
+
+                        $this->trace->histogram(Metric::BALANCE_FETCH_REQUEST_SYNC_CALL_LATENCY, $timeTaken, $dimension);
+                    }
+
+                    else
+                    {
+                        $this->trace->info(TraceCode::BALANCE_FETCH_REQUEST_SYNC_CALL_WITHIN_RECENCY_THRESHOLD,
+                                           [
+                                               'balance'         => $b[Balance\Entity::BALANCE],
+                                               'last_fetched_at' => $b[Balance\Entity::LAST_FETCHED_AT],
+                                               'threshold'       => $thresholdTimestamp,
+                                               'merchant_id'     => $merchantId,
+                                           ]);
+
+                        $this->trace->count(Metric::BALANCE_FETCH_REQUEST_SYNC_CALL_WITHIN_RECENCY_THRESHOLD_COUNT, $dimension);
+                    }
+
                 }
             }
         }

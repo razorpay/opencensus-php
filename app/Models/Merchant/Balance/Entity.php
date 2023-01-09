@@ -68,6 +68,12 @@ class Entity extends Base\PublicEntity
     // Used by RazorpayX Current Accounts to store when was the Banking Account Statement last fetched at
     const LAST_FETCHED_AT = 'last_fetched_at';
 
+    // ueed to decide on making sync call for balance fetch
+    const CACHED = 'cached';
+
+    // will be null if successful sync call is made
+    const ERROR_INFO = 'error_info';
+
     protected $fillable = [
         self::ID,
         self::TYPE,
@@ -116,6 +122,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::UPDATED_AT,
         self::LAST_FETCHED_AT,
+        self::ERROR_INFO,
     ];
 
     protected $publicSetters = [
@@ -305,6 +312,11 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getErrorInfo()
+    {
+        return $this->getAttribute(self::ERROR_INFO);
     }
 
     public function isTypePrimary(): bool

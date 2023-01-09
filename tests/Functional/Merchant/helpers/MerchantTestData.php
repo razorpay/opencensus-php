@@ -13875,6 +13875,281 @@ return [
         ],
     ],
 
+    'testGetBalancesTypeBanking' => [
+        'request'  => [
+            'url'    => '/balances?type=banking',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 2,
+                'items' => [
+                    '0' => [
+                        'id'           => '100abc000abcd0',
+                        'type'         => 'banking',
+                        'currency'     => 'INR',
+                        'name'         => null,
+                        'account_type' => 'shared',
+                        'balance'      => 200,
+                    ],
+                    '1' => [
+                        'id'           => '100abc000abc00',
+                        'type'         => 'banking',
+                        'currency'     => 'INR',
+                        'name'         => null,
+                        'account_type' => 'direct',
+                        'balance'      => 100,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBalancesTypeBankingCachedTrue' => [
+        'request'  => [
+            'url'    => '/balances?type=banking&cached=true',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 2,
+                'items' => [
+                    '0' => [
+                        'id'       => '100abc000abcd0',
+                        'type'     => 'banking',
+                        'currency' => 'INR',
+                        'name'     => null,
+                        'balance'  => 200,
+                    ],
+                    '1' => [
+                        'id'       => '100abc000abc00',
+                        'type'     => 'banking',
+                        'currency' => 'INR',
+                        'name'     => null,
+                        'balance'  => 100,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBalancesTypeBankingCachedTrueVABalanceId' => [
+        'request'  => [
+            'url'    => '/balances?type=banking&cached=true&id=100abc000abcd0',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 1,
+                'items' => [
+                    '0' => [
+                        'id'       => '100abc000abcd0',
+                        'type'     => 'banking',
+                        'currency' => 'INR',
+                        'name'     => null,
+                        'balance'  => 200,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBalancesTypeBankingCachedFalseExpOff' => [
+        'request'  => [
+            'url'    => '/balances?type=banking&cached=false',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 2,
+                'items' => [
+                    '0' => [
+                        'id'       => '100abc000abcd0',
+                        'type'     => 'banking',
+                        'currency' => 'INR',
+                        'name'     => null,
+                        'balance'  => 200,
+                    ],
+                    '1' => [
+                        'id'       => '100abc000abc00',
+                        'type'     => 'banking',
+                        'currency' => 'INR',
+                        'name'     => null,
+                        'balance'  => 100,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBalancesTypeBankingCachedFalseExpOn' => [
+        'request'  => [
+            'url'    => '/balances?type=banking&cached=false',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 2,
+                'items' => [
+                    '0' => [
+                        'id'       => '100abc000abcd0',
+                        'type'     => 'banking',
+                        'currency' => 'INR',
+                        'name'     => null,
+                        'balance'  => 200,
+                    ],
+                    '1' => [
+                        'id'       => '100abc000abc00',
+                        'type'     => 'banking',
+                        'currency' => 'INR',
+                        'name'     => null,
+                        'balance'  => 0,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBalancesTypeBankingCachedFalseCABalanceId' => [
+        'request'  => [
+            'url'    => '/balances?type=banking&cached=false&id=100abc000abc00',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 1,
+                'items' => [
+                    '0' => [
+                        'id'       => '100abc000abc00',
+                        'type'     => 'banking',
+                        'currency' => 'INR',
+                        'name'     => null,
+                        'balance'  => 23000,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBalancesTypeBankingCachedFalseCABalanceIdExpOff' => [
+        'request'  => [
+            'url'    => '/balances?type=banking&cached=false&id=100abc000abc00',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 1,
+                'items' => [
+                    '0' => [
+                        'id'       => '100abc000abc00',
+                        'type'     => 'banking',
+                        'currency' => 'INR',
+                        'name'     => null,
+                        'balance'  => 100,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBalancesLastFetchedBeyondRecencyThreshold' => [
+        'request'  => [
+            'url'    => '/balances?type=banking&cached=false&id=100abc000abc00',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 1,
+                'items' => [
+                    '0' => [
+                        'id'       => '100abc000abc00',
+                        'type'     => 'banking',
+                        'currency' => 'INR',
+                        'name'     => null,
+                        'balance'  => 23000,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBalancesLastFetchedWithinRecencyThreshold' => [
+        'request'  => [
+            'url'    => '/balances?type=banking&cached=false&id=100abc000abc00',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 1,
+                'items' => [
+                    '0' => [
+                        'id'       => '100abc000abc00',
+                        'type'     => 'banking',
+                        'currency' => 'INR',
+                        'name'     => null,
+                        'balance'  => 100,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBalancesSecondRequestWithinRecencyThreshold' => [
+        'request'  => [
+            'url'    => '/balances?type=banking&cached=false&id=100abc000abc00',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 1,
+                'items' => [
+                    '0' => [
+                        'id'           => '100abc000abc00',
+                        'type'         => 'banking',
+                        'currency'     => 'INR',
+                        'name'         => null,
+                        'balance'      => 23000,
+                        'account_type' => 'direct',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetBalancesSyncCallUnsuccessfulCase' => [
+        'request'  => [
+            'url'    => '/balances?type=banking&cached=false&id=100abc000abc00',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 1,
+                'items' => [
+                    '0' => [
+                        'id'           => '100abc000abc00',
+                        'type'         => 'banking',
+                        'currency'     => 'INR',
+                        'name'         => null,
+                        'balance'      => 100,
+                        'account_type' => 'direct',
+                        'error_info'   => 'balance_fetch_sync_call_was_not_successful',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testCreateIpConfigForMerchant' => [
         'request' => [
             'url'    => '/merchant/ip_whitelist',
@@ -14245,6 +14520,29 @@ return [
                     'api_fund_account_validation' =>  ['*'],
                 ],
                 'allowed_ips_count' => 20,
+            ],
+        ],
+    ],
+
+    'testGetBalancesTypeBankingCachedFalseCABalanceIdIcici' => [
+        'request'  => [
+            'url'    => '/balances?type=banking&cached=false&id=100abc000abc00',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'count' => 1,
+                'items' => [
+                    '0' => [
+                        'id'           => '100abc000abc00',
+                        'type'         => 'banking',
+                        'currency'     => 'INR',
+                        'name'         => null,
+                        'balance'      => 23000,
+                        'account_type' => 'direct',
+                    ]
+                ],
             ],
         ],
     ],
