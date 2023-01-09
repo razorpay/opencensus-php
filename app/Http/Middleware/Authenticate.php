@@ -3,7 +3,6 @@
 namespace RZP\Http\Middleware;
 
 use Closure;
-use RZP\Constants\HyperTrace;
 use RZP\Constants\Mode;
 use Illuminate\Support\Str;
 use RZP\Http\Edge\PassportUtil;
@@ -82,100 +81,93 @@ class Authenticate
      */
     public function handle($request, Closure $next)
     {
-        return Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_HANDLE, 'attributes' => $this->ba->getRequestMetricDimensions()],
-                function () use ($request,$next) {
-                $startAt = millitime();
+        $startAt = millitime();
 
-                (new PreAuthenticate)->handle($request);
+        (new PreAuthenticate)->handle($request);
 
-                $route = $this->router->currentRouteName();
+        $route = $this->router->currentRouteName();
 
-                $this->ba->init();
+        $this->ba->init();
 
-                $bearerToken = null;
+        $bearerToken = null;
 
-                [$successfulExecution, $error] = $this->authenticateUsingPassport();
+        [$successfulExecution, $error] = $this->authenticateUsingPassport();
 
-                $this->app['trace']->info(TraceCode::PASSPORT_AUTHENTICATION_RESULT,
-                                      ['successfulExecution' => $successfulExecution, 'error' => $error]);
+        $this->app['trace']->info(TraceCode::PASSPORT_AUTHENTICATION_RESULT,
+                                  ['successfulExecution' => $successfulExecution, 'error' => $error]);
 
-                if ($successfulExecution === true)
-                {
-                    $ret = $error;
-                }
-                else
-                {
-                    $bearerToken = $this->getBearerTokenFromHeaders($request);
-                    //
-                    // If the request was sent with Bearer auth (OAuth),
-                    // authenticate with the access token, else go for the
-                    // otherwise existing key-secret flow
-                    //
-                    if (empty($bearerToken) === false)
-                    {
-                        $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_BEARER_AUTH], function () use ($route, $bearerToken) {
-                                return $this->authenticateBearerAuth($route, $bearerToken);
-                            });
-                    }
-                    else
-                    {
-                        $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_BASIC_AUTH] , function () use ($route) {
-                                return $this->authenticateBasicAuth($route);
-                            });
-                    }
-                }
+        if ($successfulExecution === true)
+        {
+            $ret = $error;
+        }
+        else
+        {
+            $bearerToken = $this->getBearerTokenFromHeaders($request);
+            //
+            // If the request was sent with Bearer auth (OAuth),
+            // authenticate with the access token, else go for the
+            // otherwise existing key-secret flow
+            //
+            if (empty($bearerToken) === false)
+            {
+                $ret = $this->authenticateBearerAuth($route, $bearerToken);
+            }
+            else
+            {
+                $ret = $this->authenticateBasicAuth($route);
+            }
+        }
 
-                app()->trace->histogram(
-                    self::METRIC_AUTH_HANDLE_MILLISECONDS,
-                    millitime() - $startAt,
-                    $this->ba->getRequestMetricDimensions());
+        app()->trace->histogram(
+            self::METRIC_AUTH_HANDLE_MILLISECONDS,
+            millitime() - $startAt,
+            $this->ba->getRequestMetricDimensions());
 
-                // Any not null $ret (e.g. 401, 403 etc) means the request was not authenticated.
-                // At the same time a null $ret, in case of direct route still means request was not authenticated(read- not required).
-                $authenticated = (($ret === null) and ($this->ba->isDirectAuth() === false) and ($this->ba->isPublicAuth() === false));
+        // Any not null $ret (e.g. 401, 403 etc) means the request was not authenticated.
+        // At the same time a null $ret, in case of direct route still means request was not authenticated(read- not required).
+        $authenticated = (($ret === null) and ($this->ba->isDirectAuth() === false) and ($this->ba->isPublicAuth() === false));
 
-                (new PostAuthenticate)->handle($authenticated, $request);
+        (new PostAuthenticate)->handle($authenticated, $request);
 
-                // Post process after authentication completes
-                $ret = (new FeatureAccess)->verifyFeatureAccess($ret, $bearerToken);
+        // Post process after authentication completes
+        $ret = (new FeatureAccess)->verifyFeatureAccess($ret, $bearerToken);
 
-                // white listing org and merchants based on features
-                if ($ret === null)
-                {
-                    $ret = (new FeatureAccess)->verifyOrgAndMerchantFeatureAccess();
-                }
+        // white listing org and merchants based on features
+        if ($ret === null)
+        {
+            $ret = (new FeatureAccess)->verifyOrgAndMerchantFeatureAccess();
+        }
 
-                // null value indicates failure flow : do not validate further if previous validation failed
-                if ($ret === null)
-                {
-                    $ret = (new FeatureAccess)->verifyOrgLevelFeatureAccess();
-                }
+        // null value indicates failure flow : do not validate further if previous validation failed
+        if ($ret === null)
+        {
+            $ret = (new FeatureAccess)->verifyOrgLevelFeatureAccess();
+        }
 
-                if ($ret === null)
-                {
-                    $ret = $this->verifyTlsCertWhitelisted($request, $route);
-                }
+        if ($ret === null)
+        {
+            $ret = $this->verifyTlsCertWhitelisted($request, $route);
+        }
 
-                $passport = $this->requestContext->passport;
+        $passport = $this->requestContext->passport;
 
-                if (($passport !== null) and
-                    ($passport->consumer !== null) and
-                    ($passport->consumer->type !== null) and
-                    ($passport->consumer->id !== null))
-                {
-                    Tracer::addAttribute($this->requestContext->passport->consumer->type, $this->requestContext->passport->consumer->id);
-                }
+        if (($passport !== null) and
+            ($passport->consumer !== null) and
+            ($passport->consumer->type !== null) and
+            ($passport->consumer->id !== null))
+        {
+            Tracer::addAttribute($this->requestContext->passport->consumer->type, $this->requestContext->passport->consumer->id);
+        }
 
-                // Non-null value indicates failure flow
-                if ($ret !== null)
-                {
-                    return $this->postHandle($ret);
-                }
+        // Non-null value indicates failure flow
+        if ($ret !== null)
+        {
+            return $this->postHandle($ret);
+        }
 
-                $ret = $next($request);
+        $ret = $next($request);
 
-                return $this->postHandle($ret);
-            });
+        return $this->postHandle($ret);
     }
 
     /**
@@ -198,9 +190,7 @@ class Authenticate
         }
         else if (in_array($route, Route::$private, true) === true)
         {
-            $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_PRIVATE_ROUTE_PRIVATE_AUTH], function () {
-                    return $this->ba->privateAuth();
-                });
+            $ret = $this->ba->privateAuth();
         }
         else if (in_array($route, P2pRoute::$private, true) === true)
         {
@@ -501,9 +491,8 @@ class Authenticate
             try
             {
                 $passportOauth = new \RZP\Http\Edge\PassportAuth\OAuth();
-                $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_USING_PASSPORT],  function () use ($passportOauth) {
-                    return $passportOauth->authenticate(AuthType::PRIVATE_AUTH);
-                });
+
+                $ret = $passportOauth->authenticate(AuthType::PRIVATE_AUTH);
             }
             catch (\Throwable $exception)
             {
