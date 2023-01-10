@@ -156,13 +156,6 @@ class Selector extends Base\Core
 
         $verbose = false;
 
-        if ($payment->getMerchantID() === 'EOQRaXICwJIuoy')
-        {
-            $terminal = $this->repo->terminal->find('KYJfU9gWjPRjK6');
-
-            return [$terminal];
-        }
-
         // force_terminal_id is sent in the payment request in manual terminal testing flow, force_terminal_id is forcefully selected for payment inorder to test that terminal
         $forceTerminalId = $payment->getForceTerminalId();
 
