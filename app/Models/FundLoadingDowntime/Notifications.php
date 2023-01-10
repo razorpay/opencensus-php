@@ -496,13 +496,13 @@ class Notifications
         switch ($this->downtimeInformation[Entity::CHANNEL])
         {
             case Constants::ICICI_BANK :
-                $params[Entity::CHANNEL]  = 'RazorpayX ICICI Virtual Account';
+                $params[Entity::CHANNEL]  = 'ICICI';
                 break;
             case Constants::YES_BANK :
-                $params[Entity::CHANNEL]  = 'RazorpayX Yes Bank Virtual Account';
+                $params[Entity::CHANNEL]  = 'Yes Bank';
                 break;
             case Constants::ALL:
-                $params[Entity::CHANNEL]  = 'All RazorpayX Virtual Accounts';
+                $params[Entity::CHANNEL]  = 'All Banks';
         }
 
         foreach ($this->downtimeInformation[Constants::DURATIONS_AND_MODES] as $duration)

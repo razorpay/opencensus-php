@@ -53,24 +53,24 @@ class FundLoadingDowntimeMail extends Mailable
     protected function addSubject()
     {
         $subject = null;
-        $subjectChannel = preg_replace('/Virtual Account/', 'VA', $this->emailParams[Entity::CHANNEL]);
+        $channel = $this->emailParams[Entity::CHANNEL];
 
         switch ($this->flowType)
         {
             case Constant::CREATION:
-                $subject = self::rotatingLight . "[Downtime Alert] : {$subjectChannel} | " . $this->getDurationsInSubject();
+                $subject = self::rotatingLight . "[Downtime Alert] : RazorpayX Lite via {$channel} | " . $this->getDurationsInSubject();
                 break;
 
             Case Constant::UPDATION:
-                $subject = self::rotatingLight . "[Downtime Updated] : {$subjectChannel} | " . $this->getDurationsInSubject();
+                $subject = self::rotatingLight . "[Downtime Updated] : RazorpayX Lite via {$channel} | " . $this->getDurationsInSubject();
                 break;
 
             case Constant::RESOLUTION:
-                $subject = self::whiteCheckMark . "[Downtime Resolved] : {$subjectChannel}";
+                $subject = self::whiteCheckMark . "[Downtime Resolved] : RazorpayX Lite via {$channel}";
                 break;
 
             case Constant::CANCELLATION:
-                $subject = self::whiteCheckMark . "[Downtime Cancelled] : {$subjectChannel}";
+                $subject = self::whiteCheckMark . "[Downtime Cancelled] : RazorpayX Lite via {$channel}";
                 break;
         }
 

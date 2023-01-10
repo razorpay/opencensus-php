@@ -360,7 +360,7 @@ class FundLoadingDowntimeTest extends TestCase
             $expectedDowntimeParams = [
                 'type'                => 'Scheduled Maintenance Activity',
                 'source'              => 'Partner Bank',
-                'channel'             => "RazorpayX ICICI Virtual Account",
+                'channel'             => "ICICI",
                 'durations_and_modes' => [
                     0 => [
                         'start_time' => '22 Sep 05:52 pm',
@@ -390,7 +390,7 @@ class FundLoadingDowntimeTest extends TestCase
                 array_push($recipients, $recipient['address']);
             }
 
-            $this->assertSame(FundLoadingDowntimeMail::rotatingLight . '[Downtime Alert] : RazorpayX ICICI VA | 22 Sep 05:52 pm to 22 Sep 06:08 pm & 22 Sep 06:08 pm to 22 Sep 06:25 pm',
+            $this->assertSame(FundLoadingDowntimeMail::rotatingLight . '[Downtime Alert] : RazorpayX Lite via ICICI | 22 Sep 05:52 pm to 22 Sep 06:08 pm & 22 Sep 06:08 pm to 22 Sep 06:25 pm',
                               $mail->subject);
 
             return true;
@@ -484,7 +484,7 @@ class FundLoadingDowntimeTest extends TestCase
             $expectedDowntimeParams = [
                 'type'       => 'Scheduled Maintenance Activity',
                 'source'     => 'Partner Bank',
-                'channel'    => "RazorpayX ICICI Virtual Account",
+                'channel'    => "ICICI",
                 'start_time' => '30 Dec 12:00 am',
                 'end_time'   => 'to 31 Dec 12:00 am',
                 'modes'      => 'IMPS, NEFT',
@@ -505,7 +505,7 @@ class FundLoadingDowntimeTest extends TestCase
                 array_push($recipients, $recipient['address']);
             }
 
-            $this->assertSame(FundLoadingDowntimeMail::rotatingLight . '[Downtime Updated] : RazorpayX ICICI VA | 30 Dec 12:00 am to 31 Dec 12:00 am',
+            $this->assertSame(FundLoadingDowntimeMail::rotatingLight . '[Downtime Updated] : RazorpayX Lite via ICICI | 30 Dec 12:00 am to 31 Dec 12:00 am',
                               $mail->subject);
 
             return true;
@@ -600,7 +600,7 @@ class FundLoadingDowntimeTest extends TestCase
             $expectedDowntimeParams = [
                 'type'                => 'Scheduled Maintenance Activity',
                 'source'              => 'Partner Bank',
-                'channel'             => "RazorpayX ICICI Virtual Account",
+                'channel'             => "ICICI",
                 'durations_and_modes' => [
                     0 => [
                         'start_time' => '30 Dec 12:00 am',
@@ -630,7 +630,7 @@ class FundLoadingDowntimeTest extends TestCase
                 array_push($recipients, $recipient['address']);
             }
 
-            $this->assertSame(FundLoadingDowntimeMail::rotatingLight . '[Downtime Updated] : RazorpayX ICICI VA | 30 Dec 12:00 am to 31 Dec 12:00 am & 30 Dec 01:00 am to 30 Dec 05:00 am',
+            $this->assertSame(FundLoadingDowntimeMail::rotatingLight . '[Downtime Updated] : RazorpayX Lite via ICICI | 30 Dec 12:00 am to 31 Dec 12:00 am & 30 Dec 01:00 am to 30 Dec 05:00 am',
                               $mail->subject);
 
             return true;
@@ -718,7 +718,7 @@ class FundLoadingDowntimeTest extends TestCase
             $this->assertSame('fund_loading_downtime.resolution', $mail->templateName);
 
             $expectedDowntimeParams = [
-                'channel' => "RazorpayX ICICI Virtual Account",
+                'channel' => "ICICI",
                 'modes'   => 'NEFT, IMPS'
             ];
 
@@ -744,7 +744,7 @@ class FundLoadingDowntimeTest extends TestCase
                 array_push($recipients, $recipient['address']);
             }
 
-            $this->assertSame(FundLoadingDowntimeMail::whiteCheckMark . '[Downtime Resolved] : RazorpayX ICICI VA',
+            $this->assertSame(FundLoadingDowntimeMail::whiteCheckMark . '[Downtime Resolved] : RazorpayX Lite via ICICI',
                               $mail->subject);
 
             return true;
@@ -824,7 +824,7 @@ class FundLoadingDowntimeTest extends TestCase
 
             $expectedDowntimeParams = [
                 'type'                => "Scheduled Maintenance Activity",
-                'channel'             => "RazorpayX ICICI Virtual Account",
+                'channel'             => "ICICI",
                 'start_time'          => '23 Sep 09:38 pm',
                 'end_time'            => 'to 24 Sep 05:58 am',
                 'modes'               => 'NEFT, IMPS'
@@ -852,7 +852,7 @@ class FundLoadingDowntimeTest extends TestCase
                 array_push($recipients, $recipient['address']);
             }
 
-            $this->assertSame(FundLoadingDowntimeMail::whiteCheckMark . '[Downtime Cancelled] : RazorpayX ICICI VA',
+            $this->assertSame(FundLoadingDowntimeMail::whiteCheckMark . '[Downtime Cancelled] : RazorpayX Lite via ICICI',
                               $mail->subject);
 
             return true;
@@ -1056,7 +1056,7 @@ class FundLoadingDowntimeTest extends TestCase
 
             $expectedDowntimeParams = [
                 'type'       => "Scheduled Maintenance Activity",
-                'channel'    => "RazorpayX ICICI Virtual Account",
+                'channel'    => "ICICI",
                 'start_time' => '23 Sep 09:38 pm',
                 'end_time'   => 'to 24 Sep 05:58 am',
                 'modes'      => 'NEFT, IMPS'
@@ -1084,7 +1084,7 @@ class FundLoadingDowntimeTest extends TestCase
                 array_push($recipients, $recipient['address']);
             }
 
-            $this->assertSame(FundLoadingDowntimeMail::whiteCheckMark . '[Downtime Cancelled] : RazorpayX ICICI VA',
+            $this->assertSame(FundLoadingDowntimeMail::whiteCheckMark . '[Downtime Cancelled] : RazorpayX Lite via ICICI',
                               $mail->subject);
 
             return true;
