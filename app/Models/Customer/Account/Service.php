@@ -535,11 +535,9 @@ class Service extends Base\Service
             $data['1cc_customer_consent'] = $this->core->fetchCustomerConsentFor1CC($customer->getContact(), $this->merchant->getId());
 
             // Check tokens count only when the device token is not present or not valid.
-            // rzpAddressCount check is added as 1cc is also using this api for triggering otp for showing addresses.
-            // Todo: rzpAddressCount check will be removed once we have ability to find the request is from 1cc/std checkout.
-            if ($sendOtp === true && $rzpAddressCount === 0)
+            if ($sendOtp === true)
             {
-                $customerTokensCount = $this->getTokensCountByCustomer($customer, $this->merchant);
+                $customerTokensCount = $this->getCardTokensCountByCustomer($customer, $this->merchant);
 
                 if ($customerTokensCount === 0)
                 {
@@ -578,17 +576,19 @@ class Service extends Base\Service
     }
 
     /**
-     * Calculates count of all merchant tokens associated to the customer
+     * Calculates count of all merchant saved card tokens associated to the customer
      *
      * @param Customer\Entity $customer
      * @param MerchantEntity $merchant
      * @return integer
      */
-    public function getTokensCountByCustomer(Customer\Entity $customer, MerchantEntity $merchant): int
+    public function getCardTokensCountByCustomer(Customer\Entity $customer, MerchantEntity $merchant): int
     {
         $tokenCore = (new Token\Core());
 
         $tokens = $tokenCore->fetchTokensByCustomerForCheckout($customer, $merchant);
+
+        $tokens = $tokenCore->removeNonCardTokens($tokens);
 
         $tokens = $tokenCore->removeDisabledNetworkTokens($tokens, $merchant->methods->getCardNetworks());
 

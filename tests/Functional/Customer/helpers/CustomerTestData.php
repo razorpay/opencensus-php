@@ -724,6 +724,20 @@ return [
             ],
     ],
 
+    'testCustomerStatusApiWhenSavedCardTokensNotPresentExpectsOtpGettingSkipped' => [
+        'request' => [
+            'url' => '/customers/status/9988776655',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'saved' => false,
+            ],
+        ],
+    ],
+
     'testFetchSavedTokensStatusWhenInvalidCustomerTokensArePresentExpectsOtpGettingSkipped' => [
         'request' => [
                 'url' => '/customers/status/9988776655',

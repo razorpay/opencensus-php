@@ -190,6 +190,34 @@ class CustomerTokenTest extends TestCase
         $this->startTest();
     }
 
+    public function testCustomerStatusApiWhenSavedCardTokensNotPresentExpectsOtpGettingSkipped()
+    {
+        $this->mockSession();
+
+        $this->fixtures->create('token', [
+            'method'      => 'wallet',
+            'bank'        => null,
+            'card_id'     => null,
+            'customer_id' => '10000gcustomer',
+            'merchant_id' => '100000Razorpay',
+            'used_at'     => 1673359666,
+        ]);
+
+        $this->fixtures->create('token', [
+            'customer_id'   => '10000gcustomer',
+            'merchant_id'   => '100000Razorpay',
+            'method'        => 'upi',
+            'bank'          => null,
+            'wallet'        => null,
+            'vpa_id'        => '1000000000gupi',
+            'used_at'       => 1673359666,
+        ]);
+
+        $this->ba->publicAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchSavedTokensStatusWhenInvalidCustomerTokensArePresentExpectsOtpGettingSkipped()
     {
         $this->mockSession();

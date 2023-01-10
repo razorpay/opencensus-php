@@ -1764,7 +1764,7 @@ class Core extends Base\Core
         }
 
         $token->setRecurringStatus(RecurringStatus::CONFIRMED);
-        
+
         $token->saveOrFail();
 
         $this->eventUpiRecurringTokenStatus($token, $oldRecurringStatus);
@@ -3418,6 +3418,25 @@ class Core extends Base\Core
         ]);
 
         return $tokens;
+    }
+
+    /**
+     * This method takes in the current token collection,
+     * removes non-card tokens
+     *
+     * @param Base\PublicCollection|array $tokens
+     *
+     * @return Base\PublicCollection|array
+     */
+    public function removeNonCardTokens(Base\PublicCollection|array $tokens): Base\PublicCollection|array
+    {
+        return $tokens->filter(static function (Entity $token) {
+            if ($token->isCard()) {
+                return true;
+            }
+
+            return false;
+        })->values();
     }
 
     /**
