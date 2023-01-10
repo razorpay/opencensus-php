@@ -646,6 +646,9 @@ class Service extends Base\Service
     {
         $responseDiff = [];
 
+        $apiFieldsNotPopulated = ["attempts", "last_attempted_at"];
+        $timestampFields = ["updated_at", "processed_at"];
+
         foreach ($apiRefundArray as $key => $value)
         {
             if ($key === RefundEntity::NOTES)
@@ -674,6 +677,20 @@ class Service extends Base\Service
                 }
 
                 continue;
+            }
+
+            if (in_array($key, $apiFieldsNotPopulated))
+            {
+                continue;
+            }
+
+            if (in_array($key, $timestampFields))
+            {
+                $diff = $scroogeRefundArray[$key] - $value ;
+                if (abs($diff) <= 5)
+                {
+                    continue;
+                }
             }
 
             if ((isset($scroogeRefundArray[$key]) === true) and ($scroogeRefundArray[$key] !== $value))
