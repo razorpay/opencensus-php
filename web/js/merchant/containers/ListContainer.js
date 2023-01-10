@@ -7,42 +7,14 @@ import moment from 'moment';
 import { getURLQueryParams, stringifyQueryParams } from 'common/utils/rzp-utils';
 import { trimDeep } from 'common/utils/validators';
 
-// types
-type ListContainerProps<P> = {
-  blacklistQueryParams: string[];
-  location: {
-    search: string;
-    pathname: string;
-  };
-  resetFA: () => Promise<unknown>;
-  fetchAll?: (params?: Params) => Promise<unknown>;
-  fetchFA?: (params?: Params) => Promise<unknown>;
-} & P;
-
-type ListContainerStates = {
-  skip?: number;
-  count?: number;
-  status?: {
-    type?: string;
-    message?: string | null;
-  };
-};
-
-type Params<V = string | number | boolean | undefined | null> = Record<string, V>;
-
-export default class ListContainer<P = Record<string, unknown>> extends Component<
-  ListContainerProps<P>,
-  ListContainerStates
-> {
+export default class ListContainer extends Component {
   static SKIP = 0;
   static COUNT = 25;
   static contextTypes = {
     confirm: PropTypes.func,
   };
-  searchFilters: Params = {};
-  fetchList: ((params: Params) => Promise<unknown>) | undefined;
 
-  constructor(props: ListContainerProps<P>, ...args: unknown[]) {
+  constructor(props, ...args) {
     super(props, ...args);
     this.searchFilters = {};
 
@@ -64,7 +36,7 @@ export default class ListContainer<P = Record<string, unknown>> extends Componen
     };
   }
 
-  removeBlacklistedParams(params: Params, props: ListContainerProps<P> = this.props): Params {
+  removeBlacklistedParams(params, props = this.props) {
     const { blacklistQueryParams = [] } = props;
     const hasBlacklistQueryParams = blacklistQueryParams.length > 0;
 
@@ -73,7 +45,7 @@ export default class ListContainer<P = Record<string, unknown>> extends Componen
     }
 
     return Object.keys(params).reduce((result, paramKey) => {
-      const isParamBlacklisted = (blacklistQueryParams as string[]).indexOf(paramKey) >= 0;
+      const isParamBlacklisted = blacklistQueryParams.indexOf(paramKey) >= 0;
 
       if (!isParamBlacklisted) {
         result[paramKey] = params[paramKey];
@@ -83,8 +55,8 @@ export default class ListContainer<P = Record<string, unknown>> extends Componen
     }, {});
   }
 
-  defaultSearch(queryString: string): void {
-    let params: Params | null = null;
+  defaultSearch(queryString) {
+    let params = null;
 
     if (queryString) {
       params = getURLQueryParams(queryString);
@@ -97,20 +69,17 @@ export default class ListContainer<P = Record<string, unknown>> extends Componen
   }
 
   // Do default search based on query params
-  UNSAFE_componentWillMount(): void {
+  UNSAFE_componentWillMount() {
     this.defaultSearch(this.props.location.search);
   }
 
-  UNSAFE_componentWillReceiveProps(nextProps: ListContainerProps<P>): void {
+  UNSAFE_componentWillReceiveProps(nextProps) {
     if (decodeURI(this.props.location.search) !== decodeURI(nextProps.location.search)) {
       this.defaultSearch(nextProps.location.search);
     }
   }
 
-  fetchAll = (
-    params: Params | null = {},
-    fetchFA?: boolean,
-  ): Promise<unknown> | null | undefined => {
+  fetchAll = (params = {}, fetchFA) => {
     params = { ...this.getDefaultPageParams(), ...params };
     params = this.removeBlacklistedParams(params);
 
@@ -136,7 +105,7 @@ export default class ListContainer<P = Record<string, unknown>> extends Componen
 
     for (const k in params) {
       if (params.hasOwnProperty(k)) {
-        params[k] = decodeURI(params[k] as string);
+        params[k] = decodeURI(params[k]);
       }
     }
 
@@ -146,8 +115,8 @@ export default class ListContainer<P = Record<string, unknown>> extends Componen
       if (params) {
         delete params?.count; // api don't support this params
         delete params?.skip; // api don't support this params
-        const fromDate = moment(parseInt(params.from as string, 10) * 1000);
-        const toDate = moment(parseInt(params.to as string, 10) * 1000);
+        const fromDate = moment(parseInt(params.from, 10) * 1000);
+        const toDate = moment(parseInt(params.to, 10) * 1000);
         const dateDiff = toDate.diff(fromDate, 'days');
         if (dateDiff <= 90) {
           return this.fetchFA(params);
@@ -158,7 +127,11 @@ export default class ListContainer<P = Record<string, unknown>> extends Componen
       return null;
     }
     // props.fetchAll is available only when model is implemented. Addons doesn't have model hence calling 'fetchList' class fn.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-nocheck
     if (!this.props.fetchAll && this.fetchList) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-nocheck
       this.fetchList(params);
     } else if (this.props.fetchAll || this.fetchEntityList) {
       const promise = this.fetchEntityList(params);
@@ -199,7 +172,7 @@ export default class ListContainer<P = Record<string, unknown>> extends Componen
     return null;
   };
 
-  search = (params: Params): Promise<unknown> | null | undefined => {
+  search = (params) => {
     this.searchFilters = trimDeep(params);
     return this.fetchAll({
       ...this.getDefaultPageParams(),
@@ -207,7 +180,7 @@ export default class ListContainer<P = Record<string, unknown>> extends Componen
     });
   };
 
-  analizeFailure = (params: Params): Promise<unknown> | null | undefined => {
+  analizeFailure = (params) => {
     const failureAnalysisFilter = trimDeep(params);
     return this.fetchAll(
       {
@@ -217,7 +190,7 @@ export default class ListContainer<P = Record<string, unknown>> extends Componen
     );
   };
 
-  paginate = (params: Params): Promise<unknown> | null | undefined => {
+  paginate = (params) => {
     const filters = {
       ...this.searchFilters,
       ...params,
@@ -229,18 +202,18 @@ export default class ListContainer<P = Record<string, unknown>> extends Componen
     });
   };
 
-  getDefaultPageParams(): { skip: number; count: number } {
+  getDefaultPageParams() {
     return {
       skip: ListContainer.SKIP,
       count: ListContainer.COUNT,
     };
   }
 
-  fetchEntityList(params: Params): Promise<unknown> | undefined {
+  fetchEntityList(params) {
     return this.props.fetchAll?.(params);
   }
 
-  fetchFA(params: Params): Promise<unknown> | undefined {
+  fetchFA(params) {
     return this.props.fetchFA?.({
       url: `merchants/payments/failure_analysis${stringifyQueryParams(params)}`,
     });

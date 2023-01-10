@@ -24,14 +24,8 @@ import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 // actions
 import { uploadInvoice, viewInvoice } from 'merchant/reducers/paymentUploadInvoice';
 
-// types
-import type {
-  Params,
-  PaymentsListContainerProps,
-} from 'merchant/views/Transactions/UploadInvoice/types';
-
-class PaymentsListContainer extends ListContainer<PaymentsListContainerProps> {
-  onFilterSubmit = (params: Params): void => {
+class PaymentsListContainer extends ListContainer {
+  onFilterSubmit = (params) => {
     this.search(params)
       ?.then(() => {
         trackFilterSubmit({
@@ -57,18 +51,18 @@ class PaymentsListContainer extends ListContainer<PaymentsListContainerProps> {
       });
   };
 
-  onSearchAnalytics = (params: { id: string; status: string }): void => {
+  onSearchAnalytics = (params) => {
     trackSearchClicked({
       paymentId: params.id,
       paymentStatus: params.status,
     });
   };
 
-  onClearAnalytics = (): void => {
+  onClearAnalytics = () => {
     trackSearchClear();
   };
 
-  onUploadInvoice = async (id: string, file: File): Promise<void> => {
+  onUploadInvoice = async (id, file) => {
     const {
       uploadInvoicePending,
       uploadInvoiceSuccess,
@@ -95,8 +89,7 @@ class PaymentsListContainer extends ListContainer<PaymentsListContainerProps> {
       uploadInvoiceError({ id });
       showNotification({
         type: 'error',
-        message:
-          (err as { message?: string })?.message || 'Failed to upload file. Please try again!',
+        message: err?.message || 'Failed to upload file. Please try again!',
       });
       trackInvoiceUploadStatus({
         paymentId: id,
@@ -105,7 +98,7 @@ class PaymentsListContainer extends ListContainer<PaymentsListContainerProps> {
     }
   };
 
-  onView = async (id: string): Promise<void> => {
+  onView = async (id) => {
     const {
       viewInvoicePending,
       viewInvoiceSuccess,
@@ -127,7 +120,7 @@ class PaymentsListContainer extends ListContainer<PaymentsListContainerProps> {
         viewInvoiceSuccess({ id });
       }
     } catch (err) {
-      const errors = (err as { errors?: string[] })?.errors ?? [];
+      const errors = err?.errors ?? [];
       const message = Array.isArray(errors)
         ? errors.join(' ')
         : 'Failed to fetch invoice details. Please try again!';
@@ -144,11 +137,11 @@ class PaymentsListContainer extends ListContainer<PaymentsListContainerProps> {
     }
   };
 
-  componentDidMount(): void {
+  componentDidMount() {
     trackShown();
   }
 
-  render(): JSX.Element {
+  render() {
     const { invoiceFetching, invoiceUploading, ...rest } = this.props;
     const { skip, count } = this.state;
 
