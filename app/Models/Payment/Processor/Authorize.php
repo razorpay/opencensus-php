@@ -1234,6 +1234,11 @@ trait Authorize
             return $this->processPaymentPendingForCoD($payment);
         }
 
+        if($payment->isInAppUPI() === true)
+        {
+            return $this->processInAppPaymentCreated($payment);
+        }
+
         if ($this->shouldSkipAuthorizeOnRecurringForUpi($payment, $data) === true)
         {
             return $this->processRecurringCreatedForUpi($payment, $data);
@@ -1259,6 +1264,29 @@ trait Authorize
         $this->updateOrderStatusPending($payment);
 
         return $this->postPaymentAuthorizeProcessing($payment);
+    }
+
+    protected function processInAppPaymentCreated($payment): array {
+        $response = [];
+
+        $response['razorpay_payment_id'] = $payment->getPublicId();
+
+        $next = [];
+
+        $terminal = $payment->terminal;
+        array_push($next,
+            [
+                "action"    => "intent",
+                "payee_vpa" => $terminal->getVpa(),
+            ],
+            [
+                "action" => "poll",
+                "url"    => $this->route->getUrl('payment_fetch_by_id', ['id' => $payment->getPublicId()]),
+            ]);
+
+        $response['next'] = $next;
+
+        return $response;
     }
 
     protected function updateOrderStatusPending($payment)

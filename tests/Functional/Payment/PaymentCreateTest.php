@@ -4455,6 +4455,28 @@ class PaymentCreateTest extends TestCase
         $this->assertNotNull($upiMetadata->getExpiryTime());
     }
 
+    public function testInAppUpiBlock()
+    {
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $payment = $this->getDefaultUpiBlockIntentPaymentArray();
+        $payment['upi']['mode'] = 'in_app';
+
+        $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $lastPayment = $this->getLastEntity('payment');
+
+        $this->assertSame('created', $lastPayment['status']);
+
+        $upiMetadata = $this->getDbLastEntity('upi_metadata');
+
+        $this->assertNotNull($upiMetadata);
+
+        $this->assertArraySubset([
+            UpiMetadata\Entity::MODE => 'in_app',
+        ], $upiMetadata->toArray());
+    }
+
     public function testUpiAmountLimit()
     {
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');

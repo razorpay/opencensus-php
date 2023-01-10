@@ -314,6 +314,10 @@ trait PaymentCreationTrait
                             return $this->makeRedirectToAuthorize($content['request']['url']);
                         }
                     }
+                    else if(isset($request['content']) && isset($request['content']['upi'])
+                        && $request['content']['upi']['mode'] == 'in_app') {
+                        return $response;
+                    }
                 }
                 else if (($request['url'] !== '/payments/create/json') or
                         ($request['url'] !== '/payments/create/redirect'))

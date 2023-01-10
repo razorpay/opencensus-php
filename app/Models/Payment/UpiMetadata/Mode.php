@@ -6,7 +6,7 @@ class Mode
 {
     const BHARAT_QR = 'bharat_qr';
     const UPI_QR    = 'upi_qr';
-    const TURBO     = 'turbo';
+    const IN_APP    = 'in_app';
 
     // For auto recurring payments
     const AUTO      = 'auto';

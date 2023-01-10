@@ -3736,7 +3736,7 @@ class CardPaymentServiceTest extends TestCase
                                 'token_number' => '4044649165235890',
                                 'cryptogram_value' => 'test',
                                 'token_expiry_month' => 12,
-                                'token_expiry_year' => 2022,
+                                'token_expiry_year' => 2023,
                                 'payment_account_reference' => '50014EES0F4P295H',
                                 'token_reference_number' => 'DM4MMC00001564272',
                             ],

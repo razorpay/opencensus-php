@@ -334,7 +334,7 @@ class UpiTraitTest extends TestCase
             ],
         ];
 
-        $cases['only_upi_param_turbo_mode'] = [
+        $cases['upi_intent_mode'] = [
             [
                 // Expected future flow for creating payment with mode and app
                 [
@@ -342,7 +342,7 @@ class UpiTraitTest extends TestCase
                     'upi' => [
                         'vpa'   => 'abc@xyz',
                         'flow'  => 'intent',
-                        'mode'  => 'turbo',
+                        'mode'  => 'in_app',
                         'app'   => 'some.app.com',
                     ],
                 ],
@@ -352,14 +352,14 @@ class UpiTraitTest extends TestCase
                 'upi' => [
                     'vpa'       => 'abc@xyz',
                     'flow'      => 'intent',
-                    'mode'      => 'turbo',
+                    'mode'      => 'in_app',
                     'app'       => 'some.app.com',
                     'type'      => 'default',
                 ],
                 'vpa' => "abc@xyz",
                 '_' => [
                     'flow' => 'intent',
-                    'turbo' => true,
+                    'in_app' => true,
                 ],
             ],
         ];

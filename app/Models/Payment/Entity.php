@@ -2577,6 +2577,22 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($upiMetadata->isOtm() === true));
     }
 
+    public function isInAppUPI()
+    {
+        if ($this->isUpi() === false)
+        {
+            return false;
+        }
+
+        if ($this->hasMetadata(UpiMetadata\Entity::UPI_METADATA) === false)
+        {
+            return false;
+        }
+
+        $upiMetadata = $this->getMetadata(UpiMetadata\Entity::UPI_METADATA);
+        return ($upiMetadata[UpiMetadata\Entity::MODE] === UpiMetadata\Mode::IN_APP);
+    }
+
     public function isTransfer()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::TRANSFER);

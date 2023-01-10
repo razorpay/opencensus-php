@@ -182,9 +182,9 @@ trait UpiTrait
             {
                 $input['_']['upiqr'] = true;
             }
-            else if($input[Payment\Method::UPI][Entity::MODE] === Payment\UpiMetadata\Mode::TURBO)
+            else if($input[Payment\Method::UPI][Entity::MODE] === Payment\UpiMetadata\Mode::IN_APP)
             {
-                $input['_'][Payment\UpiMetadata\Mode::TURBO] = true;
+                $input['_'][Payment\UpiMetadata\Mode::IN_APP] = true;
             }
         }
         else if ((isset($input['_']['upiqr']) === true) and ($input['_']['upiqr']))
