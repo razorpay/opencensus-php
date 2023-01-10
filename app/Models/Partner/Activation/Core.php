@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Partner\Metric as PartnerMetrics;
 use RZP\Models\State;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -53,6 +54,7 @@ class Core extends Base\Core
 
         if ($merchant->isPartner() === true and empty($partnerActivation) === true and empty($merchantDetails) === false)
         {
+            $this->trace->count(Metric::PARTNERS_KYC_STARTED_TOTAL);
             $partnerActivation = $this->createPartnerActivationForMerchant($merchant, $merchantDetails, $considerActivatedMerchant);
 
             $merchant->setRelation(Merchant\Entity::PARTNER_ACTIVATION, $partnerActivation);
@@ -455,6 +457,7 @@ class Core extends Base\Core
             switch ($input[Entity::ACTIVATION_STATUS])
             {
                 case Constants::ACTIVATED:
+                    $this->trace->count(PartnerMetrics::PARTNERS_ACTIVATED_TOTAL);
                     // If merchant gets Activated, onboarding WF's should get auto-approved
                     (new ActionCore)->handleOnboardingWorkflowActionIfOpen(
                         $merchant->getId(), 'partner_activation', State\Name::APPROVED);

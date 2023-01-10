@@ -5,6 +5,7 @@ namespace RZP\Models\EntityOrigin;
 use Razorpay\OAuth\Application as OAuthApp;
 
 use RZP\Models\Base;
+use RZP\Models\Key\Metric;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\PaymentLink;
@@ -65,6 +66,8 @@ class Core extends Base\Core
                     Entity::ENTITY_ID   => $entity->getId(),
                     'stack_trace'       => $e->getTraceAsString(),
                 ]);
+            $dimensions = array(Entity::ENTITY_TYPE => $entity->getEntity());
+            $this->trace->count(Metric::ENTITY_ORIGIN_CREATE_FAILED_TOTAL, $dimensions);
         }
     }
 

@@ -67,7 +67,6 @@ class Core extends Base\Core
         if (empty($input['merchant_ids']) === false)
         {
             $this->dispatchCommissionInvoiceGenerateRequest($input);
-
             return [];
         }
 
@@ -125,18 +124,23 @@ class Core extends Base\Core
             $invoice->getGrossAmount() <= Entity::MAX_AUTO_APPROVAL_AMOUNT
         )
         {
-            $result = $this->approveInvoiceForProcessing($invoice, $merchant);
+            try {
+                $result = $this->approveInvoiceForProcessing($invoice, $merchant);
 
-            $this->trace->info(
-                TraceCode::COMMISSION_INVOICE_FINANCE_AUTO_APPROVED,
-                [
-                    "partner_id" => $merchant->getId(),
-                    "invoice_id" => $invoice->getId()
-                ]
-            );
-            $this->trace->count(Metric::COMMISSION_INVOICE_FINANCE_AUTO_APPROVED);
+                $this->trace->info(
+                    TraceCode::COMMISSION_INVOICE_FINANCE_AUTO_APPROVED,
+                    [
+                        "partner_id" => $merchant->getId(),
+                        "invoice_id" => $invoice->getId()
+                    ]
+                );
+                $this->trace->count(Metric::COMMISSION_INVOICE_FINANCE_AUTO_APPROVED);
 
-            return $result;
+                return $result;
+            } catch (\Exception $e) {
+                $this->trace->count(Metric::COMMISSION_INVOICE_FINANCE_AUTO_APPROVAL_FAILURE_TOTAL);
+                throw $e;
+            }
         }
 
         return $this->markInvoiceUnderReview($invoice, $input, $merchant);

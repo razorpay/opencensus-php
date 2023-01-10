@@ -56,6 +56,7 @@ use RZP\Models\State\Reason;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Metric;
+use RZP\Models\Partner\Metric as PartnerMetrics;
 use RZP\Services\WhatCmsService;
 use RZP\Constants\IndianStates;
 use RZP\Models\Merchant\AutoKyc;

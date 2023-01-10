@@ -9,11 +9,21 @@ final class Metric
     const COMMISSION_CREATED_TOTAL               = 'commission_created_total';
     const COMMISSION_CAPTURE_TOTAL               = 'commission_capture_total';
     const COMMISSION_FLUSH_TO_KAFKA_TOPIC_FAILED = 'commission_flush_to_kafka_topic_failed';
+    const COMMISSION_FAILED_TOTAL = 'commission_failed_total';
+    const COMMISSION_TRANSACTION_JOB_FAILED_TOTAL = 'commission_transaction_job_failed_total';
+    const COMMISSION_TRANSACTION_JOB_EXHAUSTED_TOTAL = 'commission_transaction_job_exhausted_total';
+    const COMMISSION_TRANSACTION_ON_HOLD_CLEAR_FAILED_TOTAL = 'commission_transaction_on_hold_clear_failed_total';
+    const COMMISSION_INVOICE_GENERATE_JOB_FAILED_TOTAL = 'commission_invoice_generate_job_failed_total';
+    const COMMISSION_INVOICE_GENERATE_RETRY_EXHAUSTED_TOTAL = 'commission_invoice_generate_retry_exhausted_total';
+    const COMMISSION_TDS_SETTLEMENT_TOTAL = 'commission_tds_settlement_total';
+    const COMMISSION_INVOICE_FINANCE_AUTO_APPROVAL_FAILURE_TOTAL  = 'commission_invoice_finance_auto_approval_failure_total';
+
 
     const SUBMERCHANT_CREATE_TOTAL              = 'submerchant_create_total';
     const SUBMERCHANT_USER_CREATE_TOTAL         = 'submerchant_user_create_total';
     const SUBMERCHANT_PRICING_PLAN_ASSIGN_TOTAL = 'submerchant_pricing_plan_assign_total';
     const PARTNER_ACTIVATION_CREATE_TOTAL       = 'partner_activation_create_total';
+    const PARTNER_KYC_NOTIFICATION_TOTAL = 'partner_kyc_notification_total';
 
     const COMMISSION_ON_HOLD_CLEAR_PROCESS_TIME_MS      = "commission_on_hold_clear_process_time_ms";
     const COMMISSION_TDS_SETTLEMENT_PROCESS_TIME_MS     = "commission_tds_settlement_process_time_ms";
@@ -55,4 +65,10 @@ final class Metric
     const PARTNERSHIP_COMMISSION_SYNC_JOB_PUSH_FAILURE   = 'partnership_commission_sync_job_push_failure';
 
     const PARTNER_BULK_UPDATE_ONBOARDING_SOURCE_FAILURE = 'partner_bulk_update_onboarding_source_failure';
+
+    const PARTNERS_KYC_STARTED_TOTAL = 'partners_kyc_started_total';
+    const PARTNERS_KYC_SUBMITTED_TOTAL = 'partners_kyc_submitted_total';
+    const PARTNERS_KYC_ACTIVATION_STATUS_TOTAL = 'partners_kyc_activation_status_total';
+    const PARTNERS_ACTIVATED_TOTAL = 'partners_activated_total';
+    const PARTNER_MARKED_SUB_MERCHANT_TOTAL = 'partner_marked_sub_merchant_total';
 }

@@ -19,6 +19,7 @@ use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\NeedsClarification\Core;
 use RZP\Models\Merchant\Detail\NeedsClarification\Metrics;
+use RZP\Models\Partner\Metric as PartnerMetrics;
 use RZP\Models\Merchant\Detail\Constants as DetailConstant;
 use RZP\Models\Partner\Activation\Core as PartnerActivationCore;
 use RZP\Models\Merchant\Detail\NeedsClarificationReasonsList;
@@ -296,6 +297,8 @@ class UpdateMerchantContext extends Job
             }
 
             $activationStatus = $partnerActivation->getActivationStatus();
+            $dimension = array("activation_status" => $activationStatus);
+            $this->trace->count(PartnerMetrics::PARTNERS_KYC_ACTIVATION_STATUS_TOTAL, $dimension);
 
             $this->trace->info(TraceCode::UPDATE_PARTNER_CONTEXT,[
                 'partner_id'            => $merchant->getId(),

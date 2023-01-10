@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Services\Metric;
 use RZP\Trace\TraceCode;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Partner\Metric as PartnerMetric;
@@ -76,6 +77,7 @@ class CommissionOnHoldClear extends Job
                         Trace::ERROR,
                         TraceCode::COMMISSION_TRANSACTION_ON_HOLD_CLEAR_FAILED
                     );
+                    $this->trace->count(PartnerMetric::COMMISSION_TRANSACTION_ON_HOLD_CLEAR_FAILED_TOTAL);
                 }
             }
 
@@ -104,6 +106,7 @@ class CommissionOnHoldClear extends Job
                     'mode'       => $this->mode,
                 ]
             );
+            $this->trace->count(PartnerMetric::COMMISSION_TRANSACTION_JOB_EXHAUSTED_TOTAL);
 
             $this->checkRetry($e);
         }

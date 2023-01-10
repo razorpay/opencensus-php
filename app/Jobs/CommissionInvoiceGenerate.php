@@ -74,7 +74,7 @@ class CommissionInvoiceGenerate extends Job
                     'data'   => $this->data,
                 ]
             );
-
+            $this->trace->count(Metric::COMMISSION_INVOICE_GENERATE_RETRY_EXHAUSTED_TOTAL);
             $this->checkRetry($e);
         }
 
@@ -99,7 +99,7 @@ class CommissionInvoiceGenerate extends Job
                     'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
                 ]
             );
-
+            $this->trace->count(Metric::COMMISSION_INVOICE_GENERATE_JOB_FAILED_TOTAL);
             $this->delete();
         }
         else

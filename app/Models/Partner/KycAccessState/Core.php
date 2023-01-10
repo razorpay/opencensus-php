@@ -15,6 +15,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant\Partner as PartnerEmail;
+use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Notifications\Onboarding\Events as OnboardingEvents;
@@ -156,6 +157,8 @@ class Core extends Base\Core
         $notificationHandler = new OnboardingNotificationHandler($args);
         $notificationEvent   = $isConfirmed ? OnboardingEvents::PARTNER_SUBMERCHANT_KYC_ACCESS_APPROVED : OnboardingEvents::PARTNER_SUBMERCHANT_KYC_ACCESS_REJECTED;
         $notificationHandler->sendForEvent($notificationEvent);
+        $dimensions = array("channel" => "sms/whatsapp");
+        $this->trace->count(PartnerMetric::PARTNER_KYC_NOTIFICATION_TOTAL, $dimensions);
     }
 
     /**
@@ -179,6 +182,8 @@ class Core extends Base\Core
             $mail = new PartnerEmail\KycAccessRejected($viewPayload);
         }
         Mail::send($mail);
+        $dimensions = array("channel" => "email");
+        $this->trace->count(PartnerMetric::PARTNER_KYC_NOTIFICATION_TOTAL, $dimensions);
     }
 
     public function confirmRequestForSubMerchantKyc(array $input)

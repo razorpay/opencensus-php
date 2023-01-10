@@ -6,6 +6,7 @@ use Razorpay\Trace\Logger as Trace;
 
 use App;
 use RZP\Error\ErrorCode;
+use RZP\Models\Partner\Metric;
 use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Services\Workflow;
@@ -168,7 +169,7 @@ class CommissionTdsSettlement extends Job
             $timeTakenMilliSeconds = (int) $timeTaken * 1000;
 
             $this->trace->histogram(PartnerMetric::COMMISSION_TDS_SETTLEMENT_PROCESS_TIME_MS, $timeTakenMilliSeconds);
-
+            $this->trace->count(Metric::COMMISSION_TDS_SETTLEMENT_TOTAL);
             $this->delete();
         }
         catch (\Throwable $e)
@@ -190,7 +191,6 @@ class CommissionTdsSettlement extends Job
 
             // TODO can be removed after grafan boards are updated to use new metric
             $this->trace->count(PartnerMetric::COMMISSION_TDS_SETTLEMENT_JOB_FAILURE_TOTAL);
-
             $this->delete();
         }
     }

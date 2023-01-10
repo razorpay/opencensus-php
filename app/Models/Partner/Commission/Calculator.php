@@ -1293,6 +1293,7 @@ class Calculator extends Base\Core
         //Block commissions when partner itself is submerchant.
         if ($partner->getId() === $this->getSubMerchant()->getId())
         {
+            $this->trace->count(Metric::PARTNER_MARKED_SUB_MERCHANT_TOTAL);
             $this->trace->info(TraceCode::PARTNER_IS_SUBMERCHANT_COMMISSION_CALCULATION_ERROR, [
                 'partnerId'  => $partner->getId(),
             ]);

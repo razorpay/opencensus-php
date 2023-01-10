@@ -9,4 +9,6 @@ final class Metric
     const PRIVATE_X_ROUTE_HITS_BY_CA_ACTIVATED_MERCHANT_COUNT = 'private_x_route_hits_by_ca_activated_merchant_count';
 
     const PUBLIC_X_PAYOUT_LINKS_ROUTE_HITS_BY_CA_ACTIVATED_MERCHANT_COUNT = 'public_x_payout_links_route_hits_by_ca_activated_merchant_count';
+
+    const ENTITY_ORIGIN_CREATE_FAILED_TOTAL = 'create_failed_entity_origin_total';
 }

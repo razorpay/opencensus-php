@@ -22,6 +22,7 @@ use RZP\Error\ErrorCode;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Metric;
+use RZP\Models\Partner\Metric as PartnerMetrics;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\AutoKyc;
@@ -360,6 +361,8 @@ class Core extends Detail\Core
 
                     if ($this->canSubmit($input, $response[E::PARTNER_ACTIVATION]) === true)
                     {
+                        $this->trace->count(PartnerMetrics::PARTNERS_KYC_SUBMITTED_TOTAL);
+
                         $this->submitPartnerActivationForm($merchant, $merchantDetails,$partnerActivation,$input);
 
                         $response = $this->createPartnerResponse($merchantDetails);
