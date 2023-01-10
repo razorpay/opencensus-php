@@ -1141,6 +1141,13 @@ class Entity extends Base\PublicEntity
         if($this->getMethod() === Entity::CARD)
         {
             $app = App::getFacadeRoot();
+
+            if($this->hasCardMandate() === true) {
+                $publicArray[self::MAX_AMOUNT] = ($this->cardMandate->getMaxAmount()!==null) ? $this->cardMandate->getMaxAmount():$this->getMaxAmount();
+            } else {
+                $publicArray[self::MAX_AMOUNT] = $this->getMaxAmount();
+            }
+
             try {
                 $card = $app['repo']->card->fetchForToken($this);
 
