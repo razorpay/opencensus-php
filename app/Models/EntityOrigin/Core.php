@@ -55,6 +55,8 @@ class Core extends Base\Core
             {
                 $this->repo->saveOrFail($entityOrigin);
             }
+
+            return $entityOrigin;
         }
         catch (\Throwable $e)
         {

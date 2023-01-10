@@ -1476,9 +1476,15 @@ class Processor
                 // This flow is being used for only hosted (Shopify).
                 $this->checkSignature($input, $payment);
 
-                $paymentData = $this->authorize($payment, $input, $gatewayInput);
                 // Creates an origin entity for the payment based on the auth used to initiate the payment.
-                (new EntityOrigin\Core)->createEntityOrigin($payment);
+                $entityOrigin = (new EntityOrigin\Core)->createEntityOrigin($payment);
+
+                if (empty($entityOrigin) === false)
+                {
+                    $payment->setRelation('entityOrigin', $entityOrigin);
+                }
+
+                $paymentData = $this->authorize($payment, $input, $gatewayInput);
 
                 $this->logRequestTime($payment, $startTime);
 

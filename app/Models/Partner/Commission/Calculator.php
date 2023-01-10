@@ -1220,28 +1220,40 @@ class Calculator extends Base\Core
         $entityOriginCore = new EntityOrigin\Core();
         $merchantAccessMapCore = new Merchant\AccessMap\Core();
 
-        $partnerApp = null;
+        $entityOrigin = $sourceEntity->entityOrigin;
 
-        if ($sourceEntity->isReadyForCommissionRecord() &&
-            empty($sourceEntity->entityOrigin) === true)
+        if (empty($entityOrigin) === true)
         {
-            $sourceEntity->load('entityOrigin');
+            $entityOrigin = $entityOriginCore->fetchEntityOrigin($sourceEntity);
+
+            if (empty($entityOrigin) === false)
+            {
+                // If the entity origin is not empty, log it,
+                // It can be empty if the payment is not originated from an application
+                $this->trace->info(TraceCode::COMMISSION_PAYMENT_ORIGIN_NOT_PRESENT, [
+                    'entity_origin'     => $entityOrigin->toArray(),
+                    'submerchant_id'    => $submerchant->getId(),
+                    'source_entity_id'  => $sourceEntity->getId(),
+                ]);
+            }
         }
 
-        if ($entityOriginCore->isOriginApplication($sourceEntity) === true)
-        {
-            // $application will always be a non-null value here
-            $application = $entityOriginCore->getOrigin($sourceEntity);
+        $origin     = optional($entityOrigin)->origin;
+        $originType = optional($origin)->getEntityName();
 
-            if ($merchantAccessMapCore->isMerchantMappedToApplication($submerchant, $application))
+        $partnerApp = null;
+
+        if ($originType === EntityOrigin\Constants::APPLICATION)
+        {
+            if ($merchantAccessMapCore->isMerchantMappedToApplication($submerchant, $origin))
             {
-                $partnerApp = $application;
+                $partnerApp = $origin;
                 $this->setIsPartnerOriginated(true);
             }
             else
             {
                 $this->trace->info(TraceCode::COMMISSION_INVALIDATED_ORIGIN_ENTITY, [
-                    'app_id'            => $application->getId(),
+                    'app_id'            => $origin->getId(),
                     'submerchant_id'    => $submerchant->getId(),
                     'source_entity_id'  => $sourceEntity->getId(),
                 ]);

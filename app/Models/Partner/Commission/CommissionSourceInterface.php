@@ -36,12 +36,4 @@ interface CommissionSourceInterface
      * @return mixed
      */
     public function transaction();
-
-    /**
-     * The entity can specify if it is ready for commission entity creation
-     * eg. payment is in captured state
-     *
-     * @return bool
-     */
-    public function isReadyForCommissionRecord();
 }
