@@ -254,7 +254,7 @@ class PayoutLinks
         //otherwise => on
         $variant = $this->app['razorx']->getTreatment($merchant->getId(),
             Merchant\RazorxTreatment::RX_PAYOUT_LINK_WORKFLOW_GA,
-            $this->app['rzp.mode'] ?? 'live');
+            $this->app['rzp.mode'] ?? 'live', 3);
 
         return ($variant === 'on');
     }
