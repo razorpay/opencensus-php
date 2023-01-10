@@ -1,301 +1,252 @@
-$black-color = #000000;
+$black-color = #000;
 
-.Modal {
-  margin: 65px auto;
-  padding: 0;
-  border: 0;
-  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.3);
-  background-color: #fafafa;
-  border-radius: 2px;
+.Modal
+  margin: 65px auto
+  padding: 0
+  border: 0
+  box-shadow: 0 0 8px 0 #0000004D
+  background-color: #FAFAFA
+  border-radius: 2px
 
-  .modal-header {
-    padding: 24px 24px 0;
-    border-bottom: 0;
+  .modal-header
+    padding: 24px 24px 0
+    border-bottom: 0
 
-    .modal-title {
-      font-size: 18px;
-      font-weight: bold;
-      line-height: 1.25em;
-    }
+    .modal-title
+      font-size: 18px
+      font-weight: bold
+      line-height: 1.25em
 
-    .close {
-      margin: 0;
-    }
-  }
+    .close
+      margin: 0
 
-  .modal-body {
-    padding: 16px 24px 24px;
-  }
+  .modal-body
+    padding: 16px 24px 24px
 
-  .Modal__actions {
-    padding-top: 8px;
-  }
-}
+  .Modal__actions
+    padding-top: 8px
 
-.Modal--regular {
-  max-width: 625px;
+.Modal--regular
+  max-width: 625px
 
-  @media (max-width: 625px) {
-    margin-left: 10px;
-    margin-right: 10px;
-  }
-}
+  @media (max-width 625px)
+    margin-left: 10px
+    margin-right: 10px
 
-.Modal--medium {
-  max-width: 375px;
+.Modal--medium
+  max-width: 375px
 
-  @media (max-width: 625px) {
-    margin-left: 10px;
-    margin-right: 10px;
-  }
-}
+  @media (max-width 625px)
+    margin-left: 10px
+    margin-right: 10px
 
-.Modal--med-large {
-  max-width: 473px;
+.Modal--med-large
+  max-width: 473px
 
-  @media (max-width: 625px) {
-    margin-left: 10px;
-    margin-right: 10px;
-  }
-}
+  @media (max-width 625px)
+    margin-left: 10px
+    margin-right: 10px
 
-.Modal--small {
-  max-width: 328px;
+.Modal--small
+  max-width: 328px
 
-  @media (max-width: 328px) {
-    margin-left: 10px;
-    margin-right: 10px;
-  }
-}
+  @media (max-width 328px)
+    margin-left: 10px
+    margin-right: 10px
 
-.Modal--large {
-  max-width: 756px;
+.Modal--large
+  max-width: 756px
 
-  @media (max-width: 756px) {
-    margin-left: 10px;
-    margin-right: 10px;
-  }
-}
+  @media (max-width 756px)
+    margin-left: 10px
+    margin-right: 10px
 
-.Modal--xlarge {
-  max-width: 850px;
+.Modal--xlarge
+  max-width: 850px
 
-  @media (max-width: 756px) {
-    max-width: 756px;
-    margin-left: 10px;
-    margin-right: 10px;
-  }
-}
+  @media (max-width 756px)
+    max-width: 756px
+    margin-left: 10px
+    margin-right: 10px
 
-.RazorpayXNitroAnnouncement--Modal {
+.RazorpayXNitroAnnouncement--Modal
   max-width: fit-content
 
-  .nitro-self-serve {
-    width: 1106px;
-    background: linear-gradient(120.65deg, #252C4B 0%, #171B2F 100%);
-  }
-}
+  .nitro-self-serve
+    width: 1106px
+    background: linear-gradient(120.65deg, #252C4B 0%, #171B2F 100%)
 
-.GSExclusiveOffer--Modal {
-  background-color: $black-color;
-  max-width: fit-content;
-  min-width: 300px;
+.GSExclusiveOffer--Modal
+  background-color: $black-color
+  max-height: 80%
+  max-width: 60%
 
-  .nitro-self-serve {
-    width: 1106px;
-    background: $black-color;
-  }
-}
+  .nitro-self-serve
+    width: 1106px
+    background: $black-color
 
-.gs-modal {
+.gs-modal
   background-color: #00000080
-  width: 1020px
-  max-width: fit-content
-  min-width: 300px
-  height: fit-content
+  max-height: 80%
+  max-width: 60%
 
-  .nitro-self-serve {
-    width: 1106px;
-    background: $black-color;
-  }
-}
+  .nitro-self-serve
+    width: 1106px
+    background: $black-color
 
-.gs-medium-modal {
-  background-color: #FFFFFF
-}
+.gs-medium-modal
+  background-color: #FFF
 
-.PL_Catalyst_Banner--Modal {
-  max-width: 1020px;
-  position: relative;
-  overflow: hidden;
+.PL_Catalyst_Banner--Modal
+  max-width: 1020px
+  position: relative
+  overflow: hidden
 
-  .nomob {
-    @media (max-width: 768px) {
-      display: none;
-    }
-  }
+  .nomob
+    @media (max-width 768px)
+      display: none
 
-  .mob {
+  .mob
     display: none
 
-    @media (max-width: 768px) {
+    @media (max-width 768px)
       display: unset
-    }
-  }
 
-  @media (max-width: 768px) {
-    max-width: 624px;
-  }
-}
-.PP_cross_sell_Catalyst_Banner{
+  @media (max-width 768px)
+    max-width: 624px
 
-  max-width:1027px;
-  max-height: 597px;
-  position: relative;
-  .container {
+.PP_cross_sell_Catalyst_Banner
+  max-width: 1027px
+  max-height: 597px
+  position: relative
 
-    button {
-      position: absolute;
-      top: 20px;
-      right: 0;
-      opacity: 1;
-    }
-    .image {
-      img {
-        width:1027px;
-        height: 597px;
-      }
+  .container
+    button
+      position: absolute
+      top: 20px
+      right: 0
+      opacity: 1
 
-    }
-    .button {
-      position: absolute;
-      bottom: 150px;
-      left: 320px;
-      button {
-        color: #fff;
-      }
-    }
-  }
+    .image
+      img
+        width: 1027px
+        height: 597px
 
-}
+    .button
+      position: absolute
+      bottom: 150px
+      left: 320px
 
-.RXPayrollMoonshine--Modal {
-  max-width: fit-content;
+      button
+        color: #FFF
 
-  #hubspot-ca-form-modal {
-    background: url(assets/top-right-triangle-illus.svg) no-repeat #171B2F;
+.RXPayrollMoonshine--Modal
+  max-width: fit-content
 
-    button.close {
-      position: relative;
-      z-index: 2;
-    }
+  #hubspot-ca-form-modal
+    background: url("assets/top-right-triangle-illus.svg") no-repeat #171B2F
 
-    .razorpayx-announcement-details .section {
-      .left-section .heading {
-        margin-top: 52px;
-      }
+    button.close
+      position: relative
+      z-index: 2
 
-      .right-section {
-        width: auto;
-        overflow: initial;
-        margin-left: 0;
+    .razorpayx-announcement-details .section
+      .left-section .heading
+        margin-top: 52px
 
-        img {
-          position: relative;
-          top: -30px;
-        }
-      }
-    }
-  }
-}
+      .right-section
+        width: auto
+        overflow: initial
+        margin-left: 0
 
-.Keystone--Modal {
-  max-width: fit-content;
+        img
+          position: relative
+          top: -30px
 
-  #hubspot-ca-form-modal {
-    width: 940px !important;
-  }
-}
+.Keystone--Modal
+  max-width: fit-content
 
-.Modal--full-screen {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  top: 0;
-  bottom: 0;
-}
+  #hubspot-ca-form-modal
+    width: 940px
 
-.Modal--confirm {
-  .Modal__actions {
-    > .btn {
-      width: 48%;
-    }
+.Modal--full-screen
+  width: 100%
+  height: 100%
+  margin: 0
+  top: 0
+  bottom: 0
 
-    > .btn + .btn {
-      margin-left: 4%;
-    }
-  }
-}
+.Modal--confirm
+  .Modal__actions
+    > .btn
+      width: 48%
 
-.confirm-note {
-  background-color: #FCF8E3;
-  color: #515978;
-  border-left: 4px solid #FFBB00;
-  font-size: 13px;
-  padding: 5%;
-  margin-top: 5%;
-  margin-bottom: 5%;
+    > .btn + .btn
+      margin-left: 4%
 
-  >p:first-child {
-    font-weight: bold;
-  }
-}
+.confirm-note
+  background-color: #FCF8E3
+  color: #515978
+  border-left: 4px solid #FB0
+  font-size: 13px
+  padding: 5%
+  margin-top: 5%
+  margin-bottom: 5%
 
-.confirm-note-info {
-  background-color: #F8FAFB;
-  border-left: 4px solid #528FF0;
-  font-size: 12px;
-  padding: 0 5%;
-  color: #515978;
-  margin-top: 5%;
-  margin-bottom: 5%;
-  font-size: 13px;
+  >p:first-child
+    font-weight: bold
 
-  >p:first-child {
-    font-weight: bold;
-  }
-}
+.confirm-note-info
+  background-color: #F8FAFB
+  border-left: 4px solid #528FF0
+  padding: 0 5%
+  color: #515978
+  margin-top: 5%
+  margin-bottom: 5%
+  font-size: 13px
+
+  >p:first-child
+    font-weight: bold
 
 .change-account-modal
   .header
     display: flex
     justify-content: space-between
     align-items: center
+
     .title
-      font-weight: 700
+      font-weight: bold
       font-size: 18px
+
     i
       font-size: 20px
       cursor: pointer
+
   .body
     padding: 24px
+
     .status
       margin-bottom: 24px
+
     .message
-      color: rgb(123, 129, 153)
+      color: #7B8199
+
     .paypal-onboard-button
       margin-top: 24px
       width: 100%
 
 .instantActivation-loading--Modal
-  transform: translate(0%, 150%);
+  transform: translate(0%, 150%)
+
   .activation-loader
-    text-align: center;
-    color: #000;
-    width: 345px;
-    padding: 35px 25px;
+    text-align: center
+    color: #000
+    width: 345px
+    padding: 35px 25px
+
     .activation-spinner
-      z-index: 1;
+      z-index: 1
+
     .text
-      left: 50%;
-      margin-top: 14px;
+      left: 50%
+      margin-top: 14px

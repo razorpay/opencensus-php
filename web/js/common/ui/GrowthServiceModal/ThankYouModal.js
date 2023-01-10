@@ -42,10 +42,10 @@ const ThankYouModal = ({ loading, gs_modals, closeModal, fetchGSModal, template_
 
   return (
     <>
-      <button type="button" id="gsBtnClose" onClick={closeModal}>
+      <button type="button" id="gs-btn-close" onClick={closeModal}>
         <i className="i i-close" />
       </button>
-      <div id="gsModalLoader">
+      <div id="gs-modal-loader">
         <Loader />
       </div>
     </>

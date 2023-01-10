@@ -1,46 +1,52 @@
 #btn-close-modal-exclusive-offer
-    position: absolute
-    right: 25px
-    top: 25px
-    padding: 0;
-    border: none;
-    background: none;
-    color: #FFFFFF;
+  position: absolute
+  right: 25px
+  top: 25px
+  padding: 0
+  border: none
+  background: none
+  color: #FFF
 
 #exclusive-offer-loader-modal-self-serve
-    width: 1106px;
-    height: 100%;
-    border: none;
-    
+  width: 1106px
+  height: 100%
+  border: none
 
 #exclusive-offer-modal-self-serve
-    .background-img
-       height: 100%;
-       width: 100%;
-    
+  .background-img
+    height: 100%
+    width: 100%
 
 #exclusive-offer-modal-self-serve-divider
-    height: 2px;
-    background: #F5F5F5;
-
+  height: 2px
+  background: #F5F
 
 #exclusive-offer-modal-self-serve-footer
-    display:flex;
-    background: #8B3666;
-    height: 94px;
-    text-align: center;
-    padding-left:20%;
-    .para-container
-        width: 80%;
-        .para
-            margin-top: 25px;
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.74);
-            margin-right: 70px;
-    .btn-container
-        width:20%;
-        .btn
-            margin-top: 30px;
-            height:40px;
-            margin-right: 50px;
+  display: flex
+  background: #8B3666
+  min-height: 94px
+  align-items: center
+  justify-content: space-between
 
+  .para-container
+    width: 35%
+    display: flex
+    text-align: center
+    margin-left: 31%
+    justify-content: center
+
+    .para
+      margin-top: 25px
+      margin-bottom: 25px
+      font-size: 16px
+      color: #FFFFFFBD
+
+  .btn-container
+    margin-right: 5%
+
+    .btn
+      min-height: 40px
+      white-space: normal
+
+      @media screen and (max-width 1400px)
+        max-width: 100px

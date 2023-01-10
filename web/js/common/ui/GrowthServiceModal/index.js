@@ -65,10 +65,10 @@ const GrowthServiceModal = ({
     }
     return (
       <div className={isMobileAndTablet() ? 'gs-container' : ''}>
-        <button type="button" id="gsBtnClose" onClick={closeModal}>
+        <button type="button" id="gs-btn-close" onClick={closeModal}>
           <i className="i i-close" />
         </button>
-        <div id="gsModalBody">
+        <div id="gs-modal-body">
           <img className="background-img" src={backgroundImgUrl} alt={gs_modals?.image?.alt_text} />
         </div>
         <div
@@ -121,10 +121,10 @@ const GrowthServiceModal = ({
 
   return (
     <>
-      <button type="button" id="gsBtnClose" onClick={closeModal}>
+      <button type="button" id="gs-btn-close" onClick={closeModal}>
         <i className="i i-close" />
       </button>
-      <div id="gsModalLoader">
+      <div id="gs-modal-loader">
         <Loader />;
       </div>
     </>
