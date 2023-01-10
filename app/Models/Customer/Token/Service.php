@@ -19,6 +19,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Feature;
 use RZP\Encryption;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Jobs\PushProvisioningTokenCreateJob;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Models\Customer\GatewayToken;
@@ -419,7 +420,7 @@ class Service extends Base\Service
                         Customer\Entity::EMAIL         => $customer->getEmail(),
                     ], $this->merchant, false);
 
-                    $inputSingleMerchant = [
+                    $createTokenInput = [
                         'customer_id' => $localCustomer->getPublicId(),
                         'method' => $input['method'],
                         'card' => [
@@ -430,11 +431,14 @@ class Service extends Base\Service
                         'via_push_provisioning' => true
                     ];
 
-                    $this -> createNetworkToken($inputSingleMerchant, $this->merchant);
+                    $asyncTokenisationJobId = UniqueIdEntity::generateUniqueId();
 
-                    (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::TOKEN_PUSH);
+                    PushProvisioningTokenCreateJob::dispatch($this->mode, $createTokenInput, $merchantPushProvisioning, $asyncTokenisationJobId);
 
                 }
+
+                (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::TOKEN_PUSH);
+
             }
         }
         catch (\Throwable $e)
