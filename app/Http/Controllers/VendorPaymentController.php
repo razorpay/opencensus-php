@@ -170,7 +170,7 @@ class VendorPaymentController extends Controller
 
     public function getTdsCategories()
     {
-            return $this->service->getTdsCategories($this->ba->getMerchant());
+            return $this->service->getTdsCategories($this->ba->getMerchant(), $this->input);
     }
 
     public function get(string $vendorPaymentId)

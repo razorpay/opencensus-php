@@ -332,11 +332,11 @@ class Service
         return $this->makeRequest($merchant, $url, $input);
     }
 
-    public function getTdsCategories(MerchantEntity $merchant)
+    public function getTdsCategories(MerchantEntity $merchant, array $input)
     {
         $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_TDS_CATEGORIES);
 
-        return $this->makeRequest($merchant, $url);
+        return $this->makeRequest($merchant, $url, $input);
     }
 
     public function sendUpcomingMailCron()
