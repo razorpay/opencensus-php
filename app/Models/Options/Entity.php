@@ -3,9 +3,10 @@
 namespace RZP\Models\Options;
 
 use App;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use RZP\Models\Base;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Entity extends Base\PublicEntity
 {
@@ -88,6 +89,10 @@ class Entity extends Base\PublicEntity
         self::SCOPE                    => Constants::SCOPE_GLOBAL
     ];
 
+    public function merchant(): BelongsTo
+    {
+        return $this->belongsTo(MerchantEntity::class, self::MERCHANT_ID, MerchantEntity::ID);
+    }
 
     public function setMerchantId(string $merchantId)
     {

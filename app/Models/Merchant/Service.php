@@ -2,13 +2,18 @@
 
 namespace RZP\Models\Merchant;
 
+use ApiResponse;
 use App;
 use DB;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request as HttpRequest;
+use Illuminate\Http\Response;
 use Mail;
 use Cache;
 use Config;
 use Request;
 use Illuminate\Support\Str;
+use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Controllers\MerchantController;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\Type;
@@ -11288,6 +11293,43 @@ class Service extends Base\Service
     public function getMerchantConsents($merchantId)
     {
         return (new Consent\Core())->getMerchantConsents($merchantId);
+    }
+
+    /**
+     * Runs Public Key & Keyless Auth over Internal Auth & returns the MerchantId,
+     * Mode & MerchantKey on success.
+     *
+     * Currently used by checkout-service to authenticate preferences requests
+     * and cache the auth response.
+     *
+     * This method exists because key based auth is in shadow mode on edge & raw
+     * KeyLess Auth isn't supported  by edge.
+     *
+     * @param HttpRequest $request Laravel Request Instance
+     *
+     * @return Response|JsonResponse
+     */
+    public function validatePublicAuthOverInternalAuth(HttpRequest $request): Response|JsonResponse
+    {
+        (new Validator)->validateInput('publicAuthOverInternalAuth', $request->all());
+
+        $request->merge(['key_id' => $request->input('merchant_public_key', '')]);
+
+        // Remove User Header & Password Set for Internal/App Auth.
+        $request->headers->remove('PHP_AUTH_USER');
+        $request->headers->remove('PHP_AUTH_PW');
+
+        /** @var BasicAuth $ba */
+        $ba = $this->app['basicauth'];
+
+        $response = $ba->publicAuth();
+
+        // Any not null $response (e.g. 401, 403 etc) means the request was not authenticated.
+        return $response ?? ApiResponse::json([
+            'merchant_id' => optional($ba->getMerchant())->getId(),
+            'merchant_key' => optional($ba->getKeyEntity())->getPublicKey(),
+            'mode' => $ba->getMode(),
+        ]);
     }
 
     private function sendSelfServeSuccessAnalyticsEventToSegmentForEnablingFlashCheckout()

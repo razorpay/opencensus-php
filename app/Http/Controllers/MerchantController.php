@@ -4,6 +4,8 @@ namespace RZP\Http\Controllers;
 
 use App;
 use Http\Client\Common\Exception\ServerErrorException;
+use Illuminate\Http\JsonResponse as HttpJsonResponse;
+use Illuminate\Http\Response as HttpResponse;
 use Request;
 use ApiResponse;
 use RZP\Constants\Entity as E;
@@ -3782,5 +3784,19 @@ class MerchantController extends Controller
         $input = Request::all();
 
         return (new Merchant\OneClickCheckout\Config\Service())->getShopify1ccConfigs($input);
+    }
+
+    /**
+     * Used to perform Key & Keyless Public Auth for microservices which serve
+     * requests to outside world.
+     * Should be replaced by Edge (or) an auth microservice in the long term.
+     *
+     * @return HttpResponse|HttpJsonResponse
+     *
+     * @see Merchant\Service::validatePublicAuthOverInternalAuth()
+     */
+    public function validatePublicAuthOverInternalAuth(): HttpResponse|HttpJsonResponse
+    {
+        return $this->service()->validatePublicAuthOverInternalAuth(Request::instance());
     }
 }

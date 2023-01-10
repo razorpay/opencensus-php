@@ -359,6 +359,7 @@ class Route
         'merchant_fetch_config'                    => ['get',      'account/config',                                 'MerchantController@getAccountConfig'                               ],
         'merchant_fetch_config_internal'           => ['get',      'internal/account/config',                        'MerchantController@getAccountConfigInternal'                       ],
         'merchant_fetch_config_for_checkout_internal' => ['get',   'internal/account/config/checkout',               'MerchantController@getAccountConfigForCheckoutInternal'            ],
+        'merchant_validate_public_auth_over_internal_auth' => ['get', 'internal/checkout/auth',                        'MerchantController@validatePublicAuthOverInternalAuth'             ],
         'merchant_edit_email'                      => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
         'update_merchant_mobile_number'            => ['put',      'merchants/{id}/mobile',                          'MerchantController@putMerchantContact'                             ],
         'email_user_status_for_email_update'       => ['post',     'merchants/email_user/status',                    'MerchantController@getUserStatusForEmailUpdateSelfServe'           ],
@@ -5558,8 +5559,11 @@ class Route
         'internal_1cc_configs_get',
         'internal_1cc_shopify_customer_addresses_get',
         'raw_address_create_bulk',
+
         'partner_config_fetch_guest',
         'terminal_toggle_internal',
+
+        'merchant_validate_public_auth_over_internal_auth',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -14661,6 +14665,7 @@ class Route
             'fetch_trusted_badge_status',
             'invoice_fetch_for_checkout_internal',
             'merchant_fetch_config_for_checkout_internal',
+            'merchant_validate_public_auth_over_internal_auth',
             'checkout_personalisation_internal',
         ],
 

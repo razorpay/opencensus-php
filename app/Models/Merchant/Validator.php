@@ -725,6 +725,25 @@ class Validator extends Base\Validator
         'batch_size'       => 'required|int|min:1',
     ];
 
+    /**
+     * @var array|string[]
+     *
+     * @see Service::validatePublicAuthOverInternalAuth()
+     */
+    protected static array $publicAuthOverInternalAuthRules = [
+        'merchant_public_key' => 'sometimes|size:23',
+        'x_entity_id'  => 'sometimes|filled|string|max:21',
+        'order_id' => 'sometimes|filled|string|max:20',
+        'invoice_id' => 'sometimes|filled|string|max:18',
+        'payment_id' => 'sometimes|filled|string|max:18',
+        'contact_id' => 'sometimes|filled|string|max:21',
+        'customer_id' => 'sometimes|filled|string|max:19',
+        'subscription_id' => 'sometimes|filled|string|max:18',
+        'payment_link_id' => 'sometimes|filled|string|max:19',
+        'options_id' => 'sometimes|filled|string|max:18',
+        'payout_link_id' => 'sometimes|filled|string|max:21',
+    ];
+
     protected static $ipConfigCreateOrEditRules = [
         'whitelisted_ips'   => 'required|array|min:1|max:20',
         'service'           => 'sometimes|string',
