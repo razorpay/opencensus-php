@@ -89,7 +89,7 @@ class LinkedAccount extends Base
 
             $this->repo->transactionOnLiveAndTest(function () use($input, $account, $accountId, &$status)
             {
-                $this->bankAccountCore->createOrChangeBankAccount($input, $account);
+                $this->bankAccountCore->createOrChangeBankAccount($input, $account, false, false);
 
                 //penny testing changes when bank details are updated and feature flag enabled for parent merchant.
                 if ($account->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === true)
