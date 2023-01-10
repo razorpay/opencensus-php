@@ -200,6 +200,10 @@ class Core extends Base\Core
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle(["merchant_id" => $merchantId], []);
+
         $this->repo->terminal->removeMerchantFromTerminal($terminal, $merchant);
 
         return $terminal;
@@ -257,6 +261,10 @@ class Core extends Base\Core
         }
 
         $this->validateNonDSRestriction($merchant,$terminal);
+
+       $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle([], $merchant->getId());
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
@@ -406,6 +414,10 @@ class Core extends Base\Core
             $this->validateNonDSRestriction($terminal->merchant, $terminal);
 
             $this->validateDsTerminalEdit($oldTerminal, $terminal);
+
+            $this->app['workflow']
+                ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+                ->handle([], $this->redactSecretsOnWorkflow($input));
 
             $variantFlag = $this->app->razorx->getTreatment($mId, "TERMINAL_EDIT_PROXY", $mode);
 
@@ -772,6 +784,10 @@ class Core extends Base\Core
 
         $terminal->setEnabledBanks($banksToEnable);
 
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle([], $banksToEnable);
+
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
         $mId = $terminal->getMerchantId();
@@ -825,6 +841,10 @@ class Core extends Base\Core
         }
 
         $terminal->setEnabledWallets($walletsToEnable);
+
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle([], $walletsToEnable);
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
@@ -1151,5 +1171,25 @@ class Core extends Base\Core
         ];
 
         (new Validator())->validateInput('gateway_input', $gatewayInput);
+    }
+
+    protected function redactSecretsOnWorkflow(array $redactedInput) {
+        $terminalHiddenFields = (new Entity)->getHidden();
+
+        $fieldsRedacted = false;
+
+        foreach ($terminalHiddenFields as $hidden)
+        {
+            if(isset($redactedInput[$hidden]) === true) {
+                unset($redactedInput[$hidden]);
+                $fieldsRedacted = true;
+            }
+        }
+
+        if($fieldsRedacted) {
+            $redactedInput["secrets"] = "Secrets are changed, Please check with maker";
+        }
+
+        return $redactedInput;
     }
 }

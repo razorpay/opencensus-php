@@ -96,6 +96,10 @@ class Workflow
         Permission::ENABLE_NON_3DS_PROCESSING,
         Permission::CREATE_CYBER_HELPDESK_WORKFLOW,
         Permission::EXECUTE_MERCHANT_MAX_PAYMENT_LIMIT_WORKFLOW,
+        Permission::EDIT_TERMINAL,
+        Permission::EDIT_TERMINAL_GOD_MODE,
+        Permission::ASSIGN_MERCHANT_TERMINAL,
+        Permission::TERMINAL_MANAGE_MERCHANT
     ];
 
     protected $app;

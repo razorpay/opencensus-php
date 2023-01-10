@@ -347,6 +347,7 @@ return [
             Permission::TOGGLE_TERMINAL                     => [
                 'description' => 'Ability to enable or disable a terminal',
                 'assignable' => true,
+                'workflow'    => true
             ],
             Permission::CHECK_TERMINAL_SECRET               => [
                 'description' => 'Ability to check terminal secrets and passwords',
@@ -355,6 +356,7 @@ return [
             Permission::TERMINAL_MANAGE_MERCHANT            => [
                 'description' => 'Ability to add or remove sub merchants to a terminal',
                 'assignable' => true,
+                'workflow'    => true
             ],
             Permission::EDIT_MERCHANT_PRICING               => '',
             Permission::EDIT_MERCHANT_COMMENTS              => '',
@@ -462,9 +464,18 @@ return [
             ],
             Permission::CREATE_SETTLEMENT_INITIATE          => '',
             Permission::GET_IRCTC_SETTLEMENT_FILE           => '',
-            Permission::DELETE_TERMINAL                     => '',
-            Permission::EDIT_TERMINAL                       => '',
-            Permission::EDIT_TERMINAL_GOD_MODE              => '',
+            Permission::DELETE_TERMINAL                     => [
+                'description' => 'Delete a Terminal',
+                'workflow'   => true
+            ],
+            Permission::EDIT_TERMINAL                       => [
+                'description' => 'Edits a Terminal',
+                'workflow'   => true
+            ],
+            Permission::EDIT_TERMINAL_GOD_MODE              => [
+                'description' => 'Edits a Terminal',
+                'workflow'   => true
+            ],
             Permission::PAYMENTS_BATCH_CREATE_TERMINALS_BULK => [
                 'description' => 'create terminals in bulk',
                 'assignable'  => true,
@@ -522,7 +533,10 @@ return [
             Permission::EDIT_MERCHANT_DISABLE_RECEIPT       => '',
             Permission::EDIT_MERCHANT_RECEIPT_EMAIL_EVENT   => '',
             Permission::EDIT_BULK_MERCHANT                  => '',
-            Permission::ASSIGN_MERCHANT_TERMINAL            => '',
+            Permission::ASSIGN_MERCHANT_TERMINAL            => [
+                'description' => 'Change primary merchant of a terminal',
+                'workflow'    => true
+            ],
             Permission::CREATE_EXTERNAL_ORG_TERMINALS       => [
                 'description'   => 'Create paysecure terminal',
                 'assignable'    => true,

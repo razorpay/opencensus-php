@@ -424,6 +424,10 @@ class Service extends Base\Service
         (new Terminal\Core)->validateExistingTerminal($terminal);
 
 
+        $this->app['workflow']
+            ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+            ->handle((new \stdClass), $terminal);
+
         $r = $this->repo->transaction(function () use ($id, $terminal) {
 
             $shouldSync = true;
