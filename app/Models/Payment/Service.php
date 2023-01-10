@@ -4512,6 +4512,11 @@ class Service extends Base\Service
 
         $payment->merchant()->associate($merchant);
 
+        // set the merchant in basic auth
+        // this is required because base template data is read directly from basic auth
+        // for sending template data on stork
+        $this->app['basicauth']->setMerchant($merchant);
+
         if (($payment->isCard() === true) &&
             (isset($card) === true))
         {
@@ -4577,6 +4582,11 @@ class Service extends Base\Service
             $payment = $this->repo->payment->findByPublicId($currentPaymentId);
 
             $merchant = $this->repo->merchant->findByPublicId($payment->getMerchantId());
+
+            // set the merchant in basic auth
+            // this is required because base template data is read directly from basic auth
+            // for sending template data on stork
+            $this->app['basicauth']->setMerchant($merchant);
 
             if ($payment->isCard() === true)
             {
