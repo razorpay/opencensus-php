@@ -14361,14 +14361,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_VALIDATION_FAILURE,
+                    'description' => 'One or more ips are not valid as per IPv4 nd IPv6.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_IP_FORMAT_INVALID,
         ],
 
     ],
@@ -14392,14 +14392,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_VALIDATION_FAILURE,
+                    'description' => 'IP whitelisting is not allowed when you have opted out.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_IP_WHITELISTING_NOT_ALLOWED_WHEN_OPTED_OUT,
         ],
 
     ],
@@ -14479,13 +14479,13 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_VALIDATION_FAILURE,
+                    'description' => 'Opting out/in is not allowed since it is already in same state.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -14504,13 +14504,13 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_VALIDATION_FAILURE,
+                    'description' => 'Opting out/in is not allowed since it is already in same state.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -14535,6 +14535,30 @@ return [
             ],
         ],
         'status_code' => 200
+    ],
+
+    'testMerchantCreateIpConfigWhenAlreadyOptedOut' => [
+        'request' => [
+            'url'    => '/admin/merchant/ip_whitelist',
+            'method' => 'POST',
+            'content' =>[
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3'],
+                'merchant_id'    => '10000000000000',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'IP whitelisting is not allowed when you have opted out.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_IP_WHITELISTING_NOT_ALLOWED_WHEN_OPTED_OUT,
+        ],
     ],
 
     'testMerchantIpConfigOptOutForAService' => [
@@ -14686,14 +14710,13 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_VALIDATION_FAILURE,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => RZP\Exception\BadRequestException::class,
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],

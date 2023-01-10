@@ -23,10 +23,14 @@ return [
             'content'     => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Access Denied'
+                    'description' => 'Transactions from this IP are not allowed. Contact support for help.'
                 ],
             ],
             'status_code' => 400,
+            'exception' => [
+                'class'               => RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_IP_NOT_WHITELISTED,
+            ],
         ],
 
     ],
@@ -48,10 +52,14 @@ return [
             'content'     => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Access Denied'
+                    'description' => 'Transactions from this IP are not allowed. Contact support for help.'
                 ],
             ],
             'status_code' => 400,
+            'exception' => [
+                'class'               => RZP\Exception\BadRequestException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_IP_NOT_WHITELISTED,
+            ],
         ],
     ],
 

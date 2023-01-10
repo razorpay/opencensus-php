@@ -18284,17 +18284,6 @@ The same has been enabled for the account.
         $this->resetRedisKeysForIpWhitelist($isReset);
     }
 
-    public function testFetchIpConfigForMerchantFromAdmin()
-    {
-        $this->testCreateIpConfigForMerchantFromAdmin();
-
-        $this->ba->adminAuth();
-
-        $this->startTest();
-
-        $this->resetRedisKeysForIpWhitelist();
-    }
-
     public function testUpdateIpConfigForMerchantFromAdmin()
     {
         $ipList = ['1.1.1.1', '2.2.2.2'];
@@ -18336,7 +18325,18 @@ The same has been enabled for the account.
         $this->resetRedisKeysForIpWhitelist();
     }
 
-    public function testMerchantIpConfigOptOut()
+    public function testMerchantCreateIpConfigWhenAlreadyOptedOut()
+    {
+        $this->testMerchantIpConfigOptOut(false);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
+    }
+
+    public function testMerchantIpConfigOptOut($isReset = true)
     {
         $this->ba->adminAuth();
 
@@ -18363,7 +18363,7 @@ The same has been enabled for the account.
         $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['*']);
         $this->assertEqualsCanonicalizing(json_decode($optOut), true);
 
-        $this->resetRedisKeysForIpWhitelist();
+        $this->resetRedisKeysForIpWhitelist($isReset);
     }
 
     public function testMerchantIpConfigOptIn()
@@ -18405,6 +18405,8 @@ The same has been enabled for the account.
 
     public function testMerchantIpConfigOptOutWhenAlreadyOptedOut()
     {
+        $this->testMerchantIpConfigOptOut(false);
+
         $this->ba->adminAuth();
 
         $this->startTest();

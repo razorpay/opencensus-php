@@ -774,7 +774,7 @@ class Validator extends Base\Validator
             ($proxyAuthAttributes === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'One or more fields are invalid');
+                'One or more fields are invalid.');
         }
 
         if ((app('basicauth')->isAdminAuth() === true) and

@@ -8750,14 +8750,18 @@ class Core extends Base\Core
             $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
         }
 
+        $this->trace->info(TraceCode::MERCHANT_IP_CONFIG_CREATE_EDIT_REQUEST,
+            [
+                'merchant_id'     => $this->merchant->getId(),
+                'whitelisted_ips' => $input['whitelisted_ips'],
+            ]);
+
         $accessor = Settings\Accessor::for($this->merchant, Settings\Module::IP_WHITELIST_CONFIG);
 
         if ($accessor->exists(self::OPT_OUT) === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-                'IP whitelisting is not allowed when you have opted out',
-                null);
+                ErrorCode::BAD_REQUEST_IP_WHITELISTING_NOT_ALLOWED_WHEN_OPTED_OUT);
         }
 
         $whitelistedIps = $input['whitelisted_ips'];
@@ -8776,9 +8780,10 @@ class Core extends Base\Core
         if (empty($errorIps) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-                'One or more ips are not valid as per IPv4 nd IPv6',
-                $errorIps);
+                ErrorCode::BAD_REQUEST_IP_FORMAT_INVALID,
+                 null,
+                 $errorIps
+            );
         }
 
         $this->updateIpConfigForService($input, $accessor);
@@ -8796,10 +8801,8 @@ class Core extends Base\Core
         {
             if ($this->checkIfIpCountAcrossServiceExhausted($defaultServices, $accessor, $whitelistedIps, $input['service']) === true)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-                    'Max No of Ips allowed is' . self::MAX_NO_OF_IPS_ALLOWED
-                );
+                throw new Exception\BadRequestValidationFailureException(
+                    'Max No of Ips allowed is' . self::MAX_NO_OF_IPS_ALLOWED);
             }
 
             $service = $input['service'];
@@ -8860,6 +8863,8 @@ class Core extends Base\Core
 
     public function editOptStatusForMerchantIPConfig(array $input)
     {
+        $this->trace->info(TraceCode::MERCHANT_OPT_STATUS_EDIT_REQUEST, $input);
+
         (new Validator)->validateInput('ipConfigOptStatusEdit', $input);
 
         $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
@@ -8875,10 +8880,8 @@ class Core extends Base\Core
 
         if (boolval($input[self::OPT_OUT]) === $optedOut)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-                null,
-                null);
+            throw new Exception\BadRequestValidationFailureException(
+                'Opting out/in is not allowed since it is already in same state.');
         }
 
         if (boolval($input[self::OPT_OUT]) === true)

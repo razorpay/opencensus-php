@@ -84,7 +84,7 @@ class MerchantIpFilter
 
             if ($isValidIp === false)
             {
-                return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+                return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_IP_NOT_WHITELISTED);
             }
 
             $whitelistedIps = $merchant->getWhitelistedIpsLive();
@@ -158,63 +158,88 @@ class MerchantIpFilter
     {
         $isValidIp = null;
 
-        if ($merchant->isFeatureEnabled(Feature::ENABLE_IP_WHITELIST) === true)
+        try
         {
-            $service = Route::getServiceMappingForIpWhitelist($request->route()->getName());
-
-            if ($service === null) {
-                return $isValidIp;
-            }
-
-            $requestIp = $request->getClientIp();
-
-            $this->trace->info(TraceCode::NEW_IP_WHITELIST_APPLICABLE,
-                [
-                    'service' => $service,
-                    'merchant_id' => $merchant->getId(),
-                    'client_ip' => $requestIp,
-                ]);
-
-            $isValidIp = true;
-
-            try
+            if ($merchant->isFeatureEnabled(Feature::ENABLE_IP_WHITELIST) === true)
             {
-                $redisKey = 'ip_config' . '_' . $merchant->getId() . '_' . $service;
+                $service = Route::getServiceMappingForIpWhitelist($request->route()->getName());
 
-                $whitelistedIps = $this->app['redis']->smembers($redisKey);
-            }
-            catch (\Throwable $ex)
-            {
-                $this->trace->info(TraceCode::IP_CONFIG_REDIS_GET_FAILED,
+                if ($service === null)
+                {
+                    return $isValidIp;
+                }
+
+                $requestIp = $request->getClientIp();
+
+                $this->trace->info(TraceCode::NEW_IP_WHITELIST_APPLICABLE,
                     [
-                        'service' => $service,
+                        'service'     => $service,
                         'merchant_id' => $merchant->getId(),
-                        'client_ip' => $requestIp,
-                        'exception' => $ex->getMessage(),
+                        'client_ip'   => $requestIp,
                     ]);
 
-                $whitelistedIps = json_decode(Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get($service), true);
-            }
+                $isValidIp = true;
 
-            if (in_array(self::DEFAULT_IP_WHITELIST, $whitelistedIps, true) === true)
-            {
-                return $isValidIp;
-            }
+                try
+                {
+                    $redisKey = 'ip_config' . '_' . $merchant->getId() . '_' . $service;
 
-            if ((empty($whitelistedIps) === true) or
-                (in_array($requestIp, $whitelistedIps, true) === false))
-            {
-                $this->trace->info(TraceCode::REQUEST_FAILED_FROM_NON_WHITELIST_IP,
-                    [
-                        'service' => $service,
-                        'merchant_id' => $merchant->getId(),
-                        'client_ip' => $requestIp,
-                        'whitelisted_ips' => $whitelistedIps,
-                    ]);
+                    $whitelistedIps = $this->app['redis']->smembers($redisKey);
+                }
+                catch (\Throwable $ex)
+                {
+                    $this->trace->info(TraceCode::IP_CONFIG_REDIS_GET_FAILED,
+                        [
+                            'service'     => $service,
+                            'merchant_id' => $merchant->getId(),
+                            'client_ip'   => $requestIp,
+                            'exception'   => $ex->getMessage(),
+                        ]);
 
-                $isValidIp = false;
+                    $whitelistedIps = json_decode(Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get($service), true);
+                }
+
+                if (in_array(self::DEFAULT_IP_WHITELIST, $whitelistedIps, true) === true)
+                {
+                    $this->trace->info(TraceCode::MERCHANT_DEFAULT_IP_WHITELIST_APPLIED,
+                        [
+                            'service'         => $service,
+                            'merchant_id'     => $merchant->getId(),
+                            'client_ip'       => $requestIp,
+                            'whitelisted_ips' => $whitelistedIps,
+                        ]);
+
+                    return $isValidIp;
+                }
+
+                if ((empty($whitelistedIps) === true) or
+                    (in_array($requestIp, $whitelistedIps, true) === false))
+                {
+                    $this->trace->info(TraceCode::REQUEST_FAILED_FROM_NON_WHITELIST_IP,
+                        [
+                            'service'         => $service,
+                            'merchant_id'     => $merchant->getId(),
+                            'client_ip'       => $requestIp,
+                            'whitelisted_ips' => $whitelistedIps,
+                        ]);
+
+                    $isValidIp = false;
+                }
             }
         }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::MERCHANT_IP_X_FILTER_FAILED,
+                [
+                    'service'     => $service,
+                    'merchant_id' => $merchant->getId(),
+                    'client_ip'   => $requestIp,
+                    'exception'   => $ex->getMessage(),
+                ]);
+
+            throw $ex;
+        }
+
         return $isValidIp;
     }
 }

@@ -112,6 +112,18 @@ class MerchantXIpFilterNewTest extends TestCase
         return $payout;
     }
 
+    protected function resetRedisKeysForIpWhitelist($isReset = true)
+    {
+        if($isReset === true)
+        {
+            $redisKey = 'ip_config_10000000000000_api_payouts';
+            $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+            $this->app['redis']->del($redisKey);
+            $this->app['redis']->del($redisKey2);
+        }
+    }
+
 
    //Tests if merchant is enabled on feature and not opted out and has no ip whitelisted, then request should fail.
     public function testPayoutCreateGetsErrorForNoWhitelistedIps()
@@ -123,6 +135,8 @@ class MerchantXIpFilterNewTest extends TestCase
         $this->fixtures->on('live')->create('fund_account', $this->createBankingFundAccountEntityArray());
 
         $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
     }
 
     //Tests if merchant is enabled on feature and not opted out and has no ip whitelisted, then request should fail.
@@ -161,6 +175,8 @@ class MerchantXIpFilterNewTest extends TestCase
         $this->fixtures->on('live')->create('fund_account', $this->createBankingFundAccountEntityArray());
 
         $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
     }
 
     //Tests if merchant is enabled on feature and not opted out and has a set of ips whitelisted, but request IP is different then should fail.
@@ -209,6 +225,8 @@ class MerchantXIpFilterNewTest extends TestCase
         $this->fixtures->on('live')->create('fund_account', $this->createBankingFundAccountEntityArray());
 
         $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
     }
 
     //Tests if merchant is enabled on feature and not opted out and request IP is one of the whitelisted ones, request should succeed
@@ -255,6 +273,8 @@ class MerchantXIpFilterNewTest extends TestCase
         $this->fixtures->on('live')->create('fund_account', $this->createBankingFundAccountEntityArray());
 
         $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
     }
 
     //Tests if merchant has opted out then whitelist should not apply and request should go fine.
@@ -277,6 +297,8 @@ class MerchantXIpFilterNewTest extends TestCase
         $this->fixtures->on('live')->create('fund_account', $this->createBankingFundAccountEntityArray());
 
         $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
     }
 
 //    protected function mockRedisResponse()
@@ -311,6 +333,8 @@ class MerchantXIpFilterNewTest extends TestCase
         $this->fixtures->on('live')->create('fund_account', $this->createBankingFundAccountEntityArray());
 
         $this->startTest();
+
+        $this->resetRedisKeysForIpWhitelist();
     }
 
 
