@@ -385,7 +385,7 @@ export default {
     'KUpz5tL5Acjm1Z',
 
     // prod experiment ids
-    'KaHGZHjePU5XLxs',
+    'KaHGZHjePU5XLx',
   ],
   website_compliance_flow_exp: [
     // stage
