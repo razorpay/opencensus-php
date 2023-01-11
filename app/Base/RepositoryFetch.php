@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use ReflectionClass;
 use RZP\Constants\Es;
 use RZP\Constants\Mode;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant;
 use RZP\Services\WDAService;
@@ -26,6 +27,7 @@ use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 use RZP\Exception\BadRequestValidationFailureException;
 
+use Rzp\Wda_php\SortOrder;
 use Rzp\Wda_php\Symbol;
 use Rzp\Wda_php\Operator;
 use Rzp\Wda_php\WDAQueryBuilder;
@@ -158,9 +160,13 @@ trait RepositoryFetch
 
         $query = $this->newQuery();
 
+        $baseQueryPresent = false;
+
         if ($this->baseQuery !== null)
         {
             $query = $this->baseQuery;
+
+            $baseQueryPresent = true;
         }
 
         $connection = null;
@@ -262,6 +268,57 @@ trait RepositoryFetch
             return $paginatedResult;
         }
 
+        $isWdaRoute = $this->checkIfWDARoute($connectionType);
+
+        if(!$baseQueryPresent and $isWdaRoute)
+        {
+            try
+            {
+                $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
+                    'method_name' => __FUNCTION__
+                ]);
+
+                $startTimeMs = round(microtime(true) * 1000);
+
+                $collection = $this->wdaFetch($query, $mysqlParams);
+
+                $endTimeMs = round(microtime(true) * 1000);
+
+                $queryDuration = $endTimeMs - $startTimeMs;
+
+                $this->trace->info(TraceCode::WDA_SERVICE_RESPONSE, [
+                    'method_name'   => __FUNCTION__,
+                    'duration_ms'    => $queryDuration,
+                    'response size' => $collection->count(),
+                ]);
+
+                return $collection;
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                    "wda_migration_error" => $ex->getMessage(),
+                ]);
+            }
+
+        }
+        elseif ($isWdaRoute and $baseQueryPresent)
+        {
+            try
+            {
+                $this->trace->info(TraceCode::WDA_SERVICE, [
+                    "Base Query" => $this->baseQuery->toSql(),
+                ]);
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                    "WDA Logging Error" => $ex->getMessage(),
+                ]);
+            }
+
+        }
+
         $startTimeMs = round(microtime(true) * 1000);
 
         $entities = $query->get();
@@ -283,6 +340,109 @@ trait RepositoryFetch
         }
 
         return $entities;
+    }
+
+    public function wdaFetch($query, $mysqlParams)
+    {
+        $wdaQueryBuilder = new WDAQueryBuilder();
+
+        $wdaQueryBuilder->addQuery($this->getTableName(), '*')
+            ->resources($this->getTableName());
+
+        $wdaQueryBuilder->namespace($query->getConnection()->getDatabaseName());
+
+        $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+
+        $this->buildWDAFetchQuery($wdaQueryBuilder, $mysqlParams);
+
+        $wdaClient = $this->app['wda-client']->wdaClient;
+
+        $this->trace->info(TraceCode::WDA_SERVICE_QUERY, [
+            "wda_query_builder" => $wdaQueryBuilder->build()->serializeToJsonString(),
+        ]);
+
+        $responseArray = $wdaClient->fetchMultipleEntities($wdaQueryBuilder->build());
+
+        $wdaResponse = [];
+
+        $entityType = $query->getModel();
+
+        foreach ($responseArray as $response)
+        {
+            array_push($wdaResponse, $this->sortEntityAndCleanUp($entityType, $response));
+        }
+
+        $collection = new PublicCollection();
+
+        foreach ($wdaResponse as $arr)
+        {
+            $entity = $query->newModelInstance();
+
+            $entity->forceFill($arr);
+
+            $collection->push($entity);
+        }
+
+        return $collection;
+    }
+
+    public function compareEntities($warmStorageDbResponse, $wdaResponseArray) : array
+    {
+        $responseDiff = [];
+
+        foreach ($warmStorageDbResponse as $key => $value)
+        {
+            if($key == "email" or $key == "contact")
+            {
+                continue;
+            }
+
+            if($key === PaymentEntity::NOTES or $key === OrderEntity::NOTES)
+            {
+                if($wdaResponseArray[$key] != $value)
+                {
+                    $responseDiff[$key] = $value;
+
+                }
+                continue;
+            }
+
+            if($key === PaymentEntity::ACQUIRER_DATA)
+            {
+                // casting this to array as acquirer_data is a spine dictionary object, compare would fail
+
+                $value = $value->toArray();
+
+                if( isset($wdaResponseArray[PaymentEntity::ACQUIRER_DATA]))
+                {
+                    $wdaAcquirerData = ($wdaResponseArray[PaymentEntity::ACQUIRER_DATA])->toArray();
+
+                    if($wdaAcquirerData !== $value)
+                    {
+                        $responseDiff[$key] = $value;
+                    }
+
+                    continue;
+                }
+            }
+
+            if (is_array($value) === true)
+            {
+                if ($wdaResponseArray[$key] != $value)
+                {
+                    $responseDiff[$key] = $value;
+                }
+
+                continue;
+            }
+
+            if ((isset($wdaResponseArray[$key]) === true) and ($wdaResponseArray[$key] !== $value))
+            {
+                $responseDiff[$key] = $value;
+            }
+        }
+
+        return $responseDiff;
     }
 
     protected function getConnectionFromType(string $connection)
@@ -555,6 +715,23 @@ trait RepositoryFetch
         }
     }
 
+    protected function buildWDAQueryWithParams($wdaQueryBuilder, $params)
+    {
+        foreach ($params as $key => $value)
+        {
+            $func = 'addWDAQueryParam' . studly_case($key);
+
+            if (method_exists($this, $func))
+            {
+                $this->$func($wdaQueryBuilder, $params);
+            }
+            else
+            {
+                $this->addWDAQueryParamDefault($wdaQueryBuilder, $params, $key);
+            }
+        }
+    }
+
     protected function buildFetchQuery($query, $params)
     {
         $this->buildQueryWithParams($query, $params);
@@ -566,10 +743,25 @@ trait RepositoryFetch
         return $query;
     }
 
+    protected function buildWDAFetchQuery($wdaQueryBuilder, $params)
+    {
+        $this->buildWDAQueryWithParams($wdaQueryBuilder, $params);
+
+        $this->addWDAQueryOrder($wdaQueryBuilder);
+
+        $this->buildWDAFetchQueryAdditional($params, $wdaQueryBuilder);
+    }
+
     protected function buildFetchQueryAdditional($params, $query)
     {
         return;
     }
+
+    protected function buildWDAFetchQueryAdditional($params, $wdaQueryBuilder)
+    {
+        return;
+    }
+
 
     protected function modifyFetchParams(array & $params)
     {
@@ -990,7 +1182,7 @@ trait RepositoryFetch
             catch(\Throwable $ex)
             {
                 $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
-                    'wda_exception' => $ex->getMessage(),
+                    'wda_exception'    => $ex->getMessage(),
                 ]);
             }
         }
@@ -1002,7 +1194,8 @@ trait RepositoryFetch
     {
         if(($this->app['api.route']->isWDAServiceRoute() === true) and
             $connectionType === ConnectionType::DATA_WAREHOUSE_ADMIN and
-            $this->app->runningUnitTests() === false)
+            $this->app->runningUnitTests() === false and
+            $this->isExperimentEnabled(self::WDA_MIGRATION_ADMIN) === true)
         {
             return true;
         }
@@ -1035,7 +1228,7 @@ trait RepositoryFetch
 
         $response = $wdaClient->fetchSingleEntity($wdaQueryBuilder->build());
 
-        $response = $this->sortArrayByAttributes($entity, $response);
+        $response = $this->sortEntityAndCleanUp($entity, $response);
 
         $entity->forceFill($response);
 
@@ -1044,7 +1237,7 @@ trait RepositoryFetch
         return $entity;
     }
 
-    private function sortArrayByAttributes($entity, $array)
+    private function sortEntityAndCleanUp($entity, $array)
     {
         $attributes = (new ReflectionClass($entity))->getConstants();
 
@@ -1052,7 +1245,7 @@ trait RepositoryFetch
 
         foreach ($attributes as $_ => $key)
         {
-            if (array_key_exists($key, $array))
+            if (!is_array($key) and array_key_exists($key, $array))
             {
                 $ordered[$key] = $array[$key];
 
@@ -1070,53 +1263,7 @@ trait RepositoryFetch
 
         try
         {
-            if(count($wdaResponseArray) !== count($warmStorageDbResponse))
-            {
-                $inconsistentParams['wda_response_length'] = count($wdaResponseArray);
-                $inconsistentParams['warm_db_response_length'] = count($warmStorageDbResponse);
-            }
-
-            $responseDiff = [];
-
-            foreach ($warmStorageDbResponse as $key => $value)
-            {
-                if($key === PaymentEntity::NOTES or $key === OrderEntity::NOTES)
-                {
-                    if($wdaResponseArray[$key] != $value)
-                    {
-                        $responseDiff[$key] = $value;
-
-                    }
-                    continue;
-                }
-
-                if($key === PaymentEntity::ACQUIRER_DATA)
-                {
-                    // casting this to array as acquirer_data is a spine dictionary object, compare would fail
-
-                    $value = $value->toArray();
-
-                    if( isset($wdaResponseArray[PaymentEntity::ACQUIRER_DATA]))
-                    {
-                        $wdaResponseArray[PaymentEntity::ACQUIRER_DATA] = ($wdaResponseArray[PaymentEntity::ACQUIRER_DATA])->toArray();
-                    }
-                }
-
-                if (is_array($value) === true)
-                {
-                    if ($wdaResponseArray[$key] != $value)
-                    {
-                        $responseDiff[$key] = $value;
-                    }
-
-                    continue;
-                }
-
-                if ((isset($wdaResponseArray[$key]) === true) and ($wdaResponseArray[$key] !== $value))
-                {
-                    $responseDiff[$key] = $value;
-                }
-            }
+            $responseDiff = $this->compareEntities($warmStorageDbResponse, $wdaResponseArray);
 
             if (empty($responseDiff) === false)
             {
@@ -1214,6 +1361,24 @@ trait RepositoryFetch
         }
     }
 
+    protected function addWDAQueryParamDefault($wdaQueryBuilder, $params, $key)
+    {
+        $value = $params[$key];
+
+        if ($value === 'null')
+        {
+            $wdaQueryBuilder->filters($this->getTableName(), $key);
+        }
+        else if ((is_array($value) === true) and (is_sequential_array($value) === true))
+        {
+            $wdaQueryBuilder->filters($this->getTableName(), $key, $value, Symbol::IN);
+        }
+        else
+        {
+            $wdaQueryBuilder->filters($this->getTableName(), $key, [$value], Symbol::EQ);
+        }
+    }
+
     /**
      * In Fetch merchant_id can also be injected from code.
      * Method will add merchant id in the query even if it
@@ -1280,10 +1445,24 @@ trait RepositoryFetch
         $query = $query->where($createdAt, '>=', $params['from']);
     }
 
+    protected function addWDAQueryParamFrom($wdaQueryBuilder, $params)
+    {
+        $createdAt = Common::CREATED_AT;
+
+        $wdaQueryBuilder->filters($this->getTableName(), $createdAt, [$params['from']], Symbol::GTE);
+    }
+
     protected function addQueryParamTo($query, $params)
     {
         $createdAt = $this->dbColumn(Common::CREATED_AT);
         $query = $query->where($createdAt, '<=', $params['to']);
+    }
+
+    protected function addWDAQueryParamTo($wdaQueryBuilder, $params)
+    {
+        $createdAt = Common::CREATED_AT;
+
+        $wdaQueryBuilder->filters($this->getTableName(), $createdAt, [$params['to']], Symbol::LTE);
     }
 
     protected function addQueryOrder($query)
@@ -1296,14 +1475,29 @@ trait RepositoryFetch
         $query->orderBy($this->dbColumn(Common::ID), 'desc');
     }
 
+    protected function addWDAQueryOrder($wdaQueryBuilder)
+    {
+        $wdaQueryBuilder->sort($this->getTableName(), Common::ID, SortOrder::DESC);
+    }
+
     protected function addQueryParamCount($query, $params)
     {
         $query->take($params['count']);
     }
 
+    protected function addWDAQueryParamCount($wdaQueryBuilder, $params)
+    {
+        $wdaQueryBuilder->size($params['count']);
+    }
+
     protected function addQueryParamSkip($query, $params)
     {
         $query->skip($params['skip']);
+    }
+
+    protected function addWDAQueryParamSkip($wdaQueryBuilder, $params)
+    {
+        $wdaQueryBuilder->skip($params['skip']);
     }
 
     protected function addQueryParamDeleted($query, $param)
@@ -1314,6 +1508,11 @@ trait RepositoryFetch
         {
             $query->withTrashed();
         }
+    }
+
+    protected function addWDAQueryParamDeleted($wdaQueryBuilder, $param)
+    {
+        throw new LogicException('Delete operation not supported on WDA');
     }
 
     protected function doesEntityUseSoftdeletes() : bool
@@ -1362,6 +1561,13 @@ trait RepositoryFetch
         Merchant\Entity::verifyIdAndStripSign($params[Common::MERCHANT_ID]);
 
         $query->merchantId($params[Common::MERCHANT_ID]);
+    }
+
+    protected function addWDAQueryParamMerchantId($wdaQueryBuilder, $params)
+    {
+        Merchant\Entity::verifyIdAndStripSign($params[Common::MERCHANT_ID]);
+
+        $wdaQueryBuilder->filter($this->getTableName(), "merchant_id", [$params[Common::MERCHANT_ID]], Symbol::EQ);
     }
 
     /**

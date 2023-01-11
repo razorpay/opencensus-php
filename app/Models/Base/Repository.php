@@ -4,6 +4,7 @@ namespace RZP\Models\Base;
 
 use RZP\Base\RepositoryManager;
 use RZP\Base\Repository as BaseRepository;
+use Rzp\Wda_php\Symbol;
 
 /**
  * Class Repository
@@ -34,5 +35,13 @@ class Repository extends BaseRepository
         $email = mb_strtolower($params['email']);
 
         $query->where($attribute, '=', $email);
+    }
+
+    protected function addWDAQueryParamEmail($wdaQueryBuilder, $params)
+    {
+        // Email should be case insensitive
+        $email = mb_strtolower($params['email']);
+
+        $wdaQueryBuilder->filters($this->getTableName(), 'email', [$email], Symbol::EQ);
     }
 }

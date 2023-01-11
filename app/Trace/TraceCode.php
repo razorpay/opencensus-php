@@ -8737,6 +8737,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WDA_MIGRATION_ERROR                            = 'WDA_MIGRATION_ERROR';
     const WDA_AND_WARM_DB_INCONSISTENCY                  = 'WDA_AND_WARM_DB_INCONSISTENCY';
     const COMPARE_WDA_ERROR                              = 'COMPARE_WDA_ERROR';
+    const WDA_SERVICE                                    = 'WDA_SERVICE';
+    const WDA_SERVICE_QUERY                              = 'WDA_SERVICE_QUERY';
 
     //3DS2.0 callback view experiment
     const CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR            = "CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR";

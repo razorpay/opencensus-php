@@ -12,6 +12,7 @@ use Database\Connection;
 
 use RZP\Base\ConnectionType;
 use RZP\Constants\Environment;
+use RZP\Exception\LogicException;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Exception;
@@ -53,6 +54,7 @@ use RZP\Models\Gateway\Downtime\DowntimeDetection;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 use RZP\Models\Merchant\Detail as MerchantDetail;
+use Rzp\Wda_php\Symbol;
 
 class Repository extends Base\Repository
 {
@@ -1407,7 +1409,7 @@ EOT;
                     $query->orWhere($condition);
                 }
             });
-    } 
+    }
 
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
@@ -1684,6 +1686,18 @@ EOT;
         $query = $query->where(Entity::BANK, '=', $params[Entity::BANK]);
     }
 
+    protected function addWDAQueryParamBank($wdaQueryBuilder, $params)
+    {
+        if (Payment\Processor\Netbanking::isSupportedBank($params['bank']) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_INVALID_BANK_CODE,
+                Entity::BANK);
+        }
+
+        $wdaQueryBuilder->filters($this->getTableName(), Entity::BANK, [$params[Entity::BANK]], Symbol::EQ);
+    }
+
     protected function addQueryParamStatus($query, $params)
     {
         $status = $params[Entity::STATUS];
@@ -1697,6 +1711,17 @@ EOT;
         $query->whereIn($statusColumn, $status);
     }
 
+    protected function addWDAQueryParamStatus($wdaQueryBuilder, $params)
+    {
+        $status = $params[Entity::STATUS];
+
+        $status = explode(',', $status);
+
+        Payment\Validator::validateStatusArray($status);
+
+        $wdaQueryBuilder->filters($this->getTableName(), Entity::STATUS, $status, Symbol::IN);
+    }
+
     protected function addQueryParamAmount($query, $params)
     {
         $amount = $this->dbColumn(Entity::AMOUNT);
@@ -1704,11 +1729,25 @@ EOT;
         $query->where($amount, '=', $params[Entity::AMOUNT]);
     }
 
+    protected function addWDAQueryParamAmount($wdaQueryBuilder, $params)
+    {
+        $wdaQueryBuilder->filters($this->getTableName(), Entity::AMOUNT, [$params[Entity::AMOUNT]], Symbol::EQ);
+    }
+
     protected function addQueryParamIin($query, $params)
     {
         //
         // This needs to be empty as we are doing a special join for
         // card attributes defined in buildCardJoinQuery
+        //
+        return;
+    }
+
+    protected function addWDAQueryParamIin($wdaQuery, $params)
+    {
+        //
+        // This needs to be empty as we are doing a special join for
+        // card attributes defined in buildWDACardJoinQuery
         //
         return;
     }
@@ -1722,6 +1761,15 @@ EOT;
         return;
     }
 
+    protected function addWDAQueryParamLast4($query, $params)
+    {
+        //
+        // This needs to be empty as we are doing a special join for
+        // card attributes defined in buildWDACardJoinQuery
+        //
+        return;
+    }
+
     protected function addQueryParamRecurringStatus($query, $params)
     {
         $this->joinQueryToken($query);
@@ -1731,6 +1779,22 @@ EOT;
         $query->select($this->getTableName() . '.*');
     }
 
+    protected function addWDAQueryParamRecurringStatus($wdaQueryBuilder, $params)
+    {
+        $this->joinWDAQueryToken($wdaQueryBuilder);
+
+        $tokenTable = Table::getTableNameForEntity(Constants\Entity::TOKEN);
+
+        $value = $params[Token\Entity::RECURRING_STATUS];
+
+        if(!is_array($value))
+        {
+            $value = [$value];
+        }
+
+        $wdaQueryBuilder->filters($tokenTable, Token\Entity::RECURRING_STATUS, $value, Symbol::EQ);
+    }
+
     protected function addQueryParamGatewayTerminalId($query, $params)
     {
         $this->joinQueryTerminal($query);
@@ -1738,6 +1802,15 @@ EOT;
         $query->where(Terminal\Entity::GATEWAY_TERMINAL_ID, $params[Terminal\Entity::GATEWAY_TERMINAL_ID]);
 
         $query->select($this->getTableName() . '.*');
+    }
+
+    protected function addWDAQueryParamGatewayTerminalId($wdaQueryBuilder, $params)
+    {
+        $this->joinWDAQueryToken($wdaQueryBuilder);
+
+        $terminalTable = Table::getTableNameForEntity(Constants\Entity::TERMINAL);
+
+        $wdaQueryBuilder->filters($terminalTable, Terminal\Entity::GATEWAY_TERMINAL_ID, [$params[Terminal\Entity::GATEWAY_TERMINAL_ID]], Symbol::EQ);
     }
 
     /**
@@ -1758,6 +1831,16 @@ EOT;
         $query->where($amountTransferred, '>', 0);
     }
 
+    protected function addWDAQueryParamTransferred($wdaQueryBuilder, $params)
+    {
+        if ($params[Entity::TRANSFERRED] !== '1')
+        {
+            return;
+        }
+
+        $wdaQueryBuilder->filters($this->getTableName(), Entity::AMOUNT_TRANSFERRED, [0], Symbol::GT);
+    }
+
     protected function addQueryParamCaptured($query, $params)
     {
         if (boolval($params[Entity::CAPTURED]) === false)
@@ -1767,6 +1850,18 @@ EOT;
         else
         {
             $query->whereNotNull(Entity::CAPTURED_AT);
+        }
+    }
+
+    protected function addWDAQueryParamCaptured($wdaQueryBuilder, $params)
+    {
+        if (boolval($params[Entity::CAPTURED]) === false)
+        {
+            $wdaQueryBuilder->filters($this->getTableName(), Entity::CAPTURED_AT);
+        }
+        else
+        {
+            $wdaQueryBuilder->filters($this->getTableName(), Entity::CAPTURED_AT, [], Symbol::NOT_NULL);
         }
     }
 
@@ -1782,6 +1877,20 @@ EOT;
         }
 
         return parent::addQueryParamEmail($query, $params);
+    }
+
+    protected function addWDAQueryParamEmail($wdaQueryBuilder, $params)
+    {
+        $merchant = $this->auth->getMerchant();
+
+        if (($this->auth->isPrivateAuth() === true) and
+            ($this->auth->isProxyAuth() === false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::PAYMENT_EMAIL_FETCH) === false))
+        {
+            throw new Exception\ExtraFieldsException('email');
+        }
+
+        return parent::addWDAQueryParamEmail($wdaQueryBuilder, $params);
     }
 
     protected function joinQueryToken($query)
@@ -1806,6 +1915,30 @@ EOT;
         $query->join($tokenTable, $paymentTokenId, '=', $tokenId);
     }
 
+    protected function joinWDAQueryToken($wdaQueryBuilder)
+    {
+        $joins = $wdaQueryBuilder->getJoinTables();
+
+        $tokenTable = Table::getTableNameForEntity(Constants\Entity::TOKEN);
+
+        foreach ($joins as $join)
+        {
+            if ($join === $tokenTable)
+            {
+                return;
+            }
+        }
+
+        $paymentTokenId = $this->dbColumn(Payment\Entity::TOKEN_ID);
+
+        $tokenId = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $joinOperation = $paymentTokenId.' = '.$tokenId ;
+
+        $wdaQueryBuilder->addResource($tokenTable, "INNER", $joinOperation);
+
+    }
+
     protected function buildFetchQueryAdditional($params, $query)
     {
         if ((isset($params[Card\Entity::IIN]) === true) or
@@ -1815,6 +1948,15 @@ EOT;
         }
 
         $query->select($this->getTableName() . '.*');
+    }
+
+    protected function buildWDAFetchQueryAdditional($params, $wdaQueryBuilder)
+    {
+        if ((isset($params[Card\Entity::IIN]) === true) or
+            (isset($params[Card\Entity::LAST4]) === true))
+        {
+            $this->buildWDACardJoinQuery($params, $wdaQueryBuilder);
+        }
     }
 
     /**
@@ -1837,6 +1979,22 @@ EOT;
         foreach ($cardQueryParams as $key => $value)
         {
            $joinQuery->where($cardTableName . '.' . $key, $value);
+        }
+    }
+
+    protected function buildWDACardJoinQuery($params, $wdaQueryBuilder)
+    {
+        $cardTableName       = $this->repo->card->getTableName();
+        $paymentCardIdColumn = $this->dbColumn(Entity::CARD_ID);
+        $cardIdColumn        = $this->repo->card->dbColumn(Entity::ID);
+
+        $cardQueryParams = array_only($params, $this->cardQueryKeys);
+
+        $wdaQueryBuilder->addResource($cardTableName, "INNER", $paymentCardIdColumn.' = '.$cardIdColumn);
+
+        foreach ($cardQueryParams as $key => $value)
+        {
+            $wdaQueryBuilder->filetrs($wdaQueryBuilder, $key, [$value], Symbol::EQ);
         }
     }
 
@@ -2439,6 +2597,15 @@ EOT;
         $query->select($this->getTableName() . '.*');
     }
 
+    protected function addWDAQueryParamBankReference($wdaQueryBuilder, $params)
+    {
+        $this->joinWDAQueryBankTransfer($wdaQueryBuilder);
+
+        $bankTransferTable = Table::getTableNameForEntity(Constants\Entity::BANK_TRANSFER);
+
+        $wdaQueryBuilder->filters($bankTransferTable, BankTransfer\Entity::UTR, [$params[BankTransfer\Entity::BANK_REFERENCE]], Symbol::EQ);
+    }
+
     protected function addQueryParamAcquirerData($query, $params)
     {
         $cardAcqDataSql = "IF(" . Entity::METHOD . " = '" . Method::CARD . "', " . Entity::REFERENCE2 . "=?, '')";
@@ -2452,6 +2619,11 @@ EOT;
         });
 
         $query->select($this->getTableName() . '.*');
+    }
+
+    protected function addWDAQueryParamAcquirerData($wdaQueryBuilder, $params)
+    {
+        throw new LogicException('Support for raw queries not yet implemented on WDA');
     }
 
     /**
@@ -2478,6 +2650,15 @@ EOT;
         $query->where($virtualAccountIdCol, '=', $virtualAccountId);
     }
 
+    protected function addWDAQueryParamVirtualAccountId($wdaQueryBuilder, $params)
+    {
+        $this->joinWDAQueryVaReceiver($wdaQueryBuilder);
+
+        $virtualAccountId = $params[Payment\Entity::VIRTUAL_ACCOUNT_ID];
+
+        $wdaQueryBuilder->filters(Table::VIRTUAL_ACCOUNT, VirtualAccount\Entity::ID, [$virtualAccountId], Symbol::EQ);
+    }
+
     /**
      * select `payments`.* from `payments` where `payments`.`merchant_id` = ?
      * and `receiver_id` is not null
@@ -2495,6 +2676,16 @@ EOT;
         $query->whereNotNull(Entity::RECEIVER_ID);
     }
 
+    protected function adWDAdQueryParamVirtualAccount($wdaQueryBuilder, $params)
+    {
+        if ($params[Entity::VIRTUAL_ACCOUNT] !== '1')
+        {
+            return;
+        }
+
+        $wdaQueryBuilder->filters($this->getTableName(), Entity::RECEIVER_ID, [], Symbol::NOT_NULL);
+    }
+
     protected function addQueryParamIntlBankTransfer($query, $params)
     {
         if ($params[Entity::INTL_BANK_TRANSFER] !== '1')
@@ -2503,6 +2694,16 @@ EOT;
         }
 
         $query->where(Entity::METHOD,Entity::INTL_BANK_TRANSFER);
+    }
+
+    protected function addWDAQueryParamIntlBankTransfer($wdaQueryBuilder, $params)
+    {
+        if ($params[Entity::INTL_BANK_TRANSFER] !== '1')
+        {
+            return;
+        }
+
+        $wdaQueryBuilder->filters($this->getTableName(), Entity::METHOD, [Entity::INTL_BANK_TRANSFER], Symbol::EQ);
     }
 
     /**
@@ -2537,6 +2738,30 @@ EOT;
         });
     }
 
+    protected function joinWDAQueryVaReceiver($wdaQueryBuilder): void
+    {
+        $paymentReceiverId = $this->dbColumn(Payment\Entity::RECEIVER_ID);
+
+        $qrcodeId = $this->repo
+            ->virtual_account
+            ->dbColumn(VirtualAccount\Entity::QR_CODE_ID);
+
+        $bankAccountId = $this->repo
+            ->virtual_account
+            ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID);
+
+        $bankAccountId2 = $this->repo
+            ->virtual_account
+            ->dbColumn(VirtualAccount\Entity::BANK_ACCOUNT_ID2);
+
+        $vpaId = $this->repo
+            ->virtual_account
+            ->dbColumn(VirtualAccount\Entity::VPA_ID);
+
+        $wdaQueryBuilder->addResource(Table::VIRTUAL_ACCOUNT, "INNER", $paymentReceiverId. ' = '. $qrcodeId. ' OR '. $paymentReceiverId. ' = '. $bankAccountId.
+                                        ' OR '. $paymentReceiverId. ' = '. $vpaId. ' OR '. $paymentReceiverId. ' = '. $bankAccountId2);
+    }
+
     protected function joinQueryBankTransfer($query)
     {
         $joins = $query->getQuery()->joins;
@@ -2559,6 +2784,27 @@ EOT;
         $query->join($bankTransferTable, $paymentId, '=', $bankTransferPaymentId);
     }
 
+    protected function joinWDAQueryBankTransfer($wdaQueryBuilder)
+    {
+        $joins = $wdaQueryBuilder->getJoinTables();
+
+        $bankTransferTable = Table::getTableNameForEntity(Constants\Entity::BANK_TRANSFER);
+
+        foreach ($joins as $join)
+        {
+            if ($join === $bankTransferTable)
+            {
+                return;
+            }
+        }
+
+        $paymentId = $this->dbColumn(Entity::ID);
+
+        $bankTransferPaymentId = $this->repo->bank_transfer->dbColumn(BankTransfer\Entity::PAYMENT_ID);
+
+        $wdaQueryBuilder->addResource($bankTransferTable, "INNER", $paymentId.' = '.$bankTransferPaymentId);
+    }
+
     protected function joinQueryTerminal(BuilderEx $query)
     {
         $terminalTable = Table::getTableNameForEntity(Constants\Entity::TERMINAL);
@@ -2572,6 +2818,27 @@ EOT;
         $terminalId = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
 
         $query->join($terminalTable, $paymentTerminalId, $terminalId);
+    }
+
+    protected function joinWDAQueryTerminal($wdaQueryBuilder)
+    {
+        $joins = $wdaQueryBuilder->getJoinTables();
+
+        $terminalTable = Table::getTableNameForEntity(Constants\Entity::TERMINAL);
+
+        foreach ($joins as $join)
+        {
+            if ($join === $terminalTable)
+            {
+                return;
+            }
+        }
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
+        $terminalId = $this->repo->terminal->dbColumn(Terminal\Entity::ID);
+
+        $wdaQueryBuilder->addResource($terminalTable, "INNER", $paymentTerminalId.' = '.$terminalId);
     }
 
     public function getAliasesForPaymentsDbColumns($params): array

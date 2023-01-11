@@ -95,12 +95,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const MERCHANT_ID           = 'merchant_id';
     const AMOUNT                = 'amount';
     const BASE_AMOUNT           = 'base_amount';
+    const METHOD                = 'method';
+    const STATUS                = 'status';
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const BASE_AMOUNT_REFUNDED  = 'base_amount_refunded';
     const AMOUNT_TRANSFERRED    = 'amount_transferred';
     const AMOUNT_PAIDOUT        = 'amount_paidout';
-    const STATUS                = 'status';
     const TWO_FACTOR_AUTH       = 'two_factor_auth';
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
@@ -109,7 +110,6 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const RECEIVER_ID           = 'receiver_id';
     const RECEIVER_TYPE         = 'receiver_type';
     const INTERNATIONAL         = 'international';
-    const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
     const CAPTURED              = 'captured';
     const DISPUTED              = 'disputed';

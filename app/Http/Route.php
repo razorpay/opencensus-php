@@ -16286,6 +16286,7 @@ class Route
 
     public static $fetchFromWDAService = [
         'admin_fetch_entity_by_id',
+        'admin_fetch_entity_multiple',
     ];
 
     /**
