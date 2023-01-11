@@ -98,14 +98,10 @@ export const getCurrentOutstandingBreakup = (currentOutstanding) => {
   return currentOutstandingBreakup;
 };
 
-export const handleDecimalFigure = ({
-  tempCustomAmount,
-  currentOutstandingTotalAmount,
-  totalOwedAmount,
-}) => {
+export const handleDecimalFigure = ({ tempCustomAmount, amountPendingToday, totalOwedAmount }) => {
   let value = parseInt(tempCustomAmount, 10) * 100;
-  if (value <= currentOutstandingTotalAmount) {
-    value = value + (currentOutstandingTotalAmount % 100);
+  if (value <= amountPendingToday) {
+    value = value + (amountPendingToday % 100);
   } else if (value < totalOwedAmount) {
     value = value + (totalOwedAmount % 100);
   }

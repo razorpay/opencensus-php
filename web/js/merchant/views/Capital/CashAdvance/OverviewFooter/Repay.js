@@ -16,6 +16,7 @@ const Repay = ({
   setResultAmounts,
   loading,
   user,
+  amountPendingToday,
 }) => {
   const [repayType, setRepayType] = useState(REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING);
   const [customAmount, setCustomAmount] = useState(null);
@@ -127,6 +128,7 @@ const Repay = ({
         totalPrincipalAmount={totalPrincipalAmount}
         loading={loading}
         currency={currency}
+        amountPendingToday={amountPendingToday}
       />
     );
   } else return null;

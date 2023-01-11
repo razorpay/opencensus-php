@@ -34,6 +34,7 @@ const RepayAmount = ({
   totalInterestAmount,
   loading,
   currency,
+  amountPendingToday,
 }) => {
   const isCurrentOutstandingRepayType = repayType === REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING;
   const isTotalOwedRepayType = repayType === REPAY_AMOUNT_TYPES.TOTAL_OWED;
@@ -99,7 +100,7 @@ const RepayAmount = ({
     setIsCustomAmountActive(false);
     const value = handleDecimalFigure({
       tempCustomAmount,
-      currentOutstandingTotalAmount,
+      amountPendingToday,
       totalOwedAmount,
     });
     // All new installments will be in Rs and we don't want paisa to be attributed to them.

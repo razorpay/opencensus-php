@@ -1,16 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import SummaryCarousel from '../SummaryCarousel';
-import { COLLECTIONS_PRODUCT_TYPES, REPAYMENT_VIEWS } from '../constants';
-import Summary from './Summary';
-import Repay from './Repay';
-import Result from './Result';
+import SummaryCarousel from 'merchant/views/Capital/CashAdvance/SummaryCarousel';
+import {
+  COLLECTIONS_PRODUCT_TYPES,
+  REPAYMENT_VIEWS,
+} from 'merchant/views/Capital/CashAdvance/constants';
+import Summary from 'merchant/views/Capital/CashAdvance/OverviewFooter/Summary';
+import Repay from 'merchant/views/Capital/CashAdvance/OverviewFooter/Repay';
+import Result from 'merchant/views/Capital/CashAdvance/OverviewFooter/Result';
 import './overview-footer-styles.styl';
 import { fetchInstallments, fetchCurrentOutstanding } from 'merchant/reducers/capital/withdrawals';
 import { fetchBalances } from 'merchant/reducers/capital/repayments';
 import { fetchCurrentBalance } from 'merchant/reducers/home';
 import moment from 'moment';
-import { getTotalAmountBreakup, getCurrentOutstandingBreakup } from './utils';
+import {
+  getTotalAmountBreakup,
+  getCurrentOutstandingBreakup,
+  getNextRepayBreakup,
+} from 'merchant/views/Capital/CashAdvance/OverviewFooter/utils';
 import { getProductType } from 'merchant/views/Capital/utils';
 
 // SUMMARY --> REPAY - AMOUNT --> RESULT - SUCCESS
@@ -70,6 +77,11 @@ function OverviewFooter({
 
   const currentOutstanding = getCurrentOutstandingBreakup(current_outstanding);
 
+  const nextRepayBreakup = getNextRepayBreakup(installments);
+
+  const amountPendingToday =
+    nextRepayBreakup.nextRepayInterestAmount + nextRepayBreakup.nextRepayPrincipalAmount;
+
   return (
     <div className="overview-footer">
       {!hideSummaryTab && <div className="repay-summary-tab">Repayment Summary</div>}
@@ -96,6 +108,7 @@ function OverviewFooter({
             setResultAmounts={setResultAmounts}
             loading={balances.loading || installments.loading}
             user={user}
+            amountPendingToday={amountPendingToday}
           />
         )}
         {(view === REPAYMENT_VIEWS.RESULT_FAILURE || view === REPAYMENT_VIEWS.RESULT_SUCCESS) && (
