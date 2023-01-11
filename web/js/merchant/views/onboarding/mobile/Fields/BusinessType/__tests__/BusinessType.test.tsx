@@ -20,19 +20,18 @@ afterEach(() => {
 test('should render all business types except Individual when not registered is selected previously and when L1 is not submitted', async () => {
   render(<App value="11" />, {});
   await waitFor(() => {
-    expect(screen.getByTestId('ds-text-input')).toHaveValue('Unregistered');
+    expect(screen.getByTestId('ds-text-input')).toHaveValue('Individual');
   });
   const businessTypeLabel = screen.getByTestId('ds-text');
   fireEvent.click(businessTypeLabel);
   expect(screen.queryByText('Trust')).toBeInTheDocument();
   expect(screen.queryByText('Private Limited')).toBeInTheDocument();
-  expect(screen.queryByText('Individual')).not.toBeInTheDocument();
 });
 
 test('should render only Not registered option when L1 is submitted and Not registered had been selected', async () => {
   render(<App onboardingMilestone="L1" value="11" />, {});
   await waitFor(() => {
-    expect(screen.getByTestId('ds-text-input')).toHaveValue('Unregistered');
+    expect(screen.getByTestId('ds-text-input')).toHaveValue('Individual');
   });
   const businessTypeLabel = screen.getByTestId('ds-text');
   fireEvent.click(businessTypeLabel);

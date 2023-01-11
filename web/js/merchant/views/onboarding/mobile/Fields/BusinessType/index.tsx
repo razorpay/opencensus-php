@@ -44,8 +44,12 @@ const BusinessType: React.FC<BusinessTypePropsT> = ({
         return (
           <React.Fragment key={item.id}>
             {item.status === 'active' && item.label !== 'Individual' && (
-              <Option key={item.id} value={String(item.id)} label={item.label}>
-                {item.label}
+              <Option
+                key={item.id}
+                value={String(item.id)}
+                label={item.id === '11' ? 'Individual' : item.label}
+              >
+                {item.id === '11' ? 'Individual' : item.label}
               </Option>
             )}
           </React.Fragment>

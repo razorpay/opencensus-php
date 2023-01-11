@@ -652,7 +652,7 @@ const formatBusinessTypeOptions = ({ data }, previousSelectedBusinessType) => {
       (type.status === 'active' && type.label !== 'Individual') ||
       previousSelectedBusinessType === type.id
     ) {
-      acc.push({ label: type.label, name: type.id });
+      acc.push({ label: type.id === '11' ? 'Individual' : type.label, name: type.id });
     }
     return acc;
   }, []);
