@@ -19,7 +19,14 @@ export const payment = {
   payment: {
     id: 'payment_id_1',
     fetchTransfers: jest.fn(),
-    refund: jest.fn(() => Promise.resolve()),
+    // timeout added to mimic api call
+    refund: jest.fn(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(resolve, 50);
+        }),
+    ),
+
     gateway_refund_support: false,
     status: 'captured',
     amount_transferred: 10000,

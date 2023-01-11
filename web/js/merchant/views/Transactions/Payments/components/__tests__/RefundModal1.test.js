@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/extend-expect';
-import { screen, userEvent, delay } from 'test-utils';
+import { screen, userEvent, delay, waitFor } from 'test-utils';
 import {
   renderApp,
   payment,
@@ -7,6 +7,10 @@ import {
 } from 'merchant/views/Transactions/Payments/components/__tests__/mocks/fixtures/RefundModal';
 
 describe('RefundModal', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   test('should render refund payment details', () => {
     renderApp();
     expect(screen.getByText('Refund Payment')).toBeInTheDocument();
@@ -117,6 +121,28 @@ describe('RefundModal', () => {
     });
   });
 
+  test('should prefill amount to be refunded in refund amount input field', () => {
+    renderApp();
+    const refundInput = screen.getByPlaceholderText('Enter the refund amount');
+    expect(refundInput).toHaveValue(
+      (payment.payment.amount - payment.payment.amount_refunded) / 100,
+    );
+  });
+
+  test('should make refund api call only once on clicking the Yes, Refund multiple times', async () => {
+    renderApp();
+    const issueRefund = screen.getByRole('button', {
+      name: /Issue Full refund/,
+    });
+    await userEvent.click(issueRefund);
+
+    const proceedToRefundButton = screen.getByRole('button', { name: 'Yes, Refund' });
+    await userEvent.click(proceedToRefundButton);
+    await userEvent.click(proceedToRefundButton);
+    expect(payment.payment.refund).toHaveBeenCalledTimes(1);
+    expect(issueRefund).toBeDisabled();
+  });
+
   describe('Full refund', () => {
     test('should allow to issue full refund', async () => {
       renderApp();
@@ -139,7 +165,10 @@ describe('RefundModal', () => {
         }),
       ).toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Yes, Refund' }));
-      expect(screen.getByText('Payment refunded')).toBeInTheDocument();
+      expect(issueRefund).toBeDisabled();
+      await waitFor(() => {
+        expect(screen.getByText('Payment refunded')).toBeInTheDocument();
+      });
     });
 
     test('should allow to issue full refund when instant refund is not enabled with reversals', async () => {
@@ -171,7 +200,10 @@ describe('RefundModal', () => {
         ),
       ).toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Yes, Refund' }));
-      expect(screen.getByText('Payment refunded')).toBeInTheDocument();
+      expect(issueRefund).toBeDisabled();
+      await waitFor(() => {
+        expect(screen.getByText('Payment refunded')).toBeInTheDocument();
+      });
     });
 
     test('should allow to issue full refund when instant refund is not enabled without reversals', async () => {
@@ -197,7 +229,10 @@ describe('RefundModal', () => {
       ).toBeInTheDocument();
       expect(screen.getByText('The payment will be refunded in 5-7 days.')).toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Yes, Refund' }));
-      expect(screen.getByText('Payment refunded')).toBeInTheDocument();
+      expect(issueRefund).toBeDisabled();
+      await waitFor(() => {
+        expect(screen.getByText('Payment refunded')).toBeInTheDocument();
+      });
     });
   });
 
@@ -217,8 +252,7 @@ describe('RefundModal', () => {
       });
       const refundInput = screen.getByPlaceholderText('Enter the refund amount');
       await userEvent.type(refundInput, '-100');
-      await delay();
-      const issueRefund = screen.getByRole('button', {
+      const issueRefund = await screen.findByRole('button', {
         name: /Issue Partial refund/,
       });
       await userEvent.click(issueRefund);
@@ -228,7 +262,10 @@ describe('RefundModal', () => {
         }),
       ).toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Yes, Refund' }));
-      expect(screen.getByText('Payment refunded')).toBeInTheDocument();
+      expect(issueRefund).toBeDisabled();
+      await waitFor(() => {
+        expect(screen.getByText('Payment refunded')).toBeInTheDocument();
+      });
     });
 
     test('should not allow to issue partial refund with reversals', async () => {
@@ -334,8 +371,7 @@ describe('RefundModal', () => {
             payment: {
               ...payment.payment,
               currency: null,
-              amount: 1,
-              amount_refunded: 0,
+              amount_refunded: 10.12222,
             },
           },
         },
