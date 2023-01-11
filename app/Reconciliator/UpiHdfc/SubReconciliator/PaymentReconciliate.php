@@ -15,8 +15,9 @@ use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\UniqueIdEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Upi\Mindgate\ResponseFields;
+use RZP\Reconciliator\Base\SubReconciliator\Upi\UpiPaymentServiceReconciliate;
 
-class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
+class PaymentReconciliate extends UpiPaymentServiceReconciliate
 {
     const ORDER_ID                  = 'order_id';
 
@@ -124,15 +125,33 @@ class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
                     'gateway_payment_id'    => $gatewayPaymentId,
                     'gateway'               => $this->gateway,
                 ]);
-        }
-        else
-        {
-            $upiTransfer = $this->repo->upi_transfer->findByNpciReferenceIdAndGateway($rrn,  $gateway = Gateway::UPI_MINDGATE);
 
-            if ($upiTransfer !== null)
-            {
-                $paymentId = $upiTransfer->payment->getId();
-            }
+            return $paymentId;
+        }
+
+        $upiTransfer = $this->repo->upi_transfer->findByNpciReferenceIdAndGateway($rrn,  $gateway = Gateway::UPI_MINDGATE);
+
+        if ($upiTransfer !== null)
+        {
+            return $upiTransfer->payment->getId();
+        }
+
+        // Fetch ups gateway entity if present
+        $upsEntity = $this->fetchUpsGatewayEntityByRrn($rrn, $gateway = Gateway::UPI_MINDGATE);
+
+        if (empty($upsEntity) === false)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO,
+                [
+                    'infoCode'              => Base\InfoCode::UNEXPECTED_PAYMENT_ALREADY_EXISTS,
+                    'payment_id'            => $upsEntity['payment_id'],
+                    'rrn'                   => $rrn,
+                    'gateway_payment_id'    => $gatewayPaymentId,
+                    'gateway'               => $this->gateway,
+                ]);
+
+            return $upsEntity['payment_id'];
         }
 
         if ($paymentId === null)

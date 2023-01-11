@@ -1267,10 +1267,33 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestArray(array $input): array
     {
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'],
-            Action::AUTHORIZE
-        );
+        $payment = $input['payment'];
+
+        if ($payment['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE)
+        {
+            $fiscalEntity = $this->app['upi.payments']->findByPaymentIdAndGatewayOrFail(
+                $payment['id'],
+                $payment['gateway'],
+                [
+                    'customer_reference',
+                    'merchant_reference',
+                    'gateway_reference'
+                ]);
+
+            $bankRrn            = $fiscalEntity['customer_reference'];
+            $merchantReference  = $fiscalEntity['merchant_reference'] ?: $payment['id'];
+            $gatewayPaymentId   = $fiscalEntity['gateway_reference'];
+
+        } else {
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                $input['payment']['id'],
+                Action::AUTHORIZE
+            );
+
+            $bankRrn            = $gatewayPayment->getNpciReferenceId();
+            $merchantReference  = $gatewayPayment[Entity::MERCHANT_REFERENCE] ?: $gatewayPayment[Entity::PAYMENT_ID];
+            $gatewayPaymentId   = $gatewayPayment->getGatewayPaymentId();
+        }
 
         $refund = $input['refund'];
         // The order is defined in the docs
@@ -1279,9 +1302,9 @@ class Gateway extends Base\Gateway
         $data = [
             $this->getMerchantId(),
             $this->getRefundId($refund),
-            $gatewayPayment[Entity::MERCHANT_REFERENCE] ?: $gatewayPayment[Entity::PAYMENT_ID],
-            $gatewayPayment->getGatewayPaymentId(),
-            $gatewayPayment->getNpciReferenceId(),
+            $merchantReference,
+            $gatewayPaymentId,
+            $bankRrn,
             $this->getRefundRemark($input),
             $this->formatAmount($input['refund']['amount']),
             $input['refund']['currency'],
@@ -1315,6 +1338,7 @@ class Gateway extends Base\Gateway
                 'gateway'           => $this->gateway,
                 'payment_id'        => $input['payment']['id'],
                 'refund_id'         => $input['refund']['id'],
+                'cps_route'         => $input['payment']['cps_route'],
             ]);
 
         return $request;
@@ -1407,7 +1431,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             [
                 'request' => $request,
-                'decrypted_content' => $data
+                'decrypted_content' => $data,
+                'cps_route'  => $input['payment']['cps_route']
             ]);
 
         return $request;

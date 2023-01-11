@@ -927,6 +927,7 @@ class Gateway extends Base\Gateway
                 'content'     => $content,
                 'gateway'     => 'upi_icici',
                 'refund_id'   => $input['refund']['id'],
+                'cps_route'   => $input['payment']['cps_route']
             ]);
 
         return $content;
@@ -992,6 +993,7 @@ class Gateway extends Base\Gateway
                 'request' => $request,
                 'decrypted_content' => $data,
                 'razorx'            => $this->razorxTrace,
+                'cps_route'         => $input['payment']['cps_route'],
             ]);
 
         return $request;
@@ -1703,7 +1705,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, [
             'gateway'    => $this->gateway,
             'payment_id' => $input['payment']['id'],
-            'response'   => $content
+            'response'   => $content,
+            'cps_route'  => $input['payment']['cps_route']
         ]);
 
         $this->updateGatewayPaymentResponse($refund, $content);
@@ -1794,6 +1797,7 @@ class Gateway extends Base\Gateway
                 'decrypted_content' => $data,
                 'gateway'           => $this->gateway,
                 'razorx'            => $this->razorxTrace,
+                'cps_route'         => $input['payment']['cps_route'],
             ]);
 
         return $request;

@@ -1195,6 +1195,7 @@ class Gateway extends Base\Gateway
                 'refund_id'     => $input['refund']['id'],
                 'gateway'       => $this->gateway,
                 'plain_data'    => $verifyRequestArray,
+                'cps_route'     => $input['payment']['cps_route'],
             ]);
 
         $response = $this->sendGatewayRequest($request);
@@ -1410,6 +1411,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_REFUND_REQUEST,
             [
                 'request'   => $request,
+                'cps_route' => $input['payment']['cps_route'],
             ]);
 
         try

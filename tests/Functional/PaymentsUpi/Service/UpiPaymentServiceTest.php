@@ -28,6 +28,8 @@ class UpiPaymentServiceTest extends TestCase
 
     protected $upiPaymentService;
 
+    protected $shouldCreateTerminal = true;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -325,9 +327,12 @@ class UpiPaymentServiceTest extends TestCase
 
     protected function doAjaxPaymentWithUps(string $terminalResource, string $gateway)
     {
-        $this->fixtures->terminal->disableTerminal($this->terminal->getID());
+        if ($this->shouldCreateTerminal === true)
+        {
+            $this->fixtures->terminal->disableTerminal($this->terminal->getID());
 
-        $this->terminal = $this->fixtures->create($terminalResource);
+            $this->terminal = $this->fixtures->create($terminalResource);
+        }
 
         $this->gateway = $gateway;
 

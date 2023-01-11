@@ -3,10 +3,6 @@
 namespace RZP\Tests\Functional\PaymentsUpi\Service;
 
 
-use RZP\Exception;
-use Carbon\Carbon;
-use RZP\Constants\Mode;
-use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
@@ -14,14 +10,21 @@ use RZP\Models\Merchant\Account;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
 class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
 {
+    use ReconTrait;
+    use BatchTestTrait;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/MindgateGatewayTestData.php';
 
         parent::setUp();
+
+        $this->gateway = 'upi_mindgate';
     }
 
     public function testPaymentSuccessWithV2PreProcess()
@@ -368,6 +371,212 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
         ], $payment);
     }
 
+    public function testPartialRefund()
+    {
+        $payment = $this->testUpsPaymentSuccess();
+
+        $payment = $this->getDbLastPayment();
+
+        $payment = $this->getEntityById('payment', $payment->getPublicId(), true);
+
+        $this->capturePayment($payment['id'], 50000);
+
+        // Attempt a partial refund
+        $this->refundPayment($payment['id'], 10000);
+
+        $payment = $this->getDbLastPayment();
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(10000, $payment->getAmountRefunded());
+
+        // Mindgate refunds are processed via scrooge, so is_scrooge will be true
+        $this->assertEquals($refund['is_scrooge'], true);
+
+        $this->assertNotNull($refund['acquirer_data']['rrn']);
+
+        // Attempt a partial refund
+        $this->refundPayment($payment->getPublicId(), 10000);
+
+        $payment = $payment->reload();
+
+        $this->assertEquals(20000, $payment->getAmountRefunded());
+    }
+
+    public function testFullRefund()
+    {
+        $payment = $this->testUpsPaymentSuccess();
+
+        $payment = $this->getDbLastPayment();
+
+        $payment = $this->getEntityById('payment', $payment->getPublicId(), true);
+
+        $this->capturePayment($payment['id'], 50000);
+
+        // Attempt a partial refund
+        $this->refundPayment($payment['id'], 50000);
+
+        $payment = $this->getDbLastPayment();
+
+        $refund = $this->getLastEntity('refund', true);
+
+        // Mindgate refunds are processed via scrooge, so is_scrooge will be true
+        $this->assertEquals($refund['is_scrooge'], true);
+
+        $this->assertNotNull($refund['acquirer_data']['rrn']);
+
+        $this->assertEquals(50000, $payment->getAmountRefunded());
+    }
+
+    public function testRefundFailure()
+    {
+        $this->payment['vpa'] = 'failedrefund@hdfcbank';
+
+        $payment = $this->testUpsPaymentSuccess();
+
+        $this->mockServerGatewayContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+        });
+
+        $payment = $this->getDbLastPayment();
+
+        $payment = $this->getEntityById('payment', $payment->getPublicId(), true);
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $refund = $this->refundPayment($payment['id'], 10000);
+
+        $entity = $this->getEntityById('refund', $refund['id'], 'admin');
+
+        //
+        // For scrooge refunds, status will always be created.
+        //
+        $this->assertEquals('created', $entity['status']);
+
+        $this->assertEquals(false, $entity['gateway_refunded']);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals('BT', $upi['status_code']);
+    }
+
+    public function testRetryRefund()
+    {
+        $this->payment['vpa'] = 'failedrefund@hdfcbank';
+
+        $payment = $this->testUpsPaymentSuccess();
+
+        $this->mockServerGatewayContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+        });
+
+        $payment = $this->getDbLastPayment();
+
+        $payment = $this->getEntityById('payment', $payment->getPublicId(), true);
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $refund = $this->refundPayment($payment['id'], 10000);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->mockServerGatewayContentFunction(function (&$content, $action = null) use($refund)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+
+            if ($action === 'refund')
+            {
+                $refundId = substr($refund['id'], 5);
+
+                $content[4] = 'SUCCESS';
+
+                $this->assertEquals($refundId . 1, $content[1]);
+            }
+        });
+
+        $this->retryFailedRefund($refund['id'], $refund['payment_id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals($refund['status'], 'processed');
+    }
+
+    public function testRetryRefundWithBankAccount()
+    {
+        $this->payment['vpa'] = 'failedrefund@hdfcbank';
+
+        $payment = $this->testUpsPaymentSuccess();
+
+        $this->mockServerGatewayContentFunction(function (&$content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+        });
+
+        $payment = $this->getDbLastPayment();
+
+        $payment = $this->getEntityById('payment', $payment->getPublicId(), true);
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $refund = $this->refundPayment($payment['id'], 10000);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->mockServerGatewayContentFunction(function (&$content, $action = null) use($refund)
+        {
+            if ($action === 'verify')
+            {
+                $content['status'] = 'FAILURE';
+            }
+
+            if ($action === 'refund')
+            {
+                $refundId = substr($refund['id'], 5);
+
+                $content[4] = 'SUCCESS';
+
+                $this->assertEquals($refundId . 1, $content[1]);
+            }
+        });
+
+        $bankAccountData =
+            [
+                'bank_account' => [
+                    'ifsc_code'         => '12345678911',
+                    'account_number'    => '123456789',
+                    'beneficiary_name'  => 'test'
+                ]
+            ];
+
+        $this->retryFailedRefund($refund['id'], $refund['payment_id'], $bankAccountData);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        // Assert for fta created for given refund
+        $fta = $this->getLastEntity('fund_transfer_attempt', true);
+
+        $this->assertEquals($fta['source'], $refund['id']);
+
+        $this->assertEquals('Test Merchant Refund ' . substr($payment['id'], 4), $fta['narration']);
+
+        // Refund will be in created state
+        $this->assertEquals($refund['status'], 'created');
+    }
+
     protected function getVasCallbackContent()
     {
         $vasSecret = 'b2950f37dd1df3926749b0e1c50f6063';
@@ -375,7 +584,7 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
         $terminalId = '100UPIMindgate';
 
         $this->fixtures->terminal->edit($terminalId, [
-            'gateway_secure_secret' =>  $vasSecret,
+            'gateway_secure_secret' => $vasSecret,
         ]);
 
         $terminal = $this->getDbEntityById('terminal', $terminalId);
@@ -594,5 +803,188 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
         $data['meRes'] = $this->mockServer()->encrypt($data['meRes']);
 
         return $data;
+    }
+
+    public function testPaymentRecon()
+    {
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNull($payment['reference16']);
+        }
+
+        $upiEntity1 = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+
+        $this->shouldCreateTerminal = false;
+
+        $upiEntity2 = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+
+        $entries[] = $this->overrideUpiHdfcPayment($upiEntity1);
+
+        $row = $this->overrideUpiHdfcPayment($upiEntity2);
+
+        // Change the settlement date format for this row, to test
+        // that this format is being parsed correctly without error.
+        $row['Settlement Date'] = '08/19/2018';
+
+        $entries[] = $row;
+
+        $file = $this->writeToExcelFile($entries, 'upiHdfc');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiHdfc');
+
+        $payments = $this->getEntities('payment', [], true);
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->assertNotNull($payment['reference16']);
+
+            $this->assertEquals($entries[1]['Txn ref no. (RRN)'], $payment['reference16']);
+        }
+
+        $this->assertBatchStatus('processed');
+
+        $updatedPayment1 = $this->getDbEntityById('payment', $upiEntity1['payment_id']);
+        $updatedPayment2 = $this->getDbEntityById('payment', $upiEntity2['payment_id']);
+
+        $transactionEntity1 = $this->getDbEntityById('transaction', $updatedPayment1['transaction_id']);
+        $transactionEntity2 = $this->getDbEntityById('transaction', $updatedPayment2['transaction_id']);
+
+        $this->assertNotNull($transactionEntity1['reconciled_at']);
+        $this->assertNotNull($transactionEntity2['reconciled_at']);
+
+        $this->assertNotNull($transactionEntity1['gateway_settled_at']);
+        $this->assertNotNull($transactionEntity2['gateway_settled_at']);
+
+        $upiEntity2 = $this->getDbLastEntityToArray('upi');
+    }
+
+    public function testUnexpectedPaymentSuccess()
+    {
+        $this->fixtures->merchant->createAccount(Account::DEMO_ACCOUNT);
+        $this->fixtures->merchant->enableUpi(Account::DEMO_ACCOUNT);
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $upiEntity = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+
+        $paymentEntity = $this->getDbLastPayment();
+
+        $entries[] = $this->overrideUpiHdfcPayment([
+            'payment_id'          => 'EHloDoL0yeRPV0123',
+            'npci_reference_id'   => '1234567890'
+        ]);
+
+        $file = $this->writeToExcelFile($entries, 'UpiHdfc');
+
+        $this->mockServerContentFunction(
+            function (&$response)
+            {
+                $response = [];
+            }
+        );
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiHdfc');
+
+        $unexpectedPayment = $this->getDbLastPayment();
+
+        $this->assertNotEquals($unexpectedPayment['id'], $paymentEntity['id']);
+
+        $this->assertNotNull($unexpectedPayment['reference16']);
+
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $unexpectedUpiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertEquals('EHloDoL0yeRPV0123', $unexpectedUpiEntity['merchant_reference']);
+
+        $this->assertEquals('1234567890', $unexpectedUpiEntity['npci_reference_id']);
+
+        $this->assertNotNull($unexpectedUpiEntity['reconciled_at']);
+
+        $transaction = $this->getDbLastEntityToArray('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertNotNull($transaction['gateway_settled_at']);
+    }
+
+    public function testUnexpectedPaymentRrnFetch()
+    {
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+        $upiEntity = $this->getNewUpiEntity('10000000000000', 'upi_mindgate');
+
+        $payment = $this->getDbLastPayment();
+
+        $paymentId  = $payment->getId();
+
+        $this->mockServerContentFunction(
+            function (&$response) use ($paymentId)
+            {
+                $response['entity']['payment_id'] = $paymentId;
+            }
+        );
+
+        $entries[] = $this->overrideUpiHdfcPayment([
+            'payment_id'          => 'EHloDoL0yeRPV0123',
+            'npci_reference_id'   => '1234567890'
+        ]);
+
+        $file = $this->writeToExcelFile($entries, 'UpiHdfc');
+
+        $uploadedFile = $this->createUploadedFile($file);
+
+        $this->reconcile($uploadedFile, 'UpiHdfc');
+
+        $transaction = $this->getDbLastEntityToArray('transaction');
+
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        $this->assertEquals($payment->getTransactionId(), $transaction['id']);
+
+        $this->assertNotNull($transaction['gateway_settled_at']);
+    }
+
+    protected function overrideUpiHdfcPayment(array $upiEntity)
+    {
+        $facade = $this->testData['upiHdfc'];
+
+        $facade['Order ID'] = $upiEntity['payment_id'];
+
+        $facade['Txn ref no. (RRN)'] = $upiEntity['npci_reference_id'];
+
+        return $facade;
+    }
+
+    protected function getNewUpiEntity($merchantId, $gateway, $mockServer = null)
+    {
+        $this->testUpsPaymentSuccess();
+
+        $payment = $this->getDbLastEntityToArray('payment');
+
+        $this->assertEquals(4, $payment['cps_route']);
+
+        $this->gateway = 'upi_axis';
+
+        $upiEntity['npci_reference_id'] = $payment['reference16'];
+
+        $upiEntity['payment_id'] = $payment['id'];
+
+        return $upiEntity;
+    }
+
+    protected function mockServerContentFunction($closure)
+    {
+        $this->upiPaymentService->shouldReceive('content')->andReturnUsing($closure);
     }
 }
