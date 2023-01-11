@@ -145,12 +145,19 @@ jobs:
     runs-on: [ self-hosted ]
     needs: [ build-e2e ]
     steps:
+      - name: Get Prod API commit
+        uses: fjogeleit/http-request-action@52ba495021567f279f4a6577ac8fb73672197af8
+        id: prodApiCommitId
+        with:
+          url: 'https://api.razorpay.com/commit.txt'
+
       - name: Triggers argo workflows webhook to execute e2e tests
         uses: fjogeleit/http-request-action@52ba495021567f279f4a6577ac8fb73672197af8
         with:
           url: 'https://argo.dev.razorpay.in/api/v1/events/argo-workflows/dashboard'
           method: 'POST'
           bearerToken: ${{ secrets.ARGO_TOKEN }}
+          # TODO: Remove empty line in api response
           data: >
             {
               "kube_manifests_ref": "master",
@@ -159,5 +166,10 @@ jobs:
                   "commit_id": "${{ github.sha }}",
                   "repository_name": "${{ github.repository }}"
               },
-              "dependencies": []
+              "dependencies": [
+                {
+                  "name": "api",
+                  "commit_id": ${{ steps.prodApiCommitId.outputs.response }}
+                }
+              ]
             }
