@@ -35,7 +35,15 @@ class RzpOrders extends Base\Core
                     'type'  => 'order_create',
                     'error' => $e->getMessage(),
                 ]);
-            $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_PG_ROUTER_ERROR_COUNT, ['error_type'  => 'order_create']);
+            if ($e->getCode() === "BAD_REQUEST_ORDER_AMOUNT_EXCEEDS_MAX_AMOUNT")
+            {
+                $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_ORDER_AMOUNT_EXCEEDS_ERROR_COUNT, ['error_type'  => 'order_create']);
+            }
+            else
+            {
+                $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_PG_ROUTER_ERROR_COUNT, ['error_type'  => 'order_create']);
+            }
+            
             throw $e;
         }
     }
