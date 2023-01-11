@@ -15,6 +15,37 @@ export const ATTR_DETAILS = {
     label: 'Display Name',
     desc: 'This is the display name that you and your team will see on the Razorpay dashboard.',
   },
+  curlec_display_name: {
+    label: 'Display Name',
+    desc: 'This is the display name that you and your team will see on the Curlec dashboard.',
+  },
+  additional_website_info: {
+    label: 'Additional Business Website/App',
+    desc: 'You can add second website/app to use Razorpay on that website/app',
+  },
+  curlec_additional_website_info: {
+    label: 'Additional Business Website/App',
+    desc: 'You can add second website/app to use Curlec on that website/app',
+  },
+  access_user_account: {
+    label: 'Account Access',
+    // eslint-disable-next-line prettier/prettier
+    desc: 'You have access to all products and API keys. Integrate using our robust APIs or request access to products such as Subscriptions,  Route,  and Smart Collect.',
+  },
+  curlec_access_user_account: {
+    label: 'Account Access',
+    desc: 'You have access to all products and API keys',
+  },
+  restricted_access_user_account: {
+    label: 'Account Access',
+    // eslint-disable-next-line prettier/prettier
+    desc: 'You can only access Payment Links and Invoices. Please provide website/app link to get access to our API’s and other products such as Route, Subscriptions, etc.',
+  },
+  curlec_restricted_access_user_account: {
+    label: 'Account Access',
+    // eslint-disable-next-line prettier/prettier
+    desc: 'You can only access Payment Links and Invoices. Please provide website/app link to get access to our API’s and other products',
+  },
   billing_label: {
     label: 'Billing Label',
     desc: 'This change will also get reflected in the checkout page title.',

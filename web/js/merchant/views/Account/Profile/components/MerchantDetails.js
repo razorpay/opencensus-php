@@ -268,6 +268,17 @@ const MerchantDetails = ({
     <TextHighlighter hashedWith={hashedWith}>{content}</TextHighlighter>
   );
 
+  const accountAccessHoverDescription = () => {
+    if (user?.has_key_access) {
+      return user?.isOrgCurlec
+        ? ATTR_DETAILS.curlec_access_user_account.desc
+        : ATTR_DETAILS.access_user_account.desc;
+    }
+    return user?.isOrgCurlec
+      ? ATTR_DETAILS.curlec_restricted_access_user_account.desc
+      : ATTR_DETAILS.restricted_access_user_account.desc;
+  };
+
   return (
     <div className="list-group details-row-container">
       <DetailRow label="Contact Name" value={titleCase(user.contact_name)} />
@@ -281,7 +292,11 @@ const MerchantDetails = ({
                 <i className="i i-info-outline" />
                 <Popover align="top" theme="dark">
                   <PopoverBody>
-                    <div>{ATTR_DETAILS.display_name.desc}</div>
+                    <div>
+                      {user?.isOrgCurlec
+                        ? ATTR_DETAILS.curlec_display_name.desc
+                        : ATTR_DETAILS.display_name.desc}
+                    </div>
                   </PopoverBody>
                 </Popover>
               </small>
@@ -450,11 +465,7 @@ const MerchantDetails = ({
                   <i className="i i-help" />
                   <Popover align="right" theme="dark">
                     <PopoverBody>
-                      <div>
-                        {user.has_key_access
-                          ? 'You have access to all products and API keys. Integrate using our robust APIs or request access to products such as Subscriptions,  Route,  and Smart Collect.'
-                          : 'You can only access Payment Links and Invoices. Please provide website/app link to get access to our API’s and other products such as Route, Subscriptions, etc.'}
-                      </div>
+                      <div>{accountAccessHoverDescription()}</div>
                     </PopoverBody>
                   </Popover>
                 </small>
@@ -515,7 +526,9 @@ const MerchantDetails = ({
                       <PopoverBody>
                         <div>
                           <div>
-                            You can add second website/app to use Razorpay on that website/app
+                            {user?.isOrgCurlec
+                              ? ATTR_DETAILS.curlec_additional_website_info.desc
+                              : ATTR_DETAILS.additional_website_info.desc}
                           </div>
                         </div>
                       </PopoverBody>
