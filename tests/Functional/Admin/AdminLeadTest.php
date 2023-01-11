@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Admin;
 
 use Mail;
 
+use RZP\Models\User\Entity;
 use RZP\Mail\Admin\MerchantInvitation as MerchantInvitationMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -87,6 +88,29 @@ class AdminLeadTest extends TestCase
         $adminLead = $this->getLastEntity('admin_lead', true);
 
         return $adminLead;
+    }
+
+    public function testExistingEmailInviteProhibited()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'       => $merchant->getId()
+        ]);
+
+        $email='hello@gmail.com';
+
+        $merchantUser=$this->fixtures->user->createUserForMerchant($merchant->id);
+
+        $fields = $this->getDefaultFields();
+
+        $this->storeFieldsForEntity(
+            $this->org->getPublicId(), 'admin_lead',
+            $fields, $this->authToken);
+
+        $this->testData[__FUNCTION__]['request']['content']['contact_email'] = $merchantUser->getEmail();
+
+        $this->startTest();
     }
 
     public function testSelfInviteProhibited()

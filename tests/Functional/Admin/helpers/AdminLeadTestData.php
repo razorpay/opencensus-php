@@ -79,6 +79,30 @@ return [
             'error_description' => PublicErrorDescription::BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED,
         ],
     ],
+    'testExistingEmailInviteProhibited' => [
+        'request' => [
+            'url' => '/admin-lead',
+            'method' => 'post',
+            'content' => [
+                'channel_code'  => 'RZP001',
+                'contact_name'  => 'test user',
+                "merchant_type"  => "Regular Test Merchant"
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
+            'error_description' => PublicErrorDescription::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
+        ],
+    ],
 
     'testVerifyAdminLead' => [
         'request' => [

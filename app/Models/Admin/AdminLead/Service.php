@@ -57,6 +57,16 @@ class Service extends Base\Service
 
     public function validateInvitation($orgId, &$input)
     {
+        $user = $this->repo->user->getUserFromEmail(strtolower($input['contact_email']));
+
+        if (empty($user) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS,
+                null,
+                $input);
+        }
+
         $org = OrgEntity::find($orgId);
 
         $this->trace->info(TraceCode::VALIDATE_ADMIN_INVITATION, ["input" => $input]);
@@ -69,7 +79,7 @@ class Service extends Base\Service
 
                 unset($input['is_ds_merchant']);
 
-                $input[Constants::MERCHANT_TYPE]=Constants::DS_ONLY_MERCHANT;
+                $input[Constants::MERCHANT_TYPE] = Constants::DS_ONLY_MERCHANT;
 
                 return;
             }
