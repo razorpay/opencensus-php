@@ -182,6 +182,56 @@ class Response
         return $this->json($publicError, $status, $debug);
     }
 
+    public function generateEmandateNpciErrorResponse($error, $viewData, $debug = false)
+    {
+        list($publicError, $status) = $this->getErrorResponseFields($error, $debug);
+
+        $app = $this->app;
+
+        $key = 'rzp.merchant_callback_url';
+
+        $route = $this->getCurrentRouteName();
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        $viewData += (new CheckoutView())->addOrgInformationInResponse($merchant);
+
+        if (empty($app[$key]) === false)
+        {
+            if ($this->isMerchantCallbackRoute($route))
+            {
+                $publicError = $this->flattenArrayForPost($publicError);
+
+                $callbackArray = [
+                    'type' => 'return',
+                    'request' => [
+                        'url'     => $app[$key],
+                        'method'  => 'post',
+                        'content' => $publicError,
+                    ],
+                ];
+
+                $viewData = array_merge($callbackArray, $viewData);
+
+                $view = \View::make('gateway.emandateCallbackReturnUrl')->with('data', $viewData)->render();
+
+                return \Response::make($view);
+            }
+        }
+        else if ($this->isCheckoutCallbackRoute($route))
+        {
+            $data['http_status_code'] = $status;
+
+            $data = array_merge($data, $publicError, $viewData);
+
+            $view = \View::make('gateway.emandateCallback')->with('data', $data)->render();
+
+            return \Response::make($view);
+        }
+
+        return $this->json($publicError, $status, $debug);
+    }
+
     public function generateJsonErrorResponse($code)
     {
         list($publicError, $httpStatusCode) = $this->getErrorResponseFields($code);

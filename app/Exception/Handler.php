@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant\RazorxTreatment;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
@@ -273,6 +274,19 @@ class Handler extends ExceptionHandler
             return $this->recoverableNachNbErrorResponse($this->isDebug(), $exception);
         }
 
+        if(((isset($data['merchant_id']) === true) and ($this->isNpciFeedbackPopupAllowed($data['merchant_id']) ===true)) and
+            ((isset($data['method']) === true) and ($data['method'] === 'emandate')) and
+            ((isset($data['recurring_type']) === true) and ($data['recurring_type'] === 'initial')) and
+            ((isset($data['gateway']) === true) and ($data['gateway'] === 'enach_npci_netbanking')))
+        {
+            $this->trace->info(
+                TraceCode::EMANDATE_NPCI_PAYMENT_FAILURE_CALLBACK,
+                [
+                    'payment_id'            => $data['payment_id'],
+                ]);
+            return $this->recoverableEmandateErrorResponse($this->isDebug(), $exception);
+        }
+
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
 
@@ -427,6 +441,19 @@ class Handler extends ExceptionHandler
         $this->ifTestingThenRethrowException($exception);
 
         return ApiResponse::generateNachNbErrorResponse($error, $data, $debug);
+    }
+
+    protected function recoverableEmandateErrorResponse($debug, $exception = null)
+    {
+        $this->setErrorMetadataIfApplicable($exception);
+
+        $error = $exception->getError();
+
+        $data = $exception->getData();
+
+        $this->ifTestingThenRethrowException($exception);
+
+        return ApiResponse::generateEmandateNpciErrorResponse($error, $data, $debug);
     }
 
     protected function setErrorMetadataIfApplicable($exception)
@@ -632,5 +659,33 @@ class Handler extends ExceptionHandler
             $data['error']['metadata'] = $nextBlock;
         }
         $e->setData($data);
+    }
+
+    protected function isNpciFeedbackPopupAllowed($merchantId)
+    {
+        try
+        {
+            $variantFlag = $this->app['razorx']->getTreatment($merchantId,
+                RazorxTreatment::ALLOW_NPCI_FEEDBACK_POPUP_EMANDATE_FAILURE,
+                $this->app['rzp.mode']);
+
+            $this->trace->info(
+                TraceCode::EMANDATE_ALLOW_NPCI_FEEDBACK_RAZORX_SUCCESS,
+                [
+                    'variant' => $variantFlag
+                ]);
+
+            return (strtolower($variantFlag) === 'on');
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::EMANDATE_ALLOW_NPCI_FEEDBACK_RAZORX_FAILURE,
+                [
+                    'error' => $e,
+                ]);
+
+            return false;
+        }
     }
 }

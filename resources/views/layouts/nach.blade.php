@@ -133,7 +133,7 @@
         opacity: 0.5;
       }
 
-            /* NPCI Feedback Popup */
+      /* NPCI Feedback Popup */
      .modal {
         position: fixed;
         text-transform: none;
@@ -211,7 +211,7 @@
         color: #435775;
         text-align: center;
         display: block;
-        padding: 1em 1em;
+        padding: 1em 0em;
       }
       .mandate-summery-message {
         display: block;

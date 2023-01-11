@@ -34,6 +34,7 @@ use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 use RZP\Gateway\Upi\Base\RecurringTrait;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Locale\Core as LocaleCore;
 
 trait Callback
@@ -910,10 +911,31 @@ trait Callback
 
         $previousExceptionData = $e->getData() ?? [];
 
-        $e->setData(['payment_id'  => $this->payment->getPublicId(),
-                     'order_id'    => $this->payment->getPublicOrderId(),
-                     'method'      => $this->payment->getMethod(),
-                     'application' => $this->payment->getAuthenticationGateway()]);
+        if(($this->isNpciFeedbackPopupAllowed() === true) and
+            ($this->payment->isEmandateRecurring() === true) and
+            ($this->payment->isRecurringTypeInitial() === true) and
+            ($this->payment->isGateway(Payment\Gateway::ENACH_NPCI_NETBANKING) === true))
+        {
+            $this->trace->info(
+                TraceCode::EMANDATE_NPCI_PAYMENT_FAILURE_CALLBACK,
+                [
+                    'payment_id'            => $this->payment->getPublicId(),
+                ]);
+            $e->setData(['payment_id'  => $this->payment->getPublicId(),
+                'order_id'    => $this->payment->getPublicOrderId(),
+                'method'      => $this->payment->getMethod(),
+                'recurring_type'      => $this->payment->getRecurringType(),
+                'gateway'      => $this->payment->getGateway(),
+                'merchant_id'      => $this->payment->getMerchantId(),
+                'application' => $this->payment->getAuthenticationGateway()]);
+        }
+        else
+        {
+            $e->setData(['payment_id'  => $this->payment->getPublicId(),
+                'order_id'    => $this->payment->getPublicOrderId(),
+                'method'      => $this->payment->getMethod(),
+                'application' => $this->payment->getAuthenticationGateway()]);
+        }
 
         if (Error\Error::hasAction($internalErrorCode) === false)
         {
@@ -1230,6 +1252,34 @@ trait Callback
             $card->setReference4($authReferenceNumber);
 
             $this->repo->saveOrFail($card);
+        }
+    }
+
+    protected function isNpciFeedbackPopupAllowed(): bool
+    {
+        try
+        {
+            $variantFlag = $this->app['razorx']->getTreatment($this->payment->getMerchantId(),
+                RazorxTreatment::ALLOW_NPCI_FEEDBACK_POPUP_EMANDATE_FAILURE,
+                $this->app['rzp.mode']);
+
+            $this->trace->info(
+                TraceCode::EMANDATE_ALLOW_NPCI_FEEDBACK_RAZORX_SUCCESS,
+                [
+                    'variant' => $variantFlag
+                ]);
+
+            return (strtolower($variantFlag) === 'on');
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::EMANDATE_ALLOW_NPCI_FEEDBACK_RAZORX_FAILURE,
+                [
+                    'error' => $e,
+                ]);
+
+            return false;
         }
     }
 }

@@ -40,6 +40,7 @@
     <script>
         // Callback data //
       var data = {!!utf8_json_encode($data)!!}; // Callback data //
+      var iosBridge = window.webkit && webkit.messageHandlers && webkit.messageHandlers.CheckoutBridge;
 
       // ================= NPCI Feedback =========
       window.addEventListener("load", onLoad);
@@ -58,8 +59,6 @@
         // Show only when allow_feedback param is present
         if (isPostMandateRegistration && isFeedbackAllowed) {
           feedbackPopup.classList.add("show-modal");
-        } else {
-          closeFeedbackPopup();
         }
       }
       
@@ -69,7 +68,23 @@
       
       function handleFeedbackLinkClick() {
         try {
-          const feedbackWindow = window.open(NPCI_FEEDBACK_URL, "_blank");
+          let width = screen.width - Math.round((screen.width / 10) * 2);
+          let height = screen.height - Math.round((screen.height / 10) * 2);
+          var left = (screen.width - width) / 4;
+          var top = (screen.height - height) / 3;
+          const feedbackWindow = window.open(
+            NPCI_FEEDBACK_URL,
+            "_blank",
+            "resizable=yes, width=" +
+            width +
+            ", height=" +
+            height +
+            ", top=" +
+            top +
+            ", left=" +
+            left
+          );
+
           if (
             !feedbackWindow ||
             feedbackWindow.closed ||
@@ -85,8 +100,6 @@
       }
 
       // ================ END OF NPCIFeedback ===========
-
-      var iosBridge = window.webkit && webkit.messageHandlers && webkit.messageHandlers.CheckoutBridge;
 
       function paymentCallback(btnElm) {
         btnElm.disabled=true;

@@ -648,6 +648,9 @@ final class RazorxTreatment
     // This is to show the feedback collection popup for npci
     public const ALLOW_NPCI_FEEDBACK_POPUP = "allow_npci_feedback_popup";
 
+    // This is to show the feedback collection popup for npci
+    public const ALLOW_NPCI_FEEDBACK_POPUP_EMANDATE_FAILURE = "allow_npci_feedback_popup_emandate_failure";
+
     // Experiment to migrate yes bank debit file batch processing
     public const BATCH_SERVICE_ENACH_NPCI_NETBANKING_MIGRATION = "batch_service_enach_npci_netbanking_migration";
 
