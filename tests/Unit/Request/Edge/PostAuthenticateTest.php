@@ -141,12 +141,12 @@ class PostAuthenticateTest extends TestCase
      * @param                   $expectedMismatch
      */
     public function testBearerAuth(Passport\Passport $passport,
-                                   $expectedMode,
-                                   $expectedOAuthClientId,
-                                   $expectedOAuthApplicationId,
-                                   $expectedPartnerMerchantId,
-                                   $expectedMerchantId,
-                                   $expectedMismatch)
+                                                     $expectedMode,
+                                                     $expectedOAuthClientId,
+                                                     $expectedOAuthApplicationId,
+                                                     $expectedPartnerMerchantId,
+                                                     $expectedMerchantId,
+                                                     $expectedMismatch)
     {
         $request = $this->mockPrivateRouteWithOAuthBearerToken();
         app('request.ctx')->init();
@@ -206,10 +206,10 @@ class PostAuthenticateTest extends TestCase
      * @param                   $expectedMismatch
      */
     public function testPartnerAuth(Passport\Passport $passport,
-                                    $expectedMode,
-                                    $expectedPartnerMerchantId,
-                                    $expectedMerchantId,
-                                    $expectedMismatch)
+                                                      $expectedMode,
+                                                      $expectedPartnerMerchantId,
+                                                      $expectedMerchantId,
+                                                      $expectedMismatch)
     {
         $request = $this->mockPrivateRouteWithPartnerAuthToken();
         app('request.ctx')->init();
@@ -266,19 +266,27 @@ class PostAuthenticateTest extends TestCase
      * @param                   $mode
      */
     public function testAuthenticationMismatches(Passport\Passport $passport,
-                                                 $consumerId,
-                                                 $consumerType,
-                                                 $publicKey,
-                                                 $mode,
-                                                 $edgeAuthenticated,
-                                                 $apiAuthenticated)
+                                                                   $consumerId,
+                                                                   $consumerType,
+                                                                   $publicKey,
+                                                                   $mode,
+                                                                   $edgeAuthenticated,
+                                                                   $apiAuthenticated)
     {
 
         $edgeAuthenticatedBool = $edgeAuthenticated === 'true';
-        $passport->mode=$mode;
-        $passport->consumer->id = $consumerId;
-        $passport->consumer->type = $consumerType;
-        $passport->credential->username = $publicKey;
+        $passport->mode = $mode;
+        if ($consumerType !== NULL || $consumerId !== NULL) {
+            $passport->consumer = new Passport\ConsumerClaims;
+            $passport->consumer->type = $consumerType;
+            $passport->consumer->id = $consumerId;
+        }
+
+        if ($publicKey !== NULL){
+            $passport->credential = new Passport\CredentialClaims;
+            $passport->credential->username = $publicKey;
+        }
+
         $passport->authenticated=$edgeAuthenticatedBool;
         $passport->identified=true;
 
@@ -332,10 +340,10 @@ class PostAuthenticateTest extends TestCase
      * @param                   $subMerchant
      */
     public function testImpersonationMismatchesWithImpersonation(Passport\Passport $passport,
-                                                $consumerId, $consumerType,
-                                                $publicKey, $mode,
-                                                $edgeImpersonated, $apiAuthenticated,
-                                                $impersonationType, $subMerchant)
+                                                                                   $consumerId, $consumerType,
+                                                                                   $publicKey, $mode,
+                                                                                   $edgeImpersonated, $apiAuthenticated,
+                                                                                   $impersonationType, $subMerchant)
     {
 
         $edgeImpersonatedBool = $edgeImpersonated === 'true';
@@ -408,10 +416,10 @@ class PostAuthenticateTest extends TestCase
      * @param                   $subMerchant
      */
     public function testImpersonationMismatchesWithoutImpersonation(Passport\Passport $passport,
-                                                                                   $consumerId, $consumerType,
-                                                                                   $publicKey, $mode,
-                                                                                   $edgeImpersonated, $apiAuthenticated,
-                                                                                   $impersonationType, $subMerchant)
+                                                                                      $consumerId, $consumerType,
+                                                                                      $publicKey, $mode,
+                                                                                      $edgeImpersonated, $apiAuthenticated,
+                                                                                      $impersonationType, $subMerchant)
     {
 
         $edgeImpersonatedBool = $edgeImpersonated === 'true';
@@ -483,14 +491,14 @@ class PostAuthenticateTest extends TestCase
     {
         $passport = new Passport\Passport;
         $passport->identified = true;
-        $passport->consumer = new Passport\ConsumerClaims;
-        $passport->credential = new Passport\CredentialClaims;
         return [
             // Case 1 - Successful case.
             [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "true", false],
             [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "false", true],
             [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "true", true],
-            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "false", false]
+            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "false", false],
+            [$passport, NULL, NULL, "rzp_live_TheLiveAuthKey", "live", "true", false],
+            [$passport, NULL, NULL, NULL, "live", "true", false],
         ];
     }
 }

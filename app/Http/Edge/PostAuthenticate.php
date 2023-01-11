@@ -365,7 +365,6 @@ final class PostAuthenticate
 
     /**
      * Reports any mismatches in authentication between edge and API
-     *
      * @param bool $authenticated Whether Middleware\Authenticate found request to be authenticated.
      * @param Request $request Current request object
      */
@@ -395,7 +394,7 @@ final class PostAuthenticate
         $dimensions                            = $this->ba->getRequestMetricDimensions();
         $dimensions['is_api_authenticated']    = $authenticated;
         $dimensions['is_edge_authenticated']   = $edgeAuthNResult;
-        $dimensions['consumer_type']           = $passport->consumer->type;
+        $dimensions['consumer_type']           = $passport->consumer?->type;
         //skipping metrics as of now because api counter metrics is not working
         // For logs, add merchant_id & key_id as well.
         // Not adding these for prom metrics since that'll increase the cardinality of the metric unnecessarily.
