@@ -89,6 +89,20 @@ class FeatureController extends Controller
     }
 
     /**
+     * Syncs and migrates features from api to dcs service
+     *
+     * @return ApiResponse
+     */
+    public function processDcsFeatureMigrationJob()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processDcsMigrationJob($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
      * Adds features to entities
      *
      * @param string|null $routeName

@@ -1,0 +1,105 @@
+<?php
+
+namespace RZP\Jobs\DCS;
+
+use RZP\Jobs\Job;
+use RZP\Models\Feature;
+use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Trace\TraceCode;
+use RZP\Base\RuntimeManager;
+use Razorpay\Trace\Logger as Trace;
+
+class AssignFeatures extends Job
+{
+    protected $mode;
+
+    public $timeout = 7200;
+
+    const LIMIT = 400;
+    protected $input;
+
+    public function __construct($input, $mode)
+    {
+        parent::__construct($mode);
+
+        $this->input = $input;
+        $this->mode = $mode;
+    }
+
+    public function handle()
+    {
+        parent::handle();
+
+        RuntimeManager::setMemoryLimit('4096M');
+
+        RuntimeManager::setTimeLimit($this->timeout);
+
+        RuntimeManager::setMaxExecTime($this->timeout);
+
+        $this->trace->info(TraceCode::DCS_EDIT_FEATURE_SCHEDULED_JOB);
+
+        try
+        {
+            $offset = 0;
+
+            $i = 0;
+
+            while (true)
+            {
+                $merchantIds = $this->repoManager
+                    ->feature
+                    ->fetchMerchantIdsWithFeatureInChunks(Feature\Constants::ES_AUTOMATIC_RESTRICTED, $offset, self::LIMIT);
+
+                $i++;
+
+                $offset = $i * self::LIMIT;
+
+                if (empty($merchantIds) === true)
+                {
+                    break;
+                }
+
+                $this->trace->info(TraceCode::DCS_EDIT_FEATURE_SCHEDULED_JOB_MERCHANT_IDS, [
+                    "merchant_ids"  =>  $merchantIds
+                ]);
+
+                $variant = $this->getDcsEditVariant($this->input['name'], $this->mode);
+                foreach ($merchantIds as $merchantId)
+                {
+                    AssignMerchantFeatures::dispatch($this->mode, $variant, $this->input['name'], $this->input['entity_type'], $merchantId);
+
+                    $this->trace->info(TraceCode::DCS_EDIT_FEATURE_SCHEDULED_FOR_MERCHANT_JOB_DISPATCHED, [
+                        "merchant_id"   =>  $merchantId
+                    ]);
+                }
+            }
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::DCS_EDIT_FEATURE_JOB_FAILED
+            );
+        }
+        finally
+        {
+            $this->delete();
+        }
+    }
+
+    public function getDcsEditVariant($featureName, $mode)
+    {
+        $mode = $mode ?? 'live';
+        $flag = app('razorx')->getTreatment($featureName,
+            RazorxTreatment::DCS_EDIT_ENABLED,
+            $mode);
+        $this->trace->info(TraceCode::DCS_RAZORX_EXPERIMENT, [
+            'feature_name' => $featureName,
+            'razorx_treatment' => RazorxTreatment::DCS_EDIT_ENABLED,
+            'razorx_output' => $flag,
+            'mode' => $mode,
+        ]);
+        return $flag;
+    }
+}

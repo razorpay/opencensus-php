@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Arr;
 
 use RZP\Exception;
+use RZP\Jobs\DCS\AssignFeatures;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -1499,6 +1500,15 @@ class Service extends Base\Service
             $response->add($result);
         }
         return $response;
+    }
+
+    public function processDcsMigrationJob(array $input): array
+    {
+        AssignFeatures::dispatch($input, $this->mode);
+
+        return [
+            'response' => 'DCS Features Assign Job dispatched',
+        ];
     }
 
     public function removePayoutServiceIntermediateIdempotencyFeatures()

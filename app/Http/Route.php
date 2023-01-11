@@ -2826,6 +2826,7 @@ class Route
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
         'feature_delete_entity_internal'           => ['delete',   'internal/{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                    ],
         'feature_get_merchants_internal'           => ['post',     'internal/feature/merchants',                     'FeatureController@getMerchantIdsHavingFeatures'                    ],
+        'feature_migration_dcs_scheduled'          => ['post',     'features/dcs/migration/process',                 'FeatureController@processDcsFeatureMigrationJob'    ],
 
         //Recon summary
         'daily_reconciliation_summary_fetch'       => ['get',      'daily_recon_summary',                            'AdminController@getDailyReconciliationStatusSummary'               ],
@@ -4947,6 +4948,7 @@ class Route
         'settlement_ondemand_feature_enable',
         'early_settlement_feature_period_create',
         'settlement_ondemand_partial_scheduled',
+        'feature_migration_dcs_scheduled',
         'subscription_cancel_due',
         'subscriptions_charge_invoices',
         'subscriptions_expire',
@@ -13703,6 +13705,7 @@ class Route
             'settlement_ondemand_restricted_enable',
             'early_settlement_feature_period_disable',
             'settlement_ondemand_partial_scheduled',
+            'feature_migration_dcs_scheduled',
             'nodal_initiate_transfer',
             'payment_timeout',
             'payment_auth_timeout',
