@@ -5,18 +5,46 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin\Permission;
 use RZP\Services\GovernorService;
 
 class GovernorController extends Controller
 {
-    const GET                               = 'GET';
-    const PUT                               = 'PUT';
-    const POST                              = 'POST';
-    const RULES                             = 'rules';
-    const DELETE                            = 'DELETE';
-    const GOVERNOR_RULE_EDIT_ENTITY         = 'governor_rule_edit';
-    const GOVERNOR_RULE_CREATE_ENTITY       = 'governor_rule_create';
-    const GOVERNOR_RULE_DELETE_ENTITY       = 'governor_rule_delete';
+    const GET                                   = 'GET';
+    const PUT                                   = 'PUT';
+    const POST                                  = 'POST';
+    const RULES                                 = 'rules';
+    const DELETE                                = 'DELETE';
+    const GOVERNOR_RULE_EDIT_ENTITY             = 'governor_rule_edit';
+    const GOVERNOR_RULE_CREATE_ENTITY           = 'governor_rule_create';
+    const GOVERNOR_RULE_DELETE_ENTITY           = 'governor_rule_delete';
+    const GOVERNOR_SCORECARD_RULE_EDIT_ENTITY   = 'governor_scorecard_rule_edit';
+    const GOVERNOR_SCORECARD_RULE_CREATE_ENTITY = 'governor_scorecard_rule_create';
+    const GOVERNOR_SCORECARD_RULE_DELETE_ENTITY = 'governor_scorecard_rule_delete';
+    public static array $scorecardNamespaces = [
+        'ItWxsLvhhq93CY', // keystone_scorecard
+        'ItWysAHVbOBumr', // prescorecard_check
+        'ItWxTFG290SShe', // eligibility_check
+        'JATCjn66kFSuSd', // bureau_loc_scorecard
+        'ItWyJSOQfa3xGn', // pg_scorecard
+        'JkAypLh5ULNK3z', // open_policy_business_scorecard
+        'JkB0kS7inS91VW', // open_policy_uw_scorecard
+        'ItWwIhRcFt7s9D', // banking_scorecard
+        'ItWwy43bQaPa32', // bureau_scorecard
+        'Jy0W9t8nyRDswN', // biz_vintage_beta_scorecard
+        //  stage namespaces
+        'IcyRQfQHTbGUUD',
+        'JvXjzYRc3cHNGn',
+        'IcyQcopEG884ou',
+        'IcyVO7ZYmygz66',
+        'IcyTRy9naBClEH',
+        'IcyVykudCVc68Z',
+        'JhoCVztHEacXQn',
+        'Jho7szKSX1gCMO',
+        'IcyUqpcLlvDve3',
+        'JAF2g5R1gBw0D2',
+        'Jq1FStYMjGjpI1',
+    ];
 
     public function createNamespace($source)
     {
@@ -182,6 +210,11 @@ class GovernorController extends Controller
         {
             $this->routeToGovernorViaWorkflow($method, $path, $input);
         }
+        // if call is coming for a scorecard namespace then trigger scorecard governor workflow
+        else if ($this->string_contains_array($path, self::$scorecardNamespaces) === true)
+        {
+            $this->routeToScorecardWorkflowIfApplicable($method, $path, $input);
+        }
         else
         {
             $this->routeToWorkflowIfApplicable($method, $path, $input);
@@ -245,7 +278,7 @@ class GovernorController extends Controller
 
                 $originalRule = $rule ?? [];
 
-                // not indexing mode in case of deletion 
+                // not indexing mode in case of deletion
                 if ( isset($originalRule['mode']) ){
 
                     unset($originalRule['mode']);
@@ -257,5 +290,66 @@ class GovernorController extends Controller
                     ->handle($originalRule, []);
             }
         }
+    }
+
+    protected function routeToScorecardWorkflowIfApplicable($method, $path, $body)
+    {
+        if (strpos($path, self::RULES) !== false) {
+            if ($method === self::POST)
+            {
+                $this->app['trace']->info(TraceCode::GOVERNOR_SCORECARD_CREATE_RULE_REQUEST_VIA_WORKFLOW, $body);
+
+                $this->app['workflow']
+                    ->setEntityAndId(self::GOVERNOR_SCORECARD_RULE_CREATE_ENTITY, substr($this->app['request']->getId(), 0, 12))
+                    ->setPermission(Permission\Name::EDIT_SCORECARD_GOVERNOR_CONF)
+                    ->handle([], $body);
+            }
+            elseif ($method === self::PUT)
+            {
+                $this->app['trace']->info(TraceCode::GOVERNOR_EDIT_RULE_REQUEST_VIA_WORKFLOW, $body);
+
+                $originalRule = [];
+
+                // checking old rule key exist or not
+                if (isset($body['old_rule']) === true) {
+                    $originalRule = $body['old_rule'];
+
+                    // removing old rule from body, required to populate workflow diff properly
+                    unset($body['old_rule']);
+                }
+                $this->app['trace']->info(TraceCode::GOVERNOR_SCORECARD_EDIT_RULE_REQUEST_VIA_WORKFLOW, $body);
+
+                $this->app['workflow']
+                    ->setEntityAndId(self::GOVERNOR_SCORECARD_RULE_EDIT_ENTITY, substr($this->app['request']->getId(), 0, 12))
+                    ->setPermission(Permission\Name::EDIT_SCORECARD_GOVERNOR_CONF)
+                    ->handle($originalRule, $body);
+            }
+            elseif ($method === self::DELETE)
+            {
+                // fetching rule from governor for populating workflow diff
+                $rule = $this->app['governor']->sendRequestV1('GET', $path, $body);
+
+                $originalRule = $rule ?? [];
+
+                // not indexing mode in case of deletion
+                if (isset($originalRule['mode'])) {
+                    unset($originalRule['mode']);
+                }
+
+                $this->app['trace']->info(TraceCode::GOVERNOR_SCORECARD_DELETE_RULE_REQUEST_VIA_WORKFLOW, $originalRule);
+
+                $this->app['workflow']
+                    ->setEntityAndId(self::GOVERNOR_SCORECARD_RULE_DELETE_ENTITY, substr($this->app['request']->getId(), 0, 12))
+                    ->setPermission(Permission\Name::EDIT_SCORECARD_GOVERNOR_CONF)
+                    ->handle($originalRule, []);
+            }
+        }
+    }
+
+    public function string_contains_array(string $str, array $arr): bool {
+        foreach($arr as $a){
+            if(str_contains($str, $a) === true) return true;
+        }
+        return false;
     }
 }

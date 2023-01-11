@@ -1589,6 +1589,12 @@ return [
                 'assignable'  => true,
             ],
 
+            Permission::EDIT_SCORECARD_GOVERNOR_CONF => [
+                'description' => 'Allow access to editing scorecard governor configuration',
+                'assignable'  => true,
+                'workflow'    => true,
+            ],
+
             Permission::ONE_PAGER => [
                 'description' => 'Allow access to capital-scorecard one pager data',
                 'assignable'  => true,

@@ -65,6 +65,7 @@ class Workflow
         Permission::COMMISSION_PAYOUT,
         Permission::CREATE_GOVERNOR_RULE,
         Permission::EDIT_GOVERNOR_RULE,
+        Permission::EDIT_SCORECARD_GOVERNOR_CONF,
         Permission::DELETE_GOVERNOR_RULE,
         Permission::CREATE_GATEWAY_RULE,
         Permission::EDIT_GATEWAY_RULE,

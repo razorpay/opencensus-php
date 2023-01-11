@@ -231,6 +231,7 @@ class Name
     const OPTIMIZER_SINGLE_RECON              = 'optimizer_single_recon';
     const CREATE_GOVERNOR_RULE                = 'create_governor_rule';
     const EDIT_GOVERNOR_RULE                  = 'edit_governor_rule';
+    const EDIT_SCORECARD_GOVERNOR_CONF        = 'edit_scorecard_governor_conf';
     const DELETE_GOVERNOR_RULE                = 'delete_governor_rule';
     const VIEW_MERCHANT_REPORT                = 'view_merchant_report';
     const VIEW_SPECIAL_MERCHANT_REPORT        = 'view_special_merchant_report';
