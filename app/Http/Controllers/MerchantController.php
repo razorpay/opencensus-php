@@ -1723,6 +1723,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function internalGetMerchantDetails($merchantId)
+    {
+        $response = $this->service()->internalGetMerchantDetails($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
     public function fetchMerchantDetailsForAccountReceivables()
     {
         $response = $this->service(Entity::MERCHANT_DETAIL)->fetchMerchantDetailsForAccountReceivables();
@@ -3784,6 +3791,13 @@ class MerchantController extends Controller
         $input = Request::all();
 
         return (new Merchant\OneClickCheckout\Config\Service())->getShopify1ccConfigs($input);
+    }
+
+    public function isPartnershipMerchant($merchantId){
+
+        $response = $this->service()->isPartnershipMerchant($merchantId);
+
+        return ApiResponse::json($response);
     }
 
     /**

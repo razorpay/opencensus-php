@@ -447,6 +447,7 @@ class Route
         'merchant_invoice_entity_create_admin'     => ['post',     'merchants/invoice/entity/create',                'MerchantInvoiceController@entityCreateAdmin'                       ],
         'mailing_list_remove_suspended_merchant'   => ['post',     'merchant/remove/suspended',                      'MerchantController@deleteSuspendedMerchantsFromMailingList'        ],
         'merchant_details_fetch'                   => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
+        'internal_merchant_details_fetch'          => ['get',      'internal/merchants/{id}/details',                'MerchantController@internalGetMerchantDetails'                             ],
         'account_receivables_merchant_details_fetch' => ['get',    'account_receivables/merchants/details',          'MerchantController@fetchMerchantDetailsForAccountReceivables'                             ],
         'smart_dashboard_merchant_details_fetch'   => ['get',      'smart_dashboard/merchants/details',              'MerchantController@getSmartDashboardMerchantDetails'               ],
         'merchant_details_patch'                   => ['patch',    'merchants/details',                              'MerchantController@patchMerchantDetails'                           ],
@@ -3740,6 +3741,7 @@ class Route
         'care_service_chat_proxy'                 => ['post',    'care_service/chat/{path?}',                               'CareProxyController@postChatProxyRequest',                   ],
         'care_service_dark_proxy'                 => ['post',    'care_service/dark/admin',                                 'CareProxyController@postDarkProxyRequest',                   ],
 
+        'internal_merchant_partnership'           => ['get',    'internal/merchant/{merchantId}/partnership',               'MerchantController@isPartnershipMerchant',                   ],
         'cmma_service_admin_proxy'                => ['post',    'cmma_service/admin/{path?}',                              'CmmaProxyController@handleAdminProxyRequests',               ],
         'cmma_service_cron_proxy'                 => ['post',    'cmma_service/cron/{path?}',                               'CmmaProxyController@handleCronProxyRequests'                     ],
         'myoperator_v1_proxy_get'                 => ['get',     'myoperator/{path?}',                                      'MyOperatorController@getProxyCallToMyOperatorV1'              ],
@@ -4693,6 +4695,8 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'internal_merchant_details_fetch',
+        'internal_merchant_partnership',
         'fpx_downtime_detection_cron',
         'retry_store_legal_documents_cron',
         'merchant_popular_products_cron',
@@ -6788,11 +6792,11 @@ class Route
         'pricing_get_plans',
         'pricing_get_gateway_plans',
         'pricing_delete_plan_rule_force',
+        'merchant_details_fetch',
         'buy_pricing_delete_plan_rule_force',
         'pricing_update_plan_rule',
         'buy_pricing_update_plan_rule',
         'merchant_invoice_update_gstin',
-        'merchant_details_fetch',
         'smart_dashboard_merchant_details_fetch',
         'merchant_details_suggested_update',
         'external_merchant_composite_details_fetch',
@@ -14550,6 +14554,8 @@ class Route
         ],
 
         'cmma' => [
+            'internal_merchant_partnership',
+            'internal_merchant_details_fetch',
             'internal_merchant_activation_status',
             'internal_merchant_fetch',
             'freshdesk_update_ticket_internal',

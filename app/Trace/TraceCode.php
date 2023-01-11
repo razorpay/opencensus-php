@@ -8749,6 +8749,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SOFT_LIMIT_BREACH_STATE_AMP_LATENCY = 'SOFT_LIMIT_BREACH_STATE_AMP_LATENCY';
 
     const ONE_CC_SPLITZ_EXPERIMENT_ERROR                = 'ONE_CC_SPLITZ_EXPERIMENT_ERROR';
+    const IS_PARTNERSHIP_MERCHANT                       = 'IS_PARTNERSHIP_MERCHANT';
 
     // cvv optional for amex
     const CVV_OPTIONAL = "CVV_OPTIONAL";

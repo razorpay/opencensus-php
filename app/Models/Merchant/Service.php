@@ -1425,6 +1425,51 @@ class Service extends Base\Service
         $this->app->cache->delete($cacheKey);
     }
 
+    /**
+     * @param $merchantId
+     *
+     * @return mixed
+     */
+    public function getMerchantData($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+            $merchantId, ['methods', Entity::GROUPS, Entity::ADMINS]);
+
+        // Merchant to array public
+        $data = $merchant->toArrayPublic();
+
+        // Merchant confirmed details
+        $data['confirmed'] = $this->getMerchantConfirmed($merchant);
+
+        $data['balance_configs'] = (new BalanceConfigService)->getMerchantBalanceConfigs();
+
+        // Fetch formatted merchant details.
+        $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
+
+        $data['is_inheritance_parent'] = $merchant->isInheritanceParent();
+
+        $data['tags'] = $merchant->tagNames();
+
+        $merchantAov = $merchant->merchantDetail->avgOrderValue;
+
+        if (empty($merchantAov) === false)
+        {
+            $data['merchant_details']['avg_order_min'] = $merchantAov->getMinAov();
+
+            $data['merchant_details']['avg_order_max'] = $merchantAov->getMaxAov();
+        }
+
+        // Fetch method specific custom_text.Doing only for cred now.
+        $methods = $this->merchant->getMethods();
+
+        if (empty($methods) === false)
+        {
+            (new Methods\Core)->addCustomTextForCredIfApplicable($this->merchant, $methods, $data['methods']);
+        }
+
+        return $data;
+    }
+
     protected function invalidatePreviousRequestForEmailUpdate($merchant, $currentOwnerUser)
     {
         // delete cached data to invalidated any previous request : data will be missing if link is accessed
@@ -5522,40 +5567,7 @@ class Service extends Base\Service
          */
         if (empty($this->merchant) === false)
         {
-            $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
-                $this->merchant->getId(), ['methods', Entity::GROUPS, Entity::ADMINS]);
-
-            // Merchant to array public
-            $data = $merchant->toArrayPublic();
-
-            // Merchant confirmed details
-            $data['confirmed'] = $this->getMerchantConfirmed($merchant);
-
-            $data['balance_configs'] = (new BalanceConfigService)->getMerchantBalanceConfigs();
-
-            // Fetch formatted merchant details.
-            $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
-
-            $data['is_inheritance_parent']  =  $merchant->isInheritanceParent();
-
-            $data['tags'] = $merchant->tagNames();
-
-            $merchantAov = $merchant->merchantDetail->avgOrderValue;
-
-            if (empty($merchantAov) === false)
-            {
-                $data['merchant_details']['avg_order_min'] = $merchantAov->getMinAov();
-
-                $data['merchant_details']['avg_order_max'] = $merchantAov->getMaxAov();
-            }
-
-            // Fetch method specific custom_text.Doing only for cred now.
-            $methods = $this->merchant->getMethods();
-
-            if (empty($methods) === false)
-            {
-                (new Methods\Core)->addCustomTextForCredIfApplicable($this->merchant, $methods,$data['methods']);
-            }
+            $data = $this->getMerchantData($this->merchant->getId());
         }
 
         return $data;
@@ -11492,5 +11504,44 @@ class Service extends Base\Service
         }
 
         return $isSplitzExperimentEnabled;
+    }
+
+    public function isPartnershipMerchant(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        // merchant is not a partner
+        if ($merchant->isPartner() === false) {
+
+            $isSubMerchant = (new AccessMap\Core())->isSubMerchant($merchantId);
+
+            if ($isSubMerchant === false)
+            {
+
+                return ['is_partnership' => false];
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::IS_PARTNERSHIP_MERCHANT,
+            [
+                'merchantId'     => $merchantId,
+                'is_partnership' => "true",
+            ]);
+
+        return ['is_partnership' => true];
+    }
+
+    public function internalGetMerchantDetails($merchantId)
+    {
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        if($merchant !== null){
+            $this->merchant = $merchant;
+            $this->auth->setMerchant($merchant);
+        }
+
+        return  $this->getMerchantData($merchantId);
     }
 }
