@@ -60,6 +60,7 @@ import getMobileDetect from 'common/utils/mobileDetect';
 import { isPgMerchant } from 'merchant/components/Activation/ActivationUtils';
 import currencies from '../constants/currency';
 import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
+import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 // const WebViewHeader = lazy(() =>
 //   import(/* webpackChunkName: 'webview header' */ 'merchant/components/HeaderNav/WebViewHeader'),
@@ -499,11 +500,8 @@ class App extends Component {
     }
   }
   componentDidUpdate(prevProps) {
-    const {
-      isFeedbackFormCreated,
-      goLiveNPSEnableTypeForm,
-      nonGoLiveNPSEnableTypeForm,
-    } = this.state;
+    const { isFeedbackFormCreated, goLiveNPSEnableTypeForm, nonGoLiveNPSEnableTypeForm } =
+      this.state;
     const { location } = this.props;
     if (prevProps.location.pathname !== location.pathname) {
       if (
@@ -521,11 +519,8 @@ class App extends Component {
     }
   }
   UNSAFE_componentWillReceiveProps({ user, history, location, baseLocation, org }) {
-    const {
-      goLiveNPSEnableTypeForm,
-      nonGoLiveNPSEnableTypeForm,
-      isPartnerModeEnabled,
-    } = this.state;
+    const { goLiveNPSEnableTypeForm, nonGoLiveNPSEnableTypeForm, isPartnerModeEnabled } =
+      this.state;
     if (user.isAuthenticated) {
       const role = user.userRole;
       this.redirectToRoute(role);
@@ -1091,6 +1086,13 @@ class App extends Component {
           submerchantId,
         }}
       >
+        {this.props?.user?.isOrgCurlec && (
+          <HelmetProvider>
+            <Helmet>
+              <title>Curlec By Razorpay</title>
+            </Helmet>
+          </HelmetProvider>
+        )}
         <div className={classList('layout', this.orgCode, this.renderFullPageView && 'layout--fp')}>
           <TwoFactorVerificationProvider merchantFetch={merchantFetch} ajax={ajax}>
             {!this.renderFullPageView && !this.state.isWebView && (

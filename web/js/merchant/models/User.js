@@ -9,7 +9,6 @@ import { getOrg } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 import { getItem } from 'common/utils/localStorage';
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
-
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
   roleEditPermissions,
@@ -172,6 +171,12 @@ export default class User {
   get isOrgKotak() {
     const custom_code = this.orgCustomCode;
     return custom_code?.toLowerCase() === ORG_CUSTOM_CODE_MAP.KOTAK_MAHINDRA_BANK;
+  }
+
+  /* Curlec Org Identifier */
+  get isOrgCurlec() {
+    const custom_code = this.orgCustomCode;
+    return custom_code?.toLowerCase() === ORG_CUSTOM_CODE_MAP.CURLEC;
   }
 
   /* Check case-insensitive tag check */

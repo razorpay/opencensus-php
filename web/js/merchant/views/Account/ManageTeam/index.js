@@ -110,10 +110,17 @@ class ManageTeamContainer extends React.Component {
         {/* passing the new props to the HeaderAction component to support the m-web view */}
         <HeaderAction responsive>
           <div className="btn-toolbar pull-right">
-            <DocsLink
-              url="https://razorpay.com/docs/team-support/"
-              onClick={this.onDocumentationClick}
-            />
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+              }
+            >
+              <DocsLink
+                url="https://razorpay.com/docs/team-support/"
+                onClick={this.onDocumentationClick}
+              />
+            </ShowWhen>
+
             <ShowWhen additionalCondition={(userCurrent) => userCurrent.isAllowedEdit('team')}>
               {/* To make the CTAs on header to be sticky in teh bottom need to add a wrapper to them added same */}
               <span className="cta-container">
