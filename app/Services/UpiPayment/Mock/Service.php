@@ -391,6 +391,15 @@ class Service extends UpiPaymentService
         return [$response, 200];
     }
 
+    protected function reconEntityUpdate(array $data)
+    {
+        $response = [
+            'data' => true
+        ];
+
+        return [$response, 200];
+    }
+
     public function content(&$content, $action)
     {
         return $content;

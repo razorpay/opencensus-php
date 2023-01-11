@@ -20,6 +20,12 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
 {
     use Base\UpiReconTrait;
+
+    protected $syncUpdateGateways = [
+        Payment\Gateway::UPI_ICICI,
+        Payment\Gateway::UPI_YESBANK
+    ];
+
     /**
      * Returns null if the payment is routed through UPS.
      * In case of UPS payments, the entity is updated through different
@@ -62,7 +68,48 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
             return;
         }
 
-        $this->publishToMetro($dataToUpdate);
+        $this->updateGatewayEntity($dataToUpdate);
+    }
+
+    protected function updateGatewayEntity($dataToUpdate)
+    {
+        $data = [
+            Constants::PAYMENT_ID   => $this->payment->getId(),
+            Constants::GATEWAY_DATA => $dataToUpdate,
+            Constants::GATEWAY      => $this->payment->getGateway(),
+            Constants::BATCH_ID     => $this->batchId,
+            Constants::MODEL        => Constants::AUTHORIZE
+        ];
+
+        if ($this->shouldUpdateInSync() === false)
+        {
+            $this->publishToMetro($data);
+            return;
+        }
+
+        $this->updateEntityOnUps($data);
+    }
+
+    protected  function shouldUpdateInSync()
+    {
+        $gateway = $this->payment->getGateway();
+
+        $isSyncGateway = in_array($gateway, $this->syncUpdateGateways, true);
+
+        $feature = $gateway . '_recon_sync_update';
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+            $feature, $this->mode);
+
+        return (($isSyncGateway) and
+                ($variant === $gateway));
+    }
+
+    protected function updateEntityOnUps($data)
+    {
+        $action = Constants::RECON_ENTITY_SYNC_UPDATE;
+
+        $this->app['upi.payments']->action($action, $data, $this->gateway);
     }
 
     /**
@@ -250,20 +297,12 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
      * @param array $dataToUpdate
      * @return void
      */
-    protected function publishToMetro(array $dataToUpdate)
+    protected function publishToMetro(array $data)
     {
         // publish to metro
         $metroHandler = (new MetroHandler());
 
         $topic = Constants::RECON_ENTITY_UPDATE . '-'. $this->mode;
-
-        $data = [
-            Constants::PAYMENT_ID   => $this->payment->getId(),
-            Constants::GATEWAY_DATA => $dataToUpdate,
-            Constants::GATEWAY      => $this->payment->getGateway(),
-            Constants::BATCH_ID     => $this->batchId,
-            Constants::MODEL        => Constants::AUTHORIZE
-        ];
 
         $publishData['data'] = json_encode($data);
 
@@ -334,7 +373,11 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
                     Constants::RECONCILED_AT,
             ];
 
-            return $this->getUpsGatewayEntityByColumn(Constants::CUSTOMER_REFERENCE ,$referenceNumber, $gateway, $requiredFields);
+            return $this->getUpsGatewayEntityByColumn(
+                Constants::CUSTOMER_REFERENCE,
+                $referenceNumber,
+                $gateway,
+                $requiredFields);
         }
         catch (Exception\BadRequestException $ex)
         {
@@ -357,7 +400,11 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
      * @param array $requiredFields
      * @return mixed
      */
-    protected function getUpsGatewayEntityByColumn(string $columnName, string $columnValue, string $gateway, array $requiredFields)
+    protected function getUpsGatewayEntityByColumn(
+        string $columnName,
+        string $columnValue,
+        string $gateway,
+        array $requiredFields)
     {
         $action = Constants::ENTITY_FETCH;
 
@@ -475,6 +522,6 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
     protected function generateCallbackData(array $row)
     {
         // to be implemented by gateway payment reconciliation file
-        return ;
+        return;
     }
 }

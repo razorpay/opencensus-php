@@ -31,5 +31,6 @@ final class Constants
     const VALUE = 'value';
 
     // Actions
-    const ENTITY_FETCH = 'entity_fetch';
+    const ENTITY_FETCH      = 'entity_fetch';
+    const RECON_ENTITY_SYNC_UPDATE = 'recon_entity_update';
 }

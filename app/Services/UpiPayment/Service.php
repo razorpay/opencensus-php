@@ -78,7 +78,7 @@ class Service
      */
     protected $input;
 
-    const MAX_RETRY = 2;
+    const MAX_RETRY = 1;
 
     const METADATA = 'metadata';
 
@@ -87,6 +87,8 @@ class Service
     const PRE_PROCESS = 'pre_process';
 
     const ENTITY_FETCH = 'entity_fetch';
+
+    const RECON_ENTITY_UPDATE = 'recon_entity_update';
 
     const MULTIPLE_ENTITY_FETCH = 'multiple_entity_fetch';
 
@@ -332,6 +334,9 @@ class Service
             case self::MULTIPLE_ENTITY_FETCH:
                 $data = $input;
                 break;
+            case self::RECON_ENTITY_UPDATE:
+                $data = $input;
+                break;
             case Payment\Action::FORCE_AUTHORIZE_FAILED:
                 $this->convertInputToArray($input);
                 $data = [
@@ -499,6 +504,8 @@ class Service
                 return $this->processEntityFetchResponse($response);
             case self::MULTIPLE_ENTITY_FETCH:
                 return $this->processMultipleEntityFetchResponse($response);
+            case self::RECON_ENTITY_UPDATE:
+                return $response[Response::DATA];
             case Payment\Action::FORCE_AUTHORIZE_FAILED:
                 return $response[Response::DATA];
             default:
@@ -908,6 +915,9 @@ class Service
             case self::MULTIPLE_ENTITY_FETCH:
                 $traceData += $request[Request::CONTENT];
                 break;
+            case self::RECON_ENTITY_UPDATE:
+                $traceData += $request[Request::CONTENT];
+                break;
             case Payment\Action::FORCE_AUTHORIZE_FAILED:
                 $traceData += $this->getForceAuthorizedTraceData($request[Request::CONTENT]);
                 break;
@@ -986,6 +996,11 @@ class Service
             $action = Payment\Action::VERIFY;
         }
 
+        if ($action === self::RECON_ENTITY_UPDATE)
+        {
+            return sprintf('%s/recon/entity/update', $version);
+        }
+
         return sprintf('%s/%s', $version, $action);
     }
 
@@ -1022,6 +1037,18 @@ class Service
                 ErrorCode::SERVER_ERROR_SERVICE_UNAVAILABLE,
                 [
                     'http_code' => $statusCode,
+                ]
+            );
+        }
+
+        if (empty($response) === true)
+        {
+            throw new Exception\ServerErrorException(
+                'received empty response from UPS',
+                ErrorCode::SERVER_ERROR_INVALID_RESPONSE,
+                [
+                    'http_code' => $statusCode,
+                    'response'  => $response,
                 ]
             );
         }
@@ -1066,7 +1093,7 @@ class Service
      */
     protected function getForceAuthorizedTraceData(array $content): array
     {
-    $content = $content['data'];
+        $content = $content['data'];
 
         $data = [
             Payment\Entity::GATEWAY    => $content[Entity::PAYMENT][Payment\Entity::GATEWAY] ?? null,

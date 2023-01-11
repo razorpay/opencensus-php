@@ -742,6 +742,16 @@ class UpiIciciPaymentServiceTest extends UpiPaymentServiceTest
         $this->assertBatchStatus(BatchStatus::PROCESSED);
     }
 
+    public function testPaymentReconWithSyncUpdate()
+    {
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'upi_icici_recon_sync_update', 'upi_icici');
+        });
+
+        $this->testPaymentReconciliation();
+    }
+
     public function testPaymentIdAbsentReconciliation()
     {
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
