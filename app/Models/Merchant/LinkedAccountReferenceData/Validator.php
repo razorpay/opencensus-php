@@ -16,8 +16,21 @@ class Validator extends Base\Validator
         Entity::ACCOUNT_NUMBER             => 'required|string|max:255',
         Entity::DASHBOARD_ACCESS           => 'sometimes|boolean|in:0,1',
         Entity::CUSTOMER_REFUND_ACCESS     => 'sometimes|boolean|in:0,1',
-        Entity::IFSC_CODE                  => 'required|string|max:255',
+        Entity::IFSC_CODE                  => 'required|alpha_num|size:11',
         Entity::CATEGORY                   => 'required|string|max:255|custom',
+    ];
+
+    protected static $editRules = [
+        Entity::BUSINESS_NAME              => 'sometimes|string|min:3|max:255',
+        Entity::BUSINESS_TYPE              => 'sometimes|string|min:3|max:255',
+        Entity::BENEFICIARY_NAME           => 'sometimes|string|min:3|max:120',
+        Entity::ACCOUNT_NAME               => 'sometimes|string|max:255',
+        Entity::ACCOUNT_EMAIL              => 'sometimes|string|max:255',
+        Entity::ACCOUNT_NUMBER             => 'sometimes|string|max:255',
+        Entity::DASHBOARD_ACCESS           => 'sometimes|boolean|in:0,1',
+        Entity::CUSTOMER_REFUND_ACCESS     => 'sometimes|boolean|in:0,1',
+        Entity::IFSC_CODE                  => 'sometimes|alpha_num|size:11',
+        Entity::CATEGORY                   => 'sometimes|string|max:255|custom',
     ];
 
     protected static $createManyRules = [

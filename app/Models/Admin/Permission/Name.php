@@ -793,6 +793,7 @@ class Name
     // linked account data reference Permission
 
     const LINKED_ACCOUNT_REFERENCE_DATA_CREATE       = 'linked_account_reference_data_create';
+    const LINKED_ACCOUNT_REFERENCE_DATA_UPDATE       = 'linked_account_reference_data_update';
     const AMC_LINKED_ACCOUNT_CREATION                = 'amc_linked_account_creation';
 
     // Dedupe Permission

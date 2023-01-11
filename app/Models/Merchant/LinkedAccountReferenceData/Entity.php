@@ -60,6 +60,8 @@ class Entity extends Base\PublicEntity
         self::IS_ACTIVE,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DASHBOARD_ACCESS,
+        self::CUSTOMER_REFUND_ACCESS,
     ];
 
     protected $public = [

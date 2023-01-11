@@ -159,4 +159,13 @@ class AccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function updateLinkedAccountReferenceData(string $linkedAccountRefId)
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::LINKED_ACCOUNT_REFERENCE_DATA)->editLinkedAccountReferenceData($linkedAccountRefId, $input);
+
+        return ApiResponse::json($response);
+    }
 }

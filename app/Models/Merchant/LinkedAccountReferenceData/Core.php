@@ -70,4 +70,13 @@ class Core extends Base\Core
 
         return $response;
     }
+
+    public function edit(Entity $linkedAccountReferenceData, array $input) : Entity
+    {
+        $linkedAccountReferenceData->edit($input);
+
+        $this->repo->saveOrFail($linkedAccountReferenceData);
+
+        return $linkedAccountReferenceData;
+    }
 }

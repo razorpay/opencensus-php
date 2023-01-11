@@ -3042,6 +3042,59 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateLinkedAccountReferenceData()
+    {
+        $this->testCreateLinkedAccountReferenceData();
+
+        $laRefData = $this->getDbLastEntity(Constants\Entity::LINKED_ACCOUNT_REFERENCE_DATA);
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $upsertPerm = $this->fixtures->create(Constants\Entity::PERMISSION, [Permission\Entity::NAME => Permission\Name::LINKED_ACCOUNT_REFERENCE_DATA_UPDATE]);
+
+        $role->permissions()->attach($upsertPerm->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/la_reference_data/'.$laRefData->getId();
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testUpdateLinkedAccountReferenceDataException()
+    {
+        $this->testCreateLinkedAccountReferenceData();
+
+        $laRefData = $this->getDbLastEntity(Constants\Entity::LINKED_ACCOUNT_REFERENCE_DATA);
+
+        $oldIfscCode = $laRefData->getAttribute('ifsc_code');
+
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $admin->roles()->get()[0];
+
+        $upsertPerm = $this->fixtures->create(Constants\Entity::PERMISSION, [Permission\Entity::NAME => Permission\Name::LINKED_ACCOUNT_REFERENCE_DATA_UPDATE]);
+
+        $role->permissions()->attach($upsertPerm->getId());
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/la_reference_data/'.$laRefData->getId();
+
+        $this->runRequestResponseFlow($testData);
+
+        $laRefData->refresh();
+
+        $this->assertEquals($oldIfscCode, $laRefData->getAttribute('ifsc_code'));
+    }
+
+
     public function testAmcLinkedAccountCreateForMutualFundDistributorMerchantAdminApi()
     {
         $this->createLinkedAccountReferenceData();

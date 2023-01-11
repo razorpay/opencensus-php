@@ -2107,7 +2107,7 @@ return [
                         "beneficiary_name"=> "XAY Mutual Fund - Online Collection Account",
                         "business_name"=> "Test Asset Management Limited",
                         "business_type"=> "private_limited",
-                        "dashboard_access"=> 0,
+                        "dashboard_access"=> 1,
                         "customer_refund_access"=> 0,
                         "ifsc_code"=> "UTIB0054004"
                     ],
@@ -2118,7 +2118,7 @@ return [
                         "beneficiary_name"=> "XAY Mutual Fund - Online Collection Account",
                         "business_name"=> "Test Asset Management Limited",
                         "business_type"=> "private_limited",
-                        "dashboard_access"=> 0,
+                        "dashboard_access"=> 1,
                         "customer_refund_access"=> 0,
                         "ifsc_code"=> "UTIB0054004",
                         "category" => "wrong_category",
@@ -2143,6 +2143,43 @@ return [
                 ]
             ]
         ]
+    ],
+
+    'testUpdateLinkedAccountReferenceData'   => [
+        'request'   =>  [
+            'url'   =>  '/la_reference_data/{id}',
+            'method'    => 'PATCH',
+            'content'   => [
+                'account_number'    =>  '1234567890',
+                'account_name'      =>  'XAY Mutual Fund test',
+                'ifsc_code'         =>  'SBIN0004903',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+                'account_number'    =>  '1234567890',
+                'account_name'      =>  'XAY Mutual Fund test',
+                'ifsc_code'         =>  'SBIN0004903',
+            ],
+        ],
+    ],
+
+    'testUpdateLinkedAccountReferenceDataException'   => [
+        'request'   =>  [
+            'url'   =>  '/la_reference_data/{id}',
+            'method'    => 'PATCH',
+            'content'   => [
+                'account_number'    =>  '1234567890',
+                'account_name'      =>  'XAY Mutual Fund test',
+                'ifsc_code'         =>  'SBIN0004903123',
+            ],
+        ],
+        'response'  =>  [
+            'content'   =>  [
+                'status'    => 'failed',
+                'message'   => 'The ifsc code must be 11 characters.',
+            ],
+        ],
     ],
 
     'testAmcLinkedAccountCreateForMutualFundDistributorMerchantAdminApi' => [

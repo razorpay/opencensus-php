@@ -1452,6 +1452,10 @@ return [
                 'description' => 'Create Linked Account Reference Data',
                 'assignable'  => true
             ],
+            Permission::LINKED_ACCOUNT_REFERENCE_DATA_UPDATE => [
+                'description' => 'Update linked account reference data',
+                'assignable'  => true,
+            ],
             Permission::AMC_LINKED_ACCOUNT_CREATION => [
                 'description' => 'Create AMC Linked Account for Mutual Fund Distributor Merchants',
                 'assignable'  => true
