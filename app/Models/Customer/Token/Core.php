@@ -527,6 +527,32 @@ class Core extends Base\Core
         return $token;
     }
 
+
+    public function getByTokenId($id)
+    {
+        $token = null;
+
+        if (($this->merchant !== null) and
+            ($this->merchant->isFeatureEnabled(Feature::RECURRING_DEBIT_UMRN) === true))
+        {
+            $token = $this->repo->token->getByGatewayToken($id);
+        }
+
+        // TODO: remove this once merchants shifts to token_id
+        if ($token === null)
+        {
+            $token = $this->repo->token->getByToken($id);
+        }
+
+        if ($token === null)
+        {
+            $token = $this->repo->token->findByPublicId($id);
+        }
+
+        return $token;
+    }
+
+
     public function getByTokenIdAndSubscriptionId($id, string $subscriptionId): Entity
     {
         $token = $this->repo->token->getByPublicIdAndMerchant($id, $this->merchant);

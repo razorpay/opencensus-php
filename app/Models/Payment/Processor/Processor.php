@@ -121,6 +121,9 @@ class Processor
     use EmandateRecurring;
 
 
+
+    const RAZORPAY_ORG_ID = '100000Razorpay';
+
     /**
      * Callback urls can be hit multiple times by customers.
      * Within certain duration x minutes, we will return payment
@@ -2975,10 +2978,20 @@ class Processor
                     $token = (new Customer\Token\Core)->getByTokenIdAndCustomerId($tokenId, $customerId);
 
                 } else {
+
                     $merchant = $this->merchant;
 
-                    $token = (new Customer\Token\Core)->getByTokenIdAndMerchant($tokenId, $merchant);
-
+                    $token = (new Customer\Token\Core)->getByTokenId($tokenId);
+                    if (($token->getMerchantId() !== $merchant->getId()))
+                    {
+                        if (($token->getMerchantId() !== self::RAZORPAY_ORG_ID)
+                            or ($token->card->isInternational() === false))
+                        {
+                            throw new Exception\BadRequestException(
+                                ErrorCode::BAD_REQUEST_TOKEN_NOT_APPLICABLE,
+                                'token');
+                        }
+                    }
                 }
 
                 $this->trace->info(TraceCode::TRACK_TOKENISED_PAYMENT_VALIDATION, [

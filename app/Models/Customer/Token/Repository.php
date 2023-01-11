@@ -120,6 +120,15 @@ class Repository extends Base\Repository
         return $token;
     }
 
+    public function getByToken(string $tokenId)
+    {
+        $token = $this->newQuery()
+            ->where(Token\Entity::TOKEN, '=', $tokenId)
+            ->first();
+
+        return $token;
+    }
+
     public function getByTokenAndCustomerId(string $token, string $customerId)
     {
         return $this->newQuery()
@@ -127,6 +136,7 @@ class Repository extends Base\Repository
                     ->where(Token\Entity::TOKEN, '=', $token)
                     ->first();
     }
+
 
     public function getByTokenIdAndCustomerId(string $tokenId, string $customerId)
     {
@@ -175,6 +185,15 @@ class Repository extends Base\Repository
             ->orderBy(Token\Entity::CREATED_AT, 'desc')
             ->first();
     }
+
+    public function getByGatewayToken(string $gatewayToken)
+    {
+        return $this->newQuery()
+            ->where(Token\Entity::GATEWAY_TOKEN, '=', $gatewayToken)
+            ->orderBy(Token\Entity::CREATED_AT, 'desc')
+            ->first();
+    }
+
 
     public function getByWalletTerminalAndCustomerId($wallet, $terminal, $customer)
     {
@@ -616,7 +635,7 @@ class Repository extends Base\Repository
         $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
 
         $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
-        
+
         $paymentStatusColumn = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
 
         $paymentGatewayColumn = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
