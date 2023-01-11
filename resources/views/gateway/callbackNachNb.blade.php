@@ -51,7 +51,10 @@
       var isPostMandateRegistration = !!data['emandate_details'];
       var isFeedbackAllowed = !!data['allow_feedback']
       function onLoad() {
-        openNPCIFeedbackModal();
+        // disable for webview
+        if (!iosBridge && !window.CheckoutBridge) {
+          openNPCIFeedbackModal();
+        }
       }
       
       function openNPCIFeedbackModal() {
@@ -65,24 +68,21 @@
       function closeFeedbackPopup() {
         feedbackPopup.classList.remove("show-modal");
       }
-      
+
+      function calculatePopupPosition() {
+        const width = screen.width - Math.round((screen.width / 10) * 2);
+        const height = screen.height - Math.round((screen.height / 10) * 2);
+        const left = (screen.width - width) / 4;
+        const top = (screen.height - height) / 3;
+        return `resizable=yes, width=${width}, height=${height}, top=${top}, left=${left}`;
+      }
+
       function handleFeedbackLinkClick() {
         try {
-          let width = screen.width - Math.round((screen.width / 10) * 2);
-          let height = screen.height - Math.round((screen.height / 10) * 2);
-          var left = (screen.width - width) / 4;
-          var top = (screen.height - height) / 3;
           const feedbackWindow = window.open(
             NPCI_FEEDBACK_URL,
             "_blank",
-            "resizable=yes, width=" +
-            width +
-            ", height=" +
-            height +
-            ", top=" +
-            top +
-            ", left=" +
-            left
+            calculatePopupPosition()
           );
 
           if (
