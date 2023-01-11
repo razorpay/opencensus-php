@@ -5457,8 +5457,6 @@ class Processor
 
         $this->payment = $payment;
 
-        $this->payment->order()->associate($this->order);
-
         return $payment;
     }
 
