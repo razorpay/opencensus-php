@@ -177,6 +177,23 @@ class Entity extends Base\PublicEntity
     const BANK_DUE_DATE = 'bank_due_date';
     const PCARM_MANAGER_NAME = 'pcarm_manager_name';
 
+    const API_SERVICE_FIRST_QUERY = 'api_service_first_query';
+    const API_BEYOND_TAT = 'api_beyond_tat';
+    const API_BEYOND_TAT_DEPENDENCY = 'api_beyond_tat_dependency';
+    const FIRST_CALLING_TIME = 'first_calling_time';
+    const SECOND_CALLING_TIME = 'second_calling_time';
+    const WA_MESSAGE_SENT_DATE = 'wa_message_sent_date';
+    const WA_MESSAGE_RESPONSE_DATE = 'wa_message_response_date';
+    const API_DOCKET_RELATED_ISSUE = 'api_docket_related_issue';
+    const AOF_SHARED_WITH_MO = 'aof_shared_with_mo';
+    const AOF_SHARED_DISCREPANCY = 'aof_shared_discrepancy';
+    const AOF_NOT_SHARED_REASON ='aof_not_shared_reason';
+    const CA_BEYOND_TAT_DEPENDENCY = 'ca_beyond_tat_dependency';
+    const CA_BEYOND_TAT = 'ca_beyond_tat';
+    const CA_SERVICE_FIRST_QUERY = 'ca_service_first_query';
+    const CUSTOMER_APPOINTMENT_BOOKING_DATE = 'customer_appointment_booking_date';
+    const CUSTOMER_ONBOARDING_TAT = 'customer_onboarding_tat';
+    const LEAD_IR_STATUS = 'lead_ir_status';
 
     const CUSTOMER_APPOINTMENT_DATE = 'customer_appointment_date';
     const BRANCH_CODE = 'branch_code';
@@ -362,6 +379,8 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_LOGIN_DATE,
         self::CREATED_AT,
         self::ADDITIONAL_DETAILS,
+        self::UPI_ACTIVATION_TAT,
+        self::CUSTOMER_ONBOARDING_TAT,
     ];
 
     public $public = [
@@ -427,6 +446,8 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_LOGIN_DATE,
         self::CREATED_AT,
         self::ADDITIONAL_DETAILS,
+        self::UPI_ACTIVATION_TAT,
+        self::CUSTOMER_ONBOARDING_TAT,
     ];
 
     protected $publicSetters = [
@@ -445,6 +466,7 @@ class Entity extends Base\PublicEntity
         self::ACCOUNT_ACTIVATION_TAT,
         self::UPI_ACTIVATION_COMPLETION_DATE,
         self::UPI_ACTIVATION_TAT,
+        self::CUSTOMER_ONBOARDING_TAT,
     ];
 
     protected $dates = [
@@ -814,5 +836,15 @@ class Entity extends Base\PublicEntity
 
         $array[self::UPI_ACTIVATION_TAT] =
             self::hourDifferenceBetweenTimestamps($apiOnboardingDate, $upiActivationDate);
+    }
+
+    public function setPublicCustomerOnboardingTatAttribute(array &$array)
+    {
+        $docCollectionDate = $array[self::DOC_COLLECTION_DATE];
+
+        $apiIRClosedDate = $array[self::API_IR_CLOSED_DATE]?? Carbon::now()->timestamp;
+
+        $array[self::CUSTOMER_ONBOARDING_TAT] =
+            self::hourDifferenceBetweenTimestamps($docCollectionDate, $apiIRClosedDate);
     }
 }

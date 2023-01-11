@@ -255,6 +255,8 @@ class Service extends Base\Service
             $activationDetail = $this->core->create([Entity::BANKING_ACCOUNT_ID => $bankingAccount->getId()], 'create_null');
         }
 
+        $this->calculateCustomerBookingAppointmentDate($activationDetail, $input);
+
         $this->validateAndUpdateAssigneeTeam($activationDetail, $bankingAccount, $input, $isAutomatedUpdate);
 
         if ($isAutomatedUpdate === false)
@@ -699,6 +701,23 @@ class Service extends Base\Service
         }
 
         return $input;
+    }
+
+    public function calculateCustomerBookingAppointmentDate($activationDetails, &$activationDetailInput)
+    {
+
+        $customerAppointmentDate = BankingAccount\Activation\Detail\Entity::CUSTOMER_APPOINTMENT_DATE;
+
+        $customerBookingAppointmentDate = BankingAccount\Activation\Detail\Entity::CUSTOMER_APPOINTMENT_BOOKING_DATE;
+
+        if (array_key_exists($customerAppointmentDate, $activationDetailInput))
+        {
+            if ($activationDetails[$customerAppointmentDate] !== $activationDetailInput[$customerAppointmentDate])
+            {
+                $activationDetailInput[BankingAccount\Activation\Detail\Entity::RBL_ACTIVATION_DETAILS][$customerBookingAppointmentDate] = Carbon::now()->timestamp;
+            }
+        }
+
     }
 
 }

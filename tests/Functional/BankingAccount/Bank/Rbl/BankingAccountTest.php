@@ -7686,6 +7686,23 @@ class BankingAccountTest extends TestCase
                 Leads::UPI_CREDENTIALS_DATE => '',
                 Leads::UPI_CREDENTIALS_NOT_DONE_REMARKS => null,
                 Leads::DROP_OFF_DATE => '',
+                Leads::API_SERVICE_FIRST_QUERY => null,
+                Leads::API_BEYOND_TAT => null,
+                Leads::API_BEYOND_TAT_DEPENDENCY => null,
+                Leads::FIRST_CALLING_TIME => null,
+                Leads::SECOND_CALLING_TIME => null,
+                Leads::WA_MESSAGE_SENT_DATE => null,
+                Leads::WA_MESSAGE_RESPONSE_DATE => null,
+                Leads::API_DOCKET_RELATED_ISSUE => null,
+                Leads::AOF_SHARED_WITH_MO => null,
+                Leads::AOF_SHARED_DISCREPANCY => null,
+                Leads::AOF_NOT_SHARED_REASON => null,
+                Leads::CA_BEYOND_TAT_DEPENDENCY => null,
+                Leads::CA_BEYOND_TAT => null,
+                Leads::CA_SERVICE_FIRST_QUERY => null,
+                Leads::LEAD_IR_STATUS => null,
+                Leads::CUSTOMER_APPOINTMENT_BOOKING_DATE => null,
+                Leads::CUSTOMER_ONBOARDING_TAT => null,
             ]
         ];
 
@@ -9782,6 +9799,71 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(sizeof($expected), $response['count']);
     }
 
+    public function testBankLmsEndToEndRblActivationDetailPayload()
+    {
+        $response = $this->setupBankLMSTest();
+        $user = $response['user'];
+        $response = $response['bankingAccount'];
+
+        $docCollectionDate = '1665567466';
+
+        $apiIRClosedDate = '1665826666';
+
+        $this->ba->addXOriginHeader();
+
+        $this->ba->adminAuth();
+
+        $dataToReplace = [
+            'url' => '/banking_accounts/' . $response['id'],
+            'method' => 'PATCH',
+            'content' => [
+                'activation_detail' => [
+                    'api_ir_closed_date' => $apiIRClosedDate,
+                    'customer_appointment_date' => '1665481066',
+                    'doc_collection_date' => $docCollectionDate,
+                ],
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $dataToReplace = [
+            'url' => '/banking_accounts/rbl/lms/banking_account/' . $response['id'],
+            'method' => 'PATCH',
+            'content' => [
+                'activation_detail' => [
+                    ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [
+                        ActivationDetail\Entity::API_SERVICE_FIRST_QUERY => 'API_SERVICE_FIRST_QUERY',
+                        ActivationDetail\Entity::API_BEYOND_TAT => true,
+                        ActivationDetail\Entity::API_BEYOND_TAT_DEPENDENCY => 'razorpay',
+                        ActivationDetail\Entity::FIRST_CALLING_TIME => 'FIRST_CALLING_TIME',
+                        ActivationDetail\Entity::SECOND_CALLING_TIME => 'SECOND_CALLING_TIME',
+                        ActivationDetail\Entity::WA_MESSAGE_SENT_DATE => '1665567466',
+                        ActivationDetail\Entity::WA_MESSAGE_RESPONSE_DATE => '1665567466',
+                        ActivationDetail\Entity::API_DOCKET_RELATED_ISSUE => 'API_DOCKET_RELATED_ISSUE',
+                        ActivationDetail\Entity::AOF_SHARED_WITH_MO => false,
+                        ActivationDetail\Entity::AOF_SHARED_DISCREPANCY => false,
+                        ActivationDetail\Entity::AOF_NOT_SHARED_REASON => 'AOF_NOT_SHARED_REASON',
+                        ActivationDetail\Entity::CA_BEYOND_TAT_DEPENDENCY => 'client',
+                        ActivationDetail\Entity::CA_BEYOND_TAT => false,
+                        ActivationDetail\Entity::CA_SERVICE_FIRST_QUERY => 'CA_SERVICE_FIRST_QUERY',
+                        ActivationDetail\Entity::LEAD_IR_STATUS => 'ir_raised',
+                    ]
+                ],
+            ],
+        ];
+
+        $response = $this->makeRequestAndGetContent($dataToReplace);
+
+        $this->assertEquals(ActivationDetail\Entity::hourDifferenceBetweenTimestamps($docCollectionDate, $apiIRClosedDate), $response[ActivationDetail\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::CUSTOMER_ONBOARDING_TAT]);
+
+    }
+
+
     public function testBankLmsEndToEndParallelAssigneePartnerSide()
     {
 
@@ -10149,6 +10231,21 @@ class BankingAccountTest extends TestCase
                         ActivationDetail\Entity::API_ONBOARDING_TAT_EXCEPTION => true,
                         ActivationDetail\Entity::API_ONBOARDING_TAT_EXCEPTION_REASON => 'API_ONBOARDING_TAT_EXCEPTION_REASON',
                         ActivationDetail\Entity::UPI_CREDENTIAL_NOT_DONE_REMARKS => 'UPI_CREDENTIAL_NOT_DONE_REMARKS',
+                        ActivationDetail\Entity::API_SERVICE_FIRST_QUERY => 'API_SERVICE_FIRST_QUERY',
+                        ActivationDetail\Entity::API_BEYOND_TAT => true,
+                        ActivationDetail\Entity::API_BEYOND_TAT_DEPENDENCY => 'razorpay',
+                        ActivationDetail\Entity::FIRST_CALLING_TIME => 'FIRST_CALLING_TIME',
+                        ActivationDetail\Entity::SECOND_CALLING_TIME => 'SECOND_CALLING_TIME',
+                        ActivationDetail\Entity::WA_MESSAGE_SENT_DATE => '1665567466',
+                        ActivationDetail\Entity::WA_MESSAGE_RESPONSE_DATE => '1665567466',
+                        ActivationDetail\Entity::API_DOCKET_RELATED_ISSUE => 'API_DOCKET_RELATED_ISSUE',
+                        ActivationDetail\Entity::AOF_SHARED_WITH_MO => false,
+                        ActivationDetail\Entity::AOF_SHARED_DISCREPANCY => false,
+                        ActivationDetail\Entity::AOF_NOT_SHARED_REASON => 'AOF_NOT_SHARED_REASON',
+                        ActivationDetail\Entity::CA_BEYOND_TAT_DEPENDENCY => 'client',
+                        ActivationDetail\Entity::CA_BEYOND_TAT => false,
+                        ActivationDetail\Entity::CA_SERVICE_FIRST_QUERY => 'CA_SERVICE_FIRST_QUERY',
+                        ActivationDetail\Entity::LEAD_IR_STATUS => 'ir_raised',
                     ],
                     ActivationDetail\Entity::RM_EMPLOYEE_CODE => '24128',
                     ActivationDetail\Entity::RM_NAME => 'Sachin s',
@@ -10163,6 +10260,7 @@ class BankingAccountTest extends TestCase
                     ActivationDetail\Entity::ACCOUNT_LOGIN_DATE => '1665567466',
                     ActivationDetail\Entity::ACCOUNT_OPENING_IR_CLOSE_DATE => '1665740266',
                     ActivationDetail\Entity::API_IR_CLOSED_DATE => '1665826666',
+                    ActivationDetail\Entity::ACCOUNT_OPEN_DATE => '1665481066',
                 ]
             ],
         ];
@@ -10242,12 +10340,12 @@ class BankingAccountTest extends TestCase
                 Leads::REVISED_DECLARATION => 'No',
                 Leads::ACCOUNT_IR_NO => 'IR102',
                 Leads::ACCT_LOGIN_DATE => '2022-10-12',
-                Leads::IR_LOGIN_TAT => 0,
+                Leads::IR_LOGIN_TAT => 0.0,
                 Leads::PROMO_CODE => 'RZP123',
                 Leads::CASE_LOGIN => '',
                 Leads::SR_NO => 'SR101',
                 Leads::ACCOUNT_OPEN_DATE => '2019-07-10',
-                Leads::ACCOUNT_IR_CLOSED_DATE => '2022-10-14',
+                Leads::ACCOUNT_IR_CLOSED_DATE => '2022-10-11',
                 Leads::AO_FTNR => 'Yes',
                 Leads::AO_FTNR_REASONS => 'Reason 1,Reason 2',
                 Leads::AO_TAT_EXCEPTION => 'Yes',
@@ -10255,7 +10353,7 @@ class BankingAccountTest extends TestCase
                 Leads::API_IR_NO => 'IR103',
                 Leads::API_IR_LOGIN_DATE => '2022-10-14',
                 Leads::LDAP_ID_MAIL_DATE => '',
-                Leads::API_REQUEST_TAT => 852,
+                Leads::API_REQUEST_TAT => 852.0,
                 Leads::API_IR_CLOSED_DATE => '2022-10-15',
                 Leads::API_REQUEST_PROCESSING_TAT => 1.0,
                 Leads::API_FTNR => 'Yes',
@@ -10267,6 +10365,23 @@ class BankingAccountTest extends TestCase
                 Leads::UPI_CREDENTIALS_DATE => '',
                 Leads::UPI_CREDENTIALS_NOT_DONE_REMARKS => 'UPI_CREDENTIAL_NOT_DONE_REMARKS',
                 Leads::DROP_OFF_DATE => '',
+                Leads::API_SERVICE_FIRST_QUERY => 'API_SERVICE_FIRST_QUERY',
+                Leads::API_BEYOND_TAT => 'Yes',
+                Leads::API_BEYOND_TAT_DEPENDENCY => 'razorpay',
+                Leads::FIRST_CALLING_TIME => 'FIRST_CALLING_TIME',
+                Leads::SECOND_CALLING_TIME => 'SECOND_CALLING_TIME',
+                Leads::WA_MESSAGE_SENT_DATE => '2022-10-12',
+                Leads::WA_MESSAGE_RESPONSE_DATE => '2022-10-12',
+                Leads::API_DOCKET_RELATED_ISSUE => 'API_DOCKET_RELATED_ISSUE',
+                Leads::AOF_SHARED_WITH_MO => 'No',
+                Leads::AOF_SHARED_DISCREPANCY => 'No',
+                Leads::AOF_NOT_SHARED_REASON => 'AOF_NOT_SHARED_REASON',
+                Leads::CA_BEYOND_TAT_DEPENDENCY => 'client',
+                Leads::CA_BEYOND_TAT => 'No',
+                Leads::CA_SERVICE_FIRST_QUERY => 'CA_SERVICE_FIRST_QUERY',
+                Leads::LEAD_IR_STATUS => 'ir_raised',
+                Leads::CUSTOMER_APPOINTMENT_BOOKING_DATE => '2023-01-11',
+                Leads::CUSTOMER_ONBOARDING_TAT => 3.0,
             ]
         ];
 

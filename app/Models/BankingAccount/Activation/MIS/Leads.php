@@ -102,6 +102,25 @@ class Leads extends Base
     const UPI_CREDENTIALS_NOT_DONE_REMARKS = "UPI Credentials not done Remarks";
     const DROP_OFF_DATE = "Drop - Off Date";
 
+    const API_SERVICE_FIRST_QUERY = 'Api Service First Query';
+    const API_BEYOND_TAT = 'Api Beyond Tat';
+    const API_BEYOND_TAT_DEPENDENCY = 'Api Beyond Tat Dependency';
+    const FIRST_CALLING_TIME = 'First Calling Time';
+    const SECOND_CALLING_TIME = 'Second Calling Time';
+    const WA_MESSAGE_SENT_DATE = 'Wa Message Sent Date';
+    const WA_MESSAGE_RESPONSE_DATE = 'Wa Message Response Date';
+    const API_DOCKET_RELATED_ISSUE = 'Api Docket Related Issue';
+    const AOF_SHARED_WITH_MO = 'Aof Shared With Mo';
+    const AOF_SHARED_DISCREPANCY = 'Aof Shared Discrepancy';
+    const AOF_NOT_SHARED_REASON ='Aof Not Shared Reason';
+    const CA_BEYOND_TAT_DEPENDENCY = 'Ca Beyond Tat Dependency';
+    const CA_BEYOND_TAT = 'Ca Beyond Tat';
+    const CA_SERVICE_FIRST_QUERY = 'Ca Service First Query';
+    const CUSTOMER_APPOINTMENT_BOOKING_DATE = 'Customer Appointment Booking Date';
+    const CUSTOMER_ONBOARDING_TAT = 'Customer Onboarding Tat';
+    const LEAD_IR_STATUS = 'Lead Ir Status';
+
+
     const APPLICATION_SUBMISSION_DATE = 'Application Submission Date';
     const TIMESTAMP = 'Timestamp';
 
@@ -462,6 +481,8 @@ class Leads extends Base
 
             $apiIRClosedDate = $bankingAccountActivationDetails[ActivationDetail\Entity::API_IR_CLOSED_DATE];
 
+            $customerOnboardingTat = $this->calculateTATInDays($docCollectionDate, $apiIRClosedDate);
+
             $apiRequestProcessingTAT = $this->calculateTATInDays($apiOnboardingLoginDate, $apiIRClosedDate);
 
             $fileInput[] = [
@@ -520,7 +541,7 @@ class Leads extends Base
                 self::CASE_LOGIN                       => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CASE_LOGIN_DIFFERENT_LOCATIONS)),
                 self::SR_NO                            => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::SR_NUMBER),
                 self::ACCOUNT_OPEN_DATE                => $this->convertEpochToDateFormat($accountOpeningDate),
-                self::ACCOUNT_IR_CLOSED_DATE           => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPENING_IR_CLOSE_DATE]),
+                self::ACCOUNT_IR_CLOSED_DATE           => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPEN_DATE]),
                 self::AO_FTNR                          => $this->convertToYesNo($bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPENING_FTNR], 1, 0),
                 self::AO_FTNR_REASONS                  => $bankingAccountActivationDetails[ActivationDetail\Entity::ACCOUNT_OPENING_FTNR_REASONS],
                 self::AO_TAT_EXCEPTION                 => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::ACCOUNT_OPENING_TAT_EXCEPTION)),
@@ -540,6 +561,24 @@ class Leads extends Base
                 self::UPI_CREDENTIALS_DATE             => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::UPI_CREDENTIAL_RECEIVED_DATE]),
                 self::UPI_CREDENTIALS_NOT_DONE_REMARKS => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::UPI_CREDENTIAL_NOT_DONE_REMARKS),
                 self::DROP_OFF_DATE                    => $this->convertEpochToDateFormat($bankingAccountActivationDetails[ActivationDetail\Entity::DROP_OFF_DATE]),
+
+                self::API_SERVICE_FIRST_QUERY          => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_SERVICE_FIRST_QUERY),
+                self::API_BEYOND_TAT                   => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_BEYOND_TAT)),
+                self::API_BEYOND_TAT_DEPENDENCY        => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_BEYOND_TAT_DEPENDENCY),
+                self::FIRST_CALLING_TIME               => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::FIRST_CALLING_TIME),
+                self::SECOND_CALLING_TIME              => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::SECOND_CALLING_TIME),
+                self::WA_MESSAGE_SENT_DATE             => $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::WA_MESSAGE_SENT_DATE)),
+                self::WA_MESSAGE_RESPONSE_DATE         => $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::WA_MESSAGE_RESPONSE_DATE)),
+                self::API_DOCKET_RELATED_ISSUE         => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::API_DOCKET_RELATED_ISSUE),
+                self::AOF_SHARED_WITH_MO               => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::AOF_SHARED_WITH_MO)),
+                self::AOF_SHARED_DISCREPANCY           => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::AOF_SHARED_DISCREPANCY)),
+                self::AOF_NOT_SHARED_REASON            => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::AOF_NOT_SHARED_REASON),
+                self::CA_BEYOND_TAT_DEPENDENCY         => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CA_BEYOND_TAT_DEPENDENCY),
+                self::CA_BEYOND_TAT                    => $this->convertToYesNo(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CA_BEYOND_TAT)),
+                self::CA_SERVICE_FIRST_QUERY           => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CA_SERVICE_FIRST_QUERY),
+                self::CUSTOMER_APPOINTMENT_BOOKING_DATE=> $this->convertEpochToDateFormat(ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::CUSTOMER_APPOINTMENT_BOOKING_DATE)),
+                self::CUSTOMER_ONBOARDING_TAT          => $customerOnboardingTat,
+                self::LEAD_IR_STATUS                   => ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::LEAD_IR_STATUS),
             ];
         }
 

@@ -140,6 +140,23 @@ class Validator extends BankingAccount\Validator
     ];
 
     protected static $rblActivationDetailsRules = [
+
+        ActivationDetail::API_SERVICE_FIRST_QUERY               => 'sometimes|'.self::ALLOWED_STRING_PATTERN,
+        ActivationDetail::API_BEYOND_TAT                        => 'sometimes|boolean|nullable',
+        ActivationDetail::API_BEYOND_TAT_DEPENDENCY             => 'sometimes|in:client,branch,razorpay,internal_approvals,cibil,legal,compliance',
+        ActivationDetail::FIRST_CALLING_TIME                    => 'sometimes|'.self::ALLOWED_STRING_PATTERN,
+        ActivationDetail::SECOND_CALLING_TIME                   => 'sometimes|'.self::ALLOWED_STRING_PATTERN,
+        ActivationDetail::WA_MESSAGE_SENT_DATE                  => 'sometimes|epoch|nullable',
+        ActivationDetail::WA_MESSAGE_RESPONSE_DATE              => 'sometimes|epoch|nullable',
+        ActivationDetail::API_DOCKET_RELATED_ISSUE              => 'sometimes|'.self::ALLOWED_STRING_PATTERN,
+        ActivationDetail::AOF_SHARED_WITH_MO                    => 'sometimes|boolean|nullable',
+        ActivationDetail::AOF_SHARED_DISCREPANCY                => 'sometimes|boolean|nullable',
+        ActivationDetail::AOF_NOT_SHARED_REASON                 => 'sometimes|'.self::ALLOWED_STRING_PATTERN,
+        ActivationDetail::CA_BEYOND_TAT_DEPENDENCY              => 'sometimes|in:client,branch,razorpay,internal_approvals,cibil,legal,compliance',
+        ActivationDetail::CA_BEYOND_TAT                         => 'sometimes|boolean|nullable',
+        ActivationDetail::CA_SERVICE_FIRST_QUERY                => 'sometimes|'.self::ALLOWED_STRING_PATTERN,
+        ActivationDetail::LEAD_IR_STATUS                        => 'sometimes|in:ir_raised,ir_in_discrepancy,ir_closed',
+
         ActivationDetail::IR_NUMBER                             => 'sometimes|alpha_num|nullable',
         ActivationDetail::LEAD_IR_NUMBER                        => 'sometimes|alpha_num|nullable',
         ActivationDetail::IP_CHEQUE_VALUE                       => 'sometimes|integer|nullable',
