@@ -2,6 +2,9 @@
 
 namespace RZP\Services\Dcs\Features;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+
 class Constants
 {
     const RefundEnabled = 'refund_enabled';
@@ -22,6 +25,30 @@ class Constants
     ];
 
     /**
+     * Stores the mapping of the api feature name to their corresponding dcs feature names
+     * This is required for migrating features.
+     */
+    public static $apiFeatureNameToDCSFeatureName = [
+        self::RefundEnabled => self::RefundEnabled,
+        self::DisableAutoRefund => self::DisableAutoRefund,
+        self::EligibilityEnabled => self::EligibilityEnabled,
+        self::ShowEmailOnCheckout => self::ShowEmailOnCheckout,
+        self::EmailOptionalOnCheckout => self::EmailOptionalOnCheckout,
+    ];
+
+    /**
+     * Stores the mapping of the dcs feature name to their corresponding api feature names
+     * This is required for migrating features.
+     */
+    public static $dcsFeatureNameToAPIFeatureName = [
+        self::RefundEnabled => self::RefundEnabled,
+        self::DisableAutoRefund => self::DisableAutoRefund,
+        self::EligibilityEnabled => self::EligibilityEnabled,
+        self::ShowEmailOnCheckout => self::ShowEmailOnCheckout,
+        self::EmailOptionalOnCheckout => self::EmailOptionalOnCheckout,
+    ];
+
+    /**
      * Stores the mapping of the features to their corresponding handlers
      */
     public static $dcsNewFeatures = [
@@ -37,6 +64,34 @@ class Constants
             return true;
         }
          return false;
+    }
+
+    public static function dcsFeatureNameFromAPIName($name): string
+    {
+        if (key_exists($name, self::$apiFeatureNameToDCSFeatureName) === false) {
+            $ex = new Exception\ServerErrorException('Dcs feature name missing in
+            $apiFeatureNameToDCSFeatureName please check',
+                ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE,
+                "missing dcs feature name in the map");
+
+            throw $ex;
+        }
+
+        return self::$apiFeatureNameToDCSFeatureName[$name];
+    }
+
+    public static function apiFeatureNameFromDcsName($name): string
+    {
+        if (key_exists($name, self::$apiFeatureNameToDCSFeatureName) === false) {
+            $ex = new Exception\ServerErrorException('Dcs feature name missing in
+            $dcsFeatureNameToAPIFeatureName please check with dcs team',
+                ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE,
+                "missing dcs feature name in the map");
+
+            throw $ex;
+        }
+
+        return self::$dcsFeatureNameToAPIFeatureName[$name];
     }
 
     public static function isReverseShadowFeature($variant)

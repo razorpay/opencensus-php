@@ -42,6 +42,7 @@ class Service extends Base
      */
     public function editFeature(Entity $entity, string $variant, bool $isAssignment, $mode = Mode::TEST)
     {
+        $dcsFeatureName = DcsConstants::dcsFeatureNameFromAPIName($entity->getName());
         if ($isAssignment === true)
         {
             $action  = 'assign';
@@ -64,9 +65,9 @@ class Service extends Base
 
             if (str_starts_with($variant, 'on_direct_dcs'))
             {
-                $key = DCSConstants::$featureToDCSKeyMapping[$entity->getName()];
+                $key = DCSConstants::$featureToDCSKeyMapping[$dcsFeatureName];
                 $data = DataFormatter::toKeyMapWithOutId($key);
-                $request = [$entity->getName() => $isAssignment];
+                $request = [ $dcsFeatureName => $isAssignment];
                 $this->trace->info(TraceCode::DCS_SERVICE_REQUEST, [
                     'action' => 'assign',
                     'featureDetails' => $request,
@@ -78,11 +79,11 @@ class Service extends Base
                 $value = DataFormatter::marshal($request, DataFormatter::convertDCSKeyToClassName(DataFormatter::convertKeyStringToDCSKey($key)));
 
                     // TODO change it to what ever client it is base on mode
-                $res = $this->client($mode)->patch($data, $entity->getEntityId(), $value, [$entity->getName()], self::getDefaultAuditInfo());
+                $res = $this->client($mode)->patch($data, $entity->getEntityId(), $value, [$dcsFeatureName], self::getDefaultAuditInfo());
                 $this->trace->info(TraceCode::DCS_SERVICE_SUCCESSFUL_RESPONSE, [
                     'action' => 'assign',
                     'responseEntityId' => $entity->getEntityId(),
-                    'featureName' => $entity->getName(),
+                    'featureName' => $dcsFeatureName,
                     'success' => true,
                     'mode' => $mode,
                 ]);
@@ -91,7 +92,7 @@ class Service extends Base
             {
                 $this->handleDcsFeatures($entity, $isAssignment, $mode);
             }
-            elseif (self::isDcsNewFeature($entity->getName()) === true)
+            elseif (self::isDcsNewFeature($dcsFeatureName) === true)
             {
                 $ex = new Exception\ServerErrorException('dcs service is disabled, please check with dcs team',
                     ErrorCode::BAD_REQUEST_DCS_DISABLED,
@@ -104,7 +105,7 @@ class Service extends Base
         catch (\Exception $e)
         {
             $this->trace->count(Metric::DCS_FEATURE_EDIT_FAILURE_TOTAL, $dimension);
-            if (self::isDcsNewFeature($entity->getName()) === true)
+            if (self::isDcsNewFeature($dcsFeatureName) === true)
             {
                 throw $e;
             }
@@ -132,13 +133,15 @@ class Service extends Base
      * throws Server exception in case of request failures
      *
      * @param string $entityId
-     * @param string $featureName
+     * @param string $apifeatureName
      * @param string $mode
      * @return array
      * @throws ApiException
      */
-    public function fetchByEntityIdAndName(string $entityId, string $featureName, $mode = Mode::TEST)
+    public function fetchByEntityIdAndName(string $entityId, string $apiFeatureName, $mode = Mode::TEST)
     {
+        $featureName = DcsConstants::dcsFeatureNameFromAPIName($apiFeatureName);
+
         $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
         $data = DataFormatter::toKeyMapWithOutId($key);
         $res = [];
@@ -163,7 +166,7 @@ class Service extends Base
             $features = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($key));
 
             $data = [
-                Entity::NAME => $featureName,
+                Entity::NAME => $apiFeatureName,
                 Entity::ENTITY_TYPE => $key->getEntity(),
                 Entity::ENTITY_ID => $entityId,
             ];
@@ -203,7 +206,7 @@ class Service extends Base
         foreach ($featureNames as $featureName)
         {
             $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
-            $data[$key][] = $featureName;
+            $data[$key][] = DcsConstants::dcsFeatureNameFromAPIName($featureName);
         }
 
         $this->trace->info(TraceCode::DCS_FETCH_REQUEST_RECEIVED, [
@@ -230,7 +233,7 @@ class Service extends Base
                if ($features[$featureName] === true)
                {
                    $data = [
-                       Entity::NAME => $featureName,
+                       Entity::NAME => DcsConstants::dcsFeatureNameFromAPIName($featureName),
                        Entity::ENTITY_TYPE => $key->getEntity(),
                        Entity::ENTITY_ID => $entityId,
                    ];
@@ -257,13 +260,14 @@ class Service extends Base
      * throws Server exception in case of request failures
      *
      * @param array $entityIds
-     * @param string $featureName
+     * @param string $apiFeatureName
      * @param string $mode
      * @return array
      * @throws ApiException
      */
-    public function fetchByEntityIdsAndName(array $entityIds, string $featureName, $mode = Mode::TEST)
+    public function fetchByEntityIdsAndName(array $entityIds, string $apiFeatureName, $mode = Mode::TEST)
     {
+        $featureName = DcsConstants::dcsFeatureNameFromAPIName($apiFeatureName);
         $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
         $data = DataFormatter::toKeyMapWithOutId($key);
         $res = [];
@@ -288,7 +292,7 @@ class Service extends Base
             $features = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($key));
 
             $data = [
-                Entity::NAME => $featureName,
+                Entity::NAME => $apiFeatureName,
                 Entity::ENTITY_TYPE => $key->getEntity(),
                 Entity::ENTITY_ID => $key->getEntityId(),
             ];
@@ -330,12 +334,13 @@ class Service extends Base
     /**
      * throws Server exception in case of request failures
      *
-     * @param string $featureName
+     * @param string $apiFeatureName
      * @param string $mode
      * @return array
      */
-    public function fetchByFeatureName(string $featureName, $mode = Mode::TEST)
+    public function fetchByFeatureName(string $apiFeatureName, $mode = Mode::TEST)
     {
+        $featureName = DcsConstants::dcsFeatureNameFromAPIName($apiFeatureName);
         $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
         $data = DataFormatter::toKeyMapWithOutId($key);
         return $this->handleAggregateQueries($data, $mode);
@@ -365,7 +370,7 @@ class Service extends Base
                 if ($enabled === true)
                 {
                     $buildData = [
-                        Entity::NAME => $featureName,
+                        Entity::NAME => DcsConstants::apiFeatureNameFromDcsName($featureName),
                         Entity::ENTITY_TYPE => $kv->getKey()->getEntity(),
                         Entity::ENTITY_ID => $kv->getKey()->getEntityId(),
                     ];
@@ -417,11 +422,12 @@ class Service extends Base
 
     public function handleDcsFeatures(Entity $entity, $value , $mode = Mode::TEST)
     {
-        $key = DcsConstants::$featureToDCSKeyMapping[$entity->getName()];
+        $dcsFeatureName = DcsConstants::dcsFeatureNameFromAPIName($entity->getName());
+        $key = DcsConstants::$featureToDCSKeyMapping[$dcsFeatureName];
         $data = DataFormatter::toKeyMapWithOutId($key);
 
         $this->trace->info(TraceCode::DCS_EXTERNAL_REQUEST_RECEIVED, [
-            'featureName' => $entity->getName(),
+            'featureName' => $dcsFeatureName,
             'entityID'  => $entity->getEntityId(),
             'entityType' => $entity->getEntity(),
             'requestData' => $data,
@@ -433,14 +439,14 @@ class Service extends Base
 
         $svc = new ExternalService\Service($this->app);
 
-        $req = $svc->buildExternalRequest($key, $entity->getEntityId(), [$entity->getName() => $value], $mode);
+        $req = $svc->buildExternalRequest($key, $entity->getEntityId(), [$dcsFeatureName => $value], $mode);
 
         $svcName = Constants::$newDcsConfigurationServiceMapping[$key];
 
         $res = $svc->action($svcName, $req, $mode);
 
         $this->trace->info(TraceCode::DCS_EXTERNAL_RESPONSE_RECEIVED, [
-            'featureName' => $entity->getName(),
+            'featureName' => $dcsFeatureName,
             'entityID'  => $entity->getEntityId(),
             'entityType' => $entity->getEntity(),
             'requestData' => $req,
