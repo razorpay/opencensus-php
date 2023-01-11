@@ -60,6 +60,8 @@ class Tracing
             'user_pre_signup',
             'merchant_tags',
             'merchants_switch',
+            'send_otp_salesforce_user',
+            'verify_otp_salesforce_user',
             ]
         );
 
