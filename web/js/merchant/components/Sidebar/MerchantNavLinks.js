@@ -245,7 +245,7 @@ function MerchantNavLinks(props) {
         to={routes.smartCollect}
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('virtual_accounts') &&
-          !currentUser.findTag('i18_hide_virtual_accounts')
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SmartCollect)
         }
         customBadge={getProductBadge(['smart_collect'])}
       />

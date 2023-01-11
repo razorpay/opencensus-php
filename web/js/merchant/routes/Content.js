@@ -24,6 +24,7 @@ import HandleIndex from './HandleIndex';
 import lazy from './LazyLoader';
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
 import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const ApiKeysAndPlugins = lazy(() =>
   import(/* webpackChunkName: "ApiKeysAndPlugins" */ 'merchant/views/ApiKeysAndPlugins'),
@@ -350,14 +351,19 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/settlements"
             component={Settlements}
-            additionalCondition={(user) => user.isAllowedView('settlements')}
+            additionalCondition={(user) =>
+              user.isAllowedView('settlements') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements)
+            }
           />
           <ShowWhenRoute
             path="/routeinstantsettlements"
             exact
             component={Settlements}
             additionalCondition={(user) =>
-              user.isAllowedView('early_settlement') && user.isOndemandRouteSettlementsEnabled
+              user.isAllowedView('early_settlement') &&
+              user.isOndemandRouteSettlementsEnabled &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements)
             }
           />
           <ShowWhenRoute
@@ -377,7 +383,10 @@ export default class Content extends Component {
             path="/invoices"
             exact
             component={InvoicesContainer}
-            additionalCondition={(user) => user.isAllowedView('invoices')}
+            additionalCondition={(user) =>
+              user.isAllowedView('invoices') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices)
+            }
           />
           <ShowWhenRoute
             path="/invoices/:id(inv_.+)"
@@ -387,7 +396,10 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/invoices/new"
             component={InvoicesNew}
-            additionalCondition={(user) => user.isAllowedEdit('invoices')}
+            additionalCondition={(user) =>
+              user.isAllowedEdit('invoices') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices)
+            }
           />
           <ShowWhenRoute
             path="/items"
@@ -398,7 +410,10 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/paymentlinks"
             component={PaymentLinks}
-            additionalCondition={(user) => user.isAllowedView('payment_links')}
+            additionalCondition={(user) =>
+              user.isAllowedView('payment_links') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks)
+            }
           />
 
           <ShowWhenRoute
@@ -410,7 +425,10 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/paymentpages"
             component={PaymentPages}
-            additionalCondition={(user) => user.isAllowedView('payment_pages')}
+            additionalCondition={(user) =>
+              user.isAllowedView('payment_pages') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages)
+            }
           />
 
           <Route path="/super-checkout">
@@ -427,7 +445,9 @@ export default class Content extends Component {
             path="/paymentbuttons/:id(pl_.+)/:entity_name(payments)"
             component={PaymentButtonsDetails}
             additionalCondition={(user) =>
-              user.isAllowedView('payment_buttons') && user.isPaymentButtonEnabledByRazorX
+              user.isAllowedView('payment_buttons') &&
+              user.isPaymentButtonEnabledByRazorX &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentButtons)
             }
           />
 
@@ -435,7 +455,9 @@ export default class Content extends Component {
             path="/paymentbuttons"
             component={PaymentButton}
             additionalCondition={(user) =>
-              user.isAllowedView('payment_buttons') && user.isPaymentButtonEnabledByRazorX
+              user.isAllowedView('payment_buttons') &&
+              user.isPaymentButtonEnabledByRazorX &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentButtons)
             }
           />
           <ShowWhenRoute
@@ -459,7 +481,10 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/subscriptions"
             component={Subscriptions}
-            additionalCondition={(user) => user.isAllowedView('subscriptions')}
+            additionalCondition={(user) =>
+              user.isAllowedView('subscriptions') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions)
+            }
           />
           <ShowWhenRoute
             path="/affordability"
@@ -488,7 +513,10 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/qr_codes"
             component={QRCodes}
-            additionalCondition={(user) => user.isAllowedView('qr_codes')}
+            additionalCondition={(user) =>
+              user.isAllowedView('qr_codes') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.QrCodes)
+            }
           />
 
           <ShowWhenRoute
@@ -522,17 +550,19 @@ export default class Content extends Component {
             }
           />
 
-          <Route
-            path="/customers"
-            render={() => (
-              <TabbedContent
-                headerId="invoicing-header"
-                to="/customers"
-                navLabel="Customers"
-                component={Customers}
-              />
-            )}
-          />
+          {!this.props?.user?.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Customers) && (
+            <Route
+              path="/customers"
+              render={() => (
+                <TabbedContent
+                  headerId="invoicing-header"
+                  to="/customers"
+                  navLabel="Customers"
+                  component={Customers}
+                />
+              )}
+            />
+          )}
 
           <ShowWhenRoute
             path="/connected-banking/icici-linked-ca"
@@ -551,7 +581,10 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/route"
             component={Marketplace}
-            additionalCondition={(user) => user.isAllowedView('marketplace')}
+            additionalCondition={(user) =>
+              user.isAllowedView('marketplace') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Marketplace)
+            }
           />
 
           <ShowWhenRoute
@@ -563,7 +596,10 @@ export default class Content extends Component {
           <ShowWhenRoute
             path={['/smartcollect', '/virtualaccounts']}
             component={SmartCollect}
-            additionalCondition={(user) => user.isAllowedView('virtual_accounts')}
+            additionalCondition={(user) =>
+              user.isAllowedView('virtual_accounts') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SmartCollect)
+            }
           />
 
           {/* Allowing only care health merchant having role owner and disabling for every other user roles */}
@@ -587,7 +623,9 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/website-app-details"
             component={MyAccount}
-            additionalCondition={(_) => true}
+            additionalCondition={(user) =>
+              true && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.WebsiteAppDetails)
+            }
           />
 
           <ShowWhenRoute
@@ -604,7 +642,11 @@ export default class Content extends Component {
             path="/ticket-support/tickets"
             component={MyAccount}
             myRole="owner admin"
-            additionalCondition={(user) => user.isFdTicketsEnabled && !user.isComdelApiEnabled}
+            additionalCondition={(user) =>
+              user.isFdTicketsEnabled &&
+              !user.isComdelApiEnabled &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SupportHistory)
+            }
           />
           <ShowWhenRoute
             path="/ticket-support/:instance/:id/:ticketType/conversation"
@@ -667,12 +709,18 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/offers"
             component={Offers}
-            additionalCondition={(user) => user.isAllowedView('offers')}
+            additionalCondition={(user) =>
+              user.isAllowedView('offers') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Offers)
+            }
           />
           <ShowWhenRoute
             path="/checkout-rewards"
             component={CheckoutRewards}
-            additionalCondition={(user) => user.isAllowedView('checkoutrewards')}
+            additionalCondition={(user) =>
+              user.isAllowedView('checkoutrewards') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Checkoutrewards)
+            }
           />
           <ShowWhenRoute path="/optimizer" component={Navigator} />
           <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />

@@ -5,6 +5,7 @@ import {
   matchFullPageView as matchFullPageViewx,
 } from 'merchant_common/routes';
 import { isMobileResolution } from 'common/utils/rzp-utils';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 import lazy from './LazyLoader';
 
@@ -338,7 +339,9 @@ const entityDetailsMap = {
   },
   '/instantsettlement/:id': {
     component: InstantSettlementDetails,
-    additionalCondition: (user) => user.isAllowedView('settlements'),
+    additionalCondition: (user) =>
+      user.isAllowedView('settlements') &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements),
   },
   '/paymentlinks/:id(inv_.+|plink_.+)': {
     component: PaymentLinkDetails,
@@ -353,7 +356,8 @@ const entityDetailsMap = {
   },
   '/invoices/:id/details': {
     component: PaymentLinkDetails,
-    additionalCondition: (user) => user.isAllowedView('invoices'),
+    additionalCondition: (user) =>
+      user.isAllowedView('invoices') && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Invoices),
   },
 
   '/route/payments/:id': { component: PaymentsDetails },
@@ -495,11 +499,14 @@ const entityModalsMap = {
   },
   '/offers/new': {
     component: OffersNew,
-    additionalCondition: (user) => user.isAllowedEdit('offers'),
+    additionalCondition: (user) =>
+      user.isAllowedEdit('offers') && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Offers),
   },
   '/paymentlinks/new': {
     component: PaymentLinkCreate,
-    additionalCondition: (user) => user.isAllowedEdit('payment_links'),
+    additionalCondition: (user) =>
+      user.isAllowedEdit('payment_links') &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks),
   },
   '/registration_links/:id(inv_.+)/upload_nach': {
     component: UploadNACHForm,
@@ -511,19 +518,23 @@ const entityModalsMap = {
   },
   '/subscriptions/new': {
     component: NewSubscriptionLink,
+    additionalCondition: (user) => !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions),
   },
   '/subscriptions/:id(sub_.+)/edit': {
     component: UpdateSubscriptionLink,
   },
   '/smartcollect/virtualaccounts/new': {
     component: VirtualAccountCreate,
+    additionalCondition: (user) => !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SmartCollect),
   },
   '/virtualaccounts/new': {
     component: VirtualAccountCreate,
+    additionalCondition: (user) => !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.SmartCollect),
   },
   '/qr_codes/new': {
     component: QRCodeCreate,
-    additionalCondition: (user) => user.isAllowedEdit('qr_codes'),
+    additionalCondition: (user) =>
+      user.isAllowedEdit('qr_codes') && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.QrCodes),
   },
   '/route/transfers/direct_transfer': {
     component: DirectTransfers,
@@ -534,7 +545,10 @@ const entityModalsMap = {
   },
   '/stores/products/new': {
     component: StoresProductsCreate,
-    additionalCondition: (user) => user.isAllowedView('stores') && user.isStoresEnabled,
+    additionalCondition: (user) =>
+      user.isAllowedView('stores') &&
+      user.isStoresEnabled &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Stores),
   },
   '/stores/products/:product_id': {
     component: StoresProductsCreate,
@@ -559,7 +573,9 @@ export const supportHashMapping = {
 const fullPageViewsMap = {
   '/paymentpages/new': {
     component: PaymentPagesWysiwyg,
-    additionalCondition: (user) => user.isAllowedEdit('payment_pages'),
+    additionalCondition: (user) =>
+      user.isAllowedEdit('payment_pages') &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages),
   },
   '/paymentpages/:id(pl_.+)/edit': {
     component: PaymentPagesWysiwyg,
@@ -572,7 +588,9 @@ const fullPageViewsMap = {
   '/paymentbuttons/new': {
     component: PaymentButtonCreate,
     additionalCondition: (user) =>
-      user.isAllowedEdit('payment_buttons') && user.isPaymentButtonEnabledByRazorX,
+      user.isAllowedEdit('payment_buttons') &&
+      user.isPaymentButtonEnabledByRazorX &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentButtons),
   },
   '/paymentbuttons/:id(pl_.+)/edit': {
     component: PaymentButtonCreate,
@@ -603,9 +621,11 @@ const fullPageViewsMap = {
   },
   '/app-store/:partner': {
     component: PartnerPage,
+    additionalCondition: (user) => !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppStore),
   },
   '/app-store': {
     component: PartnerAppStore,
+    additionalCondition: (user) => !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppStore),
   },
   '/tncform': {
     component: GenerateTnC,
