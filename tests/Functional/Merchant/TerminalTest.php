@@ -519,6 +519,27 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateUPIInAppTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testEditUPIInAppTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:upi_in_app_terminal');
+
+        $data = [
+            'gateway'                   => 'upi_axis',
+            'type'                      => [
+                'in_app' => '0',
+            ],
+        ];
+
+        $content = $this->editTerminal($terminal->getId(), $data);
+
+        $this->assertEquals($content['type'], ['non_recurring']);
+    }
+
     public function testAddBharatQrTerminal()
     {
         $this->startTest();

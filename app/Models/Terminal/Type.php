@@ -76,6 +76,8 @@ class Type
 
     const OFFLINE                          = 'offline';
 
+    const IN_APP                           = 'in_app';
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -102,6 +104,7 @@ class Type
         self::POS,
         self::ONLINE,
         self::OFFLINE,
+        self::IN_APP,
     ];
 
     protected static $bitPosition = [
@@ -130,6 +133,7 @@ class Type
         self::POS                              => 23,
         self::ONLINE                           => 24,
         self::OFFLINE                          => 25,
+        self::IN_APP                           => 26,
     ];
 
     /**

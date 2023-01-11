@@ -818,6 +818,35 @@ return [
         ],
     ],
 
+    'testCreateUPIInAppTerminal' => [
+        'request'  => [
+            'content' => [
+                'gateway'              => 'upi_axis',
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'upi'                  => true,
+                'vpa'                  => 'some@axis',
+                'type'                 => [
+                    'non_recurring' => '1',
+                    'in_app'         => '1',
+                ],
+            ],
+            'method'  => 'POST',
+            'url'     => '/merchants/10000000000000/terminals',
+        ],
+        'response' => [
+            'content' => [
+                'gateway_merchant_id'  => '12345',
+                'gateway_merchant_id2' => 'rzpbqr@icici',
+                'enabled'              => true,
+                'type'    => [
+                    'non_recurring',
+                    'in_app',
+                ],
+            ]
+        ]
+    ],
+
     'testAddBharatQrTerminal' => [
         'request' => [
             'content' => [

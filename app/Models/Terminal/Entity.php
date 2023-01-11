@@ -1875,6 +1875,10 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::UPI_TRANSFER) === true);
     }
 
+    public function isInAPP() {
+        return ($this->isTypeApplicable(Type::IN_APP) === true);
+    }
+
     public function isMoto()
     {
         return ($this->isTypeApplicable(Type::MOTO) === true);
