@@ -1013,6 +1013,32 @@ class Gateway extends Base\Gateway
         return;
     }
 
+    public function callbackDecryption($input)
+    {
+        parent::action($input, Action::CALLBACK_DECRYPTION);
+
+        $request = $this->getMozartRequestArray($input);
+
+        $traceReq = [
+            'method' => $request['method'],
+            'url'    => $request['url'],
+        ];
+
+        $this->traceGatewayPaymentRequest($traceReq, $input, TraceCode::UPI_GATEWAY_CALLBACK_DECRYPTION_REQUEST);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $traceRes = $this->getRedactedData($response);
+
+        $this->traceGatewayPaymentResponse($traceRes, $input, TraceCode::UPI_GATEWAY_CALLBACK_DECRYPTION_RESPONSE);
+
+        $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
+
+        unset($response['data']['_raw'], $response['_raw']);
+
+        return $response['data'];
+    }
+
     protected function isMandateCreateCallback($input, $gateway)
     {
         switch($gateway)
@@ -1812,6 +1838,12 @@ class Gateway extends Base\Gateway
     {
         $version = '';
 
+        if($this->action === Action::CALLBACK_DECRYPTION)
+        {
+            $version = 'v4';
+            return $version;
+        }
+
         if ($this->isUpiRecurringPayment($input['payment']) === true)
         {
             $gatewayAccessCode = trim($input['terminal']['gateway_access_code'] ?? null);
@@ -2067,13 +2099,14 @@ class Gateway extends Base\Gateway
                 Action::VERIFY      =>  Action::PAY_VERIFY,
             ],
             Payment\Gateway::UPI_ICICI => [
-                Action::AUTH_INIT         => null,
-                Action::AUTH_VERIFY       => null,
-                Action::PAY_INIT          => null,
-                Action::PAY_VERIFY        => null,
-                Action::MANDATE_REVOKE    => null,
-                Action::NOTIFY            => null,
-                Action::VERIFY            => null,
+                Action::AUTH_INIT           => null,
+                Action::AUTH_VERIFY         => null,
+                Action::PAY_INIT            => null,
+                Action::PAY_VERIFY          => null,
+                Action::MANDATE_REVOKE      => null,
+                Action::NOTIFY              => null,
+                Action::VERIFY              => null,
+                Action::CALLBACK_DECRYPTION => null,
             ],
             Payment\Gateway::CCAVENUE => [
                 Action::PAY_INIT      => null,
@@ -2252,13 +2285,14 @@ class Gateway extends Base\Gateway
                 Action::VERIFY      =>  Action::AUTHORIZE,
             ],
             Payment\Gateway::UPI_ICICI => [
-                Action::AUTH_INIT         => null,
-                Action::AUTH_VERIFY       => null,
-                Action::PAY_INIT          => null,
-                Action::PAY_VERIFY        => null,
-                Action::MANDATE_REVOKE    => null,
-                Action::NOTIFY            => null,
-                Action::VERIFY            => null,
+                Action::AUTH_INIT           => null,
+                Action::AUTH_VERIFY         => null,
+                Action::PAY_INIT            => null,
+                Action::PAY_VERIFY          => null,
+                Action::MANDATE_REVOKE      => null,
+                Action::NOTIFY              => null,
+                Action::VERIFY              => null,
+                Action::CALLBACK_DECRYPTION => null,
             ],
             Payment\Gateway::CCAVENUE => [
                 Action::PAY_INIT      => null,

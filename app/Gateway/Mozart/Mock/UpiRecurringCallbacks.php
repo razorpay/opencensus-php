@@ -142,9 +142,9 @@ trait UpiRecurringCallbacks
             return $jsonResponse;
         }
 
-        $encryptedResponse = $this->encryptICICIKey($jsonResponse);
+        $encryptedResponse = $this->getHybridEncryptedResponse($response);
 
-        return base64_encode($encryptedResponse);
+        return $encryptedResponse;
     }
 
     protected function getAsyncCallbackResponseMandateCreateForMindgate($payment)
@@ -452,5 +452,25 @@ trait UpiRecurringCallbacks
         }
 
         return join($content);
+    }
+
+    protected function getHybridEncryptedResponse($response)
+    {
+        $jsonResponse = json_encode($response);
+
+        $encryptedData = base64_encode($jsonResponse);
+
+        $responseData = [
+            'requestId'            => '',
+            'service'              => 'UPI',
+            'encryptedKey'         => '',
+            'oaepHashingAlgorithm' => 'NONE',
+            'iv'                   => '',
+            'encryptedData'        => $encryptedData,
+            'clientInfo'           => '',
+            'optionalParam'        => '',
+        ];
+
+        return json_encode($responseData);
     }
 }

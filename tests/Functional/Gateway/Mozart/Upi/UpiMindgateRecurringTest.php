@@ -21,6 +21,11 @@ class UpiMindgateRecurringTest extends UpiInitialRecurringTestCase
         $this->payment = $this->getDefaultUpiRecurringPaymentArray();
 
         $this->setMockGatewayTrue();
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'upi_autopay_hybrid_encryption', 'on');
+        });
     }
 
     public function testRevokeMandate()

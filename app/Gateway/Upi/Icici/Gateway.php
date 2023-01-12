@@ -23,9 +23,11 @@ use RZP\Http\RequestHeader;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
+use RZP\Gateway\Upi\Base\Response;
 use RZP\Gateway\Base\VerifyResult;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Gateway\Upi\Base\Constants;
 use RZP\Gateway\Base as GatewayBase;
 use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Base\AuthorizeFailed;
@@ -313,6 +315,26 @@ class Gateway extends Base\Gateway
         return [];
     }
 
+    protected function isUpiAutopayHybridEnabled()
+    {
+        $feature = 'upi_autopay_hybrid_encryption';
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+            $feature, Mode::LIVE);
+
+        $this->trace->info(TraceCode::UPI_RECURRING_HYBRID_RAZORX_VARIANT, [
+            'message' => 'Hybrid encryption for upi autopay',
+            'feature' => $variant,
+        ]);
+
+        if ($variant !== 'on')
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * returns true if it can be pre-processed through Mozart
      *
@@ -368,6 +390,29 @@ class Gateway extends Base\Gateway
         ];
 
         return $this->upiPreProcess($data);
+    }
+
+    /**
+     * pre-processes recurring callback through mozart
+     *
+     * @param string $input
+     * @return array
+     */
+    protected function preProcessThroughMozartUpiRecurring(string $input)
+    {
+        $data = [
+            'payload'               => json_decode($input,true),
+            'gateway'               => Payment\Gateway::UPI_ICICI,
+        ];
+
+        return $this->upiAutopayCallbackDecryption($data);
+    }
+
+    public function upiAutopayCallbackDecryption(array $input)
+    {
+        $gatewayInput = $this->getInputForPreProcess($input);
+
+        return $this->recurringCallbackDecryption($gatewayInput);
     }
 
     /**
@@ -801,7 +846,26 @@ class Gateway extends Base\Gateway
 
         $payment->generatePspData($attr);
 
-        $payment->saveOrFail();
+        try
+        {
+            $payment->saveOrFail();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(TraceCode::UPI_RECURRING_ERROR_SAVING_RESPONSE_CODE, [
+                'message'   => 'Gateway data length is too long',
+                'error'     => $e->getMessage(),
+                'upi'       => $payment,
+            ]);
+
+            $gatewayData = $payment->getGatewayData();
+
+            unset($gatewayData[Constants::GATEWAY_STATUS_CODE], $gatewayData[Constants::GATEWAY_STATUS_DESC],
+                $gatewayData[Constants::PSP_STATUS_CODE], $gatewayData[Constants::PSP_STATUS_DESC]);
+
+            $payment->setGatewayData($gatewayData);
+            $payment->saveOrFail();
+        }
     }
 
     public function mandateCancel(array $input)
@@ -1315,6 +1379,12 @@ class Gateway extends Base\Gateway
              ($routeName === 'payment_callback_bharatqr_internal')))
         {
             $response = $this->parseGatewayResponse($body, false, $isUpiTransfer);
+        }
+        else if (($this->isUpiAutopayHybridEnabled()) and ($decoded !== null) and
+            (isset($decoded["encryptedData"]) === true) and (isset($decoded["encryptedKey"]) === true) and
+            (isset($decoded["oaepHashingAlgorithm"]) === true))
+        {
+            $response = $this->preProcessThroughMozartUpiRecurring($body);
         }
         else if ($this->shouldPreProcessThroughMozart($isUpiTransfer, $isBharatQr, $routeName) === true)
         {

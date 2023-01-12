@@ -857,6 +857,7 @@ class PayVerifyData extends Base\Mock\Server
                 'bank_payment_id'    => '999999',
                 'amount'             => $entities['payment']['amount'],
                 'status'             => 'callback_successful',
+                'status_desc'        => 'Debit Success   |ZM|Valid MPIN',
                 'umn'                => $entities['payment']['id'] . '@icici',
                 'rrn'                => $entities['gateway']['redirect']['BankRRN'],
                 'npci_txn_id'        => 'HDFC00001124',

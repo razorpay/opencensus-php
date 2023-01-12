@@ -65,6 +65,7 @@ class AuthVerifyData extends Base\Mock\Server
                 'bank_payment_id' => '999999',
                 'mandate_amount'  => $entities['upi_mandate']['max_amount'],
                 'status'          => 'callback_successful',
+                'status_desc'     => 'Debit Success   |ZM|Valid MPIN',
                 'umn'             => $entities['payment']['id'] . '@icici',
                 'rrn'             => '012345678912',
                 'npci_txn_id'     => 'HDFC00001124',

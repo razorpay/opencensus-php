@@ -4,6 +4,7 @@ namespace RZP\Gateway\Upi\Base;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
 use RZP\Models\UpiMandate;
@@ -181,6 +182,22 @@ trait RecurringTrait
         return $gateway->mandateRevoke($input);
     }
 
+    protected function recurringCallbackDecryption(array $input)
+    {
+        $mozart = $this->getMozartGatewayWithModeSet();
+
+        if ($this->env === 'production')
+        {
+            $mozart->setMode(Mode::LIVE);
+        }
+        else
+        {
+            $mozart->setMode(Mode::TEST);
+        }
+
+        return $mozart->callbackDecryption($input);
+    }
+
     protected function firstDebit(array $input)
     {
         $gateway = $this->getMozartGatewayWithModeSet();
@@ -341,6 +358,23 @@ trait RecurringTrait
     protected function isFirstUpiRecurringPayment($payment): bool
     {
         return ($payment['method'] === 'upi' and $payment['recurring_type'] === 'initial');
+    }
+
+    public function upiRecurringUpdateGatewayStatus($response)
+    {
+        $payerResponseCode = explode("|", $response['status_desc']);
+        $gatewayData = [];
+        $gatewayData[Constants::GATEWAY_STATUS_CODE] = $response['status_code'];
+        $gatewayData[Constants::GATEWAY_STATUS_DESC] = rtrim($payerResponseCode[0]);
+
+        if((isset($payerResponseCode[1])) and
+            (empty($payerResponseCode[1] === false)))
+        {
+            $gatewayData[Constants::PSP_STATUS_CODE] = $payerResponseCode[1];
+            $gatewayData[Constants::PSP_STATUS_DESC] = $payerResponseCode[2];
+        }
+
+        return $gatewayData;
     }
 
     /**
@@ -534,6 +568,18 @@ trait RecurringTrait
             $updated = array_merge($current, $new);
 
             $attributes[Entity::GATEWAY_DATA] = $updated;
+        }
+
+        if((isset($response['status_desc'])) and
+            (empty($response['status_desc']) === false))
+        {
+            $payerResponseCodeDes = $this->upiRecurringUpdateGatewayStatus($response);
+            $attributes[Entity::GATEWAY_DATA] += $payerResponseCodeDes;
+
+            $this->trace->info(TraceCode::UPI_RECURRING_PAYER_RESPONSE_CODE, [
+                'attributes'                => $attributes,
+                'payer_response_code'       => $payerResponseCodeDes,
+            ]);
         }
 
         // fields like npci_reference_id, npci_txn_id must be checked against mismatch for anomalies

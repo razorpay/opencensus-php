@@ -1180,6 +1180,15 @@ class UpiIciciAutoRecurringTest extends TestCase
             'status_code'           => '0',
             'npci_txn_id'           => 'HDFC00001124',
             'npci_reference_id'     => '019721040510',
+            'gateway_data'          => [
+                'act'                   => 'execte',
+                'ano'                   => 1,
+                'sno'                   => 2,
+                'gatewayStatusCode'     => null,
+                'gatewayStatusDesc'     => 'Debit Success',
+                'pspStatusCode'         => 'ZM',
+                'pspStatusDesc'         => 'Valid MPIN',
+            ]
         ]);
 
         $this->assertUpiDbLastEntity('upi_mandate', [
