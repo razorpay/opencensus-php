@@ -518,8 +518,8 @@ class Core extends Base\Core
 
         $clarityContextEnabled = !empty($clarityContextInput) and $clarityContextInput === '1';
 
-        // Currently we are just checking if there exists even one non-archived account of the merchant for the
-        // selected channel. If we find any such account we will just return the account and wont create a new one.
+        // Currently we are just checking if there exists even one account of the merchant for the selected
+        // channel. If we find any such account we will just return the account and wont create a new one.
         // But later when a merchant will start having more than one current account in the same channel
         // this logic will have to be handled.
 
