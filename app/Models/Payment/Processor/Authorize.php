@@ -79,6 +79,7 @@ use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\RecurringType;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Customer\GatewayToken;
+use RZP\Exception\BadRequestException;
 use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Locale\Core as LocaleCore;
@@ -2164,6 +2165,77 @@ trait Authorize
         }
     }
 
+    /**
+     * @param array $gatewayInput
+     * @param Payment\Entity $payment
+     * @return void
+     * @throws BadRequestException
+     */
+    public function validateCvvForVisaTokenisedPayment(array & $gatewayInput, Payment\Entity $payment)
+    {
+
+        if ($payment->isMethodCardOrEmi() === false || $payment->card === null)
+        {
+            return;
+        }
+
+        if($payment->card->isVisa() === false) {
+            return;
+        }
+
+        if (empty($gatewayInput['card']['cvv']) && $payment->card->getTrivia() === "1" &&
+            $payment->card->isVisa())
+        {
+
+            $razorxFeature = Merchant\RazorxTreatment::CVV_OPTIONAL ."_". $payment->card->getNetworkCode() ."_".
+                $payment->getGateway();
+
+            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(),
+                $razorxFeature,
+                $this->mode
+            );
+
+            $this->trace->info(TraceCode::CVV_OPTIONAL, [
+                'payment' => $payment->getId(),
+                'network' => $payment->card->getNetworkCode(),
+                'gateway' => $payment->getGateway(),
+                'variant'  => $variant,
+                'razorx_feature'  => $razorxFeature,
+            ]);
+
+            $this->handleCvv($variant, $gatewayInput);
+        }
+    }
+
+    /**
+     * @param $variant
+     * @param array $gatewayInput
+     * @return void
+     * @throws BadRequestException
+     */
+    public function handleCvv($variant, array & $gatewayInput)
+    {
+        if (strtolower($variant) === 'on')
+        {
+            $this->trace->info(TraceCode::CVV_OPTIONAL, [$this->payment->getGateway()]);
+            unset($gatewayInput['card']['cvv']);
+        }
+        else
+        {
+
+            if ($this->payment->isVisaSafeClickStepUpPayment() === true || $this->payment->skipCvvCheck() === true
+                || $this->payment->isCardAutoRecurring() === true)
+            {
+                return;
+            }
+            else
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED);
+            }
+        }
+    }
+
     protected function validateNewSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
     {
         $this->validateSubscriptionAmount($subscription, $payment->getAmount(), $cardChange = false);
@@ -3028,6 +3100,9 @@ trait Authorize
         return true;
     }
 
+    /**
+     * @throws BadRequestException
+     */
     protected function runPostGatewaySelectionPreProcessing(Payment\Entity $payment, array & $gatewayInput)
     {
         // Fees validation can only happen after international validation has gone through
@@ -3054,6 +3129,9 @@ trait Authorize
                 'line'      => "Models/Payment/Processor/Authorize.php:1917"
             ]
         );
+
+        $this->validateCvvForVisaTokenisedPayment($gatewayInput, $payment);
+
 
         $this->repo->saveOrFail($payment);
 

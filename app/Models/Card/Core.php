@@ -891,6 +891,14 @@ class Core extends Base\Core
             return;
         }
 
+        if (empty($input['cvv']) && $card->getTrivia() === '1' &&
+            $card->isVisa() === true)
+        {
+            $this->trace->info(
+                TraceCode::CVV_OPTIONAL, []);
+            return;
+        }
+
         //
         // If the card is not Maestro, then cvv has to be set
         //
@@ -1007,7 +1015,7 @@ class Core extends Base\Core
             Card\Entity::TOKENISED              => true,
             Card\Entity::VAULT                  => "rzpvault",
             CARD\Entity::IS_CVV_OPTIONAL        => false,
-            Card\Entity::CVV                    => $input['card']['cvv'] ?? "123", // adding dummy cvv
+            Card\Entity::CVV                    => $input['card']['cvv'] ?? null,
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
             Card\Entity::TOKEN                  => $input['token'] ?? "",
         ];

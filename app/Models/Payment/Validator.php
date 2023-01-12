@@ -18,6 +18,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
 use RZP\Models\Customer\Token;
@@ -32,7 +33,6 @@ use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Currency\Core as CurrencyCore;
 use Illuminate\Validation\Concerns;
-use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
 {
@@ -1275,8 +1275,8 @@ class Validator extends Base\Validator
             return;
         }
 
-        // cvv optional for amex tokenized payments
-        if ($this->entity->card->isAmex() && empty($input['card']['cvv']) && $this->entity->card->getTrivia() === '1')
+        // cvv optional for amex and visa tokenized payments
+        if (($this->entity->card->isAmex() ||  $this->entity->card->isVisa()) && empty($input['card']['cvv']) && $this->entity->card->getTrivia() === '1')
         {
             $this->trace->info(traceCode::CVV_OPTIONAL, []);
             return;

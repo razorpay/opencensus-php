@@ -708,6 +708,9 @@ final class RazorxTreatment
     // Experiment to use card number from input to use dummy cvv in payment
     const USE_DETECT_NETWORK_FOR_DUMMY_CVV = 'use_detect_network_for_dummy_cvv';
 
+    // Experiment for keeping cvv optional for visa network
+    const CVV_OPTIONAL = "cvv_optional";
+
     //Experiment to remove invalid filters in the terminals proxy calls
     const REMOVE_GET_TERMINALS_PROXY_INVALID_FILTERS = "remove_get_terminals_proxy_invalid_filters";
 

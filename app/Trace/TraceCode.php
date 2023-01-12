@@ -8760,7 +8760,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ONE_CC_SPLITZ_EXPERIMENT_ERROR                = 'ONE_CC_SPLITZ_EXPERIMENT_ERROR';
     const IS_PARTNERSHIP_MERCHANT                       = 'IS_PARTNERSHIP_MERCHANT';
 
-    // cvv optional for amex
+    // cvv optional for amex and visa
     const CVV_OPTIONAL = "CVV_OPTIONAL";
 
     // ------------------------------ Truecaller Authentication Tracecodes ------------------------------
@@ -8803,6 +8803,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PENDING_PAYOUT_PROCESS_EXCEPTION         = 'PENDING_PAYOUT_PROCESS_EXCEPTION';
     const QUEUED_PAYOUT_PROCESS_EXCEPTION          = 'QUEUED_PAYOUT_PROCESS_EXCEPTION';
     const BATCH_SUBMITTED_PAYOUT_PROCESS_EXCEPTION = 'BATCH_SUBMITTED_PAYOUT_EXCEPTION';
+
 
 
     protected static $messages = [
