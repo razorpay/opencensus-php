@@ -233,6 +233,8 @@ class Tracing
             'fetch_partner_intent',
             'credits_fetch_multiple',
             'user_salesforce_event',
+            'send_salesforce_user_otp',
+            'verify_salesforce_user_otp',
 
             //payment page create
             'payment_page_create',
