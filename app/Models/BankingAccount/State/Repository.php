@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Support\Facades\DB;
 use RZP\Base;
 use RZP\Models\BankingAccount\Status;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -66,39 +67,36 @@ class Repository extends Base\Repository
 
     /**
      * Given an array for bankingAccountIds  
-     * Aggregate using created_at in a specific order grouping by banking_account_id  
-     * Join with the same table with Subquery to filter a specific status change log
+     * Get all created_at for a specific status
      * 
      * @param $bankingAccountIds
-     * @param $order
-     * @param $attributes
-     * @param $modifyQuery
+     * @param $status
      */
-    public function getStateChangeLogForMultipleBankingAccounts($bankingAccountIds, string $order = 'last', $attributes = [], Closure $modifyQuery = null)
+    public function getStateChangeLogForMultipleBankingAccounts(array $bankingAccountIds, string $status, string $orderBy = 'asc')
     {
-        $aggregationFunc = 'MAX';
+        $startTime = microtime(true);
 
-        if ($order === 'first') {
-            $aggregationFunc = 'MIN';
-        }
+        $stateBankingAccountIdCol = $this->repo->banking_account_state->dbColumn(Entity::BANKING_ACCOUNT_ID);
+        $stateStatusCol = $this->repo->banking_account_state->dbColumn(Entity::STATUS);
+        $stateCreatedAtCol = $this->repo->banking_account_state->dbColumn(Entity::CREATED_AT);
 
-        $query = $this->newQuery()
-            ->select(DB::raw(Entity::BANKING_ACCOUNT_ID.' as banking_account_id, '.$aggregationFunc.'(created_at) as created_at'))
-            ->whereIn(Entity::BANKING_ACCOUNT_ID, $bankingAccountIds);
-
-        foreach ($attributes as $key => $value)
-        {
-            $query->where($key, '=', $value);
-        }
-
-        $query->groupBy(Entity::BANKING_ACCOUNT_ID);
-
-        if ($modifyQuery != null && $modifyQuery instanceof Closure)
-        {
-            $modifyQuery($query);
-        }
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select($stateBankingAccountIdCol, $stateCreatedAtCol)
+            ->whereIn($stateBankingAccountIdCol, $bankingAccountIds)
+            ->where($stateStatusCol, $status)
+            ->orderBy($stateCreatedAtCol, $orderBy);
     
-        return $query->get();
+        $timestamps = $query->get();
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_DB_QUERY_DURATION, [
+            'query'       => 'state_timestamps',
+            'status'      => $status,
+            'count'       => count($bankingAccountIds),
+            'duration'    => (microtime(true) - $startTime) * 1000,
+        ]);
+
+        return $timestamps;
+
     }
 
 }

@@ -3,12 +3,15 @@
 
 namespace RZP\Models\BankingAccount\Activation\MIS;
 
+use RZP\Base\ConnectionType;
 use RZP\Models\BankingAccount;
 use RZP\Models\BankingAccount\Status;
 use RZP\Models\Base\PublicCollection;
 
 class LeadsReport extends Leads
 {
+    const BATCH_SIZE = 150;
+
     protected function getData(): array
     {
         /** ============== PREPARE DATA ================ */
@@ -35,12 +38,12 @@ class LeadsReport extends Leads
                 ],
                 BankingAccount\Entity::CHANNEL => BankingAccount\Channel::RBL,
                 BankingAccount\Entity::ACCOUNT_TYPE => BankingAccount\AccountType::CURRENT,
-                BankingAccount\Fetch::COUNT => 1000,
+                BankingAccount\Fetch::COUNT => self::BATCH_SIZE,
                 BankingAccount\Fetch::SKIP => $skip,
             ]);
 
             /** @var  PublicCollection $bankingAccounts */
-            $bankingAccounts = $this->repo->banking_account->fetch($input);
+            $bankingAccounts = $this->repo->banking_account->fetch($input, null, ConnectionType::SLAVE);
 
             foreach ($bankingAccounts as $bankingAccount)
             {
@@ -50,13 +53,13 @@ class LeadsReport extends Leads
             $bankingAccountIds = array_map(function ($bankingAccount) {
                 return $bankingAccount['id'];
             }, $bankingAccounts->toArray());
-    
+
             $this->updateCommentMap($bankingAccountIds, $commentsMap);
-    
+
             $this->updateStateMap($bankingAccountIds, $sentToBankTimestampMap);
 
-            $hasMore = count($bankingAccounts);
-            $skip = $skip + 1000;
+            $hasMore = count($bankingAccounts) == self::BATCH_SIZE;
+            $skip = $skip + self::BATCH_SIZE;
 
         }
 
@@ -65,24 +68,26 @@ class LeadsReport extends Leads
 
     public function createFile(array $fileInput)
     {
-        $xlsxFilePath = $this->createExcelFile($fileInput, $this->fileName, "/tmp");
+        $xlsxFilePath = $this->createExcelFile($fileInput, $this->fileName, "/tmp/");
 
-        return $xlsxFilePath;
+        return [$xlsxFilePath, $this->uploadTemporaryFileToStore($xlsxFilePath)];
     }
 
     public function generateFile(array $fileInput)
     {
-        $response = $this->createFile($fileInput);
+        [$xlsxFilePath, $response] = $this->createFile($fileInput);
 
-        return $response;
+        $ufhService = $this->app['ufh.service'];
+
+        $signedUrlResponse = $ufhService->getSignedUrl($response['file_id']);
+
+        return [$xlsxFilePath, $signedUrlResponse];
     }
 
     public function generate()
     {
         $fileInput = $this->getFileInput();
 
-        $file = $this->generateFile($fileInput);
-
-        return $file;
+        return $this->generateFile($fileInput);
     }
 }

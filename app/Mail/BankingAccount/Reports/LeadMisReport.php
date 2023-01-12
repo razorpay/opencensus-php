@@ -2,6 +2,9 @@
 
 namespace RZP\Mail\BankingAccount\Reports;
 
+use Razorpay\Trace\Logger as Trace;
+use RZP\Trace\TraceCode;
+
 class LeadMisReport extends Base
 {
     const SUBJECT = "Lead MIS Report from Razorpay";
@@ -34,11 +37,7 @@ class LeadMisReport extends Base
     {
         $data = $this->reportData;
 
-        $this->with(array_merge($data, [
-            'download_report_url' => ''
-        ]));
-
-        return parent::addMailData();
+        $this->with($data);
 
         return $this;
     }
@@ -52,12 +51,29 @@ class LeadMisReport extends Base
 
     protected function addAttachments()
     {
-        foreach ($this->reportData['attachments'] as $attachment)
+        try {
+
+            if (empty($this->reportData['attachments']))
+            {
+                return $this;
+            }
+
+            foreach ($this->reportData['attachments'] as $attachment)
+            {
+                $this->attach($attachment['file_path'], [
+                    'as' => $attachment['file_name'],
+                    'mime-type' => $attachment['mime_type'],
+                ]);
+            }
+        }
+        catch (\Throwable $e)
         {
-            $this->attach($attachment['file_path'], [
-                'as' => $attachment['file_name'],
-                'mime-type' => $attachment['mime_type'],
-            ]);
+            app('trace')->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_ERROR, [
+                    'attachments' => $attachment
+                ]);
         }
 
         return $this;

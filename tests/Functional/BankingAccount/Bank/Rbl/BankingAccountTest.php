@@ -50,6 +50,7 @@ use RZP\Mail\BankingAccount\StatusNotifications\Cancelled;
 use RZP\Mail\BankingAccount\StatusNotifications\Activated;
 use RZP\Models\BankingAccount\Activation\Detail\Validator;
 use RZP\Models\BankingAccount\Core as BankingAccountCore;
+use RZP\Mail\BankingAccount as BankingAccountMails;
 use RZP\Mail\BankingAccount\Activation as ActivationMails;
 use RZP\Mail\BankingAccount\StatusNotifications\Processing;
 use RZP\Mail\Invitation\Razorpayx\BankLmsInvite;
@@ -10133,6 +10134,7 @@ class BankingAccountTest extends TestCase
         $this->startTest();
 
         Mail::assertQueued(ActivationMails\BankPartnerAssigned::class);
+        
     }
 
     public function testBankingAccountLeadsMISDownloadByBank()

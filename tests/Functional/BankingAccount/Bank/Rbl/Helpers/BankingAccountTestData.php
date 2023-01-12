@@ -4714,7 +4714,8 @@ return [
             'content' => [
                 'status' => 'success',
                 'message' => 'Report will be sent over email in a few mins.'
-            ]
+            ],
+            'status_code' => 200,
         ],
     ],
 

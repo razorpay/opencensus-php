@@ -24,9 +24,12 @@ class Service extends BankingAccount\Service
 
     protected $repository;
 
+    /** @var Merchant $partnerBankMerchant */
     protected $partnerBankMerchant;
+
     /** @var  BranchMaster $branchMaster*/
     protected $branchMaster;
+
     /** @var RmMaster $rmMaster*/
     protected $rmMaster;
 
@@ -413,6 +416,11 @@ class Service extends BankingAccount\Service
     public function sendActivationMisReport(array $input)
     {
         return $this->core->sendActivationMisReport($this->partnerBankMerchant, $input);
+    }
+
+    public function setPartnerMerchantBasicAuth()
+    {
+        $this->app['basicauth']->setMerchant($this->partnerBankMerchant);
     }
 
 }

@@ -7,6 +7,7 @@ use Closure;
 use Illuminate\Support\Facades\DB;
 use RZP\Base;
 use RZP\Models\Base as BaseModels;
+use RZP\Trace\TraceCode;
 
 class Repository extends BaseModels\Repository
 {
@@ -121,47 +122,52 @@ class Repository extends BaseModels\Repository
 
     /**
      * Given an array for bankingAccountIds  
-     * Aggregate using created_at in a specific order grouping by banking_account_id  
-     * Join with the same table with Subquery to filter a specific comment
+     * Join with the same table with left join
+     * to find the last comment
      * 
      * @param $bankingAccountIds
-     * @param $order
-     * @param $attributes
-     * @param $modifyQuery
      */
-    public function getCommentForMultipleBankingAccounts($bankingAccountIds, string $order = 'last', $attributes = [], Closure $modifyQuery = null)
+    public function getCommentForMultipleBankingAccounts(array $bankingAccountIds)
     {
-        $aggregationFunc = 'MAX';
 
-        if ($order === 'first') {
-            $aggregationFunc = 'MIN';
-        }
+        $startTime = microtime(true);
 
-        $subquery = $this->newQuery()
-            ->select(DB::raw(Entity::BANKING_ACCOUNT_ID.' as baid, '.$aggregationFunc.'(created_at) as SubQueryDate'))
-            ->whereIn(Entity::BANKING_ACCOUNT_ID, $bankingAccountIds);
+        $commentTable = $this->repo->banking_account_comment->getTableName();
+        $commentCommentCol = $this->repo->banking_account_comment->dbColumn(Entity::COMMENT);
+        $commentBankingAccountIdCol = $this->repo->banking_account_comment->dbColumn(Entity::BANKING_ACCOUNT_ID);
+        $commentTypeCol = $this->repo->banking_account_comment->dbColumn(Entity::TYPE);
+        $commentSourceTeamCol = $this->repo->banking_account_comment->dbColumn(Entity::SOURCE_TEAM);
+        $commentCreatedAtCol = $this->repo->banking_account_comment->dbColumn(Entity::CREATED_AT);
 
-        foreach ($attributes as $key => $value)
-        {
-            $subquery->where($key, '=', $value);
-        }
-
-        $subquery->groupBy(Entity::BANKING_ACCOUNT_ID);
-
-        $query = $this->newQuery()
-                ->joinSub($subquery, 'SubQuery', function ($join) {
-                    $join
-                        ->on($this->getTableName().'.'.Entity::BANKING_ACCOUNT_ID, '=', 'SubQuery.baid')
-                        ->on($this->getTableName().'.'.Entity::CREATED_AT, '=', 'SubQuery.SubQueryDate');
-                })
-                ->whereIn(Entity::BANKING_ACCOUNT_ID, $bankingAccountIds);
-
-        if ($modifyQuery != null && $modifyQuery instanceof Closure)
-        {
-            $modifyQuery($query);
-        }
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select($commentBankingAccountIdCol, $commentCommentCol)
+            ->leftJoin($commentTable.' as b2', function ($join)
+            use (
+                $commentBankingAccountIdCol,
+                $commentTypeCol,
+                $commentSourceTeamCol,
+                $commentCreatedAtCol)
+            {
+                $join
+                    ->on('b2.'.Entity::BANKING_ACCOUNT_ID, '=', $commentBankingAccountIdCol)
+                    ->on('b2.'.Entity::TYPE, '=', $commentTypeCol)
+                    ->on('b2.'.Entity::SOURCE_TEAM, '=', $commentSourceTeamCol)
+                    ->on($commentCreatedAtCol, '<', 'b2.'.Entity::CREATED_AT);
+            })
+            ->whereIn($commentBankingAccountIdCol, $bankingAccountIds)
+            ->where($commentSourceTeamCol, 'bank')
+            ->where($commentTypeCol, 'external')
+            ->whereNull('b2.'.Entity::CREATED_AT);
     
-        return $query->get();
+        $comments = $query->get();
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_DB_QUERY_DURATION, [
+            'query'       => 'comments',
+            'count'       => count($bankingAccountIds),
+            'duration'    => (microtime(true) - $startTime) * 1000,
+        ]);
+
+        return $comments;
     }
 
 }

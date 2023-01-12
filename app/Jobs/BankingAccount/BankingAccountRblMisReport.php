@@ -5,9 +5,9 @@ namespace RZP\Jobs\BankingAccount;
 use RZP\Mail\Facade as Mail;
 use RZP\Jobs\Job;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Trace\TraceCode;
 use RZP\Mail\BankingAccount\Reports\LeadMisReport;
 use RZP\Models\BankingAccount as BankingAccountModel;
-use RZP\Trace\TraceCode;
 
 class BankingAccountRblMisReport extends Job
 {
@@ -50,30 +50,33 @@ class BankingAccountRblMisReport extends Job
             'input' => $this->input,
             'start_time' => $startTime,
         ];
-
+        
         $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB, $tracePayload);
 
         $bankLmsSerice = new BankingAccountModel\BankLms\Service();
 
+        $bankLmsSerice->setPartnerMerchantBasicAuth();
+
         try
         {
             /** @var string $filePath */
-            $filePath = $bankLmsSerice->sendActivationMisReport($this->input);
+            [$filePath, $signedUrlResponse] = $bankLmsSerice->sendActivationMisReport($this->input);
 
             $reportData = [
-                'download_report_url' => '',
-                'attachments' => [
-                    [
-                        'file_path' => $filePath,
-                        'file_name' => last(explode('/', $filePath)),
-                        'mime_type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    ]
-                ]
+                'download_report_url' => $signedUrlResponse['signed_url'],
             ];
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB, array_merge($tracePayload, 
+            [
+                'attempts'              => $this->attempts(),
+                'signed_url_response'   => $signedUrlResponse,
+            ]));
 
             $leadMisReportMail = new LeadMisReport($reportData, $this->maker);
 
-            Mail::queue($leadMisReportMail);
+            Mail::send($leadMisReportMail);
+
+            $this->delete();
         }
         catch (\Throwable $e) {
 
@@ -92,8 +95,10 @@ class BankingAccountRblMisReport extends Job
         finally
         {
             $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB, array_merge($tracePayload, [
-                'duration'    => (microtime(true) - $startTime) * 1000,
-                'filePath'    => $filePath,
+                'attempts'          => $this->attempts(),
+                'filePath'          => $filePath,
+                'signedUrlResponse' => $signedUrlResponse,
+                'duration'          => (microtime(true) - $startTime) * 1000,
             ]));
         }
     }

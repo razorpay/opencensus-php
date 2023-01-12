@@ -290,18 +290,16 @@ class Leads extends Base
 
     protected function updateCommentMap(array $bankingAccountIds, &$commentsMap)
     {
-        
+        if (count($bankingAccountIds) < 1)
+        {
+            return;
+        }
+
         $commentRepo = (new BankingAccount\Activation\Comment\Repository());
 
         /** @var  BankingAccount\Activation\Comment\Entity[] $lastExternalComments */
         $lastExternalComments = $commentRepo->getCommentForMultipleBankingAccounts(
-                $bankingAccountIds,
-                'last',
-                [
-                    BankingAccount\Activation\Comment\Entity::TYPE => 'external',
-                    BankingAccount\Activation\Comment\Entity::SOURCE_TEAM => 'bank'
-                ]
-            );
+                $bankingAccountIds);
 
         foreach($lastExternalComments as $lastExternalComment)
         {
@@ -311,16 +309,17 @@ class Leads extends Base
 
     protected function updateStateMap(array $bankingAccountIds, &$sentToBankTimestampMap)
     {
+        if (count($bankingAccountIds) < 1)
+        {
+            return;
+        }
+
         $stateRepo = (new BankingAccount\State\Repository());
 
         /** @var  BankingAccount\State\Entity[] $lastSentToBankLogs */
         $lastSentToBankLogs = $stateRepo->getStateChangeLogForMultipleBankingAccounts(
                 $bankingAccountIds,
-                'last',
-                [
-                    BankingAccount\State\Entity::STATUS => Status::INITIATED
-                ]
-            );
+                Status::INITIATED, 'asc');
 
         foreach($lastSentToBankLogs as $lastSentToBankLog)
         {
