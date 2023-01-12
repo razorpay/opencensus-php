@@ -34,6 +34,7 @@ class Constants
     const ONE_CC_CAPTURE_ORDER_INSTRUCTIONS = 'one_cc_capture_order_instructions';
     const ONE_CC_ADDRESS_SYNC_OFF        = 'one_cc_address_sync_off';
     const ONE_CC_WHITELIST_COUPONS       = 'one_cc_whitelist_coupons';
+    const ONE_CC_CACHE_COUPONS           = 'one_cc_cache_coupons';
 
     // gift card configs
     const ONE_CC_GIFT_CARD                 = 'one_cc_gift_card';
@@ -136,6 +137,7 @@ class Constants
         self::ONE_CC_GIFT_CARD_COD_RESTRICT,
         self::ONE_CC_ADDRESS_SYNC_OFF,
         self::ONE_CC_WHITELIST_COUPONS,
+        self::ONE_CC_CACHE_COUPONS
     ];
 
     const CONFIG_CUM_FEATURE_FLAGS = [
@@ -222,7 +224,7 @@ class Constants
     const ID                = 'id';
     const MERCHANT_ID        = 'merchant_id';
     const MODE              = 'mode';
-    
+
     const GIFT_CARD_NUMBER = 'gift_card_number';
     const GIFT_CARD_REFERENCE_ID = 'gift_card_reference_id';
     const GIFT_CARD_BALANCE = 'balance';
