@@ -355,7 +355,7 @@ class Validator extends Base\Validator
         Entity::ID          => 'required_without_all:merchant_id,ticket_id|string',
         Entity::MERCHANT_ID => 'required_without_all:id,ticket_id|string',
         Entity::TYPE        => 'sometimes|string',
-        Entity::TICKET_ID   => 'required_without_all:id,merchant_id|string',
+        Entity::TICKET_ID   => 'required_without_all:id,merchant_id|array',
         Entity::CREATED_BY  => 'sometimes|string',
         Entity::STATUS      => 'sometimes',
     ];

@@ -336,7 +336,7 @@ class FreshdeskTicketV2Test extends TestCase
 
         $this->fixtures->create('merchant_freshdesk_tickets', [
             'id'             => 'razorpayid0034',
-            'ticket_id'      => '34',
+            'ticket_id'      =>  ['34'],
             'merchant_id'    => '10000000000001',
             'type'           => 'support_dashboard',
             'ticket_details' => $ticketDetails,

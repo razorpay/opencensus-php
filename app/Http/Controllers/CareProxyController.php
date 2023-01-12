@@ -108,6 +108,7 @@ class CareProxyController extends Controller
     const FRESHDESK_MERCHANT_ADD_REPLY = 'twirp/rzp.care.freshdesk.v1.FreshdeskService/PostTicketReply';
     const FRESHDESK_MERCHANT_GET_TICKET = 'twirp/rzp.care.freshdesk.v1.FreshdeskService/GetTicket';
     const FRESHDESK_MERCHANT_CREATE_TICKET = 'twirp/rzp.care.freshdesk.v1.FreshdeskService/CreateTicket';
+    const FRESHDESK_MERCHANT_GET_TICKETS = 'twirp/rzp.care.freshdesk.v1.FreshdeskService/GetTickets';
 
     const ROUTE_VS_PERMISSION = [
         self::CALLBACK_GET_DATE_CONFIG                => Name::CALLBACK_SLOT_CONFIG_VIEW,
@@ -170,6 +171,7 @@ class CareProxyController extends Controller
         self::CHAT_SEND_WHATSAPP_POST_ONBOARDING_NOTIFICATION,
         self::FRESHDESK_MERCHANT_GET_TICKET,
         self::FRESHDESK_MERCHANT_CREATE_TICKET,
+        self::FRESHDESK_MERCHANT_GET_TICKETS,
     ];
 
     const MERCHANT_GET_ROUTES = [
