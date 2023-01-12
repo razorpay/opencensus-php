@@ -122,8 +122,8 @@ class Tooltip extends Component {
       paddingBottom,
     } = this.getDimensions(data);
 
-    let horizontalAdjustment = 0;
-    let verticalAdjustment = 0;
+    let horizontalAdjustment = this.props.horizontalAdjustment || 0;
+    let verticalAdjustment = this.props.verticalAdjustment || 0;
     if (tooltipLeft < screenLeft) {
       horizontalAdjustment = screenLeft - tooltipLeft;
     } else if (tooltipLeft + tooltipWidth > screenRight) {
@@ -383,6 +383,8 @@ Tooltip.defaultProps = {
   persistent: false,
   offset: DEFAULT_OFFSET,
   theme: 'light',
+  horizontalAdjustment: 0,
+  verticalAdjustment: 0,
 };
 
 Tooltip.propTypes = {
@@ -394,6 +396,8 @@ Tooltip.propTypes = {
   onAdjustment: PropTypes.func,
   onAlignmentChange: PropTypes.func,
   theme: PropTypes.oneOf(['light', 'dark']),
+  horizontalAdjustment: PropTypes.number,
+  verticalAdjustment: PropTypes.number,
 };
 
 export default Tooltip;

@@ -3,7 +3,7 @@ import '@testing-library/jest-dom/extend-expect';
 import PaymentsTable from 'merchant/views/Transactions/Payments/components/PaymentsTable';
 import { render, screen, userEvent } from 'test-utils';
 import { paymentMethod, description } from 'common/ui/item/pair';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 describe('PaymentsTable', () => {
   const payment = {
@@ -109,7 +109,7 @@ describe('PaymentsTable', () => {
   test('should call analytics event when order id link is clicked', async () => {
     renderApp();
     await userEvent.click(screen.getAllByRole('link', { name: /order_id_1/ })[0]);
-    expect(analyticsTrack).toHaveBeenCalledWith({
+    expect(analyticsTrackWithUserInfo).toHaveBeenCalledWith({
       actionName: 'Initiated',
       objectName: 'Self Serve',
       properties: {

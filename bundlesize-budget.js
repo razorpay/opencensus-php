@@ -10,7 +10,7 @@ module.exports = [
   {
     name: 'Runtime',
     path: 'js/merchant/runtime.*.js',
-    limit: '7 KB',
+    limit: '8 KB',
     gzip: true,
   },
   {

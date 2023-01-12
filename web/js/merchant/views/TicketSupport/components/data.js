@@ -280,3 +280,9 @@ export const PRERECORDED_RESPONSES = [
   "I didn't receive a satisfactory response",
   "I haven't received any response yet",
 ];
+
+export const QUERY_ROUTE_LINK_MERCHANT = '/ticket-support/tickets/merchant';
+export const QUERY_REQUEST_ROUTE_LINK__AGENT = '/ticket-support/tickets/agent';
+
+export const QUERY_ROUTE_LINK_MERCHANT_NEW = `/business-settings${QUERY_ROUTE_LINK_MERCHANT}`;
+export const QUERY_REQUEST_ROUTE_LINK__AGENT_NEW = `/business-settings${QUERY_REQUEST_ROUTE_LINK__AGENT}`;

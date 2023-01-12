@@ -7,8 +7,7 @@ import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import RTracking from 'react-tracking';
 import { AsyncBtn } from 'common/new-ui/Button';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const OTPModal = ({
@@ -52,27 +51,25 @@ const OTPModal = ({
       })
         .then((res) => {
           if (res.success) {
-            analyticsTrack({
+            analyticsTrackWithUserInfo({
               objectName: 'add email 2fa otp',
               actionName: 'sent',
               screen,
               properties: {
                 result: 'Success',
-                ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
             setToken(res.data.token);
           }
         })
         .catch((err) => {
-          analyticsTrack({
+          analyticsTrackWithUserInfo({
             objectName: 'add email 2fa otp',
             actionName: 'sent',
             screen,
             properties: {
               result: 'Failure',
               failureMessage: err.errors && err.errors.length ? `${err.errors[0]}` : null,
-              ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
           showNotification({
@@ -111,27 +108,25 @@ const OTPModal = ({
         .then((res) => {
           setIsVerifyingOtp(false);
           if (res.success) {
-            analyticsTrack({
+            analyticsTrackWithUserInfo({
               objectName: 'add email 2fa otp',
               actionName: 'verify',
               screen,
               properties: {
                 result: 'Success',
-                ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
             onSubmit({ token: res.data.otp_auth_token });
           }
         })
         .catch((err) => {
-          analyticsTrack({
+          analyticsTrackWithUserInfo({
             objectName: 'add email 2fa otp',
             actionName: 'verify',
             screen,
             properties: {
               result: 'Failure',
               failureMessage: err.errors && err.errors.length ? `${err.errors[0]}` : null,
-              ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
           setIsVerifyingOtp(false);
@@ -157,29 +152,27 @@ const OTPModal = ({
             selfServeTrackSuccess({
               selfServeAction: 'Email Updated',
               page: 'Profile',
-              screen: 'My Account',
+              screen,
             });
-            analyticsTrack({
+            analyticsTrackWithUserInfo({
               objectName: 'add email',
               actionName: 'verify',
               screen,
               properties: {
                 result: 'Success',
-                ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
             onSubmit();
           }
         })
         .catch((err) => {
-          analyticsTrack({
+          analyticsTrackWithUserInfo({
             objectName: 'add email',
             actionName: 'verify',
             screen,
             properties: {
               result: 'Failure',
               failureMessage: err.errors && err.errors.length ? `${err.errors[0]}` : null,
-              ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
           setIsVerifyingOtp(false);

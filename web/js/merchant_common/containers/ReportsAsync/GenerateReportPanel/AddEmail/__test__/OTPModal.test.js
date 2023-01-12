@@ -21,7 +21,7 @@ describe('OTP Modal', () => {
     phone: '9999999999',
   };
 
-  const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrack');
+  const analyticsTrackMock = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
 
   const App = (props) => {
     return <OTPModal {...defaultProps} {...props} />;

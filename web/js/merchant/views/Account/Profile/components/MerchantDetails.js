@@ -1,20 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link } from 'react-router-dom';
 import rTracking from 'react-tracking';
-import Time from 'common/ui/Time';
-import { ProgressBar } from 'common/ui/ProgressBar';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { titleCase, isPresent, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import DetailRow from 'merchant/components/DetailRow';
-import { ActivationStatusLabel } from 'merchant/components/StatusLabel';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { BUSINESS_TYPE_MAP, ATTR_DETAILS } from 'merchant/views/Account/constants';
 import {
   openModal as fnOpenModal,
   closeModal as fnCloseModal,
 } from 'merchant_common/reducers/modals';
-import UserContactMobile from './UserContactMobile';
 import { analyticsTrack } from 'common/utils/analytics';
 import Button from 'common/new-ui/Button';
 import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
@@ -24,135 +18,23 @@ import {
   BILLING_LABEL,
   NC_UPDATE_WEBSITE,
   NC_ADD_WEBSITE,
-  NC_ADD_ADDITIONAL_WEBSITE,
   RR_UPDATE_WEBSITE,
   RR_ADD_WEBSITE,
+  NC_ADD_ADDITIONAL_WEBSITE,
   RR_ADD_ADDITIONAL_WEBSITE,
-  ACTION_QUERY_PARAM_KEY,
-  UPDATE_WEBSITE_DETAILS,
 } from 'merchant/views/Account/Profile/deeplink-constants';
 import IntoView from 'common/ui/IntoView';
 import TextHighlighter from 'common/ui/TextHighlighter';
-import InitiateWebsiteChange from './WebsiteSelfServe/InitiateWebsiteChange';
 import EditTransactionLimit from './EditTransactionLimit';
-import { FLOWS } from './WebsiteSelfServe/Constants';
-import EditWebsiteDetailsModal from 'merchant/views/Account/Profile/components/EditWebsiteDetailsModal';
-import { isMobileDevice } from 'merchant/components/Home/data';
 import NeedsClarificationModal from 'merchant/views/Account/Profile/components/WorkflowRequests/NeedsClarificationModal';
-import WorkflowStatus from 'merchant/views/Account/Profile/components/WorkflowRequests/WorkflowStatus';
-import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
-import rolesList from 'merchant/helpers/permissions/roles-list';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
-import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { isOrgFeatureExist } from 'merchant/models/User';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import ContactDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/ContactDetails';
+import BusinessDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/BusinessDetails';
+import AccountDetails from 'merchant/views/AccountAndSettings/BusinessSettings/Tabs/AccountDetails';
+import BusinessWebsiteDetails from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/BusinessWebsiteDetails';
 
-function isWorkflowChangeAllowed(workflow) {
-  return (
-    !workflow?.loading &&
-    (workflow?.workflow_exists === false ||
-      !['open', 'approved'].includes(workflow?.workflow_status))
-  );
-}
-
-function renderWebsites(user, handleEditWebsite, websiteWorkflow) {
-  return (
-    <div>
-      {user.business_website ? (
-        <span className="text-primary m-r">
-          <a href={user.business_website} target="_blank" rel="noopener noreferrer">
-            {user.business_website}
-          </a>
-        </span>
-      ) : (
-        '--'
-      )}
-      {isWorkflowChangeAllowed(websiteWorkflow) &&
-        user.role === 'owner' &&
-        user.isAccepted &&
-        user.isWebsiteSelfServeOn && (
-          <TriggerOnQueryParamMatch
-            queryParamsMapping={[
-              {
-                key: ACTION_QUERY_PARAM_KEY,
-                value: UPDATE_WEBSITE_DETAILS,
-                trigger: () => handleEditWebsite(FLOWS.BUSINESS_WEBSITE),
-              },
-            ]}
-          >
-            <Button.Transparent
-              type="button"
-              onClick={() => {
-                handleEditWebsite(FLOWS.BUSINESS_WEBSITE);
-              }}
-            >
-              <i className="i i-edit p-l" />
-            </Button.Transparent>
-          </TriggerOnQueryParamMatch>
-        )}
-    </div>
-  );
-}
-
-function renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWorkflow) {
-  const hasAdditionalWebsites = isPresent(user.additional_websites);
-  const isLimitReached = hasAdditionalWebsites ? user.additional_websites.length === 5 : false;
-
-  return (
-    <div className="website-self-serve__listItem additional-websites__listcontainer">
-      <div>
-        {hasAdditionalWebsites ? (
-          user.additional_websites.map((website, idx) => (
-            <div key={`${website}_${idx}`}>
-              <a href={website} target="_blank" rel="noopener noreferrer">
-                {website}
-                {idx === user.additional_websites.length - 1 ? '' : ','}
-              </a>
-            </div>
-          ))
-        ) : (
-          <span className="additional-websites__listcontainer">--</span>
-        )}
-      </div>
-      {user.business_website &&
-        user.isAdditionalDomainWhitelistSelfServeOn &&
-        isWorkflowChangeAllowed(additionalWebsiteWorkflow) &&
-        (user.role === 'owner' || user.role === 'admin') &&
-        !isLimitReached && (
-          <div>
-            <Button.Transparent
-              type="button"
-              onClick={() => {
-                selfServeTrackInitiate({
-                  selfServeAction: 'Additional Website - App Url Updated',
-                  page: 'Profile',
-                  screen: 'My Account',
-                });
-                handleEditWebsite(FLOWS.ADDITIONAL_WEBSITE);
-              }}
-            >
-              <i className="i i-plus p-l" />
-            </Button.Transparent>
-          </div>
-        )}
-    </div>
-  );
-}
-
-const MerchantDetails = ({
-  user,
-  workflows,
-  changeDisplayName,
-  changeBillingLabel,
-  openModal,
-  closeModal,
-  tracking,
-  fetchWorkflowStatus,
-  isAdminAsMerchant,
-}) => {
-  const isAccountActivation = isAdminAsMerchant || !isOrgFeatureExist('hide_activation_form');
-  const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
+const MerchantDetails = ({ user, changeBillingLabel, openModal, closeModal, tracking }) => {
   const openNeedsClarificationModal = (data) => {
     analyticsTrack({
       objectName: 'needs clarification respond',
@@ -167,80 +49,6 @@ const MerchantDetails = ({
       size: 'small',
       component: <NeedsClarificationModal {...data} />,
     });
-  };
-
-  let activationName = 'KYC';
-  let trackerName = 'kyc.form_fill';
-  if (!user.showInstantActivation || !user.instantActivation.isL1Submitted) {
-    activationName = 'Activation';
-    trackerName = 'act.form_fill';
-  }
-
-  const businessWebsiteWorkflow = workflows[WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE];
-  const additionalWebsiteWorkflow = workflows[WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE];
-
-  const handleEditWebsite = (flowType) => {
-    const hasWebsite = user.has_key_access; // If true => edit website flow; otherwise add flow
-
-    if (hasWebsite) {
-      openModal({
-        size: 'small',
-        component: (
-          <InitiateWebsiteChange
-            user={user}
-            openModal={openModal}
-            closeModal={closeModal}
-            flowType={flowType}
-          />
-        ),
-        queryParams: {
-          [ACTION_QUERY_PARAM_KEY]: UPDATE_WEBSITE_DETAILS,
-        },
-      });
-    } else {
-      openModal({
-        size: 'small',
-        component: (
-          <EditWebsiteDetailsModal
-            onClose={closeModal}
-            onWebsiteAdd={() => fetchWorkflowStatus(WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE)}
-          />
-        ),
-        queryParams: {
-          [ACTION_QUERY_PARAM_KEY]: UPDATE_WEBSITE_DETAILS,
-        },
-      });
-    }
-
-    // Avoid tracking for additional website flow
-    if (flowType === FLOWS.ADDITIONAL_WEBSITE) return;
-
-    let analyticsObject;
-
-    // Edit flow
-    if (user.has_key_access) {
-      analyticsObject = {
-        objectName: `Website edit`,
-        actionName: 'Edit clicked',
-        screen: 'My account',
-        properties: {
-          currentWebsite: `${user.business_website}`,
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
-      };
-    } else {
-      // Add flow
-      analyticsObject = {
-        objectName: `Website add`,
-        actionName: 'Add clicked',
-        screen: 'My account',
-        properties: {
-          ...getCommonAnalyticsProperties(window.rzp_user),
-        },
-      };
-    }
-
-    analyticsTrack(analyticsObject);
   };
 
   const showGenerateTnCModal = (eventName) => {
@@ -264,295 +72,29 @@ const MerchantDetails = ({
     });
   };
 
-  const labelHandler = (hashedWith, content) => (
-    <TextHighlighter hashedWith={hashedWith}>{content}</TextHighlighter>
-  );
-
-  const accountAccessHoverDescription = () => {
-    if (user?.has_key_access) {
-      return user?.isOrgCurlec
-        ? ATTR_DETAILS.curlec_access_user_account.desc
-        : ATTR_DETAILS.access_user_account.desc;
-    }
-    return user?.isOrgCurlec
-      ? ATTR_DETAILS.curlec_restricted_access_user_account.desc
-      : ATTR_DETAILS.restricted_access_user_account.desc;
-  };
-
   return (
     <div className="list-group details-row-container">
-      <DetailRow label="Contact Name" value={titleCase(user.contact_name)} />
-
-      {changeDisplayName && (
-        <DetailRow
-          label={() => (
-            <div>
-              <span>Display Name</span>
-              <small className="help-content">
-                <i className="i i-info-outline" />
-                <Popover align="top" theme="dark">
-                  <PopoverBody>
-                    <div>
-                      {user?.isOrgCurlec
-                        ? ATTR_DETAILS.curlec_display_name.desc
-                        : ATTR_DETAILS.display_name.desc}
-                    </div>
-                  </PopoverBody>
-                </Popover>
-              </small>
-            </div>
-          )}
-          value={() =>
-            user.display_name ? (
-              <span>
-                {user.display_name}
-                <a
-                  className="p-l"
-                  onClick={(...args) => {
-                    selfServeTrackInitiate({
-                      selfServeAction: 'Display Name Updated',
-                      page: 'Profile',
-                      screen: 'My Account',
-                    });
-                    analyticsTrack({
-                      objectName: 'dispay name edit',
-                      actionName: 'clicked',
-                      screen: 'my account',
-                      properties: {
-                        action: 'reset',
-                        ...getCommonAnalyticsProperties(window.rzp_user),
-                      },
-                    });
-                    return changeDisplayName(...args);
-                  }}
-                  title="Edit Display Name"
-                >
-                  <i className="i i-edit" />
-                </a>
-              </span>
-            ) : (
-              <a
-                className="p-l"
-                onClick={() => {
-                  analyticsTrack({
-                    objectName: 'display name edit',
-                    actionName: 'clicked',
-                    screen: 'my account',
-                    properties: {
-                      ...getCommonAnalyticsProperties(window.rzp_user),
-                    },
-                  });
-                  return changeDisplayName();
-                }}
-                title="Set Display Name"
-              >
-                Set Display Name
-              </a>
-            )
-          }
-        />
-      )}
-      <IntoView hashedWith={EMAIL_UPDATE}>
-        <DetailRow
-          label={() => labelHandler(EMAIL_UPDATE, 'Contact Email')}
-          value={() => (
-            <a
-              onClick={() => {
-                analyticsTrack({
-                  objectName: 'contact email',
-                  actionName: 'clicked',
-                  screen: 'my account',
-                  properties: {
-                    ...getCommonAnalyticsProperties(window.rzp_user),
-                  },
-                });
-              }}
-              href={`mailto:${user.email}`}
-            >
-              {user.email}
-            </a>
-          )}
-        />
-      </IntoView>
-      <IntoView hashedWith={CONTACT_NUMBER_UPDATE}>
-        <UserContactMobile />
+      <IntoView hashedWith={[EMAIL_UPDATE, CONTACT_NUMBER_UPDATE]}>
+        <ContactDetails isFlowRevamped={false} />
       </IntoView>
 
-      <DetailRow label="Business Name" value={titleCase(user.business_name)} />
+      <BusinessDetails isFlowRevamped={false} />
 
-      <DetailRow label="Business Type" value={titleCase(BUSINESS_TYPE_MAP[user.business_type])} />
-
-      <DetailRow
-        label="Registration Date"
-        value={() => <Time value={user.created_at} format="MMM DD YYYY, hh:mm:ss a" />}
-      />
-
-      <DetailRow label="Registered By" value={user.marketplace_merchant_name} />
-
-      <ShowWhen
-        additionalCondition={(_user) =>
-          isAccountActivation && !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Onboarding)
-        }
-      >
-        <DetailRow
-          label={() => <b>Account Activation</b>}
-          value={() => (
-            <span>
-              <Link
-                to={isMobileDevice() ? '/onboarding/steps' : activationUrl}
-                onClick={() => {
-                  tracking.trackEvent(
-                    window.rzpQ.onbr().initiated(trackerName, {
-                      clickSource: 'My_Account',
-                    }),
-                  );
-                  analyticsTrack({
-                    objectName: 'view KYC form',
-                    actionName: 'clicked',
-                    screen: 'my account',
-                    properties: {
-                      status: window.rzp_user.verification.status,
-                    },
-                  });
-                }}
-              >
-                {user.activated || user.locked || user.submitted
-                  ? 'View'
-                  : user.activation_progress == 100 && !user.submitted
-                  ? 'Submit'
-                  : 'Fill'}
-                {` ${activationName}`} Form
-              </Link>
-            </span>
-          )}
-        />
-      </ShowWhen>
-
-      {!!user.activated && (
-        <DetailRow
-          label="Account Activated On"
-          value={() => <Time value={user.activated_at} format="MMM DD YYYY, hh:mm a" />}
-        />
-      )}
-
-      {!user.showInstantActivation ||
-        (user.instantActivation.isL1Submitted && (
-          <DetailRow
-            label={`${activationName} Form Status`}
-            value={() =>
-              user.activation_status ? (
-                <ActivationStatusLabel status={user.activation_status} />
-              ) : (
-                <div className="activation-bar-content activation-status-secondary">
-                  <div className="activation-bar-text">{user.activation_progress}% Completed</div>
-                  <div className="activation-bar">
-                    <ProgressBar type="success" max={100} value={user.activation_progress} />
-                  </div>
-                </div>
-              )
-            }
-          />
-        ))}
+      <AccountDetails isFlowRevamped={false} />
 
       {user.isActivated && (
-        <React.Fragment>
-          <DetailRow
-            label="Account Access"
-            value={() => (
-              <div className="account-access">
-                {user.has_key_access ? 'Complete' : 'Limited'}
-                <small className="help-content">
-                  <i className="i i-help" />
-                  <Popover align="right" theme="dark">
-                    <PopoverBody>
-                      <div>{accountAccessHoverDescription()}</div>
-                    </PopoverBody>
-                  </Popover>
-                </small>
-              </div>
-            )}
-          />
-
-          <IntoView
-            hashedWith={[NC_UPDATE_WEBSITE, NC_ADD_WEBSITE, RR_UPDATE_WEBSITE, RR_ADD_WEBSITE]}
-          >
-            <DetailRow
-              label={() => (
-                <div className="website-self-serve__listItem">
-                  <span>Business Website/App details</span>
-                  <small className="help-content">
-                    <i className="i i-info-outline" />
-                    <Popover align="top" theme="dark">
-                      <PopoverBody>
-                        <div>
-                          <div>
-                            These are the verified websites on which payments can be integrated
-                          </div>
-                        </div>
-                      </PopoverBody>
-                    </Popover>
-                  </small>
-                  <WorkflowStatus
-                    roles={[rolesList.OWNER]}
-                    workflowType={WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE}
-                    reviewStatus={
-                      user.has_key_access === true
-                        ? 'Your request to update the website is under review.'
-                        : 'Your request to update the website is under review. We will provide the API keys for the new website once the review is complete.'
-                    }
-                    onReplyClick={() =>
-                      openNeedsClarificationModal({
-                        workflowType: WORKFLOW_TYPES.UPDATE_BUSINESS_WEBSITE,
-                        workflowName:
-                          businessWebsiteWorkflow.permission === 'edit_merchant_website_detail'
-                            ? 'Add Business Website'
-                            : 'Update Business Website',
-                      })
-                    }
-                  />
-                </div>
-              )}
-              value={() => renderWebsites(user, handleEditWebsite, businessWebsiteWorkflow)}
-            />
-          </IntoView>
-          <IntoView hashedWith={[NC_ADD_ADDITIONAL_WEBSITE, RR_ADD_ADDITIONAL_WEBSITE]}>
-            <DetailRow
-              label={() => (
-                <div className="website-self-serve__listItem">
-                  <span>Additional Business Website/App</span>
-                  <small className="help-content">
-                    <i className="i i-info-outline" />
-                    <Popover align="top" theme="dark">
-                      <PopoverBody>
-                        <div>
-                          <div>
-                            {user?.isOrgCurlec
-                              ? ATTR_DETAILS.curlec_additional_website_info.desc
-                              : ATTR_DETAILS.additional_website_info.desc}
-                          </div>
-                        </div>
-                      </PopoverBody>
-                    </Popover>
-                  </small>
-                  <WorkflowStatus
-                    roles={[rolesList.OWNER, rolesList.ADMIN]}
-                    workflowType={WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE}
-                    reviewStatus="Your request to add the website is under review."
-                    onReplyClick={() =>
-                      openNeedsClarificationModal({
-                        workflowType: WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE,
-                        workflowName: 'Add Additional Website',
-                      })
-                    }
-                  />
-                </div>
-              )}
-              value={() =>
-                renderAdditionalWebsites(user, handleEditWebsite, additionalWebsiteWorkflow)
-              }
-            />
-          </IntoView>
-        </React.Fragment>
+        <IntoView
+          hashedWith={[
+            NC_UPDATE_WEBSITE,
+            NC_ADD_WEBSITE,
+            RR_UPDATE_WEBSITE,
+            RR_ADD_WEBSITE,
+            NC_ADD_ADDITIONAL_WEBSITE,
+            RR_ADD_ADDITIONAL_WEBSITE,
+          ]}
+        >
+          <BusinessWebsiteDetails isFlowRevamped={false} />
+        </IntoView>
       )}
 
       {changeBillingLabel &&

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { Route, NavLink, withRouter } from 'react-router-dom';
+import { Route, NavLink, withRouter, Redirect } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
@@ -19,6 +19,10 @@ import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { isPaymentMethodEnabled } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+
+const { ACCOUNT_AND_SETTINGS, API_KEYS, WEBHOOKS } = ROUTES_INFO;
 
 const analyticsGoTo = (name) => {
   window.rzpAnalytics?.({
@@ -35,6 +39,7 @@ const analyticsGoTo = (name) => {
     },
   });
 };
+// eslint-disable-next-line react/no-unsafe
 class Settings extends Component {
   state = {
     isWebsiteInWorkflow: false,
@@ -65,14 +70,23 @@ class Settings extends Component {
     analyticsGoTo('Settings');
   }
 
-  isPaymentMethodEnabled = (user) => {
-    return (
-      user.isOrgRZP === true && user.isInstrumentRequestAllowed() && this.props.mode !== 'test'
-    );
-  };
-
   render() {
-    const { tracking } = this.props;
+    const {
+      tracking,
+      user,
+      mode,
+      location: { pathname },
+    } = this.props;
+
+    if (user.isAccountAndSettingsRevampEnabled) {
+      if (pathname === '/webhooks') {
+        return <Redirect to={WEBHOOKS} />;
+      }
+      if (pathname === '/keys') {
+        return <Redirect to={API_KEYS} />;
+      }
+      return <Redirect to={ACCOUNT_AND_SETTINGS} />;
+    }
 
     return (
       <>
@@ -151,8 +165,11 @@ class Settings extends Component {
               </ShowWhen>
             ) : null}
 
-            <ShowWhen additionalCondition={(user) => this.isPaymentMethodEnabled(user)}>
-              <NavLink to="/payment-methods" onClick={() => analyticsGoTo('Payment Methods')}>
+            <ShowWhen additionalCondition={(user) => isPaymentMethodEnabled(user, mode)}>
+              <NavLink
+                to={ROUTES_INFO.PAYMENT_METHODS}
+                onClick={() => analyticsGoTo('Payment Methods')}
+              >
                 Payment Methods
               </NavLink>
             </ShowWhen>
@@ -160,7 +177,28 @@ class Settings extends Component {
           <TestModeBanner />
           <ErrorBoundary resetOnProps>
             <content>
-              <Route path="/config" component={Configuration} />
+              <Route
+                path="/config"
+                render={(props) => (
+                  <Configuration
+                    {...props}
+                    isOldFlow
+                    showBranding
+                    showMissedOrderPaymentLink
+                    showFlashCheckout
+                    showPaymentSettings
+                    showDefaultRefundSpeed
+                    showFirc
+                    showFeeBearer
+                    showInternationalPayments
+                    showEmailNotifications
+                    showSmsNotifications
+                    showWhatsappNotifications
+                    showSkipMandatorySummaryPage
+                    showAnnouncements
+                  />
+                )}
+              />
               <Route path="/webhooks" component={Webhooks} />
               <Route
                 path="/keys"
@@ -185,7 +223,7 @@ class Settings extends Component {
                 <Route exact path="/applications" component={Applications} />
               ) : null}
 
-              <Route path="/payment-methods" component={PaymentMethods} />
+              <Route path={ROUTES_INFO.PAYMENT_METHODS} component={PaymentMethods} />
             </content>
           </ErrorBoundary>
         </tabbed-container>
@@ -200,6 +238,7 @@ export default compose(
   connect(
     (state) => ({
       mode: state.session.mode,
+      user: state.session.user,
     }),
     {
       fetchAddWebsiteWorkflowStatus,

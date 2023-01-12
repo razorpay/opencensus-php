@@ -1,5 +1,4 @@
-import { analyticsTrack, getDeviceSource } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrackWithUserInfo, getDeviceSource } from 'common/utils/analytics';
 
 const OBJECT_NAME = 'Self Serve';
 const IS_LUMBER_JACK = true;
@@ -7,7 +6,7 @@ const InitiateAction = 'Initiated';
 const SuccessAction = 'Success';
 
 const instrumentAnalytics = ({ toLumberjack = false, action, selfServeAction, page, screen }) => {
-  analyticsTrack({
+  analyticsTrackWithUserInfo({
     objectName: OBJECT_NAME,
     actionName: action,
     screen,
@@ -16,7 +15,6 @@ const instrumentAnalytics = ({ toLumberjack = false, action, selfServeAction, pa
       page,
       screen,
       source: getDeviceSource(),
-      ...getCommonAnalyticsProperties(window.rzp_user),
     },
     toLumberjack,
   });

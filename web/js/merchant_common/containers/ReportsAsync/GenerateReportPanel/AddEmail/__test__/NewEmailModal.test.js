@@ -14,7 +14,7 @@ describe('New Email Modal', () => {
   };
   const App = (props) => <NewEmailModal {...defaultProps} {...props} />;
 
-  const analyticsTrackSpy = jest.spyOn(analytics, 'analyticsTrack');
+  const analyticsTrackSpy = jest.spyOn(analytics, 'analyticsTrackWithUserInfo');
 
   const typeEmailAndSubmit = async (email) => {
     render(<App />);
@@ -46,7 +46,6 @@ describe('New Email Modal', () => {
       objectName: 'add email submit',
       actionName: 'clicked',
       screen: defaultProps.screen,
-      properties: {},
     });
     expect(screen.getByRole('button', { name: /Verifying/i })).toBeInTheDocument();
 

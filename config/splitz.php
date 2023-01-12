@@ -224,6 +224,9 @@ return [
 
         // Left Nav revamp 
         'LEFT_NAV_REVAMP' => env('LEFT_NAV_REVAMP', ''),
+
+        // Account Settings Revamp
+        'ACCOUNT_SETTINGS_REVAMP'  => env('ACCOUNT_SETTINGS_REVAMP', ''),
         
         // payroll wdiget on dashboard
         'SHOW_PAYROLL_WIDGET_EXP' => env('SHOW_PAYROLL_WIDGET_EXP', ''),

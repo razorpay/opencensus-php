@@ -40,20 +40,28 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     });
   };
 
-  initiateVerifyOrUpdateMobile = () => {
+  initiateVerifyOrUpdateMobile = (isNewAccountAndSettingsPage = false) => {
     const currentUser = this.props.currentUser;
     if (currentUser.contact_mobile) {
       this.props.openModal({
         size: 'small',
         component: (
-          <VerifyContactMobile onComplete={this.onContactMobileUpdated} onClose={this.onClose} />
+          <VerifyContactMobile
+            onComplete={this.onContactMobileUpdated}
+            onClose={this.onClose}
+            isNewAccountAndSettingsPage={isNewAccountAndSettingsPage}
+          />
         ),
       });
     } else {
       this.props.openModal({
         size: 'small',
         component: (
-          <UpdateContactMobile onComplete={this.onContactMobileUpdated} onClose={this.onClose} />
+          <UpdateContactMobile
+            onComplete={this.onContactMobileUpdated}
+            onClose={this.onClose}
+            isNewAccountAndSettingsPage={isNewAccountAndSettingsPage}
+          />
         ),
       });
     }
@@ -90,6 +98,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     modes = ['test', 'live'],
     onBankAccountUpdateReq = false,
     onWrongOtpCallback = () => {},
+    isNewAccountAndSettingsPage = false,
   }) => {
     this.onCloseCallback = onFlowTermination;
     this.onUserTwoFaVerifiedCallback = (...args) => {
@@ -140,22 +149,24 @@ export default class TwoFaVerificationContextProvider extends React.Component {
               this.verifyUserViaTwoFactorOtp({
                 onSuccess: this.openSetPasswordModal,
                 onWrongOtpCallback,
+                isNewAccountAndSettingsPage,
               }),
           });
         } else {
-          return this.openSetPasswordModal();
+          return this.openSetPasswordModal(isNewAccountAndSettingsPage);
         }
       }
 
       // normal flow
       if (!user.isTwoFactorSetupDone) {
         return this.completeTwoFactorVerificationSetup({
-          onClickSetup: this.initiateVerifyOrUpdateMobile,
+          onClickSetup: () => this.initiateVerifyOrUpdateMobile(isNewAccountAndSettingsPage),
         });
       } else if (!twoFactorVerified || onBankAccountUpdateReq) {
         this.verifyUserViaTwoFactorOtp({
           onSuccess: this.onUserTwoFaVerifiedCallback,
           onWrongOtpCallback,
+          isNewAccountAndSettingsPage,
         });
       } else {
         onUserTwoFaVerified();
@@ -175,19 +186,24 @@ export default class TwoFaVerificationContextProvider extends React.Component {
     });
   };
 
-  openSetPasswordModal = () => {
+  openSetPasswordModal = (isNewAccountAndSettingsPage) => {
     this.props.openModal({
       size: 'small',
       component: (
         <SetPasswordModal
           onClose={this.onClose}
           onComplete={() => this.onUserTwoFaVerifiedCallback({ skipVerifyPassword: true })}
+          isNewAccountAndSettingsPage={isNewAccountAndSettingsPage}
         />
       ),
     });
   };
 
-  verifyUserViaTwoFactorOtp = ({ onSuccess, onWrongOtpCallback }) => {
+  verifyUserViaTwoFactorOtp = ({
+    onSuccess,
+    onWrongOtpCallback,
+    isNewAccountAndSettingsPage = false,
+  }) => {
     const { user } = this.props;
 
     triggerTwoFactorVerificationOtp().then(() => {
@@ -213,6 +229,7 @@ export default class TwoFaVerificationContextProvider extends React.Component {
                 <p class="m-t m-b">OTP will expire in 5 mins</p>
               </>
             )}
+            isNewAccountAndSettingsPage={isNewAccountAndSettingsPage}
           />
         ),
       });

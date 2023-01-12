@@ -74,6 +74,7 @@ class Notification extends Component {
           this.notificationEle = notificationEle;
         }}
         class={`Notification ${NOTIFICATION_TYPES[type]}`}
+        data-testid={NOTIFICATION_TYPES[type]}
       >
         {typeof message === 'function' ? (
           message()

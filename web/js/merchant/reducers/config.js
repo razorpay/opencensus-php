@@ -29,6 +29,7 @@ const FETCH_INTERNATIONAL_SETTING_STATUS = 'FETCH_INTERNATIONAL_SETTING_STATUS';
 const FETCH_MERCHANT_MOPL_SUBSCRIPTION = 'FETCH_MERCHANT_MOPL_SUBSCRIPTION';
 const FETCH_MOPL_PLANS = 'FETCH_MOPL_PLANS';
 const FETCH_INSIGHTS = 'FETCH_INSIGHTS';
+const FETCH_FEATURE_BY_NAME = 'FETCH_FEATURE_BY_NAME';
 
 export const TICKET_BASE_URL = 'fd/support_dashboard/ticket';
 const ADD_REPLY_URL_CARE_SERVICE =
@@ -452,6 +453,16 @@ export const fetchInternationalSettingStatus = () => {
   };
 };
 
+export const fetchFeatureByName = ({ userId, feature }) => {
+  return {
+    type: FETCH_FEATURE_BY_NAME,
+    resource: {
+      feature,
+    },
+    payload: merchantFetch(`feature/merchant/${userId}/${feature}`),
+  };
+};
+
 const initialState = {
   loading: true,
   error: null,
@@ -498,6 +509,11 @@ const initialState = {
   },
   isCallEnabled: false,
   internationalSettingStatus: {
+    loading: true,
+    data: {},
+    error: null,
+  },
+  featureStatusConfig: {
     loading: true,
     data: {},
     error: null,
@@ -754,6 +770,40 @@ const configReducer = (state = initialState, action) => {
         data: {},
         error: action.payload.errors,
       });
+
+    case `${FETCH_FEATURE_BY_NAME}::PENDING`: {
+      return set(state, 'featureStatusConfig', {
+        ...state.featureStatusConfig,
+        loading: true,
+      });
+    }
+
+    case `${FETCH_FEATURE_BY_NAME}::SUCCESS`: {
+      const {
+        resource: { feature },
+        payload: {
+          data: { status },
+        },
+      } = action;
+      return set(state, 'featureStatusConfig', {
+        loading: false,
+        data: {
+          ...state.featureStatusConfig.data,
+          [feature]: status,
+        },
+        error: null,
+      });
+    }
+
+    case `${FETCH_FEATURE_BY_NAME}::ERROR`: {
+      return set(state, 'featureStatusConfig', {
+        loading: false,
+        data: {
+          ...state.featureStatusConfig.data,
+        },
+        error: action.payload.errors,
+      });
+    }
 
     default:
       return state;

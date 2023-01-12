@@ -9,7 +9,7 @@ import * as TeamActions from 'merchant/reducers/team';
 import { updateSession } from 'merchant/reducers/session';
 import User from 'merchant/models/User';
 import ShowWhen from 'merchant/components/ShowWhen';
-import Toggle2FA from '../../components/TwoFAVerification/Toggle2FA';
+import Toggle2FA from 'merchant/views/Account/components/TwoFAVerification/Toggle2FA';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 class User2FASettings extends React.PureComponent {
   static contextType = TwoFactorVerificaionContext;
@@ -77,10 +77,11 @@ class User2FASettings extends React.PureComponent {
 
   render() {
     const { user } = this.props.user;
-    const { toggleUser2FaEnforcement } = this.props;
+    const { toggleUser2FaEnforcement, shouldOnlyToggle } = this.props;
 
     return (
       <Toggle2FA
+        shouldOnlyToggle={shouldOnlyToggle}
         renderDescription={DescriptionForUser2Fa}
         renderTitle={TitleForUser2Fa}
         toggle2FaEnforcement={toggleUser2FaEnforcement}

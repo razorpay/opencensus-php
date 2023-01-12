@@ -8,8 +8,7 @@ import { compose } from 'redux';
 import AsyncButton from 'react-async-button';
 import { reduxForm, Field } from 'redux-form';
 import { addEmail } from './services';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 const EmailModal = ({
   screen,
@@ -23,13 +22,10 @@ const EmailModal = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const _onSubmit = ({ email }) => {
-    analyticsTrack({
+    analyticsTrackWithUserInfo({
       objectName: 'add email submit',
       actionName: 'clicked',
       screen,
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
     });
     if (!email || !isEmail(email)) {
       showNotification({
@@ -44,27 +40,25 @@ const EmailModal = ({
       .then((res) => {
         setIsSubmitting(false);
         if (res.success) {
-          analyticsTrack({
+          analyticsTrackWithUserInfo({
             objectName: 'add email',
             actionName: 'result',
             screen,
             properties: {
               result: 'Success',
-              ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
           onSubmit({ email });
         }
       })
       .catch((err) => {
-        analyticsTrack({
+        analyticsTrackWithUserInfo({
           objectName: 'add email',
           actionName: 'result',
           screen,
           properties: {
             result: 'Failure',
             failureMessage: err.errors && err.errors.length ? `${err.errors[0]}` : null,
-            ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
         showNotification({

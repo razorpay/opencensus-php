@@ -355,11 +355,23 @@ function MerchantNavLinks(props) {
         isPending={isReportsPending}
       />
       <MainNavLink
+        label="Account & Settings"
+        icon="i i-settings text-warning"
+        type="general"
+        to="/account-settings"
+        additionalCondition={(currentUser) =>
+          currentUser.isAllowedMultiple(
+            'webhooks applications configuration api_keys profile credits add_funds team referrals',
+          ) && currentUser.isAccountAndSettingsRevampEnabled
+        }
+      />
+      <MainNavLink
         label="My Account"
         type="general"
         icon="i i-account text-primary"
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedMultiple('profile credits add_funds team referrals')
+          currentUser.isAllowedMultiple('profile credits add_funds team referrals') &&
+          !currentUser.isAccountAndSettingsRevampEnabled
         }
         to={routes.account}
         customBadge={
@@ -391,7 +403,8 @@ function MerchantNavLinks(props) {
         type="general"
         to={routes.settings}
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedMultiple('webhooks applications configuration api_keys')
+          currentUser.isAllowedMultiple('webhooks applications configuration api_keys') &&
+          !currentUser.isAccountAndSettingsRevampEnabled
         }
       />
     </>

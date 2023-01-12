@@ -201,7 +201,8 @@ class HeaderNav extends Component {
 
                 <ShowWhen
                   additionalCondition={(_user) =>
-                    !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
+                    !_user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements) &&
+                    !isMobileDevice()
                   }
                 >
                   <GrowthAssetEB>

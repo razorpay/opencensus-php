@@ -1,29 +1,22 @@
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import React, { lazy, Suspense } from 'react';
+import React from 'react';
+import { Redirect } from 'react-router-dom';
 import HeaderAction from 'common/ui/HeaderAction';
 import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
 import DocsLink from 'merchant/components/DocsLink';
-
 import { sendInvitation } from 'merchant/reducers/invitation';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
-
 import PendingInvitationsList from './PendingInvitations/List';
 import TeamMembersList from './TeamMembers/List';
 import Merchant2FASettings from './components/Merchant2FASettings';
 import NewInvitation from './components/NewInvitation';
-
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-
-const TestComponentBrotli = lazy(() =>
-  import(/* webpackChunkName: "TestComponentBrotli" */ './components/TestComponentBrotli'),
-);
 
 class ManageTeamContainer extends React.Component {
   static contextTypes = {
@@ -100,13 +93,12 @@ class ManageTeamContainer extends React.Component {
     });
   }
   render() {
+    const { user } = this.props;
+
+    if (user.isAccountAndSettingsRevampEnabled) <Redirect to="/business-settings/team" />;
+
     return (
       <div className="content-wrapper content-sm" id="settings-content">
-        <ErrorBoundary resetOnProps rank={Ranks.P0} team={Teams.PG_DASHBOARD}>
-          <Suspense fallback={null}>
-            <TestComponentBrotli />
-          </Suspense>
-        </ErrorBoundary>
         {/* passing the new props to the HeaderAction component to support the m-web view */}
         <HeaderAction responsive>
           <div className="btn-toolbar pull-right">
@@ -157,7 +149,7 @@ class ManageTeamContainer extends React.Component {
 }
 
 const mapStateToProps = (state) => ({
-  user: state.session.user.user,
+  user: state.session.user,
 });
 
 export default connect(mapStateToProps, { sendInvitation, openModal, closeModal })(

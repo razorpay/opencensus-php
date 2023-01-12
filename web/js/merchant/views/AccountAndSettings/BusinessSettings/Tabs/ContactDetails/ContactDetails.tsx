@@ -1,0 +1,225 @@
+import React from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import DetailRow from 'merchant/components/DetailRow';
+import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
+import UserContactMobile from 'merchant/views/Account/Profile/components/UserContactMobile';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import TextHighlighter from 'common/ui/TextHighlighter';
+import { ATTR_DETAILS } from 'merchant/views/Account/constants';
+import {
+  EMAIL_UPDATE,
+  UPDATE_DISPLAY_NAME,
+  ACTION_QUERY_PARAM_KEY,
+} from 'merchant/views/Account/Profile/deeplink-constants';
+import User from 'merchant/models/User';
+import MerchantConfigForm from 'merchant/views/Account/Profile/components/MerchantConfigForm';
+import { updateSession } from 'merchant/reducers/session';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import * as ProfileActions from 'merchant/reducers/profile';
+import { ContactDetailsProps } from 'merchant/views/AccountAndSettings/BusinessSettings/typings';
+
+const ContactDetails = ({
+  user,
+  openModal,
+  closeModal,
+  showNotification,
+  updateMerchantConfig,
+  updateSession,
+  isFlowRevamped = true,
+}: ContactDetailsProps): JSX.Element => {
+  const updateMerchantConfigFn = (args) => {
+    return updateMerchantConfig(args)
+      .then((resp) => {
+        /* istanbul ignore else */
+        if (resp.success) {
+          analyticsTrack({
+            objectName: 'display name update',
+            actionName: 'status',
+            screen: 'my account',
+            properties: {
+              status: 'success',
+              newDisplayName: args.display_name,
+              ...getCommonAnalyticsProperties(window.rzp_user),
+            },
+          });
+          showNotification({
+            type: 'success',
+            message: 'Display name changed successfully.',
+          });
+
+          closeModal();
+
+          const newUser = new User({
+            ...user,
+            display_name: resp.data.display_name,
+          });
+
+          updateSession({ user: newUser });
+        }
+
+        return resp;
+      })
+      .catch((err) => {
+        analyticsTrack({
+          objectName: 'display name update',
+          actionName: 'status',
+          screen: 'my account',
+          properties: {
+            status: 'failure',
+            newDisplayName: args.display_name,
+            failureReason: err.errors[0],
+            ...getCommonAnalyticsProperties(window.rzp_user),
+          },
+        });
+        showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
+
+  const openAttrSaveModal = (attr) =>
+    openModal({
+      size: 'small',
+      component: (
+        <MerchantConfigForm
+          attribute={attr}
+          label={ATTR_DETAILS[attr].label}
+          desc={ATTR_DETAILS[attr].desc}
+          value={user[attr]}
+          updateMerchantConfig={updateMerchantConfigFn}
+        />
+      ),
+      queryParams: {
+        [ACTION_QUERY_PARAM_KEY]: UPDATE_DISPLAY_NAME,
+      },
+    });
+
+  const openChangeDisplayName = () => openAttrSaveModal('display_name');
+
+  const labelHandler = (hashedWith, content) => (
+    <TextHighlighter hashedWith={hashedWith}>{content}</TextHighlighter>
+  );
+
+  return (
+    <div
+      data-testid="contact-details-section"
+      className={`${isFlowRevamped ? 'list-group details-row-container' : ''}`}
+    >
+      <DetailRow label="Contact Name" value={titleCase(user.contact_name)} />
+
+      {user.isAdminOrOwner && (
+        <DetailRow
+          label={() => (
+            <div>
+              <span>Display Name</span>
+              <small className="help-content">
+                <i className="i i-info-outline" />
+                <Popover align="top" theme="dark">
+                  <PopoverBody>
+                    <div>{ATTR_DETAILS.display_name.desc}</div>
+                  </PopoverBody>
+                </Popover>
+              </small>
+            </div>
+          )}
+          value={() =>
+            user.display_name ? (
+              <span>
+                {user.display_name}
+                <a
+                  className="p-l"
+                  onClick={() => {
+                    selfServeTrackInitiate({
+                      selfServeAction: 'Display Name Updated',
+                      page: 'Profile',
+                      screen: 'My Account',
+                    });
+                    analyticsTrack({
+                      objectName: 'dispay name edit',
+                      actionName: 'clicked',
+                      screen: 'my account',
+                      properties: {
+                        action: 'reset',
+                        ...getCommonAnalyticsProperties(window.rzp_user),
+                      },
+                    });
+                    return openChangeDisplayName();
+                  }}
+                  title="Edit Display Name"
+                  data-testid="Edit Display Name"
+                >
+                  <i className="i i-edit" />
+                </a>
+              </span>
+            ) : (
+              <a
+                className="p-l"
+                onClick={() => {
+                  analyticsTrack({
+                    objectName: 'display name edit',
+                    actionName: 'clicked',
+                    screen: 'my account',
+                    properties: {
+                      ...getCommonAnalyticsProperties(window.rzp_user),
+                    },
+                  });
+                  return openChangeDisplayName();
+                }}
+                title="Set Display Name"
+                data-testid="Set Display Name"
+              >
+                Set Display Name
+              </a>
+            )
+          }
+        />
+      )}
+      <DetailRow
+        label={() => labelHandler(EMAIL_UPDATE, 'Contact Email')}
+        value={() => (
+          <a
+            onClick={() => {
+              analyticsTrack({
+                objectName: 'contact email',
+                actionName: 'clicked',
+                screen: 'my account',
+                properties: {
+                  ...getCommonAnalyticsProperties(window.rzp_user),
+                },
+              });
+            }}
+            href={`mailto:${user.email}`}
+          >
+            {user.email}
+          </a>
+        )}
+      />
+      <UserContactMobile />
+    </div>
+  );
+};
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return bindActionCreators(
+    {
+      ...ProfileActions,
+      ...ModalActions,
+      showNotification,
+      updateSession,
+    },
+    dispatch,
+  );
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ContactDetails);

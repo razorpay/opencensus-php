@@ -9,12 +9,12 @@ import Form from 'common/new-ui/Form';
 import Button from 'common/new-ui/Button';
 import { required, isEmail } from 'common/utils/validators';
 
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 import NewID from './components/NewId/NewID';
 import SameTeam from './components/SameTeam/SameTeam';
 import DifferentTeam from './components/DifferentTeam/DifferentTeam';
+import { Modules } from 'common/constant/enums';
 
 // eslint-disable-next-line no-shadow
 const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmailStatus }) => {
@@ -23,14 +23,13 @@ const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmai
 
   const onEmailInputBlur = (e) => {
     enteredEmail = e.target.value;
-    analyticsTrack({
+    analyticsTrackWithUserInfo({
       objectName: 'new email id',
       actionName: 'filled',
-      screen: 'my account',
+      screen: Modules.AccountAndSettings,
       properties: {
         location: 'profile',
         newEmailId: e.target.value,
-        ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
   };
@@ -39,16 +38,15 @@ const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmai
     const { email, setContactEmail } = e;
 
     setDisabled(true);
-    analyticsTrack({
+    analyticsTrackWithUserInfo({
       objectName: 'new email id',
       actionName: 'filled',
-      screen: 'my account',
+      screen: Modules.AccountAndSettings,
       properties: {
         location: 'profile',
         newEmailId: email,
         oldEmailId: user.email,
         updateContactEmail: setContactEmail,
-        ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
 
@@ -56,15 +54,14 @@ const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmai
       .then((res) => {
         setDisabled(false);
         if (res.data && !res.data.is_user_exist) {
-          analyticsTrack({
+          analyticsTrackWithUserInfo({
             objectName: 'email update invitation',
             actionName: 'sent',
-            screen: 'my account',
+            screen: Modules.AccountAndSettings,
             properties: {
               location: 'profile',
               newEmailId: email,
               oldEmailId: user.email,
-              ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
           openModal({

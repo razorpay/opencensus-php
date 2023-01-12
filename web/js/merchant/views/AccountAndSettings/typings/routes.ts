@@ -1,0 +1,36 @@
+export enum ROUTES_INFO {
+  ACCOUNT_AND_SETTINGS = '/account-settings',
+  PAYMENT_METHODS = '/payment-methods',
+  BRANDING = '/checkout-settings/branding',
+  FLASH_CHECKOUT = '/checkout-settings/flash-checkout',
+  SKIP_MANDATORY_SUMMARY_PAGE = '/checkout-settings/skip-mandatory-summary-page',
+  TRUSTED_BADGE = '/checkout-settings/trustedbadge',
+  EMAIL_NOTIFICATIONS = '/notification-settings/email',
+  SMS_NOTIFICATIONS = '/notification-settings/sms',
+  WHATSAPP_NOTIFICATIONS = '/notification-settings/whatsapp',
+  API_KEYS = '/website-app-settings/api-keys',
+  WEBSITE_APP_SETTINGS = '/website-app-settings/website-app',
+  BUSINESS_WEBSITE_SETTINGS = '/website-app-settings/business-website-details',
+  WEBHOOKS = '/website-app-settings/webhooks',
+  BALANCES = '/payments-and-refunds-settings/balances',
+  CREDITS = '/payments-and-refunds-settings/credits',
+  REMINDERS = '/payments-and-refunds-settings/reminders',
+  CAPTURE_AND_REFUND_SETTINGS = '/payments-and-refunds-settings/capture-refund-settings',
+  TRANSACTION_LIMITS = '/payments-and-refunds-settings/transaction-limits',
+  FEE_BEARER = '/payments-and-refunds-settings/fee-bearer',
+  FAILED_PAYMENTS_RETRY = '/payments-and-refunds-settings/failed-payments-recovery',
+  CONTACT_DETAILS = '/business-settings/contact',
+  ACCOUNT_DETAILS = '/business-settings/account-activation-details',
+  BUSINESS_DETAILS = '/business-settings/business',
+  GST_DETAILS = '/business-settings/gst',
+  CUSTOMER_SUPPORT_DETAILS = '/business-settings/customer-support',
+  MANAGE_TEAM_DETAILS = '/business-settings/team',
+  SUPPORT_TICKETS_MERCHANT = '/business-settings/ticket-support/tickets/merchant',
+  SUPPORT_TICKETS_AGENT = '/business-settings/ticket-support/tickets/agent',
+  BANK_ACCOUNT_DETAILS = '/bank-accounts-settlements/bank-account-details',
+  SETTLEMENT_DETAILS = '/bank-accounts-settlements/settlement-details',
+}
+
+export type OldAndNewRouteMapInterface = {
+  [key in ROUTES_INFO]?: string;
+};

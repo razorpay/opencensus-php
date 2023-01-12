@@ -1,4 +1,4 @@
-import { Route, NavLink } from 'react-router-dom';
+import { Route, NavLink, Redirect } from 'react-router-dom';
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import TrustedBadge from 'merchant/views/Account/TrustedBadge';
 import Profile from 'merchant/views/Account/Profile';
@@ -16,16 +16,15 @@ import { connect } from 'react-redux';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import { useState, useEffect } from 'react';
 import getMobileDetect from 'common/utils/mobileDetect';
-import { isOrgFeatureExist } from 'merchant/models/User';
 import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+import { isTrustedBadgeAllowed } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+
+const { ACCOUNT_AND_SETTINGS, WEBSITE_APP_SETTINGS, TRUSTED_BADGE } = ROUTES_INFO;
 
 const MyAccount = (props) => {
   const [isWebView, setWebView] = useState(false);
-
-  const isTrustedBadge = props?.user?.isOrgAxis
-    ? false
-    : !isOrgFeatureExist('hide_razorpay_text_link');
 
   useEffect(() => {
     if (getMobileDetect().isWebView()) {
@@ -40,9 +39,24 @@ const MyAccount = (props) => {
     ) {
       if (props.user.isWebsiteComplianceFlowEnabled) props.fetchMerchantWebsiteDetails();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { websiteSectionDetailsData } = props;
+  const {
+    websiteSectionDetailsData,
+    user,
+    location: { pathname },
+  } = props;
+
+  if (user.isAccountAndSettingsRevampEnabled) {
+    if (pathname === '/website-app-details') {
+      <Redirect to={WEBSITE_APP_SETTINGS} />;
+    }
+    if (pathname === '/trustedbadge') {
+      return <Redirect to={TRUSTED_BADGE} />;
+    }
+    return <Redirect to={ACCOUNT_AND_SETTINGS} />;
+  }
 
   return (
     <>
@@ -66,11 +80,7 @@ const MyAccount = (props) => {
             >
               <NavLink to="/website-app-details">Website/App details</NavLink>
             </ShowWhen>
-            <ShowWhen
-              additionalCondition={(user) =>
-                isTrustedBadge && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TrustedBadge)
-              }
-            >
+            <ShowWhen additionalCondition={isTrustedBadgeAllowed}>
               <NavLink to="/trustedbadge">Trusted Badge</NavLink>
             </ShowWhen>
 
@@ -141,9 +151,7 @@ const MyAccount = (props) => {
           <ShowWhenRoute
             path="/trustedbadge"
             component={TrustedBadge}
-            additionalCondition={(user) =>
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TrustedBadge)
-            }
+            additionalCondition={isTrustedBadgeAllowed}
           />
           <Route path="/profile" component={Profile} />
           <ShowWhenRoute

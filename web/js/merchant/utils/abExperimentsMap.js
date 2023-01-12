@@ -453,6 +453,12 @@ export default {
     // prod experiment ids
     'Kmd4oqDWnxSFe8',
   ],
+  account_settings_revamp: [
+    // beta experiment ids
+    'L2orMNISKsZShh',
+    // prod experiment ids
+    'L2p1FFt2dWFOPd',
+  ],
   show_payroll_widget_exp: [
     //beta experiment ids
     'KmA4axC7yCGMZe',

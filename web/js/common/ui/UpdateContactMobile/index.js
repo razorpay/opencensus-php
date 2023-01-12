@@ -20,8 +20,8 @@ import { updateContactMobile, updateUser } from 'merchant_common/reducers/user';
 import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
 
 import EditContactMobileForm from './EditContactMobileForm';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { Modules } from 'common/constant/enums';
 
 class UpdateContactMobile extends React.Component {
   state = {};
@@ -87,6 +87,7 @@ class UpdateContactMobile extends React.Component {
           <p class="m-t m-b">OTP will expire in 5 mins.</p>
         </>
       )}
+      isNewAccountAndSettingsPage={this.props.isNewAccountAndSettingsPage}
     />
   );
 
@@ -108,19 +109,21 @@ class UpdateContactMobile extends React.Component {
           otpAuthToken={this.state.otpAuthToken}
           contactMobile={this.props.contactMobile}
           onClose={this.onCloseClick}
+          isNewAccountAndSettingsPage={this.props.isNewAccountAndSettingsPage}
         />
       ),
     });
   };
 
   triggerVerificationOtp = (resend = {}) => {
-    analyticsTrack({
+    analyticsTrackWithUserInfo({
       objectName: '2fa email otp',
       actionName: 'sent',
-      screen: 'my account',
+      screen: this.props.isNewAccountAndSettingsPage
+        ? Modules.AccountAndSettings
+        : Modules.MyAccount,
       properties: {
         resend,
-        ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
 
@@ -193,6 +196,7 @@ class UpdateContactMobile extends React.Component {
             )}
           </p>
         )}
+        isNewAccountAndSettingsPage={this.props.isNewAccountAndSettingsPage}
       />
     );
   }

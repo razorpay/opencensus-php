@@ -18,7 +18,8 @@ export const PRODUCTS_DATA = {
   settings: {
     icon: 'i-settings',
     additionalCondition: (user: any): boolean =>
-      user.isAllowedMultiple('webhooks applications configuration api_keys'),
+      user.isAllowedMultiple('webhooks applications configuration api_keys') &&
+      !user.isAccountAndSettingsRevampEnabled,
   },
   developers: {
     icon: 'i-developers developers-sidebar-icon',
@@ -30,7 +31,8 @@ export const PRODUCTS_DATA = {
   my_account: {
     icon: 'i-account',
     additionalCondition: (user: any): boolean =>
-      user.isAllowedMultiple('profile credits add_funds team referrals'),
+      user.isAllowedMultiple('profile credits add_funds team referrals') &&
+      !user.isAccountAndSettingsRevampEnabled,
   },
   reports: {
     icon: 'i-books',
@@ -152,6 +154,13 @@ export const PRODUCTS_DATA = {
     icon: 'i-app-store',
     additionalCondition: (): boolean => !isOrgFeatureExist('hide_razorpay_text_link'),
   },
+  accountsettings: {
+    icon: 'i-settings',
+    additionalCondition: (user: any) =>
+      user.isAllowedMultiple(
+        'webhooks applications configuration api_keys profile credits add_funds team referrals',
+      ) && user.isAccountAndSettingsRevampEnabled,
+  },
 };
 
 export const COMMON_PRODUCTS = [
@@ -183,6 +192,11 @@ export const COMMON_PRODUCTS = [
   {
     title: 'Settings',
     product_id: 'settings',
+    tags: [],
+  },
+  {
+    title: 'Account & Settings',
+    product_id: 'accountsettings',
     tags: [],
   },
 ];

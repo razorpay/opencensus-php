@@ -361,12 +361,20 @@ const initialState = {
     data: null,
     error: null,
   },
+  isAdminAsMerchant: {
+    loading: true,
+    data: false,
+    error: null,
+  },
 };
 
 export default (state = initialState, action) => {
   switch (action.type) {
     case `${BANK_ACCOUNT_FETCH}::SUCCESS`:
       return set(state, 'bankAccount', action.payload.data);
+
+    case `${BANK_ACCOUNT_FETCH}::ERROR`:
+      return set(state, 'bankAccount', null);
 
     case `${BANK_ACCOUNT_CHANGE_STATUS_FETCH}::SUCCESS`:
       return set(state, 'bankAccountChangeStatus', action.payload?.data);
@@ -389,6 +397,22 @@ export default (state = initialState, action) => {
         loading: false,
         error: action.payload.errors,
         data: initialState.reserve_balance.data,
+      });
+
+    case `${IS_ADMIN_AS_MERCHANT}::SUCCESS`:
+      return merge(state, {
+        isAdminAsMerchant: {
+          loading: false,
+          data: action.payload.data.is_admin_as_merchant,
+          error: null,
+        },
+      });
+
+    case `${IS_ADMIN_AS_MERCHANT}::ERROR`:
+      return set(state, 'isAdminAsMerchant', {
+        loading: false,
+        data: false,
+        error: action.payload.errors,
       });
 
     case `${STORE_TICKET_DETAILS}::SUCCESS`:

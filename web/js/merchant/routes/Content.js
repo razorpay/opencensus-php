@@ -24,10 +24,23 @@ import HandleIndex from './HandleIndex';
 import lazy from './LazyLoader';
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
 import { getIsPayrollWidgetEnabled } from 'merchant/components/Sidebar/helpers';
+import {
+  isTrustedBadgeAllowed,
+  isPaymentMethodEnabled,
+  isProfileViewAllowed,
+  isConfigurationViewAllowed,
+} from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const ApiKeysAndPlugins = lazy(() =>
   import(/* webpackChunkName: "ApiKeysAndPlugins" */ 'merchant/views/ApiKeysAndPlugins'),
+);
+
+const AccountAndSettingsHome = lazy(() =>
+  import(
+    /* webpackChunkName: "AccountAndSettingsHome" */ 'merchant/views/AccountAndSettings/AccountAndSettingsHome'
+  ),
 );
 
 const PartnerDashboard = lazy(() =>
@@ -111,23 +124,71 @@ const ReportsAsync = lazy(() =>
 );
 
 const MyAccount = lazy(() => import(/* webpackChunkName: "Account" */ 'merchant/views/Account'));
+
 const Settings = lazy(() => import(/* webpackChunkName: "Settings" */ 'merchant/views/Settings'));
+
+const WebsiteAndAppSettings = lazy(() =>
+  import(
+    /* webpackChunkName: "WebsiteAndAppSettings" */ 'merchant/views/AccountAndSettings/WebsiteAppSettings'
+  ),
+);
+
+const BusinessSettings = lazy(() =>
+  import(
+    /* webpackChunkName: "BusinessSettings" */ 'merchant/views/AccountAndSettings/BusinessSettings'
+  ),
+);
+
+const CheckoutSettings = lazy(() =>
+  import(
+    /* webpackChunkName: "CheckoutSettings" */ 'merchant/views/AccountAndSettings/CheckoutSettings'
+  ),
+);
+
+const PaymentsAndRefundsSettings = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentsAndRefundsSettings" */ 'merchant/views/AccountAndSettings/PaymentsAndRefundsSettings'
+  ),
+);
+
+const BankAccountsAndSettlements = lazy(() =>
+  import(
+    /* webpackChunkName: "BankAccountsAndSettlements" */ 'merchant/views/AccountAndSettings/BankAccountsAndSettlements'
+  ),
+);
+
+const NotificationSettings = lazy(() =>
+  import(
+    /* webpackChunkName: "NotificationSettings" */ 'merchant/views/AccountAndSettings/NotificationSettings'
+  ),
+);
+
+const PaymentMethodsV2 = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentMethods" */ 'merchant/views/AccountAndSettings/PaymentMethods'
+  ),
+);
+
 const SmartCollect = lazy(() =>
   import(/* webpackChunkName: "SmartCollect" */ 'merchant/views/SmartCollect/Index'),
 );
+
 const Navigator = lazy(() =>
   import(/* webpackChunkName: "Navigator" */ 'merchant/views/Navigator/Index'),
 );
 
 const Offers = lazy(() => import(/* webpackChunkName: "Offers" */ 'merchant/views/Offers'));
+
 const CheckoutRewards = lazy(() =>
   import(/* webpackChunkName: "CheckoutRewards" */ 'merchant/views/CheckoutRewards'),
 );
+
 const PaypalOnboardRedirect = lazy(() =>
   import(
     /* webpackChunkName: "PaypalOnboardRedirect" */ 'merchant/views/Settings/Configuration/PaypalOnboardRedirect'
   ),
 );
+
 const LoanDetails = lazy(() =>
   import(/* webpackChunkName: "CapitalLoans" */ 'merchant/views/Capital/Loans'),
 );
@@ -139,14 +200,17 @@ const NonFldgLoans = lazy(() =>
 const FlashCreditLandingPage = lazy(() =>
   import(/* webpackChunkName: "CapitalCashAdvance" */ 'merchant/views/Capital/CashAdvance/index'),
 );
+
 const CashAdvance = lazy(() =>
   import(/* webpackChunkName: "CashAdvance" */ 'merchant/views/Capital/CashAdvance/CashAdvance'),
 );
+
 const CorporateCards = lazy(() =>
   import(
     /* webpackChunkName: "CorporateCards" */ 'merchant/views/Capital/CorporateCards/CorporateCards'
   ),
 );
+
 const LoansCollections = lazy(() =>
   import(/* webpackChunkName: "Loans" */ 'merchant/views/Capital/Loans/LoansCollections'),
 );
@@ -165,6 +229,7 @@ const DevelopersWebhooks = lazy(() =>
 const Support = lazy(() =>
   import(/* webpackChunkName: "Support-section" */ 'merchant/components/Support'),
 );
+
 const HelpSection = lazy(() =>
   import(/* webpackChunkName: "new-help-section" */ 'merchant/components/Support/HelpSection'),
 );
@@ -187,6 +252,7 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   );
 };
 
+// eslint-disable-next-line react/no-unsafe
 @withRouter
 @connect(
   (state) => ({
@@ -298,24 +364,29 @@ export default class Content extends Component {
     }
   };
 
-  isPaymentMethodEnabled = (user) => {
-    return (
-      user.isOrgRZP === true && user.isInstrumentRequestAllowed() && this.props.mode !== 'test'
-    );
-  };
-
   getBaseView = () => {
-    const { fullPageView } = this.props;
+    const { fullPageView, user, mode } = this.props;
 
     if (fullPageView) {
       return fullPageView;
     }
 
+    const PaymentMethods = user.isAccountAndSettingsRevampEnabled ? PaymentMethodsV2 : Settings;
+
     return (
       <Suspense fallback={<Loader />}>
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
-
+          <Route
+            path="/account-settings"
+            component={AccountAndSettingsHome}
+            additionalCondition={(user) =>
+              user.isAccountAndSettingsRevampEnabled &&
+              user.isAllowedMultiple(
+                'webhooks applications configuration api_keys profile credits add_funds team referrals',
+              )
+            }
+          />
           <ShowWhenRoute
             path="/partners"
             component={PartnerDashboard}
@@ -612,12 +683,12 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/trustedbadge"
             component={MyAccount}
-            additionalCondition={(user) => !user.isOrgAxis}
+            additionalCondition={isTrustedBadgeAllowed}
           />
           <ShowWhenRoute
             path="/profile"
             component={MyAccount}
-            additionalCondition={(user) => user.isAllowedView('profile') || !user.userRole}
+            additionalCondition={isProfileViewAllowed}
           />
 
           <ShowWhenRoute
@@ -702,9 +773,9 @@ export default class Content extends Component {
             additionalCondition={(user) => user.isAllowedView('applications')}
           />
           <ShowWhenRoute
-            path="/payment-methods"
-            component={Settings}
-            additionalCondition={(user) => this.isPaymentMethodEnabled(user)}
+            path={ROUTES_INFO.PAYMENT_METHODS}
+            component={PaymentMethods}
+            additionalCondition={(user) => isPaymentMethodEnabled(user, mode)}
           />
           <ShowWhenRoute
             path="/offers"
@@ -722,6 +793,9 @@ export default class Content extends Component {
               !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Checkoutrewards)
             }
           />
+
+          <ShowWhenRoute path="/business-settings" component={BusinessSettings} />
+
           <ShowWhenRoute path="/optimizer" component={Navigator} />
           <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />
           <ShowWhenRoute strict path="/capital/:product/apply" component={LoanDetails} />
@@ -739,6 +813,28 @@ export default class Content extends Component {
             path="/payroll"
             component={PayrollWidget}
             additionalCondition={getIsPayrollWidgetEnabled}
+          />
+          <Route path="/website-app-settings" component={WebsiteAndAppSettings} />
+          <ShowWhenRoute
+            path="/checkout-settings"
+            component={CheckoutSettings}
+            additionalCondition={(user) =>
+              isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user)
+            }
+          />
+          <ShowWhenRoute
+            path="/notification-settings"
+            component={NotificationSettings}
+            additionalCondition={isConfigurationViewAllowed}
+          />
+          <ShowWhenRoute
+            path="/payments-and-refunds-settings"
+            component={PaymentsAndRefundsSettings}
+          />
+          <ShowWhenRoute
+            path="/bank-accounts-settlements"
+            component={BankAccountsAndSettlements}
+            additionalCondition={isProfileViewAllowed}
           />
           <Route exact path="/" component={HandleIndex} />
           <Route path="*" component={HandleIndex} />

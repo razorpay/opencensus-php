@@ -48,6 +48,7 @@
     "js/merchant/views/Settings/PaymentMethods",
     "js/merchant/views/Account/Profile/components/FIRC/HSCode",
     "js/merchant/components/StatusTracker",
+    "js/merchant/views/AccountAndSettings",
     "js/merchant/models/PaymentUploadInvoice.ts",
     "js/merchant/views/Transactions",
     "js/merchant/containers/ListContainer.tsx",

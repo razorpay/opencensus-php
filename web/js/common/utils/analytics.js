@@ -5,6 +5,7 @@ import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import getMobileDetect from 'common/utils/mobileDetect';
+import { Modules } from 'common/constant/enums';
 
 let source = null;
 
@@ -253,4 +254,20 @@ export const captureErrorOnAnalytics = (event, hint) => {
       toLumberjack: true,
     });
   }
+};
+
+export const analyticsTrackWithUserInfo = ({ properties = {}, ...rest }) => {
+  const { screen } = rest;
+  const propertiesWithUserInfo = {
+    ...properties,
+    ...getCommonAnalyticsProperties(window.rzp_user),
+  };
+  if (screen === Modules.AccountAndSettings) {
+    propertiesWithUserInfo.version = 'v2';
+  }
+
+  analyticsTrack({
+    ...rest,
+    properties: propertiesWithUserInfo,
+  });
 };

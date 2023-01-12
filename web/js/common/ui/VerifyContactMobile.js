@@ -48,7 +48,11 @@ export default class VerifyContactMobile extends React.Component {
     this.props.openModal({
       size: 'small',
       component: (
-        <UpdateContactMobile onComplete={this.props.onComplete} onClose={this.onCloseClick} />
+        <UpdateContactMobile
+          onComplete={this.props.onComplete}
+          onClose={this.onCloseClick}
+          isNewAccountAndSettingsPage={this.props.isNewAccountAndSettingsPage}
+        />
       ),
     });
   };
@@ -90,6 +94,7 @@ export default class VerifyContactMobile extends React.Component {
             <p class="m-t m-b">OTP will expire in 5 mins.</p>
           </>
         )}
+        isNewAccountAndSettingsPage={this.props.isNewAccountAndSettingsPage}
       />
     );
   }

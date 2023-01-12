@@ -6,14 +6,15 @@ import Input from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
 import ModalHeader from 'common/ui/ModalHeader';
 
-import { pickProps, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { pickProps } from 'common/utils/rzp-utils';
 import { isPhone } from 'common/utils/validators';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 
 import { closeModal } from 'merchant_common/reducers/modals';
 import { updateContactMobile } from 'merchant_common/reducers/user';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { Modules } from 'common/constant/enums';
 
 @connect(
   (state) => ({
@@ -42,6 +43,17 @@ export default class EditContactMobileForm extends React.Component {
     });
   };
 
+  onAnalyticsTrack = ({ objectName, actionName, properties = {} }) => {
+    analyticsTrackWithUserInfo({
+      objectName,
+      actionName,
+      screen: this.props.isNewAccountAndSettingsPage
+        ? Modules.AccountAndSettings
+        : Modules.MyAccount,
+      properties,
+    });
+  };
+
   onContactUpdateSubmit = () => {
     const { contactMobile } = this.state;
     const { otpAuthToken, showNotification } = this.props;
@@ -57,28 +69,26 @@ export default class EditContactMobileForm extends React.Component {
         selfServeTrackSuccess({
           selfServeAction: 'Mobile Updated',
           page: 'Profile',
-          screen: 'My Account',
+          screen: this.props.isNewAccountAndSettingsPage
+            ? Modules.AccountAndSettings
+            : Modules.MyAccount,
         });
-        analyticsTrack({
+        this.onAnalyticsTrack({
           objectName: 'change contact number',
           actionName: 'result',
-          screen: 'my account',
           properties: {
             status: 'success',
-            ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
         this.props.onContactMobileUpdate(this.state.contactMobile);
       })
       .catch(({ errors }) => {
-        analyticsTrack({
+        this.onAnalyticsTrack({
           objectName: 'change contact number',
           actionName: 'result',
-          screen: 'my account',
           properties: {
             status: 'failure',
             failureReason: errors[0],
-            ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
         showNotification({
@@ -97,13 +107,11 @@ export default class EditContactMobileForm extends React.Component {
   };
 
   componentDidMount() {
-    analyticsTrack({
+    this.onAnalyticsTrack({
       objectName: 'change contact number confirmation popup',
       actionName: 'displayed',
-      screen: 'my account',
       properties: {
         '2FaFlow': 'change mobile number',
-        ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
   }

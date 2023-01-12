@@ -1724,6 +1724,10 @@ export default class User {
     return getSplitzExperimentVariant('api_keys_revamp')?.variables?.result === 'on';
   }
 
+  get isAccountAndSettingsRevampEnabled() {
+    return getSplitzExperimentVariant('account_settings_revamp')?.variables?.result === 'on';
+  }
+
   get isProductLedOnboarding() {
     return getSplitzExperimentVariant('product_led_onboarding')?.variables?.result === 'on';
   }

@@ -9,9 +9,9 @@ import InputField from 'common/ui/Forms/InputField';
 import { updatePassword } from 'merchant/reducers/profile';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { Modules } from 'common/constant/enums';
 
 @connect(null, { updatePassword, closeModal, showNotification })
 @RTracking(() => window.rzpQ.component('PasswordForm'))
@@ -48,15 +48,14 @@ export default class PasswordForm extends PureComponent {
         selfServeTrackSuccess({
           selfServeAction: 'Password Updated',
           page: 'Profile',
-          screen: 'My Account',
+          screen: Modules.AccountAndSettings,
         });
-        analyticsTrack({
+        analyticsTrackWithUserInfo({
           objectName: 'change password',
           actionName: 'status',
-          screen: 'my account',
+          screen: Modules.AccountAndSettings,
           properties: {
             status: 'success',
-            ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
         const { showNotification, closeModal, tracking } = this.props;
@@ -72,14 +71,13 @@ export default class PasswordForm extends PureComponent {
         closeModal();
       })
       .catch((err) => {
-        analyticsTrack({
+        analyticsTrackWithUserInfo({
           objectName: 'change password',
           actionName: 'status',
-          screen: 'my account',
+          screen: Modules.AccountAndSettings,
           properties: {
             status: 'failure',
             failureReason: err.errors[0],
-            ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
         this.props.showNotification({
@@ -94,14 +92,13 @@ export default class PasswordForm extends PureComponent {
     return (
       <form
         onSubmit={(args) => {
-          analyticsTrack({
+          analyticsTrackWithUserInfo({
             objectName: 'change password popup',
             actionName: 'clicked',
-            screen: 'my account',
+            screen: Modules.AccountAndSettings,
             properties: {
               location: 'profile',
               action: 'change password',
-              ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
           return handleSubmit(this.changePassword)(...args);
@@ -110,14 +107,13 @@ export default class PasswordForm extends PureComponent {
         <ModalHeader
           title="Change Password"
           onCloseClick={() => {
-            analyticsTrack({
+            analyticsTrackWithUserInfo({
               objectName: 'change password popup',
               actionName: 'clicked',
-              screen: 'my account',
+              screen: Modules.AccountAndSettings,
               properties: {
                 location: 'profile',
                 action: 'cancel',
-                ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
             this.props.closeModal();

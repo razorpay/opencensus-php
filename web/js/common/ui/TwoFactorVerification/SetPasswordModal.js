@@ -11,8 +11,8 @@ import {
   setPassword as setPasswordReducer,
   checkPassword as checkPasswordReducer,
 } from 'merchant/reducers/profile';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { Modules } from 'common/constant/enums';
 
 const SetPasswordModal = ({
   onComplete,
@@ -26,6 +26,7 @@ const SetPasswordModal = ({
   showNotification,
   valid,
   handleSubmit,
+  isNewAccountAndSettingsPage = false,
 }) => {
   const [inputPassword, setInputPassword] = useState(null);
   const [inputConfirmPassword, setInputConfirmPassword] = useState(null);
@@ -48,6 +49,7 @@ const SetPasswordModal = ({
     (input_password) => /[a-z]/i.test(input_password) && /[0-9]/g.test(input_password),
     'Password must contain atleast one letter and one number',
   );
+  const screen = isNewAccountAndSettingsPage ? Modules.AccountAndSettings : Modules.MyAccount;
 
   const onSubmit = (data) => {
     if (data.password !== data.password_confirmation) {
@@ -57,25 +59,21 @@ const SetPasswordModal = ({
       });
     }
 
-    analyticsTrack({
+    analyticsTrackWithUserInfo({
       objectName: '2fa set password submit',
       actionName: 'clicked',
-      screen: 'my account',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
+      screen,
     });
 
     return setPassword(data)
       .then(() => {
         checkPassword();
-        analyticsTrack({
+        analyticsTrackWithUserInfo({
           objectName: '2fa set password',
           actionName: 'result',
-          screen: 'my account',
+          screen,
           properties: {
             result: 'Success',
-            ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
         showNotification({
@@ -85,14 +83,13 @@ const SetPasswordModal = ({
         onComplete?.(inputPassword);
       })
       .catch((err) => {
-        analyticsTrack({
+        analyticsTrackWithUserInfo({
           objectName: '2fa set password',
           actionName: 'result',
-          screen: 'my account',
+          screen,
           properties: {
             result: 'Failure',
             failureReason: err.errors[0],
-            ...getCommonAnalyticsProperties(window.rzp_user),
           },
         });
         showNotification({
@@ -102,25 +99,19 @@ const SetPasswordModal = ({
       });
   };
   const _onClose = () => {
-    analyticsTrack({
+    analyticsTrackWithUserInfo({
       objectName: '2fa set password popup close',
       actionName: 'clicked',
-      screen: 'my account',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
+      screen,
     });
     onClose?.();
   };
 
   useEffect(() => {
-    analyticsTrack({
+    analyticsTrackWithUserInfo({
       objectName: '2fa set password popup',
       actionName: 'rendered',
-      screen: 'my account',
-      properties: {
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
+      screen,
     });
   }, []);
 

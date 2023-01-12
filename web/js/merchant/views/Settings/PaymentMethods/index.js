@@ -45,7 +45,7 @@ const PaymentMethod = (props) => {
     ]).catch((errors) => {
       showNotification({
         type: 'error',
-        message: errors[0],
+        message: errors[0] || 'Something went wrong',
       });
     });
   };

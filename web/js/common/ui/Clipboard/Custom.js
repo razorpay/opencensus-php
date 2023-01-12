@@ -48,6 +48,14 @@ export default class Clipboard extends Component {
       return null;
     }
 
+    const tooltipProps = {
+      'data-event': 'active',
+    };
+
+    if (!this.props.hideTooltip) {
+      tooltipProps['data-tip'] = 'Copied';
+    }
+
     return (
       <div class="ClipboardCustom">
         <textarea
@@ -57,7 +65,7 @@ export default class Clipboard extends Component {
           ref={(textarea) => (this.textarea = textarea)}
           onFocus={this.selectValue}
         />
-        <div onClick={this.copyToClipboard} data-tip="Copied" data-event="active">
+        <div onClick={this.copyToClipboard} {...tooltipProps}>
           {this.props.children}
         </div>
       </div>

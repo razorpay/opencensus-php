@@ -278,6 +278,7 @@ function WebsiteAppDetails({
 }
 
 const mapStateToProps = (state) => ({
+  user: state.session.user,
   websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
   activationData: state.websiteCompliance.activationData,
 });

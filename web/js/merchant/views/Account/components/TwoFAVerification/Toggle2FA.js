@@ -263,7 +263,7 @@ class Toggle2FA extends Component {
     }
   };
   render() {
-    const { twoFaEnabled } = this.props;
+    const { twoFaEnabled, shouldOnlyToggle } = this.props;
     return (
       <TriggerOnQueryParamMatch
         queryParamsMapping={[
@@ -274,32 +274,44 @@ class Toggle2FA extends Component {
           },
         ]}
       >
-        <div className="panel panel-default">
-          <div className="panel-heading">
-            {this.props.renderTitle && this.props.renderTitle()}
+        {shouldOnlyToggle ? (
+          <SwitchField
+            ref={this.switchBtnRef}
+            defaultChecked={twoFaEnabled}
+            // temporarily using onChange callback from props
+            // otherwise this component will require access to both
+            // new and old context
+            onChange={this.props.onToggleChange(this.onToggleChange)}
+            type="prime"
+          />
+        ) : (
+          <div className="panel panel-default">
+            <div className="panel-heading">
+              {this.props.renderTitle && this.props.renderTitle()}
 
-            <span className="toggler-btn">
-              <SwitchField
-                ref={this.switchBtnRef}
-                defaultChecked={twoFaEnabled}
-                // temporarily using onChange callback from props
-                // otherwise this component will require access to both
-                // new and old context
-                onChange={this.props.onToggleChange(this.onToggleChange)}
-                type="prime"
-              />
-              <strong className={classList('m-l', twoFaEnabled ? 'text-primary' : 'text-faded')}>
-                {twoFaEnabled ? 'Enabled' : 'Disabled'}
-              </strong>
-            </span>
-          </div>
+              <span className="toggler-btn">
+                <SwitchField
+                  ref={this.switchBtnRef}
+                  defaultChecked={twoFaEnabled}
+                  // temporarily using onChange callback from props
+                  // otherwise this component will require access to both
+                  // new and old context
+                  onChange={this.props.onToggleChange(this.onToggleChange)}
+                  type="prime"
+                />
+                <strong className={classList('m-l', twoFaEnabled ? 'text-primary' : 'text-faded')}>
+                  {twoFaEnabled ? 'Enabled' : 'Disabled'}
+                </strong>
+              </span>
+            </div>
 
-          <div className="panel-body">
-            <form className="form-horizontal">
-              <div className="description">{this.props.renderDescription()}</div>
-            </form>
+            <div className="panel-body">
+              <form className="form-horizontal">
+                <div className="description">{this.props.renderDescription()}</div>
+              </form>
+            </div>
           </div>
-        </div>
+        )}
       </TriggerOnQueryParamMatch>
     );
   }

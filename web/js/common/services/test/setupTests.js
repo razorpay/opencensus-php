@@ -23,6 +23,7 @@ jest.mock('@razorpay/commander-services/analytics', () => {
 jest.mock('common/utils/analytics', () => ({
   ...jest.requireActual('common/utils/analytics'),
   analyticsTrack: jest.fn(),
+  analyticsTrackWithUserInfo: jest.fn(),
 }));
 jest.mock('common/services/tracking/segment', () => ({
   ...jest.requireActual('common/services/tracking/segment'),

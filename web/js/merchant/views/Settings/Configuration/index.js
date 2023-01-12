@@ -24,7 +24,6 @@ import InternationalPayments from './InternationalPayments';
 import { fetchUser } from 'merchant/reducers/session';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import IntoView from 'common/ui/IntoView';
-import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
   FLASH_CHECKOUT,
   CAPTURE_SETTINGS,
@@ -42,6 +41,13 @@ import ToggleSetting from './ToggleSetting';
 import { flashCheckoutProps, skipCardMandateSummaryProps } from './settings-config-constants';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import {
+  isFlashCheckoutAllowed,
+  isSkipMandatorySummaryPageAllowed,
+  isWhatsappNotificationEnabled,
+  isSmsNotificationEnabled,
+} from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import LoaderDots from 'common/ui/LoaderDots';
 
 // eslint-disable-next-line react/no-unsafe
 class CongfigurationContainer extends Component {
@@ -53,15 +59,22 @@ class CongfigurationContainer extends Component {
   };
 
   UNSAFE_componentWillMount() {
-    this.props.fetchFeatures(this.props.user.current).catch((err) => {
-      this.props.showNotification({
-        type: 'error',
-        message: err.errors,
+    const {
+      showFeeBearer,
+      showInternationalPayments,
+      configState: { features, error },
+    } = this.props;
+    if (!features.length || error) {
+      this.props.fetchFeatures(this.props.user.current).catch((err) => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
       });
-    });
+    }
 
     // check paypal org feature
-    if (this.props.org.features.indexOf('axis_paypal') > -1) {
+    if (showInternationalPayments && this.props.org.features.indexOf('axis_paypal') > -1) {
       this.setState({
         isPaypalOrg: true,
       });
@@ -69,8 +82,9 @@ class CongfigurationContainer extends Component {
       // check paypal MID feature
       this.fetchFeatureFlagStatus('axis_paypal_enable', 'isPaypalMid');
     }
-
-    this.fetchFeatureFlagStatus('allow_cfb_international', 'allowCFBInternational');
+    if (showFeeBearer) {
+      this.fetchFeatureFlagStatus('allow_cfb_international', 'allowCFBInternational');
+    }
   }
 
   is_hash_loaded_once = false;
@@ -236,16 +250,6 @@ class CongfigurationContainer extends Component {
     });
   };
 
-  isWhatsappNotificationEnabled = (user) => {
-    return (
-      user.isWhatsappNotificationEnabled() &&
-      user.user &&
-      user.user.contact_mobile &&
-      user.activation_status === 'activated' &&
-      (user.role === rolesList.OWNER || user.role === rolesList.ADMIN)
-    );
-  };
-
   handleCovidReliefOptinAndOut = (e) => {
     this.setState({ isLoading: true });
     const bool = e ? 1 : 0;
@@ -317,8 +321,14 @@ class CongfigurationContainer extends Component {
     international,
   }) => {
     const { allowCFBInternational } = this.state;
+    const { showFeeBearer } = this.props;
     const shouldAllow =
-      isOrgRZP && isAccepted && role === 'owner' && isFeeBearerSelfServeOn && !isPayPalEnabled;
+      showFeeBearer &&
+      isOrgRZP &&
+      isAccepted &&
+      role === 'owner' &&
+      isFeeBearerSelfServeOn &&
+      !isPayPalEnabled;
 
     if (allowCFBInternational) {
       return shouldAllow && international;
@@ -333,10 +343,24 @@ class CongfigurationContainer extends Component {
       user,
       configState: { config, loading, paypal_terminals },
       org,
+      showBranding,
+      showMissedOrderPaymentLink,
+      showFlashCheckout,
+      showPaymentSettings,
+      showDefaultRefundSpeed,
+      showFirc,
+      showInternationalPayments,
+      showEmailNotifications,
+      showSmsNotifications,
+      showWhatsappNotifications,
+      showSkipMandatorySummaryPage,
+      showAnnouncements,
+      className,
+      isOldFlow,
     } = this.props;
     let showInternationalPaymentsCard = false;
     const remarketerEnabled = user.isFeatureEnabled('missed_orders_plink');
-    if (mode === 'live') {
+    if (mode === 'live' && showInternationalPayments) {
       if (this.state.isPaypalOrg) {
         if (this.state.isPaypalMid) {
           showInternationalPaymentsCard = true;
@@ -355,32 +379,35 @@ class CongfigurationContainer extends Component {
     }
 
     return (
-      <div class="content-wrapper content-sm" id="settings-content">
+      <div className={['content-wrapper content-sm', className].join(' ')} id="settings-content">
         {loading ? (
-          <div class="page-spinner-container">
-            <Spinner />
-          </div>
+          isOldFlow ? (
+            <div class="page-spinner-container">
+              <Spinner />
+            </div>
+          ) : (
+            <LoaderDots />
+          )
         ) : (
           <div>
-            <IntoView hashedWith={ACCOUNT_SETTINGS}>
-              <CheckoutTheme
-                form="configForm"
-                onSave={this.saveConfig}
-                onSwitchChange={this.handleCovidReliefOptinAndOut}
-                isLoading={this.state.isLoading}
-              />
-            </IntoView>
-            {remarketerEnabled && (
+            {showBranding && (
+              <IntoView hashedWith={ACCOUNT_SETTINGS}>
+                <CheckoutTheme
+                  form="configForm"
+                  onSave={this.saveConfig}
+                  onSwitchChange={this.handleCovidReliefOptinAndOut}
+                  isLoading={this.state.isLoading}
+                />
+              </IntoView>
+            )}
+            {showMissedOrderPaymentLink && remarketerEnabled && (
               <IntoView hashedWith={MISSED_ORDER_PAYMENT_LINK}>
                 <MissedOrderPaymentLink />
               </IntoView>
             )}
 
             <ShowWhen
-              additionalCondition={(user) =>
-                user.isOrgAllowedFunctionality('flashcheckout') &&
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.FlashCheckout)
-              }
+              additionalCondition={(user) => showFlashCheckout && isFlashCheckoutAllowed(user)}
             >
               <IntoView hashedWith={FLASH_CHECKOUT}>
                 <ToggleSetting {...flashCheckoutProps} org={org} />
@@ -389,6 +416,7 @@ class CongfigurationContainer extends Component {
 
             <ShowWhen
               additionalCondition={(user) =>
+                showPaymentSettings &&
                 !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentCapture)
               }
             >
@@ -399,7 +427,7 @@ class CongfigurationContainer extends Component {
 
             <ShowWhen
               additionalCondition={(user) =>
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                showDefaultRefundSpeed && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
               }
             >
               <IntoView hashedWith={REFUND_SETTINGS}>
@@ -409,6 +437,7 @@ class CongfigurationContainer extends Component {
 
             <ShowWhen
               additionalCondition={(user) =>
+                showFirc &&
                 !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.International) &&
                 user?.international
               }
@@ -437,20 +466,23 @@ class CongfigurationContainer extends Component {
               />
             </ShowWhen>
 
-            <IntoView hashedWith={EMAIL_NOTIF}>
-              <EmailNotifications form="configForm" onSave={this.saveConfig} />
-            </IntoView>
-
-            {user.contact_mobile && (
-              <IntoView hashedWith={SMS_NOTIF}>
-                <SmsNotification />
+            {showEmailNotifications && (
+              <IntoView hashedWith={EMAIL_NOTIF}>
+                <EmailNotifications form="configForm" onSave={this.saveConfig} />
               </IntoView>
             )}
 
             <ShowWhen
+              additionalCondition={(user) => showSmsNotifications && isSmsNotificationEnabled(user)}
+            >
+              <IntoView hashedWith={SMS_NOTIF}>
+                <SmsNotification />
+              </IntoView>
+            </ShowWhen>
+
+            <ShowWhen
               additionalCondition={(user) =>
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.WhatsappNotification) &&
-                this.isWhatsappNotificationEnabled(user)
+                showWhatsappNotifications && isWhatsappNotificationEnabled(user)
               }
             >
               <IntoView hashedWith={WHATSAPP_NOTIF}>
@@ -460,7 +492,7 @@ class CongfigurationContainer extends Component {
 
             <ShowWhen
               additionalCondition={(user) =>
-                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.MandateSummary)
+                showSkipMandatorySummaryPage && isSkipMandatorySummaryPageAllowed(user)
               }
             >
               <IntoView hashedWith={SKIP_CARD_MANDATE_SUMMARY}>
@@ -472,7 +504,7 @@ class CongfigurationContainer extends Component {
 
         <ShowWhen
           additionalCondition={(user) =>
-            !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
+            showAnnouncements && !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)
           }
         >
           <EasterEgg extraClass="ftx-settings-page-mweb" page="Settings" />

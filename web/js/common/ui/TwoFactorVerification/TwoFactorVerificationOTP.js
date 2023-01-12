@@ -6,8 +6,8 @@ import { OtpInput } from 'common/new-ui/Input/OtpInput';
 import { AsyncBtn } from 'common/new-ui/Button';
 
 import { closeModal } from 'merchant_common/reducers/modals';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { Modules } from 'common/constant/enums';
 
 class TwoFactorVerificationOTP extends React.Component {
   static defaultProps = {
@@ -67,25 +67,29 @@ class TwoFactorVerificationOTP extends React.Component {
 
   validOtp = () => this.state.otpValue && this.state.otpValue.length === 6;
 
-  componentDidMount() {
-    analyticsTrack({
-      objectName: '2fa setup popup',
-      actionName: 'displayed',
-      screen: 'my account',
+  onAnalyticsTrack = ({ objectName, actionName, properties = {} }) => {
+    const { isNewAccountAndSettingsPage, title } = this.props;
+    analyticsTrackWithUserInfo({
+      objectName,
+      actionName,
+      screen: isNewAccountAndSettingsPage ? Modules.AccountAndSettings : Modules.MyAccount,
       properties: {
-        '2FaFlow': this.props.title,
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        '2FaFlow': title,
+        ...properties,
       },
     });
+  };
 
-    analyticsTrack({
+  componentDidMount() {
+    this.onAnalyticsTrack({
+      objectName: '2fa setup popup',
+      actionName: 'displayed',
+    });
+    this.onAnalyticsTrack({
       objectName: '2fa otp',
       actionName: 'sent',
-      screen: 'my account',
       properties: {
         action: 'cancel',
-        '2FaFlow': this.props.title,
-        ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
     this.setTimerInterval();
@@ -93,18 +97,15 @@ class TwoFactorVerificationOTP extends React.Component {
 
   attemptsTimerRef = { 2: 60, 3: 120, 4: 240, 5: 300 };
   onResendOtp = () => {
-    const { title, onResend } = this.props;
+    const { onResend } = this.props;
 
     this.noOfAttempts += 1;
-    analyticsTrack({
+    this.onAnalyticsTrack({
       objectName: '2fa setup popup',
       actionName: 'clicked',
-      screen: 'my account',
       properties: {
         action: 'resend',
-        '2FaFlow': title,
         otpAttempts: this.noOfAttempts,
-        ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
 
@@ -124,14 +125,11 @@ class TwoFactorVerificationOTP extends React.Component {
         <ModalHeader
           title={title}
           onCloseClick={(...e) => {
-            analyticsTrack({
+            this.onAnalyticsTrack({
               objectName: '2fa setup popup',
               actionName: 'clicked',
-              screen: 'my account',
               properties: {
                 action: 'cancel',
-                '2FaFlow': title,
-                ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
             this.onCloseClick(...e);

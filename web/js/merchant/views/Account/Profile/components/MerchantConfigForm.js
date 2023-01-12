@@ -8,8 +8,8 @@ import InputField from 'common/ui/Forms/InputField';
 import { compose } from 'redux';
 import { closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { analyticsTrack } from 'common/utils/analytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { Modules } from 'common/constant/enums';
 
 class MerchantConfigForm extends PureComponent {
   constructor(props) {
@@ -23,29 +23,26 @@ class MerchantConfigForm extends PureComponent {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  resetValue() {
-    analyticsTrack({
+  onAnalyticsTrack = (action) => {
+    analyticsTrackWithUserInfo({
       objectName: 'display name edit popup',
       actionName: 'clicked',
-      screen: 'my account',
+      screen: this.props.isNewAccountAndSettingsPage
+        ? Modules.AccountAndSettings
+        : Modules.MyAccount,
       properties: {
-        action: 'reset',
-        ...getCommonAnalyticsProperties(window.rzp_user),
+        action,
       },
     });
+  };
+
+  resetValue() {
+    this.onAnalyticsTrack('reset');
     this.props.change(this.props.attribute, this.props.value);
   }
 
   handleSubmit(e) {
-    analyticsTrack({
-      objectName: 'display name edit popup',
-      actionName: 'clicked',
-      screen: 'my account',
-      properties: {
-        action: 'update',
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-    });
+    this.onAnalyticsTrack('update');
     this.props.handleSubmit(this.props.updateMerchantConfig)(e);
   }
 
@@ -54,30 +51,14 @@ class MerchantConfigForm extends PureComponent {
     return (
       <form
         onSubmit={(...a) => {
-          analyticsTrack({
-            objectName: 'display name edit popup',
-            actionName: 'clicked',
-            screen: 'my account',
-            properties: {
-              action: 'update',
-              ...getCommonAnalyticsProperties(window.rzp_user),
-            },
-          });
+          this.onAnalyticsTrack('update');
           return handleSubmit(this.props.updateMerchantConfig)(...a);
         }}
       >
         <ModalHeader
           title={`Edit ${this.props.label}`}
           onCloseClick={(args) => {
-            analyticsTrack({
-              objectName: 'display name edit popup',
-              actionName: 'clicked',
-              screen: 'my account',
-              properties: {
-                action: 'cancel',
-                ...getCommonAnalyticsProperties(window.rzp_user),
-              },
-            });
+            this.onAnalyticsTrack('cancel');
             this.props.closeModal(args);
           }}
         />

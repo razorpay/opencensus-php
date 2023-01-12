@@ -1,4 +1,5 @@
 const ROUTE_REG = {
+  accountsettings: /^\/(account-settings|payment-methods|checkout-settings|notification-settings|website-app-settings|payments-and-refunds-settings|business-settings|bank-accounts-settlements)/,
   transactions: /^\/(payments|refunds|orders|batch-refunds|disputes|success-rate)/,
   // eslint-disable-next-line prettier/prettier
   settlements: /^\/(settlements|routeinstantsettlements|instantsettlement_details|instantsettlements)/,
@@ -55,6 +56,7 @@ const BASE_ROUTES = {
   subscription_buttons: '/subscription_buttons',
   chargeAtWill: '/recurring_payments',
   partner: '/submerchants',
+  accountsettings: '/account-settings',
 };
 
 export const initializeRoutes = (location, user) => {
