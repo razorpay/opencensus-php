@@ -664,11 +664,6 @@ class Core extends Base\Core
             //New check for retry is made in case we want to add additional retry logic in the future
             $retry = true;
         }
-            if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
-            {
-                $this->updateShopifyGCTransaction($order['order']['id'], $promotion);
-            }
-
 
         if ($retry === true)
         {
@@ -794,6 +789,16 @@ class Core extends Base\Core
 
             $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
 
+            $promotions = $rzpOrder['promotions'];
+
+            foreach($promotions as $promotion)
+            {
+                if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
+                {
+                    $this->updateShopifyGCTransaction($order['order']['id'], $promotion);
+                }
+            }
+
             $this->updateShopifyCustomer($client, $order);
 
             $this->trace->info(
@@ -851,7 +856,7 @@ class Core extends Base\Core
 
         $client = $this->getShopifyClientByMerchant();
 
-        $body = $this->getCreateOrderPayload($rzpOrder, $rzpPayment['method']);
+        $body = $this->getCreateOrderPayload($rzpOrder, $rzpPayment);
 
         try
         {
@@ -920,9 +925,14 @@ class Core extends Base\Core
 
         $this->updateShopifyTransaction($order['order']['id'], $rzpPayment);
 
-        if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
+        $promotions = $rzpOrder['promotions'];
+
+        foreach($promotions as $promotion)
         {
-            $this->updateShopifyGCTransaction($order['order']['id'], $promotion);
+            if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
+            {
+                $this->updateShopifyGCTransaction($order['order']['id'], $promotion);
+            }
         }
         
         $this->updateShopifyCustomer($client, $order);
@@ -1035,7 +1045,7 @@ class Core extends Base\Core
         return ['customer' => $customer];
     }
 
-    protected function getCreateOrderPayload($rzpOrder, string $paymentMethod): array
+    protected function getCreateOrderPayload($rzpOrder, $rzpPayment): array
     {
         $checkoutId = $rzpOrder['notes']['storefront_id'];
 
@@ -1131,6 +1141,10 @@ class Core extends Base\Core
         ];
 
         $discountAmountPaise = 0;
+        $couponAmount = 0;
+        $giftCardAmount = 0;
+        $couponCode = null;
+
         if (empty($rzpOrder['promotions']) === false)
         {
             $promotions = $rzpOrder['promotions'];
@@ -1139,26 +1153,24 @@ class Core extends Base\Core
             // we hardcode the order amount to Re 1. To maintain consistency, we subtract
             // Re 1 from the discount applied so Shopify reflects the Re 1 payment even for 100% discount
             // We chose amount as amount_paid for cod orders is Re 0.
-            $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] - $rzpOrder['amount'];
 
             foreach ($promotions as $key=>$value)
             {
                 if (isset($value['type']) && $value['type'] === 'gift_card')
                 {
-                    //
+                    $giftCardAmount = $giftCardAmount + $value['value'];
                 }
                 else
                 {
-                    $body['discount_codes'][$key] = [
-                        'code'   => $value['code'],
-                        'amount' => $discountAmountPaise/100,
-                    ];
+                    $couponCode = $value['code'];
 
-                    $body['current_total_discounts'] = $discountAmountPaise/100;
+                    $couponAmount = $value['value'];
                 }
             }
         }
 
+        $scriptDiscountTitle = null;
+        
         // Add script discount as coupon
         if (isset($rzpOrder['notes']['Script_Discount_Amount']) && $rzpOrder['notes']['Script_Discount_Amount'] > 0)
         {
@@ -1171,17 +1183,67 @@ class Core extends Base\Core
                 $scriptDiscountTitle = "Discount";
             }
 
-            $body['discount_codes'][] = [
-                'code'   => $scriptDiscountTitle,
-                'amount' => $rzpOrder['notes']['Script_Discount_Amount']
-            ];
+            $couponCode = $scriptDiscountTitle;
 
-            $body['current_total_discounts'] = $rzpOrder['notes']['Script_Discount_Amount'];
+            $couponAmount = intval($rzpOrder['notes']['Script_Discount_Amount'])*100;
         }
+
+        $codFeeApplied = 0;
+
+        if (strtolower($rzpPayment['method']) === 'cod' && isset($rzpOrder['cod_fee']))
+        {
+            $codFeeApplied = $rzpOrder['cod_fee'];
+        }
+        
+        $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
+
+        if(isset($scriptDiscountTitle))
+        {
+            $rzpOffers = $discountAmountPaise;
+            $discountAmountPaise = $couponAmount + $rzpOffers;
+        }
+        else
+        {
+            $rzpOffers = $discountAmountPaise - $couponAmount;
+        }
+        
+        $rzpOffersRupee = round($rzpOffers/100,2);
+
+        $discountAmountRupee = round($discountAmountPaise/100,2);
+
+        if(isset($couponCode))
+        {
+            if($rzpOffersRupee > 0)
+            {
+                $body['discount_codes'][] = [
+                    'code'   => $couponCode.' + Razorpay offers(₹'.$rzpOffersRupee.')',
+                    'amount' => $discountAmountRupee,
+                ];
+            }
+            else 
+            {
+                $body['discount_codes'][] = [
+                    'code'   => $couponCode,
+                    'amount' => $discountAmountRupee,
+                ];
+            }
+        }
+        else
+        {
+            if($rzpOffersRupee > 0)
+            {
+                $body['discount_codes'][] = [
+                    'code'   => 'Razorpay offers(₹'.$rzpOffersRupee.')',
+                    'amount' => $discountAmountRupee,
+                ];
+            }
+        }
+
+        $body['current_total_discounts'] = $discountAmountRupee;
 
         $body['financial_status'] = 'paid';
 
-        if (strtolower($paymentMethod) === 'cod')
+        if (strtolower($rzpPayment['method']) === 'cod')
         {
            $body['financial_status'] = 'pending';
            $shippingFee = $shippingFee + $codFee;
@@ -1194,7 +1256,7 @@ class Core extends Base\Core
             ]
         ];
 
-        $body['tags'] = 'Magic, '.$paymentMethod;
+        $body['tags'] = 'Magic, '.$rzpPayment['method'];
 
         if (empty($rzpOrder['notes']['gstin']) === false)
         {
@@ -1445,7 +1507,7 @@ class Core extends Base\Core
     {
         $txn = [
             'kind'              => 'sale',
-            'amount' => $payment['amount']/100,
+            'amount'            => $payment['amount']/100,
             'order_id'          => $merchantOrderId,
             'source'            => 'external',
             'processing_method' => 'manual',
