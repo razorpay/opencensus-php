@@ -158,15 +158,15 @@ class Entity extends Base\PublicEntity
     {
         $merchantWebsiteDetail = $this->getAttribute(self::MERCHANT_WEBSITE_DETAILS);
 
-        if (isset($merchantWebsiteDetail[$sectionName][$urlType]) === true)
+        $details = $merchantWebsiteDetail[$sectionName][$urlType] ?? null;
+
+        if (empty($details) === false)
         {
             foreach ($merchantWebsiteDetail[$sectionName][$urlType] as $url => $constant)
             {
                 if (trim(strtolower($url), '/') === $inputUrl)
                 {
-                    return isset($merchantWebsiteDetail[$sectionName][$urlType][$url][$constant]) === true ?
-                        $merchantWebsiteDetail[$sectionName][$urlType][$url][$constant] :
-                        null;
+                    return $merchantWebsiteDetail[$sectionName][$urlType][$url][$constant] ?? null;
                 }
             }
         }
@@ -194,9 +194,7 @@ class Entity extends Base\PublicEntity
             {
                 if (trim(strtolower($url), '/') === $inputUrl)
                 {
-                    return isset($data[$sectionName][Constants::DOCUMENT_ID]) === true ?
-                        $data[$sectionName][Constants::DOCUMENT_ID] :
-                        null;
+                    return $data[$sectionName][Constants::DOCUMENT_ID] ?? null;
                 }
             }
         }
@@ -224,9 +222,7 @@ class Entity extends Base\PublicEntity
             {
                 if (trim(strtolower($url), '/') === $inputUrl)
                 {
-                    return isset($data[$sectionName][Constants::URL]) === true ?
-                        $data[$sectionName][Constants::URL] :
-                        null;
+                    return $data[$sectionName][Constants::URL] ?? null;
                 }
             }
         }
@@ -249,9 +245,7 @@ class Entity extends Base\PublicEntity
     {
         $merchantWebsiteDetail = $this->getAttribute(self::MERCHANT_WEBSITE_DETAILS);
 
-        return isset($merchantWebsiteDetail[$sectionName][Constants::STATUS]) === true ?
-            $merchantWebsiteDetail[$sectionName][Constants::STATUS] :
-            null;
+        return $merchantWebsiteDetail[$sectionName][Constants::STATUS] ?? null;
     }
 
     /* "merchant_website_details": {
@@ -268,9 +262,7 @@ class Entity extends Base\PublicEntity
     {
         $merchantWebsiteDetail = $this->getAttribute(self::MERCHANT_WEBSITE_DETAILS);
 
-        return isset($merchantWebsiteDetail[$sectionName][Constants::SECTION_STATUS]) === true ?
-            $merchantWebsiteDetail[$sectionName][Constants::SECTION_STATUS] :
-            null;
+        return $merchantWebsiteDetail[$sectionName][Constants::SECTION_STATUS] ?? null;
     }
 
     /*
@@ -289,8 +281,7 @@ class Entity extends Base\PublicEntity
     {
         $merchantWebsiteDetail = $this->getAttribute(self::MERCHANT_WEBSITE_DETAILS);
 
-        return isset($merchantWebsiteDetail[$sectionName][Constants::UPDATED_AT]) === true ?
-            $merchantWebsiteDetail[$sectionName][Constants::UPDATED_AT] : null;
+        return $merchantWebsiteDetail[$sectionName][Constants::UPDATED_AT] ?? null;
     }
 
 
@@ -308,8 +299,6 @@ class Entity extends Base\PublicEntity
     {
         $merchantWebsiteDetail = $this->getAttribute(self::MERCHANT_WEBSITE_DETAILS);
 
-        return isset($merchantWebsiteDetail[$sectionName][Constants::PUBLISHED_URL])  === true?
-            $merchantWebsiteDetail[$sectionName][Constants::PUBLISHED_URL] :
-            null;
+        return $merchantWebsiteDetail[$sectionName][Constants::PUBLISHED_URL] ?? null;
     }
 }
