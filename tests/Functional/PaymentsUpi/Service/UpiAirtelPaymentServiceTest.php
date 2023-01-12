@@ -310,6 +310,80 @@ class UpiAirtelPaymentServiceTest extends UpiPaymentServiceTest
     }
 
     /**
+     * Test Invalid Callback Payload with pre-process through API
+     *
+     * @dataProvider testCallbackInvalidPayloadProvider
+     *
+     * @return void
+     */
+    public function testCallbackInvalidPayload($respOverride)
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_airtel';
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'api_upi_airtel_pre_process_v1', 'upi_airtel');
+        });
+
+        $resp = array_merge([
+            'amount' => 200.00,
+            'mid' => 'MER0000000548542',
+            'rrn' => '987654321',
+            'txnStatus' => 'SUCCESS',
+            'hdnOrderID' => 'L2QOgfMbvTS9PT',
+            'messageText' => 'success',
+            'code'      => '0',
+            'errorCode' => '000',
+            'payerVPA'	=> 'vishnu@rzp',
+            'txnRefNo'	=> 'FT2129114821982611',
+        ], $respOverride);
+
+        $content = json_encode($resp);
+
+        $this->makeRequestAndCatchException(
+            function() use ($content)
+            {
+                $this->makeS2SCallbackAndGetContent($content, 'upi_airtel');
+            },
+            \RZP\Exception\BadRequestException::class,
+            'payload does not contain required keys - gateway_merchant_id and payeeVPA.'
+        );
+    }
+
+    /**
+     *
+     */
+    public function testCallbackInvalidPayloadProvider()
+    {
+        return [
+            [
+                [
+                    'payeeVpa' => null,
+                ]
+            ],
+            [
+                [
+                    'payeeVpa' => '',
+                ]
+            ],
+            [
+                [
+                    'gateway_merchant_id' => null,
+                ]
+            ],
+            [
+                [
+                    'gateway_merchant_id' => '',
+                ]
+            ]
+        ];
+    }
+
+    /**
      * Test successful verification
      *
      * @return void

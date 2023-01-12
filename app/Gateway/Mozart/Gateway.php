@@ -3384,6 +3384,20 @@ class Gateway extends Base\Gateway
                 'gateway' => Payment\Gateway::UPI_AIRTEL,
             ];
 
+            if ((empty($inputArray['gateway_merchant_id']) === true) and
+                (empty($inputArray['payeeVPA']) === true))
+            {
+                $exception = new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+                    null,
+                    $inputArray,
+                    'payload does not contain required keys - gateway_merchant_id and payeeVPA.');
+
+                $this->trace->traceException($exception);
+
+                throw $exception;
+            }
+
             if (isset($inputArray['payeeVPA']) === true)
             {
                 $terminalData['gateway_merchant_id2'] = $inputArray['payeeVPA'];

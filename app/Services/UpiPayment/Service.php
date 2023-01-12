@@ -231,6 +231,20 @@ class Service
             'gateway' => Payment\Gateway::UPI_AIRTEL,
         ];
 
+        if ((empty($data['gateway_merchant_id']) === true) and
+            (empty($data['payeeVPA']) === true))
+        {
+            $exception = new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+                null,
+                $data,
+                'payload does not contain required keys - gateway_merchant_id and payeeVPA.');
+
+            $this->trace->traceException($exception);
+
+            throw $exception;
+        }
+
         if (isset($data['payeeVPA']) === true)
         {
             $terminalData['gateway_merchant_id2'] = $data['payeeVPA'];
