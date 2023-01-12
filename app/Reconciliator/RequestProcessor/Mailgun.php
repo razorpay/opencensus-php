@@ -274,8 +274,17 @@ class Mailgun extends Base
 
         $strippedHtml = $input[self::STRIPPED_HTML] ?? '';
 
+        if(in_array($input[self::RECIPIENT], $this->validator::WHITELISTED_EMAIL_FOR_ART))
+        {
+            $from = $input['X-Original-Sender'] ?? $input['From'];
+        }
+        else
+        {
+            $from = $input['X-Original-Sender'] ?? $input['sender'];
+        }
+        
         $inputDetails = [
-            self::FROM           => strtolower($input['X-Original-Sender'] ?? $input['sender']),
+            self::FROM           => strtolower($from),
             self::SUBJECT        => $input[self::SUBJECT],
             self::TO             => $input[self::RECIPIENT],
             self::TIMESTAMP      => $input[self::TIMESTAMP],
