@@ -679,6 +679,8 @@ class UserController extends Controller
         if ((empty($mobileApp) === false) and
             ($mobileApp === 'Epos'))
         {
+            $this->trace->info(TraceCode::LOGIN_BLOCKED_EPOS_APP, []);
+
             $response = User\Constants::EPOS_APP_DEPRECATED_MESSAGE;
 
             return AppResponse::jsonResponse($response);

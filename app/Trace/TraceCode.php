@@ -216,6 +216,9 @@ class TraceCode
     const USER_VERIFY_2FA_RESEND_OTP                = 'USER_VERIFY_2FA_RESEND_OTP';
     const MAKE_RECONCILIATION_REQUEST               = 'MAKE_RECONCILIATION_REQUEST';
 
+    const LOGIN_BLOCKED_EPOS_APP                    = 'LOGIN_BLOCKED_EPOS_APP';
+    const ROUTE_BLOCKED_EPOS_APP                    = 'ROUTE_BLOCKED_EPOS_APP';
+
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',
         self::MISC_TRACE_CODE                       => 'Miscellaneous trace code',

@@ -92,6 +92,12 @@ class GenericController extends Controller
             ($mobileApp === 'Epos') and
             (preg_match('/' . $eposBlockedRoutesRegex . '/', $path, $pathMatches) == true))
         {
+            $app = App::getFacadeRoot();
+            
+            $app['trace']->info(TraceCode::ROUTE_BLOCKED_EPOS_APP, [
+                'path' => $path,
+            ]);
+
             $response =  User\Constants::EPOS_APP_DEPRECATED_MESSAGE;
 
             return AppResponse::jsonResponse($response);
