@@ -9,6 +9,7 @@ use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Detail\Status as ActivationStatus;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Terminal\Category;
+use RZP\Models\User\Role;
 
 /**
  * General constants for Merchant Model.
@@ -215,6 +216,8 @@ final class Constants
     const TITLE                                      = 'title';
     const VARIANT                                    = 'variant';
     const QR_CODE                                    = 'qr_code';
+    const SUBSCRIPTIONS                              = 'subscriptions';
+    const PAYMENT_BUTTON                             = 'payment_button';
     const TAP_AND_PAY                                = 'tap_and_pay';
     const PAYMENT_PAGES                              = 'payment_pages';
     const PAYMENT_LINK                               = 'payment_link';
@@ -1176,6 +1179,50 @@ final class Constants
             self::DESCRIPTION    => 'Generate QR codes on the go',
             self::IS_NEW_PRODUCT => true
         ],
+
+        self::SUBSCRIPTIONS => [
+            self::TYPE           => 'subscriptions',
+            self::TITLE          => 'Subscriptions',
+            self::DESCRIPTION    => 'Create custom subscription plans to collect recurring payments from customers automatically',
+            self::IS_NEW_PRODUCT => true
+        ],
+
+        self::PAYMENT_BUTTON => [
+            self::TYPE           => 'payment_button',
+            self::TITLE          => 'Payment button',
+            self::DESCRIPTION    => 'Add a quick checkout button on your website/app for one-time or recurring payments',
+            self::IS_NEW_PRODUCT => false
+        ],
+    ];
+
+    const VALID_ROLES_FOR_SUBSCRIPTIONS = [
+        Role::OWNER,
+        Role::ADMIN,
+        Role::MANAGER,
+        Role::OPERATIONS,
+        Role::FINANCE,
+        Role::SUPPORT,
+    ];
+
+    const VALID_ACTIVATION_STATUS_FOR_SUBSCRIPTIONS = [
+        Detail\Status::ACTIVATED,
+        Detail\Status::ACTIVATED_MCC_PENDING,
+        Detail\Status::INSTANTLY_ACTIVATED,
+    ];
+
+    const VALID_ROLES_FOR_PAYMENT_BUTTON = [
+        Role::OWNER,
+        Role::ADMIN,
+        Role::MANAGER,
+        Role::OPERATIONS,
+        Role::FINANCE,
+        Role::SELLERAPP,
+    ];
+
+    const VALID_ACTIVATION_STATUS_FOR_PAYMENT_BUTTON = [
+        Detail\Status::ACTIVATED,
+        Detail\Status::ACTIVATED_MCC_PENDING,
+        Detail\Status::INSTANTLY_ACTIVATED,
     ];
 
     // Mapping is used for smart dashboard merchant details.

@@ -1241,6 +1241,28 @@ class Core extends Base\Core
         return false;
     }
 
+    private function isSubscriptionsEnabled()
+    {
+        if ((in_array($this->app['basicauth']->getUserRole(), Constants::VALID_ROLES_FOR_SUBSCRIPTIONS, true) === true) and
+            (in_array($this->merchant->merchantDetail->getActivationStatus(), Constants::VALID_ACTIVATION_STATUS_FOR_SUBSCRIPTIONS, true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function isPaymentButtonEnabled()
+    {
+        if ((in_array($this->app['basicauth']->getUserRole(), Constants::VALID_ROLES_FOR_PAYMENT_BUTTON, true) === true) and
+            (in_array($this->merchant->merchantDetail->getActivationStatus(), Constants::VALID_ACTIVATION_STATUS_FOR_PAYMENT_BUTTON, true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private function isPaymemtGatewayEnabled()
     {
         $activation_status = $this->merchant->merchantDetail->getActivationStatus();
@@ -1286,6 +1308,16 @@ class Core extends Base\Core
         if ($this->isQrCodeEnabled() === true)
         {
             $currentProducts[] = Constants::QR_CODE;
+        }
+
+        if ($this->isSubscriptionsEnabled() === true)
+        {
+            $currentProducts[] = Constants::SUBSCRIPTIONS;
+        }
+
+        if ($this->isPaymentButtonEnabled() === true)
+        {
+            $currentProducts[] = Constants::PAYMENT_BUTTON;
         }
 
         return $currentProducts;
