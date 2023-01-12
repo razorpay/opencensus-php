@@ -381,11 +381,12 @@ class CommissionCreateTest extends TestCase
                 'period'                 => $startDate.' to '.$endDate,
             ];
 
-            $merchant = $this->getDbEntity('merchant', ['id' => $partner->getId()]);;
+            $merchant = $this->getDbEntity('merchant', ['id' => $partner->getId()]);
+            $activationStatus = $merchant->merchantDetail->getActivationStatus();
 
             $expectedData = [
                 'merchant'              => $merchant->toArray(),
-                'activation_status'     => $merchant->merchantDetail->getActivationStatus(),
+                'activation_status'     => $activationStatus,
                 'invoices'              => $expectedInvoiceData,
                 'invoice_count'         => 1,
             ];
@@ -394,6 +395,71 @@ class CommissionCreateTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testSendCommissionInvoiceRemindersForRejectedPartners()
+    {
+        Mail::fake();
+
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => 1770,
+            'debit'  => 0,
+            'fee'    => 1770,
+            'tax'    => 270,
+        ]);
+
+        $this->fixtures->merchant_detail->edit($partner->getId(), ['activation_status' => 'rejected']);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        $this->createTaxes();
+
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
+
+        $this->runRequestResponseFlow($testData);
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $testData = $this->testData['testInvoiceOnHoldClear'];
+        $testData['request']['content']['invoice_ids'] = [$invoice->getId()];
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice status isn't updated
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $this->assertEquals('issued', $invoice->getStatus());
+
+        $input = [
+            "experiment_id" => "JbUKeDS8uXGQBI",
+            "id"            => $partner->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        (new Invoice\Service)->sendInvoiceReminders();
+
+        Mail::assertNotSent(CommissionInvoiceReminder::class);
     }
 
     private function createTaxes()

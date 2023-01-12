@@ -37,6 +37,7 @@ use RZP\Diag\Event\OnBoardingEvent;
 use RZP\Mail\Merchant\CommissionInvoiceIssued;
 use RZP\Mail\Merchant\CommissionInvoiceReminder;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Merchant\Detail\Status as DetailStatus;
 
 class Core extends Base\Core
 {
@@ -350,7 +351,7 @@ class Core extends Base\Core
         Mail::send($commissionInvoice);
     }
 
-    public function sendCommissionReminderMail(Base\PublicCollection $invoices = null, string $partnerId = null)
+    public function sendCommissionReminderMail(Base\PublicCollection $invoices = null, Merchant\Entity $partner = null, string $activationStatus = null)
     {
         $invoiceData = [];
 
@@ -372,11 +373,9 @@ class Core extends Base\Core
             ];
         }
 
-        $partner = $this->repo->merchant->findOrFail($partnerId);
-
         $data = [
             'merchant'          => $partner->toArray(),
-            'activation_status' => $partner->merchantDetail->getActivationStatus(),
+            'activation_status' => $activationStatus,
             'invoices'          => $invoiceData,
             'invoice_count'     => $invoices->count(),
         ];
@@ -384,7 +383,10 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::SEND_PARTNER_COMMISSION_INVOICE_REMINDER_EMAIL,
             [
-                'data'               => $data,
+                'merchant_id'          => $data['merchant']['id'],
+                'activation_status'    => $activationStatus,
+                'invoices'             => $invoiceData,
+                'invoice_count'        => $data['invoice_count'],
             ]
         );
 
@@ -393,12 +395,8 @@ class Core extends Base\Core
         Mail::send($commissionInvoice);
     }
 
-    public function sendCommissionReminderSms(int  $count, string $partnerId = null)
+    public function sendCommissionReminderSms(int  $count, Merchant\Entity $merchant = null, string $activationStatus = null)
     {
-        $merchant         = $this->repo->merchant->findOrFail($partnerId);
-
-        $activationStatus = $merchant->merchantDetail->getActivationStatus();
-
         $templateName     = Commission\Constants::COMMISSION_INVOICE_REMINDER_SMS_TEMPLATE[Merchant\Constants::DEFAULT];
 
         if(isset(Commission\Constants::COMMISSION_INVOICE_REMINDER_SMS_TEMPLATE[$activationStatus])=== true)
