@@ -8,17 +8,24 @@
 #
 # Core App
 #
-
-app/Http/BasicAuth/                                    @razorpay/spine-edge
-app/Http/Middleware/DecodePassportJwt.php              @razorpay/spine-edge
-app/Http/Middleware/Authenticate.php                   @razorpay/spine-edge
-app/Http/Edge/                                         @razorpay/spine-edge
-
-#
-# Gateways
-#
-
-app/Gateway/Upi                                        @razorpay/techupicore
+app/Http/BasicAuth/                                           @razorpay/spine-edge
+app/Http/Controllers/EdgeProxyController.php                  @razorpay/spine-edge
+app/Http/Controllers/EdgeThrottleController.php               @razorpay/spine-edge
+app/Http/Controllers/KeyController.php                        @razorpay/spine-edge
+app/Http/Controllers/OAuthApplicationController.php           @razorpay/spine-edge
+app/Http/Controllers/OAuthTokenController.php                 @razorpay/spine-edge
+app/Http/Edge/                                                @razorpay/spine-edge
+app/Http/Middleware/Authenticate.php                          @razorpay/spine-edge
+app/Http/Middleware/DecodePassportJwt.php                     @razorpay/spine-edge
+app/Http/Middleware/StripQueryParam.php                       @razorpay/spine-edge
+app/Http/Middleware/Throttle.php                              @razorpay/spine-edge
+app/Http/Throttle/                                            @razorpay/spine-edge
+app/Http/OAuth.php                                            @razorpay/spine-edge
+app/Http/OAuthCache.php                                       @razorpay/spine-edge
+app/Http/OAuthScopes.php                                      @razorpay/spine-edge
+app/Http/RequestContext.php                                   @razorpay/spine-edge
+app/Http/RequestContextV2.php                                 @razorpay/spine-edge
+app/Http/Route.php                                            @razorpay/spine-edge
 
 #
 # Models
@@ -40,6 +47,29 @@ app/Models/Terminal/Selector.php                       @razorpay/TechRulesRoutin
 app/Models/Transfer/                                   soutreya.kundu@razorpay.com
 app/Models/TrustedBadge                                @razorpay/checkout-backend-leads
 app/Models/FundTransfer/M2P/M2PConfigs.php             chirag.chiranjib@razorpay.com
+app/Models/Consumer/                                          @razorpay/spine-edge
+app/Models/Key/                                               @razorpay/spine-edge
+app/Models/Merchant/AccessMap/MigrateImpersonationSource.php  @razorpay/spine-edge
+app/Models/Merchant/AccessMap/MigrateKongTarget.php           @razorpay/spine-edge
+app/Models/Merchant/AccessMap/MigrateSource.php               @razorpay/spine-edge
+app/Models/OAuthApplication/                                  @razorpay/spine-edge
+app/Models/OAuthToken/                                        @razorpay/spine-edge
+
+#
+# Services
+#
+
+app/Services/UpiPayment/                               @razorpay/techupicore
+app/Services/AuthService.php                           @razorpay/spine-edge
+
+
+#
+# Gateways
+#
+
+app/Gateway/Upi                                        @razorpay/techupicore
+
+
 
 #
 # Functional Tests
@@ -50,16 +80,23 @@ tests/Functional/BankingAccountStatement/              @razorpay/Payouts-core
 tests/Functional/Key/                                  @razorpay/spine-edge
 
 #
-# Services
-#
-
-app/Services/UpiPayment/                               @razorpay/techupicore
-
-#
 # Jobs
 #
 
 app/Jobs/TrustedBadge.php                              @razorpay/checkout-backend-leads
+app/Jobs/BackFillMerchantApplications.php              @razorpay/spine-edge
+app/Jobs/BackFillReferredApplication.php               @razorpay/spine-edge
+app/Jobs/BulkMigrateAggregatorToResellerJob.php        @razorpay/spine-edge
+app/Jobs/BulkMigrateResellerToAggregatorJob.php        @razorpay/spine-edge
+app/Jobs/TriggerAcsFullSync.php                        @razorpay/spine-edge @razorpay/identity-core
+app/Jobs/TriggerAcsSync.php                            @razorpay/spine-edge @razorpay/identity-core
+
+#
+# Mails
+#
+
+app/Mail/OAuth/                                       @razorpay/spine-edge
+
 
 .github/actions/                                       @razorpay/ZeroTouchWarriors
 devspace.yaml                                          @razorpay/devstack-devs
