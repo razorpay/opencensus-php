@@ -160,15 +160,15 @@ class MerchantIpFilter
 
         try
         {
+            $service = Route::getServiceMappingForIpWhitelist(optional($request->route())->getName());
+
+            if ($service === null)
+            {
+                return $isValidIp;
+            }
+
             if ($merchant->isFeatureEnabled(Feature::ENABLE_IP_WHITELIST) === true)
             {
-                $service = Route::getServiceMappingForIpWhitelist($request->route()->getName());
-
-                if ($service === null)
-                {
-                    return $isValidIp;
-                }
-
                 $requestIp = $request->getClientIp();
 
                 $this->trace->info(TraceCode::NEW_IP_WHITELIST_APPLICABLE,
