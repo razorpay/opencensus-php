@@ -570,6 +570,9 @@ class PGRouter
                     $order->offers->push($offer);
                 }
             }
+
+            $order->setExternal(true);
+
             if (strpos($this->request->getRequestUri(), '/v1/admin/') !== 0)
             {
                 return $this->forceFillNonAdminEntites($order);
