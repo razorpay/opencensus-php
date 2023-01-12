@@ -547,7 +547,27 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_CONTEXT_NOT_SET);
         }
 
-        $merchantDetails = $this->core()->patchMerchantDetails($this->merchant, $input);
+        /**
+         * This log is added temporarily to validate merchant's attributes values (live, activated, activated_at) when
+         * admin updates the merchant details.
+         */
+        $this->trace->info(TraceCode::PATCH_MERCHANT_DETAILS, [
+            'merchant_id'  => $this->merchant->getMerchantId(),
+            'activate'     => $this->merchant->getActivated(),
+            'live'         => $this->merchant->isLive(),
+            'activated_at' => $this->merchant->getActivatedAt()
+        ]);
+
+        /**
+         * Due to a bug which shows up intermittently, a few of the merchant's attributes (live, activated, activated_at)
+         * are reset in this flow because the values are picked up from the cache and sometimes cache does not have updated data.
+         * Hence even though merchant activation is completed, the merchant does not seem to be activated. This way
+         * the updated merchant details will be fetched from the database. The bug could not be reproduced.
+         * Ref - https://razorpay.slack.com/archives/D02PNFXKGF6/p1673371800015239 for more details.
+         */
+        $merchant = $this->repo->merchant->findOrFailPublic($this->merchant->getMerchantId());
+
+        $merchantDetails = $this->core()->patchMerchantDetails($merchant, $input);
 
         return $merchantDetails->toArrayPublic();
     }

@@ -2070,6 +2070,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_BULK_EDIT_INPUT                              = 'MERCHANT_BULK_EDIT_INPUT';
     const SMART_DASHBOARD_MERCHANT_FETCH                        = 'SMART_DASHBOARD_MERCHANT_FETCH';
     const SMART_DASHBOARD_MERCHANT_EDIT                         = 'SMART_DASHBOARD_MERCHANT_EDIT';
+    const PATCH_MERCHANT_DETAILS                                = 'PATCH_MERCHANT_DETAILS';
     const MERCHANT_EDIT_ACTION                                  = 'MERCHANT_EDIT_ACTION';
     const ACCOUNT_EDIT_ACTION                                   = 'ACCOUNT_EDIT_ACTION';
     const ACCOUNT_DELETE_ACTION                                 = 'ACCOUNT_DELETE_ACTION';
