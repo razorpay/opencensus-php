@@ -101,6 +101,8 @@ use RZP\Models\Merchant\OneClickCheckout\ShippingMethods\Service as ShippingMeth
 use RZP\Models\Merchant\OneClickCheckout\ShippingService\Client as ShippingServiceClient;
 use RZP\Models\Merchant\OneClickCheckout\RtoPredictionProvider\Service as RtoPredictionProviderService;
 use RZP\Models\Merchant\OneClickCheckout\RtoPredictionService\Client as RtoPredictionServiceClient;
+use RZP\Models\Merchant\OneClickCheckout\MagicAnalyticsProvider\Service as MagicAnalyticsProviderService;
+use RZP\Models\Merchant\OneClickCheckout\IntegrationService\Client as IntegrationServiceClient;
 use RZP\Models\Merchant\OneClickCheckout\RtoDashboard\Service as RtoDashboardService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingService as  ShippingService;
 use RZP\Models\Merchant\OneClickCheckout\RtoFileUploadAuditService\Service as RtoFileUploadAuditService;
@@ -662,6 +664,10 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerRtoPredictionProviderService();
 
         $this->registerRtoPredictionServiceClient();
+
+        $this->registerMagicAnalyticsProviderService();
+
+        $this->registerIntegrationServiceClient();
 
         $this->registerRtoDashboardService();
 
@@ -1619,6 +1625,22 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('rto_prediction_service_client', function($app)
         {
             return new RtoPredictionServiceClient($app);
+        });
+    }
+
+    protected function registerMagicAnalyticsProviderService()
+    {
+        $this->app->singleton('magic_analytics_provider_service', function($app)
+        {
+            return new MagicAnalyticsProviderService($app);
+        });
+    }
+
+    protected function registerIntegrationServiceClient()
+    {
+        $this->app->singleton('integration_service_client', function($app)
+        {
+            return new IntegrationServiceClient($app);
         });
     }
 

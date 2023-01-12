@@ -232,6 +232,10 @@ class Service extends Base\Service
 
                     if (in_array($key, Constants::SHOPIFY_SPECIFIC_CONFIGS) === true && $updatePlatform === Constants::SHOPIFY) {
                         $this->add1ccConfigFlags($input, $key);
+                        if($key === Constants::ONE_CC_GA_ANALYTICS)
+                        {
+                            $this->app['magic_analytics_provider_service']->toggleBEGAAnalytics($this->merchant->getId(), $value);
+                        }
                     }
 
                     if (in_array($key, Constants::GIFT_CARD_CONFIGS) === true && $updatePlatform !== Constants::NATIVE) {

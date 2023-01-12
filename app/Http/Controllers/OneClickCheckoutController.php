@@ -24,11 +24,18 @@ class OneClickCheckoutController extends Controller
     {
         $rawContents = Request::getContent();
         $headers = Request::header();
+        $userAgent = $headers['x-user-agent'][0] ?? $headers['user-agent'][0] ?? null;
         $contentType = $headers['content-type'][0];
         $bodyJSON = $contentType === 'text/plain' ? $this->parseToJSONIfApplicable($rawContents, $contentType) : Request::all();
         try
         {
-            $result = (new Shopify\Service)->shopifyCreateCheckout($bodyJSON);
+            // todo: this will be done in FE for now we are doing it to unblock BE
+            $ga = $bodyJSON['ga_id'];
+            $parsedGa = explode(".", $ga);
+            $parsedGaId = array_slice($parsedGa, -2);
+            $gaId = join(".", $parsedGaId);
+            $customerInfo = ['user_agent' => $userAgent, 'ga_id' => $gaId];
+            $result = (new Shopify\Service)->shopifyCreateCheckout($bodyJSON, $customerInfo);
             $response = ApiResponse::json($result, 200);
             $this->addCorsHeaders($response, 'POST, OPTIONS');
             return $response;
@@ -54,9 +61,17 @@ class OneClickCheckoutController extends Controller
     public function createOrderAndGetPreferences()
     {
         $input = Request::all();
+        $headers = Request::header();
         try
         {
-            $result = (new Shopify\Service)->createOrderAndGetPreferences($input);
+            $userAgent = $headers['x-user-agent'][0] ?? $headers['user-agent'][0] ?? null;
+            // todo: this will be done in FE for now we are doing it to unblock BE
+            $ga = $input['ga_id'];
+            $parsedGa = explode(".", $ga);
+            $parsedGaId = array_slice($parsedGa, -2);
+            $gaId = join(".", $parsedGaId);
+            $customerInfo = ['user_agent' => $userAgent, 'ga_id' => $gaId];
+            $result = (new Shopify\Service)->createOrderAndGetPreferences($input, $customerInfo);
             return ApiResponse::json($result, 200);
         }
         catch (\Throwable $e)

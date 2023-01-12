@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 use App;
+use Razorpay\Trace\Logger as Trace;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -50,6 +51,8 @@ class Service extends Base\Service
     const farziEnabledMids = [
         'ChdCdGm7TvuVk6',   //boAt
     ];
+
+    const MagicAnalyticsBESyncFlowEventsFlag = false;
 
     protected $mutex;
 
@@ -176,8 +179,9 @@ class Service extends Base\Service
      * @param string additional params part of preferences API
      * @return array checkoutParams - Checkout and preferences object
      */
-    public function shopifyCreateCheckout(array $input): array
+    public function shopifyCreateCheckout(array $input, array $customerInfo): array
     {
+        unset($input['ga_id']);
         $start = millitime();
         (new Checkout)->validateCreateCheckout($input);
         $isAutoDiscountApplied = false;
@@ -192,13 +196,34 @@ class Service extends Base\Service
             $preferenceParams['send_preferences'] = true;
         }
 
-        $response = $this->createOrderAndGetCheckoutPreferences($checkout, $cart, $preferenceParams);
+        $response = $this->createOrderAndGetCheckoutPreferences($checkout, $cart, $preferenceParams, $customerInfo);
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_CREATE_RZP_ORDER_RES,
             [
                 'order_id' => $response['order_id'],
                 'time'     => millitime() - $start,
             ]);
+
+        // todo: remove this if condition when we enable flag for sync events.
+        if (self::MagicAnalyticsBESyncFlowEventsFlag === true)
+        {
+            try
+            {
+                (new Analytics)->sendCheckoutEvent($cart, $customerInfo);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::MAGIC_CHECKOUT_CHECKOUT_EVENT_FAILED,
+                    []
+                );
+
+                $this->trace->count(TraceCode::MAGIC_CHECKOUT_CHECKOUT_EVENT_FAILED);
+            }
+        }
+
         return $response;
     }
 
@@ -209,8 +234,10 @@ class Service extends Base\Service
      * @param array $input
      * @return array
      */
-    public function createOrderAndGetPreferences(array $input): array
+    public function createOrderAndGetPreferences(array $input, array $customerInfo): array
     {
+        unset($input['ga_id']);
+
         // To support backward compatibility of Shopify API version update from 2022-01 to 2022-10
         $input = $this->versionBasedInput($input);
 
@@ -229,7 +256,8 @@ class Service extends Base\Service
         $response = $this->createOrderAndGetCheckoutPreferences(
             $checkout,
             $cart,
-            $preferenceParams
+            $preferenceParams,
+            $customerInfo,
         );
 
         return [
@@ -264,7 +292,8 @@ class Service extends Base\Service
     protected function createOrderAndGetCheckoutPreferences(
         array $checkout,
         array $cart,
-        array  $preferenceParams
+        array  $preferenceParams,
+        array $customerInfo,
     ): array
     {
         $cartId = $cart['token'];
@@ -326,6 +355,8 @@ class Service extends Base\Service
             $preferences = (new MerchantService)->getCheckoutPreferences($preferenceParams);
             $checkoutParams = array_merge($checkoutParams, ['preferences' => $preferences]);
         }
+
+        (new Analytics)->storeAnalyticsCustomerInfoInCache($checkoutParams['order_id'], json_encode($customerInfo));
 
         return $checkoutParams;
     }
@@ -565,12 +596,43 @@ class Service extends Base\Service
         $this->checkForGiftCardPayment($order, $payment, $this->merchant, $fromShopifyApi);
 
         $orderArray = $order->toArrayPublic();
-        
+
         $shopifyOrder = $this->placeShopifyOrder($order, $payment, $fromShopifyApi);
 
         $this->updateRzpOrder($order, $shopifyOrder);
-        (new Analytics)->setShopifyOrderInCache($shopifyOrder, $orderArray, $payment->getMethod());
 
+        $analytics = new Analytics();
+
+        $analytics->setShopifyOrderInCache($shopifyOrder, $orderArray, $payment->getMethod());
+
+        // send purchase event only on async flow
+        // todo: remove this if condition when we enable events for sync flow too
+        if ($fromShopifyApi === false)
+        {
+            try
+            {
+                $customerInfo = $analytics->getAnalyticsCustomerInfoFromCache($order->getPublicId());
+                if (!empty($customerInfo))
+                {
+                    $analytics->sendPurchaseEvent($shopifyOrder, $orderArray, $customerInfo);
+                }
+                else
+                {
+                    $this->trace->count(TraceCode::MAGIC_CHECKOUT_PURCHASE_EVENT_FAILED);
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::MAGIC_CHECKOUT_PURCHASE_EVENT_FAILED,
+                    []
+                );
+
+                $this->trace->count(TraceCode::MAGIC_CHECKOUT_PURCHASE_EVENT_FAILED);
+            }
+        }
         $countryCode = $orderArray['customer_details']['shipping_address']['country'];
 
         // NOTE: promotions is not set if the 1ccResetAPI call fails, until CX team fixes it
@@ -980,9 +1042,9 @@ class Service extends Base\Service
     }
 
     public function validateGiftCard(array $input, string $merchantId = ''):array
-    { 
+    {
         if(empty($input['email']))
-        {            
+        {
             return (new Errors)->emailRequired();
         }
         else
@@ -1013,7 +1075,7 @@ class Service extends Base\Service
                 {
                     if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
                     {
-                        $response = (new GiftCards)->applyGiftCard($promotion, $order, $payment, $this->merchant->getId());           
+                        $response = (new GiftCards)->applyGiftCard($promotion, $order, $payment, $this->merchant->getId());
 
                          array_push($promotionsGC, $response);
 
@@ -1035,13 +1097,13 @@ class Service extends Base\Service
 
                     foreach ($promotionsGC as $promotionGC)
                     {
-                        if($promotionGC['description'] === 'invalid'){   
-                            
+                        if($promotionGC['description'] === 'invalid'){
+
                             foreach ($promotionsGC as $promotionGC)
                             {
                                 (new GiftCards)->refundGiftCard($promotionGC, $order, $payment, $this->merchant->getId());
                             }
-                            
+
                             throw new Exception\BadRequestException(
                                 ErrorCode::BAD_REQUEST_ERROR,
                                 null,
@@ -1053,7 +1115,7 @@ class Service extends Base\Service
                 }
             }
         }
-    }    
+    }
     // getOrderAnalytics checks if the Shopify order is stored in cache and returns it. This is used by the frontend
     // for pushing events to Google Analytics.
     public function getOrderAnalytics(array $input): array

@@ -261,4 +261,5 @@ final class Metric
     const BALANCE_FETCH_REQUEST_SYNC_CALL_UNSUCCESSFUL_COUNT             = 'balance_fetch_request_sync_call_unsuccessful_count';
     // histogram
     const BALANCE_FETCH_REQUEST_SYNC_CALL_LATENCY = 'balance_fetch_request_sync_call_latency';
+    const MAGIC_ANALYTICS_GET_CUSTOMER_INFO_COUNT            = 'magic_analytics_get_customer_info_count';
 }

@@ -13,6 +13,8 @@ class Analytics extends Base\Core
 {
     const SHOPIFY_ANALYTICS_CACHE_KEY = 'shopify_1cc_analytics';
     const SHOPIFY_ANALYTICS_CACHE_KEY_TTL = 14 * 1440; // 14 days
+    const MAGIC_ANALYTICS_CUSTOMER_INFO_CACHE_KEY = 'magic_analytics:customer_info:';
+    const MAGIC_ANALYTICS_GA_ID_CACHE_KEY_TTL = 1440; // 1 day
 
     protected $cache;
     protected $monitoring;
@@ -155,5 +157,167 @@ class Analytics extends Base\Core
             return explode('/authenticate', $parts['path'])[0];
         }
         return '';
+    }
+
+    public function sendPurchaseEvent(array $shopifyOrder, array $rzpOrder, string $customerInfo)
+    {
+        $customerInfoObj = json_decode($customerInfo, true);
+        $purchaseEventPayload = $this->constructPurchaseEventPayload($shopifyOrder['order'], $rzpOrder, $customerInfoObj);
+        $merchantId = $this->merchant->getId();
+
+        $this->trace->info(
+            TraceCode::DEBUG_PURCHASE_PAYLOAD_DETAILS,
+            $purchaseEventPayload
+        );
+
+        $this->app['magic_analytics_provider_service']->triggerEvent($purchaseEventPayload, [Constants::MERCHANT_ID => $merchantId]);
+    }
+
+    protected function constructPurchaseEventPayload(array $shopifyOrder, array $rzpOrder, array $customerInfo): array
+    {
+        $products = $this->transformToProducts($shopifyOrder['line_items'], Constants::PURCHASE);
+
+        $customerInfo = $this->constructCustomerInfo($shopifyOrder, $customerInfo);
+
+        $promotions = "No Coupon Applied";
+        if(isset($rzpOrder[Constants::PROMOTIONS]) && sizeof($rzpOrder[Constants::PROMOTIONS]) > 0 && isset($rzpOrder[Constants::PROMOTIONS][0]['code']))
+        {
+            $promotions = stringify($rzpOrder[Constants::PROMOTIONS][0]['code']);
+        }
+
+        return [
+            Constants::EVENT_TYPE => Constants::PURCHASE,
+            Constants::EVENT_TIME => round(microtime(true) * 1000),
+            Constants::CUSTOMER_INFO => $customerInfo,
+            Constants::PURCHASE_EVENT => [
+                Constants::PRODUCTS => $products,
+                Constants::TOTAL_REVENUE => strval($rzpOrder[Constants::AMOUNT] / 100),
+                Constants::TOTAL_TAX => $shopifyOrder[Constants::TOTAL_TAX],
+                Constants::TOTAL_SHIPPING => strval($rzpOrder[Constants::SHIPPING_FEE] / 100),
+                Constants::TRANSACTION_COUPON => $promotions,
+                Constants::TRANSACTION_ID => $shopifyOrder[Constants::NAME],
+            ]
+        ];
+    }
+
+    protected function transformToProducts(array $items, string $eventType): array
+    {
+        $products = array();
+        $position = 0;
+        foreach ($items as $item)
+        {
+            $product = array();
+            $position++;
+            $id = $item[Constants::SKU];
+            if (strlen($id) == 0 )
+            {
+                $id = strval($item[CONSTANTS::ID]);
+            }
+            $product[CONSTANTS::ID] = $id;
+            if ($eventType == Constants::PURCHASE)
+            {
+                $product[Constants::NAME] = $item[Constants::NAME];
+                $product[CONSTANTS::PRICE] = strval($item[CONSTANTS::PRICE]);
+            }
+            elseif ($eventType == Constants::CHECKOUT)
+            {
+                $product[CONSTANTS::NAME] = $item[CONSTANTS::TITLE];
+                $product[CONSTANTS::PRICE] = strval($item[CONSTANTS::PRICE] / 100);
+            }
+            $product[CONSTANTS::VARIANT] = $item[Constants::VARIANT_TITLE];
+            $product[CONSTANTS::QUANTITY] = strval($item[CONSTANTS::QUANTITY]);
+            $product[CONSTANTS::POSITION] = strval($position);
+            $products[] = $product;
+        }
+        return $products;
+    }
+
+    protected function constructCustomerInfo(array $shopifyOrder, array $customerInfo): array
+    {
+        $customerDetails = array();
+
+        $customerDetails[CONSTANTS::CLIENT_ID] = $customerInfo[Constants::GA_ID];
+        $customerDetails[CONSTANTS::USER_AGENT] = $customerInfo[Constants::USER_AGENT];
+
+        if(isset($shopifyOrder[Constants::EMAIL]))
+        {
+            $customerDetails[Constants::EMAIL] = $shopifyOrder[Constants::EMAIL];
+        }
+
+        if(isset($shopifyOrder[Constants::PHONE]))
+        {
+            $customerDetails[Constants::PHONE] = $shopifyOrder[Constants::PHONE];
+        }
+
+        return $customerDetails;
+    }
+
+    public function sendCheckoutEvent(array $cart, array $customerInfo)//, array $checkout, array $preferences, array $response)
+    {
+        $checkoutEventPayload = $this->constructCheckoutEventPayload($cart, $customerInfo);
+        $merchantId = $this->merchant->getId();
+
+        $this->trace->info(
+            TraceCode::DEBUG_CHECKOUT_PAYLOAD_DETAILS,
+            $checkoutEventPayload
+        );
+
+        $this->app['magic_analytics_provider_service']->triggerEvent($checkoutEventPayload, [Constants::MERCHANT_ID => $merchantId]);
+    }
+
+    protected function constructCheckoutEventPayload(array $cartDetails, array $customerInfo): array
+    {
+        $products = $this->transformToProducts($cartDetails['items'], Constants::CHECKOUT);
+
+        $customerInfo = $this->constructCustomerInfo([], $customerInfo);
+
+        return [
+            CONSTANTS::EVENT_TYPE => CONSTANTS::CHECKOUT,
+            CONSTANTS::EVENT_TIME => round(microtime(true) * 1000),
+            CONSTANTS::CUSTOMER_INFO => $customerInfo,
+            CONSTANTS::CHECKOUT_EVENT => [
+                CONSTANTS::PRODUCTS => $products,
+            ],
+        ];
+    }
+
+    public function storeAnalyticsCustomerInfoInCache(string $rzpOrderId, string $customerInfo)
+    {
+        $this->cache->set(
+            $this->getCacheKeyForAnalyticsCustomerInfo($rzpOrderId),
+            $customerInfo,
+            self::MAGIC_ANALYTICS_GA_ID_CACHE_KEY_TTL
+        );
+    }
+
+    public function getAnalyticsCustomerInfoFromCache(string $rzpOrderId): string
+    {
+        $key = $this->getCacheKeyForAnalyticsCustomerInfo($rzpOrderId);
+        $value = $this->cache->get($key);
+        $result = empty($value) ? 'miss': 'hit';
+        $this->pushGetAnalyticsCustomerInfoMetrics($key, $result);
+        return $value ?? '';
+    }
+
+    protected function pushGetAnalyticsCustomerInfoMetrics(string $key, string $result): void
+    {
+        $dimensions = [
+            'action' => 'get',
+            'result' => $result,
+        ];
+        $this->monitoring->addTraceCount(
+            Metric::MAGIC_ANALYTICS_GET_CUSTOMER_INFO_COUNT,
+            $dimensions
+        );
+        $dimensions['key'] = $key;
+        $this->trace->info(
+            TraceCode::MAGIC_ANALYTICS_CUSTOMER_INFO,
+            $dimensions
+        );
+    }
+
+    protected function getCacheKeyForAnalyticsCustomerInfo(string $rzpOrderId): string
+    {
+        return self::MAGIC_ANALYTICS_CUSTOMER_INFO_CACHE_KEY . $rzpOrderId;
     }
 }

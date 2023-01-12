@@ -1510,6 +1510,12 @@ return [
     ],
 
     'consumer_app' => [
+      'api' => [
+          'url'           => env('CONSUMER_APP_SERVICE_API_URL'),
+          'username'      => 'api',
+          'secret'        => env('CONSUMER_APP_SERVICE_API_SECRET', ''),
+          'timeout'       => env('CONSUMER_APP_SERVICE_API_TIMEOUT', 3),
+      ],
       'secret'  => env('CONSUMER_APP_SERVICE_SECRET')
     ],
 

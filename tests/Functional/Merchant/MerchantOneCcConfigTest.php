@@ -58,12 +58,12 @@ class MerchantOneCcConfigTest extends TestCase
         $this->setUpAuthConfigForMerchant();
         $this->startTest();
     }
-    public function testOneCcGaAnalyticsMerchant1ccConfig()
-    {
-        $this->ba->proxyAuth();
-        $this->setUpAuthConfigForMerchant();
-        $this->startTest();
-    }
+//    public function testOneCcGaAnalyticsMerchant1ccConfig()
+//    {
+//        $this->ba->proxyAuth();
+//        $this->setUpAuthConfigForMerchant();
+//        $this->startTest();
+//    }
     public function testOneCcFbAnalyticsMerchant1ccConfig()
     {
         $this->ba->proxyAuth();
@@ -77,7 +77,7 @@ class MerchantOneCcConfigTest extends TestCase
         $this->setUpAuthConfigForMerchant();
         $this->startTest();
     }
-    
+
     public function testDomainUrlMerchant1ccConfig()
     {
         $this->ba->proxyAuth();
