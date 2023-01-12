@@ -26,6 +26,7 @@ class ProviderPsp
     const OK_CREDIT         = 'ok_credit';
     const JIO               = 'jio';
     const BHIM_SBIPAY       = 'bhim_sbipay';
+    const IDFC              = 'idfc';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

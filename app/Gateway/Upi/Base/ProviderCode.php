@@ -409,7 +409,7 @@ class ProviderCode
 
     /**
      * @see https://www.bhimupi.org.in/list-banks-and-apps-live-upi-autopay
-     * @var array Psp Provider supporting AutoPay
+     * @var array Psp Provider supporting AutoPay 
      */
     protected static $validAutoPayPspProvider = [
         ProviderPsp::BHIM,
@@ -433,6 +433,7 @@ class ProviderCode
         ProviderPsp::OK_CREDIT,
         ProviderPsp::JIO,
         ProviderPsp::BHIM_SBIPAY,
+        ProviderPsp::IDFC,
     ];
 
     /**
@@ -469,6 +470,7 @@ class ProviderCode
         self::AXB           => ProviderPsp::OK_CREDIT,
         self::JIO           => ProviderPsp::JIO,
         self::SBI           => ProviderPsp::BHIM_SBIPAY,
+        self::FAM           => ProviderPsp::IDFC,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
