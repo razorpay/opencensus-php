@@ -2078,6 +2078,9 @@ class Processor
             case CardlessEmi::SEZZLE:
                 $input['contact'] = $payment['contact'];
                 break;
+            case CardlessEmi::EARLYSALARY:
+                $input['contact'] = $payment['contact'];
+                break;
             default;
                 break;
         }
