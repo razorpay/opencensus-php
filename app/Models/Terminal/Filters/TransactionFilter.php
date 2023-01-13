@@ -137,6 +137,9 @@ class TransactionFilter extends Terminal\Filter
 
                 return false;
 
+            case Method::FPX:
+                return $terminal->isFpxEnabled();
+
             default:
                 throw new Exception\LogicException(
                     'Unknown payment method passed.',

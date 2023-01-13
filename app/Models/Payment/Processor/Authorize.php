@@ -9531,6 +9531,26 @@ trait Authorize
             ErrorCode::BAD_REQUEST_PAYMENT_COD_NOT_ENABLED_FOR_MERCHANT);
     }
 
+    protected function verifyFpxEnabled(Payment\Entity $payment)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $merchantMethods = $this->methods;
+
+            if (($merchantMethods === null) or
+                ($merchantMethods->isFpxEnabled() === false))
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_ALLOWED_IN_CONFIG);
+            }
+        }
+
+        // FPX is not processed via Monolith in live mode
+        else
+        {
+            throw new Exception\LogicException('Should not reach here.', null, ['payment_method' => $payment->getMethod()]);
+        }
+    }
+
 
     protected function verifyCardEnabledInLive(Payment\Entity $payment)
     {
@@ -12188,6 +12208,9 @@ trait Authorize
                 break;
             case Payment\Method::COD:
                 $this->verifyCoDEnabled($payment);
+                break;
+            case Payment\Method::FPX:
+                $this->verifyFpxEnabled($payment);
                 break;
             default:
                 throw new Exception\LogicException(

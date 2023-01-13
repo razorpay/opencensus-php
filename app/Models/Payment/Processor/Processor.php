@@ -514,7 +514,12 @@ class Processor
      */
     private function canRouteThroughRearchFlowForMY()
     {
-        // Always true for current product state
+        // Always true for current product state except for test mode in production
+        if ((app()->isEnvironmentProduction() === true) and ($this->mode === Mode::TEST))
+        {
+            return false;
+        }
+
         return true;
     }
 
@@ -1246,9 +1251,13 @@ class Processor
 
     private function canRouteFpxThroughRearchFlow($input): bool
     {
-        // fpx always through nbplus rearch
+        // fpx always through nbplus rearch except test mode in production
         if ($input[Payment\Entity::METHOD] === Payment\METHOD::FPX)
         {
+            if ((app()->isEnvironmentProduction() === true) and ($this->mode === Mode::TEST))
+            {
+                return false;
+            }
             return true;
         }
         else

@@ -699,6 +699,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UPI);
     }
 
+    public function isFpxEnabled()
+    {
+        return $this->getAttribute(self::FPX);
+    }
+
     public function isTokenizationSupported()
     {
         if (in_array($this->getAttribute(self::GATEWAY), Gateway::$tokenizationGateways) === true)
