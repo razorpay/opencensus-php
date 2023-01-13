@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Base\RuntimeManager;
 use RZP\Trace\Tracer;
 use RZP\Constants\HyperTrace;
 
@@ -65,6 +66,10 @@ class CommissionInvoiceController extends Controller
 
     public function sendInvoiceReminders()
     {
+        RuntimeManager::setTimeLimit(120);
+
+        RuntimeManager::setMaxExecTime(120);
+
         $data = $this->service()->sendInvoiceReminders();
 
         return ApiResponse::json($data);

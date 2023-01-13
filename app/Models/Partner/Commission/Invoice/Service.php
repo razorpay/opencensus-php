@@ -74,7 +74,7 @@ class Service extends Base\Service
 
         $merchantIds = $this->repo->commission_invoice->fetchMerchantIdsByInvoiceStatus(Status::ISSUED, $startTime);
 
-        $merchantIdsChunks = array_chunk($merchantIds, 50);
+        $merchantIdsChunks = array_chunk($merchantIds, 10);
 
         foreach ($merchantIdsChunks as $merchantBatch)
         {
