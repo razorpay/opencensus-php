@@ -2370,6 +2370,64 @@ EOT;
     }
 
     /**
+     * @param int $from
+     * @param int $to
+     * @return mixed
+     * @throws Exception\ServerErrorException
+     */
+    public function fetchPendingEmandateRegistrationForEnachOptimised(int $from, int $to)
+    {
+        $paymentIdColumn = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Token\Entity::RECURRING);
+
+        $enachPaymentIdColumn = $this->repo->enach->dbColumn(Enach\Base\Entity::PAYMENT_ID);
+
+        $enachRegistrationDateColumn = $this->repo->enach->dbColumn(Enach\Base\Entity::REGISTRATION_DATE);
+
+        $selectCols = $this->repo->payment->dbColumn('*');
+
+        $globalTokenQuery = $this->newQueryOnPaymentFetchReplica(600000)
+            ->select($selectCols)
+            ->join(Table::TOKEN, Entity::GLOBAL_TOKEN_ID, '=', $tokenIdColumn)
+            ->join(Table::ENACH, $paymentIdColumn, '=', $enachPaymentIdColumn)
+            ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->where($paymentMethodColumn, '=', Method::EMANDATE)
+            ->where(Entity::GATEWAY, '=', Payment\Gateway::ENACH_RBL)
+            ->whereBetween($enachRegistrationDateColumn, [$from, $to])
+            ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
+            ->where($tokenRecurringColumn, '!=', 1)
+            ->whereNotNull(Entity::AUTHORIZED_AT)
+            ->with(['localToken', 'globalToken', 'customer', 'enach']);
+
+        $localTokenQuery = $this->newQueryOnPaymentFetchReplica(600000)
+            ->select($selectCols)
+            ->join(Table::TOKEN, Entity::TOKEN_ID, '=', $tokenIdColumn)
+            ->join(Table::ENACH, $paymentIdColumn, '=', $enachPaymentIdColumn)
+            ->where(Entity::RECURRING_TYPE, '=', RecurringType::INITIAL)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->where($paymentMethodColumn, '=', Method::EMANDATE)
+            ->where(Entity::GATEWAY, '=', Payment\Gateway::ENACH_RBL)
+            ->whereBetween($enachRegistrationDateColumn, [$from, $to])
+            ->where(Token\Entity::RECURRING_STATUS, '=', Token\RecurringStatus::INITIATED)
+            ->where($tokenRecurringColumn, '!=', 1)
+            ->whereNotNull(Entity::AUTHORIZED_AT)
+            ->with(['localToken', 'globalToken', 'customer', 'enach']);
+
+        return $localTokenQuery->union($globalTokenQuery)->get();
+    }
+
+    /**
+     * @param int $from
+     * @param int $to
+     * @return
      * @throws Exception\ServerErrorException
      */
     public function fetchPendingEmandateRegistrationForEnach(int $from, int $to)

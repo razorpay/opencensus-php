@@ -13,6 +13,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Models\FileStore\Utility;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Gateway\File\Status;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Base\PublicCollection;
@@ -65,7 +66,20 @@ class EnachRbl extends Base
 
         try
         {
-            $payments = $this->repo->payment->fetchPendingEmandateRegistrationForEnach($begin, $end);
+            $variant = $this->app['razorx']->getTreatment(
+                "EMANDATE_RBL_REGISTER", self::EMANDATE_QUERY_OPTIMIZATION,
+                $this->mode
+            );
+
+            if($variant === 'on')
+            {
+                $payments = $this->repo->payment->fetchPendingEmandateRegistrationForEnachOptimised($begin, $end);
+
+            }
+            else
+            {
+                $payments = $this->repo->payment->fetchPendingEmandateRegistrationForEnach($begin, $end);
+            }
         }
         catch (ServerErrorException $e)
         {

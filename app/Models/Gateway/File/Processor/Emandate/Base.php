@@ -23,6 +23,8 @@ abstract class Base extends Processor\Base
 {
     const FILE_METADATA = [];
 
+    const EMANDATE_QUERY_OPTIMIZATION = 'emandate_query_optimization';
+
     public function checkIfValidDataAvailable(PublicCollection $tokens)
     {
         if ($tokens->count() === 0)

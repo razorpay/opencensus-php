@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Exception\ServerErrorException;
@@ -35,7 +36,18 @@ class Hdfc extends Base
 
         try
         {
-            $tokens = $this->repo->token->fetchPendingEmandateRegistration(static::GATEWAY, $begin, $end);
+            $variant = $this->app['razorx']->getTreatment(
+                "EMANDATE_HDFC_REGISTER", self::EMANDATE_QUERY_OPTIMIZATION,
+                $this->mode
+            );
+
+            if($variant === 'on')
+            {
+                $tokens = $this->repo->token->fetchPendingEmandateRegistrationOptimised(static::GATEWAY, $begin, $end);
+            }
+            else{
+                $tokens = $this->repo->token->fetchPendingEmandateRegistration(static::GATEWAY, $begin, $end);
+            }
         }
         catch (ServerErrorException $e)
         {

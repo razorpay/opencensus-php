@@ -352,6 +352,70 @@ class Repository extends Base\Repository
     }
 
 
+    /**
+     * @param string $gateway
+     * @param int $from
+     * @param int $to
+     * @return
+     */
+    public function fetchPendingEmandateRegistrationOptimised(string $gateway, int $from, int $to)
+    {
+        $paymentTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::TOKEN_ID);
+
+        $paymentGlobalTokenIdColumn = $this->repo->payment->dbColumn(Payment\Entity::GLOBAL_TOKEN_ID);
+
+        $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentGatewayColumn = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $tokenIdColumn = $this->repo->token->dbColumn(Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Entity::RECURRING);
+
+        $paymentAuthorizedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
+
+        $paymentTableName = $this->repo->payment->getTableName();
+
+        $selectCols = $this->dbColumn('*');
+
+        $connection = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+        $localTokenQuery = $this->newQueryWithConnection($connection)
+            ->select($selectCols, 'payments.id as payment_id')
+            ->join($paymentTableName, function ($join) use($paymentTokenIdColumn, $tokenIdColumn, $paymentAuthorizedAtColumn, $from, $to)
+            {
+                $join->on($tokenIdColumn, '=', $paymentTokenIdColumn)
+                    ->whereBetween('payments.authorized_at', [$from, $to]);
+            })
+            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->where($paymentMethodColumn, '=', Method::EMANDATE)
+            ->where($paymentGatewayColumn, '=', $gateway)
+            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
+            ->where($tokenRecurringColumn, '!=', 1)
+            ->with(['customer', 'merchant']);
+
+        $globalTokenQuery = $this->newQueryWithConnection($connection)
+            ->select($selectCols, 'payments.id as payment_id')
+            ->join($paymentTableName, function ($join) use ($tokenIdColumn, $paymentGlobalTokenIdColumn, $paymentAuthorizedAtColumn, $from, $to)
+            {
+                $join->on($tokenIdColumn, '=', $paymentGlobalTokenIdColumn)
+                    ->whereBetween($paymentAuthorizedAtColumn, [$from, $to]);
+            })
+            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::INITIAL)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->where($paymentRecurringColumn, '=', Method::EMANDATE)
+            ->where($paymentGatewayColumn, '=', $gateway)
+            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::INITIATED)
+            ->where($tokenRecurringColumn, '!=', 1)
+            ->with(['customer', 'merchant']);
+
+        return $localTokenQuery->union($globalTokenQuery)->get();
+    }
 
     /**
      * @throws ServerErrorException
