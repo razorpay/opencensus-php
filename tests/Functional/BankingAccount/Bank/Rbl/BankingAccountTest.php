@@ -9846,6 +9846,14 @@ class BankingAccountTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($dataToReplace);
 
+        $customerAppointmentBookingDate = Carbon::createFromTimestamp((Carbon::now()->timestamp), Timezone::IST)->format('Y-m-d') ;
+
+        $actualCustomerAppointmentBookingDate = $response[ActivationDetail\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::RBL_ACTIVATION_DETAILS][ActivationDetail\Entity::CUSTOMER_APPOINTMENT_BOOKING_DATE];
+
+        $actualCustomerAppointmentBookingDate = Carbon::createFromTimestamp(($actualCustomerAppointmentBookingDate), Timezone::IST)->format('Y-m-d') ?? '';
+
+        $this->assertEquals($customerAppointmentBookingDate,$actualCustomerAppointmentBookingDate );
+
         $this->assertEquals(ActivationDetail\Entity::hourDifferenceBetweenTimestamps($docCollectionDate, $apiIRClosedDate), $response[ActivationDetail\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::CUSTOMER_ONBOARDING_TAT]);
 
     }
@@ -10120,7 +10128,7 @@ class BankingAccountTest extends TestCase
         $this->startTest();
 
         Mail::assertQueued(ActivationMails\BankPartnerAssigned::class);
-        
+
     }
 
     public function testBankingAccountLeadsMISDownloadByBank()
@@ -10187,6 +10195,10 @@ class BankingAccountTest extends TestCase
             BankingAccount\State\Entity::ADMIN_ID => $spocId
         ]);
 
+        $docCollectionDate = '1665567466';
+
+        $apiIrClosedDate = '1665826666';
+
         $user = $this->getDbEntity('user', ['email' => 'random@rbl.com']);
 
         (new BankingAccount\BankLms\Service())->assignBankPartnerPocToApplication($bankingAccount['id'], ['bank_poc_user_id' => $user->getId()]);
@@ -10244,10 +10256,10 @@ class BankingAccountTest extends TestCase
                     ActivationDetail\Entity::API_ONBOARDING_FTNR => true,
                     ActivationDetail\Entity::API_ONBOARDING_FTNR_REASONS => 'Reason 3,Reason 4',
                     ActivationDetail\Entity::CUSTOMER_APPOINTMENT_DATE => '1665481066',
-                    ActivationDetail\Entity::DOC_COLLECTION_DATE => '1665567466',
+                    ActivationDetail\Entity::DOC_COLLECTION_DATE => $docCollectionDate,
                     ActivationDetail\Entity::ACCOUNT_LOGIN_DATE => '1665567466',
                     ActivationDetail\Entity::ACCOUNT_OPENING_IR_CLOSE_DATE => '1665740266',
-                    ActivationDetail\Entity::API_IR_CLOSED_DATE => '1665826666',
+                    ActivationDetail\Entity::API_IR_CLOSED_DATE => $apiIrClosedDate,
                     ActivationDetail\Entity::ACCOUNT_OPEN_DATE => '1665481066',
                 ]
             ],
@@ -10275,6 +10287,15 @@ class BankingAccountTest extends TestCase
 
         $sentToBankDate = Carbon::createFromTimestamp($sentToBankTimestamp, Timezone::IST)->format('Y-m-d') ?? '';
         $sentToBankTime = Carbon::createFromTimestamp($sentToBankTimestamp, Timezone::IST)->format('h:i A') ?? '';;
+
+        $customerAppointmentBookingDate = Carbon::createFromTimestamp((Carbon::now()->timestamp), Timezone::IST)->format('Y-m-d') ;
+
+        $customerOnboardingTat = ActivationDetail\Entity::hourDifferenceBetweenTimestamps($docCollectionDate, $apiIrClosedDate, true);
+
+        if (is_double($customerOnboardingTat) === true)
+        {
+            $customerOnboardingTat =  round($customerOnboardingTat / 24);
+        }
 
         $expectedFileInput = [
             [
@@ -10368,8 +10389,8 @@ class BankingAccountTest extends TestCase
                 Leads::CA_BEYOND_TAT => 'No',
                 Leads::CA_SERVICE_FIRST_QUERY => 'CA_SERVICE_FIRST_QUERY',
                 Leads::LEAD_IR_STATUS => 'ir_raised',
-                Leads::CUSTOMER_APPOINTMENT_BOOKING_DATE => '2023-01-11',
-                Leads::CUSTOMER_ONBOARDING_TAT => 3.0,
+                Leads::CUSTOMER_APPOINTMENT_BOOKING_DATE => $customerAppointmentBookingDate,
+                Leads::CUSTOMER_ONBOARDING_TAT => $customerOnboardingTat,
             ]
         ];
 
