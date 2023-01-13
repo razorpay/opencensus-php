@@ -858,4 +858,65 @@ return [
             ],
         ],
     ],
+
+    'testCreateSignatory' => [
+        'request'  => [
+            'url'     => '/merchant/banking_application/business/10000000000000/applications/10000000000000',
+            'method'  => 'PATCH',
+            'content' => [
+                'application_specific_fields' => [
+                    'isBusinessGovtBodyOrLiasedOnUnrecognisedStockOrInternationalOrg' => 'N',
+                    'isIndianFinancialInstitution'                                    => 'Y',
+                    'isOwnerNotIndianCitizen'                                         => 'N',
+                    'isTaxResidentOutsideIndia'                                       => 'Y',
+                    'role_in_business'                                                => 'ACCOUNTANT',
+                    'business_document_mapping' => [
+                        'entityProof1' => 'AADHAR',
+                        'entityProof2' => 'PANCARD'
+                    ]
+                ],
+                'signatories'                 => [
+                    'person'         => [
+                        'first_name'                            => 'asd',
+                        'last_name'                             => 'asd',
+                        'nationality'                           => 'BRITISH OVERSEAS TERRITORY',
+                        'date_of_birth'                         => '2021-05-06T06:30:00.000Z',
+                        'gender'                                => 'Male',
+                        'marital_status'                        => 'Single',
+                        'father_name'                           => 'asdasd',
+                        'mother_name'                           => 'asdasda',
+                        'current_residential_address_details'   => [
+                            'address_building_name' => 'asd',
+                            'address_street_name'   => '',
+                            'address_landmark'      => '',
+                            'address_locality'      => '',
+                            'address_pin_code'      => '560036',
+                            'address_city'          => 'KURTUMGARH',
+                            'address_state'         => 'GOA',
+                        ],
+                        'permanent_residential_address_details' => [
+                            'address_building_name' => 'asd',
+                            'address_street_name'   => '',
+                            'address_landmark'      => '',
+                            'address_locality'      => '',
+                            'address_pin_code'      => '560036',
+                            'address_city'          => 'KURTUMGARH',
+                            'address_state'         => 'GOA',
+                        ],
+                        'role_in_business'                      => 'ACCOUNTANT',
+                    ],
+                    'signatory_type' => 'AUTHORIZED_SIGNATORY',
+                    "person_id" => "20000000000000",
+                    'document' => [
+                        'idProof' => 'PANCARD',
+                        'addressProof' => 'AADHAAR',
+                    ]
+                ],
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];

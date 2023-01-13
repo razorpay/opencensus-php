@@ -535,7 +535,7 @@ class Service extends Base\Service
      */
     public function createOrUpdateSignatory($input, $personId, string $path)
     {
-        if (empty($input[Constants::SIGNATORIES][Constants::PERSON_ID]) === false)
+        if (empty($input[Constants::SIGNATORIES][Constants::SIGNATORY_ID]) === false)
         {
             $method = Request::METHOD_PATCH;
 
