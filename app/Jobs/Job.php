@@ -156,9 +156,9 @@ class Job implements ShouldQueue
         if ($this->isMetricsEnabled())
         {
             $this->trace->gauge(Metric::QUEUE_JOB_ATTEMPT_COUNT, $this->attempts(), [
-                'job_name'         => $this->jobName,
-                'mode'             => $mode,
-                'origin_product'   => $this->originProduct,
+                'job_name'         => $this->getJobName(),
+                'queue_name'       => $this->getQueueConfigKey(),
+                'origin_product'   => $this->getOriginProduct(),
             ]);
         }
     }
@@ -312,9 +312,9 @@ class Job implements ShouldQueue
                 if ($this->isMetricsEnabled())
                 {
                     $this->trace->count(Metric::QUEUE_JOB_WORKER_TIMEOUT, [
-                        'mode'               => $this->mode ?? MODE::LIVE,
-                        'job_name'           => $this->jobName,
-                        'origin_product'     => $this->originProduct,
+                        'job_name'           => $this->getJobName(),
+                        'queue_name'         => $this->getQueueConfigKey(),
+                        'origin_product'     => $this->getOriginProduct(),
                         'attempts_exhausted' => $this->attempts() > static::MAX_RETRY_ATTEMPT,
                     ]);
                 }
@@ -344,10 +344,10 @@ class Job implements ShouldQueue
         if ($this->isMetricsEnabled())
         {
             $this->trace->count(Metric::QUEUE_JOB_WORKER_EXCEPTION, [
-                'mode'               => $this->mode ?? MODE::LIVE,
-                'job_name'           => $this->jobName,
+                'job_name'           => $this->getJobName(),
                 'error_code'         => $e->getCode(),
-                'origin_product'     => $this->originProduct,
+                'queue_name'         => $this->getQueueConfigKey(),
+                'origin_product'     => $this->getOriginProduct(),
                 'attempts_exhausted' => $this->attempts() > static::MAX_RETRY_ATTEMPT,
             ]);
         }
