@@ -5,6 +5,7 @@ namespace RZP\Models\CyberCrimeHelpDesk;
 use View;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Base\ConnectionType;
 use RZP\Models\Admin\Permission;
 use RZP\Trace\TraceCode;
 use RZP\lib\TemplateEngine;
@@ -30,7 +31,7 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('sendMailToLEAFromCyberCrimeHelpdesk', $input);
 
-        $currentDateTime     = date('Y-m-d H:i:s');
+        $currentDateTime     = epoch_format(time() + Constants::IST_DIFF, 'Y-m-d h:i:sa');;
 
         $mailSubject         = (new TemplateEngine)->render(Constants::MAIL_TO_LEA_FROM_CYBRERSOURCE_HELPDESK_EMAIL_SUBJECT, []);
 
@@ -140,6 +141,7 @@ class Service extends Base\Service
         foreach ($requestsDetails as $requestDetail)
         {
             $paymentId = $requestDetail['payment_id'];
+            $this->stripSign($paymentId);
 
             $payment   = $this->repo->payment->findOrFail($paymentId);
 
@@ -150,12 +152,9 @@ class Service extends Base\Service
                 $paymentIdsToPutOnHold[] = $txn->getId();
             }
 
-            if ( empty($requestDetail[Constants::SHARE_BENEFICARY_ACCOUNT_DETAILS]) === false )
-            {
-                $this->sendFreshdeskOutboundMailToMerchantAboutSharingMerchantDetails($payment);
-            }
-
             $this->sendFreshdeskOutboundMailReplyToLEA($payment, $entityId, $requestDetail[Constants::SHARE_BENEFICARY_ACCOUNT_DETAILS]);
+
+            $this->notifyMerchantViaFreshdeskOutboundMail($payment);
         }
 
         $this->app['trace']->info(TraceCode::CYBER_CRIME_PUT_PAYMENTS_ON_HOLD,
@@ -172,7 +171,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function sendFreshdeskOutboundMailToMerchantAboutSharingMerchantDetails($paymentDetails)
+    protected function notifyMerchantViaFreshdeskOutboundMail($paymentDetails)
     {
         $merchant            = $paymentDetails->merchant;
 
@@ -181,7 +180,7 @@ class Service extends Base\Service
         $mailBody            = \View::make(Constants::MAIL_TO_MERCHANT_ABOUT_CYBER_CRIME_EMAIL_TEMPLATE, [
             'merchant_name'     => $merchant->getName(),
             'mid'               => $merchant->getId(),
-            'date_time_stamp'   => date('Y-m-d H:i:s'),
+            'date_time_stamp'   => epoch_format(time() + Constants::IST_DIFF, 'Y-m-d h:i:sa'),
             'amount'            => $paymentDetails->getBaseAmount()/100,
             'payment_id'        => $paymentDetails->getId(),
             'payment_created_at' => epoch_format($paymentDetails->created_at + Constants::IST_DIFF),
@@ -197,7 +196,7 @@ class Service extends Base\Service
             'email'           => $merchant->getEmail(),
             'tags'            => ['bulk_fraud_email'],
             'group_id'        => (int) $this->app['config']->get('applications.freshdesk')['group_ids']['rzpind']['byers_risk'],
-            'email_config_id' => (int) $this->app['config']->get('applications.freshdesk')['email_config_ids']['notify_merchant'],
+            'email_config_id' => (int) $this->app['config']->get('applications.freshdesk')['email_config_ids']['cybercrime_helpdesk']['notify_merchant'],
             'custom_fields'   => [
                 'cf_ticket_queue' => 'Merchant',
                 'cf_merchant_id'  => $merchant->getId(),
@@ -209,9 +208,13 @@ class Service extends Base\Service
 
         $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest);
 
+        $response['body'] = null;
+        $fdOutboundEmailRequest['description'] = null;
+
         $this->app['trace']->info(
-            TraceCode::MAIL_TO_MERCHANT_ABOUT_DETAILS_SHARED_TO_LEA_SENT,
+            TraceCode::CYBER_HELPDESK_MERCHANT_NOTIFICATION_SENT,
             [
+                'freshdesk_request' => $fdOutboundEmailRequest,
                 'freshdesk_response'  => $response,
             ]);
     }
@@ -220,9 +223,16 @@ class Service extends Base\Service
     {
         $merchant                       = $payment->merchant;
 
-        $currentDateTime                = date('Y-m-d H:i:s');
+        $currentDateTime                =  epoch_format(time() + Constants::IST_DIFF, 'Y-m-d h:i:sa');
 
-        $customerIpAddress               = $payment->analytics->getIp();;
+        $customerIpAddress               = null;
+
+        $pa = $this->repo->payment_analytics->fetch(['payment_id' => $payment->getId()], null, ConnectionType::REPLICA);
+
+        if (sizeof($pa) > 0)
+        {
+            $customerIpAddress = $pa[0]->getIp();
+        }
 
         $beneficiaryBankAccountDetails  = $this->repo->bank_account->getBankAccount($merchant, Type::MERCHANT);
 
@@ -243,11 +253,13 @@ class Service extends Base\Service
 
         $response    = $this->app['freshdesk_client']->postTicketReply((int)$freshdeskTicketId, $replyInputs);
 
+        $response['body'] = null;
+        $response['body_text'] = null;
+
         $this->app['trace']->info(
-            TraceCode::MAIL_TO_MERCHANT_ABOUT_DETAILS_SHARED_TO_LEA_SENT,
+            TraceCode::CYBER_HELPDESK_DETAILS_TO_LEA_POSTED,
             [
-                'freshdesk_response'  => $response,
-                'body'                => $mailBody
+                'freshdesk_response' => $response
             ]);
     }
 
@@ -280,4 +292,13 @@ class Service extends Base\Service
         return null;
     }
 
+    protected function stripSign(& $id)
+    {
+        $ix = strpos($id, '_');
+
+        if ($ix !== false)
+        {
+            $id = substr($id, $ix + 1);
+        }
+    }
 }

@@ -188,11 +188,13 @@
                       Beneficiary Contact Details
                 </p>
               </th>
-                <th style="padding: 5px; border: 1px solid #cccccc" colspan="3">
-                    <p style="font-size: 14px; margin: 0">
-                        Beneficiary Account Details
-                    </p>
-                </th>
+                @if(empty($share_beneficary_account_details) === false  && $share_beneficary_account_details === 1)
+                    <th style="padding: 5px; border: 1px solid #cccccc" colspan="3">
+                        <p style="font-size: 14px; margin: 0">
+                            Beneficiary Account Details
+                        </p>
+                    </th>
+                @endif
             </tr>
             <tr style="padding: 5px; border: 1px solid #cccccc">
               <th style="padding: 5px; border: 1px solid #cccccc">
@@ -204,7 +206,7 @@
               <th style="padding: 5px; border: 1px solid #cccccc">
                 Merchant contact email
               </th>
-              @if(empty($share_beneficary_account_details) === false)
+              @if(empty($share_beneficary_account_details) === false  && $share_beneficary_account_details === 1)
                 <th style="padding: 5px; border: 1px solid #cccccc">
                   Beneficiary Name
                 </th>
@@ -224,7 +226,7 @@
               <td style="padding: 5px; border: 1px solid #cccccc">
                 {{$merchant_details->getContactEmail()}}
               </td>
-              @if(empty($share_beneficary_account_details) === false)
+              @if(empty($share_beneficary_account_details) === false and $share_beneficary_account_details === 1)
                 <td style="padding: 5px; border: 1px solid #cccccc">
                   {{$beneficiary_bank_account_details->getBeneficiaryName()}}
                 </td>
