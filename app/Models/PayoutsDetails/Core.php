@@ -103,9 +103,15 @@ class Core extends Base\Core
 
             if ($payoutDetails->isNotEmpty() === true)
             {
-                $updateKey = sprintf('%s->%s', Entity::ADDITIONAL_INFO, Entity::ATTACHMENTS_KEY);
+                $payoutDetail = $payoutDetails->first();
 
-                $updates = array($updateKey => $attachmentsInfo);
+                $additionalInfo = json_decode($payoutDetail[Entity::ADDITIONAL_INFO], true);
+
+                $additionalInfo[Entity::ATTACHMENTS] = $attachmentsInfo;
+
+                $additionalInfo = json_encode($additionalInfo, true);
+
+                $updates = array(Entity::ADDITIONAL_INFO => $additionalInfo);
 
                 $this->repo->payouts_details->updatePayoutDetails([$payoutId], $updates);
             }

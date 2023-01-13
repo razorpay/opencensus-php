@@ -20947,6 +20947,33 @@ return [
             ]
         ],
     ],
+
+    'testUpdateAttachmentWithPayoutDetailsAndAdditionalInfoNull'                                     => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => 'payouts/pout_JLYXwEbdcktqV1/attachments',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'SUCCESS'
+            ]
+        ],
+    ],
+
+    'testUpdateAttachmentWithPayoutDetailsAndAdditionalInfoNotNull'                                     => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => 'payouts/pout_JLYXwEbdcktqV1/attachments',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'SUCCESS'
+            ]
+        ],
+    ],
+
     'testUpdateAttachmentWithTds'                                           => [
         'request'  => [
             'method'  => 'PATCH',

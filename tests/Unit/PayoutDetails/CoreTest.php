@@ -6,6 +6,7 @@ use Mockery;
 use RZP\Exception;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\PayoutsDetails\Entity;
 use RZP\Models\Base\PublicCollection;
 
 class CoreTest extends TestCase
@@ -69,7 +70,11 @@ class CoreTest extends TestCase
 
         $payoutDetails = new PublicCollection();
 
-        $payoutDetails->put('test', '$uniqueId');
+        $payoutDetail = new Entity();
+
+        $payoutDetail->setAttribute("payout_id", "pout_1234567890");
+
+        $payoutDetails->push($payoutDetail);
 
         $pdRepoMock->shouldReceive('getPayoutDetailsByPayoutId')->andReturn($payoutDetails);
 
@@ -111,7 +116,11 @@ class CoreTest extends TestCase
 
         $payoutDetails = new PublicCollection();
 
-        $payoutDetails->put('test', '$uniqueId');
+        $payoutDetail = new Entity();
+
+        $payoutDetail->setAttribute("payout_id", "pout_1234567890");
+
+        $payoutDetails->push($payoutDetail);
 
         $pdRepoMock->shouldReceive('getPayoutDetailsByPayoutId')->andReturn($payoutDetails);
 

@@ -31410,6 +31410,139 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($uploadAttachmentResponse['file_name'], $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
     }
 
+    public function testUpdateAttachmentWithPayoutDetailsAndAdditionalInfoNull()
+    {
+        $this->testCohesiveCreatePayoutWithoutTdsSuccessForProxyAuth();
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNull($payoutDetails);
+
+        // uploading attachment
+        $fileName = 'k.png';
+
+        $localFilePath = $this->createNewFile($fileName);
+
+        $uploadAttachmentRequest = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $this->ba->proxyAuth();
+
+        $uploadAttachmentResponse = $this->makeRequestAndGetContent($uploadAttachmentRequest);
+
+        //asserting that response has file_id, file_name, and file_hash
+        $this->assertArrayHasKey('file_id', $uploadAttachmentResponse);
+
+        $this->assertArrayHasKey('file_name', $uploadAttachmentResponse);
+
+        $this->assertArrayHasKey('file_hash', $uploadAttachmentResponse);
+
+        $attachmentsDataInRequest = [
+            [
+                'file_id'   => $uploadAttachmentResponse['file_id'],
+                'file_name' => $uploadAttachmentResponse['file_name'],
+                'file_hash' => $uploadAttachmentResponse['file_hash'],
+            ]
+        ];
+
+        $payouts = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+
+        $this->fixtures->create(Constants\Entity::PAYOUTS_DETAILS, [
+            'payout_id'                 => $payouts->getId(),
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf('/payouts/%s/attachments', $payouts->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['content']['attachments'] = $attachmentsDataInRequest;
+
+        $this->startTest();
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TDS_CATEGORY_ID]);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TAX_PAYMENT_ID]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $additionalInfo = json_decode($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO], true);
+
+        $this->assertNotNull($additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY]);
+
+        $this->assertEquals($uploadAttachmentResponse['file_id'], $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_ID]);
+
+        $this->assertEquals($uploadAttachmentResponse['file_name'], $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
+    public function testUpdateAttachmentWithPayoutDetailsAndAdditionalInfoNotNull()
+    {
+        $this->testCohesiveCreatePayoutWithoutTdsSuccessForProxyAuth();
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNull($payoutDetails);
+
+        // uploading attachment
+        $fileName = 'k.png';
+
+        $localFilePath = $this->createNewFile($fileName);
+
+        $uploadAttachmentRequest = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $this->ba->proxyAuth();
+
+        $uploadAttachmentResponse = $this->makeRequestAndGetContent($uploadAttachmentRequest);
+
+        //asserting that response has file_id, file_name, and file_hash
+        $this->assertArrayHasKey('file_id', $uploadAttachmentResponse);
+
+        $this->assertArrayHasKey('file_name', $uploadAttachmentResponse);
+
+        $this->assertArrayHasKey('file_hash', $uploadAttachmentResponse);
+
+        $attachmentsDataInRequest = [
+            [
+                'file_id'   => $uploadAttachmentResponse['file_id'],
+                'file_name' => $uploadAttachmentResponse['file_name'],
+                'file_hash' => $uploadAttachmentResponse['file_hash'],
+            ]
+        ];
+
+        $payouts = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+
+        $this->fixtures->create(Constants\Entity::PAYOUTS_DETAILS, [
+            'payout_id'                 => $payouts->getId(),
+            'additional_info'           => [
+                'random_key' => 'random_info'
+            ],
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf('/payouts/%s/attachments', $payouts->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['content']['attachments'] = $attachmentsDataInRequest;
+
+        $this->startTest();
+
+        $payoutDetails = $this->getDbLastEntity(Constants\Entity::PAYOUTS_DETAILS);
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TDS_CATEGORY_ID]);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TAX_PAYMENT_ID]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $additionalInfo = json_decode($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO], true);
+
+        $this->assertNotNull($additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY]);
+
+        $this->assertEquals($uploadAttachmentResponse['file_id'], $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_ID]);
+
+        $this->assertEquals($uploadAttachmentResponse['file_name'], $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
     public function testUpdateAttachmentWithTds()
     {
         $this->testCohesiveCreatePayoutWithTdsPayoutToBeQueuedForProxyAuth();
