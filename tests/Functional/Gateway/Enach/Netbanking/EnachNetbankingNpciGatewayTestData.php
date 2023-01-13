@@ -202,6 +202,42 @@ return [
         ]
     ],
 
+    'testDebitFileGenerationYesbTxtFormat' => [
+        'request' => [
+            'content' => [
+                'type'          => 'emandate_debit',
+                'targets'       => ['yesb'],
+                'time_range'    => 24,
+                'end'           => 9,
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'recipients'          => [
+                            ''
+                        ],
+                        'status'              => 'file_generated',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emandate@razorpay.com',
+                        'type'                => 'emandate_debit',
+                        'target'              => 'yesb',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ]
+        ]
+    ],
+
     'testDebitFileGenerationYesbEarlyDebit' => [
         'request' => [
             'content' => [

@@ -104,6 +104,76 @@ class EnachNetbankingNpciYesbTest extends TestCase
         );
     }
 
+    public function testDebitFileGenerationYesbTxtFormat()
+    {
+        $response = $this->makeDebitPayment($amount = 300000, $notes = true);
+
+        $paymentId = $this->updateCreatedAtOfPayment($response['razorpay_payment_id']);
+
+        $this->fixtures->stripSign($response['razorpay_payment_id']);
+
+        $this->ba->adminAuth();
+
+        Queue::fake();
+
+        $this->mockBeamTest(function ($pushData, $intervalInfo, $mailInfo, $synchronous)
+        {
+            return [
+                'failed' => null,
+                'success' => $pushData['files'],
+            ];
+        });
+
+        $this->testData[__FUNCTION__] = $this->testData['testDebitFileGenerationYesbTxtFormat'];
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $files = $this->getEntities('file_store', [], true);
+
+        $this->assertCount(1, $files['items']);
+
+        $debit = $files['items'][0];
+
+
+        $expectedFileContentDebit = [
+            'type'        => 'enach_npci_nb_debit',
+            'entity_type' => 'gateway_file',
+            'entity_id'   => $content['id'],
+            'extension'   => 'txt',
+            'name'        => 'yesbank/nach/input_file/NACH_DR_07032020_shared_utility_code_RAZORPAY_001_test',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContentDebit, $debit);
+
+        $fileContent = explode("\n", file_get_contents('storage/files/filestore/' . $debit['location']));
+
+        // since date and amount is fixed for this test header is a constant
+        $expectedHeader = '56       RAZORPAY SOFTWARE PVT LTD                                                                 0001000000000000000030000007032020                       shared_utility_cod000000000000000000                                              000000001                                                           ';
+
+        $this->assertEquals($expectedHeader, $fileContent[0]);
+
+        $debitRow = array_map('trim', $this->parseTextRow($fileContent[1], 0, ''));
+
+        s($debitRow);
+
+        $expectedDebitRow = [
+            'ACH Transaction Code' => '67',
+            'Destination Account Type' => '10',
+            'Beneficiary Account Holder\'s Name' => 'Test account',
+            'Amount' => '0000000300000',
+            'Destination Bank IFSC / MICR / IIN' => 'UTIB0000123',
+            'Beneficiary\'s Bank Account number' => '1111111111111',
+            'User Number' => 'shared_utility_cod',
+            'Transaction Reference' => 'RZPTESTMERCHANT' . $response['razorpay_payment_id'],
+            'Product Type' => '10',
+            'UMRN' => 'UTIB6000000005844847'
+        ];
+
+        $this->assertArraySelectiveEquals($expectedDebitRow, $debitRow);
+    }
+
     public function testDebitFileGenerationForEarlyDebitPresentment()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::EARLY_MANDATE_PRESENTMENT]);
@@ -345,6 +415,72 @@ class EnachNetbankingNpciYesbTest extends TestCase
 
         $this->assertEquals('', $enach['error_code']);
         $this->assertEquals('Record Level Error:Invalid Mandate Info......', $enach['error_message']);
+
+        $this->assertEquals('REJECTED', $enach['status']);
+    }
+
+    public function testDebitFileResponseNarrationYesb()
+    {
+        $this->makeDebitPayment();
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $fileStatuses = [
+            'status'     => 'REJECTED',
+            'error_code' => '04',
+            'error_desc' => 'Balance insufficient',
+        ];
+
+        Carbon::setTestNow(Carbon::now()->addDays(29));
+
+        $this->fixtures->create(
+            'enach',
+            [
+                'payment_id' => $payment['id'],
+                'action'     => 'authorize',
+                'bank'       => 'UTIB',
+                'amount'     => $payment['amount'],
+            ]
+        );
+
+        $data = [
+            [
+                'Presentation Date' => Carbon::now(Timezone::IST)->format('m/d/Y'),
+                'UMRN' => 'UTIB6000000005844847',
+                'Transaction Ref No' => "RZPTESTMERCHANT" . $payment['id'],
+                'Utility Code' => '',
+                'Bank A/c Number' => '',
+                'Account Holder Name' => '',
+                'Bank' => '',
+                'IFSC/MICR' => '',
+                'Amount' => $payment['amount'] / 100,
+                'Reference 1' => '',
+                'Reference 2' => '',
+                'Status' => $fileStatuses['status'],
+                'Reason Code' => $fileStatuses['error_code'],
+                'Reason Discription' => $fileStatuses['error_desc'],
+                'User Reference' => '',
+            ]
+        ];
+
+        $entry = [
+            "data"        => $data[0],
+            'type'        => 'emandate',
+            'sub_type'    => 'debit',
+            'gateway'     => 'enach_npci_netbanking',
+        ];
+
+        $this->runWithData($entry, "test_batch");
+
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $this->assertEquals('failed', $payment['status']);
+        $this->assertEquals('BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE', $payment['internal_error_code']);
+
+        $enach = $this->getDbEntities('enach', ['payment_id' => $payment['id']])->first()->toArray();
+
+        $this->assertEquals('04', $enach['error_code']);
+        $this->assertEquals('Balance insufficient', $enach['error_message']);
 
         $this->assertEquals('REJECTED', $enach['status']);
     }
@@ -849,7 +985,7 @@ class EnachNetbankingNpciYesbTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
-    protected function makeDebitPayment($amount = 300000)
+    protected function makeDebitPayment($amount = 300000, $notes = null)
     {
         $payment = $this->getEmandatePaymentArray('UTIB', 'netbanking', 0);
 
@@ -886,6 +1022,11 @@ class EnachNetbankingNpciYesbTest extends TestCase
         $payment             = $this->getEmandatePaymentArray('UTIB', null, $amount);
         $payment['token']    = $tokenId;
         $payment['order_id'] = $order->getPublicId();
+
+        if($notes === true)
+        {
+            $payment['notes']    = ['emandate_narration' => "RZPTESTMERCHANT"];
+        }
 
         unset($payment['auth_type']);
 
@@ -961,5 +1102,17 @@ class EnachNetbankingNpciYesbTest extends TestCase
         $beamServiceMock->method('beamPush')->will($this->returnCallback($callback));
 
         $this->app['beam']->setMockService($beamServiceMock);
+    }
+
+    public function mockBeamTest(callable $callback)
+    {
+        $beamServiceMock = $this->getMockBuilder(BeamService::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['beamPush'])
+            ->getMock();
+
+        $beamServiceMock->method('beamPush')->will($this->returnCallback($callback));
+
+        $this->app['beam'] = $beamServiceMock;
     }
 }

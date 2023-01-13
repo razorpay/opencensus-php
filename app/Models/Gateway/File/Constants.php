@@ -75,7 +75,8 @@ class Constants
     const UJVN             = 'ujjivan';
     const INDUS_IND_DEBIT  = 'indusind_debit';
 
-    const AXIS_V2             = 'axis_v2';
+    const AXIS_V2          = 'axis_v2';
+    const YESB_EARLY_DEBIT = 'yesb_early_debit';
 
     const ENACH_NPCI_NETBANKING             = 'enach_npci_netbanking';
     const ENACH_NPCI_NETBANKING_EARLY_DEBIT = 'enach_npci_netbanking_early_debit';
@@ -201,7 +202,9 @@ class Constants
             self::SBI,
             self::ENACH_NPCI_NETBANKING,
             self::ENACH_NPCI_NETBANKING_EARLY_DEBIT,
-            self::AXIS_V2
+            self::AXIS_V2,
+            self::YESB,
+            self::YESB_EARLY_DEBIT
             //self::ENACH_NB_ICICI,  deprecated
         ],
         Type::NACH_DEBIT => [
@@ -333,8 +336,11 @@ class Constants
         Type::EMANDATE_DEBIT => [
             self::HDFC                  => ['hdfc.emandate@razorpay.com', 'amit.salvi@hdfcbank.com'],
             self::AXIS                  => ['axis.emandate@razorpay.com'],
+            self::AXIS_V2               => ['axis.emandate@razorpay.com'],
             self::ENACH_RBL             => ['rbl.emandate@razorpay.com'],
             self::ENACH_NPCI_NETBANKING => [''],
+            self::YESB                  => [''],
+            self::YESB_EARLY_DEBIT      => [''],
             self::ENACH_NB_ICICI        => [''],
             self::SBI                   => [''],
         ],

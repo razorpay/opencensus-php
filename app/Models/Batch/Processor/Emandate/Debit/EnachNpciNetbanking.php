@@ -20,7 +20,7 @@ class EnachNpciNetbanking extends Base
         $row = array_map('trim', $row);
 
         return [
-            self::PAYMENT_ID            => $row[Batch\Header::ENACH_NPCI_NETBANKING_DEBIT_PAYMENT_ID],
+            self::PAYMENT_ID            => substr($row[Batch\Header::ENACH_NPCI_NETBANKING_DEBIT_PAYMENT_ID], -14),
             self::AMOUNT                => $row[Batch\Header::ENACH_NPCI_NETBANKING_DEBIT_AMOUNT],
             self::GATEWAY_RESPONSE_CODE => $row[Batch\Header::ENACH_NPCI_NETBANKING_DEBIT_STATUS],
             self::GATEWAY_ERROR_CODE    => $row[Batch\Header::ENACH_NPCI_NETBANKING_DEBIT_ERROR_CODE],

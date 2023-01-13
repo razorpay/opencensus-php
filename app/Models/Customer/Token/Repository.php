@@ -482,6 +482,65 @@ class Repository extends Base\Repository
     }
 
     /**
+     * @param string $gateway
+     * @param $from
+     * @param $to
+     * @param $acquirer
+     * @return
+     * @throws ServerErrorException
+     */
+    public function newFetchPendingEMandateDebitWithGatewayAcquirer(string $gateway, $from, $to, $acquirer)
+    {
+        $paymentRecurringTypeColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING_TYPE);
+
+        $paymentRecurringColumn = $this->repo->payment->dbColumn(Payment\Entity::RECURRING);
+
+        $paymentMethodColumn = $this->repo->payment->dbColumn(Payment\Entity::METHOD);
+
+        $paymentStatusColumn = $this->repo->payment->dbColumn(Payment\Entity::STATUS);
+
+        $paymentGatewayColumn = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $tokenIdColumn = $this->repo->token->dbColumn(Entity::ID);
+
+        $tokenRecurringColumn = $this->repo->token->dbColumn(Entity::RECURRING);
+
+        $paymentCreatedAtColumn = $this->repo->payment->dbColumn(Payment\Entity::CREATED_AT);
+
+        $terminalAcquirerColumn = $this->repo->terminal->dbColumn(Terminal\Entity::GATEWAY_ACQUIRER);
+
+        $tokenTerminalIdColumn = $this->repo->token->dbColumn(Entity::TERMINAL_ID);
+
+        return $this->newQueryOnPaymentFetchReplica(600000)
+            ->select('tokens.' . Entity::ACCOUNT_TYPE,
+                'tokens.' . Entity::BENEFICIARY_NAME,
+                'tokens.' . Entity::IFSC,
+                'tokens.' . Entity::ACCOUNT_NUMBER,
+                'tokens.' . Entity::GATEWAY_TOKEN,
+                'tokens.' . Entity::MERCHANT_ID,
+                'tokens.' . Entity::TERMINAL_ID,
+                'payments.id as payment_id',
+                'payments.amount as payment_amount',
+                'payments.notes as payment_notes',
+                'payments.created_at as payment_created_at',
+                'payments.email as payment_email')
+            ->from(\DB::raw('`tokens`, `payments`, `terminals`'))
+            ->where($tokenIdColumn, '=', \DB::raw('`payments`.`token_id`'))
+            ->where($tokenTerminalIdColumn, '=', \DB::raw('`terminals`.`id`'))
+            ->whereBetween($paymentCreatedAtColumn, [$from, $to])
+            ->where($paymentRecurringTypeColumn, '=', Payment\RecurringType::AUTO)
+            ->where($paymentRecurringColumn, '=', 1)
+            ->where($paymentMethodColumn, '=', Method::EMANDATE)
+            ->where($paymentGatewayColumn, '=', $gateway)
+            ->where($paymentStatusColumn, '=', Payment\Status::CREATED)
+            ->where(Entity::RECURRING_STATUS, '=', RecurringStatus::CONFIRMED)
+            ->where($tokenRecurringColumn, '=', 1)
+            ->where($terminalAcquirerColumn, '=', $acquirer)
+            ->with(['merchant'])
+            ->get();
+    }
+
+    /**
      * @throws ServerErrorException
      */
     public function fetchPendingEMandateDebitWithGatewayAcquirer(string $gateway, $from, $to, $acquirer)

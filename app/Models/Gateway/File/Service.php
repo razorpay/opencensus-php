@@ -81,29 +81,6 @@ class Service extends Base\Service
 
     protected function updateTimePeriodIfApplicable(array & $input, array $targets)
     {
-        // Adding special case for citi mandate file generation to accommodate high load on file generation.
-        // if begin and end is sent from cron request consider that else continue
-
-        if (($this->app['basicauth']->isCron() === true) and
-            ($input[Entity::TYPE] === Type::NACH_DEBIT) and
-            (in_array(Constants::PAPER_NACH_CITI, $targets) === true) and
-            (empty($input[Entity::BEGIN]) === false) and
-            (empty($input[Entity::END]) === false))
-        {
-            return;
-        }
-
-        // Adding special case for yes mandate file generation to accommodate high load on file generation.
-        // if begin and end is sent from cron request consider that else continue
-        if (($this->app['basicauth']->isCron() === true) and
-            ($input[Entity::TYPE] === Type::EMANDATE_DEBIT) and
-            (in_array(Constants::ENACH_NPCI_NETBANKING, $targets) === true) and
-            (empty($input[Entity::BEGIN]) === false) and
-            (empty($input[Entity::END]) === false))
-        {
-            return;
-        }
-
         if (($input[Entity::TYPE] === Type::CARDSETTLEMENT) and
             (in_array(Constants::AXIS, $targets) === true))
         {
@@ -114,7 +91,7 @@ class Service extends Base\Service
             return;
         }
 
-        if ($this->PaperNachCitiV2($input, $targets))
+        if ($this->eMandateAutomate($input, $targets))
         {
             return;
         }
@@ -139,20 +116,37 @@ class Service extends Base\Service
      * @param $targets
      * @return bool
      */
-    protected function PaperNachCitiV2(array & $input, $targets): bool
+    protected function eMandateAutomate(array & $input, $targets): bool
     {
+        $currentType = $input[Entity::TYPE];
 
-        if (($input[Entity::TYPE] === Type::NACH_DEBIT) and
-            ((in_array(Constants::PAPER_NACH_CITI_V2, $targets) === true) or
-                (in_array(Constants::COMBINED_NACH_CITI_EARLY_DEBIT_V2, $targets) === true)))
+        $currentTarget = $targets[0];
+
+        $typeList = [
+            Type::NACH_DEBIT,
+            Type::EMANDATE_DEBIT
+        ];
+
+        $targetList = [
+            Constants::PAPER_NACH_CITI_V2,
+            Constants::COMBINED_NACH_CITI_EARLY_DEBIT_V2,
+            Constants::YESB,
+            Constants::YESB_EARLY_DEBIT,
+            Constants::ENACH_NPCI_NETBANKING
+        ];
+
+        if (in_array($currentType, $typeList) === true
+            and in_array($currentTarget, $targetList) === true)
         {
-            if (isset($input[Entity::BEGIN]) === false)
+            if (isset($input[Entity::TIME_RANGE]) === true)
             {
                 $endTime = Carbon::today(Timezone::IST)->addHours($input[Entity::END]);
 
                 $input[Entity::END] = $endTime->getTimestamp() - 1;
 
                 $input[Entity::BEGIN] = $endTime->subHours($input[Entity::TIME_RANGE])->getTimestamp();
+
+                unset($input[Entity::TIME_RANGE]);
             }
 
             if(empty($input[Entity::SUB_TYPE]) === false)
@@ -163,8 +157,6 @@ class Service extends Base\Service
             {
                 $input[Entity::SUB_TYPE] = (string) 0;
             }
-
-            unset($input[Entity::TIME_RANGE]);
 
             return true;
         }

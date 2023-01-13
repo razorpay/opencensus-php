@@ -75,16 +75,24 @@ abstract class Base extends EMandate\Base
     }
 
     /**
+     * @param PublicCollection $tokens
+     * @return PublicCollection
      * @throws GatewayFileException
      */
     public function generateData(PublicCollection $tokens): PublicCollection
     {
+        $targetList = [
+            Constants::ENACH_NPCI_NETBANKING,
+            Constants::ENACH_NPCI_NETBANKING_EARLY_DEBIT,
+            Constants::YESB,
+            Constants::YESB_EARLY_DEBIT
+        ];
+
         try
         {
             $target = $this->gatewayFile->getTarget();
 
-            if($target === Constants::ENACH_NPCI_NETBANKING or
-                $target === Constants::ENACH_NPCI_NETBANKING_EARLY_DEBIT)
+            if(in_array($target, $targetList) === true)
             {
                 return $tokens;
             }
