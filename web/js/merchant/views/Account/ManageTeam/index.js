@@ -35,7 +35,7 @@ class ManageTeamContainer extends React.Component {
       screen: 'my account',
       properties: {
         location: 'manage team',
-        pendingInvitations: this.props.user.invitations.length,
+        pendingInvitations: this.props.user?.user?.invitations?.length,
         // members left to be added
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
@@ -46,7 +46,7 @@ class ManageTeamContainer extends React.Component {
     };
 
     const defaults = {
-      sender_name: this.props.user.name,
+      sender_name: this.props.user?.user?.name,
       role: rolesList.MANAGER,
     };
     this.props.openModal({
@@ -95,7 +95,7 @@ class ManageTeamContainer extends React.Component {
   render() {
     const { user } = this.props;
 
-    if (user.isAccountAndSettingsRevampEnabled) <Redirect to="/business-settings/team" />;
+    if (user.isAccountAndSettingsRevampEnabled) return <Redirect to="/business-settings/team" />;
 
     return (
       <div className="content-wrapper content-sm" id="settings-content">
