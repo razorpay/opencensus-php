@@ -54,6 +54,53 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testCreateIsDsMerchantAdminLead' => [
+        'request' => [
+            'url' => '/admin-lead',
+            'method' => 'post',
+            'content' => [
+                'channel_code'  => 'RZP001',
+                'contact_email' => 'abc@xyz.com',
+                'contact_name'  => 'test user',
+                "is_ds_merchant"  => "1"
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'abc@xyz.com',
+                'form_data' => [
+                    "channel_code"  => "RZP001",
+                    "contact_email" => "abc@xyz.com",
+                    "contact_name"  => "test user",
+                    "merchant_type"  => "DS Only Merchant"
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    'testCreateCurlecAdminLead' => [
+        'request' => [
+            'url' => '/admin-lead',
+            'method' => 'post',
+            'content' => [
+                'channel_code'  => 'RZP001',
+                'contact_email' => 'abc@xyz.com',
+                'contact_name'  => 'test user',
+                'country_code'  => 'MY'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'abc@xyz.com',
+                'form_data' => [
+                    "channel_code"  => "RZP001",
+                    "contact_email" => "abc@xyz.com",
+                    "contact_name"  => "test user",
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 
     'testSelfInviteProhibited' => [
         'request' => [

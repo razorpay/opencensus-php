@@ -5,37 +5,89 @@ namespace RZP\Tests\Functional\Admin;
 use Mail;
 
 use RZP\Models\User\Entity;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Mail\Admin\MerchantInvitation as MerchantInvitationMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 
 class AdminLeadTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use HeimdallTrait;
 
+    /**
+     * @var array|mixed
+     */
+    private $org;
+
+    /**
+     * @var string
+     */
+    private $authToken;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/AdminLeadTestData.php';
 
         parent::setUp();
-
-        $this->org = $this->fixtures->create('org');
-
-        $this->fixtures->create('org_hostname', [
-            'org_id'    => $this->org->getId(),
-            'hostname'  => 'dashboard.sampleorg.dev',
-        ]);
-
-        $this->authToken = $this->getAuthTokenForOrg($this->org);
-
-        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
     }
 
-    protected function getDefaultFields()
+    protected function mockOrgCreation($orgId)
     {
+        if ($orgId !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            $this->org = $this->fixtures->create('org', ['id' => $orgId]);
+
+            $this->fixtures->create('org_hostname', [
+                'org_id'   => $this->org->getId(),
+                'hostname' => 'dashboard.sampleorg.dev',
+            ]);
+
+            $this->authToken = $this->getAuthTokenForOrg($this->org);
+
+            $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+            $fields = $this->getDefaultFields($orgId);
+
+            $role = $this->ba->getAdmin()->roles()->get()[0];
+
+            $this->storeFieldsForEntity(
+                $this->org->getPublicId(),
+                'admin_lead',
+                $fields, $this->authToken);
+
+        }
+        else
+        {
+            $this->org = OrgEntity::find(OrgEntity::RAZORPAY_ORG_ID);
+
+            $this->ba->adminAuth();
+
+            $fields = $this->getDefaultFields($orgId);
+
+            $role = $this->ba->getAdmin()->roles()->get()[0];
+
+            $this->storeFieldsForEntity(
+                $this->org->getPublicId(),
+                'admin_lead',$fields,null);
+        }
+
+
+    }
+
+    protected function getDefaultFields($orgId)
+    {
+        if($orgId===OrgEntity::CURLEC_ORG_ID){
+            return [
+                'channel_code',
+                'contact_email',
+                'contact_name',
+                'country_code'
+            ];
+        }
         return [
             'channel_code',
             'contact_email',
@@ -47,14 +99,7 @@ class AdminLeadTest extends TestCase
     {
         Mail::fake();
 
-        $fields = $this->getDefaultFields();
-
-        $role = $this->ba->getAdmin()->roles()->get()[0];
-
-        $this->storeFieldsForEntity(
-            $this->org->getPublicId(),
-            'admin_lead',
-            $fields, $this->authToken);
+        $this->mockOrgCreation(OrgEntity::RAZORPAY_ORG_ID);
 
         $this->startTest();
     }
@@ -63,14 +108,57 @@ class AdminLeadTest extends TestCase
     {
         Mail::fake();
 
-        $fields = $this->getDefaultFields();
+        $this->mockOrgCreation(OrgEntity::RAZORPAY_ORG_ID);
 
-        $role = $this->ba->getAdmin()->roles()->get()[0];
+        $this->startTest();
 
-        $this->storeFieldsForEntity(
-            $this->org->getPublicId(),
-            'admin_lead',
-            $fields, $this->authToken);
+        Mail::assertQueued(MerchantInvitationMail::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertArrayHasKey('invitation', $data);
+
+            $this->assertArrayHasKey('adminName', $data);
+
+            return true;
+        });
+
+        $adminLead = $this->getLastEntity('admin_lead', true);
+
+        return $adminLead;
+    }
+
+    public function testCreateIsDsMerchantAdminLead()
+    {
+        Mail::fake();
+
+        $this->mockOrgCreation(OrgEntity::AXIS_ORG_ID);
+
+        $this->fixtures->org->addFeatures([FeatureConstants::ORG_PROGRAM_DS_CHECK],$this->org->getId());
+
+        $this->startTest();
+
+        Mail::assertQueued(MerchantInvitationMail::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertArrayHasKey('invitation', $data);
+
+            $this->assertArrayHasKey('adminName', $data);
+
+            return true;
+        });
+
+        $adminLead = $this->getLastEntity('admin_lead', true);
+
+        return $adminLead;
+    }
+
+    public function testCreateCurlecAdminLead()
+    {
+        Mail::fake();
+
+        $this->mockOrgCreation(OrgEntity::CURLEC_ORG_ID);
 
         $this->startTest();
 
@@ -92,6 +180,8 @@ class AdminLeadTest extends TestCase
 
     public function testExistingEmailInviteProhibited()
     {
+        $this->mockOrgCreation(OrgEntity::RAZORPAY_ORG_ID);
+
         $merchant = $this->fixtures->create('merchant');
 
         $this->fixtures->create('merchant_detail', [
@@ -102,12 +192,6 @@ class AdminLeadTest extends TestCase
 
         $merchantUser=$this->fixtures->user->createUserForMerchant($merchant->id);
 
-        $fields = $this->getDefaultFields();
-
-        $this->storeFieldsForEntity(
-            $this->org->getPublicId(), 'admin_lead',
-            $fields, $this->authToken);
-
         $this->testData[__FUNCTION__]['request']['content']['contact_email'] = $merchantUser->getEmail();
 
         $this->startTest();
@@ -115,15 +199,9 @@ class AdminLeadTest extends TestCase
 
     public function testSelfInviteProhibited()
     {
-        $fields = $this->getDefaultFields();
-
-        $role = $this->ba->getAdmin($this->authToken)->roles()->get()[0];
+        $this->mockOrgCreation(OrgEntity::RAZORPAY_ORG_ID);
 
         $adminEmail = $this->ba->getAdmin($this->authToken)->getEmail();
-
-        $this->storeFieldsForEntity(
-            $this->org->getPublicId(), 'admin_lead',
-            $fields, $this->authToken);
 
         $this->testData[__FUNCTION__]['request']['content']['contact_email'] = $adminEmail;
 

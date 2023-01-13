@@ -22,11 +22,9 @@ class Service extends Base\Service
 
         $entity = (new Entity)->getEntityName();
 
+        $merchantType = $this->getMerchantType($input);
+
         $this->validateInvitation($orgId, $input);
-
-        $merchantType = $input[Constants::MERCHANT_TYPE];
-
-        unset($input[Constants::MERCHANT_TYPE]);
 
         (new Validator)->validateOrgSpecificInput(
             'sendInvitation', $input, $orgId, $entity);
@@ -46,13 +44,26 @@ class Service extends Base\Service
                 $data);
         }
 
-        $input[Constants::MERCHANT_TYPE]=$merchantType;
+        if (empty($merchantType) === false)
+        {
+            $input[Constants::MERCHANT_TYPE] = $merchantType;
+        }
 
         $invitation = $this->core()->create($admin, $input);
 
         $this->core()->sendInvitationEmail($admin, $invitation);
 
         return $invitation->toArrayPublic();
+    }
+
+    private function getMerchantType($input)
+    {
+        if ((isset($input["is_ds_merchant"]) === true) and ($input["is_ds_merchant"] == 1))
+        {
+            return Constants::DS_ONLY_MERCHANT;
+        }
+
+        return $input[Constants::MERCHANT_TYPE] ?? null;
     }
 
     public function validateInvitation($orgId, &$input)
@@ -73,30 +84,38 @@ class Service extends Base\Service
 
         if ($org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === true)
         {
-            if ((isset($input["is_ds_merchant"]) === true) and ($input["is_ds_merchant"] === '1'))
+            if ((isset($input["is_ds_merchant"]) === true) and ($input["is_ds_merchant"] == 1))
             {
                 $this->trace->info(TraceCode::UNBLOCK_DS_MERCHANT_REGISTRATION, ["input" => $input]);
 
                 unset($input['is_ds_merchant']);
 
-                $input[Constants::MERCHANT_TYPE] = Constants::DS_ONLY_MERCHANT;
+                return;
+            }
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+                null,
+                $input);
+        }
+
+        if (OrgEntity::isOrgRazorpay($orgId) === true)
+        {
+            if ((isset($input[Constants::MERCHANT_TYPE]) === true) and
+                (array_key_exists($input[Constants::MERCHANT_TYPE], Constants::ALLOWED_MERCHANT_TYPE_FEATURE_MAPPING)) === true)
+            {
+                $this->trace->info(TraceCode::UNBLOCK_MERCHANT_REGISTRATION, ["input" => $input]);
+
+                unset($input[Constants::MERCHANT_TYPE]);
 
                 return;
             }
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+                null,
+                $input);
         }
-
-        if ((isset($input[Constants::MERCHANT_TYPE]) === true) and
-            (array_key_exists($input[Constants::MERCHANT_TYPE], Constants::ALLOWED_MERCHANT_TYPE_FEATURE_MAPPING)) === true)
-        {
-            $this->trace->info(TraceCode::UNBLOCK_MERCHANT_REGISTRATION, ["input" => $input]);
-
-            return;
-        }
-
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_ACCESS_DENIED,
-            null,
-            $input);
     }
 
     public function getInvitations(string $orgId)
