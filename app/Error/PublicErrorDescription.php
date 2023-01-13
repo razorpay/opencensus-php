@@ -684,14 +684,14 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_RECEIPT_NOT_UNIQUE                                  = 'Receipt should be unique.';
 
     // Sub Virtual Account
-    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_EXISTS                        = 'Sub Virtual Account already exists.';
-    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_DOES_NOT_EXIST                        = 'Sub Virtual Account does not exist with provided details.';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_EXISTS                        = 'RazorpayX Lite account already exists for the sub merchant.';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_DOES_NOT_EXIST                        = 'RazorpayX Lite account does not exist for the sub merchant with provided details.';
     const BAD_REQUEST_SUB_MERCHANT_NOT_LIVE_ACTION_DENIED                       = 'Fund movement has been put on hold because either the sub-account is not live yet or has been temporarily blocked. Please reach out to our support team for further assistance.';
-    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_ENABLED                       = 'Sub Virtual Account already enabled.';
-    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_DISABLED                      = 'Sub Virtual Account already disabled.';
-    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_TRANSFER_DISABLED                     = 'Transfer is not allowed since Sub Virtual Account is not active. Please contact support for any further assistance.';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_ENABLED                       = 'RazorpayX Lite account is already enabled for the sub merchant.';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_DISABLED                      = 'RazorpayX Lite account is already disabled for the sub merchant.';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_TRANSFER_DISABLED                     = 'Transfer is not allowed since RazorpayX Lite account is not active for the sub merchant. Please contact support for any further assistance.';
     const BAD_REQUEST_MASTER_MERCHANT_NOT_LIVE_ACTION_DENIED                    = 'Fund movement has been put on hold because either the master account is not live yet or has been temporarily blocked. Please reach out to our support team for further assistance.';
-    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED                   = 'Sub Virtual Account Feature is not enabled. Please reach out to our support team for further assistance.';
+    const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED                   = 'RazorpayX Lite account feature is not enabled for the sub merchant. Please reach out to our support team for further assistance.';
     const BAD_REQUEST_BUSINESS_BANKING_NOT_ENABLED_FOR_SUB_MERCHANT             = 'Business Banking is not enabled for sub-account. Please reach out to our support team for further assistance.';
     const BAD_REQUEST_BUSINESS_BANKING_NOT_ENABLED_FOR_MASTER_MERCHANT          = 'Business Banking is not enabled for master account. Please reach out to our support team for further assistance.';
     const BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_TRANSFER_NOT_ENOUGH_BANKING_BALANCE   = 'Fund movement can\'t be performed due to insufficient balance. Please add more funds before proceeding.';
@@ -1215,8 +1215,8 @@ class PublicErrorDescription
     const BAD_REQUEST_CONTACT_WITHOUT_EMAIL                                    = 'Contact does not have email id';
 
     const BAD_REQUEST_BULK_PAYOUTS_PAYOUT_HEADER_MISMATCH                      = 'Payout amount header needs to be of either rupees or paise type';
-    const BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED                                 = 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance';
-    const BAD_REQUEST_VA_TO_VA_PAYOUTS_NOT_ALLOWED                             = 'Payouts between different Razorpay Virtual Account types is not allowed. Please contact support for any further assistance';
+    const BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED                                 = 'Payouts to RazorpayX Lite account is not enabled for your account. Please contact support for any further assistance';
+    const BAD_REQUEST_VA_TO_VA_PAYOUTS_NOT_ALLOWED                             = 'Payouts between different RazorpayX Lite accounts is not allowed. Please contact support for any further assistance';
     const BAD_REQUEST_VA_TO_VA_PAYOUTS_NO_ACTIVE_BENEFICIARY_VA_FOUND          = 'The account associated with provided fund account is either not active or does not exist. please check';
     const BAD_REQUEST_VA_TO_VA_PAYOUT_ON_SAME_ACCOUNT                          = 'Payout to same banking account is blocked';
     const BAD_REQUEST_VA_TO_VA_PAYOUT_ALREADY_PROCESSED                        = 'Payout got processed already';

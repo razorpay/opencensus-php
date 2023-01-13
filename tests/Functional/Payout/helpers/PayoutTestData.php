@@ -16115,7 +16115,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payouts between different Razorpay Virtual Account types is not allowed. Please contact support for any further assistance',
+                    'description' => PublicErrorDescription::BAD_REQUEST_VA_TO_VA_PAYOUTS_NOT_ALLOWED,
                 ],
             ],
             'status_code' => 400,
@@ -16146,7 +16146,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payouts between different Razorpay Virtual Account types is not allowed. Please contact support for any further assistance',
+                    'description' => PublicErrorDescription::BAD_REQUEST_VA_TO_VA_PAYOUTS_NOT_ALLOWED,
                 ],
             ],
             'status_code' => 400,
@@ -16245,7 +16245,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance',
+                    'description' => PublicErrorDescription::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,
                 ],
             ],
             'status_code' => 400,
@@ -16373,7 +16373,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance',
+                    'description' => PublicErrorDescription::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,
                 ],
             ],
             'status_code' => 400,
@@ -16404,7 +16404,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance',
+                    'description' => PublicErrorDescription::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,
                 ],
             ],
             'status_code' => 400,
@@ -16435,7 +16435,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance',
+                    'description' => PublicErrorDescription::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,
                 ],
             ],
             'status_code' => 400,
@@ -16632,7 +16632,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance',
+                    'description' => PublicErrorDescription::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,
                 ],
             ],
             'status_code' => 400,
@@ -16680,7 +16680,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance',
+                    'description' => PublicErrorDescription::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,
                 ],
             ],
             'status_code' => 400,
@@ -16812,7 +16812,7 @@ return [
                         'batch_id' => 'C0zv9I46W4wiOq',
                         'idempotency_key' => 'batch_abc123',
                         'error' => [
-                            'description' => 'Payouts to RazorpayX Virtual Account is not enabled for your account. Please contact support for any further assistance',
+                            'description' => PublicErrorDescription::BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED,
                             'code' => 'BAD_REQUEST_ERROR',
                         ],
                         'http_status_code' => 400
