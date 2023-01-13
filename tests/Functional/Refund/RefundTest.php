@@ -7573,6 +7573,24 @@ class RefundTest extends TestCase
         $this->assertSame('refunded', $payment['status']);
     }
 
+    public function testInternalAuthorizedPaymentRefundOnScroogeForCaptured()
+    {
+        $this->enableRazorXTreatmentForRefundV2();
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+        $payment = $this->getDbEntityById('payment', $payment['id']);
+
+        $input = ['amount' => $payment['amount']];
+
+        // Now handling this before the refund call.
+        $this->expectException('RZP\Exception\InvalidArgumentException');
+
+        $this->expectExceptionMessage('Can only refund authorized payments here but the status is captured');
+
+        $this->refundAuthorizedPayment($payment['id'], $input, true);
+    }
+
     public function testM2PTokenisationFlowForRZPTokens()
     {
         $payment = $this->defaultAuthPayment();
