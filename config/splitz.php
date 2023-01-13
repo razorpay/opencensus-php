@@ -76,6 +76,9 @@ return [
         'SUBMERCHANT_KYC_RESELLER' => env('SUBMERCHANT_KYC_RESELLER', ''),
         'SUBMERCHANT_KYC_RESELLER_RAMP' => env('SUBMERCHANT_KYC_RESELLER_RAMP', ''),
 
+        // partnership for Phantom
+        'PARTNERSHIP_FOR_PHANTOM' => env('PARTNERSHIP_FOR_PHANTOM', ''),
+
         //QR Code campaign
         'ANNOUNCEMENT_QR_CODE_V1_SPLITZ' => env('ANNOUNCEMENT_QR_CODE_V1_SPLITZ', ''),
 

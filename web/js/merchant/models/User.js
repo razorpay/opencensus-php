@@ -1743,6 +1743,11 @@ export default class User {
   get isLeftNavRevampEnabled() {
     return getSplitzExperimentVariant('left_nav_revamp')?.variables?.result === 'on';
   }
+
+  get isPartnershipForPhantomEnabled() {
+    const variant = getSplitzExperimentVariant('partnership_for_phantom');
+    return variant?.name === 'enable';
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

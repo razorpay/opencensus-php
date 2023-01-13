@@ -12,6 +12,7 @@ import ManageWebhook from './ManageWebhook';
 import ViewCredentials from './ViewCredentials';
 
 import { trackSettingsEvents } from 'merchant/views/PartnerDashboard/ga';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 @connect(
   (state) => ({
@@ -55,12 +56,14 @@ export default class SettingsContainer extends Component {
     return (
       <tabbed-container>
         <header>
-          <NavLink exact to="/partners/config">
-            Configuration
-          </NavLink>
           <NavLink exact to="/partners/settings">
             Settings
           </NavLink>
+          <ShowWhen additionalCondition={(user) => user.isPartnershipForPhantomEnabled}>
+            <NavLink exact to="/partners/config">
+              Configuration
+            </NavLink>
+          </ShowWhen>
         </header>
         <content>
           <div className="content-wrapper content-sm partner-settings">

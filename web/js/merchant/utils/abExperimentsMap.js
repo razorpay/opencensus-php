@@ -485,4 +485,10 @@ export default {
     // prod
     'KoBK1DaiY2K5B3',
   ],
+  partnership_for_phantom: [
+    // stage
+    'Kx02jtoxYeQxtk',
+    // prod
+    'KxZesk2B03J9ar',
+  ],
 };

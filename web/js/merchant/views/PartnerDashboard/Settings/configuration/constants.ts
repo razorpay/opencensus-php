@@ -1,0 +1,4 @@
+export const DEFAULT_CONFIG = {
+  BRAND_COLOR: '528FF0',
+  TEXT_COLOR: 'FFFFFF',
+};
