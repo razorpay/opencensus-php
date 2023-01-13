@@ -264,7 +264,7 @@ class Core extends Base\Core
 
        $this->app['workflow']
             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
-            ->handle([], $merchant->getId());
+            ->handle([Entity::MERCHANT_ID => $terminal->getMerchantId()],[Entity::MERCHANT_ID => $merchant->getId()]);
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
@@ -417,7 +417,7 @@ class Core extends Base\Core
 
             $this->app['workflow']
                 ->setEntityAndId($terminal->getEntity(), $terminal->getId())
-                ->handle([], $this->redactSecretsOnWorkflow($input));
+                ->handle(["terminal_edit"=> []], ["terminal_edit" => $this->redactSecretsOnWorkflow($input)]);
 
             $variantFlag = $this->app->razorx->getTreatment($mId, "TERMINAL_EDIT_PROXY", $mode);
 
@@ -782,11 +782,11 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException('banks not supported by gateway');
         }
 
-        $terminal->setEnabledBanks($banksToEnable);
-
         $this->app['workflow']
             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
-            ->handle([], $banksToEnable);
+            ->handle([Entity::ENABLED_BANKS => $terminal->getEnabledBanks()], [Entity::ENABLED_BANKS => $banksToEnable]);
+
+        $terminal->setEnabledBanks($banksToEnable);
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
@@ -840,11 +840,11 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException('wallet not supported by gateway');
         }
 
-        $terminal->setEnabledWallets($walletsToEnable);
-
         $this->app['workflow']
             ->setEntityAndId($terminal->getEntity(), $terminal->getId())
-            ->handle([], $walletsToEnable);
+            ->handle([Entity::ENABLED_WALLETS => $terminal->getEnabledWallets()], [Entity::ENABLED_WALLETS => $walletsToEnable]);
+
+        $terminal->setEnabledWallets($walletsToEnable);
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
