@@ -707,6 +707,11 @@ class Service extends Base\Service
 
         try
         {
+
+            if($merchantPushProvisioning !== null) {
+                $this->merchant = $merchantPushProvisioning;
+            }
+
             if (empty($input['card']['number']) === false) {
                 $input['card']['number'] = trim(str_replace(" ", "", $input['card']['number']));
             }
