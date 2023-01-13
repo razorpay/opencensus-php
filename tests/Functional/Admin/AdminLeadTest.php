@@ -178,6 +178,31 @@ class AdminLeadTest extends TestCase
         return $adminLead;
     }
 
+
+    public function testCreatePartnerAdminLead()
+    {
+        Mail::fake();
+
+        $this->mockOrgCreation(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->startTest();
+
+        Mail::assertQueued(PartnerInvitationMail::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertArrayHasKey('invitation', $data);
+
+            $this->assertArrayHasKey('adminName', $data);
+
+            return true;
+        });
+
+        $adminLead = $this->getLastEntity('admin_lead', true);
+
+        return $adminLead;
+    }
+
     public function testExistingEmailInviteProhibited()
     {
         $this->mockOrgCreation(OrgEntity::RAZORPAY_ORG_ID);

@@ -51,7 +51,7 @@ class Service extends Base\Service
 
         $invitation = $this->core()->create($admin, $input);
 
-        $this->core()->sendInvitationEmail($admin, $invitation);
+        $this->core()->sendInvitationEmail($admin, $invitation, $merchantType);
 
         return $invitation->toArrayPublic();
     }

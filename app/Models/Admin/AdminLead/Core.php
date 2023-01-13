@@ -6,6 +6,7 @@ use Mail;
 
 use RZP\Models\Base;
 use RZP\Models\Admin\Admin;
+use RZP\Mail\Admin\PartnerInvitation as PartnerInvitationMail;
 use RZP\Mail\Admin\MerchantInvitation as MerchantInvitationMail;
 
 class Core extends Base\Core
@@ -31,7 +32,7 @@ class Core extends Base\Core
         return $lead;
     }
 
-    public function sendInvitationEmail(Admin\Entity $admin, Entity $invitation)
+    public function sendInvitationEmail(Admin\Entity $admin, Entity $invitation, string $merchantType)
     {
         $org = $admin->org->toArrayPublic();
         $org['host_name'] = $admin->org->getPrimaryHostName();
@@ -42,7 +43,9 @@ class Core extends Base\Core
         $invitation = $invitation->toArrayPublic();
         $invitation['token'] = $token;
 
-        $merchantInvitationMail = new MerchantInvitationMail($admin, $org, $invitation);
+        $merchantInvitationMailClazz = Constants::MERCHANT_TYPE_INVITATION_MAPPING[$merchantType];
+
+        $merchantInvitationMail = new $merchantInvitationMailClazz($admin, $org, $invitation);
 
         Mail::queue($merchantInvitationMail);
     }

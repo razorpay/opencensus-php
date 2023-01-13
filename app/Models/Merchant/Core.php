@@ -234,7 +234,8 @@ class Core extends Base\Core
 
             if (empty($merchantType) === false)
             {
-                if (array_key_exists($merchantType, AdminLead\Constants::ALLOWED_MERCHANT_TYPE_FEATURE_MAPPING) === true)
+                if ((array_key_exists($merchantType, AdminLead\Constants::ALLOWED_MERCHANT_TYPE_FEATURE_MAPPING) === true) and
+                    empty(AdminLead\Constants::ALLOWED_MERCHANT_TYPE_FEATURE_MAPPING[$merchantType]) === false)
                 {
                     $featureParams = [
                         Feature\Entity::ENTITY_ID   => $merchant['id'],

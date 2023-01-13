@@ -102,6 +102,31 @@ return [
         ],
     ],
 
+    'testCreatePartnerAdminLead' => [
+        'request' => [
+            'url' => '/admin-lead',
+            'method' => 'post',
+            'content' => [
+                'channel_code'  => 'RZP001',
+                'contact_email' => 'haihello@xyz.com',
+                'contact_name'  => 'test partner',
+                "merchant_type"  => "Regular Test Partner"
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'haihello@xyz.com',
+                'form_data' => [
+                    "channel_code"  => "RZP001",
+                    "contact_email" => "haihello@xyz.com",
+                    "contact_name"  => "test partner",
+                    "merchant_type"  => "Regular Test Partner"
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testSelfInviteProhibited' => [
         'request' => [
             'url' => '/admin-lead',

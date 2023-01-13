@@ -172,6 +172,7 @@ class MailTags
 
     // Heimdall Email Tags
     const ADMIN_INVITE_MERCHANT            = 'admin_invite_merchant';
+    const ADMIN_INVITE_PARTNER            = 'admin_invite_partner';
 
     const MERCHANT_INVITATION_MAIL         = 'merchant_invitation_mail';
 
