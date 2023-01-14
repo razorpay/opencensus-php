@@ -437,7 +437,7 @@ class Validator extends Base\Validator
         'upi.ifsc'                      => 'sometimes',
         'terminal'                      => 'required|array',
         'terminal.gateway_merchant_id'  => 'required',
-        'terminal.gateway'              => 'required|string|in:upi_sbi,upi_icici,upi_axis',
+        'terminal.gateway'              => 'required|string|in:upi_sbi,upi_icici,upi_axis,upi_yesbank',
         'meta'                          => 'required|array',
         'meta.art_reason'               => 'sometimes|string',
         'meta.art_request_id'           => 'sometimes',

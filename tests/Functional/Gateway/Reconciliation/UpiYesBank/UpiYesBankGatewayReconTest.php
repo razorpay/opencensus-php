@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiYesBank;
 
 use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Constants\Timezone;
 use RZP\Models\Batch\Status;
 use RZP\Models\Payment\Gateway;
@@ -290,6 +291,217 @@ class UpiYesBankGatewayReconTest extends TestCase
         );
     }
 
+    /**
+     * Tests unexpected payment creation through ART
+     */
+    public function testUnexpectedPaymentCreation()
+    {
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+    }
+
+    /**
+     * Tests the duplicate unexpected payment creation
+     * for recon edge cases invalid paymentId, rrn mismatch ,Multiple RRN.
+     * Amount mismatch case is handled in seperate testcase
+     */
+    public function testUnexpectedPaymentCreateForAmountMismatch()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $paymentCount = 1;
+
+        $payments = $this->makeUpiYesBankPaymentsSince($paymentCount, $createdAt);
+
+        $payment = $this->getDbLastPayment();
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->fixtures->edit('upi', $upiEntity['id'], ['vpa' => 'unexpectedPayment@ybl']);
+
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $content['upi']['merchant_reference'] = $upiEntity['payment_id'];
+
+        $content['upi']['vpa'] = $upiEntity['vpa'];
+
+        //Setting amount to different amount for validating payment creation for amount mismatch
+        $content['payment']['amount'] = 10000;
+        //First occurence of amount mismatch payment request with matching rrn, paymentId, differing in amount
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals($upi['npci_reference_id'], $content['upi']['npci_reference_id']);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+    }
+
+    /**
+     * Test unexpected payment request mandatory validation
+     */
+    public function testUnexpectedPaymentValidationFailure()
+    {
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        // Unsetting the npci_reference_id to mimic validation failure
+        unset($content['upi']['npci_reference_id']);
+        unset($content['terminal']['gateway_merchant_id']);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url' => '/payments/create/upi/unexpected',
+                'method' => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        },Exception\BadRequestValidationFailureException::class);
+    }
+
+    /**
+     * Tests the payment create for duplicate unexpected payment
+     */
+    public function testDuplicateUnexpectedPayment()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $paymentCount = 1;
+
+        $payments = $this->makeUpiYesBankPaymentsSince($paymentCount, $createdAt);
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->fixtures->edit('upi', $upiEntity['id'], ['vpa' => 'unexpectedPayment@ybl']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['gateway' => 'upi_yesbank']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => '123456789012']);
+
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $content['upi']['merchant_reference'] = $upiEntity['payment_id'];
+
+        $content['upi']['vpa'] = $upiEntity['vpa'];
+
+        // Hit payment create again
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/create/upi/unexpected',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
+
+        }, Exception\BadRequestException::class,
+            'Duplicate Unexpected payment with same amount');
+    }
+
+    /**
+     * Tests the payment create for duplicate unexpected payment
+     * for amount mismatch cases
+     */
+    public function testDuplicateUnexpectedPaymentForAmountMismatch()
+    {
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+
+        $upiEntity = $this->getDbLastEntity('upi');
+
+        $this->fixtures->edit('upi', $upiEntity['id'], ['vpa' => 'unexpectedPayment@ybl']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['gateway' => 'upi_yesbank']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => '123456789012']);
+
+        //Setting amount to different amount for validating payment creation for amount mismatch
+        $content['payment']['amount'] = 10000;
+        $content['upi']['vpa'] = 'unexpectedPayment@ybl';
+        //First occurence of amount mismatch payment request with matching rrn, paymentId, differing in amount
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals($upi['npci_reference_id'], $content['upi']['npci_reference_id']);
+
+        // Hitting the payment create again for same amount mismatch request
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/create/upi/unexpected',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
+
+        }, Exception\BadRequestException::class,
+            'Multiple payments with same RRN');
+    }
+
+    /**
+     * Tests the payment create for multiple payments with same RRN
+     */
+    public function testUnexpectedPaymentForDuplicateRRN()
+    {
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals($upi['npci_reference_id'], $content['upi']['npci_reference_id']);
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $paymentCount = 1;
+
+        $payments = $this->makeUpiYesBankPaymentsSince($paymentCount, $createdAt);
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->fixtures->edit('upi', $upiEntity['id'], ['vpa' => 'unexpectedPayment@ybl']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['gateway' => 'upi_yesbank']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => '123456789012']);
+
+        // Hitting the payment create again for same amount mismatch request
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/create/upi/unexpected',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
+
+        }, Exception\BadRequestException::class,
+            'Multiple payments with same RRN');
+    }
+
     protected function createDependentEntitiesForRefund($payment)
     {
         $refundArray = [
@@ -405,4 +617,38 @@ class UpiYesBankGatewayReconTest extends TestCase
 
         return $payment->getId();
     }
+
+    protected function makeUnexpectedPaymentAndGetContent(array $content)
+    {
+        $request = [
+            'url' => '/payments/create/upi/unexpected',
+            'method' => 'POST',
+            'content' => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function buildUnexpectedPaymentRequest()
+    {
+        $this->fixtures->merchant->createAccount('100DemoAccount');
+        $this->fixtures->merchant->enableUpi('100DemoAccount');
+
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        // Unsetting fields which will not be present in UpiIcici MIS
+        unset($content['upi']['account_number']);
+        unset($content['upi']['ifsc']);
+        unset($content['upi']['npci_txn_id']);
+        unset($content['upi']['gateway_data']);
+
+        $content['terminal']['gateway'] = 'upi_yesbank';
+        $content['terminal']['gateway_merchant_id'] = $this->sharedTerminal->getGatewayMerchantId();
+
+        return $content;
+    }
+
+
 }

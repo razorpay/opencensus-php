@@ -17,6 +17,7 @@ use RZP\Gateway\Upi\Mindgate;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
+use RZP\Models\Payment\Entity as PaymentEntity;
 
 class Gateway extends Mindgate\Gateway
 {
@@ -99,7 +100,38 @@ class Gateway extends Mindgate\Gateway
     {
         parent::action($input, Action::VALIDATE_PUSH);
 
+        // It checks if the version is V2,which is request from art
+        if ((empty($input['meta']['version']) === false) and
+            ($input['meta']['version'] === 'api_v2'))
+        {
+            return $this->isDuplicateUnexpectedPaymentV2($input);
+        }
+
         $this->upiValidatePush($input);
+    }
+
+
+    /** Checks if duplicate unexpected payment for the recon through ART
+     * @param $input
+     * @throws Exception\LogicException
+     */
+    protected function isDuplicateUnexpectedPaymentV2($input)
+    {
+        $upiEntity = $this->upiGetRepository()->fetchByNpciReferenceIdAndGateway($input['upi']['npci_reference_id'], $this->gateway);
+
+        if (empty($upiEntity) === false)
+        {
+            if ($upiEntity->getAmount() === (int) ($input['payment']['amount']))
+            {
+                throw new Exception\LogicException(
+                    'Duplicate Unexpected payment with same amount',
+                    null,
+                    [
+                        'callbackData' => $input
+                    ]
+                );
+            }
+        }
     }
 
     /** AuthroizePush creates gateway entity for the payment
@@ -108,7 +140,57 @@ class Gateway extends Mindgate\Gateway
      */
     public function authorizePush($input)
     {
+        list($paymentId , $callbackData) = $input;
+
+        // It checks if the version is V2,which is request from art
+        if ((empty($callbackData['meta']['version']) === false) and
+            ($callbackData['meta']['version'] === 'api_v2'))
+        {
+           return $this->authorizePushV2($input);
+        }
+
         return $this->upiAuthorizePush($input);
+    }
+
+    protected function authorizePushV2($input)
+    {
+        list ($paymentId, $content) = $input;
+
+        // Create attributes for upi entity.
+        $attributes = [
+            Entity::TYPE                => Type::PAY,
+            Entity::RECEIVED            => 1,
+        ];
+
+        $attributes = array_merge($attributes, $content['upi']);
+
+        $payment  = $content['payment'];
+
+        $upi      = $content['upi'];
+
+        $gateway = $this->gateway;
+
+        // Create input structure for upi entity.
+        $input = [
+            'payment'    => [
+                'id'       => $paymentId,
+                'gateway'  => $gateway,
+                'vpa'      => $upi['vpa'],
+                'amount'   => $payment['amount'],
+            ],
+        ];
+
+        // Call to set the input in gateway
+        parent::action($input, Action::AUTHORIZE);
+
+        $gatewayPayment = $this->upiCreateGatewayEntity($input, $attributes);
+
+        return [
+            'acquirer' => [
+                PaymentEntity::VPA           => $gatewayPayment->getVpa(),
+                PaymentEntity::REFERENCE16   => $gatewayPayment->getNpciReferenceId(),
+            ]
+        ];
     }
 
     /**
