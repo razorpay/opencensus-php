@@ -794,6 +794,49 @@ class Gateway extends Mindgate\Gateway
         }
     }
 
+    /**
+     * This function authorize the payment forcefully when verify api is not supported
+     * or not giving correct response.
+     *
+     * @param $input
+     * @return bool
+     */
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'],
+            Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, there's nothing to do here. We just return back.
+        if ((($gatewayPayment[Entity::STATUS_CODE] === Status::SUCCESS) or
+                ($gatewayPayment[Entity::STATUS_CODE] === '00')) and
+            ($gatewayPayment[Entity::RECEIVED] === true))
+        {
+            return true;
+        }
+
+        $npciReferenceId = null;
+
+        if ((empty($input['gateway']['meta']['version']) === false) and
+            ($input['gateway']['meta']['version'] === 'api_v2'))
+        {
+            $npciReferenceId = $input['gateway']['upi']['npci_reference_id'];
+        }
+        else
+        {
+            $npciReferenceId = $input['gateway']['reference_number'];
+        }
+
+        $attributes = [
+            Entity::STATUS_CODE        => Status::SUCCESS,
+            Entity::NPCI_REFERENCE_ID  => $npciReferenceId,
+        ];
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
+    }
 
     protected function parseGatewayResponse(
         $responseBody,

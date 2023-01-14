@@ -615,10 +615,21 @@ class Gateway
         self::OFFLINE_HDFC,
         self::NETBANKING_TMB,
         self::ISG,
+        self::UPI_YESBANK,
     ];
 
     const FORCE_AUTHORIZE_FAILED_SYNC_GATEWAYS = [
         Payment\Gateway::KOTAK_DEBIT_EMI,
+    ];
+
+    /**
+     * Allow force authorization on Gateways
+     * which are onboarded on ART for reconciliation
+     */
+    const ART_FORCE_AUTHORIZE_UPI_GATEWAYS = [
+        self::UPI_SBI,
+        self::UPI_ICICI,
+        self::UPI_YESBANK,
     ];
 
     /**

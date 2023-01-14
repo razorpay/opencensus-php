@@ -819,7 +819,10 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::RECON_UPDATE_RECONCILIATION_DATA_STARTED,
-            $input
+           [
+               'input'   => $input,
+               'gateway' => $payment->getGateway(),
+           ]
         );
 
         try

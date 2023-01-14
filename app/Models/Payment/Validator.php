@@ -455,7 +455,7 @@ class Validator extends Base\Validator
         'upi.merchant_reference'        => 'required',
         'upi.npci_txn_id'               => 'sometimes',
         'upi.vpa'                       => 'required',
-        'upi.gateway'                   => 'required|string|in:upi_sbi,upi_icici,upi_axis',
+        'upi.gateway'                   => 'required|string|in:upi_sbi,upi_icici,upi_axis,upi_yesbank',
         'meta'                          => 'required|array',
         'meta.force_auth_payment'       => 'required|boolean',
         'meta.art_request_id'           => 'required',
