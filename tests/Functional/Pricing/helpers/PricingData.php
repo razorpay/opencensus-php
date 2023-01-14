@@ -4803,4 +4803,300 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testCreateUpiOneTimePlanWithoutAmountRange' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'upiOnetimePlan',
+                'rules'     => [
+                    [
+                        'product'                => 'primary',
+                        'feature'                => 'payment',
+                        'payment_method'         => 'upi',
+                        'percent_rate'           => 100,
+                        'type'                   => 'pricing'
+                    ]
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'      => 'upiOnetimePlan',
+                'entity'    => 'pricing',
+                'count'     => 1,
+                'rules'     => [
+                    [
+                        'plan_name'             => 'upiOnetimePlan',
+                        'payment_method'        => 'upi',
+                        'payment_method_type'   => null,
+                        'payment_method_subtype'=> null,
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 100,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'payment',
+                        'amount_range_active'    => false,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateUpiOneTimePlanWithAmountRange' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'upiOnetimePlan',
+                'rules'     => [
+                    [
+                        'product'                => 'primary',
+                        'feature'                => 'payment',
+                        'payment_method'         => 'upi',
+                        'percent_rate'           => 100,
+                        'type'                   => 'pricing',
+                        'amount_range_active'    => '1',
+                        'amount_range_min'       => 0,
+                        'amount_range_max'       => 50000,
+                    ]
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'      => 'upiOnetimePlan',
+                'entity'    => 'pricing',
+                'count'     => 1,
+                'rules'     => [
+                    [
+                        'plan_name'             => 'upiOnetimePlan',
+                        'payment_method'        => 'upi',
+                        'payment_method_type'   => null,
+                        'payment_method_subtype'=> null,
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 100,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'payment',
+                        'amount_range_active'    => true,
+                        'amount_range_min'       => 0,
+                        'amount_range_max'       => 50000,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateUpiAutopayPlanWithoutAmountRange' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'upiAutopayPlan',
+                'rules'     => [
+                    [
+                        'percent_rate'           => 100,
+                        'product'                => 'primary',
+                        'feature'                => 'payment',
+                        'payment_method'         => 'upi',
+                        'type'                   => 'pricing',
+                        'payment_method_subtype' => 'initial'
+                    ],
+                    [
+                        'percent_rate'           => 200,
+                        'product'                => 'primary',
+                        'feature'                => 'payment',
+                        'payment_method'         => 'upi',
+                        'type'                   => 'pricing',
+                        'payment_method_subtype' => 'auto',
+                        'fixed_rate'             => 200,
+                    ]
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'      => 'upiAutopayPlan',
+                'entity'    => 'pricing',
+                'count'     => 2,
+                'rules'     => [
+                    [
+                        'fixed_rate'            => 200,
+                        'plan_name'             => 'upiAutopayPlan',
+                        'payment_method'        => 'upi',
+                        'payment_method_type'   => null,
+                        'payment_method_subtype'=> 'auto',
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 200,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'payment'
+                    ],
+                    [
+                        'percent_rate'          => 100,
+                        'plan_name'             => 'upiAutopayPlan',
+                        'payment_method'        => 'upi',
+                        'payment_method_type'   => null,
+                        'payment_method_subtype'=> 'initial',
+                        'payment_issuer'        => null,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'payment'
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateUpiAutopayPlanWithAmountRange' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'upiAutopayPlan',
+                'rules'     => [
+                    [
+                        'payment_method_subtype' => 'initial',
+                        'amount_range_max'       => 150000,
+                        'amount_range_min'       => 0,
+                        'product'                => 'primary',
+                        'feature'                => 'payment',
+                        'payment_method'         => 'upi',
+                        'percent_rate'           => 100,
+                        'type'                   => 'pricing',
+                        'amount_range_active'    => '1',
+                    ],
+                    [
+                        'payment_method_subtype' => 'auto',
+                        'amount_range_max'       => 1500000,
+                        'amount_range_min'       => 0,
+                        'product'                => 'primary',
+                        'feature'                => 'payment',
+                        'payment_method'         => 'upi',
+                        'percent_rate'           => 100,
+                        'type'                   => 'pricing',
+                        'amount_range_active'    => '1',
+                    ],
+                    [
+                        'payment_method'         => 'card',
+                        'amount_range_min'       => 0,
+                        'amount_range_max'       => 50000,
+                        'product'                => 'primary',
+                        'feature'                => 'payment',
+                        'percent_rate'           => 100,
+                        'type'                   => 'pricing',
+                        'amount_range_active'    => '1',
+                    ],
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'      => 'upiAutopayPlan',
+                'entity'    => 'pricing',
+                'count'     => 3,
+                'rules'     => [
+                    [
+                        'payment_method_subtype'=> 'auto',
+                        'amount_range_max'       => 1500000,
+                        'amount_range_min'       => 0,
+                        'plan_name'             => 'upiAutopayPlan',
+                        'payment_method'        => 'upi',
+                        'payment_method_type'   => null,
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 100,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'payment',
+                        'amount_range_active'    => true,
+                    ],
+                    [
+                        'payment_method_subtype'=> 'initial',
+                        'amount_range_max'       => 150000,
+                        'amount_range_min'       => 0,
+                        'plan_name'             => 'upiAutopayPlan',
+                        'payment_method'        => 'upi',
+                        'payment_method_type'   => null,
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 100,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'payment',
+                        'amount_range_active'    => true,
+                    ],
+                    [
+                        'payment_method'        => 'card',
+                        'amount_range_min'       => 0,
+                        'amount_range_max'       => 50000,
+                        'plan_name'             => 'upiAutopayPlan',
+                        'payment_method_type'   => null,
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 100,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'payment',
+                        'amount_range_active'    => true,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateUpiAutopayPlanWithInvalidSubtypeRule' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'upiAutopayPlan',
+                'rules'     => [
+                    [
+                        'product'                => 'primary',
+                        'feature'                => 'payment',
+                        'payment_method'         => 'upi',
+                        'percent_rate'           => 100,
+                        'type'                   => 'pricing',
+                        'amount_range_active'    => '1',
+                        'amount_range_min'       => 0,
+                        'amount_range_max'       => 90000,
+                    ],
+                    [
+                        'product'                => 'primary',
+                        'feature'                => 'payment',
+                        'payment_method'         => 'card',
+                        'percent_rate'           => 100,
+                        'type'                   => 'pricing',
+                        'amount_range_active'    => '1',
+                        'amount_range_min'       => 0,
+                        'amount_range_max'       => 50000,
+                    ],
+                    [
+                        'product'                => 'primary',
+                        'feature'                => 'payment',
+                        'payment_method'         => 'upi',
+                        'percent_rate'           => 100,
+                        'type'                   => 'pricing',
+                        'payment_method_subtype' => 'consumer',
+                        'amount_range_active'    => '1',
+                        'amount_range_min'       => 0,
+                        'amount_range_max'       => 20000000,
+                    ],
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Only null (one-time payments) or initial or auto value is allowed for sub type field in UPI.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

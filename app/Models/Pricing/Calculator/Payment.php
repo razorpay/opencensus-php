@@ -108,6 +108,17 @@ class Payment extends Base
 
     protected function getAddOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
     {
+        if (($this->entity->getEntity() === Entity::PAYMENT) and
+            ($this->entity->isUpiRecurring() === true) and
+            (in_array(Pricing\Feature::RECURRING, $features)) and
+            ($this->pricingRules[0]->getPaymentMethodSubType() !== null))
+        {
+            if (($key = array_search(Pricing\Feature::RECURRING, $features)) !== false)
+            {
+                array_splice($features, $key, 1);
+            }
+        }
+
         $method  = $this->entity->getMethod();
         $product = $this->product;
 
@@ -509,6 +520,30 @@ class Payment extends Base
         $filters1 = [
             [Pricing\Entity::RECEIVER_TYPE, $receiverType, true, null],
         ];
+
+        $recurringType = $payment->getRecurringType();
+
+        if($payment->isUpiRecurring())
+        {
+            if($payment->getRecurringType() === PaymentModel\RecurringType::CARD_CHANGE)
+            {
+                $recurringType = PaymentModel\RecurringType::INITIAL;
+            }
+
+            $upiAutopayPricingVariant = $this->app->razorx->getTreatment(
+                $payment->getMerchantId(),
+                RazorxTreatment::UPI_AUTOPAY_PRICING,
+                $this->mode
+            );
+            
+            if($upiAutopayPricingVariant !== "on")
+            {
+                $recurringType = null;
+            }
+        }
+
+        // this is to filter upi recurring (initial/auto) or onetime upi pricing rule
+        $filters1[] = [Pricing\Entity::PAYMENT_METHOD_SUBTYPE, $recurringType, false, null];
 
         $rules = $this->applyFiltersOnRules($rules, $filters1);
 

@@ -719,4 +719,7 @@ final class RazorxTreatment
 
     /** Experiment used check whether mapns to be de-tokenized or not **/
     const DETOKENIZE_MPANS = "detokenize_mpans";
+
+    // Experiment to use new Pricing plan for upi autopay
+    const UPI_AUTOPAY_PRICING = 'upi_autopay_pricing';
 }

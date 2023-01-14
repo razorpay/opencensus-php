@@ -42,7 +42,7 @@ class Validator extends Base\Validator
         Entity::APP_NAME                => 'sometimes|nullable|string',
         Entity::PAYMENT_METHOD          => 'required_unless:feature,refund,optimizer,payment|nullable|string',
         Entity::PAYMENT_METHOD_TYPE     => 'sometimes|nullable',
-        Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,fund_transfer|nullable',
+        Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,upi,fund_transfer|nullable',
         Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
         Entity::PAYMENT_ISSUER          => 'sometimes|nullable|max:255',
         Entity::EMI_DURATION            => 'sometimes_if:payment_method,emi|nullable|integer|in:3,6,9,12,18,24',
@@ -106,6 +106,7 @@ class Validator extends Base\Validator
         'addPlanRuleProcurer',
         'addPlanRulePaymentIssuer',
         'addPlanRuleGateway',
+        'addPlanRuleUpiSubType'
         // Skipped for now as it blocks the creation of 0-pricing rules.
         // 'addPlanRuleBankTransfer',
     ];
@@ -220,6 +221,28 @@ class Validator extends Base\Validator
                     'invalid gateway '. $input[Entity::GATEWAY] .' sent for buy pricing method '. $input[Entity::PAYMENT_METHOD]);
             }
 
+        }
+    }
+
+    protected function validateAddPlanRuleUpiSubType($input)
+    {
+        if ((isset($input[Entity::PAYMENT_METHOD]) === true) and
+            ($input[Entity::PAYMENT_METHOD] === Payment\Method::UPI) and
+            (empty(($input[Entity::PAYMENT_METHOD_SUBTYPE])) === false))
+        {
+            if ((in_array($input[Entity::PAYMENT_METHOD_SUBTYPE], [Payment\RecurringType::INITIAL, Payment\RecurringType::AUTO])) === false)
+            {
+                app('trace')->info(
+                    TraceCode::UPI_RECURRING_PRICING_RULE_ERROR,
+                    ['merchantId' => $this->entity->getMerchantId(),
+                        'step'    => 'Failed during validateAddPlanRuleUpiSubType',
+                        'values'  => $input
+                    ]
+                );
+
+                throw new Exception\BadRequestValidationFailureException(
+                        'Only null (one-time payments) or initial or auto value is allowed for sub type field in UPI.');
+            }
         }
     }
 

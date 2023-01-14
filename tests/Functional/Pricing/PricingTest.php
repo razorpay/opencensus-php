@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Event;
+use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Pricing;
@@ -10,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Transaction;
 use RZP\Error\PublicErrorCode;
 use RZP\Constants\Entity as E;
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Tests\Functional\TestCase;
@@ -3176,5 +3178,35 @@ class PricingTest extends TestCase
         $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
 
         $this->startTest($testData);
+    }
+
+    public function testCreateUpiOneTimePlanWithoutAmountRange()
+    {
+        // assertions and test is run as per the helper file PricingData.php
+        $this->startTest();
+    }
+
+    public function testCreateUpiOneTimePlanWithAmountRange()
+    {
+        // assertions and test is run as per the helper file PricingData.php
+        $this->startTest();
+    }
+
+    public function testCreateUpiAutopayPlanWithoutAmountRange()
+    {
+        // assertions and test is run as per the helper file PricingData.php
+        $this->startTest();
+    }
+
+    public function testCreateUpiAutopayPlanWithAmountRange()
+    {
+        // assertions and test is run as per the helper file PricingData.php
+        $this->startTest();
+    }
+
+    public function testCreateUpiAutopayPlanWithInvalidSubtypeRule()
+    {
+        // assertions and test is run as per the helper file PricingData.php
+        $this->startTest();
     }
 }

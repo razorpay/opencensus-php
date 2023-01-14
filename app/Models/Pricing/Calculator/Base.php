@@ -18,6 +18,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base as BaseModel;
+use RZP\Models\UpiMandate\Metrics as UpiMandateMetrics;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Payment\Processor\Processor;
 
@@ -197,6 +198,22 @@ abstract class Base extends BaseModel\Core
             ($amountCredits <= 0) and
             ($totalFees > $feeCredits))
         {
+            if(($this->entity->getEntity() === Constants\Entity::PAYMENT) and
+               ($this->entity->isUpiRecurring() === true))
+            {
+                $this->trace->count(UpiMandateMetrics::UPI_AUTOPAY_PRICING_FAILED,
+                    ['merchantId' => $this->entity->getMerchantId(),
+                        'step'    => 'Fee greater than amount'
+                    ]);
+
+                $this->trace->info(
+                    TraceCode::UPI_RECURRING_PRICING_RULE_ERROR,
+                    ['merchantId' => $this->entity->getMerchantId(),
+                        'step'    => 'Fee greater than amount'
+                    ]
+                );
+            }
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT,
                 Payment\Entity::AMOUNT,
@@ -310,6 +327,22 @@ abstract class Base extends BaseModel\Core
 
         if (count($rules) === 0)
         {
+            if(($this->entity->getEntity() === Constants\Entity::PAYMENT) and
+               ($payment->isUpiRecurring() === true))
+            {
+                $this->trace->count(UpiMandateMetrics::UPI_AUTOPAY_PRICING_FAILED,
+                    ['merchantId' => $payment->getMerchantId(),
+                        'step'    => 'No rule after amount range active check'
+                    ]);
+
+                $this->trace->info(
+                    TraceCode::UPI_RECURRING_PRICING_RULE_ERROR,
+                    ['merchantId' => $this->entity->getMerchantId(),
+                        'step'    => 'No rule after amount range active check'
+                    ]
+                );
+            }
+
             throw new Exception\LogicException(
                 'Invalid rule count: 0, Merchant Id: ' . $payment->getMerchantId(),
                 ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT,
@@ -323,6 +356,22 @@ abstract class Base extends BaseModel\Core
 
         if ($rule === null)
         {
+            if(($this->entity->getEntity() === Constants\Entity::PAYMENT) and
+               ($payment->isUpiRecurring() === true))
+            {
+                $this->trace->count(UpiMandateMetrics::UPI_AUTOPAY_PRICING_FAILED,
+                    ['merchantId' => $payment->getMerchantId(),
+                        'step'    => 'No rule with this given amount range'
+                        ]);
+
+                $this->trace->info(
+                    TraceCode::UPI_RECURRING_PRICING_RULE_ERROR,
+                    ['merchantId' => $this->entity->getMerchantId(),
+                        'step'    => 'No rule with this given amount range'
+                    ]
+                );
+            }
+
             throw new Exception\LogicException(
                 'Failed to find a valid pricing rule for the payment, Merchant Id: ' . $payment->getMerchantId(),
                 ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
@@ -475,6 +524,22 @@ abstract class Base extends BaseModel\Core
             if (count($rules) === 1)
             {
                 return $rules[0];
+            }
+
+            if(($this->entity->getEntity() === Constants\Entity::PAYMENT) and
+               ($this->entity->isUpiRecurring() === true))
+            {
+                $this->trace->count(UpiMandateMetrics::UPI_AUTOPAY_PRICING_FAILED,
+                    ['merchantId' => $this->entity->getMerchantId(),
+                        'step'    => 'More than 1 rule was found at the end'
+                    ]);
+
+                $this->trace->info(
+                    TraceCode::UPI_RECURRING_PRICING_RULE_ERROR,
+                    ['merchantId' => $this->entity->getMerchantId(),
+                        'step'    => 'More than 1 rule was found at the end'
+                    ]
+                );
             }
 
             // Should not reach this case, ever.
