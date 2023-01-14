@@ -288,6 +288,7 @@ class PayoutTest extends OAuthTestCase
         $this->fixtures->edit('payout', $payout->getId(),[
             PayoutEntity::USER_ID => 'random_user123',
             PayoutEntity::IDEMPOTENCY_KEY => 'random_key',
+            PayoutEntity::PAYOUT_LINK_ID => 'random_plinkid'
         ]);
 
         $this->ba->cronAuth();
@@ -332,6 +333,7 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payout->getPricingRuleId(), $migratedPayout->pricing_rule_id);
         $this->assertEquals($payout->getIdempotencyKey(), $migratedPayout->idempotency_key);
         $this->assertEquals($payout->getRegisteredName(), $migratedPayout->registered_name);
+        $this->assertEquals($payout->getPayoutLinkId(), "poutlk_" . $migratedPayout->payout_link_id);
         $this->assertEquals($payout->getRawAttribute(PayoutEntity::ORIGIN), $migratedPayout->origin);
 
         $migratedPayoutLogs = \DB::connection('live')->select("select * from ps_payout_logs where payout_id = '$id'");

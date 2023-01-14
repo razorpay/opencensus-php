@@ -30,7 +30,7 @@ class Payout
             Entity::NOTES                => $payout->getRawAttribute(Entity::NOTES),
             Entity::ON_HOLD_AT           => $payout->getOnHoldAt(),
             Entity::ORIGIN               => $payout->getRawAttribute(Entity::ORIGIN),
-            Entity::PAYOUT_LINK_ID       => $payout->getPayoutLinkId(),
+            Entity::PAYOUT_LINK_ID       => $payout->getRawAttribute(Entity::PAYOUT_LINK_ID),
             Entity::PRICING_RULE_ID      => $payout->getPricingRuleId(),
             Entity::PURPOSE              => $payout->getPurpose(),
             Entity::PURPOSE_TYPE         => $payout->getPurposeType(),

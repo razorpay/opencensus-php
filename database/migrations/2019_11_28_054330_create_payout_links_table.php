@@ -136,14 +136,6 @@ class CreatePayoutLinksTable extends Migration
                   ->on(Table::BALANCE)
                   ->on_delete('restrict');
         });
-
-        Schema::table(Table::PAYOUT, function($table)
-        {
-            $table->foreign(\RZP\Models\Payout\Entity::PAYOUT_LINK_ID)
-                  ->references(Entity::ID)
-                  ->on(Table::PAYOUT_LINK)
-                  ->on_delete('restrict');
-        });
     }
 
     /**
