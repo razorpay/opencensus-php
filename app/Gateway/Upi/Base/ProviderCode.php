@@ -174,6 +174,7 @@ class ProviderCode
     const EQUITASBANK        = 'equitasbank';
     const GROWW              = 'yesg';
     const OKCREDIT           = 'axb';
+    const SLASH              = 'icici';
     const YESG               = 'yesg';
     const AXB                = 'axb';
     const FAM                = 'fam';
@@ -305,6 +306,7 @@ class ProviderCode
         self::SCBL               => IFSC::SCBL,
         self::SCMOBILE           => IFSC::SCBL,
         self::SIB                => IFSC::SIBL,
+        self::SLASH              => IFSC::ICIC,
         self::SRCB               => 'NPCI',
         self::SYND               => IFSC::SYNB,
         self::SYNDBANK           => IFSC::SYNB,
@@ -409,7 +411,7 @@ class ProviderCode
 
     /**
      * @see https://www.bhimupi.org.in/list-banks-and-apps-live-upi-autopay
-     * @var array Psp Provider supporting AutoPay 
+     * @var array Psp Provider supporting AutoPay
      */
     protected static $validAutoPayPspProvider = [
         ProviderPsp::BHIM,
