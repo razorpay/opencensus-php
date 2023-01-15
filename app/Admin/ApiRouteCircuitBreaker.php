@@ -129,7 +129,16 @@ class ApiRouteCircuitBreaker
             self::PATH          => $this->routePath,
         ]);
 
-        $is_api_circuit_breaker_enabled = $this->app['config']->get('app.is_api_circuit_breaker_enabled') ?: false;
+        $is_api_circuit_breaker_enabled = false;
+
+        $is_api_circuit_breaker_enabled_val = $this->app['config']->get('app.is_api_circuit_breaker_enabled') ?? false;
+
+        if (((is_string($is_api_circuit_breaker_enabled_val) === true) and
+            ($is_api_circuit_breaker_enabled_val === 'true')) or
+            ($is_api_circuit_breaker_enabled_val === true))
+        {
+            $is_api_circuit_breaker_enabled = true;
+        }
 
         if (($breakCircuit === true) and
             ($is_api_circuit_breaker_enabled === true))

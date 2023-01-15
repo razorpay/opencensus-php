@@ -358,6 +358,119 @@ class TestCase extends IlluminateTestCase
         $this->assertEmpty($error);
     }
 
+
+    /*
+ * We receive high 5xx % above threshold and circuit breaks at a point
+ * */
+    public function testApiCircuitBreakerFlowMultipleRoutesAboveThresholdKeyValueInString()
+    {
+        // for route 1
+        $route1 = 'merchant_features_fetch';
+
+        $path1 = 'merchants/me/features';
+
+        $methodName1 = 'get';
+
+        $headers1 = $this->createRequestHeaders($route1, $path1);
+
+        $response1 = $this->createResponseSuccess($headers1);
+
+        // for route 2
+        $route2 = 'user_opt_in_whatsapp';
+
+        $path2 = 'users/whatsapp/opt_in';
+
+        $methodName2 = 'post';
+
+        $headers2 = $this->createRequestHeaders($route2, $path2);
+
+        $response2 = $this->createResponseSuccess($headers2);
+
+        $exception = $this->createResponseFailure();
+
+        $this->app['config']->set('app.is_api_circuit_breaker_enabled', 'true');
+        /*
+         * window = [success1, success2 ,sleep(2), (failure1, failure2) * 19 with sleep(1), success1, sleep(1), success1, sleep(3), success1, sleep(1), success2]
+         * */
+        list($error, $data) = $this->sendMockRequestToApiGuzzleResponse($methodName1, $path1, $response1);
+
+        $this->assertEmpty($error);
+
+        list($error, $data) = $this->sendMockRequestToApiGuzzleResponse($methodName2, $path2, $response2);
+
+        $this->assertEmpty($error);
+
+        $circuitBreakerData = $this->cache->get('api_route_details');
+
+        $this->assertArrayHasKey($headers1['Api-Route-Name'], $circuitBreakerData[$methodName1]);
+
+        $this->assertArrayHasKey($headers2['Api-Route-Name'], $circuitBreakerData[$methodName2]);
+
+        sleep(2);
+
+        // taking divisible by 10 as success request
+        for ($count = 2; $count <= 20; $count++)
+        {
+            if ($count % 10 === 0)
+            {
+                $this->sendMockRequestToApiGuzzleResponse($methodName1, $path1, $response1);
+            }
+            else
+            {
+                $this->sendMockRequestToApiGuzzleException($methodName1, $path1, $exception);
+            }
+
+            //different route with only failure
+            $this->sendMockRequestToApiGuzzleException($methodName2, $path2, $exception);
+
+            sleep(1);
+        }
+
+        try
+        {
+            $this->sendMockRequestToApiGuzzleResponse($methodName1, $path1, $response1);
+        }
+        catch(\Exception $e)
+        {
+            $msg = $e->getMessage();
+            $this->assertSame('Service Unavailable : 503', $msg);
+        }
+
+        try
+        {
+            $this->sendMockRequestToApiGuzzleResponse($methodName2, $path2, $response2);
+        }
+        catch(\Exception $e)
+        {
+            $msg = $e->getMessage();
+            $this->assertSame('Service Unavailable : 503', $msg);
+        }
+
+        sleep(1);
+
+        try
+        {
+            $this->sendMockRequestToApiGuzzleResponse($methodName1, $path1, $response1);
+        }
+        catch(\Exception $e)
+        {
+            $msg = $e->getMessage();
+            $this->assertSame('Service Unavailable : 503', $msg);
+        }
+
+        sleep(3);
+
+        list($error, $data) = $this->sendMockRequestToApiGuzzleResponse($methodName1, $path1, $response1);
+
+        $this->assertEmpty($error);
+
+        sleep(1);
+
+        list($error, $data) = $this->sendMockRequestToApiGuzzleResponse($methodName2, $path2, $response2);
+
+        $this->assertEmpty($error);
+    }
+
     /*
     * We receive high 5xx % above threshold and circuit does not break at a point because of
     * is_api_circuit_breaker_enabled is not enabled in config
