@@ -924,7 +924,7 @@ class Service extends Base\Service
 
     protected function getResponseDataFromCache($payment)
     {
-        if ($payment->getGateway() !== Gateway::PAYSECURE)
+        if (!($payment->getGateway() === Gateway::PAYSECURE or $payment->getMethod() === Gateway::PAYLATER) )
         {
             return;
         }
@@ -968,7 +968,36 @@ class Service extends Base\Service
         {
             return;
         }
+        $this->cachePaymentResponse($payment, $data);
+    }
 
+    public function cachePaylaterResponseIfApplicable($payment, $data)
+    {
+
+        if ($payment->getMethod() !== Gateway::PAYLATER)
+        {
+            return;
+        }
+
+        $route = $this->app['api.route'];
+
+        if ($route->getCurrentRouteName() === "payment_create_private_json")
+        {
+            if ((empty($data['method']) === false and $data['method'] === 'paylater')
+                and (empty($data['type']) === false and $data['type'] === 'respawn'))
+            {
+                $this->cachePaymentResponse($payment, $data);
+            }
+        }
+        else
+        {
+            unset($data['payment_authenticate_url']);
+        }
+
+    }
+
+    protected function cachePaymentResponse($payment, $data)
+    {
         $key = $payment->getPaymentResponseCacheKey();
 
         $payload = Crypt::encrypt($data);

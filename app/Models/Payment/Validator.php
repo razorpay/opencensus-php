@@ -127,7 +127,7 @@ class Validator extends Base\Validator
         'offer_id'                      => 'filled|public_id|size:20',
         'provider'                      => 'required_if:method,cardless_emi,paylater,app|string',
         'ott'                           => 'sometimes_if:method,cardless_emi,paylater|string',
-        'payment_id'                    => 'sometimes_if:method,cardless_emi',
+        'payment_id'                    => 'sometimes_if:method,cardless_emi,paylater',
         'application'                   => 'sometimes|filled|string|in:google_pay,visasafeclick',
         'device'                        => 'sometimes',
         'currency_request_id'           => 'required_with:dcc_currency|string',

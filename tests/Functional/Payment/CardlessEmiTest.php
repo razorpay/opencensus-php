@@ -251,15 +251,15 @@ class CardlessEmiTest extends TestCase
 
         $authorizeRequest = $this->buildAuthPaymentRequest($this->getDefaultCardlessEmiPaymentArray(self::PROVIDER));
 
-        $authorizeRequest['content']['payment_id'] = 'pay_123456789';
+        $authorizeRequest['content']['payment_id'] = $paymentId;
 
-        $authorizeRequest['content']['ott'] = $otpVerifyResponse->original['ott'];
+        $authorizeRequest['content']['ott'] = 'invalid_ott';
 
         $this->ba->publicAuth();
 
         $this->makeRequestAndCatchException(function () use ($authorizeRequest) {
             $this->makeRequestParent($authorizeRequest);
-        }, BadRequestException::class);
+        }, BadRequestValidationFailureException::class);
 
         $paymentEntity = Payment\Entity::findOrFail(Payment\Entity::stripDefaultSign($paymentId));
 

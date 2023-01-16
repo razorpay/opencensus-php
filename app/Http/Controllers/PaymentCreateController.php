@@ -1408,7 +1408,11 @@ class PaymentCreateController extends Controller
             {
                 return $this->generateUpiJson($data);
             }
-
+            elseif (($data['type'] === 'respawn') and
+                ($data['method'] === Payment\Method::PAYLATER))
+            {
+                return $this->generatePaylaterJson($data);
+            }
             elseif ($data['type'] === 'application')
             {
                 return $this->generateApplicationJson($data);
@@ -1416,6 +1420,26 @@ class PaymentCreateController extends Controller
         }
 
         return $data;
+    }
+
+    protected function generatePaylaterJson($data){
+
+
+        $response['razorpay_payment_id'] = $data['payment_id'];
+
+        $next = [
+            [
+                'action' => 'redirect',
+                'url' => $data['payment_authenticate_url']
+            ],
+        ];
+
+        unset($data['payment_authenticate_url']);
+
+        $response['next'] = $next;
+
+        return $response;
+
     }
 
     protected function generateUpiJson($data)

@@ -2022,7 +2022,12 @@ class Processor
 
             case Payment\Method::PAYLATER:
                 $coproto = $this->preProcessPaymentInputsForPayLater($input, $payment);
-                break;
+                if ($coproto != null)
+                {
+                    (new Payment\Service())->cachePaylaterResponseIfApplicable($payment, $coproto);
+                }
+
+        break;
         }
 
         return $coproto;
@@ -5236,12 +5241,18 @@ class Processor
     {
         $this->tracePaymentNewRequest($input);
 
-        if (($input['method'] === Payment\Method::CARDLESS_EMI) === true)
+        if (($input['method'] === Payment\Method::CARDLESS_EMI) === true or ($input['method'] === Payment\Method::PAYLATER) === true)
         {
             if ((isset($input['ott']) === true) and
                 (isset($input['payment_id']) === true))
             {
                 $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($input['payment_id']));
+
+                // this is to ensure request tempering
+                unset($input['affordability_skip_order_attempt']);
+                // This is to ensure we do not increase order attempt in 2nd callback for affordability instruments
+                $input['affordability_skip_order_attempt'] = true;
+
             }
         }
 
@@ -5624,6 +5635,16 @@ class Processor
                         'method' => $payment->getMethod()
                     ]);
             }
+
+            unset($input['affordability_skip_order_attempt']);
+
+            return;
+        }
+
+        // for cardless emi and paylater, /create route is called twice in same payment flow hence we need not increment order attempt in 2nd call
+        if (isset($input['affordability_skip_order_attempt']) and $input['affordability_skip_order_attempt'] === true)
+        {
+            unset($input['affordability_skip_order_attempt']);
 
             return;
         }
@@ -7476,6 +7497,8 @@ class Processor
         {
             unset($input['payment']);
 
+            $input['payment_id'] = $payment->getPublicId();
+
             (new Customer\Raven)->sendOtp($input, $merchant);
 
             $coproto =  $coproto = [
@@ -7484,7 +7507,8 @@ class Processor
                 'request' => [
                     'url'     => $this->route->getUrlWithPublicAuth('otp_verify', [
                         'method'   => 'paylater',
-                        'provider' => $input['provider']
+                        'provider' => $input['provider'],
+                        'payment_id' => $input['payment_id']
                     ]),
                     'method'  => 'POST',
                     'content' => $input,
@@ -7497,7 +7521,8 @@ class Processor
                 'resend_url' => $this->route->getUrlWithPublicAuth('otp_post'),
                 'key_id'     => $this->ba->getPublicKey(),
                 'version'    => '1',
-                'payment_create_url' => $this->route->getUrl('payment_redirect_to_authenticate_post',['id' => $payment->id]),
+                'payment_create_url' => $this->route->getUrlWithPublicAuth('payment_create'),
+                'payment_authenticate_url' => $this->route->getUrl('payment_redirect_to_authenticate_get',['id' => $payment->id]),
             ];
 
             return $coproto;
