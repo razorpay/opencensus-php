@@ -274,6 +274,8 @@ return array(
 
     'razorpay_website_url'                => env('PL_DEMO_RAZORPAY_WEBSITE_URL'),
 
+    'razorpay_support_page_url'           => env('RAZORPAY_SUPPORT_PAGE_WEBSITE_URL'),
+
     'cdn_v1_url'                          => env('CDN_V1_URL'),
 
     'proxy_enabled'                       => env('PROXY_ENABLED'),

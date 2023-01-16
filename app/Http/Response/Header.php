@@ -15,6 +15,8 @@ class Header
     const WWW_AUTHENTICATE              = 'WWW-Authenticate';
     const X_RAZORPAY_SIGNATURE          = 'X-Razorpay-Signature';
     const ACCESS_CONTROL_ALLOW_ORIGIN   = 'Access-Control-Allow-Origin';
+    const ACCESS_CONTROL_ALLOW_HEADER   = 'Access-Control-Allow-Headers';
+    const ACCESS_CONTROL_ALLOW_CREDENTIALS = 'Access-Control-Allow-Credentials';
     // Uses obscure abbreviation because it is temporarily returned to public requests .
     const X_PASSPORT_ATTRS_MISMATCH     = 'X-PAM';
     // User for internal use. This will be consumed by edge layer

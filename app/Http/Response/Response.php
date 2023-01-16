@@ -333,6 +333,10 @@ class Response
 
         $this->setAccessControlAllowOriginStarOnSpecificRoutes($route, $response);
 
+        $this->setAccessControlAllowCredentialsTrueOnSpecificRoutes($route, $response);
+
+        $this->setAccessControlAllowHeadersStarOnSpecificRoutes($route, $response);
+
         if ($this->isResponseJsonp($route))
         {
             $data['http_status_code'] = $status;
@@ -563,6 +567,20 @@ class Response
             return;
         }
 
+        $supportPageRoutes = [
+            'otp_post', // Support page is using otp_post route for sending otp
+            'app_fetch_payments',
+            'support_page_otp_verify',
+        ];
+
+        // Enabling this route to support send otp on support page https://razorpay.com/support/
+        if (in_array($route, $supportPageRoutes, true) === true) {
+            $response->headers->set(
+                Header::ACCESS_CONTROL_ALLOW_ORIGIN,
+                $this->app['config']->get('app.razorpay_support_page_url')
+            );
+        }
+
         // temporarily adding these routes due to issue with cardless emi s2s flow
         $tempRoutes = [
             'otp_verify',
@@ -577,6 +595,32 @@ class Response
             ($merchant->isfeatureEnabled(Feature\Constants::ALLOW_S2S_APPS))))
         {
             $response->headers->set(Header::ACCESS_CONTROL_ALLOW_ORIGIN, '*');
+        }
+    }
+
+    protected function setAccessControlAllowCredentialsTrueOnSpecificRoutes($route, $response): void
+    {
+        $routes = [
+            'app_fetch_payments',
+            'support_page_otp_verify',
+        ];
+
+        if (in_array($route, $routes, true) === true)
+        {
+            $response->headers->set(Header::ACCESS_CONTROL_ALLOW_CREDENTIALS, 'true');
+        }
+    }
+
+    protected function setAccessControlAllowHeadersStarOnSpecificRoutes($route, $response): void
+    {
+        $routes = [
+            'app_fetch_payments',
+            'support_page_otp_verify',
+        ];
+
+        if (in_array($route, $routes, true) === true)
+        {
+            $response->headers->set(Header::ACCESS_CONTROL_ALLOW_HEADER, '*');
         }
     }
 
