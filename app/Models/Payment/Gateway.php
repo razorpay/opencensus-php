@@ -2345,6 +2345,8 @@ class Gateway
         IFSC::BKDN,
         IFSC::VIJB,
         IFSC::PUNB,
+        IFSC::STCB,
+
     ];
 
     public static $directDebitCardNetworks = [
