@@ -14,6 +14,12 @@ class PostAuthenticateTest extends TestCase
 {
     use HasRequestCases;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        restore_error_handler();
+    }
+
     /**
      * @param Passport\Passport|null $passport
      * @param boolean|null $expectedAuthenticated
@@ -264,6 +270,8 @@ class PostAuthenticateTest extends TestCase
      * @param                   $publicKey
      * @param                   $apiAuthenticated
      * @param                   $mode
+     * @param                   $isAuthenticatedPathRoute
+     * @param string            $routeName
      */
     public function testAuthenticationMismatches(Passport\Passport $passport,
                                                                    $consumerId,
@@ -271,7 +279,9 @@ class PostAuthenticateTest extends TestCase
                                                                    $publicKey,
                                                                    $mode,
                                                                    $edgeAuthenticated,
-                                                                   $apiAuthenticated)
+                                                                   $apiAuthenticated,
+                                                                   $isAuthenticatedPathRoute,
+                                                 string            $routeName = 'invoice_fetch_multiple')
     {
 
         $edgeAuthenticatedBool = $edgeAuthenticated === 'true';
@@ -282,15 +292,19 @@ class PostAuthenticateTest extends TestCase
             $passport->consumer->id = $consumerId;
         }
 
-        if ($publicKey !== NULL){
+        if ($publicKey !== NULL) {
             $passport->credential = new Passport\CredentialClaims;
             $passport->credential->username = $publicKey;
         }
 
-        $passport->authenticated=$edgeAuthenticatedBool;
-        $passport->identified=true;
+        $passport->authenticated = $edgeAuthenticatedBool;
+        $passport->identified = true;
 
-        $request = $this->mockPrivateRouteWithLiveMode();
+        if ($isAuthenticatedPathRoute) {
+            $request = $this->mockPrivateRouteWithLiveMode($routeName);
+        } else {
+            $request = $this->mockPublicRouteWithKeyInHeaders();
+        }
 
         $request->headers->set('X-AUTHENTICATION-RESULT', $edgeAuthenticated);
 
@@ -302,24 +316,25 @@ class PostAuthenticateTest extends TestCase
 
         $svc = Mockery::mock('Razorpay\Trace\Logger');
 
-
-        $count = $edgeAuthenticatedBool !== $apiAuthenticated ? 1:0;
-
-        $svc->shouldReceive('warning')->times($count);
-
-        $svc->shouldReceive('histogram')->times(1);
-
         $this->app->instance("trace", $svc);
 
         $ba = $this->mockBasicAuth();
 
-        $ba->expects($this->any())->method('getMode')->willReturn($mode);
+        $svc->shouldReceive('histogram')->times(1);
+        //there shouldn't be any exceptions
+        $svc->shouldReceive('error')->times(0);
 
-        if ($edgeAuthenticatedBool !== $apiAuthenticated) {
-            $ba->expects($this->atLeastOnce())->method('getMerchantId')->willReturn($consumerId);
-            $ba->expects($this->atLeastOnce())->method('getPublicKey')->willReturn($publicKey);
+        if ($isAuthenticatedPathRoute && $edgeAuthenticated !== NULL) {
+            $count = $edgeAuthenticatedBool !== $apiAuthenticated ? 1 : 0;
+            $svc->shouldReceive('warning')->times($count);
+
+            $ba->expects($this->any())->method('getMode')->willReturn($mode);
+
+            if ($edgeAuthenticatedBool !== $apiAuthenticated) {
+                $ba->expects($this->atLeastOnce())->method('getMerchantId')->willReturn($consumerId);
+                $ba->expects($this->atLeastOnce())->method('getPublicKey')->willReturn($publicKey);
+            }
         }
-
 
         (new PostAuthenticate)->handle($apiAuthenticated, $request);
         $this->assertSame($passport->mode, "live");
@@ -338,6 +353,7 @@ class PostAuthenticateTest extends TestCase
      * @param                   $apiAuthenticated
      * @param                   $impersonationType
      * @param                   $subMerchant
+     * @param string $routeName
      */
     public function testImpersonationMismatchesWithImpersonation(Passport\Passport $passport,
                                                                                    $consumerId, $consumerType,
@@ -347,7 +363,7 @@ class PostAuthenticateTest extends TestCase
     {
 
         $edgeImpersonatedBool = $edgeImpersonated === 'true';
-        $passport->mode=$mode;
+        $passport->mode = $mode;
         $passport->consumer->id = $consumerId;
         $passport->consumer->type = $consumerType;
         $passport->credential->username = $publicKey;
@@ -369,16 +385,16 @@ class PostAuthenticateTest extends TestCase
 
         $svc = Mockery::mock('Razorpay\Trace\Logger');
 
-
-        $count = $edgeImpersonatedBool !== $apiAuthenticated ? 1:0;
-
-        $svc->shouldReceive('warning')->times($count);
-
         $svc->shouldReceive('histogram')->times(1);
 
-        $this->app->instance("trace", $svc);
+        $svc->shouldReceive('error')->times(0);
 
         $ba = $this->mockBasicAuth();
+
+
+        $count = $edgeImpersonatedBool !== $apiAuthenticated ? 1 : 0;
+
+        $svc->shouldReceive('warning')->times($count);
 
         $ba->expects($this->any())->method('getMode')->willReturn($mode);
 
@@ -387,15 +403,17 @@ class PostAuthenticateTest extends TestCase
             $ba->expects($this->atLeastOnce())->method('getPublicKey')->willReturn($publicKey);
             $ba->expects($this->any())->method('getPassport')->willReturn([
                 'impersonation' => [
-                    'type'      => $impersonationType,
-                    'consumer'  => [
-                        'type'  => $consumerType,
-                        'id'    => $subMerchant
+                    'type' => $impersonationType,
+                    'consumer' => [
+                        'type' => $consumerType,
+                        'id' => $subMerchant
                     ]
                 ]
             ]);
         }
 
+
+        $this->app->instance("trace", $svc);
 
         (new PostAuthenticate)->handle($apiAuthenticated, $request);
         $this->assertSame($passport->mode, "live");
@@ -423,7 +441,7 @@ class PostAuthenticateTest extends TestCase
     {
 
         $edgeImpersonatedBool = $edgeImpersonated === 'true';
-        $passport->mode=$mode;
+        $passport->mode = $mode;
         $passport->consumer->id = $consumerId;
         $passport->consumer->type = $consumerType;
         $passport->credential->username = $publicKey;
@@ -446,11 +464,13 @@ class PostAuthenticateTest extends TestCase
         $svc = Mockery::mock('Razorpay\Trace\Logger');
 
 
-        $count = $edgeImpersonatedBool !== $apiAuthenticated ? 1:0;
+        $count = $edgeImpersonatedBool !== $apiAuthenticated ? 1 : 0;
 
         $svc->shouldReceive('warning')->times($count);
 
         $svc->shouldReceive('histogram')->times(1);
+
+        $svc->shouldReceive('error')->times(0);
 
         $this->app->instance("trace", $svc);
 
@@ -480,10 +500,14 @@ class PostAuthenticateTest extends TestCase
         $passport->impersonation->consumer = new Passport\ConsumerClaims;
         return [
             // Case 1 - Successful case.
-            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey","live", "true", false, "partner", "account_id"],
-            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey","live", "false", true, "partner", "account_id"],
-            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey","live", "true", true, "partner", "account_id"],
-            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey","live", "false", false, "partner", "account_id"]
+            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey", "live", "true", false, "partner", "account_id"],
+            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey", "live", "false", true, "partner", "account_id"],
+            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey", "live", "true", true, "partner", "account_id"],
+            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey", "live", "false", false, "partner", "account_id"],
+            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey", "live", "true", false, "partner", "account_id"],
+            [$passport, "merchant_id", "merchant", "rzp_live_partner_TheLiveAuthKey", "live", NULL, false, "partner", "account_id"],
+            [$passport, NULL, NULL, "rzp_live_partner_TheLiveAuthKey", "live", NULL, false, "partner", "account_id"],
+            [$passport, NULL, NULL, NULL, "live", NULL, false, "partner", "account_id"]
         ];
     }
 
@@ -493,12 +517,14 @@ class PostAuthenticateTest extends TestCase
         $passport->identified = true;
         return [
             // Case 1 - Successful case.
-            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "true", false],
-            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "false", true],
-            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "true", true],
-            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey","live", "false", false],
-            [$passport, NULL, NULL, "rzp_live_TheLiveAuthKey", "live", "true", false],
-            [$passport, NULL, NULL, NULL, "live", "true", false],
+            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey", "live", "true", false, true],
+            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey", "live", "false", true, true],
+            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey", "live", "true", true, true, "payouts_summary"],
+            [$passport, "merchant_id", "merchant", "rzp_live_TheLiveAuthKey", "live", "false", false, true, "payouts_summary"],
+            [$passport, NULL, NULL, "rzp_live_TheLiveAuthKey", "live", "true", false, true],
+            [$passport, NULL, NULL, NULL, "live", "true", false, true],
+            [$passport, NULL, NULL, NULL, "live", "true", false, false],
+            [$passport, NULL, NULL, NULL, "live", NULL, false, false],
         ];
     }
 }

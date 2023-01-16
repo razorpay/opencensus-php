@@ -11,6 +11,7 @@ use Razorpay\Edge\Passport;
 use RZP\Trace\TraceCode;
 use RZP\Http\RequestContextV2;
 use RZP\Http\BasicAuth;
+use Illuminate\Routing\Route as IlluminateRoute;
 
 /**
  * Class PostAuthenticate
@@ -93,6 +94,23 @@ final class PostAuthenticate
         $currentRoute = app('router')->currentRouteName();
 
         return (in_array($currentRoute, Route::$publicCallback, true) === true);
+    }
+
+    /**
+     * Checks if current route is a private route or oauth specific route
+     *
+     * @return bool true if the current route is a private route or oauth specific route
+     */
+    private function isAuthenticatedPathRoute(IlluminateRoute $route) : bool
+    {
+            $currentRoute = $route->getName();
+
+            if ( $currentRoute == NULL ){
+                return  false;
+            }
+
+            return in_array($currentRoute, Route::OAUTH_SPECIFIC_ROUTES, true) or in_array($currentRoute, Route::$private, true);
+
     }
 
 
@@ -371,6 +389,11 @@ final class PostAuthenticate
     private function reportAuthenticationMismatches(bool $authenticated, Request $request)
     {
 
+        //for now only log this metrics for private routes.
+        if ( !$this->isAuthenticatedPathRoute($request->route()) ){
+            return;
+        }
+
         //for now edge only sends this header in case of private auth
         $edgeAuthNResultStr = $request->headers->get(Constant::AUTHN_RESULT_HEADER);
         // no headers from edge so skip
@@ -415,6 +438,7 @@ final class PostAuthenticate
 
         //for now edge only sends this header in case of valid partner auth
         $edgeImpersonationResultStr = $request->headers->get(Constant::IMPERSONATION_RESULT_HEADER);
+
         // no headers from edge so skip
         if ( $edgeImpersonationResultStr === NULL ) {
             return;
@@ -427,10 +451,12 @@ final class PostAuthenticate
             return;
         }
 
+        $apiImpersonation = $this->ba->getPassportImpersonationClaims();
+
         $dimensions                            = $this->ba->getRequestMetricDimensions();
         $dimensions['is_api_authenticated']    = $authenticated;
         $dimensions['is_edge_authenticated']   = $edgeImpersonationResult;
-        $dimensions['api_impersonation']       = $this->ba->getPassport() !== null && isset($this->ba->getPassport()['impersonation']) ? $this->ba->getPassport()['impersonation'] : null;
+        $dimensions['api_impersonation']       = $apiImpersonation;
         //skipping metrics as of now because api counter metrics is not working
         // For logs, add merchant_id & key_id as well.
         // Not adding these for prom metrics since that'll increase the cardinality of the metric unnecessarily.

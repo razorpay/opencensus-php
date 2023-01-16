@@ -3204,6 +3204,15 @@ class BasicAuth
     }
 
     /**
+     * Returns impersonation claims registered on passport.
+     * @return array | null
+     */
+    public function getPassportImpersonationClaims() : array | null
+    {
+        return $this->getPassport() !== null && isset($this->getPassport()['impersonation']) ? $this->getPassport()['impersonation'] : null;
+    }
+
+    /**
      * Sets passport's roles.
      * @param array $roles
      */
