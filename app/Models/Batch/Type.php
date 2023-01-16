@@ -110,6 +110,8 @@ class Type
 
     const PARTNER_SUBMERCHANT_INVITE = 'partner_submerchant_invite';
 
+    const PARTNER_SUBMERCHANT_INVITE_CAPITAL = 'partner_submerchant_invite_capital';
+
     const PARTNER_REFERRAL_FETCH = 'partner_referral_fetch';
 
     const CONTACT               = 'contact';
@@ -585,6 +587,7 @@ class Type
         self::ADJUSTMENT,
         self::CAPTURE_SETTING,
         self::PARTNER_SUBMERCHANT_INVITE,
+        self::PARTNER_SUBMERCHANT_INVITE_CAPITAL,
         self::SUBMERCHANT_LINK,
         self::SUBMERCHANT_DELINK,
         self::SUBMERCHANT_PARTNER_CONFIG_UPSERT,

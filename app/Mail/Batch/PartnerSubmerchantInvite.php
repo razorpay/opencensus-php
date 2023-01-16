@@ -2,8 +2,6 @@
 
 namespace RZP\Mail\Batch;
 
-use Carbon\Carbon;
-
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 

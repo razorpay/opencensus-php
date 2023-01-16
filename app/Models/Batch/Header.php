@@ -739,13 +739,22 @@ class Header
     const EXPIRES_IN                   = 'expires_in';
 
     // Partner submerchant headers
-    const PARTNER_TYPE         = 'partner_type';
-    const SUBMERCHANT_ID       = 'submerchant_id';
-    const PARTNER_ID           = 'partner_id';
-    const PARTNER_MERCHANT_ID  = 'partner_merchant_id';
-    const ACCOUNT_NAME         = 'account_name';
-    const IMPLICIT_PLAN_ID     = 'implicit_plan_id';
-    const SUBMERCHANT_TYPE     = 'submerchant_type';
+    const PARTNER_TYPE              = 'partner_type';
+    const SUBMERCHANT_ID            = 'submerchant_id';
+    const PARTNER_ID                = 'partner_id';
+    const PARTNER_MERCHANT_ID       = 'partner_merchant_id';
+    const ACCOUNT_NAME              = 'account_name';
+    const IMPLICIT_PLAN_ID          = 'implicit_plan_id';
+    const SUBMERCHANT_TYPE          = 'submerchant_type';
+    const ANNUAL_TURNOVER_MIN       = 'annual_turnover_min';
+    const ANNUAL_TURNOVER_MAX       = 'annual_turnover_max';
+    const BUSINESS_VINTAGE          = 'business_vintage';
+    const COMPANY_ADDRESS_LINE_1    = 'company_address_line_1';
+    const COMPANY_ADDRESS_LINE_2    = 'company_address_line_2';
+    const COMPANY_ADDRESS_CITY      = 'company_address_city';
+    const COMPANY_ADDRESS_STATE     = 'company_address_state';
+    const COMPANY_ADDRESS_COUNTRY   = 'company_address_country';
+    const COMPANY_ADDRESS_PINCODE   = 'company_address_pincode';
 
     // Entity Mapping headers
     const ENTITY_FROM_ID       = 'entity_from_id';
@@ -3340,6 +3349,37 @@ class Header
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
+        ],
+
+        Type::PARTNER_SUBMERCHANT_INVITE_CAPITAL => [
+            self::INPUT => [
+                self::BUSINESS_NAME,
+                self::ACCOUNT_NAME,
+                self::CONTACT_MOBILE,
+                self::EMAIL,
+                self::ANNUAL_TURNOVER_MIN,
+                self::ANNUAL_TURNOVER_MAX,
+                self::COMPANY_ADDRESS_LINE_1,
+                self::COMPANY_ADDRESS_LINE_2,
+                self::COMPANY_ADDRESS_CITY,
+                self::COMPANY_ADDRESS_STATE,
+                self::COMPANY_ADDRESS_COUNTRY,
+                self::COMPANY_ADDRESS_PINCODE,
+                self::BUSINESS_TYPE,
+                self::BUSINESS_VINTAGE,
+                self::GSTIN,
+                self::PROMOTER_PAN
+            ],
+
+            self::OUTPUT => [
+                self::ACCOUNT_ID,
+                self::ACCOUNT_NAME,
+                self::CONTACT_MOBILE,
+                self::EMAIL,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
         ],
 
         Type::PARTNER_REFERRAL_FETCH => [
