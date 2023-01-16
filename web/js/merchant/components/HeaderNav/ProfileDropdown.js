@@ -321,7 +321,9 @@ export default class ProfileDropdown extends Component {
                 )}
                 <ShowWhen
                   additionalCondition={(userData) =>
-                    !!showGSTModal && userData.isAllowedView('profile_gst')
+                    !!showGSTModal &&
+                    userData.isAllowedView('profile_gst') &&
+                    !userData.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Gst)
                   }
                 >
                   <div className="media media-action" onClick={showGSTModal}>
@@ -330,7 +332,8 @@ export default class ProfileDropdown extends Component {
                 </ShowWhen>
                 <ShowWhen
                   additionalCondition={(userData) =>
-                    userData.isOrgAllowedFunctionality('external_links')
+                    userData.isOrgAllowedFunctionality('external_links') &&
+                    !userData.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
                   }
                 >
                   <div className="media media-action">
