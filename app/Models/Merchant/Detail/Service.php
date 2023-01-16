@@ -390,6 +390,16 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
+        // temporary check to prevent merchants from editing DBA for compliance
+        if ((isset($input[Entity::BUSINESS_DBA]) === true) and
+            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === true) and
+            ($merchant->getBillingLabel() != ""))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "DBA name cannot be changed"
+            );
+        }
+
         Entity::modifyConvertEmptyStringsToNull($input);
 
         if ($activationFormMilestone === DEConstants::L1_SUBMISSION)
@@ -1190,6 +1200,30 @@ class Service extends Base\Service
         }
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        // temporary check to prevent merchants from editing business name for compliance
+        if ((isset($merchant->merchantDetail) === true) and
+            (isset($input[Entity::BUSINESS_NAME]) === true) and
+            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === true) and
+            ($merchant->merchantDetail->getBusinessName() != "") and
+            ($merchant->merchantDetail->getBusinessName() != $input[Entity::BUSINESS_NAME]))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Business name cannot be changed"
+            );
+        }
+
+        // temporary check to prevent merchants from editing DBA for compliance
+        if ((isset($merchant->merchantDetail) === true) and
+            (isset($input[Entity::BUSINESS_DBA]) === true) and
+            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === true) and
+            ($merchant->merchantDetail->getBusinessDba() != "") and
+            ($merchant->merchantDetail->getBusinessDba() != $input[Entity::BUSINESS_DBA]))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Busisness DBA cannot be changed"
+            );
+        }
 
         $merchantDetailCore = $this->core;
 

@@ -16,6 +16,7 @@ use RZP\Http\Request\Requests;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\EsDao;
 use RZP\Constants\Timezone;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Core;
 use RZP\Models\User\Role;
 use RZP\Services\DiagClient;
@@ -1381,6 +1382,29 @@ We look forward to transacting with you!
     public function testCommentMerchant()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/update";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testPreventEditingBuisnessNameInMIQ()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'business_name' =>'test 1'
+        ]);
+
+        $merchantDetail[Entity::BUSINESS_NAME] = "test business";
+
+        $this->fixtures->org->addFeatures([FeatureConstants::ORG_PROGRAM_DS_CHECK],"100000razorpay");
 
         $merchantId = $merchantDetail['merchant_id'];
 

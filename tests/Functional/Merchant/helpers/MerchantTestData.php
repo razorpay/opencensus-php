@@ -1498,6 +1498,29 @@ return [
         ]
     ],
 
+    'testPreventEditMerchantName' => [
+        'request'  => [
+            'content' => [
+                'name' => 'test 2',
+            ],
+            'url'     => '/merchants/10000000000000',
+            'method'  => 'put',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Name cannot be changed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testEditMerchantInvalidWhitelistedIpsTest' => [
         'request'  => [
             'content' => [

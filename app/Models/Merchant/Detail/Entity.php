@@ -1281,6 +1281,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this->getAttribute(self::BUSINESS_DOE);
     }
 
+    public function getBusinessDba()
+    {
+        return $this->getAttribute(self::BUSINESS_DBA);
+    }
+
     public function getTransactionVolume()
     {
         return $this->getAttribute(self::TRANSACTION_VOLUME);

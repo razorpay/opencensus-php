@@ -1289,6 +1289,28 @@ return [
             ],
         ],
     ],
+
+    'testPreventEditingBuisnessNameInMIQ' => [
+        'request' => [
+            'content' => [
+                'business_name' => 'test 2',
+            ],
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Business name cannot be changed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
     'testMerchantUpdateBusinessDetails' => [
         'request'  => [
             'content' => [

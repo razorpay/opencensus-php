@@ -11953,6 +11953,29 @@ IFSC Code  ICIC0001206
         $this->assertEquals(['abc.com'], $merchant->getWhitelistedDomains());
     }
 
+    public function testPreventEditMerchantName()
+    {
+        $merchant = $this->fixtures->edit('merchant', '10000000000000', [
+            'name'               => 'test 1',
+            'pricing_plan_id'     => '1In3Yh5Mluj605',
+            'international'       => false,
+            'website'             => 'http://example.com',
+            'whitelisted_domains' => ['example.com']
+        ]);
+
+        $this->fixtures->org->addFeatures(['program_ds_check'],'100000razorpay');
+
+        $this->fixtures->pricing->createPromotionalPlan();
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'      => '10000000000000',
+            'business_website' => 'http://example.com']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testGetCheckoutRouteWithTokenForDCC()
     {
         $this->ba->publicAuth();
