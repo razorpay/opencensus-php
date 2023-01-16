@@ -143,6 +143,8 @@ class Processor extends Base\Core
                         'year' => $this->year,
                         'balance_id' => $balanceId,
                     ]);
+
+                $this->trace->count(Metric::MERCHANT_INVOICE_ENTITY_CREATION_FAILED);
              }
         }
 
@@ -199,6 +201,8 @@ class Processor extends Base\Core
                                 'balance_id'    => $balanceId,
                                 'details'       => $details
                             ]);
+
+                        $this->trace->count(Metric::FEE_CALCULATION_FOR_BANKING_BALANCE_FAILED);
                     }
                 }
 
@@ -265,6 +269,8 @@ class Processor extends Base\Core
                                 'year'        => $this->year,
                                 'month'       => $this->month,
                             ]);
+
+                        $this->trace->count(Metric::EINVOICE_CREATION_FAILED_FOR_X);
                     }
                     break;
                 }
