@@ -388,7 +388,7 @@ class Core extends Base\Core
 
             $this->validateBuyPricing($input);
 
-            $oldTerminal = $terminal;
+            $oldTerminal = $terminal->replicate();
 
             $terminal->edit($input);
 
@@ -415,9 +415,11 @@ class Core extends Base\Core
 
             $this->validateDsTerminalEdit($oldTerminal, $terminal);
 
-            $this->app['workflow']
-                ->setEntityAndId($terminal->getEntity(), $terminal->getId())
-                ->handle(["terminal_edit"=> []], ["terminal_edit" => $this->redactSecretsOnWorkflow($input)]);
+            if($oldTerminal->isEnabled() === true && $oldTerminal->getStatus() === Status::ACTIVATED) {
+                $this->app['workflow']
+                    ->setEntityAndId($terminal->getEntity(), $terminal->getId())
+                    ->handle(["terminal_edit"=> []], ["terminal_edit" => $this->redactSecretsOnWorkflow($input)]);
+            }
 
             $variantFlag = $this->app->razorx->getTreatment($mId, "TERMINAL_EDIT_PROXY", $mode);
 
