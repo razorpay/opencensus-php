@@ -530,4 +530,6 @@ return array(
     '1cc_multiple_shipping_splitz_experiment_id' => env('MAGIC_CHECKOUT_MULTIPLE_SHIPPING_EXP_ID'),
 
     'partner_submerchant_whitelabel_onboarding' => env('PARTNER_SUBMERCHANT_WHITELABEL_ONBOARDING'),
+
+    'magic_apply_coupon_experiment_id' => env('MAGIC_APPLY_COUPON_EXPERIMENT_ID'),
 );

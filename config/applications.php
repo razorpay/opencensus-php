@@ -1530,4 +1530,10 @@ return [
         'base_uri' => env('TIDB_WDA_BASE_URL')
     ],
 
+    'magic_checkout_service' => [
+        'url'           => env('APP_MAGIC_CHECKOUT_SERVICE_URL'),
+        'username'      => 'api',
+        'secret'        => env('APP_MAGIC_CHECKOUT_SERVICE_SECRET'),
+        'timeout'       => env('APP_MAGIC_CHECKOUT_SERVICE_TIMEOUT', 20),
+    ],
 ];

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\MerchantPromotions;
 
+use RZP\Models\Merchant\OneClickCheckout\Constants;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -18,6 +20,7 @@ use RZP\Models\Merchant\OneClickCheckout\DomainUtils;
 use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use RZP\Models\Merchant\OneClickCheckout\Core as OneClickCheckoutCore;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\CouponProvider;
 
 class Service extends Base\Service
 {
@@ -244,6 +247,14 @@ class Service extends Base\Service
             if (Session()->has($this->mode . '_app_token') === false) {
                 unset($input['email']);
                 unset($input['contact']);
+            }
+
+            $routeToMagicCheckoutService = $this->canRouteToMagicCheckoutService($input, $this->merchant);
+
+            if ($routeToMagicCheckoutService === true)
+            {
+                $input['merchant_id'] = $this->merchant->getId();
+                return (new CouponProvider\Service())->applyCoupon($input);
             }
 
             $orderId = $input['order_id'];
@@ -552,4 +563,26 @@ class Service extends Base\Service
         }
         return $disabledMethods;
     }
+
+    protected function canRouteToMagicCheckoutService(array $input, $merchant): bool
+    {
+        if ($this->merchant->getMerchantPlatformConfig()->getValue() === Constants::SHOPIFY ||
+            $this->merchant->get1ccConfigFlagStatus(Constants::ONE_CC_GIFT_CARD) === true)
+        {
+            return false;
+        }
+
+        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
+            [
+                'id'            => $input['order_id'],
+                'experiment_id' => $this->app['config']->get('app.magic_apply_coupon_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ]
+        );
+        return $expResult['variant'] === 'magic';
+    }
+
 }

@@ -14719,6 +14719,9 @@ class Route
             'internal_1cc_shopify_customer_addresses_get',
             'raw_address_create_bulk',
         ],
+        'magic_checkout_service' => [
+            'internal_1cc_configs_get',
+        ]
     ];
 
     //

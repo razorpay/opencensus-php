@@ -107,6 +107,8 @@ use RZP\Models\Merchant\OneClickCheckout\RtoDashboard\Service as RtoDashboardSer
 use RZP\Models\Merchant\OneClickCheckout\ShippingService as  ShippingService;
 use RZP\Models\Merchant\OneClickCheckout\RtoFileUploadAuditService\Service as RtoFileUploadAuditService;
 use RZP\Models\Merchant\OneClickCheckout\RtoFeatureReasonProvider\Service as RtoFeatureReasonProviderService;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client as  MagicCheckoutServiceClient;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\CouponProvider\Service as MagicCheckoutCouponService;
 
 class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
@@ -811,6 +813,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerCdsHttpClients();
 
         $this->registerKafkaProducerClient();
+
+        $this->registerMagicCheckoutServiceClient();
+
+        $this->registerMagicCheckoutCouponService();
+
     }
 
     protected function registerCacheManager()
@@ -2396,6 +2403,22 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             $options         = ['timeout' => 5];
 
             return new MultiCurl($responseFactory, $options);
+        });
+    }
+
+    protected function registerMagicCheckoutServiceClient()
+    {
+        $this->app->singleton('magic_checkout_service_client', function($app)
+        {
+            return new MagicCheckoutServiceClient($app);
+        });
+    }
+
+    protected function registerMagicCheckoutCouponService()
+    {
+        $this->app->singleton('magic_checkout_coupon_service', function($app)
+        {
+            return new MagicCheckoutCouponService($app);
         });
     }
 }

@@ -416,6 +416,12 @@ class Service extends Base\Service
             $merchantPlatform = $merchantPlatformConfig->getValue();
         }
 
+        $couponConfigEntity = $this->merchant->get1ccConfig(Type::COUPON_CONFIG);
+        $couponConfig = null;
+        if ($couponConfigEntity !== null)
+        {
+            $couponConfig = $couponConfigEntity->getValueJson();
+        }
         $result = [
             "domain_url"      => $domainUrl,
             "shipping_info"   => $shippingInfoUrl,
@@ -423,6 +429,7 @@ class Service extends Base\Service
             "apply_promotion" => $applyCouponUrl,
             "cod_slabs"       => $codSlabs,
             "platform"        => $merchantPlatform,
+            "coupon_config"   => $couponConfig
         ];
 
         if ($merchantPlatform === Constants::NATIVE)
