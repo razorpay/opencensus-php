@@ -5783,6 +5783,65 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
+    public function isHdfcNonDSSurcharge()
+    {
+        if ($this->isCard() === false)
+        {
+            return false;
+        }
+
+        if ($this->merchant->org->isFeatureEnabled(Feature\Constants::ORG_HDFC_VAS_CARDS_SURCHARGE) === false)
+        {
+            return false;
+        }
+
+        if($this->getGateway() !== Gateway::HDFC)
+        {
+            return false;
+        }
+
+        if($this->card->isInternational() === true)
+        {
+            return false;
+        }
+
+        if($this->getCurrency() !== Currency\Currency::INR)
+        {
+            return false;
+        }
+
+        $network = $this->card->getNetwork();
+
+        $validNetworks = [
+            Network::getFullName(Network::VISA),
+            Network::getFullName(Network::MC),
+            Network::getFullName(Network::RUPAY),
+            Network::getFullName(Network::DICL),
+        ];
+
+        $app = \App::getFacadeRoot();
+
+        $experimentResult = $app['razorx']->getTreatment($this->merchant->getId(),
+            'hdfc_vas_surcharge_2', $app['rzp.mode']);
+
+        $app['trace']->debug(TraceCode::HDFC_VAS_RAZORX_RESULT, [
+            'merchantId' => $this->merchant->getId(),
+            'paymentId' => $this->getId(),
+            'razorXResult' => $experimentResult,
+        ]);
+
+        if (
+            (in_array($network, $validNetworks, true) === true) and
+            ($this->isFeeBearerCustomer() === true) and
+            ($this->isDirectSettlement() === false) and
+            ($experimentResult === 'on'))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function isUpiAndAmountMismatched()
     {
         return (($this->isReconAmountMismatched() === true) and

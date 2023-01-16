@@ -1238,6 +1238,15 @@ trait Capture
 
         list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment);
 
+        if($payment->isHdfcNonDSSurcharge())
+        {
+            $txn->setTax(0);
+
+            $txn->setFee(0);
+
+            $txn->setMdr(0);
+        }
+
         $payment->setTax($txn->getTax());
 
         if ($payment->isFeeBearerCustomer() === false)

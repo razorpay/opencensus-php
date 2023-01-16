@@ -89,6 +89,70 @@ class HdfcVasPaymentTest extends TestCase
         self::assertEquals($oldMerchantBalance, $merchantBalance);
     }
 
+    public function testHdfcVasSurchargeNonDSPaymentHappy()
+    {
+        $org = $this->fixtures->org->createHdfcOrg();
+
+        $this->mockRazorxTreatmentV2('hdfc_vas_surcharge_2', 'on');
+
+        $merchant = $this->fixtures->merchant->edit('10000000000000',
+            [
+                'fee_bearer'  => 'customer',
+                'org_id'      =>  Admin\Org\Entity::HDFC_ORG_ID
+            ]
+        );
+
+        $this->fixtures->merchant->addFeatures(['vas_merchant']);
+
+        $this->fixtures->pricing->editDefaultPlan(['fee_bearer' => 'customer']);
+
+        $attributes = [
+            'name'        => 'hdfc_vas_cards_surcharge',
+            'entity_id'   => $org->getId(),
+            'entity_type' => 'org'
+        ];
+
+        $this->fixtures->create('feature', $attributes);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = 2000100;
+
+        $amount = $payment['amount'];
+
+        $payment = $this->getFeesForPayment($payment)['input'];
+
+        $oldMerchantBalance = $this->getEntityById('balance', $merchant['id'], true)['balance'];
+
+        $response = $this->doAuthPayment($payment);
+
+        $this->capturePayment($response['razorpay_payment_id'], $amount);
+
+        $payment = $this->getDbEntityById('payment', substr($response['razorpay_payment_id'], 4 ));
+
+        $hdfc = $this->getLastEntity('hdfc', true);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($hdfc['payment_id'], $payment->getId());
+
+        $this->assertEquals($payment['mdr'], 0);
+
+        $this->assertEquals($payment['fee'], 0);
+
+        $this->assertEquals($payment['tax'], 0);
+
+        $this->assertEquals($txn['mdr'], 0);
+
+        $this->assertEquals($txn['fee'], 0);
+
+        $this->assertEquals($txn['tax'], 0);
+
+        $merchantBalance = $this->getEntityById('balance', $merchant['id'], true)['balance'];
+
+        self::assertEquals($oldMerchantBalance + $amount, $merchantBalance);
+    }
+
     public function testHdfcVasSurchargePaymentRefund()
     {
         $org = $this->fixtures->org->createHdfcOrg();

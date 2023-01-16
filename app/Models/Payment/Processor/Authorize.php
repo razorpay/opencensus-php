@@ -576,6 +576,10 @@ trait Authorize
 
         $retry = false;
 
+        $isHdfcSurchargeModified = false;
+
+        $hdfcSurchargeOriginalValues = [];
+
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
@@ -587,6 +591,13 @@ trait Authorize
 
         while ($retryAttempts < $maxRetryAttempts)
         {
+            if($isHdfcSurchargeModified === true)
+            {
+                $isHdfcSurchargeModified = false;
+
+                $payment = $this->revertModifyPaymentForHdfcVasSurchargeNonDS($payment, $hdfcSurchargeOriginalValues);
+            }
+
             $currentTerminal = $this->selectedTerminals[$retryAttempts];
 
             // Using Hitachi terminals for paysecure until we create new ones for paysecure.
@@ -597,6 +608,13 @@ trait Authorize
             // Uncomment this to test with Sharp or any other terminal locally.
             // $currentTerminal = Terminal\Entity::findOrFail('2czHdeTG32rFhB');
             $payment->associateTerminal($currentTerminal);
+
+            if($payment->isHdfcNonDSSurcharge() === true)
+            {
+                list($payment, $hdfcSurchargeOriginalValues) = $this->modifyPaymentForHdfcVasSurchargeNonDS($payment);
+
+                $isHdfcSurchargeModified = true;
+            }
 
             if ($payment->getIsPushedToKafka() === null)
             {
@@ -4483,6 +4501,93 @@ trait Authorize
                 'newGatewayAmount'  => $gatewayAmount,
             ]
         );
+    }
+
+    protected function modifyPaymentForHdfcVasSurchargeNonDS(Payment\Entity $payment)
+    {
+        if( $payment->isHdfcNonDSSurcharge() === false )
+        {
+            return;
+        }
+
+        $originalValues = [];
+
+        $surchargeDetails = $payment->getFee();
+
+        $tax = $payment->getTax();
+
+        $gatewayAmount = $payment->getBaseAmount() - $surchargeDetails;
+
+        $expectedFee = 0;
+
+        $originalValues[Payment\Entity::AMOUNT] = $payment->getAmount();
+
+        $payment->setAmount( $gatewayAmount);
+
+        $originalValues[Payment\Entity::BASE_AMOUNT] = $payment->getBaseAmount();
+
+        $payment->setBaseAmount($gatewayAmount);
+
+        $originalValues[Payment\Entity::FEE] = $payment->getFee();
+
+        $payment->setFee($expectedFee);
+
+        $originalValues[Payment\Entity::TAX] = $payment->getTax();
+
+        $payment->setTax($expectedFee);
+
+        $originalValues[Payment\Entity::MDR] = $payment->getAttribute(Payment\Entity::MDR);
+
+        $payment->setMdr($expectedFee);
+
+        $this->trace->debug(
+            TraceCode::HDFC_VAS_SURCHARGE_2_PAYMENT_MODIFIED,
+            [
+                'network'           => $payment->card->getNetwork(),
+                'feeBearerCustomer' => $payment->isFeeBearerCustomer(),
+                'iDirectSettlement' => $payment->isDirectSettlement(),
+                'surchargeDetails'  => $surchargeDetails,
+                'tax'               => $tax,
+                'baseAmount'        => $payment->getBaseAmount(),
+                'newGatewayAmount'  => $gatewayAmount,
+            ]
+        );
+
+        return [$payment, $originalValues];
+    }
+
+    protected function revertModifyPaymentForHdfcVasSurchargeNonDS(Payment\Entity $payment, array $originalValues)
+    {
+        $surchargeDetails = $payment->getFee();
+
+        $tax = $payment->getTax();
+
+        $baseAmount = $payment->getBaseAmount();
+
+        $payment->modifyAttribute(Payment\Entity::AMOUNT, $originalValues[Payment\Entity::AMOUNT]);
+
+        $payment->modifyAttribute(Payment\Entity::BASE_AMOUNT, $originalValues[Payment\Entity::BASE_AMOUNT]);
+
+        $payment->modifyAttribute(Payment\Entity::FEE, $originalValues[Payment\Entity::FEE]);
+
+        $payment->modifyAttribute(Payment\Entity::TAX, $originalValues[Payment\Entity::TAX]);
+
+        $payment->modifyAttribute(Payment\Entity::MDR, $originalValues[Payment\Entity::MDR]);
+
+        $this->trace->debug(
+            TraceCode::HDFC_VAS_SURCHARGE_2_PAYMENT_MODIFIED_REVERT,
+            [
+                'network'           => $payment->card->getNetwork(),
+                'feeBearerCustomer' => $payment->isFeeBearerCustomer(),
+                'iDirectSettlement' => $payment->isDirectSettlement(),
+                'surchargeDetails'  => $surchargeDetails,
+                'tax'               => $tax,
+                'baseAmount'        => $baseAmount,
+                'originalValues'    => $originalValues,
+            ]
+        );
+
+        return $payment;
     }
 
     protected function verifyCheckoutDotComRecurring(Payment\Entity $payment)
