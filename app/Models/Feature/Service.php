@@ -783,6 +783,15 @@ class Service extends Base\Service
 
         $entityIds = $input[Constants::ENTITY_IDS];
 
+        foreach ($entityIds as $entityId)
+        {
+            $validateInput = $input;
+
+            $validateInput['names'] = $input['name'];
+
+            $this->validateIfDisabledFeaturesArePresent($validateInput,$input['entity_type'],$entityId);
+        }
+
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
         $names = $input[Entity::NAME];

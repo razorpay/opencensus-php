@@ -224,6 +224,16 @@ class FeaturesTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testMultiAssignBlacklistedFeaturesWhereOneMerchantHasOnlyDS()
+    {
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+        $this->fixtures->create('merchant', ['id' => '10000000000002']);
+        $this->fixtures->create('merchant', ['id' => '10000000000003']);
+
+        $this->fixtures->merchant->addFeatures(['only_ds'],'10000000000001');
+        $this->startTest();
+    }
+
     public function testMultiRemoveFeature()
     {
         $this->fixtures->create(

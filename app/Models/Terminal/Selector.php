@@ -986,6 +986,11 @@ class Selector extends Base\Core
             return false;
         }
 
+        if($this->merchant->isFeatureEnabled(Feature\Constants::ONLY_DS) === true)
+        {
+            return false;
+        }
+
         return true;
     }
 
