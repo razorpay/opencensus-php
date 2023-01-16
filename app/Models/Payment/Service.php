@@ -2100,8 +2100,11 @@ class Service extends Base\Service
         }
 
         if (isset($entity['card']) and ($this->merchant->Is3dsDetailsRequiredEnabled() === true)){
-            $authenticationData = (new Payment\Service)->getAuthenticationEntity($payment->getPublicId());
-            $this->addAuthenticationObject($entity, $authenticationData);
+            $authenticationData = (new Payment\Service)->getAuthenticationEntity3ds2($payment->getPublicId());
+            if ((isset($authenticationData['success']) === true) and ($authenticationData['success'] === true))
+            {
+                $this->addAuthenticationObject($entity, $authenticationData);
+            }
         }
 
         if (isset($entity['card']) && ($payment->card->isInternational() === false))
@@ -4431,6 +4434,15 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 Error\ErrorCode::BAD_REQUEST_PAYMENT_NOT_FOUND);
         }
+
+        return $response;
+    }
+
+    public function getAuthenticationEntity3ds2($id)
+    {
+        $paymentId = Payment\Entity::verifyIdAndStripSign($id);
+
+        $response = $this->app['card.payments']->fetchEntity('authentication', $paymentId);
 
         return $response;
     }
