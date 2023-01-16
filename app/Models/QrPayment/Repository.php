@@ -2,12 +2,12 @@
 
 namespace RZP\Models\QrPayment;
 
-use RZP\Base\Common;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
-use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
@@ -26,7 +26,10 @@ class Repository extends Base\Repository
 
     public function findByProviderReferenceIdAndGatewayAndAmount(string $providerReferenceId, string $gateway, int $amount)
     {
-        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+        $mode = ($mode ?? $this->app['rzp.mode']) ?? Mode::LIVE;
+
+        return $this->newQueryWithConnection($mode)
+                    ->useWritePdo()
                     ->where(Entity::PROVIDER_REFERENCE_ID, '=', $providerReferenceId)
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->where(Entity::AMOUNT, '=', $amount)

@@ -169,8 +169,6 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
 
             if ($qrCodePayment === null)
             {
-                $amount = (int) ($row[self::AMOUNT] * 100);
-
                 $qrCodePayment = $this->repo->qr_payment->findByProviderReferenceIdAndGatewayAndAmount($referenceNumber, Gateway::UPI_ICICI, $amount);
             }
 

@@ -3,6 +3,7 @@
 namespace RZP\Models\BharatQr;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 
 class Repository extends Base\Repository
 {
@@ -10,7 +11,10 @@ class Repository extends Base\Repository
 
     public function findByProviderReferenceIdAndAmount(string $providerReferenceId, int $amount)
     {
-        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+        $mode = ($mode ?? $this->app['rzp.mode']) ?? Mode::LIVE;
+
+        return $this->newQueryWithConnection($mode)
+                    ->useWritePdo()
                     ->where(Entity::PROVIDER_REFERENCE_ID, '=', $providerReferenceId)
                     ->where(Entity::AMOUNT, '=', $amount)
                     ->first();
