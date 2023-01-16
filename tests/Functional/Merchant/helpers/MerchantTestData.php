@@ -11537,6 +11537,33 @@ return [
         ],
     ],
 
+    'testBulkAssignBlockTagOnlyDS' => [
+        'request'  => [
+            'content' => [
+                'name'         => 'white_labelled_route',
+                'action'       => 'insert',
+                'merchant_ids' => [
+                    '10000000000000',
+                    '10000000000001',
+                    'randInvalid_Id',
+                ],
+            ],
+            'url'     => '/merchants/tags/bulk',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'total_count'  => 3,
+                'failed_count' => 3,
+                'failed_ids'   => [
+                    '10000000000000',
+                    '10000000000001',
+                    'randInvalid_Id',
+                ],
+            ],
+        ],
+    ],
+
     'testGetCapitalTags' => [
         'request'  => [
             'content' => [

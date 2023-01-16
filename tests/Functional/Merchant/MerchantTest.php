@@ -15031,6 +15031,16 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+
+    public function testBulkAssignBlockTagOnlyDS()
+    {
+        $this->fixtures->merchant->addFeatures(['only_ds']);
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testGetCapitalTags()
     {
         $this->ba->adminAuth();
