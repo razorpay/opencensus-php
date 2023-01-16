@@ -1108,23 +1108,31 @@ class customerTest extends TestCase
 
         // Current Customer payments
         $payment1 = $this->fixtures->create('payment', [
-            'contact'    => '+919988776655',
+            'contact'     => '+919988776655',
             'merchant_id' => '10000000000000',
+            'status'      => 'captured',
         ]);
 
         $payment2 = $this->fixtures->create('payment', [
-            'contact'    => '9988776655',
+            'contact'     => '9988776655',
             'merchant_id' => '10000000000001',
+            'status'      => 'pending',
+        ]);
+
+        $payment3 = $this->fixtures->create('payment', [
+            'contact'     => '9988776655',
+            'merchant_id' => '10000000000001',
+            'status'      => 'failed',
         ]);
 
         // Other Customer payments
-        $payment3 = $this->fixtures->create('payment', [
-            'contact'    => '+918888888888',
+        $payment4 = $this->fixtures->create('payment', [
+            'contact'     => '+918888888888',
             'merchant_id' => '10000000000000',
         ]);
 
-        $payment4 = $this->fixtures->create('payment', [
-            'contact'    => '8888888888',
+        $payment5 = $this->fixtures->create('payment', [
+            'contact'     => '8888888888',
             'merchant_id' => '10000000000001',
         ]);
 
@@ -1132,13 +1140,23 @@ class customerTest extends TestCase
 
         $paymentIds = $this->getPaymentIdsFromSupportPageFetchPaymentResponse($response);
 
+        $paymentDetails = $this->getPaymentDetailsFromSupportPageFetchPaymentResponse($response);
+
         $this->assertContains($payment1->getPublicId(), $paymentIds);
 
         $this->assertContains($payment2->getPublicId(), $paymentIds);
 
-        $this->assertNotContains($payment3->getPublicId(), $paymentIds);
+        $this->assertContains($payment3->getPublicId(), $paymentIds);
 
         $this->assertNotContains($payment4->getPublicId(), $paymentIds);
+
+        $this->assertNotContains($payment5->getPublicId(), $paymentIds);
+
+        $this->assertEquals('captured', $paymentDetails[$payment1->getPublicId()]['status']);
+
+        $this->assertEquals('pending', $paymentDetails[$payment2->getPublicId()]['status']);
+
+        $this->assertEquals('failed', $paymentDetails[$payment3->getPublicId()]['status']);
     }
 
     public function testFetchPaymentByContactOnSupportPageWhenUserNotLoggedInExpectsFailureWithUnauthorizedException()
@@ -1382,6 +1400,20 @@ class customerTest extends TestCase
         }
 
         return $paymentIds;
+    }
+
+    public function getPaymentDetailsFromSupportPageFetchPaymentResponse(array $response): array
+    {
+        $payments = $response['payments'];
+
+        $paymentDetails = [];
+
+        foreach ($payments as $payment)
+        {
+            $paymentDetails[$payment['payment']['id']] = $payment['payment'];
+        }
+
+        return $paymentDetails;
     }
 
     protected function editGlobalCustomer(array $content)
