@@ -7551,10 +7551,11 @@ class Processor
         return self::REDIRECT_CACHE_TTL;
     }
 
-    protected function pushPaymentToKafkaForVerify($payment)
+    protected function pushPaymentToKafkaForVerify(Payment\Entity $payment)
     {
         $startTime = microtime(true);
         $gateway = $payment->getGateway();
+        $method = $payment->getMethod();
 
         if (empty($payment->getGooglePayMethods()) === false)
         {
@@ -7574,6 +7575,11 @@ class Processor
                 ]);
 
             $isReminderVerifyPayment = false;
+            $isReminderTimeoutPayment = false;
+        }
+
+        if (in_array($method, Payment\Method::$timeoutDisabledMethods) === true)
+        {
             $isReminderTimeoutPayment = false;
         }
 

@@ -183,4 +183,8 @@ class Method
     {
         return self::$cpsEnabledMethods;
     }
+
+    public static array $timeoutDisabledMethods = [
+        self::BANK_TRANSFER,
+    ];
 }
