@@ -27,6 +27,7 @@ const mockRazorXExp = {
   isCinSyncFlowEnabled: true,
   isActivationMccPendingProgressbarDisabled: true,
   isAdharEkycRequiredForTrustSocietyNgo: true,
+  isFeEasyDashboardNCEnabled: true,
 };
 
 addParameters({

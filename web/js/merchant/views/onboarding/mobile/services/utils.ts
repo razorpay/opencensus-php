@@ -447,6 +447,27 @@ export const convertUnixToDate = ({ unixTimeStamp }): string => {
   return date;
 };
 
+export const getNcRequestDate = (kycClarificationData: any): any => {
+  const currentNcCount = kycClarificationData?.nc_count;
+  const nc = kycClarificationData?.clarification_reasons_v2;
+  let ncDate;
+  const sources = ['admin', 'system'];
+
+  const needsClarificationDate = (element) => {
+    if (element.nc_count && element.nc_count === currentNcCount && sources.includes(element.from)) {
+      ncDate = element.created_at;
+    }
+  };
+
+  if (nc) {
+    Object.keys(nc).forEach((key) => {
+      nc[key].map(needsClarificationDate);
+    });
+  }
+
+  return ncDate;
+};
+
 export const setLocalStorage = (key: string, value: string | any): void => {
   if (typeof value === 'string') {
     localStorage.setItem(key, value);
@@ -585,4 +606,22 @@ export const consentPayload = {
       url: 'https://razorpay.com/terms/',
     },
   ],
+};
+
+export const getNcExpiryDate = (kycClarificationsReasons) => {
+  const DAYS = 7;
+  const updatedAt = getNcRequestDate(kycClarificationsReasons) + DAYS * 24 * 60 * 60;
+  const expiryDate = convertUnixToDate({ unixTimeStamp: updatedAt });
+
+  return expiryDate;
+};
+
+export const isNewNcActivationStatus = (activationStatus) => {
+  const newNcActivationStatus = [
+    'needs_clarification_payments_settlement_enabled',
+    'needs_clarification_with_payments_enabled',
+    'needs_clarification_with_payment_disabled',
+  ];
+
+  return newNcActivationStatus.includes(activationStatus);
 };

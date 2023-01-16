@@ -15,7 +15,7 @@ import { showAcceptPaymentsModal, hideAcceptPaymentsModal } from 'merchant/reduc
 import { fetchInternationalProductsStatus } from 'merchant/reducers/config';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import CaInfoContainer from './RxCa/CaInfo';
-import PaymentProgressBar from '../PaymentProgressBar';
+import PaymentProgressBar from 'merchant/containers/Home/OnboardingCard/PaymentProgressBar';
 import ImgTopBg from 'assets/onboarding/top_bg.png';
 import ImgBottomBg from 'assets/onboarding/bottom_bg.png';
 import Image from 'common/ui/Image';
@@ -35,6 +35,7 @@ import {
     config: state.config.config,
     windowWidth: state.app.windowWidth,
     internationalProductsStatus: state.config.internationalProductsStatus,
+    isNcEligibile: state.home.isNcEligibile,
   }),
   {
     showAcceptPaymentsModal,
@@ -123,7 +124,14 @@ export default class OnboardingCardInstant extends Component {
   }
 
   render() {
-    const { mode, user, integration, internationalProductsStatus, limitBreach } = this.props;
+    const {
+      mode,
+      user,
+      integration,
+      internationalProductsStatus,
+      limitBreach,
+      isNcEligibile,
+    } = this.props;
     const {
       has_key_access: hasKeyAccess,
       business_website: businessWebsite,
@@ -234,6 +242,7 @@ export default class OnboardingCardInstant extends Component {
                 onActive={() => this.setActiveStep(2)}
                 {...commonModeCardProps}
                 track={trackLiveModeCard}
+                isNcEligibile={isNcEligibile}
               />
             </div>
             {user.isInstantActivationEnabled ? (

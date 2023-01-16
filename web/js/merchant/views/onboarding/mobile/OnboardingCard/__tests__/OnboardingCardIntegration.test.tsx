@@ -6,7 +6,8 @@ import * as Messages from 'merchant/views/onboarding/mobile/ActivationModals/Con
 import OnboardingCard from 'merchant/views/onboarding/mobile/OnboardingCard/index';
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import OnboardingCardShimmer from 'merchant/views/onboarding/mobile/OnboardingCard/OnboardingCardShimmer';
-import { render, waitForElementToBeRemoved, screen, fireEvent } from 'test-utils';
+import { render, waitForElementToBeRemoved, screen, server, waitFor } from 'test-utils';
+import { fetchEligibilityHandler } from 'merchant/views/onboarding/mobile/OnboardingCard/handlers';
 
 afterEach(() => {
   ActivationDB.reset();
@@ -59,7 +60,6 @@ test('should show payment disable modal', async () => {
   expect(screen.getByText(Messages.PAYMENT_DISABLE.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.PAYMENT_DISABLE.description)).toBeInTheDocument();
   expect(screen.getByText(Messages.PAYMENT_DISABLE.buttonText)).toBeInTheDocument();
-  fireEvent.click(screen.getByText(Messages.PAYMENT_DISABLE.buttonText));
 });
 
 test('should show payment enable modal', async () => {
@@ -89,5 +89,80 @@ test('should show NC modal', async () => {
   expect(screen.getByText(Messages.NC.title)).toBeInTheDocument();
   expect(screen.getByText(Messages.NC.description.normal_nc)).toBeInTheDocument();
   expect(screen.getByText(Messages.NC.buttonText)).toBeInTheDocument();
-  fireEvent.click(screen.getByText(Messages.NC.buttonText));
+});
+
+test('should show NeedsClarification modal with payments and settlement enabled  ', async () => {
+  await server.use(fetchEligibilityHandler());
+  window.sessionStorage.setItem('isNewNc', 'oCrgOzCvkfG6Qh5f4xgk5hfOb3CL4JAhCuwmiERi');
+  window.session_id = 'oCrgOzCvkfG6Qh5f4xgk5hfOb3CL4JAhCuwmtrRi';
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.unregBusinessOverview,
+    ...DataPieces.OnboardingMileStoneL2,
+    activation_status: 'needs_clarification',
+    ...DataPieces.needsClarificationPaymentsSettlementEnabled,
+  });
+
+  render(<App />, {});
+  await waitForOnboardingPageLoadingToFinish();
+
+  await waitFor(() => {
+    const title = screen.getAllByText(Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title)[0];
+    expect(title).toBeInTheDocument();
+    expect(
+      screen.getAllByText(Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.buttonText)[0],
+    ).toBeInTheDocument();
+  });
+});
+
+test('should show NeedsClarification modal with payment only enabled', async () => {
+  await server.use(fetchEligibilityHandler());
+  window.sessionStorage.setItem('isNewNc', 'oCrgOzCvkfG6Qh5f4xgk5hfOb3CL4JAhCuwmiERi');
+  window.session_id = 'oCrgOzCvkfG6Qh5f4xgk5hfOb3CL4JAhCuwmtrRi';
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.unregBusinessOverview,
+    ...DataPieces.OnboardingMileStoneL2,
+    activation_status: 'needs_clarification',
+    ...DataPieces.needsClarificationWithPaymentsEnabled,
+  });
+
+  window.sessionStorage.setItem('isNewNc', 'oCrgOzCvkfG6Qh5f4xgk5hfOb3CL4JAhCuwmiERi');
+  window.session_id = 'oCrgOzCvkfG6Qh5f4xgk5hfOb3CL4JAhCuwmtrRi';
+
+  render(<App />, {});
+  await waitForOnboardingPageLoadingToFinish();
+  await waitFor(() => {
+    const title = screen.getAllByText(Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title)[0];
+    expect(title).toBeInTheDocument();
+    expect(
+      screen.getAllByText(Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.buttonText)[0],
+    ).toBeInTheDocument();
+  });
+});
+
+test('should show NeedsClarification modal with payment disabled ', async () => {
+  await server.use(fetchEligibilityHandler());
+  window.sessionStorage.setItem('isNewNc', 'oCrgOzCvkfG6Qh5f4xgk5hfOb3CL4JAhCuwmiERi');
+  window.session_id = 'oCrgOzCvkfG6Qh5f4xgk5hfOb3CL4JAhCuwmtrRi';
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.unregBusinessOverview,
+    ...DataPieces.OnboardingMileStoneL2,
+    activation_status: 'needs_clarification',
+    ...DataPieces.needsClarificationWithPaymentDisabled,
+  });
+
+  window.sessionStorage.setItem('isNewNc', 'oCrgOzCvkfG6Qh5f4xgk5hfOb3CL4JAhCuwmiERi');
+  window.session_id = 'oCrgOzCvkfG6Qh5f4xgk5hfOb3CL4JAhCuwmtrRi';
+
+  render(<App />, {});
+  await waitForOnboardingPageLoadingToFinish();
+  await waitFor(() => {
+    const title = screen.getAllByText(Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title)[0];
+    expect(title).toBeInTheDocument();
+    expect(
+      screen.getAllByText(Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.buttonText)[0],
+    ).toBeInTheDocument();
+  });
 });

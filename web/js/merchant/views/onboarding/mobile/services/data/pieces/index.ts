@@ -167,3 +167,21 @@ export const Documents = {
     ],
   },
 };
+
+export const needsClarificationPaymentsSettlementEnabled = {
+  activated: true,
+  merchant: {
+    hold_funds: false,
+  },
+};
+
+export const needsClarificationWithPaymentsEnabled = {
+  activated: true,
+  merchant: {
+    hold_funds: true,
+  },
+};
+
+export const needsClarificationWithPaymentDisabled = {
+  activated: false,
+};

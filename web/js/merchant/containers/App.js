@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import moment from 'moment';
 import { createSidetab, createPopup } from '@typeform/embed';
+import errorService from '@razorpay/universe-utils/errorService';
 import Loader from 'common/ui/Loader';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import ModalDialog from 'common/ui/ModalDialog';
@@ -34,6 +35,7 @@ import AddGST from 'merchant/views/Account/Profile/components/AddGST';
 import { fetchGST } from 'merchant/reducers/profile';
 import { fireAnalyticsEvents, setTrackData } from 'common/utils/googleAnalytics';
 import { resizeWindow, updateMerchantLiveTransactionFlag } from 'merchant/reducers/app';
+import { fetchEligibilityForNcRevamp } from 'merchant/reducers/home';
 import { matchFullPageView } from 'merchant/routes';
 import { classList, isPresent, isNone, paiseToRupees } from 'common/utils/rzp-utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
@@ -60,6 +62,7 @@ import getMobileDetect from 'common/utils/mobileDetect';
 import { isPgMerchant } from 'merchant/components/Activation/ActivationUtils';
 import currencies from '../constants/currency';
 import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
+import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 import { Helmet, HelmetProvider } from 'react-helmet-async';
 
 // const WebViewHeader = lazy(() =>
@@ -407,6 +410,18 @@ class App extends Component {
         } else {
           this.props.history.push('/activation');
         }
+      }
+    }
+    if (this.props.user.isFeEasyDashboardNCEnabled) {
+      try {
+        this.props.fetchEligibilityForNcRevamp();
+      } catch (error) {
+        errorService.captureError(error, {
+          tags: {
+            team: Teams.GROWTH,
+          },
+          rank: Ranks.P2,
+        });
       }
     }
   }
@@ -1040,6 +1055,7 @@ class App extends Component {
       isAdharEkycRequired: user.isAdharEkycRequired,
       isAdharEkycRequiredForTrustSocietyNgo: user.isAdharEkycRequiredForTrustSocietyNgo,
       isDigilockerEkyc: user.isDigilockerEkyc,
+      isFeEasyDashboardNCEnabled: user.isFeEasyDashboardNCEnabled,
     };
   };
 
@@ -1193,6 +1209,7 @@ const mapDispatchToProps = (dispatch) =>
       fetchMerchantReferralDetail,
       fetchPayments,
       fetchTransactionAmount: fetchAmount,
+      fetchEligibilityForNcRevamp,
     },
     dispatch,
   );

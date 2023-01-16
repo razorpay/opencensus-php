@@ -1519,6 +1519,16 @@ export const updateExtension = (fileUrl, extension) => {
   return url?.substr(0, url?.lastIndexOf('.')) + extension;
 };
 
+/* convert unix timestamp to human readable date format */
+export const convertUnixToDate = (unixTimeStamp) => {
+  const date = new Date(unixTimeStamp * 1000).toLocaleString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+  return date;
+};
+
 // converts minor unit of amount to common unit of amount, ex: paise to rupees
 export const i18CurrencyConversionFromMinorUnitToCommonUnit = (amount, currency) => {
   // Ideally this should come from BE

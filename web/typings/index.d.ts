@@ -15,4 +15,5 @@ interface Window {
   bankingServiceUrl: string;
   rzp_user: any;
   BANK_DETAILS_URL: string;
+  EASY_ONBOARDING_URL: string;
 }

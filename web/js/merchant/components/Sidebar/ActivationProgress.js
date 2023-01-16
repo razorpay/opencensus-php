@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 import * as EventsActions from 'merchant/reducers/trackEvents';
 
 function ActivationProgress(props) {
-  const { user, config, trackEvents } = props;
+  const { user, config, trackEvents, isNcEligibile } = props;
 
   const {
     showInstantActivation,
@@ -43,7 +43,7 @@ function ActivationProgress(props) {
     actionCopy = 'Submit Form';
   }
 
-  const activationState = getActivationState(user, user.isUnregisteredBusiness);
+  const activationState = getActivationState(user, user.isUnregisteredBusiness, isNcEligibile);
 
   const isActivationmccPending =
     user.isActivationMccPendingProgressbarDisabled &&
@@ -155,5 +155,10 @@ export default compose(
   rTracking({
     page: 'ActivationProgress',
   }),
-  connect(null, { ...EventsActions }),
+  connect(
+    (state) => ({
+      isNcEligibile: state.home.isNcEligibile,
+    }),
+    { ...EventsActions },
+  ),
 )(ActivationProgress);

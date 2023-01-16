@@ -197,7 +197,8 @@ return [
 
         // instant activation video enable
         'INSTANT_ACTIVATION_VIDEO_ENABLE_EXP_SPLITZ' => env('INSTANT_ACTIVATION_VIDEO_ENABLE_EXP_SPLITZ', ''),
-
+        //new NC flow
+        'ENABLE_EASY_DASHBOARD_NC' => env('ENABLE_EASY_DASHBOARD_NC', ''),
         // Onboarding all as resellers
         'PARTNERSHIP_ONBOARD_RESELLERS' => env('PARTNERSHIP_ONBOARD_RESELLERS', ''),
         'EASY_ONBOARDING_REDIRECT'      => env('EASY_ONBOARDING_REDIRECT', ''),

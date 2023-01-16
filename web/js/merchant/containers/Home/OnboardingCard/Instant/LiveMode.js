@@ -53,7 +53,11 @@ export default class LiveMode extends Component {
 
     let { title, status, content } = initialState;
 
-    const activationState = getActivationState(user, user.isUnregisteredBusiness);
+    const activationState = getActivationState(
+      user,
+      user.isUnregisteredBusiness,
+      this.props.isNcEligibile,
+    );
 
     if (user.isInstantActivationEnabled) {
       switch (activationState) {

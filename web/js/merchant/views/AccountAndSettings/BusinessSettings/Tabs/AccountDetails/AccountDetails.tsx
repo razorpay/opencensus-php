@@ -16,7 +16,13 @@ import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import LoaderDots from 'common/ui/LoaderDots';
 
 const AccountDetails = (props): JSX.Element => {
-  const { user, fetchIsAdminAsMerchant, isAdminAsMerchant, isFlowRevamped = true } = props;
+  const {
+    user,
+    fetchIsAdminAsMerchant,
+    isAdminAsMerchant,
+    isFlowRevamped = true,
+    isNcEligibile,
+  } = props;
 
   React.useEffect(() => {
     const { loading, error } = isAdminAsMerchant;
@@ -61,6 +67,13 @@ const AccountDetails = (props): JSX.Element => {
                         status: window.rzp_user.verification.status,
                       },
                     });
+                    if (
+                      isNcEligibile &&
+                      user.isFeEasyDashboardNCEnabled &&
+                      user.activation_status === 'needs_clarification'
+                    ) {
+                      window.open(`${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`);
+                    }
                   }}
                 >
                   {user.activated || user.locked || user.submitted
@@ -133,6 +146,7 @@ const mapStateToProps = (state) => {
   return {
     user: state.session.user,
     isAdminAsMerchant: state.profile.isAdminAsMerchant,
+    isNcEligibile: state.home.isNcEligibile,
   };
 };
 

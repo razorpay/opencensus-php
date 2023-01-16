@@ -1070,6 +1070,10 @@ export default class User {
       getSplitzExperimentVariant('instant_activations_video_enabled')?.variables?.result === 'on'
     );
   }
+
+  get isFeEasyDashboardNCEnabled() {
+    return getSplitzExperimentVariant('enable_easy_dashboard_nc')?.variables?.result === 'on';
+  }
   get isAddReplyMigrationActive() {
     return getSplitzExperimentVariant('add_reply_migration')?.variables?.result === 'on';
   }

@@ -10,6 +10,7 @@ import {
   BIZ_CAT_SUB_CAT_OPTIONAL_ADDITIONAL_DOCS,
   BUSINESS_PROOF_TYPE_DOCS,
 } from './Constants';
+import { convertUnixToDate } from 'common/utils/rzp-utils';
 
 const PRIVATE_LIMITED = 4,
   PUBLIC_LIMITED = 5,
@@ -479,7 +480,28 @@ function showAadharDoc(activation) {
   return true;
 }
 
-function getActivationState(activationData = {}, isUnregisteredBusiness) {
+function getNcRequestDate(kycClarificationData) {
+  const currentNcCount = kycClarificationData?.nc_count;
+  const nc = kycClarificationData?.clarification_reasons_v2;
+  let ncDate;
+  const sources = ['admin', 'system'];
+  if (nc) {
+    for (const [key] of Object.entries(nc)) {
+      nc[key].forEach((element) => {
+        if (
+          element.nc_count &&
+          element.nc_count === currentNcCount &&
+          sources.includes(element.from)
+        ) {
+          ncDate = element.created_at;
+        }
+      });
+    }
+  }
+  return ncDate;
+}
+
+function getActivationState(activationData = {}, isUnregisteredBusiness, isNcEligibile = false) {
   let activationState;
 
   const {
@@ -543,7 +565,15 @@ function getActivationState(activationData = {}, isUnregisteredBusiness) {
         }
       }
     } else if (activation_status === 'needs_clarification') {
-      if (activationStatusChangeLogs.includes('activated_mcc_pending')) {
+      if (isNcEligibile) {
+        if (activationData.activated && !merchant.hold_funds) {
+          activationState = 'needs_clarification_payments_settlement_enabled';
+        } else if (activationData.activated && merchant.hold_funds) {
+          activationState = 'needs_clarification_with_payments_enabled';
+        } else if (!activationData.activated) {
+          activationState = 'needs_clarification_with_payment_disabled';
+        }
+      } else if (activationStatusChangeLogs.includes('activated_mcc_pending')) {
         activationState = merchant.hold_funds
           ? 'needs_clarification_funds_on_hold'
           : 'needs_clarification_mcc_pending';
@@ -732,6 +762,24 @@ const isPgMerchant = (userData) => {
   );
 };
 
+const getNcExpiryDate = (kycClarificationsReasons) => {
+  const DAYS = 7;
+  const updatedAt = getNcRequestDate(kycClarificationsReasons) + DAYS * 24 * 60 * 60;
+  const expiryDate = convertUnixToDate(updatedAt);
+
+  return expiryDate;
+};
+
+const isNewNcActivationStatus = (activationStatus) => {
+  const newNcActivationStatus = [
+    'needs_clarification_payments_settlement_enabled',
+    'needs_clarification_with_payments_enabled',
+    'needs_clarification_with_payment_disabled',
+  ];
+
+  return newNcActivationStatus.includes(activationStatus);
+};
+
 export {
   differentAddress,
   isUnregisteredBusiness,
@@ -783,5 +831,8 @@ export {
   getRecommendedProductDetails,
   setRecommendedProduct,
   removeRecommendedProduct,
+  getNcRequestDate,
   isPgMerchant,
+  getNcExpiryDate,
+  isNewNcActivationStatus,
 };

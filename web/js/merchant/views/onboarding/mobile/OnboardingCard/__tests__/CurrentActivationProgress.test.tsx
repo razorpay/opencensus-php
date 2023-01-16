@@ -7,7 +7,8 @@ import OnboardingCardShimmer from 'merchant/views/onboarding/mobile/OnboardingCa
 import useActivation from 'merchant/views/onboarding/mobile/hooks/useActivation';
 import useEscalation from 'merchant/views/onboarding/mobile/hooks/useEscalation';
 import CurrentActivationProgress from 'merchant/views/onboarding/mobile/OnboardingCard/CurrentActivationProgress';
-import { fireEvent, render, screen, waitForElementToBeRemoved } from 'test-utils';
+import { fireEvent, render, screen, waitForElementToBeRemoved, waitFor, server } from 'test-utils';
+import { fetchEligibilityHandler } from 'merchant/views/onboarding/mobile/OnboardingCard/handlers';
 
 afterEach(() => {
   ActivationDB.reset();
@@ -294,4 +295,68 @@ test('should not render any message', async () => {
   render(<App />, {});
   await waitForLoadingToFinish();
   expect(screen.queryByText('null')).not.toBeInTheDocument();
+});
+
+test('should show action required in case of needs clarification message which includes with payments and settlement enabled', async () => {
+  await server.use(fetchEligibilityHandler());
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.regBusinessOverview,
+    ...DataPieces.OnboardingMileStoneL2,
+    isEasyNcEnabled: true,
+    activation_status: 'needs_clarification',
+    ...DataPieces.needsClarificationPaymentsSettlementEnabled,
+  });
+  window.sessionStorage.setItem('isNewNc', 'oCrgOzCvkfG6Qh5f4xgk5hfOb3CL4JAhCuwmiERi');
+  window.session_id = 'oCrgOzCvkfG6Qh5f4xgk5hfOb3CL4JAhCuwmtrRi';
+
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  await waitFor(() => {
+    expect(screen.queryByText('ACTION REQUIRED')).toBeInTheDocument();
+  });
+});
+
+test('should show needs clarification messafe with payments enabled', async () => {
+  await server.use(fetchEligibilityHandler());
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.regBusinessOverview,
+    ...DataPieces.OnboardingMileStoneL2,
+    isEasyNcEnabled: true,
+    activation_status: 'needs_clarification',
+    ...DataPieces.needsClarificationWithPaymentsEnabled,
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  await waitFor(() => {
+    expect(
+      screen.queryByText(
+        'You’ll be able to receive collected payments in your account only after the required details are updated',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('ACTION REQUIRED')).toBeInTheDocument();
+  });
+});
+
+test('should show needs clarification messafe with payments disabled', async () => {
+  await server.use(fetchEligibilityHandler());
+  ActivationDB.update({
+    ...DataPieces.ActivationFlowWW,
+    ...DataPieces.regBusinessOverview,
+    ...DataPieces.OnboardingMileStoneL2,
+    isEasyNcEnabled: true,
+    activation_status: 'needs_clarification',
+    ...DataPieces.needsClarificationWithPaymentDisabled,
+  });
+  render(<App />, {});
+  await waitForLoadingToFinish();
+  await waitFor(() => {
+    expect(
+      screen.queryByText(
+        'You’ll be able to collect payments and receive them in your bank account only after the required details are updated',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('ACTION REQUIRED')).toBeInTheDocument();
+  });
 });

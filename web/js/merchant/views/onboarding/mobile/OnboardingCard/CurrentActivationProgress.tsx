@@ -8,6 +8,7 @@ import {
   checkIfDedupe,
   isL1Submitted,
   getFormatedCurrency,
+  getNcExpiryDate,
 } from 'merchant/views/onboarding/mobile/services/utils';
 import { showProductsModal } from 'merchant/reducers/home';
 import Link from 'common/components/Link';
@@ -20,9 +21,22 @@ import useTrackEvents from 'merchant/hooks/useTrackEvents';
 import { IReferee } from 'merchant/views/onboarding/mobile/Screens/Home';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import VideoModal from 'merchant/components/VideoModal';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import useEligibility from 'merchant/views/onboarding/mobile/hooks/useEligibility';
 
 const InlineText = styled.span`
   color: #162f5661;
+`;
+
+const Pill = styled.span`
+  background: #d12d2d;
+  border-radius: 12px;
+  padding: 4px 12px;
+  color: white;
+  margin-bottom: 16px;
+  display: block;
+  width: fit-content;
+  font-size: 10px;
 `;
 
 const CurrentActivationProgress: React.FC<
@@ -35,11 +49,14 @@ const CurrentActivationProgress: React.FC<
 > = ({ data, escalation, history, referee, showProductModal }) => {
   const { user, experiments, submerchantId } = useApp();
   const trackEvents = useTrackEvents();
+  const eligibilityData = useEligibility();
   const isReferredMerchant = referee?.status === 'signup';
   const activationFormUrl = experiments.isActivationFormFullView ? 'kyc' : 'activation';
   const isSignupWithEasyOnboarding = user?.user?.signup_campaign === EASY_ONBOARDING;
+  const isEasyNcEnabled = eligibilityData?.nc_revamp_enabled;
 
   const [shouldShowVideoModal, setShouldShowVideoModal] = useState(false);
+  const expiryDate = getNcExpiryDate(user?.kyc_clarification_reasons);
 
   const onCTAClick = () => {
     if (submerchantId) {
@@ -76,8 +93,25 @@ const CurrentActivationProgress: React.FC<
     window.rzpTicketSystem?.openModal('#ticket');
   };
 
-  const goToNcFlow = () => {
-    if (submerchantId) {
+  const goToNcFlow = (isEasyNcResolveNow = false, trackProps = {}) => {
+    if (isEasyNcResolveNow) {
+      trackEvents({
+        objectName: 'NC Resolve Now',
+        actionName: 'Clicked',
+        screen: 'home page',
+        properties: {
+          funnelStage: 'NC',
+          ctaClicked: 'Resolve Now',
+          clickSource: 'Onboarding banner',
+          ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
+          deviceType: isMobileDevice(768) ? 'mweb' : 'dweb',
+          ...trackProps,
+        },
+      });
+    }
+    if (isEasyNcEnabled) {
+      window.open(`${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`);
+    } else if (submerchantId) {
       history.push(`/partners/submerchants/acc_${submerchantId}/activation`);
     } else {
       history.push(activationFormUrl);
@@ -258,6 +292,35 @@ const CurrentActivationProgress: React.FC<
       );
     }
 
+    if (isEasyNcEnabled && data.activation_status === 'needs_clarification') {
+      let description = '';
+      if (data.activated && !data.merchant.hold_funds) {
+        description = `Update the required details before ${expiryDate} to avoid settlements for your account being put on-hold`;
+      } else if (data.activated && data.merchant.hold_funds) {
+        description =
+          'You’ll be able to receive collected payments in your account only after the required details are updated';
+      } else if (!data.activated) {
+        description =
+          'You’ll be able to collect payments and receive them in your bank account only after the required details are updated';
+      }
+      return (
+        <>
+          <Pill>{Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.pill}</Pill>
+          <Info
+            title={Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title}
+            description={description}
+            isNewNCEnabled
+          />
+          <Buttons.Primary
+            onClick={() =>
+              goToNcFlow(true, { formName: Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title })
+            }
+            title={Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.buttonText}
+          />
+        </>
+      );
+    }
+
     if (data.activation_status === 'needs_clarification') {
       let description = Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description.normal;
       if (isInstantActivationEnabled) {
@@ -268,6 +331,31 @@ const CurrentActivationProgress: React.FC<
           description = Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description.funds_onhold;
         }
       }
+
+      if (isEasyNcEnabled && data.activation_status === 'needs_clarification') {
+        let description = '';
+        if (data.activated && !data.merchant.hold_funds) {
+          description = `Update the required details before ${expiryDate} to avoid settlements for your account being put on-hold`;
+        } else if (data.activated && data.merchant.hold_funds) {
+          description =
+            'You’ll be able to receive collected payments in your account only after the required details are updated';
+        } else if (!data.activated) {
+          description =
+            'You’ll be able to collect payments and receive them in your bank account only after the required details are updated';
+        }
+        const title = Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title;
+        return (
+          <>
+            <Pill>{Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.pill}</Pill>
+            <Info title={title} description={description} isNewNCEnabled />
+            <Buttons.Primary
+              onClick={() => goToNcFlow(true, { formName: title })}
+              title={Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.buttonText}
+            />
+          </>
+        );
+      }
+
       return (
         <>
           <Info

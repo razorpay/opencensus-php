@@ -76,3 +76,9 @@ export const UNDER_REVIEW = {
     'Your payment limits have been removed and KYC is under review. We will notify you if we require any clarifications on your KYC. You may experience a delay.',
   buttonText: 'Generate Terms And Conditions',
 };
+
+export const NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS = {
+  title: 'We need a few more details to complete KYC verification',
+  buttonText: 'Resolve now',
+  pill: 'ACTION REQUIRED',
+};

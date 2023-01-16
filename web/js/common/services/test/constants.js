@@ -15,6 +15,7 @@ const mockRazorXExp = {
   isActivationMccPendingProgressbarDisabled: true,
   isMsmeDisabled: true,
   isAdharEkycRequiredForTrustSocietyNgo: true,
+  isFeEasyDashboardNCEnabled: true,
 };
 
 const mockContext = {

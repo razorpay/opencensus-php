@@ -54,7 +54,11 @@ class ActivationCard extends Component {
         ? (limitBreach.amount * 100) / limitBreach.limit >= 100
         : false;
 
-    const activationState = getActivationState(user, user.isUnregisteredBusiness);
+    const activationState = getActivationState(
+      user,
+      user.isUnregisteredBusiness,
+      this.props.isNcEligibile,
+    );
     const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
     const isReferredMerchant = this.props.referee?.status === 'signup';
     const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
@@ -822,6 +826,7 @@ const mapStateToProps = (state) => ({
   showProducts: state.home.instantActivations.showProductsModal,
   limitBreach: state.home.limitBreach,
   referee: state.merchantReferral.data.referee,
+  isNcEligibile: state.home.isNcEligibile,
 });
 
 export default compose(

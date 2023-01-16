@@ -1,4 +1,7 @@
-import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
+import {
+  getActivationState,
+  getNcExpiryDate,
+} from 'merchant/components/Activation/ActivationUtils';
 import SupportButton from './SupportButton';
 import { Link } from 'react-router-dom';
 import { SAMPLE_TICKET } from 'merchant/views/TicketSupport/components/data';
@@ -6,10 +9,14 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, getCommonSegmentProperties } from 'common/utils/rzp-utils';
 
 export const kycModalContent = (args = {}) => {
-  const activationState = getActivationState(args.activationData, args.isUnregisteredBusiness);
+  const activationState = getActivationState(
+    args.activationData,
+    args.isUnregisteredBusiness,
+    args.isNcEligibile,
+  );
   const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
   const activationFormUrl = args.isActivationFormFullView ? '/kyc' : '/activation';
-
+  const expiryDate = getNcExpiryDate(args.activationData?.kyc_clarification_reasons);
   switch (activationState) {
     case 'L2_dedupe_blocked':
     case 'L1_dedupe_blocked': {
@@ -562,6 +569,59 @@ export const kycModalContent = (args = {}) => {
             }}
           >
             Request a call
+          </button>
+        ),
+      };
+    }
+
+    case 'needs_clarification_payments_settlement_enabled': {
+      return {
+        title: 'We need a few more details to complete KYC verification',
+        body: (
+          <div>
+            {`You will not be able to receive payments in your bank account if the required details are not updated before ${expiryDate} `}
+          </div>
+        ),
+        pill: 'ACTION REQUIRED',
+        button: (
+          <button type="button" className="btn btn-primary nc-button" onClick={args.goToNCOnEasy}>
+            Resolve now
+          </button>
+        ),
+      };
+    }
+
+    case 'needs_clarification_with_payments_enabled': {
+      return {
+        title: 'We need a few more details to complete KYC verification',
+        body: (
+          <div>
+            You’ll be able to receive collected payments in your account only after the required
+            details are updated
+          </div>
+        ),
+        pill: 'ACTION REQUIRED',
+        button: (
+          <button type="button" className="btn btn-primary nc-button" onClick={args.goToNCOnEasy}>
+            Resolve now
+          </button>
+        ),
+      };
+    }
+
+    case 'needs_clarification_with_payment_disabled': {
+      return {
+        title: 'We need a few more details to complete KYC verification',
+        body: (
+          <div>
+            You’ll be able to collect payments and receive them in your bank account only after the
+            required details are updated
+          </div>
+        ),
+        pill: 'ACTION REQUIRED',
+        button: (
+          <button type="button" className="btn btn-primary nc-button" onClick={args.goToNCOnEasy}>
+            Resolve now
           </button>
         ),
       };

@@ -213,8 +213,13 @@ const MerchantDetails = ({ user, changeBillingLabel, openModal, closeModal, trac
   );
 };
 
-export default connect((state) => ({ workflows: state.workflows }), {
-  openModal: fnOpenModal,
-  closeModal: fnCloseModal,
-  fetchWorkflowStatus: fetchWorkflowStatusReducer,
-})(rTracking()(MerchantDetails));
+export default connect(
+  (state) => ({
+    workflows: state.workflows,
+  }),
+  {
+    openModal: fnOpenModal,
+    closeModal: fnCloseModal,
+    fetchWorkflowStatus: fetchWorkflowStatusReducer,
+  },
+)(rTracking()(MerchantDetails));

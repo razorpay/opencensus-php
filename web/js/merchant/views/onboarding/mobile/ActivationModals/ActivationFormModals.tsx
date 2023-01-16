@@ -7,6 +7,8 @@ import Text from '@razorpay/blade-old/src/atoms/Text';
 import { Modal, ModalBody } from 'common/components/Modal';
 import { getModalContent, ModalTypeT } from './ModalContent';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
+import { isMobileDevice } from 'merchant/components/Home/data';
+import { isNewNcActivationStatus } from 'merchant/views/onboarding/mobile/services/utils';
 
 interface ActivationModalPropsT extends RouteComponentProps {
   isOpen: boolean;
@@ -29,7 +31,7 @@ const ActivationModal: React.FC<ActivationModalPropsT> = ({
   activationData,
   dedupeStatus,
 }) => {
-  const { title, description, image, button, additionalDesc } = getModalContent(
+  const { title, description, image, button, additionalDesc, pill } = getModalContent(
     modalType,
     closeModal,
     history,
@@ -37,6 +39,8 @@ const ActivationModal: React.FC<ActivationModalPropsT> = ({
     dedupeStatus,
   );
   const trackEvents = useTrackEvents();
+
+  const isNewNC = isNewNcActivationStatus(modalType);
 
   useEffect(() => {
     trackEvents({
@@ -47,6 +51,21 @@ const ActivationModal: React.FC<ActivationModalPropsT> = ({
         'Modal Label': title,
       },
     });
+    if (isNewNC) {
+      trackEvents({
+        objectName: 'NC Entry Modal',
+        actionName: 'Loaded',
+        screen: 'home page',
+        properties: {
+          formName: title,
+          activationState: modalType,
+          funnelStage: 'NC',
+          ncCount: `${activationData?.kyc_clarification_reasons?.nc_count}`,
+          deviceType: isMobileDevice(768) ? 'mweb' : 'dweb',
+        },
+        toCleverTap: true,
+      });
+    }
   }, []);
 
   if (!title) {
@@ -62,6 +81,17 @@ const ActivationModal: React.FC<ActivationModalPropsT> = ({
     return true;
   };
 
+  const Pill = styled.span`
+    background: #d12d2d;
+    border-radius: 12px;
+    padding: 4px 12px;
+    color: white;
+    margin-bottom: 16px;
+    display: block;
+    width: fit-content;
+    font-size: 10px;
+  `;
+
   return (
     <Modal
       onClose={() => {
@@ -74,6 +104,15 @@ const ActivationModal: React.FC<ActivationModalPropsT> = ({
             'CTA Label': title,
           },
         });
+
+        const isSessionExpired = window.session_id !== window.sessionStorage.getItem('isNewNc');
+
+        if (isNewNC) {
+          if (isSessionExpired && !!window.session_id) {
+            window.sessionStorage.setItem('isNewNc', window.session_id || '');
+          }
+        }
+
         closeModal();
       }}
       isOpen={isOpen}
@@ -84,23 +123,33 @@ const ActivationModal: React.FC<ActivationModalPropsT> = ({
           {image}
           <Space margin={[1.5, 0, 0]}>
             <View>
+              {pill && <Pill>{pill}</Pill>}
               <Space margin={[1, 0]}>
                 <View>
                   <Text
                     size="large"
                     weight="bold"
                     _letterSpacing="small"
-                    align="center"
+                    align={pill ? 'start' : 'center'}
                     _lineHeight="large"
                   >
                     {title}
                   </Text>
                 </View>
               </Space>
-
               <Text
                 size="medium"
-                align={['under_review', 'tnc'].includes(modalType) ? 'justify' : 'center'}
+                align={
+                  [
+                    'under_review',
+                    'tnc',
+                    'needs_clarification_payments_settlement_enabled',
+                    'needs_clarification_with_payments_enabled',
+                    'needs_clarification_with_payment_disabled',
+                  ].includes(modalType)
+                    ? 'justify'
+                    : 'center'
+                }
               >
                 {description}
                 {additionalDesc}

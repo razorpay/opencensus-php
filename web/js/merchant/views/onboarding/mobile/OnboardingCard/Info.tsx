@@ -18,6 +18,7 @@ interface InfoPropsT {
   titleJSXAlign?: AlignType;
   descriptionJSX?: React.ReactNode;
   descriptionJSXAlign?: AlignType;
+  isNewNCEnabled?: boolean;
 }
 
 const DescriptionElement = styled(View)`
@@ -38,6 +39,7 @@ const Info: React.FC<InfoPropsT> = ({
   descriptionJSX,
   titleJSXAlign = 'right',
   descriptionJSXAlign = 'right',
+  isNewNCEnabled = false,
 }) => {
   return (
     <>
@@ -51,7 +53,7 @@ const Info: React.FC<InfoPropsT> = ({
                 </Flex>
               </Space>
             ) : null}
-            <Text size="medium" color={titleColor} weight="bold">
+            <Text size={isNewNCEnabled ? 'large' : 'medium'} color={titleColor} weight="bold">
               {title}
             </Text>
             {titleJSXAlign === 'right' && titleJSX ? (
@@ -73,7 +75,7 @@ const Info: React.FC<InfoPropsT> = ({
           </View>
         </Flex>
       </Space>
-      <Text size="xsmall" color={descriptionColor}>
+      <Text size={isNewNCEnabled ? 'medium' : 'xsmall'} color={descriptionColor}>
         {description}
         {descriptionJSXAlign === 'right' && descriptionJSX ? (
           <Space margin={[0, 0, 0, 0.5]}>

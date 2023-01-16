@@ -35,6 +35,7 @@ const HIDE_FRAUD_DETECTION_MODAL = 'HIDE_FRAUD_DETECTION_MODAL';
 const SHOW_TNC_MODAL = 'SHOW_TNC_MODAL';
 const HIDE_TNC_MODAL = 'HIDE_TNC_MODAL';
 const ESCALATIONS_FETCH = 'ESCALATIONS_FETCH';
+const FETCH_ELIGIBILITY_FOR_NC_REVAMP = 'FETCH_ELIGIBILITY_FOR_NC_REVAMP';
 const SHOW_PARTNER_KYC_STATUS_MODAL = 'SHOW_PARTNER_KYC_STATUS_MODAL';
 const HIDE_PARTNER_KYC_STATUS_MODAL = 'HIDE_PARTNER_KYC_STATUS_MODAL';
 
@@ -105,6 +106,7 @@ const initialState = {
     loading: true,
     data: {},
   },
+  isNcEligibile: false,
 };
 
 const getTransactionCountData = (data, mode) => {
@@ -167,6 +169,16 @@ export const fetchEscalations = () => {
     type: ESCALATIONS_FETCH,
     payload: merchantFetch({
       url: 'merchants/onboarding/escalations',
+      mode: 'live',
+    }),
+  };
+};
+
+export const fetchEligibilityForNcRevamp = () => {
+  return {
+    type: FETCH_ELIGIBILITY_FOR_NC_REVAMP,
+    payload: merchantFetch({
+      url: `merchant/activation/clarifications/eligibility`,
       mode: 'live',
     }),
   };
@@ -573,6 +585,17 @@ export default function homeReducer(state = initialState, action) {
           limit: paiseToRupees(action.payload.data.limit.payment),
           escaltionsLastUpdatedAt: action.payload.data.updated_at,
         },
+      });
+
+    case `${FETCH_ELIGIBILITY_FOR_NC_REVAMP}::PENDING`:
+      return set(state);
+
+    case `${FETCH_ELIGIBILITY_FOR_NC_REVAMP}::ERROR`:
+      return set(state);
+
+    case `${FETCH_ELIGIBILITY_FOR_NC_REVAMP}::SUCCESS`:
+      return merge(state, {
+        isNcEligibile: action.payload.data.nc_revamp_enabled,
       });
 
     case INVALID_MERCHANT_CALL:

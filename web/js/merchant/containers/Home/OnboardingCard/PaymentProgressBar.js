@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
+import { connect } from 'react-redux';
 import rTracking from 'react-tracking';
 import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -8,7 +9,7 @@ import { formatNumberWithCommas } from 'common/utils/numerals';
 import { i18CurrencyConversionFromMinorUnitToCommonUnit } from 'common/utils/rzp-utils';
 import Time from 'common/ui/Time';
 
-const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
+const PaymentProgressBar = ({ user, mode, history, limitBreach, isNcEligibile }) => {
   const [paymentProgress, setPaymentProgress] = useState(0);
   const [lastUpdatedTime, setLastUpdateTime] = useState(0);
   const [content, setContent] = useState(null);
@@ -52,7 +53,7 @@ const PaymentProgressBar = ({ user, mode, history, limitBreach }) => {
   }, [mode]);
 
   useEffect(() => {
-    const activationState = getActivationState(user, user.isUnregisteredBusiness);
+    const activationState = getActivationState(user, user.isUnregisteredBusiness, isNcEligibile);
     let activationFlowContent, activationFlowButton;
 
     const limitBreachHappened =
@@ -166,5 +167,11 @@ const ProgressBar = ({ width, percent, backgroundColor: bgColor, ProgressColor }
 
 export default compose(
   withRouter,
+  connect(
+    (state) => ({
+      isNcEligibile: state.home.isNcEligibile,
+    }),
+    null,
+  ),
   rTracking(() => window.rzpQ.component('PaymentProgressBar')),
 )(PaymentProgressBar);

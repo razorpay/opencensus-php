@@ -98,3 +98,31 @@ test('should not open if modal type empty', async () => {
   await waitForLoadingToFinish();
   expect(screen.queryByText('modal should not be open')).not.toBeInTheDocument();
 });
+
+test('should show action required in case of needs clarification message which includes with payments and settlement enabled', async () => {
+  render(<App isOpen={true} modaltype="needs_clarification_payments_settlement_enabled" />, {});
+  await waitForLoadingToFinish();
+  expect(screen.queryByText('ACTION REQUIRED')).toBeInTheDocument();
+});
+
+test('should show needs clarification messafe with payments enabled', async () => {
+  render(<App isOpen={true} modaltype="needs_clarification_with_payments_enabled" />, {});
+  await waitForLoadingToFinish();
+  expect(
+    screen.queryByText(
+      'You’ll be able to receive collected payments in your account only after the required details are updated',
+    ),
+  ).toBeInTheDocument();
+  expect(screen.queryByText('ACTION REQUIRED')).toBeInTheDocument();
+});
+
+test('should show needs clarification messafe with payments disabled', async () => {
+  render(<App isOpen={true} modaltype="needs_clarification_with_payment_disabled" />, {});
+  await waitForLoadingToFinish();
+  expect(
+    screen.queryByText(
+      'You’ll be able to collect payments and receive them in your bank account only after the required details are updated',
+    ),
+  ).toBeInTheDocument();
+  expect(screen.queryByText('ACTION REQUIRED')).toBeInTheDocument();
+});

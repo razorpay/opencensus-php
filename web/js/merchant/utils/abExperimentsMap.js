@@ -485,6 +485,12 @@ export default {
     // prod
     'KoBK1DaiY2K5B3',
   ],
+  enable_easy_dashboard_nc: [
+    // beta
+    'L3AHj3UNHRhUXQ',
+    // prod
+    'L3DutoiWP8H6Zn',
+  ],
   partnership_for_phantom: [
     // stage
     'Kx02jtoxYeQxtk',

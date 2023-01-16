@@ -15,6 +15,7 @@ const KYCStatusModal = ({
   activationDuration,
   tracking,
   history,
+  isNcEligibile,
 }) => {
   const goToActivationForm = () => {
     onClose();
@@ -47,6 +48,7 @@ const KYCStatusModal = ({
     onClose,
     modalType,
     goToMerchantDashboard,
+    isNcEligibile,
   };
   const content = kycModalContent(args);
 
@@ -68,6 +70,11 @@ const KYCStatusModal = ({
 
 export default compose(
   withRouter,
-  connect(null, null),
+  connect(
+    (state) => ({
+      isNcEligibile: state.home.isNcEligibile,
+    }),
+    null,
+  ),
   rTracking(() => window.rzpQ.component('PartnerKYCStatusModal')),
 )(KYCStatusModal);

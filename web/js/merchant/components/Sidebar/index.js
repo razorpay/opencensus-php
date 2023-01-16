@@ -61,6 +61,7 @@ const BASE_ROUTES = {
   (state) => ({
     showMobileMenu: state.app.showMobileMenu,
     showAcceptPayments: state.home.instantActivations.showAcceptPayments,
+    isNcEligibile: state.home.isNcEligibile,
     org: state.session.org,
   }),
   { toggleMobileMenu, showAcceptPaymentsModal, hideAcceptPaymentsModal, ...EventsActions },
@@ -165,7 +166,21 @@ export default class Sidebar extends Component {
       },
     });
 
-    if (user.isOnboardingV2Enabled && isMobileDevice()) {
+    if (this.props.isNcEligibile && user.activation_status === 'needs_clarification') {
+      const needsClarificationOnEasyUrl = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
+      this.props.trackEvents({
+        objectName: 'NC Easy',
+        actionName: 'Redirect',
+        screen: 'home page',
+        properties: {
+          ctaLabel: 'Account Activation',
+          ctaLocation: 'LHS_Nav_Bar',
+          ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
+          deviceType: isMobileDevice(768) ? 'mweb' : 'dweb',
+        },
+      });
+      window.open(needsClarificationOnEasyUrl);
+    } else if (user.isOnboardingV2Enabled && isMobileDevice()) {
       this.props.history.push('/onboarding/steps');
     } else if (user.isActivationFormFullView) {
       this.props.history.push('/kyc');

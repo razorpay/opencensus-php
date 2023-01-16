@@ -144,3 +144,9 @@ export const GREYLIST_STEP = {
   description:
     'Submit a few more KYC details to accept payments from your customers and receive settlements in your account',
 };
+
+export const NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS = {
+  title: 'We need a few more details to complete KYC verification',
+  buttonText: 'Resolve now',
+  pill: 'ACTION REQUIRED',
+};

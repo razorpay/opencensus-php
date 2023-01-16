@@ -17,6 +17,8 @@ import * as Message from './Constant';
 import { SAMPLE_TICKET } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 import VideoModal from 'merchant/components/VideoModal';
+import { getNcExpiryDate } from 'merchant/views/onboarding/mobile/services/utils';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 export type ModalTypeT =
   | 'dedupe'
@@ -28,6 +30,9 @@ export type ModalTypeT =
   | 'settelment_onhold'
   | 'needs_clarification'
   | 'rejected'
+  | 'needs_clarification_payments_settlement_enabled'
+  | 'needs_clarification_with_payments_enabled'
+  | 'needs_clarification_with_payment_disabled'
   | '';
 
 const InlineText = styled(View)`
@@ -54,10 +59,13 @@ export const getModalContent = (
   let button: ReactNode = <div />;
   let image: ReactNode = <div />;
   let additionalDesc: ReactNode = <span />;
+  let pill: ReactNode = <span />;
   const statusLog = activationData?.activationStatusChangeLogs || [];
   const isPartialMatch = dedupeStatus === 'partial_match';
   const isPaymentLimitRemoved =
     !statusLog.includes('needs_clarification') && !!activationData?.activated;
+
+  const expiryDate = getNcExpiryDate(activationData?.kyc_clarification_reasons);
 
   const [shouldShowVideoModal, setShouldShowVideoModal] = useState(false);
   const openCustomerSupport = () => {
@@ -135,6 +143,39 @@ export const getModalContent = (
         </div>
       );
     } else return null;
+  };
+
+  const trackNCEasyRedirect = (trackProps = {}) => {
+    trackEvents({
+      objectName: 'NC Resolve Now',
+      actionName: 'Clicked',
+      screen: 'home page',
+      properties: {
+        funnelStage: 'NC',
+        ctaClicked: 'Resolve Now',
+        clickSource: 'Modal',
+        ncCount: `${activationData?.kyc_clarification_reasons?.nc_count}`,
+        deviceType: isMobileDevice(768) ? 'mweb' : 'dweb',
+        ...trackProps,
+      },
+    });
+  };
+
+  const handleNcButton = () => {
+    closeModal();
+    sendSegmentEventFromButton(Message.NC.buttonText);
+    trackNCEasyRedirect({
+      activationState: modalType,
+      formName: title,
+    });
+    const formUrl = submerchantId
+      ? `partners/submerchants/${submerchantId}/activation`
+      : activationFormUrl;
+    if (submerchantId) {
+      history.push(formUrl);
+    } else {
+      window.open(`${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`);
+    }
   };
 
   switch (modalType) {
@@ -407,6 +448,53 @@ export const getModalContent = (
       );
       return { title, description, image, button };
 
+    case 'needs_clarification_payments_settlement_enabled':
+      title = Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title;
+      image = <img src={NeedsClarification} />;
+      description = `You will not be able to receive payments in your bank account if the required details are
+          not updated before ${expiryDate} `;
+
+      pill = Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.pill;
+      button = (
+        <Button onClick={handleNcButton} block>
+          {Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.buttonText}
+        </Button>
+      );
+      return { title, pill, description, image, button };
+
+    case 'needs_clarification_with_payments_enabled':
+      title = Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title;
+      image = <img src={NeedsClarification} />;
+      description = (
+        <>
+          You’ll be able to receive collected payments in your account only after the required
+          details are updated
+        </>
+      );
+      pill = Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.pill;
+      button = (
+        <Button onClick={handleNcButton} block>
+          {Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.buttonText}
+        </Button>
+      );
+      return { title, pill, description, image, button };
+
+    case 'needs_clarification_with_payment_disabled':
+      title = Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title;
+      image = <img src={NeedsClarification} />;
+      description = (
+        <>
+          You’ll be able to collect payments and receive them in your bank account only after the
+          required details are updated
+        </>
+      );
+      pill = Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.pill;
+      button = (
+        <Button onClick={handleNcButton} block>
+          {Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.buttonText}
+        </Button>
+      );
+      return { title, pill, description, image, button };
     default:
       return { title, description, image, button, additionalDesc };
   }

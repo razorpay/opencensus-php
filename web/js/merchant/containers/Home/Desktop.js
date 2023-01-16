@@ -62,7 +62,10 @@ import {
   showProductsModal,
 } from 'merchant/reducers/home';
 import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
-import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
+import {
+  getActivationState,
+  isNewNcActivationStatus,
+} from 'merchant/components/Activation/ActivationUtils';
 import NCModal from 'merchant/components/Activation/NCModal';
 import DedupeModal from 'merchant/components/Home/DedupeModal';
 import NeoStoneTracker from 'common/ui/NotificationsDropdown/Neostone/Tracker';
@@ -89,6 +92,7 @@ import RecentActivity from 'merchant/containers/Home/RecentActivity';
 import { XCorporateCardStatusTracker } from 'merchant/components/StatusTracker';
 import * as LocalStorageService from 'common/utils/localStorage';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -128,6 +132,7 @@ class AnalyticsDesktop extends Component {
       fetchBankAccountChangeStatus,
       fetchCarouselBanner,
       fetchInternationalSettingStatus,
+      isNcEligibile,
     } = this.props;
     fetchEscalations();
     analyticsTrack({
@@ -156,7 +161,7 @@ class AnalyticsDesktop extends Component {
 
     this.checkIfFirstEverSettlement();
 
-    const activationState = getActivationState(user, user.isUnregisteredBusiness);
+    const activationState = getActivationState(user, user.isUnregisteredBusiness, isNcEligibile);
     const shouldShowModal =
       activationState === 'L2_dedupe_blocked' ||
       activationState === 'needs_clarification_mcc_pending' ||
@@ -181,10 +186,11 @@ class AnalyticsDesktop extends Component {
       transactionAmount,
       // from parent component
       canShowL1ActivationModals,
+      isNcEligibile,
     } = this.props;
 
     if (!canShowL1ActivationModals) return;
-    const activationState = getActivationState(user, user.isUnregisteredBusiness);
+    const activationState = getActivationState(user, user.isUnregisteredBusiness, isNcEligibile);
     if (
       !user.isInstantActivationEnabled ||
       !['poi_verified', 'L1_instantly_activated'].includes(activationState)
@@ -309,12 +315,6 @@ class AnalyticsDesktop extends Component {
       // If both created_at & updated_at are same, only then show banner
       return isSame;
     } else return false;
-  };
-
-  onNcModalClose = () => {
-    this.setState({
-      showNcPopup: false,
-    });
   };
 
   isWhatsappNotificationEnabled = (user) => {
@@ -502,6 +502,45 @@ class AnalyticsDesktop extends Component {
     let carouselItem = [];
     if (banner_carousel_items.length) carouselItem = [...banner_carousel_items];
 
+    const activationState = getActivationState(
+      user,
+      user.isUnregisteredBusiness,
+      this.props.isNcEligibile,
+    );
+
+    const onNcModalClose = () => {
+      const sessionExpired = window.session_id !== window.sessionStorage.getItem('isNewNc');
+      if (isNewNcActivationStatus(activationState)) {
+        if (sessionExpired) {
+          window.sessionStorage.setItem('isNewNc', window.session_id);
+        }
+      }
+      this.setState({
+        showNcPopup: false,
+      });
+    };
+
+    const goToNCOnEasy = () => {
+      analyticsTrack({
+        objectName: 'NC Resolve Now',
+        actionName: 'Clicked',
+        screen: 'home page',
+        properties: {
+          funnelStage: 'NC',
+          formName: 'We need a few more details to complete KYC verification',
+          ctaClicked: 'Resolve Now',
+          clickSource: 'NC Modal',
+          activationState,
+          ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
+          deviceType: isMobileDevice(768) ? 'mweb' : 'dweb',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+      });
+      const needsClarificationOnEasyUrl = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
+      onNcModalClose();
+      window.open(needsClarificationOnEasyUrl);
+    };
+
     return (
       <div className="home-analytics-desktop">
         <ShowWhen
@@ -574,7 +613,11 @@ class AnalyticsDesktop extends Component {
               !this.props.user.isInstantActivationEnabled && (
                 <NCModal
                   isActivationFormFullView={this.props.user.isActivationFormFullView}
-                  onClose={this.onNcModalClose}
+                  onClose={onNcModalClose}
+                  activationState={activationState}
+                  kycClarificationsReasons={this.props.user?.kyc_clarification_reasons}
+                  goToNCOnEasy={goToNCOnEasy}
+                  user={this.props.user}
                 />
               )}
             {!this.props.user.isInstantActivationEnabled &&
@@ -1103,6 +1146,7 @@ const mapStateToProps = (state) => ({
   ticketsRaisedByAgents: state.config.ticketsRaisedByAgents.data[1],
   bannerCarouselData: state?.growthService?.banner_carousel_items,
   internationalSettingStatus: state.config.internationalSettingStatus,
+  isNcEligibile: state.home.isNcEligibile,
 });
 
 export default withRouter(

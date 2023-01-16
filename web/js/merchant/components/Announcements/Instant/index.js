@@ -12,15 +12,20 @@ import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import GenerateTnCPage from 'merchant/components/Home/GenerateTnCPage';
 import { getCommonSegmentProperties, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getActivationState } from 'merchant/components/Activation/ActivationUtils';
+import {
+  getActivationState,
+  getNcExpiryDate,
+} from 'merchant/components/Activation/ActivationUtils';
 import { showProductsModal, hideProductsModal } from 'merchant/reducers/home';
 import ProductsModal from 'merchant/components/Home/ProductsModal';
 import { trackProductsModal } from 'merchant/containers/Home/OnboardingCard/Instant/ga';
 import VideoModal from 'merchant/components/VideoModal';
+import { isMobileDevice } from 'merchant/components/Home/data';
 
 @connect(
   (state) => ({
     showProducts: state.home.instantActivations.showProductsModal,
+    isNcEligibile: state.home.isNcEligibile,
   }),
   { showProductsModal, openModal, closeModal, hideProductsModal },
 )
@@ -58,6 +63,23 @@ export default class InstantActivationAnnouncements extends Component {
     }
   };
 
+  trackNCEasyRedirect = (trackProps = {}) => {
+    analyticsTrack({
+      objectName: 'NC Resolve Now',
+      actionName: 'Clicked',
+      screen: 'home page',
+      properties: {
+        funnelStage: 'NC',
+        formName: 'We need a few more details to complete KYC verification',
+        ctaClicked: 'Resolve Now',
+        clickSource: 'Banner',
+        deviceType: isMobileDevice(768) ? 'mweb' : 'dweb',
+        ...trackProps,
+        ...getCommonSegmentProperties(window.rzp_user),
+      },
+    });
+  };
+
   render() {
     const {
       user,
@@ -75,6 +97,7 @@ export default class InstantActivationAnnouncements extends Component {
       shouldShowTnCBannerForAxis = false,
     } = this.props;
     const activationUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
+    const needsClarificationOnEasyUrl = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
     const commonSettlementBanner = {
       theme: 'success',
       title: 'Account Activated',
@@ -101,6 +124,16 @@ export default class InstantActivationAnnouncements extends Component {
         screen: 'home page',
       });
     };
+
+    const activationState = getActivationState(
+      user,
+      user.isUnregisteredBusiness,
+      this.props.isNcEligibile,
+    );
+
+    const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
+
+    const expiryDate = getNcExpiryDate(user?.kyc_clarification_reasons);
 
     const InstantActivationVideoLink = () => {
       const isInstantActivationVideoEnabled = user.isInstantActivationVideoEnabled;
@@ -156,8 +189,6 @@ export default class InstantActivationAnnouncements extends Component {
     };
 
     if (user.isInstantActivationEnabled) {
-      const activationState = getActivationState(user, user.isUnregisteredBusiness);
-      const L2_dedupe_blocked = activationState === 'L2_dedupe_blocked';
       switch (activationState) {
         case 'L1_dedupe_blocked':
         case 'L2_dedupe_blocked': {
@@ -406,21 +437,6 @@ export default class InstantActivationAnnouncements extends Component {
 
           break;
         }
-        case 'needs_clarificarion': {
-          theme = 'danger';
-          title = 'KYC Clarification';
-          content = (
-            <div class="announcement-container">
-              <div class="announcement-info">
-                We need some clarfication regarding your KYC details. Please clarify at the earliest
-                to get your KYC approved{' '}
-              </div>
-              <div className="big-circle-seprator" />
-              <Link to={activationUrl}>Update details</Link>
-            </div>
-          );
-          break;
-        }
         case 'needs_clarification_mcc_pending': {
           theme = 'danger';
           title = 'KYC Clarification';
@@ -462,6 +478,101 @@ export default class InstantActivationAnnouncements extends Component {
               </div>
               <div className="big-circle-seprator" />
               <Link to={activationUrl}>Update details</Link>
+            </div>
+          );
+          break;
+        }
+        case 'needs_clarification_payments_settlement_enabled': {
+          theme = 'danger';
+          title = 'Action required';
+          content = (
+            <div class="announcement-container">
+              <div>
+                <div class="announcement-info-header">
+                  We need a few more details to complete KYC verification.
+                </div>
+                <div class="full-width-info">
+                  {`You will not be able to receive payments in your bank account if the required details are not updated before ${expiryDate}`}
+                </div>
+              </div>
+              <div className="big-circle-seprator" />
+              <button
+                class="btn-link"
+                type="button"
+                onClick={() => {
+                  window.open(needsClarificationOnEasyUrl);
+                  this.trackNCEasyRedirect({
+                    activationState,
+                    ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
+                  });
+                }}
+              >
+                <strong>Resolve Now</strong>
+              </button>
+            </div>
+          );
+          break;
+        }
+        case 'needs_clarification_with_payments_enabled': {
+          theme = 'danger';
+          title = 'Action required';
+          content = (
+            <div class="announcement-container">
+              <div>
+                <div class="announcement-info-header">
+                  We need a few more details to complete KYC verification.
+                </div>
+                <div class="full-width-info">
+                  You’ll be able to collect payments and receive them in your bank account only
+                  after the required details are updated
+                </div>
+              </div>
+              <div className="big-circle-seprator" />
+              <button
+                class="btn-link"
+                type="button"
+                onClick={() => {
+                  window.open(needsClarificationOnEasyUrl);
+                  this.trackNCEasyRedirect({
+                    activationState,
+                    ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
+                  });
+                }}
+              >
+                <strong>Resolve Now</strong>
+              </button>
+            </div>
+          );
+          break;
+        }
+        case 'needs_clarification_with_payment_disabled': {
+          theme = 'danger';
+          title = 'Action required';
+          content = (
+            <div class="announcement-container">
+              <div>
+                <div class="announcement-info-header">
+                  We need a few more details to complete KYC verification.
+                </div>
+                <div class="full-width-info">
+                  Your payments acceptance and settlement to your bank account will be made live
+                  after getting the required inputs
+                </div>
+              </div>
+              <div className="big-circle-seprator" />
+              <button
+                class="btn-link"
+                type="button"
+                onClick={() => {
+                  window.open(needsClarificationOnEasyUrl);
+                  this.trackNCEasyRedirect({
+                    activationState,
+                    ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
+                  });
+                }}
+              >
+                <strong>Resolve Now</strong>
+              </button>
             </div>
           );
           break;
@@ -697,6 +808,95 @@ export default class InstantActivationAnnouncements extends Component {
           title = 'Account Suspended';
           content =
             'Due to irregularities in documents submitted by you, your account has been suspended. You will not be able to conduct live transactions';
+        } else if (activationState === 'needs_clarification_payments_settlement_enabled') {
+          theme = 'danger';
+          title = 'Action required';
+          content = (
+            <div class="announcement-container">
+              <div>
+                <div class="announcement-info-header">
+                  We need a few more details to complete KYC verification.
+                </div>
+                <div class="full-width-info">
+                  {`You will not be able to receive payments in your bank account if the required details are not updated before ${expiryDate}`}
+                </div>
+              </div>
+              <div className="big-circle-seprator" />
+              <button
+                class="btn-link"
+                type="button"
+                onClick={() => {
+                  window.open(needsClarificationOnEasyUrl);
+                  this.trackNCEasyRedirect({
+                    activationState,
+                    ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
+                  });
+                }}
+              >
+                <strong>Resolve Now</strong>
+              </button>
+            </div>
+          );
+        } else if (activationState === 'needs_clarification_with_payments_enabled') {
+          theme = 'danger';
+          title = 'Action required';
+          content = (
+            <div class="announcement-container">
+              <div>
+                <div class="announcement-info-header">
+                  We need a few more details to complete KYC verification.
+                </div>
+                <div class="full-width-info">
+                  You’ll be able to receive collected payments in your account only after the
+                  required details are updated
+                </div>
+              </div>
+              <div className="big-circle-seprator" />
+              <button
+                class="btn-link"
+                type="button"
+                onClick={() => {
+                  window.open(needsClarificationOnEasyUrl);
+                  this.trackNCEasyRedirect({
+                    activationState,
+                    ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
+                  });
+                }}
+              >
+                <strong>Resolve Now</strong>
+              </button>
+            </div>
+          );
+        } else if (activationState === 'needs_clarification_with_payment_disabled') {
+          theme = 'danger';
+          title = 'Action required';
+          content = (
+            <div class="announcement-container">
+              <div>
+                <div class="announcement-info-header">
+                  We need a few more details to complete KYC verification.
+                </div>
+                <div class="full-width-info">
+                  You’ll be able to collect payments and receive them in your bank account only
+                  after the required details are updated
+                </div>
+              </div>
+              <div className="big-circle-seprator" />
+              <button
+                class="btn-link"
+                type="button"
+                onClick={() => {
+                  window.open(needsClarificationOnEasyUrl);
+                  this.trackNCEasyRedirect({
+                    activationState,
+                    ncCount: `${user?.kyc_clarification_reasons?.nc_count}`,
+                  });
+                }}
+              >
+                <strong>Resolve Now</strong>
+              </button>
+            </div>
+          );
         } else {
           title = 'KYC Clarification';
           content = (

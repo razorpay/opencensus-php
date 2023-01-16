@@ -22,6 +22,7 @@ import { ActivationModal, ModalTypeT } from 'merchant/views/onboarding/mobile/Ac
 import { useApp } from 'common/context/App';
 import { IReferee } from 'merchant/views/onboarding/mobile/Screens/Home';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
+import useEligibility from 'merchant/views/onboarding/mobile/hooks/useEligibility';
 import { EASY_ONBOARDING } from 'merchant/views/onboarding/mobile/Constants/OnboardingConstants';
 import FormIcon from 'assets/onboarding/form_icon.svg';
 
@@ -71,6 +72,7 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
   const { status: activationQueryStatus, data: activationData } = useActivation();
   const { status: escalationsStatus, data: escalationsData } = useEscalation();
   const trackEvents = useTrackEvents();
+  const eligibilityData = useEligibility();
 
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [modalType, setModalType] = useState<ModalTypeT>('');
@@ -87,9 +89,11 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
   const [isModalClosed, setIsModalClosed] = useState(false);
 
   useEffect(() => {
+    const isSessionExpired = window.session_id !== window.sessionStorage.getItem('isNewNc');
+    let canShowModals: any = localStorage.getItem(`${user.current}--mweb_modal`);
+    canShowModals = JSON.parse(canShowModals);
+
     if (activationQueryStatus === 'success' && isInstantActivationEnabled) {
-      let canShowModals: any = localStorage.getItem(`${user.current}--mweb_modal`);
-      canShowModals = JSON.parse(canShowModals);
       const status = activationData.activation_status;
       const isUnreg = isUnregisteredBusiness(activationData.business_type);
       const isPoifailed = ['failed', 'incorrect_details', 'not_matched'].includes(
@@ -135,6 +139,24 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
             ...canShowModals,
             settlement_onhold: true,
           });
+        } else if (
+          activationData.activation_status === 'needs_clarification' &&
+          eligibilityData?.nc_revamp_enabled &&
+          isSessionExpired
+        ) {
+          if (activationData.activated && !activationData.merchant.hold_funds) {
+            setModalType('needs_clarification_payments_settlement_enabled');
+            setIsModalOpen(true);
+            setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, nc: true });
+          } else if (activationData.activated && activationData.merchant.hold_funds) {
+            setModalType('needs_clarification_with_payments_enabled');
+            setIsModalOpen(true);
+            setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, nc: true });
+          } else if (!activationData.activated) {
+            setModalType('needs_clarification_with_payment_disabled');
+            setIsModalOpen(true);
+            setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, nc: true });
+          }
         } else if (status === 'needs_clarification' && !canShowModals?.nc) {
           setModalType('needs_clarification');
           setIsModalOpen(true);
@@ -145,8 +167,28 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
           setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, rejected: true });
         }
       }
+    } else if (activationQueryStatus === 'success') {
+      if (
+        activationData.activation_status === 'needs_clarification' &&
+        eligibilityData?.nc_revamp_enabled &&
+        isSessionExpired
+      ) {
+        if (activationData.activated && !activationData.merchant.hold_funds) {
+          setModalType('needs_clarification_payments_settlement_enabled');
+          setIsModalOpen(true);
+          setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, nc: true });
+        } else if (activationData.activated && activationData.merchant.hold_funds) {
+          setModalType('needs_clarification_with_payments_enabled');
+          setIsModalOpen(true);
+          setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, nc: true });
+        } else if (!activationData.activated) {
+          setModalType('needs_clarification_with_payment_disabled');
+          setIsModalOpen(true);
+          setLocalStorage(`${user.current}--mweb_modal`, { ...canShowModals, nc: true });
+        }
+      }
     }
-  }, [activationQueryStatus]);
+  }, [activationQueryStatus, eligibilityData]);
 
   const isActivationmccPending =
     experiments.isActivationMccPendingProgressbarDisabled &&
@@ -184,78 +226,84 @@ const OnboardingCard: React.FC<IOnboardingCardProps> = ({ referee }) => {
   return (
     <WrapperView>
       <Card padding={isActivationmccPending ? [2, 4, 2, 2] : [2]} margin={[2]}>
-        <Flex
-          flexDirection="row"
-          justifyContent="space-between"
-          alignItems={isActivationmccPending ? 'center' : 'flex-start'}
-        >
-          <View>
-            <HeadingContainer>
-              <Space margin={[0, 0, 0.5, 0]}>
-                <HeadingContainer>
+        {!eligibilityData?.nc_revamp_enabled &&
+          activationData.activation_status !== 'needs_clarification' && (
+            <>
+              <Flex
+                flexDirection="row"
+                justifyContent="space-between"
+                alignItems={isActivationmccPending ? 'center' : 'flex-start'}
+              >
+                <View>
+                  <HeadingContainer>
+                    <Space margin={[0, 0, 0.5, 0]}>
+                      <HeadingContainer>
+                        {isActivationmccPending ? (
+                          <Text size="large" weight="bold">
+                            Congratulations !
+                          </Text>
+                        ) : (
+                          <Text size="large" weight="bold">
+                            Account Activation
+                          </Text>
+                        )}
+                      </HeadingContainer>
+                    </Space>
+                    {((isDedupe && !activationData.activated) ||
+                      activationData.activation_status === 'rejected') &&
+                    activationData.submitted &&
+                    !isActivationmccPending &&
+                    isInstantActivationEnabled ? (
+                      <AccountBlock>Paused</AccountBlock>
+                    ) : isActivationmccPending ? (
+                      <MccPendingSubDescription>
+                        Now you can accept unlimited payments. Settlements to your bank account have
+                        been enabled.
+                      </MccPendingSubDescription>
+                    ) : (
+                      <>
+                        <Space margin={[1, 2, 0, 0]}>
+                          <Text size="small" color="positive.960" weight="bold">
+                            {activationData.activation_progress}% complete
+                          </Text>
+                        </Space>
+                        <Space margin={[0, 2, 0, 0]}>
+                          <View>
+                            <ProgressBar
+                              progressBarCompletedColor="primary.700"
+                              progressBarBackgroundColor="primary.200"
+                              percentDone={activationData.activation_progress}
+                              height="6px"
+                            />
+                          </View>
+                        </Space>
+                      </>
+                    )}
+                  </HeadingContainer>
+                  <img src={FormIcon} alt="fill_activation_form_icon" />
                   {isActivationmccPending ? (
-                    <Text size="large" weight="bold">
-                      Congratulations !
-                    </Text>
-                  ) : (
-                    <Text size="large" weight="bold">
-                      Account Activation
-                    </Text>
-                  )}
-                </HeadingContainer>
-              </Space>
-              {((isDedupe && !activationData.activated) ||
-                activationData.activation_status === 'rejected') &&
-              activationData.submitted &&
-              !isActivationmccPending &&
-              isInstantActivationEnabled ? (
-                <AccountBlock>Paused</AccountBlock>
-              ) : isActivationmccPending ? (
-                <MccPendingSubDescription>
-                  Now you can accept unlimited payments. Settlements to your bank account have been
-                  enabled.
-                </MccPendingSubDescription>
-              ) : (
-                <>
-                  <Space margin={[1, 2, 0, 0]}>
-                    <Text size="small" color="positive.960" weight="bold">
-                      {activationData.activation_progress}% complete
-                    </Text>
-                  </Space>
-                  <Space margin={[0, 2, 0, 0]}>
-                    <View>
-                      <ProgressBar
-                        progressBarCompletedColor="primary.700"
-                        progressBarBackgroundColor="primary.200"
-                        percentDone={activationData.activation_progress}
-                        height="6px"
+                    <CloseIcon>
+                      <Button
+                        variant="tertiary"
+                        size="small"
+                        variantColor="shade"
+                        icon="close"
+                        onClick={() => setIsModalClosed(true)}
                       />
-                    </View>
-                  </Space>
-                </>
-              )}
-            </HeadingContainer>
-            <img src={FormIcon} alt="fill_activation_form_icon" />
-            {isActivationmccPending ? (
-              <CloseIcon>
-                <Button
-                  variant="tertiary"
-                  size="small"
-                  variantColor="shade"
-                  icon="close"
-                  onClick={() => setIsModalClosed(true)}
-                />
-              </CloseIcon>
-            ) : null}
-          </View>
-        </Flex>
+                    </CloseIcon>
+                  ) : null}
+                </View>
+              </Flex>
 
-        <Separator $onboardingMilestone={activationData.activation_form_milestone} />
+              <Separator $onboardingMilestone={activationData.activation_form_milestone} />
+            </>
+          )}
         <CurrentActivationProgress
           data={activationData}
           escalation={escalationsData}
           referee={referee}
         />
+
         <ActivationModal
           isOpen={isModalOpen}
           modalType={modalType}
