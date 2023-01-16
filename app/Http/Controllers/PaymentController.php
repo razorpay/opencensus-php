@@ -650,7 +650,9 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->validateVpa($input);
+        $data = Tracer::inSpan(['name' => HyperTrace::PAYMENT_VALIDATE_VPA], function() use ($input) {
+            return $this->service()->validateVpa($input);
+        });
 
         return ApiResponse::json($data);
     }

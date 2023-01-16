@@ -436,6 +436,10 @@ class Tracing
             // p2p_routes
             'p2p_merchant_devices_fetch_all',
             'p2p_merchant_vpa_fetch_all',
+
+            // validate vpa routes
+            'payment_validate_vpa',
+            'payment_validate_vpa_old',
         ]);
     }
 
