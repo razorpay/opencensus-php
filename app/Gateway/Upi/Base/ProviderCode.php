@@ -436,6 +436,7 @@ class ProviderCode
         ProviderPsp::JIO,
         ProviderPsp::BHIM_SBIPAY,
         ProviderPsp::IDFC,
+        ProviderPsp::TATA_NEU,
     ];
 
     /**
@@ -473,6 +474,7 @@ class ProviderCode
         self::JIO           => ProviderPsp::JIO,
         self::SBI           => ProviderPsp::BHIM_SBIPAY,
         self::FAM           => ProviderPsp::IDFC,
+        self::TAPICICI      => ProviderPsp::TATA_NEU,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
