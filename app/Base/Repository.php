@@ -1310,6 +1310,11 @@ class Repository extends \Razorpay\Spine\Repository
             return Config::get('database.default');
         }
 
+        if (isset($this->app['rzp.mode']) === false)
+        {
+            $this->app['rzp.mode'] = Mode::LIVE;
+        }
+        
         $mode = $mode ?? $this->app['rzp.mode'];
 
         $connection = ($mode === Mode::TEST) ? Connection::REPORTING_REPLICA_TEST : Connection::REPORTING_REPLICA_LIVE;
