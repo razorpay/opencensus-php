@@ -1255,6 +1255,23 @@ class Selector extends Base\Core
             return false;
         }
 
+        // We dont want to onboard hitachi terminal if payment
+        // is done using amex cards, since hitachi does not support it
+        // Slack: https://razorpay.slack.com/archives/CNV2GTFEG/p1673252018996959?thread_ts=1673001461.787579&cid=CNV2GTFEG
+        if (($payment->isMethodCardOrEmi() === true) and
+            (Gateway::isCardNetworkUnsupportedOnGateway(Gateway::HITACHI, ($payment->card->getNetworkCode() ?? '')) === true))
+        {
+            $this->trace->info(
+                TraceCode::SKIPPING_HITACHI_AUTOMATIC_ONBOARDING_UNSUPPORTED_NETWORK,
+                [
+                    'payment'             => $payment,
+                    'merchant'            => $merchant,
+                    'card_network'        => ($payment->card->getNetworkCode() ?? ''),
+                ]);
+
+            return false;
+        }
+
         $createTerminalCondition = (($payment->isMethod(Method::CARD) === true) and
         ($payment->isBharatQr() === false) and
         ((in_array($merchant->getCategory(), \RZP\Gateway\Hitachi\Gateway::BLACKLISTED_MCC) === false) or

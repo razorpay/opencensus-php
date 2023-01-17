@@ -3003,4 +3003,106 @@ class TerminalSelectionTest extends TestCase
             BadRequestException::class,PublicErrorDescription::BAD_REQUEST_PAYMENT_BANK_NOT_ENABLED_FOR_MERCHANT);
     }
 
+    // test to check whether unsupported network will return no terminals
+    // See Payment/Gateway@isCardNetworkUnsupportedOnGateway
+    // Slack: https://razorpay.slack.com/archives/CNV2GTFEG/p1673252018996959?thread_ts=1673001461.787579&cid=CNV2GTFEG
+    public function testHitachiOnboardingForUnsupportedNetwork() {
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+
+        $this->fixtures->merchant->setCategory('1240');
+
+        $input = $this->getInputForPayment('American Express', '374741410437245', '1234');
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+
+        $this->terminalsServiceMock = $this->getTerminalsServiceMock();
+
+        // asserting no calls to TS is made
+        $category = "1240";
+        $this->mockTerminalsServiceSendRequest(function () use($category){
+            return $this->getHitachiOnboardResponseAndCreate($category);
+        }, 0);
+
+        $selectedTerminals = $selector->select();
+
+        // No terminals should be selected since network is unsupported
+        $this->assertEquals(1, sizeof($selectedTerminals));
+        $this->assertNull($selectedTerminals[0]);
+    }
+
+    // test to check whether only supported network will return terminals
+    public function testHitachiOnboardingForSupportedNetwork() {
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hitachi_terminal');
+        $input = $this->getInputForPayment('Visa', '4012001036275556', '123');
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+
+        // Since network is supported, hitachi terminal should be returned
+        $this->assertEquals(1, sizeof($selectedTerminals));
+        $this->assertNotNull($selectedTerminals[0]);
+        $this->assertEquals('hitachi', $selectedTerminals[0]['gateway']);
+    }
+
+    protected function getInputForPayment($network, $cardNumber, $cvv)
+    {
+        $cardArray = [
+            'number'        => $cardNumber,
+            'expiry_month'  => '12',
+            'expiry_year'   => '2035',
+            'cvv'           => $cvv,
+            'network'       => $network,
+            'issuer'        => 'HDFC',
+            'name'          => 'Test',
+            'international' => true,
+        ];
+
+        $card = (new Card\Entity)->fill($cardArray);
+
+        $merchantDetailArray = [
+            'contact_name'                  => 'rzp',
+            'contact_email'                 => 'test@rzp.com',
+            'merchant_id'                   => '10000000000000',
+            'business_operation_address'    => 'Koramangala',
+            'business_operation_state'      => 'KARNATAKA',
+            'business_operation_pin'        =>  560047,
+            'business_dba'                  => 'test',
+            'business_name'                 => 'rzp_test',
+            'business_operation_city'       => 'Bangalore',
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailArray);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+        $paymentArray['method'] = 'card';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+
+        $payment->card()->associate($card);
+        $payment->setId("IUZpaMvrlsraCB");
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant,
+            'card_mandate' => null
+        ];
+
+        return $input;
+    }
 }

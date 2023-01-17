@@ -8854,6 +8854,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MAGIC_ANALYTICS_CONFIG_BE_GA_ANALYTICS_FAILED = 'MAGIC_ANALYTICS_CONFIG_BE_GA_ANALYTICS_FAILED';
     const MAGIC_ANALYTICS_TRIGGER_ANALYTIC_EVENT_FAILED = 'MAGIC_ANALYTICS_TRIGGER_ANALYTIC_EVENT_FAILED';
 
+    const SKIPPING_HITACHI_AUTOMATIC_ONBOARDING_UNSUPPORTED_NETWORK  = 'SKIPPING_HITACHI_AUTOMATIC_ONBOARDING_UNSUPPORTED_NETWORK';
+
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',

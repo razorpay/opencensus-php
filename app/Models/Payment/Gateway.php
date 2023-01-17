@@ -4855,4 +4855,35 @@ class Gateway
         IFSC::INDB => Gateway::INDUSIND_DEBIT_EMI
     );
 
+    /**
+     * List of card networks not supported on respective gateways
+     *
+     * @param $gateway
+     * @param $cardNetwork
+     * @return bool
+     */
+    public static function isCardNetworkUnsupportedOnGateway($gateway, $cardNetwork): bool
+    {
+        if ((empty($gateway) === true) or
+            (empty($cardNetwork) === true))
+        {
+            return false;
+        }
+
+        $unsupportedList = [
+            self::HITACHI   => [
+                Network::AMEX,
+                Network::DICL,
+            ],
+        ];
+
+        if ((isset($unsupportedList[$gateway]) === true) and
+            (in_array($cardNetwork, $unsupportedList[$gateway], true) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 }
