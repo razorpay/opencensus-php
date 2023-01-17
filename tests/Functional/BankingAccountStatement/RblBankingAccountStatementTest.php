@@ -29,6 +29,7 @@ use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
+use RZP\Models\Merchant\Webhook\Event;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use RZP\Models\Merchant\Balance\Entity;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -43,6 +44,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\BankingAccountStatementProcessor;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
@@ -62,6 +64,7 @@ class RblBankingAccountStatementTest extends TestCase
 {
     use PayoutTrait;
     use AttemptTrait;
+    use WebhookTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
     use TestsBusinessBanking;
@@ -138,6 +141,8 @@ class RblBankingAccountStatementTest extends TestCase
             BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => 0,
             BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => 123400
         ]);
+
+        $this->mockStorkService();
 
         $this->balance = $this->getDbEntity('balance', ['merchant_id' => '10000000000000', 'type' => 'banking']);
 
@@ -12243,6 +12248,21 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMozartMockResponse($mockedResponse);
 
+        $payloadReversed = null;
+
+        $this->mockServiceStorkRequest(
+            function($path, $payload) use (& $payloadReversed) {
+                $this->assertContains($payload['event']['name'], ['payout.reversed']);
+                switch ($payload['event']['name'])
+                {
+                    case Event::PAYOUT_REVERSED:
+                        $payloadReversed = $payload;
+                        break;
+                }
+
+                return new \Requests_Response();
+            })->times(11);
+
         $testData = $this->testData['testRblAccountStatementTxnMappingCase1'];
 
         $this->testData[__FUNCTION__] = $testData;
@@ -12302,6 +12322,30 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertEquals($reversal->getId(), $basEntries[2]['entity_id']);
         $this->assertEquals($reversal->getTransactionId(), $basEntries[2]['transaction_id']);
         $this->assertEquals($transactions[2]['entity_id'],$reversal->getId());
+
+        $payoutReversedEventData = [
+            'entity'   => 'event',
+            'event'    => 'payout.reversed',
+            'contains' => [
+                'payout',
+            ],
+            'payload'  => [
+                'payout' => [
+                    'entity' => [
+                        'entity' => 'payout',
+                        'status' => 'reversed',
+                        'failure_reason' => 'REVERSAL',
+                        'status_details'  => [
+                            'source' => 'beneficiary_bank',
+                            'reason' =>  'beneficiary_bank_failure',
+                            'description' => 'Payout failed at beneficiary bank due to technical issue. Please retry.'
+                        ]
+                    ],
+                ],
+            ],
+        ];
+
+        $this->validateStorkWebhookFireEvent('payout.reversed', $payoutReversedEventData, $payloadReversed);
     }
 
     public function testRBLAccountStatementWithVariousRegex()

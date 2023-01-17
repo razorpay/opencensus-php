@@ -38,6 +38,7 @@ use RZP\Models\BankingAccountStatement\Processor\Source;
 use RZP\Models\BankingAccountStatement\Details as BASDetails;
 use RZP\Models\BankingAccountStatement\Constants as BASConstants;
 use RZP\Jobs\BankingAccountStatement as BankingAccountStatementJob;
+use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 use RZP\Models\Payout\Processor\DownstreamProcessor\DownstreamProcessor;
 use RZP\Models\BankingAccountStatement\Processor\Rbl\Gateway as RblGateway;
 use RZP\Models\BankingAccountStatement\Processor\Icici\Gateway as IciciGateway;
@@ -2435,7 +2436,9 @@ class Core extends Base\Core
 
             $reverseReason = $existingPayout->getFailureReason() ?? 'REVERSAL';
 
-            (new Payout\Core)->reversePayout($existingPayout, $reverseReason);
+            (new Payout\Core)->reversePayout($existingPayout, $reverseReason, 'FAILURE');
+
+            (new PayoutsStatusDetailsCore())->create($existingPayout);
 
             $reversal = $existingPayout->reversal;
 
