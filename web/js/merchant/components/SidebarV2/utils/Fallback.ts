@@ -70,6 +70,12 @@ export const FALLBACK_PRODUCTS = [
         tags: [],
       },
       {
+        title: 'Affordability',
+        product_id: 'affordability',
+        category: 'promoted',
+        tags: ['NEW'],
+      },
+      {
         title: 'Stores',
         product_id: 'stores',
         category: '',

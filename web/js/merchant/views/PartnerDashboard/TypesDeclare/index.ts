@@ -8,6 +8,8 @@ export interface UserT extends Record<string, unknown> {
   isOnboardAsResellers: boolean;
   isShowInvoiceCurrentFY: boolean;
   isShowAffordabilityWidget: boolean;
+  isShowAffWidgetShopifyWaitlist: boolean;
+  isShowAffWidgetWoocWaitlist: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

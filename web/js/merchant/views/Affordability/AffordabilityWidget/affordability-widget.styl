@@ -1,0 +1,76 @@
+.OnBoarding--AffordabilityWidget
+  padding: 0
+  background: #FFF
+
+  .Slider
+    max-height: unset
+    height: auto
+
+    @media (max-width 375px)
+      height: 102vh
+
+  .Landing--Image
+    overflow: hidden
+    z-index: 2
+    position: relative
+    background-color: #F4FDFF
+
+    img
+      width: 100%
+      max-width: 700px
+      min-width: 520px
+
+  .Product--Details
+    margin-top: 0
+    padding: 0 50px
+
+    @media (max-width 1024px)
+      padding: 0 24px
+
+    .refresh-note
+      position: absolute
+      bottom: 50px
+      font-size: 12px
+      font-weight: 400
+      font-style: italic
+
+      span
+        font-weight: 700
+
+    .Details-heading
+      margin: 32px 0 24px
+
+      .dash
+        border: 1.5px solid #2B83EA
+
+    .Details-title
+      font-size: 30px
+      line-height: 36px
+      margin: 16px 0 8px
+      font-weight: 800
+      // stylelint-disable-next-line
+      color: rgba(22, 47, 86, 0.87)
+
+      @media (max-width 1024px)
+        font-size: 28px
+
+    .Details-desc
+      margin-bottom: 30px
+      font-size: 14px
+      line-height: 18px
+      font-weight: 400
+      color: #7C8297
+
+    .Button-Container
+      bottom: 20px
+
+      @media (max-width 375px)
+        position: static
+        display: flex
+        justify-content: flex-end
+
+        button.Forward-Button
+          margin-top: 40px
+
+  .setup-others .Button-Container
+    bottom: 10px

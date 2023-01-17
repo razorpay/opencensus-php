@@ -20,6 +20,7 @@ const ROUTE_REG = {
   qr_codes: /^\/qr_codes(\/(payments))?/,
   offers: /^\/offers(\/(new))?/,
   stores: /^\/stores(\/(products|orders))?/,
+  affordability: /^\/affordability(\/(widget))?/,
 };
 
 const BASE_ROUTES = {
@@ -57,6 +58,7 @@ const BASE_ROUTES = {
   chargeAtWill: '/recurring_payments',
   partner: '/submerchants',
   accountsettings: '/account-settings',
+  affordability: 'affordability/widget',
 };
 
 export const initializeRoutes = (location, user) => {
@@ -76,6 +78,8 @@ export const initializeRoutes = (location, user) => {
     routes.settings = pathname.match(ROUTE_REG.settings)[0];
   } else if (ROUTE_REG.invoices.test(pathname)) {
     routes.invoices = pathname.match(ROUTE_REG.invoices)[0];
+  } else if (ROUTE_REG.affordability.test(pathname)) {
+    routes.affordability = pathname.match(ROUTE_REG.affordability)[0];
   } else if (ROUTE_REG.route.test(pathname)) {
     routes.route = pathname.match(ROUTE_REG.route)[0];
   } else if (ROUTE_REG.payment_links.test(pathname)) {

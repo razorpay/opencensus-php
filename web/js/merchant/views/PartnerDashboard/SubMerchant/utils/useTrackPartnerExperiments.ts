@@ -12,6 +12,8 @@ export default function useTrackPartnerExperiments(user: UserT): void {
     isOnboardAsResellers,
     isShowInvoiceCurrentFY,
     isShowAffordabilityWidget,
+    isShowAffWidgetShopifyWaitlist,
+    isShowAffWidgetWoocWaitlist,
   } = user;
 
   const trackExperiments = useCallback(() => {
@@ -31,6 +33,8 @@ export default function useTrackPartnerExperiments(user: UserT): void {
         isOnboardAsResellers,
         isShowInvoiceCurrentFY,
         isShowAffordabilityWidget,
+        isShowAffWidgetShopifyWaitlist,
+        isShowAffWidgetWoocWaitlist,
       },
     });
   }, [
@@ -43,6 +47,8 @@ export default function useTrackPartnerExperiments(user: UserT): void {
     isOnboardAsResellers,
     isShowInvoiceCurrentFY,
     isShowAffordabilityWidget,
+    isShowAffWidgetShopifyWaitlist,
+    isShowAffWidgetWoocWaitlist,
   ]);
 
   useEffect(() => {

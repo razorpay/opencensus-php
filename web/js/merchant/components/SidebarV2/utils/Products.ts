@@ -89,6 +89,12 @@ export const PRODUCTS_DATA = {
     additionalCondition: (user: any): boolean =>
       user.isAllowedView('qr_codes') && !user.findTag('i18_hide_qr_codes'),
   },
+  affordability: {
+    icon: 'i-affordability',
+    additionalCondition: (user: any) => {
+      return user.isShowAffordabilityWidget && user.isOrgRZP;
+    },
+  },
   subscriptions: {
     icon: 'i-refresh',
     additionalCondition: (user: any): boolean =>

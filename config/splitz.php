@@ -240,6 +240,8 @@ return [
 
         // affordability widget on dashboard
         'SHOW_AFFORDABILITY_WIDGET_EXP' => env('SHOW_AFFORDABILITY_WIDGET_EXP', ''),
+        'SHOW_AFF_WIDGET_SHOPIFY_WAIT_LIST' => env('SHOW_AFF_WIDGET_SHOPIFY_WAIT_LIST', ''),
+        'SHOW_AFF_WIDGET_WOOC_WAIT_LIST' => env('SHOW_AFF_WIDGET_WOOC_WAIT_LIST', ''),
         
         // disable ticket creation for international activation
         'DISABLE_INTERNATIONAL_ACTIVATION' => env('DISABLE_INTERNATIONAL_ACTIVATION', '')

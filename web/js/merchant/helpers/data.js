@@ -130,6 +130,7 @@ export const RZPFeatures = {
   PB: 'payment_buttons',
   INVOICE: 'invoices',
   OFFERS: 'offers',
+  AFFORDABILITY_WIDGET: 'affordability_widget',
   REWARDS: 'rewards',
   QR_CODES: 'qr_codes',
   MAGIC_CHECKOUT: 'magic_checkout',

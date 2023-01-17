@@ -1,48 +1,49 @@
-import affCart from 'assets/affordability_widget/aff-cart.svg';
-import affCustomers from 'assets/affordability_widget/aff-customers.svg';
-import affGrowth from 'assets/affordability_widget/aff-growth.svg';
-const FeatureTile = ({ icon, metric, featureDesc }) => {
+import 'merchant/views/Affordability/components/featuretiles/feature-tiles.styl';
+import { useEffect } from 'react';
+import { compose } from 'redux';
+import RTracking from 'react-tracking';
+import { FeatureTilesList } from './data';
+import track from './track';
+import trackDetails from 'merchant/views/Affordability/AffordabilityWidget/PlanDetails/track';
+
+const FeatureTile = ({ icon, metric, featureDesc, description }) => {
   return (
     <div className="benefit-tile">
       <div className="icon-wrapper">
         <img src={icon} className="icon-img" />
       </div>
-      <b className="benefit-metric">{metric}</b>
-      <p className="benefit-desc">{featureDesc}</p>
+      <div className="benefit-content-wrapper">
+        <b className="benefit-metric">{metric}</b>
+        <p className="benefit-desc">{featureDesc}</p>
+        <p className="benefit-desc-complete">{description}</p>
+      </div>
     </div>
   );
 };
 
-const FeatureTilesList = [
-  {
-    icon: affCart,
-    metric: '47%',
-    featureDesc: <>Increase in order value</>,
-  },
-  {
-    icon: affGrowth,
-    metric: '57%',
-    featureDesc: <>Growth in conversion rates</>,
-  },
-  {
-    icon: affCustomers,
-    metric: '38%',
-    featureDesc: <>Higher customer satisfaction</>,
-  },
-];
+const FeatureTiles = ({ expanded = false }) => {
+  useEffect(() => {
+    if (!expanded) {
+      track.productDetailsRender();
+    } else {
+      trackDetails.widgetBenefitsRender();
+    }
+  }, []);
 
-export const FeatureTiles = () => {
   return (
-    <div className="benefit-tiles-grid">
+    <div className={`benefit-tiles-grid ${expanded ? 'tiles-expanded' : ''}`}>
       {FeatureTilesList.map((feature, index) => (
-        <div key={index}>
-          <FeatureTile
-            icon={feature.icon}
-            featureDesc={feature.featureDesc}
-            metric={feature.metric}
-          />
-        </div>
+        <FeatureTile
+          icon={feature.icon}
+          featureDesc={feature.featureDesc}
+          metric={feature.metric}
+          description={feature.description}
+          key={index}
+        />
       ))}
     </div>
   );
 };
+
+// eslint-disable-next-line babel/new-cap
+export default compose(RTracking(() => window.rzpQ.component('FeatureTiles'))(FeatureTiles));

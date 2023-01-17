@@ -557,6 +557,8 @@ export default class Content extends Component {
               !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Subscriptions)
             }
           />
+          <ShowWhenRoute path="/affordability" component={Affordability} />
+
           <ShowWhenRoute
             path="/affordability"
             component={Affordability}

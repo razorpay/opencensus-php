@@ -159,4 +159,7 @@ export const RoutesConfig = {
   '/payments/invoices': Teams.CROSS_BORDER,
 
   '/payroll': Teams.XPAYROLL,
+
+  '/affordability/widget': Teams.AFFORDABILITY,
+  '/affordability/widget/platforms': Teams.AFFORDABILITY,
 };

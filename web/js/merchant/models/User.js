@@ -453,6 +453,12 @@ export default class User {
     return isEnabled;
   }
 
+  get isAffordabilityWidgetEnabled() {
+    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.AFFORDABILITY_WIDGET);
+
+    return isEnabled;
+  }
+
   get isRewardsEnabled() {
     const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.REWARDS);
 
@@ -1722,6 +1728,16 @@ export default class User {
 
   get isShowAffordabilityWidget() {
     return getSplitzExperimentVariant('show_affordability_widget_exp').variables?.result === 'on';
+  }
+
+  get isShowAffWidgetShopifyWaitlist() {
+    return (
+      getSplitzExperimentVariant('show_aff_widget_shopify_wait_list').variables?.result === 'on'
+    );
+  }
+
+  get isShowAffWidgetWoocWaitlist() {
+    return getSplitzExperimentVariant('show_aff_widget_wooc_wait_list').variables?.result === 'on';
   }
 
   get isApiKeysRevampEnabled() {

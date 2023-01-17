@@ -3,12 +3,14 @@ import Button from 'common/new-ui/Button';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 
-function JoinedWaitlistButton() {
+function JoinedWaitlistButton(props) {
+  const { platform } = props;
+
   useEffect(() => {
     analyticsTrack({
-      objectName: 'Affordability Widget Early Access Joined',
+      objectName: `Affordability Widget ${platform} Plugin Early Access Joined`,
       actionName: 'appear',
-      screen: 'Affordability Widget',
+      screen: `Affordability Widget ${platform} Setup`,
       properties: {
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
@@ -17,9 +19,8 @@ function JoinedWaitlistButton() {
   }, []);
 
   return (
-    <Button className="joined-button">
+    <Button className="Button--primary btn-lg btn-feedback" disabled={true}>
       Joined the waitlist
-      <i className="i i-tick" />
     </Button>
   );
 }

@@ -1,0 +1,167 @@
+$screen-xs-max = 1024px
+
+.aff-header
+  display: flex
+  align-items: center
+
+  @media (max-width 767px)
+    flex-wrap: wrap
+
+  .settings-dropdown
+    i
+      font-size: unset
+      top: 0
+
+  .dropdown-menu
+    left: -56px
+
+.widget-disble-modal
+  .modal-body
+    padding: 16px 24px
+
+  .shopify-disable
+    font-style: italic
+    margin-top: 12px
+
+  .modal-footer
+    display: flex
+    justify-content: flex-end
+    align-items: center
+    border-top: 0
+    margin-top: 30px
+    padding: 0
+
+    .btn-border
+      background: #FFF
+      margin-right: 16px
+      color: #528FF0
+
+.aff-self-server
+  .caption
+    margin-bottom: 16px
+
+  .plans-wrapper
+    margin-top: 30px
+
+  .block
+    padding: 16px
+    // stylelint-disable-next-line
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.25)
+
+  .plan-heading
+    font-size: 10px
+    font-weight: 400
+    color: #858C9A
+    margin-bottom: 4px
+    text-transform: uppercase
+
+    span
+      font-style: italics
+
+  .plan-value
+    font-weight: 700
+    font-size: 14px
+    padding: 0
+
+    @media (max-width 395px)
+      display: flex
+      flex-wrap: wrap
+      align-items: center
+
+  .discounted-price
+    text-decoration-line: line-through
+    // stylelint-disable-next-line
+    color: rgba(90, 102, 109, 0.6)
+    font-size: 12px
+    font-weight: 500
+    margin: 0 6px
+
+  .plan-details-grid
+    display: grid
+    grid-template-columns: 2fr
+    gap: 16px
+    margin-top: 16px
+
+    @media (max-width $screen-xs-max)
+      grid-template-columns: unset
+
+    @media (max-width 395px)
+      display: flex
+      flex-direction: column
+
+    .plan-details
+      margin-bottom: 12px
+
+      .plan-details-wrapper
+        display: grid
+        margin-bottom: 16px
+        grid-template-columns: repeat(3, 1fr) 2fr
+
+        @media (max-width $screen-xs-max)
+          grid-template-columns: 1fr 1fr
+
+        .customize-widget
+          // stylelint-disable-next-line max-nesting-depth
+          @media (max-width 395px)
+            margin-top: 20px
+
+      .plan-details-wrapper-sm
+        grid-template-columns: 1fr 1fr 2fr
+
+      .configure-wrapper
+        .config-head
+          margin-bottom: 16px
+
+      .offers-wrapper
+        display: grid
+        grid-template-columns: repeat(2, 1fr)
+        gap: 16px
+
+        @media (max-width $screen-xs-max)
+          display: flex
+          flex-direction: column
+
+        .block
+          padding: 0
+          display: flex
+          // stylelint-disable-next-line max-nesting-depth
+          img
+            width: 194px
+            // stylelint-disable-next-line max-nesting-depth
+            @media (max-width $screen-xs-max)
+              width: 150px
+          // stylelint-disable-next-line max-nesting-depth
+          .block-desc-wrapper
+            padding: 20px 16px
+            display: flex
+            flex-direction: column
+            justify-content: space-between
+            // stylelint-disable-next-line max-nesting-depth
+            .block-desc-header
+              color: #444
+              font-size: 14px
+              font-weight: 800
+            // stylelint-disable-next-line max-nesting-depth
+            .block-desc-content
+              color: #7C8297
+              font-size: 13px
+              font-weight: 400
+              margin-top: 6px
+
+    .query-wrapper
+      height: 255px
+
+      @media (max-width $screen-xs-max)
+        height: auto
+
+      .query-row
+        margin-top: 30px
+
+        @media (max-width 395px)
+          margin-top: 16px
+
+    .query-wrapper-sm
+      height: 90px
+
+      @media (max-width 395px)
+        height: auto

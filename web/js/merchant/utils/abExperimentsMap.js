@@ -473,6 +473,20 @@ export default {
     //prod experiment ids,
     'KpKKcFI3d29nAv',
   ],
+  show_aff_widget_shopify_wait_list: [
+    //beta experiment ids
+    'L3aVOvsChLiuPm',
+
+    //prod experiment ids,
+    'L3abQRPY3iDdGf',
+  ],
+  show_aff_widget_wooc_wait_list: [
+    //beta experiment ids
+    'L4jTBkRsvWCFZJ',
+
+    //prod experiment ids,
+    'L4jWAHTviz9Tbu',
+  ],
   get_ticket_migration: [
     // beta
     'KoBY1gZStTu3ic',
