@@ -10856,6 +10856,69 @@ class UserTest extends TestCase
         $this->assertEquals([$user->getId()], $mappings->pluck('user_id')->toArray());
     }
 
+    public function testWhatsAppOptInForX()
+    {
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
+            'contact_mobile' => '9876543210',
+            'id'             => '2abcd000000000',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app]);
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->app['stork_service']->shouldReceive('optInForWhatsapp')->once()->with('test','9876543210',[
+            'source'           => 'x',
+            'business_account' => 'razorpayx'
+        ])->andReturn([
+            'optin_status'  => true
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testWhatsAppOptInStatusForX()
+    {
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
+            'contact_mobile' => '9876543210',
+            'id'             => '2abcd000000000',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app]);
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->app['stork_service']->shouldReceive('optInStatusForWhatsapp')->once()->with('test','9876543210','x','razorpayx')->andReturn([
+            'phone_number'  => '9876543210'
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testWhatsAppOptOutForX()
+    {
+        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [
+            'contact_mobile' => '9876543210',
+            'id'             => '2abcd000000000',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user['id']);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app]);
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->app['stork_service']->shouldReceive('optOutForWhatsapp')->once()->with('test','9876543210','x','razorpayx')->andReturn([
+            'optin_status'  => false
+        ]);
+
+        $this->startTest();
+    }
+
     private function mockSplitzExperiment($output)
     {
         $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();

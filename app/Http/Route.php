@@ -9461,6 +9461,8 @@ class Route
         'user_send_x_mobile_app_link'                  => '*',
         'user_2fa_change_setting'                      => '*',
         'user_opt_in_whatsapp'                         => '*',
+        'user_opt_out_whatsapp'                        => '*',
+        'user_opt_in_status_whatsapp'                  => '*',
         'banking_account_create'                       => '*',
         'banking_account_create_dashboard'             => '*',
         'get_banking_account_slot_booking_details'     => '*',

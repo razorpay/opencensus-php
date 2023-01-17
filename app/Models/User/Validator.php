@@ -295,14 +295,17 @@ class Validator extends Base\Validator
     protected static $optInWhatsappRules = [
         'source'               => 'required|string',
         'send_welcome_message' => 'sometimes|boolean',
+        'business_account'     => 'sometimes|string|in:razorpayx,razorpay'
     ];
 
     protected static $optOutWhatsappRules = [
-        'source' => 'required|string',
+        'source'               => 'required|string',
+        'business_account'     => 'sometimes|string|in:razorpayx,razorpay'
     ];
 
     protected static $optInStatusWhatsappRules = [
-        'source' => 'required|string',
+        'source'               => 'required|string',
+        'business_account'     => 'sometimes|string|in:razorpayx,razorpay'
     ];
 
     protected static $updateContactMobileRules = [

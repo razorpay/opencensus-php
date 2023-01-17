@@ -2775,7 +2775,9 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND);
         }
 
-        return app('stork_service')->optOutForWhatsapp($this->mode, $contact, $input['source']);
+        $businessAccount = $input['business_account'] ?? '';
+
+        return app('stork_service')->optOutForWhatsapp($this->mode, $contact, $input['source'], $businessAccount);
     }
 
     public function optInStatusForWhatsapp(array $input, $user = null)
@@ -2796,7 +2798,9 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_REGISTERED_MOBILE_NUMBER_NOT_FOUND);
         }
 
-        return app('stork_service')->optInStatusForWhatsapp($this->mode, $contact, $input['source']);
+        $businessAccount = $input['business_account'] ?? '';
+
+        return app('stork_service')->optInStatusForWhatsapp($this->mode, $contact, $input['source'], $businessAccount);
     }
 
     public function getDetails(array $input)

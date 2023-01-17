@@ -328,17 +328,27 @@ class Stork
             'send_welcome_message' => $input['send_welcome_message'] ?? true,
         ];
 
+        if(array_key_exists('business_account',$input))
+        {
+            $storkInput['business_account'] = $input['business_account'];
+        }
+
         return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/OptInUser', $storkInput);
     }
 
-    public function optInStatusForWhatsapp(string $mode, string $number, string $source)
+    public function optInStatusForWhatsapp(string $mode, string $number, string $source, string $businessAccount = '')
     {
         $this->init($mode);
 
         $storkInput = [
-            'phone_number' => $number,
-            'source'       => $source,
+            'phone_number'      => $number,
+            'source'            => $source,
         ];
+
+        if(!empty($businessAccount))
+        {
+            $storkInput['business_account'] = $businessAccount;
+        }
 
         return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/GetUserConsent', $storkInput);
     }
@@ -355,14 +365,19 @@ class Stork
      * @throws ServerErrorException
      * @throws TwirpException
      */
-    public function optOutForWhatsapp(string $mode, string $number, string $source)
+    public function optOutForWhatsapp(string $mode, string $number, string $source, string $businessAccount = '')
     {
         $this->init($mode);
 
         $storkInput = [
-            'phone_number' => $number,
-            'source'       => $source,
+            'phone_number'      => $number,
+            'source'            => $source,
         ];
+
+        if(!empty($businessAccount))
+        {
+            $storkInput['business_account'] = $businessAccount;
+        }
 
         return $this->requestAndGetParsedBody('/twirp/rzp.stork.whatsapp.v1.WhatsappAPI/OptOutUser', $storkInput);
     }

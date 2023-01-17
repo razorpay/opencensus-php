@@ -6724,4 +6724,53 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_PARTNER_MAP,
         ],
     ],
+
+    'testWhatsAppOptInForX' => [
+        'request' => [
+            'url'     => '/users/whatsapp/opt_in',
+            'method'  => 'POST',
+            'content' => [
+                'source'           => 'x',
+                'business_account' => 'razorpayx'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'optin_status' => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testWhatsAppOptInStatusForX' => [
+        'request' => [
+            'url'     => '/users/whatsapp/opt_in_status?source=x&business_account=razorpayx',
+            'method'  => 'GET',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'phone_number' => '9876543210'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testWhatsAppOptOutForX' => [
+        'request' => [
+            'url'     => '/users/whatsapp/opt_out',
+            'method'  => 'POST',
+            'content' => [
+                'source'           => 'x',
+                'business_account' => 'razorpayx'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'optin_status' => false
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];
