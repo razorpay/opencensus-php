@@ -331,7 +331,7 @@ class FtsTest extends TestCase
 
         Mail::assertSent(PartnerBankHealthMail::class, function($mail) {
 
-            $subject = "[Downtime notification] We are experiencing an issue with processing IMPS payouts through RBL Bank";
+            $subject = "We are facing an issue with processing IMPS payouts through RBL Bank " . PartnerBankHealthMail::SMILING_FACE_WITH_TEAR;
 
             $this->assertSame($subject, $mail->subject);
 
@@ -408,7 +408,7 @@ class FtsTest extends TestCase
 
         Mail::assertSent(PartnerBankHealthMail::class, function($mail) {
 
-            $subject = "[Uptime notification] Now you can process IMPS payouts through RBL Bank";
+            $subject = "IMPS Payouts through RBL Bank is up and running!";
 
             $this->assertSame($subject, $mail->subject);
 
@@ -545,7 +545,7 @@ class FtsTest extends TestCase
 
         Mail::assertSent(PartnerBankHealthMail::class, function($mail) {
 
-            $subject = "[Downtime notification] We are experiencing an issue with processing UPI payouts through RazorpayX";
+            $subject = "We are facing an issue with processing UPI payouts through RazorpayX ". PartnerBankHealthMail::SMILING_FACE_WITH_TEAR;
 
             $this->assertSame($subject, $mail->subject);
 
@@ -995,7 +995,7 @@ class FtsTest extends TestCase
         //assert other contents of the Mailable class like subject, sender and view
         Mail::assertSent(PartnerBankHealthMail::class, function($mail) {
 
-            $subject = "[Downtime notification] We are experiencing an issue with processing IMPS payouts through Axis Bank";
+            $subject = "We are facing an issue with processing IMPS payouts through Axis Bank " . PartnerBankHealthMail::SMILING_FACE_WITH_TEAR;
 
             $this->assertSame($subject, $mail->subject);
 
@@ -1066,7 +1066,7 @@ class FtsTest extends TestCase
 
         Mail::assertSent(PartnerBankHealthMail::class, function($mail) {
 
-            $subject = "[Uptime notification] Now you can process IMPS payouts through Axis Bank";
+            $subject = "IMPS Payouts through Axis Bank is up and running!";
 
             $this->assertSame($subject, $mail->subject);
 
@@ -1143,7 +1143,7 @@ class FtsTest extends TestCase
         //assert other contents of the Mailable class like subject, sender and view
         Mail::assertSent(PartnerBankHealthMail::class, function($mail) {
 
-            $subject = "[Downtime notification] We are experiencing an issue with processing IMPS payouts through Yes Bank";
+            $subject = "We are facing an issue with processing IMPS payouts through Yes Bank " . PartnerBankHealthMail::SMILING_FACE_WITH_TEAR;
 
             $this->assertSame($subject, $mail->subject);
 

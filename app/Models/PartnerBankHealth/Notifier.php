@@ -31,8 +31,8 @@ class Notifier extends \RZP\Models\Base\Core
     const DISPLAY_NAME   = 'display_name';
     const DEFAULT_SOURCE = 'RazorpayX';
 
-    // make this redis based fetch/updated
-    const DEFAULT_CONFIG_FETCH_LIMIT = 50;
+    // make this redis based fetch/update
+    const DEFAULT_CONFIG_FETCH_LIMIT = 20;
 
     const CHANNEL_MAPPING_FOR_DB = [
         'YESB' => 'yesbank',
@@ -279,12 +279,6 @@ class Notifier extends \RZP\Models\Base\Core
 
     public function sendEmail(ConfigEntity $config, $emailParams)
     {
-        //This is to avoid unnecessary failures in mail flow via stork as the template is not present in templating service
-        if ($this->env === Environment::PRODUCTION)
-        {
-            return;
-        }
-
         $storkResponse       = null;
         $merchantId          = $config->getMerchantId();
         $merchantDisplayName = $config->merchant->getDisplayName();

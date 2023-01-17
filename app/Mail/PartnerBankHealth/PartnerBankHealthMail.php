@@ -13,8 +13,10 @@ class PartnerBankHealthMail extends Mailable
 {
     public $params;
 
-    const DOWNTIME_SUBJECT = "[Downtime notification] We are experiencing an issue with processing %s payouts through %s";
-    const UPTIME_SUBJECT   = "[Uptime notification] Now you can process %s payouts through %s";
+    const DOWNTIME_SUBJECT = "We are facing an issue with processing %s payouts through %s";
+    const UPTIME_SUBJECT   = "%s Payouts through %s is up and running!";
+
+    const SMILING_FACE_WITH_TEAR = "\xF0\x9F\xA5\xB2"; //slack equivalent : 🥲
 
     const SOURCE = NotificationType::PARTNER_BANK_HEALTH;
 
@@ -34,7 +36,7 @@ class PartnerBankHealthMail extends Mailable
         switch ($this->params['status'])
         {
             case Status::DOWN:
-                $subject = self::DOWNTIME_SUBJECT;
+                $subject = self::DOWNTIME_SUBJECT . ' ' . self::SMILING_FACE_WITH_TEAR;
                 break;
             case Status::UP:
                 $subject = self::UPTIME_SUBJECT;
