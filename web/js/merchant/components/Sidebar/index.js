@@ -54,6 +54,7 @@ const BASE_ROUTES = {
   magicCheckout: '/magic',
   stores: '/stores/products',
   developersApis: '/developers/apis',
+  developersWebhooks: '/developers/webhooks',
 };
 
 @withRouter

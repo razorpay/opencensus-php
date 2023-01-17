@@ -388,7 +388,7 @@ function MerchantNavLinks(props) {
         label="Developers"
         type="general"
         icon="i i-developers developers-sidebar-icon text-primary"
-        to={routes.developersApis}
+        to={user.isDeveloperConsoleEnabled ? routes.developersApis : routes.developersWebhooks}
         additionalCondition={(currentUser) =>
           !isMobileResolution() &&
           currentUser.isAllowedView('developers_console') &&

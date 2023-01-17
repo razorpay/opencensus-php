@@ -25,6 +25,7 @@ const ROUTE_REG = {
   x_corporate_cards: /^\/capital\/corporate-cards/,
   loans: /^\/captial\/loans/,
   affordability: /^\/affordability(\/(widget))?/,
+  developers: /^\/developers(\/(api|webhooks))?/,
 };
 
 const BASE_ROUTES = {
@@ -70,6 +71,9 @@ export const initializeRoutes = (location, user) => {
   const routes = { ...BASE_ROUTES };
   if (!user.isAllowedView('configuration')) {
     routes.settings = '/webhooks';
+  }
+  if (user.isDeveloperConsoleWebhooksTabEnabled && !user.isDeveloperConsoleEnabled) {
+    routes.developers = '/developers/webhooks';
   }
   if (user.isOrgAxis) {
     routes.my_account = '/profile';
