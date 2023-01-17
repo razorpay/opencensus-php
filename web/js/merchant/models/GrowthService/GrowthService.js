@@ -1,6 +1,7 @@
 import GenericEntity from 'merchant/models/GenericEntity';
 import { getMode, getUser } from 'merchant/store';
 import { assetNames } from './data';
+import { getItem } from 'common/utils/localStorage';
 import { getChannelID, sortAssetData, isValidAssetData, sortCarouselBanner } from './commonUtils';
 
 export default class GrowthService extends GenericEntity {
@@ -43,6 +44,12 @@ export default class GrowthService extends GenericEntity {
       user_id,
       ...this.getUserFeatures(),
     };
+  };
+
+  removeDismissedData = (data = {}) => {
+    const bannerKey = `${data?.id}-${this.user?.current}`;
+    const val = getItem(bannerKey);
+    return !val; // return 'false' if key/value is 'null' & not dismissed by user
   };
 
   fetchAssetData = (channel_id, assetName) => {
@@ -132,8 +139,9 @@ export default class GrowthService extends GenericEntity {
 
       if (Array.isArray(gsBanners)) banners.push(...gsBanners);
     }
-
-    banners = banners.filter((banner) => isValidAssetData(banner, assetNames.BANNER));
+    banners = banners.filter(
+      (banner) => isValidAssetData(banner, assetNames.BANNER) && this.removeDismissedData(banner),
+    );
     sortAssetData(banners, assetNames.BANNER);
     if (banners.length) banners = banners.slice(0, totalBannersLimit);
     return banners;
