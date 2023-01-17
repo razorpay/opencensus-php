@@ -20,6 +20,10 @@ const ROUTE_REG = {
   qr_codes: /^\/qr_codes(\/(payments))?/,
   offers: /^\/offers(\/(new))?/,
   stores: /^\/stores(\/(products|orders))?/,
+  cash_advance: /^\/capital\/cash-advance/,
+  working_capital_loans: /^\/capital\/non-fldg-loans/,
+  x_corporate_cards: /^\/capital\/corporate-cards/,
+  loans: /^\/captial\/loans/,
   affordability: /^\/affordability(\/(widget))?/,
 };
 
