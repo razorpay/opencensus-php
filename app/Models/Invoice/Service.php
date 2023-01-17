@@ -761,6 +761,42 @@ class Service extends Base\Service
         return $this->core->switchPlVersions($input, $this->merchant);
     }
 
+    public function dccPaymentInvoiceCron(array $input)
+    {
+        $this->trace->info(TraceCode::DCC_PAYMENT_E_INVOICE_CRON_INIT,[
+            'input'  => $input,
+        ]);
+        try
+        {
+            $dccCore = new DccEInvoiceCore();
+            // if payload has IDs then process payload request (manual run of cron)
+            if (isset($input[\RZP\Models\Invoice\Constants::REFERENCE_ID]) and isset($input[\RZP\Models\Invoice\Constants::REFERENCE_TYPE]))
+            {
+                $dccCore->processPayload($input);
+            }
+            // process yesterday's failed invoices (default cron job)
+            else
+            {
+                $dccCore->processFailedInvoices();
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::DCC_PAYMENT_E_INVOICE_CRON_FAILED,[
+                    'payload' => $input,
+                ]
+            );
+        }
+
+        $this->trace->info(TraceCode::DCC_PAYMENT_E_INVOICE_CRON_COMPLETED, [
+            'input'  => $input,
+        ]);
+        return ['success' => true];
+    }
+
     protected function serializeOrgPropertiesForHostedForPaymentLinkService()
     {
         $org = $this->merchant->org;

@@ -699,4 +699,44 @@ class Repository extends Base\Repository
         // Adding return type as slave for now. hotfix to reduce replication lag in TiDb
         return ($mode === Mode::TEST) ? Connection::SLAVE_TEST : Connection::SLAVE_LIVE;
     }
+
+    public function fetchInvoicesByEntity(string $entityId, string $entityType)
+    {
+        return $this->repo->useSlave(function() use ($entityId, $entityType)
+        {
+            return $this->newQuery()
+                ->where(Entity::ENTITY_ID, $entityId)
+                ->where(Entity::ENTITY_TYPE, $entityType)
+                ->get();
+        });
+    }
+
+    public function fetchInvoicesByEntityAndType(string $entityId, string $entityType, string $type)
+    {
+        return $this->repo->useSlave(function() use ($entityId, $entityType, $type)
+        {
+            return $this->newQuery()
+                ->where(Entity::ENTITY_ID, $entityId)
+                ->where(Entity::ENTITY_TYPE, $entityType)
+                ->where(Entity::TYPE, $type)
+                ->get();
+        });
+    }
+
+    public function fetchYesterdaysFailedInvoicesByType(string $type)
+    {
+        return $this->repo->useSlave(function() use ($type)
+        {
+            $currentTime = Carbon::now(Timezone::IST);
+            $to = $currentTime->startOfDay()->getTimestamp();
+            $from = $currentTime->subDay()->startOfDay()->getTimestamp();
+
+            return $this->newQuery()
+                ->where(Entity::TYPE, $type)
+                ->where(Entity::CREATED_AT, '>=', $from)
+                ->where(Entity::CREATED_AT, '<', $to)
+                ->where(Entity::STATUS, Status::FAILED)
+                ->get();
+        });
+    }
 }

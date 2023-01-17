@@ -9,10 +9,17 @@ class Type
     const ECOD    = 'ecod';
     const INVOICE = 'invoice';
     const LINK    = 'link';
+    const DCC_INV = 'dcc_inv';
+    const DCC_CRN = 'dcc_crn';
 
     protected static $paymentLinkTypes = [
         self::LINK,
         self::ECOD,
+    ];
+
+    protected static $dccEInvoiceTypes = [
+        self::DCC_INV,
+        self::DCC_CRN,
     ];
 
     public static function isTypeValid(string $type): bool
@@ -26,6 +33,11 @@ class Type
     {
         return ((self::isTypeValid($type)) and
                 (in_array($type, self::$paymentLinkTypes, true) === true));
+    }
+
+    public static function getDCCEInvoiceTypes(): array
+    {
+        return self::$dccEInvoiceTypes;
     }
 
     public static function checkType(string $type)
@@ -56,6 +68,11 @@ class Type
 
             case self::INVOICE:
                 return 'Invoice';
+
+            case self::DCC_INV:
+                return 'DCC tax invoice';
+            case self::DCC_CRN:
+                return 'DCC credit note';
         }
     }
 }

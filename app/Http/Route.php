@@ -1279,6 +1279,7 @@ class Route
         'invoice_view_live_post'                   => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test_post'                   => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_get_pdf'                          => ['get',      'invoices/{x_entity_id}/pdf',                     'InvoiceController@getInvoicePdf'                                   ],
+        'dcc_invoice_generation_cron'              => ['post',     'invoices/dcc-payment/cron',                      'InvoiceController@dccPaymentInvoiceCron'                           ],
         'item_create'                              => ['post',     'items',                                          'ItemController@createItem'                                         ],
         'item_fetch'                               => ['get',      'items/{id}',                                     'ItemController@getItem'                                            ],
         'item_fetch_multiple'                      => ['get',      'items',                                          'ItemController@getItems'                                           ],
@@ -4695,6 +4696,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'dcc_invoice_generation_cron',
         'internal_merchant_details_fetch',
         'internal_merchant_partnership',
         'fpx_downtime_detection_cron',
@@ -13649,6 +13651,7 @@ class Route
         ],
 
         'cron' => [
+            'dcc_invoice_generation_cron',
             'fpx_downtime_detection_cron',
             'payment_page_cds_billing_update_cron',
             'merchant_popular_products_cron',

@@ -898,6 +898,25 @@ trait Capture
             $this->processTransferIfApplicable($payment);
         }
 
+        if($payment->isDCC()
+            and ($payment->isMethodInternationalApp() or $payment->isCard())
+            and $payment->shouldCreateDCCEInvoiceExperiment())
+        {
+            try
+            {
+                (new Invoice\DccEInvoiceCore())->dispatchForInvoice($payment->getId(),Invoice\Constants::PAYMENT_FLOW);
+            }
+            catch (\Exception $e){
+
+                $this->trace->info(
+                    TraceCode::DCC_PAYMENT_E_INVOICE_MESSAGE_DISPATCH_FAILED,[
+                        'reference_id'       => $payment->getId(),
+                        'reference_type'     => Invoice\Constants::PAYMENT_FLOW,
+                    ]
+                );
+            }
+        }
+
         $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
     }
 

@@ -529,6 +529,8 @@ return array(
 
     'send_firs_available_email_experiment_id' => env('SEND_FIRS_AVAILABLE_EMAIL_EXPERIMENT_ID'),
 
+    'create_dcc_e_invoice_experiment_id' => env('CREATE_DCC_E_INVOICE_EXPERIMENT_ID'),
+
     '1cc_multiple_shipping_splitz_experiment_id' => env('MAGIC_CHECKOUT_MULTIPLE_SHIPPING_EXP_ID'),
 
     'partner_submerchant_whitelabel_onboarding' => env('PARTNER_SUBMERCHANT_WHITELABEL_ONBOARDING'),

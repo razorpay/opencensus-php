@@ -16,6 +16,7 @@ use RZP\Services\FTS;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Invoice;
 use RZP\Models\Reversal;
 use RZP\Models\Currency;
 use RZP\Trace\TraceCode;
@@ -4276,5 +4277,30 @@ trait Refund
         );
 
         return (strtolower($variant) === RefundConstants::RAZORX_VARIANT_ON);
+    }
+
+    public function pushRefundMessageForDCCEInvoiceCreation($refund, $id)
+    {
+        /** @var Payment\Entity $payment */
+        $payment = $this->retrieve($id);
+
+        if ($payment->isDCC() === true
+            and ($payment->isMethodInternationalApp() or $payment->isCard())
+            and $payment->shouldCreateDCCEInvoiceExperiment())
+        {
+            try
+            {
+                (new Invoice\DccEInvoiceCore())->dispatchForInvoice($refund->getId(), Invoice\Constants::REFUND_FLOW);
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->info(
+                    TraceCode::DCC_PAYMENT_E_INVOICE_MESSAGE_DISPATCH_FAILED,[
+                        'reference_id'       => $refund->getId(),
+                        'reference_type'     => Invoice\Constants::REFUND_FLOW,
+                    ]
+                );
+            }
+        }
     }
 }

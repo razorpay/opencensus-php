@@ -85,6 +85,7 @@ class Entity extends Base\PublicEntity
     const REMINDER_STATUS           = 'reminder_status';
     const BATCH_OFFSET              = 'batch_offset';
     const OFFER_AMOUNT              = 'offer_amount';
+    const REF_NUM                   = 'ref_num';
 
     /**
      * Captures the Place of Supply GSTIN code for the invoice. (Ex: '05', '31', '35' etc.)
@@ -280,6 +281,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRE_BY                 => null,
         self::BIG_EXPIRE_BY             => null,
         self::RECEIPT                   => null,
+        self::REF_NUM                   => null,
         self::MERCHANT_GSTIN            => null,
         self::MERCHANT_LABEL            => null,
         self::SUPPLY_STATE_CODE         => null,
@@ -344,6 +346,7 @@ class Entity extends Base\PublicEntity
         self::INTERNAL_REF,
         self::IDEMPOTENCY_KEY,
         self::OFFER_AMOUNT,
+        self::REF_NUM,
     ];
 
     protected $visible = [
@@ -371,6 +374,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::MERCHANT_ID,
         self::DATE,
+        self::REF_NUM,
         self::MERCHANT_GSTIN,
         self::MERCHANT_LABEL,
         self::SUPPLY_STATE_CODE,
@@ -455,6 +459,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::IDEMPOTENCY_KEY,
         self::REMINDER_STATUS,
+        self::REF_NUM,
     ];
 
     /**
@@ -499,6 +504,7 @@ class Entity extends Base\PublicEntity
         self::NACH_FORM_URL,
         self::CREATED_AT,
         self::OFFER_AMOUNT,
+        self::REF_NUM,
     ];
 
     protected $appends = [
@@ -825,6 +831,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_GSTIN);
     }
 
+    public function getRefNum()
+    {
+        return $this->getAttribute(self::REF_NUM);
+    }
+
     public function getMerchantLabel()
     {
         return $this->getAttribute(self::MERCHANT_LABEL);
@@ -1024,6 +1035,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::INVOICE);
     }
 
+    public function isTypeDCCEInvoice(): bool
+    {
+        return in_array($this->getType(), Type::getDCCEInvoiceTypes(), true);
+    }
+
    public function isFullyPaid(Payment\Entity $payment)
     {
         $trace = App::getFacadeRoot()['trace'];
@@ -1062,6 +1078,11 @@ class Entity extends Base\PublicEntity
     public function getEntityType()
     {
         return $this->getAttribute(self::ENTITY_TYPE);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
     }
 
     public function isTypeOfSubscriptionRegistration(): bool
@@ -1301,7 +1322,7 @@ class Entity extends Base\PublicEntity
 
     public function setComment($comment)
     {
-        if ($this->hasSubscription() === true)
+        if ($this->hasSubscription() === true or $this->isTypeDCCEInvoice() === true)
         {
             $this->setAttribute(self::COMMENT, $comment);
         }
@@ -1309,7 +1330,7 @@ class Entity extends Base\PublicEntity
 
     public function setNotes(array $notes)
     {
-        if ($this->hasSubscription() === true)
+        if ($this->hasSubscription() === true or $this->isTypeDCCEInvoice() === true)
         {
             $this->setAttribute(self::NOTES, $notes);
         }
@@ -1364,6 +1385,11 @@ class Entity extends Base\PublicEntity
     public function setMerchantGstin(string $gstin = null)
     {
         $this->setAttribute(self::MERCHANT_GSTIN, $gstin);
+    }
+
+    public function setRefNum(string $refNum = null)
+    {
+        $this->setAttribute(self::REF_NUM, $refNum);
     }
 
     public function setMerchantLabel(string $merchantLabel)

@@ -650,6 +650,15 @@ class InvoiceController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function dccPaymentInvoiceCron()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->dccPaymentInvoiceCron($input);
+
+        return ApiResponse::json($response);
+    }
+
     protected function shouldForwardToPaymentLinkService(
         array $input = [],
         bool $checkForInput = false,

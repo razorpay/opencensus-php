@@ -309,6 +309,11 @@ class UfhService
             $this->merchantId = $requestData[self::ENTITY_ID];
         }
 
+        if($type === \RZP\Models\Invoice\Type::DCC_INV . '_file' || $type === \RZP\Models\Invoice\Type::DCC_CRN . '_file')
+        {
+            $this->merchantId = $entity->getMerchantId();
+        }
+
         $this->ufhClient = $this->createUfhClient();
 
         try

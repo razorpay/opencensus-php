@@ -115,6 +115,7 @@ class Validator extends Base\Validator
         Entity::OPTIONS_KEY              => 'sometimes|array',
         Entity::REMINDER_ENABLE          => 'sometimes|boolean',
         Entity::OFFER_AMOUNT             => 'sometimes|integer',
+        Entity::REF_NUM                  => 'sometimes|string',
     ];
 
     //
@@ -186,6 +187,7 @@ class Validator extends Base\Validator
         Entity::OPTIONS_KEY              => 'sometimes|array',
         Entity::REMINDER_ENABLE          => 'sometimes|bool',
         Entity::OFFER_AMOUNT             => 'sometimes|integer',
+        Entity::REF_NUM                  => 'sometimes|string',
     ];
 
     protected static $editDraftRules = [
@@ -330,6 +332,7 @@ class Validator extends Base\Validator
     protected static $validExternalEntities = [
         E::SUBSCRIPTION_REGISTRATION,
         E::PAYMENT_PAGE,
+        E::PAYMENT,
     ];
 
     public function validateView($attribute, $value)
@@ -920,7 +923,10 @@ class Validator extends Base\Validator
             case Type::INVOICE:
                 $this->validateInvoiceIssueForInvoiceType($invoice);
                 break;
-
+            case Type::DCC_CRN:
+            case Type::DCC_INV:
+                $this->validateInvoiceIssueForDCCEInvoiceType($invoice);
+                break;
             default:
                 $this->validateInvoiceIssueForOtherTypes($invoice);
                 break;
@@ -1257,6 +1263,24 @@ class Validator extends Base\Validator
         if (($lineItemsCount === 0) and (blank($description) === true))
         {
             throw new BadRequestValidationFailureException('description is required.');
+        }
+    }
+
+    protected function validateInvoiceIssueForDCCEInvoiceType(Entity $invoice)
+    {
+        $invoiceAmount = $invoice->getAmount();
+
+        if ($invoiceAmount === null)
+        {
+            throw new BadRequestValidationFailureException('amount cannot be empty.');
+        }
+
+        $refNum = $invoice->getRefNum();
+
+        // For ref_num need to do empty() check as it is 'sometimes' in Validator.
+        if (empty($refNum) === true)
+        {
+            throw new BadRequestValidationFailureException('ref_num is required.');
         }
     }
 

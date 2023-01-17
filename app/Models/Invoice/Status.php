@@ -22,6 +22,16 @@ class Status
     const CANCELLED      = 'cancelled';
     const EXPIRED        = 'expired';
 
+    // CREATED:       Default status on creating the entity.
+    // INITIATED:     Process to generate PDF Invoice started.
+    // GENERATED:     Invoice successfully generated and can be downloaded.
+    // FAILED:        Invoice generation failed.
+
+    const CREATED        = 'created';
+    const INITIATED      = 'initiated';
+    const GENERATED      = 'generated';
+    const FAILED         = 'failed';
+
     // ----------- End Invoice Statuses ------------------------------
 
     // ----------- Invoice subscription statuses ---------------------
@@ -45,6 +55,11 @@ class Status
         self::PAID,
         self::CANCELLED,
         self::EXPIRED,
+
+        self::CREATED,
+        self::INITIATED,
+        self::GENERATED,
+        self::FAILED,
     ];
 
     public static $subscriptionStatuses = [

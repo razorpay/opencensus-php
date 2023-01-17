@@ -6173,4 +6173,32 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return Carbon::createFromTimestamp($this->getCreatedAt(), $timeZone)->format('dS M, Y H:i:s A ')  . Timezone::getTimeZoneAbbrevation($timeZone);
     }
 
+    public function shouldCreateDCCEInvoiceExperiment()
+    {
+        $app = \App::getFacadeRoot();
+        try
+        {
+            $properties = [
+                'id'            => $this->getId(),
+                'experiment_id' => $app['config']->get('app.create_dcc_e_invoice_experiment_id'),
+            ];
+
+            $response = $app['splitzService']->evaluateRequest($properties);
+            $variant = $response['response']['variant']['name'] ?? '';
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $app['trace']->traceException(
+                $e,
+                null,
+                TraceCode::DCC_PAYMENT_E_INVOICE_SPLITZ_ERROR
+            );
+        }
+        return false;
+    }
+
 }

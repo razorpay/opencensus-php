@@ -278,6 +278,8 @@ class Service extends Base\Service
 
         $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
 
+        $this->getNewProcessor()->pushRefundMessageForDCCEInvoiceCreation($refund, $id);
+
         return $refund->toArrayPublic();
     }
 
