@@ -620,7 +620,7 @@ class Core extends Base\Core
                 ]
             );
 
-            $order = $this->retryPlaceShopifyOrder($client, $orderId, $body, $rzpPayment, true);
+            $order = $this->retryPlaceShopifyOrder($client, $rzpOrder, $body, $rzpPayment, true);
 
             return $order;
         }
@@ -677,7 +677,7 @@ class Core extends Base\Core
                 ]
             );
 
-            $retryOrderResponse = $this->retryPlaceShopifyOrder($client, $orderId, $body, $rzpPayment, false);
+            $retryOrderResponse = $this->retryPlaceShopifyOrder($client, $rzpOrder, $body, $rzpPayment, false);
 
             if (is_array($retryOrderResponse) === true)
             {
@@ -769,7 +769,7 @@ class Core extends Base\Core
         return [];
     }
 
-    protected function retryPlaceShopifyOrder($client, string $orderId, array $body, $rzpPayment, bool $fromShopifyApi)
+    protected function retryPlaceShopifyOrder($client, array $rzpOrder, array $body, $rzpPayment, bool $fromShopifyApi)
     {
         try
         {
@@ -805,7 +805,7 @@ class Core extends Base\Core
                 TraceCode::SHOPIFY_1CC_PLACE_ORDER_RETRY_RES,
                 [
                     'type'             => $fromShopifyApi === true ? 'order_place_api_retry_success' : 'order_place_sqs_retry_success',
-                    'order_id'         => $orderId,
+                    'order_id'         => $rzpOrder['id'],
                     'shopify_order_id' => $order['order']['id'],
                     'time'             => millitime() - $placeOrderStart
                 ]
@@ -823,7 +823,7 @@ class Core extends Base\Core
                 TraceCode::SHOPIFY_1CC_API_ORDER_RETRY_ERROR,
                 [
                     'type'     => $fromShopifyApi === true ? 'order_place_api_retry_failed' : 'order_place_sqs_retry_failed',
-                    'order_id' => $orderId,
+                    'order_id' => $rzpOrder['id'],
                     'error'    => $message
                 ]
             );
@@ -836,12 +836,13 @@ class Core extends Base\Core
             }
 
             throw new Exception\BadRequestException(
-              ErrorCode::BAD_REQUEST_ERROR,
-              null,
-              null,
-              'RETRY_FAILED'
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'RETRY_FAILED'
             );
         }
+
     }
 
     public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi): array
