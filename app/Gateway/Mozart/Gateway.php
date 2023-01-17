@@ -3134,6 +3134,7 @@ class Gateway extends Base\Gateway
 
         if ($handleException === true)
         {
+            // This function is also being used for credpay where $input['gateway'] will not be present
             if (isset($input['gateway']) && $input['gateway'] == MandateHubs::BILLDESK_SIHUB)
             {
                 $response['meta_data']['payment_id'] = "pay_".$input['payment']['id'] ?? null;
