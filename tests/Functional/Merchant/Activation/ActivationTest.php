@@ -11,6 +11,7 @@ use Mockery;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Card\Network;
 use RZP\Services\KafkaMessageProcessor;
@@ -44,6 +45,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetails;
@@ -2507,6 +2509,82 @@ class ActivationTest extends OAuthTestCase
         $this->startTest($testData);
         Mail::assertQueued(NotifyActivationSubmission::class);
     }
+
+    public function testAllowNonDSMerchantsForActivation()
+    {
+        $this->ba->adminAuth();
+
+        $merchantSignupRequest = [
+            'content' => [
+                'id'          => '1X4hRFHFx4UiXt',
+                'name'        => 'Tester',
+                'email'       => 'test@localhost.com',
+                'coupon_code' => 'RANDOM-123',
+            ],
+            'url'     => '/merchants',
+            'method'  => 'POST',
+        ];
+
+
+        $this->fixtures->org->addFeatures([Feature\Constants::ORG_PROGRAM_DS_CHECK],"100000razorpay");
+
+        $response = $this->makeRequestAndGetContent($merchantSignupRequest);
+
+        Config::set('applications.test_case.execution', false);
+
+        $merchantId = '1X4hRFHFx4UiXt';
+
+        $merchantAttributes = [
+            'website' => 'abc.com',
+            'category' => 1100,
+            'billing_label' => 'labore',
+            'transaction_report_email' => 'test@razorpay.com',
+            'created_at' => 1670889499
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttributes);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $merchantId, [
+            'submitted'           => true,
+            'bank_branch_ifsc'    => 'CBIN0281697',
+            'bank_account_number' => '0002020000304030434',
+            'bank_account_name'   => 'random name',
+            'contact_mobile'      => '9999999999',
+            'business_category'   => 'financial_services',
+            'business_subcategory'=> 'accounting',
+        ]);
+
+        $this->fixtures->on('test')->edit('merchant_detail', $merchantId, [
+            'submitted'           => true,
+            'bank_branch_ifsc'    => 'CBIN0281697',
+            'bank_account_number' => '0002020000304030434',
+            'bank_account_name'   => 'random name',
+            'contact_mobile'      => '9999999999',
+            'business_category'   => 'financial_services',
+            'business_subcategory'=> 'accounting',
+        ]);
+
+        $activationRequest = [
+            'url'     => '/merchant/activation/' . $merchantId . '/activation_status',
+            'method'  => 'patch',
+            'content' => [
+                'activation_status' => 'activated',
+            ],
+        ];
+
+        $this->fixtures->create('merchant_website', [
+            'merchant_id'              => $merchantId,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $this->merchantAssignPricingPlan('1hDYlICobzOCYt', $merchantId);
+
+        $response = $this->makeRequestAndGetContent($activationRequest);
+
+        $this->assertEquals("activated", $response['activation_status']);
+    }
+
 
     public function testKycSubmissionForInstantlyActivatedMerchantForCustomOrg()
     {

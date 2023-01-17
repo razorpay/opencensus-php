@@ -2920,6 +2920,15 @@ class Core extends Base\Core
 
         if ($this->allowActivationOnTerminalChecks($merchant) === true)
         {
+            $this->trace->info(TraceCode::ALLOWING_ACTIVATION_FOR_ONLY_DS, ['merchant_id' => $merchant->getId()]);
+
+            return false;
+        }
+
+        if ($this->allowActivationForNonDSMerchants($merchant) === true)
+        {
+            $this->trace->info(TraceCode::ALLOWING_ACTIVATION_FOR_NON_DS, ['merchant_id' => $merchant->getId()]);
+
             return false;
         }
 
@@ -5000,6 +5009,17 @@ class Core extends Base\Core
 
         if ((isset($merchantTerminals['ds_terminals']) === true and  $merchantTerminals['ds_terminals'] > 0) and
             (isset($merchantTerminals['non_ds_terminals']) === true and $merchantTerminals['non_ds_terminals'] === 0))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function allowActivationForNonDSMerchants($merchant)
+    {
+        if (($merchant->getCreatedAt() <= 1670889599) and
+            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === true))
         {
             return true;
         }
