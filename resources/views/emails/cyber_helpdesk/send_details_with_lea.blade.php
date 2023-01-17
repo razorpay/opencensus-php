@@ -137,39 +137,40 @@
                 Merchant name
               </th>
             </tr>
-            <tr style="padding: 5px; border: 1px solid #cccccc">
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{date("Y-m-d H:i:s", $payment_details->getCreatedAt())}}
-              </td>
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$payment_details->getMethod()}}
-              </td>
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$payment_details->getId()}}
-              </td>
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$payment_details->getStatus()}}
-              </td>
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{number_format((float)$payment_details->getBaseAmount()/100, 2,
-                '.', '')}}
-              </td>
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$payment_details->getEmail()}}
-              </td>
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$payment_details->getContact()}}
-              </td>
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$customer_ip_address}}
-              </td>
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$merchant->getWebsite()}}
-              </td>
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$merchant->getName()}}
-              </td>
-            </tr>
+            @foreach($data as $query)
+                <tr style="padding: 5px; border: 1px solid #cccccc">
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                    {{date("Y-m-d h:i:sa", $query['details']['payment']['created_at'] + $ist_diff)}}
+                  </td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                    {{$query['details']['payment']['method']}}
+                  </td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                    {{$query['details']['payment']['id']}}
+                  </td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                    {{$query['details']['payment']['status']}}
+                  </td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                      ₹ {{number_format((float)$query['details']['payment']['base_amount']/100, 2,'.', '')}}
+                  </td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                    {{$query['details']['payment']['email']}}
+                  </td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                    {{$query['details']['payment']['contact']}}
+                  </td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                    {{$query['details']['payment_analytics']['ip']}}
+                  </td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                    {{$query['details']['merchant_details']['business_website']}}
+                  </td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                    {{$query['details']['merchant_details']['merchant_name']}}
+                  </td>
+                </tr>
+                  @endforeach
           </table>
         </div>
         <p style="margin: 0">(B) Beneficiary Details</p>
@@ -188,7 +189,7 @@
                       Beneficiary Contact Details
                 </p>
               </th>
-                @if(empty($share_beneficary_account_details) === false  && $share_beneficary_account_details === 1)
+                @if($share_beneficiary_account_details === 1)
                     <th style="padding: 5px; border: 1px solid #cccccc" colspan="3">
                         <p style="font-size: 14px; margin: 0">
                             Beneficiary Account Details
@@ -206,7 +207,7 @@
               <th style="padding: 5px; border: 1px solid #cccccc">
                 Merchant contact email
               </th>
-              @if(empty($share_beneficary_account_details) === false  && $share_beneficary_account_details === 1)
+              @if($share_beneficiary_account_details === 1)
                 <th style="padding: 5px; border: 1px solid #cccccc">
                   Beneficiary Name
                 </th>
@@ -218,23 +219,23 @@
             </tr>
             <tr style="padding: 5px; border: 1px solid #cccccc">
               <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$merchant_details->getContactName()}}
+                {{$merchant_details['contact_name']}}
               </td>
               <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$merchant_details->getContactMobile()}}
+                {{$merchant_details['contact_mobile']}}
               </td>
               <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$merchant_details->getContactEmail()}}
+                {{$merchant_details['contact_email']}}
               </td>
-              @if(empty($share_beneficary_account_details) === false and $share_beneficary_account_details === 1)
+              @if($share_beneficiary_account_details === 1)
                 <td style="padding: 5px; border: 1px solid #cccccc">
-                  {{$beneficiary_bank_account_details->getBeneficiaryName()}}
+                  {{$bank_account['beneficiary_name']}}
                 </td>
                 <td style="padding: 5px; border: 1px solid #cccccc">
-                  {{$beneficiary_bank_account_details->getAccountNumber()}}
+                  {{$bank_account['account_number']}}
                 </td>
                 <td style="padding: 5px; border: 1px solid #cccccc">
-                  {{$beneficiary_bank_account_details->getIfscCode()}}
+                  {{$bank_account['ifsc_code']}}
                 </td>
               @endif
             </tr>

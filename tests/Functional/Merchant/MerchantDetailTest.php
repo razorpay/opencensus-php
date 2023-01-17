@@ -8160,59 +8160,6 @@ We look forward to transacting with you!
         );
     }
 
-    public function testSendMailToLEAFromCyberCrimeHelpdesk()
-    {
-        $this->ba->cyberCrimeHelpDeskAppAuth();
-
-        $this->mockFreshdesk(1);
-
-        $this->startTest();
-    }
-
-    protected function mockFreshdesk(int $expectFdCallCount): void
-    {
-        $freshdeskClientMock = $this->getMockBuilder(FreshdeskTicketClient::class)
-            ->setConstructorArgs([$this->app])
-            ->onlyMethods(['sendOutboundEmail'])
-            ->getMock();
-
-        $freshdeskClientMock
-            ->expects($this->exactly($expectFdCallCount))
-            ->method('sendOutboundEmail')
-            ->willReturn(['id' => '123']);
-
-        $this->app->instance('freshdesk_client', $freshdeskClientMock);
-    }
-
-    public function testCyberCrimeHelpDeskWorkflowAction()
-    {
-        $workflowMakerEmail = \Config::get('applications.cyber_crime_helpdesk')['maker_email'];
-
-        $this->fixtures->create('admin', [
-            'id' => '6dLbNSpv5Ybbbd',
-            'email' => $workflowMakerEmail,
-            'name' => 'test_agent',
-            'org_id' => Org::RZP_ORG,
-        ]);
-
-        $this->setupWorkflow("create_cyber_helpdesk_workflow", PermissionName::CREATE_CYBER_HELPDESK_WORKFLOW);
-
-        $this->ba->cyberCrimeHelpDeskAppAuth();
-
-        $this->startTest();
-
-        $permission = (new PermissionRepository)->findByOrgIdAndPermission(
-            Org::RZP_ORG, PermissionName::CREATE_CYBER_HELPDESK_WORKFLOW
-        );
-
-        $workflowActions = (new ActionRepository)->getOpenActionOnEntityOperation(
-            'ticket1', 'freshdesk_ticket', $permission->getId()
-        );
-
-        $this->assertNotEmpty($workflowActions);
-
-    }
-
     private function mockSplitzEvaluation() {
         $input = [
             "experiment_id" => "JqPQNIjSTvE6v0",

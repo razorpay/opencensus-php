@@ -15,6 +15,7 @@ use RZP\Models\BankAccount\Type;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Transaction\Service as TransactionService;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
+use RZP\Models\Payment;
 
 class Service extends Base\Service
 {
@@ -31,18 +32,18 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('sendMailToLEAFromCyberCrimeHelpdesk', $input);
 
-        $currentDateTime     = epoch_format(time() + Constants::IST_DIFF, 'Y-m-d h:i:sa');;
+        $currentDateTime = epoch_format(time() + Constants::IST_DIFF_IN_SEC, 'Y-m-d h:i:sa');;
 
-        $mailSubject         = (new TemplateEngine)->render(Constants::MAIL_TO_LEA_FROM_CYBRERSOURCE_HELPDESK_EMAIL_SUBJECT, []);
+        $mailSubject = (new TemplateEngine)->render(Constants::LEA_ACKNOWLEDGEMENT_MAIL_SUBJECT, []);
 
-        $mailSubject         = sprintf($mailSubject, $currentDateTime);
+        $mailSubject = sprintf($mailSubject, $currentDateTime);
 
-        $mailBody            = \View::make(Constants::MAIL_TO_LEA_FROM_CYBRERSOURCE_HELPDESK_EMAIL_TEMPLATE, [
-            'currentDateTime'     => $currentDateTime,
-            'payment_requests'    => $input[Constants::PAYMENT_REQUESTS]
+        $mailBody = \View::make(Constants::LEA_ACKNOWLEDGEMENT_MAIL_TEMPLATE, [
+            'currentDateTime'  => $currentDateTime,
+            'payment_requests' => $input[Constants::PAYMENT_REQUESTS]
         ])->render();
 
-        $freshDeskConfig     =  $this->app['config']->get('applications.freshdesk');
+        $freshDeskConfig = $this->app['config']->get('applications.freshdesk');
 
         $fdOutboundEmailRequest = [
             'subject'         => $mailSubject,
@@ -51,12 +52,12 @@ class Service extends Base\Service
             'status'          => 2, // Create ticket with open status
             'priority'        => 1,
             'type'            => 'Incident',
-            'email_config_id' => (int)$freshDeskConfig['email_config_ids']['cybercrime_helpdesk']['acknowledgement'],
-            'group_id'        => (int)$freshDeskConfig['group_ids']['cybercrime_helpdesk']['acknowledgement'],
+            'email_config_id' => (int) $freshDeskConfig['email_config_ids']['cybercrime_helpdesk']['acknowledgement'],
+            'group_id'        => (int) $freshDeskConfig['group_ids']['cybercrime_helpdesk']['acknowledgement'],
             'custom_fields'   => [
                 'cf_ticket_queue' => 'Thirdparty',
-                'cf_category'     =>  'Fraud',
-                'cf_subcategory'  =>  Constants::FRESHDESK_EMAIL_CYBER_CELL_SUB_CATEGORY,
+                'cf_category'     => 'Fraud',
+                'cf_subcategory'  => Constants::FRESHDESK_EMAIL_CYBER_CELL_SUB_CATEGORY,
                 'cf_product'      => 'Payment Gateway',
             ]
         ];
@@ -71,12 +72,12 @@ class Service extends Base\Service
         $this->app['trace']->info(
             TraceCode::MAIL_TO_LEA_FROM_CYBER_CRIME_HELPDESK_SENT,
             [
-                '$mailBody'           => $mailBody,
-                '$mailSubject'        => $mailSubject,
-                'freshdesk_response'  => $response,
+                '$mailBody'          => $mailBody,
+                '$mailSubject'       => $mailSubject,
+                'freshdesk_response' => $response,
             ]);
 
-        return [ Constants::FD_TICKET_ID =>  (string) $response['id'] ?? null ];
+        return [Constants::FD_TICKET_ID => (string) $response['id'] ?? null];
     }
 
     public function postCyberCrimeWorflowCreateAction($inputs)
@@ -100,7 +101,7 @@ class Service extends Base\Service
     protected function getCyberCrimeWorkflowMaker()
     {
         // This is to be handled correctly, for now hardcoding the org_id for the maker_email used in config
-        $makerOrg = Org\Entity::RAZORPAY_ORG_ID;
+        $makerOrg   = Org\Entity::RAZORPAY_ORG_ID;
         $makerEmail = $this->app['config']->get('applications.cyber_crime_helpdesk.maker_email');
 
         if (empty($makerEmail) === true)
@@ -113,78 +114,176 @@ class Service extends Base\Service
         return $maker;
     }
 
-    public function postCyberCrimeWorkflowApproval($inputs)
+    /**
+     * @throws Exception\LogicException
+     * @throws \Throwable
+     */
+    public function postCyberCrimeWorkflowApproval($ticketDetails)
     {
-        $entityId = $inputs[Constants::TICKET_DATA][Constants::FD_TICKET_ID];
+        $this->updateTicketDataAsPerApprovedDataFromComment($ticketDetails);
 
-        $actions  = (new WorkFlowActionCore())->fetchOpenActionOnEntityOperationWithPermissionList(
-            $entityId, 'freshdesk_ticket', [PermissionName::CREATE_CYBER_HELPDESK_WORKFLOW], Org\Constants::RZP);
+        $this->shareFetchedDetailsWithLEA($ticketDetails);
 
-        if ( empty($actions) === true )
+        $this->notifyMerchantViaFreshdeskOutboundMail($ticketDetails);
+
+        $this->putSettlementOnHoldIfRequired($ticketDetails);
+    }
+
+    protected function putSettlementOnHoldIfRequired($ticketDetails)
+    {
+        $txnIdsToPutOnHold = [];
+
+        foreach ($ticketDetails['ticket_data']['ticket'] as $request)
         {
-            throw new Exception\LogicException('Workflow is not present for entity id ' . $entityId);
-        }
-
-        $workflowAction = $actions[0];
-
-        $requestsDetails  = $this->getCyberCrimeMerchantsPaymentData($workflowAction);
-
-        $this->app['trace']->info(
-            TraceCode::PAYMENT_DETAILS_USED_FOR_CYBER_CRIME,
-            [
-                'request_details'         => $requestsDetails,
-                'freshdesk_id'            => $entityId
-            ]);
-
-        $paymentIdsToPutOnHold = [];
-
-        foreach ($requestsDetails as $requestDetail)
-        {
-            $paymentId = $requestDetail['payment_id'];
-            $this->stripSign($paymentId);
-
-            $payment   = $this->repo->payment->findOrFail($paymentId);
-
-            if ( empty($requestDetail[Constants::PUT_SETTLEMENT_ON_HOLD]) === false )
+            if ($request['hold_settlement'] === '1')
             {
-                $txn                     =  $payment->transaction;
-
-                $paymentIdsToPutOnHold[] = $txn->getId();
+                $txnIdsToPutOnHold[] = $request['data']['transaction']['id'];
             }
-
-            $this->sendFreshdeskOutboundMailReplyToLEA($payment, $entityId, $requestDetail[Constants::SHARE_BENEFICARY_ACCOUNT_DETAILS]);
-
-            $this->notifyMerchantViaFreshdeskOutboundMail($payment);
         }
 
         $this->app['trace']->info(TraceCode::CYBER_CRIME_PUT_PAYMENTS_ON_HOLD,
-            [
-                'payment_ids'        => $paymentIdsToPutOnHold,
-            ]);
+                                  [
+                                      'transaction_ids' => $txnIdsToPutOnHold,
+                                  ]);
 
-        if (empty($paymentIdsToPutOnHold) === false)
+        if (empty($txnIdsToPutOnHold) === false)
         {
             (new TransactionService())->toggleTransactionHold([
-                'transaction_ids' => $paymentIdsToPutOnHold,
-                'reason'          => "Payment on hold as requested by lea"
-            ]);
+                                                                  'transaction_ids' => $txnIdsToPutOnHold,
+                                                                  'reason'          => "Payment on hold as requested by lea"
+                                                              ]);
         }
     }
 
-    protected function notifyMerchantViaFreshdeskOutboundMail($paymentDetails)
+
+    /**
+     * @throws \Throwable
+     * @throws Exception\LogicException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\BadRequestException
+     */
+    protected function updateTicketDataAsPerApprovedDataFromComment(&$ticketDetails)
     {
-        $merchant            = $paymentDetails->merchant;
+        $freshdeskTicket = $ticketDetails[Constants::TICKET_DATA][Constants::FD_TICKET_ID];
 
-        $mailSubject         = sprintf(Constants::MAIL_TO_MERCHANT_ABOUT_CYBER_CRIME_EMAIL_SUBJECT, $merchant->getName(), $merchant->getId(), date('Y-m-d'));
+        $approvedDetails = $this->getApprovedDetailsFromWorkflowActionComments($freshdeskTicket);
 
-        $mailBody            = \View::make(Constants::MAIL_TO_MERCHANT_ABOUT_CYBER_CRIME_EMAIL_TEMPLATE, [
-            'merchant_name'     => $merchant->getName(),
-            'mid'               => $merchant->getId(),
-            'date_time_stamp'   => epoch_format(time() + Constants::IST_DIFF, 'Y-m-d h:i:sa'),
-            'amount'            => $paymentDetails->getBaseAmount()/100,
-            'payment_id'        => $paymentDetails->getId(),
-            'payment_created_at' => epoch_format($paymentDetails->created_at + Constants::IST_DIFF),
-            'respond_by'        => date('d F Y', time()+Constants::MERCHANT_RESPOND_BY_IN_SECONDS + Constants::IST_DIFF),
+        $this->app['trace']->info(
+            TraceCode::CYBER_HELPDESK_REQUEST_DETAILS_APPROVED,
+            [
+                'approved_details' => $approvedDetails,
+                'freshdesk_id'     => $freshdeskTicket
+            ]);
+
+        foreach ($approvedDetails as $approvedDetail)
+        {
+            $this->updateRequestDetailsAccordingToApprovedDetails($ticketDetails, $approvedDetail);
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\BadRequestException
+     */
+    protected function updateRequestDetailsAccordingToApprovedDetails(&$ticketDetails, $approvedDetail)
+    {
+        for ($i = 0; $i <= count($ticketDetails[Constants::TICKET_DATA][Constants::TICKET]); $i++)
+        {
+            $query = $ticketDetails[Constants::TICKET_DATA][Constants::TICKET][$i];
+
+            if ($query[Constants::REQUEST]['id'] === $approvedDetail[Constants::REQUEST_ID])
+            {
+                if (isset($query['details']) === true && empty($query['details']) === false)
+                {
+                    //if the details were fetched by cyber_helpdesk service then it might be possible that settlement status is changed b/w workflow creation and approval
+                    $ticketDetails[Constants::TICKET_DATA][Constants::TICKET][$i][Constants::DETAILS][Constants::PAYMENT][Payment\Entity::STATUS] =
+                        $this->repo->payment->findOrFail($query['details']['payment']['id'])->getStatus();
+                }
+                else
+                {
+                    //if the details weren't fetched by cyber_helpdesk and payment_id was provided by workflow approver then fetch the details
+                    $ticketDetails[Constants::TICKET_DATA][Constants::TICKET][$i][Constants::DETAILS] = $this->getDetailsUsingPaymentId($approvedDetail[Constants::PAYMENT_ID], $query[Constants::REQUEST]);
+                }
+
+                $ticketDetails[Constants::TICKET_DATA][Constants::TICKET][$i][Constants::HOLD_SETTLEMENT]                   = $approvedDetail[Constants::PUT_SETTLEMENT_ON_HOLD];
+                $ticketDetails[Constants::TICKET_DATA][Constants::TICKET][$i][Constants::SHARE_BENEFICIARY_ACCOUNT_DETAILS] = $approvedDetail[Constants::SHARE_BENEFICARY_ACCOUNT_DETAILS];
+
+                break;
+            }
+        }
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\BadRequestException
+     */
+    protected function getDetailsUsingPaymentId($paymentId, $request): array
+    {
+        $this->stripSign($paymentId);
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        (new Validator)->validateApprovedPaymentWithQueryData($payment, $request['data']);
+
+        $merchantDetails  = $payment->merchant->merchantDetail;
+        $bankAccount      = $this->repo->bank_account->getBankAccount($merchantDetails, Type::MERCHANT);
+        $transaction      = $this->repo->transaction->findOrFail($payment->getTransactionId());
+        $paymentAnalytics = $this->repo->payment_analytics->fetch(['payment_id' => $payment->getId()], null, ConnectionType::REPLICA)[0];
+
+        return [
+            Constants::PAYMENT           => [
+                Constants::ID        => $payment->getId(),
+                Payment\Entity::METHOD      => $payment->getMethod(),
+                Payment\Entity::BASE_AMOUNT => $payment->getBaseAmount(),
+                Payment\Entity::CREATED_AT  => $payment->getCreatedAt(),
+                Payment\Entity::EMAIL       => $payment->getEmail(),
+                Payment\Entity::CONTACT     => $payment->getContact(),
+                Payment\Entity::STATUS      => $payment->getStatus(),
+            ],
+            Constants::MERCHANT_DETAILS  => [
+                Constants::MERCHANT_ID      => $merchantDetails->getMerchantId(),
+                Constants::MERCHANT_NAME    => $merchantDetails->getBusinessName(),
+                Constants::CONTACT_NAME     => $merchantDetails->getContactName(),
+                Constants::CONTACT_EMAIL   => $merchantDetails->getContactEmail(),
+                Constants::CONTACT_MOBILE   => $merchantDetails->getContactMobile(),
+                Constants::BUSINESS_WEBSITE => $merchantDetails->getWebsite(),
+            ],
+            Constants::TRANSACTION       => [
+                Constants::ID      => $transaction->getId(),
+                Constants::SETTLED => $transaction->isSettled(),
+            ],
+            Constants::BANK_ACCOUNT      => [
+                Constants::ID               => $bankAccount->getId(),
+                Constants::BENEFICIARY_NAME => $bankAccount->getBeneficiaryName(),
+                Constants::ACCOUNT_NUMBER   => $bankAccount->getAccountNumber(),
+                Constants::IFSC_CODE        => $bankAccount->getIfscCode(),
+            ],
+            Constants::PAYMENT_ANALYTICS => [
+                Constants::IP => $paymentAnalytics !== null ? $paymentAnalytics->getIp() : ""
+            ],
+        ];
+    }
+
+    protected function notifyMerchantViaFreshdeskOutboundMail($ticketDetails)
+    {
+        $data       = $ticketDetails[Constants::TICKET_DATA]['ticket'];
+        $merchantId = $data[0]['details']['merchant_details']['merchant_id'];
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $mailSubject = sprintf(Constants::NOTIFY_MERCHANT_ABOUT_FRAUD_MAIL_SUBJECT, $merchant->getName(), $merchant->getId(), date('Y-m-d'));
+
+        $mailBody = \View::make(Constants::NOTIFY_MERCHANT_ABOUT_FRAUD_MAIL_TEMPLATE, [
+            Constants::MERCHANT_NAME     => $merchant->getName(),
+            Constants::MERCHANT_ID       => $merchant->getId(),
+            Constants::CURRENT_DATE_TIME => epoch_format(time() + Constants::IST_DIFF_IN_SEC, 'Y-m-d h:i:sa'),
+            Constants::RESPOND_BY        => date('d F Y', time() + Constants::MERCHANT_RESPOND_BY_IN_SECONDS + Constants::IST_DIFF_IN_SEC),
+            Constants::DATA              => $data,
+            Constants::IST_DIFF          => Constants::IST_DIFF_IN_SEC
         ])->render();
 
         $fdOutboundEmailRequest = [
@@ -208,52 +307,40 @@ class Service extends Base\Service
 
         $response = $this->app['freshdesk_client']->sendOutboundEmail($fdOutboundEmailRequest);
 
-        $response['body'] = null;
+        $response['body']                      = null;
         $fdOutboundEmailRequest['description'] = null;
 
         $this->app['trace']->info(
             TraceCode::CYBER_HELPDESK_MERCHANT_NOTIFICATION_SENT,
             [
-                'freshdesk_request' => $fdOutboundEmailRequest,
-                'freshdesk_response'  => $response,
+                'freshdesk_request'  => $fdOutboundEmailRequest,
+                'freshdesk_response' => $response,
             ]);
     }
 
-    protected function sendFreshdeskOutboundMailReplyToLEA($payment, $freshdeskTicketId, $shareBeneficiaryAccountDetails)
+    protected function shareFetchedDetailsWithLEA($ticketDetails)
     {
-        $merchant                       = $payment->merchant;
+        $currentDateTime = epoch_format(time() + Constants::IST_DIFF_IN_SEC, 'Y-m-d h:i:sa');
 
-        $currentDateTime                =  epoch_format(time() + Constants::IST_DIFF, 'Y-m-d h:i:sa');
-
-        $customerIpAddress               = null;
-
-        $pa = $this->repo->payment_analytics->fetch(['payment_id' => $payment->getId()], null, ConnectionType::REPLICA);
-
-        if (sizeof($pa) > 0)
-        {
-            $customerIpAddress = $pa[0]->getIp();
-        }
-
-        $beneficiaryBankAccountDetails  = $this->repo->bank_account->getBankAccount($merchant, Type::MERCHANT);
-
-        $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchant->getId());
-
-        $mailBody = \View::make(Constants::REPLY_MAIL_TO_LEA_TEMPLATE, [
-            'payment_details'                  => $payment,
-            'customer_ip_address'              => $customerIpAddress,
-            'merchant'                         => $merchant,
-            'merchant_details'                 => $merchantDetails,
-            'fd_ticket_id'                     => $freshdeskTicketId,
-            'current_date_time'                => $currentDateTime,
-            'share_beneficary_account_details' => $shareBeneficiaryAccountDetails,
-            'beneficiary_bank_account_details' => $beneficiaryBankAccountDetails
+        $data                              = $ticketDetails[Constants::TICKET_DATA][Constants::TICKET];
+        $merchantDetails                   = $data[0][Constants::DETAILS][Constants::MERCHANT_DETAILS];
+        $bankAccount                       = $data[0][Constants::DETAILS][Constants::BANK_ACCOUNT];
+        $share_beneficiary_account_details = $data[0][Constants::SHARE_BENEFICIARY_ACCOUNT_DETAILS];
+        $mailBody                          = \View::make(Constants::SEND_DETAILS_WITH_LEA_MAIL_TEMPLATE, [
+            Constants::FD_TICKET_ID                     => $ticketDetails[Constants::TICKET_DATA][Constants::FD_TICKET_ID],
+            Constants::CURRENT_DATE_TIME                => $currentDateTime,
+            Constants::DATA                             => $data,
+            Constants::MERCHANT_DETAILS                 => $merchantDetails,
+            Constants::BANK_ACCOUNT                     => $bankAccount,
+            Constants::SHARE_BENEFICIARY_ACCOUNT_DETAILS => $share_beneficiary_account_details,
+            Constants::IST_DIFF                         => Constants::IST_DIFF_IN_SEC,
         ])->render();
 
         $replyInputs = ['body' => $mailBody];
 
-        $response    = $this->app['freshdesk_client']->postTicketReply((int)$freshdeskTicketId, $replyInputs);
+        $response = $this->app['freshdesk_client']->postTicketReply((int) $ticketDetails[Constants::TICKET_DATA][Constants::FD_TICKET_ID], $replyInputs);
 
-        $response['body'] = null;
+        $response['body']      = null;
         $response['body_text'] = null;
 
         $this->app['trace']->info(
@@ -263,36 +350,54 @@ class Service extends Base\Service
             ]);
     }
 
-    protected function getCyberCrimeMerchantsPaymentData($workflowAction)
+    /**
+     * @throws Exception\LogicException
+     */
+    protected function getApprovedDetailsFromWorkflowActionComments($fresdeskTicket)
     {
-        $comments = $this->repo->comment->fetchByActionId($workflowAction->getId());
+        $workflowActionId = $this->getOpenWorkflowActionIdForFreshdeskTicket($fresdeskTicket);
+
+        $comments = $this->repo->comment->fetchByActionId($workflowActionId);
 
         foreach ($comments as $comment)
         {
-            $paymentDetails = $this->getCyberCrimePaymentDetailsFromWorkflowComment($comment);
+            $requestDetails = $this->getJsonDecodeDataFromComments($comment);
 
-            if (empty($paymentDetails) === false)
+            if (empty($requestDetails) === false)
             {
-                return $paymentDetails;
+                return $requestDetails;
             }
         }
 
         throw new Exception\LogicException('Payment Details comment not found on workflow');
     }
 
-    protected function getCyberCrimePaymentDetailsFromWorkflowComment($commentDetails)
+    protected function getOpenWorkflowActionIdForFreshdeskTicket($freshdeskTicket)
+    {
+        $actions = (new WorkFlowActionCore())->fetchOpenActionOnEntityOperationWithPermissionList(
+            $freshdeskTicket, 'freshdesk_ticket', [PermissionName::CREATE_CYBER_HELPDESK_WORKFLOW], Org\Constants::RZP);
+
+        if (empty($actions) === true)
+        {
+            throw new Exception\LogicException('Workflow is not present for entity id ' . $freshdeskTicket);
+        }
+
+        return $actions[0]->getId();
+    }
+
+    protected function getJsonDecodeDataFromComments($commentDetails)
     {
         $comment = $commentDetails['comment'];
 
-        if ( str_contains($comment, Constants::PREFIX_CYBER_CRIME_PAYMENT_DETAILS_COMMENT) )
+        if (str_contains($comment, Constants::PREFIX_CYBER_CRIME_PAYMENT_DETAILS_COMMENT))
         {
-            return json_decode( substr($comment, strlen(Constants::PREFIX_CYBER_CRIME_PAYMENT_DETAILS_COMMENT), strlen($comment) ), true);
+            return json_decode(substr($comment, strlen(Constants::PREFIX_CYBER_CRIME_PAYMENT_DETAILS_COMMENT), strlen($comment)), true);
         }
 
         return null;
     }
 
-    protected function stripSign(& $id)
+    protected function stripSign(&$id)
     {
         $ix = strpos($id, '_');
 

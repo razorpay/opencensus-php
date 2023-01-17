@@ -71,7 +71,7 @@
           font-size: 14px;
         "
       >
-        {{$merchant_name}} {{$mid}} | {{$date_time_stamp}}
+        {{$merchant_name}} {{$merchant_id}} | {{$current_date_time}}
       </div>
 
       <div
@@ -89,7 +89,8 @@
         <p style="font-size: 15px; margin: 5px 0">Hi Team,</p>
         <p style="margin: 0">
           We have received an Unauthorized Transaction alert on the
-          below-captioned payment(s).
+          below-captioned payment(s). We request you to kindly stop the
+            services/delivery for the reported transactions and initiate a refund incase of an amount not utilized.
         </p>
 
         <div style="overflow: scroll; margin: 15px 0">
@@ -126,28 +127,27 @@
                 Respond By
               </th>
             </tr>
-            <tr style="padding: 5px; border: 1px solid #cccccc">
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$payment_id}}
-              </td>
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$payment_created_at}}
-              </td>
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                 Rs {{number_format((float)$amount, 2, '.', '')}}
-              </td>
-              <td style="padding: 5px; border: 1px solid #cccccc">CyberCell</td>
-              <td style="padding: 5px; border: 1px solid #cccccc">
-                {{$respond_by}}
-              </td>
-            </tr>
+              @foreach($data as $query)
+                <tr style="padding: 5px; border: 1px solid #cccccc">
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                      {{$query['details']['payment']['id']}}
+                  </td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                    {{date("Y-m-d h:i:sa", $query['details']['payment']['created_at'] + $ist_diff)}}
+                  </td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                      ₹ {{number_format((float)$query['details']['payment']['base_amount']/100, 2,'.', '')}}
+                  </td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">CyberCell</td>
+                  <td style="padding: 5px; border: 1px solid #cccccc">
+                    {{$respond_by}}
+                  </td>
+                </tr>
+              @endforeach
           </table>
         </div>
 
-        <p style="margin: 0">
-          We request you to kindly stop the above mentioned transactions and
-          issue a refund for these.
-        </p>
+        <p style="margin: 0"></p>
         <p>
           Also, kindly share the below details for further investigation/action.
         </p>

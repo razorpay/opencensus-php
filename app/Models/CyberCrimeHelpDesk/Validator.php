@@ -4,6 +4,8 @@
 namespace RZP\Models\CyberCrimeHelpDesk;
 
 use RZP\Base\Validator as BaseValidator;
+use RZP\Exception\BadRequestException;
+use RZP\Models\Payment;
 
 
 class Validator extends BaseValidator
@@ -21,5 +23,32 @@ class Validator extends BaseValidator
         'ticket_data.file_names'        =>  'sometimes|array',
         'ticket_data.fd_ticket_id'      =>  'required|string|max:255',
     ];
+
+    /**
+     * @throws BadRequestException
+     */
+    public function validateApprovedPaymentWithQueryData($payment, $requestData)
+    {
+        if($payment->getMethod() !== $requestData[Payment\Entity::METHOD])
+        {
+            throw new BadRequestException('Payment Details are not matching the query asked for payment '. $payment->getId());
+        }
+
+        switch ($payment->getMethod())
+        {
+            case Constants::UPI:
+                if ($payment->getReference16() !== $requestData[Payment\Entity::REFERENCE16])
+                {
+                    throw new BadRequestException('Payment Details are not matching the query asked for payment '. $payment->getId());
+                }
+                break;
+            case Constants::NETBANKING:
+                if ($payment->getReference1() !== $requestData[Payment\Entity::REFERENCE1])
+                {
+                    throw new BadRequestException('Payment Details are not matching the query asked for payment '. $payment->getId());
+                }
+
+        }
+    }
 
 }

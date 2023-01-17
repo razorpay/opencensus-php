@@ -140,6 +140,21 @@ trait WorkflowTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    public function addComments($workflowActionId, string $comments, $mode = 'test')
+    {
+        $this->ba->adminAuth($mode);
+
+        $request = [
+            'method' => 'POST',
+            'url' => '/w-actions/' . $workflowActionId . '/comments',
+            'content' => [
+                "comment" => $comments,
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     public function updateObserverData($workflowActionId, array $observerData, $mode = 'test')
     {
         $this->ba->adminAuth($mode);

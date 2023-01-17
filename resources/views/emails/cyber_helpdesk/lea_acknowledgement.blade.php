@@ -122,27 +122,27 @@
                 @else
                   <td style="padding: 5px; border: 1px solid #cccccc"></td>
                 @endif
-                
+
                 @if(empty($paymentRequest['reference16']) === false)
                   <td style="padding: 5px; border: 1px solid #cccccc">
                     {{$paymentRequest['reference16']}}
                   </td>
-                @elseif(empty($paymentRequest['refrence1']) === false)
+                @elseif(empty($paymentRequest['reference1']) === false)
                   <td style="padding: 5px; border: 1px solid #cccccc">
-                    {{$paymentRequest['refrence1']}}
+                    {{$paymentRequest['reference1']}}
                   </td>
                 @else
                   <td style="padding: 5px; border: 1px solid #cccccc"></td>
                 @endif
-                
+
                 @if(empty($paymentRequest['base_amount']) === false)
                   <td style="padding: 5px; border: 1px solid #cccccc">
-                    {{$paymentRequest['base_amount']}}/100
+                      ₹ {{number_format((float)$paymentRequest['base_amount']/100, 2,'.', '')}}
                   </td>
                 @else
                   <td style="padding: 5px; border: 1px solid #cccccc"></td>
                 @endif
-                
+
                 @if(empty($paymentRequest['from']) === false and empty($paymentRequest['to']) === false)
                   <td style="padding: 5px; border: 1px solid #cccccc">
                     {{date("Y-m-d H:i:s", $paymentRequest['from']) }} -
@@ -151,7 +151,7 @@
                 @else
                   <td style="padding: 5px; border: 1px solid #cccccc"></td>
                 @endif
-                
+
                 @if(empty($paymentRequest['vpa']) === false)
                   <td style="padding: 5px; border: 1px solid #cccccc">
                     {{$paymentRequest['vpa']}}
