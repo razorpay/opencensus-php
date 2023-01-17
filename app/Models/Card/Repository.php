@@ -202,17 +202,23 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findCardMerchantIdsByFingerprint(string $fingerprint,  array $merchant_ids)
+    public function findCardMerchantIdsByFingerprint(string $fingerprint,  array $merchant_ids, int $limit)
     {
         $createdAt  = $this->dbColumn(Entity::CREATED_AT);
 
         $globalFingerprint = $this->dbColumn(Entity::GLOBAL_FINGERPRINT);
-        return $this->newQuery()
+
+
+        // TODO: Further optimization can be picked up later on this. Once a merchant is found for given fingerprint
+        //       These is no need to query further rows.
+        return  $this->newQueryWithConnection($this->getSlaveConnection())
             ->select(Entity::MERCHANT_ID)
             ->whereNotNull($globalFingerprint)
             ->where($globalFingerprint, '=', $fingerprint)
             ->whereIn(Entity::MERCHANT_ID, $merchant_ids)
-            ->orderBy($createdAt, 'desc')
+            ->distinct()
+            ->limit($limit)
+            ->get()
             ->pluck(Entity::MERCHANT_ID)->toArray();
     }
 
