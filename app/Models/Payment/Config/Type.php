@@ -9,13 +9,12 @@ class Type
     const LOCALE                 = 'locale';
     const RISK                   = 'risk';
     const DCC                    = 'dcc';
-    const PAYMENT_FAILED         = 'payment_failed';
     const CONVENIENCE_FEE        = 'convenience_fee';
     const DCC_RECURRING          = 'dcc_recurring';
     const MCC_MARKDOWN           = 'mcc_markdown';
 
     protected static $supportedConfigType = [
-      self::LATE_AUTH, self::CHECKOUT, self::LOCALE, self::RISK, self::DCC, self::CONVENIENCE_FEE, self::PAYMENT_FAILED, self::DCC_RECURRING, self::MCC_MARKDOWN
+      self::LATE_AUTH, self::CHECKOUT, self::LOCALE, self::RISK, self::DCC, self::CONVENIENCE_FEE, self::DCC_RECURRING, self::MCC_MARKDOWN
     ];
 
     public function isConfigTypeSupported($type)

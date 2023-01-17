@@ -573,31 +573,7 @@ class ApiEventSubscriber extends Base\Core
 
     private function pushForRevival(Payment\Entity $payment)
     {
-        $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), RazorxTreatment::PL_MO_CREATION_VIA_PL_SERVICE, $this->mode);
-
-        if ($variant === 'on')
-        {
-            (new Payment\Core())->pushFailedPaymentForRevival($payment);
-            return;
-        }
-
-        if (ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER === $payment->getInternalErrorCode())
-            return;
-
-        $this->trace->info(TraceCode::FAILED_PAYMENT_PL_CREATION_CONDITION, [
-            'hasOrder' => $payment->hasOrder(),
-            'productType' => $payment->hasOrder() ? $payment->order->getProductType() : false,
-            'orderHasInvoice' => empty($payment->order->invoice),
-            'featureEnabled' => $payment->merchant->isFeatureEnabled(Feature\Constants::MISSED_ORDERS_PLINK)
-        ]);
-
-        if ($payment->hasOrder() === true and
-            empty($payment->order->getProductType()) and
-            empty($payment->order->invoice) and
-            $payment->merchant->isFeatureEnabled(Feature\Constants::MISSED_ORDERS_PLINK))
-        {
-            (new Payment\Core())->pushFailedPaymentToKafkaForPLCreation($payment);
-        }
+        (new Payment\Core())->pushFailedPaymentForRevival($payment);
     }
 
     protected function onPaymentCaptured($payment)

@@ -5448,32 +5448,6 @@ class Service extends Base\Service
         }
     }
 
-    public function reviveOrderViaPL($id)
-    {
-        $payment_id = Payment\Entity::getSign().Payment\Entity::getDelimiter().$id;
-
-        try {
-            $payment = $this->repo->payment->findByPublicId($payment_id);
-        } catch (\Throwable $e) {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::FAILED_PAYMENT_PL_CREATION_FAILED,
-                [
-                    'payment_id'         => $payment_id
-                ]
-            );
-            return false;
-        }
-
-        if ($payment->hasOrder() == false || $payment->order->isPaid() == true)
-        {
-            return false;
-        }
-
-        return $this->core->createPaymentLinkToReviveOrder($payment);
-    }
-
     /**
      * Authorizes failed payment based on ART input
      * [force_authorize_failed,verify_authorize_failed]

@@ -59,8 +59,6 @@ class Constants
     const TIMEOUT_AT                                   = 'timeout_at';
     const VERIFY_SERVICE                               = 'verify_service';
     const TIMEOUT_SERVICE                              = 'timeout_service';
-    const CREATE_PL_AT                                 = 'create_pl_at';
-    const REGISTER_PAYMENT_FAILED_IN_SCHEDULER         = 'register_payment_failed_in_scheduler';
     const ACTIVE                                       = 'active';
 
     const NOTHING_VIA_SCHEDULER                 =   null;

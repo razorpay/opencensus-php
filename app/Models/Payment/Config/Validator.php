@@ -232,18 +232,6 @@ class Validator extends Base\Validator
             $this->validateInput('mcc_markdown_config', $input['config']);
         }
 
-        if (($input['type'] === Type::PAYMENT_FAILED) and
-            (isset($input['config']) === true))
-        {
-            $config = $input['config'];
-
-            if (isset($config['retry_payment_links']) && isset($config['retry_payment_links']['send_after'])
-                && $config['retry_payment_links']['send_after'] > 43200) {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Payment Link Send After Cannot be greater than 5 days');
-            }
-        }
-
         if (($input['type'] === Type::LATE_AUTH) and
             (isset($input['config']) === true))
         {

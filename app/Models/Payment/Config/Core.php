@@ -58,7 +58,7 @@ class Core extends Base\Core
 
                 $config->build($input);
 
-                if (((isset($input['type']) === true) && ($input['type'] === Type::DCC)) || 
+                if (((isset($input['type']) === true) && ($input['type'] === Type::DCC)) ||
                     ((isset($input['type']) === true) && ($input['type'] === Type::DCC_RECURRING)))
                 {
                     return $this->validateAndSaveDccConfig($input, $merchant, $config);
@@ -84,14 +84,6 @@ class Core extends Base\Core
                                 'Default Config is present for the provided merchant');
                         }
 
-                        if ((isset($defaultConfig) === true) and
-                            ($input['type'] === Type::PAYMENT_FAILED))
-                        {
-                            throw new Exception\BadRequestException(
-                                ErrorCode::BAD_REQUEST_DEFAULT_PAYMENT_FAILED_CONFIG_PRESENT, null, null,
-                                'Default Payment Failed Config is present for the provided merchant');
-                        }
-
                         if (isset($defaultConfig) === true)
                         {
                             if ($input['type'] === Type::LOCALE)
@@ -106,7 +98,7 @@ class Core extends Base\Core
                             $this->repo->saveOrFail($defaultConfig);
                         }
 
-                        if ((isset($defaultConfig) === true) and 
+                        if ((isset($defaultConfig) === true) and
                             ((new Type())->isInternationalMarkupOrMarkdownConfig($input['type']) === true))
                         {
                             $defaultConfig->is_default = false;
@@ -248,15 +240,6 @@ class Core extends Base\Core
 
     }
 
-    private function updatePaymentFailedConfig($config, $input)
-    {
-        $config->setConfig(json_encode($input['config']));
-
-        $this->repo->saveOrFail($config);
-
-        return $config;
-    }
-
     private function updateDccConfig($config, $input)
     {
         $config->setConfig(json_encode($input['config']));
@@ -326,11 +309,6 @@ class Core extends Base\Core
                         if ($type === Type::MCC_MARKDOWN)
                         {
                             $this->updateMccMarkdownConfig($config, $input);
-                        }
-
-                        if ($type === Type::PAYMENT_FAILED)
-                        {
-                            $this->updatePaymentFailedConfig($config, $input);
                         }
 
                         return $config;
@@ -447,18 +425,6 @@ class Core extends Base\Core
             $this->repo->saveOrFail($config);
 
             return $config;
-    }
-
-    public function getPaymentFailedConfig($merchantId)
-    {
-        $config = $this->repo->config->fetchDefaultConfigByMerchantIdAndType($merchantId, Type::PAYMENT_FAILED);
-
-        if(isset($config) === true)
-        {
-            return json_decode($config->config, true);
-        }
-
-        return false;
     }
 
     public function validateAndSaveCustomerFeeConfig($inputConfig)
