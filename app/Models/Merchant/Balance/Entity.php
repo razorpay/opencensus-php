@@ -214,12 +214,12 @@ class Entity extends Base\PublicEntity
     {
         $accountType = $attributes[self::ACCOUNT_TYPE];
 
+        $app = App::getFacadeRoot();
+
         if ($accountType === AccountType::DIRECT)
         {
             /** @var Details\Entity $basDetails */
             $basDetails = $this->bankingAccountStatementDetails;
-
-            $app = App::getFacadeRoot();
 
             $variant = $app->razorx->getTreatment(
                 $basDetails->getId(),
@@ -242,6 +242,21 @@ class Entity extends Base\PublicEntity
                     $attributes[self::LAST_FETCHED_AT] = $basDetails->getBalanceLastFetchedAt();
                 }
             }
+        }
+
+        if ($accountType === AccountType::SHARED)
+        {
+            $exp = $app->razorx->getTreatment(
+                $this->getMerchantId(),
+                RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE,
+                $app['rzp.mode'] ?? 'live'
+            );
+
+            if ($exp === 'on')
+            {
+                $attributes[self::LAST_FETCHED_AT] = Carbon::now()->getTimestamp();
+            }
+
         }
     }
 

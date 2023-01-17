@@ -17496,11 +17496,15 @@ The same has been enabled for the account.
     {
         $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
 
+        $this->setMockRazorxTreatment([RazorxTreatment::SYNC_CALL_FOR_FRESH_BALANCE => 'on']);
+
         $this->setUpMerchantForGetBalances();
 
         $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
 
         $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $startTimeStamp = Carbon::now()->getTimestamp();
 
         $response = $this->startTest();
 
@@ -17508,6 +17512,7 @@ The same has been enabled for the account.
         $this->assertEquals('banking', $response['items'][0]['type']);
         $this->assertEquals('100abc000abcd0', $response['items'][0]['id']);
         $this->assertEquals('shared', $response['items'][0]['account_type']);
+        $this->assertGreaterThanOrEqual($startTimeStamp,$response['items'][0]['last_fetched_at']);
     }
 
     public function testGetBalancesTypeBankingCachedFalseExpOff()
