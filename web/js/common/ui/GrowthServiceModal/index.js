@@ -20,13 +20,14 @@ const GrowthServiceModal = ({
   template_id,
   history,
   tracking_id,
+  isMobileResolution,
 }) => {
   useEffect(() => {
     fetchGSModal({ template_id });
   }, []);
   const isEmptyOrNotMobile =
     Object.keys(gs_modals).length === 0 || (!gs_modals?.image?.mobile_url && isMobileAndTablet());
-  const backgroundImgUrl = isMobileAndTablet()
+  const backgroundImgUrl = isMobileResolution
     ? gs_modals?.image?.mobile_url
     : gs_modals?.image?.url;
   const Description = ({ description, type }) => {
@@ -64,15 +65,19 @@ const GrowthServiceModal = ({
       closeModal();
     }
     return (
-      <div className={isMobileAndTablet() ? 'gs-container' : ''}>
+      <div className={isMobileResolution ? 'gs-container' : ''}>
         <button type="button" id="gs-btn-close" onClick={closeModal}>
           <i className="i i-close" />
         </button>
         <div id="gs-modal-body">
-          <img className="background-img" src={backgroundImgUrl} alt={gs_modals?.image?.alt_text} />
+          <img
+            className={isMobileResolution ? 'background-img-mweb' : 'background-img-dweb'}
+            src={backgroundImgUrl}
+            alt={gs_modals?.image?.alt_text}
+          />
         </div>
         <div
-          className={isMobileAndTablet() ? 'gs-modal-footer-mobile' : 'gs-modal-footer'}
+          className={isMobileResolution ? 'gs-modal-footer-mobile' : 'gs-modal-footer'}
           style={{
             background: gs_modals?.footer_data?.background_color
               ? gs_modals?.footer_data?.background_color
@@ -138,6 +143,7 @@ export default compose(
     (state) => {
       return {
         ...state?.growthService?.gs_modals,
+        isMobileResolution: state.app.isMobileResolution,
       };
     },
     {
