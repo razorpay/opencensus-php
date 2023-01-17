@@ -699,6 +699,9 @@ final class RazorxTreatment
     // Experiment to migrate disputes routes from API to disputes service
     const DISPUTES_DECOMP = 'disputes_decomp';
 
+    // Experiment to migrate shield international traffic to separate pods
+    const SHIELD_INTL_POD = 'shield_intl_pod';
+
     // Experiment to use card number from input to use dummy cvv in payment
     const USE_DETECT_NETWORK_FOR_DUMMY_CVV = 'use_detect_network_for_dummy_cvv';
 

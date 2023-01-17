@@ -4,10 +4,13 @@ namespace RZP\Services;
 
 use App;
 
+use RZP\Constants\Mode;
 use RZP\Constants\Shield as ShieldConstants;
 use RZP\Error\ErrorCode;
 use RZP\Exception\IntegrationException;
 use RZP\Http\Request\Requests;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\Network;
@@ -46,7 +49,8 @@ class ShieldClient implements ExternalService
     const TRACE_REQUEST_FEATURE    = 'shield_dns_trace';
 
     protected $config;
-    protected $baseUrl;
+    protected $baseUrlDom;
+    protected $baseUrlIntl;
     protected $trace;
 
     const PAYMENT_ANALYTICS_KEYS = [
@@ -74,7 +78,9 @@ class ShieldClient implements ExternalService
 
         $this->trace = $app['trace'];
 
-        $this->baseUrl = $this->config['url'];
+        $this->baseUrlDom = $this->config['url'];
+
+        $this->baseUrlIntl = $this->config['url_international'];
     }
 
     public function fetchMultiple(string $entity, array $input)
@@ -410,7 +416,7 @@ class ShieldClient implements ExternalService
                 break;
         }
 
-        $url = $this->baseUrl . $path;
+        $url = $this->getBaseUrl($data, $path) . $path;
 
         if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test')
         {
@@ -518,9 +524,26 @@ class ShieldClient implements ExternalService
         return self::REQUEST_TIMEOUT_OTHERS;
     }
 
+    private function getBaseUrl($input, $path)
+    {
+        if ($path === self::EVALUATE_PATH and
+            ((isset($input['input'][Payment\Entity::INTERNATIONAL])) and
+                ($input['input'][Payment\Entity::INTERNATIONAL] === true)))
+        {
+            $variant = $this->app['razorx']->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::SHIELD_INTL_POD, $this->app['basicauth']->getMode() ?? Mode::LIVE);
+
+            if ($variant === RazorxTreatment::RAZORX_VARIANT_ON)
+            {
+                return $this->baseUrlIntl;
+            }
+        }
+
+        return $this->baseUrlDom;
+    }
+
     public function sendRequestV2(string $path, string $method, array $data = []): array
     {
-        $url = $this->baseUrl . $path;
+        $url = $this->getBaseUrl($data, $path) . $path;
 
         $headers = $this->getShieldHeaders();
 
@@ -570,7 +593,7 @@ class ShieldClient implements ExternalService
     //this function is exact copy of sendRequestV2 but it throws error if shield response status-code is not 200
     public function sendRequestV2ForWorkflow(string $path, string $method, array $data = []): array
     {
-        $url = $this->baseUrl . $path;
+        $url = $this->getBaseUrl($data, $path) . $path;
 
         $headers = $this->getShieldHeaders();
 

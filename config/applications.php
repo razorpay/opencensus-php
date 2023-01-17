@@ -721,6 +721,7 @@ return [
     'shield' => [
         'mock'     => env('SHIELD_MOCK', false),
         'url'      => env('SHIELD_BASE_URL'),
+        'url_international'      => env('SHIELD_BASE_URL_INTERNATIONAL'),
         'mock_url' => env('SHIELD_BASE_MOCK_URL'),
         'auth' => [
             'username' => 'api',
