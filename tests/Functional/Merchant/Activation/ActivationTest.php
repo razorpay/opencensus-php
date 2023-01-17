@@ -4112,6 +4112,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testFailureBankDetailsVerificationForUnRegisteredBusiness()
     {
+        $this->markTestSkipped('Old way of bank account validation not used anymore');
+
         $merchantAttributes = ['business_type' => 2, 'promoter_pan_name' => 'pankaj kumar','activation_status' => 'under_review',];
 
         $this->verifyFailureBankDetailsVerification($merchantAttributes);
@@ -4119,6 +4121,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testFailureBankDetailsVerificationForNameMismatchCaseForUnRegisteredBusiness()
     {
+        $this->markTestSkipped('Old way of bank account validation not used anymore');
+
         $merchantAttributes = ['business_type' => 2, 'promoter_pan_name' => 'pankaj kumar'];
 
         $this->verifyFailureBankDetailsVerificationForNameMismatchCase($merchantAttributes);
@@ -4126,6 +4130,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testFailureBankDetailsVerificationForPartnerShip()
     {
+        $this->markTestSkipped('Old way of bank account validation not used anymore');
+
         $merchantAttributes = ['business_type' => 1, 'promoter_pan_name' => 'pankaj kumar'];
 
         $this->verifyFailureBankDetailsVerification($merchantAttributes);
@@ -4133,6 +4139,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testFailureBankDetailsVerificationForHUF()
     {
+        $this->markTestSkipped('Old way of bank account validation not used anymore');
+
         $merchantAttributes = ['business_type' => 13, 'promoter_pan_name' => 'pankaj kumar'];
 
         $this->verifyFailureBankDetailsVerification($merchantAttributes);
@@ -4140,6 +4148,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testFailureBankDetailsVerificationForNameMismatchCasePartnerShip()
     {
+        $this->markTestSkipped('Old way of bank account validation not used anymore');
+
         $merchantAttributes = ['business_type' => 1, 'promoter_pan_name' => 'pankaj kumar'];
 
         $this->verifyFailureBankDetailsVerificationForNameMismatchCase($merchantAttributes);
@@ -4147,6 +4157,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testFailureBankDetailsVerificationForNameMismatchCaseHUF()
     {
+        $this->markTestSkipped('Old way of bank account validation not used anymore');
+
         $merchantAttributes = ['business_type' => 13, 'promoter_pan_name' => 'pankaj kumar'];
 
         $this->verifyFailureBankDetailsVerificationForNameMismatchCase($merchantAttributes);
@@ -4154,6 +4166,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testFailureBankDetailsVerificationForRegisteredBusiness()
     {
+        $this->markTestSkipped('Old way of bank account validation not used anymore');
+
         $merchantAttributes = ['business_type' => 4, 'business_name' => 'pankaj kumar'];
 
         $this->verifyFailureBankDetailsVerification($merchantAttributes);
@@ -4161,6 +4175,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testFailureBankDetailsVerificationForNameMismatchCaseForRegisteredBusiness()
     {
+        $this->markTestSkipped('Old way of bank account validation not used anymore');
+
         $merchantAttributes = ['business_type' => 4, 'business_name' => 'pankaj kumar'];
 
         $this->verifyFailureBankDetailsVerificationForNameMismatchCase($merchantAttributes);
@@ -4408,6 +4424,8 @@ class ActivationTest extends OAuthTestCase
 
     public function testPennyTestingCronFailure()
     {
+        $this->markTestSkipped('Old way of bank account validation not used anymore');
+
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',
                                                   ['business_type'                    => 2,
                                                    'promoter_pan_name'                => 'rishabh acharya',

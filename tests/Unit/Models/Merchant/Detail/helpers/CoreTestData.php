@@ -8,6 +8,9 @@ return [
                 'contact_email' => [
                     [
                         'from'        => 'admin',
+                        'nc_count'    => 1,
+                        'created_at'  => 1673533086,
+                        'is_current'  => true,
                         'reason_type' => 'predefined',
                         'field_value' => 'adnakdad',
                         'reason_code' => 'provide_poc',
@@ -17,6 +20,10 @@ return [
             'additional_details'    => [
                 'cancelled_cheque'     => [
                     [
+                        'from'        => 'system',
+                        'nc_count'    => 1,
+                        'created_at'  => 1673533086,
+                        'is_current'  => true,
                         'reason_type' => 'custom',
                         'field_type'  => 'document',
                         'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -24,13 +31,21 @@ return [
                 ],
                 'bank_account_number' =>[
                     [
-                    'reason_type' => 'custom',
-                    'field_type'  => 'text',
-                    'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
+                        'from'        => 'system',
+                        'nc_count'    => 1,
+                        'created_at'  => 1673533086,
+                        'is_current'  => true,
+                        'reason_type' => 'custom',
+                        'field_type'  => 'text',
+                        'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
                      ]
                 ],
                 'bank_account_name'     => [
                     [
+                        'from'        => 'system',
+                        'nc_count'    => 1,
+                        'created_at'  => 1673533086,
+                        'is_current'  => true,
                         'reason_type' => 'custom',
                         'field_type'  => 'document',
                         'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -38,6 +53,10 @@ return [
                 ],
                 'bank_branch_ifsc'     => [
                     [
+                        'from'        => 'system',
+                        'nc_count'    => 1,
+                        'created_at'  => 1673533086,
+                        'is_current'  => true,
                         'reason_type' => 'custom',
                         'field_type'  => 'document',
                         'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -45,6 +64,10 @@ return [
                 ],
                 'business_description' => [
                     [
+                        'from'        => 'system',
+                        'nc_count'    => 1,
+                        'created_at'  => 1673533086,
+                        'is_current'  => true,
                         'reason_type' => 'predefined',
                         'field_type'  => 'text',
                         'reason_code' => 'provide_poc',
@@ -58,6 +81,9 @@ return [
             'contact_email' => [
                 [
                     'from'        => 'admin',
+                    'nc_count'    => 1,
+                    'created_at'  => 1673533086,
+                    'is_current'  => true,
                     'reason_type' => 'predefined',
                     'field_value' => 'adnakdad',
                     'reason_code' => 'provide_poc',
@@ -67,13 +93,21 @@ return [
         'additional_details'    => [
             'bank_account_number' => [
                 [
-                'reason_type' => 'custom',
-                'field_type'  => 'text',
-                'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
+                    'from'        => 'system',
+                    'nc_count'    => 1,
+                    'created_at'  => 1673533086,
+                    'is_current'  => true,
+                    'reason_type' => 'custom',
+                    'field_type'  => 'text',
+                    'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
                 ]
             ],
             'cancelled_cheque'     => [
                 [
+                    'from'        => 'system',
+                    'nc_count'    => 1,
+                    'created_at'  => 1673533086,
+                    'is_current'  => true,
                     'reason_type' => 'custom',
                     'field_type'  => 'document',
                     'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -81,6 +115,10 @@ return [
             ],
             'business_description' => [
                 [
+                    'from'        => 'system',
+                    'nc_count'    => 1,
+                    'created_at'  => 1673533086,
+                    'is_current'  => true,
                     'reason_type' => 'predefined',
                     'field_type'  => 'text',
                     'reason_code' => 'provide_poc',
@@ -88,6 +126,10 @@ return [
             ],
             'bank_account_name'     => [
                 [
+                    'from'        => 'system',
+                    'nc_count'    => 1,
+                    'created_at'  => 1673533086,
+                    'is_current'  => true,
                     'reason_type' => 'custom',
                     'field_type'  => 'document',
                     'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -95,6 +137,10 @@ return [
             ],
             'bank_branch_ifsc'     => [
                 [
+                    'from'        => 'system',
+                    'nc_count'    => 1,
+                    'created_at'  => 1673533086,
+                    'is_current'  => true,
                     'reason_type' => 'custom',
                     'field_type'  => 'document',
                     'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -104,6 +150,10 @@ return [
         'clarification_reasons_v2' =>[
             'bank_account_number' => [
                 [
+                    'from'        => 'system',
+                    'nc_count'    => 1,
+                    'created_at'  => 1673533086,
+                    'is_current'  => true,
                     'reason_type' => 'custom',
                     'field_type'  => 'text',
                     'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -123,6 +173,9 @@ return [
             'contact_email' => [
                 [
                     'from'        => 'admin',
+                    'nc_count'    => 1,
+                    'created_at'  => 1673533086,
+                    'is_current'  => true,
                     'reason_type' => 'predefined',
                     'field_value' => 'adnakdad',
                     'reason_code' => 'provide_poc',
@@ -130,6 +183,10 @@ return [
             ],
             'business_description' => [
                 [
+                    'from'        => 'system',
+                    'nc_count'    => 1,
+                    'created_at'  => 1673533086,
+                    'is_current'  => true,
                     'reason_type' => 'predefined',
                     'field_type'  => 'text',
                     'reason_code' => 'provide_poc',
@@ -145,13 +202,17 @@ return [
                     [
                         'from'        => 'admin',
                         'nc_count'    => 1,
+                        'created_at'  => 1000,
+                        'is_current'  => false,
                         'reason_code' => "invalid_personal_pan_number",
-                        'created_at'  => 1000
+                        'reason_type' => 'predefined',
                     ],
                     [
                         'from'        => 'admin',
                         'nc_count'    => 2,
                         'reason_code' => "invalid_personal_pan_number",
+                        'reason_type' => 'predefined',
+                        'is_current'  => true,
                         'created_at'  => 2000
                     ]
                 ],
@@ -160,6 +221,8 @@ return [
                         'from'        => 'admin',
                         'nc_count'    => 2,
                         'reason_code' => "signatory_name_not_matched",
+                        'reason_type' => 'predefined',
+                        'is_current'  => true,
                         'created_at'  => 2000
                     ]
                 ]
@@ -173,12 +236,16 @@ return [
                 [
                     'from'        => 'admin',
                     'nc_count'    => 1,
+                    'reason_type' => 'predefined',
+                    'is_current'  => false,
                     'reason_code' => "invalid_personal_pan_number",
                     'created_at'  => 1000
                 ],
                 [
                     'from'        => 'admin',
                     'nc_count'    => 2,
+                    'reason_type' => 'predefined',
+                    'is_current'  => true,
                     'reason_code' => "invalid_personal_pan_number",
                     'created_at'  => 2000
                 ]
@@ -187,6 +254,8 @@ return [
                 [
                     'from'        => 'admin',
                     'nc_count'    => 2,
+                    'reason_type' => 'predefined',
+                    'is_current'  => true,
                     'reason_code' => "signatory_name_not_matched",
                     'created_at'  => 2000
                 ]
@@ -199,6 +268,8 @@ return [
                     'from'        => 'admin',
                     'nc_count'    => 1,
                     'reason_code' => "invalid_personal_pan_number",
+                    'reason_type' => 'predefined',
+                    'is_current'  => false,
                     'created_at'  => 1000,
                     'related_fields'=>[
                         [
@@ -209,6 +280,8 @@ return [
                 [
                     'from'        => 'admin',
                     'nc_count'    => 2,
+                    'reason_type' => 'predefined',
+                    'is_current'  => true,
                     'reason_code' => "invalid_personal_pan_number",
                     'created_at'  => 2000,
                     'related_fields'=>[]
@@ -218,6 +291,8 @@ return [
                 [
                     'from'        => 'admin',
                     'nc_count'    => 2,
+                    'reason_type' => 'predefined',
+                    'is_current'  => true,
                     'created_at'  => 2000,
                     'reason_code' => "signatory_name_not_matched",
                 ]
@@ -232,12 +307,16 @@ return [
                     [
                         'from'        => 'admin',
                         'nc_count'    => 1,
+                        'is_current'  => false,
+                        'reason_type' => 'predefined',
                         'reason_code' => "invalid_company_pan_number",
                         'created_at'  => 1000
                     ],
                     [
                         'from'        => 'admin',
                         'nc_count'    => 2,
+                        'is_current'  => true,
+                        'reason_type' => 'predefined',
                         'reason_code' => "invalid_company_pan_number",
                         'created_at'  => 2000
                     ]
@@ -245,6 +324,8 @@ return [
                 'company_pan_name' => [
                     [
                         'from'        => 'admin',
+                        'is_current'  => true,
+                        'reason_type' => 'predefined',
                         'nc_count'    => 2,
                         'reason_code' => "update_director_pan",
                         'created_at'  => 2000
@@ -259,12 +340,16 @@ return [
             'company_pan' => [
                 [
                     'from'        => 'admin',
+                    'is_current'  => false,
+                    'reason_type' => 'predefined',
                     'nc_count'    => 1,
                     'reason_code' => "invalid_company_pan_number",
                     'created_at'  => 1000
                 ],
                 [
                     'from'        => 'admin',
+                    'is_current'  => true,
+                    'reason_type' => 'predefined',
                     'nc_count'    => 2,
                     'reason_code' => "invalid_company_pan_number",
                     'created_at'  => 2000
@@ -273,6 +358,8 @@ return [
             'company_pan_name' => [
                 [
                     'from'        => 'admin',
+                    'is_current'  => true,
+                    'reason_type' => 'predefined',
                     'nc_count'    => 2,
                     'reason_code' => "update_director_pan",
                     'created_at'  => 2000
@@ -285,6 +372,8 @@ return [
                 [
                     'from'        => 'admin',
                     'nc_count'    => 1,
+                    'is_current'  => false,
+                    'reason_type' => 'predefined',
                     'reason_code' => "invalid_company_pan_number",
                     'created_at'  => 1000,
                     'related_fields'=>[
@@ -295,6 +384,8 @@ return [
                 ],
                 [
                     'from'        => 'admin',
+                    'is_current'  => true,
+                    'reason_type' => 'predefined',
                     'nc_count'    => 2,
                     'reason_code' => "invalid_company_pan_number",
                     'created_at'  => 2000,
@@ -304,6 +395,8 @@ return [
             'company_pan_name' => [
                 [
                     'from'        => 'admin',
+                    'is_current'  => true,
+                    'reason_type' => 'predefined',
                     'nc_count'    => 2,
                     'created_at'  => 2000,
                     'reason_code' => "update_director_pan",
@@ -328,6 +421,7 @@ return [
                 'bank_account_number' => [
                     [
                         'nc_count'    => 1,
+                        'from'        => 'system',
                         'reason_type' => 'custom',
                         'field_type'  => 'text',
                         'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -336,6 +430,7 @@ return [
                 'cancelled_cheque'     => [
                     [
                         'nc_count'    => 1,
+                        'from'        => 'system',
                         'reason_type' => 'custom',
                         'field_type'  => 'document',
                         'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -344,6 +439,7 @@ return [
                 'business_description' => [
                     [
                         'nc_count'    => 1,
+                        'from'        => 'system',
                         'reason_type' => 'predefined',
                         'field_type'  => 'text',
                         'reason_code' => 'provide_poc',
@@ -352,6 +448,7 @@ return [
                 'bank_account_name'     => [
                     [
                         'nc_count'    => 1,
+                        'from'        => 'system',
                         'reason_type' => 'custom',
                         'field_type'  => 'document',
                         'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -360,6 +457,7 @@ return [
                 'bank_branch_ifsc'     => [
                     [
                         'nc_count'    => 1,
+                        'from'        => 'system',
                         'reason_type' => 'custom',
                         'field_type'  => 'document',
                         'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -370,6 +468,7 @@ return [
                 'bank_account_number' => [
                     [
                         'nc_count'    => 1,
+                        'from'        => 'system',
                         'reason_type' => 'custom',
                         'field_type'  => 'text',
                         'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -398,6 +497,7 @@ return [
                 'business_description' => [
                     [
                         'nc_count'    => 1,
+                        'from'        => 'system',
                         'reason_type' => 'predefined',
                         'field_type'  => 'text',
                         'reason_code' => 'provide_poc',
@@ -460,6 +560,7 @@ return [
             'bank_account_number' => [
                 [
                     'nc_count'    => 1,
+                    'from'        => 'system',
                     'reason_type' => 'custom',
                     'field_type'  => 'text',
                     'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -469,6 +570,7 @@ return [
             'cancelled_cheque'     => [
                 [
                     'nc_count'    => 1,
+                    'from'        => 'system',
                     'reason_type' => 'custom',
                     'field_type'  => 'document',
                     'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -478,6 +580,7 @@ return [
             'business_description' => [
                 [
                     'nc_count'    => 1,
+                    'from'        => 'system',
                     'reason_type' => 'predefined',
                     'field_type'  => 'text',
                     'reason_code' => 'provide_poc',
@@ -487,6 +590,7 @@ return [
             'bank_account_name'     => [
                 [
                     'nc_count'    => 1,
+                    'from'        => 'system',
                     'reason_type' => 'custom',
                     'field_type'  => 'document',
                     'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -496,6 +600,7 @@ return [
             'bank_branch_ifsc'     => [
                 [
                     'nc_count'    => 1,
+                    'from'        => 'system',
                     'reason_type' => 'custom',
                     'field_type'  => 'document',
                     'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -527,6 +632,7 @@ return [
                 [
                     'nc_count'    => 1,
                     'reason_type' => 'custom',
+                    'from'        => 'system',
                     'field_type'  => 'text',
                     'is_current'  => false,
                     'reason_code' => 'Lorem ipsum dolor sit amet consectetuer',
@@ -556,6 +662,7 @@ return [
             'business_description' => [
                 [
                     'nc_count'    => 1,
+                    'from'        => 'system',
                     'reason_type' => 'predefined',
                     'field_type'  => 'text',
                     'reason_code' => 'provide_poc',

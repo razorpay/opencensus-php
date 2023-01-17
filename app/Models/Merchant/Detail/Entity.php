@@ -1213,7 +1213,55 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
     public function getKycClarificationReasons()
     {
-        return $this->getAttribute(self::KYC_CLARIFICATION_REASONS);
+        if (empty($this->getAttribute(self::KYC_CLARIFICATION_REASONS)) === false)
+        {
+            $existingKycClarifications      = $this->getAttribute(self::KYC_CLARIFICATION_REASONS);
+            $ncCount                        = $existingKycClarifications[Merchant\Constants::NC_COUNT] ?? null;
+            $existingReasons                = $existingKycClarifications[Entity::CLARIFICATION_REASONS] ?? [];
+            $existingAdditionalDetails      = $existingKycClarifications[Entity::ADDITIONAL_DETAILS] ?? [];
+            $existingClarificationReasonsV2 = $existingKycClarifications[Entity::CLARIFICATION_REASONS_V2] ?? [];
+
+            $clarificationReasons   = $this->getClarificationReasons($existingReasons);
+            $additionalDetails      = $this->getClarificationReasons($existingAdditionalDetails);
+            $clarificationReasonsV2 = $this->getClarificationReasons($existingClarificationReasonsV2);
+
+            $KycClarifications = [
+                Entity::CLARIFICATION_REASONS    => $clarificationReasons,
+                Entity::ADDITIONAL_DETAILS       => $additionalDetails,
+                Entity::CLARIFICATION_REASONS_V2 => $clarificationReasonsV2
+            ];
+
+            if (empty($ncCount) === false)
+            {
+                $KycClarifications[Merchant\Constants::NC_COUNT] = $ncCount;
+            }
+
+            return $KycClarifications;
+        }
+
+        return null;
+    }
+
+    protected function getClarificationReasons($existingReasons)
+    {
+        $existingReasons = $existingReasons ?? [];
+
+        foreach ($existingReasons as $key => $values)
+        {
+            $newValues = [];
+
+            foreach ($values as $val)
+            {
+                if (isset($val[Merchant\Constants::FROM]) === true)
+                {
+                    $newValues[] = $val;
+                }
+            }
+
+            $existingReasons[$key] = $newValues;
+        }
+
+        return $existingReasons;
     }
 
     public function setKycClarificationReasons(array $reasons)
