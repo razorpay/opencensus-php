@@ -22,6 +22,7 @@ import NeedsClarificationModal from 'merchant/views/Account/Profile/components/W
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { BusinessWebsiteDetailsProps } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/typings';
+import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 
 const isWorkflowChangeAllowed = (workflow) => {
   return (
@@ -258,7 +259,11 @@ const BusinessWebsiteDetails = (props: BusinessWebsiteDetailsProps): JSX.Element
               <Popover align="top" theme="dark">
                 <PopoverBody>
                   <div>
-                    <div>You can add second website/app to use Razorpay on that website/app</div>
+                    <div>
+                      {user?.isOrgCurlec
+                        ? ATTR_DETAILS.curlec_additional_website_info.desc
+                        : ATTR_DETAILS.additional_website_info.desc}
+                    </div>
                   </div>
                 </PopoverBody>
               </Popover>

@@ -14,6 +14,7 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { fetchIsAdminAsMerchant } from 'merchant/reducers/profile';
 import LoaderDots from 'common/ui/LoaderDots';
+import { accountAccessHoverDescription } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 const AccountDetails = (props): JSX.Element => {
   const {
@@ -126,11 +127,7 @@ const AccountDetails = (props): JSX.Element => {
                 <i className="i i-help" />
                 <Popover align="right" theme="dark">
                   <PopoverBody>
-                    <div>
-                      {user.has_key_access
-                        ? 'You have access to all products and API keys. Integrate using our robust APIs or request access to products such as Subscriptions,  Route,  and Smart Collect.'
-                        : 'You can only access Payment Links and Invoices. Please provide website/app link to get access to our API’s and other products such as Route, Subscriptions, etc.'}
-                    </div>
+                    <div>{accountAccessHoverDescription(user)}</div>
                   </PopoverBody>
                 </Popover>
               </small>

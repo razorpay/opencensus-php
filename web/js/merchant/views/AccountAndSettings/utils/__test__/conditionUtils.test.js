@@ -2,13 +2,14 @@ import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/condi
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 
 jest.mock('merchant/models/User', () => ({
   ...jest.requireActual('merchant/models/User'),
   isOrgFeatureExist: jest.fn(),
 }));
 
-const { isFlashCheckoutAllowed } = conditionalUtils;
+const { isFlashCheckoutAllowed, accountAccessHoverDescription } = conditionalUtils;
 
 const getUser = () => ({
   isAllowedView: jest.fn(),
@@ -329,5 +330,51 @@ describe('Condition Utils', () => {
   testUtilWhichUsesSingleUserFunc('isSettlementsAllowed', 'findTag', {
     reverse: true,
     extraTestMessage: 'on passing Settlements',
+  });
+
+  describe('Different hovering text of account access, based on org and user access', () => {
+    test('user has access and org is non-i18n', () => {
+      const userInfo = {
+        has_key_access: true,
+        isOrgCurlec: false,
+      };
+
+      expect(accountAccessHoverDescription(userInfo)).toEqual(
+        ATTR_DETAILS.access_user_account.desc,
+      );
+    });
+
+    test('user do not have access and org is non-i18n', () => {
+      const userInfo = {
+        has_key_access: false,
+        isOrgCurlec: false,
+      };
+
+      expect(accountAccessHoverDescription(userInfo)).toEqual(
+        ATTR_DETAILS.restricted_access_user_account.desc,
+      );
+    });
+
+    test('user has access and org is i18n', () => {
+      const userInfo = {
+        has_key_access: true,
+        isOrgCurlec: true,
+      };
+
+      expect(accountAccessHoverDescription(userInfo)).toEqual(
+        ATTR_DETAILS.curlec_access_user_account.desc,
+      );
+    });
+
+    test('user do not have access and org is i18n', () => {
+      const userInfo = {
+        has_key_access: false,
+        isOrgCurlec: true,
+      };
+
+      expect(accountAccessHoverDescription(userInfo)).toEqual(
+        ATTR_DETAILS.curlec_restricted_access_user_account.desc,
+      );
+    });
   });
 });

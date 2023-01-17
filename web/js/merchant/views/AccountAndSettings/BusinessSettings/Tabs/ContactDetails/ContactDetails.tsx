@@ -121,7 +121,11 @@ const ContactDetails = ({
                 <i className="i i-info-outline" />
                 <Popover align="top" theme="dark">
                   <PopoverBody>
-                    <div>{ATTR_DETAILS.display_name.desc}</div>
+                    <div>
+                      {user?.isOrgCurlec
+                        ? ATTR_DETAILS.curlec_display_name.desc
+                        : ATTR_DETAILS.display_name.desc}
+                    </div>
                   </PopoverBody>
                 </Popover>
               </small>

@@ -2,6 +2,7 @@ import User, { isOrgFeatureExist } from 'merchant/models/User';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { AdditionalContextInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
+import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 
 export const isConfigurationViewAllowed = (user: User): boolean =>
   user.isAllowedView('configuration');
@@ -94,3 +95,14 @@ export const isBankAccountDetailsAllowed = (user: User): boolean =>
 
 export const isSettlementsAllowed = (user: User): boolean =>
   !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements);
+
+export const accountAccessHoverDescription = (user: User) => {
+  if (user?.has_key_access) {
+    return user?.isOrgCurlec
+      ? ATTR_DETAILS.curlec_access_user_account.desc
+      : ATTR_DETAILS.access_user_account.desc;
+  }
+  return user?.isOrgCurlec
+    ? ATTR_DETAILS.curlec_restricted_access_user_account.desc
+    : ATTR_DETAILS.restricted_access_user_account.desc;
+};
