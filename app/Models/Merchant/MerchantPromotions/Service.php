@@ -249,7 +249,12 @@ class Service extends Base\Service
                 unset($input['contact']);
             }
 
-            $routeToMagicCheckoutService = $this->canRouteToMagicCheckoutService($input, $this->merchant);
+            $routeToMagicCheckoutService = false;
+            try {
+                $routeToMagicCheckoutService = $this->canRouteToMagicCheckoutService($input, $this->merchant);
+            } catch (\Throwable $e) {
+                $routeToMagicCheckoutService = false;
+            }
 
             if ($routeToMagicCheckoutService === true)
             {
@@ -566,7 +571,8 @@ class Service extends Base\Service
 
     protected function canRouteToMagicCheckoutService(array $input, $merchant): bool
     {
-        if ($this->merchant->getMerchantPlatformConfig()->getValue() === Constants::SHOPIFY ||
+        $platformConfig = $this->merchant->getMerchantPlatformConfig();
+        if (($platformConfig != null && $platformConfig->getValue() === Constants::SHOPIFY) ||
             $this->merchant->get1ccConfigFlagStatus(Constants::ONE_CC_GIFT_CARD) === true)
         {
             return false;
