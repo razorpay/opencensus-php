@@ -296,9 +296,10 @@ class Repository extends Base\Repository
 
         $setlIds = $setls->modelKeys();
 
-        $query = $this->newQuery();
+        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection());
 
-        $txns = $query->merchantId($merchantId)
+        $txns = $query
+                      ->merchantId($merchantId)
                       ->whereIn(Entity::SETTLEMENT_ID, $setlIds)
                       ->take($count)
                       ->skip($skip)
