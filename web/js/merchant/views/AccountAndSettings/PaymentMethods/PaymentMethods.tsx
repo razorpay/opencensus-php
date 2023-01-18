@@ -6,7 +6,7 @@ import DashboardBanner from 'common/ui/DashboardBanner';
 import Breadcrumb from 'common/components/Breadcrumb';
 import { accountAndSettingsLink } from 'merchant/views/AccountAndSettings/constants/constants';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
-import { StyledDivider } from 'merchant/views/AccountAndSettings/styled';
+import { StyledDivider, StyledHeader } from 'merchant/views/AccountAndSettings/styled';
 import Loader from 'common/components/Loader';
 import lazy from 'merchant/routes/LazyLoader';
 
@@ -21,18 +21,18 @@ const PaymentMethodsV2 = (): JSX.Element => {
         <DashboardBanner />
       </div>
       <div className="tabbed-container">
-        <header className="scrollable-tab-header">
-          <Breadcrumb
-            items={[
-              accountAndSettingsLink,
-              {
-                label: 'Payment Methods',
-                link: ROUTES_INFO.PAYMENT_METHODS,
-              },
-            ]}
-          />
+        <Breadcrumb
+          items={[
+            accountAndSettingsLink,
+            {
+              label: 'Payment Methods',
+              link: ROUTES_INFO.PAYMENT_METHODS,
+            },
+          ]}
+        />
+        <StyledHeader className="scrollable-tab-header">
           <NavLink to={ROUTES_INFO.PAYMENT_METHODS}>Payment Methods</NavLink>
-        </header>
+        </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<Loader />}>

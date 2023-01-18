@@ -8,6 +8,7 @@ import {
   StyledConfiguration,
   StyledDivider,
   StyledTabContentContainer,
+  StyledHeader,
 } from 'merchant/views/AccountAndSettings/styled';
 import {
   isWhatsappNotificationEnabled,
@@ -40,16 +41,16 @@ const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | n
         <DashboardBanner />
       </div>
       <div className="tabbed-container">
-        <header className="scrollable-tab-header">
-          <Breadcrumb
-            items={[
-              accountAndSettingsLink,
-              {
-                label: ROUTE_MAP[pathname],
-                link: pathname,
-              },
-            ]}
-          />
+        <Breadcrumb
+          items={[
+            accountAndSettingsLink,
+            {
+              label: ROUTE_MAP[pathname],
+              link: pathname,
+            },
+          ]}
+        />
+        <StyledHeader className="scrollable-tab-header">
           <NavLink to={ROUTES_INFO.EMAIL_NOTIFICATIONS}>Email</NavLink>
           <ShowWhen additionalCondition={isSmsNotificationEnabled}>
             <NavLink to={ROUTES_INFO.SMS_NOTIFICATIONS}>SMS</NavLink>
@@ -57,7 +58,7 @@ const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | n
           <ShowWhen additionalCondition={isWhatsappNotificationEnabled}>
             <NavLink to={ROUTES_INFO.WHATSAPP_NOTIFICATIONS}>WhatsApp</NavLink>
           </ShowWhen>
-        </header>
+        </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<Loader />}>

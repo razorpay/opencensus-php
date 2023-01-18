@@ -61,4 +61,5 @@ export enum CheckoutSettingsFields {
 export enum BankAccountSettlementFields {
   BANK_ACCOUNT_DETAILS = 'bank_account_details',
   SETTLEMENT_DETAILS = 'settlement_details',
+  FIRS = 'forward_inwards_remittance_statement',
 }

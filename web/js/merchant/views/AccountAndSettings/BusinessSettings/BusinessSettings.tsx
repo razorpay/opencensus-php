@@ -8,7 +8,11 @@ import DashboardBanner from 'common/ui/DashboardBanner';
 import Breadcrumb from 'common/components/Breadcrumb';
 import lazy from 'merchant/routes/LazyLoader';
 import { BusinessSettingsProps } from './typings';
-import { StyledDivider, StyledTabContentContainer } from 'merchant/views/AccountAndSettings/styled';
+import {
+  StyledDivider,
+  StyledTabContentContainer,
+  StyledHeader,
+} from 'merchant/views/AccountAndSettings/styled';
 import {
   accountAndSettingsLink,
   ROUTE_MAP,
@@ -72,16 +76,16 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
         <DashboardBanner />
       </div>
       <div className="tabbed-container">
-        <header id="settings-header" className="scrollable-tab-header">
-          <Breadcrumb
-            items={[
-              accountAndSettingsLink,
-              {
-                label: ROUTE_MAP[location.pathname],
-                link: location.pathname,
-              },
-            ]}
-          />
+        <Breadcrumb
+          items={[
+            accountAndSettingsLink,
+            {
+              label: ROUTE_MAP[location.pathname],
+              link: location.pathname,
+            },
+          ]}
+        />
+        <StyledHeader className="scrollable-tab-header">
           <NavLink to={ROUTES_INFO.CONTACT_DETAILS}>Contact details</NavLink>
           <ShowWhen additionalCondition={(user) => isAccountDetailsEnabled(user)}>
             <NavLink to={ROUTES_INFO.ACCOUNT_DETAILS}>Account details</NavLink>
@@ -100,7 +104,7 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
               {user.isMobileSignupCareActive ? `Support History` : `Support Tickets`}
             </NavLink>
           </ShowWhen>
-        </header>
+        </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<Loader />}>

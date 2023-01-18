@@ -9,6 +9,7 @@ import {
   StyledConfiguration,
   StyledDivider,
   StyledTabContentContainer,
+  StyledHeader,
 } from 'merchant/views/AccountAndSettings/styled';
 import { connect } from 'react-redux';
 import {
@@ -49,16 +50,16 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
         <DashboardBanner />
       </div>
       <div className="tabbed-container">
-        <header className="scrollable-tab-header">
-          <Breadcrumb
-            items={[
-              accountAndSettingsLink,
-              {
-                label: ROUTE_MAP[pathname],
-                link: pathname,
-              },
-            ]}
-          />
+        <Breadcrumb
+          items={[
+            accountAndSettingsLink,
+            {
+              label: ROUTE_MAP[pathname],
+              link: pathname,
+            },
+          ]}
+        />
+        <StyledHeader className="scrollable-tab-header">
           <ShowWhen additionalCondition={isConfigurationViewAllowed}>
             <NavLink to={ROUTES_INFO.BRANDING}>Branding</NavLink>
             <ShowWhen additionalCondition={isFlashCheckoutAllowed}>
@@ -73,7 +74,7 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
           <ShowWhen additionalCondition={isTrustedBadgeAllowed}>
             <NavLink to={ROUTES_INFO.TRUSTED_BADGE}>Trusted Badge</NavLink>
           </ShowWhen>
-        </header>
+        </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<Loader />}>

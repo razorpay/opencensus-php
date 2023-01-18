@@ -96,7 +96,17 @@ export const isBankAccountDetailsAllowed = (user: User): boolean =>
 export const isSettlementsAllowed = (user: User): boolean =>
   !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements);
 
-export const accountAccessHoverDescription = (user: User) => {
+export const shouldShowFIRCSection = (user: User): boolean => {
+  /**
+   * Show FIRC section either when user is international enabled or when opgsp_import_flow feature flag is enabled.
+   */
+  if (user.international) {
+    return true;
+  }
+  return user.findTag('opgsp_import_flow');
+};
+
+export const accountAccessHoverDescription = (user: User): boolean => {
   if (user?.has_key_access) {
     return user?.isOrgCurlec
       ? ATTR_DETAILS.curlec_access_user_account.desc

@@ -12,6 +12,7 @@ import {
   StyledDivider,
   StyledTabContentContainer,
   StyledConfiguration,
+  StyledHeader,
 } from 'merchant/views/AccountAndSettings/styled';
 import TransactionLimits from './Tabs/TransactionLimits';
 import { fetchFeatureByName as fetchFeatureByNameFn } from 'merchant/reducers/config';
@@ -54,11 +55,11 @@ const PaymentsAndRefundsSettings = ({
   featureStatusConfig: { data: featureData, loading: isFeatureLoading },
   location,
 }): JSX.Element => {
-  // console.log('location', location.pathname);
   useEffect(() => {
     if (!featureData.hasOwnProperty(feature)) {
       fetchFeatureByName({ userId: user.id, feature });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const PaymentCaptureAndRefund = (props) => (
@@ -88,16 +89,16 @@ const PaymentsAndRefundsSettings = ({
         <DashboardBanner />
       </div>
       <div className="tabbed-container">
-        <header id="settings-header" className="scrollable-tab-header">
-          <Breadcrumb
-            items={[
-              accountAndSettingsLink,
-              {
-                label: ROUTE_MAP[location.pathname],
-                link: location.pathname,
-              },
-            ]}
-          />
+        <Breadcrumb
+          items={[
+            accountAndSettingsLink,
+            {
+              label: ROUTE_MAP[location.pathname],
+              link: location.pathname,
+            },
+          ]}
+        />
+        <StyledHeader className="scrollable-tab-header">
           <ShowWhen additionalCondition={(user) => isBalancesEnabled(user)}>
             <NavLink to={ROUTES_INFO.BALANCES}>Balances</NavLink>
           </ShowWhen>
@@ -123,7 +124,7 @@ const PaymentsAndRefundsSettings = ({
           <ShowWhen additionalCondition={(user): boolean => isFailedPaymentRetryEnabled(user)}>
             <NavLink to={ROUTES_INFO.FAILED_PAYMENTS_RETRY}>Failed payments recovery</NavLink>
           </ShowWhen>
-        </header>
+        </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<Loader />}>

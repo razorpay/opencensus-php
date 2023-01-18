@@ -21,6 +21,12 @@ export const StyledConfiguration = styled(Configuration)`
   }
 `;
 
+export const StyledHeader = styled.header`
+  && {
+    border-top: 0;
+  }
+`;
+
 export const StyledContent = styled.div`
   &.content {
     margin-top: 20px;

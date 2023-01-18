@@ -11,15 +11,20 @@ import {
 } from 'merchant/views/AccountAndSettings/constants/constants';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
-import { StyledDivider, StyledTabContentContainer } from 'merchant/views/AccountAndSettings/styled';
+import {
+  StyledDivider,
+  StyledTabContentContainer,
+  StyledHeader,
+} from 'merchant/views/AccountAndSettings/styled';
 import Loader from 'common/components/Loader';
 import lazy from 'merchant/routes/LazyLoader';
 import {
   isBankAccountDetailsAllowed,
   isSettlementsAllowed,
+  shouldShowFIRCSection,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
-const { BANK_ACCOUNT_DETAILS, SETTLEMENT_DETAILS } = ROUTES_INFO;
+const { BANK_ACCOUNT_DETAILS, SETTLEMENT_DETAILS, FIRS } = ROUTES_INFO;
 
 const BankAccountDetails = lazy(() =>
   import(
@@ -32,11 +37,18 @@ const SettlementDetails = lazy(() =>
   ),
 );
 
+const FIRCSection = lazy(() =>
+  import(
+    /* webpackChunkName: "FIRCSection" */ 'merchant/views/Account/Profile/components/FIRC/FIRCSection'
+  ),
+);
+
 const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Element | null => {
   if (!user.isAccountAndSettingsRevampEnabled) {
     switch (pathname) {
       case BANK_ACCOUNT_DETAILS:
       case SETTLEMENT_DETAILS:
+      case FIRS:
         return <Redirect to="/profile" />;
       default:
         return <Redirect to="/dashboard" />;
@@ -49,23 +61,26 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
         <DashboardBanner />
       </div>
       <div className="tabbed-container">
-        <header className="scrollable-tab-header">
-          <Breadcrumb
-            items={[
-              accountAndSettingsLink,
-              {
-                label: ROUTE_MAP[pathname],
-                link: pathname,
-              },
-            ]}
-          />
+        <Breadcrumb
+          items={[
+            accountAndSettingsLink,
+            {
+              label: ROUTE_MAP[pathname],
+              link: pathname,
+            },
+          ]}
+        />
+        <StyledHeader className="scrollable-tab-header">
           <ShowWhen additionalCondition={isBankAccountDetailsAllowed}>
             <NavLink to={BANK_ACCOUNT_DETAILS}>Bank account details</NavLink>
           </ShowWhen>
           <ShowWhen additionalCondition={isSettlementsAllowed}>
             <NavLink to={SETTLEMENT_DETAILS}>Settlement details</NavLink>
           </ShowWhen>
-        </header>
+          <ShowWhen additionalCondition={shouldShowFIRCSection}>
+            <NavLink to={FIRS}>Forward inwards remittance statement</NavLink>
+          </ShowWhen>
+        </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<Loader />}>
@@ -81,6 +96,11 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
                     additionalCondition={isSettlementsAllowed}
                     path={SETTLEMENT_DETAILS}
                     component={SettlementDetails}
+                  />
+                  <ShowWhenRoute
+                    additionalCondition={shouldShowFIRCSection}
+                    path={FIRS}
+                    component={FIRCSection}
                   />
                 </Switch>
               </StyledTabContentContainer>

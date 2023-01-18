@@ -27,6 +27,7 @@ const getUser = () => ({
   isInstrumentRequestAllowed: jest.fn(),
   isWebsiteComplianceFlowEnabled: undefined,
   isFeatureEnabled: jest.fn(),
+  international: undefined,
 });
 describe('Condition Utils', () => {
   let user = getUser();
@@ -60,7 +61,7 @@ describe('Condition Utils', () => {
       test.each([
         [false, isBoolean ? false : undefined],
         [true, isBoolean ? true : 'john doe'],
-      ])(`should return %s when returns ${userProperty} is %s`, (userPropertyValue, utilOutput) => {
+      ])(`should return %s when ${userProperty} is %s`, (userPropertyValue, utilOutput) => {
         expect(conditionalUtils[utilName]({ [userProperty]: !!utilOutput })).toBe(
           !!userPropertyValue,
         );
@@ -93,7 +94,6 @@ describe('Condition Utils', () => {
       (flag, isOrgAllowedFunctionality, findTag) => {
         user.isOrgAllowedFunctionality.mockReturnValueOnce(isOrgAllowedFunctionality);
         user.findTag.mockReturnValueOnce(findTag);
-        // console.log("🚀 ~ file: conditionUtils.test.js:38 ~ describe ~ findTag", findTag, typeof(findTag), user.findTag())
         expect(isFlashCheckoutAllowed(user)).toBe(flag);
       },
     );
@@ -330,6 +330,20 @@ describe('Condition Utils', () => {
   testUtilWhichUsesSingleUserFunc('isSettlementsAllowed', 'findTag', {
     reverse: true,
     extraTestMessage: 'on passing Settlements',
+  });
+
+  describe('shouldShowFIRCSection', () => {
+    test('should return true when user.international is true', () => {
+      const shouldShowFIRCSection = conditionalUtils.shouldShowFIRCSection({
+        ...user,
+        international: true,
+      });
+      expect(shouldShowFIRCSection).toBe(true);
+    });
+  });
+
+  testUtilWhichUsesSingleUserFunc('shouldShowFIRCSection', 'findTag', {
+    extraTestMessage: 'on passing opgsp_import_flow tag',
   });
 
   describe('Different hovering text of account access, based on org and user access', () => {

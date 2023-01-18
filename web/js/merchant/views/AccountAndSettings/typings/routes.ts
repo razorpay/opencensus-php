@@ -29,6 +29,7 @@ export enum ROUTES_INFO {
   SUPPORT_TICKETS_AGENT = '/business-settings/ticket-support/tickets/agent',
   BANK_ACCOUNT_DETAILS = '/bank-accounts-settlements/bank-account-details',
   SETTLEMENT_DETAILS = '/bank-accounts-settlements/settlement-details',
+  FIRS = '/bank-accounts-settlements/firs',
 }
 
 export type OldAndNewRouteMapInterface = {

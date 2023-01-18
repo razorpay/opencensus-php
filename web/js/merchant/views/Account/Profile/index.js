@@ -67,6 +67,7 @@ import {
 } from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps';
 import moment from 'moment';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { shouldShowFIRCSection } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 const FIRCSection = lazy(() =>
   import(
@@ -667,16 +668,6 @@ class Profile extends Component {
     });
   };
 
-  shouldShowFIRCSection = (usr) => {
-    /**
-     * Show FIRC section either when user is international enabled or when opgsp_import_flow feature flag is enabled.
-     */
-    if (usr.international) {
-      return true;
-    }
-    return usr.tags.some((tag) => tag.toLowerCase() === 'opgsp_import_flow');
-  };
-
   render() {
     const { user, profile, settlement_amount } = this.props;
     const { bankAccount } = profile;
@@ -838,10 +829,10 @@ class Profile extends Component {
             </IntoView>
           </ShowWhen>
 
-          <ShowWhen additionalCondition={this.shouldShowFIRCSection}>
+          <ShowWhen additionalCondition={shouldShowFIRCSection}>
             <SuspenseWithLoader>
               <IntoView hashedWith={VIEW_FIRC}>
-                <FIRCSection user={user} />
+                <FIRCSection />
               </IntoView>
             </SuspenseWithLoader>
           </ShowWhen>

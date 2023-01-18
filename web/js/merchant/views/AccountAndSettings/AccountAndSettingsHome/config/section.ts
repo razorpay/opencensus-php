@@ -22,6 +22,7 @@ import {
   isSettlementsAllowed,
   isBankAccountDetailsAllowed,
   isProfileViewAllowed,
+  shouldShowFIRCSection,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import {
   User,
@@ -235,6 +236,12 @@ export const Sections: SectionCardInterface[] = [
         title: 'Settlement details',
         href: ROUTES_INFO.SETTLEMENT_DETAILS,
         additionalCondition: (): ((user: User) => boolean) => isSettlementsAllowed,
+      },
+      {
+        id: BankAccountSettlementFields.FIRS,
+        title: 'Forward inwards remittance statement',
+        href: ROUTES_INFO.FIRS,
+        additionalCondition: (): ((user: User) => boolean) => shouldShowFIRCSection,
       },
     ],
   },

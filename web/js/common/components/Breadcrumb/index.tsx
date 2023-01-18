@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyledBreadcrumb, StyledBreadcrumbItem } from 'common/components/Breadcrumb/Styled';
+import { classList } from 'common/utils/rzp-utils';
 
 interface BreadcrumbItem {
   label: string;
@@ -8,11 +9,15 @@ interface BreadcrumbItem {
 
 interface BreadcrumbProps {
   items: BreadcrumbItem[];
+  className?: string;
 }
 
-const Breadcrumb = ({ items }: BreadcrumbProps): JSX.Element => {
+const Breadcrumb = ({ items, className }: BreadcrumbProps): JSX.Element => {
   return (
-    <StyledBreadcrumb className="breadcrumb-container" data-testid="breadcrumb">
+    <StyledBreadcrumb
+      className={classList('scrollable-tab-header', className)}
+      data-testid="breadcrumb"
+    >
       <StyledBreadcrumbItem to={items[0]?.link}>
         <i className="i i-arrow-back" />
       </StyledBreadcrumbItem>

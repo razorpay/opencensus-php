@@ -1,7 +1,11 @@
 import styled from 'styled-components';
 import { NavLink } from 'react-router-dom';
 
-export const StyledBreadcrumb = styled.div``;
+export const StyledBreadcrumb = styled.header`
+  && {
+    border-bottom: 0;
+  }
+`;
 
 export const StyledBreadcrumbItem = styled(NavLink)`
   && {

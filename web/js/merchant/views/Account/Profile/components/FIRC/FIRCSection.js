@@ -227,7 +227,7 @@ const FIRCSection = (props) => {
   );
 };
 
-const mapStateToProps = (state) => ({ firc: state.profile.fircDetails });
+const mapStateToProps = (state) => ({ firc: state.profile.fircDetails, user: state.session.user });
 
 const mapDispatchToProps = {
   ...modalActions,

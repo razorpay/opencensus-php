@@ -11,6 +11,7 @@ import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/condi
 jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
   isBankAccountDetailsAllowed: jest.fn().mockReturnValue(false),
   isSettlementsAllowed: jest.fn().mockReturnValue(false),
+  shouldShowFIRCSection: jest.fn().mockReturnValue(false),
 }));
 
 describe('BankAccountsAndSettlements', () => {
@@ -25,24 +26,32 @@ describe('BankAccountsAndSettlements', () => {
   testConditionalLinks(renderApp, [
     ['Bank account details', 'isBankAccountDetailsAllowed', ROUTES_INFO.BANK_ACCOUNT_DETAILS],
     ['Settlement details', 'isSettlementsAllowed', ROUTES_INFO.SETTLEMENT_DETAILS],
+    ['Forward inwards remittance statement', 'shouldShowFIRCSection', ROUTES_INFO.FIRS],
   ]);
 
-  test('should render BankAccountDetails component when isBankAccountDetailsAllowed', () => {
+  test('should render Bank account details when isBankAccountDetailsAllowed', () => {
     conditionalUtils.isBankAccountDetailsAllowed.mockReturnValue(true);
     renderApp();
     expect(screen.getByText('Bank account details')).toBeInTheDocument();
   });
 
-  test('should render BankAccountDetails component when isSettlementsAllowed', () => {
+  test('should render Settlement details when isSettlementsAllowed', () => {
     conditionalUtils.isSettlementsAllowed.mockReturnValue(true);
     renderApp();
     expect(screen.getByText('Settlement details')).toBeInTheDocument();
+  });
+
+  test('should render FIRS details when shouldShowFIRCSection is true', () => {
+    conditionalUtils.shouldShowFIRCSection.mockReturnValue(true);
+    renderApp();
+    expect(screen.getByText('Forward inwards remittance statement')).toBeInTheDocument();
   });
 
   describe('When account and settings revamp is not enabled', () => {
     testRedirectionWhenAccountAndSettingsIsNotEnabled(renderApp, [
       ['/profile', ROUTES_INFO.BANK_ACCOUNT_DETAILS],
       ['/profile', ROUTES_INFO.SETTLEMENT_DETAILS],
+      ['/profile', ROUTES_INFO.FIRS],
       ['/dashboard', '/bank-accounts-settlements/some-route'],
     ]);
   });

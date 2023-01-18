@@ -15,6 +15,11 @@ jest.mock('merchant/views/Account/Profile/components/SettlementDetails', () => (
   default: () => <div>SettlementDetails</div>,
 }));
 
+jest.mock('merchant/views/Account/Profile/components/FIRC/FIRCSection', () => ({
+  __esModule: true,
+  default: () => <div>FIRSDetails</div>,
+}));
+
 export const renderApp = ({ user, pathname } = {}) => {
   return render(
     <BankAccountsAndSettlements

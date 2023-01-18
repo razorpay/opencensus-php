@@ -29,6 +29,7 @@ export const ROUTE_MAP = {
   [ROUTES_INFO.SUPPORT_TICKETS_AGENT]: 'Support history',
   [ROUTES_INFO.BANK_ACCOUNT_DETAILS]: 'Bank account details',
   [ROUTES_INFO.SETTLEMENT_DETAILS]: 'Settlement details',
+  [ROUTES_INFO.FIRS]: 'Forward inwards remittance statement',
 };
 
 export const accountAndSettingsLink = {

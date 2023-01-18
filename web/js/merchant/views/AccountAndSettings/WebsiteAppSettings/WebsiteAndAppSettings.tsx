@@ -10,7 +10,11 @@ import Breadcrumb from 'common/components/Breadcrumb';
 import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance';
 import { newRoutes, newAndOldRouteMap } from './constants/constants';
 import { WebsiteAndAppSettingsProps, NewRoutes } from './typings';
-import { StyledDivider, StyledTabContentContainer } from 'merchant/views/AccountAndSettings/styled';
+import {
+  StyledDivider,
+  StyledTabContentContainer,
+  StyledHeader,
+} from 'merchant/views/AccountAndSettings/styled';
 import {
   accountAndSettingsLink,
   ROUTE_MAP,
@@ -60,16 +64,16 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
         <DashboardBanner />
       </div>
       <div className="tabbed-container">
-        <header id="settings-header" className="scrollable-tab-header">
-          <Breadcrumb
-            items={[
-              accountAndSettingsLink,
-              {
-                label: ROUTE_MAP[location.pathname],
-                link: location.pathname,
-              },
-            ]}
-          />
+        <Breadcrumb
+          items={[
+            accountAndSettingsLink,
+            {
+              label: ROUTE_MAP[location.pathname],
+              link: location.pathname,
+            },
+          ]}
+        />
+        <StyledHeader className="scrollable-tab-header">
           <ShowWhen
             additionalCondition={(user) =>
               isWebsiteDetailsEnabled({ user, websiteSectionDetailsData })
@@ -84,7 +88,7 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
           <ShowWhen additionalCondition={(user) => isWebhookEnabled(user)}>
             <NavLink to={ROUTES_INFO.WEBHOOKS}>Webhooks</NavLink>
           </ShowWhen>
-        </header>
+        </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>
           <Suspense fallback={<Loader />}>
