@@ -20,6 +20,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Core;
 use RZP\Models\User\Role;
 use RZP\Services\DiagClient;
+use RZP\Models\Merchant\Document\Type;
 use RZP\Services\KafkaProducer;
 use RZP\Services\KafkaProducerClient;
 use RZP\Services\FreshdeskTicketClient;
@@ -40,6 +41,7 @@ use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Mail\Merchant\MerchantDashboardEmail;
+use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
@@ -58,6 +60,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Merchant\Bvs\BvsValidationTest;
@@ -108,6 +111,19 @@ class MerchantDetailTest extends OAuthTestCase
         $this->esClient =  $this->esDao->getEsClient()->getClient();
 
         $this->config = App::getFacadeRoot()['config'];
+    }
+
+    protected function enableRazorXTreatmentForRazorX()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment', 'getCachedTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->willReturn('on');
     }
 
     protected function mockBvsService()
@@ -410,6 +426,861 @@ class MerchantDetailTest extends OAuthTestCase
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
+    }
+
+    public function testAddClarificationReasons()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testAddClarificationReasonsNullFields()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testGetClarificationReasons()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $testData = $this->testData['testAddClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testAddClarificationReasonsNullFields'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testAddNonGroupClarificationReasons()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchantId,
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest();
+    }
+
+    public function testGroupMerchantClarificationReasonsFlow()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => true
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId()
+        ]);
+
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+                                      [
+                                          'address_proof_url',
+                                          'business_pan_url',
+                                          'business_proof_url',
+                                          'promoter_address_url',
+                                          'personal_pan',
+                                          'cancelled_cheque',
+                                      ]);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchant->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+
+        // add review notes for fields
+
+        $testData = $this->testData['testAddClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+
+        // put merchant to NC state
+
+        $testData = $this->testData['changeActivationStatusToNeedsClarification'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        //verify email has been sent
+        \Illuminate\Support\Facades\Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_live_settlements_not_live', $mail->getTemplate());
+
+            return true;
+        });
+
+
+        // save comments
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $testData = $this->testData['testSaveGroupCommentsMerchantClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->startTest($testData);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertArraySubset([
+                                     "nc_count" =>  1,
+                                     "additional_details" =>  [],
+                                     "clarification_reasons" =>  [
+                                         "bank_branch_ifsc" =>  [
+                                             [
+                                                 "from" =>  "admin",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "field_value" =>  "SBIN0000202",
+                                                 "reason_code" =>  "bank_account_change_request_for_unregistered",
+                                                 "reason_type" =>  "predefined"
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "Bank details are correct. Please check again",
+                                                 "reason_type" =>  "custom"
+                                             ]
+                                         ],
+                                         "cancelled_cheque" =>  [
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "Bank details are correct. Please check again",
+                                                 "reason_type" =>  "custom"
+                                             ]
+                                         ],
+                                         "bank_account_name" =>  [
+                                             [
+                                                 "from" =>  "admin",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "field_value" =>  "Ajay Kumar Brahma",
+                                                 "reason_code" =>  "bank_account_change_request_for_unregistered",
+                                                 "reason_type" =>  "predefined"
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "Bank details are correct. Please check again",
+                                                 "reason_type" =>  "custom"
+                                             ]
+                                         ],
+                                         "bank_account_number" =>  [
+                                             [
+                                                 "from" =>  "admin",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "field_value" =>  "123456780",
+                                                 "reason_code" =>  "bank_account_change_request_for_unregistered",
+                                                 "reason_type" =>  "predefined"
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "Bank details are correct. Please check again",
+                                                 "reason_type" =>  "custom"
+                                             ]
+                                         ]
+                                     ],
+                                     "clarification_reasons_v2" =>  [
+                                         "bank_account_number" =>  [
+                                             [
+                                                 "from" =>  "admin",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "field_value" =>  "123456780",
+                                                 "reason_code" =>  "bank_account_change_request_for_unregistered",
+                                                 "reason_type" =>  "predefined",
+                                                 "related_fields" =>  [
+                                                     [
+                                                         "field_name" =>  "cancelled_cheque"
+                                                     ],
+                                                     [
+                                                         "field_name" =>  "bank_account_name"
+                                                     ],
+                                                     [
+                                                         "field_name" =>  "bank_branch_ifsc"
+                                                     ]
+                                                 ]
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "Bank details are correct. Please check again",
+                                                 "reason_type" =>  "custom",
+                                                 "related_fields" =>  [
+                                                     [
+                                                         "field_name" =>  "cancelled_cheque"
+                                                     ],
+                                                     [
+                                                         "field_name" =>  "bank_account_name"
+                                                     ],
+                                                     [
+                                                         "field_name" =>  "bank_branch_ifsc"
+                                                     ]
+                                                 ]
+                                             ]
+                                         ]
+                                     ]
+                                 ],$merchantDetails->getKycClarificationReasons());
+
+        $testData = $this->testData['testSaveGroupMerchantClarificationReasonsDocValidation'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->startTest($testData);
+
+
+        $document = $this->fixtures->create('merchant_document', [
+            'id' => 'Km8g59o82Gw6IA',
+            'document_type' => Type::CANCELLED_CHEQUE,
+            'file_store_id' => '123123',
+            'merchant_id'   => $merchantDetail['merchant_id'],
+        ]);
+
+        $testData = $this->testData['testSaveGroupMerchantClarificationReasonsMissingField'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->startTest($testData);
+
+        $testData = $this->testData['testSaveGroupMerchantClarificationReasonsInvalidFeildData'];
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->startTest($testData);
+
+        $testData = $this->testData['testSaveGroupMerchantClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->startTest($testData);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertNotEquals('icic0001232',$merchantDetails->getBankBranchIfsc());
+        $this->assertNotEquals('test',$merchantDetails->getBankAccountName());
+        $this->assertNotEquals('1234567892',$merchantDetails->getBankAccountNumber());
+
+        // save notes after submitting group
+
+        $testData = $this->testData['testSaveNotesForGroupClarifications'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->startTest($testData);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertArraySubset([
+                                     "nc_count" =>  1,
+                                     "additional_details" =>  [],
+                                     "clarification_reasons" =>  [
+                                         "bank_branch_ifsc" =>  [
+                                             [
+                                                 "from" =>  "admin",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "field_value" =>  "SBIN0000202",
+                                                 "reason_code" =>  "bank_account_change_request_for_unregistered",
+                                                 "reason_type" =>  "predefined"
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "Bank details are correct. Please check again",
+                                                 "reason_type" =>  "custom"
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "updated new set of bank details. please verify now",
+                                                 "reason_type" =>  "custom"
+                                             ]
+                                         ],
+                                         "cancelled_cheque" =>  [
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "Bank details are correct. Please check again",
+                                                 "reason_type" =>  "custom"
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "updated new set of bank details. please verify now",
+                                                 "reason_type" =>  "custom"
+                                             ]
+                                         ],
+                                         "bank_account_name" =>  [
+                                             [
+                                                 "from" =>  "admin",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "field_value" =>  "Ajay Kumar Brahma",
+                                                 "reason_code" =>  "bank_account_change_request_for_unregistered",
+                                                 "reason_type" =>  "predefined"
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "Bank details are correct. Please check again",
+                                                 "reason_type" =>  "custom"
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "updated new set of bank details. please verify now",
+                                                 "reason_type" =>  "custom"
+                                             ]
+                                         ],
+                                         "bank_account_number" =>  [
+                                             [
+                                                 "from" =>  "admin",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "field_value" =>  "123456780",
+                                                 "reason_code" =>  "bank_account_change_request_for_unregistered",
+                                                 "reason_type" =>  "predefined"
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "Bank details are correct. Please check again",
+                                                 "reason_type" =>  "custom"
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "updated new set of bank details. please verify now",
+                                                 "reason_type" =>  "custom"
+                                             ]
+                                         ]
+                                     ],
+                                     "clarification_reasons_v2" =>  [
+                                         "bank_account_number" =>  [
+                                             [
+                                                 "from" =>  "admin",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "field_value" =>  "123456780",
+                                                 "reason_code" =>  "bank_account_change_request_for_unregistered",
+                                                 "reason_type" =>  "predefined",
+                                                 "related_fields" =>  [
+                                                     [
+                                                         "field_name" =>  "cancelled_cheque"
+                                                     ],
+                                                     [
+                                                         "field_name" =>  "bank_account_name"
+                                                     ],
+                                                     [
+                                                         "field_name" =>  "bank_branch_ifsc"
+                                                     ]
+                                                 ]
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "Bank details are correct. Please check again",
+                                                 "reason_type" =>  "custom",
+                                                 "related_fields" =>  [
+                                                     [
+                                                         "field_name" =>  "cancelled_cheque"
+                                                     ],
+                                                     [
+                                                         "field_name" =>  "bank_account_name"
+                                                     ],
+                                                     [
+                                                         "field_name" =>  "bank_branch_ifsc"
+                                                     ]
+                                                 ]
+                                             ],
+                                             [
+                                                 "from" =>  "merchant",
+                                                 "nc_count" =>  1,
+                                                 "is_current" =>  true,
+                                                 "reason_code" =>  "updated new set of bank details. please verify now",
+                                                 "reason_type" =>  "custom",
+                                                 "related_fields" =>  [
+                                                     [
+                                                         "field_name" =>  "cancelled_cheque"
+                                                     ],
+                                                     [
+                                                         "field_name" =>  "bank_account_name"
+                                                     ],
+                                                     [
+                                                         "field_name" =>  "bank_branch_ifsc"
+                                                     ]
+                                                 ]
+                                             ]
+                                         ]
+                                     ]
+                                 ],$merchantDetails->getKycClarificationReasons());
+
+        //submit nc form
+
+        $testData = $this->testData['testSubmitNCFormGroupFields'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->startTest($testData);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertEquals('icic0001232',$merchantDetails->getBankBranchIfsc());
+        $this->assertEquals('test',$merchantDetails->getBankAccountName());
+        $this->assertEquals('1234567892',$merchantDetails->getBankAccountNumber());
+
+        //$this->assertEquals('under_review',$merchantDetails->getActivationStatus());
+
+    }
+
+    public function testNonGroupMerchantClarificationReasonsFlow()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => false,
+            'activated'  => 0,
+            'hold_funds' => true
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId()
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchant->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+                                      [
+                                          'address_proof_url',
+                                          'business_pan_url',
+                                          'business_proof_url',
+                                          'promoter_address_url',
+                                          'personal_pan',
+                                          'cancelled_cheque',
+                                      ]);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        // put merchant to NC state validation error
+
+        $testData = $this->testData['changeActivationStatusToNeedsClarificationWithoutReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->startTest($testData);
+
+        //add admin clarification reasons
+
+        $testData = $this->testData['testAddNonGroupClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        // put merchant to NC state
+
+        $testData = $this->testData['changeActivationStatusToNeedsClarification'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        //verify email has been sent
+        \Illuminate\Support\Facades\Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_not_live', $mail->getTemplate());
+
+            return true;
+        });
+
+        //testAddNonGroupClarificationReasonsForMerchantInNC
+        $testData = $this->testData['testAddNonGroupClarificationReasonsForMerchantInNC'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->startTest($testData);
+
+
+        // save comments
+       $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $testData = $this->testData['testAddCommentForNonGroupFieldsClarification'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->startTest($testData);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertArraySubset([
+                                     "nc_count" => 1,
+                                     "additional_details" => [
+
+                                     ],
+                                     "clarification_reasons" => [
+                                         "website" => [
+                                             [
+                                                 "from" => "admin",
+                                                 "nc_count" => 1,
+                                                 "is_current" => true,
+                                                 "field_value" => "https://www.hello.com",
+                                                 "reason_code" => "your website is not live",
+                                                 "reason_type" => "custom"
+                                             ],
+                                             [
+                                                 "from" => "merchant",
+                                                 "nc_count" => 1,
+                                                 "is_current" => true,
+                                                 "reason_code" => "website is in progress of going live",
+                                                 "reason_type" => "custom"
+                                             ]
+                                         ]
+                                     ],
+                                     "clarification_reasons_v2" => [
+                                         "website" => [
+                                             [
+                                                 "from" => "admin",
+                                                 "nc_count" => 1,
+                                                 "is_current" => true,
+                                                 "field_value" => "https://www.hello.com",
+                                                 "reason_code" => "your website is not live",
+                                                 "reason_type" => "custom"
+                                             ],
+                                             [
+                                                 "from" => "merchant",
+                                                 "nc_count" => 1,
+                                                 "is_current" => true,
+                                                 "reason_code" => "website is in progress of going live",
+                                                 "reason_type" => "custom"
+                                             ]
+                                         ]
+                                     ]
+                                 ],$merchantDetails->getKycClarificationReasons());
+
+        // test submit validations
+        $testData = $this->testData['testSubmitNCFormNonGroupFieldsWithoutGroupSubmission'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->startTest($testData);
+
+        // submit group
+
+        $testData = $this->testData['testSubmitForNonGroupFieldsClarification'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->startTest($testData);
+
+        $testData = $this->testData['testAddNoteForNonGroupFieldsClarification'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->startTest($testData);
+
+        $merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        $this->assertArraySubset([
+                                     "nc_count" => 1,
+                                     "additional_details" => [
+
+                                     ],
+                                     "clarification_reasons" => [
+                                         "website" => [
+                                             [
+                                                 "from" => "admin",
+                                                 "nc_count" => 1,
+                                                 "is_current" => true,
+                                                 "field_value" => "https://www.hello.com",
+                                                 "reason_code" => "your website is not live",
+                                                 "reason_type" => "custom"
+                                             ],
+                                             [
+                                                 "from" => "merchant",
+                                                 "nc_count" => 1,
+                                                 "is_current" => true,
+                                                 "reason_code" => "website is in progress of going live",
+                                                 "reason_type" => "custom"
+                                             ],
+                                             [
+                                                 "from" => "merchant",
+                                                 "nc_count" => 1,
+                                                 "is_current" => true,
+                                                 "reason_code" => "website is going live this month",
+                                                 "reason_type" => "custom"
+                                             ]
+                                         ]
+                                     ],
+                                     "clarification_reasons_v2" => [
+                                         "website" => [
+                                             [
+                                                 "from" => "admin",
+                                                 "nc_count" => 1,
+                                                 "is_current" => true,
+                                                 "field_value" => "https://www.hello.com",
+                                                 "reason_code" => "your website is not live",
+                                                 "reason_type" => "custom"
+                                             ],
+                                             [
+                                                 "from" => "merchant",
+                                                 "nc_count" => 1,
+                                                 "is_current" => true,
+                                                 "reason_code" => "website is in progress of going live",
+                                                 "reason_type" => "custom"
+                                             ],
+                                             [
+                                                 "from" => "merchant",
+                                                 "nc_count" => 1,
+                                                 "is_current" => true,
+                                                 "reason_code" => "website is going live this month",
+                                                 "reason_type" => "custom"
+                                             ]
+                                         ]
+                                     ]
+                                 ],$merchantDetails->getKycClarificationReasons());
+
+        //submit nc form
+
+        $testData = $this->testData['testSubmitNCFormNonGroupFields'];
+
+        $testData['request']['url'] = "/merchant/activation/clarifications";
+
+        $this->startTest($testData);
+
+        //$merchantDetails = $this->getDbEntityById('merchant_detail', $merchantId);
+
+        //$this->assertEquals('under_review',$merchantDetails->getActivationStatus());
+    }
+
+    public function testNCRevampCommForPaymentsLiveSettlementLive()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => false
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id' => $merchant->getId()
+        ]);
+
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+                                      [
+                                          'address_proof_url',
+                                          'business_pan_url',
+                                          'business_proof_url',
+                                          'promoter_address_url',
+                                          'personal_pan',
+                                          'cancelled_cheque',
+                                      ]);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => $merchant->getId(),
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+        // add review notes for fields
+
+        $testData = $this->testData['testAddClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        // put merchant to NC state
+
+        $testData = $this->testData['changeActivationStatusToNeedsClarification'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        //verify email has been sent
+        \Illuminate\Support\Facades\Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_live_settlements_live', $mail->getTemplate());
+
+            return true;
+        });
     }
 
     public function testGetMerchantActivationStatusChangeLog()

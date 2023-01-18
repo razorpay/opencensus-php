@@ -9,6 +9,14 @@ use RZP\Models\Merchant\RazorxTreatment;
 
 class Events
 {
+    const NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     = 'NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE';
+    const NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE = 'NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE';
+    const NC_COUNT_1_PAYMENTS_NOT_LIVE                  = 'NC_COUNT_1_PAYMENTS_NOT_LIVE';
+    const NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     = 'NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE';
+    const NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE = 'NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE';
+    const NC_COUNT_2_PAYMENTS_NOT_LIVE                  = 'NC_COUNT_2_PAYMENTS_NOT_LIVE';
+
+
     const PARTNER_EVENTS_PREFIX             = 'PARTNER_';
     const PARTNER_SUBMERCHANT_EVENTS_PREFIX = 'PARTNER_SUBMERCHANT_';
 
@@ -54,6 +62,10 @@ class Events
     const PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED = 'PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED';
 
     const SMS_TEMPLATES = [
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE         => 'sms.onboarding.nc_revamp',
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => 'sms.onboarding.nc_revamp',
+        self::NC_COUNT_1_PAYMENTS_NOT_LIVE                      => 'sms.onboarding.nc_revamp',
+
         self::PAYMENTS_ENABLED                            => 'sms.onboarding.payments_enabled',
         self::NEEDS_CLARIFICATION                         => 'sms.onboarding.needs_clarification',
         self::UNREGISTERED_PAYMENTS_ENABLED               => 'sms.onboarding.unregistered.payments_enabled',
@@ -109,6 +121,15 @@ class Events
         self::PARTNER_SUBMERCHANT_UNREGISTERED_SETTLEMENTS_ENABLED => 'send_sms_whatsapp_partner_submerchant_onboarding_events',
     ];
 
+    const SMS_TEMPLATES_RAZORX_EXPERIMENTS = [
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE         => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE         => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_1_PAYMENTS_NOT_LIVE                      => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                      => RazorxTreatment::NC_REVAMP
+    ];
+
     const WHATSAPP_TEMPLATES = [
         self::NEEDS_CLARIFICATION              => 'Hi {merchantName}, we need more clarifications on your KYC, please visit your dashboard and make the necessary changes at {dashboardUrl}',
         self::UNREGISTERED_SETTLEMENTS_ENABLED => 'Congratulations {merchantName}, your KYC is approved and settlements have been enabled for your Razorpay account. Visit your dashboard to accept payments {dashboardUrl}',
@@ -119,6 +140,14 @@ class Events
 
     // Add template name here if the registered template name defers from standard pattern of 'onboarding.*'
     const WHATSAPP_TEMPLATE_NAMES = [
+
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'nc_count_payments_live_settlements_live',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'nc_count_payments_live_settlements_live',
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'nc_count_payments_live_settlements_not_live',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'nc_count_payments_live_settlements_not_live',
+        self::NC_COUNT_1_PAYMENTS_NOT_LIVE                  => 'nc_count_payments_not_live',
+        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                  => 'nc_count_payments_not_live',
+
         self::PARTNER_ADDED_SUBMERCHANT                            => 'whatsapp_partnerships_add_sub_merchant_partner',
         self::PARTNER_ADDED_SUBMERCHANT_FOR_X                      => 'whatsapp_partnerships_add_sub_merchant_partner_for_x',
         self::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS    => 'whatsapp_partnerships_partner_submerchant_activated_mcc_pending_success',
@@ -143,6 +172,13 @@ class Events
     ];
 
     const WHATSAPP_TEMPLATES_NEW_EXPERIMENTS = [
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE         => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE         => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_1_PAYMENTS_NOT_LIVE                      => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                      => RazorxTreatment::NC_REVAMP,
+
         self::DOWNLOAD_MERCHANT_WEBSITE_SECTION       => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
         self::WEBSITE_SECTION_PUBLISHED               => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
         self::WEBSITE_ADHERENCE_HARD_NUDGE            => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
@@ -151,6 +187,13 @@ class Events
     ];
 
     const WHATSAPP_TEMPLATES_CTA_TEMPLATE = [
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE         => 'onboarding/needs-clarification',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE         => 'onboarding/needs-clarification',
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => 'onboarding/needs-clarification',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => 'onboarding/needs-clarification',
+        self::NC_COUNT_1_PAYMENTS_NOT_LIVE                      => 'onboarding/needs-clarification',
+        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                      => 'onboarding/needs-clarification',
+
         self::WEBSITE_ADHERENCE_HARD_NUDGE            => 'app/website-app-detail',
         self::WEBSITE_ADHERENCE_SOFT_NUDGE            => 'app/website-app-detail',
         self::FIRST_PAYMENT_OFFER                     => 'signin?utm_source=Reactivation&utm_medium=whatsapp&utm_campaign=10k_referral_content',
@@ -162,6 +205,13 @@ class Events
 
     // blade templates
     const WHATSAPP_TEMPLATES_NEW = [
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'whatsapp.merchant.onboarding.nc_count_payments_live_settlements_live',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'whatsapp.merchant.onboarding.nc_count_payments_live_settlements_live',
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'whatsapp.merchant.onboarding.nc_count_payments_live_settlements_not_live',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'whatsapp.merchant.onboarding.nc_count_payments_live_settlements_not_live',
+        self::NC_COUNT_1_PAYMENTS_NOT_LIVE                  => 'whatsapp.merchant.onboarding.nc_count_payments_not_live',
+        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                  => 'whatsapp.merchant.onboarding.nc_count_payments_not_live',
+
         self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => 'whatsapp.merchant.onboarding.payments_limit_breach',
         self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => 'whatsapp.merchant.onboarding.payments_breach_blocked',
         self::UNREGISTERED_PAYMENTS_ENABLED               => 'whatsapp.merchant.onboarding.payments_enabled',
@@ -199,6 +249,13 @@ class Events
     ];
 
     const EMAIL_TEMPLATES = [
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'emails.merchant.onboarding.nc_count_1_payments_live_settlements_live',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'emails.merchant.onboarding.nc_count_2_payments_live_settlements_live',
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'emails.merchant.onboarding.nc_count_1_payments_live_settlements_not_live',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'emails.merchant.onboarding.nc_count_2_payments_live_settlements_not_live',
+        self::NC_COUNT_1_PAYMENTS_NOT_LIVE                  => 'emails.merchant.onboarding.nc_count_1_payments_not_live',
+        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                  => 'emails.merchant.onboarding.nc_count_2_payments_not_live',
+
         self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => 'emails.merchant.onboarding.payments_limit_breach',
         self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => 'emails.merchant.onboarding.payments_breach_blocked',
         self::ACTIVATED_MCC_PENDING_SUCCESS               => 'emails.merchant.onboarding.activated_mcc_pending_success',
@@ -222,6 +279,13 @@ class Events
     ];
 
     const EMAIL_SUBJECTS = [
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => '[Action required] Few more details required to complete KYC verification',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => '[Action required] Few more details required to complete KYC verification',
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => '[Action required] Few more details required to complete KYC verification',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => '[Action required] Few more details required to complete KYC verification',
+        self::NC_COUNT_1_PAYMENTS_NOT_LIVE                  => '[Action required] Few more details required to complete KYC verification',
+        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                  => '[Action required] Few more details required to complete KYC verification',
+
         self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => 'Razorpay Reminder: Update your KYC details to continue accepting payments',
         self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => 'Razorpay Alert: Your payments are paused, submit KYC details to resume payments',
         self::ACTIVATED_MCC_PENDING_SUCCESS               => 'Congratulations! You can now receive payments in your bank account with Razorpay',
@@ -245,6 +309,13 @@ class Events
     ];
 
     const EMAIL_CC = [
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::NC_COUNT_1_PAYMENTS_NOT_LIVE                  => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                  => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
+
         self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION            => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
         self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED          => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],
         self::ACTIVATED_MCC_PENDING_SUCCESS                        => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],

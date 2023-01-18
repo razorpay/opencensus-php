@@ -21,6 +21,15 @@ class SmsNotificationService extends BaseNotificationService
         $merchantCore = new Core();
 
         $isExperimentEnabled = true;
+
+        if (isset(Events::SMS_TEMPLATES_RAZORX_EXPERIMENTS[$this->event]) === true)
+        {
+            $experiment = Events::SMS_TEMPLATES_RAZORX_EXPERIMENTS[$this->event];
+
+            $merchant = $this->args[Constants::MERCHANT];
+
+            $isExperimentEnabled = $merchantCore->isRazorxExperimentEnable($merchant->getMerchantId(), $experiment);
+        }
         if (isset(Events::SMS_TEMPLATES_SPLITZ_EXPERIMENTS[$this->event]) === true)
         {
             $experimentKey = Events::SMS_TEMPLATES_SPLITZ_EXPERIMENTS[$this->event];

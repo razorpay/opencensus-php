@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Document;
 use RZP\Constants\Entity as E;
+use RZP\Models\FileStore\Format;
 
 class Type
 {
@@ -111,7 +112,7 @@ class Type
     const SLA_DEALERSHIP_AGREEMENT          = 'sla_dealership_agreement';
     const RESELLER_AGREEMENT                = 'reseller_agreeement';
     const LIQUOR_LICENSE                    = 'liquor_license';
-    const FORM_8                            = 'form_8a';
+    const FORM_8A                           = 'form_8a';
     const FORM_10AC                         = 'form_10ac';
     const IRCTC_AGENT_AGREEMENT             = 'irctc_agent_agreement';
     const UNDERTAKING                       = 'undertaking';
@@ -141,6 +142,7 @@ class Type
     const BBPS_DOCUMENT                     = 'bbps_document';
     const MSO_DOCUMENT                      = 'mso_document';
     const GOVT_AUTHORISATION_LETTER         = 'govt_authorisation_letter';
+    const CANCELLED_CHEQUE_VIDEO            = 'cancelled_cheque_video';
 
     const NC_ADDITIONAL_DOCUMENTS = [
 
@@ -171,7 +173,7 @@ class Type
         self::SLA_DEALERSHIP_AGREEMENT,
         self::RESELLER_AGREEMENT,
         self::LIQUOR_LICENSE,
-        self::FORM_8,
+        self::FORM_8A,
         self::FORM_10AC,
         self::IRCTC_AGENT_AGREEMENT,
         self::UNDERTAKING,
@@ -231,7 +233,7 @@ class Type
         self::SLA_DEALERSHIP_AGREEMENT          => "SLA/Dealership agreement",
         self::RESELLER_AGREEMENT                => "Re-seller agreement",
         self::LIQUOR_LICENSE                    => "Brewery addendum or Liquor license",
-        self::FORM_8                            => "Form 8A",
+        self::FORM_8A                           => "Form 8A",
         self::FORM_10AC                         => "Form 10AC",
         self::IRCTC_AGENT_AGREEMENT             => "IRCTC agent agreement",
         self::UNDERTAKING                       => "Undertaking",
@@ -271,10 +273,10 @@ class Type
     ];
 
     const PROOF_TYPE_ENTITY_MAPPING = [
-        self::INDIVIDUAL_PROOF_OF_ADDRESS          => E::STAKEHOLDER,
-        self::INDIVIDUAL_PROOF_OF_IDENTIFICATION   => E::STAKEHOLDER,
-        self::BUSINESS_PROOF_OF_IDENTIFICATION     => E::MERCHANT,
-        self::ADDITIONAL_DOCUMENTS                 => E::MERCHANT,
+        self::INDIVIDUAL_PROOF_OF_ADDRESS        => E::STAKEHOLDER,
+        self::INDIVIDUAL_PROOF_OF_IDENTIFICATION => E::STAKEHOLDER,
+        self::BUSINESS_PROOF_OF_IDENTIFICATION   => E::MERCHANT,
+        self::ADDITIONAL_DOCUMENTS               => E::MERCHANT,
     ];
 
     const BANK_PROOF_DOCUMENTS = [
@@ -349,69 +351,171 @@ class Type
         self::EMERCHANTPAY_PAN,
         self::EMERCHANTPAY_PASSPORT,
 
+        self::CANCELLED_CHEQUE_VIDEO,
         self::OTHER,
+
+        self::FSSAI_CERTIFICATE,
+        self::AYUSH_CERTIFICATE,
+        self::FFMC_LICENSE,
+        self::BIS_CERTIFICATE,
+        self::IRDA_CERTIFICATE,
+        self::FDA_CERTIFICATE,
+        self::DOT_CERTIFICATE,
+        self::TRAI_CERTIFICATE,
+        self::RBI_CERTIFICATE,
+        self::DGCA_CERTIFICATE,
+        self::NATIONAL_HOUSING_BANK_CERTIFICATE,
+        self::DEALERSHIP_RIGHTS_CERTIFCATE,
+        self::PCI_DSS_CERTIFICATE,
+        self::GII_CERTIFICATE,
+        self::PHARMACY_DRUG_LICENSE,
+        self::FORM_20_20b_21_21b,
+        self::INVOICE,
+        self::RESELLER_AGREEMENT,
+        self::LIQUOR_LICENSE,
+        self::FORM_8A,
+        self::FORM_10AC,
+        self::IRCTC_AGENT_AGREEMENT,
+        self::UNDERTAKING,
+        self::EPF_SCHEME_CERTIFICATE,
+        self::PROOF_OF_PROFESSION,
+        self::GIA_CERTIFICATE,
+        self::PM_WANI_CERTIFICATE,
+        self::PESCO_LICENSE,
+        self::DOMAIN_OWNERSHIP_DOCUMENT,
+        self::IEC_LICENSE,
+        self::BUSINESS_CORRESPONDENT_DOCUMENT,
+        self::MMTC_PAMP_LICENSE,
+        self::SAFEGOLD_PARTNERSHIP_DOCUMENT,
+        self::BRAND_TIE_UP_DOCUMENT,
+        self::FDA_LICENSE,
+        self::FSSAI_LICENSE,
+        self::MERCHANT_SERVICE_ARGUMENT,
+        self::LEGAL_OPINION_DOCUMENT,
+        self::UNDERTAKING_DOCUMENT,
+        self::MANUFACTURING_LICENSE,
+        self::SLA_DOCUMENT,
+        self::RERA_LICENSE,
+        self::COPYWRITE_LICENSE,
+        self::TRADE_LICENSE,
+        self::IATO_LICENSE,
+        self::BBPS_DOCUMENT,
+        self::MSO_DOCUMENT,
+        self::GOVT_AUTHORISATION_LETTER
+    ];
+
+    const DOCUMENT_TYPE_VALIDATIONS = [
+        self::CANCELLED_CHEQUE_VIDEO => Format::VALID_VIDEO_EXTENSIONS
     ];
 
     const DOCUMENT_TYPE_TO_PROOF_TYPE_MAPPING = [
-        self::SEBI_REGISTRATION_CERTIFICATE    => self::ADDITIONAL_DOCUMENTS,
-        self::IRDAI_REGISTRATION_CERTIFICATE   => self::ADDITIONAL_DOCUMENTS,
-        self::FFMC_LICENSE                     => self::ADDITIONAL_DOCUMENTS,
-        self::NBFC_REGISTRATION_CERTIFICATE    => self::ADDITIONAL_DOCUMENTS,
-        self::AMFI_CERTIFICATE                 => self::ADDITIONAL_DOCUMENTS,
+        self::CANCELLED_CHEQUE_VIDEO            => self::ADDITIONAL_DOCUMENTS,
+        self::FSSAI_CERTIFICATE                 => self::ADDITIONAL_DOCUMENTS,
+        self::AYUSH_CERTIFICATE                 => self::ADDITIONAL_DOCUMENTS,
+        self::BIS_CERTIFICATE                   => self::ADDITIONAL_DOCUMENTS,
+        self::IRDA_CERTIFICATE                  => self::ADDITIONAL_DOCUMENTS,
+        self::FDA_CERTIFICATE                   => self::ADDITIONAL_DOCUMENTS,
+        self::DOT_CERTIFICATE                   => self::ADDITIONAL_DOCUMENTS,
+        self::TRAI_CERTIFICATE                  => self::ADDITIONAL_DOCUMENTS,
+        self::RBI_CERTIFICATE                   => self::ADDITIONAL_DOCUMENTS,
+        self::DGCA_CERTIFICATE                  => self::ADDITIONAL_DOCUMENTS,
+        self::NATIONAL_HOUSING_BANK_CERTIFICATE => self::ADDITIONAL_DOCUMENTS,
+        self::DEALERSHIP_RIGHTS_CERTIFCATE      => self::ADDITIONAL_DOCUMENTS,
+        self::PCI_DSS_CERTIFICATE               => self::ADDITIONAL_DOCUMENTS,
+        self::GII_CERTIFICATE                   => self::ADDITIONAL_DOCUMENTS,
+        self::PHARMACY_DRUG_LICENSE             => self::ADDITIONAL_DOCUMENTS,
+        self::FORM_20_20b_21_21b                => self::ADDITIONAL_DOCUMENTS,
+        self::INVOICE                           => self::ADDITIONAL_DOCUMENTS,
+        self::RESELLER_AGREEMENT                => self::ADDITIONAL_DOCUMENTS,
+        self::LIQUOR_LICENSE                    => self::ADDITIONAL_DOCUMENTS,
+        self::FORM_8A                           => self::ADDITIONAL_DOCUMENTS,
+        self::FORM_10AC                         => self::ADDITIONAL_DOCUMENTS,
+        self::IRCTC_AGENT_AGREEMENT             => self::ADDITIONAL_DOCUMENTS,
+        self::UNDERTAKING                       => self::ADDITIONAL_DOCUMENTS,
+        self::EPF_SCHEME_CERTIFICATE            => self::ADDITIONAL_DOCUMENTS,
+        self::PROOF_OF_PROFESSION               => self::ADDITIONAL_DOCUMENTS,
+        self::GIA_CERTIFICATE                   => self::ADDITIONAL_DOCUMENTS,
+        self::PM_WANI_CERTIFICATE               => self::ADDITIONAL_DOCUMENTS,
+        self::PESCO_LICENSE                     => self::ADDITIONAL_DOCUMENTS,
+        self::DOMAIN_OWNERSHIP_DOCUMENT         => self::ADDITIONAL_DOCUMENTS,
+        self::IEC_LICENSE                       => self::ADDITIONAL_DOCUMENTS,
+        self::BUSINESS_CORRESPONDENT_DOCUMENT   => self::ADDITIONAL_DOCUMENTS,
+        self::MMTC_PAMP_LICENSE                 => self::ADDITIONAL_DOCUMENTS,
+        self::SAFEGOLD_PARTNERSHIP_DOCUMENT     => self::ADDITIONAL_DOCUMENTS,
+        self::BRAND_TIE_UP_DOCUMENT             => self::ADDITIONAL_DOCUMENTS,
+        self::FDA_LICENSE                       => self::ADDITIONAL_DOCUMENTS,
+        self::FSSAI_LICENSE                     => self::ADDITIONAL_DOCUMENTS,
+        self::MERCHANT_SERVICE_ARGUMENT         => self::ADDITIONAL_DOCUMENTS,
+        self::LEGAL_OPINION_DOCUMENT            => self::ADDITIONAL_DOCUMENTS,
+        self::UNDERTAKING_DOCUMENT              => self::ADDITIONAL_DOCUMENTS,
+        self::MANUFACTURING_LICENSE             => self::ADDITIONAL_DOCUMENTS,
+        self::SLA_DOCUMENT                      => self::ADDITIONAL_DOCUMENTS,
+        self::RERA_LICENSE                      => self::ADDITIONAL_DOCUMENTS,
+        self::COPYWRITE_LICENSE                 => self::ADDITIONAL_DOCUMENTS,
+        self::TRADE_LICENSE                     => self::ADDITIONAL_DOCUMENTS,
+        self::IATO_LICENSE                      => self::ADDITIONAL_DOCUMENTS,
+        self::BBPS_DOCUMENT                     => self::ADDITIONAL_DOCUMENTS,
+        self::MSO_DOCUMENT                      => self::ADDITIONAL_DOCUMENTS,
+        self::GOVT_AUTHORISATION_LETTER         => self::ADDITIONAL_DOCUMENTS,
+        self::SEBI_REGISTRATION_CERTIFICATE     => self::ADDITIONAL_DOCUMENTS,
+        self::IRDAI_REGISTRATION_CERTIFICATE    => self::ADDITIONAL_DOCUMENTS,
+        self::FFMC_LICENSE                      => self::ADDITIONAL_DOCUMENTS,
+        self::NBFC_REGISTRATION_CERTIFICATE     => self::ADDITIONAL_DOCUMENTS,
+        self::AMFI_CERTIFICATE                  => self::ADDITIONAL_DOCUMENTS,
 
-        self::SLA_SEBI_REGISTRATION_CERTIFICATE   => self::ADDITIONAL_DOCUMENTS,
-        self::SLA_IRDAI_REGISTRATION_CERTIFICATE  => self::ADDITIONAL_DOCUMENTS,
-        self::SLA_FFMC_LICENSE                    => self::ADDITIONAL_DOCUMENTS,
-        self::SLA_NBFC_REGISTRATION_CERTIFICATE   => self::ADDITIONAL_DOCUMENTS,
-        self::SLA_AMFI_CERTIFICATE                => self::ADDITIONAL_DOCUMENTS,
-        self::SLA_IATA_CERTIFICATE                => self::ADDITIONAL_DOCUMENTS,
+        self::SLA_SEBI_REGISTRATION_CERTIFICATE  => self::ADDITIONAL_DOCUMENTS,
+        self::SLA_IRDAI_REGISTRATION_CERTIFICATE => self::ADDITIONAL_DOCUMENTS,
+        self::SLA_FFMC_LICENSE                   => self::ADDITIONAL_DOCUMENTS,
+        self::SLA_NBFC_REGISTRATION_CERTIFICATE  => self::ADDITIONAL_DOCUMENTS,
+        self::SLA_AMFI_CERTIFICATE               => self::ADDITIONAL_DOCUMENTS,
+        self::SLA_IATA_CERTIFICATE               => self::ADDITIONAL_DOCUMENTS,
 
-        self::AFFILIATION_CERTIFICATE             => self::ADDITIONAL_DOCUMENTS,
-        self::IATA_CERTIFICATE                    => self::ADDITIONAL_DOCUMENTS,
+        self::AFFILIATION_CERTIFICATE => self::ADDITIONAL_DOCUMENTS,
+        self::IATA_CERTIFICATE        => self::ADDITIONAL_DOCUMENTS,
 
-        self::PPI_LICENSE                     => self::ADDITIONAL_DOCUMENTS,
-        self::DRIVER_LICENSE_BACK             => self::INDIVIDUAL_PROOF_OF_ADDRESS,
-        self::DRIVER_LICENSE_FRONT            => self::INDIVIDUAL_PROOF_OF_ADDRESS,
-        self::AADHAR_FRONT                    => self::INDIVIDUAL_PROOF_OF_ADDRESS,
-        self::AADHAR_BACK                     => self::INDIVIDUAL_PROOF_OF_ADDRESS,
-        self::AADHAR_ZIP                      => self::INDIVIDUAL_PROOF_OF_ADDRESS,
-        self::AADHAR_XML                      => self::INDIVIDUAL_PROOF_OF_ADDRESS,
-        self::PASSPORT_FRONT                  => self::INDIVIDUAL_PROOF_OF_ADDRESS,
-        self::PASSPORT_BACK                   => self::INDIVIDUAL_PROOF_OF_ADDRESS,
-        self::VOTER_ID_FRONT                  => self::INDIVIDUAL_PROOF_OF_ADDRESS,
-        self::VOTER_ID_BACK                   => self::INDIVIDUAL_PROOF_OF_ADDRESS,
-        self::CANCELLED_CHEQUE                => self::ADDITIONAL_DOCUMENTS,
-        self::BANK_VERIFICATION_LETTER        => self::ADDITIONAL_DOCUMENTS,
-        self::BUSINESS_PROOF_URL              => self::BUSINESS_PROOF_OF_IDENTIFICATION,
-        self::BUSINESS_OPERATION_PROOF_URL    => self::ADDITIONAL_DOCUMENTS,
-        self::BUSINESS_PAN_URL                => self::BUSINESS_PROOF_OF_IDENTIFICATION,
-        self::ADDRESS_PROOF_URL               => self::ADDITIONAL_DOCUMENTS,
-        self::PROMOTER_PROOF_URL              => self::ADDITIONAL_DOCUMENTS,
-        self::PROMOTER_PAN_URL                => self::INDIVIDUAL_PROOF_OF_IDENTIFICATION,
-        self::PROMOTER_ADDRESS_URL            => self::INDIVIDUAL_PROOF_OF_ADDRESS,
-        self::FORM_12A_URL                    => self::ADDITIONAL_DOCUMENTS,
-        self::FORM_80G_URL                    => self::ADDITIONAL_DOCUMENTS,
-        self::MEMORANDUM_OF_ASSOCIATION       => self::ADDITIONAL_DOCUMENTS,
-        self::ARTICLE_OF_ASSOCIATION          => self::ADDITIONAL_DOCUMENTS,
-        self::BOARD_RESOLUTION                => self::ADDITIONAL_DOCUMENTS,
-        self::PERSONAL_PAN                    => self::INDIVIDUAL_PROOF_OF_IDENTIFICATION,
+        self::PPI_LICENSE                  => self::ADDITIONAL_DOCUMENTS,
+        self::DRIVER_LICENSE_BACK          => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::DRIVER_LICENSE_FRONT         => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::AADHAR_FRONT                 => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::AADHAR_BACK                  => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::AADHAR_ZIP                   => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::AADHAR_XML                   => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::PASSPORT_FRONT               => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::PASSPORT_BACK                => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::VOTER_ID_FRONT               => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::VOTER_ID_BACK                => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::CANCELLED_CHEQUE             => self::ADDITIONAL_DOCUMENTS,
+        self::BANK_VERIFICATION_LETTER     => self::ADDITIONAL_DOCUMENTS,
+        self::BUSINESS_PROOF_URL           => self::BUSINESS_PROOF_OF_IDENTIFICATION,
+        self::BUSINESS_OPERATION_PROOF_URL => self::ADDITIONAL_DOCUMENTS,
+        self::BUSINESS_PAN_URL             => self::BUSINESS_PROOF_OF_IDENTIFICATION,
+        self::ADDRESS_PROOF_URL            => self::ADDITIONAL_DOCUMENTS,
+        self::PROMOTER_PROOF_URL           => self::ADDITIONAL_DOCUMENTS,
+        self::PROMOTER_PAN_URL             => self::INDIVIDUAL_PROOF_OF_IDENTIFICATION,
+        self::PROMOTER_ADDRESS_URL         => self::INDIVIDUAL_PROOF_OF_ADDRESS,
+        self::FORM_12A_URL                 => self::ADDITIONAL_DOCUMENTS,
+        self::FORM_80G_URL                 => self::ADDITIONAL_DOCUMENTS,
+        self::MEMORANDUM_OF_ASSOCIATION    => self::ADDITIONAL_DOCUMENTS,
+        self::ARTICLE_OF_ASSOCIATION       => self::ADDITIONAL_DOCUMENTS,
+        self::BOARD_RESOLUTION             => self::ADDITIONAL_DOCUMENTS,
+        self::PERSONAL_PAN                 => self::INDIVIDUAL_PROOF_OF_IDENTIFICATION,
 
-        self::SHOP_ESTABLISHMENT_CERTIFICATE  => self::BUSINESS_PROOF_OF_IDENTIFICATION,
-        self::GST_CERTIFICATE                 => self::BUSINESS_PROOF_OF_IDENTIFICATION,
-        self::MSME_CERTIFICATE                => self::BUSINESS_PROOF_OF_IDENTIFICATION,
-        self::BANK_STATEMENT                  => self::ADDITIONAL_DOCUMENTS,
+        self::SHOP_ESTABLISHMENT_CERTIFICATE => self::BUSINESS_PROOF_OF_IDENTIFICATION,
+        self::GST_CERTIFICATE                => self::BUSINESS_PROOF_OF_IDENTIFICATION,
+        self::MSME_CERTIFICATE               => self::BUSINESS_PROOF_OF_IDENTIFICATION,
+        self::BANK_STATEMENT                 => self::ADDITIONAL_DOCUMENTS,
 
-        self::FIRS_FILE                       => self::ADDITIONAL_DOCUMENTS,
-        self::FIRS_ZIP                        => self::ADDITIONAL_DOCUMENTS,
+        self::FIRS_FILE => self::ADDITIONAL_DOCUMENTS,
+        self::FIRS_ZIP  => self::ADDITIONAL_DOCUMENTS,
 
-        self::OTHER                           => self::ADDITIONAL_DOCUMENTS,
-        self::WEBSITE_SCREENSHOT              => self::ADDITIONAL_DOCUMENTS,
-        self::BUSINESS_CORRESPONDENT          => self::ADDITIONAL_DOCUMENTS,
-        self::LEGAL_OPINION                   => self::ADDITIONAL_DOCUMENTS,
-        self::GAMING_ADDENDUM                 => self::ADDITIONAL_DOCUMENTS,
+        self::OTHER                  => self::ADDITIONAL_DOCUMENTS,
+        self::WEBSITE_SCREENSHOT     => self::ADDITIONAL_DOCUMENTS,
+        self::BUSINESS_CORRESPONDENT => self::ADDITIONAL_DOCUMENTS,
+        self::LEGAL_OPINION          => self::ADDITIONAL_DOCUMENTS,
+        self::GAMING_ADDENDUM        => self::ADDITIONAL_DOCUMENTS,
 
-        self::FIRS_ICICI_FILE                 => self::ADDITIONAL_DOCUMENTS,
-        self::FIRS_ICICI_ZIP                  => self::ADDITIONAL_DOCUMENTS,
+        self::FIRS_ICICI_FILE => self::ADDITIONAL_DOCUMENTS,
+        self::FIRS_ICICI_ZIP  => self::ADDITIONAL_DOCUMENTS,
 
         self::EMERCHANTPAY_GST_CERTIFICATE    => self::ADDITIONAL_DOCUMENTS,
         self::EMERCHANTPAY_PROOF_OF_OWNERSHIP => self::ADDITIONAL_DOCUMENTS,
@@ -422,9 +526,10 @@ class Type
 
     /**
      * Following documents needs to perform for OCR
+     *
      * @var array
      */
-    protected static $documentsToPerformOcr = [
+    protected static $documentsToPerformOcr    = [
         self::AADHAR_FRONT,
         self::AADHAR_BACK,
         self::PASSPORT_FRONT,
@@ -435,7 +540,7 @@ class Type
         self::BUSINESS_PROOF_URL
     ];
 
-    protected static $poaDocuments = [
+    protected static $poaDocuments             = [
         self::AADHAR_FRONT,
         self::PASSPORT_FRONT,
         self::VOTER_ID_FRONT,
@@ -453,10 +558,12 @@ class Type
 
     public static function getRelatedDocumentType($documentType)
     {
-         if ($documentType === self::AADHAR_FRONT) {
-             return self::AADHAR_BACK;
-         }
-         return self::AADHAR_FRONT;
+        if ($documentType === self::AADHAR_FRONT)
+        {
+            return self::AADHAR_BACK;
+        }
+
+        return self::AADHAR_FRONT;
     }
 
     public static function isJointValidationDocumentType($documentType): bool
@@ -514,7 +621,7 @@ class Type
 
         $validMappings = array_intersect_key($proofMappings, $proofs);
 
-        return array_reduce($validMappings, function ($array, $item){
+        return array_reduce($validMappings, function($array, $item) {
             return array_merge($array, $item);
         }, []);
 

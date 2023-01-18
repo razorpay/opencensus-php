@@ -945,6 +945,12 @@ final class FactoryData
                                                                       ]
         );
 
+        $factory(\RZP\Models\ClarificationDetail\Entity::class, [
+                                                                          'id'            => $faker->uniqueid,
+                                                                          'merchant_id'   => '10000000000000',
+                                                                      ]
+        );
+        
         $factory(\RZP\Models\Merchant\Consent\Entity::class, [
                                                                'id'            => 'KdSCny9TA9OrmI',
                                                                'merchant_id'   => '10000000000000',

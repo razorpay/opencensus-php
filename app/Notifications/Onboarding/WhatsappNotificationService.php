@@ -3,10 +3,12 @@
 namespace RZP\Notifications\Onboarding;
 
 use RZP\Services\Stork;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\Constants;
 use RZP\Notifications\BaseNotificationService;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Notifications\Onboarding\Constants as OnboardingConstants;
 
 class WhatsappNotificationService extends BaseNotificationService
 {
@@ -33,7 +35,7 @@ class WhatsappNotificationService extends BaseNotificationService
 
             $properties = [
                 'id'            => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.'.$experimentKey),
+                'experiment_id' => $this->app['config']->get('app.' . $experimentKey),
             ];
 
             $isExperimentEnabled = $merchantCore->isSplitzExperimentEnable($properties, 'enable');
@@ -98,18 +100,26 @@ class WhatsappNotificationService extends BaseNotificationService
                         continue;
                     }
 
-                    $this->app['stork_service']->sendWhatsappMessage(
+                    $response = $this->app['stork_service']->sendWhatsappMessage(
                         $this->mode,
                         $templateMessage,
                         $partnerContactMobile,
                         $payload
                     );
+
+                    $this->trace->info(
+                        TraceCode::MERCHANT_ONBOARDING_WHATSAPP_SENT,
+                        [
+                            'merchantId' => $merchant->getMerchantId(),
+                            'template'    => $this->getTemplateMessage(),
+                            'response'    => $response
+                        ]);
                 }
             }
             else
             {
                 // Send to submerchant
-                $this->app['stork_service']->sendWhatsappMessage(
+                $response = $this->app['stork_service']->sendWhatsappMessage(
                     $this->mode,
                     $templateMessage,
                     $this->getPhone(),

@@ -803,7 +803,7 @@ class Service extends Base\Service
         }
     }
 
-    public function canActivateMerchant($merchantDetails, $websiteDetail): bool
+    public function validateMerchantActivation($merchantDetails, $websiteDetail): bool
     {
         try
         {

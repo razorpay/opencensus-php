@@ -1702,6 +1702,13 @@ class PublicErrorDescription
 
     const BAD_REQUEST_ROUTE_NOT_ACCESSIBLE_VIA_BANKING                              = 'Route not enabled for banking';
 
+    const BAD_REQUEST_INVALID_INPUT_FOR_NC                                          = 'Processing failed because of bad input';
+    const BAD_REQUEST_REQUIRED_FILEDS_FOR_NC                                        = 'Processing failed because input does not have all fields';
+    const BAD_REQUEST_CLARIFICATIONS_PENDING_NC                                     = 'Processing failed because more clarifications required';
+    const BAD_REQUEST_INVALID_DOCUMENT_FOR_NC                                       = 'Processing failed because of invalid document';
+    const BAD_REQUEST_INVALID_MERCHANT_STATUS_NC                                    = 'Processing failed because merchant is not in Needs Clarification';
+    const INVALID_STATUS_CHANGE_NC                                                  = 'Processing failed because no clarifications asked';
+
     // 1cc Gift Card Error Description
     const SAME_GIFT_CARD_APPLIED                                                    = 'Same gift card cannot be applied again';
     const GIFT_CARD_INVALID                                                         = 'Gift Card is either expired or invalid';

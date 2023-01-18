@@ -74,6 +74,7 @@ trait HeimdallTrait
             'org_id'   => $org->getId(),
             'username' => 'auth admin',
             'password' => 'Heimdall!234',
+            'email'    => 'admin@razorpay.com'
         ]);
 
         if ($role === 'admin')

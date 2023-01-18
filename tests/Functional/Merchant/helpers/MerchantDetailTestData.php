@@ -457,6 +457,991 @@ return [
         ],
     ],
 
+    'testAddClarificationReasons' => [
+        'request' => [
+            'content' =>  [
+                "clarification_reasons" => [
+                    [
+                        "group_name" => "bank_details",
+                        "field_details" => [
+                            "bank_account_number"=>"1234567891",
+                            "bank_account_name"=>"test",
+                            "bank_branch_ifsc"=>"icic0001231",
+                            "cancelled_cheque"=>null
+                            ],
+                        "comment_data" => [
+                            "type"=>"predefined",
+                            "text"=>"bank_account_change_request_for_prop_ngo_trust"
+                            ]
+                    ]
+                ],
+                "old_clarification_reasons" => [
+                    "issue_fields" => "bank_account_number,bank_account_name,bank_branch_ifsc",
+                    "kyc_clarification_reasons" => [
+                        "clarification_reasons" => [
+                            "bank_account_number" => [
+                                [
+                                    "reason_type" => "predefined",
+                                    "field_value" => "123456780",
+                                    "reason_code" => "bank_account_change_request_for_unregistered"
+                                ]
+                            ],
+                            "bank_account_name" => [
+                                [
+                                    "reason_type" => "predefined",
+                                    "field_value" => "Ajay Kumar Brahma",
+                                    "reason_code" => "bank_account_change_request_for_unregistered"
+                                ]
+                            ],
+                            "bank_branch_ifsc" => [
+                                [
+                                    "reason_type" => "predefined",
+                                    "field_value" => "SBIN0000202",
+                                    "reason_code" => "bank_account_change_request_for_unregistered"
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'clarification_details' => [
+                    'nc_count' => 0,
+                    'bank_details' => [
+                        'nc_count' => 1,
+                        'status' => "needs_clarification",
+                        'fields' => ["bank_branch_ifsc", "cancelled_cheque", "bank_account_name", "bank_account_number"],
+                        'comments' => [
+                            [
+                                'status' => "needs_clarification",
+                                'nc_count' => 1,
+                                'comment_data' => [
+                                    'type' => "predefined",
+                                    'text' => "Entered bank details are incorrect, please share company bank account details or authorised signatory details.",
+                                    ],
+                                'message_from' => "admin",
+                                'admin_email' => 'admin@razorpay.com',
+                                'field_details' => [
+                                    'bank_branch_ifsc' => "icic0001231",
+                                    'cancelled_cheque' => NULL,
+                                    'bank_account_name' => "test",
+                                    'bank_account_number' => "1234567891",
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'kyc_clarification_reasons' => [
+                    'clarification_reasons' => [
+                        'bank_account_number' => [
+                            [
+                                'reason_type' => "predefined",
+                                'field_value' => "123456780",
+                                'reason_code' => "bank_account_change_request_for_unregistered",
+                                'from' => "admin",
+                                'nc_count' => 1,
+                                'is_current' =>  TRUE,
+                            ],
+                        ],
+                        'bank_account_name' => [
+                            [
+                                'reason_type' => "predefined",
+                                'field_value' => "Ajay Kumar Brahma",
+                                'reason_code' => "bank_account_change_request_for_unregistered",
+                                'from' => "admin",
+                                'nc_count' => 1,
+                                'is_current' =>  TRUE,
+                            ],
+                        ],
+                        'bank_branch_ifsc' => [
+                            [
+                                'reason_type' => "predefined",
+                                'field_value' => "SBIN0000202",
+                                'reason_code' => "bank_account_change_request_for_unregistered",
+                                'from' => "admin",
+                                'nc_count' => 1,
+                                'is_current' =>  TRUE,
+                            ],
+                        ],
+                    ],
+                    'clarification_reasons_v2' => [
+                        'bank_account_number' => [
+                            [
+                                'reason_type' => "predefined",
+                                'field_value' => "123456780",
+                                'reason_code' => "bank_account_change_request_for_unregistered",
+                                'from' => "admin",
+                                'nc_count' => 1,
+                                'is_current' =>  TRUE,
+                            ],
+                        ],
+                    ],
+                    'nc_count' => 1,
+                ],
+            ],
+        ],
+    ],
+
+    'testAddClarificationReasonsNullFields' => [
+        'request' => [
+            'content' =>  [
+                "clarification_reasons" => [
+                    [
+                        "group_name" => "bank_details",
+                        "field_details" => [
+                            "bank_account_number"=>null,
+                            "bank_account_name"=>null,
+                            "bank_branch_ifsc"=>null,
+                            "cancelled_cheque"=>null
+                        ],
+                        "comment_data" => [
+                            "type"=>"predefined",
+                            "text"=>"bank_account_change_request_for_prop_ngo_trust"
+                            ]
+                    ]
+                ],
+                "old_clarification_reasons" => [
+                    "issue_fields" => "bank_account_number,bank_account_name,bank_branch_ifsc",
+                    "kyc_clarification_reasons" => [
+                        "clarification_reasons" => [
+                            "bank_account_number" => [
+                                [
+                                    "reason_type" => "predefined",
+                                    "field_value" => "123456780",
+                                    "reason_code" => "bank_account_change_request_for_unregistered"
+                                ]
+                            ],
+                            "bank_account_name" => [
+                                [
+                                    "reason_type" => "predefined",
+                                    "field_value" => "Ajay Kumar Brahma",
+                                    "reason_code" => "bank_account_change_request_for_unregistered"
+                                ]
+                            ],
+                            "bank_branch_ifsc" => [
+                                [
+                                    "reason_type" => "predefined",
+                                    "field_value" => "SBIN0000202",
+                                    "reason_code" => "bank_account_change_request_for_unregistered"
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'clarification_details' => [
+                    'nc_count' => 0,
+                    'bank_details' => [
+                        'nc_count' => 1,
+                        'status' => "needs_clarification",
+                        'fields' => ["bank_branch_ifsc", "cancelled_cheque", "bank_account_name", "bank_account_number"],
+                        'comments' => [
+                            [
+                                'status' => "needs_clarification",
+                                'admin_email' => 'admin@razorpay.com',
+                                'nc_count' => 1,
+                                'comment_data' => [
+                                    'type' => "predefined",
+                                    'text' => "Entered bank details are incorrect, please share company bank account details or authorised signatory details.",
+                                ],
+                                'message_from' => "admin",
+                                'field_details' => null,
+                            ],
+                        ],
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testAddNonGroupClarificationReasons' => [
+        'request' => [
+            'content' =>  [
+                "clarification_reasons" =>  [
+                    [
+                        "group_name" => "website",
+                        "field_details" =>  ["website" =>  "https://www.hello.com"],
+                        "comment_data" =>  [
+                            "type" =>  "custom",
+                            "text" =>  "your website is not live"
+                        ]
+                    ]
+                ],
+                "old_clarification_reasons" => [
+                    "issue_fields" => "website",
+                    "kyc_clarification_reasons" => [
+                        "clarification_reasons" => [
+                            "website" => [
+                                [
+                                    "reason_type" => "custom",
+                                    "field_value" => "https://www.hello.com",
+                                    "reason_code" => "your website is not live"
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "clarification_details" => [
+                    "nc_count" => 0,
+                    "website" => [
+                        'nc_count' => 1,
+                        "status" => "needs_clarification",
+                        "fields" => [
+                            "website"
+                        ],
+                        "comments" => [
+                            [
+                                "field_details" => [
+                                    "website" => "https://www.hello.com"
+                                ],
+                                "comment_data" => [
+                                    "type" => "custom",
+                                    "text" => "your website is not live"
+                                ],
+                                "message_from" => "admin",
+                                'admin_email' => 'admin@razorpay.com',
+                                'nc_count' => 1,
+                                "status" => "needs_clarification"
+                            ]
+                        ]
+                    ]
+                ],
+                ],
+            ],
+    ],
+
+    'testAddNonGroupClarificationReasonsForMerchantInNC' => [
+        'request' => [
+            'content' =>  [
+                "clarification_reasons" =>  [
+                    [
+                        "group_name" => "website",
+                        "field_details" =>  ["website" =>  "https://www.hello.com"],
+                        "comment_data" =>  [
+                            "type" =>  "custom",
+                            "text" =>  "your website is not live"
+                        ]
+                    ]
+                ],
+                "old_clarification_reasons" => [
+                    "issue_fields" => "website",
+                    "kyc_clarification_reasons" => [
+                        "clarification_reasons" => [
+                            "website" => [
+                                [
+                                    "reason_type" => "custom",
+                                    "field_value" => "https://www.hello.com",
+                                    "reason_code" => "your website is not live"
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testGetClarificationReasons' => [
+        'request' => [
+            'url'       => '/merchant/activation/clarifications',
+            'method'    => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'clarification_details' =>  [
+                    'nc_count' => 0,
+                    'bank_details' =>  [
+                        'fields' =>  [
+                            "bank_branch_ifsc",
+                            "cancelled_cheque",
+                            "bank_account_name",
+                            "bank_account_number"
+                        ],
+                        'status' => "needs_clarification",
+                        'nc_count' => 1,
+                        'comments' =>  [
+                            [
+                                'status' => "needs_clarification",
+                                'nc_count' => 1,
+                                'comment_data' =>  [
+                                    'type' => "predefined",
+                                    'text' => "Entered bank details are incorrect, please share company bank account details or authorised signatory details."
+                                ],
+                                'message_from' => "admin",
+                                'admin_email' => 'admin@razorpay.com',
+                                'field_details' => NULL,
+                            ],
+                            [
+                                'status' => "needs_clarification",
+                                'nc_count' => 1,
+                                'comment_data' =>  [
+                                    'type' => "predefined",
+                                    'text' => "Entered bank details are incorrect, please share company bank account details or authorised signatory details."
+                                ],
+                                'message_from' => "admin",
+                                'admin_email' => 'admin@razorpay.com',
+                                'field_details' =>  [
+                                    'bank_branch_ifsc' => "icic0001231",
+                                    'cancelled_cheque' => NULL,
+                                    'bank_account_name' => "test",
+                                    'bank_account_number' => "1234567891"
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'changeActivationStatusToNeedsClarification' => [
+        'request'  => [
+            'content' => [
+                'activation_status' => 'needs_clarification',
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status' => 'needs_clarification',
+            ],
+        ],
+    ],
+
+    'changeActivationStatusToNeedsClarificationWithoutReasons' => [
+        'request'  => [
+            'content' => [
+                'activation_status' => 'needs_clarification',
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testSaveGroupCommentsMerchantClarificationReasons' => [
+        'request' => [
+            'url'       => '/merchant/activation/clarifications',
+            'method'    => 'POST',
+            'content' => [
+                "bank_details"=> [
+                    "comment_data"=> [
+                        "type"=> "custom",
+                        "text"=> "Bank details are correct. Please check again"
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+                    "clarification_details"=> [
+                        'nc_count' => 1,
+                        'bank_details' => [
+                            'status' => "needs_clarification",
+                            'nc_count' => 1,
+                            'fields' => [
+                                "bank_branch_ifsc",
+                                "cancelled_cheque",
+                                "bank_account_name",
+                                "bank_account_number"
+                            ],
+                            'comments' => [
+                                [
+                                    "field_details"=> null,
+                                    "comment_data"=> [
+                                        "text"=> "Bank details are correct. Please check again",
+                                        "type"=> "custom"
+                                    ],
+                                    "message_from"=> "merchant",
+                                    'nc_count' => 1,
+                                    "status"=> "needs_clarification",
+                                ],
+                                [
+                                    'status' => "needs_clarification",
+                                    'nc_count' => 1,
+                                    'comment_data' => [
+                                        'type' => "predefined",
+                                        'text' => "Entered bank details are incorrect, please share company bank account details or authorised signatory details.",
+                                    ],
+                                    'message_from' => "admin",
+                                    'admin_email' => 'admin@razorpay.com',
+                                    'field_details' => [
+                                        'bank_branch_ifsc' => "icic0001231",
+                                        'cancelled_cheque' => NULL,
+                                        'bank_account_name' => "test",
+                                        'bank_account_number' => "1234567891",
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ]
+            ],
+        ],
+        ],
+
+    'testSaveGroupMerchantClarificationReasonsDocValidation' => [
+        'request' => [
+            'url'       => '/merchant/activation/clarifications',
+            'method'    => 'POST',
+            'content' => [
+                "bank_details"=> [
+                    "field_details"=> [
+                        "bank_branch_ifsc"=> "icic0001232",
+                        "cancelled_cheque"=> "Km8g59o82Gw6IA",
+                        "bank_account_name"=> "test",
+                        "bank_account_number"=> "1234567892",
+                    ],
+                    "submit"=> 1
+                ],
+            ],
+            'response' => [
+                'status_code' => 400,
+                ]
+        ]
+    ],
+
+    'testSaveGroupMerchantClarificationReasonsMissingField' => [
+        'request' => [
+            'url'       => '/merchant/activation/clarifications',
+            'method'    => 'POST',
+            'content' => [
+                "bank_details"=> [
+                    "field_details"=> [
+                        "bank_branch_ifsc"=> "icic0001232",
+                        "cancelled_cheque"=> "Km8g59o82Gw6IA",
+                        "bank_account_number"=> "1234567892",
+                    ],
+                    "submit"=> 1
+                ],
+            ]],'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testSaveGroupMerchantClarificationReasonsInvalidFeildData' => [
+        'request' => [
+            'url'       => '/merchant/activation/clarifications',
+            'method'    => 'POST',
+            'content' => [
+                "bank_details"=> [
+                    "field_details"=> [
+                        "bank_branch_ifsc"=> "icic0001232rfhhggjhghgjkhjkhjhghjghj",
+                        "cancelled_cheque"=> "Km8g59o82Gw6IA",
+                        "bank_account_name"=> "test",
+                        "bank_account_number"=> "1234567892",
+                    ],
+                    "submit"=> 1
+                ],
+            ]],'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testSaveGroupMerchantClarificationReasons' => [
+        'request' => [
+            'url'       => '/merchant/activation/clarifications',
+            'method'    => 'POST',
+            'content' => [
+                "bank_details"=> [
+                    "field_details"=> [
+                        "bank_branch_ifsc"=> "icic0001232",
+                        "cancelled_cheque"=> "Km8g59o82Gw6IA",
+                        "bank_account_name"=> "test",
+                        "bank_account_number"=> "1234567892",
+                    ],
+                    "submit"=> 1
+                ],
+                ]],
+        'response' => [
+            'content' => [
+                "clarification_details"=> [
+                                              'nc_count' => 1,
+                                              'bank_details' => [
+                                                  'nc_count' => 1,
+                                                  'status' => "submitted",
+                                                  'fields' => [
+                                                      "bank_branch_ifsc",
+                                                      "cancelled_cheque",
+                                                      "bank_account_name",
+                                                      "bank_account_number"
+                                                  ],
+                                                  'comments' => [
+                                                      [
+                                                          "field_details"=> [
+                                                              "bank_branch_ifsc"=> "icic0001232",
+                                                              "cancelled_cheque"=> "Km8g59o82Gw6IA",
+                                                              "bank_account_name"=> "test",
+                                                              "bank_account_number"=> "1234567892",
+
+                                                          ],
+                                                          "comment_data"=> null,
+                                                          "message_from"=> "merchant",
+                                                          'nc_count' => 1,
+                                                          "status"=> "submitted",
+                                                      ],
+                                                      [
+                                                          "field_details"=> null,
+                                                          "comment_data"=> [
+                                                              "text"=> "Bank details are correct. Please check again",
+                                                              "type"=> "custom"
+                                                          ],
+                                                          "message_from"=> "merchant",
+                                                          'nc_count' => 1,
+                                                          "status"=> "submitted",
+                                                      ],
+                                                      [
+                                                          'status' => "submitted",
+                                                          'nc_count' => 1,
+                                                          'comment_data' => [
+                                                              'type' => "predefined",
+                                                              'text' => "Entered bank details are incorrect, please share company bank account details or authorised signatory details.",
+                                                          ],
+                                                          'message_from' => "admin",
+                                                          'admin_email' => 'admin@razorpay.com',
+                                                          'field_details' => [
+                                                              'bank_branch_ifsc' => "icic0001231",
+                                                              'cancelled_cheque' => NULL,
+                                                              'bank_account_name' => "test",
+                                                              'bank_account_number' => "1234567891",
+                                                          ],
+                                                      ],
+                                                  ],
+                                              ],
+                                          ],
+                ],
+            ]
+    ],
+
+    'testSaveNotesForGroupClarifications' => [
+            'request' => [
+                'content' => [
+                    "bank_details"=> [
+                        "comment_data"=> [
+                            "type"=> "note",
+                            "text"=> "updated new set of bank details. please verify now"
+                        ]
+                    ]
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    "clarification_details"=> [
+                                                  'nc_count' => 1,
+                                                  'bank_details' => [
+                                                      'nc_count' => 1,
+                                                      'status' => "submitted",
+                                                      'fields' => [
+                                                          "bank_branch_ifsc",
+                                                          "cancelled_cheque",
+                                                          "bank_account_name",
+                                                          "bank_account_number"
+                                                      ],
+                                                      'comments' => [
+                                                          [
+                                                              "field_details"=> null,
+                                                              "comment_data"=> [
+                                                                  "text"=> "updated new set of bank details. please verify now",
+                                                                  "type"=> "note"
+                                                              ],
+                                                              "message_from"=> "merchant",
+                                                              'nc_count' => 1,
+                                                              "status"=> "submitted",
+                                                          ],
+                                                          [
+                                                              "field_details"=> [
+                                                                  "bank_branch_ifsc"=> "icic0001232",
+                                                                  "cancelled_cheque"=> "Km8g59o82Gw6IA",
+                                                                  "bank_account_name"=> "test",
+                                                                  "bank_account_number"=> "1234567892",
+
+                                                              ],
+                                                              "comment_data"=> null,
+                                                              "message_from"=> "merchant",
+                                                              'nc_count' => 1,
+                                                              "status"=> "submitted",
+                                                          ],
+                                                          [
+                                                              "field_details"=> null,
+                                                              "comment_data"=> [
+                                                                  "text"=> "Bank details are correct. Please check again",
+                                                                  "type"=> "custom"
+                                                              ],
+                                                              "message_from"=> "merchant",
+                                                              'nc_count' => 1,
+                                                              "status"=> "submitted",
+                                                          ],
+                                                          [
+                                                              'status' => "submitted",
+                                                              'comment_data' => [
+                                                                  'type' => "predefined",
+                                                                  'text' => "Entered bank details are incorrect, please share company bank account details or authorised signatory details.",
+                                                              ],
+                                                              'message_from' => "admin",
+                                                              'admin_email' => 'admin@razorpay.com',
+                                                              'nc_count' => 1,
+                                                              'field_details' => [
+                                                                  'bank_branch_ifsc' => "icic0001231",
+                                                                  'cancelled_cheque' => NULL,
+                                                                  'bank_account_name' => "test",
+                                                                  'bank_account_number' => "1234567891",
+                                                              ],
+                                                          ],
+                                                      ],
+                                                  ],
+                                              ],
+                ]
+            ]
+        ],
+
+    'testSubmitNCFormGroupFields' => [
+        'request' => [
+            'content' => [
+                "submit"=> '1'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "clarification_details"=> [
+                    'nc_count' => 1,
+                    'bank_details' => [
+                        'status' => "under_review",
+                        "nc_count"=> 1,
+                        'fields' => [
+                            "bank_branch_ifsc",
+                            "cancelled_cheque",
+                            "bank_account_name",
+                            "bank_account_number"
+                        ],
+                        'comments' => [
+                            [
+                                "field_details"=> null,
+                                "comment_data"=> [
+                                    "text"=> "updated new set of bank details. please verify now",
+                                    "type"=> "note"
+                                ],
+                                "message_from"=> "merchant",
+                                "nc_count"=> 1,
+                                "status"=> "under_review",
+                            ],
+                            [
+                                "field_details"=> [
+                                    "bank_branch_ifsc"=> "icic0001232",
+                                    "cancelled_cheque"=> "Km8g59o82Gw6IA",
+                                    "bank_account_name"=> "test",
+                                    "bank_account_number"=> "1234567892",
+
+                                ],
+                                "comment_data"=> null,
+                                "message_from"=> "merchant",
+                                "nc_count"=> 1,
+                                "status"=> "under_review",
+                            ],
+                            [
+                                "field_details"=> null,
+                                "comment_data"=> [
+                                    "text"=> "Bank details are correct. Please check again",
+                                    "type"=> "custom"
+                                ],
+                                "message_from"=> "merchant",
+                                "nc_count"=> 1,
+                                "status"=> "under_review",
+                            ],
+                            [
+                                'status' => "under_review",
+                                'comment_data' => [
+                                    'type' => "predefined",
+                                    'text' => "Entered bank details are incorrect, please share company bank account details or authorised signatory details.",
+                                ],
+                                'message_from' => "admin",
+                                'admin_email' => 'admin@razorpay.com',
+                                "nc_count"=> 1,
+                                'field_details' => [
+                                    'bank_branch_ifsc' => "icic0001231",
+                                    'cancelled_cheque' => NULL,
+                                    'bank_account_name' => "test",
+                                    'bank_account_number' => "1234567891",
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ]
+        ]
+    ],
+
+    'testSubmitNCFormNonGroupFields' => [
+        'request' => [
+            'content' => [
+                "submit"=> '1'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "clarification_details"=> [
+                    "nc_count"=> 1,
+                    "website"=> [
+                        "fields"=> [
+                            "website"
+                        ],
+                        "status"=> "under_review",
+                        "nc_count"=> 1,
+                        "comments"=> [
+                            [
+                                "field_details"=> null,
+                                "comment_data"=> [
+                                    "type"=> "note",
+                                    "text"=> "website is going live this month"
+                                ],
+                                "message_from"=> "merchant",
+                                "nc_count"=> 1,
+                                "status"=> "under_review",
+                            ],
+                            [
+                                "field_details"=> null,
+                                "comment_data"=> [
+                                    "type"=> "custom",
+                                    "text"=> "website is in progress of going live"
+                                ],
+                                "message_from"=> "merchant",
+                                "nc_count"=> 1,
+                                "status"=> "under_review",
+                            ],
+                            [
+                                "field_details"=> [
+                                    "website"=> "https://www.hello.com"
+                                ],
+                                "comment_data"=> [
+                                    "type"=> "custom",
+                                    "text"=> "your website is not live"
+                                ],
+                                "message_from"=> "admin",
+                                "nc_count"=> 1,
+                                'admin_email' => 'admin@razorpay.com',
+                                "status"=> "under_review",
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testSubmitNCFormNonGroupFieldsWithoutGroupSubmission' => [
+        'request' => [
+            'content' => [
+                "submit"=> '1'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ]
+    ],
+
+    'testAddCommentForNonGroupFieldsClarification' => [
+            'request' => [
+                'content' => [
+                    "website"=> [
+                        "comment_data"=> [
+                            "type"=> "custom",
+                            "text"=> "website is in progress of going live"
+                        ]
+                    ]
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    "clarification_details"=> [
+                        "nc_count"=> 1,
+                        "website"=> [
+                            "fields"=> [
+                                "website"
+                            ],
+                            "nc_count"=> 1,
+                            "status"=> "needs_clarification",
+                            "comments"=> [
+                                [
+                                    "field_details"=> null,
+                                    "comment_data"=> [
+                                        "type"=> "custom",
+                                        "text"=> "website is in progress of going live"
+                                    ],
+                                    "message_from"=> "merchant",
+                                    "nc_count"=> 1,
+                                    "status"=> "needs_clarification",
+                                ],
+                                [
+                                    "field_details"=> [
+                                        "website"=> "https://www.hello.com"
+                                    ],
+                                    "comment_data"=> [
+                                        "type"=> "custom",
+                                        "text"=> "your website is not live"
+                                    ],
+                                    "message_from"=> "admin",
+                                    'admin_email' => 'admin@razorpay.com',
+                                    "nc_count"=> 1,
+                                    "status"=> "needs_clarification",
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+                ]
+            ],
+
+    'testSubmitForNonGroupFieldsClarification' => [
+            'request' => [
+                'content' => [
+                    "website"=> [
+                        "submit"=> 1
+                    ]
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    "clarification_details"=> [
+                        "nc_count"=> 1,
+                        "website"=> [
+                            "status"=> "submitted",
+                            "nc_count"=> 1,
+                            "fields"=> [
+                                "website"
+                            ],
+                            "comments"=> [
+                                [
+                                    "field_details"=> null,
+                                    "comment_data"=> [
+                                        "type"=> "custom",
+                                        "text"=> "website is in progress of going live"
+                                    ],
+                                    "nc_count"=> 1,
+                                    "message_from"=> "merchant",
+                                    "status"=> "submitted",
+                                ],
+                                [
+                                    "field_details"=> [
+                                        "website"=> "https://www.hello.com"
+                                    ],
+                                    "comment_data"=> [
+                                        "type"=> "custom",
+                                        "text"=> "your website is not live"
+                                    ],
+                                    "message_from"=> "admin",
+                                    "nc_count"=> 1,
+                                    'admin_email' => 'admin@razorpay.com',
+                                    "status"=> "submitted",
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ],
+
+    'testAddNoteForNonGroupFieldsClarification' => [
+            'request' => [
+                'content' => [
+                    "website"=> [
+                        "comment_data"=> [
+                            "type"=> "note",
+                            "text"=> "website is going live this month"
+                        ]
+                    ]
+                ],
+            ],
+            'response' => [
+                'content' => [
+                    "clarification_details"=> [
+                        "nc_count"=> 1,
+                        "website"=> [
+                            "fields"=> [
+                                "website"
+                            ],
+                            "nc_count"=> 1,
+                            "status"=> "submitted",
+                            "comments"=> [
+                                [
+                                    "field_details"=> null,
+                                    "comment_data"=> [
+                                        "type"=> "note",
+                                        "text"=> "website is going live this month"
+                                    ],
+                                    "message_from"=> "merchant",
+                                    "nc_count"=> 1,
+                                    "status"=> "submitted",
+                                ],
+                                [
+                                    "field_details"=> null,
+                                    "comment_data"=> [
+                                        "type"=> "custom",
+                                        "text"=> "website is in progress of going live"
+                                    ],
+                                    "message_from"=> "merchant",
+                                    "nc_count"=> 1,
+                                    "status"=> "submitted",
+                                ],
+                                [
+                                    "field_details"=> [
+                                        "website"=> "https://www.hello.com"
+                                    ],
+                                    "comment_data"=> [
+                                        "type"=> "custom",
+                                        "text"=> "your website is not live"
+                                    ],
+                                    "message_from"=> "admin",
+                                    'admin_email' => 'admin@razorpay.com',
+                                    "nc_count"=> 1,
+                                    "status"=> "submitted",
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ],
+
     'testGetMerchantActivationStatusChangeLog' => [
         'request' => [
             'content' => [],

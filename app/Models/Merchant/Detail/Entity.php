@@ -13,6 +13,7 @@ use RZP\Models\Merchant\Store;
 use RZP\Constants\IndianStates;
 use RZP\Constants\Country;
 use RZP\Models\Merchant\AutoKyc;
+use RZP\Models\ClarificationDetail;
 use RZP\Exception\InvalidPermissionException;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use RZP\Models\Merchant\Document\OcrVerificationStatus;
@@ -199,6 +200,7 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     const MERCHANT_AVG_ORDER_VALUE      = 'merchant_avg_order_value';
     const MERCHANT_WEBSITE              = 'merchant_website';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
+    const CLARIFICATION_DETAIL          = 'clarification_detail';
     const MERCHANT_BUSINESS_DETAIL      = 'merchant_business_detail';
     const MERCHANT_OTP_VERIFICATION_LOG = 'merchant_otp_verification_log';
     // fields_pending field is used in new Account APIs.

@@ -141,6 +141,8 @@ use RZP\Models\Merchant\Store\Constants as StoreConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\ManualVerificationRequestDispatcher;
 use RZP\Models\Merchant\Document\Type as DocumentType;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\BankAccount as BankAccountRequestDispatcher;
+use RZP\Models\ClarificationDetail\Validator as ClarificationDetailValidator;
+use RZP\Models\ClarificationDetail\Service as ClarificationDetailService;
 use RZP\Models\Merchant\Website;
 
 class Core extends Base\Core
@@ -639,6 +641,22 @@ class Core extends Base\Core
         }
 
         return $count;
+    }
+
+    public function getLatestStatusChange($statusChangeLogs, string $status)
+    {
+        $latestStatusData = null;
+
+        foreach ($statusChangeLogs as $statusData)
+        {
+            if ($statusData[State\Entity::NAME] === $status)
+            {
+
+                $latestStatusData = $statusData;
+            }
+        }
+
+        return $latestStatusData;
     }
 
     private function triggerNeedsClarificationRespondedWorkflow($merchant, $oldMerchantDetails)
@@ -2094,12 +2112,14 @@ class Core extends Base\Core
 
     public function getUpdatedKycClarificationReasons(array $input, string $merchantId, ?string $source = null): array
     {
+
         $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
 
         $existingKycClarifications      = $merchantDetails->getKycClarificationReasons() ?? [];
         $existingReasons                = $existingKycClarifications[Entity::CLARIFICATION_REASONS] ?? null;
         $existingAdditionalDetails      = $existingKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
         $existingClarificationReasonsV2 = $existingKycClarifications[Entity::CLARIFICATION_REASONS_V2] ?? null;
+
 
         $newKycClarifications = $input[Entity::KYC_CLARIFICATION_REASONS] ?? [];
         $newAdditionalDetails = $newKycClarifications[Entity::ADDITIONAL_DETAILS] ?? null;
@@ -2123,6 +2143,7 @@ class Core extends Base\Core
         $statusChangeLogs = (new Merchant\Core)->getActivationStatusChangeLog($merchantDetails->merchant);
 
         $ncCount = $this->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
+
 
         if ($this->app['basicauth']->isAdminAuth() === true or
             $source === 'admin' or
@@ -2969,9 +2990,19 @@ class Core extends Base\Core
 
         $currentActivationStatus = $merchantDetails->getActivationStatus();
 
-        $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS_INTERNAL,[
+        $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS_INTERNAL, [
             'Activation Status' => $input[Entity::ACTIVATION_STATUS]
         ]);
+
+        if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
+        {
+            (new Merchant\Website\Service())->validateMerchantActivation($merchantDetails, $websiteDetail);
+        }
+
+        if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
+        {
+            (new ClarificationDetailValidator())->validateClarificationExists($merchant->getId());
+        }
 
         if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED or
             $input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING or
@@ -2987,10 +3018,6 @@ class Core extends Base\Core
             }
         }
 
-        if($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
-        {
-            (new Merchant\Website\Service())->canActivateMerchant($merchantDetails, $websiteDetail);
-        }
 
         $merchantDetails->getValidator()
                         ->validateActivationStatusChange(
@@ -3081,7 +3108,7 @@ class Core extends Base\Core
         ) {
 
             $dbUpdateStartTime = microtime(true);
-            $merchantId = $merchant->getMerchantId();
+            $merchantId        = $merchant->getMerchantId();
 
             if (($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED) and
                 ($merchant->isLinkedAccount() === false))
@@ -3098,15 +3125,15 @@ class Core extends Base\Core
                 $isMerchantPreviouslyActivated = $merchant->isActivated();
 
                 $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATE_LOG, [
-                    'text'     => 'before activating merchant',
-                    'shouldSave'       => $shouldSave,
+                    'text'       => 'before activating merchant',
+                    'shouldSave' => $shouldSave,
                 ]);
 
                 (new Merchant\Activate)->activate($merchant, true, $shouldSave);
 
                 $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATE_LOG, [
-                    'text'     => 'after activating merchant',
-                    'shouldSave'       => $shouldSave,
+                    'text'       => 'after activating merchant',
+                    'shouldSave' => $shouldSave,
                 ]);
 
                 $this->triggerRequestToBvs($merchant, Status::ACTIVATED);
@@ -3118,13 +3145,13 @@ class Core extends Base\Core
                     $this->paymentEnabledEvent($merchant, $oldMerchantDetails, $newMerchantDetails);
                 }
 
-                if($merchant->isNoDocOnboardingFeatureEnabled() === true)
+                if ($merchant->isNoDocOnboardingFeatureEnabled() === true)
                 {
                     (new Merchant\AccountV2\Core())->removeNoDocOnboardingFeature($merchantId);
 
                     $this->trace->info(TraceCode::NO_DOC_MERCHANT_FULLY_ACTIVATED, [
-                        'merchant_id'   => $merchantId,
-                        'step'          => 'No-doc onboarded merchant is fully activated before its Gmv limit breaches'
+                        'merchant_id' => $merchantId,
+                        'step'        => 'No-doc onboarded merchant is fully activated before its Gmv limit breaches'
                     ]);
                 }
             }
@@ -3148,12 +3175,12 @@ class Core extends Base\Core
                 }
 
                 // A no-doc onboarded merchant will not observe 'activated_mcc_pending' state. Though if such a merchant is marked with this status, we are removing no_doc_onboarding flag
-                if($merchant->isNoDocOnboardingFeatureEnabled() === true)
+                if ($merchant->isNoDocOnboardingFeatureEnabled() === true)
                 {
                     (new Merchant\AccountV2\Core())->removeNoDocOnboardingFeature($merchantId);
 
                     $this->trace->info(TraceCode::NO_DOC_MERCHANT_MARKED_MCC_PENDING, [
-                        'merchant_id'   => $merchantId
+                        'merchant_id' => $merchantId
                     ]);
                 }
             }
@@ -3169,7 +3196,7 @@ class Core extends Base\Core
                 (new Merchant\AccountV2\Core())->addNoDocPartiallyActivatedTag($merchant);
 
                 $this->trace->info(TraceCode::NO_DOC_MERCHANT_PARTIALLY_ACTIVATED, [
-                    'merchant_id'                   => $merchantId
+                    'merchant_id' => $merchantId
                 ]);
             }
 
@@ -3205,13 +3232,13 @@ class Core extends Base\Core
 
                 $this->triggerRequestToBvs($merchant, Status::REJECTED, $rejectionReasons);
 
-                if($merchant->isNoDocOnboardingFeatureEnabled() === true)
+                if ($merchant->isNoDocOnboardingFeatureEnabled() === true)
                 {
                     (new Merchant\AccountV2\Core())->removeNoDocOnboardingFeature($merchantId);
 
                     $this->trace->info(TraceCode::NO_DOC_MERCHANT_REJECTED, [
-                        'merchant_id'                   => $merchantId,
-                        'step'          => 'No-doc onboarded merchant is marked rejected before its Gmv limit breaches'
+                        'merchant_id' => $merchantId,
+                        'step'        => 'No-doc onboarded merchant is marked rejected before its Gmv limit breaches'
                     ]);
                 }
             }
@@ -3220,8 +3247,8 @@ class Core extends Base\Core
             {
 
                 $this->trace->info(TraceCode::NC_INITIATED, [
-                    'merchant_id'                   => $merchantId,
-                    'db-update-start_time'          => $dbUpdateStartTime
+                    'merchant_id'          => $merchantId,
+                    'db-update-start_time' => $dbUpdateStartTime
                 ]);
 
                 //
@@ -3232,14 +3259,18 @@ class Core extends Base\Core
                 {
 
                     $this->trace->info(TraceCode::NC_EMAIL_INITIATED, [
-                        'merchant_id'                   => $merchantId,
-                        'kyc_clarification_reasonse'    => $merchantDetails->getKycClarificationReasons(),
-                        'activation_status'             => $merchantDetails->getActivationStatus()
+                        'merchant_id'                => $merchantId,
+                        'kyc_clarification_reasonse' => $merchantDetails->getKycClarificationReasons(),
+                        'activation_status'          => $merchantDetails->getActivationStatus()
                     ]);
 
                     $merchantDetails->setLocked(false);
 
-                    $this->sendNeedsClarificationEmail($merchant);
+                    if ($merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === false or
+                        (new ClarificationDetailService)->isEligibleForRevampNC($merchantId) === false)
+                    {
+                        $this->sendNeedsClarificationEmail($merchant);
+                    }
 
                     $this->sendSubMerchantNCStatusChangedEmail($merchant);
 
@@ -3247,10 +3278,10 @@ class Core extends Base\Core
                     $this->publishMetroEventForMerchantActivationNeedsClarification($merchant);
 
                     $this->trace->info(TraceCode::NC_EMAIL_SENT, [
-                        'merchant_id'                   => $merchantId,
-                        'activation_status'             => $merchantDetails->getActivationStatus(),
-                        'db-update-start_time'          => $dbUpdateStartTime,
-                        'duration'                      => (microtime(true) - $dbUpdateStartTime) * 1000
+                        'merchant_id'          => $merchantId,
+                        'activation_status'    => $merchantDetails->getActivationStatus(),
+                        'db-update-start_time' => $dbUpdateStartTime,
+                        'duration'             => (microtime(true) - $dbUpdateStartTime) * 1000
                     ]);
 
                 }
@@ -3262,7 +3293,7 @@ class Core extends Base\Core
             // - We also call deactivate method on merchant entity which will disable live mode and mark merchant as deactivated.
             // - Jira EPA-168
             //
-            if(($input[Entity::ACTIVATION_STATUS] === Status::UNDER_REVIEW) and
+            if (($input[Entity::ACTIVATION_STATUS] === Status::UNDER_REVIEW) and
                 ($merchant->isLinkedAccount() === true) and
                 ($merchant->isActivated() === true))
             {
@@ -3329,6 +3360,7 @@ class Core extends Base\Core
 
         $properties = $this->getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails, $currentActivationStatus);
 
+
         // Sending Product Led Event To Hubspot
 
         $this->pushProductLedHubspotEvent($merchant, $properties);
@@ -3363,14 +3395,14 @@ class Core extends Base\Core
             'activationStatus'         => $currentActivationStatus,
             'merchant'                 => $merchant,
             Merchant\Constants::PARAMS => [
-                'subMerchantName' => $merchant->getTrimmedName(25, "..."),
-                'subMerchantId'   => $merchant->getId()
+                'subMerchantName'  => $merchant->getTrimmedName(25, "..."),
+                'subMerchantId'    => $merchant->getId(),
             ]
         ];
 
         $this->trace->info(TraceCode::MERCHANT_ACTIVATION_ONBOARDING_NOTIFICATION, [
-            'duration'    => (microtime(true) - $startTime) * 1000,
-            'start_time'  => $startTime
+            'duration'   => (microtime(true) - $startTime) * 1000,
+            'start_time' => $startTime
         ]);
 
         Tracer::inSpan(['name' => 'onboarding_notification_handler_send'], function() use ($args) {
@@ -3406,7 +3438,6 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::NC_ADDITIONAL_DOCUMENTS,[
             'DocumentList' => $response
         ]);
-
         return $response;
     }
     public function syncNoDocOnboardedMerchantDetailsToEs(Entity $merchantDetail)

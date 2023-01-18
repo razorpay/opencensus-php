@@ -148,6 +148,18 @@ class Format
         self::XLSX,
     ];
 
+    const VALID_VIDEO_EXTENSIONS = [
+        'video/x-ms-wmv',
+        'video/m4v',
+        'video/x-matroska',
+        'video/mpeg',
+        'video/x-msvideo',
+        'video/x-flv',
+        'video/quicktime',
+        'video/mp4',
+        'video/mpeg'
+    ];
+
     /**
      * Validate if content given given is proper for filetype provided
      *

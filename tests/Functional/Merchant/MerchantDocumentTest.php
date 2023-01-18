@@ -232,6 +232,55 @@ class MerchantDocumentTest Extends TestCase
         $this->startTest();
     }
 
+    public function testVideoFileUpload()
+    {
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000');
+
+        //Merchant detail entity for default test merchant
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+            ]);
+
+        $this->updateUploadmp4Video(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+
+    public function testOnlyVideoFileUploadSupported()
+    {
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000');
+
+        //Merchant detail entity for default test merchant
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+            ]);
+
+        $this->updateUploadXLSXDocument(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testVideoUploadForUnsupportedDocuments()
+    {
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000');
+
+        //Merchant detail entity for default test merchant
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+            ]);
+
+        $this->updateUploadmp4Video(__FUNCTION__);
+
+        $this->startTest();
+    }
+
     public function uploadDocAndCheckOcrSuccess(int $businessType,
                                                 string $octResponseStatus,
                                                 string $ocrVerificationStatus,
@@ -298,6 +347,18 @@ class MerchantDocumentTest Extends TestCase
             __DIR__ . '/../Batch/files/input.xlsx',
             'input.xlsx',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            null,
+            true);
+    }
+
+    protected function updateUploadmp4Video(string $callee)
+    {
+        $testData = &$this->testData[$callee];
+
+        $testData['request']['files']['file'] = new UploadedFile(
+            __DIR__ . '/../Batch/files/input.mp4',
+            'input.mp4',
+            'video/mp4',
             null,
             true);
     }

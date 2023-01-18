@@ -2,22 +2,36 @@
 
 namespace RZP\Notifications\Onboarding;
 
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Notifications\Channel;
 use RZP\Notifications\Factory;
 use RZP\Models\Merchant\Entity;
 use RZP\Exception\LogicException;
 use RZP\Notifications\BaseHandler;
 use RZP\Models\Merchant\Detail\Status;
+use RZP\Models\Merchant\Core as MCore;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
+use RZP\Models\ClarificationDetail\Core as ClarificationDetailsCore;
 use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 
 class Handler extends BaseHandler
 {
     const SUPPORTED_CHANNELS_FOR_EVENTS = [
-        Events::NEEDS_CLARIFICATION                                  => [Channel::SMS, Channel::WHATSAPP],
+
+        Events::NEEDS_CLARIFICATION                           => [Channel::SMS, Channel::WHATSAPP],
+        Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::NC_COUNT_1_PAYMENTS_NOT_LIVE                  => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::NC_COUNT_2_PAYMENTS_NOT_LIVE                  => [Channel::EMAIL, Channel::WHATSAPP],
+
         Events::UNREGISTERED_SETTLEMENTS_ENABLED                     => [Channel::SMS, Channel::WHATSAPP],
         Events::REGISTERED_SETTLEMENTS_ENABLED                       => [Channel::SMS, Channel::WHATSAPP],
         Events::REGISTERED_PAYMENTS_ENABLED                          => [Channel::SMS, Channel::WHATSAPP],
@@ -126,6 +140,78 @@ class Handler extends BaseHandler
         return $success;
     }
 
+    private function getNCCommunicationEvent(Entity $merchant)
+    {
+        $events = [];
+
+        $doesV3Exist = (new ClarificationDetailsCore)->hasClarificationDetails($merchant->getId());
+
+        $statusChangeLogs = (new MCore)->getActivationStatusChangeLog($merchant);
+
+        $ncCount = (new DetailCore)->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
+
+        $clarificationDetails = [];
+
+        if ($doesV3Exist === true)
+        {
+            $clarificationDetails = (new ClarificationDetailsCore)->getCommunicationParams($merchant->getId());
+
+            if ($merchant->isActivated() === true and $merchant->isFundsOnHold() === false)
+            {
+                if ($ncCount <= 1)
+                {
+                    array_push($events, Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE);
+                }
+                else
+                {
+                    array_push($events, Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE);
+                }
+            }
+            else
+            {
+                if ($merchant->isActivated() === true and $merchant->isFundsOnHold() === true)
+                {
+                    if ($ncCount <= 1)
+                    {
+                        array_push($events, Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE);
+                    }
+                    else
+                    {
+                        array_push($events, Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE);
+                    }
+                }
+                else
+                {
+                    if ($merchant->isActivated() === false)
+                    {
+                        if ($ncCount <= 1)
+                        {
+                            array_push($events, Events::NC_COUNT_1_PAYMENTS_NOT_LIVE);
+                        }
+                        else
+                        {
+                            array_push($events, Events::NC_COUNT_2_PAYMENTS_NOT_LIVE);
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            array_push($events, Events::NEEDS_CLARIFICATION);
+        }
+        array_push($events, Events::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION);
+
+        $this->args[MConstants::PARAMS]['clarification_details'] = $clarificationDetails;
+
+        $this->args[MConstants::PARAMS]['ncSubmissionDate'] = Carbon::createFromTimestamp(
+            Carbon::now()
+                  ->addDays(5)
+                  ->getTimestamp(), Timezone::IST)->isoFormat('MMM Do YYYY');
+
+        return $events;
+    }
+
     private function getEventForActivationStatus(?string $activationStatus, Entity $merchant)
     {
         $events                  = [];
@@ -139,10 +225,11 @@ class Handler extends BaseHandler
                 array_push($events, Events::ACTIVATED_MCC_PENDING_ACTION_REQUIRED);
                 array_push($events, Events::PARTNER_SUBMERCHANT_ACTIVATED_MCC_PENDING_SUCCESS);
                 break;
+
             case Status::NEEDS_CLARIFICATION:
-                array_push($events, Events::NEEDS_CLARIFICATION);
-                array_push($events, Events::PARTNER_SUBMERCHANT_NEEDS_CLARIFICATION);
+                $events = $this->getNCCommunicationEvent($merchant);
                 break;
+
             case Status::ACTIVATED:
                 if ($isUnregistered or ($activationStatus === Status::INSTANTLY_ACTIVATED))
                 {

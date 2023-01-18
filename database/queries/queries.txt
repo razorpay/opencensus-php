@@ -7112,6 +7112,22 @@ Alter table merchant_details
 ALTER TABLE merchant_website
     MODIFY COLUMN grace_period tinyint(1) DEFAULT NULL ;
 
+CREATE TABLE clarification_details(
+  id char(14) COLLATE utf8mb4_bin primary key,
+  merchant_id char(14) CHARACTER SET utf8 COLLATE utf8_bin not null,
+  status varchar(30) DEFAULT NULL,
+  comment_data json DEFAULT NULL,
+  message_from char(30) DEFAULT NULL,
+  group_name varchar(255) DEFAULT NULL,
+  field_details json DEFAULT NULL,
+  metadata json DEFAULT NULL,
+  audit_id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
+  created_at int not null,
+  updated_at int not null,
+  KEY clarification_details_merchant_id_index (merchant_id),
+  KEY clarification_details_created_at_index (created_at)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
 ALTER TABLE stakeholders
   ADD column verification_metadata json DEFAULT NULL;
 
@@ -7139,4 +7155,3 @@ ALTER TABLE partner_configs
 
 ALTER TABLE tokens
     ADD COLUMN source enum(`merchant`, `issuer`) NOT NULL DEFAULT `merchant`;
-

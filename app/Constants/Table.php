@@ -473,6 +473,8 @@ class Table
 
     const LINKED_ACCOUNT_REFERENCE_DATA = 'linked_account_reference_data';
 
+    const CLARIFICATION_DETAIL          = 'clarification_details';
+
     protected static $entityToTableMap = [
         Entity::AXIS_MIGS                          => self::MIGS,
         Entity::AXIS_GENIUS                        => self::MIGS,

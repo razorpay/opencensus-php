@@ -1317,6 +1317,42 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postMerchantClarificationDetails($mid)
+    {
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::CLARIFICATION_DETAILS_EDIT_REQUEST, []);
+
+        $response = $this->service(E::CLARIFICATION_DETAIL)->createClarificationDetailAdmin($mid, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postMerchantResponseToClarifications()
+    {
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::CLARIFICATION_DETAILS_EDIT_REQUEST, $input);
+
+        $response = $this->service(E::CLARIFICATION_DETAIL)->saveMerchantResponseToClarifications($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantNcRevampEligibility($id=null)
+    {
+        $response = $this->service(E::CLARIFICATION_DETAIL)->getMerchantNcRevampEligibility($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantClarificationDetails($id=null)
+    {
+        $response = $this->service(E::CLARIFICATION_DETAIL)->getClarificationDetail($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function sendWhatsappNotification($id)
     {
         $input = Request::all();

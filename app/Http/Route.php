@@ -19,6 +19,13 @@ class Route
     protected $namespace = 'RZP\Http\Controllers';
 
     protected static $apiRoutes = [
+        'merchant_nc_revamp_eligibility_admin'              => ['get',      'merchant/activation/{id}/clarifications/eligibility',  'MerchantController@getMerchantNcRevampEligibility'                 ],
+        'merchant_nc_revamp_eligibility'                    => ['get',      'merchant/activation/clarifications/eligibility',       'MerchantController@getMerchantNcRevampEligibility'                 ],
+        'merchant_activation_clarifications_save_admin'     => ['post',     'merchant/activation/{id}/clarifications',              'MerchantController@postMerchantClarificationDetails'               ],
+        'merchant_activation_clarifications_fetch_admin'    => ['get',      'merchant/activation/{id}/clarifications',              'MerchantController@getMerchantClarificationDetails'                ],
+        'merchant_activation_clarifications_save'           => ['post',     'merchant/activation/clarifications',                   'MerchantController@postMerchantResponseToClarifications'           ],
+        'merchant_activation_clarifications_fetch'          => ['get',      'merchant/activation/clarifications',                   'MerchantController@getMerchantClarificationDetails'                ],
+
         // internal
         'internal_create'    => ['post', 'internal', 'InternalController@create'],
         'internal_fail'      => ['post', 'internal/{id}/fail', 'InternalController@fail'],
@@ -5704,6 +5711,9 @@ class Route
     //
 
     public static $proxy = [
+        'merchant_activation_clarifications_fetch',
+        'merchant_nc_revamp_eligibility',
+        'merchant_activation_clarifications_save',
         'merchant_website_plugin_save',
         'payment_links_subscription_activate',
         'payment_links_subscription_deactivate',
@@ -6583,6 +6593,9 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_activation_clarifications_save_admin',
+        'merchant_activation_clarifications_fetch_admin',
+        'merchant_nc_revamp_eligibility_admin',
         'merchant_ip_config_opt_status_admin',
         'merchant_ip_config_fetch_admin',
         'merchant_ip_config_create_admin',
@@ -7798,6 +7811,12 @@ class Route
     ];
 
     public static $routePermission = [
+        'merchant_activation_clarifications_save_admin'      => Permission::EDIT_MERCHANT,
+        'merchant_activation_clarifications_fetch_admin'=> Permission::VIEW_MERCHANT,
+        'merchant_nc_revamp_eligibility_admin'          => Permission::VIEW_MERCHANT,
+        'merchant_activation_clarifications_fetch'            => Permission::VIEW_MERCHANT,
+        'merchant_activation_clarifications_save'       => Permission::EDIT_MERCHANT,
+        'merchant_nc_revamp_eligibility'                => Permission::VIEW_MERCHANT,
         'merchant_ip_config_opt_status_admin'             => Permission::ADMIN_MERCHANT_IP_WHITELIST,
         'merchant_ip_config_fetch_admin'                  => Permission::ADMIN_MERCHANT_IP_WHITELIST,
         'merchant_ip_config_create_admin'                 => Permission::ADMIN_MERCHANT_IP_WHITELIST,
@@ -8096,7 +8115,7 @@ class Route
         'merchant_supported_plugins'               => Permission::VIEW_MERCHANT,
         'merchant_info'                            => Permission::VIEW_MERCHANT,
         'merchant_audit_info'                      => Permission::VIEW_MERCHANT,
-        'merchant_plugin_fetch'                          => Permission::VIEW_MERCHANT,
+        'merchant_plugin_fetch'                    => Permission::VIEW_MERCHANT,
         'entity_audit_info'                        => Permission::VIEW_MERCHANT,
         'get_audit_entities'                       => Permission::VIEW_MERCHANT,
         'merchant_logs_search'                     => Permission::VIEW_MERCHANT,
@@ -10029,6 +10048,9 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_activation_clarifications_fetch',
+            'merchant_nc_revamp_eligibility',
+            'merchant_activation_clarifications_save',
             'merchant_ip_config_fetch',
             'merchant_ip_config_create',
             'merchant_website_plugin_save',
@@ -11341,6 +11363,12 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_activation_clarifications_fetch',
+            'merchant_nc_revamp_eligibility',
+            'merchant_activation_clarifications_save',
+            'merchant_activation_clarifications_save_admin',
+            'merchant_activation_clarifications_fetch_admin',
+            'merchant_nc_revamp_eligibility_admin',
             'merchant_website_plugin_save',
             'wfs_workflows_list',
             'wfs_workflows_get',

@@ -141,6 +141,73 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testVideoFileUpload' => [
+            'request'  => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'cancelled_cheque_video',
+            ],
+        ],
+    'response' => [
+            'content' => [
+                'documents' => [
+                    'cancelled_cheque_video' => [
+
+                    ]
+                ],
+            ]
+        ]
+    ],
+
+    'testOnlyVideoFileUploadSupported' => [
+        'request'   => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'cancelled_cheque_video',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The file must be a file of type: wmv ,m4v ,mkv ,mpg ,avi ,flv ,mov ,mp4 ,mpeg.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testVideoUploadForUnsupportedDocuments' => [
+        'request'   => [
+            'url'     => '/merchant/documents/upload',
+            'method'  => 'POST',
+            'content' => [
+                'document_type' => 'gia_certificate',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The file must be a file of type: pdf, jpeg, jpg, png, jfif.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
     'testFileUploadDocumentTypeInvalid' => [
         'request'   => [
             'url'     => '/merchant/documents/upload',

@@ -21,7 +21,7 @@ class CreateMerchantDocumentTable extends Migration
             $table->engine = 'InnoDB';
 
             $table->char(Document::ID, Document::ID_LENGTH)
-                  ->primary();
+                ->primary();
 
             $table->char(Document::FILE_STORE_ID, Document::ID_LENGTH)->nullable();
 
@@ -36,10 +36,10 @@ class CreateMerchantDocumentTable extends Migration
             $table->string(Document::ENTITY_TYPE, 255);
 
             $table->enum(Document::SOURCE, [Source::API, Source::UFH])
-                  ->default(Source::API);
+                ->default(Source::API);
 
             $table->string(Document::OCR_VERIFY, 30)
-                  ->nullable();
+                ->nullable();
 
             $table->char(Document::VALIDATION_ID, Document::ID_LENGTH)
                 ->nullable();

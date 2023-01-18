@@ -652,6 +652,7 @@ class Entity
     const MERCHANT_CONSENT_DETAILS      = 'merchant_consent_details';
     const MERCHANT_CONSENTS             = 'merchant_consents';
     const MERCHANT_VERIFICATION_DETAIL  = 'merchant_verification_detail';
+    const CLARIFICATION_DETAIL          = 'clarification_detail';
     const MERCHANT_BUSINESS_DETAIL      = 'merchant_business_detail';
 
     const M2M_REFERRAL                  = 'm2m_referral';
@@ -820,6 +821,7 @@ class Entity
         self::STAKEHOLDER,
         self::MERCHANT_DETAIL,
         self::MERCHANT_VERIFICATION_DETAIL,
+        self::CLARIFICATION_DETAIL,
         self::MERCHANT_PROMOTION,
         self::MERCHANT_DOCUMENT,
         self::USER,
@@ -1390,6 +1392,7 @@ class Entity
         self::MERCHANT_CONSENTS               => \RZP\Models\Merchant\Consent::class,
         self::MERCHANT_CONSENT_DETAILS        => \RZP\Models\Merchant\Consent\Details::class,
         self::MERCHANT_VERIFICATION_DETAIL    => \RZP\Models\Merchant\VerificationDetail::class,
+        self::CLARIFICATION_DETAIL            => \RZP\Models\ClarificationDetail::class,
         self::AUDIT_INFO                      => \RZP\Models\Base\Audit::class,
         self::MERCHANT_BUSINESS_DETAIL        => \RZP\Models\Merchant\BusinessDetail::class,
         self::M2M_REFERRAL                    => \RZP\Models\Merchant\M2MReferral::class,

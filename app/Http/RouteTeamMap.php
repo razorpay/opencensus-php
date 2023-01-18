@@ -248,6 +248,12 @@ class RouteTeamMap
         'merchant_workflow_clarification'          => [self::TEAM_PAYMENTS_DASHBOARD],
         'workflow_needs_merchant_clarification'    => [self::TEAM_PAYMENTS_DASHBOARD],
 
+        'merchant_activation_clarifications_save_admin'        => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_activation_clarifications_fetch_admin'  => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_nc_revamp_eligibility'                  => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_activation_clarifications_save'         => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_nc_revamp_eligibility_admin'            => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_activation_clarifications_fetch'              => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_store_add'                              => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_store_fetch'                            => [self::TEAM_PAYMENTS_GROWTH],
         'm2m_referral_link_get'                           => [self::TEAM_PAYMENTS_GROWTH],
