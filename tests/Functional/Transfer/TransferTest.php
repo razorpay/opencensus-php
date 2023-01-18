@@ -17,6 +17,7 @@ use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Admin\Permission\Name as PermissionName;
 
 class TransferTest extends TestCase
 {
@@ -1944,6 +1945,13 @@ class TransferTest extends TestCase
         $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
         $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    public function testDebugRoute()
+    {
+        $this->ba->adminAuthWithPermission(PermissionName::DEBUG_TRANSFERS_ROUTES);
 
         $this->startTest();
     }

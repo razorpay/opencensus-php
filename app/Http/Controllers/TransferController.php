@@ -171,9 +171,9 @@ class TransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->syncSettlementStatus($input);
+        $response = $this->service()->debugRoute($input);
 
-        return ApiResponse::json($response);
+        return ApiResponse::json($response ?? []);
 
 //        return ApiResponse::json(
 //            [

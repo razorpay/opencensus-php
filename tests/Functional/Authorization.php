@@ -584,6 +584,19 @@ class Authorization
         $this->addAdminAuthHeaders($orgId, $token, $hostName, $crossOrgId);
     }
 
+    public function adminAuthWithPermission(string $permissionName, $mode = 'test', $token = null, $orgId = null, $hostName = null, string $crossOrgId = null)
+    {
+        $this->adminAuth($mode, $token, $orgId, $hostName, $crossOrgId);
+
+        $admin = $this->getAdmin();
+
+        $roleOfAdmin = $admin->roles()->get()[0];
+
+        $permission = Fixtures\Fixtures::getInstance()->create('permission', ['name' => $permissionName]);
+
+        $roleOfAdmin->permissions()->attach($permission->getId());
+    }
+
     public function adminProxyAuth($account = '10000000000000',
                                    $user = 'rzp_test_10000000000000',
                                    $token = null,

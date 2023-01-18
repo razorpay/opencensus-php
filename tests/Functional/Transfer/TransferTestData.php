@@ -835,4 +835,21 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_SAME_IDEM_KEY_DIFFERENT_REQUEST,
         ],
     ],
+
+    'testDebugRoute' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/transfer_debug',
+            'content' => [
+                'option'    => 'payment_transfer',
+                'data'      => [
+                    'abcd1234567890',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ]
+    ]
 ];

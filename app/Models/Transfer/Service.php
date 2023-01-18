@@ -10,12 +10,15 @@ use RZP\Models\Reversal;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\TransferProcess;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Jobs\Transfers\TransferSettlementStatus;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 
@@ -923,10 +926,131 @@ class Service extends Base\Service
         return $this->core->getTransferInput($transfer);
     }
 
-    public function syncSettlementStatus(array $input)
+    /**
+     * Takes an option as input to determine which action to perform. Actions are to
+     * process payment transfers or order transfers in sync, update settlement_status,
+     * update recipient_settlement_id.
+     * Takes a data array as input that contains relevant IDs.
+     *
+     * @param array $input
+     * @return void
+     * @throws BadRequestValidationFailureException
+     * @throws LogicException
+     */
+    public function debugRoute(array $input)
     {
-        $settlementIds = $input['settlement_ids'];
+        (new Validator())->validateInput('debug_route', $input);
 
+        $option = $input['option'];
+
+        switch ($option)
+        {
+            case 'payment_transfer':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION_1,
+                    [
+                        'input' => $input,
+                    ]
+                );
+
+                $paymentIds = $input['data'];
+
+                if (count($paymentIds) > 150)
+                {
+                    throw new BadRequestValidationFailureException('Maximum 150 payment IDs can be passed.');
+                }
+
+                foreach ($paymentIds as $paymentId)
+                {
+                    (new TransferProcess($this->mode, $paymentId, Constant::PAYMENT))->handle();
+
+                    $this->trace->info(
+                        TraceCode::PAYMENT_TRANSFER_PROCESSED_IN_SYNC,
+                        [
+                            'payment_id' => $paymentId,
+                        ]
+                    );
+                }
+
+                break;
+            }
+
+            case 'order_transfer':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION_2,
+                    [
+                        'input' => $input,
+                    ]
+                );
+
+                $paymentIds = $input['data'];
+
+                if (count($paymentIds) > 150)
+                {
+                    throw new BadRequestValidationFailureException('Maximum 150 payment IDs can be passed.');
+                }
+
+                foreach ($paymentIds as $paymentId)
+                {
+                    (new TransferProcess($this->mode, $paymentId, Constant::ORDER))->handle();
+
+                    $this->trace->info(
+                        TraceCode::ORDER_TRANSFER_PROCESSED_IN_SYNC,
+                        [
+                            'payment_id' => $paymentId,
+                        ]
+                    );
+                }
+
+                break;
+            }
+
+            case 'settlement_status_update':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION_3,
+                    [
+                        'input' => $input,
+                    ]
+                );
+
+                $settlementIds = $input['data'];
+
+                if (count($settlementIds) > 5000)
+                {
+                    throw new BadRequestValidationFailureException('Maximum 5000 settlement IDs can be passed.');
+                }
+
+                $this->syncSettlementStatus($settlementIds);
+
+                break;
+            }
+
+            case 'settlement_id_update':
+            {
+                $this->trace->info(
+                    TraceCode::ROUTE_DEBUG_ENDPOINT_OPTION_4,
+                    [
+                        'input' => $input,
+                    ]
+                );
+
+                // Insert code here for recipient_settlement_id update.
+
+                break;
+            }
+
+            default:
+            {
+                throw new LogicException('Option passed is invalid.');
+            }
+        }
+    }
+
+    protected function syncSettlementStatus(array $settlementIds)
+    {
         foreach ($settlementIds as $settlementId)
         {
             $this->trace->info(

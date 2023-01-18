@@ -49,6 +49,11 @@ class Validator extends Base\Validator
         'hold_parameters'
     ];
 
+    protected static $debugRouteRules = [
+        'option'        => 'required|string',
+        'data'          => 'required|array',
+    ];
+
     protected function validateBalance(string $key, string $value, array $data) {
 
         // Only on type of recipient is allowed, confirm that others aren't there
