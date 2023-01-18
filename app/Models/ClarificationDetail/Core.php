@@ -9,7 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Error\PublicErrorDescription;
-
+use RZP\Models\ClarificationDetail\Service as ClarDetailService;
 use RZP\Exception;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -220,5 +220,51 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::CLARIFICATION_DETAILS_COMMUNICATION_PARAMS, $params);
 
         return $params;
+    }
+
+    public function getSegmentEventParams($merchant)
+    {
+        try
+        {
+            $properties = [];
+
+            $isEligibleForNCRevamp = (new ClarDetailService())->isEligibleForRevampNC($merchant->getId());
+
+            if($isEligibleForNCRevamp === true)
+            {
+                $properties['merchantId'] = $merchant->getId();
+
+                $properties['nc_count'] = $this->getNcCount($merchant);
+
+                $clarificationDetails = $this->repo->clarification_detail->getByMerchantIdAndStatusFromReplica($merchant->getId(), Constants::NEEDS_CLARIFICATION);
+
+                foreach ($clarificationDetails as $clarificationDetail)
+                {
+                    $params = [];
+
+                    $groupName = $clarificationDetail->getGroupName();
+
+                    $params['admin_email'] = $clarificationDetail->getAdminEmail();
+
+                    $params['admin_comment'] = $clarificationDetail->getAdminComment();
+
+                    $properties[$groupName] = $params;
+                }
+            }
+
+            $this->trace->info(TraceCode::SEGMENT_EVENT_PUSH, [
+                'merchant_id' => $merchant->getId(),
+                'nc_fields'   => $properties
+            ]);
+
+            return $properties;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::SEGMENT_EVENT_PUSH_FAILURE,[
+                'merchant_id' => $merchant->getId(),
+                'Error Message' => $e->getMessage()
+            ]);
+        }
     }
 }

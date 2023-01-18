@@ -143,6 +143,7 @@ use RZP\Models\Merchant\Document\Type as DocumentType;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\BankAccount as BankAccountRequestDispatcher;
 use RZP\Models\ClarificationDetail\Validator as ClarificationDetailValidator;
 use RZP\Models\ClarificationDetail\Service as ClarificationDetailService;
+use RZP\Models\ClarificationDetail\Core as ClarificationDetailCore;
 use RZP\Models\Merchant\Website;
 
 class Core extends Base\Core
@@ -3642,7 +3643,15 @@ class Core extends Base\Core
             $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, ['id' => $properties['id'] ?? null]);
         }
 
+        $needsClarificationsProperties = (new ClarificationDetailCore())->getSegmentEventParams($merchant);
+
+        if (empty($needsClarificationsProperties) === false)
+        {
+            $properties['nc_fields'] = $needsClarificationsProperties;
+        }
+
         $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS_INTERNAL, [
+            'merchantId'        => $merchant->getId(),
             'activation_status' => $activationStatus,
             'properties'        => $properties
         ]);

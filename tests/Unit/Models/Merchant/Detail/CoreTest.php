@@ -1294,6 +1294,62 @@ class CoreTest extends TestCase
 
         $this->assertArrayNotHasKey('product_led', $response);
     }
+
+    public function testSegmentEventPropertiesForMerchantNCRevampEligible()
+    {
+        $core = new DetailCore();
+
+        $this->fixtures->create('merchant',[
+            'id' => 'HNhLp6FDNX0Ov5'
+        ]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id' => 'HNhLp6FDNX0Ov5'
+        ]);
+
+        $this->fixtures->create('clarification_detail', [
+            "merchant_id" => 'HNhLp6FDNX0Ov5',
+            "group_name"  => "bank_details",
+            "status"      => 'needs_clarification',
+            "metadata"    => [
+                'admin_email' => '123@gmail.com',
+            ],
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+
+        $previousActivationStatus = $merchantDetails->getActivationStatus();
+
+        $splitzInput = [
+            "experiment_id" => "KDU9Zk7cp7SGQy",
+            "id"            => $merchant->getId(),
+        ];
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
+        $this->mockRazorxTreatment();
+
+        $response = $core->getSegmentEventPropertiesforActivationStatusChange($merchant, $merchantDetails, $previousActivationStatus);
+
+        $this->assertArrayHasKey('nc_fields', $response);
+
+        $ncFields = $response['nc_fields'];
+
+        $this->assertArrayHasKey('nc_count', $ncFields);
+
+        $this->assertArrayHasKey('bank_details', $ncFields);
+
+        $this->assertArrayHasKey('admin_email', $ncFields['bank_details']);
+
+    }
     public function testEligibleForMtuPopupShowSignupCampaign()
     {
         $this->enableRazorXTreatmentForRazorX();

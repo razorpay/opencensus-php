@@ -65,4 +65,12 @@ class Repository extends Base\Repository
                     ->where(Entity::GROUP_NAME, $groupName)
                     ->get();
     }
+
+    public function getByMerchantIdAndStatusFromReplica($merchantId, string $status)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::STATUS, $status)
+                    ->get();
+    }
 }
