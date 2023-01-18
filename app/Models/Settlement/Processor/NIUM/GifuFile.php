@@ -87,7 +87,6 @@ class GifuFile extends Base\BaseGifuFile
                         $row->EMID = $merchantIntegrationInfo->getIntegrationKey();
                         $row->Amount = ((float)$transaction->getAmount()) / 100;
                         $row->BankPaidAmount = ((float)$transaction->getAmount()) / 100;
-                        $row->CreditType = $transaction->getType() === Type::PAYMENT ? 1 : 0;
                         $row->Currency = $transaction->getCurrency(); // Should always be INR, but not hard-coding for now
                         $row->invoiceNumber = $transaction->getEntityId();
                         $row->PD = Carbon::now(Timezone::IST)->isoFormat('MM/DD/YYYY');
@@ -98,14 +97,40 @@ class GifuFile extends Base\BaseGifuFile
                         $row->DebitFee = ((float)($fee-$tax)) / 100;
                         $row->PayforText = $merchantIntegrationInfo->getNotes()['payForText'];
 
-                        if ($row->CreditType === 1) // Payment Case
+                        $creditTypeValue = 0;
+                        $netAmountValue = 0;
+                        $chargebackValue = 0;
+
+                        switch ($transaction->getType())
                         {
-                            $row->NetAmount = ((float)$transaction->getCredit()) / 100;
-                        } else // Refund/Chargeback Case
-                        {
-                            $row->NetAmount = ((float)$transaction->getDebit()) / 100;
-                            $row->IsChargeback = $transaction->getType() === Type::ADJUSTMENT ? 1 : 0;
+                            case Type::PAYMENT:
+                                $netAmountValue = $this->getAmountInRupee($transaction->getCredit());
+                                $creditTypeValue = 1;
+                                break;
+
+                            case Type::REFUND:
+                                $netAmountValue = $this->getAmountInRupee($transaction->getDebit());
+                                $creditTypeValue = 0;
+                                break;
+
+                            case Type::ADJUSTMENT:
+                                [$netAmountValue, $creditTypeValue] = $this->getAdjustmentDetails($transaction);
+                                $chargebackValue = 1;
+                                break;
+
+                            default:
+                                // should not have come here
+                                $this->trace->error(TraceCode::NIUM_GIFU_FILE_INCORRECT_TRANSACTION,
+                                [
+                                    'transaction_id'    => $transaction->getId(),
+                                    'transaction_type'  => $transaction->getType(),
+                                ]);
+                                break;
                         }
+
+                        $row->CreditType = $creditTypeValue;
+                        $row->NetAmount = $netAmountValue;
+                        $row->IsChargeback = $chargebackValue;
 
                         array_push($data, $row->getAssocArray());
                     }
@@ -143,5 +168,29 @@ class GifuFile extends Base\BaseGifuFile
         $bucketType = Bucket::getBucketConfigName($this->type, $this->env);
 
         return $config[$bucketType];
+    }
+
+    protected function getAmountInRupee($amount)
+    {
+        return ((float)$amount) / 100;
+    }
+
+    protected function getAdjustmentDetails($transaction)
+    {
+        $amount = 0;
+        $creditType = 0;
+
+        if ($transaction->isCredit() === true)
+        {
+            $amount = $this->getAmountInRupee($transaction->getCredit());
+            $creditType = 1;
+        }
+        else if ($transaction->isDebit() === true)
+        {
+            $amount = $this->getAmountInRupee($transaction->getDebit());
+            $creditType = 0;
+        }
+
+        return [$amount, $creditType];
     }
 }

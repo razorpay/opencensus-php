@@ -12,6 +12,7 @@ use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 
 
 
@@ -21,6 +22,7 @@ class NiumTest extends OAuthTestCase
     use AttemptTrait;
     use DbEntityFetchTrait;
     use PartnerTrait;
+    use WorkflowTrait;
 
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
     const DEFAULT_MERCHANT_ID       = 'DefaultPartner';
@@ -84,6 +86,22 @@ class NiumTest extends OAuthTestCase
         $dispute = $this->fixtures->create('dispute', [
             'merchant_id' => self::DEFAULT_SUBMERCHANT_ID, 'deduct_at_onset' => true,
             'amount' => 100, 'test' => 'nium']);
+
+        $dispute2 = $this->fixtures->create('dispute', [
+            'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
+            'deduct_at_onset'       => 1,
+            'amount'                => 100, 
+            'test'                  => 'nium',
+            'amount_deducted'       => 100,
+            'deduction_source_type' => 'adjustment',
+            'deduction_source_id'   => 'randomAdjId123',
+            'status'                => 'under_review',
+            'internal_status'       => 'represented',
+            'amount_reversed'       => 0,
+            'deduction_reversal_at' => time() + 60 * 86400,
+        ]);
+
+        $this->performAdminActionOnDispute(['status' => 'won'], $dispute2->getId());
 
         $this->initiateSettlements(Channel::AXIS);
         $settlement = $this->getLastEntity('settlement', true);
@@ -346,5 +364,19 @@ class NiumTest extends OAuthTestCase
             $mime,
             null,
             true);
+    }
+
+    protected function performAdminActionOnDispute(array $input, $disputeId)
+    {
+        $this->addPermissionToBaAdmin('edit_dispute');
+        $admin = $this->ba->getAdmin();
+        $this->fixtures->admin->edit($admin["id"], ['allow_all_merchants' => true]);
+        $this->ba->adminProxyAuth(self::DEFAULT_SUBMERCHANT_ID, 'rzp_test_' . self::DEFAULT_SUBMERCHANT_ID);
+
+        return $this->makeRequestAndGetContent([
+            'url'     => '/disputes/disp_' . $disputeId,
+            'method'  => 'POST',
+            'content' => $input,
+        ]);
     }
 }
