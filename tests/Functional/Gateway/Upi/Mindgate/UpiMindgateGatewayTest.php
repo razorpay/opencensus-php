@@ -2208,12 +2208,12 @@ class UpiMindgateGatewayTest extends TestCase
     public function udfTestDataProvider()
     {
         $testData = [
-            'application_id' => '1000230202020',
+            'Application Id' => '1000230202020',
         ];
 
         $testCases = [
             ['No Notes Provided' => [], ['NA', 'NA', 'NA', 'NA', 'NA']],
-            ['application id provided' => $testData,
+            ['Application Id provided' => $testData,
                 array_merge(array_values($testData), ['NA', 'NA', 'NA','NA'])],
         ];
 
@@ -2224,9 +2224,9 @@ class UpiMindgateGatewayTest extends TestCase
 
         unset($testData['extra_field']);
 
-        $testData['application_id'] = 'https:\/\/itcestore.myshopify.com\/services\/ping\/########)!))@)@\/razorpay_cards_upi_netbanking_wallets_\/17376444470';
+        $testData['Application Id'] = 'https:\/\/itcestore.myshopify.com\/services\/ping\/########)!))@)@\/razorpay_cards_upi_netbanking_wallets_\/17376444470';
 
-        $sanitizeValue[] = substr(preg_replace('/[^A-Za-z0-9@_\-=.\/]/', '', $testData['application_id']),0,60);
+        $sanitizeValue[] = substr(preg_replace('/[^A-Za-z0-9@_\-=.\/]/', '', $testData['Application Id']),0,60);
 
         $testCases[3] = ['Length of value more than 60 char and has special characters that are not allowed' => $testData, array_merge($sanitizeValue,['NA', 'NA', 'NA','NA'])];
 

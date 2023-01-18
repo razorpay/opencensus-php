@@ -965,9 +965,9 @@ class Gateway extends Base\Gateway
         {
             $values = $payment['notes'];
 
-            if (empty($values) === false and empty($values['application_id']) === false)
+            if (empty($values) === false and empty($values['Application Id']) === false)
             {
-                $data[7] = $this->sanitizeInput($values['application_id']);
+                $data[7] = $this->sanitizeInput($values['Application Id']);
             }
         }
 
