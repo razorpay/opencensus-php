@@ -25,6 +25,8 @@ class Service extends Base\Service
 {
     protected $trace;
 
+    protected $app;
+
     const UPLOAD_KEYS = [
         'business_proof'           => 'business_proof_url',
         'business_operation_proof' => 'business_operation_proof_url',
@@ -40,6 +42,8 @@ class Service extends Base\Service
         $this->currentUser = Auth::user();
 
         $app = \App::getFacadeRoot();
+
+        $this->app = $app;
 
         $this->trace = $app['trace'];
     }
@@ -470,6 +474,43 @@ class Service extends Base\Service
         ]);
 
         return $data['items'] ?? [];
+    }
+
+    public function fetchPartnerActivationStatus()
+    {
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_PARTNER_ACTIVATION_ROUTE_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+        list($error, $data) = $request->send('partner/activation', 'GET');
+
+        if (empty($error) === false)
+        {
+            $this->trace->error(
+                TraceCode::GET_PARTNER_ACTIVATION_ROUTE_ERROR,
+                [
+                    "exception" => $error
+                ]
+            );
+            $this->app['metrics']->count(Constants::FETCH_PARTNER_ACTIVATION_FAILED, 1, [ "exception" => $error[0] ]);
+        }
+
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::GET_PARTNER_ACTIVATION_ROUTE_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration,
+            'controller'          => app('request')->route()->getAction()['controller']
+        ]);
+
+        return ($data && $data['partner_activation']) ? $data ['partner_activation']['activation_status']: '';
     }
 
     public function getMerchantUsers($merchantId)

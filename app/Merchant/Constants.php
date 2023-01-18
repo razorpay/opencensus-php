@@ -14,6 +14,7 @@ class Constants
      * partner config column which contains config type
      */
     const COMMISSION_MODEL = 'commission_model';
+    const FETCH_PARTNER_ACTIVATION_FAILED   = 'fetch_partner_activation_failed';
 
     //
     // This is temporary code to get merchant waitlist

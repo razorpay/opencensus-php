@@ -1382,6 +1382,11 @@ class Service extends Base\Service
                                     }
                                 }
                             }
+
+                            if(in_array($data['merchants'][$merchant['id']]['partner_type'], Constants::PARTNER_ACTIVATION_APPLICABLE_TYPES))
+                            {
+                                $data['merchants'][$merchant['id']]['partner']['activation_status'] = $merchantService->fetchPartnerActivationStatus();
+                            }
                         }
                     }
                 }

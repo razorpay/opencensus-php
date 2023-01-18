@@ -212,6 +212,7 @@ class Constants
         'dashboard.dev.razorpay.in',
     ];
 
+    const PARTNER_ACTIVATION_APPLICABLE_TYPES = ['reseller'];
     // Fields to be added if API calls are to be skipped for them.
     // Since we want to adopt the changes in a phase-wise manner, commenting out the fields.
     // Will uncomment when they are to be excluded from the user data
