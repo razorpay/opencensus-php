@@ -3199,7 +3199,7 @@ class Validator extends Base\Validator
     public function editTerminalValidator($terminal, $input)
     {
 
-        if ($this->shouldSkipGatewayValidations($terminal) === true)
+        if ($this->shouldSkipGatewayValidations($terminal, $input) === true)
         {
             return;
         }
@@ -3224,7 +3224,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function shouldSkipGatewayValidations($terminal)
+    public function shouldSkipGatewayValidations($terminal, $input)
     {
         $app = App::getFacadeRoot();
 
@@ -3235,7 +3235,8 @@ class Validator extends Base\Validator
             return false;
         }
 
-        if ($app['request.ctx']->getRoute() === 'terminal_edit_god_mode')
+        if(isset($input['terminal_edit_god_mode']) === true &&
+            ($input['terminal_edit_god_mode'] === true || $input['terminal_edit_god_mode']) == '1')
         {
             return true;
         }

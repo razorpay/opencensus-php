@@ -4829,7 +4829,8 @@ return [
     'testEditTerminalWithGodModeEdit' => [
         "request" => [
             'content' => [
-                'gateway_merchant_id' => 'editedMid'
+                'gateway_merchant_id' => 'editedMid',
+                'terminal_edit_god_mode' => true
             ],
             'method' => 'PUT'
         ],
