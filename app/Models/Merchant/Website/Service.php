@@ -819,8 +819,11 @@ class Service extends Base\Service
 
             if(empty($websiteDetail) === true and ($this->auth->isAdminAuth() === true))
             {
-                throw new BadRequestValidationFailureException(
-                    'Please fill in the website details');
+                if ((new DetailCore())->isProductionEnvironment() === true)
+                {
+                    throw new BadRequestValidationFailureException(
+                        'Please fill in the website details');
+                }
             }
 
             foreach (Constants::MANDATORY_ADMIN_SECTIONS as $sectionName)
