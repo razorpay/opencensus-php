@@ -2203,7 +2203,55 @@ return [
             ],
         ],
     ],
-
+    'testAddPricingPlanRuleForAffordabilityWidget' => [
+        'request' => [
+            'content' => [
+                'product'             => 'primary',
+                'feature'             => 'affordability_widget',
+                'payment_method'      => null,
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'fixed_rate'          => 100000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name'    => 'TestPlan1',
+                'product'      => 'primary',
+                'feature'      => 'affordability_widget',
+                'fixed_rate'   => 100000
+            ],
+        ],
+    ],
+    'testAddPricingRuleForWidgetMaxFixedRate' => [
+        'request' => [
+            'content' => [
+                'product'             => 'primary',
+                'feature'             => 'affordability_widget',
+                'payment_method'      => null,
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'fixed_rate'          => 3000000
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The fixed rate may not be greater than 2500000.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
     'testAddPricingPlanEmandateDebitAadhaarRule' => [
         'request' => [
             'content' => [

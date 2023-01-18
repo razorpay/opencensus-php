@@ -1446,6 +1446,7 @@ class Constants
      * Feature to control affordability widget on merchant dashboard
      */
     const AFFORDABILITY_WIDGET = 'affordability_widget';
+
     const EDIT_SINGLE_VA_EXPIRY = 'edit_single_va_expiry';
 
     const ACCEPT_LOWER_AMOUNT = 'accept_lower_amount';
@@ -2408,11 +2409,12 @@ class Constants
         self::DISABLE_TRUECALLER_LOGIN_MWEB => true,
         self::DISABLE_TRUECALLER_LOGIN_SDK => true,
         self::DISABLE_TRUECALLER_LOGIN_ADD_NEW_CARD_SCREEN => true,
-        self::DISABLE_TRUECALLER_LOGIN_SAVED_CARDS_SCREEN => true,
+        self::DISABLE_TRUECALLER_LOGIN_SAVED_CARDS_SCREEN  => true,
         self::ONLY_DS                         => true,
         self::ORG_PROGRAM_DS_CHECK            => true,
         self::OPTIMIZER_ONLY_MERCHANT         => true,
         self::REGULAR_TEST_MERCHANT           => true,
+        DcsConstants::AffordabilityWidgetSet           => true,
     ];
 
     // Entity type constants
@@ -3332,6 +3334,11 @@ class Constants
             'display_name'  => 'QR Payment custom notes',
             'documentation' => 'qr-codes',
         ],
+        DcsConstants::AffordabilityWidgetSet  => [
+            'feature'       => DcsConstants::AffordabilityWidgetSet,
+            'display_name'  => 'Affordability Widget',
+            'documentation' => 'Feature to enable Affordability Widget',
+        ],
     ];
 
     /**
@@ -3381,6 +3388,7 @@ class Constants
         self::CARD_MANDATE_SKIP_PAGE,
         DcsConstants::ShowEmailOnCheckout,
         DcsConstants::EmailOptionalOnCheckout,
+        DcsConstants::AffordabilityWidgetSet,
     ];
 
     /*

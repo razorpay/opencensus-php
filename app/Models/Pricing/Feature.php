@@ -18,6 +18,7 @@ class Feature
     const SETTLEMENT_ONDEMAND     = 'settlement_ondemand';
     const OPTIMIZER               = 'optimizer';
     const MAGIC_CHECKOUT          = 'magic_checkout';
+    const AFFORDABILITY_WIDGET    = 'affordability_widget';
 
     const FEATURE_LIST = [
         self::MAGIC_CHECKOUT,

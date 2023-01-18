@@ -173,6 +173,7 @@ class Service extends Base
 
            if ($features[$featureName] === true){
                $entity = (new Entity)->build($data);
+               $entity->setEntityType($key->getEntity());
                $entity->setEntityId($entityId);
                $res = $entity;
                break;
@@ -239,6 +240,7 @@ class Service extends Base
                    ];
 
                    $entity = (new Entity)->build($data);
+                   $entity->setEntityType($key->getEntity());
                    $entity->setEntityId($entityId);
                    $res[] = $entity;
                }
@@ -299,6 +301,7 @@ class Service extends Base
 
             if ($features[$featureName] === true){
                 $entity = (new Entity)->build($data);
+                $entity->setEntityType($key->getEntity());
                 $entity->setEntityId($key->getEntityId());
                 $res[] = $entity;
             }
@@ -375,6 +378,7 @@ class Service extends Base
                         Entity::ENTITY_ID => $kv->getKey()->getEntityId(),
                     ];
                     $entity = (new Entity)->build($buildData);
+                    $entity->setEntityType($kv->getKey()->getEntity());
                     $entity->setEntityId($kv->getKey()->getEntityId());
                     $res[] = $entity;
                 }

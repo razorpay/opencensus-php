@@ -40,7 +40,7 @@ class Validator extends Base\Validator
         Entity::PROCURER                => 'sometimes|nullable|in:razorpay,merchant',
         Entity::PLAN_NAME               => 'sometimes',
         Entity::APP_NAME                => 'sometimes|nullable|string',
-        Entity::PAYMENT_METHOD          => 'required_unless:feature,refund,optimizer,payment|nullable|string',
+        Entity::PAYMENT_METHOD          => 'required_unless:feature,refund,optimizer,payment,affordability_widget|nullable|string',
         Entity::PAYMENT_METHOD_TYPE     => 'sometimes|nullable',
         Entity::PAYMENT_METHOD_SUBTYPE  => 'sometimes_if:payment_method,card,emandate,upi,fund_transfer|nullable',
         Entity::PAYMENT_NETWORK         => 'sometimes|nullable|string',
@@ -53,7 +53,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT_RANGE_MIN        => 'required_only_if:amount_range_active,1|integer|nullable|max:500000000000',
         Entity::AMOUNT_RANGE_MAX        => 'required_only_if:amount_range_active,1|integer|nullable|min:100|max:500000000000', // max 500 cr
         Entity::PERCENT_RATE            => 'sometimes|integer|max:20000',
-        Entity::FIXED_RATE              => 'sometimes|integer|max:200000',
+        Entity::FIXED_RATE              => 'sometimes|integer|max:2500000',
         Entity::MIN_FEE                 => 'sometimes|integer|max:100000',
         Entity::MAX_FEE                 => 'sometimes|nullable|integer|min:1|max:100000',
         Entity::TYPE                    => 'sometimes|string|custom',
@@ -67,7 +67,7 @@ class Validator extends Base\Validator
 
     protected static $editPlanRuleRules = [
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
-        Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
+        Entity::FIXED_RATE          => 'sometimes|integer|max:2500000',
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
         Entity::MAX_FEE             => 'sometimes|nullable|integer|min:1|max:100000',
         Entity::FEE_BEARER          => 'sometimes|in:platform,customer',

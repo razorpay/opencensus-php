@@ -39,7 +39,8 @@ class Fee extends Base\Core
     const DEFAULT_VIRTUAL_UPI_PLAN_ID        = 'E9t4ljLBnt2cad';
     const DEFAULT_INSTANT_REFUNDS_PLAN_ID    = 'EIccfYpbLnrp6E';
     const DEFAULT_INSTANT_REFUNDS_PLAN_V2_ID = 'F3HF3mQrxjvSnm';
-    
+    const DEFAULT_AFFORDABILITY_WIDGET_PLAN_ID = 'L4teuQy3rngjPm';
+
     public function __construct()
     {
         parent::__construct();

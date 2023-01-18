@@ -420,6 +420,7 @@ class UserRolesScope
             'merchant_edit_config_la'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'merchant_features_fetch'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER, Role::LINKED_ACCOUNT_ADMIN],
             'merchant_features_update'                      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::FINANCE, Role::SELLERAPP,],
+            'affordability_widget_details'                  => [Role::OWNER, Role::ADMIN],
             'merchant_fetch_methods'                        => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::OPERATIONS, Role::MANAGER, Role::SELLERAPP,],
             'merchant_fetch_payment_failure_analysis'       => [Role::ADMIN, Role::OWNER, Role::OPERATIONS, Role::MANAGER, Role::FINANCE, Role::SUPPORT,],
             'merchant_fetch_schedule_tasks'                 => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::FINANCE, Role::OPERATIONS, Role::SUPPORT, Role::SELLERAPP,],

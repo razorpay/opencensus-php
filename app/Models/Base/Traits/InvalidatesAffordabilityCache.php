@@ -8,6 +8,7 @@ use RZP\Models\Key\Repository as KeyRepository;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Services\AffordabilityService;
+use RZP\Services\Dcs\Features\Constants as DcsConstants;
 
 trait InvalidatesAffordabilityCache
 {
@@ -39,7 +40,8 @@ trait InvalidatesAffordabilityCache
             return $this->invalidateAffordabilityCacheForAllMerchants();
         }
 
-        if (!$merchant->isFeatureEnabled(Features::AFFORDABILITY_WIDGET)) {
+        if (!$merchant->isAtLeastOneFeatureEnabled([Features::AFFORDABILITY_WIDGET,
+                                                    DcsConstants::AffordabilityWidgetSet,])) {
             // Ignore if feature not enabled
             return true;
         }
@@ -70,7 +72,8 @@ trait InvalidatesAffordabilityCache
      */
     protected function getAllAffordabilityWidgetFeatureEnabledMerchantIds(): array
     {
-        return $this->featureRepository->findMerchantIdsHavingFeatures([Features::AFFORDABILITY_WIDGET]);
+        return $this->featureRepository->findMerchantIdsHavingFeatures([Features::AFFORDABILITY_WIDGET,
+                                                                        DcsConstants::AffordabilityWidgetSet,]);
     }
 
     /**

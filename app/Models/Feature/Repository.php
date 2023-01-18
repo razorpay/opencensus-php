@@ -380,6 +380,15 @@ class Repository extends Base\Repository
 
     public function deleteAndSyncIfApplicableOrFail(Entity $feature, bool $shouldSync)
     {
+        $entityType = $feature->getEntityType();
+        $entityId = $feature->getEntityId();
+        $featureName = $feature->getName();
+        $feature = $this->newQuery()
+            ->where(Entity::ENTITY_TYPE, $entityType)
+            ->where(Entity::ENTITY_ID, $entityId)
+            ->where(Entity::NAME, $featureName)
+            ->firstOrFailPublic();
+
         if ($shouldSync === true)
         {
             $this->deleteAndSyncOrFail($feature);

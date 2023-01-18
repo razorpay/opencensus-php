@@ -12,6 +12,7 @@ use RZP\Models\Offer\Entity as OfferEntity;
 use RZP\Models\Offer\EntityOffer\Entity as EntityOfferEntity;
 use RZP\Models\Order\ProductType;
 use RZP\Models\Payment\Entity as PaymentEntity;
+use RZP\Services\Dcs\Features\Constants as DcsConstants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -113,6 +114,14 @@ class AffordabilityTest extends TestCase
 
     public function testFeatureEnabledOnAffordabilityWidget()
     {
+        $response = $this->startTest();
+        $this->assertTrue($response['enabled']);
+    }
+
+    public function testFeatureEnabledOnRzpAffordabilityWidget()
+    {
+        $this->fixtures->merchant->removeFeatures([Constants::AFFORDABILITY_WIDGET]);
+        $this->fixtures->merchant->addFeatures([DcsConstants::AffordabilityWidgetSet], Account::TEST_ACCOUNT);
         $response = $this->startTest();
         $this->assertTrue($response['enabled']);
     }

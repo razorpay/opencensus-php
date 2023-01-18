@@ -2723,7 +2723,7 @@ class PricingTest extends TestCase
                 }
                 else
                 {
-                    $message =  "The payment method field is required unless feature is in refund, optimizer, payment.";
+                    $message =  "The payment method field is required unless feature is in refund, optimizer, payment, affordability_widget.";
 
                 }
                 $testData['response']['content']['error']['description'] = $message;
@@ -3208,5 +3208,27 @@ class PricingTest extends TestCase
     {
         // assertions and test is run as per the helper file PricingData.php
         $this->startTest();
+    }
+
+    public function testAddPricingPlanRuleForAffordabilityWidget()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
+    }
+
+    public function testAddPricingRuleForWidgetMaxFixedRate()
+    {
+        $this->ba->adminAuth();
+
+        $content = $this->createPricingPlan();
+
+        $testData['request']['url'] = '/pricing/'. $content['id'] . '/rule';
+
+        $this->startTest($testData);
     }
 }

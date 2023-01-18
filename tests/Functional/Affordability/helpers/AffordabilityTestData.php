@@ -18,7 +18,23 @@ return [
             ]
         ]
     ],
-
+    'testFeatureEnabledOnRzpAffordabilityWidget' => [
+        'request' => [
+            'content' => [
+                "key" => "rzp_test_TheTestAuthKey",
+                "components" => [
+                    "offers",
+                ]
+            ],
+            'url'    => '/affordability',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                "enabled" => true,
+            ]
+        ]
+    ],
     'testFeatureEnabledOnAffordabilityWidget' => [
         'request' => [
             'content' => [

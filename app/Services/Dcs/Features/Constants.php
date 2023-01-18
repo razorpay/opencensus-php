@@ -12,6 +12,7 @@ class Constants
     const EligibilityEnabled = 'eligibility_enabled';
     const ShowEmailOnCheckout = 'show_email_on_checkout';
     const EmailOptionalOnCheckout = 'email_optional_oncheckout';
+    const AffordabilityWidgetSet = 'affordability_widget_set';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -22,6 +23,7 @@ class Constants
         self::EligibilityEnabled => "rzp/pg/merchant/affordability/EligibilityFeatures",
         self::ShowEmailOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
         self::EmailOptionalOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
+        self::AffordabilityWidgetSet => "rzp/pg/merchant/affordability/Widget",
     ];
 
     /**
@@ -34,6 +36,7 @@ class Constants
         self::EligibilityEnabled => self::EligibilityEnabled,
         self::ShowEmailOnCheckout => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout => self::EmailOptionalOnCheckout,
+        self::AffordabilityWidgetSet => self::AffordabilityWidgetSet,
     ];
 
     /**
@@ -46,6 +49,7 @@ class Constants
         self::EligibilityEnabled => self::EligibilityEnabled,
         self::ShowEmailOnCheckout => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout => self::EmailOptionalOnCheckout,
+        self::AffordabilityWidgetSet => self::AffordabilityWidgetSet,
     ];
 
     /**
@@ -55,6 +59,7 @@ class Constants
         self::RefundEnabled => 'direct',
         self::DisableAutoRefund => 'direct',
         self::EligibilityEnabled => 'client',
+        self::AffordabilityWidgetSet => 'client',
     ];
 
     public static function isShadowFeature($variant)

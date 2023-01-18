@@ -2,25 +2,51 @@
 
 namespace RZP\Models\Affordability;
 
+use Razorpay\Trace\Logger as Trace;
+use RZP\Constants\Mode;
+use RZP\Constants\Product;
+use RZP\Error\ErrorCode;
+use RZP\Http\Request\Requests;
 use RZP\Models\Base;
 use RZP\Models\Emi\Service as EmiService;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Pricing\Feature as PricingFeature;
+use RZP\Services\Dcs\Features\Constants as DcsConstants;
 use RZP\Models\Merchant\Methods\Core as MethodsCore;
 use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Models\Merchant\Checkout;
 use RZP\Models\Offer\Core as OfferCore;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\PayLater;
+use RZP\Trace\TraceCode;
 use stdClass;
+use Requests_Exception;
+use RZP\Exception;
+use RZP\Models\Pricing;
 
 class Service extends Base\Service
 {
+    public const FETCH_WIDGET_ENDPOINT = "/v1/widget/details";
+    public const UPDATE_WIDGET_TRIAL_PERIOD = "/v1/widget/trial_period";
+
+    public const X_REQUEST_TASK_ID        = 'X-Razorpay-TaskId';
+    public const X_PASSPORT_JWT_V1        = 'X-Passport-JWT-V1';
+    public const CONTENT_TYPE_HEADER      = 'Content-Type';
+    public const AUTHORIZATION            = 'Authorization';
+    public const CONTENT_TYPE             = 'application/json';
+
     /** @var Validator */
     private $validator;
+
+    protected $config;
 
     public function __construct(Validator $validator)
     {
         parent::__construct();
+
+        $this->config = $this->app['config']->get('applications.affordability');
+
+        $this->mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
         $this->validator = $validator;
     }
@@ -59,7 +85,8 @@ class Service extends Base\Service
      */
     protected function isEnabled(array &$data): bool
     {
-        $data['enabled'] = $this->merchant->isFeatureEnabled(Features::AFFORDABILITY_WIDGET);
+        $data['enabled'] = $this->merchant->isAtLeastOneFeatureEnabled([Features::AFFORDABILITY_WIDGET,
+                                                                        DcsConstants::AffordabilityWidgetSet,]);
 
         return $data['enabled'];
     }
@@ -169,5 +196,157 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    public function getWidgetDetails()
+    {
+        $this->merchant = $this->auth->getMerchant();
+
+        $url = $this->getBaseUrl() . self::FETCH_WIDGET_ENDPOINT;
+
+        try
+        {
+            $response = Requests::get($url, $this->getRequestHeaders());
+        }
+        catch (Requests_Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::FETCH_WIDGET_API_REQUEST_FAILED);
+
+            throw new Exception\ServerErrorException('Error completing the request',
+                ErrorCode::SERVER_ERROR);
+        }
+
+        $response = $this->formatResponse($response);
+
+        $response['pricing'] = $this->getAffordabilityWidgetPricingForMerchant();
+
+        return $response;
+    }
+
+    public function updateWidgetTrialPeriod($input)
+    {
+        $url = $this->getBaseUrl() . self::UPDATE_WIDGET_TRIAL_PERIOD;
+
+        try
+        {
+            $response = Requests::put($url, $this->getRequestHeaders(), json_encode($input));
+        }
+        catch (Requests_Exception $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::UPDATE_WIDGET_TRIAL_PERIOD_FAILED);
+
+            throw new Exception\ServerErrorException('Error completing the request',
+                ErrorCode::SERVER_ERROR);
+        }
+
+        $response = $this->formatResponse($response);
+
+        return $response;
+    }
+
+    protected function getBaseUrl(): string
+    {
+        return $this->config['url'];
+    }
+
+    protected function getInternalAuthToken(): string
+    {
+        $config = $this->app['config']->get('applications.affordability');
+        $username = 'rzp_' . $this->mode;
+        $password = $config['service_secret'];
+        return base64_encode("{$username}:{$password}");
+    }
+
+    protected function getRequestHeaders(): array
+    {
+        $jwt = $this->auth->getPassportJwt($this->getBaseUrl());
+
+        return [
+            self::CONTENT_TYPE_HEADER  => self::CONTENT_TYPE,
+            self::AUTHORIZATION => 'Basic '. $this->getInternalAuthToken(),
+            self::X_PASSPORT_JWT_V1 => $jwt,
+            self::X_REQUEST_TASK_ID => $this->app['request']->getTaskId(),
+        ];
+    }
+
+    public function getAffordabilityWidgetPricingForMerchant(): array
+    {
+        // Merchant's pricing plan id
+        $pricingPlanId = $this->merchant->getPricingPlanId();
+
+        $widgetPricingRules = $this->repo->pricing->getPricingRulesByPlanIdProductAndFeatureWithoutOrgId(
+            $pricingPlanId,
+            Product::PRIMARY,
+            PricingFeature::AFFORDABILITY_WIDGET
+        );
+
+        if ($widgetPricingRules->isEmpty() === false and count($widgetPricingRules) > 0)
+        {
+            $rate = $widgetPricingRules[0][Pricing\Entity::FIXED_RATE];
+        }
+
+        $defaultPlanId = Pricing\Fee::DEFAULT_AFFORDABILITY_WIDGET_PLAN_ID;
+
+        $defaultWidgetPricingRules = $this->repo->pricing->getPricingRulesByPlanIdProductAndFeatureWithoutOrgId(
+            $defaultPlanId,
+            Product::PRIMARY,
+            PricingFeature::AFFORDABILITY_WIDGET
+        );
+
+        if ($defaultWidgetPricingRules->isEmpty() === false and count($defaultWidgetPricingRules) > 0)
+        {
+            $defaultRate = $defaultWidgetPricingRules[0][Pricing\Entity::FIXED_RATE];
+        }
+
+        if(!isset($defaultRate) and !isset($rate))
+        {
+            throw new Exception\ServerErrorException('No Pricing Defined for Affordability Widget',
+                ErrorCode::BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT);
+        }
+
+        if(isset($defaultRate) and !isset($rate))
+        {
+            $rate = $defaultRate;
+        }
+
+        $response = [];
+
+        $response['rate'] = $rate;
+        if($rate < $defaultRate)
+        {
+            $response['default'] = $defaultRate;
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param $response
+     * @return mixed
+     * @throws Exception\BadRequestException
+     * @throws Exception\ServerErrorException
+     */
+    protected function formatResponse($response)
+    {
+        if ($response->status_code >= 500) {
+
+            throw new Exception\ServerErrorException('Error completing the request',
+                ErrorCode::SERVER_ERROR);
+
+        } else if ($response->status_code >= 400) {
+
+            $error = json_decode($response->body);
+            $errorDescription = $error->error->description;
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR, null, null, $errorDescription);
+        }
+
+        if ($response->body === "null" or $response->body === '') {
+            throw new Exception\ServerErrorException('Error completing the request',
+                ErrorCode::SERVER_ERROR);
+        }
+
+        return json_decode($response->body, true);
     }
 }
