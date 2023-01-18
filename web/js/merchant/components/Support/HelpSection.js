@@ -139,6 +139,7 @@ const HelpSection = ({ user, history, org, fetchTicketsRaisedByAgents: _fetchTic
             email: user.email,
             contact_mobile: user?.user?.contact_mobile,
             role: user?.role,
+            tags: user?.tags,
             activation_status: user.activation_status,
             business_type: user?.business_type,
             business_website: user?.business_website,
