@@ -12,6 +12,7 @@ use Mockery;
 use \WpOrg\Requests\Response;
 
 use Carbon\Carbon;
+use Illuminate\Queue\SqsQueue;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Mail\PayoutLink\Approval;
@@ -34,6 +35,7 @@ use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Http\BasicAuth;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settings;
 use RZP\Models\Internal;
@@ -64,6 +66,7 @@ use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Jobs\PayoutPostCreateProcess;
 use RZP\Models\Base\PublicCollection;
 use RZP\Mail\Banking\LowBalanceAlert;
+use RZP\Jobs\ApprovedPayoutProcessor;
 use RZP\Services\Mock\WorkflowService;
 use RZP\Models\Payout\WorkflowFeature;
 use RZP\Exception\BadRequestException;
@@ -73,6 +76,7 @@ use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Jobs\PayoutServiceDataMigration;
 use RZP\Models\Card\Entity as CardEntity;
+use RZP\Jobs\ApprovedPayoutDistribution;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance as Balance;
@@ -33275,6 +33279,316 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertEquals('initiated', $payout->getStatus());
+    }
+
+    public function testAsyncPayoutApprove()
+    {
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['config']->set('queue.approved_payout_distribute.connection', 'sync');
+
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [false, 'Dummy'],
+        ]);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id' => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([ 'amount' => 2000 ], 'rzp_live_TheLiveAuthKey');
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $initialBalance = $balance->getBalance();
+
+        $this->assertEquals('pending', $payout['status']);
+
+        (new AdminService)->setConfigKeys([ConfigKey::PAYOUT_ASYNC_APPROVE_DISTRIBUTION_RATE_LIMIT => 30]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::PAYOUT_ASYNC_APPROVE_DISTRIBUTION_WINDOW_LENGTH => 2]);
+
+        ApprovedPayoutDistribution::dispatch('live', [
+            'id' => $payout['id'],
+            'input' => [
+                'queue_if_low_balance'  => '',
+                'type'                  => 'workflow_callbacks_approved'
+            ],
+            'payout_id' => $payout['id'],
+            'is_approved' => true,
+            'message_group' => $payout['merchant_id']
+        ], $payout['merchant_id']);
+
+        $balance->reload();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals('initiated', $payout['status']);
+        $this->assertEquals($initialBalance - $payout->getAmount() - $payout->getFees(), $balance->getBalance());
+    }
+
+    public function testAsyncPayoutApproveRateLimited()
+    {
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [false, 'Dummy'],
+        ]);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id' => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->assertEquals('pending', $payout1['status']);
+        $this->assertEquals('pending', $payout2['status']);
+
+        (new AdminService)->setConfigKeys([ConfigKey::PAYOUT_ASYNC_APPROVE_DISTRIBUTION_RATE_LIMIT => 1]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::PAYOUT_ASYNC_APPROVE_DISTRIBUTION_WINDOW_LENGTH => 60]);
+
+        ApprovedPayoutDistribution::dispatch('live', [
+            'id' => $payout1['id'],
+            'input' => [
+                'queue_if_low_balance'  => '',
+                'type'                  => 'workflow_callbacks_approved'
+            ],
+            'payout_id' => $payout1['id'],
+            'is_approved' => true,
+            'message_group' => $payout1['merchant_id']
+        ], $payout1['merchant_id']);
+
+        ApprovedPayoutDistribution::dispatch('live', [
+            'id' => $payout2['id'],
+            'input' => [
+                'queue_if_low_balance'  => '',
+                'type'                  => 'workflow_callbacks_approved'
+            ],
+            'payout_id' => $payout2['id'],
+            'is_approved' => true,
+            'message_group' => $payout2['merchant_id']
+        ], $payout2['merchant_id']);
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // last created payout status should still be pending since approval is rate limited to 1 payout every 60 seconds
+        $this->assertEquals('pending', $payout['status']);
+    }
+
+    public function testAsyncPayoutApproveProcessing()
+    {
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [false, 'Dummy'],
+        ]);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id' => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([ 'amount' => 2000 ], 'rzp_live_TheLiveAuthKey');
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $initialBalance = $balance->getBalance();
+
+        $this->assertEquals('pending', $payout['status']);
+
+        (new AdminService)->setConfigKeys([ConfigKey::PAYOUT_ASYNC_APPROVE_PROCESSING_RATE_LIMIT => 15]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::PAYOUT_ASYNC_APPROVE_PROCESSING_WINDOW_LENGTH => 1]);
+
+        ApprovedPayoutProcessor::dispatch('live', [
+            'queue_if_low_balance'  => '',
+            'type'                  => 'workflow_callbacks_approved',
+        ], $payout['id'], true);
+
+        $balance->reload();
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals('initiated', $payout['status']);
+        $this->assertEquals($initialBalance - $payout->getAmount() - $payout->getFees(), $balance->getBalance());
+    }
+
+
+    public function testAsyncPayoutApproveProcessingDLQPushOnError()
+    {
+        $queueMock = Mockery::mock(SqsQueue::class);
+
+        $receivedQueueName = null;
+
+        // Mock the queue push call made for DLQ and access the queue name that was passed
+        $queueObject = new class {
+            public $queueName;
+            public function pushRaw($payload, $queueName) {
+                $this->queueName = $queueName;
+                return true;
+            }
+        };
+
+        $queueMock->shouldReceive(['connection' => $queueObject]);
+
+        $this->app->instance('queue', $queueMock);
+
+        $this->liveSetUp();
+
+        $approvedPayoutProcessor = new ApprovedPayoutProcessor('live', [
+            'queue_if_low_balance'  => '',
+            'type'                  => 'workflow_callbacks_approved',
+            'attempts'              => 2 // This is set so that when an error is thrown, message is directly pushed to dlq instead of retrying
+        ], '123456789', true);
+
+        $approvedPayoutProcessor->handle();
+
+        $processorDLQName = $this->app['config']->get('queue.approved_payout_processor_dlq.' . Mode::LIVE);
+
+        // Assert that the queue push call was made to the correct DLQ when processing failed because it couldn't find the payout
+        $this->assertEquals($processorDLQName, $queueObject->queueName);
+    }
+
+    public function testAsyncPayoutApproveProcessingRateLimited()
+    {
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [false, 'Dummy'],
+        ]);
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id' => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+        $payout2 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->assertEquals('pending', $payout1['status']);
+        $this->assertEquals('pending', $payout2['status']);
+
+        (new AdminService)->setConfigKeys([ConfigKey::PAYOUT_ASYNC_APPROVE_PROCESSING_RATE_LIMIT => 1]);
+
+        (new AdminService)->setConfigKeys([ConfigKey::PAYOUT_ASYNC_APPROVE_PROCESSING_WINDOW_LENGTH => 60]);
+
+        ApprovedPayoutProcessor::dispatch('live', [
+            'queue_if_low_balance'  => '',
+            'type'                  => 'workflow_callbacks_approved'
+        ], $payout1['id'], true);
+
+        ApprovedPayoutProcessor::dispatch('live', [
+            'queue_if_low_balance'  => '',
+            'type'                  => 'workflow_callbacks_approved'
+        ], $payout2['id'], true);
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        // last created payout status should still be pending since processing is rate limited to 1 payout every 60 seconds
+        $this->assertEquals('pending', $payout['status']);
+    }
+
+    public function testPayoutApproveForCallbackFromNewWFSWhenAsyncNotEnabled()
+    {
+        Queue::fake();
+
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id' => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Owner role user
+        $this->ba->appAuthLive($this->config['applications.workflows.secret']);
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/approve';
+
+        $this->startTest();
+
+        // assert that the payout was not pushed for async processing
+        Queue::assertNotPushed(ApprovedPayoutDistribution::class);
+    }
+
+    public function testPayoutApproveForCallbackFromNewWFSWhenAsyncEnabled()
+    {
+        Queue::fake();
+
+        $this->liveSetUp();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode(true);
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id' => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        // Approve with Owner role user
+        $this->ba->appAuthLive($this->config['applications.workflows.secret']);
+
+        $testData                   = &$this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/payouts_internal/' . $payout["id"] . '/approve';
+
+        $this->startTest();
+
+        // assert that the payout was pushed for async processing
+        Queue::assertPushed(ApprovedPayoutDistribution::class);
     }
  }
 

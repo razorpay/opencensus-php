@@ -156,7 +156,7 @@ trait PayoutTrait
         $this->assertNotEquals($id, $response['id']);
     }
 
-    public function createPayoutWorkflowWithBankingUsersLiveMode()
+    public function createPayoutWorkflowWithBankingUsersLiveMode($isBulkApproveAsyncEnabled = false)
     {
         (new Admin\Service)->setConfigKeys(
             [
@@ -176,7 +176,7 @@ trait PayoutTrait
 
         $this->app->razorx->method('getTreatment')
             ->will($this->returnCallback(
-                function ($mid, $feature, $mode)
+                function ($mid, $feature, $mode) use ($isBulkApproveAsyncEnabled)
                 {
                     if ($feature === Merchant\RazorxTreatment::RX_CUSTOM_ACCESS_CONTROL_DISABLED)
                     {
@@ -184,6 +184,11 @@ trait PayoutTrait
                     }
 
                     if ($feature === Merchant\RazorxTreatment::SECURE_OTP_CONTEXT)
+                    {
+                        return 'on';
+                    }
+
+                    if ($feature === Merchant\RazorxTreatment::PAYOUT_BULK_APPROVE_ASYNC && $isBulkApproveAsyncEnabled === true)
                     {
                         return 'on';
                     }

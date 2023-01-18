@@ -230,6 +230,10 @@ class Validator extends Base\Validator
         ConfigKey::DEFAULT_OPGSP_TRANSACTION_LIMIT_USD                                 => 'filled|integer',
         ConfigKey::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA                              => 'filled|boolean',
         ConfigKey::RX_OD_BALANCE_CONFIGURED_FOR_MAGICBRICKS                            => 'filled|integer',
+        ConfigKey::PAYOUT_ASYNC_APPROVE_DISTRIBUTION_RATE_LIMIT                        => 'filled|integer',
+        ConfigKey::PAYOUT_ASYNC_APPROVE_DISTRIBUTION_WINDOW_LENGTH                     => 'filled|integer',
+        ConfigKey::PAYOUT_ASYNC_APPROVE_PROCESSING_RATE_LIMIT                          => 'filled|integer',
+        ConfigKey::PAYOUT_ASYNC_APPROVE_PROCESSING_WINDOW_LENGTH                       => 'filled|integer'
     ];
 
     protected static $setRedisKeysRules = [

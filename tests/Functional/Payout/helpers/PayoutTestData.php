@@ -21508,5 +21508,43 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
-    ]
+    ],
+
+    'testPayoutApproveForCallbackFromNewWFSWhenAsyncNotEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'url'     => '/payouts_internal/{id}/approve',
+            'content' => [
+                'queue_if_low_balance'  => false,
+                'type' => 'workflow_callbacks_approved',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "payout",
+            ],
+        ],
+    ],
+
+    'testPayoutApproveForCallbackFromNewWFSWhenAsyncEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+            ],
+            'url'     => '/payouts_internal/{id}/approve',
+            'content' => [
+                'queue_if_low_balance'  => false,
+                'type' => 'workflow_callbacks_approved',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "payout",
+            ],
+        ],
+    ],
 ];

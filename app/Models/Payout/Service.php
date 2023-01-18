@@ -48,6 +48,7 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\PayoutOutbox\RequestType;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Workflow\Service\Adapter;
+use RZP\Jobs\ApprovedPayoutDistribution;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Merchant\Account as Account;
 use RZP\Models\Payout\Batch as PayoutsBatch;
@@ -699,7 +700,24 @@ class Service extends Base\Service
 
         $payout->getValidator()->validatePayoutStatusForApproveOrReject();
 
-        $payout = (new Core)->processActionOnPayout($approved, $payout, $input);
+        if ($this->shouldProcessBulkApproveAsync($payout->getMerchantId()))
+        {
+            $payload = [
+                'input' => $input,
+                'payout_id' => $id,
+                'is_approved' => $approved,
+            ];
+
+            $this->trace->info(TraceCode::PAYOUT_ASYNC_APPROVE_JOB_DISPATCH, ['payload' => $payload]);
+
+            ApprovedPayoutDistribution::dispatch($this->mode, $payload, $payout->getMerchantId());
+
+            $this->trace->info(TraceCode::PAYOUT_ASYNC_APPROVE_JOB_DISPATCH_SUCCESS, ['payload' => $payload]);
+        }
+        else
+        {
+            $payout = (new Core)->processActionOnPayout($approved, $payout, $input);
+        }
 
         return $payout->toArrayPublic();
     }
@@ -4590,5 +4608,15 @@ class Service extends Base\Service
         }
 
         return $this->userCore->getBankingUsersForMerchantRoles($merchantIdToRolesMapping);
+    }
+
+    private function shouldProcessBulkApproveAsync(string $merchantId)
+    {
+        $bulkApprovalAsyncExperimentVariant = $this->app->razorx->getTreatment(
+            $merchantId,
+            RazorxTreatment::PAYOUT_BULK_APPROVE_ASYNC,
+            Constants\Mode::LIVE);
+
+        return (strtolower($bulkApprovalAsyncExperimentVariant) === 'on');
     }
 }

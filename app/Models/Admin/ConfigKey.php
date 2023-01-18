@@ -349,6 +349,14 @@ class ConfigKey
     // OD balance related keys for direct account
     const RX_OD_BALANCE_CONFIGURED_FOR_MAGICBRICKS = self::PREFIX . 'rx_od_balance_configured_for_magicbricks';
 
+    const PAYOUT_ASYNC_APPROVE_DISTRIBUTION_RATE_LIMIT = SELF::PREFIX . 'payout_async_approve_distribution_rate_limit';
+
+    const PAYOUT_ASYNC_APPROVE_DISTRIBUTION_WINDOW_LENGTH = SELF::PREFIX . 'payout_async_approve_distribution_window_length';
+
+    const PAYOUT_ASYNC_APPROVE_PROCESSING_RATE_LIMIT = SELF::PREFIX . 'payout_async_approve_processing_rate_limit';
+
+    const PAYOUT_ASYNC_APPROVE_PROCESSING_WINDOW_LENGTH = SELF::PREFIX . 'payout_async_approve_processing_window_length';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,

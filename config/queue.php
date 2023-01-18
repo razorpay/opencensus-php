@@ -61,6 +61,19 @@ return [
         'test'       =>  env('AWS_LEDGER_X_JOURNAL_TEST_QUEUE'),
         'live'       =>  env('AWS_LEDGER_X_JOURNAL_LIVE_QUEUE'),
     ],
+    'approved_payout_distribute' => [
+        'test'       => env('AWS_APPROVED_PAYOUT_DISTRIBUTION_TEST_QUEUE'),
+        'live'       => env('AWS_APPROVED_PAYOUT_DISTRIBUTION_LIVE_QUEUE'),
+        'connection' => 'sqs-fifo'
+    ],
+    'approved_payout_processor' => [
+        'test'       => env('AWS_APPROVED_PAYOUT_PROCESSOR_TEST_QUEUE'),
+        'live'       => env('AWS_APPROVED_PAYOUT_PROCESSOR_LIVE_QUEUE'),
+    ],
+    'approved_payout_processor_dlq' => [
+        'test'       => env('AWS_APPROVED_PAYOUT_PROCESSOR_DLQ_TEST_QUEUE'),
+        'live'       => env('AWS_APPROVED_PAYOUT_PROCESSOR_DLQ_LIVE_QUEUE'),
+    ],
     'batch_payouts_process' => [
         'test'       =>  env('AWS_BATCH_PAYOUTS_PROCESS_TEST_QUEUE'),
         'live'       =>  env('AWS_BATCH_PAYOUTS_PROCESS_LIVE_QUEUE'),
@@ -611,6 +624,14 @@ return [
 
         env('AWS_CROSSBORDER_DCC_EINVOICE_LIVE_QUEUE') => 'RZP\\Jobs\\PaymentEInvoice',
         env('AWS_CROSSBORDER_DCC_EINVOICE_TEST_QUEUE') => 'RZP\\Jobs\\PaymentEInvoice',
+
+        env('AWS_APPROVED_PAYOUT_DISTRIBUTION_TEST_QUEUE') => 'RZP\\Jobs\\ApprovedPayoutDistribution',
+        env('AWS_APPROVED_PAYOUT_DISTRIBUTION_LIVE_QUEUE') => 'RZP\\Jobs\\ApprovedPayoutDistribution',
+    ],
+
+    'fifo_sqs_mappings'=>[
+        'beta-api-approved-payout-distribution-queue-test' => 'RZP\\Jobs\\ApprovedPayoutDistribution',
+        'beta-api-approved-payout-distribution-queue-test' => 'RZP\\Jobs\\ApprovedPayoutDistribution',
     ],
 
     /*
@@ -696,6 +717,18 @@ return [
 
         'sqs-raw' => [
             'driver' => 'sqs-raw',
+            'key'    => env('AWS_KEY_ID'),
+            'secret' => env('AWS_KEY_SECRET'),
+            'prefix' => env('AWS_QUEUE_PREFIX'),
+            'queue'  => env('AWS_DEFAULT_QUEUE'),
+            'region' => env('AWS_REGION'),
+            // See sqs.timeout configuration above.
+            'timeout'     => 3.0,
+            'credentials' => $awsCredentialsCache,
+        ],
+
+        'sqs-fifo' => [
+            'driver' => 'sqs-fifo',
             'key'    => env('AWS_KEY_ID'),
             'secret' => env('AWS_KEY_SECRET'),
             'prefix' => env('AWS_QUEUE_PREFIX'),

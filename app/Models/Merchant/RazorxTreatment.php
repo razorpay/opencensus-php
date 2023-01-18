@@ -718,4 +718,7 @@ final class RazorxTreatment
 
     // Experiment to use new Pricing plan for upi autopay
     const UPI_AUTOPAY_PRICING = 'upi_autopay_pricing';
+
+    // Experiment to enable async bulk approval or not
+    const PAYOUT_BULK_APPROVE_ASYNC = 'payout_bulk_approve_async';
 }
