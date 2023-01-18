@@ -9215,9 +9215,11 @@ trait Authorize
             $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
         }
 
+        $recurring = $this->payment->isCardRecurring();
+
         $cardCore = new Card\Core;
 
-        $cardInput = $cardCore->getCardInputFromCryptogram($cryptogram, $card, $input, $recurringTokenNumber);
+        $cardInput = $cardCore->getCardInputFromCryptogram($cryptogram, $card, $input, $recurringTokenNumber, $recurring);
 
         return $this->createCardEntity($cardInput, true, $this->merchant, $input);
     }
