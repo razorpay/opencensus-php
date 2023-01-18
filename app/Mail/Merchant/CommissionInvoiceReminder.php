@@ -34,7 +34,7 @@ class CommissionInvoiceReminder extends Mailable
 
         $name = $this->data['merchant']['name'];
 
-        $this->to($email, $name);
+        $this->to($email, strlen($name) < 50 ? $name : substr($name, 0, 46) . "...");
 
         return $this;
     }

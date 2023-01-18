@@ -712,7 +712,7 @@ class Calculator extends Base\Core
             $this->traceContext(TraceCode::COMMISSION_COMPONENTS_SAVED, ['commission_component_id' => $commissionComponent->getId()]);
 
             // send to queue to create transaction and update balance of partner
-            CommissionCapture::dispatch($this->mode, $commission->getPublicId())->delay(self::COMMISSION_CAPTURE_DELAY);;
+            CommissionCapture::dispatch($this->mode, $commission->getPublicId())->afterCommit();
         }
 
     }
