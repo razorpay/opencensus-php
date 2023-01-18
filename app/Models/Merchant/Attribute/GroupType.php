@@ -20,6 +20,11 @@ class GroupType
             Type::MERCHANT_ONBOARDING_CATEGORY
         ],
 
+        Group::PRODUCTS_ENABLED => [
+            Type::X,
+            Type::PG,
+        ],
+
         Group::X_MERCHANT_PREFERENCES => [
             Type::BUSINESS_CATEGORY,
             Type::TEAM_SIZE,

@@ -227,6 +227,59 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testCreateOrderLiveModeNonKycActivatedNonVaActivatedExperimentOn()
+    {
+
+        $attributes = [
+            'merchant_id'       => '10000000000000',
+            'bas_business_id'   => '10000000000000',
+        ];
+
+        $this->fixtures->on('live')->create('merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product' => 'banking',
+                'type' => 'X',
+                'group' => 'products_enabled',
+                'value' => 'false',
+            ]);
+
+        $this->fixtures->on('live')->create('merchant_detail', $attributes);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
+
+    public function testCreateOrderLiveModeNonKycActivatedVaActivatedExperimentOn()
+    {
+        $this->testData[__FUNCTION__] = $this->testData['testCreateOrder'];
+
+        $this->mockRazorxTreatmentV2(RazorxTreatment::RAZORPAY_X_AUTHORISE_CA_ACTIVATED_MERCHANT_TO_ACCESS_X_PRIVATE_ROUTES, 'on');
+
+        $attributes = [
+            'merchant_id'       => '10000000000000',
+            'bas_business_id'   => '10000000000000',
+        ];
+
+        $this->fixtures->on('live')->create('merchant_attribute',
+            [
+                'merchant_id' => '10000000000000',
+                'product' => 'banking',
+                'type' => 'X',
+                'group' => 'products_enabled',
+                'value' => 'true',
+            ]);
+
+        $this->fixtures->on('live')->create('merchant_detail', $attributes);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $this->startTest();
+    }
+
     public function testCreateOrder()
     {
         $order = $this->startTest();

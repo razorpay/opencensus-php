@@ -5,7 +5,6 @@ namespace RZP\Http\BasicAuth;
 use ApiResponse;
 use Razorpay\Trace\Logger as Trace;
 use Razorpay\OAuth\Client as OAuthClient;
-
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Key;
@@ -14,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Key\Metric;
+use RZP\Constants\Product;
 use RZP\Http\RequestContext;
 use RZP\Base\RepositoryManager;
 use RZP\Error\PublicErrorDescription;
@@ -254,7 +254,9 @@ abstract class AuthCreds
     {
         $isMerchantCaActivated = (new Merchant\Core())->isCurrentAccountActivated($this->merchant);
 
-        if ($isMerchantCaActivated === true)
+        $isMerchantVaActivated = (new Merchant\Core())->isXVaActivated($this->merchant);
+
+        if ($isMerchantCaActivated === true || $isMerchantVaActivated === true)
         {
             $route = $this->app['api.route']->getCurrentRouteName();
 

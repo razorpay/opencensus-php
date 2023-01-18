@@ -578,6 +578,82 @@ return [
         ],
     ],
 
+    'testProductEnabledPresenceInResponseForTrueCase' => [
+        'request' => [
+            'url'    => '/users/id',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchants'               => [
+                    [
+                        'activated'            => false,
+                        'archived_at'          => null,
+                        'suspended_at'         => null,
+                        'role'                 => 'owner',
+                    ],
+                    [
+                        'activated'            => false,
+                        'archived_at'          => null,
+                        'suspended_at'         => null,
+                        'banking_role'         => 'owner',
+                        'attributes'           => [
+                            'items'     => [
+                                [
+                                    'product'     => 'banking',
+                                    'group'       => 'products_enabled',
+                                    'type'        => 'X',
+                                    'value'       => 'true'
+                                ]
+                            ]
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testProductEnabledPresenceInResponseForFalseCase' => [
+        'request' => [
+            'url'    => '/users/id',
+            'method' => 'GET',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchants'               => [
+                    [
+                        'activated'            => false,
+                        'archived_at'          => null,
+                        'suspended_at'         => null,
+                        'role'                 => 'owner',
+                    ],
+                    [
+                        'activated'            => false,
+                        'archived_at'          => null,
+                        'suspended_at'         => null,
+                        'banking_role'         => 'owner',
+                        'attributes'           => [
+                            'items'     => [
+                                [
+                                    'product'     => 'banking',
+                                    'group'       => 'products_enabled',
+                                    'type'        => 'X',
+                                    'value'       => 'false'
+                                ]
+                            ]
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetAfterStoringPreSignUpSourceInfo' => [
         'request' => [
             'url'    => '/users/id',

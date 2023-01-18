@@ -14,4 +14,5 @@ class Group
     const X_TRANSACTION_VIEW            = 'x_transaction_view';
     const MASTERCARD                    = 'mastercard';
     const VISA                          = 'visa';
+    const PRODUCTS_ENABLED              = 'products_enabled';
 }

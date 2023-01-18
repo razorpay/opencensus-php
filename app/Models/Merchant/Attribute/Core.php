@@ -89,6 +89,13 @@ class Core extends Base\Core
         return $merchantAttribute->toArrayDeleted();
     }
 
+    public function isXVaActivated(Merchant\Entity $merchant) : bool
+    {
+        $vaActivated = $this->repo->merchant_attribute->getValueForProductGroupType($merchant->getId(), PRODUCT::BANKING, Merchant\Attribute\Group::PRODUCTS_ENABLED, Merchant\Attribute\Type::X)[Entity::VALUE] ?? "false";
+
+        return ($vaActivated === "true");
+    }
+
     public function bulkUpdateAttributeValuesByIds(array $merchantAttributeIds, $newAttributeValue)
     {
         $this->trace->info(TraceCode::MERCHANT_ATTRIBUTE_BULK_UPDATE_REQUEST,

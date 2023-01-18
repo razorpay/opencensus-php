@@ -3796,11 +3796,11 @@ class Core extends Base\Core
 
                 $merchantPreferencesAttributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchant['id'], Product::BANKING, Merchant\Attribute\Group::X_MERCHANT_PREFERENCES)->toArrayPublic();
 
+                $xProductEnabledAttributes = (new Merchant\Attribute\Core())->fetchKeyValuesByMerchantId($merchant['id'], Product::BANKING, Merchant\Attribute\Group::PRODUCTS_ENABLED)->toArrayPublic();
                 // This is a hack, to unblock for now, need to figure out how to merge public arrays
                 $settableAttributes['entity'] = "collection";
-                $settableAttributes['count'] = count($signupAttributes['items']?? []) + count($currentAccountAttributes['items'] ?? []) + count($merchantPreferencesAttributes['items'] ?? []) + count($currentAccountAttributesFromPG['items'] ?? []);
-                $settableAttributes['items'] = array_merge($signupAttributes['items'] ?? [], $currentAccountAttributes['items'] ?? [], $merchantPreferencesAttributes['items'] ?? [], $currentAccountAttributesFromPG['items'] ?? []);
-
+                $settableAttributes['count'] = count($xProductEnabledAttributes['items'] ?? []) +  count($signupAttributes['items']?? []) + count($currentAccountAttributes['items'] ?? []) + count($merchantPreferencesAttributes['items'] ?? []) + count($currentAccountAttributesFromPG['items'] ?? []);
+                $settableAttributes['items'] = array_merge($xProductEnabledAttributes['items'] ?? [], $signupAttributes['items'] ?? [], $currentAccountAttributes['items'] ?? [], $merchantPreferencesAttributes['items'] ?? [], $currentAccountAttributesFromPG['items'] ?? []);
                 $this->trace->info(TraceCode::USERS_SEND_OTP_FOR_ACTION_WITH_CONTACT, $settableAttributes);
 
                 $merchant['attributes'] = $settableAttributes;

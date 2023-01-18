@@ -76,4 +76,5 @@ class Type
     const REQUESTER_ID                    = 'requester_id';
     const MERCHANT_NAME                   = 'merchant_name';
 
+    const X = 'X';
 }

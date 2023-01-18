@@ -7362,6 +7362,10 @@ class Core extends Base\Core
         return $this->checkIfCurrentAccountIsActivated($merchant);
     }
 
+    public function isXVaActivated(Entity $merchant) : bool
+    {
+        return (new Attribute\Core())->isXVaActivated($merchant);
+    }
 
     /**
      * @param Entity $merchant

@@ -1220,6 +1220,84 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
+    public function testProductEnabledPresenceInResponseForTrueCase()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->disableRazorXTreatmentCAC();
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => $merchant->getId(),
+                'product'     => 'banking',
+                'group'       => 'products_enabled',
+                'type'        => 'X',
+                'value'       => 'true'
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testProductEnabledPresenceInResponseForFalseCase()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->disableRazorXTreatmentCAC();
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $this->fixtures->create('merchant_attribute',
+            [
+                'merchant_id' => $merchant->getId(),
+                'product'     => 'banking',
+                'group'       => 'products_enabled',
+                'type'        => 'X',
+                'value'       => 'false'
+            ]);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/users/' . $user['id'];
+
+        $testData['request']['server']['HTTP_X-Dashboard-User-id'] = $user['id'];
+
+        $testData['request']['server']['HTTP_X-Request-Origin'] = config('applications.banking_service_url');
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     public function testGetAfterStoringPreSignUpSourceInfo()
     {
         $user = $this->fixtures->create('user');

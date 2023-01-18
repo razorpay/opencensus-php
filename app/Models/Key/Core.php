@@ -55,12 +55,14 @@ class Core extends Base\Core
         if (($mode === Mode::LIVE) and
             ($merchant->isActivated() === false))
         {
-            // We need to allow key generation in case merchant is ca activated and request is coming from banking
+            // We need to allow key generation in case merchant is (ca activated / va activated)  and request is coming from banking
             $isMerchantCaActivated = (new Merchant\Core())->isCurrentAccountActivated($merchant);
+
+            $isMerchantVaActivated = (new Merchant\Core())->isXVaActivated($merchant);
 
             $isRequestOriginBanking = ($this->app->basicauth->getRequestOriginProduct() === Product::BANKING);
 
-            if ($isMerchantCaActivated === false || $isRequestOriginBanking === false)
+            if ($isRequestOriginBanking === false || (($isMerchantCaActivated === false) and ($isMerchantVaActivated === false)))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED);
