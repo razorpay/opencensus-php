@@ -804,6 +804,16 @@ class FeaturesTest extends OAuthTestCase
     }
 
     /**
+     * This function tests updating of a editable merchant feature: affordability_widget
+     */
+    public function testUpdateMerchantFeatureAffordabilityWidget()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
      * This function tests updating of a visible merchant feature: es_automatic.
      * Should fail if feature es_on_demand is not added to the merchant.
      */

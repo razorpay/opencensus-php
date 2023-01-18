@@ -3339,6 +3339,12 @@ class Constants
             'display_name'  => 'Affordability Widget',
             'documentation' => 'Feature to enable Affordability Widget',
         ],
+        // Deprecated this flag. Adding for time being to keep woocommerce & shopify working
+        self::AFFORDABILITY_WIDGET => [
+            'feature'       => self::AFFORDABILITY_WIDGET,
+            'display_name'  => 'Affordability Widget',
+            'documentation' => 'Feature to enable Affordability Widget',
+        ],
     ];
 
     /**
@@ -3386,6 +3392,7 @@ class Constants
         self::MISSED_ORDERS_PLINK,
         self::DISABLE_COLLECT_CONSENT,
         self::CARD_MANDATE_SKIP_PAGE,
+        self::AFFORDABILITY_WIDGET,
         DcsConstants::ShowEmailOnCheckout,
         DcsConstants::EmailOptionalOnCheckout,
         DcsConstants::AffordabilityWidgetSet,

@@ -568,6 +568,27 @@ return [
         ]
     ],
 
+    'testUpdateMerchantFeatureAffordabilityWidget' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'affordability_widget' => '1',
+                ],
+                'optout_reason' => 'some reason'
+            ],
+            'url' => '/merchants/me/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [ ],
+            'status_code' => 200
+        ]
+    ],
+
     'testEnableEsAutomaticFeaturesFailure' => [
         'request' => [
             'content' => [
