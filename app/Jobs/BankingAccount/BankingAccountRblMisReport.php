@@ -53,6 +53,19 @@ class BankingAccountRblMisReport extends Job
         
         $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB, $tracePayload);
 
+        // To have a Fail safe mechanism if the job gets repeated again
+        if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
+        {
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_DELETE, [
+                'job_attempts'      => $this->attempts(),
+                'message'           => 'Fail Safe: Deleting the job after configured number of tries. Still unsuccessful.'
+            ]);
+
+            $this->delete();
+
+            return;
+        }
+
         $bankLmsSerice = new BankingAccountModel\BankLms\Service();
 
         $bankLmsSerice->setPartnerMerchantBasicAuth();
@@ -66,9 +79,10 @@ class BankingAccountRblMisReport extends Job
                 'download_report_url' => $signedUrlResponse['signed_url'],
             ];
 
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB, array_merge($tracePayload, 
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_S3_SUCCESS, array_merge($tracePayload, 
             [
                 'attempts'              => $this->attempts(),
+                'filePath'              => $filePath,
                 'signed_url_response'   => $signedUrlResponse,
             ]));
 
@@ -76,7 +90,19 @@ class BankingAccountRblMisReport extends Job
 
             Mail::send($leadMisReportMail);
 
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_SUCCESS, array_merge($tracePayload, 
+            [
+                'attempts'            => $this->attempts(),
+                'filePath'            => $filePath,
+                'signedUrlResponse'   => $signedUrlResponse,
+            ]));
+
             $this->delete();
+
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_DELETE, [
+                'job_attempts'      => $this->attempts(),
+                'message'           => 'Deleted the job after successful attempt.'
+            ]);
         }
         catch (\Throwable $e) {
 
@@ -94,7 +120,7 @@ class BankingAccountRblMisReport extends Job
         }
         finally
         {
-            $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB, array_merge($tracePayload, [
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_DURATION, array_merge($tracePayload, [
                 'attempts'          => $this->attempts(),
                 'filePath'          => $filePath,
                 'signedUrlResponse' => $signedUrlResponse,
