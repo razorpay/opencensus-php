@@ -92,6 +92,8 @@ class Service
 
     const MULTIPLE_ENTITY_FETCH = 'multiple_entity_fetch';
 
+    const TRANSACTION_UPSERT = 'transaction_upsert';
+
     /**
      * Initiates the app container, trace and UPS config
      */
@@ -359,6 +361,9 @@ class Service
                     'action'    => $this->action,
                 ];
                 break;
+            case self::TRANSACTION_UPSERT:
+                $data = $input;
+                break;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -521,6 +526,8 @@ class Service
             case self::RECON_ENTITY_UPDATE:
                 return $response[Response::DATA];
             case Payment\Action::FORCE_AUTHORIZE_FAILED:
+                return $response[Response::DATA];
+            case self::TRANSACTION_UPSERT:
                 return $response[Response::DATA];
             default:
                 throw new Exception\LogicException(
@@ -934,6 +941,9 @@ class Service
                 break;
             case Payment\Action::FORCE_AUTHORIZE_FAILED:
                 $traceData += $this->getForceAuthorizedTraceData($request[Request::CONTENT]);
+                break;
+            case self::TRANSACTION_UPSERT:
+                $traceData += $request[Request::CONTENT];
                 break;
             default:
                 throw new Exception\LogicException(

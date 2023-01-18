@@ -283,6 +283,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const NB_PLUS_SERVICE                   = 3;
     const UPI_PAYMENT_SERVICE               = 4;
     const NB_PLUS_SERVICE_PAYMENTS          = 6;
+    const REARCH_UPI_PAYMENT_SERVICE        = 7;
 
     const FORMATTED_AMOUNT                  = 'formatted_amount';
     const FORMATTED_CREATED_AT              = 'formatted_created_at';
@@ -2623,6 +2624,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     public function isRoutedThroughUpiPaymentService()
     {
         return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::UPI_PAYMENT_SERVICE);
+    }
+
+    public function isRoutedThroughPaymentsUpiPaymentService()
+    {
+        return ($this->getAttribute(self::CPS_ROUTE) === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE);
     }
 
     public function isPushPaymentMethod()

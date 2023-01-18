@@ -258,6 +258,13 @@ class Core extends Base\Core
                     ]
                 );
             }
+            else if (($payment->isUpi() === true) and
+                    ($payment->isRoutedThroughPaymentsUpiPaymentService() === true))
+            {
+                $action = 'transaction_upsert';
+
+                $this->app['upi.payments']->action($action, $data, $payment->getGateway());
+            }
         }
     }
 
