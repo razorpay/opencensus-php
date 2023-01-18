@@ -550,6 +550,11 @@ return [
         'test'       => env('AWS_CROSSBORDER_MERCHANT_EMAIL_TEST_QUEUE'),
     ],
 
+    'generate_payment_e_invoice' => [
+        'live'       => env('AWS_CROSSBORDER_DCC_EINVOICE_LIVE_QUEUE'),
+        'test'       => env('AWS_CROSSBORDER_DCC_EINVOICE_TEST_QUEUE'),
+    ],
+
     'partner_bank_health_notify' => [
         'test'       => env('AWS_PARTNER_BANK_HEALTH_NOTIFY_TEST_QUEUE'),
         'live'       => env('AWS_PARTNER_BANK_HEALTH_NOTIFY_LIVE_QUEUE'),
@@ -603,6 +608,9 @@ return [
 
         //mapping for ART refund recon entity update job
         env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE') => 'RZP\\Jobs\\ArtReconProcess',
+
+        env('AWS_CROSSBORDER_DCC_EINVOICE_LIVE_QUEUE') => 'RZP\\Jobs\\PaymentEInvoice',
+        env('AWS_CROSSBORDER_DCC_EINVOICE_TEST_QUEUE') => 'RZP\\Jobs\\PaymentEInvoice',
     ],
 
     /*
