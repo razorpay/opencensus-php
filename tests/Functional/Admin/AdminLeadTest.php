@@ -6,6 +6,7 @@ use Mail;
 
 use RZP\Models\User\Entity;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Mail\Admin\PartnerInvitation as PartnerInvitationMail;
 use RZP\Mail\Admin\MerchantInvitation as MerchantInvitationMail;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;

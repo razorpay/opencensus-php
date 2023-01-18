@@ -32,7 +32,7 @@ class Core extends Base\Core
         return $lead;
     }
 
-    public function sendInvitationEmail(Admin\Entity $admin, Entity $invitation, string $merchantType)
+    public function sendInvitationEmail(Admin\Entity $admin, Entity $invitation, $merchantType)
     {
         $org = $admin->org->toArrayPublic();
         $org['host_name'] = $admin->org->getPrimaryHostName();
@@ -43,7 +43,13 @@ class Core extends Base\Core
         $invitation = $invitation->toArrayPublic();
         $invitation['token'] = $token;
 
-        $merchantInvitationMailClazz = Constants::MERCHANT_TYPE_INVITATION_MAPPING[$merchantType];
+        $merchantInvitationMailClazz = MerchantInvitationMail::class;
+
+        if(empty($merchantType) === false and
+           array_key_exists($merchantType, Constants::MERCHANT_TYPE_INVITATION_MAPPING))
+        {
+            $merchantInvitationMailClazz = Constants::MERCHANT_TYPE_INVITATION_MAPPING[$merchantType];
+        }
 
         $merchantInvitationMail = new $merchantInvitationMailClazz($admin, $org, $invitation);
 
