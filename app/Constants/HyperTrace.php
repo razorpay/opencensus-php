@@ -259,4 +259,21 @@ class HyperTrace
     const SUBMERCHANT_STORK_INVALIDATE_CACHE_REQUEST                          = 'submerchant.stork.invalidate_cache_request';
     const PAYMENT_VALIDATE_VPA                                                = 'payment.validate_vpa';
 
+    const AUTHENTICATE_PRE_AUTHENTICATE                             = 'authenticate.pre_authenticate';
+    const AUTHENTICATE_USING_PASSPORT                               = 'authenticate.using_passport';
+    const AUTHENTICATE_BASIC_AUTH                                   = 'authenticate.basic_auth';
+    const AUTHENTICATE_BEARER_AUTH                                  = 'authenticate.bearer_auth';
+    const AUTHENTICATE_USING_PASSPORT_OAUTH                         = 'authenticate.using_passport_oauth';
+    const AUTHENTICATE_PRIVATE_ROUTE_PRIVATE_AUTH                   = 'authenticate.private_route.private_auth';
+    const BASIC_AUTH_VERIFY_SECRET                                  = 'basic_auth.verify_secret';
+    const BASIC_AUTH_IS_KEY_EXISTING                                = 'basic_auth.is_key_existing';
+    const BASIC_AUTH_CHECK_AND_SET_KEY_ID                           = 'basic_auth.check_and_set_key_id';
+    const BASIC_AUTH_VERIFY_KEY_NOT_EXPIRED                         = 'basic_auth.verify_key_not_expired';
+    const BASIC_AUTH_CHECK_AND_SET_ACCOUNT_SCOPE                    = 'basic_auth.check_and_set_account_scope';
+    const BASIC_AUTH_SET_ADMIN_AUTH_IF_APPLICABLE                   = 'basic_auth.set_admin_auth_if_applicable';
+    const BASIC_AUTH_VERIFY_INTERNAL_APP_AS_PROXY                   = 'basic_auth.verify_internal_app_as_proxy';
+    const BASIC_AUTH_IS_MERCHANT_MANAGED_BY_PARTNER                 = 'basic_auth.is_merchant_managed_by_partner';
+    const BASIC_AUTH_CHECK_AND_SET_PARTNER_MERCHANT_SCOPE           = 'basic_auth.check_and_set_partner_merchant_scope';
+    const BASIC_AUTH_SET_AND_CHECK_MERCHANT_ACTIVATED_FOR_LIVE      = 'basic_auth.set_and_check_merchant_activated_for_live';
+    const BASIC_AUTH_VALIDATE_ACCOUNT_FOR_CURRENT_AUTH_TYPE         = 'basic_auth.validate_account_for_current_auth_type';
 }

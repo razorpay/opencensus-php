@@ -3,6 +3,7 @@
 namespace RZP\Http\Middleware;
 
 use Closure;
+use RZP\Constants\HyperTrace;
 use RZP\Constants\Mode;
 use Illuminate\Support\Str;
 use RZP\Http\Edge\PassportUtil;
@@ -83,7 +84,12 @@ class Authenticate
     {
         $startAt = millitime();
 
-        (new PreAuthenticate)->handle($request);
+        $span = Tracer::startSpan(['name' => self::METRIC_AUTH_HANDLE_MILLISECONDS]);
+        $scope = Tracer::withSpan($span);
+
+        Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_PRE_AUTHENTICATE], function () use ($request) {
+            return (new PreAuthenticate)->handle($request);
+        });
 
         $route = $this->router->currentRouteName();
 
@@ -91,7 +97,9 @@ class Authenticate
 
         $bearerToken = null;
 
-        [$successfulExecution, $error] = $this->authenticateUsingPassport();
+        [$successfulExecution, $error] = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_USING_PASSPORT], function () {
+            return $this->authenticateUsingPassport();
+        });
 
         $this->app['trace']->info(TraceCode::PASSPORT_AUTHENTICATION_RESULT,
                                   ['successfulExecution' => $successfulExecution, 'error' => $error]);
@@ -110,14 +118,19 @@ class Authenticate
             //
             if (empty($bearerToken) === false)
             {
-                $ret = $this->authenticateBearerAuth($route, $bearerToken);
+                $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_BEARER_AUTH], function () use ($route, $bearerToken) {
+                        return $this->authenticateBearerAuth($route, $bearerToken);
+                    });
             }
             else
             {
-                $ret = $this->authenticateBasicAuth($route);
+                $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_BASIC_AUTH], function () use ($route) {
+                        return $this->authenticateBasicAuth($route);
+                    });
             }
         }
 
+        $scope->close();
         app()->trace->histogram(
             self::METRIC_AUTH_HANDLE_MILLISECONDS,
             millitime() - $startAt,
@@ -190,7 +203,9 @@ class Authenticate
         }
         else if (in_array($route, Route::$private, true) === true)
         {
-            $ret = $this->ba->privateAuth();
+            $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_PRIVATE_ROUTE_PRIVATE_AUTH], function () {
+                    return $this->ba->privateAuth();
+                });
         }
         else if (in_array($route, P2pRoute::$private, true) === true)
         {
@@ -491,8 +506,9 @@ class Authenticate
             try
             {
                 $passportOauth = new \RZP\Http\Edge\PassportAuth\OAuth();
-
-                $ret = $passportOauth->authenticate(AuthType::PRIVATE_AUTH);
+                $ret = Tracer::inspan(['name' => HyperTrace::AUTHENTICATE_USING_PASSPORT_OAUTH],  function () use ($passportOauth) {
+                    return $passportOauth->authenticate(AuthType::PRIVATE_AUTH);
+                });
             }
             catch (\Throwable $exception)
             {

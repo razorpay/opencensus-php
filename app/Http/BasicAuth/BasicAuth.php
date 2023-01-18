@@ -15,6 +15,7 @@ use Lcobucci\JWT\Signer as JWTSigner;
 use Lcobucci\JWT\Signer\Key\InMemory;
 use Lcobucci\JWT\Encoding\JoseEncoder;
 use Razorpay\OAuth\OAuthServer;
+use RZP\Constants\HyperTrace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
 use RZP\Http\Edge\Metric;
@@ -43,6 +44,7 @@ use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Account\Entity as Account;
 
 use Razorpay\OAuth\Client as OAuthClient;
+use RZP\Trace\Tracer;
 
 /**
  * Class BasicAuth
@@ -503,7 +505,10 @@ class BasicAuth
             return ApiResponse::httpAuthExpected();
         }
 
-        $keyError = $this->checkAndSetKeyId($key);
+        $keyError = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_CHECK_AND_SET_KEY_ID], function () use ($key)
+        {
+            return $this->checkAndSetKeyId($key);
+        });
 
         if ($keyError !== null)
         {
@@ -802,13 +807,21 @@ class BasicAuth
          * on behalf of sub-merchant. The partner-merchant mapping is
          * verified at a later point.
          */
-        if ($this->authCreds->isKeyExisting() === true)
-        {
-            $response = $this->authCreds->verifyKeyNotExpired();
 
+        $isKeyExisting = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_IS_KEY_EXISTING], function ()
+            {
+                return $this->authCreds->isKeyExisting();
+            });
+        if ($isKeyExisting === true)
+        {
+            $response = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_VERIFY_KEY_NOT_EXPIRED], function () {
+                    return $this->authCreds->verifyKeyNotExpired();
+                });
             if ($response === true)
             {
-                $response = $this->authCreds->verifySecret();
+                $response = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_VERIFY_SECRET], function () {
+                    return $this->authCreds->verifySecret();
+                });
             }
 
             if ($response !== true)
@@ -818,31 +831,47 @@ class BasicAuth
 
             $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_MERCHANT, $this->getMerchantId(), true);
 
-            $error = $this->checkAndSetAccountScope();
-
+            $error = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_CHECK_AND_SET_ACCOUNT_SCOPE], function () {
+                return $this->checkAndSetAccountScope();
+            });
             if ($error !== null)
             {
                 return $error;
             }
 
-            return $this->checkAndSetPartnerMerchantScope();
+            $checkAndSetPartnerMerchantScope = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_CHECK_AND_SET_PARTNER_MERCHANT_SCOPE], function () {
+                return $this->checkAndSetPartnerMerchantScope();
+            });
+            return $checkAndSetPartnerMerchantScope;
         }
-        else if ($this->verifyInternalAppAsProxy() === true)
+        else
         {
-            $this->setDashboardHeaders();
+            $verifyInternalAppAsProxy = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_VERIFY_INTERNAL_APP_AS_PROXY], function () {
+                return $this->verifyInternalAppAsProxy();
+            });
 
-            $this->setProxyTrue();
+            if ($verifyInternalAppAsProxy === true)
+            {
+                $this->setDashboardHeaders();
 
-            $this->setAdminAuthIfApplicable();
+                $this->setProxyTrue();
 
-            $this->setPassportImpersonationClaims(
-                $this->admin ? self::PASSPORT_IMPERSONATION_TYPE_ADMIN_MERCHANT : self::PASSPORT_IMPERSONATION_TYPE_USER_MERCHANT,
-                $this->authCreds->getMerchant()->getId()
-            );
+                Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_SET_ADMIN_AUTH_IF_APPLICABLE], function () {
+                    return $this->setAdminAuthIfApplicable();
+                });
 
-            $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_APPLICATION, $this->internalApp, true, ['name' => $this->internalApp]);
+                $this->setPassportImpersonationClaims(
+                    $this->admin ? self::PASSPORT_IMPERSONATION_TYPE_ADMIN_MERCHANT : self::PASSPORT_IMPERSONATION_TYPE_USER_MERCHANT,
+                    $this->authCreds->getMerchant()->getId()
+                );
 
-            return $this->checkAndSetAccountScope();
+                $this->setPassportConsumerClaims(self::PASSPORT_CONSUMER_TYPE_APPLICATION, $this->internalApp, true, ['name' => $this->internalApp]);
+
+                $scope = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_CHECK_AND_SET_ACCOUNT_SCOPE], function () {
+                    return $this->checkAndSetAccountScope();
+                });
+                return $scope;
+            }
         }
 
         return $this->authCreds->invalidApiKey();
@@ -2269,8 +2298,10 @@ class BasicAuth
 
         $account = $this->repo->merchant->find($this->getAccountId());
 
-        if (($account === null) or
-            ($this->validateAccountForCurrentAuthType($account) === false))
+        $validateAccountForCurrentAuthType = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_VALIDATE_ACCOUNT_FOR_CURRENT_AUTH_TYPE], function () use ($account){
+                return ($account === null) or ($this->validateAccountForCurrentAuthType($account) === false);
+            });
+        if ($validateAccountForCurrentAuthType)
         {
             return $this->invalidAccountId($this->getAccountId());
         }
@@ -2361,7 +2392,9 @@ class BasicAuth
 
         try
         {
-            $this->authCreds->setAndCheckMerchantActivatedForLive($account);
+            Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_SET_AND_CHECK_MERCHANT_ACTIVATED_FOR_LIVE], function () use ($account) {
+                return $this->authCreds->setAndCheckMerchantActivatedForLive($account);
+            });
         }
         catch (LogicException $e)
         {
@@ -2373,7 +2406,10 @@ class BasicAuth
 
         $partnerId = $this->getPartnerMerchantId();
 
-        if ((new Merchant\Core)->isMerchantManagedByPartner($merchantId, $partnerId) === false)
+        $isMerchantManagedByPartner = Tracer::inspan(['name' => HyperTrace::BASIC_AUTH_IS_MERCHANT_MANAGED_BY_PARTNER], function () use ($merchantId, $partnerId) {
+            return (new Merchant\Core)->isMerchantManagedByPartner($merchantId, $partnerId);
+        });
+        if ($isMerchantManagedByPartner === false)
         {
             return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_MERCHANT_NOT_UNDER_PARTNER);
         }
