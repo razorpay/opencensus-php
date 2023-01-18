@@ -50,6 +50,9 @@ function _track() {
     setupGuide: (source) => {
       sendToSegment('view setup guide', 'click', { source });
     },
+    next: () => {
+      sendToSegment('Affordability Onboarding Introduction Next', 'click', null);
+    },
   };
 }
 

@@ -28,10 +28,16 @@ export const FALLBACK_PRODUCTS = [
         tags: [],
       },
       {
-        title: 'QR Codes',
-        product_id: 'qr_codes',
+        title: 'Affordability',
+        product_id: 'affordability',
         category: 'promoted',
         tags: ['NEW'],
+      },
+      {
+        title: 'QR Codes',
+        product_id: 'qr_codes',
+        category: '',
+        tags: [],
       },
       {
         title: 'Subscriptions',
@@ -68,12 +74,6 @@ export const FALLBACK_PRODUCTS = [
         product_id: 'optimizer',
         category: '',
         tags: [],
-      },
-      {
-        title: 'Affordability',
-        product_id: 'affordability',
-        category: 'promoted',
-        tags: ['NEW'],
       },
       {
         title: 'Stores',

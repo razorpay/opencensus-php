@@ -32,8 +32,9 @@ const AffordabilityWidgetOnboarding = (props) => {
 
   const handleNextClickHandler = (callback) => {
     callback();
-    track.continue();
     props.history.push('/affordability/widget/platforms');
+    track.continue();
+    track.next();
   };
   return (
     <OnBoardingWrapper class="AffordabilityWidget">
