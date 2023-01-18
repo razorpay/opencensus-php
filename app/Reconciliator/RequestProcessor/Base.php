@@ -55,6 +55,7 @@ class Base extends Core
     const AIRTEL                   = 'Airtel';
     const BILLDESK                 = 'BillDesk';
     const PAYZAPP                  = 'PayZapp';
+    const PAYZAPPV2                = 'PayZappV2';
     const MPESA                    = 'Mpesa';
     const MOBIKWIK                 = 'Mobikwik';
     const AMAZONPAY                = 'Amazonpay';
@@ -166,6 +167,7 @@ class Base extends Core
         self::AXIS                     => ['pg.estatements@axisbank.com'],
         self::BILLDESK                 => [],
         self::PAYZAPP                  => ['donotreply@enstage.com'],
+        self::PAYZAPPV2                => [],
         self::MOBIKWIK                 => [],
         self::AMAZONPAY                => [],
         self::MPESA                    => [],
