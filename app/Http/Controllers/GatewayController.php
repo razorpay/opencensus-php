@@ -346,7 +346,7 @@ class GatewayController extends Controller
 
                 if ($terminal === null)
                 {
-                    throw new Exception\LogicException('No terminal found for QR Code Payment', $data);
+                    throw new Exception\LogicException('No terminal found for QR Code Payment', null, $data);
                 }
 
                 if ($terminal->isQrV2Terminal() === true)
