@@ -290,45 +290,25 @@ class Repository extends Base\Repository
         $postedDate      = $this->dbColumn(Entity::POSTED_DATE);
         $transactionDate = $this->dbColumn(Entity::TRANSACTION_DATE);
 
-        $variant = $this->app['razorx']->getTreatment(
-            $this->app['basicauth']->getMerchantId(),
-            Experiment::RAZORX_FLAG_TO_ENHANCE_FETCH_LOGIC, $app['rzp.mode'] ?? Mode::LIVE);
+        return $query->whereExists(function($q) use ($params, $postedDate, $transactionDate) {
+            $q->where($postedDate, '>=', $params['from'])
+              ->where($transactionDate, '>=', $params['from']);
+        });
 
-        if ($variant === 'on')
-        {
-            return $query->whereExists(function($q) use ($params, $postedDate, $transactionDate) {
-                $q->where($postedDate, '>=', $params['from'])
-                  ->where($transactionDate, '>=', $params['from']);
-            });
-        }
-        else
-        {
-            $query->where($postedDate, '>=', $params['from']);
-        }
     }
 
     protected function addQueryParamTo($query, $params)
     {
-        $postedDate       = $this->dbColumn(Entity::POSTED_DATE);
-        $transactionDate  = $this->dbColumn(Entity::TRANSACTION_DATE);
-        // offest posted date is to add a buffer of 24 hours for posted date while fetching
+        $postedDate      = $this->dbColumn(Entity::POSTED_DATE);
+        $transactionDate = $this->dbColumn(Entity::TRANSACTION_DATE);
+        // offset posted date is to add a buffer of 24 hours for posted date while fetching
         $offsetPostedDate = Carbon::createFromTimestamp($params['to'], Timezone::IST)->addHours(24)->getTimestamp();
 
-        $variant = $this->app['razorx']->getTreatment(
-            $this->app['basicauth']->getMerchantId(),
-            Experiment::RAZORX_FLAG_TO_ENHANCE_FETCH_LOGIC, $app['rzp.mode'] ?? Mode::LIVE);
+        return $query->whereExists(function($q) use ($params, $postedDate, $offsetPostedDate, $transactionDate) {
+            $q->where($postedDate, '<=', $offsetPostedDate)
+              ->where($transactionDate, '<=', $params['to']);
+        });
 
-        if ($variant === 'on')
-        {
-            return $query->whereExists(function($q) use ($params, $postedDate, $offsetPostedDate, $transactionDate) {
-                $q->where($postedDate, '<=', $offsetPostedDate)
-                  ->where($transactionDate, '<=', $params['to']);
-            });
-        }
-        else
-        {
-            $query->where($postedDate, '<=', $params['to']);
-        }
     }
 
     protected function addQueryParamBalanceId(BuilderEx $query, array $params)

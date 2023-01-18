@@ -451,9 +451,6 @@ final class RazorxTreatment
     // Experiment to send create validation metadata to BVS
     const BVS_CREATE_VALIDATION_METADATA = 'BVS_CREATE_VALIDATION_METADATA';
 
-    // Experiment to change the fetch logic for showing statements on x dashboard
-    const RAZORX_FLAG_TO_ENHANCE_FETCH_LOGIC = 'razorx_flag_to_enhance_fetch_logic';
-
     // Experiment to send manual verification data to BVS
     const BVS_MANUAL_VERIFICATION_DATA = 'BVS_MANUAL_VERIFICATION_DATA';
 

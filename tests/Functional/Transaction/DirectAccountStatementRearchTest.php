@@ -289,21 +289,25 @@ class DirectAccountStatementRearchTest extends TestCase
         $this->createDummyPayout();
         $bas = $this->getDbLastEntity('banking_account_statement');
         $this->fixtures->edit('banking_account_statement', $bas->getId(), ['posted_date' => $oldTimestamp]);
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['transaction_date' => $oldTimestamp]);
 
         // create a dummy reversal and a BAS and set the BAS posted_date to 2 days earlier.
         $this->createDummyReversal();
         $bas = $this->getDbLastEntity('banking_account_statement');
         $this->fixtures->edit('banking_account_statement', $bas->getId(), ['posted_date' => $oldTimestamp]);
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['transaction_date' => $oldTimestamp]);
 
         // create a dummy external and a BAS and set the BAS posted_date to 2 days earlier.
         $this->createDummyExternal();
         $bas = $this->getDbLastEntity('banking_account_statement');
         $this->fixtures->edit('banking_account_statement', $bas->getId(), ['posted_date' => $oldTimestamp]);
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['transaction_date' => $oldTimestamp]);
 
         // create a dummy BAS and set the BAS posted_date to 2 days earlier.
         $this->createDummyBasRecordsWithoutLinkingEntity();
         $bas = $this->getDbLastEntity('banking_account_statement');
         $this->fixtures->edit('banking_account_statement', $bas->getId(), ['posted_date' => $oldTimestamp]);
+        $this->fixtures->edit('banking_account_statement', $bas->getId(), ['transaction_date' => $oldTimestamp]);
 
         // we expect date filter to happen on posted_date
         // if it doesn't happen, then we shall be missing all statements in the response
