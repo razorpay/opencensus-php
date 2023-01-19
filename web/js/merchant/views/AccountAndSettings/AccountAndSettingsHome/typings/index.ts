@@ -1,13 +1,13 @@
 import { RouteComponentProps } from 'react-router-dom';
 import {
-  SectionCardDataFields,
-  PaymentMethodsFields,
-  WebsiteAppSettingsFields,
-  BusinessSettingsFields,
-  PaymentRefundsFields,
-  NotificationSettingsFields,
-  CheckoutSettingsFields,
   BankAccountSettlementFields,
+  BusinessSettingsFields,
+  CheckoutSettingsFields,
+  NotificationSettingsFields,
+  PaymentMethodsFields,
+  PaymentRefundsFields,
+  SectionCardDataFields,
+  WebsiteAppSettingsFields,
 } from './section';
 
 export type isMobile = boolean | undefined;
@@ -71,6 +71,7 @@ interface FeatureResponse {
   loading: boolean;
 }
 export interface AccountAndSettingsHomePropInterface {
+  isMobile?: isMobile;
   user: User;
   profile: any;
   mode: string;

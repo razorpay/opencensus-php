@@ -28,4 +28,18 @@ describe('Account And Product Section', () => {
     const dividers = screen.getAllByTestId('divider');
     expect(dividers.length).toEqual(defaultProps.sections.length - 1);
   });
+
+  test('should render shimmer incase of section length is zero', () => {
+    const props = {
+      sections: [],
+      isMobile: true,
+    };
+    const { rerender } = renderApp(props);
+    expect(screen.getAllByTestId('skeleton-card-shimmer').length).toEqual(3);
+    expect(screen.getAllByTestId('divider').length).toEqual(2);
+
+    rerender(<AccountAndProductSection {...props} isMobile={false} />);
+    expect(screen.getAllByTestId('skeleton-card-shimmer').length).toEqual(3);
+    expect(screen.getAllByTestId('divider').length).toEqual(3);
+  });
 });

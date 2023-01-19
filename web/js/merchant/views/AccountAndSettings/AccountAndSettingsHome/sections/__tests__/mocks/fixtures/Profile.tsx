@@ -43,7 +43,10 @@ jest.mock(
 
 const state = store.getState();
 
-export const getState = ({ userData = {}, userProfile = {} } = {}) => ({
+export const getState = ({ userData = {}, userProfile = {}, appConfig = {} } = {}): Record<
+  string,
+  any
+> => ({
   session: {
     ...state.session,
     user: {
@@ -73,5 +76,9 @@ export const getState = ({ userData = {}, userProfile = {} } = {}) => ({
       },
     },
     ...userProfile,
+  },
+  app: {
+    isMobileResolution: false,
+    ...appConfig,
   },
 });

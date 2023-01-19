@@ -1,42 +1,41 @@
-import React, { useState } from 'react';
-import { connect } from 'react-redux';
-import { compose, bindActionCreators } from 'redux';
-import { Heading, Text, Link } from '@razorpay/blade/components';
+import { Heading, Link, Text } from '@razorpay/blade/components';
+import Collapsible from 'common/components/Collapsible';
+import { Modules } from 'common/constant/enums';
+import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { titleCase } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import * as ProfileActions from 'merchant/reducers/profile';
+import { updateSession } from 'merchant/reducers/session';
+import { ACTION_QUERY_PARAM_KEY } from 'merchant/views/Account/Profile/deeplink-constants';
+import Divider from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/Divider';
+import MerchantDetails from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/MerchantDetails';
 import ProfilePhoto from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/ProfilePhoto';
 import UserInfo from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/UserInfo';
-import MerchantDetails from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/MerchantDetails';
 import Verification from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/Verification';
-import Divider from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/Divider';
 import {
-  ProfileContainer,
-  ProfileContent,
-  UserProfile,
-  Details,
-  Subheading,
-  MobileProfileContainer,
-  MobileProfileView,
-  ProfileDetail,
-} from './styled';
-import Collapsible from 'common/components/Collapsible';
-import * as ModalActions from 'merchant_common/reducers/modals';
-import { isMobileDevice } from 'merchant/components/Home/data';
-import { getInfoData } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/utils/profile';
-import { titleCase } from 'common/utils/rzp-utils';
-import { ACTION_QUERY_PARAM_KEY } from 'merchant/views/Account/Profile/deeplink-constants';
-import { updateSession } from 'merchant/reducers/session';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import * as ProfileActions from 'merchant/reducers/profile';
-import { updateUser } from 'merchant_common/reducers/user';
-import { useTwoFactorVerificationContext } from 'common/ui/TwoFactorVerification/TwoFactorVerificationContext';
-import { FORM_MAP } from './handlers';
-import {
-  ProfilePropsInterface,
   InfoDataInterface,
   PersonalProfileFields,
+  ProfilePropsInterface,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
-import { Modules } from 'common/constant/enums';
+import { getInfoData } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/utils/profile';
+import * as ModalActions from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { updateUser } from 'merchant_common/reducers/user';
+import React, { useState } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators, compose } from 'redux';
+import { FORM_MAP } from './handlers';
+import {
+  Details,
+  MobileProfileContainer,
+  MobileProfileView,
+  ProfileContainer,
+  ProfileContent,
+  ProfileDetail,
+  Subheading,
+  UserProfile,
+} from './styled';
 
 const makeAnalyticsCall = ({
   id,
@@ -150,9 +149,9 @@ const Profile = (props: ProfilePropsInterface): JSX.Element => {
       </MobileProfileView>
       <Collapsible open={isShowMore}>
         <>
-          <MerchantDetails merchantId={merchantId} />
+          <MerchantDetails merchantId={merchantId} isMobile={isMobile} />
           <Divider noMargin />
-          <Verification />
+          <Verification isMobile={isMobile} />
           <Divider noMargin />
           <UserInfo onClick={handleEditClick} isMobile={isMobile} infoData={infoData} />
         </>
@@ -168,9 +167,9 @@ const Profile = (props: ProfilePropsInterface): JSX.Element => {
           <Details>
             <Heading size="small">{titleCase(merchantName)}</Heading>
             <Subheading>Owner</Subheading>
-            <MerchantDetails merchantId={merchantId} />
+            <MerchantDetails merchantId={merchantId} isMobile={isMobile} />
             <Divider />
-            <Verification />
+            <Verification isMobile={isMobile} />
           </Details>
         </UserProfile>
         <UserInfo onClick={handleEditClick} isMobile={isMobile} infoData={infoData} />
@@ -183,6 +182,7 @@ const mapStateToProps = (state) => {
   return {
     user: state.session.user,
     profile: state.profile,
+    isMobile: state.app.isMobileResolution,
   };
 };
 
@@ -194,7 +194,3 @@ const mapDispatchToProps = (dispatch) => {
 };
 
 export default compose(connect(mapStateToProps, mapDispatchToProps))(Profile);
-
-Profile.defaultProps = {
-  isMobile: isMobileDevice(),
-};

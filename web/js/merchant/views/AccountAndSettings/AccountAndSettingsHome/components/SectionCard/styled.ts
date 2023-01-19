@@ -53,7 +53,7 @@ export const CardItems = styled.div`
   padding-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: ${({ isShimmer }) => (isShimmer ? 12 : 8)}px;
   @media screen and (max-width: 768px) {
     gap: 16px;
     padding-top: 24;

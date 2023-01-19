@@ -1,14 +1,13 @@
+import { Text } from '@razorpay/blade/components';
+import Popover, { PopoverBody } from 'common/ui/Popover';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import User2FASettings from 'merchant/views/Account/Profile/components/User2FASettings';
+import { TooltipContainer } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/UserInfo/styled';
+import { VerificationPropsInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 import React from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { IconText, VerificationContainer } from './styled';
-import { TooltipContainer } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/UserInfo/styled';
-import { Text } from '@razorpay/blade/components';
-import User2FASettings from 'merchant/views/Account/Profile/components/User2FASettings';
-import Popover, { PopoverBody } from 'common/ui/Popover';
-import { isMobileDevice } from 'merchant/components/Home/data';
-import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-import { VerificationPropsInterface } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 
 const Verification = ({ isMobile, user }: VerificationPropsInterface): JSX.Element | null => {
   const {
@@ -55,7 +54,3 @@ const mapStateToProps = (state) => {
 };
 
 export default compose(connect(mapStateToProps, null))(Verification);
-
-Verification.defaultProps = {
-  isMobile: isMobileDevice(),
-};

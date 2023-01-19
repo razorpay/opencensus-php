@@ -1,9 +1,8 @@
+import { Link, Text } from '@razorpay/blade/components';
 import React from 'react';
-import { Pointer, SubInfo, StyledMerchantDetails } from './styled';
-import { Text, Link } from '@razorpay/blade/components';
+import { Pointer, StyledMerchantDetails, SubInfo } from './styled';
 // eslint-disable-next-line
 import CustomClipboard from 'common/ui/Clipboard/Custom';
-import { isMobileDevice } from 'merchant/components/Home/data';
 
 interface MerchantDetailsPropsInterface {
   merchantId: string;
@@ -28,10 +27,6 @@ const MerchantDetails = ({ isMobile, merchantId }: MerchantDetailsPropsInterface
       </CustomClipboard>
     </StyledMerchantDetails>
   );
-};
-
-MerchantDetails.defaultProps = {
-  isMobile: isMobileDevice(),
 };
 
 export default MerchantDetails;

@@ -1,25 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { connect } from 'react-redux';
-import { compose, bindActionCreators } from 'redux';
-import Profile from './sections/Profile';
-import AccountAndProductSection from './sections/AccountAndProductSection';
-import { PageLayoutContainer } from './styled';
-import { getSectionCards } from './utils/sectionCard';
-import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
+import { fetchFeatureByName as fetchFeatureByNameFn } from 'merchant/reducers/config';
 import {
   fetchMerchantInstruments as fetchMerchantInstrumentsFn,
   fetchRequestedInstruments as fetchRequestedInstrumentsFn,
   setLoading as setLoadingFn,
 } from 'merchant/reducers/instrumentRequests';
-import Spinner from 'common/ui/Spinner';
 import { fetchMerchantWebsiteDetails as fetchMerchantWebsiteDetailsFn } from 'merchant/reducers/websitecompliance';
-import { fetchFeatureByName as fetchFeatureByNameFn } from 'merchant/reducers/config';
+import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { bindActionCreators, compose } from 'redux';
+import AccountAndProductSection from './sections/AccountAndProductSection';
+import Profile from './sections/Profile';
+import { PageLayoutContainer } from './styled';
 import { AccountAndSettingsHomePropInterface, SectionCardInterface } from './typings';
+import { getSectionCards } from './utils/sectionCard';
 
 const feature = 'allow_cfb_international';
 
 const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX.Element => {
   const {
+    isMobile,
     user,
     profile,
     mode,
@@ -90,13 +90,7 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
   return (
     <PageLayoutContainer>
       <Profile />
-      {!sections?.length ? (
-        <div className="page-spinner-container">
-          <Spinner />
-        </div>
-      ) : (
-        <AccountAndProductSection sections={sections} />
-      )}
+      <AccountAndProductSection sections={sections} isMobile={isMobile} />
     </PageLayoutContainer>
   );
 };
@@ -110,6 +104,7 @@ const mapStateToProps = (state) => {
     loading: state.instrumentRequests.loading,
     websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
     featureStatusConfig: state.config.featureStatusConfig,
+    isMobile: state.app.isMobileResolution,
   };
 };
 

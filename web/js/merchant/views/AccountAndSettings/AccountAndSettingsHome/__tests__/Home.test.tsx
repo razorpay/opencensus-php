@@ -71,6 +71,8 @@ describe('AccountAndSettingsHomePage', () => {
     await waitFor(() => {
       expect(screen.getByText('Accounts and Product Sections')).toBeInTheDocument();
     });
-    expect(screen.getByText('7 sections found')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('7 sections found')).toBeInTheDocument();
+    });
   });
 });

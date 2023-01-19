@@ -23,9 +23,6 @@ describe('Merchant Profile Section', () => {
     const initialState = getState();
     renderApp({
       initialState,
-      props: {
-        isMobile: false,
-      },
     });
     expect(screen.getByText('Your profile')).toBeInTheDocument();
     expect(screen.getByText(titleCase(initialState.session.user.contact_name))).toBeInTheDocument();
@@ -46,12 +43,12 @@ describe('Merchant Profile Section', () => {
         },
         userRole: 'admin',
       },
+      appConfig: {
+        isMobileResolution: true,
+      },
     });
     renderApp({
       initialState,
-      props: {
-        isMobile: true,
-      },
     });
     expect(screen.getByText(titleCase(initialState.session.user.contact_name))).toBeInTheDocument();
     expect(screen.getByText('Owner')).toBeInTheDocument();
