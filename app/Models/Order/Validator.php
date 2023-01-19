@@ -17,6 +17,7 @@ use RZP\Models\SubscriptionRegistration;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Currency\Core as CurrencyCore;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\SubscriptionRegistration\Validator as SubscriptionRegistrationValidator;
 use RZP\Trace\TraceCode;
 
 class Validator extends Base\Validator
@@ -101,6 +102,10 @@ class Validator extends Base\Validator
 
     protected $changeBankCodeGatewayMapping = [
         IFSC::UJVN => 'USFB',
+    ];
+
+    protected static $fetchOrderDetailsForCheckoutRules = [
+        'order'    => 'required|array',
     ];
 
     protected function getBankCodeMapping($bank)
@@ -326,6 +331,25 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_NACH_FORM_STATUS_PENDING);
             }
         }
+    }
+
+    public function validateNachStatusForCheckout(Entity $order): void
+    {
+        if ($order->getMethod() !== Payment\Method::NACH) {
+            return;
+        }
+
+        $invoice = $order->invoice;
+
+        if ($invoice === null) {
+            return;
+        }
+
+        (new SubscriptionRegistrationValidator())->validateInvoiceCreatedForTokenRegistration($invoice);
+
+        $subscriptionRegistration = $invoice->tokenRegistration;
+
+        (new SubscriptionRegistrationValidator())->validateSubscriptionRegistrationForAuthentication($subscriptionRegistration);
     }
 
     /**

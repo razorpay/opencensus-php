@@ -1133,6 +1133,7 @@ class Route
         'order_fetch_by_id'                        => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
         'order_fetch_by_id_internal'               => ['get',      'orders_internal/{id}',                           'OrderController@fetchOrderDetailById'                              ],
         'order_fetch_by_id_internal_admin'         => ['get',      'orders_internal_admin/{id}',                     'OrderController@fetchOrderDetailByIdAdmin'                         ],
+        'order_fetch_internal_checkout'            => ['get',      'internal/orders/checkout',                       'OrderController@fetchOrderDetailsForCheckout'                      ],
         'order_payments'                           => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'         => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'order_edit'                               => ['patch',    'orders/{id}',                                    'OrderController@update'                                            ],
@@ -6585,6 +6586,7 @@ class Route
         'invoice_fetch_for_checkout_internal',
         'checkout_personalisation_internal',
         'fetch_payment_config_checkout_internal',
+        'order_fetch_internal_checkout',
         'merchant_methods_offers_checkout_internal',
 
         'partner_config_fetch',
@@ -14717,6 +14719,7 @@ class Route
             'fetch_trusted_badge_status',
             'invoice_fetch_for_checkout_internal',
             'merchant_fetch_config_for_checkout_internal',
+            'order_fetch_internal_checkout',
             'merchant_methods_offers_checkout_internal',
             'merchant_validate_public_auth_over_internal_auth',
             'checkout_personalisation_internal',

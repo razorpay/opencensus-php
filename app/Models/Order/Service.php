@@ -24,6 +24,7 @@ use RZP\Base\ConnectionType;
 use RZP\Models\Bank\BankCodes;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Offer;
+use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -519,6 +520,19 @@ class Service extends Base\Service
         $orderAdminArray['checkout_config_id'] = $checkoutConfigId;
 
         return $orderAdminArray;
+    }
+
+    public function fetchOrderDetailsForCheckout($input): array
+    {
+        $validator = new Validator();
+        $validator->validateInput('fetch_order_details_for_checkout', $input);
+
+        // create order entity using forcefill
+        $order = $this->app['pg_router']->getOrderEntityFromOrderAttributes($input['order']);
+
+        $validator->validateNachStatusForCheckout($order);
+
+        return (new Core())->getFormattedDataForCheckout($order, $this->merchant);
     }
 
     public function fetchMultiple($input)

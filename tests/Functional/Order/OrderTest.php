@@ -2938,4 +2938,113 @@ class OrderTest extends TestCase
 
         $this->runRequestResponseFlow($testData);
     }
+
+    public function testFetchOrderDetailsForCheckout(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['order'] = [
+            'id' => 'abcdef1234567',
+            'amount' => 50000,
+            'partial_payment'   => false,
+            'currency'          => 'INR',
+            'amount_paid'       => 0,
+            'amount_due'        => 50000,
+            'first_payment_min_amount' => null,
+        ];
+
+        $this->startTest();
+    }
+
+    public function testFetchOrderDetailsForCheckoutWithAllPossibleFieldsInResponse(): void
+    {
+        $this->fixtures->merchant->addFeatures([
+            FeatureConstants::TPV,
+            FeatureConstants::ONE_CLICK_CHECKOUT,
+        ]);
+
+        $orderData = [
+            'amount'        => 50000,
+            'receipt'       => 'rcptid42',
+            'method'        => 'netbanking',
+            'bank_account'  => [
+                'account_number'    => '040304030403040',
+                'ifsc'              => 'UTIB0003098',
+                'name'              => 'ThisIsAwesome',
+            ],
+            'line_items_total' => 50000,
+            'line_items' => [
+                [
+                    'type' => 'e-commerce',
+                    'sku' => '1g234',
+                    'variant_id' => '12r34',
+                    'other_product_codes' => [
+                        'upc' => '12r34',
+                        'ean' => '123r4',
+                        'unspsc' => '123s4'
+                    ],
+                    'price' => '20000',
+                    'offer_price' => '20000',
+                    'tax_amount' => 0,
+                    'quantity' => 1,
+                    'name' => 'TEST',
+                    'description' => 'TEST',
+                    'weight' => '1700',
+                    'dimensions' => [
+                        'length' => '1700',
+                        'width' => '1700',
+                        'height' => '1700'
+                    ],
+                    'image_url' => 'http://url',
+                    'product_url' => 'http://url',
+                    'notes' => []
+                ],
+                [
+                    'type' => 'e-commerce',
+                    'sku' => '1g235',
+                    'variant_id' => '12r34',
+                    'other_product_codes' => [
+                        'upc' => '12r34',
+                        'ean' => '123r4',
+                        'unspsc' => '123s4'
+                    ],
+                    'price' => '30000',
+                    'offer_price' => '30000',
+                    'tax_amount' => 0,
+                    'quantity' => 1,
+                    'name' => 'TEST',
+                    'description' => 'TEST',
+                    'weight' => 1700,
+                    'dimensions' => [
+                        'length' => 1700,
+                        'width' => 1700,
+                        'height' => 1700
+                    ],
+                    'image_url' => 'http://url',
+                    'product_url' => 'http://url',
+                    'notes' => []
+                ]
+            ]
+        ];
+
+        $order = $this->createOrder($orderData);
+
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['order'] = [
+            'id' => substr($order['id'], 6),
+            'amount' => 50000,
+            'partial_payment'   => false,
+            'currency'          => 'INR',
+            'amount_paid'       => 0,
+            'amount_due'        => 50000,
+            'first_payment_min_amount' => null,
+            'receipt' => 'rcptid42',
+            'bank' => 'UTIB',
+            'method' => 'netbanking',
+            'account_number' => '040304030403040'
+        ];
+
+        $this->startTest();
+    }
 }

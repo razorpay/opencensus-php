@@ -2607,4 +2607,93 @@ return [
         ],
     ],
 
+    'testFetchOrderDetailsForCheckout' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/internal/orders/checkout',
+        ],
+        'response'  => [
+            'content' => [
+                'partial_payment'   => false,
+                'amount'            => 50000,
+                'currency'          => 'INR',
+                'amount_paid'       => 0,
+                'amount_due'        => 50000,
+                'first_payment_min_amount' => null,
+            ],
+        ],
+    ],
+
+    'testFetchOrderDetailsForCheckoutWithAllPossibleFieldsInResponse' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/internal/orders/checkout',
+        ],
+        'response'  => [
+            'content' => [
+                'partial_payment'   => false,
+                'amount'            => 50000,
+                'currency'          => 'INR',
+                'amount_paid'       => 0,
+                'amount_due'        => 50000,
+                'first_payment_min_amount' => null,
+                'bank' => 'UTIB',
+                'account_number' => 'XXXXXXXXXXXXX40',
+                'method' => 'netbanking',
+                'line_items_total' => 50000,
+                'line_items' => [
+                    [
+                        'type' => 'e-commerce',
+                        'sku' => '1g234',
+                        'variant_id' => '12r34',
+                        'other_product_codes' => [
+                            'upc' => '12r34',
+                            'ean' => '123r4',
+                            'unspsc' => '123s4'
+                        ],
+                        'price' => '20000',
+                        'offer_price' => '20000',
+                        'tax_amount' => 0,
+                        'quantity' => 1,
+                        'name' => 'TEST',
+                        'description' => 'TEST',
+                        'weight' => '1700',
+                        'dimensions' => [
+                            'length' => '1700',
+                            'width' => '1700',
+                            'height' => '1700'
+                        ],
+                        'image_url' => 'http://url',
+                        'product_url' => 'http://url',
+                        'notes' => []
+                    ],
+                    [
+                        'type' => 'e-commerce',
+                        'sku' => '1g235',
+                        'variant_id' => '12r34',
+                        'other_product_codes' => [
+                            'upc' => '12r34',
+                            'ean' => '123r4',
+                            'unspsc' => '123s4'
+                        ],
+                        'price' => '30000',
+                        'offer_price' => '30000',
+                        'tax_amount' => 0,
+                        'quantity' => 1,
+                        'name' => 'TEST',
+                        'description' => 'TEST',
+                        'weight' => 1700,
+                        'dimensions' => [
+                            'length' => 1700,
+                            'width' => 1700,
+                            'height' => 1700
+                        ],
+                        'image_url' => 'http://url',
+                        'product_url' => 'http://url',
+                        'notes' => []
+                    ]
+                ]
+            ],
+        ],
+    ]
 ];

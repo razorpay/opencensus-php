@@ -96,6 +96,15 @@ class OrderController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function fetchOrderDetailsForCheckout()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchOrderDetailsForCheckout($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function fetchPayments($id)
     {
         $input = Request::all();
@@ -277,7 +286,7 @@ class OrderController extends Controller
 
         return ApiResponse::json([], 200);
     }
-    
+
     public function getCODOrders(){
 
         $input = Request::all();
