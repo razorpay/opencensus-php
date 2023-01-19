@@ -160,9 +160,6 @@ final class RazorxTreatment
     // Onboard merchant on RazorpayX test mode
     const RAZORPAY_X_TEST_MODE_ONBOARDING = 'razorpayx_x_test_mode_onboarding';
 
-    // Onboard merchant on Ledger
-    const LEDGER_ONBOARDING = 'ledger_onboarding';
-
     // Onboard merchant on Ledger with reverse shadow
     const LEDGER_ONBOARDING_REVERSE_SHADOW = 'ledger_onboarding_reverse_shadow';
 

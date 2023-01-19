@@ -9321,7 +9321,7 @@ IFSC Code  ICIC0001206
      */
     public function testMerchantSwitchProduct($expValue = 'on', $category2 = 'school')
     {
-        $this->mockLedgerSns(0);
+        $this->mockLedgerSns(2);
 
         $this->enableRazorXTreatmentForXOnboarding($expValue);
 
@@ -9430,16 +9430,16 @@ IFSC Code  ICIC0001206
         $this->assertContains(Features::NEW_BANKING_ERROR, $testFeaturesArray);
         $this->assertContains(Features::NEW_BANKING_ERROR, $liveFeaturesArray);
 
-        // Assert that the ledger_journal_writes feature is not enabled at all
-        $this->assertNotContains('ledger_journal_writes', $testFeaturesArray);
-        $this->assertNotContains('ledger_journal_writes', $liveFeaturesArray);
+        // Assert that the ledger_journal_writes feature is also enabled for the merchant
+        $this->assertContains('ledger_journal_writes', $testFeaturesArray);
+        $this->assertContains('ledger_journal_writes', $liveFeaturesArray);
     }
 
     public function testMerchantSwitchProductWithLedgerExperimentOn($expValue = 'on', $category2 = 'school')
     {
         $this->mockLedgerSns(2);
 
-        $this->enableRazorXTreatmentForXOnboarding($expValue, 'on');
+        $this->enableRazorXTreatmentForXOnboarding($expValue);
 
         $liveUser = (new User())->createUserForMerchant('10000000000000', [
             'contact_mobile' => '8888888888',
@@ -9557,7 +9557,7 @@ IFSC Code  ICIC0001206
         $this->mockLedgerSns(0);
 
         $this->app['config']->set('applications.ledger.enabled', false);
-        $this->enableRazorXTreatmentForXOnboarding($expValue, 'off', 'on');
+        $this->enableRazorXTreatmentForXOnboarding($expValue, 'on');
 
         $liveUser = (new User())->createUserForMerchant('10000000000000', [
             'contact_mobile' => '8888888888',
@@ -11384,7 +11384,6 @@ IFSC Code  ICIC0001206
     }
 
     protected function enableRazorXTreatmentForXOnboarding($value = 'on',
-                                                           $ledgerOnboardingValue = 'control',
                                                            $ledgerReverseShadowOnboardingValue = 'control')
     {
         (new Admin\Service)->setConfigKeys(
@@ -11408,7 +11407,7 @@ IFSC Code  ICIC0001206
 
         $this->app->razorx->method('getTreatment')
                           ->will($this->returnCallback(
-                              function ($mid, $feature, $mode) use ($value, $ledgerOnboardingValue, $ledgerReverseShadowOnboardingValue)
+                              function ($mid, $feature, $mode) use ($value, $ledgerReverseShadowOnboardingValue)
                               {
                                   if ($feature === Merchant\RazorxTreatment::RAZORPAY_X_TEST_MODE_ONBOARDING)
                                   {
@@ -11422,11 +11421,6 @@ IFSC Code  ICIC0001206
                                   if ($feature == Merchant\RazorxTreatment::RAZORPAY_X_ACL_DENY_UNAUTHORISED)
                                   {
                                       return $value;
-                                  }
-
-                                  if ($feature == Merchant\RazorxTreatment::LEDGER_ONBOARDING)
-                                  {
-                                      return $ledgerOnboardingValue;
                                   }
 
                                   if ($feature == Merchant\RazorxTreatment::LEDGER_ONBOARDING_REVERSE_SHADOW)

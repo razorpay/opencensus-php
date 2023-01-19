@@ -934,37 +934,31 @@ class Activate extends Base\Core
                 }
                 else
                 {
-                    // Call Ledger Entity method which will take care of creating the account for this balance in Ledger in shadow mode.
-                    // Flow will come here only if balance is created successfully in API DB.
-                    $ledgerExperimentActive = $this->onBoardMerchantOnLedger($merchant, $mode);
-
-                    // check if experiment is active for shadow mode
-                    if ($ledgerExperimentActive === true)
+                    // Call Ledger entity method which will take care of creating the account for this balance in Ledger in shadow mode.
+                    // Flow will come here only if balance is created successfully in API DB and ledger_reverse_shadow feature is not enabled.
+                    if ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false)
                     {
-                        if ($merchant->isFeatureEnabled(Feature\Constants::LEDGER_JOURNAL_WRITES) === false)
-                        {
-                            (new Feature\Core)->create(
-                                [
-                                    Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
-                                    Feature\Entity::ENTITY_ID   => $merchant->getId(),
-                                    Feature\Entity::NAME        => Feature\Constants::LEDGER_JOURNAL_WRITES,
-                                ]);
+                        (new Feature\Core)->create(
+                            [
+                                Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+                                Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                                Feature\Entity::NAME        => Feature\Constants::LEDGER_JOURNAL_WRITES,
+                            ]);
 
-                            $this->trace->info(
-                                TraceCode::LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
-                                [
-                                    'merchant_id'       => $merchant->getId(),
-                                    'mode'              => $mode,
-                                ]);
-                        }
-
-                        // Removing ledger reverse shadow features because merchant is being onboarded in shadow mode.
-                        $this->deleteLedgerManuallyAssignedFeature($merchant, Feature\Constants::LEDGER_REVERSE_SHADOW);
-
-                        $this->deleteLedgerManuallyAssignedFeature($merchant, Feature\Constants::LEDGER_JOURNAL_READS);
-
-                        (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAccount, $mode);
+                        $this->trace->info(
+                            TraceCode::LEDGER_JOURNAL_WRITES_FEATURE_ASSIGNED,
+                            [
+                                'merchant_id'       => $merchant->getId(),
+                                'mode'              => $mode,
+                            ]);
                     }
+
+                    // Removing ledger reverse shadow features because merchant is being onboarded in shadow mode.
+                    $this->deleteLedgerManuallyAssignedFeature($merchant, Feature\Constants::LEDGER_REVERSE_SHADOW);
+
+                    $this->deleteLedgerManuallyAssignedFeature($merchant, Feature\Constants::LEDGER_JOURNAL_READS);
+
+                    (new Merchant\Balance\Ledger\Core)->createXLedgerAccount($merchant, $bankingAccount, $mode);
                 }
             }
 
@@ -1164,17 +1158,6 @@ class Activate extends Base\Core
         ];
 
         $this->addFeatureWhileHandlingStaleRead($featureParams);
-    }
-
-    // Returns true if experiment and env variable to onboard merchant on ledger is running.
-    protected function onBoardMerchantOnLedger(Entity $merchant, string $mode): bool
-    {
-        $variant = $this->app->razorx->getTreatment($merchant->getId(),
-            Merchant\RazorxTreatment::LEDGER_ONBOARDING,
-            $mode
-        );
-
-        return (strtolower($variant) === 'on');
     }
 
     // Returns true if experiment and env variable to onboard merchant on ledger in reverse shadow is running.
