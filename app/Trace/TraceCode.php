@@ -79,6 +79,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FETCH_MULTIPLE_BALANCE_REQUEST                        = 'FETCH_MULTIPLE_BALANCE_REQUEST';
     const FETCH_MULTIPLE_MERCHANT_BALANCE_REQUEST               = 'FETCH_MULTIPLE_MERCHANT_BALANCE_REQUEST';
     const PAR_ASYNC_JOB                                         = 'PAR_ASYNC_JOB';
+    const REQUEST_HEADERS                                       = 'REQUEST_HEADERS';
+    const LOGGING_REQUEST_HEADERS_FAILED                        = 'LOGGING_REQUEST_HEADERS_FAILED';
 
     const GATEWAY_HEALTH_CHECK_REQUEST                          = 'GATEWAY_HEALTH_CHECK_REQUEST';
     const GATEWAY_EMAIL_CONFIG_NOT_ENABLED                      = 'GATEWAY_EMAIL_CONFIG_NOT_ENABLED';
