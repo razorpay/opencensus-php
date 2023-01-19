@@ -145,12 +145,16 @@ export default class RuleList extends React.Component {
             </div>
           </div>
 
-          <div class="panel-header">
-            <h2 class="payment-gateway-title" style={{ marginTop: '20px', marginBottom: '10px' }}>
+          <div className="panel-header">
+            <h2 className="payment-gateway-title default-rule-title">
               <span className="provider-title">Default Rule</span>
-              <Link to={`/optimizer/rules/${default_rule?.id}`} class="pull-right">
-                <button className="pull-right no-border create-rule-act"> View Default Rule</button>
-              </Link>
+              {default_rule?.id && (
+                <Link to={`/optimizer/rules/${default_rule.id}`} class="pull-right">
+                  <button type="button" className="pull-right no-border create-rule-act">
+                    View Default Rule
+                  </button>
+                </Link>
+              )}
             </h2>
           </div>
           <div class="panel-body pt0" style={{ paddingTop: '0 !important', marginBottom: '10px' }}>

@@ -1,6 +1,8 @@
 import React from 'react';
+
 import { MultiSelectDropdownWithSearch } from 'merchant/components/MultiSelectDropdownWithSearch';
-import { WalletLabels } from '../util';
+
+import { WalletLabels } from 'merchant/views/Navigator/components/util';
 
 export const WalletsMultiSelect = ({
   walletOptions,

@@ -1,8 +1,10 @@
 import React, { Fragment } from 'react';
+
 import Input from 'common/new-ui/Input';
 
+import { TPV_OPTIONS } from 'merchant/views/Navigator/constants';
+
 import { WalletsMultiSelect } from './WalletsMultiSelect';
-import { TPV_OPTIONS } from './constants';
 
 export function Step3({
   isEdit,
@@ -93,7 +95,8 @@ export function Step3({
 
                 <div className="col-xs-9">
                   <Input.Radio
-                    defaultValue={provider.Gateway_details?.['UPI Features']?.tpv ?? 0}
+                    id={label}
+                    defaultValue={provider.Gateway_details?.TPV ?? -1}
                     options={TPV_OPTIONS}
                     name={label.toLowerCase()}
                     onChange={changeGatewayDetails}
@@ -122,12 +125,12 @@ export function Step3({
                 ) : (
                   <>
                     <Input
-                      id={label?.toLowerCase()}
+                      id={label}
                       name={label?.toLowerCase()}
                       type={data_type === 'string' ? 'text' : 'number'}
                       value={provider?.Gateway_details?.[label] || ''}
                       placeholder={data_value}
-                      onChange={(e) => changeGatewayDetails(e, label)}
+                      onChange={changeGatewayDetails}
                     />
                     {validationErrors[label] && (
                       <div className="provider-details-validation-error">

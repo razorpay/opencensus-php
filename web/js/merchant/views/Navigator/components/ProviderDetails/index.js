@@ -15,6 +15,7 @@ import { gatewayLogos, WalletLabels } from 'merchant/views/Navigator/components/
 
 import APIDetails from './components/APIDetails';
 import NoProviderFound from './components/NoProviderFound';
+import { getUPIOptionLabel } from './util';
 
 @withRouter
 @connect(
@@ -118,7 +119,7 @@ export default class ProviderDetails extends Component {
                     <div className="list-group details-row-container">
                       <EntityDetailRow
                         label="TPV Enabled"
-                        value={() => (upiFeatures.tpv ? 'Yes' : 'No')}
+                        value={() => getUPIOptionLabel(upiFeatures.tpv)}
                       />
                     </div>
                   )}

@@ -1,9 +1,26 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Link, Redirect } from 'react-router-dom';
-import Spinner from 'common/ui/Spinner';
 import { CSSTransition } from 'react-transition-group';
+
+import Spinner from 'common/ui/Spinner';
+import { deepClone } from 'common/utils/rzp-utils';
+import { merchantFetch } from 'merchant/utils/ajax';
+
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+
+import { trackOptimizerEvents, trackAPIResults } from 'merchant/views/Navigator/track';
+import { addProvider, editProvider } from 'merchant/views/Navigator/service';
+import {
+  INIT_PROVIDER_STATE,
+  INIT_FORM_STATE,
+  HAVE_NETBANKING_FEATURES,
+  HAVE_UPI_FEATURES,
+  NETBANKING_FEATURES,
+  UPI_FEATURES,
+} from 'merchant/views/Navigator/constants';
+
 import FullPageCover from './FullPageCover';
 import FullPageCoverHeader from './FullPageCoverHeader';
 import {
@@ -11,14 +28,8 @@ import {
   gatewayLogos,
   getSelectedProviderWithAcquirer as getSelectedProvider,
 } from './util';
-import { merchantFetch } from 'merchant/utils/ajax';
-import { showNotification } from 'merchant_common/reducers/notifications';
 import { HowToGetDetails } from './Provider/HowToGetDetails';
 import { Step1, Step2, Step3 } from './AddProvider/index';
-import { trackOptimizerEvents, trackAPIResults } from 'merchant/views/Navigator/track';
-import { addProvider, editProvider } from 'merchant/views/Navigator/service';
-import { INIT_PROVIDER_STATE, INIT_FORM_STATE } from 'merchant/views/Navigator/constants';
-import { deepClone } from 'common/utils/rzp-utils';
 
 @withRouter
 @connect(
@@ -98,11 +109,29 @@ export default class AddProvider extends React.Component {
     if (terminalId && activeProviders?.length > 0) {
       const provider = activeProviders.find((item) => item?.Terminal_id === terminalId) || {};
 
-      this.setState({
-        ...deepClone(INIT_FORM_STATE),
-        selectedProvider: provider?.Gateway || '',
-        provider,
-      });
+      if (provider) {
+        const { Gateway, Gateway_details } = provider;
+
+        let TPV = 0;
+
+        if (HAVE_UPI_FEATURES.includes(Gateway)) {
+          TPV = Gateway_details[UPI_FEATURES]?.tpv ?? 0;
+        } else if (HAVE_NETBANKING_FEATURES.includes(Gateway)) {
+          TPV = Gateway_details[NETBANKING_FEATURES]?.tpv ?? 0;
+        }
+
+        this.setState({
+          ...deepClone(INIT_FORM_STATE),
+          selectedProvider: provider?.Gateway || '',
+          provider: {
+            ...provider,
+            Gateway_details: {
+              ...Gateway_details,
+              TPV,
+            },
+          },
+        });
+      }
     }
   };
 
@@ -323,7 +352,7 @@ export default class AddProvider extends React.Component {
     Object.keys(providers[selectedProviderWithAcquirer]).forEach((key) => {
       const value = provider?.Gateway_details?.[key];
 
-      if (!['Payment Methods', 'Gateway Name', 'TPV'].includes(key) && !value) {
+      if (!['Payment Methods', 'Gateway Name'].includes(key) && !value) {
         isValid = false;
       } else if (key === 'Payment Methods' && value?.length === 0) {
         isValid = false;
@@ -341,7 +370,7 @@ export default class AddProvider extends React.Component {
   };
 
   changeGatewayDetails = (event, item) => {
-    const { type, checked, value, name } = event.target;
+    const { type, checked, value, id } = event.target;
 
     this.setState(
       (prevState) => {
@@ -371,12 +400,8 @@ export default class AddProvider extends React.Component {
               delete provider.Gateway_details.wallet_metadata;
             }
           }
-        } else if (type === 'radio' && ['tpv'].includes(name)) {
-          const upiFeatures = provider.Gateway_details['UPI Features'] || {};
-
-          provider.Gateway_details['UPI Features'] = { ...upiFeatures, [name]: Number(value) };
         } else {
-          provider.Gateway_details[item] = value;
+          provider.Gateway_details[id] = value;
         }
 
         return { provider };
@@ -434,14 +459,26 @@ export default class AddProvider extends React.Component {
   };
 
   onSubmit = async () => {
-    const { provider, isEdit } = this.state;
+    const { provider, isEdit, selectedProvider } = this.state;
     const { closeModal, history, showNotification } = this.props;
 
-    let res = null;
+    const Gateway_details = provider?.Gateway_details || {};
+    const upiFeatures = Gateway_details?.[UPI_FEATURES] || {};
+    const netBanking = Gateway_details?.[NETBANKING_FEATURES] || {};
+    const tpv = Number(Gateway_details?.TPV) ?? 0;
+
+    if (HAVE_UPI_FEATURES.includes(selectedProvider)) {
+      Gateway_details[UPI_FEATURES] = { ...upiFeatures, tpv };
+    } else if (HAVE_NETBANKING_FEATURES.includes(selectedProvider)) {
+      Gateway_details[NETBANKING_FEATURES] = { ...netBanking, tpv };
+    }
+
+    delete Gateway_details?.TPV;
 
     const payload = {
       ...provider,
       Gateway: this.getSelectedProviderWithAcquirer(),
+      Gateway_details,
     };
 
     trackOptimizerEvents({
@@ -455,6 +492,8 @@ export default class AddProvider extends React.Component {
     });
 
     this.setState({ isSaving: true });
+
+    let res = null;
 
     try {
       if (isEdit) {
