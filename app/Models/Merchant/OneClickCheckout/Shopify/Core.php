@@ -1186,7 +1186,7 @@ class Core extends Base\Core
 
             $couponCode = $scriptDiscountTitle;
 
-            $couponAmount = intval($rzpOrder['notes']['Script_Discount_Amount'])*100;
+            $couponAmount = floatval($rzpOrder['notes']['Script_Discount_Amount'])*100;
         }
 
         $codFeeApplied = 0;
