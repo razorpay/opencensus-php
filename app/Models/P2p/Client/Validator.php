@@ -80,7 +80,8 @@ class Validator extends Base\Validator
     public function makeGetGatewayConfigRules()
     {
         $rules = $this->makeRules([
-                      Entity::CUSTOMER_ID  => 'required',
+                      Entity::CUSTOMER_ID    => 'sometimes',
+                      DeviceEntity::CONTACT  => 'required',
                   ]);
 
         return $rules;

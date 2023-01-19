@@ -29,7 +29,7 @@ class ClientGateway extends Gateway implements Contracts\ClientGateway
                 Fields::SUB_MERCHANT_ID          => $this->getSubMerchantId(),
                 Fields::MCC_CODE                 => $this->getMerchantCategoryCode(),
                 Fields::TIMESTAMP                => $this->getTimeStamp(),
-                Fields::MOBILE_NUMBER            => '91' . substr($this->input[Entity::CUSTOMER][CustomerEntity::CONTACT] , -10),
+                Fields::MOBILE_NUMBER            => '91' . substr($this->input[CustomerEntity::CONTACT] , -10),
         ]);
 
         $gatewayResponse = $this->sendGatewayRequestAndParseResponse($request);

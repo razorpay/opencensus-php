@@ -22,7 +22,7 @@ class ClientGateway extends Gateway implements Contracts\ClientGateway
     {
         $response->setData([
            Entity::GATEWAY_CONFIG => [
-                Entity::MERCHANT_ID => $this->input[Entity::CUSTOMER][Entity::MERCHANT_ID]
+                Fields::MCC => '7298'
            ],
            Entity::TOKEN => [
                 Fields::GATEWAY_TOKEN => 'test token'

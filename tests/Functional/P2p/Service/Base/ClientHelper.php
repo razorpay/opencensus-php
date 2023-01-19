@@ -17,7 +17,7 @@ class ClientHelper extends P2pHelper
         $request = $this->request('turbo/%s/config',[$gatewayId]);
 
         $default = [
-            'customer_id' => $this->fixtures->customer->getPublicId(),
+            'contact' => $this->fixtures->customer->getContact(),
         ];
 
         $this->content($request, $default, $content);

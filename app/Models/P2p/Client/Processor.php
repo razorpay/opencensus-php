@@ -4,8 +4,8 @@ namespace RZP\Models\P2p\Client;
 
 use RZP\Exception;
 use RZP\Models\P2p\Base;
-use RZP\Models\P2p\Device;
 use RZP\Error\P2p\ErrorCode;
+use RZP\Models\P2p\Device\Entity as DeviceEntity;
 
 /**
  * @property Core $core
@@ -21,15 +21,7 @@ class Processor extends Base\Processor
     {
         $this->initialize(Action::GET_GATEWAY_CONFIG, $input, true);
 
-        $customer = (new Device\Core)->getDeviceCustomer($input[Entity::CUSTOMER_ID]);
-
-        // If customer id does not have contact throw exception
-        if($customer->getContact() === null)
-        {
-            throw new Exception\P2p\BadRequestException(ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
-        }
-
-        $this->gatewayInput->put(Entity::CUSTOMER, $customer->toArray());
+        $this->gatewayInput->put(DeviceEntity::CONTACT, $input[DeviceEntity::CONTACT]);
 
         return $this->callGateway();
     }
