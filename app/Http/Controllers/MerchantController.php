@@ -792,6 +792,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getPaymentMethodsWithOffersForCheckout()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->getPaymentMethodsWithOffersForCheckout($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPaymentMethodsById($merchantId)
     {
         $data = $this->service()->getPaymentMethodsById($merchantId);

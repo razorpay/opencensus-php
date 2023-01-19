@@ -218,6 +218,96 @@ class Checkout
 
         return $data;
     }
+
+    public function getPaymentMethodsWithOffersForCheckout(array $input, Entity $merchant): array
+    {
+        $order = null;
+
+        // create order entity using forcefill
+        if (isset($input['order']))
+        {
+            $order = $this->app['pg_router']->getOrderEntityFromOrderAttributes($input['order']);
+        }
+
+        $data['methods'] = $this->getMerchantPaymentMethodsForCheckout($input, $merchant, $order);
+
+        $this->addOfferDetailsAndUpdateMethodsForCheckout($merchant, $order, $data);
+
+        return $data;
+    }
+
+    protected function getMerchantPaymentMethodsForCheckout(array $input, Merchant\Entity $merchant, ?Order\Entity $order): array
+    {
+        $methodsCore = new Methods\Core();
+
+        $data[Entity::METHODS] = $methodsCore->getFormattedMethods($merchant);
+
+        $data[Entity::METHODS] = $methodsCore->addUpiType($merchant, $data[Entity::METHODS]);
+
+        //changes based on order entity
+        if ($order !== null)
+        {
+            $data[Entity::METHODS][Payment\Method::INTL_BANK_TRANSFER] = $this->addCurrencyBasedIntlVirtualAccounts($merchant, $order);
+
+            $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
+        }
+
+        $this->checkAndAddCustomProviders($data);
+
+        $this->filterMethodBasedOnRecurring($data, $input);
+
+        //TODO: check if mode is correctly accessed
+        $data[Entity::METHODS] = $methodsCore->enableOrDisableMethodsBasedOnTerminals($merchant, $data[Entity::METHODS], $this->app['rzp.mode']);
+
+        $this->getCustomerAndFillAppDetails($input, $merchant, $data);
+
+        return $data[Entity::METHODS];
+    }
+
+    protected function getCustomerAndFillAppDetails(array $input, Entity $merchant, array &$data): void
+    {
+        /**
+         * Fetch customer contact only if
+         * 1. Merchant has cred enabled
+         * 2. And cred_merchant_consent feature flag is enabled
+         *
+         * cred_merchant_consent is enabled on very few merchants
+         * This will help avoid customer entity calls for the remaining merchants
+         */
+        if ((empty($data[Entity::METHODS][Payment\Method::APP][Payment\Gateway::CRED]) === false) &&
+            ($merchant->isFeatureEnabled(Feature\Constants::CRED_MERCHANT_CONSENT) === true))
+        {
+            $data['customer'] = [];
+
+            $this->checkAndFillAppTokenInputFromSession($merchant, $this->app['rzp.mode'], $input);
+
+            $data['customer']['contact'] = $this->findContact($input, $merchant, $data);
+        }
+
+        $this->checkAndFillAppDetails($input, $merchant, $data, $this->app['rzp.mode']);
+    }
+
+    /**
+     * This does the following
+     * 1. Adds offer details in data['offers']
+     * 2. Adds data['force_offer'] if it is a forced offer
+     * 3. Updates data['methods'] according to the available offers
+     */
+    protected function addOfferDetailsAndUpdateMethodsForCheckout(Entity $merchant, ?Order\Entity $order, array &$data): array
+    {
+        if (($order !== null) and
+            ($order->hasOffers() === true))
+        {
+            $this->checkAndFillOrderOffers($order, $data);
+        }
+        else
+        {
+            $this->checkAndFillNonOrderOffers($merchant, $data);
+        }
+
+        return [];
+    }
+
     protected function fillMerchantPolicyPage(Entity $merchant, array & $data): void
     {
         try
@@ -690,8 +780,9 @@ class Checkout
             }
         }
 
+        // TODO: Rishi to explicitly review this change since it changes existing code
         if (($merchant->isTPVRequired() === true) and
-            (empty($data['order']['method']) === true))
+            (empty($order->getMethod()) === true))
         {
             $methods = [
                 Payment\Method::NETBANKING => $data['methods'][Payment\Method::NETBANKING],

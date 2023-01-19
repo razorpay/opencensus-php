@@ -3348,6 +3348,11 @@ class Service extends Base\Service
         return $formattedMethods;
     }
 
+    public function getPaymentMethodsWithOffersForCheckout($input): array
+    {
+        return (new Checkout())->getPaymentMethodsWithOffersForCheckout($input, $this->merchant);
+    }
+
     /**
      * Get Payment Methods by Merchant Id
      *

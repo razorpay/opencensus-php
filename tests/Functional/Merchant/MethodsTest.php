@@ -1279,4 +1279,41 @@ class MethodsTest extends TestCase
         $this->ba->terminalsAuth();
         $this->startTest();
     }
+
+    public function testGetPaymentMethodsAndOffersForCheckoutWithoutOrder(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enablePaytm();
+
+        $this->startTest();
+    }
+
+    public function testGetPaymentMethodsAndOffersForCheckoutWithOrder(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enablePaytm();
+
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+                                                              $offer1,
+                                                              $offer2,
+                                                          ]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = ['order' => $order->toArray()];
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
+        $this->assertEquals($offer2->getPublicId(), $response['offers'][1]['id']);
+    }
 }

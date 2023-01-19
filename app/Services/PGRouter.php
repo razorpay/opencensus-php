@@ -534,6 +534,13 @@ class PGRouter
         return $this->sendRequest($endpoint, Requests::PATCH, $input, $throwExceptionOnFailure, self::DEFAULT_REQUEST_TIMEOUT, true);
     }
 
+    public function getOrderEntityFromOrderAttributes(array $orderAttributes): ?Order\Entity
+    {
+        $response['body'] = $orderAttributes;
+
+        return $this->forceFillOrderFromResponse($response);
+    }
+
     private function forceFillOrderFromResponse($response)
     {
         if ((empty($response) === false) and

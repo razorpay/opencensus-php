@@ -89,6 +89,7 @@ class Route
         'checkout_hosted_get'                      => ['get',      'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         // TODO: Check Splunk and remove the write here
         'merchant_methods'                         => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
+        'merchant_methods_offers_checkout_internal'=> ['post',     'internal/methods_offers/checkout',               'MerchantController@getPaymentMethodsWithOffersForCheckout'         ],
         'merchant_methods_hdfc_debit_emi'         => ['post',      'methods/hdfc_debit_emi',                         'MerchantController@updateHdfcDebitEmiPaymentMethods'                              ],
 
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
@@ -6584,6 +6585,7 @@ class Route
         'invoice_fetch_for_checkout_internal',
         'checkout_personalisation_internal',
         'fetch_payment_config_checkout_internal',
+        'merchant_methods_offers_checkout_internal',
 
         'partner_config_fetch',
         'partner_config_edit',
@@ -14715,6 +14717,7 @@ class Route
             'fetch_trusted_badge_status',
             'invoice_fetch_for_checkout_internal',
             'merchant_fetch_config_for_checkout_internal',
+            'merchant_methods_offers_checkout_internal',
             'merchant_validate_public_auth_over_internal_auth',
             'checkout_personalisation_internal',
         ],
