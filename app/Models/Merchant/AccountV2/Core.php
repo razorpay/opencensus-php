@@ -5,15 +5,18 @@ namespace RZP\Models\Merchant\AccountV2;
 use Request;
 use RZP\Exception;
 use RZP\Models\User;
+use RZP\Trace\Tracer;
 use RZP\Models\Feature;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Product;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Merchant\Account\Entity;
 use RZP\Models\Merchant\Account\Constants;
-use RZP\Constants\HyperTrace;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
@@ -22,8 +25,6 @@ use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 use RZP\Models\Partner\Config\Constants as ConfigConstants;
 use RZP\Models\Merchant\Escalations\Constants as EscalationConstants;
-use RZP\Trace\TraceCode;
-use RZP\Trace\Tracer;
 
 class Core extends Merchant\Core
 {
@@ -622,5 +623,76 @@ class Core extends Merchant\Core
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         return ($merchant->isFeatureEnabled(Feature\Constants::SUBM_NO_DOC_ONBOARDING) === true);
+    }
+
+    public function triggerWebhookForNoDocGmvLimitBreach(Merchant\Entity $merchant, array $params)
+    {
+        $data = $this->getNoDocGmvLimitWarnData($merchant, $params);
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN        => $merchant,
+            ApiEventSubscriber::WITH        => $data,
+            ApiEventSubscriber::MERCHANT_ID => $merchant->getId()
+        ];
+
+        $this->app['events']->dispatch('api.account.no_doc_onboarding_gmv_limit_warning', $eventPayload);
+    }
+
+    private function getNoDocGmvLimitWarnData(Merchant\Entity $merchant, array $params = [])
+    {
+        $merchantId = $merchant->getId();
+
+        if(empty($params) === true or empty($params['threshold']) === true
+            or empty($params['current_gmv']) === true or empty($params['milestone']) === true)
+        {
+            throw new Exception\RuntimeException('Data sent to trigger webhook for no doc gmv breach warning is not sufficient', [
+                'merchant_id'  => $merchantId,
+                'parameters'   => $params
+            ]);
+        }
+
+        $message = null;
+
+        $threshold = $params['threshold'];
+
+        $currentGmv = $params['current_gmv'];
+
+        switch ($params['milestone'])
+        {
+            case EscalationConstants::NO_DOC_P90_GMV:
+            case EscalationConstants::NO_DOC_P91_GMV:
+                switch ($merchant->merchantDetail->getActivationStatus())
+                {
+                    case Detail\Status::UNDER_REVIEW :
+                        $message = "You can accept payments upto INR " .max(($threshold - $currentGmv)/100, 0). ". You can continue to accept payments without any limits post full account activation.";
+                        break;
+                    case Detail\Status::NEEDS_CLARIFICATION :
+                        $message = "You can accept payments upto INR " .max(($threshold - $currentGmv)/100, 0). ". In order to remove this limit, kindly provide responses to outstanding clarifications for submitted KYC documents.";
+                        break;
+                    case Detail\Status::ACTIVATED_KYC_PENDING :
+                        $message = "You can accept payments upto INR " .max(($threshold - $currentGmv)/100, 0). ". In order to remove this limit, kindly submit the KYC documents.";
+                        break;
+                }
+                break;
+            case EscalationConstants::HARD_LIMIT_NO_DOC:
+                switch ($merchant->merchantDetail->getActivationStatus())
+                {
+                    case Detail\Status::UNDER_REVIEW :
+                        $message = "You have breached the GMV limit. You can continue to accept payments after full account activation.";
+                        break;
+                    case Detail\Status::NEEDS_CLARIFICATION :
+                        $message = "You have breached the GMV limit. In order to remove this limit, kindly submit the KYC documents.";
+                        break;
+                }
+        }
+
+        return [
+            'acc_id'        => $merchantId,
+            'gmv_limit'     => $threshold/100,
+            'current_gmv'   => $currentGmv/100,
+            'message'       => $message,
+            'live'          => $merchant->isLive(),
+            'funds_on_hold' => $merchant->isFundsOnHold()
+        ];
     }
 }

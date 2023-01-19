@@ -5,7 +5,6 @@ namespace RZP\Models\Merchant\Escalations\Actions\Handlers;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\Detail\Status;
-use RZP\Models\Merchant\Product\Requirements;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Escalations\Actions\Entity;
 use RZP\Models\Merchant\AccountV2\Core as AccV2Core;
@@ -96,6 +95,8 @@ class NoDocLimitHandler extends Handler
                         $accountV2Core->removeNoDocOnboardingFeature($merchantId);
 
                         $accountV2Core->addNoDocLimitBreachedTag($merchant);
+
+                        $accountV2Core->triggerWebhookForNoDocGmvLimitBreach($merchant, $params);
 
                         $this->trace->info(
                             TraceCode::NO_DOC_ONBOARDING_ESCALATION_SUCCESS,

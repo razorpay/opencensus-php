@@ -15,6 +15,7 @@ use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\Escalations;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Escalations\Actions;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -23,6 +24,7 @@ use RZP\Services\Mock\DruidService as MockDruidService;
 
 class CoreTest extends TestCase
 {
+    use TestsWebhookEvents;
     use DbEntityFetchTrait;
 
     public function testNoEscalationTriggeredIfMerchantNotInOpenState()
@@ -423,6 +425,20 @@ class CoreTest extends TestCase
             'business_website'  => 'http://hello.com'
         ]);
 
+        $this->expectWebhookEvent('account.no_doc_onboarding_gmv_limit_warning',
+            function (MerchantEntity $merchant, array $event)
+            {
+                $this->assertArraySubset([
+                    'acc_id'         => $merchant->getId(),
+                    'gmv_limit'      => 50000,
+                    'current_gmv'    => 55600,
+                    'message'        => 'You have breached the GMV limit. In order to remove this limit, kindly submit the KYC documents.',
+                    'live'           => false,
+                    'funds_on_hold'  => true
+                ], $event['payload']);
+
+            });
+
         $this->createTransaction($merchant->getId(), 'payment', 55600);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
@@ -483,7 +499,8 @@ class CoreTest extends TestCase
 
         $this->assertFundHoldsForNoDoc($merchant, true, true, Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
 
-        $this->assertFeatureAbsence('no_doc_onboarding', $merchant->id);    }
+        $this->assertFeatureAbsence('no_doc_onboarding', $merchant->id);
+    }
 
     public function testNoDocEscalationWithPartnerConfigGmvValue()
     {
@@ -523,6 +540,20 @@ class CoreTest extends TestCase
             'sub_merchant_config' => json_decode('{"gmv_limit":[{"value":10100000,"set_for":"no_doc_submerchants"}]}', 1)
         ]);
 
+        $this->expectWebhookEvent('account.no_doc_onboarding_gmv_limit_warning',
+            function (MerchantEntity $merchant, array $event)
+            {
+                $this->assertArraySubset([
+                    'acc_id'         => $merchant->getId(),
+                    'gmv_limit'      => 10100000,
+                    'current_gmv'    => 10110000,
+                    'message'        => 'You have breached the GMV limit. You can continue to accept payments after full account activation.',
+                    'live'           => false,
+                    'funds_on_hold'  => true
+                ], $event['payload']);
+
+            });
+
         $this->createTransaction($merchant->getId(), 'payment', 10110000);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
@@ -545,6 +576,20 @@ class CoreTest extends TestCase
             'business_website'  => 'http://hello.com'
         ]);
 
+        $this->expectWebhookEvent('account.no_doc_onboarding_gmv_limit_warning',
+            function (MerchantEntity $merchant, array $event)
+            {
+                $this->assertArraySubset([
+                    'acc_id'         => $merchant->getId(),
+                    'gmv_limit'      => 50000,
+                    'current_gmv'    => 45000,
+                    'message'        => 'You can accept payments upto INR 5000. In order to remove this limit, kindly submit the KYC documents.',
+                    'live'           => true,
+                    'funds_on_hold'  => false
+                ], $event['payload']);
+
+            });
+
         $this->createTransaction($merchant->getId(), 'payment', 45000);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
@@ -565,6 +610,20 @@ class CoreTest extends TestCase
             'activation_status' => 'under_review',
             'business_website'  => 'http://hello.com'
         ]);
+
+        $this->expectWebhookEvent('account.no_doc_onboarding_gmv_limit_warning',
+            function (MerchantEntity $merchant, array $event)
+            {
+                $this->assertArraySubset([
+                    'acc_id'         => $merchant->getId(),
+                    'gmv_limit'      => 50000,
+                    'current_gmv'    => 45000,
+                    'message'        => 'You can accept payments upto INR 5000. You can continue to accept payments without any limits post full account activation.',
+                    'live'           => true,
+                    'funds_on_hold'  => false
+                ], $event['payload']);
+
+            });
 
         $this->createTransaction($merchant->getId(), 'payment', 45000);
 
@@ -587,6 +646,20 @@ class CoreTest extends TestCase
             'business_website'  => 'http://hello.com'
         ]);
 
+        $this->expectWebhookEvent('account.no_doc_onboarding_gmv_limit_warning',
+            function (MerchantEntity $merchant, array $event)
+            {
+                $this->assertArraySubset([
+                    'acc_id'         => $merchant->getId(),
+                    'gmv_limit'      => 50000,
+                    'current_gmv'    => 45000,
+                    'message'        => 'You can accept payments upto INR 5000. In order to remove this limit, kindly provide responses to outstanding clarifications for submitted KYC documents.',
+                    'live'           => true,
+                    'funds_on_hold'  => false
+                ], $event['payload']);
+
+            });
+
         $this->createTransaction($merchant->getId(), 'payment', 45000);
 
         (new Escalations\Core())->handleNoDocGmvLimitBreach();
@@ -607,6 +680,20 @@ class CoreTest extends TestCase
             'activation_status' => 'activated_kyc_pending',
             'business_website'  => 'http://hello.com'
         ]);
+
+        $this->expectWebhookEvent('account.no_doc_onboarding_gmv_limit_warning',
+            function (MerchantEntity $merchant, array $event)
+            {
+                $this->assertArraySubset([
+                    'acc_id'         => $merchant->getId(),
+                    'gmv_limit'      => 50000,
+                    'current_gmv'    => 47000,
+                    'message'        => 'You can accept payments upto INR 3000. In order to remove this limit, kindly submit the KYC documents.',
+                    'live'           => true,
+                    'funds_on_hold'  => false
+                ], $event['payload']);
+
+            });
 
         $this->createTransaction($merchant->getId(), 'payment', 47000);
 

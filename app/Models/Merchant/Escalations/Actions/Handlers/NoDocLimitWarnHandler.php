@@ -4,8 +4,9 @@ namespace RZP\Models\Merchant\Escalations\Actions\Handlers;
 
 use RZP\Exception;
 use RZP\Trace\TraceCode;
-use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\Escalations\Actions\Entity;
+use RZP\Models\Merchant\AccountV2\Core as AccV2Core;
 
 class NoDocLimitWarnHandler extends Handler
 {
@@ -14,15 +15,23 @@ class NoDocLimitWarnHandler extends Handler
         try {
             $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-            $data = $this->getNoDocGmvLimitWarnData($merchantId, $params);
+            if(in_array($merchant->merchantDetail->getActivationStatus(), Status::MERCHANT_NO_DOC_OPEN_STATUSES, true) === false)
+            {
+                $this->trace->info(
+                    TraceCode::NO_DOC_ONBOARDING_ESCALATION_SKIPPED,
+                    [
+                        'merchant_id'   => $merchantId,
+                        'step'          => 'no_doc_limit_warn_handler',
+                        'reason'        => 'Xpress escalation warning skipped since the merchant does not have any of the xpress open statuses',
+                    ]
+                );
 
-            $eventPayload = [
-                ApiEventSubscriber::MAIN        => $merchant,
-                ApiEventSubscriber::WITH        => $data,
-                ApiEventSubscriber::MERCHANT_ID => $merchantId
-            ];
+                return;
+            }
 
-            $this->app['events']->dispatch('api.account.no_doc_onboarding_gmv_limit_warning', $eventPayload);
+            $accountV2Core = new AccV2Core();
+
+            $accountV2Core->triggerWebhookForNoDocGmvLimitBreach($merchant, $params);
 
             $this->trace->info(
                 TraceCode::NO_DOC_ONBOARDING_ESCALATION_SUCCESS,
@@ -48,27 +57,5 @@ class NoDocLimitWarnHandler extends Handler
 
             throw $e;
         }
-    }
-
-    private function getNoDocGmvLimitWarnData(string $merchantId, array $params = [])
-    {
-        if(empty($params) === true or empty($params['threshold']) === true or empty($params['current_gmv']) === true)
-        {
-            throw new Exception\RuntimeException('Data sent to trigger webhook for no doc gmv breach warning is not sufficient', [
-                'merchant_id'  => $merchantId,
-                'parameters'   => $params
-            ]);
-        }
-
-        $threshold = $params['threshold'];
-
-        $currentGmv = $params['current_gmv'];
-
-        return [
-            'acc_id'        => $merchantId,
-            'gmv_limit'     => $threshold/100,
-            'current_gmv'   => $currentGmv/100,
-            'message'       =>  "You can accept payments upto INR " .max(($threshold - $currentGmv)/100, 0). ". In order to remove this limit, kindly submit the KYC documents."
-        ];
     }
 }
