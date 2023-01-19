@@ -84,13 +84,13 @@ class Notifications
     ];
 
     const SMS_TEMPLATE_MAP = [
-        'creation_1'   => 'sms.fund_loading_downtime.creation_1',
-        'creation_2'   => 'sms.fund_loading_downtime.creation_2',
-        'creation_3'   => 'sms.fund_loading_downtime.creation_3',
-        'updation_1'   => 'sms.fund_loading_downtime.update_1',
-        'updation_2'   => 'sms.fund_loading_downtime.update_2',
-        'resolution'   => 'sms.fund_loading_downtime.resolution',
-        'cancellation' => 'sms.fund_loading_downtime.cancellation',
+        'creation_1'   => 'sms.fund_loading_downtime.creation_1.v1',
+        'creation_2'   => 'sms.fund_loading_downtime.creation_2.v1',
+        'creation_3'   => 'sms.fund_loading_downtime.creation_3.v1',
+        'updation_1'   => 'sms.fund_loading_downtime.update_1.v1',
+        'updation_2'   => 'sms.fund_loading_downtime.update_2.v1',
+        'resolution'   => 'sms.fund_loading_downtime.resolution.v1',
+        'cancellation' => 'sms.fund_loading_downtime.cancelation.v1',
     ];
 
     public function __construct($input, $flowType)
@@ -440,7 +440,7 @@ class Notifications
                 $params[Entity::CHANNEL] = 'YESB';
                 break;
             default:
-                $params[Entity::CHANNEL] = 'All';
+                $params[Entity::CHANNEL] = 'All Banks';
         }
 
         foreach ($this->downtimeInformation[Constants::DURATIONS_AND_MODES] as $key => $value)

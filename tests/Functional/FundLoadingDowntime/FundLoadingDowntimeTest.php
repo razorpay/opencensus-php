@@ -319,6 +319,33 @@ class FundLoadingDowntimeTest extends TestCase
         $this->createVirtualAccount('10000000000000', 'xbalance111111', 'va111111111111');
         $this->createVirtualAccount('10000000000011', 'xbalance222222', 'va222222222222');
 
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        //Since 3 distinct mobile numbers are present, sendSMS call should be made 3 times.
+        $storkMock->shouldReceive('sendSMS')->times(3)
+                  ->withArgs(function($mode, $smsPayload, $mockInTestMode) {
+
+                      $expectedSmsParams                  = $this->getDefaultSmsParams();
+                      $expectedSmsParams['templateName']  = 'sms.fund_loading_downtime.creation_2.v1';
+                      $expectedSmsParams['contentParams'] = [
+                          'channel' => 'ICICI',
+                          'start1'  => '22Sep 05:52 pm',
+                          'end1'    => 'to 22Sep 06:08 pm',
+                          'modes1'  => 'NEFT,UPI and',
+                          'start2'  => '22Sep 06:08 pm',
+                          'end2'    => 'to 22Sep 06:25 pm',
+                          'modes2'  => 'RTGS',
+                      ];
+
+                      $this->assertEquals('test', $mode);
+                      $this->assertEquals(false, $mockInTestMode);
+                      $this->assertArraySelectiveEquals($expectedSmsParams, $smsPayload);
+
+                      return true;
+                  })->andReturn(['message_id' => '10000000000msg']);
+
         $this->startTest();
 
         $fundLoadingDowntimes = $this->getDbEntities('fund_loading_downtimes')->toArray();
@@ -444,6 +471,29 @@ class FundLoadingDowntimeTest extends TestCase
 
         $this->fixtures->create('fund_loading_downtimes', $attributes);
 
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        //Since 3 distinct mobile numbers are present, sendSMS call should be made 3 times.
+        $storkMock->shouldReceive('sendSMS')->times(3)
+                  ->withArgs(function($mode, $smsPayload, $mockInTestMode) {
+                      $expectedSmsParams                  = $this->getDefaultSmsParams();
+                      $expectedSmsParams['templateName']  = 'sms.fund_loading_downtime.update_1.v1';
+                      $expectedSmsParams['contentParams'] = [
+                          'channel' => 'ICICI',
+                          'start1'  => '30Dec 12:00 am',
+                          'end1'    => 'to 31Dec 12:00 am',
+                          'modes1'  => 'IMPS,NEFT'
+                      ];
+
+                      $this->assertEquals('test', $mode);
+                      $this->assertEquals(false, $mockInTestMode);
+                      $this->assertArraySelectiveEquals($expectedSmsParams, $smsPayload);
+
+                      return true;
+                  })->andReturn(['message_id' => '10000000000msg']);
+
         $this->startTest();
 
         $updateDetails = &$this->testData[__FUNCTION__]['request']['content']['update_details'];
@@ -559,6 +609,32 @@ class FundLoadingDowntimeTest extends TestCase
         ];
 
         $this->fixtures->create('fund_loading_downtimes', $attributes);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        //Since 3 distinct mobile numbers are present, sendSMS call should be made 3 times.
+        $storkMock->shouldReceive('sendSMS')->times(3)
+                  ->withArgs(function($mode, $smsPayload, $mockInTestMode) {
+                      $expectedSmsParams                  = $this->getDefaultSmsParams();
+                      $expectedSmsParams['templateName']  = 'sms.fund_loading_downtime.update_2.v1';
+                      $expectedSmsParams['contentParams'] = [
+                          'channel' => 'ICICI',
+                          'start1'  => '30Dec 12:00 am',
+                          'end1'    => 'to 31Dec 12:00 am',
+                          'modes1'  => 'IMPS and',
+                          'start2'  => '30Dec 01:00 am',
+                          'end2'    => 'to 30Dec 05:00 am',
+                          'modes2'  => 'NEFT',
+                      ];
+
+                      $this->assertEquals('test', $mode);
+                      $this->assertEquals(false, $mockInTestMode);
+                      $this->assertArraySelectiveEquals($expectedSmsParams, $smsPayload);
+
+                      return true;
+                  })->andReturn(['message_id' => '10000000000msg']);
 
         $this->startTest();
 
@@ -679,6 +755,24 @@ class FundLoadingDowntimeTest extends TestCase
         ];
 
         $this->fixtures->create('fund_loading_downtimes', $secondDowntime);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $storkMock->shouldReceive('sendSMS')->times(2)
+                  ->withArgs(function($mode, $smsPayload, $mockInTestMode) {
+                      $expectedSmsParams                             = $this->getDefaultSmsParams();
+                      $expectedSmsParams['templateName']             = 'sms.fund_loading_downtime.resolution.v1';
+                      $expectedSmsParams['contentParams']['channel'] = 'ICICI';
+                      $expectedSmsParams['contentParams']['modes']  = 'NEFT,IMPS';
+
+                      $this->assertEquals('test', $mode);
+                      $this->assertEquals(false, $mockInTestMode);
+                      $this->assertArraySelectiveEquals($expectedSmsParams, $smsPayload);
+
+                      return true;
+                  })->andReturn(['message_id' => '10000000000msg']);
 
         $this->startTest();
 
@@ -977,6 +1071,26 @@ class FundLoadingDowntimeTest extends TestCase
 
         $this->fixtures->create('fund_loading_downtimes', $attributes);
 
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $storkMock->shouldReceive('sendSMS')->times(2)
+                  ->withArgs(function($mode, $smsPayload, $mockInTestMode) {
+                      $expectedSmsParams                             = $this->getDefaultSmsParams();
+                      $expectedSmsParams['templateName']             = 'sms.fund_loading_downtime.cancelation.v1';
+                      $expectedSmsParams['contentParams']['channel'] = 'ICICI';
+                      $expectedSmsParams['contentParams']['start1']  = '23Sep 09:38 pm';
+                      $expectedSmsParams['contentParams']['end1']    = 'to 24Sep 05:58 am';
+                      $expectedSmsParams['contentParams']['modes1']  = 'NEFT,IMPS';
+
+                      $this->assertEquals('test', $mode);
+                      $this->assertEquals(false, $mockInTestMode);
+                      $this->assertArraySelectiveEquals($expectedSmsParams, $smsPayload);
+
+                      return true;
+                  })->andReturn(['message_id' => '10000000000msg']);
+
         $this->startTest();
 
         $remainingDowntimes = $this->getDbEntities('fund_loading_downtimes')->toArray();
@@ -1140,5 +1254,16 @@ class FundLoadingDowntimeTest extends TestCase
         ];
 
         $this->fixtures->create('balance', $balance);
+    }
+
+    public function getDefaultSmsParams()
+    {
+        return [
+            'source'            => 'fund_loading_downtime',
+            'language'          => 'english',
+            'sender'            => 'RZPAYX',
+            'contentParams'     => [],
+            'templateNamespace' => 'razorpayx_payouts_core',
+        ];
     }
 }
