@@ -54,7 +54,7 @@ class Leads extends Base
     const SUB_STATUS = "Sub - Status";
     const ASSIGNEE = "Assignee";
     const MID_OFFICE_POC = "Mid-Office POC";
-    const LEAD_REFERRED_BY_RBL_STAFF = "Lead referred by RBL staff";
+    const LEAD_REFERRED_BY_RBL_STAFF = "Other leads"; // Lead referred by RBL staff
     const OFFICE_AT_DIFFERENT_LOCATIONS = "Directors/Partners/Registered Office at Different Location";
     const CUSTOMER_APPOINTMENT_DATE = "Customer appointment date";
     const APPOINTMENT_TAT = "Appointment date TAT";

@@ -991,11 +991,6 @@ class Core extends Base\Core
             // Again updating since the calculation of due date is dependent on banking account's latest data
             $this->activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate, $entity,false);
 
-            if ($isRevivedLead === true)
-            {
-                (new BankLms\Service())->detachCaApplicationMerchantFromBankPartner([Entity::BANKING_ACCOUNT_ID => $bankingAccount->getPublicId()]);
-            }
-
         });
 
         // re-fetch banking-account to handle case where it is updated during freshdeskticket creation

@@ -91,7 +91,7 @@ class Core extends BankingAccount\Core
     {
         $response =  (new Merchant\Core())->attachSubMerchantToBankCaPartner($partnerBank, $bankingAccount->merchant);
 
-        $this->notifier->notify($bankingAccount, Event::BANK_PARTNER_ASSIGNED, Event::INFO, [Constants::PARTNER_MERCHANT_ID => $partnerBank->getId()]);
+        // $this->notifier->notify($bankingAccount, Event::BANK_PARTNER_ASSIGNED, Event::INFO, [Constants::PARTNER_MERCHANT_ID => $partnerBank->getId()]);
 
         return $response;
     }

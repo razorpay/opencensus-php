@@ -24,7 +24,7 @@ class Service extends BankingAccount\Service
 
     protected $repository;
 
-    /** @var Merchant $partnerBankMerchant */
+    /** @var Merchant\Entity $partnerBankMerchant */
     protected $partnerBankMerchant;
 
     /** @var  BranchMaster $branchMaster*/

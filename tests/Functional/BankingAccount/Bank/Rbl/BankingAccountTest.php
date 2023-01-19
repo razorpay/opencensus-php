@@ -10100,7 +10100,7 @@ class BankingAccountTest extends TestCase
             null, null,
             $response);
 
-        Mail::assertQueued(ActivationMails\BankPartnerAssigned::class, function ($mail) use ($user)
+        Mail::assertNotQueued(ActivationMails\BankPartnerAssigned::class, function ($mail) use ($user)
         {
             $mail->build();
             return $mail->hasTo($user->getEmail());
@@ -10127,7 +10127,7 @@ class BankingAccountTest extends TestCase
 
         $this->startTest();
 
-        Mail::assertQueued(ActivationMails\BankPartnerAssigned::class);
+        Mail::assertNotQueued(ActivationMails\BankPartnerAssigned::class);
     }
 
     public function testBankingAccountLeadsMISDownloadByBank()
@@ -10424,7 +10424,7 @@ class BankingAccountTest extends TestCase
             null, null,
             $response);
 
-        Mail::assertQueued(ActivationMails\BankPartnerAssigned::class);
+        Mail::assertNotQueued(ActivationMails\BankPartnerAssigned::class);
     }
 
     //public function testBankLmsEndToEndAfterDetachingSubMerchant()
