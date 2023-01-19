@@ -5,7 +5,7 @@ import Amount from 'common/ui/Amount';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Repayments from 'merchant/models/Capital/Repayments';
-import { loadCheckoutScript } from '../../utils/index';
+import { loadCheckoutScript } from 'merchant/views/Capital/utils/index';
 import {
   REPAYMENT_VIEWS,
   REPAY_METHOD_TYPES,
@@ -13,14 +13,14 @@ import {
   COLLECTIONS_PRODUCT_TYPES,
   REPAY_AMOUNT_TYPES,
   PAYMENT_MODES,
-} from '../constants';
+} from 'merchant/views/Capital/CashAdvance/constants';
 import { getPrincipalAmount, getInterestAmount } from './utils';
 import {
   trackCheckoutFlowCancel,
   trackCheckoutFlowSuccess,
   trackRepayCancel,
   trackRepayConfirm,
-} from '../TrackEvents/trackEvents';
+} from 'merchant/views/Capital/CashAdvance/TrackEvents/trackEvents';
 
 function updateRepaymentData(data, onResolve, onReject) {
   const repayment = new Repayments();
@@ -45,6 +45,7 @@ const RepayMethod = ({
   totalPrincipalAmount,
   totalInterestAmount,
   repayType,
+  isBalanceZero,
   location: { pathname = '' },
 }) => {
   const isCurrentOutstandingRepayType = repayType === REPAY_AMOUNT_TYPES.CURRENT_OUTSTANDING;
@@ -214,8 +215,6 @@ const RepayMethod = ({
     } else setBankBalance({ ...bankBalance, active });
   };
 
-  const isBalanceZero = balance === 0;
-
   return (
     <div className="repay-container repay-method repay">
       <div className="repay-text">I want to repay using</div>
@@ -225,7 +224,7 @@ const RepayMethod = ({
             className={`action ml--1 ${settlementBalance.isCustomAmountActive ? '' : 'mr-24'} ${
               settlementBalance.active && !settlementBalance.error ? 'active' : ''
             } ${settlementBalance.active && settlementBalance.error ? 'error' : ''} ${
-              balance === 0 || isFundsOnHold ? 'disabled' : ''
+              isBalanceZero || isFundsOnHold ? 'disabled' : ''
             } cursor-pointer`}
             onClick={() => handleSettlementBalanceSelect(!settlementBalance.active)}
           >

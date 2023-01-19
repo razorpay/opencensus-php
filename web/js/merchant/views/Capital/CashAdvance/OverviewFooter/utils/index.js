@@ -107,3 +107,14 @@ export const handleDecimalFigure = ({ tempCustomAmount, amountPendingToday, tota
   }
   return value;
 };
+
+export const handleDecimalFigureForSettlementBalance = ({ repayAmount, balance }) => {
+  const repayAmountPaisa = repayAmount % 100;
+  const balancePaisa = balance % 100;
+  const adjustedAmount = balance - balancePaisa + repayAmountPaisa;
+  if (balancePaisa >= repayAmountPaisa) {
+    return adjustedAmount;
+  } else {
+    return adjustedAmount - 100 > 0 ? adjustedAmount - 100 : 0;
+  }
+};

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import RepayAmount from 'merchant/views/Capital/CashAdvance/OverviewFooter/RepayAmount';
 import RepayMethod from 'merchant/views/Capital/CashAdvance/OverviewFooter/RepayMethod';
+import { handleDecimalFigureForSettlementBalance } from 'merchant/views/Capital/CashAdvance/OverviewFooter/utils';
 import { REPAYMENT_VIEWS, REPAY_AMOUNT_TYPES } from 'merchant/views/Capital/CashAdvance/constants';
 
 const Repay = ({
@@ -24,7 +25,11 @@ const Repay = ({
   const isFundsOnHold = user?.merchant?.hold_funds;
   const currency = user?.merchant?.currency;
 
-  const isBalanceZero = balance === 0;
+  const amount =
+    repayAmount > balance
+      ? handleDecimalFigureForSettlementBalance({ repayAmount, balance })
+      : repayAmount;
+  const isBalanceZero = balance === 0 || amount === 0;
 
   const [settlementBalance, setSettlementBalance] = useState({
     active: !isBalanceZero,
@@ -66,7 +71,6 @@ const Repay = ({
   }, [view]);
 
   useEffect(() => {
-    const amount = repayAmount > balance ? balance : repayAmount;
     setSettlementBalance({
       ...settlementBalance,
       amount,
@@ -108,6 +112,7 @@ const Repay = ({
         currentOutstandingInterestAmount={currentOutstandingInterestAmount}
         currentOutstandingPrincipalAmount={currentOutstandingPrincipalAmount}
         repayType={repayType}
+        isBalanceZero={isBalanceZero}
       />
     );
   } else if (view === REPAYMENT_VIEWS.REPAY_AMOUNT) {
