@@ -130,7 +130,9 @@ class Generator extends QrCode\Generator
     {
         $refId = self::TR_PREFIX . $qrCode->getId() . QrCode\Constants::QR_CODE_V2_TR_SUFFIX;
 
-        if (($this->terminalId === null) or ($qrCode->getAmount() === null))
+        if (($this->terminalId === null) or
+            ($qrCode->getUsageType() === UsageType::MULTIPLE_USE) or
+            ($qrCode->getAmount() === null))
         {
             return $refId;
         }

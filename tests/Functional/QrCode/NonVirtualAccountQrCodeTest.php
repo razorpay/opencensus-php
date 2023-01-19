@@ -1883,13 +1883,13 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
         $this->enableRazorXTreatmentForQrDedicatedTerminal();
 
-        $qrCode = $this->createQrCode(['usage'          => 'multiple_use',
-            'type'           => 'upi_qr',
-            'fixed_amount'   => true,
-            'payment_amount' => 10000
-        ],
-            'live',
-            'LiveAccountMer');
+        $qrCode = $this->createQrCode(['usage'          => 'single_use',
+                                       'type'           => 'upi_qr',
+                                       'fixed_amount'   => true,
+                                       'payment_amount' => 10000
+                                      ],
+                                      'live',
+                                      'LiveAccountMer');
 
         $qrCodeEntity = $this->getLastEntity('qr_code', true, 'live');
 
