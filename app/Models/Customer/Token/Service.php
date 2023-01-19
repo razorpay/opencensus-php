@@ -726,6 +726,8 @@ class Service extends Base\Service
 
                 $response = $token->toArrayPublicTokenizedCard($serviceProviderTokens);
 
+                unset($response['source']);
+
                 if($this->merchant->isFeatureEnabled(Feature\Constants::ALLOW_NETWORK_TOKENS) === false) {
                     unset($response['service_provider_tokens']);
                 }
@@ -1195,6 +1197,8 @@ class Service extends Base\Service
 
         $response['notes'] = [];
 
+        unset($response['source']);
+
         return $response;
     }
 
@@ -1285,6 +1289,11 @@ class Service extends Base\Service
     protected function triggerStatusWebhook($input, $dbToken)
     {
         $serviceProviderTokens = $this->core->fetchToken($dbToken, true);
+
+        if($dbToken['source'] === 'merchant')
+        {
+            unset($dbToken['source']);
+        }
 
         $eventPayload = [
             ApiEventSubscriber::MAIN => $dbToken,
