@@ -9386,4 +9386,153 @@ We look forward to transacting with you!
 
         return [$merchant, $subMerchantUser, $managedApp];
     }
+
+    public function testCreateMerchantProductDuringMerchantActivationIfNotExist()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant['id'],
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $merchantUser['id']);
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
+        $this->startTest();
+
+        $merchantProducts = $this->getDbEntities('merchant_product', [
+            'merchant_id' => $merchant->getId(),
+            'product_name' => 'payment_gateway']);
+
+        $this->assertEquals(1, count($merchantProducts));
+    }
+
+    public function testSkipCreateMerchantProductDuringMerchantActivationIfExist()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant['id'],
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $merchantUser['id']);
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
+        $this->startTest();
+
+        $merchantProducts = $this->getDbEntities('merchant_product', [
+            'merchant_id' => $merchant->getId(),
+            'product_name' => 'payment_gateway']);
+
+        $this->assertEquals(1, count($merchantProducts));
+    }
+
+    public function testErrorWhenInvalidPartnerIdIsProvidedDuringActivation()
+    {
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant['id'],
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $merchantUser['id']);
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
+        $this->startTest();
+    }
+
+    public function testErrorWhenExpIsNotEnabledForProvidedPartnerIdDuringActivation()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant['id'],
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testErrorWhenResellerPartnerProvidedDuringActivation()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant['id'],
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testErrorWhenPurePlatformPartnerProvidedDuringActivation()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'pure_platform']);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant['id'],
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testErrorWhenPartnerIdProvidedIsNotPartnerDuringActivation()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => null]);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $merchant['id'],
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $merchantUser['id']);
+
+        $this->startTest();
+    }
 }

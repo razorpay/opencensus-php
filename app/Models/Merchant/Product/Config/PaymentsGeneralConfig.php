@@ -165,7 +165,7 @@ class PaymentsGeneralConfig extends Base\Service
 
     private function getNotificationDetails(Merchant\Entity $merchant)
     {
-        $merchantUser = $this->repo->user->getUserFromEmail($merchant->getEmail());
+        $merchantUser = $merchant->primaryOwner();
 
         $response = [];
 
@@ -232,7 +232,7 @@ class PaymentsGeneralConfig extends Base\Service
 
     private function updateNotifications(Merchant\Entity $merchant, array $configValue)
     {
-        $merchantUser = $this->repo->user->getUserFromEmail($merchant->getEmail());
+        $merchantUser = $merchant->primaryOwner();
 
         if (isset($configValue[Util\Constants::SMS]) === true)
         {

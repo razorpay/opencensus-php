@@ -4929,4 +4929,146 @@ return [
             ],
         ],
     ],
+
+    'testCreateMerchantProductDuringMerchantActivationIfNotExist' => [
+        'request' => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+                'partner_id'       => '10000000000000'
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit' => false,
+            ],
+        ],
+    ],
+
+    'testSkipCreateMerchantProductDuringMerchantActivationIfExist' => [
+        'request' => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+                'partner_id'       => '10000000000000'
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+                'verification' => [
+                    'status' => 'disabled',
+                    'disabled_reason' => 'required_fields',
+                ],
+                'can_submit' => false,
+            ],
+        ],
+    ],
+
+    'testErrorWhenInvalidPartnerIdIsProvidedDuringActivation' => [
+        'request' => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+                'partner_id'       => '10000000000000'
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' =>[
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
+        ],
+    ],
+
+    'testErrorWhenExpIsNotEnabledForProvidedPartnerIdDuringActivation' => [
+        'request' => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+                'partner_id'       => '10000000000000'
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' =>[
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PARTNER_SUBMERCHANT_WHITELABEL_ONBOARDING_EXP_NOT_ENABLED,
+        ],
+    ],
+
+    'testErrorWhenResellerPartnerProvidedDuringActivation' => [
+        'request' => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+                'partner_id'       => '10000000000000'
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' =>[
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testErrorWhenPurePlatformPartnerProvidedDuringActivation' => [
+        'request' => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+                'partner_id'       => '10000000000000'
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' =>[
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION,
+        ],
+    ],
+
+    'testErrorWhenPartnerIdProvidedIsNotPartnerDuringActivation' => [
+        'request' => [
+            'content' => [
+                'bank_branch_ifsc' => 'ICIC0000002',
+                'partner_id'       => '10000000000000'
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' =>[
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
+        ],
+    ]
 ];

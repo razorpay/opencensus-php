@@ -402,6 +402,10 @@ class Service extends Base\Service
 
         Entity::modifyConvertEmptyStringsToNull($input);
 
+        $partnerId = $this->getPartnerInfoFromInput($input);
+
+        $isPhantomOnboardingFlow = Merchant\PhantomUtility::validatePhantomOnBoarding($partnerId);
+
         if ($activationFormMilestone === DEConstants::L1_SUBMISSION)
         {
             $response = $this->saveInstantActivationDetails($input);
@@ -488,6 +492,12 @@ class Service extends Base\Service
         if (empty($partnerActivation) === false)
         {
             $response[DetailConstants::LOCK_COMMON_FIELDS] = $this->core->fetchCommonFieldsToBeLocked($partnerActivation);
+        }
+
+        if ($isPhantomOnboardingFlow)
+        {
+            $productInput = [Merchant\Product\Util\Constants::PRODUCT_NAME => Merchant\Product\Name::PAYMENT_GATEWAY];
+            (new Merchant\Product\Core())->createMerchantProduct($merchant, $productInput);
         }
 
         return $response;
@@ -3728,5 +3738,24 @@ class Service extends Base\Service
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $this->merchant, $segmentProperties, $segmentEventName
         );
+    }
+
+    private function getPartnerInfoFromInput(array &$input)
+    {
+        if ((isset($input[Merchant\Constants::PARTNER_ID]) === false) or
+            (empty($input[Merchant\Constants::PARTNER_ID]) === true))
+        {
+            return '';
+        }
+
+        $partnerId = $input[Merchant\Constants::PARTNER_ID];
+
+        $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+        (new Merchant\Validator())->validateIsAggregatorPartner($partner);
+
+        unset($input[Merchant\Constants::PARTNER_ID]);
+
+        return $partnerId;
     }
 }

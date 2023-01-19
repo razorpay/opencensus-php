@@ -117,7 +117,11 @@ class Service extends Base\Service
         if (empty($merchantProduct) === false)
         {
             $this->trace->info(TraceCode::MERCHANT_PRODUCT_ALREADY_EXISTS,
-                               $merchantProduct->toArrayPublic());
+                               [
+                                   'merchant_id'         => $merchant->getId(),
+                                   'merchant_product'    => $merchantProduct->getProduct(),
+                                   'merchant_product_id' => $merchantProduct->getId()
+                               ]);
 
             $response = Tracer::inspan(['name' => HyperTrace::GET_PRODUCT_CONFIG], function () use ($merchantId, $merchantProduct) {
 
@@ -131,8 +135,6 @@ class Service extends Base\Service
                 return $this->getProductConfigPayload($payload, $productName, $merchant);
             });
 
-            $merchantProduct = (new Entity)->generateId();
-
             $isExpEnabled = (new Merchant\Core())->isExpEnabledForProductConfigIssue($partner);
 
             Tracer::inspan(['name' => HyperTrace::SET_DEFAULT_METHODS], function () use ($merchant, $partner, $isExpEnabled) {
@@ -145,24 +147,11 @@ class Service extends Base\Service
                 }
             });
 
-            $response = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $merchantProduct, $payload, $productName) {
+            $response = $this->repo->transactionOnLiveAndTest(function() use ($merchant, $payload, $productName) {
 
                 $input = ['product_name' => $productName];
 
-                $merchantProduct->setActivationStatus(Status::REQUESTED);
-
-                $merchantProduct->merchant()->associate($merchant);
-
-                $merchantProduct->build($input);
-
-                $this->repo->merchant_product->saveOrFail($merchantProduct);
-
-                $this->trace->info(TraceCode::PRODUCT_CONFIGURATION_CREATE_RESPONSE,
-                    [
-                        'merchant_id'           => $merchant->getId(),
-                        'merchant_product'      => $merchantProduct
-                    ]
-                );
+                $merchantProduct = $this->core()->create($merchant, $input);
 
                 $response = Tracer::inspan(['name' => HyperTrace::CREATE_PRODUCT_CONFIG_CORE], function () use ($merchant, $merchantProduct, $payload) {
 

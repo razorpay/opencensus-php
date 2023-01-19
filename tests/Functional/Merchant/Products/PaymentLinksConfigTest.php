@@ -222,7 +222,10 @@ class PaymentLinksConfigTest extends OAuthTestCase
     {
         $this->fixtures->on('live')->edit('merchant', $subMerchant->getId(), ['email' => 'testemail@gmail.com']);
         $this->fixtures->on('live')->edit('merchant_detail', $subMerchant->getId(), ['activation_status' => $status]);
-        $this->fixtures->on('live')->create('user', ['name' => 'test', 'email' => 'testemail@gmail.com', 'contact_mobile' => '9999999999']);
+        $user = $this->fixtures->on('live')->create('user', ['name' => 'test', 'email' => 'testemail@gmail.com', 'contact_mobile' => '9999999999']);
+
+        $this->fixtures->user->createUserMerchantMapping(['merchant_id' => $subMerchant->getId(), 'user_id' => $user['id'], 'role' => 'owner',], 'test');
+        $this->fixtures->user->createUserMerchantMapping(['merchant_id' => $subMerchant->getId(), 'user_id' => $user['id'], 'role' => 'owner',], 'live');
 
         $this->fixtures->on('test')->edit('merchant', $subMerchant->getId(), ['email' => 'testemail@gmail.com']);
         $this->fixtures->on('test')->edit('merchant_detail', $subMerchant->getId(), ['activation_status' => $status]);

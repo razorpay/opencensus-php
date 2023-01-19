@@ -819,4 +819,47 @@ class Core extends Base\Core
 
         return true;
     }
+
+    public function createMerchantProduct(Merchant\Entity $merchant, array $input)
+    {
+        $productName = $input[Util\Constants::PRODUCT_NAME];
+
+        $merchantProduct = $this->repo->merchant_product->fetchMerchantProductConfigByProductName($merchant->getId(), $productName);
+
+        if (empty($merchantProduct) === false)
+        {
+            $this->trace->info(TraceCode::MERCHANT_PRODUCT_ALREADY_EXISTS,
+                               [
+                                   'merchant_id'         => $merchant->getId(),
+                                   'merchant_product'    => $merchantProduct->getProduct(),
+                                   'merchant_product_id' => $merchantProduct->getId()
+                               ]);
+        } else
+        {
+            $this->create($merchant, $input);
+        }
+    }
+
+    public function create(Merchant\Entity $merchant, array $input) : Entity
+    {
+        $merchantProduct = (new Entity)->generateId();
+
+        $merchantProduct->setActivationStatus(Status::REQUESTED);
+
+        $merchantProduct->merchant()->associate($merchant);
+
+        $merchantProduct->build($input);
+
+        $this->repo->merchant_product->saveOrFail($merchantProduct);
+
+        $this->trace->info(TraceCode::PRODUCT_CONFIGURATION_CREATE_RESPONSE,
+                           [
+                               'merchant_id'           => $merchant->getId(),
+                               'merchant_product'      => $merchantProduct->getProduct(),
+                               'merchant_product_id'   => $merchantProduct->getId()
+                           ]
+        );
+
+        return $merchantProduct;
+    }
 }

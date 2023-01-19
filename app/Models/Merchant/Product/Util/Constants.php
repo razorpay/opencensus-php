@@ -190,4 +190,6 @@ class Constants
     ];
 
     const CONFIG_UPDATE_FLOW_ENABLED = 'CONFIG_UPDATE_FLOW_ENABLED';
+
+    const PRODUCT_NAME = 'product_name';
 }
