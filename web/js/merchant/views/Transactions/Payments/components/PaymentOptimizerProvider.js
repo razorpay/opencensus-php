@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { connect } from 'react-redux';
 import { gatewayLogos } from 'merchant/views/Navigator/components/util';
 import { titleCase } from 'common/utils/rzp-utils';
 
@@ -21,22 +22,22 @@ export const findProviderDetails = (terminalProviders, terminal_id, settled_by) 
   return provider;
 };
 
-export default ({
-  terminal_id,
-  settled_by,
-  terminalProviders,
-  hideExternalLink,
-  isDetailView,
-  isTableView,
-}) => {
-  const provider = findProviderDetails(terminalProviders, terminal_id, settled_by);
+const PaymentOptimizerProvider = (props) => {
+  const {
+    user,
+    terminal_id,
+    settled_by,
+    terminalProviders,
+    hideExternalLink,
+    isDetailView,
+    isTableView,
+  } = props;
 
-  if (provider?.Provider_name === 'Razorpay') {
-    hideExternalLink = true;
-  }
+  const provider = findProviderDetails(terminalProviders, terminal_id, settled_by);
+  const hideProviderDetails = provider?.Provider_name === 'Razorpay' ? true : hideExternalLink;
 
   let providerName = '';
-  if (isDetailView && !hideExternalLink) {
+  if (isDetailView && !hideProviderDetails) {
     if (provider?.Provider_name?.length > 23) {
       providerName = `${provider.Provider_name.substr(0, 20)}...`;
     } else if (provider) {
@@ -44,31 +45,36 @@ export default ({
     }
   }
 
-  if (provider) {
-    return (
-      <>
-        <div
-          className={`provider-name${isTableView ? ' provider-table-view' : ''}`}
-          title={isTableView ? provider.Provider_name : ''}
-        >
-          <img
-            className="gateway-logo"
-            src={gatewayLogos[provider.Gateway]}
-            alt={provider.Gateway}
-          />
-          {isDetailView ? provider.Gateway : provider.Provider_name}
-        </div>
-        {!hideExternalLink && (
-          <div className="provider-external-link">
-            {isDetailView ? <span title={provider.Provider_name}>{`${providerName} `}</span> : ''}
+  if (!provider) return <div className="provider-name">--</div>;
+
+  return (
+    <>
+      <div
+        className={`provider-name${isTableView ? ' provider-table-view' : ''}`}
+        title={isTableView ? provider.Provider_name : ''}
+      >
+        <img className="gateway-logo" src={gatewayLogos[provider.Gateway]} alt={provider.Gateway} />
+        {isDetailView ? provider.Gateway : provider.Provider_name}
+      </div>
+      {!hideProviderDetails && (
+        <div className="provider-external-link">
+          {isDetailView ? <span title={provider.Provider_name}>{`${providerName} `}</span> : ''}
+          {user?.hideForNIASupportRole && (
             <Link to={`/optimizer/provider/${terminal_id}`}>
               Provider details
               <i className="i i-external-link" />
             </Link>
-          </div>
-        )}
-      </>
-    );
-  }
-  return <div className="provider-name">--</div>;
+          )}
+        </div>
+      )}
+    </>
+  );
 };
+
+const mapStateToProps = (state) => {
+  return {
+    user: state.session.user,
+  };
+};
+
+export default connect(mapStateToProps)(PaymentOptimizerProvider);

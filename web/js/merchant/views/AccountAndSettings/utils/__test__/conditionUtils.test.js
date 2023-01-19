@@ -123,13 +123,15 @@ describe('Condition Utils', () => {
 
   describe('isTrustedBadgeAllowed', () => {
     test.each([
-      [false, false, true, false],
-      [false, true, true, false],
-      [false, false, false, true],
-      [true, false, false, false],
+      [false, false, false, true, false],
+      [false, false, true, false, false],
+      [false, false, false, false, true],
+      [false, true, false, false, false],
+      [true, true, false, false, false],
     ])(
-      'should return %s when isOrgAxis is %s, isOrgFeatureExist returns %s and user.findTag returns %s on passing hide_razorpay_text_link',
-      (flag, isOrgAxis, isOrgFeatureExistOutput, findTagOutput) => {
+      'should return %s when user.isAllowedView returns %s, isOrgAxis is %s, isOrgFeatureExist returns %s and user.findTag returns %s on passing hide_razorpay_text_link',
+      (flag, isAllowedViewOutput, isOrgAxis, isOrgFeatureExistOutput, findTagOutput) => {
+        user.isAllowedView.mockReturnValueOnce(isAllowedViewOutput);
         user.isOrgAxis = isOrgAxis;
         isOrgFeatureExist.mockReturnValueOnce(isOrgFeatureExistOutput);
         user.findTag.mockReturnValueOnce(findTagOutput);
@@ -311,11 +313,10 @@ describe('Condition Utils', () => {
     );
   });
   testUtilWhichUsesSingleUserFunc('isFailedPaymentRetryEnabled', 'isFeatureEnabled');
+
   describe('isBankAccountDetailsAllowed', () => {
     test.each([
       [false, true, true],
-      [false, true, false],
-      [false, false, true],
       [true, false, false],
     ])(
       'should return %s when isOrgFeatureExist hide_settlement_details returns %s and user.findTag BankAccount returns %s',

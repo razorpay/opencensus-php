@@ -112,6 +112,14 @@ describe('Settlement Info', () => {
 
   describe('View Details', () => {
     test('should call open modal on click view more transaction', async () => {
+      const initialState = {
+        ...state,
+        session: {
+          user: {
+            hideForNIASupportRole: true,
+          },
+        },
+      };
       const data = {
         transaction: {
           id: 'pay_123456',
@@ -120,7 +128,7 @@ describe('Settlement Info', () => {
         },
       };
       const entityType = 'refund';
-      render(<App initialState={state} data={data} entityType={entityType} />);
+      render(<App initialState={initialState} data={data} entityType={entityType} />);
       const viewTransactionBtn = screen.getByText('View Details');
       fireEvent.click(viewTransactionBtn);
       await waitFor(() => {
@@ -130,6 +138,11 @@ describe('Settlement Info', () => {
     test('should call open modal on click view more settlement on hold', async () => {
       const initialState = {
         ...state,
+        session: {
+          user: {
+            hideForNIASupportRole: true,
+          },
+        },
         home: {
           settlement_amount: {
             data: { no_settlement: { on_hold: 200 } },

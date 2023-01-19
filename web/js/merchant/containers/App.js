@@ -838,16 +838,18 @@ class App extends Component {
 
     if (pathname === '/' || pathname === '/dashboard' || pathname === '/dashboard_v2') {
       switch (role) {
-        case [rolesList.SELLERAPP]:
-        case [rolesList.AGENT]:
-          const url = '/paymentlinks';
-          return this.props.history.replace(url);
+        case rolesList.SELLERAPP:
+        case rolesList.AGENT:
+          this.props.history.replace('/paymentlinks');
+          break;
 
-        case [rolesList.SUPPORT]:
-          return this.props.history.replace('/payments');
+        case rolesList.SUPPORT:
+          this.props.history.replace('/payments');
+          break;
 
         case null:
-          return this.props.history.replace('/profile');
+          this.props.history.replace('/profile');
+          break;
       }
     }
   }

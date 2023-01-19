@@ -86,7 +86,8 @@ function MerchantNavLinks(props) {
         isSettlementEnabled={isSettlementEnabled && !isRecommendProduct}
         additionalCondition={(currentUser) =>
           currentUser.isAllowedView('settlements') &&
-          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements)
+          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements) &&
+          currentUser.hideForNIASupportRole
         }
       />
 
@@ -157,6 +158,7 @@ function MerchantNavLinks(props) {
         type="product"
         to={routes.apiKeys}
         additionalCondition={(currentUser) =>
+          currentUser.isAllowedView('api_keys') &&
           (currentUser.isProductLedOnboardingRZP || currentUser.isApiKeysRevampEnabled) &&
           currentUser.activated
         }
@@ -279,7 +281,8 @@ function MerchantNavLinks(props) {
         icon="i i-routing text-warm temp-icon-style"
         to="/optimizer"
         additionalCondition={(currentUser) =>
-          currentUser.isOptimizerEnabled || currentUser.isOptimizerOnboardingEnabled
+          currentUser.isAllowedView('optimizer') &&
+          (currentUser.isOptimizerEnabled || currentUser.isOptimizerOnboardingEnabled)
         }
         isNew={user?.isOptimizerOnboardingEnabled && !user?.isOptimizerEnabled}
       />
@@ -350,7 +353,8 @@ function MerchantNavLinks(props) {
         type="general"
         to="/reports"
         additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('reports') || currentUser.isCareHealthOwner
+          (currentUser.isAllowedView('reports') || currentUser.isCareHealthOwner) &&
+          currentUser.hideForNIASupportRole
         }
         isPending={isReportsPending}
       />

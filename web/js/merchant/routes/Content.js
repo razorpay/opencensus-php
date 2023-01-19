@@ -367,9 +367,7 @@ export default class Content extends Component {
   getBaseView = () => {
     const { fullPageView, user, mode } = this.props;
 
-    if (fullPageView) {
-      return fullPageView;
-    }
+    if (fullPageView) return fullPageView;
 
     const PaymentMethods = user.isAccountAndSettingsRevampEnabled ? PaymentMethodsV2 : Settings;
 
@@ -414,17 +412,28 @@ export default class Content extends Component {
             path="/success-rate"
             component={Transactions}
             isTagDependent={true}
-            additionalCondition={(usr) => this.props.mode === 'live' && usr.findTag('success_rate')}
+            additionalCondition={(currentUser) =>
+              mode === 'live' &&
+              currentUser.findTag('success_rate') &&
+              currentUser.isAllowedView('success_rate')
+            }
           />
 
-          <Route path="/settlements/:id(setl_.+)/" component={SettlementDetailsV2} />
+          <ShowWhenRoute
+            path="/settlements/:id(setl_.+)/"
+            component={SettlementDetailsV2}
+            additionalCondition={(user) =>
+              user.isAllowedView('settlements') && user.hideForNIASupportRole
+            }
+          />
 
           <ShowWhenRoute
             path="/settlements"
             component={Settlements}
             additionalCondition={(user) =>
               user.isAllowedView('settlements') &&
-              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements)
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements) &&
+              user.hideForNIASupportRole
             }
           />
           <ShowWhenRoute
@@ -602,7 +611,9 @@ export default class Content extends Component {
             path="/api-keys"
             component={ApiKeysAndPlugins}
             additionalCondition={(_user) =>
-              (_user.isProductLedOnboardingRZP || _user.isApiKeysRevampEnabled) && _user.activated
+              _user.isAllowedView('api_keys') &&
+              (_user.isProductLedOnboardingRZP || _user.isApiKeysRevampEnabled) &&
+              _user.activated
             }
           />
 
@@ -679,7 +690,10 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/reports"
             component={ReportsAsync}
-            additionalCondition={(user) => user.isAllowedView('reports') || user.isCareHealthOwner}
+            additionalCondition={(user) =>
+              (user.isAllowedView('reports') || user.isCareHealthOwner) &&
+              user.hideForNIASupportRole
+            }
           />
 
           <ShowWhenRoute
@@ -798,7 +812,11 @@ export default class Content extends Component {
 
           <ShowWhenRoute path="/business-settings" component={BusinessSettings} />
 
-          <ShowWhenRoute path="/optimizer" component={Navigator} />
+          <ShowWhenRoute
+            path="/optimizer"
+            component={Navigator}
+            additionalCondition={(user) => user.isAllowedView('optimizer')}
+          />
           <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />
           <ShowWhenRoute strict path="/capital/:product/apply" component={LoanDetails} />
           <Redirect exact from="/capital/loans" to="/capital/loans/apply" />
@@ -883,7 +901,7 @@ export default class Content extends Component {
   };
 
   render() {
-    const { user, fullPageView, isWebView } = this.props;
+    const { mode, user, fullPageView, isWebView } = this.props;
 
     let DetailView = this.detailView;
     const BaseView = this.baseLocation ? this.getBaseView() : null;
@@ -933,7 +951,7 @@ export default class Content extends Component {
       <main
         class={classList(
           !fullPageView && !isWebView && 'main-content',
-          this.props.mode === 'test' && isMobileDevice() ? 'test-mode' : '',
+          mode === 'test' && isMobileDevice() ? 'test-mode' : '',
         )}
       >
         <ErrorBoundary resetOnProps>

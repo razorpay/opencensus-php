@@ -25,7 +25,8 @@ import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 @connect(
   (state) => ({
     ...state.items,
-    session: state.session,
+    user: state.session.user,
+    mode: state.session.mode,
     invoicesProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.INVOICE),
   }),
   {
@@ -91,7 +92,7 @@ export default class ItemsListContainer extends ListContainer {
      * Taxes are to be shown when the merchant has GSTIN entered.
      * Size of modal changes if taxes are to be shown.
      */
-    const user = this.props.session.user;
+    const { user } = this.props;
     const gstin = user.gstin || user.p_gstin;
     const showTaxes = Boolean(gstin);
 
@@ -155,14 +156,13 @@ export default class ItemsListContainer extends ListContainer {
   };
 
   render() {
-    const { loading, items, session, isInvoiceView } = this.props;
-    const { mode } = session;
-    const status = this.state.status;
+    const { loading, items, user, mode, isInvoiceView } = this.props;
+    const { status } = this.state;
 
     return (
-      <div class="content-wrapper">
+      <div className="content-wrapper">
         <HeaderAction>
-          <div class="btn-toolbar">
+          <div className="btn-toolbar">
             {isInvoiceView && (
               <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
                 <TakeATourButton feature={RZPFeatures.INVOICE} />
@@ -174,8 +174,8 @@ export default class ItemsListContainer extends ListContainer {
                 (mode !== 'live' || !user.isRejected) && user.isAllowedEdit('items')
               }
             >
-              <button class="pull-right btn btn-primary" onClick={() => this.showItemModal()}>
-                <i class="i i-plus" />
+              <button className="pull-right btn btn-primary" onClick={() => this.showItemModal()}>
+                <i className="i i-plus" />
                 <span>New Item</span>
               </button>
             </ShowWhen>
@@ -189,6 +189,7 @@ export default class ItemsListContainer extends ListContainer {
           isLoading={loading}
           onEdit={this.showItemModal}
           onDelete={this.deleteItem}
+          userActionAllowed={user.isAllowedEdit('items')}
         />
 
         <Pager

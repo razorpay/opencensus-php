@@ -184,9 +184,11 @@ class SettlementInfo extends Component {
           <ShowWhen additionalCondition={() => !showCustomSettlDetails || adminAsMerchant}>
             <SettlementStatusLabel status={isOnHold ? 'under_review' : 'on_temporary_hold'} />
           </ShowWhen>
-          <a className="nav-link" onClick={this.onViewDetailsClick}>
-            View Details
-          </a>
+          {user?.hideForNIASupportRole && (
+            <a className="nav-link" onClick={this.onViewDetailsClick}>
+              View Details
+            </a>
+          )}
         </div>
       );
     } else if (

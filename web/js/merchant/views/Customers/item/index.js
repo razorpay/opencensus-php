@@ -1,20 +1,22 @@
 export const customerId = {
   title: 'Customer Id',
-  value: (item, onClick) => <a onClick={onClick}>{item.id}</a>,
+  value: (item, onClick, userActionAllowed) =>
+    userActionAllowed ? <a onClick={onClick}>{item.id}</a> : <span>{item.id}</span>,
 };
 
 export const customerName = {
   title: 'Customer Name',
-  value: (item, onClick) => <a onClick={onClick}>{item.name}</a>,
+  value: (item, onClick, userActionAllowed) =>
+    userActionAllowed ? <a onClick={onClick}>{item.name}</a> : <span>{item.name}</span>,
 };
 
 export const action = {
   title: 'Action',
-  value: (item, onClick) => (
+  value: (_, onClick) => (
     <div className="btn-group">
       <button type="button" className="btn btn-xs btn-default" onClick={onClick}>
         <i className="i i-edit" />
-        <span>edit</span>
+        <span>Edit</span>
       </button>
     </div>
   ),

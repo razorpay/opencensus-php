@@ -487,6 +487,10 @@ export default class User {
     return this.isOwner || this.userRole === rolesList.ADMIN;
   }
 
+  get isSupportRole() {
+    return this.userRole === rolesList.SUPPORT;
+  }
+
   get isRazorxRXCASelfServeFlowEnabled() {
     return this.getExpStatus('rx_ca_self_serve_flow');
   }
@@ -921,6 +925,10 @@ export default class User {
 
   get isSingleReconEnabled() {
     return this.isFeatureEnabled('enable_single_recon');
+  }
+
+  get hideForNIASupportRole() {
+    return !(this.isSupportRole && this.current === 'If9Z0dDl6Vht65');
   }
 
   get isOndemandSettlementEnabled() {
@@ -1771,9 +1779,7 @@ export default class User {
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {
-  if (!moduleName) {
-    return false;
-  }
+  if (!moduleName) return false;
 
   const restrictedModulesForOrg = antiOrgsModules[getOrg().custom_code];
 

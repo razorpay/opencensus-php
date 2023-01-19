@@ -47,9 +47,13 @@ function SettlementOverview({
   return (
     <div className="settlement-overview-container">
       <div>
-        <Link to={`/settlements/${id}`} onClick={trackEvent}>
-          <code>{id}</code>
-        </Link>
+        {user?.hideForNIASupportRole ? (
+          <Link to={`/settlements/${id}`} onClick={trackEvent}>
+            <code>{id}</code>
+          </Link>
+        ) : (
+          <span>{id}</span>
+        )}
       </div>
       <ShowWhen additionalCondition={() => utr && (!showCustomSettlDetails || adminAsMerchant)}>
         <div className="row settlement-detail-row">

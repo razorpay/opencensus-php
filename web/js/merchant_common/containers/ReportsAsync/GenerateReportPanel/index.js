@@ -187,7 +187,14 @@ class GenerateReportPanel extends React.PureComponent {
   };
 
   render() {
-    const { configs, customConfigs, accounts, emailReportOptions, showSelectAccount } = this.props;
+    const {
+      user,
+      configs,
+      customConfigs,
+      accounts,
+      emailReportOptions,
+      showSelectAccount,
+    } = this.props;
     const { selectedConfig, dateRangeError, selectedAccount } = this.state;
     let allConfigs = [...configs.items, ...customConfigs];
 
@@ -195,7 +202,6 @@ class GenerateReportPanel extends React.PureComponent {
 
     allConfigs = allConfigs.filter((config) => {
       const isInSkipConfigs = skipConfigs.indexOf(config.type) > -1;
-
       return !isInSkipConfigs;
     }); // Filtering out configs from skipConfigs
 
@@ -212,12 +218,11 @@ class GenerateReportPanel extends React.PureComponent {
       { label: 'Custom', name: 'dateRange' },
     ];
 
-    if (this.props?.user?.findTag) {
+    if (user?.findTag) {
       allConfigs = allConfigs.filter((config) => {
         const configType = REPORT_CONFIG_TYPE[config.type];
-        if (configType && this.props.user.findTag(configType)) {
-          return false;
-        }
+        if (configType && user.findTag(configType)) return false;
+        if (config?.name === 'Monthly Invoice Report' && user.isSupportRole) return false;
         return true;
       });
     }

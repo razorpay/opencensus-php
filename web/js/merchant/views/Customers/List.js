@@ -19,7 +19,7 @@ const CustomerCreation = lazy(() =>
   import(/* webpackChunkName: "CustomersNew" */ 'merchant/views/Customers/New'),
 );
 
-@connect((state) => ({ ...state.customers, mode: state.session.mode }), {
+@connect((state) => ({ ...state.customers, mode: state.session.mode, user: state.session.user }), {
   ...CustomerActions,
   ...ModalActions,
   ...NotificationActions,
@@ -89,7 +89,7 @@ export default class CustomersListContainer extends ListContainer {
   };
 
   render() {
-    const { loading, items, mode } = this.props;
+    const { loading, items, mode, user } = this.props;
     const { status } = this.state;
 
     return (
@@ -116,6 +116,7 @@ export default class CustomersListContainer extends ListContainer {
         <CustomersList
           customers={items}
           isLoading={loading}
+          userActionAllowed={user.isAllowedEdit('customers')}
           onEdit={this.showCustomerModal}
           onDelete={this.deleteCustomer}
         />

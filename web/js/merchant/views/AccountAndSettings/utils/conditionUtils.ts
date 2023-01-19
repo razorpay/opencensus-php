@@ -27,6 +27,7 @@ export const isWhatsappNotificationEnabled = (user: User): boolean =>
   (user.role === rolesList.OWNER || user.role === rolesList.ADMIN);
 
 export const isTrustedBadgeAllowed = (user: User): boolean =>
+  user.isAllowedView('trustedbadge') &&
   !user.isOrgAxis &&
   !isOrgFeatureExist('hide_razorpay_text_link') &&
   !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TrustedBadge);

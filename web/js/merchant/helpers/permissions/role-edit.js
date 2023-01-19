@@ -8,7 +8,6 @@ const {
   FINANCE,
   SUPPORT,
   RBL_SUPERVISOR,
-  RBL_AGENT,
   SELLERAPP,
   SELLERAPP_PLUS,
   AGENT,
@@ -87,4 +86,8 @@ export default {
   // partner dashboard permissions
   submerchants: [OWNER, MANAGER, ADMIN],
   partner_applications: [OWNER, MANAGER, ADMIN],
+
+  // optimizer
+  optimizer: [OWNER, ADMIN, MANAGER, OPERATIONS],
+  provider_details: [OWNER, ADMIN, MANAGER, OPERATIONS],
 };

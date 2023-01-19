@@ -13,7 +13,9 @@ export const PRODUCTS_DATA = {
   settlements: {
     icon: 'i-done-all',
     additionalCondition: (user: any): boolean =>
-      user.isAllowedView('settlements') && !user.findTag('i18_hide_settlements'),
+      user.isAllowedView('settlements') &&
+      !user.findTag('i18_hide_settlements') &&
+      user.hideForNIASupportRole,
   },
   settings: {
     icon: 'i-settings',
@@ -37,7 +39,7 @@ export const PRODUCTS_DATA = {
   reports: {
     icon: 'i-books',
     additionalCondition: (user: any): boolean =>
-      user.isAllowedView('reports') || user.isCareHealthOwner,
+      (user.isAllowedView('reports') || user.isCareHealthOwner) && user.hideForNIASupportRole,
   },
   x_corporate_cards: {
     icon: 'i-credit-card',
@@ -69,7 +71,8 @@ export const PRODUCTS_DATA = {
   optimizer: {
     icon: 'i-routing',
     additionalCondition: (user: any): boolean =>
-      user.isOptimizerEnabled || user.isOptimizerOnboardingEnabled,
+      user.isAllowedView('optimizer') &&
+      (user.isOptimizerEnabled || user.isOptimizerOnboardingEnabled),
   },
   bbps: {
     icon: 'i-chart',
@@ -125,7 +128,9 @@ export const PRODUCTS_DATA = {
   api_keys: {
     icon: 'i-api-keys-plugins',
     additionalCondition: (user: any): boolean =>
-      (user.isProductLedOnboardingRZP || user.isApiKeysRevampEnabled) && user.activated,
+      user.isAllowedView('api_keys') &&
+      (user.isProductLedOnboardingRZP || user.isApiKeysRevampEnabled) &&
+      user.activated,
   },
   stores: {
     icon: 'i-store-product',

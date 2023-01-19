@@ -18,7 +18,6 @@ const {
 
 /*
  * User level map to decide whether a module can be viewed by the give role.
- *
  * */
 export default {
   home: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE],
@@ -27,6 +26,7 @@ export default {
   refunds: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT],
   payments_batch_uploads: [OWNER, ADMIN, MANAGER, OPERATIONS],
   refunds_batch_uploads: [OWNER, ADMIN, MANAGER, OPERATIONS],
+  success_rate: [OWNER, ADMIN, MANAGER, OPERATIONS],
   settlements: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT, RBL_SUPERVISOR, AGENT],
   invoices: [
     OWNER,
@@ -75,7 +75,6 @@ export default {
     MANAGER,
     OPERATIONS,
     FINANCE,
-    SUPPORT,
     REGISTRATION_LINK_SUPERVISOR,
     REGISTRATION_LINK_AGENT,
   ],
@@ -110,6 +109,7 @@ export default {
     REGISTRATION_LINK_AGENT,
     REGISTRATION_LINK_SUPERVISOR,
   ],
+  trustedbadge: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE],
   add_funds: [OWNER, ADMIN, MANAGER, OPERATIONS],
   profile_gst: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT, SELLERAPP, AGENT],
   credits: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE],
@@ -121,8 +121,8 @@ export default {
   configuration: [OWNER, ADMIN, MANAGER],
   early_settlement: [OWNER, ADMIN],
   applications: [OWNER],
-  offers: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT, RBL_SUPERVISOR, AGENT, SELLERAPP],
-  checkoutrewards: [OWNER, ADMIN, MANAGER, OPERATIONS, SUPPORT, AGENT],
+  offers: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, RBL_SUPERVISOR, AGENT, SELLERAPP],
+  checkoutrewards: [OWNER, ADMIN, MANAGER, OPERATIONS, AGENT],
   developers_console: [OWNER, ADMIN],
 
   // partner dashboard permissions
@@ -134,4 +134,8 @@ export default {
   loans: [OWNER, ADMIN],
   cash_advance: [OWNER, ADMIN],
   b2b_payments: [OWNER, ADMIN, MANAGER, OPERATIONS, FINANCE, SUPPORT],
+
+  // optimizer
+  optimizer: [OWNER, ADMIN, MANAGER, OPERATIONS],
+  provider_details: [OWNER, ADMIN, MANAGER, OPERATIONS],
 };

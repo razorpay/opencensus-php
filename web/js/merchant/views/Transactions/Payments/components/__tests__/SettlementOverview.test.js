@@ -18,6 +18,7 @@ describe('SettlementOverview', () => {
   const defaultProps = {
     payment,
     user: {
+      hideForNIASupportRole: true,
       isSingleReconEnabled: true,
       isOptimizerEnabled: true,
     },
