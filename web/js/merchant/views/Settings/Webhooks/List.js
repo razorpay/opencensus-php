@@ -2,7 +2,6 @@ import React from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
-import HeaderAction from 'common/ui/HeaderAction';
 import Alert from 'common/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
 import WebhooksList from 'merchant/views/Settings/Webhooks/components/List';
@@ -95,41 +94,38 @@ class WebhooksContainer extends ListContainer {
             },
           ]}
         />
-        <div className="banner-container">
-          <DashboardBanner />
-          <CSATSurveyBanner user={this.props.user} />
-        </div>
-        <div className="content-wrapper" style={{ minHeight: '350px' }}>
-          {/* passing the new props to the HeaderAction component to support the m-web view */}
-          <HeaderAction responsive>
-            <div className="btn-toolbar pull-right webhook-flex">
-              <ShowWhen
-                additionalCondition={(user) =>
-                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
-                }
-              >
-                <DocsLink url="https://razorpay.com/docs/webhooks/" />
-              </ShowWhen>
-              {/* To make the CTAs on header to be sticky in teh bottom need to add a wrapper to them added same */}
-              <span className="cta-container">
-                <button className="btn btn-primary" onClick={this.showNewWebhookModal}>
-                  + Add New Webhook
-                </button>
-              </span>
-            </div>
-          </HeaderAction>
+        <div>
+          <div className="webhooks-cta-section">
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+              }
+            >
+              <DocsLink url="https://razorpay.com/docs/webhooks/" />
+            </ShowWhen>
+            <span className="cta-container">
+              <button className="btn btn-primary" onClick={this.showNewWebhookModal}>
+                + Add New Webhook
+              </button>
+            </span>
+          </div>
+          <div className="banner-container">
+            <DashboardBanner />
+            <CSATSurveyBanner user={this.props.user} />
+          </div>
+          <div className="content-wrapper" style={{ minHeight: '350px' }}>
+            {error ? <Alert type="error" message={error} /> : null}
 
-          {error ? <Alert type="error" message={error} /> : null}
-
-          <WebhooksList
-            webhooks={webhooks}
-            isLoading={loadingAllWebhooks}
-            onNewWebhookClick={this.showNewWebhookModal}
-            modeFormatted={modeFormatted}
-            skip={this.state.skip}
-            count={this.state.count}
-            paginate={this.paginate}
-          />
+            <WebhooksList
+              webhooks={webhooks}
+              isLoading={loadingAllWebhooks}
+              onNewWebhookClick={this.showNewWebhookModal}
+              modeFormatted={modeFormatted}
+              skip={this.state.skip}
+              count={this.state.count}
+              paginate={this.paginate}
+            />
+          </div>
         </div>
       </>
     );

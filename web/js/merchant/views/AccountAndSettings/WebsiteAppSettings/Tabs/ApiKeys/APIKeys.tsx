@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import Keys from 'merchant/views/Settings/Keys/List';
+import ApiKeysAndPlugins from 'merchant/views/ApiKeysAndPlugins';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import { APIKeysProps } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/typings';
 import { bindActionCreators } from 'redux';
 
 const APIKeysTab = (props: APIKeysProps): JSX.Element => {
+  const { user } = props;
   const [isWebsiteInWorkflow, setIsWebsiteInWorkflow] = useState(false);
 
   const onWebsiteAdd = () => setIsWebsiteInWorkflow(true);
+
+  const shouldShowNewAPIKeysAndPluginsView =
+    (user.isProductLedOnboardingRZP || user.isApiKeysRevampEnabled) && user.activated;
 
   React.useEffect(() => {
     props
@@ -22,7 +27,11 @@ const APIKeysTab = (props: APIKeysProps): JSX.Element => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <Keys {...props} onWebsiteAdd={onWebsiteAdd} isWebsiteInWorkflow={isWebsiteInWorkflow} />;
+  return shouldShowNewAPIKeysAndPluginsView ? (
+    <ApiKeysAndPlugins />
+  ) : (
+    <Keys {...props} onWebsiteAdd={onWebsiteAdd} isWebsiteInWorkflow={isWebsiteInWorkflow} />
+  );
 };
 
 const mapDispatchToProps = (dispatch) =>
@@ -33,4 +42,9 @@ const mapDispatchToProps = (dispatch) =>
     dispatch,
   );
 
-export default connect(null, mapDispatchToProps)(APIKeysTab);
+export default connect(
+  (state) => ({
+    user: state.session.user,
+  }),
+  mapDispatchToProps,
+)(APIKeysTab);

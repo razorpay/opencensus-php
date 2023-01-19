@@ -94,29 +94,31 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
           <Suspense fallback={<Loader />}>
             <StyledDivider>
               <StyledTabContentContainer className="content">
-                <Switch>
-                  <ShowWhenRoute
-                    path={ROUTES_INFO.WEBSITE_APP_SETTINGS}
-                    component={WebsiteAppDetails}
-                    additionalCondition={(user) =>
-                      isWebsiteDetailsEnabled({ user, websiteSectionDetailsData })
-                    }
-                  />
-                  <ShowWhenRoute
-                    path={ROUTES_INFO.API_KEYS}
-                    component={APIKeys}
-                    additionalCondition={(user) => isApiKeyEnabled(user)}
-                  />
-                  <ShowWhenRoute
-                    path={ROUTES_INFO.WEBHOOKS}
-                    component={Webhooks}
-                    additionalCondition={(user) => isWebhookEnabled(user)}
-                  />
-                  <Route
-                    path={ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS}
-                    component={BusinessWebsiteDetails}
-                  />
-                </Switch>
+                <main>
+                  <Switch>
+                    <ShowWhenRoute
+                      path={ROUTES_INFO.WEBSITE_APP_SETTINGS}
+                      component={WebsiteAppDetails}
+                      additionalCondition={(user) =>
+                        isWebsiteDetailsEnabled({ user, websiteSectionDetailsData })
+                      }
+                    />
+                    <ShowWhenRoute
+                      path={ROUTES_INFO.API_KEYS}
+                      component={APIKeys}
+                      additionalCondition={(user) => isApiKeyEnabled(user)}
+                    />
+                    <ShowWhenRoute
+                      path={ROUTES_INFO.WEBHOOKS}
+                      component={Webhooks}
+                      additionalCondition={(user) => isWebhookEnabled(user)}
+                    />
+                    <Route
+                      path={ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS}
+                      component={BusinessWebsiteDetails}
+                    />
+                  </Switch>
+                </main>
               </StyledTabContentContainer>
             </StyledDivider>
           </Suspense>

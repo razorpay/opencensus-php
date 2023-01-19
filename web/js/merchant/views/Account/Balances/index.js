@@ -26,7 +26,6 @@ import {
 import lazy from 'merchant/routes/LazyLoader';
 import DocsLink from 'merchant/components/DocsLink';
 import ReserveBalance from 'merchant/views/Account/Balances/ReserveBalance';
-import HeaderAction from 'common/ui/HeaderAction';
 import CurrentBalance from 'merchant/views/Account/Balances/CurrentBalance';
 import Loader from 'common/ui/Loader';
 import { TicketSystemEmitter } from 'merchant/care/init';
@@ -244,14 +243,12 @@ class AddFundsContainer extends Component {
 
     return (
       <div class="content-wrapper content-sm" style={{ backgroundColor: '#f9fafb' }}>
-        <HeaderAction responsive>
-          <div className="btn-toolbar pull-right">
-            <DocsLink
-              url="https://razorpay.com/docs/payment-gateway/dashboard-guide/balances/"
-              onClick={() => analyticsTrack(OPEN_DOCUMENTATION)}
-            />
-          </div>
-        </HeaderAction>
+        <div className="documentation-section-link">
+          <DocsLink
+            url="https://razorpay.com/docs/payment-gateway/dashboard-guide/balances/"
+            onClick={() => analyticsTrack(OPEN_DOCUMENTATION)}
+          />
+        </div>
         <div class="balances-note-row">
           <span>Note: Standard TDR charges applies on adding funds</span>
           {user.isAllowedEdit('credits') && (

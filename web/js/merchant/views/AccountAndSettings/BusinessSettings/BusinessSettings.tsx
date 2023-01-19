@@ -110,25 +110,27 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
           <Suspense fallback={<Loader />}>
             <StyledDivider>
               <StyledTabContentContainer className="content">
-                <Switch>
-                  <Route path={ROUTES_INFO.CONTACT_DETAILS} component={ContactDetails} />
-                  <Route path={ROUTES_INFO.ACCOUNT_DETAILS} component={AccountDetails} />
-                  <Route path={ROUTES_INFO.BUSINESS_DETAILS} component={BusinessDetails} />
-                  <Route path={ROUTES_INFO.GST_DETAILS} component={GSTDetails} />
-                  <Route
-                    path={ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS}
-                    component={CustomerSupportDetails}
-                  />
-                  <Route path={ROUTES_INFO.MANAGE_TEAM_DETAILS} component={TeamDetails} />
-                  <Route
-                    path="/business-settings/ticket-support/tickets"
-                    component={SupportTickets}
-                  />
-                  <Route
-                    path="/business-settings/ticket-support/:instance/:id/:ticketType/conversation"
-                    component={Conversations}
-                  />
-                </Switch>
+                <main>
+                  <Switch>
+                    <Route path={ROUTES_INFO.CONTACT_DETAILS} component={ContactDetails} />
+                    <Route path={ROUTES_INFO.ACCOUNT_DETAILS} component={AccountDetails} />
+                    <Route path={ROUTES_INFO.BUSINESS_DETAILS} component={BusinessDetails} />
+                    <Route path={ROUTES_INFO.GST_DETAILS} component={GSTDetails} />
+                    <Route
+                      path={ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS}
+                      component={CustomerSupportDetails}
+                    />
+                    <Route path={ROUTES_INFO.MANAGE_TEAM_DETAILS} component={TeamDetails} />
+                    <Route
+                      path="/business-settings/ticket-support/tickets"
+                      component={SupportTickets}
+                    />
+                    <Route
+                      path="/business-settings/ticket-support/:instance/:id/:ticketType/conversation"
+                      component={Conversations}
+                    />
+                  </Switch>
+                </main>
               </StyledTabContentContainer>
             </StyledDivider>
           </Suspense>

@@ -11,10 +11,16 @@ const FallbackComponent = ({ eventId }) => {
   );
 };
 
-const HeaderAction = ({ children, org, responsive, isMobile }) => {
-  /* 
-    we want to check if the components have props responsive true 
-    and its mobileview then we want to render header actions in div instread 
+const HeaderAction = ({
+  children,
+  org,
+  responsive,
+  isMobile,
+  target = 'tabbed-container > header',
+}) => {
+  /*
+    we want to check if the components have props responsive true
+    and its mobileview then we want to render header actions in div instread
     of TetherComponent
   */
   const mweb = responsive && isMobile;
@@ -24,7 +30,7 @@ const HeaderAction = ({ children, org, responsive, isMobile }) => {
     </div>
   ) : (
     <TetherComponent
-      target="tabbed-container > header"
+      target={target}
       attachment="top right"
       targetAttachment="top right"
       offset="-10px 12px"

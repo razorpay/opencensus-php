@@ -130,31 +130,35 @@ const PaymentsAndRefundsSettings = ({
           <Suspense fallback={<Loader />}>
             <StyledDivider>
               <StyledTabContentContainer className="content">
-                <Switch>
-                  <Route path={ROUTES_INFO.BALANCES} component={BalanceSettings} />
-                  <Route path={ROUTES_INFO.CREDITS} component={CreditsSettings} />
-                  <Route path={ROUTES_INFO.REMINDERS} component={ReminderSettings} />
-                  <Route path={ROUTES_INFO.TRANSACTION_LIMITS} component={TransactionLimits} />
-                  <ShowWhenRoute
-                    path={ROUTES_INFO.FEE_BEARER}
-                    component={FeeBearer}
-                    additionalCondition={(user): boolean =>
-                      shouldShowFeeBearerSelfServe({
-                        user,
-                        allowCFBInternational: featureData[feature],
-                      })
-                    }
-                  />
-                  <ShowWhenRoute
-                    path={ROUTES_INFO.CAPTURE_AND_REFUND_SETTINGS}
-                    component={PaymentCaptureAndRefund}
-                    additionalCondition={(user): boolean => isPaymentCaptureAndRefundEnabled(user)}
-                  />
-                  <Route
-                    path={ROUTES_INFO.FAILED_PAYMENTS_RETRY}
-                    component={MissedOrderPaymentLink}
-                  />
-                </Switch>
+                <main>
+                  <Switch>
+                    <Route path={ROUTES_INFO.BALANCES} component={BalanceSettings} />
+                    <Route path={ROUTES_INFO.CREDITS} component={CreditsSettings} />
+                    <Route path={ROUTES_INFO.REMINDERS} component={ReminderSettings} />
+                    <Route path={ROUTES_INFO.TRANSACTION_LIMITS} component={TransactionLimits} />
+                    <ShowWhenRoute
+                      path={ROUTES_INFO.FEE_BEARER}
+                      component={FeeBearer}
+                      additionalCondition={(user): boolean =>
+                        shouldShowFeeBearerSelfServe({
+                          user,
+                          allowCFBInternational: featureData[feature],
+                        })
+                      }
+                    />
+                    <ShowWhenRoute
+                      path={ROUTES_INFO.CAPTURE_AND_REFUND_SETTINGS}
+                      component={PaymentCaptureAndRefund}
+                      additionalCondition={(user): boolean =>
+                        isPaymentCaptureAndRefundEnabled(user)
+                      }
+                    />
+                    <Route
+                      path={ROUTES_INFO.FAILED_PAYMENTS_RETRY}
+                      component={MissedOrderPaymentLink}
+                    />
+                  </Switch>
+                </main>
               </StyledTabContentContainer>
             </StyledDivider>
           </Suspense>

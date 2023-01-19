@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Link, Route, Switch } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
-
 import {
   getBannerAndModalVisibility,
   fetchMerchantWebsiteDetails,
@@ -10,7 +9,6 @@ import {
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { fetchPayments } from 'merchant/reducers/collection';
 import Announcement from 'merchant/components/Announcements/Instant';
-
 import OnboardingCard from 'merchant/views/onboarding/mobile/Screens/Home';
 import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
 import WebsiteComplianceBanner from 'merchant/components/Announcements/WebsiteCompliance';
@@ -60,16 +58,14 @@ const ApiKeysAndPlugins = ({
       </div>
       <div className="tabbed-container">
         <header className="scrollable-tab-header hidden-sm">
-          <Link className="active" to="/api-keys">
+          <NavLink className="active" to="">
             API Keys & Plugins
-          </Link>
+          </NavLink>
           <div className="btn-toolbar pull-right" />
         </header>
         <div className="content">
           <ErrorBoundary resetOnProps>
-            <Switch>
-              <Route path="/api-keys" component={KeysAndPlugins} />
-            </Switch>
+            <KeysAndPlugins />
           </ErrorBoundary>
         </div>
       </div>

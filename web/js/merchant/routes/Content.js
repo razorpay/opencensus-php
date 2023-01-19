@@ -375,7 +375,7 @@ export default class Content extends Component {
       <Suspense fallback={<Loader />}>
         <Switch location={this.baseLocation}>
           <Route path="/dashboard" component={Home} />
-          <Route
+          <ShowWhenRoute
             path="/account-settings"
             component={AccountAndSettingsHome}
             additionalCondition={(user) =>

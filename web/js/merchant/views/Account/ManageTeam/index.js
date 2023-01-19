@@ -1,7 +1,6 @@
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { Redirect } from 'react-router-dom';
 import HeaderAction from 'common/ui/HeaderAction';
 import ModalHeader from 'common/ui/ModalHeader';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -17,6 +16,11 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import Styled from 'styled-components';
+
+const StyledDiv = Styled.div`
+  margin-top:${({ isFlowRevamped }) => (isFlowRevamped ? '40px' : '0px')};
+`;
 
 class ManageTeamContainer extends React.Component {
   static contextTypes = {
@@ -95,12 +99,15 @@ class ManageTeamContainer extends React.Component {
   render() {
     const { user } = this.props;
 
-    if (user.isAccountAndSettingsRevampEnabled) return <Redirect to="/business-settings/team" />;
-
     return (
       <div className="content-wrapper content-sm" id="settings-content">
         {/* passing the new props to the HeaderAction component to support the m-web view */}
-        <HeaderAction responsive>
+        <HeaderAction
+          responsive
+          target={
+            user.isAccountAndSettingsRevampEnabled ? '.content > main' : 'tabbed-container > header'
+          }
+        >
           <div className="btn-toolbar pull-right">
             <ShowWhen
               additionalCondition={(user) =>
@@ -131,7 +138,9 @@ class ManageTeamContainer extends React.Component {
             !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TwoFactorVerification)
           }
         >
-          <Merchant2FASettings />
+          <StyledDiv isFlowRevamped={user.isAccountAndSettingsRevampEnabled}>
+            <Merchant2FASettings />
+          </StyledDiv>
         </ShowWhen>
 
         <div className="ManageTeam--list">

@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import Spinner from 'common/ui/Spinner';
-import HeaderAction from 'common/ui/HeaderAction';
 import { groupBy, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CreditDetails from './CreditDetails';
 import CreditDetailsNew from './CreditDetailsNew';
 import DocsLink from 'merchant/components/DocsLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import ManageCreditAlerts from './ManageCreditAlerts';
-import { CLICK_ON_MANAGE_ALERTS, OPEN_DOCUMENTATION } from '../ga';
+import { CLICK_ON_MANAGE_ALERTS, OPEN_DOCUMENTATION } from 'merchant/views/Account/Credits/ga';
 import { loadCheckout } from 'merchant/utils/fetchKeysAndCheckout';
 import { connect } from 'react-redux';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
@@ -49,14 +48,12 @@ function CreditsList(props) {
   return (
     <div className="credits content-wrapper content-sm">
       {showDocumentation && (
-        <HeaderAction responsive>
-          <div className="btn-toolbar pull-right">
-            <DocsLink
-              url="https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/"
-              onClick={() => analyticsTrack(OPEN_DOCUMENTATION)}
-            />
-          </div>
-        </HeaderAction>
+        <div className="documentation-section-link">
+          <DocsLink
+            url="https://razorpay.com/docs/payment-gateway/dashboard-guide/credits/"
+            onClick={() => analyticsTrack(OPEN_DOCUMENTATION)}
+          />
+        </div>
       )}
       {loading ? (
         <div className="page-spinner-container">

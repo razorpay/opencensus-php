@@ -35,6 +35,7 @@ export interface WebsiteAndAppSettingsProps extends RouteComponentProps {
 }
 
 export interface APIKeysProps extends RouteComponentProps {
+  user: User;
   fetchAddWebsiteWorkflowStatus: () => Promise<{ data: any }>;
 }
 

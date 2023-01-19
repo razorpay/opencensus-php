@@ -21,7 +21,12 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { isTrustedBadgeAllowed } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
-const { ACCOUNT_AND_SETTINGS, WEBSITE_APP_SETTINGS, TRUSTED_BADGE } = ROUTES_INFO;
+const {
+  ACCOUNT_AND_SETTINGS,
+  WEBSITE_APP_SETTINGS,
+  TRUSTED_BADGE,
+  MANAGE_TEAM_DETAILS,
+} = ROUTES_INFO;
 
 const MyAccount = (props) => {
   const [isWebView, setWebView] = useState(false);
@@ -49,13 +54,16 @@ const MyAccount = (props) => {
   } = props;
 
   if (user.isAccountAndSettingsRevampEnabled) {
-    if (pathname === '/website-app-details') {
-      <Redirect to={WEBSITE_APP_SETTINGS} />;
+    switch (pathname) {
+      case '/website-app-details':
+        return <Redirect to={WEBSITE_APP_SETTINGS} />;
+      case '/trustedbadge':
+        return <Redirect to={TRUSTED_BADGE} />;
+      case '/team':
+        return <Redirect to={MANAGE_TEAM_DETAILS} />;
+      default:
+        <Redirect to={ACCOUNT_AND_SETTINGS} />;
     }
-    if (pathname === '/trustedbadge') {
-      return <Redirect to={TRUSTED_BADGE} />;
-    }
-    return <Redirect to={ACCOUNT_AND_SETTINGS} />;
   }
 
   return (
