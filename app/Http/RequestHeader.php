@@ -92,6 +92,12 @@ class RequestHeader
      * Request header for Typeform auth
      */
 
+    const PAYPAL_SIGNATURE = 'PAYPAL-TRANSMISSION-SIG';
+    const PAYPAL_AUTH_ALGO = 'PAYPAL-AUTH-ALGO';
+    const PAYPAL_CERT_URL  = 'PAYPAL-CERT-URL';
+    const PAYPAL_TRANSMISSION_ID = 'PAYPAL-TRANSMISSION-ID';
+    const PAYPAL_TRANSMISSION_TIME = 'PAYPAL-TRANSMISSION-TIME';
+
     const TYPEFORM_SIGNATURE             =  'typeform-signature';
 
     // For testing purpose

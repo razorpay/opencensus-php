@@ -1173,6 +1173,10 @@ return [
         'timeout'       => env('APP_FINANCIAL_DATA_SERVICE_TIMEOUT', 60),
     ],
 
+    'paypal' => [
+        'merchant_on_boarding_completed_webhook_id' => env('PAYPAL_MERCHANT_ON_BOARDING_COMPLETED_WEBHOOK_ID'),
+    ],
+
     'typeform' => [
         'typeform_webhook_secret'  => env('TYPEFORM_WEBHOOK_SECRET'),
         'typeform_api_key'         => env('TYPEFORM_API_KEY'),

@@ -9,6 +9,8 @@ use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Entity;
+use RZP\Http\RequestHeader;
 use RZP\Models\Terminal\Status;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
@@ -18,10 +20,12 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Gateway;
 use RZP\Exception\BaseException;
 use RZP\Models\Mpan\Entity as MpanEntity;
+use Aws\Api\Parser\Crc32ValidatingParser;
 use RZP\Models\Gateway\Terminal\Constants;
 use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\Batch\Processor\UpiTerminalOnboarding;
 use RZP\Models\Gateway\Terminal\Service as GatewayTerminalService;
+use function Clue\StreamFilter\append;
 
 class Service extends Base\Service
 {
@@ -268,9 +272,85 @@ class Service extends Base\Service
         return $result;
     }
 
+    private function validateCallbackSignature(string $gateway, array $input)
+    {
+        if ($gateway === Entity::WALLET_PAYPAL)
+        {
+            $headers = [
+                'signature'         => $this->app['request']->header(RequestHeader::PAYPAL_SIGNATURE),
+                'algo'              => $this->app['request']->header(RequestHeader::PAYPAL_AUTH_ALGO),
+                'cert_url'          => $this->app['request']->header(RequestHeader::PAYPAL_CERT_URL),
+                'transmission_id'   => $this->app['request']->header(RequestHeader::PAYPAL_TRANSMISSION_ID),
+                'transmission_time' => $this->app['request']->header(RequestHeader::PAYPAL_TRANSMISSION_TIME),
+            ];
+
+            $missingHeaders = [];
+
+            foreach ($headers as $key => $value)
+            {
+                if (empty($value) === true)
+                {
+                    $missingHeaders[] = $key;
+                }
+            }
+
+            if (count($missingHeaders) > 0)
+            {
+                $this->trace->info(TraceCode::TERMINAL_ONBOARDING_CALLBACK_HEADERS_VERIFICATION, [
+                    'error'           => 'all headers were not sent',
+                    'missing_headers' => $missingHeaders,
+                ]);
+
+                return;
+            }
+
+            $webhookId = $this->app['config']->get('applications.paypal.merchant_on_boarding_completed_webhook_id');
+
+            $rawBody = $this->app['request']->getContent();
+
+            $crc = crc32($rawBody);
+
+            $cert = file_get_contents($headers['cert_url']);
+
+            $pubKey = openssl_pkey_get_public($cert);
+
+            $details = openssl_pkey_get_details($pubKey);
+
+            $key = '';
+
+            if (array_key_exists('key', $details) === true)
+            {
+                $key = $details['key'];
+            }
+
+            $inputString = implode('|', [$headers['transmission_id'], $headers['transmission_time'], $webhookId, $crc]);
+
+            $result = openssl_verify(
+                $inputString,
+                base64_decode($headers['signature']),
+                $pubKey,
+                'sha256WithRSAEncryption'
+            );
+
+            $result2 = openssl_verify(
+                $inputString,
+                base64_decode($headers['signature']),
+                $key,
+                'sha256WithRSAEncryption'
+            );
+
+            $this->trace->info(TraceCode::TERMINAL_ONBOARDING_CALLBACK_HEADERS_VERIFICATION, [
+                'result1' => $result,
+                'result2' => $result2
+            ]);
+        }
+    }
+
     public function processTerminalOnboardCallback(string $gateway, array $input)
     {
         $this->app['trace']->info(TraceCode::TERMINAL_ONBOARDING_CALLBACK_RECEIVED, $input);
+
+        $this->validateCallbackSignature($gateway, $input);
 
         $response = $this->app['terminals_service']->terminalOnboardCallback($gateway, $input);
 
