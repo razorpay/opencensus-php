@@ -622,9 +622,6 @@ return [
         //mapping for ART refund recon entity update job
         env('AWS_ART_RECON_ENTITY_UPDATE_QUEUE') => 'RZP\\Jobs\\ArtReconProcess',
 
-        env('AWS_CROSSBORDER_DCC_EINVOICE_LIVE_QUEUE') => 'RZP\\Jobs\\PaymentEInvoice',
-        env('AWS_CROSSBORDER_DCC_EINVOICE_TEST_QUEUE') => 'RZP\\Jobs\\PaymentEInvoice',
-
         env('AWS_APPROVED_PAYOUT_DISTRIBUTION_TEST_QUEUE') => 'RZP\\Jobs\\ApprovedPayoutDistribution',
         env('AWS_APPROVED_PAYOUT_DISTRIBUTION_LIVE_QUEUE') => 'RZP\\Jobs\\ApprovedPayoutDistribution',
     ],
