@@ -8,10 +8,13 @@ use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Method;
+use RZP\Gateway\Upi\Base\Secure;
+use RZP\Gateway\Upi\Base\IntentParams;
 use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Models\Payment\UpiMetadata\Type;
 use RZP\Models\Payment\UpiMetadata\Entity;
 use RZP\Models\Payment\UpiMetadata\Contants;
+use RZP\Models\Feature\Constants as Feature;
 
 trait UpiTrait
 {
@@ -307,7 +310,162 @@ trait UpiTrait
             $this->setMetadataForUpsAuthorize($payment, $gatewayData);
         }
 
-        return $this->app['upi.payments']->action($action, $gatewayData, $gateway);
+        try
+        {
+            $response = $this->app['upi.payments']->action($action, $gatewayData, $gateway);
+
+            if ($action === Payment\Action::AUTHORIZE)
+            {
+                $this->modifyResponseForMindgateIfApplicable($gatewayData, $response, $action, $gateway);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_ERROR,
+                [
+                    'payment'       => $payment->toArray(),
+                    'message'       => $ex->getMessage(),
+                    'stack_trace'   => $ex->getTrace(),
+                ]
+            );
+
+            throw $ex;
+        }
+        return $response;
+    }
+
+    /**
+     * Adds signed intent url and signed qr code for Mindgate intent transactions if applicable
+     *
+     * @param array $gatewayData
+     * @param array $response
+     * @param string $action
+     * @param string $gateway
+     * @return void
+     */
+    public function modifyResponseForMindgateIfApplicable(array $gatewayData, array &$response, string $action, string $gateway)
+    {
+        if ($gateway !== Payment\Gateway::UPI_MINDGATE)
+        {
+            return;
+        }
+
+        $flow = $gatewayData['upi']['flow'] ?? '';
+        if (($action !== Payment\Action::AUTHORIZE) or
+            ($flow !== Flow::INTENT))
+        {
+            return;
+        }
+
+        if ($this->shouldSignIntentRequestForMindgate($gatewayData) === false)
+        {
+            return;
+        }
+
+        $request = $this->getIntentRequestForMindgate($gatewayData);
+
+        $secure = $this->getSecureInstanceForMindgate($gatewayData);
+
+        $secure->setRequest($request);
+
+        $data = [
+            'intent_url'    => $secure->getIntentUrl(),
+            'qr_code_url'   => $secure->getQrcodeUrl(),
+        ];
+
+        $response['data'] = $data;
+
+        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RESPONSE_UPDATED,
+        [
+            'flow'      => $flow,
+            'action'    => $action,
+            'gateway'   => $gateway,
+            'response'  => $response,
+        ]);
+    }
+
+    /**
+     * Create an instance of Secure modes in UPI which are SI and SQR
+     * Method must not be overridden, if there are gateway specific
+     * changes required, Add a getter and override that.
+     *
+     * @return Secure
+     */
+    protected function getSecureInstanceForMindgate(array $gatewayData): Secure
+    {
+        $config = [
+            Secure::PRIVATE_KEY => $this->getSignIntentPrivateKeyForMindgate($gatewayData),
+        ];
+
+        $secure = new Secure($config);
+
+        return $secure;
+    }
+
+    /**
+     * Returns a list of parameter that are required for building an intent URL
+     *
+     * @param $input
+     * @return array
+     */
+    protected function getIntentRequestForMindgate($input)
+    {
+        $content = [
+            IntentParams::PAYEE_ADDRESS => $input['terminal']->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA,
+            IntentParams::PAYEE_NAME    => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
+            IntentParams::TXN_NOTE      => $this->getPaymentRemark($input),
+            IntentParams::TXN_AMOUNT    => $input['payment']['amount'] / 100,
+            IntentParams::TXN_CURRENCY  => $input['payment']['currency'],
+            IntentParams::MCC           => $input['merchant']['category'] ?? '6012',
+            IntentParams::TXN_REF_ID    => $input['payment']['id'],
+        ];
+
+        if (isset($input['upi']['reference_url']) === true)
+        {
+            $content['url'] = $input['upi']['reference_url'];
+        }
+
+        return $content;
+    }
+
+    /**
+     * Returns the Payment Remark, i.e. The payment description if it exists
+     * else the default remark 'Pay via Razorpay`
+     *
+     * @param array $input
+     * @return string
+     */
+    protected function getPaymentRemark(array $input)
+    {
+        $paymentDescription = $input['payment']['description'] ?? '';
+        $filteredPaymentDescription = Payment\Entity::getFilteredDescription($paymentDescription);
+
+        $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
+
+        return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
+    }
+
+    /**
+     * We are using SI Private Key Check as SI is migration change.
+     * Once we move all terminals to SI, this check can be removed.
+     *
+     * @return bool
+     */
+    protected function shouldSignIntentRequestForMindgate(array $gatewayData): bool
+    {
+        return (empty($this->getSignIntentPrivateKeyForMindgate($gatewayData)) === false);
+    }
+
+    /**
+     * Private key is merchant dependent, thus can only be retrieved
+     * from terminal, Starting with MindGate where it's store in
+     * gateway_terminal_password2, Later gateways can override this.
+     *
+     * @return mixed
+     */
+    protected function getSignIntentPrivateKeyForMindgate(array $gatewayData)
+    {
+        return $gatewayData['terminal']['gateway_terminal_password2'] ?? '';
     }
 
     /**

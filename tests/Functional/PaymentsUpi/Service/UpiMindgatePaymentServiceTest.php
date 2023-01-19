@@ -6,6 +6,7 @@ namespace RZP\Tests\Functional\PaymentsUpi\Service;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
+use RZP\Gateway\Upi\Base\Secure;
 use RZP\Models\Merchant\Account;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Payment\UpiMetadata\Flow;
@@ -174,6 +175,37 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
             Entity::TERMINAL_ID => $this->terminal->getId(),
             Entity::GATEWAY => $this->gateway
         ], $payment);
+    }
+
+    public function testUpsIntentPaymentSuccess()
+    {
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        unset($this->payment['description']);
+        unset($this->payment['vpa']);
+
+        $this->payment['_']['flow'] = 'intent';
+
+        $response = $this->doAjaxPaymentWithUps('terminal:shared_upi_mindgate_signed_intent_terminal', 'upi_mindgate');
+
+        $payment = $this->getDbLastpayment()->toArray();
+
+        $this->assertArraySubset([
+            Entity::CPS_ROUTE => 4,
+        ], $payment);
+
+        $this->assertEquals('intent', $response['type']);
+        $this->assertArrayHasKey('intent_url', $response['data']);
+        $this->assertArrayHasKey('qr_code_url', $response['data']);
+
+        $secure = new Secure([
+            Secure::PUBLIC_KEY => $this->terminal['gateway_access_code'],
+        ]);
+
+        $this->assertTrue($secure->verifyIntent($response['data']['intent_url']));
+        $this->assertTrue($secure->verifyIntent($response['data']['qr_code_url']));
     }
 
     public function testUpsPaymentFailure()

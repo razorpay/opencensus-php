@@ -314,6 +314,7 @@ class Service extends UpiPaymentService
                if (empty($content['payment_id']) === false)
                {
                    $response['entity']['payment_id'] = $content['payment_id'];
+                   $response['entity']['merchant_reference'] = $content['payment_id'];
                }
 
                 return [$response, 200];

@@ -341,7 +341,7 @@ class UpiPaymentServiceTest extends TestCase
             return $this->getRazoxVariant($feature, 'api_'.$this->gateway.'_v1', 'upips');
         });
 
-        $this->doAuthPaymentViaAjaxRoute($this->payment);
+        return $this->doAuthPaymentViaAjaxRoute($this->payment);
     }
 
     protected function doAjaxPayment(string $terminalResource, string $gateway)
