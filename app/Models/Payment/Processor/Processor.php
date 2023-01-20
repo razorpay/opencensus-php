@@ -1378,6 +1378,17 @@ class Processor
         return $part1 . $checksum . $part2;
     }
 
+    protected function validatePaymentForOptimizerOnlyMerchants(){
+        $merchant=$this->merchant;
+        if($merchant!=null && $merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::OPTIMIZER_ONLY_MERCHANT) && !$merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::RAAS)){
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_OPTIMIZER_ONLY_MERCHANT_HAS_RAAS_DISABLED,
+                "merchant_id",
+                $merchant->getId(),
+                "Optimizer only merchant should have raas feature enabled to make the payments");
+        }
+    }
+
     protected function preProcessPosPaymentRequest(&$input)
     {
         if(isset($input['receiver_type']) === false or $input['receiver_type'] !== Receiver::POS)
@@ -1423,6 +1434,8 @@ class Processor
             $startTime = microtime(true);
 
             $this->logRequestHeaders();
+
+            $this->validatePaymentForOptimizerOnlyMerchants();
 
             $this->preProcessPosPaymentRequest($input);
 

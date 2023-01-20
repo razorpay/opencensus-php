@@ -10570,4 +10570,34 @@ class PaymentCreateTest extends TestCase
             }
         }
     }
+
+    public function testCreatePaymentWithOptimizerOnlyFlagEnabledRaasDisabled()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->addFeatures(['optimizer_only_merchant']);
+        try{
+            $this->doAuthPayment($payment);
+        }
+        catch(\Throwable $e){
+            $this->assertEquals($e->getCode(),"BAD_REQUEST_OPTIMIZER_ONLY_MERCHANT_HAS_RAAS_DISABLED");
+        }
+    }
+
+
+    public function testCreatePaymentWithOptimizerOnlyFlagEnabledRaasEnabled()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->create('order', ['id' => '100000000order']);
+
+        $payment['amount'] = 1000000;
+
+        $payment['order_id'] = 'order_100000000order';
+
+        $this->fixtures->merchant->addFeatures(['optimizer_only_merchant']);
+        $this->fixtures->merchant->addFeatures(['raas']);
+
+        $this->doAuthPayment($payment);
+    }
 }
