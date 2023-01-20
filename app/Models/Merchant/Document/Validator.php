@@ -46,6 +46,7 @@ class Validator extends Base\Validator
     protected static $uploadDocumentWithoutFileTypeRules = [
         Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
         Entity::FILE          => 'required|file',
+        'is_partner_kyc'      => 'sometimes|boolean'
     ];
 
     protected static $aadharUploadRules = [
