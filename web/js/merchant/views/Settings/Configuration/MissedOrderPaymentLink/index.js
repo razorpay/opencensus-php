@@ -23,6 +23,7 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 import IconSave from 'assets/missed_order/icon-save.svg';
 import track from 'merchant/views/Settings/Configuration/MissedOrderPaymentLink/track';
 import Button from 'merchant/views/Settings/Configuration/MissedOrderPaymentLink/components/Button';
+import { triggerHotjarRecording } from 'common/utils/hotjar';
 import 'merchant/views/Settings/Configuration/MissedOrderPaymentLink/missedorder.styl';
 
 const PlanSelection = lazy(() =>
@@ -114,6 +115,7 @@ const MissedOrderPaymentLink = ({
       ),
     });
     track.getStarted();
+    triggerHotjarRecording('Failed_Payments_Recovery');
   };
 
   const viewInsight = () => {
