@@ -4,6 +4,8 @@ namespace RZP\Models\P2p\Preferences;
 
 use RZP\Models\P2p\Base;
 use RZP\Models\P2p\Device;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Customer\Entity as CustomerEntity;
 
 /**
@@ -39,6 +41,10 @@ class Processor extends Base\Processor
 
     private function getGatewayPreferencesForSDK()
     {
+        $adminService = new AdminService;
+
+        $popularBankList = $adminService->getConfigKey(['key' => ConfigKey::UPI_TURBO_POPULAR_BANK_LIST]);
+
         return[
             Entity::GATEWAYS => [
                 [
@@ -46,6 +52,7 @@ class Processor extends Base\Processor
                     Entity::GATEWAY    => $this->getGateway(),
                 ],
             ],
+            Entity::POPULAR_BANKS   => $popularBankList,
         ];
     }
 

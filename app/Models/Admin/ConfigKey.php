@@ -357,6 +357,9 @@ class ConfigKey
 
     const PAYOUT_ASYNC_APPROVE_PROCESSING_WINDOW_LENGTH = SELF::PREFIX . 'payout_async_approve_processing_window_length';
 
+    // UPI turbo
+    const UPI_TURBO_POPULAR_BANK_LIST           = self::PREFIX . 'upi_turbo_popular_bank_list';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,
@@ -503,7 +506,8 @@ class ConfigKey
         self::MCC_DEFAULT_MARKDOWN_PERCENTAGE,
         self::DEFAULT_OPGSP_TRANSACTION_LIMIT_USD,
         self::PAYOUT_SERVICE_DATA_MIGRATION_BUFFER,
-        self::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA
+        self::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA,
+        self::UPI_TURBO_POPULAR_BANK_LIST,
     ];
 
     const REDIS_CONFIG_MAP = [

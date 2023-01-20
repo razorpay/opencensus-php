@@ -14,4 +14,5 @@ class Entity extends Base\Entity
     const GATEWAYS                  = 'gateways';
     const GATEWAY                   = 'gateway';
     const PRIORITY                  = 'priority';
+    const POPULAR_BANKS             = 'popular_banks';
 }
