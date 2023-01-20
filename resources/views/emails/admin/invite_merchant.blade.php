@@ -1,8 +1,8 @@
-Hi!
+Hi,
 
 <br><br>
 
-{{ $adminName }} has invited you to sign up for {{ $org['business_name'] }} Merchant Services. <!-- TODO Parse invitation array and fill correct data -->
+You are invited to sign up to {{ $org['business_name'] }} Merchant Services. <!-- TODO Parse invitation array and fill correct data -->
 
 <br><br>
 

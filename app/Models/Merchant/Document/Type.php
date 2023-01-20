@@ -101,7 +101,7 @@ class Type
     const DOT_CERTIFICATE                   = 'dot_certificate';
     const TRAI_CERTIFICATE                  = 'trai_certificate';
     const RBI_CERTIFICATE                   = 'rbi_certificate';
-    const DGCA_CERTIFICATE                  = 'dgca_certifcate';
+    const DGCA_CERTIFICATE                  = 'dgca_certificate';
     const NATIONAL_HOUSING_BANK_CERTIFICATE = 'national_housing_bank_certificate';
     const DEALERSHIP_RIGHTS_CERTIFCATE      = 'dealership_rights_certificate';
     const PCI_DSS_CERTIFICATE               = 'pci_dss_certificate';

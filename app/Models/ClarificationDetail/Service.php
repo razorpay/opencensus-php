@@ -304,7 +304,8 @@ class Service extends Base\Service
             return $this->repo->transactionOnLiveAndTest(function() use ($merchantId) {
 
                 $merchantActivationInput = [Constants::SUBMIT => '1'];
-                //$this->merchantDetailService->saveMerchantDetailsForActivation([Constants::SUBMIT => '1']);
+
+                $groupsAddedToMerchantActivationInput = [];
 
                 //mark all groups to under_review
                 $clarifications = $this->repo->clarification_detail->getByMerchantIdAndStatus($merchantId, Constants::SUBMITTED);
@@ -317,7 +318,8 @@ class Service extends Base\Service
                         "groupClarification" => $clarification
                     ]);
 
-                    if ($clarification->isMessageFromMerchant() === true)
+                    if ($clarification->isMessageFromMerchant() === true and
+                        in_array($clarification->getGroupName(),$groupsAddedToMerchantActivationInput) === false)
                     {
                         $fields = $clarification->getFieldDetailsIfApplicable();
 
@@ -332,6 +334,8 @@ class Service extends Base\Service
                         ]);
 
                         $merchantActivationInput = array_merge($merchantActivationInput, $fields);
+
+                        array_push($groupsAddedToMerchantActivationInput,$clarification->getGroupName());
                     }
 
                     $clarification->edit([Entity::STATUS => Constants::UNDER_REVIEW], 'edit');
