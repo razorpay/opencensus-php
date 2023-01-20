@@ -163,6 +163,9 @@ final class RazorxTreatment
     // Onboard merchant on Ledger with reverse shadow
     const LEDGER_ONBOARDING_REVERSE_SHADOW = 'ledger_onboarding_reverse_shadow';
 
+    // Expt to cache ledger account id for a merchant for RX transaction Fetch API
+    const LEDGER_TIDB_MERCHANT_ACCOUNT_ID_CACHE = 'ledger_tidb_merchant_account_id_cache';
+
     // Onboard direct accounting merchant on Ledger with shadow
     const DA_LEDGER_ONBOARDING = 'da_ledger_onboarding';
 

@@ -6,6 +6,7 @@ use Db;
 use RZP\Models\Base;
 use Illuminate\Database\Query\JoinClause;
 use RZP\Models\Transaction\Statement\Ledger\Account;
+
 /**
  * Class Repository
  *
@@ -56,5 +57,28 @@ class Repository extends Base\Repository
 
         return $query->get()
                      ->toArray();
+    }
+
+    /**
+     * select account_id from `ledger`.`account_details`
+     *          where `ledger`.`account_details`.`account_name` = 'Merchant Balance Account - <MID>';
+     *
+     * @param string $accountName
+     * @param string|null $connectionType
+     * @return string
+     */
+    public function fetchAccountIDByAccountName(string $accountName, string $connectionType = null) :string
+    {
+        $connection = $this->getConnectionFromType($connectionType);
+        $query = $this->newQueryWithConnection($connection);
+
+        $accountTable = $this->repo->ledger_account->getTableName();
+        $accountDetailAccountNameColumn = $this->repo->account_detail->dbColumn(Entity::ACCOUNT_NAME);
+        $accountIDColumn = $this->repo->account_detail->dbColumn(Entity::ACCOUNT_ID);
+
+        $query->select($accountIDColumn);
+        $query->where($accountDetailAccountNameColumn, $accountName);
+
+        return $query->get()->first()[Entity::ACCOUNT_ID];
     }
 }

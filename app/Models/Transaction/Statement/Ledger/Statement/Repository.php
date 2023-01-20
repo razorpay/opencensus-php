@@ -7,11 +7,13 @@ use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Base\BuilderEx;
+use RZP\Constants\Mode;
 use RZP\Models\Reversal;
 use RZP\Models\External;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\FundAccount;
+use RZP\Base\ConnectionType;
 use RZP\Models\BankTransfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
@@ -75,6 +77,8 @@ class Repository extends Base\Repository
         'source.fundAccount.account',
     ];
 
+    const MERCHANT_ID_LEDGER_ACCOUNT_ID_CACHE_PREFIX   = 'merchant_account_id_cache_';
+
     /**
      * {@inheritDoc}
      *
@@ -117,8 +121,12 @@ class Repository extends Base\Repository
      */
     protected function addCommonQueryParamMerchantId($query, $merchantId)
     {
-        // For admins, merchant ID may not be required.
-        // For merchants, the ID is always required.
+       // If experiment active, we fetch ledger merchant account from cache and use here
+       if ($this->ledgerTidbMerchantAccountIDCacheExperiment($merchantId) === true)
+        {
+            $this->addCommonQueryParamMerchantIdExperiment($query, $merchantId);
+            return;
+        }
 
         if ($merchantId !== null)
         {
@@ -156,6 +164,85 @@ class Repository extends Base\Repository
                 throw new InvalidArgumentException('Merchant Id is required for fetch query');
             }
         }
+    }
+
+    /**
+     * In Fetch merchant_id can also be injected from code.
+     * Method will add merchant id in the query even if it
+     * is not part of input.
+     *
+     *  select `prod_pg_ledger_live`.`ledger_entries`.* from `prod_pg_ledger_live`.`ledger_entries`
+     *  left join `balance`
+     *  on `balance`.`merchant_id` = `prod_pg_ledger_live`.`ledger_entries`.`merchant_id`
+     *  where `prod_pg_ledger_live`.`ledger_entries`.`merchant_id` = ?
+     *  and `prod_pg_ledger_live`.`ledger_entries`.`account_id` = ?
+     *  and `balance`.`id` = ? order by `prod_pg_ledger_live`.`ledger_entries`.`journal_id` desc limit 5 offset 0
+     *
+     * @param BuilderEx $query
+     * @param string    $merchantId
+     */
+    protected function addCommonQueryParamMerchantIdExperiment($query, $merchantId)
+    {
+        if ($merchantId !== null)
+        {
+            $ledgerMerchantBalanceAccountID = $this->getMerchantBalanceAccountIDFromLedger($merchantId);
+
+            $query = $query->merchantId($merchantId);
+
+            $acountIDColumn = $this->dbColumn(LedgerEntry\Entity::ACCOUNT_ID);
+
+            $query->select($this->getTableName() . '.*');
+
+            $query->where($acountIDColumn, $ledgerMerchantBalanceAccountID);
+        }
+
+        //
+        // We need to check whether merchant id is required or not
+        // to perform the query. This is important because when
+        // merchant is making a query, it needs to be enforced
+        // and should not be missing by mistake.
+        //
+        if ($this->isMerchantIdRequiredForFetch())
+        {
+            if ($merchantId === null)
+            {
+                throw new InvalidArgumentException('Merchant Id is required for fetch query');
+            }
+        }
+    }
+
+    protected function getMerchantBalanceAccountIDFromLedger($merchantId)
+    {
+        $startTimeMs = round(microtime(true) * 1000);
+
+        // cache look up for ledger account id
+        $ledgerAccountID = $this->app['cache']->get(self::MERCHANT_ID_LEDGER_ACCOUNT_ID_CACHE_PREFIX . $merchantId);
+        if (!empty($ledgerAccountID))
+        {
+            $endTimeMs = round(microtime(true) * 1000);
+            $this->trace->info(TraceCode::QUERY_TIME_FOR_LEDGER_ACCOUNT_GET, [
+                'is_cache'              => true,
+                'account_id'            => $ledgerAccountID,
+                'cache_lookup_duration' => $endTimeMs - $startTimeMs,
+            ]);
+            return $ledgerAccountID;
+        }
+
+        // db lookup for ledger account id
+        $accountName = 'Merchant Balance Account - ' . $merchantId;
+        $ledgerAccountID = $this->repo->account_detail->fetchAccountIDByAccountName($accountName, ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
+
+        $this->app['cache']->put(self::MERCHANT_ID_LEDGER_ACCOUNT_ID_CACHE_PREFIX . $merchantId, $ledgerAccountID, 60 * 60 * 24 * 3);  // 3 days
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $this->trace->info(TraceCode::QUERY_TIME_FOR_LEDGER_ACCOUNT_GET, [
+            'is_cache'              => false,
+            'account_id'            => $ledgerAccountID,
+            'query_duration'        => $endTimeMs - $startTimeMs,
+        ]);
+
+        return $ledgerAccountID;
     }
 
     protected function addQueryOrder($query)
@@ -770,7 +857,7 @@ class Repository extends Base\Repository
             });
     }
 
-     /**
+    /**
      * Fetch payout entity using txn id and then set it's attributes on transaction array.
      * @param string $id
      * @param array $transaction
@@ -898,5 +985,20 @@ class Repository extends Base\Repository
         // Calling statement entity function to set public attributes for adjustment entity.
         $statement = new Statement\Entity();
         $statement->setPublicSourceAttributeForExternal($transaction);
+    }
+
+    // Returns true if experiment and env is present for MID
+    protected function ledgerTidbMerchantAccountIDCacheExperiment($merchantID): bool
+    {
+        $variant = $this->app->razorx->getTreatment($merchantID,
+            Merchant\RazorxTreatment::LEDGER_TIDB_MERCHANT_ACCOUNT_ID_CACHE,
+            $this->app['basicauth']->getMode() ?? Mode::LIVE
+        );
+
+        $this->trace->info(TraceCode::LEDGER_TIDB_MERCHANT_ACCOUNT_CACHE_EXPERIMENT, [
+            'variant' => $variant,
+        ]);
+
+        return (strtolower($variant) === 'on');
     }
 }
