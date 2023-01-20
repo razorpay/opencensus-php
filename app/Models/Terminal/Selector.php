@@ -991,6 +991,11 @@ class Selector extends Base\Core
             return false;
         }
 
+        if ($payment->isInAppUPI() === true)
+        {
+            return false;
+        }
+
         return true;
     }
 

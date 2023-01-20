@@ -2889,6 +2889,103 @@ class TerminalSelectionTest extends TestCase
     }
 
     /**
+     *
+     * For In App UPI payment if smart router selects no terminal ,
+     * It should not fallback to API filters and sorters
+     *
+     * @throws RuntimeException
+     * @throws \RZP\Exception\BadRequestException
+     */
+    public function testNoTerminalFoundForInApp()
+    {
+        $this->app['rzp.mode'] = Mode::LIVE;
+        $this->app['env']      = Environment::PRODUCTION;
+
+        $upiMetadata = [
+            'flow'        => 'intent',
+            'mode'        => 'in_app',
+        ];
+
+        $upi = (new Payment\UpiMetadata\Entity)->fill($upiMetadata);
+
+        $paymentArray = $this->getDefaultUpiPaymentArray();
+        $paymentArray['status'] = 'created';
+
+        unset($paymentArray['upi']);
+
+        // Setting random payment ID to allow hitting smart router
+        $paymentArray['id'] = 'randomid123';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $upi->payment()->associate($payment);
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+
+        $this->makeRequestAndCatchException(
+            function() use ($selector)
+            {
+                $selector->select();
+            },
+            RuntimeException::class, 'No terminal found.');
+    }
+
+    public function testTerminalFoundForInApp()
+    {
+        $this->fixtures->create('terminal:upi_in_app_terminal');
+
+        //$this->fixtures->merchant->setCategory('1240');
+
+        $upiMetadata = [
+            'flow'        => 'intent',
+            'mode'        => 'in_app',
+        ];
+
+        $upi = (new Payment\UpiMetadata\Entity)->fill($upiMetadata);
+
+        $paymentArray = $this->getDefaultUpiPaymentArray();
+        $paymentArray['status'] = 'created';
+
+        unset($paymentArray['upi']);
+
+        // Setting random payment ID to allow hitting smart router
+        $paymentArray['id'] = 'randomid123';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment->merchant()->associate($merchant);
+
+        $upi->payment()->associate($payment);
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $input = [
+            'payment' => $payment,
+            'merchant' => $payment->merchant
+        ];
+
+        $options = new Options;
+        $selector = new Selector($input, $options);
+        $selectedTerminals = $selector->select();
+
+        $this->assertEquals(1, sizeof($selectedTerminals));
+        $terminal = $selectedTerminals[0];
+        $this->assertEquals('1000UpiInAppTl', $terminal->getId());
+    }
+
+    /**
      * Tests terminal selection using the 'enabled_wallets' field
      *
      * @throws RuntimeException
