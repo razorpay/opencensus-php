@@ -4,6 +4,7 @@ namespace Unit\Models\Merchant\Detail;
 
 use Mockery;
 
+use Carbon\Carbon;
 use Tests\Unit\TestCase;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\Detail\Service as MerchantService;
@@ -303,6 +304,18 @@ class DetailServiceTest extends TestCase
             'action'                => 'edit'];
 
         $this->getMerchantDetailAttributeMock();
+
+        $this->merchantEntityMock->shouldReceive('getMerchantId')->andReturn('1cXSLlUU8V9sXl');
+
+        $this->merchantEntityMock->shouldReceive('getActivated')->andReturn(true);
+
+        $this->merchantEntityMock->shouldReceive('isLive')->andReturn(true);
+
+        $this->merchantEntityMock->shouldReceive('getActivatedAt')->andReturn(Carbon::now()->getTimestamp());
+
+        $this->repoMock->shouldReceive('driver')->with('merchant')->andReturn($this->merchantRepoMock);
+
+        $this->getFindOrFailPublic();
 
         $this->merchantDetailEntityMock->shouldReceive('getValidator')->andReturn($this->merchantDetailValidator);
 
