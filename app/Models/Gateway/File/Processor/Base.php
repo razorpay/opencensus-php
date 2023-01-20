@@ -5,7 +5,6 @@ namespace RZP\Models\Gateway\File\Processor;
 use App;
 
 use RZP\Exception;
-use RZP\Models\Gateway\File\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Core;
@@ -16,7 +15,9 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Gateway\File\Type;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
+use RZP\Models\Gateway\File\Metric;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Gateway\File\Constants;
 use RZP\Jobs\FileGenerationInstrumentation;
 
 
@@ -459,5 +460,24 @@ abstract class Base extends Core
                                     "error" => $ex
                                 ]);
         }
+    }
+
+    public function generateMetric(string $metricName, array $metricDimensions=[])
+    {
+        try {
+            $this->trace->count($metricName, $this->getMetricDimensions($metricDimensions));
+        }
+        catch (\Exception $ex) {
+            $this->trace->info(TraceCode::COI_EXPERIMENT, ["metric error" => $ex]);
+        }
+    }
+
+    public function getMetricDimensions(array $extra = []): array
+    {
+        return $extra + [
+                'mode'              => $this->mode,
+                'target'            => $this->gatewayFile->getTarget(),
+                'type'              => $this->gatewayFile->getType()
+            ];
     }
 }

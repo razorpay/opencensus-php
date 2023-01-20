@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking;
 use RZP\Models\Customer\Token;
+use RZP\Models\Gateway\File\Metric;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
@@ -40,6 +41,8 @@ abstract class Base extends Nach\Base
         }
         catch (ServerErrorException $e)
         {
+            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+
             $this->trace->traceException($e);
 
             throw new GatewayFileException(

@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Base as ModelBase;
+use RZP\Models\Gateway\File\Metric;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
@@ -95,11 +96,15 @@ class EnachRbl extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
 
+            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_RBL");
 
         }
         catch (\Throwable $e)
         {
+            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+
             $this->trace->traceException($e);
 
             throw new GatewayFileException(

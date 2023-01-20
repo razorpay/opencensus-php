@@ -13,6 +13,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Customer\Token;
+use RZP\Models\Gateway\File\Metric;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
@@ -124,11 +125,15 @@ class CombinedNachIcici extends Debit\Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
 
+            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_ICICI");
 
         }
         catch (\Throwable $e)
         {
+            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
@@ -447,6 +452,8 @@ class CombinedNachIcici extends Debit\Base
         }
         catch (ServerErrorException $e)
         {
+            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+
             $this->trace->traceException($e);
 
             throw new GatewayFileException(

@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking;
 use RZP\Models\Base as ModelBase;
+use RZP\Models\Gateway\File\Metric;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
@@ -45,6 +46,8 @@ abstract class Base extends EMandate\Base
         }
         catch (ServerErrorException $e)
         {
+            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+
             $this->trace->traceException($e);
 
             throw new GatewayFileException(
@@ -106,6 +109,8 @@ abstract class Base extends EMandate\Base
         }
         catch (\Throwable $e)
         {
+            $this->generateMetric(Metric::EMANDATE_DATA_ENTITY_ERROR);
+
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_DATA,
                 [

@@ -15,6 +15,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Customer\Token;
+use RZP\Models\Gateway\File\Metric;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
@@ -219,10 +220,14 @@ class PaperNachCiti extends Debit\Base
                     'target' => $this->gatewayFile->getTarget(),
                 ]);
 
+            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_CITI");
         }
         catch (\Throwable $e)
         {
+            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
@@ -366,6 +371,8 @@ class PaperNachCiti extends Debit\Base
             ($beamResponse['success'] === null) or
             ($beamResponse['failed'] !== null))
         {
+            $this->generateMetric(Metric::EMANDATE_BEAM_ERROR);
+
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 null,
@@ -408,6 +415,8 @@ class PaperNachCiti extends Debit\Base
 
         if(count($sentFiles) !== count($fileInfo))
         {
+            $this->generateMetric(Metric::EMANDATE_BEAM_ERROR);
+
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 null,
@@ -819,6 +828,8 @@ class PaperNachCiti extends Debit\Base
         }
         catch (ServerErrorException $e)
         {
+            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+
             $this->trace->traceException($e);
 
             throw new GatewayFileException(
@@ -868,6 +879,12 @@ class PaperNachCiti extends Debit\Base
                 'target' => $this->gatewayFile->getTarget(),
                 'type'   => $this->gatewayFile->getType()
             ]);
+
+        // can uncomment once metrics works fine
+
+        // $metricDimension = [ "total_records" => count($paymentIds)];
+
+        // $this->generateMetric(Metric::EMANDATE_DB_COUNT, $metricDimension);
 
         return $tokens;
     }

@@ -12,8 +12,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
-use RZP\Models\Gateway\File\Type;
 use RZP\Models\Base as ModelBase;
+use RZP\Models\Gateway\File\Metric;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Base\PublicCollection;
@@ -168,6 +168,8 @@ class EnachNpciNetbanking extends Base
             ($beamResponse['success'] === null) or
             ($beamResponse['failed'] !== null))
         {
+            $this->generateMetric(Metric::EMANDATE_BEAM_ERROR);
+
             throw new GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
                 null,
@@ -261,10 +263,14 @@ class EnachNpciNetbanking extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
 
+            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_YES");
         }
         catch (\Throwable $e)
         {
+            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
@@ -303,6 +309,8 @@ class EnachNpciNetbanking extends Base
         }
         catch (ServerErrorException $e)
         {
+            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+
             $this->trace->traceException($e);
 
             throw new GatewayFileException(

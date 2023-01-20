@@ -11,6 +11,7 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File\Metric;
 use RZP\Exception\RuntimeException;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
@@ -72,10 +73,14 @@ abstract class Base extends Processor\Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
 
+            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "OTHER_BANKS");
         }
         catch (\Throwable $e)
         {
+            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [
@@ -106,6 +111,8 @@ abstract class Base extends Processor\Base
         }
         catch (\Throwable $e)
         {
+            $this->generateMetric(Metric::EMANDATE_FILE_SENT_ERROR);
+
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE,
                 [

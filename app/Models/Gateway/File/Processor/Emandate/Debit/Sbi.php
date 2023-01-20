@@ -11,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Gateway\Netbanking;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\File;
+use RZP\Models\Gateway\File\Metric;
 use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\Processor\FileHandler;
@@ -162,11 +163,15 @@ class Sbi extends Base
                     'type'   => $this->gatewayFile->getType()
                 ]);
 
+            $this->generateMetric(Metric::EMANDATE_FILE_GENERATED);
+
             $this->fileGenerationProcessAsync($this->gatewayFile->getId(), "GEN_SBI");
 
         }
         catch (\Throwable $e)
         {
+            $this->generateMetric(Metric::EMANDATE_FILE_GENERATION_ERROR);
+
             throw new GatewayFileException(
                 ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE,
                 [

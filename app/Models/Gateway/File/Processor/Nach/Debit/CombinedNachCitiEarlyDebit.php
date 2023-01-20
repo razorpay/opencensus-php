@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File\Metric;
 use RZP\Models\FundTransfer\Holidays;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
@@ -59,6 +60,8 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
         }
         catch (ServerErrorException $e)
         {
+            $this->generateMetric(Metric::EMANDATE_DB_ERROR);
+
             $this->trace->traceException($e);
 
             throw new GatewayFileException(
@@ -88,7 +91,7 @@ class CombinedNachCitiEarlyDebit extends PaperNachCiti
                 'end'             => $end,
                 'entity_count'    => count($paymentIds),
             ]);
-
+        
         return $tokens;
     }
 
