@@ -503,6 +503,8 @@ return array(
 
     'checkout_enable_rudderstack_plugin_splitz_experiment_id' => env('CHECKOUT_ENABLE_RUDDERSTACK_PLUGIN_SPLITZ_EXPERIMENT_ID'),
 
+    'checkout_downtime_splitz_experiment_id' => env('CHECKOUT_DOWNTIME_SPLITZ_EXPERIMENT_ID'),
+
     'send_submerchant_first_transaction_segment_event' => env('SEND_SUBMERCHANT_FIRST_TRANSACTION_SEGMENT_EVENT'),
 
     'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),

@@ -57,6 +57,7 @@ class CheckoutExperiment
             'truecaller_1cc_for_non_prefill'                     => 'control',
             'email_less_checkout'                                => false,
             'enable_rudderstack_plugin'                          => false,
+            'checkout_downtime'                                  => 'control',
         ];
 
         $this->input = $input;
@@ -247,6 +248,14 @@ class CheckoutExperiment
             'app.checkout_enable_rudderstack_plugin_splitz_experiment_id',
             'EnableRudderstackPlugin',
             'enable_rudderstack_plugin',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_downtime_splitz_experiment_id',
+            'CheckoutDowntime',
+            'checkout_downtime',
             ['merchant_id' => $this->merchantId]
         );
     }
@@ -460,5 +469,10 @@ class CheckoutExperiment
             'variant_1' => 'test',
             default => 'control',
         };
+    }
+
+    private function handleCheckoutDowntimeResponse($response): string
+    {
+        return $response['variant']['name'] ?? 'control';
     }
 }
