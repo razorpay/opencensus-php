@@ -7,6 +7,7 @@ use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
 use RZP\Jobs\ParAsyncTokenisationJob;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
@@ -647,6 +648,9 @@ class Core extends Base\Core
     }
 
     /**
+     * ToDo: Refactor this method to call self::filterTokensForCheckout()
+     *       before returning the response
+     *
      * @param Customer\Entity $customer
      * @param Merchant\Entity $merchant
      *
@@ -3538,5 +3542,29 @@ class Core extends Base\Core
             ]);
 
         $rowsAffected = (new Token\Repository)->updateById($tokenId, $updateData);
+    }
+
+    /**
+     * @param Base\PublicCollection $tokens
+     * @return Base\PublicCollection
+     */
+    public function filterTokensForCheckout(Base\PublicCollection $tokens): Base\PublicCollection
+    {
+        // TODO: Needs to be fixed later when we allow first recurring on old recurring nb token.
+        // Currently, we do not expose any recurring NB tokens to the customer.
+        // We do not handle the flow where a customer can use an existing token
+        // to subscribe to another product.
+        //
+        $tokens = $this->removeEmandateRecurringTokens($tokens);
+
+        $tokens = $this->removeDisabledNetworkTokens($tokens, $this->merchant->methods->getCardNetworks());
+
+        $tokens = $this->removeDuplicateCardRecurringTokensIfAny($tokens, $this->merchant);
+
+        $tokens = $this->removeNonCompliantCardTokens($tokens, $this->merchant->getId());
+
+        $tokens = $this->removeNonActiveTokenisedCardTokens($tokens);
+
+        return $this->addConsentFieldInTokens($tokens, $this->merchant);
     }
 }

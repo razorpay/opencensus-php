@@ -1133,7 +1133,7 @@ class Route
         'order_fetch_by_id'                        => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
         'order_fetch_by_id_internal'               => ['get',      'orders_internal/{id}',                           'OrderController@fetchOrderDetailById'                              ],
         'order_fetch_by_id_internal_admin'         => ['get',      'orders_internal_admin/{id}',                     'OrderController@fetchOrderDetailByIdAdmin'                         ],
-        'order_fetch_internal_checkout'            => ['get',      'internal/orders/checkout',                       'OrderController@fetchOrderDetailsForCheckout'                      ],
+        'order_fetch_internal_checkout'            => ['post',     'internal/orders/checkout',                       'OrderController@fetchOrderDetailsForCheckout'                      ],
         'order_payments'                           => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'         => ['post',     'orders/payments/refund',                         'PaymentController@postRefundAuthorizedPaymentsOfPaidOrders'        ],
         'order_edit'                               => ['patch',    'orders/{id}',                                    'OrderController@update'                                            ],
@@ -1176,6 +1176,7 @@ class Route
         'customer_update_token'                    => ['put',      'customers/{id}/tokens/{token}',                  'CustomerController@updateToken'                                    ],
         'customer_fetch_token'                     => ['get',      'customers/{id}/tokens/{token}',                  'CustomerController@fetchToken'                                     ],
         'customer_fetch_tokens'                    => ['get',      'customers/{id}/tokens',                          'CustomerController@fetchTokens'                                    ],
+        'customer_fetch_tokens_internal'           => ['get',      'internal/customers/tokens',                      'TokenController@fetchCustomerTokensInternal'                       ],
         'customer_delete_token'                    => ['delete',   'customers/{id}/tokens/{token}',                  'CustomerController@deleteToken'                                    ],
         'customer_cancel_token'                    => ['put',      'customers/{id}/tokens/{token}/cancel',           'CustomerController@cancelToken'                                    ],
         'customer_get_saved_status'                => ['get',      'customers/status/{contact}',                     'CustomerController@fetchGlobalCustomerStatus'                      ],
@@ -6579,6 +6580,9 @@ class Route
         'payouts_bulk_reject_owner',
         'payout_links_bulk_reject_owner',
 
+        // Checkout Service Routes
+        'customer_fetch_tokens_internal',
+
         'merchant_ip_config_fetch',
         'merchant_ip_config_create',
 
@@ -6593,6 +6597,7 @@ class Route
         'partner_config_edit',
         'partner_config_edit_logo',
     ];
+
     // These will run on internal auth with the assurance
     // of X-Admin-Token being passed.
     //
@@ -9944,6 +9949,7 @@ class Route
         '1cc_apply_gift_card',
         '1cc_remove_gift_card',
         '1cc_shopify_order',
+        'customer_fetch_tokens_internal',
         'checkout_personalisation_internal',
     ];
 
@@ -14722,6 +14728,7 @@ class Route
             'order_fetch_internal_checkout',
             'merchant_methods_offers_checkout_internal',
             'merchant_validate_public_auth_over_internal_auth',
+            'customer_fetch_tokens_internal',
             'checkout_personalisation_internal',
         ],
 

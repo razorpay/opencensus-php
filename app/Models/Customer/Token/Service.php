@@ -279,24 +279,63 @@ class Service extends Base\Service
     }
 
     /**
+     * Fetch tokens using customer id for Checkout.
+     *
+     * @param string $customerId
+     *
+     * @return array
+     */
+    public function fetchTokensForLocalCustomerForCheckout(string $customerId): array
+    {
+        // This is needed to ensure that the merchant is getting only his customer's details
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+
+        $tokens = $this->core->fetchTokensByCustomerForCheckout($customer, $this->merchant);
+
+        $tokens = $this->core->filterTokensForCheckout($tokens);
+
+        return $tokens->toArrayPublic();
+    }
+
+    /**
      * fetch tokens for an app_token (global customer)
      *
-     * @return entity tokens
+     * @return array tokens
      */
-    public function fetchTokensForGlobalCustomer()
+    public function fetchTokensForGlobalCustomer(): array
     {
         $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
 
         $tokens = new Base\PublicCollection;
 
-        if ($appTokenId !== null)
+        if (!empty($appTokenId))
         {
             $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
 
             $tokens = $this->core->fetchTokensByCustomerForCheckout($app->customer, $this->merchant);
+
+            $tokens = $this->core->filterTokensForCheckout($tokens);
         }
 
         return $tokens->toArrayPublic();
+    }
+
+    /**
+     * Fetched Tokens associated to Local (Based on customer_id in $input) or
+     * Global (Based on Session Cookie passed in Headers) Customers.
+     *
+     * @param array $input
+     * @return array
+     */
+    public function fetchLocalOrGlobalCustomerTokens(array $input): array
+    {
+        if (empty($input['customer_id'])) {
+            $tokens = $this->fetchTokensForGlobalCustomer();
+        } else {
+            $tokens = $this->fetchTokensForLocalCustomerForCheckout($input['customer_id']);
+        }
+
+        return $tokens;
     }
 
     /**

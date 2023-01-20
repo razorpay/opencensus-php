@@ -3,11 +3,10 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Request;
+use RZP\Models\Customer\Token\Service;
 use View;
-
-use RZP\Constants\Entity as E;
-use RZP\Trace\TraceCode;
 
 class TokenController extends Controller
 {
@@ -156,6 +155,20 @@ class TokenController extends Controller
         $input = Request::all();
 
         $data = $this->service()->globalCustomerLocalSavedCardAsyncTokenisation($input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * @return JsonResponse
+     *
+     * @see Service::fetchLocalOrGlobalCustomerTokens()
+     */
+    public function fetchCustomerTokensInternal(): JsonResponse
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchLocalOrGlobalCustomerTokens($input);
 
         return ApiResponse::json($data);
     }
