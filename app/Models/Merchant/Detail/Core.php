@@ -2878,6 +2878,11 @@ class Core extends Base\Core
 
     public function blockMerchantActivations($merchant)
     {
+        // check activation for malaysia merchants
+        if ($this->isMalaysianMerchant($merchant))
+        {
+            return false;
+        }
 
         try
         {
@@ -2921,6 +2926,7 @@ class Core extends Base\Core
         {
             return false;
         }
+
         // activations allowed for linked accounts
         if ($merchant->isLinkedAccount() === true)
         {
@@ -4359,6 +4365,16 @@ class Core extends Base\Core
         ]);
 
         return $response;
+    }
+
+    private function isMalaysianMerchant($merchant) {
+        $countryCode = $merchant->getCountry();
+
+        if ($countryCode === 'MY')
+        {
+            return true;
+        }
+        return false;
     }
 
     private function getStatusChangeLogs(Merchant\Entity $merchant)

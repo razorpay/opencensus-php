@@ -1225,6 +1225,23 @@ class CoreTest extends TestCase
         $this->assertFalse($response);
 
     }
+
+    public function testBlockMerchantActivationForMalaysiaRegion()
+    {
+        $core = new DetailCore();
+
+        $merchant_id = '1X4hRFHFx4UiXt';
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => $merchant_id,
+            'country_code' => 'MY'
+        ]);
+
+        $response = $core->blockMerchantActivations($merchant);
+
+        $this->assertFalse($response);
+
+    }
     public function testGetSegmentEventPropertiesForActivationStatusChangeTrue()
     {
         $core = new DetailCore();
