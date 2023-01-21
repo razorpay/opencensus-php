@@ -283,10 +283,13 @@ class Activate extends Base\Core
             $detailCore->updateActivationStatus($merchant, $activationStatusData, $merchant);
         }
 
+        $isPhantomOnboardingFlow = \Request::all()[Merchant\Constants::PHANTOM_ONBOARDING_FLOW_ENABLED] ?? false;
+
         $properties = [
-            'previousActivationStatus'    => null,
-            'currentActivationStatus'     => $merchantDetails->getActivationStatus(),
-            'easyOnboarding'              => $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING)
+            'previousActivationStatus'              => null,
+            'currentActivationStatus'               => $merchantDetails->getActivationStatus(),
+            'easyOnboarding'                        => $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING),
+            Merchant\Constants::PHANTOM_ONBOARDING  => $isPhantomOnboardingFlow
         ];
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(

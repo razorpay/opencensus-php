@@ -991,10 +991,15 @@ class Core extends Base\Core
 
         $eventAttributes = $merchant->toArrayEvent();
 
+        $isPhantomOnboarding = \Request::all()[Constants::PHANTOM_ONBOARDING_FLOW_ENABLED] ?? false;
+
+        $eventAttributes[Merchant\Constants::PHANTOM_ONBOARDING] = $isPhantomOnboarding;
+
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::SUBMITTED, $eventAttributes);
 
         $properties = [
-            'easyOnboarding'    =>  $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING)
+            'easyOnboarding'    =>  $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING),
+            Merchant\Constants::PHANTOM_ONBOARDING => $isPhantomOnboarding
         ];
 
         $this->app['segment-analytics']->pushTrackEvent($merchant, $properties, SegmentEvent::L2_SUBMISSION);
@@ -1618,7 +1623,8 @@ class Core extends Base\Core
         $this->app->hubspot->trackL1ContactProperties($input, $merchant, $merchantDetails->getActivationFlow());
 
         $properties = [
-            'easyOnboarding' =>  $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING)
+            'easyOnboarding' =>  $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING),
+            Merchant\Constants::PHANTOM_ONBOARDING => \Request::all()[Constants::PHANTOM_ONBOARDING_FLOW_ENABLED] ?? false
         ];
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant, $properties, SegmentEvent::L1_SUBMISSION);
@@ -1989,6 +1995,8 @@ class Core extends Base\Core
         $eventAttributes['activation_progress'] = $activationProgress;
 
         $eventAttributes[Detail\Constants::POI_STATUS] = $merchantDetail->getPoiVerificationStatus();
+
+        $eventAttributes[Merchant\Constants::PHANTOM_ONBOARDING] = \Request::all()[Constants::PHANTOM_ONBOARDING_FLOW_ENABLED] ?? false;
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
@@ -3372,6 +3380,12 @@ class Core extends Base\Core
 
         $this->pushProductLedHubspotEvent($merchant, $properties);
 
+        $isPhantomOnboardingFlow = \Request::all()[Merchant\Constants::PHANTOM_ONBOARDING_FLOW_ENABLED] ?? false;
+
+        $customProperties[Merchant\Constants::PHANTOM_ONBOARDING] = $isPhantomOnboardingFlow;
+
+        $properties[Merchant\Constants::PHANTOM_ONBOARDING] = $isPhantomOnboardingFlow;
+
         if($currentActivationStatus === Status::INSTANTLY_ACTIVATED){
 
             $this->app['segment-analytics']->pushTrackEvent(
@@ -3471,11 +3485,14 @@ class Core extends Base\Core
     public function paymentEnabledEvent($merchant, $oldMerchantDetails, $newMerchantDetails)
     {
 
+        $isPhantomOnboardingFlow = \Request::all()[Constants::PHANTOM_ONBOARDING_FLOW_ENABLED] ?? false;
+
         $properties = [
-            'previousActivationStatus' => $oldMerchantDetails->getActivationStatus(),
-            'currentActivationStatus'  => $newMerchantDetails->getActivationStatus(),
-            'activated_at'             => $merchant->getActivatedAt(),
-            'easyOnboarding'           => $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING)
+            'previousActivationStatus'              => $oldMerchantDetails->getActivationStatus(),
+            'currentActivationStatus'               => $newMerchantDetails->getActivationStatus(),
+            'activated_at'                          => $merchant->getActivatedAt(),
+            'easyOnboarding'                        => $merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING),
+            Merchant\Constants::PHANTOM_ONBOARDING  => $isPhantomOnboardingFlow
         ];
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(

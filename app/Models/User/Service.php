@@ -38,6 +38,7 @@ use RZP\Models\Merchant\BusinessDetail as MBD;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
@@ -401,7 +402,7 @@ class Service extends Base\Service
 
     }
 
-    protected function signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput=null)
+    protected function signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput=null, $isPhantomOnboardingFlow = false)
     {
         if (empty($m2mReferralInput))
         {
@@ -417,12 +418,13 @@ class Service extends Base\Service
         $merchant = $this->repo->user->findOrFailPublic($user[Entity::ID])->getMerchantEntity();
 
         $customProperties = [
-            Entity::EMAIL                      => $user[Entity::EMAIL] ?? null,
-            Entity::VISITOR_ID                 => $visitorId,
-            Merchant\Constants::PARTNER_INTENT => $partnerIntent,
-            'is_m2m_referral'                  => $isM2MReferral,
-            'phone'                            => $user[Entity::CONTACT_MOBILE] ?? "",
-            'easyOnboarding'                   => optional($merchant)->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true
+            Entity::EMAIL                          => $user[Entity::EMAIL] ?? null,
+            Entity::VISITOR_ID                     => $visitorId,
+            Merchant\Constants::PARTNER_INTENT     => $partnerIntent,
+            'is_m2m_referral'                      => $isM2MReferral,
+            'phone'                                => $user[Entity::CONTACT_MOBILE] ?? "",
+            'easyOnboarding'                       => optional($merchant)->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true,
+            Merchant\Constants::PHANTOM_ONBOARDING => $isPhantomOnboardingFlow
         ];
 
         if ($user[Entity::SIGNUP_VIA_EMAIL] == 0)
@@ -632,6 +634,8 @@ class Service extends Base\Service
 
         unset($input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
 
+        $isPhantomOnboardingFlow = Merchant\PhantomUtility::checkIfPhantomOnBoardingFlow($input);
+
         $verifySuccess = $this->core->verifySignupOtp($input);
 
         if ($verifySuccess === true)
@@ -717,7 +721,7 @@ class Service extends Base\Service
 
             $signupMethod = Constants::OTP;
 
-            $this->signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput);
+            $this->signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput, $isPhantomOnboardingFlow);
 
             return $data;
         }

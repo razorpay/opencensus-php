@@ -1841,4 +1841,10 @@ final class Constants
         'email',
         'mydash101',
     ];
+
+    const PHANTOM_ONBOARDING_FLOW_ENABLED = 'PHANTOM_ONBOARDING_FLOW_ENABLED';
+
+    const PHANTOM_ONBOARDING              = 'isPhantomOnboarding';
+
+    const PHANTOM_SIGNUP                  = 'phantom_signup';
 }

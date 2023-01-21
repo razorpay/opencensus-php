@@ -799,6 +799,11 @@ class EventCode
         'name'  => 'partnerships.submerchant.signup.error'
     ];
 
+    const PARTNER_LINKING_CONSENT_RESPONSE_RESULT = [
+        'group' => 'onboarding',
+        'name'  => 'partner_linking.consent.response.result'
+    ];
+
     const MERCHANT_ONBOARDING_CATEGORY_UPDATE = [
         'group' => 'onboarding',
         'name'  => 'merchant_onboarding_category.update'

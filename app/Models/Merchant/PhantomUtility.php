@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use App;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Partner\Constants as PartnerConstants;
 
 class PhantomUtility
 {
@@ -40,4 +41,35 @@ class PhantomUtility
 
         return $isExpEnabled;
     }
+
+    public static function checkIfPhantomOnBoardingFlow(array &$input) : bool
+    {
+        if ((isset($input[Constants::SOURCE]) === false) or
+            (empty($input[Constants::SOURCE]) === true))
+        {
+            return false;
+        }
+
+        $isPhantomFlowEnabled = $input[Constants::SOURCE] == PartnerConstants::PHANTOM;
+
+        unset($input[Constants::SOURCE]);
+
+        return $isPhantomFlowEnabled;
+    }
+
+    public static function checkAndSetContextForPhantomSource(array &$input) : void
+    {
+        if ((isset($input[Constants::SOURCE]) === false) or
+            (empty($input[Constants::SOURCE]) === true))
+        {
+            return;
+        }
+
+        $isPhantomFlow = $input[Constants::SOURCE] == PartnerConstants::PHANTOM;
+
+        \Request::instance()->request->add([Constants::PHANTOM_ONBOARDING_FLOW_ENABLED => $isPhantomFlow]);
+
+        unset($input[Constants::SOURCE]);
+    }
+
 }

@@ -250,6 +250,8 @@ class Service extends Base\Service
 
         $input[Constants::PARTNER_INTENT] = $partnerIntent;
 
+        $input[Constants::PHANTOM_ONBOARDING] = \Request::all()[Constants::PHANTOM_ONBOARDING_FLOW_ENABLED] ?? false;
+
         $this->trace->info(TraceCode::UTM_PARAMS, [
             'merchant'    => $this->merchant->getId(),
             'eventParams' => $input
@@ -401,6 +403,8 @@ class Service extends Base\Service
         }
 
         Entity::modifyConvertEmptyStringsToNull($input);
+
+        Merchant\PhantomUtility::checkAndSetContextForPhantomSource($input);
 
         $partnerId = $this->getPartnerInfoFromInput($input);
 
@@ -1748,12 +1752,9 @@ class Service extends Base\Service
 
         $isReferrerMerchantFromPhantom = false;
 
-        if (!empty($referrerMerchant)) {
-            $properties = [
-                'id'            => $referrerMerchant,
-                'experiment_id' => $this->app['config']->get('app.partner_submerchant_whitelabel_onboarding'),
-            ];
-            $isReferrerMerchantFromPhantom = (new Merchant\Core)->isSplitzExperimentEnable($properties, 'enable');
+        if (!empty($referrerMerchant))
+        {
+            $isReferrerMerchantFromPhantom = Merchant\PhantomUtility::isPhantomOnBoardingWhitelistedForPartner($referrerMerchant);
         }
 
         $presignupDetails = [];
@@ -1967,7 +1968,7 @@ class Service extends Base\Service
 
     private function applyPartnerSubMerchantMapping($subMerchant, $input, $product)
     {
-        $partnerId = $input['partner_id'];
+        $partnerId = $input[Merchant\Constants::PARTNER_ID];
 
         $partner = $this->repo->merchant->findOrFailPublic($partnerId);
 
@@ -2006,22 +2007,44 @@ class Service extends Base\Service
         // update merchant pricing plan to the one specified by partner in partner config if applicable
         $merchantCore->assignSubMerchantPricingPlan($partner, $subMerchant, $linkedAccount);
 
-        $data = [
-            'status'       => 'success',
-            'merchant_id'  => $subMerchant->getId(),
-            'partner_id'   => $partnerId,
-            'source'       => $input['source'],
-            'product_group'=> $product,
-        ];
-
-        $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
-                                                 $partner, null,
-                                                 $data);
-
         if ($partner->isFeatureEnabled(FeatureConstants::SKIP_SUBM_ONBOARDING_COMM) === true)
         {
             $this->app->hubspot->skipMerchantOnboardingComm($subMerchant->getEmail());
         }
+
+        if ($input['source'] === PartnerConstants::PHANTOM)
+        {
+            $partnerLinkingData = [
+                Constants::PHANTOM_ONBOARDING => true
+            ];
+
+            $this->app['diag']->trackOnboardingEvent(EventCode::PARTNER_LINKING_CONSENT_RESPONSE_RESULT,
+                                                     $partner, null, $partnerLinkingData);
+        }
+
+        $isSignUpFlow = \Request::all()[Merchant\Constants::PHANTOM_SIGNUP] ?? true;
+
+        if ($isSignUpFlow)
+        {
+            $this->sendSubMerchantSignupEvents($partner, $subMerchant, $input, $product);
+        }
+    }
+
+    private function sendSubMerchantSignupEvents($partner, $subMerchant, $input, $product)
+    {
+        $data = [
+            'status'       => 'success',
+            'merchant_id'  => $subMerchant->getId(),
+            'partner_id'   => $partner->getId(),
+            'source'       => $input['source'],
+            'product_group'=> $product,
+        ];
+
+        $merchantCore = new Merchant\Core;
+
+        $this->app['diag']->trackOnboardingEvent(EventCode::PARTNERSHIP_SUBMERCHANT_SIGNUP,
+                                                 $partner, null,
+                                                 $data);
 
         $this->app->hubspot->trackSubmerchantSignUp($partner->getEmail());
 
@@ -2033,7 +2056,7 @@ class Service extends Base\Service
         $this->trace->count(PartnerMetric::SUBMERCHANT_CREATE_TOTAL, $dimension);
         $merchantCore->pushSettleToPartnerSubmerchantMetrics($partner->getId(), $subMerchant->getId());
 
-        $merchantCore->sendPartnerLeadInfoToSalesforce($subMerchant->getId(), $partnerId, $product);
+        $merchantCore->sendPartnerLeadInfoToSalesforce($subMerchant->getId(), $partner->getId(), $product);
     }
 
     public function addPartnerSubMerchantMappingIfApplicable($subMerchant, array &$input)
@@ -2041,21 +2064,16 @@ class Service extends Base\Service
         if ((isset($input[Merchant\Constants::PARTNER_ID]) === false) or
             (empty($input[Merchant\Constants::PARTNER_ID]) === true))
         {
-            return;
+            return false;
         }
 
-        $properties = [
-            'id'            => $input[Merchant\Constants::PARTNER_ID],
-            'experiment_id' => $this->app['config']->get('app.partner_submerchant_whitelabel_onboarding'),
-        ];
-
-        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable($properties, 'enable');
+        $isExpEnabled = Merchant\PhantomUtility::isPhantomOnBoardingWhitelistedForPartner($input[Merchant\Constants::PARTNER_ID]);
 
         if ($isExpEnabled)
         {
             $mappingInput = [
                 'partner_id' => $input['partner_id'],
-                'source' => PartnerConstants::PHANTOM
+                'source'     => PartnerConstants::PHANTOM
             ];
 
             $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, Product::PRIMARY);

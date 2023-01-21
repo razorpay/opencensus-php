@@ -6022,6 +6022,7 @@ class Core extends Base\Core
 
         try
         {
+            \Request::instance()->request->add([Merchant\Constants::PHANTOM_SIGNUP => false]);
             (new Merchant\Detail\Service())->addPartnerSubMerchantMappingIfApplicable($subMerchant, $input);
         }
         catch (\Exception $e)
