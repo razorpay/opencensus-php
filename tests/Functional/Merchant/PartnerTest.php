@@ -14,6 +14,7 @@ use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
 use RZP\Models\User\BankingRole;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Constants as MerchantConstants;
@@ -25,6 +26,7 @@ use Razorpay\OAuth\Application;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Merchant\Request;
 use RZP\Models\Settings\Accessor;
+use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\Merchant\AccessMap;
@@ -47,6 +49,7 @@ class PartnerTest extends OAuthTestCase
     use MocksSplitz;
     use PartnerTrait;
     use BatchTestTrait;
+    use CreateLegalDocumentsTrait;
     use TestsWebhookEvents;
 
     const PARTNER                = 'partner';
@@ -2787,6 +2790,13 @@ class PartnerTest extends OAuthTestCase
         Mail::assertQueued(PartnerOnBoarded::class);
     }
 
+    protected function mockBvsService()
+    {
+        $mock = $this->mockCreateLegalDocument();
+
+        $mock->expects($this->once())->method('createLegalDocument')->withAnyParameters();
+    }
+
     public function testUpdatePartnerTypeAsPurePlatformUsingProxyAuth()
     {
         Mail::fake();
@@ -3011,6 +3021,81 @@ class PartnerTest extends OAuthTestCase
         $this->assertEquals( 'activated', $partnerActivation->getActivationStatus());
 
         Mail::assertQueued(PartnerOnBoarded::class);
+    }
+
+    public function testCreateLegalDocsConsentForResellerPartner()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant_detail:sane',
+            [
+                'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+            ]);
+
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+
+        $app = ['id'=>'8ckeirnw84ifke'];
+
+        $this->mockAuthServiceCreateApplication($merchant, $app);
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
+
+        $this->mockBvsService();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $merchantConsents = $this->getDbLastEntity('merchant_consents');
+
+        $termsDetails = (new MerchantConsentDetailsRepo())->getById($merchantConsents->getDetailsId());
+
+        $expectedTerms        =  MerchantConstants::RAZORPAY_PARTNERSHIP_TERMS;
+        $expectedConsentFor   =  'Partnership_Terms & Conditions';
+
+        $this->assertEquals($merchant->getId(), $merchantConsents->getMerchantId());
+        $this->assertEquals($expectedConsentFor, $merchantConsents->getConsentFor());
+        $this->assertEquals($expectedTerms, $termsDetails->getURL());
+
+        $this->assertEquals('initiated', $merchantConsents->getStatus());
+    }
+
+    public function testSkipCreateLegalDocsConsentForResellerPartnerIfConsentsExists()
+    {
+        Mail::fake();
+
+        $this->fixtures->create('merchant_detail:sane',
+            [
+                'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+            ]);
+
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+
+        $app = ['id'=>'8ckeirnw84ifke'];
+
+        $this->mockAuthServiceCreateApplication($merchant, $app);
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
+
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('merchant_consents',
+            [
+                'merchant_id' => $merchant->getId(),
+                'consent_for' => 'Partnership_Terms & Conditions',
+                'status'      => 'initiated'
+            ]);
+
+        $expectedMerchantConsents = $this->getDbLastEntity('merchant_consents');
+
+        $testData = $this->testData['testCreateLegalDocsConsentForResellerPartner'];
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantConsents = $this->getDbLastEntity('merchant_consents');
+
+        $this->assertEquals($expectedMerchantConsents, $merchantConsents);
+
     }
 
     public function testUpdatePartnerTypeUsingProxyAuthWithInvalidPartnerType()

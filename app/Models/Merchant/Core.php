@@ -17,13 +17,14 @@ use RZP\Constants\HyperTrace;
 use RZP\Models\VirtualAccount;
 use RZP\Jobs\SyncStakeholder;
 use RZP\Mail\User as UserMail;
+use RZP\Jobs\CapturePartnershipConsents;
 use \RZP\Models\BankingAccount;
 use RZP\Exception\LogicException;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestValidationFailureException;
 use Razorpay\OAuth\Application as OAuthApp;
 use RZP\Constants\Entity as EntityConstants;
-
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Exception;
 use RZP\Models\Emi;
 use RZP\Models\Base;
@@ -9045,5 +9046,25 @@ class Core extends Base\Core
         ];
 
         $this->app['events']->dispatch('api.account.mapped_to_partner', $eventPayload);
+    }
+
+    /**
+     * Triggers async Job for capturing IP and create legal documents for Oauth Authorize.
+     * @param string $merchantId
+     */
+    public function captureConsentsForOauth(string $merchantId)
+    {
+        $input = [
+            DEConstants::CONSENT            => true,
+            DEConstants::IP_ADDRESS         => $this->app['request']->ip(),
+            DEConstants::DOCUMENTS_DETAIL   => [
+                [
+                    DEConstants::TYPE => Constants::TERMS,
+                    DEConstants::URL  => Constants::RAZORPAY_PARTNERSHIP_OAUTH_TERMS,
+                ]
+            ]
+        ];
+
+        CapturePartnershipConsents::dispatch($this->mode, $input, $merchantId, Constants::OAUTH);
     }
 }

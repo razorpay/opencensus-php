@@ -15,8 +15,10 @@ use RZP\Models\Merchant\Referral;
 use RZP\Models\Partner\Activation;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Jobs\SubmerchantFirstTransactionEvent ;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 
 class Service extends Base\Service
 {
@@ -62,7 +64,6 @@ class Service extends Base\Service
 
         unset($merchantInput[Detail\Entity::SUBMIT]);
         unset($merchantInput[Detail\Entity::KYC_CLARIFICATION_REASONS]);
-
         if (empty($merchantInput) === false)
         {
             $merchantInput[Activation\Constants::PARTNER_KYC_FLOW] = true;
@@ -73,6 +74,14 @@ class Service extends Base\Service
         $response = $this->core->processPartnerActivation($input, $merchantDetail, $this->merchant);
 
         $response[Detail\Constants::LOCK_COMMON_FIELDS] = (new Detail\Core())->fetchCommonFieldsToBeLocked($merchantDetail);
+
+        if( empty($input[DEConstants::CONSENT]) === false)
+        {
+            $milestone = 'PartnerActivation';
+            $input[DEConstants::IP_ADDRESS ] = $this->app['request']->ip();
+
+            CapturePartnershipConsents::dispatch($this->mode, $input, $this->merchant->getId(), $milestone);
+        }
 
         return $response;
     }

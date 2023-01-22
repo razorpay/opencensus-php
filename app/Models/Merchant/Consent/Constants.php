@@ -47,6 +47,14 @@ class Constants
         'L2_agreement'
     ];
 
+    const VALID_LEGAL_DOC_FOR_PARTNERSHIP = [
+        'Partnership_Terms and Conditions',
+        'PartnerActivation_Terms and Conditions',
+        'PartnerActivation_Service Agreement',
+        'PartnerActivation_Privacy Policy',
+        'Oauth_Terms and Conditions'
+    ];
+
     const VALID_LEGAL_DOC_FOR_X = [
         'X_Privacy Policy',
         'X_Terms of Use'

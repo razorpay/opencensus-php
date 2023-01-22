@@ -15,12 +15,14 @@ use Request;
 use Illuminate\Support\Str;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Controllers\MerchantController;
+use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\Type;
 use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Locale\Core as LocaleCore;
 use RZP\Models\Merchant\Balance\Type as ProductType;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\RazorxTreatment as Experiment;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Payment\Processor\CardlessEmi;
@@ -7064,6 +7066,20 @@ class Service extends Base\Service
 
             return $this->core()->updatePartnerType($this->merchant, $input[Entity::PARTNER_TYPE]);
         });
+
+        if( empty($input[DEConstants::CONSENT]) === false)
+        {
+            $mode = ($this->app['env'] === Environment::TESTING) ? Mode::TEST : Mode::LIVE;
+            $input[DEConstants::IP_ADDRESS ] = $this->app['request']->ip();
+            $input[DEConstants::DOCUMENTS_DETAIL] = [
+                [
+                    DEConstants::TYPE => Constants::TERMS,
+                    DEConstants::URL  => Constants::RAZORPAY_PARTNERSHIP_TERMS,
+                ]
+            ];
+
+            CapturePartnershipConsents::dispatch($mode, $input, $this->merchant->getId(), Constants::PARTNERSHIP);
+        }
 
         return $response;
     }

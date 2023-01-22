@@ -2,14 +2,20 @@
 
 namespace RZP\Tests\Functional\OAuth;
 
+use DB;
 use Carbon\Carbon;
 use RZP\Constants;
+use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\CreateLegalDocumentsTrait;
 
 class OAuthAppMerchantMapTest extends OAuthTestCase
 {
     use OAuthTrait;
+    use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
+    use CreateLegalDocumentsTrait;
 
     protected function setUp(): void
     {
@@ -48,6 +54,47 @@ class OAuthAppMerchantMapTest extends OAuthTestCase
         $this->assertEquals($application->getId(), $liveMapping['entity_id']);
 
         $this->assertEquals($application->getId(), $testMapping['entity_id']);
+    }
+
+    public function testCreateLegalDocsConsentForOAuthAuthorize()
+    {
+        $application = $this->createOAuthApplication(["partner_type" => "pure_platform"]);
+
+        $this->fixtures->create('merchant_detail:sane',
+            [
+                'merchant_id'       => '10000000000000',
+            ]);
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest('10000000000000');
+
+        $this->mockBvsService();
+
+        $testData = $this->testData['testOAuthAppMerchantMap'];
+
+        $testData['request']['content']['application_id'] = $application->getId();
+        $testData['response']['content']['entity_id']     = $application->getId();
+
+        $this->runRequestResponseFlow($testData);
+
+        $merchantConsents = $this->getDbLastEntity('merchant_consents');
+
+        $termsDetails = (new MerchantConsentDetailsRepo())->getById($merchantConsents->getDetailsId());
+
+        $expectedTerms        =  'https://razorpay.com/terms/razorpayx/partnership/';
+        $expectedConsentFor   =  'Oauth_Terms & Conditions';
+
+        $this->assertEquals('10000000000000', $merchantConsents->getMerchantId());
+        $this->assertEquals($expectedConsentFor, $merchantConsents->getConsentFor());
+        $this->assertEquals($expectedTerms, $termsDetails->getURL());
+
+        $this->assertEquals('initiated', $merchantConsents->getStatus());
+    }
+
+    protected function mockBvsService()
+    {
+        $mock = $this->mockCreateLegalDocument();
+
+        $mock->expects($this->once())->method('createLegalDocument')->withAnyParameters();
     }
 
     public function testOAuthAppMerchantMapIncorrectEntityId()

@@ -110,7 +110,7 @@ class Core extends Base\Core
                            ]);
 
         $merchantIdList = $this->repo->merchant_consents->getUniqueMerchantIdsWithConsentsNotSuccess(
-            Constants::VALID_LEGAL_DOC,
+            array_merge(Constants::VALID_LEGAL_DOC, Constants::VALID_LEGAL_DOC_FOR_PARTNERSHIP),
             Carbon::now()->subDays(Constants::DEFAULT_LAST_CRON_SUB_DAYS)->getTimestamp());
 
 
@@ -220,7 +220,9 @@ class Core extends Base\Core
 
         $xConsents = $detailService->checkIfConsentsPresent($merchantId, ConsentConstant::VALID_LEGAL_DOC_FOR_X) ? $this->processAndGetConsents($merchantId, Constants::RX) : [];
 
-        return array_merge($l2Consents, $xConsents);
+        $partnershipConsents = $detailService->checkIfConsentsPresent($merchantId, ConsentConstant::VALID_LEGAL_DOC_FOR_PARTNERSHIP) ? $this->processAndGetConsents($merchantId, Constants::PG) : [];
+
+        return array_merge(array_unique(array_merge($l2Consents,$partnershipConsents)), $xConsents);
     }
 
     protected function processAndGetConsents($merchantId, $platform)

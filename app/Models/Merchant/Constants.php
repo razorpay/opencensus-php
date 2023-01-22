@@ -177,10 +177,15 @@ final class Constants
     const NEW_GSTIN                                     = 'new_gstin';
     const TRANSACTION_TYPE_INTERNATIONAL                = 'international';
     const TRANSACTION_TYPE_DOMESTIC                     = 'domestic';
+    const OAUTH                                         = 'Oauth';
+    const PARTNERSHIP                                   = 'Partnership';
 
     const RAZORPAY_PRIVACY_POLICY_URL                   = 'https://razorpay.com/privacy/';
     const RAZORPAY_CA_TERMS_OF_USE                      = 'https://razorpay.com/x/terms/razorpayx/';
     const RAZORPAY_TERMS_OF_USE                         = 'https://razorpay.com/x/terms/';
+
+    const RAZORPAY_PARTNERSHIP_TERMS             = 'https://razorpay.com/s/terms/partners/';
+    const RAZORPAY_PARTNERSHIP_OAUTH_TERMS       = 'https://razorpay.com/terms/razorpayx/partnership/';
 
     const INCREASE_TRANSACTION_LIMIT_POST_WORKFLOW_APPROVE          = 'RZP\Http\Controllers\MerchantController@postTransactionLimitWorkflowApprove';
 

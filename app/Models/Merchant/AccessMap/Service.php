@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\AccessMap;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
@@ -31,10 +32,11 @@ class Service extends Base\Service
      *
      * @param string $merchantId
      * @param array  $input
+     * @param bool $consent // Is true only for request coming from RZP Oauth
      *
      * @return array
      */
-    public function mapOAuthApplication(string $merchantId, array $input): array
+    public function mapOAuthApplication(string $merchantId, array $input, bool $consent = false): array
     {
         $this->trace->info(TraceCode::APP_MERCHANT_ACCESS_MAP, ['input' => $input]);
 
@@ -44,6 +46,11 @@ class Service extends Base\Service
         $entityOwner = $this->repo->merchant->findOrFailPublic($input['partner_id']);
 
         $mapping     = (new Core)->addMappingForOAuthApp($entityOwner, $merchant, $input);
+
+        if($consent === true)
+        {
+            (new Merchant\Core())->captureConsentsForOauth($merchantId);
+        }
 
         return $mapping->toArrayPublic();
     }

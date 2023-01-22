@@ -1969,7 +1969,7 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = (new AccessMap\Service)
-                        ->mapOAuthApplication($merchantId, $input);
+                        ->mapOAuthApplication($merchantId, $input, true);
 
         return ApiResponse::json($response);
     }

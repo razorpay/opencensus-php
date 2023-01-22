@@ -1851,6 +1851,23 @@ return [
         ],
     ],
 
+    'testCreateLegalDocsConsentForResellerPartner'   => [
+        'request'   => [
+            'url'       => '/merchant/partner_type',
+            'method'    => 'PATCH',
+            'content'   => [
+                'partner_type'      => 'reseller',
+                'consent'           =>  true,
+            ],
+        ],
+        'response'  => [
+            'content'       => [
+                'partner_type'              => 'reseller',
+                'has_commission_configs'    => true,
+            ],
+        ],
+    ],
+
     'testUpdatePartnerTypeAsBankOnboardingPartner' => [
         'request'  => [
             'url'     => '/banking_accounts/rbl/lms/merchant/admin/partner_type',
