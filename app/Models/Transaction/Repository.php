@@ -261,7 +261,7 @@ class Repository extends Base\Repository
 
         $setlIds = $setls->modelKeys();
 
-        $query = $this->newQuery();
+        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection());
 
         $txns = $query->merchantId($merchantId)
                       ->where(function($query) use ($from, $to, $setlIds)
