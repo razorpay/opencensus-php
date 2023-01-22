@@ -243,7 +243,7 @@ class MerchantDocumentTest Extends TestCase
                 'merchant_id' => '10000000000000',
             ]);
 
-        $this->updateUploadmp4Video(__FUNCTION__);
+        $this->updateUploadCmp4Video(__FUNCTION__);
 
         $this->startTest();
     }
@@ -276,7 +276,7 @@ class MerchantDocumentTest Extends TestCase
                 'merchant_id' => '10000000000000',
             ]);
 
-        $this->updateUploadmp4Video(__FUNCTION__);
+        $this->updateUploadInputmp4Video(__FUNCTION__);
 
         $this->startTest();
     }
@@ -351,13 +351,25 @@ class MerchantDocumentTest Extends TestCase
             true);
     }
 
-    protected function updateUploadmp4Video(string $callee)
+    protected function updateUploadInputmp4Video(string $callee)
     {
         $testData = &$this->testData[$callee];
 
         $testData['request']['files']['file'] = new UploadedFile(
             __DIR__ . '/../Batch/files/input.mp4',
             'input.mp4',
+            'video/mp4',
+            null,
+            true);
+    }
+
+    protected function updateUploadCmp4Video(string $callee)
+    {
+        $testData = &$this->testData[$callee];
+
+        $testData['request']['files']['file'] = new UploadedFile(
+            __DIR__ . '/../Batch/files/c.mp4',
+            'c.mp4',
             'video/mp4',
             null,
             true);

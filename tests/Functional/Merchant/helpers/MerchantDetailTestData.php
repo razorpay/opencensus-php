@@ -1515,7 +1515,7 @@ return [
             "dot_certificate"                   => "DOT certificate",
             "trai_certificate"                  => "TRAI certificate",
             "rbi_certificate"                   => "RBI certificate",
-            "dgca_certifcate"                   => "DGCA certificate",
+            "dgca_certificate"                   => "DGCA certificate",
             "national_housing_bank_certificate" => "Certificate issued by National Housing Bank",
             "affiliation_certificate"           => "Affiliation Certificate",
             "dealership_rights_certificate"     => "Dealership rights",

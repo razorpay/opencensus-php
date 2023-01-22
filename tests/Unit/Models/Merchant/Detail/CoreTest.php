@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Store;
 use RZP\Models\Coupon\Constants;
 use RZP\Models\Merchant\Detail\Core;
 use RZP\Services\Mock\ApachePinotClient;
+use RZP\Models\ClarificationDetail\Service;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
@@ -1322,6 +1323,14 @@ class CoreTest extends TestCase
 
         $merchantDetails = $this->fixtures->create('merchant_detail:valid_fields', [
             'merchant_id' => 'HNhLp6FDNX0Ov5'
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant('HNhLp6FDNX0Ov5');
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id' => 'HNhLp6FDNX0Ov5',
+            'user_id' => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
         ]);
 
         $this->fixtures->create('clarification_detail', [
