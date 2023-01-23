@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Order\Core;
 use RZP\Models\Payment\Entity;
 use RZP\Trace\TraceCode;
 use RZP\Services\CredcaseSigner;
@@ -272,7 +273,7 @@ class PlinkController extends Controller
 
         $headers['X-User-Agent'] = $request->header('X-User-Agent');
 
-        $headers['X-Razorpay-Public-Key'] = $this->ba->getPublicKey();
+        $headers['X-Razorpay-Public-Key'] = (new Core())->getOrderPublicKey($this->ba->getMerchant());
 
         $headers['X-Razorpay-Application-Id'] = $this->ba->getOAuthApplicationId();
 
