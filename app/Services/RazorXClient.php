@@ -140,7 +140,7 @@ class RazorXClient
         return $treatment;
     }
 
-    public function getTreatment(string $id, string $featureFlag, string $mode, $retryCount = 0): string
+    public function getTreatment(string $id, string $featureFlag, string $mode, $retryCount = 0, $requestOptions = []): string
     {
         $variant = $this->checkWhitelistedExperimentsForCardPs($featureFlag);
 
@@ -167,7 +167,7 @@ class RazorXClient
             return $storedVariant;
         }
 
-        return $this->getVariantFromRazorXService($id, $featureFlag, $mode, $retryCount);
+        return $this->getVariantFromRazorXService($id, $featureFlag, $mode, $retryCount, $requestOptions);
     }
 
     protected function checkWhitelistedExperimentsForCardPs($feature)
@@ -227,7 +227,7 @@ class RazorXClient
                                     string $id,
                                     string $featureFlag,
                                     string $mode,
-                                    int $retryCount = 0)
+                                    int $retryCount = 0, array $requestOptions = [])
     {
         $data = [
             self::ID               => $id,
@@ -237,7 +237,7 @@ class RazorXClient
             self::RETRY_COUNT_KEY  => $retryCount,
         ];
 
-        $variant = $this->sendRequest(self::EVALUATE_URI, Requests::GET, $data);
+        $variant = $this->sendRequest(self::EVALUATE_URI, Requests::GET, $data, $requestOptions);
 
         $this->storeVariant($variant);
 
@@ -384,14 +384,18 @@ class RazorXClient
     protected function sendRequest(
         string $url,
         string $method,
-        array $data = [])
+        array $data = [], array $requestOptions = [])
     {
         if ($this->config['mock'] === true)
         {
             return self::DEFAULT_CASE;
         }
 
-        $request = $this->getRequestParams($url, $method, $data);
+        $request = $this->getRequestParams($url, $method, $data, $requestOptions);
+
+        $this->trace->info(TraceCode::RAZORX_REQUEST, [
+            'request'   => $request,
+        ]);
 
         $retryCount = $data[self::RETRY_COUNT_KEY] ?? 0;
 
@@ -475,7 +479,7 @@ class RazorXClient
     protected function getRequestParams(
         string $url,
         string $method,
-        array $data = []): array
+        array $data = [], array $requestOptions = []): array
     {
         $url = $this->baseUrl . $url;
 
@@ -492,6 +496,7 @@ class RazorXClient
             'timeout' => $this->requestTimeout,
             'auth'    => [$this->key, $this->secret],
         ];
+        $options = array_merge($options, $requestOptions);
 
         return [
             'url'     => $url,
