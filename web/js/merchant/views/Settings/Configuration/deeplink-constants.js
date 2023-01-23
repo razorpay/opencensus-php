@@ -3,6 +3,7 @@ export const EMAIL_NOTIF = 'email_notifications';
 export const CAPTURE_SETTINGS = 'capture_settings';
 export const REFUND_SETTINGS = 'refund_settings';
 export const CHECKOUT_LANG = 'checkout_language';
+export const CHECKOUT_EMAIL_SETTINGS = 'checkout_email';
 export const FLASH_CHECKOUT = 'flash_checkout';
 export const SETTLEMENT_CYCLE = 'settlement_cycle_settings';
 export const WHATSAPP_NOTIF = 'whatsapp_notifications';

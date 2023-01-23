@@ -1,18 +1,24 @@
 import { Component } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { getCommonAnalyticsProperties, camelize } from 'common/utils/rzp-utils';
 import FileUploadButton from 'common/ui/FileUpload/Button';
 import { getCurrencySymbol } from 'common/ui/Amount';
 import {
   uploadLogo,
   fetchLocale,
   updateLocale,
+  updateFeatures,
+  updateEmailConfig,
   saveLocale,
   removeLogo,
+  getEmailConfigFlags,
+  EmailLessCheckoutConfigOptions,
+  CHECKOUT_EMAIL_FEATURE_FLAG,
 } from 'merchant/reducers/config';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -22,13 +28,16 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import CovidKnowMore from 'common/ui/CovidKnowMore';
 import LoaderDots from 'common/ui/LoaderDots';
 import IntoView from 'common/ui/IntoView';
-import { ACCOUNT_SETTINGS, CHECKOUT_LANG } from './deeplink-constants';
+import { ACCOUNT_SETTINGS, CHECKOUT_LANG, CHECKOUT_EMAIL_SETTINGS } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import Button from 'common/new-ui/Button';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import EasterEgg from 'merchant/components/EasterEgg';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import EmailRequiredPreviewImage from 'assets/checkout/preview-checkout-form.png';
+import EmailOptionalPreviewImage from 'assets/checkout/preview-checkout-form-email-optional.png';
+import EmailHiddenPreviewImage from 'assets/checkout/preview-checkout-form-email-hidden.png';
 
 const languageOptions = [
   { name: 'English', code: 'en' },
@@ -40,9 +49,28 @@ const languageOptions = [
   { name: 'Telugu', code: 'tel' },
 ];
 
+const checkoutEmailConfigOptions = [
+  {
+    name: 'No (Default)',
+    code: EmailLessCheckoutConfigOptions.NO,
+  },
+  {
+    name: 'As an optional field',
+    code: EmailLessCheckoutConfigOptions.OPTIONAL,
+  },
+  {
+    name: 'As a mandatory field',
+    code: EmailLessCheckoutConfigOptions.REQUIRED,
+  },
+];
+
 // eslint-disable-next-line react/no-unsafe
 class CheckoutTheme extends Component {
   state = { brandColor: this.props.config.brand_color };
+
+  static contextTypes = {
+    confirm: PropTypes.func,
+  };
 
   UNSAFE_componentWillMount() {
     this.props.fetchLocale();
@@ -222,6 +250,173 @@ class CheckoutTheme extends Component {
 
   onChangeLocale = (e) => {
     this.props.updateLocale(e.target.value);
+  };
+
+  onChangeEmailConfig = (e) => {
+    this.props.updateEmailConfig(e.target.value);
+  };
+
+  analyticsForFeatureChange = (featureName, isFeatureEnabled, optionalProperties = {}) => {
+    const analyticsLabel = camelize(featureName);
+    const analyticsObjName = featureName.toLowerCase();
+
+    analyticsTrack({
+      objectName: `${analyticsObjName} toggle`,
+      actionName: 'result',
+      screen: 'settings',
+      properties: {
+        location: 'configuration',
+        [analyticsLabel]: isFeatureEnabled ? 'Enabled' : 'Disabled',
+        ...optionalProperties,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+    });
+  };
+
+  getEmailConfigUpdateRequestPayload = () => {
+    const existingEmailConfigFlag = getEmailConfigFlags(this.props.features);
+    const emailConfig = this.props.email_config;
+    let emailOptional = false;
+    let emailShown = false;
+    switch (emailConfig) {
+      case EmailLessCheckoutConfigOptions.OPTIONAL:
+        emailOptional = true;
+        emailShown = true;
+        break;
+      case EmailLessCheckoutConfigOptions.REQUIRED:
+        emailOptional = false;
+        emailShown = true;
+        break;
+      default:
+        break;
+    }
+    const data = {
+      features: {},
+      should_sync: 0,
+    };
+    // add only if feature flags are changing from existing
+    if (existingEmailConfigFlag.emailShown !== emailShown) {
+      data.features[CHECKOUT_EMAIL_FEATURE_FLAG.SHOW_EMAIL_ON_CHECKOUT] = emailShown;
+    }
+    if (existingEmailConfigFlag.emailOptional !== emailOptional) {
+      data.features[CHECKOUT_EMAIL_FEATURE_FLAG.EMAIL_OPTIONAL_ON_CHECKOUT] = emailOptional;
+    }
+    return { data, emailShown, emailOptional };
+  };
+
+  updateEmailConfig = async ({ emailOptional, emailShown, requestData }) => {
+    // Used for analytics
+    const updatedFeatureFlagKeyValue = {
+      [CHECKOUT_EMAIL_FEATURE_FLAG.EMAIL_OPTIONAL_ON_CHECKOUT]: emailOptional,
+      [CHECKOUT_EMAIL_FEATURE_FLAG.SHOW_EMAIL_ON_CHECKOUT]: emailShown,
+    };
+
+    selfServeTrackInitiate({
+      selfServeAction: 'Email Config Changed',
+      page: 'Config',
+      screen: 'Settings',
+    });
+
+    analyticsTrack({
+      objectName: 'save_email_address_preference',
+      actionName: 'clicked',
+      screen: 'settings',
+      properties: {
+        location: 'configuration',
+        option_selected: this.props.email_config,
+        ...getCommonAnalyticsProperties(window.rzp_user),
+      },
+      toLumberjack: true,
+    });
+
+    try {
+      const response = await this.props.updateFeatures(requestData, this.props.user.current);
+      if (response) {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Configuration updated',
+        });
+
+        Object.entries(updatedFeatureFlagKeyValue).forEach(([key, value]) => {
+          this.analyticsForFeatureChange(key, value, {
+            status: 'Success',
+          });
+        });
+      }
+    } catch (err) {
+      this.props.showNotification({
+        type: 'error',
+        message: err.errors,
+      });
+      Object.entries(updatedFeatureFlagKeyValue).forEach(([key, value]) => {
+        this.analyticsForFeatureChange(key, value, {
+          status: 'Failure',
+          failureReason: err.errors?.[0] || '',
+        });
+      });
+    }
+  };
+
+  saveEmailConfig = (e) => {
+    e.preventDefault();
+    const {
+      data: requestData,
+      emailShown,
+      emailOptional,
+    } = this.getEmailConfigUpdateRequestPayload();
+
+    if (!Object.keys(requestData.features).length) {
+      // no update required Already updated
+      this.props.showNotification({
+        type: 'success',
+        message: 'Configuration updated',
+      });
+      return;
+    }
+
+    if (this.props.email_config === EmailLessCheckoutConfigOptions.REQUIRED) {
+      this.context
+        .confirm({
+          header: "Are you sure you want to collect the customer's e-mail address on checkout?",
+          message: () => (
+            <div className="text-semi-muted">
+              <p>
+                Collecting additional information from the user that is not necessary might result
+                in increased drop-off on checkout
+              </p>
+            </div>
+          ),
+          affirmativeLabel: 'Yes, collect email',
+          affirmativePendingLabel: 'Updating...',
+          abortLabel: "No, don't collect",
+          abort: () => {},
+          action: () => {
+            this.updateEmailConfig({
+              emailOptional,
+              emailShown,
+              requestData,
+            });
+          },
+        })
+        .catch(() => {});
+      return;
+    }
+    this.updateEmailConfig({
+      emailOptional,
+      emailShown,
+      requestData,
+    });
+  };
+
+  getPreviewImage = (emailLessSettings) => {
+    switch (emailLessSettings) {
+      case EmailLessCheckoutConfigOptions.NO:
+        return EmailHiddenPreviewImage;
+      case EmailLessCheckoutConfigOptions.OPTIONAL:
+        return EmailOptionalPreviewImage;
+      default:
+        return EmailRequiredPreviewImage;
+    }
   };
 
   saveLocale = (e) => {
@@ -434,7 +629,7 @@ class CheckoutTheme extends Component {
                         onClick={this.saveLocale}
                       />
                     </div>
-                    <div className="col-md-12">
+                    <div className="col-md-12 mt-12">
                       <br />
                       Default language will be used on the Checkout page if customer doesn’t specify
                       a language.
@@ -442,6 +637,40 @@ class CheckoutTheme extends Component {
                   </div>
                 )}
               </IntoView>
+              <div className="mt-12">
+                <IntoView hashedWith={CHECKOUT_EMAIL_SETTINGS}>
+                  <div className="form-group">
+                    <label className="col-md-12 mt-12">
+                      <strong>
+                        <TextHighlighter hashedWith={CHECKOUT_EMAIL_SETTINGS}>
+                          Collect email address from users on Checkout page
+                        </TextHighlighter>
+                      </strong>
+                    </label>
+                    <div className="col-md-6">
+                      <select
+                        className="form-control"
+                        defaultValue={this.props.email_config}
+                        onChange={this.onChangeEmailConfig}
+                      >
+                        {checkoutEmailConfigOptions.map((config) => (
+                          <option key={config.code} value={config.code}>
+                            {config.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="col-md-3 col-sm-6 language-option-button">
+                      <AsyncButton
+                        className="btn btn-primary"
+                        text="Save"
+                        pendingText="Saving..."
+                        onClick={this.saveEmailConfig}
+                      />
+                    </div>
+                  </div>
+                </IntoView>
+              </div>
             </form>
             <ShowWhen
               additionalCondition={(user) =>
@@ -511,7 +740,7 @@ class CheckoutTheme extends Component {
               </div>
             </div>
             <div id="preview-checkout-form">
-              <img src="/img/preview-checkout-form.png" width="100%" />
+              <img src={this.getPreviewImage(this.props.email_config)} width="100%" />
               <div id="payment-method-icons">
                 {['card', 'netbanking', 'wallet', 'upi', 'emi', 'qr'].map((type, ix) => (
                   <span key={ix}>
@@ -535,7 +764,9 @@ export default compose(
     removeLogo,
     showNotification,
     fetchLocale,
+    updateFeatures,
     updateLocale,
+    updateEmailConfig,
     saveLocale,
     ...ModalActions,
   }),

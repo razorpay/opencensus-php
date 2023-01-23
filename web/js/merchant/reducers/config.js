@@ -7,6 +7,7 @@ import { computeBannerState } from 'merchant/utils/intlPaymentsRecommendation';
 const CONFIG_FETCH = 'CONFIG_FETCH';
 const LOCALE_FETCH = 'CONFIG_LOCALE_FETCH';
 const LOCALE_UPDATE = 'CONFIG_LOCALE_UPDATE';
+const EMAIL_CONFIG_UPDATE = 'EMAIL_CONFIG_UPDATE';
 const LOCALE_SAVE = 'CONFIG_LOCALE_SAVE';
 const FEATURES_FETCH = 'FEATURES_FETCH';
 const FETCH_TICKET_RAISED_BY_AGENTS = 'FETCH_TICKET_RAISED_BY_AGENTS';
@@ -201,6 +202,13 @@ export const updateLocale = (locale) => {
   return {
     type: LOCALE_UPDATE,
     payload: locale,
+  };
+};
+
+export const updateEmailConfig = (config) => {
+  return {
+    type: EMAIL_CONFIG_UPDATE,
+    payload: config,
   };
 };
 
@@ -446,6 +454,46 @@ const fetchBannerState = async () => {
   return res;
 };
 
+// Start of Checkout EmailLess Config
+
+export const EmailLessCheckoutConfigOptions = {
+  NO: 'no',
+  OPTIONAL: 'optional',
+  REQUIRED: 'required',
+};
+
+export const CHECKOUT_EMAIL_FEATURE_FLAG = {
+  EMAIL_OPTIONAL_ON_CHECKOUT: 'email_optional_oncheckout',
+  SHOW_EMAIL_ON_CHECKOUT: 'show_email_on_checkout',
+};
+
+export function getEmailConfigFlags(featureFlags) {
+  let emailShown = false;
+  let emailOptional = false;
+  featureFlags.forEach(({ feature, value }) => {
+    if (feature === CHECKOUT_EMAIL_FEATURE_FLAG.SHOW_EMAIL_ON_CHECKOUT) {
+      emailShown = value;
+    }
+    if (feature === CHECKOUT_EMAIL_FEATURE_FLAG.EMAIL_OPTIONAL_ON_CHECKOUT) {
+      emailOptional = value;
+    }
+  });
+  return { emailShown, emailOptional };
+}
+
+function computeFeatureFlagsForCheckoutEmailConfig(featureFlags) {
+  const { emailShown, emailOptional } = getEmailConfigFlags(featureFlags);
+  if ((!emailOptional && !emailShown) || (!emailShown && emailOptional)) {
+    return EmailLessCheckoutConfigOptions.NO;
+  }
+  if (emailShown && emailOptional) {
+    return EmailLessCheckoutConfigOptions.OPTIONAL;
+  }
+  return EmailLessCheckoutConfigOptions.REQUIRED;
+}
+
+// End of Checkout EmailLess Config
+
 export const fetchInternationalSettingStatus = () => {
   return {
     type: FETCH_INTERNATIONAL_SETTING_STATUS,
@@ -513,6 +561,7 @@ const initialState = {
     data: {},
     error: null,
   },
+  email_config: EmailLessCheckoutConfigOptions.NO,
   featureStatusConfig: {
     loading: true,
     data: {},
@@ -536,6 +585,7 @@ const configReducer = (state = initialState, action) => {
       return merge(state, {
         loading: false,
         features: action.payload.data.features,
+        email_config: computeFeatureFlagsForCheckoutEmailConfig(action.payload.data.features),
         error: null,
       });
 
@@ -665,7 +715,8 @@ const configReducer = (state = initialState, action) => {
           language_code: action.payload,
         },
       });
-
+    case EMAIL_CONFIG_UPDATE:
+      return set(state, 'email_config', action.payload);
     case `${LOCALE_SAVE}::SUCCESS`:
       return set(state, 'locale', action.payload.data);
 
