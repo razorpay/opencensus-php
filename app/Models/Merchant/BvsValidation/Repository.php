@@ -176,4 +176,17 @@ class Repository extends Base\Repository
             ->Where(Entity::OWNER_TYPE, "=", "merchant")
             ->get();
     }
+
+    public function getArtefactTypeFromValidationId(string $validationId)
+    {
+        $artefactTypeColumn   = $this->repo->bvs_validation->dbColumn(Entity::ARTEFACT_TYPE);
+
+        return $this->newQuery()
+            ->select($artefactTypeColumn)
+            ->Where(Entity::VALIDATION_ID, $validationId)
+            ->Where(Entity::PLATFORM, "=", "pg")
+            ->Where(Entity::OWNER_TYPE, "=", "merchant")
+            ->pluck(Entity::ARTEFACT_TYPE)
+            ->toArray();
+    }
 }

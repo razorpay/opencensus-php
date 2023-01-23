@@ -243,6 +243,8 @@ class UpdateMerchantContext extends Job
         {
             $this->updatePartnerContext($merchant);
         }
+
+        $this->pushJobProcessingTimeMetrics($merchant, $startTime);
     }
 
 
@@ -397,6 +399,39 @@ class UpdateMerchantContext extends Job
         else
         {
             $this->release(self::RETRY_INTERVAL);
+        }
+    }
+
+    private function pushJobProcessingTimeMetrics(Merchant\Entity $merchant, float $startTime)
+    {
+        try
+        {
+            $artefactType = $this->repoManager->bvs_validation->getArtefactTypeFromValidationId($this->validationId);
+
+            $onboardingFlow = $merchant->isNoDocOnboardingEnabled()? 'no_doc_onboarding': 'normal_onboarding';
+
+            if(sizeof($artefactType) === 1)
+            {
+                $dimensions = [
+                    'artefact_type'     => $artefactType[0],
+                    'onboarding_flow'   => $onboardingFlow
+                ];
+
+                $timeTaken = millitime() - $startTime;
+
+                $this->trace->histogram(Metrics::UPDATE_CONTEXT_JOB_PROCESSING_IN_MS, $timeTaken, $dimensions);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::UPDATE_MERCHANT_CONTEXT_METRICS_FAILURE,
+                [
+                    'merchant_id'       => $this->merchantId,
+                    'bvs_validation_id' => $this->validationId,
+                ]);
         }
     }
 }
