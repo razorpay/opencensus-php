@@ -1,6 +1,6 @@
-import React from 'react';
-import { Route, Redirect } from 'react-router-dom';
 import Loader from 'common/ui/Loader';
+import React from 'react';
+import { Redirect, Route } from 'react-router-dom';
 
 const TAGS_API_NOT_RESOLVED_YET = 'TAGS_API_NOT_RESOLVED_YET';
 
@@ -103,14 +103,14 @@ export function ShowWhenRoute(store, defaultPath = '/dashboard') {
   return ({ component: Component, ...rest }) => (
     <Route
       {...rest}
-      render={() => {
+      render={(routeInfo) => {
         const loader = rest?.loader;
         const showWhenUtilResult = showWhenUtil(store)(rest);
 
         if (showWhenUtilResult === TAGS_API_NOT_RESOLVED_YET) {
           return loader || <Loader />;
         } else if (showWhenUtilResult) {
-          return <Component {...rest} />;
+          return <Component {...rest} {...routeInfo} />;
         } else {
           return (
             <Redirect // nosemgrep : https://semgrep.dev/s/razorpay:rzp-react-router-redirect
