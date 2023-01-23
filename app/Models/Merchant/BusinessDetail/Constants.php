@@ -78,4 +78,6 @@ class Constants
     ];
 
     const MERCHANT_SELECTED_PLUGIN = 'merchant_selected_plugin';
+
+    const WEBSITE = 'website';
 }

@@ -238,19 +238,26 @@ class Core extends Base\Core
 
         $pluginDetails = $input['plugin_details'];
 
-        foreach ($existingPluginDetails as &$existingPluginDetail)
+        try
         {
-            if ($existingPluginDetail['website'] === $pluginDetails['website'])
+            foreach ($existingPluginDetails as &$existingPluginDetail)
             {
-                $existingPluginDetail = array_merge($existingPluginDetail, $pluginDetails);
-                $existingWebsite                   = true;
-                break;
+                if ($existingPluginDetail[Constants::WEBSITE] === $pluginDetails[Constants::WEBSITE])
+                {
+                    $existingPluginDetail = array_merge($existingPluginDetail, $pluginDetails);
+                    $existingWebsite                   = true;
+                    break;
+                }
+            }
+
+            if ($existingWebsite === false)
+            {
+                array_push($existingPluginDetails, $pluginDetails);
             }
         }
-
-        if ($existingWebsite === false)
+        catch(\Throwable $ex)
         {
-            array_push($existingPluginDetails, $pluginDetails);
+            $this->trace->traceException($ex);
         }
 
         return $existingPluginDetails;
