@@ -29,6 +29,7 @@ use RZP\Mail\Invoice\Issued;
 use RZP\Constants\Entity as E;
 use RZP\Models\Invoice\Reminder;
 use RZP\Models\Plan\Subscription;
+use RZP\Models\EntityOrigin\Constants;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
 use Illuminate\Support\Facades\Storage;
@@ -217,6 +218,8 @@ class Core extends Base\Core
         {
             $this->options->createOptionForPaymentLink($input, $merchant, $invoice);
         }
+
+        (new \RZP\Models\EntityOrigin\Core())->createEntityOrigin($invoice);
 
         return $invoice;
     }

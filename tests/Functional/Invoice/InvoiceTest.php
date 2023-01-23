@@ -11,7 +11,9 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Illuminate\Support\Facades\DB;
 use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Tests\Functional\Partner\Constants;
 use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
+use RZP\Tests\Functional\Partner\Commission\CommissionTrait;
 use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
 use RZP\Models\Base\UniqueIdEntity;
@@ -33,6 +35,7 @@ class InvoiceTest extends TestCase
     use TestsMetrics;
     use PaymentTrait;
     use CreatesInvoice;
+    use CommissionTrait;
     use InvoiceTestTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
@@ -89,6 +92,66 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals('Test Merchant', $invoice->getMerchantLabel());
         $this->assertEquals('29kjsngjk213922', $invoice->getMerchantGstin());
+    }
+
+    public function testCreateInvoiceWithPartnerAuth()
+    {
+        $subMerchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID;
+        $client = $this->setUpPartnerSubMerchantConfig(Constants::DEFAULT_MERCHANT_ID, $subMerchantId);
+
+        $this->ba->partnerAuth($subMerchantId, 'rzp_test_partner_' . $client->getId(), $client->getSecret());
+
+        $this->startTest();
+
+        $invoice = $this->getDbLastEntity('invoice');
+
+        $entityOrigin = $this->getDbEntity('entity_origin', [
+            'entity_id' => $invoice->getId(),
+            'origin_type' => 'application',
+        ]);
+        $this->assertNotNull($entityOrigin);
+
+        $this->doPaymentForInvoiceCreatedWithPartnerAuth($invoice);
+
+        $payment = $this->getDbLastEntity('payment');
+
+        $this->assertNotNull($payment->entityOrigin);
+        $this->assertEquals('application', $payment->entityOrigin->origin->getEntityName());
+
+        $commission = $this->getDbEntity('commission', ['source_id' => $payment->getId()]);
+
+        $this->assertNotNull($commission);
+    }
+
+    private function setUpPartnerSubMerchantConfig($partnerId, $subMerchantId)
+    {
+        $client = $this->setUpNonPurePlatformPartnerAndSubmerchant($partnerId, $subMerchantId);
+        $this->fixtures->merchant->addFeatures(['invoice_receipt_mandatory'], $subMerchantId);
+
+        $this->fixtures->pricing->createImplicitPartnerPricingPlan([
+            'plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            'percent_rate' => 100,
+        ]);
+        $this->createConfigForPartnerApp($client->getApplicationId(), null, [
+            'implicit_plan_id' => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+        ]);
+
+        return $client;
+    }
+
+    private function doPaymentForInvoiceCreatedWithPartnerAuth($invoice)
+    {
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = 'order_'.$invoice['order_id'];
+        $payment['amount']   = $invoice['amount'];
+
+        return $this->doAuthAndGetPayment(
+            $payment,
+            [
+                'status'   => 'captured',
+                'order_id' => 'order_'.$invoice['order_id'],
+            ]
+        );
     }
 
     public function testCreateInvoiceWithBatchIdInHeader()

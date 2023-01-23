@@ -96,17 +96,21 @@ class Core extends Base\Core
         // and set the VA's entity_origin as the entity_origin for this txn.
         // If the txn does not have either of those, basic auth is used to extract the origin entity's details.
         //
-        if (empty($subscriptionId) === false)
+        if (optional($entity->order)->getProductType() === Order\ProductType::PAYMENT_LINK_V2)
+        {
+            $originEntity = $this->getOriginEntityFromPaymentLinkId($entity->order->getProductId());
+        }
+        else if (optional($entity->order)->getProductType() === Order\ProductType::INVOICE)
+        {
+            $originEntity = $this->getOriginEntityFromInvoice($entity->order->getProductId());
+        }
+        else if (empty($subscriptionId) === false)
         {
             $originEntity = $this->getOriginEntityFromSubscription($subscriptionId);
         }
         else if (empty($receiver) === false)
         {
             $originEntity = $this->getOriginEntityFromReceiver($receiver);
-        }
-        else if (optional($entity->order)->getProductType() === Order\ProductType::PAYMENT_LINK_V2)
-        {
-            $originEntity = $this->getOriginEntityFromPaymentLinkId($entity->order->getProductId());
         }
         else
         {
@@ -271,6 +275,21 @@ class Core extends Base\Core
 
         return optional($entityOrigin)->origin;
     }
+
+    /**
+     * Returns origin entity for the invoice if present
+     *
+     * @param string $invoiceId
+     *
+     * @return mixed|null
+     */
+    protected function getOriginEntityFromInvoice(string $invoiceId): mixed
+    {
+        $entityOrigin = $this->repo->entity_origin->fetchByEntityTypeAndEntityId('invoice', $invoiceId);
+
+        return optional($entityOrigin)->origin ?? $this->getOriginEntityFromAuth();
+    }
+
     /**
      * Returns origin entity for the payment link if present
      *
