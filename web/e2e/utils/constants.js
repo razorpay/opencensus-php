@@ -1,6 +1,6 @@
 const credentials = {
   username: process.env.USERNAME ?? 'akash.raina@razorpay.com',
-  password: process.env.PASSWORD ?? 'sunita1234',
+  password: process.env.PASSWORD ?? 'sunita12345',
 };
 
 module.exports = {
