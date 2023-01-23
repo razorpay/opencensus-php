@@ -4,7 +4,6 @@ import Slider from 'common/new-ui/Slider';
 import S0 from './steps/S0';
 import S1 from './steps/S1';
 import S2 from './steps/S2';
-import S3 from './steps/S3';
 import User from 'merchant/models/User';
 import { updateSession } from 'merchant/reducers/session';
 import { merchantFetch } from 'merchant/utils/ajax';
@@ -181,8 +180,8 @@ export default class BaseScreen extends React.Component {
       eventLabel: `Partner Onboarding | Accept T&C | ${this.state.businessTypeName}`,
     });
     analyticsTrack({
-      objectName: 'Partner T&C Page',
-      actionName: 'accept clicked',
+      objectName: 'Partner Get Started',
+      actionName: 'clicked',
       screen: this.screenName,
       properties: {
         location: 'partner onboarding base screen',
@@ -193,6 +192,7 @@ export default class BaseScreen extends React.Component {
 
     return this.closeTransaction('merchant/partner_type', {
       partner_type: this.state.role,
+      consent: 1,
     });
   };
 
@@ -263,16 +263,10 @@ export default class BaseScreen extends React.Component {
                   lpVariant={this.state.lpVariant}
                   lpFold={this.state.lpFold}
                   businessTypeName={this.state.businessTypeName}
+                  onCompleteClick={this.onCompleteClick}
                 />
               )
             : null}
-          {(sliderProps) => (
-            <S3
-              key={isHidePartnerType ? 2 : 3}
-              sliderProps={sliderProps}
-              onNext={this.onCompleteClick}
-            />
-          )}
         </Slider>
         {!this.props.disableClose && (
           <button

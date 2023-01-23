@@ -1,9 +1,15 @@
 import React, { useEffect } from 'react';
 import SlideController from './SlideController';
 import PartnerSelectBox from './PartnerTypeSelector';
-import { track } from '../ga';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { track } from 'merchant/views/PartnerDashboard/Onboarding/ga';
+import {
+  getOnContactSupportClicked,
+  getOnPrivacyPolicyClicked,
+  getOnTnCClicked,
+} from 'merchant/views/PartnerDashboard/Onboarding/steps/helpers/analytics';
+import { ONBOARDING_LABELS } from 'merchant/views/PartnerDashboard/constants';
 
 const S2 = ({
   role,
@@ -17,6 +23,7 @@ const S2 = ({
   lpFold,
   businessTypeName,
   screenName,
+  onCompleteClick,
 }) => {
   const handleNextClick = () => {
     tracking.trackEvent(
@@ -43,7 +50,16 @@ const S2 = ({
       },
       toCleverTap: true,
     });
+    return onCompleteClick();
   };
+
+  useEffect(() => {
+    const container = document.querySelector('.partner-onboarding-base-screen');
+    container.classList.add('step-2');
+    return () => {
+      container.classList.remove('step-2');
+    };
+  }, []);
 
   const handleOtherCTAClicks = (action) => {
     tracking.trackEvent(
@@ -55,14 +71,9 @@ const S2 = ({
       }),
     );
   };
-
-  useEffect(() => {
-    const container = document.querySelector('.partner-onboarding-base-screen');
-    container.classList.add('step-2');
-    return () => {
-      container.classList.remove('step-2');
-    };
-  }, []);
+  const onContactSupportClicked = getOnContactSupportClicked(screenName, handleOtherCTAClicks);
+  const onPrivacyPolicyClicked = getOnPrivacyPolicyClicked(screenName, handleOtherCTAClicks);
+  const onTnCClicked = getOnTnCClicked(screenName, handleOtherCTAClicks);
 
   useEffect(() => {
     const closeButton = document.querySelector('.partner-onboarding-base-screen button.close');
@@ -149,7 +160,7 @@ const S2 = ({
             <a
               href="https://razorpay.com/support/"
               target="_blank"
-              onClick={() => handleOtherCTAClicks('Contact Support')}
+              onClick={onContactSupportClicked}
               rel="noopener noreferrer"
             >
               &nbsp;Contact Support <i className="i i-external-link " />
@@ -171,6 +182,27 @@ const S2 = ({
               I just want to use Razorpay products
             </a>
           </p>
+          <p>
+            By signing up you agree to our{' '}
+            <a
+              href="https://razorpay.com/privacy/"
+              target="_blank"
+              onClick={onPrivacyPolicyClicked}
+              rel="noopener noreferrer"
+            >
+              privacy policy
+            </a>{' '}
+            and{' '}
+            <a
+              href="https://razorpay.com/s/terms-partners/"
+              target="_blank"
+              className="highlight"
+              onClick={onTnCClicked}
+              rel="noreferrer noopener"
+            >
+              terms of use.
+            </a>
+          </p>
         </div>
       </div>
       <SlideController
@@ -183,6 +215,8 @@ const S2 = ({
         }}
         disNext={!role}
         onNext={handleNextClick}
+        nextBtnLabel={ONBOARDING_LABELS.GET_STARTED}
+        nextBtnPendingLabel={ONBOARDING_LABELS.GET_STARTED_PENDING}
       />
     </>
   );

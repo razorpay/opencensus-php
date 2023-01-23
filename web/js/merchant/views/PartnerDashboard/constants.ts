@@ -10,6 +10,6 @@ export const ADD_MODE = {
 };
 
 export const ONBOARDING_LABELS = {
-  GET_STARTED: 'Accept and Get Started',
+  GET_STARTED: 'Get Started',
   GET_STARTED_PENDING: 'Getting Started ...',
 };
