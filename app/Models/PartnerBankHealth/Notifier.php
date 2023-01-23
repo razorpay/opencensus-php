@@ -281,7 +281,7 @@ class Notifier extends \RZP\Models\Base\Core
     {
         $storkResponse       = null;
         $merchantId          = $config->getMerchantId();
-        $merchantDisplayName = $config->merchant->getDisplayName();
+        $merchantDisplayName = $config->merchant->getDisplayNameElseName();
         $notificationEmails  = $config->getNotificationEmails();
 
         $this->trace->info(TraceCode::PARTNER_BANK_HEALTH_EMAIL_TO_MERCHANT_INIT, ['merchant_id' => $merchantId]);

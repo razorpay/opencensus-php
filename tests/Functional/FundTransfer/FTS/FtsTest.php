@@ -1197,7 +1197,7 @@ class FtsTest extends TestCase
                                                                ]);
 
         $merchant = $this->getDbEntityById('merchant', $merchantId, 'live');
-        $this->fixtures->on('live')->edit('merchant', $merchantId, ['display_name' => "Merchant $merchantId"]);
+        $this->fixtures->on('live')->edit('merchant', $merchantId, ['display_name' => "", 'name' => "Merchant $merchantId"]);
         $merchantConfigs->merchant()->associate($merchant);
         $merchantConfigs->save();
     }
