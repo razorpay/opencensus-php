@@ -1054,7 +1054,7 @@ class Service
                 ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED
             );
         }
-        else if ($statusCode === 503)
+        else if (($statusCode === 503) or ($statusCode === 502))
         {
             throw new Exception\ServerErrorException(
                 'Upi Payments Service is not available',
@@ -1065,19 +1065,19 @@ class Service
             );
         }
 
-        if (empty($response) === true)
+        $responseBody = json_decode($response->getBody(), true);
+
+        if (empty($responseBody) === true)
         {
             throw new Exception\ServerErrorException(
                 'received empty response from UPS',
                 ErrorCode::SERVER_ERROR_INVALID_RESPONSE,
                 [
                     'http_code' => $statusCode,
-                    'response'  => $response,
+                    'response'  => $responseBody,
                 ]
             );
         }
-
-        $responseBody = json_decode($response->getBody(), true);
 
         return [$responseBody, $statusCode];
     }
