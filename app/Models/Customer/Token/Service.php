@@ -771,6 +771,8 @@ class Service extends Base\Service
                     unset($response['service_provider_tokens']);
                 }
 
+                $this->manualTriggerMerchantWebhook($token, $serviceProviderTokens);
+
                 return $response;
             }
 
@@ -792,6 +794,22 @@ class Service extends Base\Service
 
             throw $e;
         }
+    }
+
+    public function manualTriggerMerchantWebhook($token, $serviceProviderTokens) {
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $token,
+            ApiEventSubscriber::WITH => $serviceProviderTokens,
+        ];
+
+        $this->trace->info(TraceCode::MANUAL_MERCHANT_WEBHOOK_TRIGGER,
+            [
+                "eventpayload" => $eventPayload
+            ]
+        );
+        $this->app['events']->dispatch('api.token.service_provider.activated', $eventPayload);
+
     }
 
     public function pushFetchTokenEvents(& $input, $isPar)

@@ -7887,6 +7887,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Push Token Provisioning
     const TOKEN_PUSH_INFO                                     = 'TOKEN_PUSH_INFO';
     const TOKEN_PUSH_EXCEPTION                                = 'TOKEN_PUSH_EXCEPTION';
+    const MANUAL_MERCHANT_WEBHOOK_TRIGGER                     = 'MANUAL_MERCHANT_WEBHOOK_TRIGGER';
 
     const TRANSACTION_LIMIT_CTS_RATIO_NOT_FOUND               = 'TRANSACTION_LIMIT_CTS_RATIO_NOT_FOUND';
     const TRANSACTION_LIMIT_FTS_RATIO_NOT_FOUND               = 'TRANSACTION_LIMIT_FTS_RATIO_NOT_FOUND';
