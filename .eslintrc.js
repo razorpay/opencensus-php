@@ -11,6 +11,7 @@ module.exports = {
   ],
   plugins: ['no-relative-import-paths'],
   // TODO: Uncomment later plugins: ['jsx-a11y'],
+  ignorePatterns: ['.eslintrc.js'],
   rules: {
     'no-shadow': 'off',
     'babel/camelcase': 'off',

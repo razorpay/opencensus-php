@@ -94,3 +94,10 @@ E2E Code Structure:
 
     - test-results
       // screnshots of failed test suites
+
+# Typescript Process
+While writing Typescript files , you might encounter eslint issue , to solve that :
+
+- Include your folder/file path in `tsconfig.json` 
+
+```"include": [/*add your file path*/]```
