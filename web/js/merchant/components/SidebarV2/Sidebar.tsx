@@ -32,18 +32,23 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
     config,
     user,
     fetchLeftNavItems,
-    leftNavItems: { loading: isLoading, data },
+    leftNavItems: { loading: isNavItemsLoading, data },
     org,
     isMobile,
+    isTagsLoading,
   } = props;
   const { location, history } = props;
 
   const [routesInfo, setRoutesInfo] = useState<Routes>({});
   const [activeTab, setActiveTab] = useState<string>('');
   const isExternalRedirect = org?.external_redirect_url_text && org?.external_redirect_url;
+  const [isTwoSecondsTimeoutReached, setIsTwoSecondsTimeoutReached] = useState(false);
 
   useEffect(() => {
     fetchLeftNavItems();
+    setTimeout(() => {
+      setIsTwoSecondsTimeoutReached(true);
+    }, 2000);
   }, []);
 
   const handleActivationClick = () => {
@@ -67,6 +72,9 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
     activeTab,
     user,
   };
+
+  // fallback to default list if it takes more than 2 seconds to load nav items
+  const isLoading = !isTwoSecondsTimeoutReached && (isNavItemsLoading || isTagsLoading);
 
   return (
     <>
@@ -154,6 +162,7 @@ const mapStateToProps = (state) => {
     showAcceptPayments: state.home.instantActivations.showAcceptPayments,
     org: state.session.org,
     isMobile: state.app.isMobileResolution,
+    isTagsLoading: !state.session.isTagsLoaded,
   };
 };
 
