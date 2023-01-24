@@ -4,6 +4,7 @@ namespace RZP\Services\Dcs\Features;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Feature\Constants as APIFeaturesConstants;
 
 class Constants
 {
@@ -12,6 +13,7 @@ class Constants
     const EligibilityEnabled = 'eligibility_enabled';
     const ShowEmailOnCheckout = 'show_email_on_checkout';
     const EmailOptionalOnCheckout = 'email_optional_oncheckout';
+    const AutoCommissionInvoiceDisabled = 'auto_invoice_generation_disabled';
     const AffordabilityWidgetSet = 'affordability_widget_set';
 
     /**
@@ -23,6 +25,7 @@ class Constants
         self::EligibilityEnabled => "rzp/pg/merchant/affordability/EligibilityFeatures",
         self::ShowEmailOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
         self::EmailOptionalOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
+        self::AutoCommissionInvoiceDisabled => "rzp/platform/partner/commission/Features",
         self::AffordabilityWidgetSet => "rzp/pg/merchant/affordability/Widget",
     ];
 
@@ -36,6 +39,7 @@ class Constants
         self::EligibilityEnabled => self::EligibilityEnabled,
         self::ShowEmailOnCheckout => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout => self::EmailOptionalOnCheckout,
+        APIFeaturesConstants::AUTO_COMM_INV_DISABLED => self::AutoCommissionInvoiceDisabled,
         self::AffordabilityWidgetSet => self::AffordabilityWidgetSet,
     ];
 
@@ -50,6 +54,7 @@ class Constants
         self::ShowEmailOnCheckout => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout => self::EmailOptionalOnCheckout,
         self::AffordabilityWidgetSet => self::AffordabilityWidgetSet,
+        self::AutoCommissionInvoiceDisabled => APIFeaturesConstants::AUTO_COMM_INV_DISABLED,
     ];
 
     /**
@@ -59,6 +64,7 @@ class Constants
         self::RefundEnabled => 'direct',
         self::DisableAutoRefund => 'direct',
         self::EligibilityEnabled => 'client',
+        self::AutoCommissionInvoiceDisabled => 'direct',
         self::AffordabilityWidgetSet => 'client',
     ];
 

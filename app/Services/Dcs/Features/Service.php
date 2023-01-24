@@ -416,7 +416,7 @@ class Service extends Base
 
     public static function isDcsFeature($featureName)
     {
-        return key_exists($featureName, DcsConstants::$featureToDCSKeyMapping);
+        return key_exists($featureName, DcsConstants::$featureToDCSKeyMapping) || key_exists($featureName, DcsConstants::$apiFeatureNameToDCSFeatureName);
     }
 
     public static function isDcsNewFeature($featureName)

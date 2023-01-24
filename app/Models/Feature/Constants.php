@@ -283,6 +283,11 @@ class Constants
      */
     const KYC_HANDLED_BY_PARTNER          = 'kyc_handled_by_partner';
 
+    /*
+     * disable commission invoice auto-approval for both partner and finance
+     */
+    const AUTO_COMM_INV_DISABLED          = 'auto_comm_inv_disabled';
+
     /**
      * When creating submerchant in bulk, merchant name is synced with business name which is same for all submerchants
      * of a partner. To avoid syncing business_name with merchant_name, this feature flag is used.
@@ -2400,6 +2405,7 @@ class Constants
         DcsConstants::EligibilityEnabled => true,
         DcsConstants::EmailOptionalOnCheckout => true,
         DcsConstants::ShowEmailOnCheckout => true,
+        self::AUTO_COMM_INV_DISABLED          => true,
         self::ONE_CC_ADDRESS_SYNC_OFF         => true,
         self::REDUCE_OD_BALANCE_FOR_CA        => true,
         self::PUSH_PROVISIONING_LIVE          => true,
@@ -3327,6 +3333,11 @@ class Constants
         DcsConstants::EmailOptionalOnCheckout => [
             'feature'       => DcsConstants::EmailOptionalOnCheckout,
             'display_name'  => 'Email optional on std/hosted checkout',
+            'documentation' => '',
+        ],
+        self::AUTO_COMM_INV_DISABLED => [
+            'feature'       => self::AUTO_COMM_INV_DISABLED,
+            'display_name'  => 'Commission invoice Partner auto approval disable',
             'documentation' => '',
         ],
         self::QR_CUSTOM_TXN_NAME => [
