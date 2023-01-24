@@ -216,13 +216,13 @@ class Core extends Base\Core
     {
         $detailService = new DetailService();
 
-        $l2Consents = $detailService->checkIfConsentsPresent($merchantId) ? $this->processAndGetConsents($merchantId, Constants::PG) : [];
+        $validDocTypesForPg = array_merge(ConsentConstant::VALID_LEGAL_DOC, ConsentConstant::VALID_LEGAL_DOC_FOR_PARTNERSHIP);
+
+        $pgConsents = $detailService->checkIfConsentsPresent($merchantId, $validDocTypesForPg) ? $this->processAndGetConsents($merchantId, Constants::PG) : [];
 
         $xConsents = $detailService->checkIfConsentsPresent($merchantId, ConsentConstant::VALID_LEGAL_DOC_FOR_X) ? $this->processAndGetConsents($merchantId, Constants::RX) : [];
 
-        $partnershipConsents = $detailService->checkIfConsentsPresent($merchantId, ConsentConstant::VALID_LEGAL_DOC_FOR_PARTNERSHIP) ? $this->processAndGetConsents($merchantId, Constants::PG) : [];
-
-        return array_merge(array_unique(array_merge($l2Consents,$partnershipConsents)), $xConsents);
+        return array_merge($pgConsents, $xConsents);
     }
 
     protected function processAndGetConsents($merchantId, $platform)

@@ -3,6 +3,7 @@
 
 namespace RZP\Models\Merchant\Consent;
 
+use RZP\Models\Merchant\Constants as MeConstants;
 
 class Constants
 {
@@ -48,11 +49,11 @@ class Constants
     ];
 
     const VALID_LEGAL_DOC_FOR_PARTNERSHIP = [
-        'Partnership_Terms and Conditions',
-        'PartnerActivation_Terms and Conditions',
+        'Partnership' . '_' . MeConstants::TERMS,
+        'PartnerActivation' . '_' . MeConstants::TERMS,
         'PartnerActivation_Service Agreement',
         'PartnerActivation_Privacy Policy',
-        'Oauth_Terms and Conditions'
+        'Oauth' . '_' . MeConstants::TERMS
     ];
 
     const VALID_LEGAL_DOC_FOR_X = [

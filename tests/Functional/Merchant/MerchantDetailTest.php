@@ -3567,6 +3567,29 @@ We look forward to transacting with you!
         $this->assertCount(2, $response);
     }
 
+    public function testFetchMerchantConsentsForPg()
+    {
+        $this->fixtures->create('merchant_consents',
+            [
+                'merchant_id' => self::DEFAULT_MERCHANT_ID,
+                'consent_for' => 'Partnership_Terms & Conditions',
+                'status'      => 'initiated'
+            ]);
+
+
+        $this->mockCreateLegalDocument();;
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testFetchMerchantConsents'];
+
+        $testData['request']['url'] = '/merchant/consents/'. self::DEFAULT_MERCHANT_ID;
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $this->assertCount(2, $response);
+    }
+
     public function testBulkAssignReviewer()
     {
         $this->ba->adminAuth();
