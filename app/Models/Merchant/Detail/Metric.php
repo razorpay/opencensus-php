@@ -36,6 +36,8 @@ final class Metric
     const BVS_RESPONSE_TOTAL                  = 'bvs_response_total';
     const BVS_REQUEST_TOTAL                   = 'bvs_request_total';
     const BVS_ARTEFACT_VERIFICATION_TRIGGER   = 'bvs_artefact_verification_trigger';
+    const BVS_DIGILOCKER_URL_RESPONSE_TOTAL   = 'bvs_digilocker_url_response_total';
+    const BVS_DIGILOCKER_DETAILS_RESPONSE_TOTAL = 'bvs_digilocker_details_response_total';
 
     const SHOP_ESTABLISHMENT_NUMBER_LENGTH_MORE_THAN_30 = 'shop_establishment_number_length_more_than_30';
 

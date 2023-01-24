@@ -1224,6 +1224,24 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function merchantIdentityVerification()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->merchantIdentityVerification($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function processIdentityVerificationDetails()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->processIdentityVerificationDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getMerchantInfo($id)
     {
         $response = $this->service(E::MERCHANT_DETAIL)->getMerchantInfo($id);

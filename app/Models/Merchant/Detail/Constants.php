@@ -498,6 +498,8 @@ class Constants
 
     const URL_TYPE = 'url_type';
 
+    const VERIFICATION_TYPE = 'verification_type';
+
     const BUSINESS_APP_URL      = 'business_app_url';
     const BUSINESS_APP_USERNAME = 'business_app_username';
     const BUSINESS_APP_PASSWORD = 'business_app_password';
@@ -522,20 +524,6 @@ class Constants
         Entity::BUSINESS_REGISTERED_PIN,
         Entity::PROMOTER_PAN,
         Entity::PROMOTER_PAN_NAME
-    ];
-
-    const AADHAAR_ESIGN_BUSINESS_TYPES_EXPERIMENT_MAPPING = [
-        BusinessType::NOT_YET_REGISTERED => RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
-        BusinessType::INDIVIDUAL         => RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
-        BusinessType::PROPRIETORSHIP     => RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
-        BusinessType::PARTNERSHIP        => RazorxTreatment::ESIGN_AADHAR_FUNCTIONALITY,
-        BusinessType::HUF                => RazorxTreatment::AADHAAR_EKYC_FOR_HUF,
-        BusinessType::PUBLIC_LIMITED     => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
-        BusinessType::PRIVATE_LIMITED    => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
-        BusinessType::LLP                => RazorxTreatment::AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES,
-        BusinessType::TRUST              => RazorxTreatment::AADHAAR_EKYC_FOR_TRUST_SOCIETY_NGO,
-        BusinessType::SOCIETY            => RazorxTreatment::AADHAAR_EKYC_FOR_TRUST_SOCIETY_NGO,
-        BusinessType::NGO                => RazorxTreatment::AADHAAR_EKYC_FOR_TRUST_SOCIETY_NGO
     ];
 
     const SUPPORTED_VERIFICATION_RESPONSE_TYPES = [

@@ -3436,6 +3436,16 @@ class Service extends Base\Service
 
     }
 
+    public function merchantIdentityVerification(array $input)
+    {
+        return (new Core())->merchantIdentityVerification($input);
+    }
+
+    public function processIdentityVerificationDetails(array $input)
+    {
+        return (new Core())->processIdentityVerificationDetails($input);
+    }
+
     public function getMerchantInfo($merchant_id)
     {
         $core = new Core();

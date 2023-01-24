@@ -7760,6 +7760,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BUSINESS_DETAIL_DOES_NOT_EXIST                                 = 'BUSINESS_DETAIL_DOES_NOT_EXIST';
     const MERCHANT_BUSINESS_WEBSITE_DETAILS                             = 'MERCHANT_BUSINESS_WEBSITE_DETAILS';
 
+    //Digilocker redirect flow
+    const MERCHANT_IDENTITY_VERIFICATION                                = 'MERCHANT_IDENTITY_VERIFICATION';
+    const PROCESS_IDENTITY_VERIFICATION_DETAILS                         = 'PROCESS_IDENTITY_VERIFICATION_DETAILS';
+    const PROCESS_DIGILOCKER_AADHAAR_VERIFICATION                       = 'PROCESS_DIGILOCKER_AADHAAR_VERIFICATION';
+    const REFERENCE_ID_DOES_NOT_EXIST                                   = 'REFERENCE_ID_DOES_NOT_EXIST';
+    const BVS_GET_VERIFICATION_URL_REQUEST                              = 'BVS_GET_VERIFICATION_URL_REQUEST';
+    const BVS_GET_VERIFICATION_URL_RESPONSE                             = 'BVS_GET_VERIFICATION_URL_RESPONSE';
+    const BVS_GET_VERIFICATION_DETAILS_REQUEST                          = 'BVS_GET_VERIFICATION_DETAILS_REQUEST';
+    const BVS_GET_VERIFICATION_DETAILS_RESPONSE                         = 'BVS_GET_VERIFICATION_DETAILS_RESPONSE';
+
     const FETCHED_GATEWAY_DOWNTIMES_FROM_DB                             = 'FETCHED_GATEWAY_DOWNTIMES_FROM_DB';
     const FILTERED_METHOD_PROC_SPECIFICS                                = 'FILTERED_METHOD_PROC_SPECIFICS';
     const PLATFORM_SPECIFIC_DOWNTIMES                                   = 'PLATFORM_SPECIFIC_DOWNTIMES';

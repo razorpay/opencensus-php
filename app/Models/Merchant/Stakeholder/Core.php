@@ -190,6 +190,12 @@ class Core extends Base\Core
                 }
             }
         }
+
+        if (empty($input[Constants::VERIFICATION_METADATA]) === false)
+        {
+            $input[Constants::VERIFICATION_METADATA] = $this->mergeJson($stakeholder->getVerificationMetadata(), $input[Constants::VERIFICATION_METADATA]);
+        }
+
         unset($input[Constants::ADDRESSES]);
 
         $stakeholder->edit($input, $rule);
@@ -272,5 +278,46 @@ class Core extends Base\Core
 
             return $stakeholder;
         });
+    }
+
+    /**
+     * edit stakeholder if exists else creates one
+     *
+     * @param Detail\Entity $merchantDetails
+     * @param               $stakeholderInput
+     */
+    public function createOrEditStakeholder(Detail\Entity $merchantDetails, $stakeholderInput)
+    {
+        $stakeholder = $merchantDetails->stakeholder;
+
+        if ($stakeholder === null)
+        {
+            $this->trace->info(
+                TraceCode::STAKEHOLDER_DOES_NOT_EXIST,
+                [
+                    'merchant_id' => $merchantDetails->getMerchantId(),
+                ]
+            );
+
+            $stakeholder = $this->createStakeholderFromMerchantDetails($merchantDetails);
+
+            $merchantDetails->setRelation(Detail\Entity::STAKEHOLDER, $stakeholder);
+        }
+
+        $this->editStakeholder($stakeholder, $stakeholderInput);
+
+    }
+
+    protected function mergeJson($existingDetails, $newDetails)
+    {
+        if (empty($newDetails) === false)
+        {
+            foreach ($newDetails as $key => $value)
+            {
+                $existingDetails[$key] = $value;
+            }
+        }
+
+        return $existingDetails;
     }
 }

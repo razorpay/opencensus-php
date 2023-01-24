@@ -325,4 +325,54 @@ class DefaultProcessorMock extends DefaultProcessor
         $arr = json_decode($body, true);
         return get_Protobuf_Struct($arr);
     }
+
+    /**
+     * @param array $input
+     *
+     * @return array|string[]
+     */
+    public function getVerificationUrl(array $input)
+    {
+        if ($this->mockStatus === Constant::SUCCESS)
+        {
+            return [
+                'verification_url' => 'https://api.digitallocker.gov.in/public'
+            ];
+        }
+
+        return [
+            'code'    => 'unavailable',
+            'message' => 'hyperverge gateway request failed with http code - 500  internal code  - ER_SERVER, error - Something went wrong',
+            'meta'    => [
+                "internal_error_code" => "SERVER_ERROR",
+                "public_error_code"   => "some_error_encountered"
+            ]
+        ];
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     */
+    public function fetchVerificationDetails(array $input)
+    {
+        if($this->mockStatus === Constant::SUCCESS)
+        {
+            return [
+                'is_valid' => true,
+                'probe_id' => 'HxOGLBW7n6AD2f',
+                'file_url' => 'https://thinkbespoke.com.au/wp-content/uploads/2019/12/precondo-ca-QHDFm084RNk-unsplash.xml'
+            ];
+        }
+
+        return [
+            'code'    => 'unavailable',
+            'message' => 'hyperverge gateway request failed with http code - 500  internal code  - ER_SERVER, error - Something went wrong',
+            'meta'    => [
+                "internal_error_code" => "SERVER_ERROR",
+                "public_error_code"   => "some_error_encountered"
+            ]
+        ];
+    }
 }

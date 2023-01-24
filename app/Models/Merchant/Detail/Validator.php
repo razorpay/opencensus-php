@@ -333,6 +333,15 @@ class Validator extends Base\Validator
         Entity::ARCHIVE                         => 'required|boolean',
     ];
 
+    protected static $identityVerificationRules = [
+        'verification_type'         => 'required|in:AADHAAR_EKYC',
+        'redirect_url'              => 'sometimes|string|custom:active_url'
+    ];
+
+    protected static $digilockerUrlRules = [
+        'redirect_url'              => 'required|string|custom:active_url'
+    ];
+
     protected static $activationStatusRules = [
         Entity::ACTIVATION_STATUS               => 'required|string|max:30',
         Entity::CLARIFICATION_MODE              => 'filled|string|max:15',

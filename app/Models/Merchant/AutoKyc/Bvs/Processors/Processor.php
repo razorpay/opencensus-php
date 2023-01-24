@@ -18,4 +18,8 @@ interface Processor extends AutoKycProcessor
     public function GetRules(): array;
 
     public function FetchDetails(string $validationId): Response;
+
+    public function getVerificationUrl(array $input);
+
+    public function fetchVerificationDetails(array $input);
 }

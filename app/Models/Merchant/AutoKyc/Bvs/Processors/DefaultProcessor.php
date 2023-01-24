@@ -338,4 +338,27 @@ class DefaultProcessor implements Processor
 
         return Constant::SYNC;
     }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws IntegrationException
+     */
+    public function getVerificationUrl(array $input)
+    {
+        return (new BvsClient\ArtefactCuratorApiClient())->getVerificationUrl($input);
+    }
+
+    /**
+     * @param array $input
+     *
+     * @return array
+     * @throws IntegrationException
+     */
+    public function fetchVerificationDetails(array $input)
+    {
+        return (new BvsClient\ArtefactCuratorApiClient())->fetchVerificationDetails($input);
+    }
+
 }

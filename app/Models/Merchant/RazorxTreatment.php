@@ -11,9 +11,6 @@ final class RazorxTreatment
     const MAILMODO_L1_FORM_EMAIL_TRIGGER = 'mailmodo_l1_form_email_trigger';
     const PAR_ASYNC_FOR_CARD_FINGERPRINT = 'par_async_for_card_fingerprint';
 
-    const AADHAAR_EKYC_FOR_REG_BUSINESS_TYPES  = 'adharEkyc_for_reg_businessTypes';
-    const AADHAAR_EKYC_FOR_HUF                 = 'aadhaar_ekyc_for_huf';
-    const AADHAAR_EKYC_FOR_TRUST_SOCIETY_NGO   = 'aadharEkyc_for_trust_society_ngo';
     const DISABLE_RZP_TOKENISED_PAYMENT        = 'disable_rzp_tokenised_payment';
 
     //Razorx treatment constant, whether to make sync call or not
@@ -278,9 +275,6 @@ final class RazorxTreatment
     // experiment to enable whatsapp notifications and also refactoring notifications;
     const WHATSAPP_NOTIFICATIONS = 'whatsapp_notifications';
 
-    // experiment to enable esign aadhar functionality
-    const ESIGN_AADHAR_FUNCTIONALITY = 'esign_aadhar_functionality';
-
     // experiment to enable pushing events to segment
     const SEGMENT_ANALYTICS_FUNCTIONALITY = 'segment_analytics_functionality';
 
@@ -467,6 +461,8 @@ final class RazorxTreatment
     const DRUID_MIGRATION = 'DRUID_MIGRATION';
 
     const WHATCMS_EXPERIMENT = 'WHATCMS_EXPERIMENT';
+
+    const ESIGN_AADHAR_VERIFICATION = 'ESIGN_AADHAR_VERIFICATION';
 
     //Experiment for removal of extra fields in payment response
     const DISALLOW_ORG_DATA_IN_RESPONSE = 'disallow_org_data_in_response';

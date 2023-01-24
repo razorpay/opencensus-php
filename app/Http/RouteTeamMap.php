@@ -364,6 +364,9 @@ class RouteTeamMap
         'user_device_detail_save'                         => [self::TEAM_PAYMENTS_GROWTH],
         'friend_buy_reward_validation'                    => [self::TEAM_PAYMENTS_GROWTH],
         'mailmodo_l1_form_submission'                     => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_fetch_verification_details'             => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_process_verification_details'           => [self::TEAM_PAYMENTS_GROWTH],
+
         // Risk team
         'shield_rules_get_multiple'                       => [self::TEAM_PAYMENTS_RISK],
         'shield_rules_get'                                => [self::TEAM_PAYMENTS_RISK],

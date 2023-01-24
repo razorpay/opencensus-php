@@ -765,10 +765,10 @@ class Route
         'merchant_activation_company_search'       => ['get',      'merchant/activation/company_search',             'MerchantController@getCompanySearchList'                           ],
         'merchant_activation_gst_details'          => ['get',      'merchant/activation/gst_details',                'MerchantController@getGstInList'                                   ],
         'merchant_business_types'                  => ['get',      'merchant/onboarding/business_types',             'MerchantController@getBusinessTypes'                               ],
-        'merchant_business_types_admin'            => ['get',      'merchant/onboarding/business_types/admin',        'MerchantController@getBusinessTypes'                               ],
+        'merchant_business_types_admin'            => ['get',      'merchant/onboarding/business_types/admin',        'MerchantController@getBusinessTypes'                              ],
         'merchant_supported_plugins'               => ['get',      'onboarding/merchant/supported_plugins',          'MerchantController@getMerchantSupportedPlugins'                    ],
         'merchant_info'                            => ['get',      'merchant/{id}/info',                             'MerchantController@getMerchantInfo'                                ],
-        'merchant_plugin_fetch'                    => ['get',      'onboarding/merchants/{id}/plugin',               'MerchantController@getMerchantPlugin'                                ],
+        'merchant_plugin_fetch'                    => ['get',      'onboarding/merchants/{id}/plugin',               'MerchantController@getMerchantPlugin'                              ],
         'merchant_logs_search'                     => ['post',     'merchant/logs',                                  'MerchantController@createLogSearch'                                ],
         'merchant_logs_fetch'                      => ['get',      'merchant/logs',                                  'MerchantController@getMerchantLogs'                                ],
         'merchant_audit_info'                      => ['get',      'audit/info/merchant/{id}',                       'AuditingController@getMerchantAuditInfo'                           ],
@@ -778,7 +778,11 @@ class Route
         'merchant_activation_files'                => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_upload_file_admin'    => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'               => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
-        'merchant_coupons_apply'                   => ['post',     'merchant/activation/coupons/apply',              'MerchantController@postApplyCoupon'                                               ],
+        'merchant_coupons_apply'                   => ['post',     'merchant/activation/coupons/apply',              'MerchantController@postApplyCoupon'                                ],
+
+        //Digilocker redirect flow
+        'merchant_identity_verification'           => ['post',     'merchant/identity/verification',                 'MerchantController@merchantIdentityVerification'                   ],
+        'merchant_process_verification_details'    => ['post',     'merchant/process/identity/verificationDetails',  'MerchantController@processIdentityVerificationDetails'            ],
 
         'merchant_activation_send_notification'         => ['post',     'merchant/activation/{id}/send_whatsapp_notification',     'MerchantController@sendWhatsappNotification'         ],
         'merchant_activation_get_request_document_list' => ['get',      'merchant/activation/whatsapp_notification_document_list', 'MerchantController@getRequestDocumentList'           ],
@@ -5719,6 +5723,8 @@ class Route
     //
 
     public static $proxy = [
+        'merchant_identity_verification',
+        'merchant_process_verification_details',
         'merchant_activation_clarifications_fetch',
         'merchant_nc_revamp_eligibility',
         'merchant_activation_clarifications_save',
@@ -7847,6 +7853,8 @@ class Route
         'public_merchant_website_section_pages'           => Permission::VIEW_MERCHANT,
         'merchant_consents_admin_fetch'                   => Permission::VIEW_MERCHANT,
         'merchant_website_plugin_save'                    => Permission::VIEW_MERCHANT,
+        'merchant_identity_verification'                  => Permission::EDIT_MERCHANT,
+        'merchant_process_verification_details'           => Permission::EDIT_MERCHANT,
         //'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_fetch_by_id'         => Permission::RBL_BANK_MID_OFFICE,
         //'banking_account_bank_lms_comments_list'       => Permission::RBL_BANK_MID_OFFICE,
@@ -10064,6 +10072,8 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_identity_verification',
+            'merchant_process_verification_details',
             'merchant_activation_clarifications_fetch',
             'merchant_nc_revamp_eligibility',
             'merchant_activation_clarifications_save',

@@ -9,6 +9,7 @@ use Lib\PhoneBook;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Constants\Environment;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Jobs;
 use RZP\Constants\HyperTrace;
@@ -145,6 +146,7 @@ use RZP\Models\ClarificationDetail\Validator as ClarificationDetailValidator;
 use RZP\Models\ClarificationDetail\Service as ClarificationDetailService;
 use RZP\Models\ClarificationDetail\Core as ClarificationDetailCore;
 use RZP\Models\Merchant\Website;
+use RZP\Models\Merchant\Detail\Factory as DetailFactory;
 
 class Core extends Base\Core
 {
@@ -5894,17 +5896,14 @@ class Core extends Base\Core
             return false;
         }
 
-        if (array_key_exists($merchantDetails->getBusinessType(), DetailConstants::AADHAAR_ESIGN_BUSINESS_TYPES_EXPERIMENT_MAPPING) === true)
+        //We will set a single experiment for aadhaar esign verification
+        $isAadhaarEsignEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(), RazorxTreatment::ESIGN_AADHAR_VERIFICATION);
+
+        if ($isAadhaarEsignEnabled === false)
         {
-            $experimentName = DetailConstants::AADHAAR_ESIGN_BUSINESS_TYPES_EXPERIMENT_MAPPING[$merchantDetails->getBusinessType()];
-
-            $isAadhaarEsignEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(), $experimentName);
-
-            if ($isAadhaarEsignEnabled === false)
-            {
-                return false;
-            }
+            return false;
         }
+
         return true;
     }
 
@@ -7154,6 +7153,11 @@ class Core extends Base\Core
 
     public function processDigilockerAadhaarVerification(string $merchantId, string $aadhaarXml, string $artefactCuratorId)
     {
+        $this->trace->info(TraceCode::PROCESS_DIGILOCKER_AADHAAR_VERIFICATION, [
+            "merchant_id" => $merchantId,
+            "probe_id"    => $artefactCuratorId,
+        ]);
+
         $stakeholderInput = [
             Stakeholder\Entity::AADHAAR_ESIGN_STATUS => 'verified',
             Stakeholder\Entity::BVS_PROBE_ID         => $artefactCuratorId
@@ -7161,8 +7165,8 @@ class Core extends Base\Core
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-
         $xml = $this->getXmlFile($merchantId,$aadhaarXml);
+
         $this->encryptFile($xml);
 
         $this->uploadAadharEsignDocument($merchant, Document\Type::AADHAR_XML, $xml);
@@ -7218,7 +7222,7 @@ class Core extends Base\Core
             return new UploadedFile($tmpZipFilePath, 'file.xml', null, null, true);
         }
 
-        throw new Exception\BadRequestValidationFailureException("unable to creare aadhar xml file");
+        throw new Exception\BadRequestValidationFailureException("unable to create aadhaar xml file");
     }
 
     private function extractXmlFromZip(string $merchantId, string $pin, $zip)
@@ -8051,6 +8055,56 @@ class Core extends Base\Core
         }
 
         return $result;
+    }
+
+    /**
+     * @param $input
+     *
+     * @return array|null
+     * @throws LogicException
+     */
+    public function merchantIdentityVerification($input)
+    {
+        $merchant = $this->merchant;
+
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $merchantDetails->getValidator()->validateInput('identityVerification', $input);
+
+        $this->trace->info(TraceCode::MERCHANT_IDENTITY_VERIFICATION, [
+            "merchant_id" => $merchant->getId(),
+            "input"       => $input,
+        ]);
+
+        $verificationService = DetailFactory::getIdentityVerificationInstance($input[DetailConstants::VERIFICATION_TYPE]);
+
+        unset($input[DetailConstants::VERIFICATION_TYPE]);
+
+        return $verificationService->merchantIdentityVerification($merchant, $merchantDetails,  $input);
+    }
+
+    /**
+     * @param $input
+     *
+     * @return array
+     * @throws LogicException
+     */
+    public function processIdentityVerificationDetails($input)
+    {
+        $merchant = $this->merchant;
+
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $merchantDetails->getValidator()->validateInput('identityVerification', $input);
+
+        $this->trace->info(TraceCode::PROCESS_IDENTITY_VERIFICATION_DETAILS, [
+            "merchant_id" => $merchant->getId(),
+            "input"       => $input
+        ]);
+
+        $verificationService = DetailFactory::getIdentityVerificationInstance($input[DetailConstants::VERIFICATION_TYPE]);
+
+        return $verificationService->processIdentityVerificationDetails($merchant, $merchantDetails);
     }
 
     /*

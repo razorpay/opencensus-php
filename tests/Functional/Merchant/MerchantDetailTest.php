@@ -9246,6 +9246,50 @@ We look forward to transacting with you!
         $this->assertNull($businessDetail);
     }
 
+    public function testFetchIdentityVerificationUrl()
+    {
+        Config::set('services.bvs.mock', true);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->create('stakeholder', ['merchant_id' => $merchantId]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $stakeholderDetail = $this->getDbLastEntity('stakeholder');
+
+        $this->assertTrue(isset($stakeholderDetail['verification_metadata']) === true);
+
+        $this->assertTrue(isset($stakeholderDetail['verification_metadata']['reference_id']) === true);
+    }
+
+    public function testFetchIdentityVerificationUrlForInvalidInputs()
+    {
+        $merchant = $this->fixtures->on('test')->create('merchant', [
+            'activated'  => 1,
+        ]);
+
+        $merchantDetail = $this->fixtures->on('test')->create('merchant_detail:valid_fields', [
+            'merchant_id'       => $merchant['id'],
+            'activation_status' => 'activated_mcc_pending',
+            ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant['id']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $merchantUser['id']);
+
+        $this->startTest();
+
+    }
+
     public function testPutPreSignUpDetailsWithPartnerIdForAggregator()
     {
         list($merchant, $subMerchantUser, $managedApp) = $this->setUpAggregatorPartnerAndSubMerchant();
@@ -9500,6 +9544,117 @@ We look forward to transacting with you!
         $this->ba->proxyAuth('rzp_test_' . $merchant['id'], $merchantUser['id']);
 
         $this->startTest();
+
+    }
+
+    public function testFetchIdentityVerificationUrlForBVSFailure()
+    {
+        Config::set('services.bvs.mock', true);
+
+        Config::set('services.bvs.response', 'failed');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->create('stakeholder', ['merchant_id' => $merchantId]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $stakeholderDetail = $this->getDbLastEntity('stakeholder');
+
+        $this->assertTrue(isset($stakeholderDetail['verification_metadata']) === true);
+    }
+
+    public function testProcessIdentityVerificationDetails()
+    {
+        Config::set('services.bvs.mock', true);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->create('stakeholder', [
+            'merchant_id' => $merchantId,
+            'verification_metadata' =>  ['reference_id' => 'reference_id']
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $stakeholderDetail = $this->getDbLastEntity('stakeholder');
+
+        $this->assertTrue(isset($stakeholderDetail['bvs_probe_id']) === true);
+
+        $this->assertEquals('verified', $stakeholderDetail['aadhaar_esign_status']);
+    }
+
+    public function testFailureProcessIdentityVerificationDetails()
+    {
+        Config::set('services.bvs.mock', true);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->create('stakeholder', [
+            'merchant_id' => $merchantId
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $stakeholderDetail = $this->getDbLastEntity('stakeholder');
+
+        $this->assertTrue(isset($stakeholderDetail['bvs_probe_id']) === false);
+
+        $this->assertTrue(isset($stakeholderDetail['aadhaar_esign_status']) === false);
+    }
+
+    public function testProcessIdentityVerificationDetailsForBVSFailure()
+    {
+        Config::set('services.bvs.mock', true);
+
+        Config::set('services.bvs.response', 'failed');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $this->fixtures->create('stakeholder', [
+            'merchant_id' => $merchantId,
+            'verification_metadata' =>  ['reference_id' => 'reference_id']
+        ]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $stakeholderDetail = $this->getDbLastEntity('stakeholder');
+
+        $this->assertTrue(isset($stakeholderDetail['bvs_probe_id']) === false);
+
+        $this->assertTrue(isset($stakeholderDetail['aadhaar_esign_status']) === false);
     }
 
     public function testErrorWhenResellerPartnerProvidedDuringActivation()

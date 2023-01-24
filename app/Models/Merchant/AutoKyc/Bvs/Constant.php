@@ -185,6 +185,8 @@ class Constant
     const ONLINE_PROVIDER                 = 'online_provider';
     const VALUE                           = 'value';
 
+    const AADHAAR_EKYC                     = 'AADHAAR_EKYC';
+
     const FIELD_ARTEFACT_DETAILS_MAP = [
         self::PARTNERSHIP_DEED            => [
             self::ARTEFACT_TYPE   => self::PARTNERSHIP_DEED,
@@ -320,5 +322,13 @@ class Constant
         self::BANK_ACCOUNT_WITH_PERSONAL_PAN,
         self::BANK_ACCOUNT_WITH_BUSINESS_PAN,
         self::BANK_ACCOUNT_WITH_BUSINESS_OR_PROMOTER_PAN
+    ];
+
+    const COMPLIANCE_STATUS               = 'compliance_status';
+    const IS_ANY_DELAY                    = 'is_any_delay';
+    const IS_DEFAULTER                    = 'is_defaulter';
+
+    const ACCEPTED_VERIFICATION_TYPE = [
+        self::AADHAAR_EKYC
     ];
 }

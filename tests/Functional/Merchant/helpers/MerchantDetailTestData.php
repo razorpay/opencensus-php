@@ -4881,6 +4881,22 @@ return [
         ],
     ],
 
+    'testFetchIdentityVerificationUrl' => [
+        'request'  => [
+            'content' => [
+                'verification_type' => 'AADHAAR_EKYC',
+                'redirect_url'      => 'https://www.google.com/'
+            ],
+            'url'     => '/merchant/identity/verification',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'verification_url' =>  'https://api.digitallocker.gov.in/public'
+                 ],
+        ],
+    ],
+
     'testPutPreSignUpDetailsWithPartnerIdForAggregator' => [
         'request' => [
             'content' => [
@@ -4897,6 +4913,27 @@ return [
         ],
     ],
 
+    'testFetchIdentityVerificationUrlForBVSFailure' => [
+        'request'  => [
+            'content' => [
+                'verification_type' => 'AADHAAR_EKYC',
+                'redirect_url'      => 'https://www.google.com/'
+            ],
+            'url'     => '/merchant/identity/verification',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'code'    => 'unavailable',
+                'message' => 'hyperverge gateway request failed with http code - 500  internal code  - ER_SERVER, error - Something went wrong',
+                'meta'    => [
+                    "internal_error_code" => "SERVER_ERROR",
+                    "public_error_code"   => "some_error_encountered"
+                ]
+                ],
+        ],
+    ],
+
     'testPutPreSignUpDetailsWithPartnerIdAndDisabledExperiment' => [
         'request' => [
             'content' => [
@@ -4909,6 +4946,77 @@ return [
         ],
         'response' => [
             'content' => [
+            ],
+        ],
+    ],
+
+    'testFetchIdentityVerificationUrlForInvalidInputs' => [
+        'request'  => [
+            'content' => [
+                'verification_type' => 'AADHAAR_EKYC'
+            ],
+            'url'     => '/merchant/identity/verification',
+            'method'  => 'POST'
+        ],
+        'response'  =>[
+            'content' =>[
+                'error'  => [
+                    'code' =>  PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The redirect url field is required.',
+                ],
+            ],
+        'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testProcessIdentityVerificationDetails' => [
+        'request'  => [
+            'content' => [
+                'verification_type' => 'AADHAAR_EKYC',
+            ],
+            'url'     => '/merchant/process/identity/verificationDetails',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'is_valid' => true
+            ],
+        ],
+    ],
+
+    'testFailureProcessIdentityVerificationDetails' => [
+        'request'  => [
+            'content' => [
+                'verification_type' => 'AADHAAR_EKYC',
+            ],
+            'url'     => '/merchant/process/identity/verificationDetails',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testProcessIdentityVerificationDetailsForBVSFailure' => [
+        'request'  => [
+            'content' => [
+                'verification_type' => 'AADHAAR_EKYC',
+            ],
+            'url'     => '/merchant/process/identity/verificationDetails',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'code'    => 'unavailable',
+                'message' => 'hyperverge gateway request failed with http code - 500  internal code  - ER_SERVER, error - Something went wrong',
+                'meta'    => [
+                    "internal_error_code" => "SERVER_ERROR",
+                    "public_error_code"   => "some_error_encountered"
+                ]
             ],
         ],
     ],
@@ -5071,4 +5179,5 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_IS_NOT_PARTNER,
         ],
     ]
+
 ];

@@ -108,6 +108,11 @@ class Entity extends Base\PublicEntity
         self::DIRECTOR             => 'bool',
         self::EXECUTIVE            => 'bool',
         self::PERCENTAGE_OWNERSHIP => 'float',
+        self::VERIFICATION_METADATA => 'array',
+    ];
+
+    protected $defaults           = [
+        self::VERIFICATION_METADATA   => []
     ];
 
     public function getPercentageOwnershipAttribute($value)
@@ -226,5 +231,19 @@ class Entity extends Base\PublicEntity
     public function setVerificationMetadata($verificationMetadata)
     {
         $this->setAttribute(self::VERIFICATION_METADATA, $verificationMetadata);
+    }
+
+    public function getValueFromVerificationMetaData($key)
+    {
+        $verificationMetaData   = $this->getAttribute(self::VERIFICATION_METADATA);
+
+        $value = null;
+
+        if (empty($verificationMetaData) === false and array_key_exists($key, $verificationMetaData))
+        {
+            $value = $verificationMetaData[$key];
+        }
+
+        return $value;
     }
 }

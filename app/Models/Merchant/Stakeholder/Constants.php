@@ -22,6 +22,8 @@ class Constants
     const KYC          = 'kyc';
     const PAN          = 'pan';
     const PHONE        = 'phone';
+    const VERIFICATION_TYPE = 'verification_type';
+    const VERIFICATION_METADATA  = 'verification_metadata';
 
     const MERCHANT_DETAILS_COMMON_FIELDS = [
         Entity::MERCHANT_ID               => Detail\Entity::MERCHANT_ID,
