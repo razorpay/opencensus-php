@@ -5,6 +5,9 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
+
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Services\MasterOnboardingService;
 
@@ -36,6 +39,30 @@ class MasterOnboardingController extends Controller
         $payload = $request->all();
 
         $response = $this->masterOnboardingService->sendRequestAndParseResponse($requestUri, $method, $payload, false);
+
+        return ApiResponse::json($response);
+    }
+
+    public function adminRequestForOneCa($path = null)
+    {
+        $request = Request::instance();
+
+        $requestUri = $path;
+
+        $oneCaPath = ['intents','save_workflow'];
+
+        if(in_array($requestUri,$oneCaPath) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Does not have permission to submit one ca form'
+            );
+        }
+
+        $method = $request->method();
+
+        $payload   = $request->all();
+
+        $response = $this->masterOnboardingService->sendRequestAndParseResponse($requestUri, $method, $payload, true);
 
         return ApiResponse::json($response);
     }

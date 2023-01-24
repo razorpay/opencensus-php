@@ -353,6 +353,10 @@ return [
                 'description' => 'Ability to check terminal secrets and passwords',
                 'assignable'  => true,
             ],
+            Permission::SUBMIT_ONE_CA => [
+                'description' => 'Ability to submit one ca form',
+                'assignable'  => true,
+            ],
             Permission::TERMINAL_MANAGE_MERCHANT            => [
                 'description' => 'Ability to add or remove sub merchants to a terminal',
                 'assignable' => true,

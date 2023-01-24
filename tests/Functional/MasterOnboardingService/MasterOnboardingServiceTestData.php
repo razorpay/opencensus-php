@@ -531,6 +531,34 @@ return [
         ],
     ],
 
+    'testAdminCreateIntentForOneCa' => [
+        'request'  => [
+            'url'     => '/mob/admin_oneca/intents',
+            'method'  => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'user_id' => '20000000000000',
+                'source' => 'signup',
+                'service' => 'x',
+                'product_bundle_name' => 'ca_cc_product_bundle'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'intent' => [
+                    'merchant_id' => '10000000000000',
+                    'service' => 'x',
+                    'source' => 'signup',
+                    'user_id' => '20000000000000',
+                    'product_bundle' => []
+                ]
+            ]
+        ],
+    ],
+
     'testAdminCreateIntent' => [
         'request'  => [
             'url'     => '/mob/admin/intents',

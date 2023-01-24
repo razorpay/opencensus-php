@@ -10881,6 +10881,29 @@ return [
         ],
     ],
 
+
+    'testUpsertOpportunityOnSalesforceForOneCaViaAdmin' => [
+        'request' => [
+            'url'     => '/admin/merchant/10000000000000/one_ca_salesforce_event',
+            'method'  => \Requests::POST,
+            'server' => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Admin-Token'      => Org::DEFAULT_ADMIN_TOKEN,
+            ],
+            'content' => [
+                "event_type"=> "CURRENT_ACCOUNT_INTEREST",
+                "event_properties"=> [
+                    "opportunity_progress"=> "Application submitted"
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 202,
+        ],
+    ],
+
     'testUpsertOpportunityOnSalesforceViaAdmin' => [
         'request' => [
             'url'     => '/admin/merchant/10000000000000/salesforce_event',

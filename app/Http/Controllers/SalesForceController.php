@@ -35,6 +35,22 @@ class SalesForceController extends Controller {
 
     }
 
+    public function sendSalesForceEventForOneCa(string $mid)
+    {
+        $input = Request::all();
+        try {
+            $salesForceEventRequest = $this->buildSalesForceEventRequestDTO($input);
+            $merchant = $this->app['basicauth']->getMerchant();
+            $this->salesForceService->raiseEventForOneCa($merchant, $salesForceEventRequest);
+        } catch (\Throwable $e) {
+            $this->logger->traceException($e, Logger::CRITICAL,
+                TraceCode::SALESFORCE_EVENT_REQUEST_FAILED);
+            throw $e;
+        }
+
+        return ApiResponse::json([], 202);
+    }
+
     public function sendSalesForceEvent(string $mid) {
         $input = Request::all();
         try {

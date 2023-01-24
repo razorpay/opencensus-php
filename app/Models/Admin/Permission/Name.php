@@ -16,6 +16,7 @@ class Name
     // Rename view_merchant_features to view_features as features
     // have now been extended to applications as well.
     const VIEW_MERCHANT_FEATURES              = 'view_merchant_features';
+    const SUBMIT_ONE_CA                       = 'submit_one_ca';
     const VIEW_MERCHANT_BANKS                 = 'view_merchant_banks';
     const VIEW_NETWORKS                       = 'view_networks';
     const VIEW_MERCHANT_BANK_ACCOUNTS         = 'view_merchant_bank_accounts';

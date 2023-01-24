@@ -7,6 +7,7 @@ use ApiResponse;
 
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Entity;
 use RZP\Services\SalesForceClient;
@@ -16,6 +17,7 @@ use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\XChannelDefinition;
 use RZP\Models\Merchant\Attribute\Repository;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Attribute\Type as MerchantAttributeType;
@@ -39,6 +41,24 @@ class SalesForceService extends Base\Service {
         parent::__construct();
         $this->salesForceClient = $salesForceClient;
         $this->xChannelDefinitionService = $xChannelDefinitionService ?? new XChannelDefinition\Service();
+    }
+
+    public function raiseEventForOneCa(Entity $merchant, SalesForceEventRequestDTO $salesForceEventRequestDTO)
+    {
+        $eventType = $salesForceEventRequestDTO->getEventType()->getValue();
+
+        $admin = $this->auth->getAdmin();
+
+        $permissionList = $admin->getPermissionsList();
+
+        if ($eventType === Constants::RX_WEBSITE_SF_EVENTS && (in_array(Permission::VIEW_ACTIVATION_FORM, $permissionList) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Does not  have permission to submit one ca form'
+            );
+        }
+
+        $this->raiseEvent($merchant, $salesForceEventRequestDTO);
     }
 
     public function raiseEvent(Entity $merchant, SalesForceEventRequestDTO $salesForceEventRequestDTO) {

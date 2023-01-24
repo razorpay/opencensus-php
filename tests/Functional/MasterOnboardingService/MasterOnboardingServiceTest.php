@@ -145,6 +145,37 @@ class MasterOnboardingServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testAdminCreateIntentForOneCa()
+    {
+        $this->ba->adminAuth();
+
+        $admin = $this->ba->getAdmin();
+
+        $role = $this->fixtures->create('role', [
+            'org_id' => Org::RZP_ORG,
+        ]);
+
+        DB::table('role_map')->insert(
+            [
+                'role_id'     => $role->getId(),
+                'entity_type' => 'admin',
+                'entity_id'   => $admin->getId(),
+            ]);
+
+        $permission = $this->fixtures->create('permission',[
+            'name'   => 'submit_one_ca'
+        ]);
+
+        DB::table('permission_map')->insert(
+            [
+                'entity_id'     => $role->getId(),
+                'entity_type'   => 'role',
+                'permission_id' => $permission->getId(),
+            ]);
+
+        $this->startTest();
+    }
+
     public function testAdminCreateIntent()
     {
         $this->addRoleAndPermissionForAdmin();

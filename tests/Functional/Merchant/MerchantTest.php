@@ -14264,6 +14264,13 @@ IFSC Code  ICIC0001206
         $this->startTest();
     }
 
+    public function testUpsertOpportunityOnSalesforceForOneCaViaAdmin()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testUpsertOpportunityOnSalesforceViaAdmin()
     {
         $this->ba->adminAuth();
