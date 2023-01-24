@@ -192,7 +192,22 @@ return [
             ],
         ],
     ],
-
+    'testVerifyMerchantInvitation' => [
+        'request' => [
+            'url' => '/merchant-invitation/verify/%s',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'abc@xyz.com',
+                'form_data' => [
+                    "channel_code"  => "RZP001",
+                    "contact_email" => "abc@xyz.com",
+                    "contact_name"  => "test user"
+                ],
+            ],
+        ],
+    ],
     'testPutAdminLead' => [
         'request' => [
             'url' => '/admin-lead/%s',

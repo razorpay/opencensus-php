@@ -1608,6 +1608,10 @@ class Route
         'admin_delete'                             => ['delete',   'admin/{id}',                                     'OrganizationController@deleteAdmin'                                ],
         'admin_lead_create'                        => ['post',     'admin-lead',                                     'OrganizationController@postAdminLead'                              ],
         'admin_lead_get_multiple'                  => ['get',      'admin-lead-multiple',                            'OrganizationController@getAdminLeadMultiple'                       ],
+
+        'merchant_invitation_verify'               => ['get',      'merchant-invitation/verify/{token}',             'OrganizationController@verifyAdminLead'                            ],
+
+        // To-Do : This route should be deprecated in favour of merchant_invitation_verify route . Keeping this route temporarily to decouple FE and BE deployments and avoid any production issue due to removal of route. The older route admin_lead_verify was re-routing request to admin portal due to presence of admin in url. Hence added the new url pattern without using admin in route name.
         'admin_lead_verify'                        => ['get',      'admin-lead/verify/{token}',                      'OrganizationController@verifyAdminLead'                            ],
         'admin_lead_put'                           => ['put',      'admin-lead/{id}',                                'OrganizationController@putAdminLead'                               ],
         'merchant_admin_lead_put'                  => ['put',      'admin-lead-merchant/{id}',                       'OrganizationController@putAdminLead'                               ],
@@ -4846,6 +4850,7 @@ class Route
         'adj_add_batch',
         'merchant_fetch_internal',
         'admin_lead_verify',
+        'merchant_invitation_verify',
         'admin_authentication',
         // route to support 2fa for admin dashboard
         'admin_verify_second_factor_auth',
@@ -8259,6 +8264,7 @@ class Route
         'emi_generate_excel'                       => Permission::GENERATE_EMI_EXCEL,
         'dummy_critical_error'                     => Permission::TRIGGER_DUMMY_ERROR,
         'admin_lead_verify'                        => Permission::ADMIN_LEAD_VERIFY,
+        'merchant_invitation_verify'               => Permission::ADMIN_LEAD_VERIFY,
         'merchant_tag_add'                         => Permission::EDIT_MERCHANT_TAGS,
         'merchant_tag_delete'                      => Permission::EDIT_MERCHANT_TAGS,
         'refund_verify_multiple'                   => Permission::VERIFY_REFUND,
@@ -11537,6 +11543,7 @@ class Route
             'admin_lead_get_multiple',
             'admin_lead_put',
             'admin_lead_verify',
+            'merchant_invitation_verify',
             'admin_logout',
             'admin_merchants_tpvs_create',
             'admin_post_stork',
@@ -13640,6 +13647,7 @@ class Route
             'admin_verify_second_factor_auth',
             'admin_resend_otp_2fa',
             'admin_lead_verify',
+            'merchant_invitation_verify',
             'admin_forgot_password',
             'admin_reset_password',
             'user_confirm_by_data',

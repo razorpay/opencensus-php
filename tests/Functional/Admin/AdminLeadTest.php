@@ -234,6 +234,21 @@ class AdminLeadTest extends TestCase
         $this->startTest();
     }
 
+    public function testVerifyMerchantInvitation()
+    {
+        $adminLead = $this->testCreateAllowedAdminLead();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $adminLead['token']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testVerifyAdminLead()
     {
         $adminLead = $this->testCreateAllowedAdminLead();
