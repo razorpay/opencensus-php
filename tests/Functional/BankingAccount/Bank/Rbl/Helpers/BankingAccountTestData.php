@@ -346,6 +346,24 @@ return [
         ],
     ],
 
+    'testUpdateBankingAccountFromDashboardServiceabilityExperiment' => [
+        'request' => [
+            'url' => '/banking_accounts_dashboard',
+            'method' => 'PATCH',
+            'server' => [
+                'X-Dashboard-User-Id' => '20000000000000',
+            ],
+            'content' => [
+                'pincode' => '560038'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'pincode' => '560038'
+            ]
+        ]
+    ],
+
     'testFreshDeskTicketForSelfServe' => [
         'request'  => [
             'url'     => '/banking_accounts_dashboard',

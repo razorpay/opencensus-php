@@ -120,7 +120,9 @@ class Service extends Base\Service
 
         (new Validator)->setStrictFalse()->validateInput(Validator::PRE_PROCESS_DASHBOARD, $input);
 
-        $resp = $this->checkPincodeAndBusinessType($input);
+        $isServiceabilityExperimentEnabled = $this->checkBasServiceabilityExperimentEnabled();
+
+        $resp = $this->checkPincodeBusinessTypeAndFillMerchantAddress($input, $isServiceabilityExperimentEnabled);
 
         $activationDetailInput = $this->core->extractAndValidateActivationDetailInput($input);
 
@@ -147,7 +149,9 @@ class Service extends Base\Service
         {
             (new Activation\Detail\Validator)->setStrictFalse()->validateInput('preProcess', $activationDetailInput);
 
-            $activationDetailInput = $this->core->autofillStateAndCityFromPincode($activationDetailInput, $input);
+            if (!$isServiceabilityExperimentEnabled) {
+                $activationDetailInput = $this->core->autofillStateAndCityFromPincode($activationDetailInput, $input);
+            }
 
             if (isset($activationDetailInput[ActivationDetail\Entity::SALES_TEAM]) === true)
             {
@@ -403,7 +407,9 @@ class Service extends Base\Service
 
         $bankingAccount->load('bankingAccountActivationDetails');
 
-        $resp = $this->checkPincodeAndBusinessType($input);
+        $isServiceabilityExperimentEnabled = $this->checkBasServiceabilityExperimentEnabled();
+
+        $resp = $this->checkPincodeBusinessTypeAndFillMerchantAddress($input, $isServiceabilityExperimentEnabled);
 
         if ($resp['serviceability'] === false OR $resp['business_type_supported'] === false)
         {
@@ -416,7 +422,9 @@ class Service extends Base\Service
 
         if (is_null($activationDetailInput) === false)
         {
-            $activationDetailInput = $this->core->autofillStateAndCityFromPincode($activationDetailInput, $input);
+            if (!$isServiceabilityExperimentEnabled) {
+                $activationDetailInput = $this->core->autofillStateAndCityFromPincode($activationDetailInput, $input);
+            }
 
             $this->checkIfPersonalDetailFilledAndFireEvent($bankingAccount, $activationDetailInput, $ca_channel);
 
@@ -1073,6 +1081,53 @@ class Service extends Base\Service
                 'errorMessage'   => null];
     }
 
+    public function CheckServiceableByRBLUsingBAS(string $pincode, bool $includeIcici = false) : array
+    {
+        $basResponse = [];
+
+        $isAdmin = $this->app['basicauth']->isAdminAuth();
+
+        $response = [
+            'serviceability' => false,
+            'errorMessage' => null,
+        ];
+
+        try
+        {
+            // 1. make BAS call
+            $basResponse = (new BankingAccountService\Service())->checkServiceability($pincode)['data'] ?? [];
+
+            // 2. validate response
+            (new Validator())->validateInput('basServiceabilityResponse', $basResponse[Constants::PINCODE_DETAILS]);
+        }
+        catch(Exception\BadRequestValidationFailureException $e)
+        {
+            /*
+             * Not catching Exception\ServerErrorException thrown by BAS 500 errors. Allow them to
+             * percolate upwards.
+             */
+            $response['errorMessage'] = $e->getMessage() . ';' . $basResponse[Constants::PINCODE_DETAILS][Constants::ERROR];
+
+            return $response;
+        }
+
+        unset($basResponse[Constants::PINCODE_DETAILS][Constants::ERROR]);
+
+        $response = array_merge($response, $basResponse[Constants::PINCODE_DETAILS]);
+
+        // 3. extract serviceable banks
+        $serviceableBanks = $this->extractServiceableBanksFromBasServiceabilityResponse($basResponse);
+
+        // 4. set serviceability if valid
+        if (in_array(Constants::RBL, $serviceableBanks) or
+            (in_array(Constants::ICICI, $serviceableBanks) and $includeIcici and $isAdmin))
+        {
+            $response['serviceability'] = true;
+        }
+
+        return $response;
+    }
+
     public function resetWebhookData(string $id)
     {
         $bankingAccount = $this->repo->banking_account->findByPublicId($id);
@@ -1145,7 +1200,7 @@ class Service extends Base\Service
      * @throws Exception\RuntimeException
      * @throws IntegrationException
      */
-    protected function checkPincodeAndBusinessType(array $input): array
+    protected function checkPincodeBusinessTypeAndFillMerchantAddress(array &$input, bool $isExperimentEnabled): array
     {
         $serviceability = null;
 
@@ -1153,7 +1208,7 @@ class Service extends Base\Service
         {
             $pincode = $input[Entity::PINCODE];
 
-            $serviceability = $this->CheckServiceableByRBL($pincode, false);
+            $serviceability = !$isExperimentEnabled ? $this->CheckServiceableByRBL($pincode) : $this->CheckServiceableByRBLUsingBAS($pincode);
         }
 
         $businessTypeSupported = true;
@@ -1174,11 +1229,17 @@ class Service extends Base\Service
                 'errorMessage' => null
             ] ;
         }
-        return [
-            'business_type_supported' => $businessTypeSupported,
-            'serviceability' => $serviceability['serviceability'],
-            'errorMessage' => $serviceability['errorMessage']
-        ] ;
+
+        $serviceability['business_type_supported'] = $businessTypeSupported;
+
+        if($isExperimentEnabled and $serviceability['serviceability'])
+        {
+            $input['activation_detail'][ActivationDetail\Entity::MERCHANT_CITY] = $serviceability[Constants::CITY];
+            $input['activation_detail'][ActivationDetail\Entity::MERCHANT_STATE] = $serviceability[Constants::STATE];
+            $input['activation_detail'][ActivationDetail\Entity::MERCHANT_REGION] = $serviceability[Constants::REGION];
+        }
+
+        return $serviceability;
     }
 
     /**
@@ -1609,5 +1670,47 @@ class Service extends Base\Service
     private function checkIfSentToBank($previousStatus, $currentStatus): bool
     {
         return ($previousStatus != $currentStatus and $currentStatus == Status::INITIATED);
+    }
+
+    // TODO: Remove experiment check after 100% ramp.
+    private function checkBasServiceabilityExperimentEnabled() : bool
+    {
+        try{
+            $isExperimentEnabled = (new \RZP\Models\Merchant\Core())->isSplitzExperimentEnable([
+                'id'            => $this->merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.rbl_serviceability_on_bas_exp_id')
+            ], Constants::ACTIVE);
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_SERVICEABILITY_EXPERIMENT_STATUS, [
+                'experiment_status' => $isExperimentEnabled
+            ]);
+
+            return $isExperimentEnabled;
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_SERVICEABILITY_EXPERIMENT_FAILED, [
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return false;
+    }
+
+    private function extractServiceableBanksFromBasServiceabilityResponse(array $basResponse) : array
+    {
+        $serviceableBanks = [];
+
+        $serviceability = $basResponse[Constants::SERVICEABILITY];
+
+        for ($index = 0; $index < count($serviceability); $index++)
+        {
+            if($serviceability[$index][Constants::IS_SERVICEABLE])
+            {
+                $serviceableBanks[] = $serviceability[$index][Constants::PARTNER_BANK];
+            }
+        }
+
+        return $serviceableBanks;
     }
 }

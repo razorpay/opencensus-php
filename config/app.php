@@ -440,6 +440,8 @@ return array(
 
     'commission_invoice_bucket_migration_exp_id'  => env('COMMISSION_INVOICE_BUCKET_MIGRATION_EXP_ID'),
 
+    'rbl_serviceability_on_bas_exp_id' => env('RBL_SERVICEABILITY_ON_BAS_EXP_ID'),
+
     'nocode' => [
         'cache' => [
             'slug_ttl'      => env('NOCODE_SLUG_CACHE_TTL', 86400),

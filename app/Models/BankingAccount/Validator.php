@@ -271,6 +271,13 @@ class Validator extends Base\Validator
         'direct_channel'
     ];
 
+    protected static $basServiceabilityResponseRules = [
+        'city'   => 'required|filled',
+        'state'  => 'required|filled',
+        'region' => 'required|filled',
+        'error'  => 'sometimes'
+    ];
+
 
     public function validatePincodes(array $input)
     {

@@ -16,6 +16,8 @@ class Constants
 
     const SUCCESS_MESSAGE = 'Data Successfully Inserted';
 
+    const ERROR = 'error';
+
     const ERROR_DESC = 'ErrorDesc';
 
     const ERROR_MESSAGE = 'A schema validation error has occurred while validating the message tree,6008,1,1,213,cvc-minLength-valid: The length of value \"\" is \"0\" which is not valid with respect to the minLength facet with value \"1\" for type \"#Anonymous\".,/Root/XMLNSC/NeoBankingLeadReq/Body/%s';
@@ -24,4 +26,25 @@ class Constants
 
     const ACTIVATION_ACCOUNT_TYPE = 'activation_account_type';
 
+
+    // Serviceability Check consts
+    const RBL = 'RBL';
+
+    const ICICI = 'ICICI';
+
+    const ACTIVE = 'active';
+
+    const PINCODE_DETAILS = 'pincode_details';
+
+    const CITY = 'city';
+
+    const STATE = 'state';
+
+    const REGION = 'region';
+
+    const IS_SERVICEABLE = 'is_serviceable';
+
+    const SERVICEABILITY = 'serviceability';
+
+    const PARTNER_BANK = 'partner_bank';
 }

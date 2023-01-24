@@ -55,7 +55,9 @@ class Constants
 
     const BAS_PIN_CODE_SERVICEABILITY   = 'is_serviceable';
 
-    const BAS_PIN_CODE_SERVICEABILITY_BULK   = 'is_serviceable_bulk';
+    const BAS_SERVICEABILITY_BULK   = 'is_serviceable_bulk';
+
+    const BAS_CHECK_SERVICEABILITY  = 'check_serviceability';
 
     const ALLOCATE_LEAD                 = "allocate_lead";
 
@@ -88,7 +90,7 @@ class Constants
     const X_DASHBOARD                   = 'x_dashboard';
 
     const RBL                           = 'RBL';
-    
+
     const ICICI                           = 'ICICI';
 
     const X_CA_UNIFIED                  = 'X-CA-Unified';

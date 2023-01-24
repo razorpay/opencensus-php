@@ -508,7 +508,7 @@ class Service extends Base\Service
 
     public function checkPinCodeServiceabilityBulk($input)
     {
-        $path = Constants::BAS_PIN_CODE_SERVICEABILITY_BULK;
+        $path = Constants::BAS_SERVICEABILITY_BULK;
 
         $queryParams = $this->request->query();
 
@@ -519,6 +519,11 @@ class Service extends Base\Service
         $uri = $this->core()->attachRequestParamsToPath($queryString, $path);
 
         return $this->bankingAccountService->sendRequestAndProcessResponse($uri, 'GET', $input);
+    }
+
+    public function checkServiceability(string $pincode): array
+    {
+        return $this->bankingAccountService->sendRequestAndProcessResponse(Constants::BAS_CHECK_SERVICEABILITY . '?pincode='. $pincode, 'GET', []);
     }
 
     public function checkCommonServiceability($input)
