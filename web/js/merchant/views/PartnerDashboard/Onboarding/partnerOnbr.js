@@ -50,6 +50,10 @@ export default class BaseScreen extends React.Component {
 
     const isAppStorePage = this.props.location.pathname === '/app-store';
     this.screenName = isAppStorePage ? 'app store' : 'home page';
+    this.partnerOnboardingClass = 'partner-onboarding-base-screen new-screen';
+    if (this.props?.user?.isOrgCurlec) {
+      this.partnerOnboardingClass = `${this.partnerOnboardingClass} hide-onboarding-img`;
+    }
   }
 
   componentDidMount() {
@@ -229,7 +233,7 @@ export default class BaseScreen extends React.Component {
     const { user } = this.props;
     const isHidePartnerType = user?.isOnboardAsResellers && user.role === 'owner';
     return (
-      <div className="partner-onboarding-base-screen new-screen">
+      <div className={this.partnerOnboardingClass}>
         <Slider>
           {!this.props.disableClose
             ? (sliderProps) => (
@@ -264,6 +268,7 @@ export default class BaseScreen extends React.Component {
                   lpFold={this.state.lpFold}
                   businessTypeName={this.state.businessTypeName}
                   onCompleteClick={this.onCompleteClick}
+                  isOrgCurlec={user?.isOrgCurlec}
                 />
               )
             : null}

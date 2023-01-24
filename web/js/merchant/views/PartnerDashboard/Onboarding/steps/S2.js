@@ -10,6 +10,8 @@ import {
   getOnTnCClicked,
 } from 'merchant/views/PartnerDashboard/Onboarding/steps/helpers/analytics';
 import { ONBOARDING_LABELS } from 'merchant/views/PartnerDashboard/constants';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const S2 = ({
   role,
@@ -24,7 +26,10 @@ const S2 = ({
   businessTypeName,
   screenName,
   onCompleteClick,
+  isOrgCurlec,
 }) => {
+  const rzpProductText = 'I just want to use Razorpay products';
+  const curlecProductText = 'I just want to use Curlec products';
   const handleNextClick = () => {
     tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.partner.type.next', {
@@ -105,7 +110,13 @@ const S2 = ({
   return (
     <>
       <div className="partner-onbr-info step-2">
-        <div className="partner-illustration" />
+        <ShowWhen
+          additionalCondition={(user) =>
+            !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PartnerIllustration)
+          }
+        >
+          <div className="partner-illustration" />
+        </ShowWhen>
         <div className="title">Choose your Partnership&nbsp;Type</div>
         <div className="options-group select-partner-type-options">
           <PartnerSelectBox
@@ -120,7 +131,13 @@ const S2 = ({
             <ul>
               <li> Earn referral bonus </li>
               <li> Get automated commissions </li>
-              <li> Refer using referral links </li>
+              <ShowWhen
+                additionalCondition={(user) =>
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks)
+                }
+              >
+                <li> Refer using referral links </li>
+              </ShowWhen>
             </ul>
           </PartnerSelectBox>
           <PartnerSelectBox
@@ -155,17 +172,23 @@ const S2 = ({
           </PartnerSelectBox>
         </div>
         <div className="bottom-container">
-          <p style={{ marginTop: '10px' }}>
-            Want to become a Platform Partner?
-            <a
-              href="https://razorpay.com/support/"
-              target="_blank"
-              onClick={onContactSupportClicked}
-              rel="noopener noreferrer"
-            >
-              &nbsp;Contact Support <i className="i i-external-link " />
-            </a>
-          </p>
+          <ShowWhen
+            additionalCondition={(user) =>
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PartnershipProgram)
+            }
+          >
+            <p style={{ marginTop: '10px' }}>
+              Want to become a Platform Partner?
+              <a
+                href="https://razorpay.com/support/"
+                target="_blank"
+                onClick={onContactSupportClicked}
+                rel="noopener noreferrer"
+              >
+                &nbsp;Contact Support <i className="i i-external-link " />
+              </a>
+            </p>
+          </ShowWhen>
           <p>
             <a
               onClick={() => {
@@ -179,7 +202,7 @@ const S2 = ({
                 color: '#57666E',
               }}
             >
-              I just want to use Razorpay products
+              {isOrgCurlec ? curlecProductText : rzpProductText}
             </a>
           </p>
           <p>
