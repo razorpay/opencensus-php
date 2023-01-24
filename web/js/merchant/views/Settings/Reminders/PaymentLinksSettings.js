@@ -154,7 +154,7 @@ export default connect(
       withOutExpireByConfigs.push(serializeConfig(ele));
     });
     merchantConfig.forEach((ele) => {
-      ele.channels.forEach(() => channels.add(ele));
+      ele.channels.forEach((item) => channels.add(item));
 
       const reminderOption = serializeConfig(ele.reminder_config, true);
 
