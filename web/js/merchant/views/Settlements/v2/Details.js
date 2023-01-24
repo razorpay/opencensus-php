@@ -18,6 +18,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 const SettlementDetails = (props) => {
   const [detailsCollapse, setdetailsCollapse] = useState(true);
   const [checkAmounts, setCheckAmounts] = useState({});
+  const { match } = props; // better start destructuring props here
 
   useEffect(() => {
     const { user, fetchProviders, match } = props;
@@ -90,7 +91,7 @@ const SettlementDetails = (props) => {
           <Link to="/settlements" class="link-all">
             <i class="i i-arrow-back" /> All Settlements
           </Link>
-          <i class="i i-chevron-right" /> Settlement Id: {props.match.params.id}
+          <i class="i i-chevron-right" /> Settlement Id: {match?.params?.id}
         </div>
         {user?.isSingleReconEnabled &&
           user?.isOptimizerEnabled &&
@@ -106,7 +107,7 @@ const SettlementDetails = (props) => {
         <div class="panel panel-default">
           {props.mode === 'test' && <TestModeBanner />}
           <div class="panel-heading">
-            <div class="text">{props.match.params.id}</div>
+            <div class="text">{match?.params?.id}</div>
             {/* added a new class as we need to add media query for the same for m-web support */}
             <div class="settlement-total-amount">
               {!loading ? (
@@ -129,10 +130,10 @@ const SettlementDetails = (props) => {
           </div>
           <div class="panel-body">
             <div class="entity-details">
-              <SettlementInfo settlementId={props.match.params.id} />
+              <SettlementInfo settlementId={match?.params?.id} />
             </div>
             <div class="item-details">
-              <SettlementBreakup settlementId={props.match.params.id} />
+              <SettlementBreakup settlementId={match?.params?.id} />
             </div>
           </div>
         </div>
@@ -157,7 +158,7 @@ const SettlementDetails = (props) => {
       <div />
 
       <div class="content-sm txn-details settlements-v2 entity-list-table">
-        <SettlementEntities settlementId={props.match.params.id} />
+        <SettlementEntities settlementId={match?.params?.id} />
       </div>
     </React.Fragment>
   );
