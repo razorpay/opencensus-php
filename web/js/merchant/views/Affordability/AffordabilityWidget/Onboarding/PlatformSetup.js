@@ -143,7 +143,7 @@ const platformSteps = {
       desc: 'Preview the widget in test mode and switch to live mode by viewing the setup guide',
       cta: 'setup',
       redirectUrl:
-        'https://razorpay.com/docs/payments/payment-gateway/affordability/widget/native#step-1-integrate-the-widget',
+        'https://razorpay.com/docs/payments/payment-gateway/affordability/widget/native-web/#step-1-integrate-the-widget',
       done: false,
     },
     {

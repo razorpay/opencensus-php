@@ -37,31 +37,33 @@ const AffordabilityWidgetOnboarding = (props) => {
     track.next();
   };
   return (
-    <OnBoardingWrapper class="AffordabilityWidget">
-      <div className="Slider">
-        <Switch>
-          <Route exact path="/affordability/widget/">
-            <Landing
-              className=""
-              title="Affordability Widget"
-              imageUrl="https://cdn.razorpay.com/static/assets/affordability-widget/widget_banner.svg"
-              desc={desc}
-              callout={calloutElement}
-              ctaText="Continue"
-              next={handleNextClickHandler}
-              feature={RZPFeatures.AFFORDABILITY_WIDGET}
-              active="0"
-            />
-          </Route>
-          <Route exact path="/affordability/widget/setup/:platform">
-            <PlatformSetup {...props} />
-          </Route>
-          <Route exact path="/affordability/widget/platforms">
-            <OnboardingPlatforms {...props} title={PlatformsTitle} platforms={PlatformsList} />
-          </Route>
-        </Switch>
-      </div>
-    </OnBoardingWrapper>
+    <tabbed-container>
+      <OnBoardingWrapper class="AffordabilityWidget">
+        <div className="Slider">
+          <Switch>
+            <Route exact path="/affordability/widget/">
+              <Landing
+                className=""
+                title="Affordability Widget"
+                imageUrl="https://cdn.razorpay.com/static/assets/affordability-widget/widget_banner.svg"
+                desc={desc}
+                callout={calloutElement}
+                ctaText="Continue"
+                next={handleNextClickHandler}
+                feature={RZPFeatures.AFFORDABILITY_WIDGET}
+                active="0"
+              />
+            </Route>
+            <Route exact path="/affordability/widget/setup/:platform">
+              <PlatformSetup {...props} />
+            </Route>
+            <Route exact path="/affordability/widget/platforms">
+              <OnboardingPlatforms {...props} title={PlatformsTitle} platforms={PlatformsList} />
+            </Route>
+          </Switch>
+        </div>
+      </OnBoardingWrapper>
+    </tabbed-container>
   );
 };
 

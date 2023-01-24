@@ -32,6 +32,9 @@ import track from './Onboarding/track';
 import { compose } from 'redux';
 import { withRouter } from 'react-router-dom';
 import Settings from 'merchant/views/Affordability/components/settings';
+import ProductWrapper from 'common/ui/ProductWrapper';
+
+const tabsData = [{ title: 'Widget', url: '/affordability/widget' }];
 
 const AffordabilityWidget = (props) => {
   const { affordabilityWidgetProductOnBoarding, affordabilityWidget } = props;
@@ -53,6 +56,10 @@ const AffordabilityWidget = (props) => {
   }, []);
 
   useEffect(() => {
+    if (!showOnboarding) {
+      track.widgetTabClicked();
+    }
+
     track.widgetTabRender({
       is_default_tab: true,
       is_widget_live: enabled,
@@ -72,31 +79,39 @@ const AffordabilityWidget = (props) => {
   }
 
   return (
-    <content>
-      <div className="aff-self-server content-wrapper">
-        <TestModeBanner />
-        <HeaderAction responsive>
-          <div className="aff-header btn-toolbar pull-right">
-            <TakeATourButton feature={RZPFeatures.AFFORDABILITY_WIDGET} />
-            <DocsLink url="https://razorpay.com/docs/payments/payment-gateway/affordability/widget/" />
-            {affordability.enabled ? (
-              <Settings
-                openModal={props.openModal}
-                closeModal={props.closeModal}
-                user={props.user}
-                source={affordability.widget_enable_source}
-              />
-            ) : null}
+    <ProductWrapper
+      tabsData={tabsData}
+      extra={
+        <>
+          <TakeATourButton feature={RZPFeatures.AFFORDABILITY_WIDGET} />
+          <DocsLink url="https://razorpay.com/docs/payments/payment-gateway/affordability/widget/" />
+
+          {affordability.enabled ? (
+            <Settings
+              openModal={props.openModal}
+              closeModal={props.closeModal}
+              user={props.user}
+              source={affordability.widget_enable_source}
+            />
+          ) : null}
+        </>
+      }
+    >
+      <content>
+        <div className="aff-self-server content-wrapper">
+          <TestModeBanner />
+          <HeaderAction responsive>
+            <div className="aff-header btn-toolbar pull-right" />
+          </HeaderAction>
+          <Alert type={status.type} message={status.message} />
+          <div className="benefits-wrapper">
+            <p className="caption">Benefits</p>
+            <FeatureTiles expanded={true} />
           </div>
-        </HeaderAction>
-        <Alert type={status.type} message={status.message} />
-        <div className="benefits-wrapper">
-          <p className="caption">Benefits</p>
-          <FeatureTiles expanded={true} />
+          <PlanDetails loading={loading} affordability={affordability} {...props} />
         </div>
-        <PlanDetails loading={loading} affordability={affordability} {...props} />
-      </div>
-    </content>
+      </content>
+    </ProductWrapper>
   );
 };
 

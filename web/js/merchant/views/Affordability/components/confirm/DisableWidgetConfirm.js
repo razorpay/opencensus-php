@@ -5,7 +5,7 @@ import { compose } from 'redux';
 import rTracking from 'react-tracking';
 import track from 'merchant/views/Affordability/AffordabilityWidget/PlanDetails/track';
 
-const DisableWidgetConfirmModal = ({ closeModal, source, onConfirm }) => {
+const DisableWidgetConfirmModal = ({ closeModal, onConfirm }) => {
   useEffect(() => {
     track.disableWidgetConfirmRender();
   }, []);
@@ -19,11 +19,9 @@ const DisableWidgetConfirmModal = ({ closeModal, source, onConfirm }) => {
       <ModalHeader title="Do you want to disable the widget" onCloseClick={handleClose} />
       <div className="modal-body">
         <p>Disabling the widget would remove the Affordability Widget from your website.</p>
-        {source === 'shopify' ? (
-          <p className="shopify-disable">
-            For Shopify, please disable the widget from the Shopify App.
-          </p>
-        ) : null}
+        <p className="shopify-disable">
+          For Shopify, please disable the widget from the Shopify App.
+        </p>
         <div className="modal-footer">
           <AsyncButton
             onClick={onConfirm}

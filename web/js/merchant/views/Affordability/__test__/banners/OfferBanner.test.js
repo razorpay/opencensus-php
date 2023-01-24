@@ -2,7 +2,8 @@ import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { offerBanner } from 'merchant/views/Affordability/__test__/mocks/banners';
 import { render, screen } from 'test-utils';
-import OfferBanner from 'merchant/views/Affordability/components/banners/SpecialOfferBanner';
+import SpecialOfferBanner from 'merchant/views/Affordability/components/banners/SpecialOfferBanner';
+import OfferBanner from 'merchant/views/Affordability/components/banners/OfferBanner';
 
 describe('Affordability self serve onboarding screen', () => {
   /*
@@ -29,7 +30,12 @@ describe('Affordability self serve onboarding screen', () => {
 
   const renderApp = (props = {}) => {
     render(
-      <OfferBanner {...props} {...defaultProps} {...offerBanner} closeOnboarding={() => {}} />,
+      <SpecialOfferBanner
+        {...defaultProps}
+        {...props}
+        {...offerBanner}
+        closeOnboarding={() => {}}
+      />,
       {
         initialState: {
           session: { user: { isAffordabilityWidgetEnabled: true } },
@@ -45,5 +51,24 @@ describe('Affordability self serve onboarding screen', () => {
   test('should render Special Offer Banner', () => {
     renderApp();
     expect(screen.getByText('🎉 Limited period offer')).toBeInTheDocument();
+  });
+});
+
+describe('Affordability Self Serve Banner', () => {
+  const renderApp = (props = {}) => {
+    render(<OfferBanner {...props} {...offerBanner} closeOnboarding={() => {}} />, {
+      initialState: {
+        session: { user: { isAffordabilityWidgetEnabled: true } },
+      },
+    });
+  };
+
+  test('should render Offer Banner', () => {
+    renderApp();
+    expect(
+      screen.getByText(
+        'Start your free trial on Affordability Widget. No additional charges will be applied without your consent after the free trial.',
+      ),
+    ).toBeInTheDocument();
   });
 });

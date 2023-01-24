@@ -9,7 +9,11 @@ import {
 } from './mocks/fixtures';
 import Affordability from 'merchant/views/Affordability';
 import { render, screen } from 'test-utils';
+import { App } from 'merchant/views/Affordability/__test__/mocks/onboarding';
+import { MemoryRouter } from 'react-router-dom';
+import { createMemoryHistory } from 'history';
 
+let history;
 const getStateSpy = jest.spyOn(store, 'getState');
 
 describe('Affordability', () => {
@@ -23,6 +27,13 @@ describe('Affordability', () => {
    */
   beforeAll(() => {
     window.rzp_user = rzpUserConfig('activated', 'owner');
+    history = createMemoryHistory();
+    window.rzpQ = {
+      component: jest.fn(),
+      productOnboarding: () => ({
+        success: jest.fn(),
+      }),
+    };
     jest.useFakeTimers();
   });
 
@@ -42,8 +53,17 @@ describe('Affordability', () => {
     expect(renderApp).not.toThrowError();
   });
 
-  test('should render Affordability title', () => {
-    renderApp();
-    expect(screen.getByText('Widget')).toBeInTheDocument();
+  test('should load widget onboarding screen', async () => {
+    render(
+      <MemoryRouter initialEntries={['/affordability/widget/']}>
+        <App {...defaultProps} history={history} closeOnboarding={() => {}} />
+      </MemoryRouter>,
+      {
+        initialState: {
+          session: { user: { isAffordabilityWidgetEnabled: true } },
+        },
+      },
+    );
+    await expect(screen.getByText('Affordability Widget')).toBeInTheDocument();
   });
 });

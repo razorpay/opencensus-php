@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import ErrorBoundary, { Teams } from 'common/new-ui/ErrorBoundary';
 
-import { Route, Switch, NavLink, withRouter } from 'react-router-dom';
+import { Route, Switch, withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
 import DashboardBanner from 'common/ui/DashboardBanner';
@@ -23,9 +23,9 @@ import {
 import WidgetEnabledBanner from './components/banners/WidgetEnabledBanner';
 import WidgetDisabledBanner from './components/banners/WidgetDisabledBanner';
 import SpecialOfferBanner from './components/banners/SpecialOfferBanner';
-import track from './AffordabilityWidget/Onboarding/track';
 import { compose } from 'redux';
 import { Redirect } from 'react-router';
+import OfferBanner from './components/banners/OfferBanner';
 
 const Affordability = (props) => {
   const {
@@ -82,10 +82,6 @@ const Affordability = (props) => {
     initAffordabilityWidgetOnboarding(props);
   }, [loading, isTour, enabled]);
 
-  const trackTabClick = () => {
-    track.widgetTabClicked();
-  };
-
   return (
     <>
       <div className="banner-container">
@@ -109,26 +105,20 @@ const Affordability = (props) => {
                 trialDays={trial_period_in_days}
               />
             ) : null}
+            {showOnboarding ? <OfferBanner /> : null}
           </>
         )}
       </div>
-      <tabbed-container>
-        <header id="link-header">
-          <NavLink onClick={trackTabClick} to="/affordability/widget">
-            Widget
-          </NavLink>
-        </header>
-        <ErrorBoundary team={Teams.AFFORDABILITY} resetOnProps>
-          <Switch>
-            <Route
-              exact
-              path="/affordability/"
-              render={() => <Redirect to="/affordability/widget" />}
-            />
-            <Route path="/affordability/widget" component={AffordabilityWidget} />
-          </Switch>
-        </ErrorBoundary>
-      </tabbed-container>
+      <ErrorBoundary team={Teams.AFFORDABILITY} resetOnProps>
+        <Switch>
+          <Route
+            exact
+            path="/affordability/"
+            render={() => <Redirect to="/affordability/widget" />}
+          />
+          <Route path="/affordability/widget" component={AffordabilityWidget} />
+        </Switch>
+      </ErrorBoundary>
     </>
   );
 };
