@@ -290,11 +290,8 @@ class Repository extends Base\Repository
         $postedDate      = $this->dbColumn(Entity::POSTED_DATE);
         $transactionDate = $this->dbColumn(Entity::TRANSACTION_DATE);
 
-        return $query->whereExists(function($q) use ($params, $postedDate, $transactionDate) {
-            $q->where($postedDate, '>=', $params['from'])
-              ->where($transactionDate, '>=', $params['from']);
-        });
-
+        return $query->where($postedDate, '>=', $params['from'])
+                     ->where($transactionDate, '>=', $params['from']);
     }
 
     protected function addQueryParamTo($query, $params)
@@ -304,11 +301,8 @@ class Repository extends Base\Repository
         // offset posted date is to add a buffer of 24 hours for posted date while fetching
         $offsetPostedDate = Carbon::createFromTimestamp($params['to'], Timezone::IST)->addHours(24)->getTimestamp();
 
-        return $query->whereExists(function($q) use ($params, $postedDate, $offsetPostedDate, $transactionDate) {
-            $q->where($postedDate, '<=', $offsetPostedDate)
-              ->where($transactionDate, '<=', $params['to']);
-        });
-
+        return $query->where($postedDate, '<=', $offsetPostedDate)
+                     ->where($transactionDate, '<=', $params['to']);
     }
 
     protected function addQueryParamBalanceId(BuilderEx $query, array $params)
