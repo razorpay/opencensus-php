@@ -22185,6 +22185,8 @@ class PayoutTest extends OAuthTestCase
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUTS_ON_HOLD]);
 
+        $metricsMock = $this->createMetricsMock();
+
         $balanceId = $this->bankingBalance->getId();
 
         $this->setUpCounterAndFreePayoutsCount('shared', $balanceId);
@@ -22259,7 +22261,17 @@ class PayoutTest extends OAuthTestCase
 
         $this->expectWebhookEvent('payout.failed');
 
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Payout\Metric::ON_HOLD_PAYOUT_FAILED_TOTAL,
+            $metricsMock,
+            $boolMetricCaptured,
+            ['bank_code' => 'RZPB']);
+
         $this->startTest();
+
+        $this->assertTrue($boolMetricCaptured);
 
         $counter = $this->getDbEntities('counter',
                                         [

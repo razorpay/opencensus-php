@@ -2752,6 +2752,16 @@ class Core extends Base\Core
 
                             $this->repo->payout->saveOrFail($payout);
 
+                            // Since laravel would have already loaded the relation for fund account and bank account
+                            // Refetching the relation shouldn't need to do a DB call.
+                            // Adding a default value for cases a bene bank code doesn't exist (for instance, non fund account payouts)
+                            $beneBankCode = substr($payout->fundAccount->account->getIfscCode(), 0, 4)
+                                ?? Constants\Metric::LABEL_NONE_VALUE;
+
+                            $this->trace->count(
+                                Metric::ON_HOLD_PAYOUT_FAILED_TOTAL,
+                                [Constants\Metric::LABEL_BANK_CODE => $beneBankCode]);
+
                             $this->trace->info(
                                 TraceCode::ON_HOLD_PAYOUT_FAILED,
                                 [

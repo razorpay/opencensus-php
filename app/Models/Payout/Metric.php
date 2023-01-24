@@ -21,6 +21,7 @@ final class Metric
     const PAYOUT_INITIATED_TOTAL                            = 'payout_initiated_total';
     const PAYOUT_REJECTED_TOTAL                             = 'payout_rejected_total';
     const PAYOUT_CANCELLED_TOTAL                            = 'payout_cancelled_total';
+    const ON_HOLD_PAYOUT_FAILED_TOTAL                       = 'on_hold_payout_failed_total';
     const PAYOUT_BATCH_SUBMITTED_TOTAL                      = 'payout_batch_submitted_total';
     const PAYOUT_SCHEDULED_TOTAL                            = 'payout_scheduled_total';
     const PAYOUT_ON_HOLD_TOTAL                              = 'payout_on_hold_total';

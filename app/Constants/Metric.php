@@ -105,6 +105,7 @@ class Metric
     const LABEL_IS_SUCCESS                      = 'is_success';
     const LABEL_ERROR_CODE                      = 'error_code';
     const LABEL_ROUTE_NAME                      = 'route_name';
+    const LABEL_BANK_CODE                       = 'bank_code';
 
     // Default label values
     const LABEL_DEFAULT_VALUE                   = 'other';
