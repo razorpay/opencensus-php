@@ -12,6 +12,7 @@ export default function useEligibility(): any {
     async () => {
       const eligibility = await fetch({
         url: `merchant/activation/clarifications/eligibility`,
+        mode: 'live',
       });
       return eligibility;
     },

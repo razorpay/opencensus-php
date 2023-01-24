@@ -545,7 +545,8 @@ function getActivationState(activationData = {}, isUnregisteredBusiness, isNcEli
     if (
       (dedupeStatus === 'blocked' ||
         (activation_flow === 'blacklist' && isSignupWithEasyOnboarding)) &&
-      !activated
+      !activated &&
+      activation_status !== 'needs_clarification' // if nc skip dedupe state
     ) {
       activationState = 'L2_dedupe_blocked';
     } else if (activation_status === 'under_review') {
