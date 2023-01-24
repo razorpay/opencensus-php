@@ -96,6 +96,18 @@ return [
             ],
         ],
     ],
+    'testInvoiceApprovalFor3MonthOld' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
 
     'testInvoiceCreateWithout3SubMtusAfterUpdatedTnc' => [
         'request' => [

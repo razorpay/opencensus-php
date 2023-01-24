@@ -4,6 +4,9 @@ namespace RZP\Models\Partner\Commission\Invoice;
 
 use RZP\Base;
 use RZP\Exception;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Models\Partner\Metric as PartnerMetric;
 
 class Validator extends Base\Validator
 {
@@ -49,6 +52,77 @@ class Validator extends Base\Validator
     {
         return key_exists($status, Status::ALLOWED_STATUSES_FOR_MERCHANT);
     }
+
+    /**
+     * validates if the invoice is expired for partner approval
+     * @param Entity $invoice invoice entity
+     *
+     * @throws Exception\LogicException
+     */
+    public function validatePartnerInvoiceApprovalExpiry(Entity $invoice)
+    {
+        $invoiceMonth = $invoice->getMonth();
+        $invoiceYear  = $invoice->getYear();
+        $invoiceTimestamp = Carbon::createFromDate($invoiceYear, $invoiceMonth)->setTimezone(Timezone::IST)->timestamp;
+
+        if($this->isCurrentFinancialYear($invoiceTimestamp))
+        {
+            return ;
+        }
+        if($this->isLastQuarterInvoiceValid($invoiceMonth, $invoiceYear) === false)
+        {
+            app('trace')->count(PartnerMetric::PARTNER_INVOICE_APPROVAL_AFTER_EXPIRY);
+
+            throw new Exception\LogicException(
+                'Invoice expired for partner approval',
+                null,
+                [
+                    'invoice_id' => $invoice->getId()
+                ]);
+        }
+    }
+
+    /**
+     * validates if the invoice timestamp is present in current financial year
+     * @param int $invoiceTimestamp invoice timestamp
+     *
+     * @return bool
+     */
+    protected function isCurrentFinancialYear(int $invoiceTimestamp): bool
+    {
+        $now = Carbon::now(Timezone::IST);
+
+        $financialYearStart = $now->month > 3 ?
+            Carbon::createFromDate($now->year, 4)->setTimezone(Timezone::IST)->startOfMonth()->timestamp
+            : Carbon::createFromDate($now->year-1, 4)->setTimezone(Timezone::IST)->startOfMonth()->timestamp;
+
+        $financialYearEnd = $now->month > 3 ?
+            Carbon::createFromDate($now->year+1, 3)->setTimezone(Timezone::IST)->endOfMonth()->timestamp
+            : Carbon::createFromDate($now->year, 3)->setTimezone(Timezone::IST)->endOfMonth()->timestamp;
+
+        return $invoiceTimestamp >= $financialYearStart and $invoiceTimestamp <= $financialYearEnd;
+    }
+
+    /**
+     * validates if the invoice is for last quarter previous financial year and current month is
+     * present in first quarter of current financial year
+     * @param int $invoiceYear invoice year
+     * @param int $invoiceMonth invoice month
+     *
+     * @return bool
+     */
+    protected function isLastQuarterInvoiceValid(int $invoiceMonth, int $invoiceYear): bool
+    {
+        $now = Carbon::now(Timezone::IST);
+
+        if($now->month > 6)
+        {
+            return false;
+        }
+
+        return $invoiceMonth < 4  and $invoiceYear === $now->year;
+    }
+
 
     public function validateLineItemsCount(int $lineItemsCount)
     {

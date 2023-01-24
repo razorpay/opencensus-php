@@ -66,6 +66,9 @@ final class Metric
 
     const PARTNER_BULK_UPDATE_ONBOARDING_SOURCE_FAILURE = 'partner_bulk_update_onboarding_source_failure';
 
+
+    const PARTNER_INVOICE_APPROVAL_AFTER_EXPIRY = 'partner_invoice_approval_after_expiry';
+    
     const PARTNERS_KYC_STARTED_TOTAL = 'partners_kyc_started_total';
     const PARTNERS_KYC_SUBMITTED_TOTAL = 'partners_kyc_submitted_total';
     const PARTNERS_KYC_ACTIVATION_STATUS_TOTAL = 'partners_kyc_activation_status_total';

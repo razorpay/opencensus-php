@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use RZP\Services\Mock\DataLakePresto;
 use Illuminate\Database\Eloquent\Factory;
 
+use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Partner;
 use RZP\Constants\Timezone;
@@ -598,6 +599,95 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals('processed', $invoice['status']);
     }
 
+
+    /**
+     * The following testcase validates the following
+     * 1. Create commission for a single subM
+     * 2. create commission_invoice
+     * 3. validate partner approval for invoice created before 3 months
+     */
+    public function testInvoiceApprovalFor3MonthOld()
+    {
+        Mail::fake();
+
+        $testData = $this->setUpCommissionCreate();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+
+        $this->createTaxes();
+
+        $this->runRequestResponseFlow($testData);
+
+
+        $month = $now->month > 3 ? $now->month-3 : $now->month+9;
+        $year = $now->month > 3 ? $now->year : $now->year-1;
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $this->fixtures->base->editEntity('commission_invoice',  $invoice['id'],
+              ['month' => $month ,'year'=> $year]);
+
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $invoiceExpectedData = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'month' => $month,
+            'year' => $year,
+            'status' => 'issued',
+            'gross_amount' => 944,
+            'tax_amount' => 144,
+        ];
+
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+
+        $lineItemExpectedData = [
+            [
+                'amount' => 944,
+                'gross_amount' => 944,
+                'tax_amount' => 144,
+                'net_amount' => 944,
+                'tax_inclusive' => true,
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($lineItemExpectedData, $invoice->lineItems->toArray());
+
+        $this->fixtures->merchant->addFeatures('automated_comm_payout', Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $testData = $this->testData['testInvoiceAction'];
+
+        $testData['request']['url'] = '/commissions/invoice/' . $invoice->getId();
+
+        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+    }
     /**
      * The following testcase validates the following
      * 1. Create commission for a single subM

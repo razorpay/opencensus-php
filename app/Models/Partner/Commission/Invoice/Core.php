@@ -119,7 +119,9 @@ class Core extends Base\Core
         }
 
         (new Validator())->validateMerchantToAllowChangeAction($input[Entity::ACTION]);
-
+        
+        (new Validator())->validatePartnerInvoiceApprovalExpiry($invoice);
+        
         if (
             $this->isPartialFinanceApprovalRemovalExpEnabled($merchant->getId()) and
             $invoice->getGrossAmount() <= Entity::MAX_AUTO_APPROVAL_AMOUNT
@@ -919,7 +921,9 @@ class Core extends Base\Core
 
         $year  = ($month < 4) ? $year-1 : $year ; // Decrease year for Jan, Feb and Mar.
 
-        return Carbon::createFromDate($year, 5, 1, Timezone::IST)->startOfMonth()->getTimestamp();
+        $month = ($month > 3 and $month < 7) ? 2 : 5 ;
+
+        return Carbon::createFromDate($year, $month, 1, Timezone::IST)->startOfMonth()->getTimestamp();
     }
 
     public function clearOnHoldForInvoiceBulk(array $input)
