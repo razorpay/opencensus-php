@@ -47,6 +47,12 @@ export const routeToChannelIDMap = {
       stage: 'IUaDYoZPVkmx8F',
       production: 'IUaU0WNV5we4Gj',
     },
+    '/app/affordability/widget': {
+      dev: 'L7zp8I03kDXAcG',
+      beta: 'L7zp8I03kDXAcG',
+      stage: 'L7zp8I03kDXAcG',
+      production: 'L7zkfTu5Mwxg8a',
+    },
     '/app/invoices': {
       dev: 'IUaEJoC102u2MY',
       beta: 'IUaEJoC102u2MY',
@@ -370,6 +376,7 @@ export const routeToRouteNameMap = {
   '/app/dashboard': 'home',
   '/app/payments': 'transactions',
   'app/settlements': 'settlements',
+  '/app/affordability/widget': 'affordability-widget',
   'app/invoices': 'invoices',
   'app/paymentlinks': 'payment-links',
   'app/paymentpages': 'payment-pages',

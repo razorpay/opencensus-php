@@ -18,12 +18,9 @@ const getGrowthEventTypeFromEvent = (eventName = '') => {
 
 export const getChannelID = (fromWhere = 'home', isOrgRZP = true) => {
   const routeMap = getRouteMap(isOrgRZP);
-  const channelID =
-    routeMap[fromWhere]?.[window.APP_ENV] ||
-    routeMap.default[window.APP_ENV] ||
-    routeMap.default.production;
+  const channelID = routeMap[fromWhere]?.[window.APP_ENV];
 
-  return channelID;
+  return channelID || 'xxxxxxxxxxxxxx';
 };
 
 const sortAnnouncements = (announcements = []) => {
