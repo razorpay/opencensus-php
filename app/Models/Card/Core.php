@@ -177,21 +177,12 @@ class Core extends Base\Core
 
         $noOfTokens = count($response['service_provider_tokens']);
 
-        if ($noOfTokens > 1){
-            // fetching providerReferenceId from token entity
-            foreach ($response['service_provider_tokens'] as $token) {
-                if ($token['provider_type'] === "network" && empty($token['providerReferenceId'] === false)) {
-                    $providerReferenceId = $token['providerReferenceId'];
-                }
+        // fetching providerReferenceId from token entity
+        foreach ($response['service_provider_tokens'] as $token) {
+            if ($token['provider_type'] === "network" && empty($token['provider_data']['providerReferenceId'] === false)) {
+                $providerReferenceId = $token['providerReferenceId'];
             }
         }
-        else if (isset($payment) && empty($response['providerReferenceId']) === false) {
-            $providerReferenceId = $response['providerReferenceId'];
-        }
-        else if ((isset($payment) && empty($response['service_provider_tokens'][0]['providerReferenceId']) === false)) {
-            $providerReferenceId = $response['service_provider_tokens'][0]['providerReferenceId'];
-        }
-
 
         if(isset($payment) && $providerReferenceId != null)
         {
@@ -1037,7 +1028,7 @@ class Core extends Base\Core
             $cardInput[Card\Entity::TOKEN_EXPIRY_YEAR ] =  $cryptogram['card']['expiry_year'] ?? null;
         }
 
-        if ($card->getVault() === Card\Vault::AXIS) {
+        if ($card->getVault() === Card\Vault::AXIS || ($card->getVault() === Card\Vault::PROVIDERS && $cryptogram === null && $card->getIssuer() === Card\Issuer::UTIB)) {
             $cardInput[Card\Entity::NUMBER] = Card\Entity::DUMMY_AXIS_TOKENHQ_CARD;
         }
 

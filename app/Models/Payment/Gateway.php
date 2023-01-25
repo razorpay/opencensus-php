@@ -290,6 +290,10 @@ class Gateway
         self::TOKENISATION_AXIS,
     ];
 
+    const TOKENISATION_CRYPTOGRAM_NOT_REQUIRED_GATEWAYS = [
+        self::AXIS_TOKENHQ,
+    ];
+
     //
     // Temporarily uses a different constant. Ideally POWER_WALLETS should be
     // used. Once auto debit functionality is implemented for all power wallets

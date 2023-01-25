@@ -726,6 +726,7 @@ class Entity
     const NETWORK_REFERENCE_ID      = 'network_reference_id';
     const PROVIDER_DATA             = 'provider_data';
     const TOKENISED                 = 'tokenised';
+    const PROVIDER_TYPE             = 'provider_type';
 
     // Ledger
     const JOURNAL             = 'journal';

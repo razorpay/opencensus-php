@@ -622,8 +622,18 @@ class CardPaymentService
 
             assertTrue(empty($networkToken) === false);
 
-            $trn = $networkToken[0][Entity::PROVIDER_DATA][Entity::TOKEN_REFERENCE_NUMBER] ?? '';
-            $input[Entity::CARD][Entity::TOKEN_REFERENCE_NUMBER] = $trn;
+            $noOfTokens = count($networkToken);
+
+            if ($noOfTokens > 1)
+            {
+                $trn = $networkToken[0][Entity::PROVIDER_TYPE] === 'issuer' ? $networkToken[0][Entity::PROVIDER_DATA][Entity::TOKEN_REFERENCE_NUMBER] : $networkToken[1][Entity::PROVIDER_DATA][Entity::TOKEN_REFERENCE_NUMBER];
+                $input[Entity::CARD][Entity::TOKEN_REFERENCE_NUMBER] = $trn;
+            }
+            else
+            {
+                $trn = $networkToken[0][Entity::PROVIDER_DATA][Entity::TOKEN_REFERENCE_NUMBER] ?? '';
+                $input[Entity::CARD][Entity::TOKEN_REFERENCE_NUMBER] = $trn;
+            }
         }
     }
 

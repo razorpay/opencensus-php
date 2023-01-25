@@ -98,7 +98,7 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
         {
             $this->logPaymentRoutingInfo($payment, $card, false);
 
-            $cardInput = $processor->createCardForNetworkTokenCardMandate($card, $token, []);
+            $cardInput = $processor->createCardForNetworkTokenCardMandate($card, $token, [], $payment);
         }
         else
         {

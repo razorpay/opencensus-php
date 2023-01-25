@@ -295,7 +295,7 @@ trait Authorize
             {
                 $this->selectedTerminals = [(new TerminalProcessor)->getTerminalFromGatewayData($gatewayInput)];
             }
-            else
+            else if (!(empty($this->selectedTerminals) === false and $payment['method'] === Payment\Method::CARD and $gatewayInput['card']['tokenised'] === true))
             {
                 $chargeAccountMerchant = $gatewayInput[Payment\Entity::CHARGE_ACCOUNT_MERCHANT] ?? null;
 
@@ -5822,7 +5822,7 @@ trait Authorize
             {
                 $payment->localToken()->associate($token);
 
-                $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
+                $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input, $payment);
 
                 return;
             }
@@ -5941,7 +5941,7 @@ trait Authorize
             {
                 $payment->localToken()->associate($token);
 
-                $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
+                $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input, $payment);
             }
             else if ($payment->isUpiRecurring() === true)
             {
@@ -6046,7 +6046,7 @@ trait Authorize
 
             $payment->localToken()->associate($token);
 
-            $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
+            $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input, $payment);
         }
         else if ($payment->isEmandate() === true)
         {
@@ -6134,7 +6134,7 @@ trait Authorize
             {
                 $payment->localToken()->associate($token);
 
-                $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
+                $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input, $payment);
 
                 return;
             }
@@ -6146,7 +6146,7 @@ trait Authorize
                 'payment_id' => $payment->getId(),
             ]);
 
-            $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input);
+            $gatewayInput['card'] = $this->createCardEntityFromSavedToken($token, $input, $payment);
 
             $payment->globalToken()->associate($token);
 
@@ -8708,6 +8708,11 @@ trait Authorize
                 return false;
             }
 
+            if ($this->canRunAxisTokenHQOTP($payment) === true)
+            {
+                return true;
+            }
+
             if ($payment->card->iinRelation !== null)
             {
                 if (empty($gatewayInput['auth_type']) === false)
@@ -9170,13 +9175,13 @@ trait Authorize
      * @return array
      * @throws \Exception
      */
-    protected function associateAndGetCardArrayForSavedToken(Token\Entity $token, array & $input): array
+    protected function associateAndGetCardArrayForSavedToken(Token\Entity $token, array & $input, Payment\Entity $payment=null): array
     {
         $card = $this->repo->card->fetchForToken($token);
 
         if ($card->isRzpSavedCard() === false)
         {
-            return $this->createCardEntityForTokenisedCard($token, $input);
+            return $this->createCardEntityForTokenisedCard($token, $input, $payment);
         }
 
         $gateway = $input['payment']['gateway'] ?? null;
@@ -9199,18 +9204,49 @@ trait Authorize
                 ]);
     }
 
-    protected function createCardForNetworkToken($card, $input, $merchant = null, $recurringTokenNumber = null)
+        protected function fetchCryptogramForDualToken($card, Payment\Entity $payment, $merchant = null) {
+
+        $cryptogram = null;
+
+        $cardEntity = $card;
+        $cardEntity['trivia'] = '1';
+        $cardEntity['iin'] = $cardEntity['iin'] === "" ? '000000' : $cardEntity['iin'];
+        $payment->card()->associate($cardEntity);
+
+
+        // make a call to smart router to get which terminal should be used to fetch cryptogram
+        $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment, null, null, $this->authenticationChannel);
+
+        $payment->card()->dissociate();
+
+        if (in_array($this->selectedTerminals[0]['gateway'], Payment\Gateway::TOKENISATION_CRYPTOGRAM_NOT_REQUIRED_GATEWAYS)) {
+            // currently we only support axis terminals & it doesn't require cryptogram
+            return $cryptogram;
+        }else {
+            $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
+        }
+
+
+
+        return $cryptogram;
+    }
+
+    protected function createCardForNetworkToken($card, $input, $payment, $merchant = null, $recurringTokenNumber = null)
     {
         if ($merchant === null){
             $merchant = $card->merchant;
         }
 
         $cryptogram = null;
+        $cardVault = $card->getVault();
+        if ($cardVault === Card\Vault::PROVIDERS || $cardVault == Card\Vault::AXIS){
+            $cryptogram = $this->fetchCryptogramForDualToken($card, $payment, $merchant);
+        }
 
         // for recurring subsequent calls we dont need cryptogram
         // we are storing tokenPAN in card_mandate table for recurring purposes. so need to make fetchcryptogram
         // $recurringTokenNumber is passed the value of TokenPAN in recurring use cases
-        if($recurringTokenNumber === null && $card->getVault() !== Card\Vault::AXIS)
+        else if ($recurringTokenNumber === null && $card->getVault() !== Card\Vault::AXIS)
         {
             $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $merchant);
         }
@@ -9235,7 +9271,7 @@ trait Authorize
      * @return array
      * @throws Exception\BadRequestException
      */
-    protected function createCardEntityForTokenisedCard(Token\Entity $token, $input): array
+    protected function createCardEntityForTokenisedCard(Token\Entity $token, $input, $payment): array
     {
         $card = $token->card;
 
@@ -9251,7 +9287,7 @@ trait Authorize
 
                 $paymentProcessor->setPayment($this->payment);
 
-                return $paymentProcessor->createCardForNetworkTokenCardMandate($card, $token, []);
+                return $paymentProcessor->createCardForNetworkTokenCardMandate($card, $token, [], $payment);
             }
 
             $merchant = $card->merchant;
@@ -9265,7 +9301,7 @@ trait Authorize
                 $merchant = $merchant->getFullManagedPartnerWithTokenInteroperabilityFeatureIfApplicable($merchant);
             }
 
-            return $this->createCardForNetworkToken($card, $input, $merchant);
+            return $this->createCardForNetworkToken($card, $input, $payment, $merchant);
         }
 
         $this->logTokenisedCardPaymentRoutingInfo($token, true);
@@ -9329,13 +9365,13 @@ trait Authorize
      * @return array
      * @throws \Exception
      */
-    protected function createCardEntityFromSavedToken(Token\Entity $token, array & $input): array
+    protected function createCardEntityFromSavedToken(Token\Entity $token, array & $input, $payment): array
     {
         $card = $this->repo->card->fetchForToken($token);
 
         if ($card->isRzpSavedCard() === false)
         {
-            return $this->createCardEntityForTokenisedCard($token, $input);
+            return $this->createCardEntityForTokenisedCard($token, $input, $payment);
         }
 
         $gateway = $input['payment']['gateway']?? null;

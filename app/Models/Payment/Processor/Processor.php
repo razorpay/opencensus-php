@@ -671,6 +671,10 @@ class Processor
                             {
                                 return false;
                             }
+                            if ($card->getVault() === Card\Vault::PROVIDERS || $card->getVault() === Card\Vault::AXIS)
+                            {
+                                return false;
+                            }
                             if ($card->isNetworkTokenisedCard() === true)
                             {
                                 $this->trace->info(TraceCode::TOKENISED_CARD_PAYMENT_ROUTING_INFO, [
@@ -7801,7 +7805,7 @@ class Processor
         }
     }
 
-    public function createCardForNetworkTokenCardMandate($card, $token, $input)
+    public function createCardForNetworkTokenCardMandate($card, $token, $input, $payment)
     {
         try
         {
@@ -7813,13 +7817,13 @@ class Processor
 
                 (new CardMandate\Core())->storeVaultTokenPan($token->cardMandate, $recurringTokenNumber);
 
-                return $this->createCardForNetworkToken($card, $input, null, $cryptogram['token_number']);
+                return $this->createCardForNetworkToken($card, $input, $payment, null, $cryptogram['token_number']);
             }
             else
             {
                 $recurringTokenNumber = (new Card\CardVault)->getCardNumber($token->cardMandate->getVaultTokenPan(),[],null,true);
 
-                return $this->createCardForNetworkToken($card, $input, null, $recurringTokenNumber);
+                return $this->createCardForNetworkToken($card, $input, $payment, null, $recurringTokenNumber);
             }
         }
         catch (\Exception $e)
@@ -7829,7 +7833,7 @@ class Processor
             ]);
         }
 
-        return $this->createCardForNetworkToken($card, $input);
+        return $this->createCardForNetworkToken($card, $input, $payment);
     }
 
     /**
