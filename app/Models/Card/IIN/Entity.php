@@ -204,6 +204,11 @@ class Entity extends Base\PublicEntity
         return $this->supports(Flow::OTP);
     }
 
+    public function isDCCBlacklisted()
+    {
+        return $this->supports(Flow::DCC_BLACKLISTED);
+    }
+
     public function isTokenised()
     {
         return $this->getAttribute(self::TOKENISED);

@@ -1031,6 +1031,18 @@ class PaymentCreateDCCTest extends TestCase
         $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
     }
 
+    public function testPaymentFlowsDccBlacklistedIIINS()
+    {
+        $iin = $this->fixtures->iin->create(['iin' => '414366', 'country' => 'US', 'issuer' => 'UTIB', 'network' => 'Visa',
+            'flows'   => ['3ds' => '1', 'pin' => '1', 'otp' => '1','dcc_blacklisted' => '1',]]);
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData($iin));
+        $responseContent = json_decode($response->getContent(), true);
+
+        $this->assertTrue(array_key_exists('currency_request_id', $responseContent) === false);
+        $this->assertTrue(array_key_exists('all_currencies', $responseContent) === false);
+    }
+
     public function testPaymentFlowsCurrencyInfoWithToken()
     {
         $flowsData = [

@@ -227,6 +227,14 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetIinDCCBlacklistedUpdate()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+
+    }
+
     public function testPrivateGetIinEmptyNetwork()
     {
         $this->testAddIin();

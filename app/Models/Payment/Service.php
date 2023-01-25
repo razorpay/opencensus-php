@@ -2611,7 +2611,8 @@ class Service extends Base\Service
     {
         if (($iinEntity !== null) and
             (IIN\IIN::isInternational($iinEntity->getCountry(), $merchant->getCountry()))  === true and
-            (Card\Network::isDCCSupportedNetwork($iinEntity->getNetworkCode())) === true)
+            (Card\Network::isDCCSupportedNetwork($iinEntity->getNetworkCode())) === true and
+            $iinEntity->isDCCBlacklisted() === false)
         {
             return true;
         }

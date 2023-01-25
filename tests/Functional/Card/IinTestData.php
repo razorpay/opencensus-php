@@ -688,6 +688,37 @@ return [
         ],
     ],
 
+    'testGetIinDCCBlacklistedUpdate' => [
+        'request' => [
+            'url'     => '/iins/bulk',
+            'method'  => 'PATCH',
+            'content' => [
+                'iins'   => ['401200', '401201'],
+                'payload' => [
+                    'flows' => [
+                        'dcc_blacklisted' => '1',
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                '401200' => [
+                    'flows' => [
+                        '3ds',
+                        'dcc_blacklisted',
+                    ],
+                ],
+                '401201' => [
+                    'flows' => [
+                        '3ds',
+                        'dcc_blacklisted',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testPrivateGetIinEmptyNetwork' => [
         'request' => [
             'url' => '/iins/112333',

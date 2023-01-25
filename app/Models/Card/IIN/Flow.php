@@ -6,22 +6,24 @@ use RZP\Models\Feature\Constants as Feature;
 
 class Flow
 {
-    const _3DS         = '3ds';
-    const PIN          = 'pin';
-    const OTP          = 'otp';
-    const IFRAME       = 'iframe';
-    const MAGIC        = 'magic';
-    const HEADLESS_OTP = 'headless_otp';
-    const IVR          = 'ivr';
+    const _3DS              = '3ds';
+    const PIN               = 'pin';
+    const OTP               = 'otp';
+    const IFRAME            = 'iframe';
+    const MAGIC             = 'magic';
+    const HEADLESS_OTP      = 'headless_otp';
+    const IVR               = 'ivr';
+    const DCC_BLACKLISTED   = 'dcc_blacklisted';
 
     public static $flows = [
-        self::_3DS         => 1,
-        self::PIN          => 2,
-        self::OTP          => 4,
-        self::IFRAME       => 8,
-        self::MAGIC        => 16,
-        self::HEADLESS_OTP => 32,
-        self::IVR          => 64,
+        self::_3DS              => 1,
+        self::PIN               => 2,
+        self::OTP               => 4,
+        self::IFRAME            => 8,
+        self::MAGIC             => 16,
+        self::HEADLESS_OTP      => 32,
+        self::IVR               => 64,
+        self::DCC_BLACKLISTED   => 128,
     ];
 
     public static $featureToFlowMappings = [
