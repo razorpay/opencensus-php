@@ -4,13 +4,11 @@ namespace RZP\Jobs;
 
 use App;
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Constants;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Consent as Consent;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
@@ -20,12 +18,14 @@ class CapturePartnershipConsents extends Job
 {
     const RETRY_INTERVAL = 300;
 
-    const MAX_RETRY_ATTEMPT = 2;
+    const MAX_RETRY_ATTEMPT = 1;
 
     /**
      * @var string
      */
     protected $queueConfigKey = 'commission';
+
+    protected $metricsEnabled = true;
 
     protected $merchantId;
 
@@ -84,62 +84,56 @@ class CapturePartnershipConsents extends Job
         $merchantId   = $merchant->getId();
         $activationFormMilestone = $input[MerchantDetail::ACTIVATION_FORM_MILESTONE] = $milestone;
 
-        try {
+        $detailService = new Merchant\Detail\Service();
 
-            $detailService = new Merchant\Detail\Service();
+        //if legal documents are not present already, store them in database
+        if($detailService->checkIfConsentsPresent($merchantId, [$activationFormMilestone.'_'.Constants::TERMS]) === false)
+        {
+            $input[Consent\Entity::ENTITY_ID]   =  null;
+            $input[Consent\Entity::ENTITY_TYPE] =  null;
 
-            //if legal documents are not present already, store them in database
-            if($detailService->checkIfConsentsPresent($merchantId, [$activationFormMilestone.'_'.Constants::TERMS]) === false)
+            $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
+                'message' => 'Consents are not present.',
+                'input'   => $input
+            ]);
+
+            $detailService->storeConsents($merchantId, $input, $merchant->primaryOwner()->getId());
+
+            $documents_detail = $detailService->getDocumentsDetails($input);
+
+            $legalDocumentsInput = [
+                DEConstants::DOCUMENTS_DETAIL => $documents_detail
+            ];
+
+            $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
+
+            $processor->setMerchant($merchant);
+
+            $response = $processor->processLegalDocuments($legalDocumentsInput);
+
+            $responseData = $response->getResponseData();
+
+            $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
+
+            foreach ($documentDetailsInput as $documentDetailInput)
             {
-                $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
-                    'message' => 'Consents are not present.'
-                ]);
+                $type = $activationFormMilestone.'_'.$documentDetailInput['type'] ;
 
-                $detailService->storeConsents($merchantId, $input, $merchant->primaryOwner()->getId());
+                $merchantConsentDetail = $this->repoManager->merchant_consents->fetchMerchantConsentDetails($merchantId, $type);
 
-                $documents_detail = $detailService->getDocumentsDetails($input);
-
-                $legalDocumentsInput = [
-                    DEConstants::DOCUMENTS_DETAIL => $documents_detail
+                $updateInput = [
+                    'status'     => Consent\Constants::INITIATED,
+                    'updated_at' => Carbon::now()->getTimestamp(),
+                    'request_id' => $responseData['id']
                 ];
 
-                $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
-
-                $processor->setMerchant($merchant);
-
-                $response = $processor->processLegalDocuments($legalDocumentsInput);
-
-                $responseData = $response->getResponseData();
-
-                $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
-
-                foreach ($documentDetailsInput as $documentDetailInput)
-                {
-                    $type = $activationFormMilestone.'_'.$documentDetailInput['type'] ;
-
-                    $merchantConsentDetail = $this->repoManager->merchant_consents->fetchMerchantConsentDetails($merchantId, $type);
-
-                    $updateInput = [
-                        'status'     => Consent\Constants::INITIATED,
-                        'updated_at' => Carbon::now()->getTimestamp(),
-                        'request_id' => $responseData['id']
-                    ];
-
-                    (new Consent\Core())->updateConsentDetails($merchantConsentDetail, $updateInput);
-                }
-
-            }
-            else
-            {
-                $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
-                    'message' => 'Consents are already present.'
-                ]);
+                (new Consent\Core())->updateConsentDetails($merchantConsentDetail, $updateInput);
             }
         }
-        catch (\Throwable $exception)
+        else
         {
-            $this->trace->info(TraceCode::CONSENT_CREATION_ERROR, [
-                'message' => $exception->getMessage()
+            $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
+                'message' => 'Consents are already present.'
             ]);
         }
     }
