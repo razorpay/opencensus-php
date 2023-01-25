@@ -393,10 +393,6 @@ class RazorXClient
 
         $request = $this->getRequestParams($url, $method, $data, $requestOptions);
 
-        $this->trace->info(TraceCode::RAZORX_REQUEST, [
-            'request'   => $request,
-        ]);
-
         $retryCount = $data[self::RETRY_COUNT_KEY] ?? 0;
 
         return $this->makeRequestAndGetResponse($request, $retryCount, $retryCount);
