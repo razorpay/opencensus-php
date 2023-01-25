@@ -570,6 +570,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::SOURCE, $source);
     }
 
+    public function setDescriptor(string $value)
+    {
+        return $this->setAttribute(self::DESCRIPTOR, $value);
+    }
+
     protected function setPublicCustomerIdAttribute(array & $array)
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);

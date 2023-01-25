@@ -10,6 +10,7 @@ use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Jobs\VirtualAccountsAutoCloseInactive;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
 use RZP\Models\Base\PublicCollection;
@@ -581,6 +582,94 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANTS_BULK_CLOSE_RESPONSE, $response);
 
         return $response;
+    }
+
+    public function autoCloseInactiveVirtualAccounts(array $input)
+    {
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_AUTO_CLOSE_INACTIVE_CRON_REQUEST,
+             [
+                 'input'    => $input,
+             ]
+        );
+
+        $validator = new Validator();
+
+        $validator->validateInput('autoCloseInactiveVirtualAccount', $input);
+
+        $validator->validateMerchantIdAndVirtualAccountId($input);
+
+        $validator->validateAndSetGateway($input);
+
+        $expiryDelta = $input['expiry_delta'] ?? Constant::EXPIRY_DELTA;
+
+        $validator->validateStartAndEndDate($input, $expiryDelta);
+
+        // - hard limit on number of VAs to be processed in one cron request
+        $maxLimit = $input['limit'] ?? 0;
+
+        $input['count'] = ($maxLimit > 0) ? min($maxLimit, Constant::PAGE_COUNT) : Constant::PAGE_COUNT;
+
+        $processedCount = 0;
+
+        $skip = 0;
+
+        do
+        {
+            $input['skip']  =  $skip;
+
+            $startTime = microtime(true);
+
+            // - if a hard limit is passed in request, do process more VAs more than the limit.
+            if($maxLimit > 0 and $processedCount >= $maxLimit)
+            {
+                break;
+            }
+
+            $inactiveVirtualAccountIds = $this->repo->virtual_account->fetchInactiveVirtualAccounts($input, $expiryDelta);
+
+            $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_AUTO_CLOSE_CRON_DISPATCH,
+                [
+                    'input'         => $input,
+                    'count'         =>  sizeof($inactiveVirtualAccountIds),
+                    'time_taken'    =>  microtime(true) - $startTime,
+                ]);
+
+            VirtualAccountsAutoCloseInactive::dispatch($this->mode, $inactiveVirtualAccountIds->toArray());
+
+            $skip += 1;
+
+            $processedCount += sizeof($inactiveVirtualAccountIds);
+        }
+        while(sizeof($inactiveVirtualAccountIds) === $input['count']);
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_ACCOUNT_AUTO_CLOSE_INACTIVE_CRON_REQUEST_SUCCESS,
+                [
+                    'response'  =>  [
+                        'count'   =>  $processedCount
+                    ]
+                ]
+        );
+        return [
+            'count'   =>  $processedCount
+        ];
+    }
+
+    public function autoCloseInactiveVirtualAccountsBulk(array $virtualAccountIds)
+    {
+        $closedVirtualAccounts = [];
+
+        $failedVirtualAccounts = [];
+
+        $virtualAccounts = $this->repo->virtual_account->fetchActiveOrPaidVirtualAccountIds($virtualAccountIds, count($virtualAccountIds));
+
+        $this->closeMultipleVirtualAccounts($virtualAccounts, $closedVirtualAccounts, $failedVirtualAccounts);
+
+        return [
+            'closed_virtual_accounts'   =>  $closedVirtualAccounts,
+            'failed_virtual_accounts'   =>  $failedVirtualAccounts
+        ];
     }
 
     private function closeMultipleVirtualAccounts(

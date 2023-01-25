@@ -18,6 +18,13 @@ class Constant
     const VA_EXPIRY_OFFSET = 'va_expiry_offset';
 
     const FETCH_LIMIT = 100;
+    const PAGE_COUNT  = 1000;
+
+    // To check if a virtual account is inactive in past {delta} days.
+    const EXPIRY_DELTA = 90;
+    const VIRTUAL_ACCOUNT_AUTO_CLOSE_INACTIVE_CRON = 'worker:virtual_accounts_auto_close_inactive';
+    const DORMANT_VA_CLOSURE = 'dormant_va_closure';
+
     const IDEMPOTENCY_KEY             = 'idempotency_key';
     const VIRTUAL_ACCOUNT_ID          = 'virtual_account_id';
 

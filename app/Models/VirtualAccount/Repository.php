@@ -15,7 +15,9 @@ use RZP\Models\BankAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicEntity;
+use Illuminate\Support\Facades\DB;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\BankTransfer\Entity as BankTransferEntity;
 
 class Repository extends Base\Repository
 {
@@ -228,6 +230,126 @@ class Repository extends Base\Repository
                     ->limit($limit)
                     ->get()
                     ->all();
+    }
+
+    public function fetchActiveOrPaidVirtualAccountIds(array $virtualAccountIds, $limit = 1000)
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::STATUS,[Status::ACTIVE, Status::PAID])
+            ->whereIn(Entity::ID, $virtualAccountIds)
+            ->limit($limit)
+            ->get()
+            ->all();
+    }
+
+    public function fetchInactiveVirtualAccounts(array $params, int $expiryDelta = 90)
+    {
+        $vaExpiryTimeStamp = Carbon::now(Timezone::IST)->subDays($expiryDelta)->startOfDay()->getTimestamp();
+
+        $virtualAccountCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+        $virtualAccountStatus = $this->dbColumn(Entity::STATUS);
+        $virtualAccountId = $this->dbColumn(Entity::ID);
+        $vaBankAccountId = $this->dbColumn(Entity::BANK_ACCOUNT_ID);
+
+        $bankTransferId = $this->repo->bank_transfer->dbColumn(BankTransferEntity::ID);
+        $bankTransferVAId = $this->repo->bank_transfer->dbColumn(BankTransferEntity::VIRTUAL_ACCOUNT_ID);
+        $bankTransfersCreatedAt = $this->repo->bank_transfer->dbColumn(BankTransferEntity::CREATED_AT);
+        $bankTransferPaymentId = $this->repo->bank_transfer->dbColumn(BankTransferEntity::PAYMENT_ID);
+
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->select(DB::raw("count($bankTransferId) as payment_count, $virtualAccountId"))
+                      ->leftJoin(Table::BANK_TRANSFER,function($join)
+                      use (
+                          $expiryDelta,
+                          $virtualAccountId,
+                          $bankTransferVAId,
+                          $bankTransfersCreatedAt,
+                          $vaExpiryTimeStamp,
+                          $bankTransferPaymentId)
+                      {
+                          $join
+                              ->on($virtualAccountId, '=', $bankTransferVAId)
+                              ->where($bankTransfersCreatedAt,'>=', $vaExpiryTimeStamp)
+                              ->where($bankTransferPaymentId,'<>', '');
+
+                      })
+                     ->whereIn($virtualAccountStatus, [Status::PAID,Status::ACTIVE])
+                     ->whereNotNull($vaBankAccountId)
+                     ->where($virtualAccountCreatedAt, '<=', $vaExpiryTimeStamp);
+
+
+            $this->addQueryParamGatewayIfapplicable($query, $params);
+
+            $this->addQueryParamMerchantIdIfApplicable($query, $params);
+
+            $this->addQueryParamCreatedAtIfApplicable($query, $params);
+
+            $this->addQueryParamVirtualAccountIdIfApplicable($query, $params);
+
+            $query = $query->orderBy($virtualAccountCreatedAt)
+                           ->groupBy($virtualAccountId)
+                           ->having('payment_count','=',0);
+            return $this->getPaginated($query, $params)->pluck(Entity::ID);
+    }
+
+    private function addQueryParamGatewayIfapplicable($query, $params)
+    {
+        if ((isset($params['gateway']) === false) or (empty($params['gateway']) === true))
+        {
+            return;
+        }
+
+        $bankAccountIfscCol = $this->repo->bank_account->dbColumn(BankAccount\Entity::IFSC_CODE);
+        $vaBankAccountId    = $this->dbColumn(Entity::BANK_ACCOUNT_ID);
+        $bankAccountId      = $this->repo->bank_account->dbColumn(BankAccount\Entity::ID);
+
+        $ifscCode = $params['gateway'];
+
+        $query->join(Table::BANK_ACCOUNT, $vaBankAccountId, '=', $bankAccountId)
+            ->where($bankAccountIfscCol, '=', $ifscCode);
+    }
+
+    private function addQueryParamMerchantIdIfApplicable($query, $params)
+    {
+        $merchantId = $this->dbColumn(Entity::MERCHANT_ID);
+
+        if(isset($params['merchant_ids']) === true)
+        {
+            $query->whereIn($merchantId,$params['merchant_ids']);
+        }
+    }
+
+    private function addQueryParamCreatedAtIfApplicable($query, $params)
+    {
+        $createdAt = $this->dbColumn(Entity::CREATED_AT);
+
+        if (isset($params['start_date']) === true and empty($params['start_date']) === false)
+        {
+            $startDateTimestamp = Carbon::createFromFormat('Y-m-d',$params['start_date'])->startOfDay()
+                                                                                                ->timezone(Timezone::IST)
+                                                                                                ->getTimestamp();
+
+            $query->where($createdAt,'>',$startDateTimestamp);
+        }
+
+        if (isset($params['end_date']) === true and empty($params['end_date']) === false)
+        {
+            $endDateTimestamp = Carbon::createFromFormat('Y-m-d',$params['end_date'])->endOfDay()
+                                                                                            ->timezone(Timezone::IST)
+                                                                                            ->getTimestamp();
+            $query->where($createdAt,'<',$endDateTimestamp);
+        }
+    }
+
+    private function addQueryParamVirtualAccountIdIfApplicable($query, $params)
+    {
+        $virtualAccountId = $this->dbColumn(Entity::ID);
+
+        if (isset($params['virtual_account_ids']) === true and empty($params['virtual_account_ids']) === false)
+        {
+            $query->whereIn($virtualAccountId,$params['virtual_account_ids']);
+        }
     }
 
     public function fetchByOfflineId(string $offlineId)

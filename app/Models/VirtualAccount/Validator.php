@@ -110,6 +110,16 @@ class Validator extends Base\Validator
         'virtual_account_ids'   => 'filled|array|max:100|min:1'
     ];
 
+    public static $autoCloseInactiveVirtualAccountRules = [
+        'merchant_ids'          =>  'sometimes|array|max:100|min:1',
+        'virtual_account_ids'   =>  'sometimes|array|min:1',
+        'start_date'            =>  'sometimes|date_format:Y-m-d',
+        'end_date'              =>  'sometimes|date_format:Y-m-d',
+        'gateway'               =>  'sometimes|string',
+        'expiry_delta'          =>  'sometimes|numeric',
+        'limit'                 =>  'sometimes|numeric'
+    ];
+
     protected static $createValidators = [
         Entity::RECEIVER_TYPES,
     ];
@@ -310,5 +320,51 @@ class Validator extends Base\Validator
     public function validateSource($attribute, $value)
     {
         SourceType::checkSourceType($value);
+    }
+
+    public function validateMerchantIdAndVirtualAccountId(array $input)
+    {
+        if (isset($input['merchant_ids']) and isset($input['virtual_account_ids']))
+        {
+            throw new BadRequestValidationFailureException('Please pass either merchant ids or virtual account ids');
+        }
+    }
+
+    public function validateAndSetGateway(array &$input)
+    {
+        if (isset($input['gateway']) === true)
+        {
+            if (isset(Provider::IFSC[$input['gateway']]) === false)
+            {
+                throw new BadRequestValidationFailureException('Invalid gateway provided');
+            }
+
+            $input['gateway'] = Provider::IFSC[$input['gateway']];
+        }
+    }
+
+    public function validateStartAndEndDate(array $input, $expiryDelta)
+    {
+        $expiryDeltaTimestamp = Carbon::now(Timezone::IST)->subDays($expiryDelta)->getTimestamp();
+
+        if (isset($input['start_date']) === true)
+        {
+            $startDate = Carbon::createFromFormat('Y-m-d', $input['start_date'])->getTimestamp();
+
+             if ($startDate > $expiryDeltaTimestamp)
+             {
+                 throw new BadRequestValidationFailureException("Start date cannot be less than $expiryDelta days away from current day");
+             }
+        }
+
+        if (isset($input['end_date']) === true)
+        {
+            $endDate = Carbon::createFromFormat('Y-m-d', $input['end_date'])->getTimestamp();
+
+            if ($endDate > $expiryDeltaTimestamp)
+            {
+                throw new BadRequestValidationFailureException("End date cannot be less than $expiryDelta days away from current day");
+            }
+        }
     }
 }

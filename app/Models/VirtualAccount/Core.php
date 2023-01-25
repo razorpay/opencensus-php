@@ -323,7 +323,7 @@ class Core extends Base\Core
         {
             $virtualAccount->close_by = null;
         }
-        
+
         return $virtualAccount;
     }
 
@@ -767,6 +767,11 @@ class Core extends Base\Core
 
             $virtualAccount->setStatus(Status::CLOSED);
 
+            if ($this->isAutoCloseInactiveVirtualAccountCron() === true)
+            {
+                $virtualAccount->setDescriptor(Constant::DORMANT_VA_CLOSURE);
+            }
+
             $currentTime = Carbon::now()->getTimestamp();
 
             $virtualAccount->setClosedAt($currentTime);
@@ -779,6 +784,16 @@ class Core extends Base\Core
         });
 
         return $virtualAccount;
+    }
+
+    protected function isAutoCloseInactiveVirtualAccountCron()
+    {
+        if((app()->runningInQueue() === true) and
+            (app('worker.ctx')->getJobName() === Constant::VIRTUAL_ACCOUNT_AUTO_CLOSE_INACTIVE_CRON))
+        {
+            return true;
+        }
+        return false;
     }
 
     protected function deactivatePayers(Entity $virtualAccount)

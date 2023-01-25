@@ -369,4 +369,13 @@ class VirtualAccountController extends Controller
         });
         return ApiResponse::json([], 204);
     }
+
+    public function autoCloseInactiveVirtualAccounts()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->autoCloseInactiveVirtualAccounts($input);
+
+        return ApiResponse::json($response);
+    }
 }
