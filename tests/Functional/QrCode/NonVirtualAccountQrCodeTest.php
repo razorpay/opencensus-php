@@ -89,6 +89,8 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testCreateBharatQrCodeWithEntityOrigin()
     {
+        $this->markTestSkipped("Entity Origin for merchant auth is deprecated and will not be stores");
+        
         $response = $this->createQrCode();
 
         $expectedResponse = $this->testData[__FUNCTION__];

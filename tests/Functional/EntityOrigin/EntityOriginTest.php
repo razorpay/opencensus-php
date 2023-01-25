@@ -31,6 +31,8 @@ class EntityOriginTest extends TestCase
      */
     public function testCreatePaymentOriginMerchantKey()
     {
+        $this->markTestSkipped('Entity origin for merchant auth has been removed');
+
         $payment = $this->getDefaultPaymentArray();
 
         $payment = $this->doAuthAndGetPayment($payment);
@@ -128,6 +130,8 @@ class EntityOriginTest extends TestCase
      */
     public function testCreatePaymentOriginPrivateAuth()
     {
+        $this->markTestSkipped('Entity origin for merchant auth has been removed');
+        
         $this->mockCardVault();
 
         $merchantId = '10000000000000';

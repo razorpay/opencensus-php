@@ -319,33 +319,12 @@ class Core extends Base\Core
 
         switch ($originType)
         {
-            case Constants::MERCHANT:
-                // If the merchant's credentials are used, fetch the merchant entity directly from the BasicAuth
-                $originEntity = app('basicauth')->getMerchant();
-                break;
-
             case Constants::APPLICATION:
                 $originEntity = (new OAuthApp\Repository)->findOrFail($originId);
                 break;
 
             default:
                 break;
-        }
-
-        if ($originEntity === null)
-        {
-            $authType                  = app('basicauth')->getAuthType();
-            $routeName                 = app('router')->currentRouteName();
-
-            $this->trace->critical(
-                TraceCode::ORIGIN_INVALID_TYPE,
-                [
-                    Entity::ORIGIN_TYPE             => $originType,
-                    Entity::ORIGIN_ID               => $originId,
-                    'auth_type'                     => $authType,
-                    'route_name'                    => $routeName,
-                ]
-            );
         }
 
         return $originEntity;
