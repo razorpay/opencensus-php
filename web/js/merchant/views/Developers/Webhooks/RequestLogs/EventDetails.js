@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
@@ -6,6 +6,10 @@ import SyntaxHighlighter from 'react-syntax-highlighter';
 import arta from 'react-syntax-highlighter/dist/esm/styles/hljs/arta';
 import StatusLabel from 'merchant/views/Developers/components/StatusLabel';
 import RequestResponseDetails from 'merchant/views/Developers/components/RequestResponseDetails';
+import {
+  trackWebhookLogDetailsOpened,
+  trackWebhookLogRequestResponseDetailsOpened,
+} from 'merchant/views/Developers/events';
 
 const syntaxHighlighterCustomStyles = {
   background: '#1E222E',
@@ -13,6 +17,14 @@ const syntaxHighlighterCustomStyles = {
 
 const RequestDetails = ({ id, items: webhookLogs }) => {
   const webhookLog = webhookLogs.find((log) => log.request_id === id) || {};
+
+  useEffect(() => {
+    trackWebhookLogDetailsOpened();
+  }, []);
+
+  const handleAccordionOpen = (menuOpened) => {
+    trackWebhookLogRequestResponseDetailsOpened(menuOpened);
+  };
 
   return (
     <div className="request-details-log">
@@ -40,6 +52,7 @@ const RequestDetails = ({ id, items: webhookLogs }) => {
                 <RequestResponseDetails
                   title="Request Headers"
                   textToCopy={JSON.stringify(webhookLog.request.header)}
+                  onOpen={() => handleAccordionOpen('Request Headers')}
                 >
                   <SyntaxHighlighter
                     language="json"
@@ -52,6 +65,7 @@ const RequestDetails = ({ id, items: webhookLogs }) => {
                 <RequestResponseDetails
                   title="Request"
                   textToCopy={JSON.stringify(webhookLog.request.body)}
+                  onOpen={() => handleAccordionOpen('Request Body')}
                 >
                   <SyntaxHighlighter
                     language="json"
@@ -64,6 +78,7 @@ const RequestDetails = ({ id, items: webhookLogs }) => {
                 <RequestResponseDetails
                   title="Response Headers"
                   textToCopy={JSON.stringify(webhookLog.response.header)}
+                  onOpen={() => handleAccordionOpen('Response Headers')}
                 >
                   <SyntaxHighlighter
                     language="json"
@@ -76,6 +91,7 @@ const RequestDetails = ({ id, items: webhookLogs }) => {
                 <RequestResponseDetails
                   title="Response"
                   textToCopy={JSON.stringify(webhookLog.response.body)}
+                  onOpen={() => handleAccordionOpen('Response Headers')}
                 >
                   <SyntaxHighlighter
                     language="json"
