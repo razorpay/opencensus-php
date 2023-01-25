@@ -167,7 +167,19 @@ class PaymentEInvoice extends Job
 
             $eInvoiceCore = new DccEInvoiceCore();
 
-            $paymentEInvoice = $existingPaymentEInvoice ?? $eInvoiceCore->createNewDCCEInvoice($payment, $baseEntity, $referenceType);
+            // if invoice already exist then fetch the object from master DB
+            // this is required as writes can't be done on slave DB
+            // if the invoice already exist then $existingPaymentEInvoice will be the read object (from slave)
+            // which we fetched using entity_id field. (indexed on slave only)
+            // we'll fetch write object from master's DB using the invoice ID (Primary key i.e. always indexed)
+            if (isset($existingPaymentEInvoice) and !empty($existingPaymentEInvoice))
+            {
+                $paymentEInvoice = $eInvoiceCore->getEntityFromMaster($existingPaymentEInvoice->getId());
+            }
+            else
+            {
+                $paymentEInvoice = $eInvoiceCore->createNewDCCEInvoice($payment, $baseEntity, $referenceType);
+            }
 
             // fetch request payload for registering invoice
             $requestData = $eInvoiceCore->getEInvoiceRequestData($paymentEInvoice, $payment, $baseEntity);

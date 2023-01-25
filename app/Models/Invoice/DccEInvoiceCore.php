@@ -61,6 +61,12 @@ class DccEInvoiceCore extends Core
         return $this->create($input, $payment->merchant, null, null, $payment);
     }
 
+    // fetch invoice entity from master DB to perform writes
+    public function getEntityFromMaster($invoiceId)
+    {
+        return $this->repo->invoice->findOrFail($invoiceId);
+    }
+
     // prepares data to send
     public function getEInvoiceRequestData($paymentEInvoice, $payment, $baseEntity)
     {
