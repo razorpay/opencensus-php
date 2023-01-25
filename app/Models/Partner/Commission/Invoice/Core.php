@@ -121,11 +121,8 @@ class Core extends Base\Core
         (new Validator())->validateMerchantToAllowChangeAction($input[Entity::ACTION]);
         
         (new Validator())->validatePartnerInvoiceApprovalExpiry($invoice);
-        
-        if (
-            $this->isPartialFinanceApprovalRemovalExpEnabled($merchant->getId()) and
-            $invoice->getGrossAmount() <= Entity::MAX_AUTO_APPROVAL_AMOUNT
-        )
+
+        if ($this->isFinanceAutoApprovalEnabled($invoice))
         {
             try {
                 $result = $this->approveInvoiceForProcessing($invoice, $merchant);
@@ -147,6 +144,18 @@ class Core extends Base\Core
         }
 
         return $this->markInvoiceUnderReview($invoice, $input, $merchant);
+    }
+
+    private function isFinanceAutoApprovalEnabled(Entity $invoice): bool
+    {
+        $merchant = $invoice->merchant;
+        if (!$this->isPartialFinanceApprovalRemovalExpEnabled($merchant->getId())) { // partner finance exp. check
+            return false;
+        }
+        if ($invoice->getGrossAmount() > Entity::MAX_AUTO_APPROVAL_AMOUNT) { // gross amount > 50k
+            return false;
+        }
+        return ($invoice->getYear() >= 2023 or ($invoice->getYear() >= 2022 and $invoice->getMonth() >= 12));// partner approval timestamp check for invoice before dec-2022
     }
 
     /**
