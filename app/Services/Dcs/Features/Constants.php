@@ -15,15 +15,19 @@ class Constants
     const EmailOptionalOnCheckout = 'email_optional_oncheckout';
     const AutoCommissionInvoiceDisabled = 'auto_invoice_generation_disabled';
     const AffordabilityWidgetSet = 'affordability_widget_set';
+    const EnableMerchantExpiryForPP = 'payment_page_no_expiry_enabled';
+    const EnableMerchantExpiryForPL = 'payment_link_no_expiry_enabled';
+    const EnableMerchantCreateOwnTemplate = 'payment_page_create_own_template_enabled';
+    const EnableCustomerAmount = 'payment_page_customer_decide_amount_enabled';
     const ReceiptUniqueEnabled = 'receipt_unique_enabled';
     const CartAmountCheckEnabled = 'cart_amount_check_enabled';
-	  const AllowPaymentsOnPaidOrder = 'allow_payments_on_paid_order';
-	  const ExcessOrderAmountEnabled = 'excess_order_amount_enabled';
-	  const DcsPaymentMailsDisabled = 'payment_mails_disabled';
-	  const FreeCreditUnregDisabled = 'free_credit_unreg_disabled';
-	  const AsyncBalanceUpdateEnabled = 'async_balance_update_enabled';
-	  const AsyncTransactionUpdateEnabled = 'async_transaction_update_enabled';
-	  const AutoRefundsDisabled = 'auto_refunds_disabled';
+	const AllowPaymentsOnPaidOrder = 'allow_payments_on_paid_order';
+	const ExcessOrderAmountEnabled = 'excess_order_amount_enabled';
+	const DcsPaymentMailsDisabled = 'payment_mails_disabled';
+	const FreeCreditUnregDisabled = 'free_credit_unreg_disabled';
+	const AsyncBalanceUpdateEnabled = 'async_balance_update_enabled';
+	const AsyncTransactionUpdateEnabled = 'async_transaction_update_enabled';
+	const AutoRefundsDisabled = 'auto_refunds_disabled';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -36,6 +40,10 @@ class Constants
         self::EmailOptionalOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
         self::AutoCommissionInvoiceDisabled => "rzp/platform/partner/commission/Features",
         self::AffordabilityWidgetSet => "rzp/pg/merchant/affordability/Widget",
+        self::EnableMerchantExpiryForPP => "rzp/nocode/merchant/paymentpage/Features",
+        self::EnableMerchantExpiryForPL => "rzp/nocode/merchant/paymentlink/Features",
+        self::EnableMerchantCreateOwnTemplate => "rzp/nocode/merchant/paymentpage/Features",
+        self::EnableCustomerAmount => "rzp/nocode/merchant/paymentpage/Features",
         self::ReceiptUniqueEnabled => "rzp/pg/merchant/order/Features",
         self::CartAmountCheckEnabled => "rzp/pg/merchant/order/cart/Features",
         self::AllowPaymentsOnPaidOrder =>"rzp/pg/merchant/order/payments/Features",
@@ -59,6 +67,10 @@ class Constants
         self::EmailOptionalOnCheckout => self::EmailOptionalOnCheckout,
         APIFeaturesConstants::AUTO_COMM_INV_DISABLED => self::AutoCommissionInvoiceDisabled,
         self::AffordabilityWidgetSet => self::AffordabilityWidgetSet,
+        APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PL => self::EnableMerchantExpiryForPL,
+        APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PP => self::EnableMerchantExpiryForPP,
+        APIFeaturesConstants::ENABLE_CREATE_OWN_TEMPLATE => self::EnableMerchantCreateOwnTemplate,
+        APIFeaturesConstants::ENABLE_CUSTOMER_AMOUNT => self::EnableCustomerAmount,
         APIFeaturesConstants::ORDER_RECEIPT_UNIQUE => self::ReceiptUniqueEnabled,
         APIFeaturesConstants::CART_API_AMOUNT_CHECK => self::CartAmountCheckEnabled,
         APIFeaturesConstants::DISABLE_AMOUNT_CHECK => self::AllowPaymentsOnPaidOrder,
@@ -91,6 +103,10 @@ class Constants
         self::AsyncTransactionUpdateEnabled => APIFeaturesConstants::ASYNC_TXN_FILL_DETAILS,
         self::AutoRefundsDisabled => APIFeaturesConstants::DISABLE_AUTO_REFUNDS,
         self::AutoCommissionInvoiceDisabled => APIFeaturesConstants::AUTO_COMM_INV_DISABLED,
+        self::EnableMerchantExpiryForPL => APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PL,
+        self::EnableMerchantExpiryForPP => APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PP,
+        self::EnableMerchantCreateOwnTemplate => APIFeaturesConstants::ENABLE_CREATE_OWN_TEMPLATE,
+        self::EnableCustomerAmount => APIFeaturesConstants::ENABLE_CUSTOMER_AMOUNT
     ];
 
     /**
@@ -102,6 +118,10 @@ class Constants
         self::EligibilityEnabled => 'client',
         self::AutoCommissionInvoiceDisabled => 'direct',
         self::AffordabilityWidgetSet => 'client',
+        self::EnableMerchantExpiryForPL => 'direct',
+        self::EnableMerchantExpiryForPP => 'direct',
+        self::EnableMerchantCreateOwnTemplate => 'direct',
+        self::EnableCustomerAmount => 'direct'
     ];
 
     public static function isShadowFeature($variant)

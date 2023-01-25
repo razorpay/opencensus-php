@@ -65,7 +65,7 @@ class Repository extends Base\Repository
             ->cacheTags($cacheTags)
             ->get();
 
-        return $res->merge($apiResponse)->unique(Entity::NAME, true);
+        return $apiResponse->merge($res)->unique(Entity::NAME, true);
     }
 
     public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)

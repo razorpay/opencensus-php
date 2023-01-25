@@ -9,6 +9,7 @@ use RZP\Base;
 use RZP\Constants\Mode;
 use RZP\Constants\Table;
 use RZP\Models\Currency\Core as CurrencyCore;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -582,6 +583,76 @@ class Validator extends Base\Validator
 
         // Additionally, validates UDF schema
         $this->validateUdfSchema($input);
+    }
+
+    public function validatePayerNameAndExpiryForCreate($merchant, $input)
+    {
+        if ($merchant->org->isFeatureEnabled(Feature::ENABLE_PAYER_NAME_FOR_PP) === true)
+        {
+            $settings = $input[Entity::SETTINGS] ?? [];
+
+            if (isset($settings[Entity::UDF_SCHEMA])) {
+
+                $udf_schema = json_decode($settings[Entity::UDF_SCHEMA], true);
+
+                if (($udf_schema !== null) and (in_array(Entity::PAYER_NAME, array_column($udf_schema, 'name')) === false))
+                {
+                    throw new BadRequestValidationFailureException(
+                        'Mandatory field Payer Name missing.');
+                }
+            }
+            else
+            {
+                throw new BadRequestValidationFailureException(
+                    'Mandatory field Payer Name missing.');
+            }
+        }
+
+        if (($merchant->org->isFeatureEnabled(Feature::HIDE_NO_EXPIRY_FOR_PP) === true) and
+            ($merchant->isEnableMerchantExpiryForPPEnabled() === false))
+        {
+            if ((isset($input[Entity::EXPIRE_BY]) === false) or ($input[Entity::EXPIRE_BY] === null)) {
+                    throw new BadRequestValidationFailureException(
+                        'Mandatory field Expires By must be set');
+            }
+        }
+
+        $payment_page_items = $input['payment_page_items'] ?? [];
+
+        $template_type = $input[Entity::TEMPLATE_TYPE];
+
+        if (($merchant->org->isFeatureEnabled(Feature::HIDE_DYNAMIC_PRICE_PP) === true) and
+            ($merchant->isEnableCustomerAmountEnabled() === false) and
+            ($template_type !== 'donation'))
+        {
+            foreach ($payment_page_items as $paymentPageItem)
+            {
+                if (isset($paymentPageItem['item']) === true)
+                {
+                    $amount = $paymentPageItem['item'][Entity::AMOUNT];
+
+                    if ($amount === null)
+                    {
+                        throw new BadRequestValidationFailureException(
+                            'Price has to be a fixed amount');
+                    }
+                }
+            }
+        }
+
+        }
+
+
+    public function validatePayerNameAndExpiryForUpdate($merchant, $input)
+    {
+        if (($merchant->org->isFeatureEnabled(Feature::HIDE_NO_EXPIRY_FOR_PP) === true) and
+            ($merchant->isEnableMerchantExpiryForPPEnabled() === false))
+        {
+            if (is_null($input[Entity::EXPIRE_BY])) {
+                throw new BadRequestValidationFailureException(
+                    'Mandatory field Expires By must be set ' . $input[Entity::EXPIRE_BY]);
+            }
+        }
     }
 
     public function validateCheckoutOptions(array $input): void

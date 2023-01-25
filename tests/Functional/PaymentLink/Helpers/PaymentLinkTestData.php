@@ -3830,15 +3830,13 @@ return [
             'content' => [
                 'receipt'       => '00000000000001',
                 'title'         => 'Sample title',
+                "expire_by" => 1670914048,
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
-                'notes'         => [
-                    'sample_key' => 'Sample notes',
-                ],
+                "support_email" => "abc@razorpay.com",
+                "support_contact"   => "adasdadasdsad",
                 "settings" => [
-                    "partner_webhook_settings" => [
-                        "partner_shiprocket" => "1",
-                    ],
-                    "udf_schema" => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":0}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":1}},{\"name\":\"name\",\"title\":\"Name\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":3}},{\"name\":\"address\",\"title\":\"Address\",\"required\":true,\"type\":\"string\",\"options\":{\"cmp\":\"textarea\",\"is_shiprocket\":true},\"settings\":{\"position\":4}},{\"name\":\"city\",\"title\":\"City\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":5}},{\"name\":\"state\",\"title\":\"State\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":6}},{\"name\":\"pincode\",\"title\":\"Pincode\",\"required\":true,\"type\":\"number\",\"minLength\":5,\"maxLength\":7,\"pattern\":\"number\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":7}}]",
+                    "allow_social_share" => "0",
+                    "udf_schema" => "[{\"name\":\"payer_name\",\"required\":true,\"title\":\"Customer_Name\",\"type\":\"string\",\"settings\":{\"position\":1}},{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":0}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":1}},{\"name\":\"name\",\"title\":\"Name\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":3}},{\"name\":\"address\",\"title\":\"Address\",\"required\":true,\"type\":\"string\",\"options\":{\"cmp\":\"textarea\",\"is_shiprocket\":true},\"settings\":{\"position\":4}},{\"name\":\"city\",\"title\":\"City\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":5}},{\"name\":\"state\",\"title\":\"State\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":6}},{\"name\":\"pincode\",\"title\":\"Pincode\",\"required\":true,\"type\":\"number\",\"minLength\":5,\"maxLength\":7,\"pattern\":\"number\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":7}}]",
                 ],
                 'payment_page_items' => [
                     [
@@ -3866,6 +3864,140 @@ return [
         ],
     ],
 
+
+    'testCreatePaymentPageWithMandatoryPayerNameAndExpiryWithoutPayerName' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                "expire_by" => 1670914048,
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                "support_email" => "abc@razorpay.com",
+                "support_contact"   => "adasdadasdsad",
+                "settings" => [
+                    "allow_social_share" => "0",
+                    "udf_schema" => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":0}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":1}},{\"name\":\"name\",\"title\":\"Name\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":3}},{\"name\":\"address\",\"title\":\"Address\",\"required\":true,\"type\":\"string\",\"options\":{\"cmp\":\"textarea\",\"is_shiprocket\":true},\"settings\":{\"position\":4}},{\"name\":\"city\",\"title\":\"City\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":5}},{\"name\":\"state\",\"title\":\"State\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":6}},{\"name\":\"pincode\",\"title\":\"Pincode\",\"required\":true,\"type\":\"number\",\"minLength\":5,\"maxLength\":7,\"pattern\":\"number\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":7}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+    'testCreatePaymentPageWithMandatoryPayerNameAndExpiryWithoutExpiry' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                "support_email" => "abc@razorpay.com",
+                "support_contact"   => "adasdadasdsad",
+                "settings" => [
+                    "allow_social_share" => "0",
+                    "udf_schema" => "[{\"name\":\"payer_name\",\"required\":true,\"title\":\"Customer_Name\",\"type\":\"string\",\"settings\":{\"position\":1}},{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":0}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":1}},{\"name\":\"name\",\"title\":\"Name\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":3}},{\"name\":\"address\",\"title\":\"Address\",\"required\":true,\"type\":\"string\",\"options\":{\"cmp\":\"textarea\",\"is_shiprocket\":true},\"settings\":{\"position\":4}},{\"name\":\"city\",\"title\":\"City\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":5}},{\"name\":\"state\",\"title\":\"State\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":6}},{\"name\":\"pincode\",\"title\":\"Pincode\",\"required\":true,\"type\":\"number\",\"minLength\":5,\"maxLength\":7,\"pattern\":\"number\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":7}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreatePaymentPageWithMandatoryPayerNameAndExpiry' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'receipt'       => '00000000000001',
+                'title'         => 'Sample title',
+                "expire_by"     =>  1671009406,
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'notes'         => [
+                    'sample_key' => 'Sample notes',
+                ],
+                "settings" => [
+                    "partner_webhook_settings" => [
+                        "partner_shiprocket" => "1",
+                    ],
+                    "udf_schema" => "[{\"name\":\"payer_name\",\"required\":true,\"title\":\"Customer_Name\",\"type\":\"string\",\"settings\":{\"position\":1}},{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":0}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":1}},{\"name\":\"name\",\"title\":\"Name\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":3}},{\"name\":\"address\",\"title\":\"Address\",\"required\":true,\"type\":\"string\",\"options\":{\"cmp\":\"textarea\",\"is_shiprocket\":true},\"settings\":{\"position\":4}},{\"name\":\"city\",\"title\":\"City\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":5}},{\"name\":\"state\",\"title\":\"State\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":6}},{\"name\":\"pincode\",\"title\":\"Pincode\",\"required\":true,\"type\":\"number\",\"minLength\":5,\"maxLength\":7,\"pattern\":\"number\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":7}}]",
+                ],
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => 100000,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
     'testCreatePaymentPageWithPartnerSettingsAndInvalidPartnerShouldThrowError' => [
         'request'  => [
             'url'     => '/payment_pages',

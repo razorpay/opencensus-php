@@ -1506,6 +1506,8 @@ class Constants
 
     const HIDE_NO_EXPIRY_FOR_PL = 'hide_no_expiry_for_pl';
 
+    const SHOW_PNAME_IN_CHECKOUT_PL = 'show_pname_in_chkout_pl';
+
     const ENABLE_PAYER_NAME_FOR_PP = 'enable_payer_name_for_pp';
 
     const HIDE_NO_EXPIRY_FOR_PP = 'hide_no_expiry_for_pp';
@@ -1514,7 +1516,13 @@ class Constants
 
     const HIDE_DYNAMIC_PRICE_PP = 'hide_dynamic_price_pp';
 
-    const SHOW_PNAME_IN_CHECKOUT = 'show_pname_in_chkout';
+    const ENABLE_MERCHANT_EXPIRY_PL = 'enable_merchant_expiry_pl';
+
+    const ENABLE_MERCHANT_EXPIRY_PP = 'enable_merchant_expiry_pp';
+
+    const ENABLE_CREATE_OWN_TEMPLATE = 'enbl_create_own_tmpl';
+
+    const ENABLE_CUSTOMER_AMOUNT = 'enable_customer_amount';
 
     // form builder
 
@@ -2318,7 +2326,11 @@ class Constants
         self::HIDE_NO_EXPIRY_FOR_PP           => true,
         self::HIDE_CREATE_NEW_TEMPLATE_PP     => true,
         self::HIDE_DYNAMIC_PRICE_PP           => true,
-        self::SHOW_PNAME_IN_CHECKOUT          => true,
+        self::SHOW_PNAME_IN_CHECKOUT_PL       => true,
+        self::ENABLE_MERCHANT_EXPIRY_PL       => true,
+        self::ENABLE_MERCHANT_EXPIRY_PP       => true,
+        self::ENABLE_CREATE_OWN_TEMPLATE      => true,
+        self::ENABLE_CUSTOMER_AMOUNT          => true,
         self::FILE_UPLOAD_PP                  => true,
         self::ENABLE_ADDITIONAL_INFO_UPI      => true,
         self::ENABLE_TC_DASHBOARD             => true,
@@ -2406,6 +2418,10 @@ class Constants
         DcsConstants::EmailOptionalOnCheckout => true,
         DcsConstants::ShowEmailOnCheckout => true,
         self::AUTO_COMM_INV_DISABLED          => true,
+        DcsConstants::EnableMerchantExpiryForPP => true,
+        DcsConstants::EnableMerchantExpiryForPL => true,
+        DcsConstants::EnableCustomerAmount => true,
+        DcsConstants::EnableMerchantCreateOwnTemplate => true,
         self::ONE_CC_ADDRESS_SYNC_OFF         => true,
         self::REDUCE_OD_BALANCE_FOR_CA        => true,
         self::PUSH_PROVISIONING_LIVE          => true,
@@ -3307,6 +3323,26 @@ class Constants
         self::ROUTE_NO_DOC_KYC  => [
             'feature'       => self::ROUTE_NO_DOC_KYC,
             'display_name'  => 'route_no_doc_kyc',
+            'documentation' => '',
+        ],
+        self::ENABLE_MERCHANT_EXPIRY_PL =>[
+            'feature'       => self::ENABLE_MERCHANT_EXPIRY_PL,
+            'display_name'  => 'Enables merchant to select no expiry option on payment links',
+            'documentation' => '',
+        ],
+        self::ENABLE_MERCHANT_EXPIRY_PP =>[
+            'feature'       => self::ENABLE_MERCHANT_EXPIRY_PP,
+            'display_name'  => 'Enables merchant to select no expiry option on payment pages',
+            'documentation' => '',
+        ],
+        self::ENABLE_CREATE_OWN_TEMPLATE =>[
+            'feature'       => self::ENABLE_CREATE_OWN_TEMPLATE,
+            'display_name'  => 'Enables merchant to select create own template option',
+            'documentation' => '',
+        ],
+        self::ENABLE_CUSTOMER_AMOUNT =>[
+            'feature'       => self::ENABLE_CUSTOMER_AMOUNT,
+            'display_name'  => 'Enables merchant to select dynamic customer amount',
             'documentation' => '',
         ],
 

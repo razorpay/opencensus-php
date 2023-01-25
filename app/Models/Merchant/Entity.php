@@ -967,6 +967,16 @@ class Entity extends Base\PublicEntity
         return $this->isFeatureEnabled(Feature\Constants::ROUTE_CODE_SUPPORT);
     }
 
+    public function isEnableMerchantExpiryForPPEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::ENABLE_MERCHANT_EXPIRY_PP);
+    }
+
+    public function isEnableCustomerAmountEnabled() : bool
+    {
+        return $this->isFeatureEnabled(Feature\Constants::ENABLE_CUSTOMER_AMOUNT);
+    }
+
     public function linkedAccountsRequireKyc(): bool
     {
         return $this->getAttribute(self::LINKED_ACCOUNT_KYC);

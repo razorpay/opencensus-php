@@ -187,6 +187,9 @@ class Entity extends Base\PublicEntity
     const CUSTOM_DOMAIN_SLUG                    = 'custom_domain_slug'; // This is only for validation key
     const SETTINGS_CUSTOM_DOMAIN_KEY            = "entity_settings_custom_domain";
 
+    // HDFC Collect Now Mandatory UDF fields
+    const PAYER_NAME = 'payer__name';
+
     const SETTINGS_KEYS                = [
         self::THEME,
         self::UDF_SCHEMA,

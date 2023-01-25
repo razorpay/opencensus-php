@@ -2145,6 +2145,71 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreatePaymentPageWithMandatoryPayerNameAndExpiry()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::ENABLE_PAYER_NAME_FOR_PP,
+        ]);
+
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::HIDE_NO_EXPIRY_FOR_PP
+        ]);
+
+        $expireBy = Carbon::now(Timezone::IST)->addSeconds(120)->getTimestamp();
+
+        $this->testData[__FUNCTION__]['request']['content']['expire_by'] = $expireBy;
+
+        $this->startTest();
+    }
+
+    public function testCreatePaymentPageWithMandatoryPayerNameAndExpiryWithoutPayerName()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::ENABLE_PAYER_NAME_FOR_PP,
+        ]);
+
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::HIDE_NO_EXPIRY_FOR_PP
+        ]);
+
+        $this->startTest();
+    }
+
+
+    public function testCreatePaymentPageWithMandatoryPayerNameAndExpiryWithoutExpiry()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::ENABLE_PAYER_NAME_FOR_PP,
+        ]);
+
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::HIDE_NO_EXPIRY_FOR_PP
+        ]);
+
+        $this->startTest();
+    }
+
     public function testPaymentHandleUpdate()
     {
         $this->testPaymentHandleCreationApi();

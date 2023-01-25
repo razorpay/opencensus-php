@@ -43,6 +43,7 @@ use RZP\Services\MerchantRiskClient;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\ElfinWrapper;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 use RZP\Models\PaymentLink\PaymentPageItem as PPI;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -117,6 +118,9 @@ class Core extends Base\Core
         $settings = $input[Entity::SETTINGS] ?? [];
 
         $settings[Entity::VERSION] = Version::V2;
+
+
+        (new Validator())->validatePayerNameAndExpiryForCreate($merchant, $input);
 
         Tracer::inSpan(['name' => 'payment_page.create.build'], function() use ($paymentLink, $input) {
             $paymentLink->build($input);
@@ -387,6 +391,8 @@ class Core extends Base\Core
                 Entity::ID    => $paymentLink->getId(),
                 Entity::INPUT => $input,
             ]);
+        
+        (new Validator())->validatePayerNameAndExpiryForUpdate($this->merchant, $input);
 
         $settingCustomDomain = $paymentLink->getSettings(Entity::CUSTOM_DOMAIN);
         $settingCustomDomain = is_string($settingCustomDomain) ? $settingCustomDomain : "";

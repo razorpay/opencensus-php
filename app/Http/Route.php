@@ -14046,6 +14046,7 @@ class Route
         ],
 
         'payment_links' => [
+            'internal_feature_get_all',
             'merchant_fetch_config_internal',
             'send_email_for_pl_service',
             'customer_fetch_by_id',
