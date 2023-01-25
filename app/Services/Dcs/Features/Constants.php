@@ -149,7 +149,7 @@ class Constants
 
     public static function apiFeatureNameFromDcsName($name): string
     {
-        if (key_exists($name, self::$apiFeatureNameToDCSFeatureName) === false) {
+        if (key_exists($name, self::$dcsFeatureNameToAPIFeatureName) === false) {
             $ex = new Exception\ServerErrorException('Dcs feature name missing in
             $dcsFeatureNameToAPIFeatureName please check with dcs team',
                 ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE,

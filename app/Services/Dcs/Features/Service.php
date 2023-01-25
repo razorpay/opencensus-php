@@ -207,7 +207,7 @@ class Service extends Base
         foreach ($featureNames as $featureName)
         {
             $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
-            $data[$key][] = DcsConstants::dcsFeatureNameFromAPIName($featureName);
+            $data[$key][] = $featureName;
         }
 
         $this->trace->info(TraceCode::DCS_FETCH_REQUEST_RECEIVED, [
