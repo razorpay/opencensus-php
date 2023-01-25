@@ -44,6 +44,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\BankingAccountStatementProcessor;
+use RZP\Mail\Transaction\Payout as PayoutMail;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\BankingAccount\Entity as BaEntity;
@@ -12371,5 +12372,227 @@ class RblBankingAccountStatementTest extends TestCase
             })->all();
 
         $this->assertEqualsCanonicalizing($utrsExpected, $utrsActual);
+    }
+
+    public function testPayoutProcessedMailTriggeredViaStmtProcessingJobRbl()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
+
+        Mail::fake();
+
+        $this->setupForRblPayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     =>  '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'SUCCESS',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1234567,
+                'mode'                => 'IMPS',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check the status by calling getStatus API.',
+                'source_id'           => $payout['id'],
+                'source_type'         => 'payout',
+                'status'              => 'processed',
+                'utr'                 => '933815383814',
+                'source_account_id'   => 111111111,
+                'bank_account_type'   => 'current'
+            ],
+        ];
+
+        $this->ba->ftsAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        $this->assertEquals('933815383814', $payout->getUtr());
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout->getStatus());
+
+        Mail::assertNotQueued(PayoutMail::class);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'debit',
+                                    'utr'                       => '933815383814',
+                                    'amount'                    => '10095',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'SDHDH',
+                                    'balance'                   => -95,
+                                    'transaction_date'          => 1584987183,
+                                    'posted_date'               => Carbon::now()->getTimestamp(),
+                                ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            BasDetails\Entity::ID                                  => 'xba00000000006',
+            BasDetails\Entity::MERCHANT_ID                         => '10000000000000',
+            BasDetails\Entity::BALANCE_ID                          => $this->bankingBalance->getId(),
+            BasDetails\Entity::ACCOUNT_NUMBER                      => '2323230041626905',
+            BasDetails\Entity::CHANNEL                             => BasDetails\Channel::RBL,
+            BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::GATEWAY_BALANCE                     => -95,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => -95,
+            BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT           => 123456,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => 123399,
+            BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT           => 123460,
+            BasDetails\Entity::ACCOUNT_TYPE                        => BasDetails\AccountType::DIRECT,
+        ]);
+
+        BankingAccountStatementProcessor::dispatch('test', [
+            'channel'           => \RZP\Models\BankingAccount\Channel::RBL,
+            'account_number'    => 2224440041626905
+        ]);
+
+        Mail::assertQueued(PayoutMail::class, function($mail) {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('banking', $mail->originProduct);
+
+            $this->assertEquals('10095', $viewData['txn']['amount']); // raw amount
+            $this->assertEquals('100.95', amount_format_IN($viewData['txn']['amount'])); // formatted amount
+
+            $payout = $this->getDbLastEntity('payout');
+
+            $this->assertEquals('pout_' . $payout->getId(), $viewData['source']['id']);
+            $this->assertEquals($payout->getFailureReason(), $viewData['source']['failure_reason']);
+
+            $expectedData = [
+                'txn' => [
+                    'entity_id' => $payout->getId(),
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($expectedData, $viewData);
+
+            $this->assertArrayHasKey('created_at_formatted', $viewData['txn']);
+
+            $this->assertEquals('emails.transaction.payout_processed', $mail->view);
+
+            return true;
+        });
+    }
+
+    // payout is created in initiated state with utr also present , account statement is created , processing of acc statement is done
+    // mail is not triggered , then fts update comes with processed state , then mail is triggered .
+    public function testPayoutProcessedMailTriggeredViaStmtProcessingJobRblCase2()
+    {
+        (new AdminService)->setConfigKeys([ConfigKey::ACCOUNT_STATEMENT_V2_FLOW => ["2224440041626905"]]);
+
+        Mail::fake();
+
+        $this->setupForRblPayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     =>  '/update_fts_fund_transfer',
+            'content' => [
+                'bank_processed_time' => '2019-12-04 15:51:21',
+                'bank_status_code'    => 'SUCCESS',
+                'extra_info'          => [
+                    'beneficiary_name' => 'SUSANTA BHUYAN',
+                    'cms_ref_no'       => 'd10ce8e4167f11eab1750a0047330000',
+                    'internal_error'   => false
+                ],
+                'failure_reason'      => '',
+                'fund_transfer_id'    => 1234567,
+                'mode'                => 'IMPS',
+                'narration'           => 'Kissht FastCash Disbursal',
+                'remarks'             => 'Check the status by calling getStatus API.',
+                'source_id'           => $payout['id'],
+                'source_type'         => 'payout',
+                'status'              => 'initiated',
+                'utr'                 => '933815383814',
+                'source_account_id'   => 111111111,
+                'bank_account_type'   => 'current'
+            ],
+        ];
+
+        $this->ba->ftsAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        $this->assertEquals('933815383814', $payout->getUtr());
+
+        Mail::assertNotQueued(PayoutMail::class);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'debit',
+                                    'utr'                       => '933815383814',
+                                    'amount'                    => '10095',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626905,
+                                    'bank_transaction_id'       => 'SDHDH',
+                                    'balance'                   => -95,
+                                    'transaction_date'          => 1584987183,
+                                    'posted_date'               => Carbon::now()->getTimestamp(),
+                                ]);
+
+        $this->fixtures->create('banking_account_statement_details', [
+            BasDetails\Entity::ID                                  => 'xba00000000006',
+            BasDetails\Entity::MERCHANT_ID                         => '10000000000000',
+            BasDetails\Entity::BALANCE_ID                          => $this->bankingBalance->getId(),
+            BasDetails\Entity::ACCOUNT_NUMBER                      => '2323230041626905',
+            BasDetails\Entity::CHANNEL                             => BasDetails\Channel::RBL,
+            BasDetails\Entity::STATUS                              => BasDetails\Status::ACTIVE,
+            BasDetails\Entity::GATEWAY_BALANCE                     => -95,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE           => -95,
+            BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT           => 123456,
+            BasDetails\Entity::STATEMENT_CLOSING_BALANCE_CHANGE_AT => 123399,
+            BasDetails\Entity::LAST_STATEMENT_ATTEMPT_AT           => 123460,
+            BasDetails\Entity::ACCOUNT_TYPE                        => BasDetails\AccountType::DIRECT,
+        ]);
+
+        BankingAccountStatementProcessor::dispatch('test', [
+            'channel'           => \RZP\Models\BankingAccount\Channel::RBL,
+            'account_number'    => 2224440041626905
+        ]);
+
+        Mail::assertNotQueued(PayoutMail::class);
+
+        $request = ['method'  => 'POST',
+                    'url'     => '/update_fts_fund_transfer',
+                    'content' => [
+                        'bank_processed_time' => '2019-12-04 15:51:21',
+                        'bank_status_code'    => 'SUCCESS',
+                        'failure_reason'      => '',
+                        'fund_transfer_id'    => 1234567,
+                        'mode'                => 'IMPS',
+                        'narration'           => 'Kissht FastCash Disbursal',
+                        'remarks'             => 'Check the status by calling getStatus API.',
+                        'source_id'           => $payout['id'],
+                        'source_type'         => 'payout',
+                        'status'              => 'processed',
+                        'source_account_id'   => 111111111,
+                        'bank_account_type'   => 'current',
+                        'channel'             => 'rbl',
+                        'utr'                 => '933815383814',
+                    ]
+        ];
+
+        $this->ba->ftsAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout->reload();
+
+        Mail::assertQueued(PayoutMail::class);
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout->getStatus());
     }
 }

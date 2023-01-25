@@ -29425,6 +29425,105 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals('failed', $payout->getStatus());
     }
 
+    public function testPayoutProcessedMailViaStatementProcessing()
+    {
+        Mail::fake();
+
+        $this->createDirectAccountPayout();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['status' => 'initiated']);
+
+        $this->updateFtaAndSource($payout->getId(), Payout\Status::PROCESSED, '933815383814');
+
+        $payout->reload();
+
+        $this->assertEquals('933815383814', $payout->getUtr());
+
+        $this->assertEquals(Payout\Status::PROCESSED, $payout->getStatus());
+
+        Mail::assertNotQueued(PayoutMail::class);
+
+        $transaction = $this->fixtures->create('transaction',
+                                               ['merchant_id'       => '10000000000000',
+                                                'type'        => 'external',
+                                                'entity_id'   => 'testExternal00',
+                                                'amount'      => 104,
+                                                'balance_id'  => $this->bankingBalance->getId(),
+                                               ]);
+
+        $this->fixtures->create('banking_account_statement',
+                                [
+                                    'type'                      => 'debit',
+                                    'amount'                    => '104',
+                                    'channel'                   => 'rbl',
+                                    'account_number'            => 2224440041626906,
+                                    'transaction_id'            => $transaction['id'],
+                                    'entity_type'               => 'external',
+                                    'entity_id'                 => 'testExternal00',
+                                    'bank_transaction_id'       => 'SDHDH',
+                                    'balance'                   => 30019891,
+                                    'transaction_date'          => 1584987183
+                                ]);
+
+        $bas = $this->getDbLastEntity('banking_account_statement');
+
+        $this->fixtures->create('external',
+                                [
+                                    'id' => 'testExternal00' ,
+                                    'merchant_id' => '10000000000000',
+                                    'transaction_id' => $transaction['id'],
+                                    'banking_account_statement_id' => $bas->getId(),
+                                    'channel' => 'rbl',
+                                    'bank_reference_number' => $bas->getBankTransactionId(),
+                                    'utr' => '211708954836',
+                                    'type' => $bas->getType(),
+                                    'amount' => $bas->getAmount(),
+                                    'currency' => 'INR',
+                                    'balance_id' => $payout['balance_id'],
+                                ]);
+
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'     => '/banking_account_statement/source/update',
+            'method'  => 'POST',
+            'content' => [
+                'payout_id'     => $payout['id'],
+                'debit_bas_id'  => $bas['id'],
+                'end_status'    => 'processed'],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        Mail::assertQueued(PayoutMail::class, function($mail) {
+            $viewData = $mail->viewData;
+
+            $this->assertEquals('104', $viewData['txn']['amount']); // raw amount
+            $this->assertEquals('1.04', amount_format_IN($viewData['txn']['amount'])); // formatted amount
+
+            $payout = $this->getDbLastEntity('payout');
+
+            $this->assertEquals('pout_' . $payout->getId(), $viewData['source']['id']);
+            $this->assertEquals($payout->getFailureReason(), $viewData['source']['failure_reason']);
+
+            $expectedData = [
+                'txn' => [
+                    'entity_id' => $payout->getId(),
+                ]
+            ];
+
+            $this->assertArraySelectiveEquals($expectedData, $viewData);
+
+            $this->assertArrayHasKey('created_at_formatted', $viewData['txn']);
+
+            $this->assertEquals('emails.transaction.payout_processed', $mail->view);
+
+            return true;
+        });
+    }
+
     public function testProcessingOfFreePayoutsInLedgerReverseShadowModeInLiveMode()
     {
         $this->testFreePayoutsOnLedgerReverseShadowInLiveMode();

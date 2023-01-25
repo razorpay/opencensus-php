@@ -2521,6 +2521,15 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($payout);
 
+        // trigger mail only if account type is of direct , transaction is created, payout is in processed state
+        if ( ($payout->isBalanceAccountTypeDirect() === true) and
+             ($payout->isOfMerchantTransaction() === true) and
+             ($payout->getStatus() === Status::PROCESSED))
+        {
+            $event = "payout.processed";
+            (new Transaction\Notifier($payout->transaction, $event))->notify();
+        }
+
         return $payout;
     }
 
@@ -3642,7 +3651,7 @@ class Core extends Base\Core
         return $delay;
     }
 
-    protected function linkPayoutToDebitBas($payout, $debit_bas)
+    protected function linkPayoutToDebitBas(Payout\Entity $payout, $debit_bas)
     {
         if (($payout->getId() === $debit_bas->source->getId()) and
             ($debit_bas->source->getEntity() === 'payout'))
@@ -3660,6 +3669,12 @@ class Core extends Base\Core
         if ($payout->getStatus() === Status::PROCESSED)
         {
             (new Payout\Core)->handlePayoutTransactionForDirectBanking($payout, $debit_bas);
+
+            if ($payout->isOfMerchantTransaction() === true)
+            {
+                $event = "payout.processed";
+                (new Transaction\Notifier($payout->transaction, $event))->notify();
+            }
         }
         else
         {
