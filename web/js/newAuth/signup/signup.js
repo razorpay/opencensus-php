@@ -24,6 +24,7 @@ import { FullPageLoader } from 'common/components/Loader';
 
 const SignUp = () => {
   const [programDsCheck, setProgramDsCheck] = useState(false);
+  const [orgName, setOrgName] = useState();
   const [isFetchingOrgData, setFetchingOrgData] = useState(false);
   const [oneTapInfo, setOneTapInfo] = useState({
     isExpOn: true,
@@ -85,6 +86,7 @@ const SignUp = () => {
     fetchOrg()
       .then((res) => {
         const isProgramDsCheck = res?.data?.features?.indexOf('program_ds_check') > -1;
+        setOrgName(res?.data?.custom_code);
         setProgramDsCheck(isProgramDsCheck);
         setFetchingOrgData(false);
       })
@@ -93,10 +95,9 @@ const SignUp = () => {
       });
   };
 
-  // Check org feature flag 'program_ds_check' & allow sign up
   useEffect(() => {
-    // Only fetch org data if it's a banking url
-    if (getHostName() !== 'dashboard.razorpay.com') {
+    const query = QueryString.parse(window.location.search);
+    if (getHostName() !== 'dashboard.razorpay.com' || query?.merchant_invitation) {
       getOrgData();
     }
   }, []);
@@ -169,6 +170,7 @@ const SignUp = () => {
                             skipCaptcha={isTestEnvironment()}
                             autoReadOtpSignup
                             showMobileSignup
+                            orgName={orgName}
                           />
                         </CommanderShieldThemeWrapper>
                       </AbsoluteView>
