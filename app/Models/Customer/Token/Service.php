@@ -135,7 +135,7 @@ class Service extends Base\Service
 
         $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
 
-        if ($token->hasCard() && ($token->card->isTokenisationCompliant() === false) && ($this->mode !== MODE::TEST))
+        if ($token->hasCard() && ($token->card->isTokenisationCompliant() === false) && ($this->mode !== MODE::TEST) && ($token->isRecurring() === false))
          {
              throw new Exception\BadRequestException(
                  ErrorCode::BAD_REQUEST_INVALID_ID,
