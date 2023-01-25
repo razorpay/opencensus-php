@@ -15,6 +15,15 @@ class Constants
     const EmailOptionalOnCheckout = 'email_optional_oncheckout';
     const AutoCommissionInvoiceDisabled = 'auto_invoice_generation_disabled';
     const AffordabilityWidgetSet = 'affordability_widget_set';
+    const ReceiptUniqueEnabled = 'receipt_unique_enabled';
+    const CartAmountCheckEnabled = 'cart_amount_check_enabled';
+	  const AllowPaymentsOnPaidOrder = 'allow_payments_on_paid_order';
+	  const ExcessOrderAmountEnabled = 'excess_order_amount_enabled';
+	  const DcsPaymentMailsDisabled = 'payment_mails_disabled';
+	  const FreeCreditUnregDisabled = 'free_credit_unreg_disabled';
+	  const AsyncBalanceUpdateEnabled = 'async_balance_update_enabled';
+	  const AsyncTransactionUpdateEnabled = 'async_transaction_update_enabled';
+	  const AutoRefundsDisabled = 'auto_refunds_disabled';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -27,6 +36,15 @@ class Constants
         self::EmailOptionalOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
         self::AutoCommissionInvoiceDisabled => "rzp/platform/partner/commission/Features",
         self::AffordabilityWidgetSet => "rzp/pg/merchant/affordability/Widget",
+        self::ReceiptUniqueEnabled => "rzp/pg/merchant/order/Features",
+        self::CartAmountCheckEnabled => "rzp/pg/merchant/order/cart/Features",
+        self::AllowPaymentsOnPaidOrder =>"rzp/pg/merchant/order/payments/Features",
+        self::ExcessOrderAmountEnabled => "rzp/pg/merchant/order/payments/Features",
+        self::DcsPaymentMailsDisabled => "rzp/pg/merchant/payments/communication/Features",
+        self::FreeCreditUnregDisabled => "rzp/pg/org/payments/credits/Features",
+        self::AsyncBalanceUpdateEnabled => "rzp/pg/merchant/payments/ledger/Features",
+        self::AsyncTransactionUpdateEnabled => "rzp/pg/merchant/payments/ledger/Features",
+        self::AutoRefundsDisabled => "rzp/pg/merchant/payments/refunds/Features",
     ];
 
     /**
@@ -41,6 +59,15 @@ class Constants
         self::EmailOptionalOnCheckout => self::EmailOptionalOnCheckout,
         APIFeaturesConstants::AUTO_COMM_INV_DISABLED => self::AutoCommissionInvoiceDisabled,
         self::AffordabilityWidgetSet => self::AffordabilityWidgetSet,
+        APIFeaturesConstants::ORDER_RECEIPT_UNIQUE => self::ReceiptUniqueEnabled,
+        APIFeaturesConstants::CART_API_AMOUNT_CHECK => self::CartAmountCheckEnabled,
+        APIFeaturesConstants::DISABLE_AMOUNT_CHECK => self::AllowPaymentsOnPaidOrder,
+        APIFeaturesConstants::EXCESS_ORDER_AMOUNT => self::ExcessOrderAmountEnabled,
+        APIFeaturesConstants::PAYMENT_MAILS_DISABLED => self::DcsPaymentMailsDisabled,
+        APIFeaturesConstants::DISABLE_FREE_CREDIT_UNREG => self::FreeCreditUnregDisabled,
+        APIFeaturesConstants::ASYNC_BALANCE_UPDATE => self::AsyncBalanceUpdateEnabled,
+        APIFeaturesConstants::ASYNC_TXN_FILL_DETAILS => self::AsyncTransactionUpdateEnabled,
+        APIFeaturesConstants::DISABLE_AUTO_REFUNDS => self::AutoRefundsDisabled,
     ];
 
     /**
@@ -54,6 +81,15 @@ class Constants
         self::ShowEmailOnCheckout => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout => self::EmailOptionalOnCheckout,
         self::AffordabilityWidgetSet => self::AffordabilityWidgetSet,
+        self::ReceiptUniqueEnabled => APIFeaturesConstants::ORDER_RECEIPT_UNIQUE,
+        self::CartAmountCheckEnabled => APIFeaturesConstants::CART_API_AMOUNT_CHECK,
+        self::AllowPaymentsOnPaidOrder => APIFeaturesConstants::DISABLE_AMOUNT_CHECK,
+        self::ExcessOrderAmountEnabled => APIFeaturesConstants::EXCESS_ORDER_AMOUNT,
+        self::DcsPaymentMailsDisabled => APIFeaturesConstants::PAYMENT_MAILS_DISABLED,
+        self::FreeCreditUnregDisabled => APIFeaturesConstants::DISABLE_FREE_CREDIT_UNREG,
+        self::AsyncBalanceUpdateEnabled => APIFeaturesConstants::ASYNC_BALANCE_UPDATE,
+        self::AsyncTransactionUpdateEnabled => APIFeaturesConstants::ASYNC_TXN_FILL_DETAILS,
+        self::AutoRefundsDisabled => APIFeaturesConstants::DISABLE_AUTO_REFUNDS,
         self::AutoCommissionInvoiceDisabled => APIFeaturesConstants::AUTO_COMM_INV_DISABLED,
     ];
 

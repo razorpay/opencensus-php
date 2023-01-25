@@ -1122,6 +1122,18 @@ return [
                 'username'  => env('CHECKOUT_AFFORDABILITY_API_USERNAME_TEST'),
                 'password'  => env('CHECKOUT_AFFORDABILITY_API_PASSWORD_TEST'),
             ],
+        ],
+        'pg-router' => [
+            'live'       => [
+                'url'       => env('PG_ROUTER_URL'),
+                'username'  => env('PG_ROUTER_KEY'),
+                'password'  => env('PG_ROUTER_SECRET'),
+            ],
+            'test'       => [
+                "url"       => env('PG_ROUTER_URL'),
+                'username'  => env('PG_ROUTER_KEY'),
+                'password'  => env('PG_ROUTER_SECRET'),
+            ],
         ]
     ],
 
