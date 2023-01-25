@@ -3,7 +3,6 @@
 namespace RZP\Models\Settings;
 
 use App;
-use Carbon\Carbon;
 use Razorpay\Spine\DataTypes\Dictionary;
 use anlutro\LaravelSettings\SettingsManager;
 
@@ -69,7 +68,7 @@ class Accessor extends Base\Core
 
     protected function initLaravelSettings()
     {
-        $this->laravelSettings = new SettingsManager(App::getFacadeRoot());
+        $this->laravelSettings = new CustomSettingsManager(App::getFacadeRoot());
     }
 
     /**
@@ -246,8 +245,6 @@ class Accessor extends Base\Core
             'entity_type'       => $this->entity,
             'entity_id'         => $this->id,
             Entity::MODULE      => $this->module,
-            Entity::CREATED_AT  => Carbon::now()->getTimestamp(),
-            Entity::UPDATED_AT  => Carbon::now()->getTimestamp()
         ];
 
         $this->laravelSettings->setExtraColumns($filterColumns);
