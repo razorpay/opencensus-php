@@ -16,6 +16,7 @@ use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Models\Payment\PaymentMeta\MismatchAmountReason;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
@@ -718,6 +719,76 @@ class UpiIciciGatewayReconTest extends TestCase
         ], $upi->toArray());
 
         $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    public function testQrPaymentReconForDedicatedTerminalPayment()
+    {
+        $reconRow = $this->testData['upiIcici'];
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $this->fixtures->merchant->addFeatures(['qr_codes']);
+        $this->t2 = $this->fixtures->create('terminal:dedicated_upi_icici_terminal', ['merchant_id' => '10000000000000']);
+        $this->enableRazorXTreatmentForQrDedicatedTerminal();
+
+        $this->createQrCode(['usage'          => 'single_use',
+                             'type'           => 'upi_qr',
+                             'fixed_amount'   => true,
+                             'payment_amount' => 10000
+                            ]);
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $request = $this->testData['testProcessIciciQrPayment'];
+        $request['content']['BankRRN'] = $reconRow['bankTranID'];
+        $request['content']['merchantTranId'] = $qrCode->getReference() . 'qrv2';
+        $request['content']['merchantId'] = $this->t2->getGatewayMerchantId();
+
+        $this->makeUpiIciciPayment($request);
+
+        $qrPayment = $this->getDbLastEntity('qr_payment');
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals($qrPayment['payment_id'], $payment['id']);
+
+        $reconRow['merchantID']         = $this->t2->getGatewayMerchantId();
+        $reconRow['merchantTranID']     = $qrCode->getReference() . 'qrv2';
+        $reconRow['subMerchantName']    = 'DEMO MERCHANT';
+
+        $entries[] = $reconRow;
+
+        $file = $this->writeToExcelFile($entries, 'mis_report','files/settlement','Recon MIS');
+        $uploadedFile = $this->createUploadedFile($file);
+        $this->reconcile($uploadedFile, 'UpiIcici');
+        $transactionId = $payment['transaction_id'];
+        $transaction = $this->getDbEntityById('transaction', $transactionId);
+        $this->assertNotNull($transaction['reconciled_at']);
+
+        // Assert UPI entity
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertArraySubset([
+                                     'payment_id'            => $payment->getId(),
+                                     'npci_reference_id'     => $reconRow['bankTranID'],
+                                     'merchant_reference'    => $qrCode->getId() . 'qrv2',
+                                 ], $upi->toArray());
+
+        $this->assertBatchStatus(Status::PROCESSED);
+    }
+
+    protected function enableRazorXTreatmentForQrDedicatedTerminal()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+               ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+               {
+                   if ($featureFlag === (RazorxTreatment::DEDICATED_TERMINAL_QR_CODE))
+                   {
+                       return 'on';
+                   }
+                   return 'control';
+               });
     }
 
     protected function overrideUpiIciciPayment(array $upiEntity, $gatewayPaymentId = null)

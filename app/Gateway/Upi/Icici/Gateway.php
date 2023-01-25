@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use ErrorException;
 use RZP\Models\Order;
+use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -18,7 +19,6 @@ use RZP\Models\BharatQr;
 use RZP\Gateway\Upi\Base;
 use RZP\Models\UpiTransfer;
 use RZP\Constants\Timezone;
-use RZP\Models\BankAccount;
 use RZP\Http\RequestHeader;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
@@ -724,7 +724,7 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_ID => $this->getMerchantId(),
             Fields::TERMINAL_ID => $this->getTerminalId($this->input),
             Fields::BILL_NUMBER => '1234',
-            Fields::MERCHANT_TRAN_ID => $input['qr_code']['id'],
+            Fields::MERCHANT_TRAN_ID => $input['qr_code']['id'] . QrCode\Constants::QR_CODE_V2_TR_SUFFIX,
         ];
 
         $path = 'pay_v3';

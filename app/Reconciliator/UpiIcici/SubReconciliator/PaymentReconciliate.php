@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\UpiIcici\SubReconciliator;
 
 use Carbon\Carbon;
 use RZP\Gateway\Upi;
+use RZP\Models\QrCode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\BharatQr;
@@ -85,7 +86,7 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
             return null;
         }
 
-        if ((isset($row[self::SUB_MERCHANT_NAME]) === true) and (strpos($row[self::SUB_MERCHANT_NAME], 'BHARAT QR') !== false))
+        if ($this->isQrCodePayment($row) === true)
         {
             return $this->getPaymentIdFromBharatQrEntity($row);
         }
@@ -97,6 +98,32 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
         {
             return $this->getPaymentIdFromUpi($row);
         }
+    }
+
+    protected function isQrCodePayment(array $row)
+    {
+        if ((isset($row[self::SUB_MERCHANT_NAME]) === true) and
+            (strpos($row[self::SUB_MERCHANT_NAME], 'BHARAT QR') !== false))
+        {
+            return true;
+        }
+
+        if (isset($row[self::MERCHANT_TRAN_ID]) === false)
+        {
+            return false;
+        }
+
+        $merchantTranId = trim($row[self::MERCHANT_TRAN_ID]);
+
+        $suffixLength = strlen(QrCode\Constants::QR_CODE_V2_TR_SUFFIX);
+
+        if ((strlen($merchantTranId) >= ($suffixLength + QrCode\Entity::ID_LENGTH)) and
+            (str_ends_with($merchantTranId, QrCode\Constants::QR_CODE_V2_TR_SUFFIX)))
+        {
+            return true;
+        }
+
+       return false;
     }
 
     protected function getPaymentIdFromBharatQrEntity(array $row)
