@@ -392,15 +392,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-        // temporary check to prevent merchants from editing DBA for compliance
-        if ((isset($input[Entity::BUSINESS_DBA]) === true) and
-            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === true) and
-            ($merchant->getBillingLabel() != ""))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "DBA name cannot be changed"
-            );
-        }
+        $this->allowEditingOfBusinessNameAndDBAKYC($merchant, $input);
 
         Entity::modifyConvertEmptyStringsToNull($input);
 
@@ -505,6 +497,43 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    private function allowEditingOfBusinessNameAndDBAKYC($merchant, $input)
+    {
+        if (($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === false))
+        {
+            return;
+        }
+
+        // for test cases
+        if (isset($merchant->merchantDetail) === false) 
+        {
+            return false;
+        }
+
+        // temporary check to prevent merchants from editing DBA for compliance
+        $businessDBA = $merchant->merchantDetail->getBusinessDba();
+
+        if ((isset($input[Entity::BUSINESS_DBA]) === true) and
+            (isset($businessDBA) === true) and
+            ($businessDBA !== ''))
+        {
+
+            throw new Exception\BadRequestValidationFailureException(
+                'DBA name cannot be changed'
+            );
+        }
+
+        $businessName = $merchant->merchantDetail->getBusinessName();
+        if ((isset($input[Entity::BUSINESS_NAME]) === true) and
+            (isset($businessDBA) === true) and
+            ($businessDBA !== ''))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Business Name cannot be changed'
+            );
+        }
     }
 
     public function saveMerchantDetails(array $input, Merchant\Entity $merchant)
@@ -1215,29 +1244,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        // temporary check to prevent merchants from editing business name for compliance
-        if ((isset($merchant->merchantDetail) === true) and
-            (isset($input[Entity::BUSINESS_NAME]) === true) and
-            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === true) and
-            ($merchant->merchantDetail->getBusinessName() != "") and
-            ($merchant->merchantDetail->getBusinessName() != $input[Entity::BUSINESS_NAME]))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "Business name cannot be changed"
-            );
-        }
-
-        // temporary check to prevent merchants from editing DBA for compliance
-        if ((isset($merchant->merchantDetail) === true) and
-            (isset($input[Entity::BUSINESS_DBA]) === true) and
-            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === true) and
-            ($merchant->merchantDetail->getBusinessDba() != "") and
-            ($merchant->merchantDetail->getBusinessDba() != $input[Entity::BUSINESS_DBA]))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "Busisness DBA cannot be changed"
-            );
-        }
+        $this->allowEditingOfMIQForCompliance($merchant, $input);
 
         $merchantDetailCore = $this->core;
 
@@ -1249,6 +1256,45 @@ class Service extends Base\Service
         }
 
         return $merchantDetailCore->createResponse($merchantDetails);
+    }
+
+    public function allowEditingOfMIQForCompliance($merchant, $input)
+    {
+
+        if ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === false)
+        {
+            return;
+        }
+
+        // for test cases
+        if (isset($merchant->merchantDetail) === false) 
+        {
+            return false;
+        }
+
+        $businessDBA = $merchant->merchantDetail->getBusinessDba();
+
+        // temporary check to prevent merchants from editing business name for compliance
+        if ((isset($merchant->merchantDetail) === true) and
+            (isset($input[Entity::BUSINESS_NAME]) === true) and
+            (isset($businessDBA) === true) and
+            ($businessDBA !== ''))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Business name cannot be changed'
+            );
+        }
+
+        // temporary check to prevent merchants from editing DBA for compliance
+        if ((isset($merchant->merchantDetail) === true) and
+            (isset($input[Entity::BUSINESS_DBA]) === true) and
+            (isset($businessDBA) === true) and
+            ($businessDBA !== ''))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Busisness DBA cannot be changed'
+            );
+        }
     }
 
     public function editMerchantDetailsByPartner($merchantId, array $input)

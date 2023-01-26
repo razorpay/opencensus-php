@@ -2270,7 +2270,8 @@ We look forward to transacting with you!
     public function testPreventEditingBuisnessNameInMIQ()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail', [
-            'business_name' =>'test 1'
+            'business_name' =>'test 1',
+            'business_dba'  => 'test'
         ]);
 
         $merchantDetail[Entity::BUSINESS_NAME] = "test business";

@@ -11963,6 +11963,7 @@ IFSC Code  ICIC0001206
 
         $this->fixtures->create('merchant_detail', [
             'merchant_id'      => '10000000000000',
+            'business_dba'     => 'test',
             'business_website' => 'http://example.com']);
 
         $this->ba->adminAuth();

@@ -916,27 +916,8 @@ class Service extends Base\Service
                 'merchant_id' => $id,
                 'input'       => $input,
             ]);
-        // temporary check to prevent merchants from editing name for compliance
-        if ((isset($input[Entity::NAME]) === true) and
-            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === true) and
-            ($merchant->getName() != "") and
-            ($merchant->getName() != $input[Entity::NAME]))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "Name cannot be changed"
-            );
-        }
 
-        // temporary check to prevent merchants from editing billing label for compliance
-        if ((isset($input[Entity::BILLING_LABEL]) === true) and
-            ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === true) and
-            ($merchant->getBillingLabel() != "") and
-            ($merchant->getBillingLabel() != $input[Entity::BILLING_LABEL]))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "Billing Label cannot be changed"
-            );
-        }
+       $this->allowEditingOfMerchantForCompliance($merchant, $input);
         // when the funds are released via bulk action then in that scenario
         // just process the data at API side. No settlement service will be called to
         // update Disable feature.
@@ -997,6 +978,43 @@ class Service extends Base\Service
         }
 
         return $merchant->toArrayPublic();
+    }
+
+    private function allowEditingOfMerchantForCompliance($merchant, $input)
+    {
+
+        if ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_PROGRAM_DS_CHECK) === false)
+        {
+            return;
+        }
+
+        // for test cases
+        if (isset($merchant->merchantDetail) === false) 
+        {
+            return false;
+        }
+
+        $businessDBA = $merchant->merchantDetail->getBusinessDba();
+
+        // temporary check to prevent merchants from editing name for compliance
+        if ((isset($input[Entity::NAME]) === true) and
+            (isset($businessDBA) === true) and
+            ($businessDBA !== ''))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Name cannot be changed'
+            );
+        }
+
+        // temporary check to prevent merchants from editing billing label for compliance
+        if ((isset($input[Entity::BILLING_LABEL]) === true) and
+            (isset($businessDBA) === true) and
+            ($businessDBA !== ''))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Billing Label cannot be changed'
+            );
+        }
     }
 
     public function syncMerchantFundsOnHold(string $parentMid, $holdFunds)
