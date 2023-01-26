@@ -133,10 +133,12 @@ class Service extends Base
      * throws Server exception in case of request failures
      *
      * @param string $entityId
-     * @param string $apifeatureName
+     * @param string $apiFeatureName
      * @param string $mode
      * @return array
      * @throws ApiException
+     * @throws Exception\BadRequestException
+     * @throws Exception\ServerErrorException
      */
     public function fetchByEntityIdAndName(string $entityId, string $apiFeatureName, $mode = Mode::TEST)
     {
@@ -167,13 +169,13 @@ class Service extends Base
 
             $data = [
                 Entity::NAME => $apiFeatureName,
-                Entity::ENTITY_TYPE => $key->getEntity(),
+                Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($key->getEntity()),
                 Entity::ENTITY_ID => $entityId,
             ];
 
            if ($features[$featureName] === true){
                $entity = (new Entity)->build($data);
-               $entity->setEntityType($key->getEntity());
+               $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($key->getEntity()));
                $entity->setEntityId($entityId);
                $res = $entity;
                break;
@@ -199,6 +201,8 @@ class Service extends Base
      * @param string $mode
      * @return array
      * @throws ApiException
+     * @throws Exception\BadRequestException
+     * @throws Exception\ServerErrorException
      */
     public function fetchByEntityIdAndFeatureNames(string $entityId, array $featureNames, $mode = Mode::TEST)
     {
@@ -225,22 +229,22 @@ class Service extends Base
         $kvs =  $response->getKvs() == null ? []: $response->getKvs();
         foreach ($kvs as $kv)
         {
-            $key = $kv->getKey();
+            $kvkey = $kv->getKey();
 
-            $features = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($key));
+            $keyFeatures = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($kvkey));
 
-           foreach ($data[DataFormatter::convertDCSKeyToStringWithOutEntityId($key)] as $featureName)
+           foreach ($data[DataFormatter::convertDCSKeyToStringWithOutEntityId($kvkey)] as $featureName)
            {
-               if ($features[$featureName] === true)
+               if ($keyFeatures[$featureName] === true)
                {
                    $data = [
-                       Entity::NAME => DcsConstants::dcsFeatureNameFromAPIName($featureName),
-                       Entity::ENTITY_TYPE => $key->getEntity(),
+                       Entity::NAME => DcsConstants::apiFeatureNameFromDcsName($featureName),
+                       Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()),
                        Entity::ENTITY_ID => $entityId,
                    ];
 
                    $entity = (new Entity)->build($data);
-                   $entity->setEntityType($key->getEntity());
+                   $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()));
                    $entity->setEntityId($entityId);
                    $res[] = $entity;
                }
@@ -295,13 +299,13 @@ class Service extends Base
 
             $data = [
                 Entity::NAME => $apiFeatureName,
-                Entity::ENTITY_TYPE => $key->getEntity(),
+                Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($key->getEntity()),
                 Entity::ENTITY_ID => $key->getEntityId(),
             ];
 
             if ($features[$featureName] === true){
                 $entity = (new Entity)->build($data);
-                $entity->setEntityType($key->getEntity());
+                $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($key->getEntity()));
                 $entity->setEntityId($key->getEntityId());
                 $res[] = $entity;
             }
@@ -374,11 +378,12 @@ class Service extends Base
                 {
                     $buildData = [
                         Entity::NAME => DcsConstants::apiFeatureNameFromDcsName($featureName),
-                        Entity::ENTITY_TYPE => $kv->getKey()->getEntity(),
+                        Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($kv->getKey()->getEntity()),
                         Entity::ENTITY_ID => $kv->getKey()->getEntityId(),
                     ];
+
                     $entity = (new Entity)->build($buildData);
-                    $entity->setEntityType($kv->getKey()->getEntity());
+                    $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($kv->getKey()->getEntity()));
                     $entity->setEntityId($kv->getKey()->getEntityId());
                     $res[] = $entity;
                 }
