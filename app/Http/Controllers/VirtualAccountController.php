@@ -311,9 +311,14 @@ class VirtualAccountController extends Controller
     {
         $input = Request::all();
 
+        $response = $this->service()->autoCloseInactiveVirtualAccounts($input);
+
         return ApiResponse::json(
-            ['msg' => 'Virtual Account debug route. Use this route for debugging/data corrections via dark',
-                'input' => $input]
+            [
+                'msg'       => 'Virtual Account debug route. Use this route for debugging/data corrections via dark',
+                'input'     => $input,
+                'response'  => $response,
+            ]
         );
     }
 

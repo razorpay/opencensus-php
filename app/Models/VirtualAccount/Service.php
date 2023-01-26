@@ -637,9 +637,9 @@ class Service extends Base\Service
 
             VirtualAccountsAutoCloseInactive::dispatch($this->mode, $inactiveVirtualAccountIds->toArray());
 
-            $skip += 1;
-
             $processedCount += sizeof($inactiveVirtualAccountIds);
+
+            $skip += $processedCount;
         }
         while(sizeof($inactiveVirtualAccountIds) === $input['count']);
 
