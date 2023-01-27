@@ -2,7 +2,10 @@
 
 namespace Functional\Merchant;
 
+use RZP\Constants\Environment;
+use RZP\Constants\Mode;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant\MerchantPromotions\Service;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -173,6 +176,14 @@ class MerchantPromotionsTest extends TestCase
         $this->ba->publicAuth();
 
         $this->runRequestResponseFlow($testData);
+    }
+
+    public function testCanRouteToMagicCXInProd() {
+        $this->app['env'] = Environment::PRODUCTION;
+        $this->app['rzp.mode'] = Mode::TEST;
+        $merchant = $this->fixtures->create('merchant');
+        $res = (new Service())->canRouteToMagicCheckoutService([], $merchant);
+        $this->assertFalse($res);
     }
 
     private function setUpMerchantForCouponsRequest()

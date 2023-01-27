@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\MerchantPromotions;
 
+use RZP\Constants\Mode;
 use RZP\Models\Merchant\OneClickCheckout\Constants;
 use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use Throwable;
@@ -569,11 +570,12 @@ class Service extends Base\Service
         return $disabledMethods;
     }
 
-    protected function canRouteToMagicCheckoutService(array $input, $merchant): bool
+    public function canRouteToMagicCheckoutService(array $input, $merchant): bool
     {
-        $platformConfig = $this->merchant->getMerchantPlatformConfig();
-        if (($platformConfig != null && $platformConfig->getValue() === Constants::SHOPIFY) ||
-            $this->merchant->get1ccConfigFlagStatus(Constants::ONE_CC_GIFT_CARD) === true)
+        $platformConfig = $merchant->getMerchantPlatformConfig();
+        if ((app()->isEnvironmentProduction() === true && $this->mode === Mode::TEST) ||
+            ($platformConfig != null && $platformConfig->getValue() === Constants::SHOPIFY) ||
+            ($this->merchant->get1ccConfigFlagStatus(Constants::ONE_CC_GIFT_CARD) === true))
         {
             return false;
         }
