@@ -132,4 +132,9 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::ENTITY_ID, $entityId);
     }
+
+    public function getDeletedAt()
+    {
+        return $this->getAttribute(self::DELETED_AT);
+    }
 }

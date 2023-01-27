@@ -49,7 +49,7 @@ class MigrateKongTarget implements Target
         $repo = app('repo');
 
         $repo->transaction(function () use ($core, $sourceRecord) {
-            $this->outboxSend($core, $sourceRecord);
+            $this->outboxSend($core, $sourceRecord, 'create');
         });
 
         return new Response(Response::ACTION_UPSERTED, $sourceRecord->key, null);
@@ -58,7 +58,14 @@ class MigrateKongTarget implements Target
     /** {@inheritDoc} */
     public function delete(Record $record)
     {
-        // Not needed to implement.
+        $core = new Core;
+        $repo = app('repo');
+
+        $repo->transaction(function () use ($core, $record) {
+            $this->outboxSend($core, $record, 'delete');
+        });
+
+        return null;
     }
 
     /**
@@ -66,18 +73,18 @@ class MigrateKongTarget implements Target
      * @param Record $sourceRecord
      * @return void
      */
-    function outboxSend(Core $core, Record $sourceRecord): void {
+    function outboxSend(Core $core, Record $sourceRecord, string $action): void {
         if ($this->enable_cassandra_outbox)
         {
             $core->createOutboxJob(
-                "create_impersonation_grant",
+                $action . "_impersonation_grant",
                 $sourceRecord->value,
                 MerchantApplications\Entity::MANAGED);
         }
         if ($this->enable_postgres_outbox)
         {
             $core->createOutboxJob(
-                "create_impersonation_grant_postgres",
+                $action . " _impersonation_grant_postgres",
                 $sourceRecord->value,
                 MerchantApplications\Entity::MANAGED);
         }

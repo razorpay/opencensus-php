@@ -33,7 +33,7 @@ class MigrateImpersonationSource implements Source
         while (true)
         {
 
-            $entities = $repo->merchant_access_map->getAllMappingsByApplicationType(
+            $entities = $repo->merchant_access_map->getAllMappingsByApplicationTypeWithTrashed(
                 MerchantApplications\Entity::MANAGED,
                 $afterId,
                 self::CHUNK_SIZE_IDS);
@@ -61,7 +61,7 @@ class MigrateImpersonationSource implements Source
         {
             $entities = $repo->useSlave(function() use ($repo, $ids)
             {
-                return $repo->merchant_access_map->findMany($ids);
+                return $repo->merchant_access_map->findManyWithTrashed($ids);
             });
             foreach ($entities as $entity)
             {
@@ -73,10 +73,15 @@ class MigrateImpersonationSource implements Source
     }
 
     /** {@inheritDoc} */
-    public function find(Record $targetRecord): ?Record
+    public function find(Record $record): ?Record
     {
-        // Not needed to implement.
-        return null;
+        $id = $record->value->getId();
+        return $repo->merchant_access_map->findWithTrashed($id);
+    }
+
+    /** {@inheritDoc} */
+    public function getAction(Record $record): string
+    {
+        return is_null($record->value->getDeletedAt()) ? 'create' : 'delete';
     }
 }
-

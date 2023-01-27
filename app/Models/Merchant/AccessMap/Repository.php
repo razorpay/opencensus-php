@@ -243,6 +243,42 @@ class Repository extends Base\Repository
             ->get();
     }
 
+public function getAllMappingsByApplicationTypeWithTrashed(string $appType, string $afterId, int $chunk)
+    {
+        $accessMapEntityId = $this->repo->merchant_access_map->dbColumn("entity_id");
+        $accessMapId = $this->repo->merchant_access_map->dbColumn(Entity::ID);
+        $merchantApplicationId = $this->repo->merchant_application->dbColumn(Entity::APPLICATION_ID);
+
+        return $this->newQuery()
+            ->select($accessMapId)
+            ->where($accessMapId, '>', $afterId)
+            ->where(Entity::ENTITY_TYPE, Entity::APPLICATION)
+            ->where(MerchantApplications\Entity::TYPE, $appType)
+            ->join(Table::MERCHANT_APPLICATION, $accessMapEntityId, '=', $merchantApplicationId)
+            ->orderBy($accessMapId)
+            ->take($chunk)
+            ->withTrashed()
+            ->get();
+    }
+
+    public function findManyWithTrashed(array $ids)
+    {
+        return $this->newQuery()
+            ->select('*')
+            ->whereIn(Entity::ID, $ids)
+            ->withTrashed()
+            ->get();
+    }
+
+    public function findWithTrashed(string $id)
+    {
+        return $this->newQuery()
+            ->select('*')
+            ->where(Entity::ID, $id)
+            ->withTrashed()
+            ->get();
+    }
+
     public function getSubMerchantCount(string $partnerId)
     {
         return $this->newQuery()

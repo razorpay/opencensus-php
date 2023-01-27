@@ -6,6 +6,7 @@ use Throwable;
 use Razorpay\Trace\Logger;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\AccessMap\MigrateImpersonationSource as MigrateImpersonationSource;
 
 /**
  * Migrate
@@ -99,6 +100,15 @@ class Migrate
             $summary['source_iter_total']++;
             try
             {
+                // check if instance is MigrateImpersonationSource
+                if ($this->source instanceof MigrateImpersonationSource) {
+                    // allow to delete target record only if source record is deleted or expired
+                    if ($this->source->getAction($sourceRecord) == 'delete') {
+                        $this->target->delete($sourceRecord);
+                        $summary['target_deleted_total']++;
+                        continue;
+                    }
+                }
                 $resp = $this->target->migrate($sourceRecord, $dryRun);
                 $summary["target_{$resp->action}_total"]++;
             }
