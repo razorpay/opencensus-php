@@ -75,8 +75,7 @@ if (! function_exists('read_env_file'))
 {
     // Ref the link to understand the reason behind adding the check
     // https://github.com/vlucas/phpdotenv#putenv-and-getenv
-    // Why we are checking for automation env as well? - https://razorpay.slack.com/archives/C02JS82TKGR/p1671082916778419
-    if ($env !== 'production' and $env !== 'automation')
+    if ($env !== 'production')
     {
         function read_env_file($envDir, $fileName)
         {
