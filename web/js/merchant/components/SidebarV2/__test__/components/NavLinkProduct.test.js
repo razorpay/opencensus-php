@@ -10,6 +10,9 @@ import { titleCase } from 'common/utils/rzp-utils';
 const defaultProps = {
   activeTab: 'main',
   routes: {},
+  user: {
+    tags: [],
+  },
 };
 
 jest.mock('merchant/components/SidebarV2/components/NavLinkItem', () => ({ title }) => (
@@ -21,9 +24,12 @@ jest.mock('merchant/components/SidebarV2/components/NavLinkItem', () => ({ title
 jest.mock('merchant/components/SidebarV2/components/Shimmer/shimmer', () => () => (
   <div>Shimmer Loading</div>
 ));
+
+const App = (props) => <NavLinkProduct {...defaultProps} {...props} />;
+
 describe('NavLinkProduct', () => {
   const renderApp = ({ props } = {}) =>
-    render(<NavLinkProduct {...defaultProps} {...props} />, {
+    render(<App {...props} />, {
       historyOptions: { initialEntries: ['/profile'] },
       path: '/profile',
     });
@@ -103,5 +109,28 @@ describe('NavLinkProduct', () => {
     await waitFor(() => {
       expect(screen.getByText('Shimmer Loading')).toBeInTheDocument();
     });
+  });
+
+  test("should update products list when user's tags are updated", () => {
+    jest.spyOn(showUtils, 'showWhenUtil').mockImplementation(() => true);
+    const props = {
+      loading: false,
+      heading: FALLBACK_PRODUCTS[0].section_name,
+      products: FALLBACK_PRODUCTS[0].product_options,
+    };
+    const { rerender } = renderApp({
+      props,
+    });
+
+    expect(screen.getAllByText('Navigation Link Item').length).toBe(
+      FALLBACK_PRODUCTS[0].product_options.length,
+    );
+    // showWhenUtil is set to false for all products so that in the next rerender
+    // we can check if the products list is updated
+    jest.spyOn(showUtils, 'showWhenUtil').mockImplementation(() => false);
+
+    rerender(<App {...props} user={{ tags: ['test-tag'] }} />);
+
+    expect(screen.queryAllByText('Navigation Link Item').length).toBe(0);
   });
 });

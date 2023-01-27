@@ -93,7 +93,8 @@ const NavLinkProduct = ({
     setSectionProducts({
       valid,
     });
-  }, [products, section_id]);
+    // user.tags is added as dependency to reevaluate the products again as ShowWhenUtil is dependent on user tags
+  }, [products, section_id, user.tags]);
 
   useEffect(() => {
     if (sectionProducts?.valid?.slice(3).find((each) => each.product_id === activeTab)) {
