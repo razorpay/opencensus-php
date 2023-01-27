@@ -293,6 +293,11 @@ class Service extends Base\Service
 
         $file = new HttpFoundation\File\UploadedFile($fileDetails['file_path'],$this->fileProcessor->getFileName($file),$fileDetails['mime_type'],null,true);
 
+        // additional check to ensure mode is set
+        if (!isset($mode) or $mode !== Mode::LIVE or $mode !== Mode::TEST)
+        {
+            $mode = Mode::LIVE;
+        }
         $document = $this->uploadFileAndSaveInMerchantDocument($file, $input, $mode);
 
         $documentMetaData = [
@@ -331,7 +336,7 @@ class Service extends Base\Service
         return false;
     }
 
-    protected function uploadFileAndSaveInMerchantDocument(HttpFoundation\File\UploadedFile $file, array $input, string $mode = Mode::LIVE)
+    protected function uploadFileAndSaveInMerchantDocument(HttpFoundation\File\UploadedFile $file, array $input, $mode = Mode::LIVE)
     {
         $filename = $file->getClientOriginalName();
 

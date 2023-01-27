@@ -2,6 +2,7 @@
 
 namespace RZP\Jobs;
 
+use RZP\Constants\Mode;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -36,7 +37,7 @@ class MerchantFirsDocuments extends Job
 
     public function __construct(array $payload)
     {
-        $this -> setMode($payload);
+        $this->setMode($payload);
 
         parent::__construct($this->mode);
 
@@ -112,6 +113,10 @@ class MerchantFirsDocuments extends Job
         if (array_key_exists(self::MODE, $payload) === true)
         {
             $this->mode = $payload[self::MODE];
+        }
+        else
+        {
+            $this->mode = Mode::LIVE;
         }
     }
 
