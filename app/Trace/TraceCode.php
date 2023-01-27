@@ -8893,6 +8893,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MAGIC_CHECKOUT_SERVICE_ERROR                             = 'MAGIC_CHECKOUT_SERVICE_ERROR';
 
     const ONE_CC_SPLITZ_EXPERIMENT_ERROR                = 'ONE_CC_SPLITZ_EXPERIMENT_ERROR';
+    const ONE_CC_SPLITZ_EXPERIMENT_RESPONSE             = 'ONE_CC_SPLITZ_EXPERIMENT_RESPONSE';
+
     const IS_PARTNERSHIP_MERCHANT                       = 'IS_PARTNERSHIP_MERCHANT';
 
     // cvv optional for amex and visa

@@ -51,7 +51,8 @@ class SplitzExperimentEvaluator extends Base\Core
                 $variant = $defaultVariant;
             }
         } catch (\Throwable $e) {
-            $this->traceError($onFailTraceCode, 'uncaught_exception', 'none', $e->getMessage(), $tracePayload);
+            $response = $response ?? [];
+            $this->traceError($onFailTraceCode, 'uncaught_exception', $response, $e->getMessage(), $tracePayload);
             $variant = $defaultVariant;
         }
 
@@ -61,7 +62,14 @@ class SplitzExperimentEvaluator extends Base\Core
                 'experiment_enabled' => $variant === $expectedVariant,
             ];
         }
-
+        $this->trace->info(TraceCode::ONE_CC_SPLITZ_EXPERIMENT_RESPONSE,
+            array_merge(
+                $tracePayload,
+                [
+                    'response' => $response ?? [],
+                    'variant' => $variant,
+                ])
+        );
         return ['variant' => $variant];
     }
 
@@ -73,7 +81,7 @@ class SplitzExperimentEvaluator extends Base\Core
      * @param array $tracePayload
      * @return void
      */
-    protected function traceError(string $onFailTraceCode, string $reason, string $response, string $errorMessage, array $tracePayload): void
+    protected function traceError(string $onFailTraceCode, string $reason, array $response = [], string $errorMessage, array $tracePayload): void
     {
         $this->trace->error(
             $onFailTraceCode,
