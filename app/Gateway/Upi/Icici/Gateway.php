@@ -360,19 +360,7 @@ class Gateway extends Base\Gateway
             return false;
         }
 
-        $feature = 'api'. '_' . Payment\Gateway::UPI_ICICI . '_pre_process_v1';
-
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, Mode::LIVE);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
-            'gateway' => Payment\Gateway::UPI_ICICI,
-            'variant' => $variant,
-            'mode'    => Mode::LIVE,
-            'feature' => $feature,
-        ]);
-
-        return ($variant === Payment\Gateway::UPI_ICICI);
+        return ($this->shouldUseUpiPreProcess(Payment\Gateway::UPI_ICICI) === true);
     }
 
     /**

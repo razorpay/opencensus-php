@@ -3292,9 +3292,14 @@ class Processor
     {
         $feature = 'api'. '_' . $payment->getGateway() . '_v1';
 
+        $requestOptions = [
+            'connect_timeout' => 1,
+            'timeout'         => 1,
+        ];
+
         // hit razorx service to get the variant
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, $this->mode);
+            $feature, $this->mode, 3, $requestOptions);
 
         $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_RAZORX_VARIANT,
         [

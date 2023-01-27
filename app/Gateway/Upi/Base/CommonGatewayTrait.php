@@ -190,13 +190,16 @@ trait CommonGatewayTrait
 
     private function isPreProcessRampedUpFully(string $gateway): bool
     {
-        if($this->env === 'testing')
+        if($this->env === 'testing' || (app()->isEnvironmentQA() === true))
         {
             return false;
         }
 
         $gateways = [
             Payment\Gateway::UPI_SBI,
+            Payment\Gateway::UPI_AXIS,
+            Payment\Gateway::UPI_AIRTEL,
+            Payment\Gateway::UPI_MINDGATE
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -218,8 +221,13 @@ trait CommonGatewayTrait
 
         $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
+        $requestOptions = [
+            'connect_timeout' => 1,
+            'timeout'         => 1,
+        ];
+
         $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, $mode, 3);
+            $feature, $mode, 3, $requestOptions);
 
         $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
             'gateway' => $gateway,

@@ -3397,23 +3397,9 @@ class Gateway extends Base\Gateway
      */
     public function preProcessServerCallbackForUpiAirtel(string $input,$mode = null)
     {
-        $feature = 'api'. '_' . Payment\Gateway::UPI_AIRTEL . '_' . Action::PRE_PROCESS . '_' . 'v1';
-
-        $mode = ($mode === null) ? Mode::LIVE : $mode ;
-
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, $mode, 3);
-
         $inputArray = json_decode($input, true);
 
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PRE_PROCESS_RAZORX_VARIANT, [
-            'gateway' => Payment\Gateway::UPI_AIRTEL,
-            'variant' => $variant,
-            'mode'    => $mode,
-            'feature' => $feature,
-        ]);
-
-        if ($variant === 'upi_airtel')
+        if ($this->shouldUseUpiPreProcess(Payment\Gateway::UPI_AIRTEL) === true)
         {
             $terminalData = [
                 'gateway' => Payment\Gateway::UPI_AIRTEL,
@@ -3442,6 +3428,8 @@ class Gateway extends Base\Gateway
             {
                 $terminalData['gateway_merchant_id'] = $inputArray['gateway_merchant_id'];
             }
+
+            $mode = ($mode === null) ? Mode::LIVE : $mode ;
 
             $terminal = $this->app['repo']->terminal->findByGatewayAndTerminalData(Payment\Gateway::UPI_AIRTEL,
                 $terminalData, false, $mode);

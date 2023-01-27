@@ -23,7 +23,12 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
 
     protected $syncUpdateGateways = [
         Payment\Gateway::UPI_ICICI,
-        Payment\Gateway::UPI_YESBANK
+        Payment\Gateway::UPI_YESBANK,
+        Payment\Gateway::UPI_AIRTEL,
+        Payment\Gateway::UPI_SBI,
+        Payment\Gateway::UPI_MINDGATE,
+        Payment\Gateway::UPI_AXIS,
+        Payment\Gateway::UPI_JUSPAY
     ];
 
     /**
