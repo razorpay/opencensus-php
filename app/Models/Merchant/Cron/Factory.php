@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Cron;
 
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Cron\Jobs\BvsCronJob;
+use RZP\Models\Merchant\Cron\Jobs\FOHRemovalCronJob;
 use RZP\Models\Merchant\Cron\Jobs\MonthFirstMtuCronJob;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Cron\Jobs\MtuTransactedCronJob;
@@ -123,6 +124,10 @@ class Factory
             case Constants::MERCHANT_AUTO_KYC_PASS_CRON_JOB_NAME:
                 RuntimeManager::setMaxExecTime(7200);
                 return (new MerchantAutoKycPassCronJob($input));
+            case Constants::FOH_REMOVAL_CRON_JOB_NAME:
+                RuntimeManager::setMaxExecTime(3600);
+                return (new FOHRemovalCronJob($input));
+
         }
 
         throw new BadRequestValidationFailureException("invalid cron");

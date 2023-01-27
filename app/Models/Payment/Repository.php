@@ -899,6 +899,19 @@ EOT;
                     ->min(Payment\Entity::CREATED_AT);
     }
 
+    public function getMerchantTransactionCountBetweenTimestamps($merchantId, $from)
+    {
+        $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $query = $this->newQueryWithConnection($connectionType);
+
+        return $query
+            ->where(Payment\Entity::MERCHANT_ID, '=', $merchantId)
+            ->whereBetween(Payment\Entity::CREATED_AT, [$from, time()])
+            ->count();
+    }
+
+
     /**
      * Fetches old payments which can be timed-out at method level with respective
      * merchant relation.

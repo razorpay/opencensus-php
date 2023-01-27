@@ -30,6 +30,7 @@ class Constants
     const MERCHANT_AUTO_KYC_FAILURE_CRON_JOB_NAME                    = 'merchant_auto_kyc_failure_cron';
     const SUBMERCHANT_FIRST_TRANSACTION                              = 'transacted-submerchants';
     const MERCHANT_AUTO_KYC_PASS_CRON_JOB_NAME                       = 'merchant_auto_kyc_pass_cron';
+    const FOH_REMOVAL_CRON_JOB_NAME                                  = 'foh_removal_cron';
 
     # map keys
     const AUTO_KYC_FAILURE_DATA = "auto_kyc_failure_data";
@@ -41,5 +42,7 @@ class Constants
     const MERCHANT_AUTO_KYC_FAILURE_TIMESTAMP = "merchant_auto_kyc_failure_timestamp";
 
     const  AUTO_KYC_LAST_CRON_DEFAULT_VALUE = 1;
+
+    const FOH_REMOVAL_LAST_CRON_DEFAULT_VLAUE = 24 ;
 
 }

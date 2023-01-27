@@ -9,6 +9,8 @@ class Constants
     const AMP = 'AMP';
     const AUTO_KYC_FAILURE = 'AUTO_KYC_FAILURE';
 
+    const FOH_REMOVAL = 'FOH_REMOVAL';
+
     // available escalation types
     const ESCALATION_TYPES = [
         self::SOFT_LIMIT,

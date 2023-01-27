@@ -349,6 +349,8 @@ class ConfigKey
     // OD balance related keys for direct account
     const RX_OD_BALANCE_CONFIGURED_FOR_MAGICBRICKS = self::PREFIX . 'rx_od_balance_configured_for_magicbricks';
 
+    const RISK_FOH_TEAM_EMAIL_IDS = self::PREFIX . 'risk_foh_team_email_ids';
+
     const PAYOUT_ASYNC_APPROVE_DISTRIBUTION_RATE_LIMIT = SELF::PREFIX . 'payout_async_approve_distribution_rate_limit';
 
     const PAYOUT_ASYNC_APPROVE_DISTRIBUTION_WINDOW_LENGTH = SELF::PREFIX . 'payout_async_approve_distribution_window_length';
@@ -507,6 +509,7 @@ class ConfigKey
         self::DEFAULT_OPGSP_TRANSACTION_LIMIT_USD,
         self::PAYOUT_SERVICE_DATA_MIGRATION_BUFFER,
         self::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA,
+        self::RISK_FOH_TEAM_EMAIL_IDS,
         self::UPI_TURBO_POPULAR_BANK_LIST,
     ];
 

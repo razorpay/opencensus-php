@@ -13,11 +13,14 @@ use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Cron\Constants;
 use RZP\Models\Merchant\Detail\POIStatus;
 use RZP\Models\Merchant\Detail\BusinessType;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
+use RZP\Tests\Functional\Fixtures\Entity\Workflow;
+use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Merchant\Cron\Core as CronJobHandler;
 use RZP\Models\Merchant\Cron\Constants as CronConstants;
+use RZP\Models\Merchant\Cron\Collectors\FOHRemovalDataCollector;
 use RZP\Models\Merchant\Cron\Collectors\MerchantAutoKycPassDataCollector;
-
 
 class AutoKycTest extends TestCase
 {
@@ -260,6 +263,251 @@ class AutoKycTest extends TestCase
         ]);
 
         $collectorData = (new MerchantAutoKycPassDataCollector($lastCronRunTimestamp, $currentCronRunTimestamp, []))->collectDataFromSource();
+
+        $data = $collectorData->getData();
+
+        $merchantIds = $data[Constants::MERCHANT_IDS] ?? null;
+
+        $this->assertEquals(1, count($merchantIds));
+    }
+
+    public function testFohMerchantFailingLastTransaction()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setImpersonatedMerchant();
+
+        $this->fixtures->create('admin', ['email' => 'randomemail2@rzp.com', 'org_id' => Org::RZP_ORG, 'id' => 'RzrpyOrgAdmnId',]);
+
+        $this->fixtures->create('merchant', ['id' => '10000000000000', 'hold_funds' => true]);
+
+        $workflowAction = $this->fixtures->create('workflow_action', [
+            'entity_id'         => '10000000000000',
+            'entity_name'       => 'merchant',
+            'approved'          => 1,
+            'permission_id'     => Permission::EDIT_MERCHANT_SUSPEND,
+            'workflow_id'       => 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID,
+            'state_changer_id'  => 'RzrpyOrgAdmnId'
+        ]);
+
+        $lastCronRunTimestamp = Carbon::now()->subHours(2)->getTimestamp();
+
+        $currentCronRunTimestamp = Carbon::now()->getTimestamp();
+
+        $this->fixtures->create('payment', ['merchant_id' => '10000000000000', 'created_at' => $lastCronRunTimestamp]);
+
+        $this->fixtures->create('feature', ['name' => 'cash_on_card', 'entity_id' => '10000000000000', 'entity_type' => 'merchant']);
+
+        $collectorData = (new FOHRemovalDataCollector($lastCronRunTimestamp, $currentCronRunTimestamp, []))->collectDataFromSource();
+
+        $data = $collectorData->getData();
+
+        $merchantIds = $data[Constants::MERCHANT_IDS] ?? null;
+
+        $this->assertEquals(0, count($merchantIds));
+    }
+
+    public function testFohMerchantFailingOnHold()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setImpersonatedMerchant();
+
+        $this->fixtures->create('admin', ['email' => 'randomemail2@rzp.com', 'org_id' => Org::RZP_ORG, 'id' => 'RzrpyOrgAdmnId',]);
+
+        $this->fixtures->create('merchant', ['id' => '10000000000000', 'hold_funds' => false]);
+
+        $workflowAction = $this->fixtures->create('workflow_action', [
+            'entity_id'         => '10000000000000',
+            'entity_name'       => 'merchant',
+            'approved'          => 1,
+            'permission_id'     => Permission::EDIT_MERCHANT_SUSPEND,
+            'workflow_id'       => 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID,
+            'state_changer_id'  => 'RzrpyOrgAdmnId'
+        ]);
+
+        $lastCronRunTimestamp = Carbon::now()->subHours(2)->getTimestamp();
+
+        $currentCronRunTimestamp = Carbon::now()->getTimestamp();
+
+        $this->fixtures->create('payment', ['merchant_id' => '10000000000000', 'created_at' => $lastCronRunTimestamp]);
+
+        $this->fixtures->create('feature', ['name' => 'cash_on_card', 'entity_id' => '10000000000000', 'entity_type' => 'merchant']);
+
+        $this->fixtures->create('dispute',['merchant_id' => '10000000000000', 'status' => 'won', 'deduct_at_onset' => true]);
+
+        $collectorData = (new FOHRemovalDataCollector($lastCronRunTimestamp, $currentCronRunTimestamp, []))->collectDataFromSource();
+
+        $data = $collectorData->getData();
+
+        $merchantIds = $data[Constants::MERCHANT_IDS] ?? null;
+
+        $this->assertEquals(0, count($merchantIds));
+    }
+
+    public function testFohMerchantFailingDisputeFilter()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setImpersonatedMerchant();
+
+        $this->fixtures->create('admin', ['email' => 'randomemail2@rzp.com', 'org_id' => Org::RZP_ORG, 'id' => 'RzrpyOrgAdmnId',]);
+
+        $this->fixtures->create('merchant', ['id' => '10000000000000', 'hold_funds' => false]);
+
+        $workflowAction = $this->fixtures->create('workflow_action', [
+            'entity_id'         => '10000000000000',
+            'entity_name'       => 'merchant',
+            'approved'          => 1,
+            'permission_id'     => Permission::EDIT_MERCHANT_SUSPEND,
+            'workflow_id'       => 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID,
+            'state_changer_id'  => 'RzrpyOrgAdmnId'
+        ]);
+
+        $lastCronRunTimestamp = Carbon::now()->subHours(2)->getTimestamp();
+
+        $currentCronRunTimestamp = Carbon::now()->getTimestamp();
+
+        $this->fixtures->create('payment', ['merchant_id' => '10000000000000', 'created_at' => $lastCronRunTimestamp]);
+
+        $this->fixtures->create('feature', ['name' => 'cash_on_card', 'entity_id' => '10000000000000', 'entity_type' => 'merchant']);
+
+        $this->fixtures->create('dispute',['merchant_id' => '10000000000000', 'status' => 'won', 'deduct_at_onset' => true]);
+
+        $collectorData = (new FOHRemovalDataCollector($lastCronRunTimestamp, $currentCronRunTimestamp, []))->collectDataFromSource();
+
+        $data = $collectorData->getData();
+
+        $merchantIds = $data[Constants::MERCHANT_IDS] ?? null;
+
+        $this->assertEquals(0, count($merchantIds));
+    }
+
+    public function testFohMerchantFailingLEATagFilter()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setImpersonatedMerchant();
+
+        $this->fixtures->create('admin', ['email' => 'randomemail2@rzp.com', 'org_id' => Org::RZP_ORG, 'id' => 'RzrpyOrgAdmnId',]);
+
+        $this->fixtures->create('merchant', ['id' => '10000000000000', 'hold_funds' => false, 'tags' => "RISK_LEA_DEBIT-FREEZE_"]);
+
+        $workflowAction = $this->fixtures->create('workflow_action', [
+            'entity_id'         => '10000000000000',
+            'entity_name'       => 'merchant',
+            'approved'          => 1,
+            'permission_id'     => Permission::EDIT_MERCHANT_SUSPEND,
+            'workflow_id'       => 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID,
+            'state_changer_id'  => 'RzrpyOrgAdmnId'
+        ]);
+
+        $lastCronRunTimestamp = Carbon::now()->subHours(2)->getTimestamp();
+
+        $currentCronRunTimestamp = Carbon::now()->getTimestamp();
+
+        $this->fixtures->create('payment', ['merchant_id' => '10000000000000', 'created_at' => $lastCronRunTimestamp]);
+
+        $this->fixtures->create('feature', ['name' => 'cash_on_card', 'entity_id' => '10000000000000', 'entity_type' => 'merchant']);
+
+        $this->fixtures->create('dispute',['merchant_id' => '10000000000000', 'status' => 'won', 'deduct_at_onset' => true]);
+
+        $collectorData = (new FOHRemovalDataCollector($lastCronRunTimestamp, $currentCronRunTimestamp, []))->collectDataFromSource();
+
+        $data = $collectorData->getData();
+
+        $merchantIds = $data[Constants::MERCHANT_IDS] ?? null;
+
+        $this->assertEquals(0, count($merchantIds));
+    }
+
+    public function testFohMerchantFailingCapitalProductsFeaturesFilter()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setImpersonatedMerchant();
+
+        $this->fixtures->create('admin', ['email' => 'randomemail2@rzp.com', 'org_id' => Org::RZP_ORG, 'id' => 'RzrpyOrgAdmnId',]);
+
+        $this->fixtures->create('merchant', ['id' => '10000000000000', 'hold_funds' => false, 'tags' => "RISK_LEA_DEBIT-FREEZE_"]);
+
+        $workflowAction = $this->fixtures->create('workflow_action', [
+            'entity_id'         => '10000000000000',
+            'entity_name'       => 'merchant',
+            'approved'          => 1,
+            'permission_id'     => Permission::EDIT_MERCHANT_SUSPEND,
+            'workflow_id'       => 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID,
+            'state_changer_id'  => 'RzrpyOrgAdmnId'
+        ]);
+
+        $lastCronRunTimestamp = Carbon::now()->subHours(2)->getTimestamp();
+
+        $currentCronRunTimestamp = Carbon::now()->getTimestamp();
+
+        $this->fixtures->create('payment', ['merchant_id' => '10000000000000', 'created_at' => $lastCronRunTimestamp]);
+
+        $this->fixtures->create('feature', ['name' => 'cash_on_card', 'entity_id' => '10000000000000', 'entity_type' => 'merchant']);
+
+        $this->fixtures->create('dispute',['merchant_id' => '10000000000000', 'status' => 'won', 'deduct_at_onset' => true]);
+
+        $this->fixtures->create('feature', ['name' => 'withdraw_loc', 'entity_id' => '10000000000000', 'entity_type' => 'merchant']);
+
+        $collectorData = (new FOHRemovalDataCollector($lastCronRunTimestamp, $currentCronRunTimestamp, []))->collectDataFromSource();
+
+        $data = $collectorData->getData();
+
+        $merchantIds = $data[Constants::MERCHANT_IDS] ?? null;
+
+        $this->assertEquals(0, count($merchantIds));
+    }
+
+    public function testValidFohRemovalMerchant()
+    {
+        $this->mockRazorxAndMerchantRiskClient();
+
+        $this->setImpersonatedMerchant();
+
+        $this->fixtures->create('admin', [
+            'email'               => 'randomemail2@rzp.com',
+            'org_id'              => Org::RZP_ORG,
+        ]);
+
+        $this->fixtures->create('workflow_action', [
+            'entity_id'     => '10000000000000',
+            'entity_name'   => 'merchant',
+            'approved'      => 1,
+            'permission_id' => Permission::EDIT_MERCHANT_SUSPEND,
+            'workflow_id'   => 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID,
+        ]);
+
+        $this->fixtures->create('merchant', [
+            'id'            => '10000000000000',
+            'hold_funds'    => true,
+        ]);
+
+        $lastCronRunTimestamp = Carbon::now()->subHours(2)->getTimestamp();
+
+        $currentCronRunTimestamp = Carbon::now()->getTimestamp();
+
+        $this->fixtures->create('payment', [
+            'merchant_id'   => '10000000000000',
+            'created_at'    => $currentCronRunTimestamp
+        ]);
+
+        $this->fixtures->create('dispute',[
+            'merchant_id'   => '10000000000000',
+            'status'        => 'won',
+            'deduct_at_onset' => true
+        ]);
+
+        $this->fixtures->create('feature', [
+            'name'          => 'withdraw_loc',
+            'entity_id'     => '10000000000000',
+            'entity_type'   => 'merchant',
+
+        ]);
+
+        $collectorData = (new FOHRemovalDataCollector($lastCronRunTimestamp, $currentCronRunTimestamp, []))->collectDataFromSource();
 
         $data = $collectorData->getData();
 

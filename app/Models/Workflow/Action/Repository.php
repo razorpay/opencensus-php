@@ -565,4 +565,29 @@ class Repository extends Base\Repository
             ->orderBy(Entity::UPDATED_AT, 'desc')
             ->first();
     }
+
+    public function fetchWorkFlowActionForWorkFlows(
+        int $limit,
+        int $skip,
+        array $adminIdList,
+        array $permissionIdList,
+        array $workflowIdList,
+        int $currenTimestamp,
+        int $timestamp)
+    {
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+            ->select(Entity::ENTITY_ID)
+            ->whereIn(Entity::STATE_CHANGER_ID, $adminIdList)
+            ->whereIn(Entity::PERMISSION_ID, $permissionIdList)
+            ->whereIn(Entity::WORKFLOW_ID, $workflowIdList)
+            ->where(Entity::APPROVED, '=', 1)
+            ->where(Entity::CREATED_AT, '<=', $currenTimestamp)
+            ->where(Entity::CREATED_AT, '>=', $timestamp)
+            ->take($limit)
+            ->skip($skip)
+            ->distinct()
+            ->get()
+            ->pluck(Entity::ENTITY_ID)
+            ->toarray();
+    }
 }

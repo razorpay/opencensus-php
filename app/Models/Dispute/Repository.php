@@ -409,4 +409,14 @@ class Repository extends Base\Repository
                       ->where(Entity::DEDUCTION_SOURCE_TYPE, '=', 'adjustment')
                       ->get();
     }
+
+    public function getNonDaoLostAndWonDisputes($merchantId)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->whereNotIn(Entity::STATUS, [Status::LOST, Status::WON])
+            ->where(Entity::DEDUCT_AT_ONSET, '=', true)
+            ->first();
+    }
+
 }
