@@ -3,19 +3,19 @@
 namespace RZP\Jobs;
 
 use App;
-use RZP\Constants\Mode;
-use RZP\Constants\Metric;
+use Razorpay\Trace\Logger;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-use Razorpay\Trace\Logger;
-use RZP\Services\Mutex;
-use RZP\Trace\TraceCode;
-use RZP\Models\Admin\ConfigKey;
 use RZP\Trace\Tracer;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
+use RZP\Services\Mutex;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
+use RZP\Models\Admin\ConfigKey;
 
 class Job implements ShouldQueue
 {
@@ -137,6 +137,8 @@ class Job implements ShouldQueue
         $this->jobName      = $this->jobName ?? snake_case(class_basename($this));
         $this->appAuth      = $app['basicauth']->isAppAuth();
         $this->jobPassport  = "";
+
+        $this->setArrayOffsetErrorHandler();
     }
 
     public function handle()
@@ -366,5 +368,34 @@ class Job implements ShouldQueue
 
         $app = App::getFacadeRoot();
         $this->jobPassport = $app['basicauth']->getPassportJwt(get_called_class(), $tokenExpiryInSecs);
+    }
+
+    /**
+     * We are suppressing the "Trying to access array offset on value of type null" because of the changes in PHP 8.1
+     * which is explicitly throwing error if array is null or when we are accessing fields without null check
+     *
+     * @return void
+     */
+    private function setArrayOffsetErrorHandler(): void
+    {
+        set_error_handler(function($errNo, $errStr)
+        {
+            // error was suppressed with the @-operator
+            if (0 === error_reporting())
+            {
+                return false;
+            }
+
+            // $errStr may need to be escaped:
+            $errStr = htmlspecialchars($errStr);
+
+            if ($errStr === "Trying to access array offset on value of type null")
+            {
+                // log to sumo here, so we can fix over time.
+                return true;
+            }
+
+            return false;
+        }, E_WARNING);
     }
 }
