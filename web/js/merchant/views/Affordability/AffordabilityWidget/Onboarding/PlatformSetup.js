@@ -87,7 +87,9 @@ const ViewSetupGuide = ({ platform, cta, redirectUrl }) => {
   };
 
   const handleViewSetupClick = () => {
-    if (platform !== 'shopify' && cta === 'setup') {
+    if (platform === 'shopify') {
+      track.goToShopify('shopify_setup_page');
+    } else if (platform !== 'shopify' && cta === 'setup') {
       track.setupGuide(setupSource);
     }
   };
@@ -113,7 +115,7 @@ const platformSteps = {
       title: 'Install Affordability App',
       desc: 'You will be redirected to Shopify to download the app',
       cta: 'setup',
-      redirectUrl: '',
+      redirectUrl: 'https://apps.shopify.com/affordability-widget',
       lastStep: true,
     },
   ],

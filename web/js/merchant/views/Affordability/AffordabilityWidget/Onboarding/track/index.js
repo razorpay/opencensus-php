@@ -50,6 +50,9 @@ function _track() {
     setupGuide: (source) => {
       sendToSegment('view setup guide', 'click', { source });
     },
+    goToShopify: (source) => {
+      sendToSegment('widget go to shopify', 'click', { source });
+    },
     next: () => {
       sendToSegment('Affordability Onboarding Introduction Next', 'click', null);
     },
