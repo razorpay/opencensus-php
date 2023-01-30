@@ -54,6 +54,7 @@ class Status
         self::NEEDS_CLARIFICATION,
         self::ACTIVATED_MCC_PENDING
     ];
+
     const SUBMERCHANT_OPEN_STATUSES = [
         self::INSTANTLY_ACTIVATED,
         self::UNDER_REVIEW,

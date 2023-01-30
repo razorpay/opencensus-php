@@ -49,6 +49,8 @@ class CommissionTdsSettlement extends Job
 
     protected $invoiceId;
 
+    protected $isPartnerAutoApproveEnabled = false;
+
     public function __construct(string $mode, string $partnerId, $input)
     {
         parent::__construct($mode);
@@ -64,6 +66,7 @@ class CommissionTdsSettlement extends Job
         $this->updateInvoiceStatus = $input[Invoice\Constants::UPDATE_INVOICE_STATUS] ?? true;
         $this->createTds = $input[Invoice\Constants::CREATE_TDS] ?? true;
         $this->skipProcessed = $input[Invoice\Constants::SKIP_PROCESSED] ?? false;
+        $this->isPartnerAutoApproveEnabled = $input[Commission\Constants::INVOICE_AUTO_APPROVED] ?? false;
     }
 
     public function handle()
@@ -161,7 +164,7 @@ class CommissionTdsSettlement extends Job
 
                 $this->repoManager->saveOrFail($invoice);
 
-                CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId());
+                CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId(), [Commission\Constants::INVOICE_AUTO_APPROVED => $this->isPartnerAutoApproveEnabled]);
             }
 
             $timeTaken = microtime(true) - $timeStarted;

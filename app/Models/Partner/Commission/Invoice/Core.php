@@ -6,6 +6,10 @@ use Carbon\Carbon;
 
 use Mail;
 use RZP\Exception;
+use RZP\Mail\Merchant\CommissionInvoiceAutoApproved;
+use RZP\Models\Merchant\Detail\Entity as MerchantEntity;
+use RZP\Models\Merchant\Detail\Status as DetailStatus;
+use RZP\Models\Partner\Activation\Constants as PartnerActivationConstants;
 use RZP\Models\Tax;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
@@ -37,7 +41,6 @@ use RZP\Diag\Event\OnBoardingEvent;
 use RZP\Mail\Merchant\CommissionInvoiceIssued;
 use RZP\Mail\Merchant\CommissionInvoiceReminder;
 use RZP\Models\Admin\Permission\Name as Permission;
-use RZP\Models\Merchant\Detail\Status as DetailStatus;
 
 class Core extends Base\Core
 {
@@ -115,7 +118,7 @@ class Core extends Base\Core
         if (($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true) or
             (($env === 'testing') and ($input[Entity::ACTION] === Status::APPROVED)))
         {
-            return $this->approveInvoiceForProcessing($invoice, $merchant);
+            return $this->approveInvoiceForProcessing($invoice, $merchant, $input);
         }
 
         (new Validator())->validateMerchantToAllowChangeAction($input[Entity::ACTION]);
@@ -125,7 +128,7 @@ class Core extends Base\Core
         if ($this->isFinanceAutoApprovalEnabled($invoice))
         {
             try {
-                $result = $this->approveInvoiceForProcessing($invoice, $merchant);
+            $result = $this->approveInvoiceForProcessing($invoice, $merchant, $input);
 
                 $this->trace->info(
                     TraceCode::COMMISSION_INVOICE_FINANCE_AUTO_APPROVED,
@@ -163,22 +166,26 @@ class Core extends Base\Core
      *
      * @param   Entity              $invoice    The invoice entity
      * @param   Merchant\Entity     $merchant   The partner merchant entity
+     * @param   string[]            $input      This contains data to pass on next method
      *
      * @return  string[]            Success response as true
      *
      * @throws  Exception\LogicException    Throws Exception\LogicException
      */
-    private function approveInvoiceForProcessing(Entity $invoice, Merchant\Entity $merchant)
+    private function approveInvoiceForProcessing(Entity $invoice, Merchant\Entity $merchant, array $input)
     {
         $invoice->setStatus(Status::APPROVED);
 
         $this->repo->saveOrFail($invoice);
 
-        Tracer::inspan(['name' => HyperTrace::CLEAR_ON_HOLD_FOR_PARTNER_CORE], function () use ($merchant, $invoice) {
+        Tracer::inspan(['name' => HyperTrace::CLEAR_ON_HOLD_FOR_PARTNER_CORE], function () use ($merchant, $invoice, $input) {
             // clear on Hold For Partner after workflow is approved
-            (new Commission\Core)->clearOnHoldForPartner(
-                $merchant, [ Commission\Constants::INVOICE_ID => $invoice->getId() ]
-            );
+            $data = [ Commission\Constants::INVOICE_ID => $invoice->getId() ];
+            if (isset($input[Commission\Constants::INVOICE_AUTO_APPROVED])) {
+                $data[Commission\Constants::INVOICE_AUTO_APPROVED] = $input[Commission\Constants::INVOICE_AUTO_APPROVED];
+            }
+
+            (new Commission\Core)->clearOnHoldForPartner($merchant, $data);
         });
 
         return ['success' => 'true'];
@@ -315,6 +322,79 @@ class Core extends Base\Core
         $commissionInvoice = new CommissionInvoiceIssued($data);
 
         Mail::send($commissionInvoice);
+    }
+
+    /**
+     * send commission invoice auto-approval email
+     *
+     * @param   Entity   $invoice    The invoice Entity
+     *
+     * @param   string|null $pdfPath  invoice pdf path
+     *
+     * @return  void
+     *
+     */
+    public function sendInvoiceAutoApprovedMail(Entity $invoice, string $pdfPath = null) {
+        $data = $this->getTemplateData($invoice, $pdfPath);
+
+        $commissionInvoiceAutoApproved = new CommissionInvoiceAutoApproved($data);
+
+        Mail::send($commissionInvoiceAutoApproved);
+    }
+
+    /**
+     * send commission invoice auto-approval sms
+     *
+     * @param   Entity   $invoice    The invoice Entity
+     *
+     * @param   string|null $pdfPath  invoice pdf path
+     *
+     * @return  void
+     *
+     */
+    public function sendCommissionAutoApprovedSMS(Entity $invoice, string $pdfPath = null) {
+        $merchant = $invoice->merchant;
+        $templateName = Commission\Constants::COMMISSION_INVOICE_ISSUED_SMS_TEMPLATE[Commission\Constants::INVOICE_AUTO_APPROVED];
+        $data = $this->getTemplateData($invoice, $pdfPath);
+        $activationStatus = $data['activation_status'];
+
+        $tracePayload = [
+            'partner_id'          => $merchant->getId(),
+            'activation_status'   => $activationStatus,
+            'sms_template'        => $templateName,
+            "invoice_id"          => $invoice->getId(),
+            "invoice_month"       => $invoice->getMonth(),
+            "invoice_year"        => $invoice->getYear(),
+        ];
+
+        try
+        {
+            if(empty($merchant->merchantDetail->getContactMobile()) === false)
+            {
+                $smsPayload = [
+                    'ownerId'           => $merchant->getId(),
+                    'ownerType'         => 'merchant',
+                    'orgId'             => $merchant->getOrgId(),
+                    'sender'            => 'RZRPAY',
+                    'destination'       => $merchant->merchantDetail->getContactMobile(),
+                    'templateName'      => $templateName,
+                    'templateNamespace' => 'partnerships',
+                    'language'          => 'english',
+                    'contentParams'     => [
+                        'start_date'   => $data['start_date'],
+                        'end_date'     => $data['end_date']
+                    ]
+                ];
+
+                $this->trace->info(TraceCode::SEND_PARTNER_COMMISSION_INVOICE_AUTO_APPROVED_SMS, $tracePayload);
+
+                $this->app->stork_service->sendSms($this->mode, $smsPayload);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::PARTNER_COMMISSION_INVOICE_COMMUNICATION_SMS_FAILED, $tracePayload);
+        }
     }
 
     public function sendCommissionInvoiceEvents(Entity $invoice, array $eventCode)
@@ -813,14 +893,68 @@ class Core extends Base\Core
             }
 
             $this->updateInvoiceAmounts($invoice);
-
             $this->repo->saveOrFail($invoice);
 
+            $isPartnerAutoApprovalEnabled = $this->isPartnerInvoiceAutoApprovalEnabled($partner, $invoice);
+
+            if ($isPartnerAutoApprovalEnabled)
+            {
+                $this->trace->info(
+                    TraceCode::COMMISSION_INVOICE_PARTNER_AUTO_APPROVED,
+                    [
+                        "partner_id" => $partner->getId(),
+                        "invoice_id" => $invoice->getId()
+                    ]
+                );
+
+                $invoiceStatusRequest = [Entity::ACTION => Status::UNDER_REVIEW, Commission\Constants::INVOICE_AUTO_APPROVED => $isPartnerAutoApprovalEnabled];
+                $this->changeInvoiceStatus($invoice, $invoiceStatusRequest);
+                $this->trace->count(Metric::COMMISSION_INVOICE_AUTO_APPROVED);
+            }
             if ($invoice->isIssued() === true)
             {
                 CommissionInvoiceAction::dispatch($this->mode, $invoice->getStatus(), $invoice->getId())->delay(self::COMMISSION_INVOICE_ACTION_DELAY);
             }
         });
+    }
+
+    public function isPartnerInvoiceAutoApprovalEnabled(Merchant\Entity $partner, Entity $invoice): bool
+    {
+        if (!$this->isPartnerInvoiceAutoApprovalExpEnabled($partner->getId(), $invoice->getYear()))
+        {
+            return false;
+        }
+        if ($invoice->getGrossAmount() > Entity::MAX_AUTO_APPROVAL_AMOUNT)
+        {
+            return false;
+        }
+        if ($partner->isPartnerInvoiceAutoApprovalDisabled())
+        {
+            return false;
+        }
+        
+        $merchant = $invoice->merchant;
+        $merchantDetail = $merchant->merchantDetail;
+        
+        if ($merchantDetail === null or !empty($merchantDetail->getGstin())) // GSTIN available then auto approval not applicable
+        {
+            return false;
+        }
+        return $this->checkPartnerActivationStatus($partner, $merchantDetail);
+    }
+
+    private function checkPartnerActivationStatus(Merchant\Entity $partner, Merchant\Detail\Entity $merchantDetail): bool
+    {
+        $partnerType = $partner->getPartnerType();
+        $isActivated = $partner->getActivated();
+        $activationStatus = $merchantDetail->getActivationStatus();
+        
+        if (($partnerType === Merchant\Constants::RESELLER) and (empty($activationStatus) === true)) {
+            $activationStatus = ($partner->partnerActivation !== null) ? $partner->partnerActivation->getActivationStatus() : null;
+            $isActivated = $activationStatus === PartnerActivationConstants::ACTIVATED;
+        }
+
+        return $isActivated;
     }
 
     public function createInvoicePdfAndGetFilePath(Entity $invoice)
@@ -1125,6 +1259,27 @@ class Core extends Base\Core
     }
 
     /**
+     * Checks whether partner is allowed for auto invoice generation.
+     *
+     * @param string $merchantId
+     *
+     * @return bool
+     */
+    private function isPartnerInvoiceAutoApprovalExpEnabled(string $partnerId, int $invoiceYear): bool
+    {
+
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.partner_invoice_auto_approval_exp_id'),
+            'request_data'  => json_encode([
+                'invoice_year' => strval($invoiceYear),
+                ]),
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+    }
+
+    /**
      * sends event to kafka topic
      *
      * @param string $eventType
@@ -1152,4 +1307,5 @@ class Core extends Base\Core
         ];
         (new KafkaProducer(Commission\Constants::COMMISSIONS_EVENTS_TOPIC . $this->mode, stringify($event)))->Produce();
     }
+
 }

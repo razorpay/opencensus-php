@@ -9,6 +9,7 @@ use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Partner\Commission\Invoice;
+use RZP\Models\Partner\Commission\Constants as CommissionConstants;
 
 class CommissionInvoiceAction extends Job
 {
@@ -104,7 +105,16 @@ class CommissionInvoiceAction extends Job
         $core    = new Invoice\Core;
         $pdfPath = $core->createInvoicePdfAndGetFilePath($this->invoice);
 
-        $core->sendCommissionProcessedMail($this->invoice, $pdfPath);
+        if (isset($this->invoiceData[CommissionConstants::INVOICE_AUTO_APPROVED]) &&
+            $this->invoiceData[CommissionConstants::INVOICE_AUTO_APPROVED] === true)
+        {
+            $core->sendInvoiceAutoApprovedMail($this->invoice, $pdfPath);
+            $core->sendCommissionAutoApprovedSMS($this->invoice, $pdfPath);
+        }
+        else
+        {
+            $core->sendCommissionProcessedMail($this->invoice, $pdfPath);
+        }
 
         $core->sendCommissionInvoiceEvents($this->invoice, EventCode::PARTNERSHIPS_COMMISSION_INVOICE_PROCESSED);
     }

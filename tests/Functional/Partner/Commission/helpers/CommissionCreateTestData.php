@@ -4,6 +4,19 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\Partner\Constants;
 
+$autoApprovalCaptureRequestResponse = [
+    'request' => [
+        'method' => 'POST',
+        'content' => [],
+    ],
+    'response' => [
+        'content' => [
+            'status' => 'captured',
+            'entity' => 'payment',
+        ],
+    ],
+];
+
 return [
     'createVirtualAccountQrCodeReceiver' => [
         'method'  => 'POST',
@@ -108,6 +121,20 @@ return [
             ],
         ],
     ],
+
+    'testInvoiceCreateWithAutoApproval' => $autoApprovalCaptureRequestResponse,
+
+    'testInvoiceCreateWithAutoApprovalDisabled' => $autoApprovalCaptureRequestResponse,
+
+    'testInvoiceCreateAutoApprovalFailedGSTINPresent' => $autoApprovalCaptureRequestResponse,
+
+    'testInvoiceCreateAutoApprovalFailedResellerKYCNotApproved' => $autoApprovalCaptureRequestResponse,
+
+    'testInvoiceCreateAutoApprovalSuccessForNonReseller' => $autoApprovalCaptureRequestResponse,
+
+    'testInvoiceCreateAutoApprovalFailedExpNotEnabled' => $autoApprovalCaptureRequestResponse,
+
+    'testInvoiceCreateAutoApprovalFailedForNonResellerKYCStatus' => $autoApprovalCaptureRequestResponse,
 
     'testInvoiceCreateWithout3SubMtusAfterUpdatedTnc' => [
         'request' => [

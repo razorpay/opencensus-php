@@ -134,6 +134,8 @@ class Core extends Base\Core
 
     public function clearOnHoldForPartner(Merchant\Entity $partner, array $input): array
     {
+        $isInvoiceAutoApproved = $input[Constants::INVOICE_AUTO_APPROVED] ?? false;
+        unset($input[Constants::INVOICE_AUTO_APPROVED]);
         (new Validator)->validateInput('mark_for_settlement', $input);
 
         Tracer::inspan(['name' => HyperTrace::VALIDATE_TDS_DEFINED], function () use ($partner) {
@@ -149,6 +151,9 @@ class Core extends Base\Core
             $data = (new CommissionInvoice\Core)->convertMonthAndYearToTimeStamp($invoice->getMonth(), $invoice->getYear());
 
             $data[Constants::INVOICE_ID] = $input[Constants::INVOICE_ID];
+
+            $data[Constants::INVOICE_AUTO_APPROVED] = $isInvoiceAutoApproved;
+
 
             $attrs = [
                 'partnerId'        =>  $partner->getId(),

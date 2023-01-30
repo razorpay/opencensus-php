@@ -2498,6 +2498,277 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals($partnerId, $commission['partner_id']);
     }
 
+    public function testInvoiceCreateWithAutoApproval()
+    {
+        $testData = $this->setUpCommissionCreateWith3MTU();
+        $merchant = ['partner_type' => 'reseller'];
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+        $partnerActivation = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,'activation_status' => 'activated'];
+        $testData = $this->setupForInvoiceAutoApproval($testData, $merchantDetail, $partnerActivation, $merchant);
+
+        $now = Carbon::now(Timezone::IST);
+
+        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $now->year, 'enable');
+        $this->mockAutoApprovalFinanceExp(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice is created
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $invoiceExpectedData = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'month' => $now->month,
+            'year' => $now->year,
+            'status' => 'processed',
+            'gross_amount' => 800
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+    }
+
+    public function testInvoiceCreateWithAutoApprovalDisabled()
+    {
+        $testData = $this->setUpCommissionCreateWith3MTU();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+        $partnerActivation = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,'activation_status' => 'activated'];
+        $testData = $this->setupForInvoiceAutoApproval($testData, $merchantDetail, $partnerActivation);
+
+        $now = Carbon::now(Timezone::IST);
+
+        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $now->year, 'enable');
+        $this->fixtures->merchant->addFeatures('auto_comm_inv_disabled', Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice is created
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $invoiceExpectedData = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'month' => $now->month,
+            'year' => $now->year,
+            'status' => 'issued',
+            'gross_amount' => 800
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+    }
+
+    public function testInvoiceCreateAutoApprovalFailedGSTINPresent()
+    {
+        $testData = $this->setUpCommissionCreateWith3MTU();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'gstin' => '27APIPM9598J1ZW'];
+        $partnerActivation = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,'activation_status' => 'activated'];
+        $testData = $this->setupForInvoiceAutoApproval($testData, $merchantDetail, $partnerActivation);
+
+        $now = Carbon::now(Timezone::IST);
+
+        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $now->year, 'enable');
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice is created
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $invoiceExpectedData = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'month' => $now->month,
+            'year' => $now->year,
+            'status' => 'issued',
+            'gross_amount' => 944,
+            'tax_amount' => 144,
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+    }
+
+    public function testInvoiceCreateAutoApprovalFailedResellerKYCNotApproved()
+    {
+        $testData = $this->setUpCommissionCreateWith3MTU();
+
+        $merchant = ['partner_type' => 'reseller'];
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+        $partnerActivation = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'activation_status' => 'pending'];
+        $testData = $this->setupForInvoiceAutoApproval($testData, $merchantDetail, $partnerActivation, $merchant);
+        $now = Carbon::now(Timezone::IST);
+
+        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $now->year,'enable');
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice is created
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $invoiceExpectedData = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'month' => $now->month,
+            'year' => $now->year,
+            'status' => 'issued',
+            'gross_amount' => 800
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+    }
+
+    public function testInvoiceCreateAutoApprovalSuccessForNonReseller()
+    {
+        $testData = $this->setUpCommissionCreateWith3MTU();
+
+        $merchant = ['activated' => true];
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+        $partnerActivation = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+        $testData = $this->setupForInvoiceAutoApproval($testData, $merchantDetail, $partnerActivation, $merchant);
+
+        $now = Carbon::now(Timezone::IST);
+        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $now->year, 'enable');
+        $this->mockAutoApprovalFinanceExp(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice is created
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $invoiceExpectedData = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'month' => $now->month,
+            'year' => $now->year,
+            'status' => 'processed',
+            'gross_amount' => 800
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+    }
+
+    public function testInvoiceCreateAutoApprovalFailedForNonResellerKYCStatus()
+    {
+        $testData = $this->setUpCommissionCreateWith3MTU();
+        $merchant = ['activated' => false];
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+        $partnerActivation = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+        $testData = $this->setupForInvoiceAutoApproval($testData, $merchantDetail, $partnerActivation, $merchant);
+
+        $now = Carbon::now(Timezone::IST);
+        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $now->year, 'enable');
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice is created
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $invoiceExpectedData = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'month' => $now->month,
+            'year' => $now->year,
+            'status' => 'issued',
+            'gross_amount' => 800
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+    }
+
+    public function testInvoiceCreateAutoApprovalFailedExpNotEnabled()
+    {
+        $testData = $this->setUpCommissionCreateWith3MTU();
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+        $partnerActivation = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,'activation_status' => 'pending'];
+        $testData = $this->setupForInvoiceAutoApproval($testData, $merchantDetail, $partnerActivation);
+
+        $now = Carbon::now(Timezone::IST);
+        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $now->year, 'disable');
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice is created
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $invoiceExpectedData = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            'month' => $now->month,
+            'year' => $now->year,
+            'status' => 'issued',
+            'gross_amount' => 800
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+    }
+
+    public function testInvoiceCreateAutoApprovalFailedMaxAmountCheckBreached()
+    {
+        Mail::fake();
+
+        $grossAmount = ( Invoice\Entity::MAX_AUTO_APPROVAL_AMOUNT + 100 );
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => $grossAmount,
+            'debit'  => 0,
+            'fee'    => $grossAmount,
+            'tax'    => 762727,
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+        $now = Carbon::now(Timezone::IST);
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        $this->createTaxes();
+
+        $this->mockPartnerInvoiceAutoApproval($partner->getId(), $now->year, 'enable');
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
+
+        $this->startTest($testData);
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $invoiceExpectedData = [
+            'merchant_id'   => 'DefaultPartner',
+            'month'         => $now->month,
+            'year'          => $now->year,
+            'status'        => 'issued',
+            'gross_amount'  => $grossAmount,
+            'tax_amount'    => 762727,
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+    }
+
+    private function setupForInvoiceAutoApproval($testData, array $merchantDetail, array $partnerActivation, $merchant = null) {
+        Mail::fake();
+        if ($merchant) {
+            $this->fixtures->on(Mode::TEST)->edit('merchant', Constants::DEFAULT_PLATFORM_MERCHANT_ID, $merchant);
+            $this->fixtures->on(Mode::LIVE)->edit('merchant', Constants::DEFAULT_PLATFORM_MERCHANT_ID, $merchant);
+        }
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('partner_activation', $partnerActivation);
+        $this->fixtures->on(Mode::TEST)->create('partner_activation', $partnerActivation);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->runRequestResponseFlow($testData);
+
+        list($payment, $commission) = $this->assertAndGetCommissionByType(CommissionType::IMPLICIT);
+        $testData = $this->testData['testInvoiceGenerate'];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+
+        $this->createTaxes();
+        return $testData;
+    }
+
     protected function tearDown(): void
     {
         parent::tearDown();
@@ -2532,5 +2803,25 @@ class CommissionCreateTest extends TestCase
         $datalakeMock->shouldReceive('getDataFromDataLake')->andReturn([
             json_decode(json_encode(['partner_id' => $partnerId, 'mtu_count' => $mtuCount]))
         ]);
+    }
+
+    private function mockPartnerInvoiceAutoApproval(string $merchantId, int $invoiceYear, string $output) {
+        $input = [
+            "experiment_id" => "L08J6QilO9olL5",
+            "id"            => $merchantId,
+            "request_data"  => json_encode([
+                'invoice_year' => strval($invoiceYear),
+            ]),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $output,
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
     }
 }

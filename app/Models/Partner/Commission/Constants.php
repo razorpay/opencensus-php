@@ -52,6 +52,7 @@ class Constants
     const PARTNER_UNDER_REVIEW_TEMPLATE            = 'Partner_commission_invoice.Under_review';
     const PARTNER_NEEDS_CLARIFICATION_TEMPLATE     = 'Partner_commission_invoice.Needs_clarification';
     const PARTNER_DEFAULT_TEMPLATE                 = 'Partner_commission_invoice.Null';
+    const PARTNER_INVOICE_AUTO_APPROVED_TEMPLATE   = 'Partner_commission_invoice.Auto_Approved';
 
     const COMMISSION_COMPUTED_ZERO_EVENT_NAME      =  'commission_computed_zero';
     const COMMISSION_COMPUTED_NEGATIVE_EVENT_NAME  =  'commission_computed_negative';
@@ -59,6 +60,7 @@ class Constants
     const COMMISSIONS_EVENTS_TOPIC        =  'events.commission-events.v1.';
     const COMMISSION_EVENTS               =  'commission-events';
     const COMMISSION_EVENTS_VERSION       =  'v1';
+    const INVOICE_AUTO_APPROVED           = 'invoice_auto_approved';
 
     const COMMISSION_SYNC_OUTBOX_JOB      = 'partnerships.commission_sync.v1';
 
@@ -70,6 +72,7 @@ class Constants
     ];
 
     const COMMISSION_INVOICE_ISSUED_SMS_TEMPLATE = [
+        self::INVOICE_AUTO_APPROVED            => self::PARTNER_INVOICE_AUTO_APPROVED_TEMPLATE,
         DetailStatus::ACTIVATED                => self::PARTNER_ACTIVATED_TEMPLATE,
         DetailStatus::UNDER_REVIEW             => self::PARTNER_UNDER_REVIEW_TEMPLATE,
         DetailStatus::NEEDS_CLARIFICATION      => self::PARTNER_NEEDS_CLARIFICATION_TEMPLATE,

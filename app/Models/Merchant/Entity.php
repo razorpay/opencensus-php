@@ -2515,6 +2515,11 @@ class Entity extends Base\PublicEntity
         return ($this->isFeatureEnabled(Feature\Constants::KYC_HANDLED_BY_PARTNER));
     }
 
+    public function isPartnerInvoiceAutoApprovalDisabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::AUTO_COMM_INV_DISABLED));
+    }
+
     public function shouldRetainMerchantName(): bool
     {
         return ($this->isFeatureEnabled(Feature\Constants::RETAIN_SUB_MERCHANT_NAME));

@@ -460,6 +460,7 @@ return array(
     'merchant_policies_exp_id'          => env('MERCHANT_POLICIES_EXP_ID'),
     'product_led_mail_communication' => env('PRODUCT_LED_MAIL_COMMUNICATION'),
     'merchant_activation_manual_override' => env('MERCHANT_ACTIVATION_MANUAL_OVERRIDE'),
+    'partner_invoice_auto_approval_exp_id'=> env('PARTNER_INVOICE_AUTO_APPROVAL_EXP_ID'),
     'cmma_post_onboarding_foh_removal_splitz_experiment_id' => env('CMMA_POST_ONBOARDING_FOH_REMOVAL_SPLITZ_EXPERIMENT_ID'),
 
     'merchant_kyc_update_to_partner_exp_id'            => env('MERCHANT_KYC_UPDATE_TO_PARTNER_EXP_ID'),
