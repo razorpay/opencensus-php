@@ -5,7 +5,8 @@ import moment from 'moment';
 import { dateCalculator } from 'common/new-ui/Input/Calendar';
 import { timeCalculator } from 'common/new-ui/Input/Time';
 import { classList } from 'common/utils/rzp-utils';
-import track from '../../track';
+import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
+import { showNoExpiryPL } from 'merchant/views/PaymentLinks/utils';
 
 class LinkExpiry extends React.Component {
   constructor(props) {
@@ -62,7 +63,7 @@ class LinkExpiry extends React.Component {
 
   render() {
     const { props, state } = this;
-    const isRequired = props.required;
+    const isRequired = props.required || !showNoExpiryPL();
 
     const disabled = props.disabled || state.hasNoDate === true;
 
@@ -78,7 +79,7 @@ class LinkExpiry extends React.Component {
             autoRender
             label="Link Expiry"
             fieldLabel="No Expiry"
-            class="Input--vTop mobile-field"
+            className="Input--vTop mobile-field"
             labelClass="Input-label pb-8"
             onChange={this.handleHasNoDate}
             disabled={props.disabled}
@@ -89,14 +90,14 @@ class LinkExpiry extends React.Component {
         <Input.Group
           required={isRequired}
           label={isRequired && 'Link Expiry'}
-          class={classList(
+          className={classList(
             !isRequired && 'InputGroup--near',
             'InputGroup--inline',
             isRequired && 'InputGroup--vTop',
           )}
           disabled={disabled}
         >
-          <div class="Input-content">
+          <div className="Input-content">
             <Input.ToCalendar
               readOnly
               allowToday
@@ -106,7 +107,7 @@ class LinkExpiry extends React.Component {
               size="half"
               defaultValue={props.defaultValue}
               onChange={this.onDateChange}
-              addonAfter={<i class="i i-date-range" />}
+              addonAfter={<i className="i i-date-range" />}
               ref={this.ref}
               onBlur={() => {
                 track.lj.fields.expiryDate();
@@ -119,7 +120,7 @@ class LinkExpiry extends React.Component {
                 placeholder="11:59PM"
                 defaultValue={props.defaultValue}
                 onChange={this.onTimeChange}
-                addonAfter={<i class="i i-time" />}
+                addonAfter={<i className="i i-time" />}
                 onBlur={() => {
                   track.lj.fields.expiryTime();
                   track.segment.fields.expiryTime();

@@ -24,6 +24,7 @@ import { createPaymentLinkV2 } from 'merchant/views/PaymentLinks/PaymentLinks/mo
 import { getURLQueryParams, paiseToRupees } from 'common/utils/rzp-utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import track from './track';
+import { showPayerNamePL, showNoExpiryPL } from 'merchant/views/PaymentLinks/utils';
 
 const PAYMENT_LINK_FORMS = {
   base: BaseForm,
@@ -160,6 +161,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
             email_notify: data.notify && data.notify.email ? '1' : '0',
             email: data.customer.email,
             contact: data.customer.contact,
+            name: data.customer?.name ?? '',
             notes: defaultValueNotes,
             expire_by,
             reminder_enable: isReminderEnabled ? '1' : '0',
@@ -181,10 +183,19 @@ export default class PaymentLinkCreateV2 extends React.Component {
   selectTemplate = (linkType) => this.setState({ linkType });
 
   onFormSubmit = (data) => {
+    const { showNotification } = this.props;
     const reqPayload = {
       ...this.state.formData,
       ...data,
     };
+
+    if (!showNoExpiryPL() && !reqPayload?.expire_by) {
+      showNotification({
+        type: 'error',
+        message: 'Expire By is mandatory!',
+      });
+      return false;
+    }
 
     this.setState({
       isFormLocked: true,
@@ -364,7 +375,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
 
     const isModalView = props.onClose;
     return (
-      <div class="PaymentLinks--CreateV2">
+      <div className="PaymentLinks--CreateV2">
         {showLinkTypeSelectionView && (
           <PaymentLinkTypeSelector
             isTestMode={props.isTestMode}
@@ -391,6 +402,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
             onChangeNotes={this.onChangeNotes}
             isMobileResolution={props.isMobileResolution}
             history={props.history}
+            showPayerName={showPayerNamePL()}
           />
         )}
       </div>

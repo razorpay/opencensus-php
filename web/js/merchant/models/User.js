@@ -1450,6 +1450,10 @@ export default class User {
     return this.isFeatureEnabled('nps_survey_payment_links');
   }
 
+  get isMerchantExpiryPL() {
+    return this.isFeatureEnabled('enable_merchant_expiry_pl');
+  }
+
   get isEmailMandatoryOnL1() {
     return false;
   }

@@ -2,7 +2,7 @@ import React from 'react';
 import { classList } from 'common/utils/rzp-utils';
 
 import { Modal, ModalContent } from 'common/new-ui/Modal';
-import FormWizard from '../components/FormWizard';
+import FormWizard from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/FormWizard';
 import {
   Amount,
   PaymentFor,
@@ -12,7 +12,9 @@ import {
   Reminders,
   LinkExpiry,
   Notes,
-} from '../components/Fields';
+  PayerName,
+} from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 export default class UPIForm extends React.Component {
   onSubmit = () => {
@@ -23,7 +25,7 @@ export default class UPIForm extends React.Component {
 
   render() {
     const { props } = this;
-    const { formData } = props;
+    const { formData, showPayerName } = props;
 
     const content = (
       <FormWizard
@@ -49,6 +51,9 @@ export default class UPIForm extends React.Component {
           defaultValue={formData.description}
           required={props.isDescriptionRequired}
         />
+        <ShowWhen additionalCondition={() => showPayerName}>
+          <PayerName defaultValue={formData?.name} required={true} />
+        </ShowWhen>
         <ContactDetails
           disabled={props.disabled}
           defaultContactNumber={formData.contact}
@@ -82,7 +87,10 @@ export default class UPIForm extends React.Component {
     if (props.isModalView) {
       return (
         <Modal
-          class={classList('PaymentLink--CreateV2', props.showAnimationOnLoading && 'animate-down')}
+          className={classList(
+            'PaymentLink--CreateV2',
+            props.showAnimationOnLoading && 'animate-down',
+          )}
           showCloseBtn={false}
         >
           <ModalContent>{content}</ModalContent>
@@ -90,6 +98,6 @@ export default class UPIForm extends React.Component {
       );
     }
 
-    return <div class="StandAloneContainer">{content}</div>;
+    return <div className="StandAloneContainer">{content}</div>;
   }
 }

@@ -5,6 +5,7 @@ import { transformCreatePLPayload_OldToNew, transformPLDetails_NewToOld } from '
 import { trackFormSubmit } from './ga';
 
 import store from 'merchant/store';
+import { showPayerNamePL } from 'merchant/views/PaymentLinks/utils';
 
 /*
  *
@@ -140,7 +141,7 @@ export function editPaymentLink(id, payload) {
 }
 
 export function createPaymentLinkV2(payload) {
-  let reqPayload = { ...payload };
+  const reqPayload = { ...payload };
 
   // Amount
   reqPayload.amount = Math.round(reqPayload.amount * 100);
@@ -166,6 +167,10 @@ export function createPaymentLinkV2(payload) {
   }
 
   delete reqPayload.email;
+  if (showPayerNamePL()) {
+    customer.name = reqPayload?.name ?? '';
+    delete reqPayload.name;
+  }
 
   if (Object.keys(customer).length) {
     reqPayload.customer = customer;

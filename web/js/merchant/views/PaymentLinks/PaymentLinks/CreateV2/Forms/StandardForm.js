@@ -1,6 +1,6 @@
 import React from 'react';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
-import FormWizard from '../components/FormWizard';
+import FormWizard from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/FormWizard';
 import {
   Amount,
   PaymentFor,
@@ -12,10 +12,12 @@ import {
   LinkExpiry,
   Notes,
   MWebContactDetails,
-} from '../components/Fields';
+  PayerName,
+} from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields';
 import { analyticsTrack } from 'common/utils/analytics';
 import { classList, getURLQueryParams, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import * as LocalStorageService from 'common/utils/localStorage';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 // TODO: Feels like, can be written in better.
 export default class StandardForm extends React.Component {
@@ -40,7 +42,7 @@ export default class StandardForm extends React.Component {
   }
   render() {
     const { props } = this;
-    const { formData } = props;
+    const { formData, showPayerName } = props;
 
     const content = (
       <FormWizard
@@ -65,6 +67,9 @@ export default class StandardForm extends React.Component {
           defaultValue={formData.description}
           required={props.isDescriptionRequired}
         />
+        <ShowWhen additionalCondition={() => showPayerName}>
+          <PayerName defaultValue={formData?.name} required={true} />
+        </ShowWhen>
         {props.isMobileResolution ? (
           <MWebContactDetails
             disabled={props.disabled}
@@ -116,7 +121,10 @@ export default class StandardForm extends React.Component {
     if (props.isModalView) {
       return (
         <Modal
-          class={classList('PaymentLink--CreateV2', props.showAnimationOnLoading && 'animate-down')}
+          className={classList(
+            'PaymentLink--CreateV2',
+            props.showAnimationOnLoading && 'animate-down',
+          )}
           showCloseBtn={false}
         >
           <ModalContent>{content}</ModalContent>
@@ -124,6 +132,6 @@ export default class StandardForm extends React.Component {
       );
     }
 
-    return <div class="StandAloneContainer">{content}</div>;
+    return <div className="StandAloneContainer">{content}</div>;
   }
 }
