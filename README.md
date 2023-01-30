@@ -1,103 +1,46 @@
-# Razorpay dashboard
+<header>
+    <h1 align="center">Razorpay Dashboard</h1>
+    <p align="center">The good ol' dashboard, aging like a fine wine</p>
+</header>
 
-The production dashboard uses the following:
+### 📚 Docs
 
-- PHP 7.1
-- Alpine Linux 3.7
+Following docs will help you with various common tasks on the merchant dashboard
 
-Builds are done using Drone. See the `.drone.yml` file for details on these.
+- [Local Setup](./wiki/local-setup.md) - setup dashboard on your local machine
+- [Using Devstack](./wiki/dashboard-devstack.md) - use the dev environment and see your code running
+- [Contributing Guide](./CONTRIBUTING.md) - guidelines to help you start contributing to the dashboard
+- [Deployment Guide](./wiki/deployment-guide.md) - ship your code to millions of users
+- [Backend Architecture](./wiki/backend-architecture.md) - take a look at how things are working under the hood for dashboard backend
 
-# Setup instructions with Devstack (for local development)
+### ❓ How to
 
-### Prerequisites
+- [Write Unit tests on Dashboard](./wiki/unit-tests-runbook.md)
+- [Write Better CSS on Dashboard](./wiki/css-guide.md)
+- [Lazy Load Components to optimize the application](./wiki/lazyloading-components.md)
+- [Add Typescript Support for your feature](./wiki/typescript-support.md)
 
-- For cloning the repo and initial setup follow [PG Dashboard Setup Guide](https://docs.google.com/document/d/1baW2jhf7fSSbTL5OgeSdXWwWVNAdLg675GhtKO0EWgU/edit#heading=h.x3wtpynpvz5b)
-- For setting up devstack, follow [Devstack Dev Runbook](https://docs.google.com/document/d/1fc9EKjGi1UcSZIEQ5c6p3r0ns5r6mlmbPCdeDek16Co/edit?usp=sharing)
+### 🔗 Helpful Links
 
-### Using devstack for Dashboard repo
+**Deployment Pipelines**
 
-- For getting onboarded to dashboard devstack and understanding the various use-cases, follow [Dashboard Guide for Development & Testing](https://docs.google.com/document/d/1Wk-SxvuZjPMHToQo3K2jXY0aTpvqXrF8UtuGnIaluds/edit?usp=sharing)
+- [Deploy to Prod](https://deploy.razorpay.com/#/applications/prod-dashboard/executions?pipeline=Deploy%20V2)
 
-# Docs
+**Hosted URLs**
 
-To generate documentation for our PHP codebase, run the following:
+- [Dashboard Prod](https://dashboard.razorpay.com) _Panic if this doesn't work_ 🚒
+- [Dashboard QA](https://dashboard.qa.razorpay.in) - for QA 🧑‍🚒
+- [Dashboard Devstack](https://dashboard.dev.razorpay.in) - everyone can have one for themselves 🫰🏻
+- Beta - There’s no beta, never had been 🔫🧑‍🚀
 
-```bash
-curl -L https://github.com/ApiGen/ApiGen/releases/download/v4.1.0/apigen-4.1.0.phar -o apigen && chmod +x apigen
-./apigen generate -d ./docs -s ./app
-```
+**Observability**
 
-The documentation will be generated in the docs directory.
+- [Sentry](https://sentry.io/organizations/rzp/dashboard/1087/?environment=production&project=5699615&statsPeriod=24h) 🐞
+- [SonarQube](https://sonar.razorpay.com/dashboard?id=dashboard) 🧪
 
-# RazorX / Splitz dashboard setup
-
-To run RazorX / Splitz dashboard you'll need to use Redirector extension.
-
-- Create following rule in redirector
-
-```json
-{
-  "description": "",
-  "exampleUrl": "https://betacdn.np.razorpay.in/dashboard/dist/razorx-entry.js",
-  "exampleResult": "http://localhost:8000/dist/razorx-entry.js",
-  "error": null,
-  "includePattern": "https://*cdn.np.razorpay.in/dashboard/dist/razorx-entry.js",
-  "excludePattern": "",
-  "patternDesc": "",
-  "redirectUrl": "http://localhost:8000/dist/razorx-entry.js",
-  "patternType": "W",
-  "processMatches": "noProcessing",
-  "disabled": false,
-  "grouped": false,
-  "appliesTo": ["script"]
-}
-```
-
-- Start ecstatic server in **public** folder using following command
-
-```bash
-ecstatic --cache 0 -H 'Access-Control-Allow-Origin: *'
-```
-
-- Start node server in **web** folder using this command
-
-```bash
-STAGE=development REDIRECTOR=true node tools/build.js --project=razorx
-```
-
-- Go to https://beta-admin-dashboard.stage.razorpay.in/razorx and turn on redirector.
-
-# Deployment Process
-
-https://docs.google.com/document/d/1__-n3Ap8vLKCBLFt8Z2FyxvpQR9GfkimyEPm3C0Cslo/edit
-
-
-# End 2 End Testing Process 
-To run E2E testing 
-1. Make devstack build 
-2. Update your devstack label in DEV_LABEL variable in package.json command and run test:e2e command.
-
-Incase of any error, you can check screenshot on web/test-results folder
-
-E2E Code Structure: 
-  - Web 
-    - e2e
-      - setup
-        // global setup for authentication
-        // we can add funtionality which we need for all test suites
-      - storageState
-        // storage state file for user auth state to reuse in other test suites
-      - suites
-        // e2e test cases to add
-      - utils 
-        // helper method or reusable methods
-
-    - test-results
-      // screnshots of failed test suites
-
-# Typescript Process
-While writing Typescript files , you might encounter eslint issue , to solve that :
-
-- Include your folder/file path in `tsconfig.json` 
-
-```"include": [/*add your file path*/]```
+<blockquote align="center">
+  <i>
+    <strong>There are no solutions, only trade-offs</strong>
+    <span> - Thomas Sowell</span>
+  </i>
+</blockquote>
