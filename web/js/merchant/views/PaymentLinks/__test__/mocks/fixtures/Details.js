@@ -92,7 +92,7 @@ export const paymentLinkConfig = (data = {}) => {
     type: 'link',
     customer_details: {
       customer_email: 'bhaskar.mishra@razorpay.com',
-      customer_name: 'bhaskar mishra',
+      customer_name: data.customer_name || 'bhaskar mishra',
       email_status: 'sent',
     },
     email_notify: '0',

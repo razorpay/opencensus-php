@@ -19,9 +19,10 @@ import { editPaymentLink } from 'merchant/views/PaymentLinks/PaymentLinks/model'
 import { keysToSentence, findBy } from 'common/utils/rzp-utils';
 import { fetchReminders, fetchRemindersMerchantConfigs } from 'merchant/reducers/reminders';
 
-import track from './track';
-import { MIN_AMOUNT_TEXT } from '../components/Edit/EditMinimumAmount';
-
+import track from 'merchant/views/PaymentLinks/PaymentLinks/Details/track';
+import { MIN_AMOUNT_TEXT } from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/EditMinimumAmount';
+import { showNoExpiryPL } from 'merchant/views/PaymentLinks/utils';
+const showNoExpiry = showNoExpiryPL();
 @connect(
   (state) => ({
     ...state.paymentlink,
@@ -219,7 +220,7 @@ export default class PaymentLinkDetails extends Component {
     this.context.confirm({
       header: 'Cancel Link?',
       message: () => (
-        <div class="text-semi-muted">
+        <div className="text-semi-muted">
           <p>The Link will be cancelled and the customer will not be able to pay for it.</p>
         </div>
       ),
@@ -320,6 +321,15 @@ export default class PaymentLinkDetails extends Component {
   };
 
   editPaymentLink = (data) => {
+    const { showNotification } = this.props;
+    // if expire by is mandatory then expire by should not be 'undefined'
+    if (!showNoExpiry && !data?.expire_by && data?.hasOwnProperty('expire_by')) {
+      showNotification({
+        type: 'error',
+        message: 'Expire By is mandatory!',
+      });
+      return false;
+    }
     if (data.partial_payment) {
       track.onUpdatePartial(this.getPaymentLinkType());
     }
@@ -433,6 +443,7 @@ export default class PaymentLinkDetails extends Component {
         trackEditReceipt={this.trackEditReceipt}
         trackEditExpiry={this.trackEditExpiry}
         trackEditNotes={this.trackEditNotes}
+        showNoExpiry={showNoExpiry}
       />
     );
   }

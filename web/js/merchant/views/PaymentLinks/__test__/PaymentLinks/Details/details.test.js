@@ -331,4 +331,36 @@ describe('Payment Link Details', () => {
     renderApp(props);
     expect(screen.getByText('Edit Business Segment')).toBeInTheDocument();
   });
+
+  test('should render customer name,  expiry by & have option to edit expiry" ', () => {
+    const data = {
+      upiLink: true,
+      status: 'created',
+      partial_payment: true,
+      expire_by: '0',
+      customer_name: 'rzp customer',
+    };
+    const mockUserData = {
+      isPaymentlinksV2Enabled: true,
+      isPaymentLinkCreationV2Enabled: true,
+    };
+    const getPaymentLinkConfig = paymentLinkConfig(data);
+    const user = generateUser(mockUserData);
+    const props = {
+      user,
+      isLoading: false,
+      getPaymentLinkConfig,
+      isAutoRemindersUpdating: true,
+      notifyCustomer: notifyCustomerFnMock,
+      isPaymentLinksRemindersEnabled: true,
+      trackEditReceipt: editReceiptMock,
+      isRoleAllowedEdit: true,
+      onCancel: onCancelMock,
+      showNoExpiry: true,
+    };
+    renderApp(props);
+    expect(screen.getByText('rzp customer')).toBeInTheDocument();
+    expect(screen.getByText('Expires On')).toBeInTheDocument();
+    expect(screen.getByText('Edit Expiry')).toBeInTheDocument();
+  });
 });

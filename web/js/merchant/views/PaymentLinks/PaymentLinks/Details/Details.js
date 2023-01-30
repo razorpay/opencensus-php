@@ -15,8 +15,8 @@ import Tooltip from 'common/ui/Tooltip';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 
 import CustomerDetails from 'merchant/components/CustomerDetails';
-import ReminderStepsDetails from './ReminderStepsDetails';
-import PaymentDetails from './PaymentDetails';
+import ReminderStepsDetails from 'merchant/views/PaymentLinks/PaymentLinks/Details/ReminderStepsDetails';
+import PaymentDetails from 'merchant/views/PaymentLinks/PaymentLinks/Details/PaymentDetails';
 
 import {
   EditExpiry,
@@ -31,7 +31,7 @@ import {
   trackTogglePartialPayment,
   trackClickDuplicatePaymentLink,
 } from 'merchant/views/PaymentLinks/PaymentLinks/ga';
-import track from './track';
+import track from 'merchant/views/PaymentLinks/PaymentLinks/Details/track';
 
 export default (props) => {
   const {
@@ -45,6 +45,7 @@ export default (props) => {
     onChangeSendAutoReminder,
     isMinimumFirstPaymentEnabled,
     isPaymentLinksRemindersEnabled,
+    showNoExpiry,
   } = props;
 
   const status = paymentlink.status ? paymentlink.status.toLowerCase() : null;
@@ -93,32 +94,32 @@ export default (props) => {
     }
   };
   return (
-    <div class="content-wrapper content-sm txn-details">
+    <div className="content-wrapper content-sm txn-details">
       {isLoading ? (
-        <div class="page-spinner-container">
+        <div className="page-spinner-container">
           <Spinner />
         </div>
       ) : (
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
-            <i class="i i-link text-primary icon--formal" /> <strong>{paymentlink.id}</strong>
-            <div class="btn-toolbar pull-right">
+        <div className="panel panel-default SliderPanel">
+          <div className="panel-heading">
+            <i className="i i-link text-primary icon--formal" /> <strong>{paymentlink.id}</strong>
+            <div className="btn-toolbar pull-right">
               <NavLink
                 onClick={() => {
                   track.onClone(paymentLinkType);
                   trackClickDuplicatePaymentLink();
                 }}
-                class="btn Button--primary--invert"
+                className="btn Button--primary--invert"
                 to={`/paymentlinks/new?duplicate_id=${paymentlink.id}`}
               >
-                <i class="i i-copy" />
+                <i className="i i-copy" />
                 <Tooltip theme="dark">Duplicate Payment Link</Tooltip>
               </NavLink>
               {(isRoleAllowedEdit || user.role === rolesList.RBL_AGENT) &&
                 isContactDetailsAvl &&
                 (isDraft || isIssued || isPartiallyPaid) && (
                   <button
-                    class="btn Button--primary"
+                    className="btn Button--primary"
                     onClick={() => {
                       track.onResend(paymentLinkType);
                       props.notifyCustomer();
@@ -132,18 +133,18 @@ export default (props) => {
             </div>
           </div>
 
-          <div class="SliderPanel__Body">
-            <div class="panel-body">
-              <div class="list-group details-row-container">
+          <div className="SliderPanel__Body">
+            <div className="panel-body">
+              <div className="list-group details-row-container">
                 {user.isPaymentLinkCreationV2Enabled && (
                   <EntityDetailRow label="Link Type">
                     {isUPILink ? (
                       <>
-                        <i class="i i-upi m-r" /> UPI Payment Link
+                        <i className="i i-upi m-r" /> UPI Payment Link
                       </>
                     ) : (
                       <>
-                        <i class="i i-bank m-r" /> Standard Payment Link
+                        <i className="i i-bank m-r" /> Standard Payment Link
                       </>
                     )}
                   </EntityDetailRow>
@@ -162,7 +163,7 @@ export default (props) => {
                       />
                       {isRoleAllowedEdit && isIssued && (
                         <Button.Transparent
-                          class="Button--Link"
+                          className="Button--Link"
                           style={{ marginLeft: 12 }}
                           onClick={props.onCancel}
                         >
@@ -193,7 +194,7 @@ export default (props) => {
                                 toEnablePartialPayment,
                               );
                             }}
-                            class="Button--Link"
+                            className="Button--Link"
                             style={{ marginLeft: 12 }}
                             pendingState={isPartialPayment ? 'Disabling' : 'Enabling'}
                           >
@@ -290,7 +291,7 @@ export default (props) => {
                 )}
                 {!isPaymentLinksRemindersEnabled && (
                   <EntityDetailRow label="Reminders">
-                    <div class="Input-content">
+                    <div className="Input-content">
                       Reminders are not set for payment links.
                       <br />
                       Set it up{' '}
@@ -347,6 +348,7 @@ export default (props) => {
                             isRoleAllowedEdit={isRoleAllowedEdit}
                             isExpireByRequired={
                               user.isExpireByRequired ||
+                              !showNoExpiry ||
                               (user.isPaymentlinksV2Enabled && paymentlink.expire_by)
                             }
                           />
