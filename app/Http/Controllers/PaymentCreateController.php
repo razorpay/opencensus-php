@@ -1030,7 +1030,7 @@ class PaymentCreateController extends Controller
     {
         $barricade_action = 'merchant_integration_s2s_callback';
         $barricade_merchant_integration = 'barricade_merchant_integration_s2s_callback';
-        $sqsPush = $this->app->razorx->getTreatment($barricade_action, $barricade_merchant_integration, 'live');
+        $sqsPush = $this->app->razorx->getTreatment($barricade_action, $barricade_merchant_integration, $this->app['rzp.mode']);
 
         if ($sqsPush === 'on') {
 
@@ -1040,7 +1040,7 @@ class PaymentCreateController extends Controller
 
             try {
                 $waitTime = 600;
-                $queueName = $this->app['config']->get('queue.barricade_verify.' . 'live');
+                $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->app['rzp.mode']);
                 $this->app['queue']->connection('sqs')->later($waitTime, "Barricade Queue Push", json_encode($data), $queueName);
 
 

@@ -48,7 +48,7 @@ class QrPaymentController extends Controller
 
     protected function pushForBarricade($payment, $qrCodeId): void
     {
-        $sqsPush = $this->app->razorx->getTreatment($qrCodeId, self::BARRICADE_MERCHANT_INTEGRATION_QRPAYMENT_FLOW, 'live');
+        $sqsPush = $this->app->razorx->getTreatment($qrCodeId, self::BARRICADE_MERCHANT_INTEGRATION_QRPAYMENT_FLOW, $this->app['rzp.mode']);
 
         if ($sqsPush === 'on') {
 
@@ -62,7 +62,7 @@ class QrPaymentController extends Controller
 
             try {
                 $waitTime = 600;
-                $queueName = $this->app['config']->get('queue.barricade_verify.' . 'live');
+                $queueName = $this->app['config']->get('queue.barricade_verify.' . $this->app['rzp.mode']);
                 $this->app['queue']->connection('sqs')->later($waitTime, "Barricade Queue Push", json_encode($data), $queueName);
 
 
