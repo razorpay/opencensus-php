@@ -240,6 +240,16 @@ class Service extends Base\Service
             {
                 $channelDetails = $this->getChannelAndSubchannel($utmParams);
 
+                /*
+                 * If channel was calculated to be UNMAPPED but merchant signed-up on PG,
+                 * set the channel explicitly as PG. This happens when UTM params are missing/mangled
+                 */
+                if ($channelDetails[Constants::CHANNEL] === Channels::UNMAPPED and
+                    $merchant->getSignupSource() === Product::PRIMARY)
+                {
+                    $channelDetails[Constants::CHANNEL] = Channels::PG;
+                }
+
                 // Check if signed up via X mobile app
                 if (!empty($signupSource) && $signupSource === Constants::X_MOBILE_APP)
                 {

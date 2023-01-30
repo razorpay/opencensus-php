@@ -345,6 +345,82 @@ class XChannelDefinitionTest extends TestCase
         $this->xChannelDefinitionService->storeChannelDetails($merchant, $utmParams);
     }
 
+    public function testStoreChannelDetailsForPGMerchantNoUTMParams()
+    {
+        $this->attributeCoreMock
+            ->shouldReceive('fetchKeyValues')
+            ->withArgs([Mockery::any(), Product::BANKING, Attribute\Group::X_MERCHANT_PREFERENCES, [Attribute\Type::X_SIGNUP_PLATFORM]])
+            ->once()
+            ->andReturn(new PublicCollection());
+
+        $this->attributeCoreMock
+            ->shouldReceive('fetchKeyValues')
+            ->withArgs([Mockery::any(), Product::BANKING, Attribute\Group::X_SIGNUP, [Attribute\Type::CHANNEL]])
+            ->once()
+            ->andReturn(new PublicCollection());
+
+        $expectedData = [
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::CHANNEL,
+                Attribute\Entity::VALUE => Channels::PG,
+            ],
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::SUBCHANNEL,
+                Attribute\Entity::VALUE => Channels::UNMAPPED,
+            ],
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::FINAL_UTM_SOURCE,
+                Attribute\Entity::VALUE => Constants::UNKNOWN,
+            ],
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::FINAL_UTM_MEDIUM,
+                Attribute\Entity::VALUE => Constants::UNKNOWN,
+            ],
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::FINAL_UTM_CAMPAIGN,
+                Attribute\Entity::VALUE => Constants::UNKNOWN,
+            ],
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::REF_WEBSITE,
+                Attribute\Entity::VALUE => Constants::UNKNOWN,
+            ],
+            [
+                Attribute\Entity::TYPE  => Attribute\Type::LAST_CLICK_SOURCE_CATEGORY,
+                Attribute\Entity::VALUE => 'Unknown',
+            ],
+        ];
+
+        $this->attributeServiceMock
+            ->shouldReceive('upsert')
+            ->withArgs(function($group, $data, $product, $merchant) use ($expectedData) {
+                sort($data);
+                sort($expectedData);
+
+                $this->assertEquals(Attribute\Group::X_SIGNUP, $group);
+                $this->assertEquals(Product::BANKING, $product);
+                $this->assertEquals($expectedData, $data);
+
+                return true;
+            })
+            ->once()
+            ->andReturn();
+
+        $this->basicAuthMock
+            ->shouldReceive('getMode')
+            ->andReturn(Mode::TEST);
+
+        $this->basicAuthMock
+            ->shouldReceive('setModeAndDbConnection')
+            ->withAnyArgs()
+            ->andReturns();
+
+        $merchant  = Mockery::mock('RZP\Models\Merchant\Entity');
+
+        $merchant->shouldReceive('getSignupSource')->andReturn('primary');
+
+        $this->xChannelDefinitionService->storeChannelDetails($merchant, []);
+    }
+
     private function createTestDependencyMocks()
     {
         $this->attributeCoreMock = Mockery::mock('RZP\Models\Merchant\Attribute\Core');
