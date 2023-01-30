@@ -25,7 +25,7 @@ import {
 } from 'merchant/views/PaymentPages/PaymentPages/ga';
 import { sendLink, exportReportCSV } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
-import track from './track';
+import track from 'merchant/views/PaymentPages/PaymentPages/Details/track';
 
 import EditStock from 'merchant/views/PaymentPages/PaymentPages/components/EditStock';
 
@@ -36,11 +36,10 @@ import {
 import ShareView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Share';
 import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
 
-import PaymentsList from './PaymentsList';
-
+import PaymentsList from 'merchant/views/PaymentPages/PaymentPages/Details/PaymentsList';
 import Button from 'common/new-ui/Button';
 import Tooltip from 'common/ui/Tooltip';
-import DropdownSettings from './DropdownSettings';
+import DropdownSettings from 'merchant/views/PaymentPages/PaymentPages/Details/DropdownSettings';
 import DonationGoalTrackerPreview from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection/DonationGoalTrackerPreview';
 import { parseGoalTrackerAmountValues } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection/helpers';
 import MagicCheckoutLabel from 'merchant/components/MagicCheckout/MagicCheckoutLabel';
@@ -280,6 +279,7 @@ export default class PaymentPagesV3Entity extends React.Component {
       editPaymentPage,
       toggleManualActivation,
       reActivateLink,
+      isNoExpiryMandatory,
     } = this.props;
 
     // paymentPageEntity = mockPaymentPage;
@@ -296,25 +296,25 @@ export default class PaymentPagesV3Entity extends React.Component {
     return (
       <React.Fragment>
         <div
-          class={classList(
+          className={classList(
             'content-sm txn-details Entity--paymentpage Entity--paymentpage-v2 Entity--paymentpage-v3',
             this.state.detailsCollapse && 'Entity--paymentpage-collapse',
           )}
         >
-          <div class="content-header">
+          <div className="content-header">
             <Link to="/paymentpages">
-              <i class="i i-arrow-back" /> All Payment Pages
+              <i className="i i-arrow-back" /> All Payment Pages
             </Link>
-            <i class="i i-chevron-right" /> {paymentPageEntity.title}
+            <i className="i i-chevron-right" /> {paymentPageEntity.title}
           </div>
 
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <div class="text">{paymentPageEntity.title}</div>
-              <div class="btn-toolbar">
+          <div className="panel panel-default">
+            <div className="panel-heading">
+              <div className="text">{paymentPageEntity.title}</div>
+              <div className="btn-toolbar">
                 {isRoleAllowedEdit && isActive && (
-                  <Button class="Button--primary--invert" onClick={this.openShareView}>
-                    <i class="i i-share-outline" />
+                  <Button className="Button--primary--invert" onClick={this.openShareView}>
+                    <i className="i i-share-outline" />
                     <Tooltip theme="dark" align="top">
                       Share Page
                     </Tooltip>
@@ -326,7 +326,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                     to={`/paymentpages/new?duplicate_id=${paymentPageEntity.id}`}
                     onClick={this.onClickDuplicatePage}
                   >
-                    <Button class="Button--primary--invert">
+                    <Button className="Button--primary--invert">
                       <i className="i i-duplicate" />
                     </Button>
                     <Tooltip theme="dark" align="top" className="rzp-tooltip-duplicate">
@@ -340,15 +340,15 @@ export default class PaymentPagesV3Entity extends React.Component {
                 {isRoleAllowedEdit && (
                   <Link to={`/paymentpages/${paymentPageEntity.id}/edit`}>
                     <Button.Primary>
-                      <i class="i i-edit icon-border-bottom" /> Edit Page
+                      <i className="i i-edit icon-border-bottom" /> Edit Page
                     </Button.Primary>
                   </Link>
                 )}
               </div>
             </div>
 
-            <div class="panel-body">
-              <div class="entity-details">
+            <div className="panel-body">
+              <div className="entity-details">
                 <EntityDetailRow
                   label="Page URL"
                   value={() => (
@@ -368,7 +368,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                       <PaymentPagesStatusLabel status={status} />
                       {isRoleAllowedEdit && (
                         <Button.Transparent
-                          class="Button--Link"
+                          className="Button--Link"
                           style={{ marginLeft: 12 }}
                           onClick={isActive ? toggleManualActivation : reActivateLink}
                         >
@@ -413,6 +413,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                       entityId={paymentPageEntity.id}
                       isRoleAllowedEdit={isRoleAllowedEdit}
                       trackerFn={this.trackDateUpdate}
+                      isExpireByRequired={!isNoExpiryMandatory}
                     />
                   )}
                 />
@@ -439,7 +440,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                     label="Shiprocket order creation"
                     value={() => (
                       <div>
-                        <div class="status-label label label-success">Enabled</div>
+                        <div className="status-label label label-success">Enabled</div>
                         <Link
                           style={{ marginLeft: 12 }}
                           to={`/paymentpages/${paymentPageEntity.id}/edit?modal=shiprocket`}
@@ -452,7 +453,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                 )}
               </div>
 
-              <div class="item-details">
+              <div className="item-details">
                 {paymentPageEntity.settings &&
                   paymentPageEntity.settings.goal_tracker &&
                   paymentPageEntity.settings.goal_tracker.is_active === '1' && (
@@ -467,25 +468,25 @@ export default class PaymentPagesV3Entity extends React.Component {
                       currency={paymentPageEntity.currency}
                     />
                   )}
-                <div class="table-container">
+                <div className="table-container">
                   {paymentPageEntity.payment_page_items.map((pi, ix) => (
-                    <div class="table" key={ix}>
+                    <div className="table" key={ix}>
                       <div>
                         <b>{pi.item.name}</b>
                       </div>
                       <div>
-                        <div class="title">Revenue</div>
+                        <div className="title">Revenue</div>
                         <Amount
                           value={pi.total_amount_paid}
                           currency={paymentPageEntity.currency}
                         />
                       </div>
                       <div>
-                        <div class="title">Price</div>
+                        <div className="title">Price</div>
                         <Amount value={pi.item.amount} currency={paymentPageEntity.currency} />
                       </div>
-                      <div class="item-details-units">
-                        <div class="title">Units Sold</div>
+                      <div className="item-details-units">
+                        <div className="title">Units Sold</div>
                         <EditStock
                           totalStock={pi.stock}
                           quantitySold={pi.quantity_sold}
@@ -503,7 +504,7 @@ export default class PaymentPagesV3Entity extends React.Component {
           </div>
           <button
             type="button"
-            class="btn-primary btn-sm panel-collapser"
+            className="btn-primary btn-sm panel-collapser"
             onClick={() => {
               this.state.detailsCollapse && track.showMore();
 
@@ -512,36 +513,36 @@ export default class PaymentPagesV3Entity extends React.Component {
           >
             {this.state.detailsCollapse ? (
               <span>
-                Show More <i class="i i-chevron-down" />
+                Show More <i className="i i-chevron-down" />
               </span>
             ) : (
               <span>
-                Show Less <i class="i i-chevron-up" />
+                Show Less <i className="i i-chevron-up" />
               </span>
             )}
           </button>
         </div>
 
-        <div class="content-sm txn-details Entity--paymentpage-v3">
+        <div className="content-sm txn-details Entity--paymentpage-v3">
           {this.props.mode === 'test' && <TestModeBanner />}
 
-          <div class="stats">
-            <div class="info">
-              <b class="bold">Transactions</b>
+          <div className="stats">
+            <div className="info">
+              <b className="bold">Transactions</b>
               {this.getStatsTable(paymentPageEntity).map((st, ix) => (
                 <div key={ix}>
                   {st.title}
-                  <b class="bold">{st.value}</b>
+                  <b className="bold">{st.value}</b>
                 </div>
               ))}
             </div>
 
-            <div class="report-download btn-toolbar">
+            <div className="report-download btn-toolbar">
               <div
-                class="btn btn-default Button--invert report-download-trigger"
+                className="btn btn-default Button--invert report-download-trigger"
                 disabled={this.state.isExportInProgress}
               >
-                <i class="i i-download m-r" />
+                <i className="i i-download m-r" />
                 {this.state.isExportInProgress ? 'Downloading...' : 'Download Report'}
               </div>
               <Popover align="bottom">
@@ -550,7 +551,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                     <li
                       key={index}
                       type="button"
-                      class="btn"
+                      className="btn"
                       onClick={() => this.downloadReport(o.name)}
                       disabled={this.state.isExportInProgress}
                     >

@@ -244,6 +244,11 @@ export default class User {
     return isViewAllowed;
   }
 
+  isOrgFeatureEnabled(feature) {
+    const features = getOrg()?.features;
+    return features?.indexOf(feature) > -1;
+  }
+
   /*
    * isAllowedMultiple is for grouped tabs, example: Settings in side bar.
    * If any route is present in moduleNames, it will be treated for view only mode and will make parent group(hood) visible.
@@ -399,6 +404,16 @@ export default class User {
 
   get isMagicCheckoutEnabled() {
     return this.isFeatureEnabled('one_cc_merchant_dashboard') && this.isOrgRZP;
+  }
+
+  get isMerchantExpiryPPEnabled() {
+    return this.isFeatureEnabled('enable_merchant_expiry_pp');
+  }
+
+  get isNoExpiryMandatoryPP() {
+    const orgFeatureEnabled = this.isOrgFeatureEnabled('hide_no_expiry_for_pp');
+    const merchantFeatureEnabled = this.isMerchantExpiryPPEnabled;
+    return orgFeatureEnabled ? merchantFeatureEnabled : true;
   }
 
   get isBulkAddressUploadEnabled() {

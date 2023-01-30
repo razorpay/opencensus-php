@@ -15,23 +15,23 @@ import {
   editPaymentPageItem,
   activatePaymentPage,
   deactivatePaymentPage,
-} from '../model';
+} from 'merchant/views/PaymentPages/PaymentPages/model';
 import Spinner from 'common/ui/Spinner';
 import { updateItem } from 'common/utils/immutable';
 
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { trackDetailViewEdits } from '../ga';
-import track from './track';
+import { trackDetailViewEdits } from 'merchant/views/PaymentPages/PaymentPages/ga';
+import track from 'merchant/views/PaymentPages/PaymentPages/Details/track';
 
 import NoEntityResultsFound from 'common/ui/NoEntityResultsFound';
 
-import PaymentPagesV3Entity from './V3';
+import PaymentPagesV3Entity from 'merchant/views/PaymentPages/PaymentPages/Details/V3';
 
 import ActivateAgain from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ActivateAgain';
 
 @withRouter
-@connect(() => ({}), {
+@connect((state) => ({ user: state.session.user }), {
   updatePPInReduxList,
   showNotification,
   closeModal,
@@ -120,12 +120,18 @@ export default class extends React.Component {
   }
 
   editPaymentPage = (data, paymentPageItemId) => {
+    const { showNotification, user } = this.props;
     const isEntityPaymentPageItem = !!paymentPageItemId;
 
     const _updateFn = isEntityPaymentPageItem ? editPaymentPageItem : editPaymentPage;
 
     const id = isEntityPaymentPageItem ? paymentPageItemId : this.state.paymentPageEntity.id;
-
+    if (!user?.isNoExpiryMandatoryPP && !data?.expire_by) {
+      return showNotification({
+        type: 'error',
+        message: 'Expire By is mandatory!',
+      });
+    }
     return _updateFn(id, data)
       .then((resp) => {
         if (resp.data) {
@@ -239,7 +245,7 @@ export default class extends React.Component {
     this.context.confirm({
       header,
       message: () => (
-        <div class="text-semi-muted">
+        <div className="text-semi-muted">
           <p>{message}</p>
         </div>
       ),
@@ -396,12 +402,12 @@ export default class extends React.Component {
   }
 
   render() {
+    const { user } = this.props;
     const { paymentPageEntity, loading } = this.state;
-
     if (loading) {
       return (
-        <div class="content-wrapper content-sm txn-details Entity--paymentpage">
-          <div class="page-spinner-container">
+        <div className="content-wrapper content-sm txn-details Entity--paymentpage">
+          <div className="page-spinner-container">
             <Spinner />
           </div>
         </div>
@@ -410,7 +416,7 @@ export default class extends React.Component {
 
     if (!loading && !Object.keys(paymentPageEntity).length) {
       return (
-        <div class="content-wrapper content-sm txn-details Entity--paymentpage">
+        <div className="content-wrapper content-sm txn-details Entity--paymentpage">
           <NoEntityResultsFound
             error={
               <span>
@@ -431,6 +437,7 @@ export default class extends React.Component {
         editPaymentPage={this.editPaymentPage}
         toggleManualActivation={this.toggleManualActivation}
         reActivateLink={this.reActivateLink}
+        isNoExpiryMandatory={user?.isNoExpiryMandatoryPP}
       />
     );
   }
