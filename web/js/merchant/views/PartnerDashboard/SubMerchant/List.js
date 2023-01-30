@@ -13,7 +13,7 @@ import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr'
 import AddMerchant from './AddMerchant';
 import ReferralBox from './ReferralBox';
 import Announcement from 'merchant/components/Announcements/Instant';
-import { XSubMerchantList, PrimarySubMerchantList } from './AccountsList';
+import { XSubMerchantList, PrimarySubMerchantList, CapitalSubMerchantList } from './AccountsList';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { trackAddNewMerchantEvents } from 'merchant/views/PartnerDashboard/ga';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -45,6 +45,24 @@ export default class SubMerchantsList extends Component {
     // triggered because Affiliate Razorpay Accounts is default view
     this.trackUserEvent('partnerships.dashboard.affiliate_account.payments');
   }
+  getProductType = () => {
+    const basePath = this.props?.match?.path;
+    switch (this.props?.location?.pathname) {
+      case `${basePath}`: {
+        return PRODUCT_TYPE.PG;
+      }
+      case `${basePath}/x`: {
+        return PRODUCT_TYPE.X;
+      }
+      case `${basePath}/capital`: {
+        return PRODUCT_TYPE.CAPITAL;
+      }
+      default: {
+        return PRODUCT_TYPE.X;
+      }
+    }
+  };
+
   handleAddMerchant = () => {
     this.trackUserEvent('partnerships.submerchant.add', {
       source: 'navbar',
@@ -59,12 +77,20 @@ export default class SubMerchantsList extends Component {
       },
       toCleverTap: true,
     });
+
     trackAddNewMerchantEvents('Click - Navbar');
     const { closeModal } = this.props;
     const { referralData } = this.state;
+    const addMerchantType = this.getProductType();
     this.props.openModal({
       size: 'med-large',
-      component: <AddMerchant closeModal={closeModal} referralData={referralData} />,
+      component: (
+        <AddMerchant
+          closeModal={closeModal}
+          referralData={referralData}
+          addType={addMerchantType}
+        />
+      ),
     });
   };
 
@@ -80,7 +106,7 @@ export default class SubMerchantsList extends Component {
       },
       toCleverTap: true,
     });
-
+    const product = this.getProductType();
     this.props.openModal({
       size: 'med-large',
       component: (
@@ -91,6 +117,7 @@ export default class SubMerchantsList extends Component {
           tracking={this.props.tracking}
           partnerID={this.props.user.id}
           partnershipForXEnabled={this.props.user.isPartnershipForXEnabled}
+          product={product}
         />
       ),
     });
@@ -133,8 +160,8 @@ export default class SubMerchantsList extends Component {
 
   render() {
     const { user } = this.props;
+    const { isPartnershipForCapitalEnabled } = user;
     const not_pure_platform = user.isPartner() && !user.isPartner('pure_platform');
-
     if (user.isPartnerIntent()) {
       this.props.openModal({
         size: 'xlarge',
@@ -169,6 +196,11 @@ export default class SubMerchantsList extends Component {
                   onClick={(e) => this.sendAnalytics(e, 'navlink-X')}
                 >
                   RazorpayX Affiliate Accounts
+                </NavLink>
+              </ShowWhen>
+              <ShowWhen additionalCondition={() => isPartnershipForCapitalEnabled}>
+                <NavLink exact to="/partners/submerchants/capital">
+                  Corporate Credit Card Affiliate Accounts
                 </NavLink>
               </ShowWhen>
             </div>
@@ -214,6 +246,21 @@ export default class SubMerchantsList extends Component {
                       <XSubMerchantList
                         {...props}
                         product={PRODUCT_TYPE.X}
+                        referralData={this.state.referralData}
+                      />
+                    )}
+                    exact
+                  />
+                ) : (
+                  ''
+                )}
+                {isPartnershipForCapitalEnabled ? (
+                  <Route
+                    path={`${this.props.match.path}/capital`}
+                    render={(props) => (
+                      <CapitalSubMerchantList
+                        {...props}
+                        product={PRODUCT_TYPE.CAPITAL}
                         referralData={this.state.referralData}
                       />
                     )}

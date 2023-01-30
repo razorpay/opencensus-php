@@ -46,6 +46,11 @@ export default class SubmerchantDetailsContainer extends Component {
     if (this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
       product = PRODUCT_TYPE.X;
     }
+
+    if (this.props.history.location.pathname.startsWith('/partners/submerchants/capital')) {
+      product = PRODUCT_TYPE.CAPITAL;
+    }
+
     this.setState({
       product,
     });
@@ -74,6 +79,8 @@ export default class SubmerchantDetailsContainer extends Component {
   getCurrentProduct = () => {
     if (this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
       return 'X';
+    } else if (this.props.history.location.pathname.startsWith('/partners/submerchants/capital')) {
+      return 'Capital';
     }
     return 'Payments';
   };

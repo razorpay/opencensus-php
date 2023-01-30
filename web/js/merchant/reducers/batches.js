@@ -385,7 +385,13 @@ export const validatePaymentLinkBatch = (file, progressTracker) => {
 
 /* Partner Submerchant linking batches */
 export const validatePartnerSubmerchantBatch = validateBatch('partner_submerchant_invite');
+export const validatePartnerSubmerchantCapitalBatch = validateBatch(
+  'partner_submerchant_invite_capital',
+);
 export const createPartnerSubmerchantBatch = createBatch('partner_submerchant_invite');
+export const createPartnerSubmerchantCapitalBatch = createBatch(
+  'partner_submerchant_invite_capital',
+);
 
 /* direct debit batches */
 export const createPaymentsBatch = createBatch('direct_debit');

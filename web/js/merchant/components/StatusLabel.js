@@ -261,6 +261,29 @@ export const batchAddressStatusMap = {
   failed: 'label-failed',
 };
 
+export const capitalStatusMap = {
+  'bureau submission': 'label-light-warning',
+  'income proof submission': 'label-light-warning',
+  'pre-offer Verification': 'label-light-warning',
+  'offer acceptance': 'label-light-warning',
+  'post offer docs collection': 'label-light-warning',
+  'post offer docs verification': 'label-light-warning',
+  'esign initiaiton': 'label-light-warning',
+  'merchant esign pending': 'label-light-information',
+  'nach pending': 'label-light-information',
+  'rzp esign pending': 'label-light-information',
+  'lender decision': 'label-light-information',
+  'lender response': 'label-light-information',
+  'post offer docs resubmission': 'label-light-warning',
+  'rejection bucket': 'label-danger-light',
+  'uw processing': 'label-light-warning',
+  'uw hold': 'label-danger-light',
+  'application closed': 'label-danger-light',
+  'go-live': 'label-success-light',
+  'application rejected': 'label-danger-light',
+  'not available': '',
+};
+
 export const InvoiceStatusLabel = statusLabel(invoiceStatusMap);
 export const PaymentPagesStatusLabel = statusLabel(paymentPagesStatusMap);
 export const RouteTransfersStatusLabel = statusLabel(routeTransfersStatusMap);
@@ -284,6 +307,7 @@ export const XSubmerchantCAStatusLabel = statusLabel(XSubmerchantCAStatusMap);
 export const XSubmerchantVAStatusLabel = statusLabel(XSubmerchantVAStatusMap);
 export const StoreProductsStatusLabel = statusLabel(storeProductsStatusMap);
 export const batchAddressStatusLabel = statusLabel(batchAddressStatusMap);
+export const CapitalSubMerchantStatusLabel = statusLabel(capitalStatusMap);
 
 // statusLabel is being used in lot of places, not sure which place is triggering this error https://sentry.io/organizations/rzp/issues/2660520384/?project=5699615
 // item.entity is coming as undefined. Passing {} for now, this will hide the status, enabling us to

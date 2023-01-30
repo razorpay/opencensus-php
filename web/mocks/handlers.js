@@ -24,6 +24,7 @@ import {
   partnerConfigFetchHandlers,
   partnerConfigSaveHandlers,
 } from 'merchant/views/PartnerDashboard/Settings/configuration/__tests__/mocks/handlers';
+import { subMerchantListHandlers } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/handlers';
 
 export const handlers = [
   // Handles a "Login" mutation
@@ -824,4 +825,5 @@ export const handlers = [
   ...paymentHandleHandlers,
   ...partnerConfigFetchHandlers,
   ...partnerConfigSaveHandlers,
+  ...subMerchantListHandlers,
 ];

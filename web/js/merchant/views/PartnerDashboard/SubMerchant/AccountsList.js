@@ -21,6 +21,7 @@ import {
   ActivationStatusLabel,
   SubmerchantSettlementLabel,
   XSubmerchantCAStatusLabel,
+  CapitalSubMerchantStatusLabel,
 } from 'merchant/components/StatusLabel';
 import {
   submerchant as submerchantColumn,
@@ -49,6 +50,10 @@ import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import AddNewSubMerchants from 'assets/onboarding/add-new-sub-merchants.png';
 import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
 import Image from 'common/ui/Image';
+import {
+  getActivationStatusData,
+  activationStatusMap,
+} from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
 
 const email = {
   title: 'Registered Email',
@@ -147,6 +152,19 @@ const xCurrentAccountStatus = {
   ),
 };
 
+const capitalStatus = {
+  title: <Fragment>Activation Status&nbsp;</Fragment>,
+  value: (submerchant) => (
+    <span>
+      {submerchant.capitalActivationStatus ? (
+        <CapitalSubMerchantStatusLabel status={submerchant.capitalActivationStatus.toLowerCase()} />
+      ) : (
+        <span>Not Available</span>
+      )}
+    </span>
+  ),
+};
+
 const switchMerchantActionBtn = (handleSwitchMerchant) => ({
   title: 'Switch Account',
   value: (item) =>
@@ -171,13 +189,53 @@ const appId = {
 
 @RTracking(() => window.rzpQ.component('ProductSubMerchantsList'))
 class ProductSubMerchantsList extends ListContainer {
-  state = {};
+  state = {
+    capitalLoading: false,
+    capitalItems: [],
+  };
 
   constructor(props) {
     super(props);
 
     // if this feature is enabled - allows partner to perform submerchant kyc without requesting them
     this.isSubMerchantKYCAccess = this.props.user.isFeatureEnabled('partner_sub_kyc_access');
+    this.isCapitalProduct = this.props.product === PRODUCT_TYPE.CAPITAL;
+  }
+
+  getCapitalAcivationStatus = (subMerchantData) => {
+    this.setState({ capitalLoading: true });
+    const promises = [];
+    subMerchantData.forEach((items) => {
+      promises.push(getActivationStatusData(items.id));
+    });
+
+    // Once all promises are resolved, update the state
+    Promise.allSettled(promises)
+      .then((responses) => {
+        const data = responses.map((response, index) => {
+          if (response.status === 'fulfilled') {
+            return {
+              ...subMerchantData[index],
+              capitalActivationStatus: activationStatusMap(response.value.stage),
+            };
+          }
+          return {
+            ...subMerchantData[index],
+            capitalActivationStatus: '',
+          };
+        });
+        this.setState({ capitalItems: data, capitalLoading: false });
+      })
+      .catch(() => {
+        this.setState({ capitalLoading: false });
+      });
+  };
+
+  componentDidUpdate(prevProps) {
+    const { items } = this.props;
+    if (this.isCapitalProduct && prevProps.items !== items && items?.length > 0) {
+      this.getCapitalAcivationStatus(items);
+    }
   }
 
   searchAnalytics = () => {
@@ -202,6 +260,9 @@ class ProductSubMerchantsList extends ListContainer {
     }
     if (product === PRODUCT_TYPE.X) {
       return 'X';
+    }
+    if (this.isCapitalProduct) {
+      return 'Capital';
     }
     return '';
   };
@@ -263,6 +324,11 @@ class ProductSubMerchantsList extends ListContainer {
         {item.name}
       </Link>
     ),
+  });
+
+  capitalName = () => ({
+    ...submerchantColumn,
+    value: (item) => <Link to={`/partners/submerchants/capital/${item.id}`}>{item.name}</Link>,
   });
 
   actions = {
@@ -472,10 +538,12 @@ class ProductSubMerchantsList extends ListContainer {
 
   render() {
     const { user, product, referralData, location, isSubMerchantKycResellerEnabled } = this.props;
+    const { capitalLoading, capitalItems } = this.state;
     let appIdColumn = [];
     let switchMerchantColumn = [];
-    const referralUrl = referralData ? referralData[product].url : '';
+    const referralUrl = referralData ? referralData[product]?.url : '';
     const isNonEmptyList = Array.isArray(this.props.items) && this.props.items.length > 0;
+    const isNonEmptyCapitalList = Array.isArray(capitalItems) && capitalItems?.length > 0;
     const isFilterSearchUsed = location.search !== '';
     const shouldShowWelcomeScreen =
       !isNonEmptyList && !isFilterSearchUsed && !user.isPartner('pure_platform');
@@ -494,7 +562,7 @@ class ProductSubMerchantsList extends ListContainer {
       });
     }
 
-    if (this.props.loading) {
+    if (this.props.loading || capitalLoading) {
       return (
         <tabbed-container>
           <content>
@@ -613,6 +681,16 @@ class ProductSubMerchantsList extends ListContainer {
                   {...this.props}
                 />
               )}
+              {isNonEmptyCapitalList && this.isCapitalProduct && (
+                <DataTable
+                  title="Sub Merchants"
+                  count={this.state.count}
+                  skip={this.state.skip}
+                  paginate={this.paginate}
+                  columns={[this.capitalName(), id, email, addedOn, capitalStatus]}
+                  items={capitalItems}
+                />
+              )}
 
               {shouldShowWelcomeScreen && (
                 <>
@@ -642,7 +720,8 @@ class ProductSubMerchantsList extends ListContainer {
                       </div>
                       <ShowWhen
                         additionalCondition={(currentUser) =>
-                          currentUser.isPartner() && currentUser.isPartner('reseller')
+                          (currentUser.isPartner() && currentUser.isPartner('reseller')) ||
+                          this.isCapitalProduct
                         }
                       >
                         <div>
@@ -721,4 +800,13 @@ export const XSubMerchantList = connect(
     ...state.submerchants,
   }),
   getDispatchToProps(PRODUCT_TYPE.X),
+)(ProductSubMerchantsList);
+
+export const CapitalSubMerchantList = connect(
+  (state) => ({
+    user: state.session.user,
+    mode: state.session.mode,
+    ...state.submerchants,
+  }),
+  getDispatchToProps(PRODUCT_TYPE.CAPITAL),
 )(ProductSubMerchantsList);

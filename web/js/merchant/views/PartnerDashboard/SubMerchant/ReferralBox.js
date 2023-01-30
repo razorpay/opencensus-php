@@ -5,6 +5,7 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/SelectBox';
 import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
 import Image from 'common/ui/Image';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 export default function ReferralBox({
   user,
@@ -13,11 +14,13 @@ export default function ReferralBox({
   tracking,
   partnerID,
   partnershipForXEnabled,
+  product = PRODUCT_TYPE.X,
 }) {
   const [productType, setProductType] = useState(PRODUCT_TYPE.X);
   const pgReferralLink = referralData?.[PRODUCT_TYPE.PG]?.url ?? '';
   const bankingReferralLink = referralData?.[PRODUCT_TYPE.X]?.url ?? '';
-
+  const capitalReferralLink = referralData?.[PRODUCT_TYPE.CAPITAL]?.url ?? '';
+  const isCapitalProduct = productType === PRODUCT_TYPE.CAPITAL;
   const getCurrentProduct = () => {
     if (productType === PRODUCT_TYPE.PG) {
       return 'Payments';
@@ -27,6 +30,11 @@ export default function ReferralBox({
     }
     return '';
   };
+  useEffect(() => {
+    if (product === PRODUCT_TYPE.CAPITAL) {
+      setProductType(PRODUCT_TYPE.CAPITAL);
+    }
+  }, [product]);
 
   const trackUserEvent = (eventName, properties = {}) => {
     const productGroup = getCurrentProduct();
@@ -107,6 +115,25 @@ export default function ReferralBox({
             ''
           )}
         </SelectBox>
+        <ShowWhen additionalCondition={() => user.isPartnershipForCapitalEnabled}>
+          <SelectBox
+            label="Corporate Credit Card"
+            description="Refer merchants to Capital products like corporate cards"
+            onClick={() => setProductType(PRODUCT_TYPE.CAPITAL)}
+            checked={isCapitalProduct}
+          >
+            {isCapitalProduct ? (
+              <SocialShareGroup
+                referralUrl={capitalReferralLink}
+                tracking={tracking}
+                product={PRODUCT_TYPE.CAPITAL}
+                partnerID={partnerID}
+              />
+            ) : (
+              ''
+            )}
+          </SelectBox>
+        </ShowWhen>
         <SelectBox
           label="RazorpayX"
           description="Invite affiliates to open RazorpayX powered Current Account to process payouts"

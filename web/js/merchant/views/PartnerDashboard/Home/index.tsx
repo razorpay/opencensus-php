@@ -21,6 +21,7 @@ import 'merchant/views/PartnerDashboard/Home/home.styl';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import Loader from 'common/ui/Loader';
 import DashboardBanner from 'common/ui/DashboardBanner';
+import { CapitalReferralCard } from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/CapitalReferralCard';
 
 const AggregatorFormLazy = React.lazy(() =>
   import('merchant/views/PartnerDashboard/Home/Components/ReferralGuide/AggregatorForm'),
@@ -38,6 +39,7 @@ const Home = ({ user, showNotification, openModal, closeModal, tracking }: Partn
 
   const merchant = user.merchants[user.current];
   const partnerName = merchant.name;
+  const { isPartnershipForCapitalEnabled } = user;
 
   const loadData = async () => {
     try {
@@ -209,6 +211,9 @@ const Home = ({ user, showNotification, openModal, closeModal, tracking }: Partn
           isUserOwner={isUserOwner}
           user={user}
         />
+      </ShowWhen>
+      <ShowWhen additionalCondition={() => isPartnershipForCapitalEnabled}>
+        <CapitalReferralCard handleReferClient={handleReferClient} />
       </ShowWhen>
     </div>
   );

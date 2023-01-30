@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import Spinner from 'common/ui/Spinner';
@@ -13,10 +13,16 @@ import {
   SubmerchantSettlementLabelNew,
   SubmerchantSettlementLabel,
   XSubmerchantCAStatusLabel,
+  CapitalSubMerchantStatusLabel,
 } from 'merchant/components/StatusLabel';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import SubMerchantKycStatusLabel from './SubMerchantKycStatusLabel';
 import DetailsAction from './DetailsAction';
+import { numberDifferentiation } from 'merchant/views/PartnerDashboard/SubMerchant/utils/index';
+import {
+  getActivationStatusData,
+  activationStatusMap,
+} from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
 
 export default (props) => {
   const {
@@ -34,12 +40,36 @@ export default (props) => {
 
   const isPGProduct = product === PRODUCT_TYPE.PG;
   const isXProduct = product === PRODUCT_TYPE.X;
+  const isCapitalProduct = product === PRODUCT_TYPE.CAPITAL;
   const contact_mobile = submerchant?.user?.contact_mobile;
   const activation_status = submerchant?.details?.activation_status;
   const smallWrapper = ['activated', 'activated_mcc_pending', 'under_review', 'rejected'].includes(
     activation_status,
   );
   const isShowLargeWrapper = isReseller && isSubMerchantKycResellerEnabled && !smallWrapper;
+  const [capitalDetails, setCapitalDetails] = useState();
+  const [showMoreDetails, setShowMoreDetails] = useState(false);
+
+  useEffect(() => {
+    const activationStatusData = async (id) => {
+      const response = await getActivationStatusData(id);
+      setCapitalDetails(response);
+    };
+    if (submerchant?.id) {
+      activationStatusData(submerchant.id);
+    }
+  }, [submerchant]);
+
+  const getBusinessVintage = (vintage) => {
+    if (vintage.toLowerCase() === 'business_tenure_unknown') {
+      return 'Unknown';
+    }
+    return vintage;
+  };
+
+  const handleDetailsToggle = () => {
+    setShowMoreDetails((currentValue) => !currentValue);
+  };
   return (
     <div class={`content-wrapper txn-details ${isShowLargeWrapper ? 'content-lg' : 'content-sm'}`}>
       {isLoading ? (
@@ -185,6 +215,77 @@ export default (props) => {
                     isSubMerchantKYCAccess={isSubMerchantKYCAccess}
                   />
                 )}
+                <ShowWhen additionalCondition={() => isCapitalProduct}>
+                  {submerchant?.application && (
+                    <EntityDetailRow value={submerchant.application?.id} label="Application ID" />
+                  )}
+                  {capitalDetails && showMoreDetails && (
+                    <>
+                      {(capitalDetails?.stage || capitalDetails.stage == '') && (
+                        <EntityDetailRow label="Activation Status">
+                          {capitalDetails?.stage !== '' ? (
+                            <CapitalSubMerchantStatusLabel
+                              status={activationStatusMap(capitalDetails.stage).toLowerCase()}
+                            />
+                          ) : (
+                            <span>Not Available</span>
+                          )}
+                        </EntityDetailRow>
+                      )}
+                      {capitalDetails?.business?.legal_name && (
+                        <EntityDetailRow
+                          value={capitalDetails.business.legal_name}
+                          label="Business Name"
+                        />
+                      )}
+                      {capitalDetails?.business?.applicants.length > 0 &&
+                        capitalDetails?.business?.applicants[0].kyc && (
+                          <EntityDetailRow label="POC Name">
+                            {capitalDetails.business.applicants[0].kyc.first_name}{' '}
+                            {capitalDetails.business.applicants[0].kyc.second_name}
+                          </EntityDetailRow>
+                        )}
+                      {capitalDetails?.business?.addresses?.length > 0 && (
+                        <>
+                          <EntityDetailRow label="Company Address">
+                            {capitalDetails.business.addresses[0].address_line1}{' '}
+                            {capitalDetails.business.addresses[0].address_line2}{' '}
+                            {capitalDetails.business.addresses[0].city},
+                            {capitalDetails.business.addresses[0].state}
+                          </EntityDetailRow>
+                          <EntityDetailRow
+                            value={capitalDetails.business.addresses[0].pincode}
+                            label="Company Pincode"
+                          />
+                        </>
+                      )}
+                      {capitalDetails?.business?.deed_type && (
+                        <EntityDetailRow
+                          value={capitalDetails.business.deed_type}
+                          label="Business Type"
+                        />
+                      )}
+                      {capitalDetails?.business?.tenure && (
+                        <EntityDetailRow
+                          value={getBusinessVintage(capitalDetails.business.tenure)}
+                          label="Business Vintage"
+                        />
+                      )}
+                      {capitalDetails?.business?.annual_turnover_max &&
+                        capitalDetails?.business?.annual_turnover_min && (
+                          <EntityDetailRow label="Annual Revenue Slab">
+                            {numberDifferentiation(capitalDetails?.business?.annual_turnover_min)} -{' '}
+                            {numberDifferentiation(capitalDetails?.business?.annual_turnover_max)}
+                          </EntityDetailRow>
+                        )}
+                    </>
+                  )}
+                  {capitalDetails && (
+                    <button className="link_button" onClick={handleDetailsToggle}>
+                      {showMoreDetails ? 'show less details' : 'show more details'}
+                    </button>
+                  )}
+                </ShowWhen>
               </div>
             </div>
           </div>

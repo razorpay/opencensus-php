@@ -4,11 +4,11 @@ import type { RTrackingT } from 'merchant/views/PartnerDashboard/Home/TypesDecla
 
 export interface AddMerchantPropsT {
   closeModal: () => void;
-  source: string;
+  source?: string;
   referralData?: string | Record<string, unknown>;
   // TS_TODO: TS has a problem with redux connected props.
   user?: any;
-  onAddSuccess: () => void;
+  onAddSuccess?: () => void;
   addType?: string;
   isMobileResolution?: boolean;
   location?: Location;
@@ -16,7 +16,9 @@ export interface AddMerchantPropsT {
   create?: ActionCreator<any>;
   showNotification?: ActionCreator<any>;
   createBatch?: ActionCreator<any>;
+  createCapitalBatch?: ActionCreator<any>;
   validateBatch?: ActionCreator<any>;
+  validateCapitalBatch?: ActionCreator<any>;
   tracking?: RTrackingT;
   handleSubmit?: SubmitHandler;
 }

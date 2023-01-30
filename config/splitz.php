@@ -244,6 +244,9 @@ return [
         'SHOW_AFF_WIDGET_WOOC_WAIT_LIST' => env('SHOW_AFF_WIDGET_WOOC_WAIT_LIST', ''),
         
         // disable ticket creation for international activation
-        'DISABLE_INTERNATIONAL_ACTIVATION' => env('DISABLE_INTERNATIONAL_ACTIVATION', '')
+        'DISABLE_INTERNATIONAL_ACTIVATION' => env('DISABLE_INTERNATIONAL_ACTIVATION', ''),
+
+        // Partnership for Capital
+        'PARTNERSHIP_CAPITAL' => env('PARTNERSHIP_CAPITAL', ''),
     ]
 ];

@@ -10,6 +10,8 @@ import { closeModal } from 'merchant_common/reducers/modals';
 import {
   createPartnerSubmerchantBatch as createBatch,
   validatePartnerSubmerchantBatch as validateBatch,
+  validatePartnerSubmerchantCapitalBatch as validateCapitalBatch,
+  createPartnerSubmerchantCapitalBatch as createCapitalBatch,
 } from 'merchant/reducers/batches';
 import setGaTrack from 'merchant/containers/BatchNew/ga';
 import rTracking from 'react-tracking';
@@ -28,65 +30,60 @@ import Button from 'common/new-ui/Button';
 import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/components/SocialShareGroup';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { PRODUCT_TYPE, ADD_MODE } from 'merchant/views/PartnerDashboard/constants';
-import { minLength } from 'merchant/views/PartnerDashboard/SubMerchant/utils';
+import { minLength, getInitialState } from 'merchant/views/PartnerDashboard/SubMerchant/utils';
 import type {
   AddMerchantPropsT,
   AddMerchantStateT,
   ReduxFormEvent,
   NewMerchant,
 } from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant.types';
+import { classList } from 'common/utils/rzp-utils';
 
 const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
 
 class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   onAddSuccess: () => void;
   isPartnershipForXEnabled: boolean;
+  isPartnershipForCapitalEnabled: boolean;
   isPartnershipFUX: boolean;
   constructor(props: AddMerchantPropsT) {
     super(props);
-    const state = {
-      file_id: '',
-      addMode: ADD_MODE.single,
-      bulkContactsCount: 0,
-      step: 1,
-      merchantType: PRODUCT_TYPE.X,
-      merchantEmail: '',
-      merchantName: '',
-      merchantContact: '',
-      referralData: props.referralData || '',
-      isFormValid: false,
-    };
-    const { user, onAddSuccess = () => {} } = props;
-    const { isPartnershipForXEnabled, isPartnershipFUX } = user;
-    switch (props.addType) {
-      case PRODUCT_TYPE.PG: {
-        state.step = 2;
-        state.merchantType = PRODUCT_TYPE.PG;
-        break;
-      }
-      case PRODUCT_TYPE.X: {
-        state.step = 2;
-        state.merchantType = PRODUCT_TYPE.X;
-        break;
-      }
-      default: {
-        if (!isPartnershipForXEnabled) {
-          state.step = 2;
-          state.merchantType = PRODUCT_TYPE.PG;
-        }
-      }
-    }
+    const { user, addType, referralData, onAddSuccess = () => {} } = props;
+    const state = getInitialState({ user, addType, referralData });
+    const { isPartnershipForXEnabled, isPartnershipFUX, isPartnershipForCapitalEnabled } = user;
     this.state = state;
     this.onAddSuccess = onAddSuccess;
     this.isPartnershipForXEnabled = isPartnershipForXEnabled;
     this.isPartnershipFUX = isPartnershipFUX;
+    this.isPartnershipForCapitalEnabled = isPartnershipForCapitalEnabled;
   }
 
   sampleUrl = () => {
-    if (this.isPartnershipForXEnabled) {
+    const { merchantType } = this.state;
+    if (merchantType !== PRODUCT_TYPE.CAPITAL && this.isPartnershipForXEnabled) {
       return '/files/sample_submerchant_batch.xlsx';
     }
+    if (merchantType === PRODUCT_TYPE.CAPITAL) {
+      return '/files/sample_capital_submerchant_batch.xlsx';
+    }
     return '/files/sample_submerchant_link.xlsx';
+  };
+
+  batchType = () => {
+    const { merchantType } = this.state;
+    if (merchantType === PRODUCT_TYPE.CAPITAL) {
+      return 'partner_submerchant_invite_capital';
+    }
+    return 'partner_submerchant_invite';
+  };
+
+  validateBatchType = () => {
+    const { merchantType } = this.state;
+    const { validateBatch, validateCapitalBatch } = this.props;
+    if (merchantType === PRODUCT_TYPE.CAPITAL) {
+      return validateCapitalBatch;
+    }
+    return validateBatch;
   };
 
   getModalHeaderText = () => {
@@ -97,6 +94,8 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
       case 2:
         return merchantType === PRODUCT_TYPE.X
           ? 'Add New Merchants - RazorpayX'
+          : merchantType === PRODUCT_TYPE.CAPITAL
+          ? 'Add New Merchants - Corporate Card'
           : 'Add New Merchants - Razorpay Payments';
       case 3:
         return 'Merchant Added Successfully';
@@ -223,7 +222,14 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   };
 
   handleBatchCreate = (): void => {
-    const { user, tracking, showNotification, closeModal, createBatch } = this.props;
+    const {
+      user,
+      tracking,
+      showNotification,
+      closeModal,
+      createBatch,
+      createCapitalBatch,
+    } = this.props;
     const { bulkContactsCount, file_id, merchantType } = this.state;
     gaEvents.trackUploadBatch('Partner submerchant');
     tracking?.trackEvent(
@@ -233,6 +239,43 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
       }),
     );
     trackAddNewMerchantEvents('Add Multiple - Invite Contacts');
+    if (merchantType === PRODUCT_TYPE.CAPITAL) {
+      return createCapitalBatch?.({
+        file_id,
+        config: {
+          product: merchantType,
+        },
+      })
+        .then(() => {
+          this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.upload', {
+            Action: 'Invite',
+            success: bulkContactsCount,
+          });
+          this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.invite', {
+            success: bulkContactsCount,
+          });
+          showNotification?.({
+            type: 'success',
+            message:
+              'Your file has been successfully processed. Status of account creation will be sent to you within 2 hours.',
+          });
+          this.onAddSuccess();
+          closeModal();
+        })
+        .catch((error) => {
+          this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.upload', {
+            Action: 'Invite',
+            error: error && error[0],
+          });
+          this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.invite', {
+            error: error && error[0],
+          });
+          showNotification?.({
+            type: 'error',
+            message: 'Failed to invite.',
+          });
+        });
+    }
     return (
       createBatch &&
       createBatch({
@@ -335,6 +378,9 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     if (merchantType === PRODUCT_TYPE.X) {
       return 'X';
     }
+    if (merchantType === PRODUCT_TYPE.CAPITAL) {
+      return 'Capital';
+    }
     return '';
   };
 
@@ -359,7 +405,10 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   handleNextClick = () => {
     this.setState((prevState) => ({ step: prevState.step + 1 }));
 
-    const { step } = this.state;
+    const { step, merchantType } = this.state;
+    if (merchantType === PRODUCT_TYPE.CAPITAL) {
+      this.setState({ addMode: ADD_MODE.bulk });
+    }
     if (step === 1) {
       this.trackUserEvent('partnerships.submerchant.add.product_group.next');
       this.eventAddNewMerchant();
@@ -489,7 +538,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   };
 
   render() {
-    const { handleSubmit, user, validateBatch, tracking, source } = this.props;
+    const { handleSubmit, user, tracking, source } = this.props;
     const {
       merchantType,
       addMode,
@@ -507,6 +556,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
       ? [required(), name(), minLength(4), maxLength(255)]
       : [required()];
     const referralUrl = referralData ? referralData[merchantType]?.url : '';
+
     return (
       <div className="partner-submerchant-modal fixed-height-modal">
         <ModalHeader title={this.getModalHeaderText()} onCloseClick={this.modalCloseClick} />
@@ -514,7 +564,13 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
           <ShowWhen additionalCondition={() => step === 1}>
             <div className="step">
               <div className="type-selection flex-col-between">
-                <div className="type-selection__content">
+                <div
+                  className={classList(
+                    this.isPartnershipForCapitalEnabled
+                      ? 'type-selection__content-capital'
+                      : 'type-selection__content',
+                  )}
+                >
                   <SelectBox
                     label="Razorpay Payments"
                     description="Invite affiliates to use Razorpay Payment products to collect payments"
@@ -539,6 +595,16 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                     }}
                     checked={merchantType === PRODUCT_TYPE.X}
                   />
+                  <ShowWhen additionalCondition={() => this.isPartnershipForCapitalEnabled}>
+                    <SelectBox
+                      label="Corporate Credit Card"
+                      description="Refer merchants to Capital products like Corporate Cards"
+                      onClick={() => {
+                        this.setState({ merchantType: PRODUCT_TYPE.CAPITAL });
+                      }}
+                      checked={merchantType === PRODUCT_TYPE.CAPITAL}
+                    />
+                  </ShowWhen>
                 </div>
                 <div className="type-selection__actions">
                   <Button.Primary
@@ -555,12 +621,14 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
           <ShowWhen additionalCondition={() => step === 2}>
             <div className="step">
               <ul className="tab-headers">
-                <li
-                  className={addMode === ADD_MODE.single ? 'active' : ''}
-                  onClick={() => this.handleModeChange(ADD_MODE.single)}
-                >
-                  {this.getTabHeaderText(ADD_MODE.single)}
-                </li>
+                <ShowWhen additionalCondition={() => merchantType !== PRODUCT_TYPE.CAPITAL}>
+                  <li
+                    className={addMode === ADD_MODE.single ? 'active' : ''}
+                    onClick={() => this.handleModeChange(ADD_MODE.single)}
+                  >
+                    {this.getTabHeaderText(ADD_MODE.single)}
+                  </li>
+                </ShowWhen>
                 <li
                   className={addMode === ADD_MODE.bulk ? 'active' : ''}
                   onClick={() => this.handleModeChange(ADD_MODE.bulk)}
@@ -583,11 +651,11 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                     sampleFileDownloadAnalytics={this.sampleFileDownloadAnalytics}
                     clickToUploadAnalytics={this.clickToUploadAnalytics}
                     onValidation={this.onValidation}
-                    batchType="partner_submerchant_invite"
+                    batchType={this.batchType()}
                     batchTypeText="text"
                     sampleUrl={this.sampleUrl()}
                     gaEvents={gaEvents}
-                    validateBatch={validateBatch}
+                    validateBatch={this.validateBatchType()}
                     maxRows={500}
                     maxFileSize={52428800}
                     onFileRemove={this.onValidation}
@@ -617,6 +685,15 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                       </div>
                     </div>
                   ) : null}
+                  <ShowWhen
+                    additionalCondition={() =>
+                      this.isPartnershipForCapitalEnabled && merchantType === PRODUCT_TYPE.CAPITAL
+                    }
+                  >
+                    <div className={classList(file_id ? 'bulk_back_button_container' : '')}>
+                      <Button.Transparent onClick={this.handleBackClick}>Back</Button.Transparent>
+                    </div>
+                  </ShowWhen>
                 </div>
               </ShowWhen>
 
@@ -792,6 +869,8 @@ export default compose<ComponentType<AddMerchantPropsT>>(
     closeModal,
     createBatch,
     validateBatch,
+    validateCapitalBatch,
+    createCapitalBatch,
   }),
   reduxForm({
     form: 'addMerchant',

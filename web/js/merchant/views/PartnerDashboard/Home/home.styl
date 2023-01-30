@@ -309,6 +309,76 @@ $partnerDashboardCdn = "https://cdn.razorpay.com/static/assets/partner-dashboard
     }
   }
 
+  .capital-referral-guide-card {
+    margin: 22px;
+    background-color: #1D2345;
+    display: flex;
+    border-radius: 4px;
+
+    @media screen and (max-width $desktop-wide) {
+      display: block;
+    }
+
+    @media screen and (max-width 600px) {
+      background-image: url("assets/capital-background.svg");
+      background-repeat: no-repeat;
+      background-position: right top;
+      background-size: 60% 60%;
+    }
+
+    .details-container {
+      width: 80%;
+      padding: 20px;
+
+      @media screen and (max-width $desktop-wide) {
+        width: 100%
+      }
+
+      .heading-title {
+        color: #FFF;
+        font-style: normal;
+        font-weight: 700;
+        font-size: 20px;
+        line-height: 30px;
+        padding: 20px;
+
+        span {
+          color: #FF9D08;
+        }
+      }
+
+      .details {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        padding: 15px 20px;
+
+        .details-with-icon {
+          display: flex;
+          margin: 10px;
+
+          .details-text {
+            color: #FFF;
+            font-style: normal;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 20px;
+            margin-left: 12px;
+          }
+        }
+      }
+    }
+
+    .image-container {
+      height: 185px;
+      opacity: 0.5;
+
+      @media screen and (max-width $desktop-wide) {
+        display: none;
+      }
+    }
+  }
+
   .recommendation-shimmer {
     .primary-shimmer {
       margin-right: 8px;

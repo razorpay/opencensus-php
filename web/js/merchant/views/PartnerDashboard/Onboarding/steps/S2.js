@@ -168,6 +168,7 @@ const S2 = ({
                 </a>{' '}
                 integration to get automated&nbsp;commissions
               </li>
+              <li>Not applicable for RazorpayX Current account and Corporate Cards</li>
             </ul>
           </PartnerSelectBox>
         </div>

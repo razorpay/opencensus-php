@@ -499,6 +499,13 @@ export default {
     // prod
     'KoBK1DaiY2K5B3',
   ],
+  partnership_capital: [
+    // stage
+    'L01gPBm1R1OpJG',
+
+    // prod
+    'L0rynez0HhIXHb',
+  ],
   enable_easy_dashboard_nc: [
     // beta
     'L3AHj3UNHRhUXQ',
