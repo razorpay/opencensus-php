@@ -2,6 +2,7 @@
 
 namespace RZP\Services\Mock;
 
+use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\BankingAccount\Entity;
@@ -50,6 +51,42 @@ class BankingAccountService
         return [
             "name" => "RazorpayX",
         ];
+    }
+
+    public function getGeneratedRblCredentials(string $bankingAccountId)
+    {
+        if ($bankingAccountId == '1000000lcustba')
+        {
+            return [
+                'banking_account_id'       => $bankingAccountId,
+                'merchant_id'              => 'L6NxGyvDkztFol',
+                'merchant_name'            => 'TEST MERCHANT',
+                'email'                    => 'x.rbl..4@razorpay.com',
+                'dev_portal_password'      => 'RERPD32rhbtg',
+                'ldap_id'                  => '4BK27SE1V1',
+                'ldap_password'            => 'TMAYH38ymhbp',
+                'upi_handle1'              => 'testUsername@rzp',
+                'upi_handle2'              => 'payouts.puv27-2@rbl',
+                'upi_handle3'              => 'payouts.rrp73-3@rbl',
+                'mcc_code'                 => '6012',
+            ];
+        }
+        else
+        {
+            return [
+                'banking_account_id'       => $bankingAccountId,
+                'merchant_id'              => '',
+                'merchant_name'            => '',
+                'email'                    => '',
+                'dev_portal_password'      => '',
+                'ldap_id'                  => '',
+                'ldap_password'            => '',
+                'upi_handle1'              => '',
+                'upi_handle2'              => '',
+                'upi_handle3'              => '',
+                'mcc_code'                 => '',
+            ];
+        }
     }
 
     public function fetchBankingCredentials($merchantId, string $channel = 'icici', string $accountNumber = '1234566')

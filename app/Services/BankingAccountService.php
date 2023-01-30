@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\BankingAccountService\Core;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -26,6 +27,9 @@ use RZP\Models\BankingAccount\Entity as BankingAccountEntity;
 class BankingAccountService
 {
     const CONTENT_TYPE_JSON = 'application/json';
+    const GET = 'GET';
+    const DATA = 'data';
+    const GET_GENERATED_CREDENTIALS_PATH = 'rbl/banking_account/%s/credentials';
 
     protected $baseUrl;
 
@@ -498,6 +502,30 @@ class BankingAccountService
         $response = $this->sendRequestAndProcessResponse($path, 'GET', [], []);
 
         return $response['data'];
+    }
+
+    public function getGeneratedRblCredentials(string $bankingAccountId)
+    {
+        $path = sprintf(self::GET_GENERATED_CREDENTIALS_PATH, $bankingAccountId);
+
+        try {
+
+            $response = $this->sendRequestAndProcessResponse($path, self::GET, [], []);
+    
+            return $response[self::DATA];
+        } 
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_SERVICE_GET_CREDENTIALS_ERROR,
+                [
+                    'bankingAccountId' => $bankingAccountId
+                ]);
+
+            throw $e;
+
+        }
     }
 
     public function fetchActivatedDirectAccountsFromBas(MerchantEntity $merchant)

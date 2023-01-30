@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
+use RZP\Services\FTS\CreateAccount;
 use RZP\Services\FTS\Transfer\Client;
 use RZP\Models\Merchant\Balance\Entity;
 use RZP\Models\Merchant\Balance\Channel;
@@ -243,15 +244,22 @@ class FtsTest extends TestCase
         $this->startTest();
     }
 
+    public function mockBankingAccountService()
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', true);    
+    }
+
     public function testGracefulUpdateOfExistingSourceAccount()
     {
         $this->setUpForRblUpiCredsUpdateTest();
+
+        $this->mockBankingAccountService();
 
         $this->ba->adminAuth();
 
         $request = $this->generateMockRequestForGracefulSourceAccountUpdate();
 
-        $this->makeRequestAndGetContent($request);
+        $response = $this->makeRequestAndGetContent($request);
 
         $credentials = $request['content']['source_account']['credentials'];
 
@@ -285,6 +293,26 @@ class FtsTest extends TestCase
         $this->assertEquals('banking_account', $vpa[0]['entity_type']);
         $this->assertEquals('1000000lcustba', $vpa[0]['entity_id']);
         $this->assertEquals('testusername@rzp', $vpa[0]['address']);
+    }
+
+    /**
+     * To test the case where the VPA doesn't match
+     */
+    public function testGracefulUpdateOfExistingSourceAccountNegativeCase()
+    {
+        $this->setUpForRblUpiCredsUpdateTest();
+
+        $this->mockBankingAccountService();
+
+        $this->ba->adminAuth();
+
+        $request = $this->generateMockRequestForGracefulSourceAccountUpdate();
+
+        $request['content']['source_account']['credentials'][RblGatewayFields::PAYER_VPA] = 'wrong_vpa@rbl';
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['exception'], CreateAccount::VPAS_DO_NOT_MATCH_ERROR);
     }
 
     protected function generateMockRequestForGracefulSourceAccountUpdate()

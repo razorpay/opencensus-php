@@ -5,6 +5,7 @@ namespace RZP\Services\FTS;
 use Razorpay\Trace\Logger;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
@@ -30,6 +31,7 @@ use RZP\Models\FundTransfer\Attempt\Type as Product;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\BankingAccount\Gateway\Rbl\Fields as RblGatewayFields;
 use RZP\Models\BankingAccount\Detail\Core as BankingAccountDetailCore;
+use RZP\Services\BankingAccountService;
 
 class CreateAccount extends Base
 {
@@ -40,6 +42,13 @@ class CreateAccount extends Base
     const SOURCE_ACCOUNT_CONST = 'source_account';
     const CREDENTIALS          = 'credentials';
     const BANKING_ACCOUNT_ID   = 'banking_account_id';
+
+    const UPI_HANDLE1       = 'upi_handle1';
+    const UPI_HANDLE2       = 'upi_handle2';
+    const UPI_HANDLE3       = 'upi_handle3';
+
+    const VPAS_DO_NOT_EXIST_ERROR = 'Banking Account Credentials are not generated';
+    const VPAS_DO_NOT_MATCH_ERROR = 'Payer VPA does not match any of the generated VPAs';
 
     protected $status;
 
@@ -849,6 +858,8 @@ class CreateAccount extends Base
     {
         // Fetch all the objects related to the relevant banking account
         $bankingAccountId     = $srcAccDetails[self::BANKING_ACCOUNT_ID];
+
+        /** @var BankingAccount\Entity */
         $bankingAccountEntity = $this->repo->banking_account->findOrFailPublic($bankingAccountId);
         $this->channel        = $bankingAccountEntity->getChannel();
         $processor            = $this->bankingAccountCore->getProcessor($this->channel);
@@ -858,6 +869,8 @@ class CreateAccount extends Base
         if(($this->channel === Channel::RBL) and
            (empty($srcAccDetails[Constants::CREDENTIALS][RblGatewayFields::PAYER_VPA]) === false))
         {
+            $this->validateVPAWithGeneratedRblCredentials($bankingAccountEntity->getId(), $srcAccDetails[Constants::CREDENTIALS][RblGatewayFields::PAYER_VPA]);
+
             // Right now, we are only expecting the VPA of a merchant to be created once.
             // Since the VPA address is generated manually, update requests for VPAs shall be rare.
             // Hence, not checking for already existing VPAs for now.
@@ -887,6 +900,43 @@ class CreateAccount extends Base
             self::BANKING_ACCOUNT_ID   => $bankingAccountId,
             Constants::CREDENTIALS     => $tokenisedCreds,
         ];
+    }
+
+    public function validateVPAWithGeneratedRblCredentials(string $bankingAccountId, string $vpa)
+    {
+        /** @var BankingAccountService|\RZP\Services\Mock\BankingAccountService $bas */
+        $bas = app('banking_account_service');
+
+        $credentials = $bas->getGeneratedRblCredentials($bankingAccountId);
+
+        if (empty($credentials[self::UPI_HANDLE1]) &&
+            empty($credentials[self::UPI_HANDLE2]) &&
+            empty($credentials[self::UPI_HANDLE3]))
+        {
+            throw new Exception\BadRequestValidationFailureException(self::VPAS_DO_NOT_EXIST_ERROR,
+                null,
+                [
+                    'entered_vpa'             => $vpa,
+                ]);
+        }
+
+        if (in_array($vpa, [
+            $credentials[self::UPI_HANDLE1],
+            $credentials[self::UPI_HANDLE2],
+            $credentials[self::UPI_HANDLE3],
+        ]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(self::VPAS_DO_NOT_MATCH_ERROR,
+                null,
+                [
+                    'entered_vpa'             => $vpa,
+                    'available_vpas' => [
+                        $credentials[self::UPI_HANDLE1],
+                        $credentials[self::UPI_HANDLE2],
+                        $credentials[self::UPI_HANDLE3],
+                    ]
+                ]);
+        }
     }
 
     /**
