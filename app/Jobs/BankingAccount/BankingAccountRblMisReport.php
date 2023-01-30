@@ -11,11 +11,13 @@ use RZP\Models\BankingAccount as BankingAccountModel;
 
 class BankingAccountRblMisReport extends Job
 {
-    const MAX_RETRY_ATTEMPT = 2;
+    const MAX_RETRY_ATTEMPT = 1; // setting this to 1 to avoid repeated jobs
 
     const RETRY_INTERVAL = 300;
 
     public $timeout = 300;
+
+    protected $metricsEnabled = true;
 
     // protected $queueConfigKey = 'banking_account_rbl_mis_report';
 
@@ -50,10 +52,10 @@ class BankingAccountRblMisReport extends Job
             'input' => $this->input,
             'start_time' => $startTime,
         ];
-        
+
         $this->trace->info(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB, $tracePayload);
 
-        // To have a Fail safe mechanism if the job gets repeated again
+        // To remove the job if the job gets repeated again
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->error(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_DELETE, [
@@ -116,7 +118,7 @@ class BankingAccountRblMisReport extends Job
                     ])
                 );
 
-            $this->checkRetry();
+            $this->checkRetry($e);
         }
         finally
         {
@@ -129,8 +131,10 @@ class BankingAccountRblMisReport extends Job
         }
     }
 
-    protected function checkRetry()
+    protected function checkRetry(\Throwable $e)
     {
+        $this->countJobException($e);
+
         if ($this->attempts() > self::MAX_RETRY_ATTEMPT)
         {
             $this->trace->error(TraceCode::BANKING_ACCOUNT_RBL_MIS_REPORT_JOB_DELETE, [

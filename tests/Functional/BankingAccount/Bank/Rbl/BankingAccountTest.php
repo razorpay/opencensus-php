@@ -10340,6 +10340,7 @@ class BankingAccountTest extends TestCase
         $this->startTest();
 
         Mail::assertNotQueued(ActivationMails\BankPartnerAssigned::class);
+        Mail::assertNotQueued(BankingAccountMails\Reports\LeadMisReport::class);
     }
 
     public function testBankingAccountLeadsMISDownloadByBank()
