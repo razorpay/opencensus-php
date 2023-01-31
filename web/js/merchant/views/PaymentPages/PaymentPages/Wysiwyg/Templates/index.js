@@ -1,9 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ModalMask, Modal, ModalContent } from 'common/new-ui/Modal';
-import META from './meta';
-import { trackGoBackDashboard, trackTemplateSelection, trackStartCreation } from '../../ga';
-import track from '../track/';
+import META from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/Templates/meta';
+import {
+  trackGoBackDashboard,
+  trackTemplateSelection,
+  trackStartCreation,
+} from 'merchant/views/PaymentPages/PaymentPages/ga';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const createYourOwn = {
   card: {
@@ -26,6 +31,7 @@ export default class extends React.PureComponent {
   };
 
   render() {
+    const { showCustomTemplate } = this.props;
     return (
       <ModalMask maskClosable={false} class="payment-pages-v2-templates view-1" isBlur={true}>
         <Link class="back-btn" to="/paymentpages/" onClick={trackGoBackDashboard}>
@@ -40,12 +46,14 @@ export default class extends React.PureComponent {
             </div>
 
             <div class="TemplateCard-list">
-              <TemplateCard
-                title={createYourOwn.card.title}
-                description={createYourOwn.card.description}
-                img={createYourOwn.card.img}
-                selectTemplate={this.selectTemplate('custom', null)}
-              />
+              <ShowWhen additionalCondition={() => showCustomTemplate}>
+                <TemplateCard
+                  title={createYourOwn.card.title}
+                  description={createYourOwn.card.description}
+                  img={createYourOwn.card.img}
+                  selectTemplate={this.selectTemplate('custom', null)}
+                />
+              </ShowWhen>
               {Object.keys(META).map((m, k) => {
                 if (META.hasOwnProperty(m)) {
                   return (

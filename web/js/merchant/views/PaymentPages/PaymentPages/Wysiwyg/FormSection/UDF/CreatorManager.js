@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import CreatorModal from '../CreatorModal';
-import BaseForm from './BaseForm';
+import CreatorModal from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/CreatorModal';
+import BaseForm from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/BaseForm';
 import Alert from 'common/new-ui/Alert';
 import Button from 'common/new-ui/Button';
 import { setSettingsModal } from 'merchant/reducers/wysiwyg';
@@ -42,12 +42,14 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
         onSubmitUDFField,
         checkoutOptions,
         isShiprocket,
+        showPayerNamePP,
         ...restProps
       } = this.props;
 
       let isFieldDeletable = true;
       let isFieldForcedRequired = false; // If so, then no option in dropdown to set the field optional.
       let isCheckoutOption = false;
+      let isLabelDisabled = false;
 
       if (field) {
         if ([checkoutOptions.email, checkoutOptions.phone].indexOf(field.name) > -1) {
@@ -57,6 +59,13 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
         } else if (isShiprocket) {
           isFieldDeletable = false;
           isFieldForcedRequired = true;
+        }
+
+        // If feature flags are enabled then Payer Name should be  mandatory, non editable & remove delete option
+        if (showPayerNamePP && field?.name === 'payer__name') {
+          isFieldDeletable = false;
+          isFieldForcedRequired = true;
+          isLabelDisabled = true;
         }
       }
 
@@ -79,6 +88,7 @@ export default function CreatorManager(WrappedDisplayFieldComponent) {
               isFieldForcedRequired={isFieldForcedRequired}
               isCheckoutOption={isCheckoutOption}
               isShiprocket={isShiprocket}
+              isLabelDisabled={isLabelDisabled}
             />
           )}
         </div>
@@ -121,6 +131,7 @@ class BaseFormModal extends React.PureComponent {
       isFieldDeletable,
       isFieldForcedRequired,
       isShiprocket,
+      isLabelDisabled,
     } = this.props;
 
     return (
@@ -134,6 +145,7 @@ class BaseFormModal extends React.PureComponent {
           onDeleteField={isFieldDeletable ? this.onDeleteFormItem : undefined}
           isFieldForcedRequired={isFieldForcedRequired}
           isShiprocket={isShiprocket}
+          isLabelDisabled={isLabelDisabled}
         />
         {!isFieldDeletable ? (
           isShiprocket ? (

@@ -4,28 +4,27 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router';
 import { connect } from 'react-redux';
 import ReactDOM from 'react-dom';
-
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import Loader from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/components/Loader';
 import lazy from 'merchant/routes/LazyLoader';
-import Svelte from './Svelte';
-import DetailsSection from './DetailsSection';
-import FormSection from './FormSection';
-import TemplatesMask from './Templates';
+import Svelte from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/Svelte';
+import DetailsSection from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection';
+import FormSection from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection';
+import TemplatesMask from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/Templates';
 import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings';
 import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
 import ShiprocketConfirmation from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ShiprocketConfirmation';
 import MerchantLogoTooltip from 'merchant/views/PaymentPages/PaymentPages/components/MerchantLogoTooltip';
-import MobileActionButtons from './components/MobileActionButtons';
+import MobileActionButtons from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/components/MobileActionButtons';
 
 import {
   createPaymentPage,
   editPaymentPage,
   setReceiptDetails,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
-import track from './track';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import debounce from 'common/utils/debounce';
 import { dispatchWebViewEvent } from 'common/utils/reactNativeWebView';
@@ -68,7 +67,7 @@ import {
 import {
   convertSinglePriceFieldToMandatory,
   isFormItemOfTypeAmount,
-} from './FormSection/Amount/helpers';
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/helpers';
 import { transfeeRuleToApiFormat } from 'merchant/views/PaymentPages/PaymentPages/helpers';
 
 import { DEFAULT_RULE } from 'merchant/views/MagicCheckout/constants';
@@ -132,6 +131,7 @@ const ERROR = {
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesWysiwyg'))
 export default class PaymentPagesWysiwyg extends React.PureComponent {
+  _isMounted = true;
   static contextTypes = {
     confirm: PropTypes.func,
   };
@@ -361,16 +361,22 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       enabled: false,
       feeRule: DEFAULT_RULE,
     });
+    this._isMounted = false;
   }
 
   fetchMerchantDetails = () => {
     const { mode, user } = this.props;
     merchantFetch({ url: `merchant/${user.id}/tnc`, mode })
       .then((res) => {
-        this.setState({ merchant_tnc: !res.error ? res.data : null });
+        if (this._isMounted) {
+          this.setState({ merchant_tnc: !res.error ? res.data : null });
+        }
+        return res;
       })
       .finally(() => {
-        this.setState({ isMerchantDataLoaded: true });
+        if (this._isMounted) {
+          this.setState({ isMerchantDataLoaded: true });
+        }
       });
   };
 
@@ -396,6 +402,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   initSubApps = () => {
+    const { user } = this.props;
     ReactDOM.render(
       <DetailsSection
         supportEmailRef={this.supportEmailRef}
@@ -403,7 +410,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       />,
       document.getElementById('details-section'),
     );
-    ReactDOM.render(<FormSection />, document.getElementById('form-section'));
+    ReactDOM.render(
+      <FormSection hideDynamicPriceField={user?.hideDynamicPriceFieldPP} />,
+      document.getElementById('form-section'),
+    );
 
     this.setState({
       onSvelteAppMount: true,
@@ -412,8 +422,15 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
   // Update settings in store
   handleSaveSettings = (formData) => {
+    const { showNotification, user } = this.props;
     const data = {};
-
+    if (!user?.isNoExpiryMandatoryPP && !formData?.expire_by) {
+      showNotification({
+        type: 'error',
+        message: 'Expire By is mandatory!',
+      });
+      return;
+    }
     data.expire_by = formData.expire_by;
 
     /* 
@@ -463,8 +480,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   )
   handleSavePublish = (label) => {
     const isEditExistingId = !!this.props.id;
-    const { paymentPageEntity, FORM_ITEMS, magicCheckout, user } = this.props;
-    const { isMagicCheckoutLive, isPaymentPageMagicEnabled } = user;
+    const { paymentPageEntity, FORM_ITEMS, magicCheckout, user, showNotification } = this.props;
+    const { isMagicCheckoutLive, isPaymentPageMagicEnabled, isNoExpiryMandatoryPP } = user;
     const { enabled: magicEnabled, feeRule: magicFeeRule } = magicCheckout;
     // console.log('Handle Create..', paymentPageEntity);
 
@@ -596,6 +613,14 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         this.supportPhoneRef?.current?.el.focus();
       }
 
+      return;
+    }
+
+    if (!isNoExpiryMandatoryPP && !expire_by) {
+      showNotification({
+        type: 'error',
+        message: 'Expire By is mandatory!',
+      });
       return;
     }
 
@@ -1135,7 +1160,12 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
 
     const { paymentPageEntity, id: payment_page_id, user, FORM_ITEMS, magicCheckout } = this.props;
 
-    const { isMagicCheckoutLive, isPaymentPageMagicEnabled } = user;
+    const {
+      isMagicCheckoutLive,
+      isPaymentPageMagicEnabled,
+      isNoExpiryMandatoryPP,
+      showCustomTemplatePP,
+    } = user;
     const isShiprocket =
       paymentPageEntity?.settings?.partner_webhook_settings?.partner_shiprocket === '1';
 
@@ -1268,6 +1298,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
           <TemplatesMask
             onClose={this.handleIntroClose}
             selectTemplate={this.props.updateTemplateType}
+            showCustomTemplate={showCustomTemplatePP}
           />
         )}
 
@@ -1303,6 +1334,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             handleShiprocket={this.handleShiprocket}
             isShiprocket={isShiprocket}
             customDomain={this.props.customDomain}
+            isNoExpiryMandatory={isNoExpiryMandatoryPP}
           />
         )}
 

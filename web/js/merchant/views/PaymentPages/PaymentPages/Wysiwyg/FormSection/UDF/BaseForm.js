@@ -2,10 +2,11 @@ import React from 'react';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
-import FieldOptionsDropdownWrapper, { OptionsItem } from '../FieldOptionsDropdown';
-
+import FieldOptionsDropdownWrapper, {
+  OptionsItem,
+} from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FieldOptionsDropdown';
 import { classList } from 'common/utils/rzp-utils';
-import { mapFieldToIndex } from '../UDF/helpers';
+import { mapFieldToIndex } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/helpers';
 
 export default class BaseForm extends React.PureComponent {
   constructor(props) {
@@ -98,6 +99,7 @@ export default class BaseForm extends React.PureComponent {
       onDeleteField,
       isFieldForcedRequired,
       isShiprocket,
+      isLabelDisabled,
     } = this.props;
 
     const { isRequired, hasDescription, disableSubmit, mirrorDisplayTitle } = this.state;
@@ -131,7 +133,7 @@ export default class BaseForm extends React.PureComponent {
           placeholder="Enter field label"
           onInput={this.onInputTitle}
           autoRender
-          disabled={isShiprocket}
+          disabled={isShiprocket || isLabelDisabled}
           validator={(val) => {
             if (!val) {
               return 'Field title is required';

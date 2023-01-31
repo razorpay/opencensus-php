@@ -11,11 +11,10 @@ import { lenientUrl } from 'common/utils/validators';
 import { DocLink } from 'merchant/components/DocsLink';
 import { trackPageSettingsData } from 'merchant/views/PaymentPages/PaymentPages/ga';
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
-
 import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
 import PluginsAndAddOns from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PluginsAndAddOns';
 import ShiprocketImage from '../../../../../../../../css/assets/payment_pages/shiprocket.svg';
-import CustomURL from './CustomUrl';
+import CustomURL from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings/CustomUrl';
 import { SHIPROCKET_DASHBOARD_LINK } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
 export default class PaymentPageSettings extends React.Component {
@@ -161,7 +160,13 @@ export default class PaymentPageSettings extends React.Component {
   };
 
   render() {
-    const { handleClose, isTestMode, paymentPageEntity, isShiprocket } = this.props;
+    const {
+      handleClose,
+      isTestMode,
+      paymentPageEntity,
+      isShiprocket,
+      isNoExpiryMandatory = true,
+    } = this.props;
 
     const {
       slug,
@@ -237,6 +242,7 @@ export default class PaymentPageSettings extends React.Component {
                     defaultValue={expire_by}
                     onChange={this.updateDate}
                     isInline
+                    required={!isNoExpiryMandatory}
                   />
                 </div>
 

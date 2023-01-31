@@ -2,11 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { sortableContainer, sortableElement } from 'react-sortable-hoc';
-import AmountDisplayField from './Amount/AmountDisplayField';
-import UDFDisplayField from './UDF/UDFDisplayField';
-import AddUDFButton from './UDF/AddUDFButton';
-import AddAmountButton from './Amount/AddAmountButton';
-import FormFooter from './FormFooter';
+import AmountDisplayField from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/AmountDisplayField';
+import UDFDisplayField from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/UDFDisplayField';
+import AddUDFButton from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/UDF/AddUDFButton';
+import AddAmountButton from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/Amount/AddAmountButton';
+import FormFooter from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/FormSection/FormFooter';
 import {
   updateData,
   deleteInFormItems,
@@ -47,6 +47,7 @@ class SortableFormItemsList extends React.Component {
       onSubmitUDFField,
       onSubmitAmountField,
       isShiprocketSetting,
+      showPayerNamePP,
     } = this.props;
 
     // disable sorting in mobile view
@@ -86,6 +87,7 @@ class SortableFormItemsList extends React.Component {
                 validateSameTitleExists={validateSameTitleExists}
                 disabled={isSortingDisabled}
                 isShiprocket={checkIsShiprocketField(isShiprocketSetting, fi.name)}
+                showPayerNamePP={showPayerNamePP}
               />
             );
           }
@@ -95,7 +97,7 @@ class SortableFormItemsList extends React.Component {
   }
 }
 
-@connect((state) => ({ ...state.wysiwyg }), {
+@connect((state) => ({ ...state.wysiwyg, user: state.session.user }), {
   updateData,
   deleteInFormItems,
   updateInFormItems,
@@ -192,9 +194,14 @@ export default class View extends React.PureComponent {
   };
 
   onSubmitUDFField = (formData, indexInFormItems, isCheckoutOption) => {
+    const { user } = this.props;
     // console.log('FORM DATA.....', formData);
     const fieldSchema = constructFieldSchema(formData);
     // console.log('FIELD SCHEMA...', fieldSchema);
+    const isPayerNameField = user?.showPayerNamePP && formData?.title === 'Payer Name';
+    if (isPayerNameField) {
+      fieldSchema.name = 'payer__name';
+    }
 
     if (!fieldSchema || (fieldSchema.enum && (!formData.enum || !formData.enum.length))) {
       throw new Error('Invalid field data');
@@ -270,8 +277,8 @@ export default class View extends React.PureComponent {
   }
 
   render() {
-    const { paymentPageEntity, FORM_ITEMS, magicCheckout, updateMagicData } = this.props;
-
+    const { paymentPageEntity, FORM_ITEMS, magicCheckout, updateMagicData, user } = this.props;
+    let _hideDynamicPriceField = user?.hideDynamicPriceFieldPP;
     if (!paymentPageEntity) {
       return null;
     }
@@ -282,6 +289,11 @@ export default class View extends React.PureComponent {
           <div class="spin-btn large visible" />
         </div>
       );
+    }
+
+    // Always show dynamic price with donation template
+    if (paymentPageEntity?.template_type === 'donation') {
+      _hideDynamicPriceField = false;
     }
 
     const isPaymentPageEditMode = !!paymentPageEntity.id; // If it has reached uptil here, and id exist, then it's edit mode of existing payment page.
@@ -305,6 +317,7 @@ export default class View extends React.PureComponent {
                 } /*Added in the starting of form Items*/
                 validateSameTitleExists={this.validateSameTitleExists}
                 isPaymentPageEditMode={isPaymentPageEditMode}
+                hideDynamicPriceField={_hideDynamicPriceField}
               />
             </div>
           </div>
@@ -332,6 +345,7 @@ export default class View extends React.PureComponent {
           isShiprocketSetting={
             paymentPageEntity?.settings?.partner_webhook_settings?.partner_shiprocket === '1'
           }
+          showPayerNamePP={user?.showPayerNamePP}
         />
 
         {this.props.isShiprocketOpened && <div class="shiprocket-blank-preview" />}
@@ -356,6 +370,7 @@ export default class View extends React.PureComponent {
               onSubmitAmountField={this.onSubmitAmountField}
               validateSameTitleExists={this.validateSameTitleExists}
               isPaymentPageEditMode={isPaymentPageEditMode}
+              hideDynamicPriceField={_hideDynamicPriceField}
             />
           </div>
         </div>

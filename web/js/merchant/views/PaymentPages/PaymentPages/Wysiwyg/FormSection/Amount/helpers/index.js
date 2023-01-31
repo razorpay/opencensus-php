@@ -1,13 +1,12 @@
 import FIELD_TYPES from './fieldTypes';
 
 // Note: mapFieldToIndex is prone to error if the position of items is changed in FIELD_TYPES
-export function getAmountFieldTypes() {
-  const fieldTypes = [
-    FIELD_TYPES.fixed_price,
-    FIELD_TYPES.dynamic_price,
-    FIELD_TYPES.multiple_purchase,
-  ];
-
+export function getAmountFieldTypes(hideDynamicPriceField = false) {
+  const fieldTypes = [FIELD_TYPES.fixed_price, FIELD_TYPES.multiple_purchase];
+  if (!hideDynamicPriceField) {
+    // Add dynamic price at 1st index to make the other user expeiriance same as before.
+    fieldTypes.splice(1, 0, FIELD_TYPES.dynamic_price);
+  }
   return fieldTypes;
 }
 

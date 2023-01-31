@@ -410,10 +410,35 @@ export default class User {
     return this.isFeatureEnabled('enable_merchant_expiry_pp');
   }
 
+  get isCustomerAmountEnabled() {
+    return this.isFeatureEnabled('enable_customer_amount');
+  }
+
+  get isCreateOwnTemplateEnabled() {
+    return this.isFeatureEnabled('enbl_create_own_tmpl');
+  }
+
   get isNoExpiryMandatoryPP() {
     const orgFeatureEnabled = this.isOrgFeatureEnabled('hide_no_expiry_for_pp');
     const merchantFeatureEnabled = this.isMerchantExpiryPPEnabled;
     return orgFeatureEnabled ? merchantFeatureEnabled : true;
+  }
+
+  get showPayerNamePP() {
+    return this.isOrgFeatureEnabled('enable_payer_name_for_pp');
+  }
+
+  get showCustomTemplatePP() {
+    const orgFeatureEnabled = this.isOrgFeatureEnabled('hide_create_new_tmpl_pp');
+    const merchantFeatureEnabled = this.isCreateOwnTemplateEnabled;
+    return orgFeatureEnabled ? merchantFeatureEnabled : true;
+  }
+
+  get hideDynamicPriceFieldPP() {
+    const orgFeatureEnabled = this.isOrgFeatureEnabled('hide_dynamic_price_pp');
+    const merchantFeatureEnabled = this.isCustomerAmountEnabled;
+    // hide Dynamic Price option if org feature `hide_dynamic_price_pp` is enabled & merchant feature `enable_customer_amount` is disabled.
+    return orgFeatureEnabled ? !merchantFeatureEnabled : false;
   }
 
   get isBulkAddressUploadEnabled() {

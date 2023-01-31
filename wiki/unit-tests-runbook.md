@@ -78,10 +78,10 @@ All our tests are governed by the configuration files `web/jest.config.js` and `
 
       coverageThreshold: {
         global: {
-          statements: 50,
-          branches: 37,
-          functions: 39,
-          lines: 51,
+          statements: 47,
+          branches: 35,
+          functions: 38,
+          lines: 48,
         },
         './js/merchant/views/onboarding/': {
           statements: 72,

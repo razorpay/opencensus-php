@@ -58,7 +58,7 @@ export const updateTemplateType = (data, templateKey) => {
 export const initDefaultFormItems = () => {
   return {
     type: INIT_DEFAULT_FORM_ITEMS,
-    payload: { user: store.getState().session.user },
+    payload: { user: store.getState().session.user, org: store.getState().session?.org },
   };
 };
 
@@ -227,6 +227,15 @@ export default (state = initialState, action) => {
       const currentUser = action.payload.user;
 
       const defaultFields = [];
+      // if org feature flag 'enable_payer_name_for_pp' is enabled then add Payer Name as default filed.
+      const orgDetails = action.payload.org;
+      const showPayerNamePP = orgDetails?.features?.indexOf('enable_payer_name_for_pp') > -1;
+      if (showPayerNamePP) {
+        const payerNameFiled = FIXED_FIELDS?.name;
+        payerNameFiled.title = 'Payer Name';
+        payerNameFiled.name = 'payer__name';
+        defaultFields.push(payerNameFiled);
+      }
 
       if (!currentUser.isPaymentPageEmailOptional) {
         defaultFields.push(FIXED_FIELDS.email);
