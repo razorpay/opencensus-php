@@ -34,6 +34,7 @@ use RZP\Constants\Timezone;
 use RZP\Jobs\AppsRiskCheck;
 use RZP\Services\UfhService;
 use RZP\Constants\Entity as E;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Invoice\Entity as IE;
 use RZP\Exception\BaseException;
 use RZP\Models\Currency\Currency;
@@ -43,7 +44,6 @@ use RZP\Services\MerchantRiskClient;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestException;
 use RZP\Models\PaymentLink\ElfinWrapper;
-use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\PaymentLink\Template\UdfSchema;
 use RZP\Models\PaymentLink\PaymentPageItem as PPI;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -101,6 +101,9 @@ class Core extends Base\Core
     public function create(array $input, Merchant\Entity $merchant, User\Entity $user = null): Entity
     {
         $this->trace->info(TraceCode::PAYMENT_LINK_CREATE_REQUEST, $input);
+
+        //bulk upload flow
+        $this->validateBulkUploadFlow($input,$merchant);
 
         $paymentLink = Tracer::inSpan(['name' => 'payment_page.create.generate_id'], function() {
             return (new Entity)->generateId();
@@ -192,6 +195,46 @@ class Core extends Base\Core
 
         return $paymentLink;
     }
+
+    public function validateBulkUploadFlow($input, $merchant, $paymentLink = null)
+    {
+        if ((isset($input[Entity::VIEW_TYPE]) === true and
+                $input[Entity::VIEW_TYPE] === Entity::VIEW_TYPE_FILE_UPLOAD_PAGE) or
+            ((isset($paymentLink) === true) and
+            (($paymentLink->getViewType()) !== null) and
+            $paymentLink->getViewType() === Entity::VIEW_TYPE_FILE_UPLOAD_PAGE))
+        {
+            if ($merchant->isFeatureEnabled(Feature::FILE_UPLOAD_PP) === false)
+            {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT);
+            }
+
+            $this->trace->info(
+                    TraceCode::PAYMENT_PAGE_BULK_UPLOAD,
+                    [
+                        Entity::MERCHANT_ID => $this->merchant->getPublicId()
+                    ]);
+
+                $settings = $input['settings'];
+
+                if (!isset($settings[Entity::UDF_SCHEMA])) {
+
+                    throw new BadRequestValidationFailureException(
+                        'Mandatory field Primary reference ID missing.');
+                }
+
+                $udf_schema = json_decode($settings[Entity::UDF_SCHEMA], true);
+
+                $setVal = in_array(Entity::PRI_REF_ID, array_column($udf_schema, 'name'));
+
+                if ($setVal === false)
+                {
+                    throw new BadRequestValidationFailureException(
+                        'Mandatory field Primary reference ID missing.');
+                }
+            }
+
+        }
 
     public function createPaymentHandle(array $input, Merchant\Entity $merchant): Entity
     {
@@ -391,7 +434,7 @@ class Core extends Base\Core
                 Entity::ID    => $paymentLink->getId(),
                 Entity::INPUT => $input,
             ]);
-        
+
         (new Validator())->validatePayerNameAndExpiryForUpdate($this->merchant, $input);
 
         $settingCustomDomain = $paymentLink->getSettings(Entity::CUSTOM_DOMAIN);

@@ -16,6 +16,7 @@ class ViewType
     const PAGE                = 'page';
     const SUBSCRIPTION_BUTTON = 'subscription_button';
     const PAYMENT_HANDLE      = 'payment_handle';
+    const FILE_UPLOAD_PAGE    = 'file_upload_page';
 
     public static function isValid(string $viewType): bool
     {

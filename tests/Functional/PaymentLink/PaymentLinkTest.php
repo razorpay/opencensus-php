@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\PaymentLink;
 
+use DB;
 use Event;
 use Carbon\Carbon;
 use Mail;
@@ -444,6 +445,54 @@ class PaymentLinkTest extends TestCase
 
     public function testPaymentPageCreateWithNonUtf8InTerms()
     {
+        $this->startTest();
+    }
+
+    public function testPaymentPageCreateForFileUpload()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+        $this->startTest();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $entityArray = $entity->toArray();
+
+        self::assertEquals($entityArray['view_type'], 'file_upload_page');
+    }
+
+    public function testPaymentPageCreateForFileUploadWithoutPhone()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+        $this->startTest();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $entityArray = $entity->toArray();
+
+        self::assertEquals($entityArray['view_type'], 'file_upload_page');
+    }
+
+    public function testPaymentPageCreateForFileUploadWithSecRefId()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+        $this->startTest();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $entityArray = $entity->toArray();
+
+        self::assertEquals($entityArray['view_type'], 'file_upload_page');
+    }
+
+    public function testPaymentPageCreateForFileUploadWithoutFeature()
+    {
+        $this->startTest();
+    }
+
+    public function testPaymentPageCreateForFileUploadMissingPrimaryRefID()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
         $this->startTest();
     }
 

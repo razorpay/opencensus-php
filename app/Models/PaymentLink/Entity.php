@@ -58,6 +58,7 @@ class Entity extends Base\PublicEntity
     const VIEW_TYPE_BUTTON     = 'button';
     const VIEW_TYPE_PAGE       = 'page';
     const VIEW_TYPE_STORE      = 'store';
+    const VIEW_TYPE_FILE_UPLOAD_PAGE = 'file_upload_page';
 
     const VIEW_TYPE_PAYMENT_HANDLE     = 'payment_handle';
     const NAME                         = 'name';
@@ -189,6 +190,9 @@ class Entity extends Base\PublicEntity
 
     // HDFC Collect Now Mandatory UDF fields
     const PAYER_NAME = 'payer__name';
+
+    //File upload
+    const PRI_REF_ID                            = 'pri__ref__id';
 
     const SETTINGS_KEYS                = [
         self::THEME,
