@@ -1054,7 +1054,7 @@ class Service extends Base\Service
 
         $cacheKey = $this->getOAuthSessionTokenCacheKey($token);
 
-        $this->cache->put($cacheKey, $data, 10);
+        $this->cache->put($cacheKey, $data, 60);
 
         $response = [
             'token'         => $token,
