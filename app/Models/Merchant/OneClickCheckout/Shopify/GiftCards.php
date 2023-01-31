@@ -51,7 +51,7 @@ class GiftCards extends Base\Core
                                     'gift_card_number'          => $input['gift_card_number'],
                                     'balance'         => floatval($giftCard['balance'])*100,
                                     'gift_card_reference_id'  => strval($giftCard['id']),
-                                    'allowedPartialRedemption'  => 0
+                                    'allowedPartialRedemption'  => 1
                                 ], 
                             ],   
                             'status_code' => 200,
