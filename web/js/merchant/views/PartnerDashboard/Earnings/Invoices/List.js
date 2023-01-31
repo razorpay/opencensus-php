@@ -72,8 +72,12 @@ class CommissionInvoicesList extends ListContainer {
     // range for a financial year (excluding April)
     if (isShowInvoiceCurrentFY) {
       const currentFinancialYear = getCurrentFinancialYear();
-      newParams.from = new Date(currentFinancialYear, 4, 1).getTime() / 1000;
-      newParams.to = new Date(currentFinancialYear + 1, 2, 31).getTime() / 1000;
+      const currentMonth = new Date().getMonth();
+      if (currentMonth < 3 || currentMonth > 5)
+        // show invoices of previous Q4 in the Q1 quarter of current financial year
+        newParams.from = new Date(currentFinancialYear, 4, 1).getTime() / 1000;
+      else newParams.from = new Date(currentFinancialYear, 1, 1).getTime() / 1000;
+      newParams.to = new Date(currentFinancialYear + 1, 3, 30).getTime() / 1000;
     }
 
     return newParams;
