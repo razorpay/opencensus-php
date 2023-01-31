@@ -219,6 +219,24 @@ class TerminalCreationBulkTest extends TestCase
         $this->assertEquals(substr($terminal['id'],5), $response['items'][0]['terminal_id']);
     }
 
+    public function testBulkTerminalCreationUpiIcici()
+    {
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $this->assertEquals(substr($terminal['id'], 5), $response['items'][0]['terminal_id']);
+    }
+
+    public function testBulkTerminalCreationUpiIciciNegative()
+    {
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+    }
+
     // to test gateway access code field
     public function testBulkTerminalNetbankingCub()
     {

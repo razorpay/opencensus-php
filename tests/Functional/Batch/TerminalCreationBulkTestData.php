@@ -372,6 +372,77 @@ return [
         ],
     ],
 
+    'testBulkTerminalCreationUpiIcici' => [
+        'request' => [
+            'url'       => '/terminals/bulk',
+            'method'    => 'post',
+            'content'   => [
+                [
+                    'idempotency_key'                               => 'randomIdempotencyKey',
+                    Header::TERMINAL_CREATION_MERCHANT_ID           => '10000000000000',
+                    Header::TERMINAL_CREATION_GATEWAY               => 'upi_icici',
+                    Header::TERMINAL_CREATION_TYPE                  => 'non_recurring, bharat_qr',
+                    Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID   => '1234567',
+                    Header::TERMINAL_CREATION_VPA                   => 'thisisatestterminalforupiicici@icici',
+                    Header::TERMINAL_CREATION_CARD                  => '0',
+                    Header::TERMINAL_CREATION_NETBANKING            => '0',
+                    Header::TERMINAL_CREATION_EMANDATE              => '0',
+                    Header::TERMINAL_CREATION_UPI                   => '1',
+                    Header::TERMINAL_CREATION_GATEWAY_ACQUIRER      => 'icic',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'Merchant Id'   => '10000000000000',
+                        'Gateway'       => 'upi_icici',
+                        'VPA'           => 'thisisatestterminalforupiicici@icici',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testBulkTerminalCreationUpiIciciNegative' => [
+        'request' => [
+            'url'       => '/terminals/bulk',
+            'method'    => 'post',
+            'content'   => [
+                [
+                    'idempotency_key'                               => 'randomIdempotencyKey',
+                    Header::TERMINAL_CREATION_MERCHANT_ID           => '10000000000000',
+                    Header::TERMINAL_CREATION_GATEWAY               => 'upi_icici',
+                    Header::TERMINAL_CREATION_TYPE                  => 'non_recurring, bharat_qr',
+                    Header::TERMINAL_CREATION_GATEWAY_MERCHANT_ID   => '1234567',
+                    Header::TERMINAL_CREATION_VPA                   => 'thisisatestterminalforupiicicigateway@icici',
+                    Header::TERMINAL_CREATION_CARD                  => '0',
+                    Header::TERMINAL_CREATION_NETBANKING            => '0',
+                    Header::TERMINAL_CREATION_EMANDATE              => '0',
+                    Header::TERMINAL_CREATION_UPI                   => '1',
+                    Header::TERMINAL_CREATION_GATEWAY_ACQUIRER      => 'icic',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'terminal_id'   => '',
+                        'error'         => [
+                            'description'   => 'The vpa may not be greater than 40 characters.',
+                        ],
+                        'Merchant Id'   => '10000000000000',
+                        'Gateway'       => 'upi_icici',
+                        'VPA'           => 'thisisatestterminalforupiicicigateway@icici',
+                    ],
+                ],
+            ],
+        ],
+    ],
 
     'testBulkTerminalNetbankingCub' => [
         'request'  => [

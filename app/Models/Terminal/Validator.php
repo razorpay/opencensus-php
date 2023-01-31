@@ -216,7 +216,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
         Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::UPI                        => 'required|boolean|in:1',
-        Entity::VPA                        => 'required_only_if:type.bharat_qr,1|string|max:20',
+        Entity::VPA                        => 'required_only_if:type.bharat_qr,1|string',
         Entity::TYPE                       => 'sometimes|array',
         Entity::VIRTUAL_UPI_HANDLE         => 'required_if:type.upi_transfer,1|string',
         Entity::VIRTUAL_UPI_ROOT           => 'required_if:type.upi_transfer,1|string',
@@ -225,6 +225,14 @@ class Validator extends Base\Validator
         Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::NOTES                      => 'sometimes|string',
+    ];
+
+    protected static $vpaLengthRules = [
+        Entity::VPA     => 'max:20',
+    ];
+
+    protected static $vpaLengthForBqrRules = [
+        Entity::VPA     => 'max:40',
     ];
 
     protected static $upiAirtelTerminalRules = [
@@ -2862,7 +2870,40 @@ class Validator extends Base\Validator
         if (property_exists(__CLASS__, $var))
         {
             $this->validateInput($op, $input);
+
+            $this->validateVpaLengthIfApplicable($input);
         }
+    }
+
+    protected function validateVpaLengthIfApplicable(array $input)
+    {
+        //
+        // $input[Entity::GATEWAY] exists here, already checked in the calling function.
+        //
+        if ($input[Entity::GATEWAY] !== Gateway::UPI_ICICI)
+        {
+            return;
+        }
+
+        $vpa = $input[Entity::VPA] ?? null;
+
+        if (empty($vpa) === true)
+        {
+            return;
+        }
+
+        $type = $input[Entity::TYPE] ?? [];
+
+        $isBharatQr = (bool)($type[Type::BHARAT_QR] ?? null);
+        
+        if ($isBharatQr === true)
+        {
+            $this->validateInput('vpa_length_for_bqr', [Entity::VPA => $vpa]);
+
+            return;
+        }
+
+        $this->validateInput('vpa_length', [Entity::VPA => $vpa]);
     }
 
     protected function validateTpv($input)
