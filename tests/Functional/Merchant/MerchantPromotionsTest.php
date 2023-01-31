@@ -2,12 +2,15 @@
 
 namespace Functional\Merchant;
 
+use Mockery;
+use RZP\Error\ErrorCode;
+use RZP\Exception\ServerErrorException;
+use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client;
 use RZP\Constants\Environment;
 use RZP\Constants\Mode;
-use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\MerchantPromotions\Service;
 use RZP\Tests\Functional\TestCase;
-use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class MerchantPromotionsTest extends TestCase
@@ -178,7 +181,33 @@ class MerchantPromotionsTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
-    public function testCanRouteToMagicCXInProd() {
+    public function testApplyCouponWithCxService503()
+    {
+        $client = Mockery::mock(client::class, [$this->app])->makePartial();
+        $response = new \stdClass();
+        $response->status_code = 503;
+
+        $client->shouldAllowMockingMethod('makeRequest')
+            ->shouldAllowMockingProtectedMethods()
+            ->shouldReceive('makeRequest')
+            ->andReturn(
+                $response
+            );
+
+        try
+        {
+            $client->sendRequest('', [], 'POST');
+        }
+        catch (\Throwable $e)
+        {
+            $this->assertExceptionClass($e, ServerErrorException::class);
+            $errorcode = $e->getError()->getInternalErrorCode();
+            $this->assertEquals($errorcode, ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+        }
+    }
+
+    public function testCanRouteToMagicCXInProd()
+    {
         $this->app['env'] = Environment::PRODUCTION;
         $this->app['rzp.mode'] = Mode::TEST;
         $merchant = $this->fixtures->create('merchant');

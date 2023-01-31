@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use RZP\Http\Request\Requests;
+use RZP\Exception\ServerErrorException;
 
 
 class Client
@@ -55,6 +56,14 @@ class Client
                         'status_code' => $response->status_code,
                         'response' => $response
                     ]);
+            }
+
+            if ($response->status_code === 503)
+            {
+                throw new ServerErrorException(
+                    "magic checkout request failed with 503",
+                    ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                );
             }
 
             if ($response->status_code >= 500)
