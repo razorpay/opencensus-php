@@ -161,12 +161,15 @@ export default class PaymentLinkCreateV2 extends React.Component {
             email_notify: data.notify && data.notify.email ? '1' : '0',
             email: data.customer.email,
             contact: data.customer.contact,
-            name: data.customer?.name ?? '',
             notes: defaultValueNotes,
             expire_by,
             reminder_enable: isReminderEnabled ? '1' : '0',
           },
         };
+
+        if (showPayerNamePL()) {
+          newState.formData.name = data.customer?.name ?? '';
+        }
 
         this.setState(newState);
       })
