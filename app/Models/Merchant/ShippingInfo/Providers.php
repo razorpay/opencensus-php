@@ -9,7 +9,7 @@ use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\Type;
 
 class Providers extends Base\Core
 {
-    public function shippingResponseFromShippingProviderConfig($orderId, $order, $orderMeta, $address, $shippingMethodProviderConfig)
+    public function shippingResponseFromShippingProviderConfig($orderId, $order, $orderMeta, $address, $shippingMethodProviderConfig): array
     {
         $shippingMethodProviderConfigJson = $shippingMethodProviderConfig->getValueJson();
         $shippingProviderType = $shippingMethodProviderConfigJson[Constants::PROVIDER_TYPE] ?? Type::SHIPROCKET;
@@ -52,8 +52,69 @@ class Providers extends Base\Core
             $orderId,
             $this->merchant->getId(),
             $notes);
+        return $this->parseShippingServiceResponse($address, $shippingInfo);
+    }
+
+    protected function getShippingInfoForShippingMethodProvider($shippingMethodProviderEntity, $address, $orderId): array
+    {
+
+        $shippingMethodProvider = $shippingMethodProviderEntity->getValueJson();
+        $merchantId = $this->merchant->getId();
+        $input = [
+            'order_id' => $orderId,
+            'address' => $address
+        ];
+        $shippingInfo = $this->app['shipping_method_provider_service']
+            ->getShippingInfoForAddress($shippingMethodProvider, $input, $merchantId);
+
+        return array_merge($input['address'], $shippingInfo);
+    }
+
+    public function shippingProviderMigrationFlow($shippingMethodProviderConfig, $address, $orderId, $lineItemsTotal, $notes, $merchantOrderId): array
+    {
+        $address['country_code'] = $address['country'];
+        unset($address['country']);
+
+        $address['zip_code'] = $address['zipcode'];
+        unset($address['zipcode']);
+
+        $pickupLocation = [];
+
+        if ($shippingMethodProviderConfig !== null)
+        {
+            $shippingMethodProvider = $shippingMethodProviderConfig->getValueJson();
+            if (empty($shippingMethodProvider) === false &&
+                empty($shippingMethodProvider[Constants::WAREHOUSE_PINCODE]) === false) {
+                $pickupLocation = [
+                    'zip_code' => $shippingMethodProvider[Constants::WAREHOUSE_PINCODE],
+                    'country_code' => 'IN'
+                ];
+            }
+        }
+        $updatedNotes = empty($notes) === false ? $notes : (object)[];
+        $this->trace->count(Metric::SHIPPING_SERVICE_CALL_COUNT, ['mode' => $this->mode ]);
+        $shippingInfo = $this->app['shipping_methods_service']->get(
+            $address,
+            $pickupLocation,
+            $lineItemsTotal,
+            $orderId,
+            $this->merchant->getId(),
+            $updatedNotes,
+            $merchantOrderId);
+
+        return $this->parseShippingServiceResponse($address, $shippingInfo);
+    }
+
+    /**
+     * @param $address
+     * @param array $shippingInfo
+     * @return mixed
+     */
+    protected function parseShippingServiceResponse($address, array $shippingInfo)
+    {
         $address['country'] = $address['country_code'];
         unset($address['country_code']);
+
         $address['zipcode'] = $address['zip_code'];
         unset($address['zip_code']);
 
@@ -103,20 +164,5 @@ class Providers extends Base\Core
         }
         }
         return array_merge($address, $shippingInfo);
-    }
-
-    protected function getShippingInfoForShippingMethodProvider($shippingMethodProviderEntity, $address, $orderId): array
-    {
-
-        $shippingMethodProvider = $shippingMethodProviderEntity->getValueJson();
-        $merchantId = $this->merchant->getId();
-        $input = [
-            'order_id' => $orderId,
-            'address' => $address
-        ];
-        $shippingInfo = $this->app['shipping_method_provider_service']
-            ->getShippingInfoForAddress($shippingMethodProvider, $input, $merchantId);
-
-        return array_merge($input['address'], $shippingInfo);
     }
 }

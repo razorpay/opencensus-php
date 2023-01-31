@@ -10620,7 +10620,7 @@ class Service extends Base\Service
     /**
      * @throws BadRequestException
      */
-    protected function validateAndSortSlabs(array $slabs): array
+    public function validateAndSortSlabs(array $slabs): array
     {
         $validator = (new Validator);
 
@@ -11604,5 +11604,50 @@ class Service extends Base\Service
         }
 
         return  $this->getMerchantData($merchantId);
+    }
+
+    /**
+     * @param array $slabs
+     * @return array
+     */
+    public function covertToNewSlabFormat(array $slabs): array
+    {
+        //If slabs list has only 1 item - rule_type flat/free
+        if (empty($slabs) === false && count($slabs) === 1)
+        {
+            if ($slabs[0]['fee'] === 0)
+            {
+                $feeRule = [
+                    'rule_type' => 'free',
+                    'fee' => 0,
+                    'rules' => [],
+                ];
+            } else
+            {
+                $feeRule = [
+                    'rule_type' => 'flat',
+                    'fee' => $slabs[0]['fee'],
+                    'rules' => [],
+                ];
+            }
+        } else
+        {
+            $feeRule = [
+                'rule_type' => 'slabs',
+                'fee' => 0,
+            ];
+            $rules = [];
+            for ($index = 0; $index < count($slabs); $index++)
+            {
+                $rules[$index]['fee'] = $slabs[$index]['fee'];
+                $rules[$index]['order_amount']['gte'] = $slabs[$index]['amount'];
+                if ($index + 1 < count($slabs))
+                {
+                    $rules[$index]['order_amount']['lt'] = $slabs[$index + 1]['amount'] - 1;
+                }
+            }
+            $feeRule['rules'] = $rules;
+        }
+        return $feeRule;
     }
 }
