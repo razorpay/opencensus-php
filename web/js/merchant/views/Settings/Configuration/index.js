@@ -51,12 +51,19 @@ import LoaderDots from 'common/ui/LoaderDots';
 
 // eslint-disable-next-line react/no-unsafe
 class CongfigurationContainer extends Component {
-  state = {
-    isLoading: false,
-    isPaypalOrg: false,
-    isPaypalMid: false,
-    allowCFBInternational: false,
-  };
+  constructor(props) {
+    super(props);
+    const {
+      configState: { features, error },
+    } = this.props;
+    this.state = {
+      isLoading: false,
+      isPaypalOrg: false,
+      isPaypalMid: false,
+      allowCFBInternational: false,
+      isFeaturesLoading: !features.length || error,
+    };
+  }
 
   UNSAFE_componentWillMount() {
     const {
@@ -65,12 +72,17 @@ class CongfigurationContainer extends Component {
       configState: { features, error },
     } = this.props;
     if (!features.length || error) {
-      this.props.fetchFeatures(this.props.user.current).catch((err) => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
+      this.props
+        .fetchFeatures(this.props.user.current)
+        .catch((err) => {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors,
+          });
+        })
+        .finally(() => {
+          this.setState({ isFeaturesLoading: false });
         });
-      });
     }
 
     // check paypal org feature
@@ -343,7 +355,7 @@ class CongfigurationContainer extends Component {
     const {
       mode,
       user,
-      configState: { config, loading, paypal_terminals },
+      configState: { config, loading: isConfigLoading, paypal_terminals },
       org,
       showBranding,
       showMissedOrderPaymentLink,
@@ -360,6 +372,7 @@ class CongfigurationContainer extends Component {
       className,
       isOldFlow,
     } = this.props;
+    const { isFeaturesLoading } = this.state;
     let showInternationalPaymentsCard = false;
     const remarketerEnabled = user.isFeatureEnabled('missed_orders_plink');
     if (mode === 'live' && showInternationalPayments) {
@@ -379,10 +392,9 @@ class CongfigurationContainer extends Component {
         }
       }
     }
-
     return (
       <div className={['content-wrapper content-sm', className].join(' ')} id="settings-content">
-        {loading ? (
+        {isConfigLoading || isFeaturesLoading ? (
           isOldFlow ? (
             <div class="page-spinner-container">
               <Spinner />
