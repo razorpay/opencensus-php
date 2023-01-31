@@ -509,6 +509,20 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function testFetchPaymentLinksForFileUpload()
+    {
+        $this->testCreatePaymentLinkWithMultiplePaymentPageItem();
+        $this->testCreatePaymentLinkWithMultiplePaymentPageItem();
+        $this->testPaymentPageCreateForFileUpload();
+        $this->startTest();
+    }
+
+    public function testFetchPaymentLinksForFileUploadWithoutFeature()
+    {
+        $this->startTest();
+    }
+
+
     public function testFetchPaymentButtons()
     {
         $this->testCreatePaymentButtonWithMultipleItems();

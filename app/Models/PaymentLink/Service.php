@@ -23,6 +23,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Feature\Constants as Feature;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PaymentLink\PaymentPageItem as PPI;
 use RZP\Models\PaymentLink\CustomDomain\Plans as CDS_PLANS;
@@ -63,6 +64,8 @@ class Service extends Base\Service
     {
         $this->modifyInputForFetch($input);
 
+        $this->validateInputForFileUpload($input, $this->merchant);
+
         $entities = Tracer::inSpan(['name' => 'payment_page.fetch_pages'], function() use($input)
         {
             return $this->entityRepo->fetch($input, $this->merchant->getId());
@@ -76,6 +79,18 @@ class Service extends Base\Service
         if ((isset($input[Entity::VIEW_TYPE]) === false) || (empty($input[Entity::VIEW_TYPE]) === true))
         {
             $input[Entity::VIEW_TYPE] = Entity::VIEW_TYPE_PAGE;
+        }
+    }
+
+    public function validateInputForFileUpload($input,$merchant)
+    {
+        if ((isset($input[Entity::VIEW_TYPE]) === true) and
+            ($input[Entity::VIEW_TYPE] === ViewType::FILE_UPLOAD_PAGE) and
+            ($merchant->isFeatureEnabled(Feature::FILE_UPLOAD_PP) === false))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT
+            );
         }
     }
 

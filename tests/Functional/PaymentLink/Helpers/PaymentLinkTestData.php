@@ -848,6 +848,52 @@ return [
         ],
     ],
 
+    'testFetchPaymentLinksForFileUpload' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'get',
+            'content' => [
+                'view_type' => 'file_upload_page'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'user_id'     => User::MERCHANT_USER_ID,
+                        'amount'      => NULL,
+                        'currency'    => 'INR',
+                        'title'       => 'Sample title',
+                        'description' => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPaymentLinksForFileUploadWithoutFeature' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'get',
+            'content' => [
+                'view_type' => 'file_upload_page'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT,
+        ],
+    ],
+
     'testFetchPaymentButtons' => [
         'request'  => [
             'url'     => '/payment_pages?view_type=button',
