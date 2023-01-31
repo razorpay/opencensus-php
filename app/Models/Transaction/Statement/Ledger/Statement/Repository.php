@@ -12,6 +12,7 @@ use RZP\Models\Reversal;
 use RZP\Models\External;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Metric;
 use RZP\Models\FundAccount;
 use RZP\Base\ConnectionType;
 use RZP\Models\BankTransfer;
@@ -22,6 +23,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Transaction\Statement;
 use RZP\Models\FundAccount\Validation;
 use Illuminate\Database\Query\JoinClause;
+use RZP\Models\Transaction\Metric as TxnMetric;
 use RZP\Models\Transaction\Statement\Ledger\Journal as Journal;
 use RZP\Models\Transaction\Statement\Ledger\LedgerEntry as LedgerEntry;
 use RZP\Models\Transaction\Statement\Ledger\AccountDetail as AccountDetail;
@@ -81,34 +83,50 @@ class Repository extends Base\Repository
 
     /**
      * {@inheritDoc}
-     *
      * This method overrides the fetch method of RepositoryFetch class, params should match the signature of the parent
      * method.
+     * @throws \Throwable
      */
     public function fetch(array $input,
                           string $merchantId = null,
                           string $connectionType = null): PublicCollection
     {
-        $startTimeMs = round(microtime(true) * 1000);
+        try
+        {
+            $startTimeMs = round(microtime(true) * 1000);
 
-        $statements = parent::fetch($input, $merchantId, $connectionType);
+            $statements = parent::fetch($input, $merchantId, $connectionType);
 
-        $endTimeMs = round(microtime(true) * 1000);
+            $endTimeMs = round(microtime(true) * 1000);
 
-        $totalFetchTime = $endTimeMs - $startTimeMs;
+            $totalFetchTime = $endTimeMs - $startTimeMs;
 
-        $this->trace->info(TraceCode::QUERY_TIME_FOR_LEDGER_TRANSACTION_API , [
-            'duration_ms'    => $totalFetchTime,
-            'merchantId'     => $merchantId,
-        ]);
+            $this->trace->info(TraceCode::QUERY_TIME_FOR_LEDGER_TRANSACTION_API , [
+                'duration_ms'    => $totalFetchTime,
+                'merchantId'     => $merchantId,
+            ]);
 
-        // After fetching settlement collection, we lazy load source relations for payout.
-        $statements->where(Entity::TRANSACTOR_TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
+            // After fetching settlement collection, we lazy load source relations for payout.
+            $statements->where(Entity::TRANSACTOR_TYPE, E::PAYOUT)->load($this->expandsForTypePayout);
 
-        // After fetching settlement collection, we lazy load source relations for Fund account validation.
-        $statements->where(Entity::TRANSACTOR_TYPE, E::FUND_ACCOUNT_VALIDATION)->load($this->expandsForTypeFAV);
+            // After fetching settlement collection, we lazy load source relations for Fund account validation.
+            $statements->where(Entity::TRANSACTOR_TYPE, E::FUND_ACCOUNT_VALIDATION)->load($this->expandsForTypeFAV);
 
-        return $statements;
+            return $statements;
+        }
+        catch (\Throwable $ex)
+        {
+
+            $dimensions = [];
+
+            // Adding internal app name in labels
+            $dimensions[Metric::LABEL_RZP_INTERNAL_APP_NAME] = app('request.ctx')->getInternalAppName() ?? Metric::LABEL_NONE_VALUE;
+
+            // Increasing error counter
+            $this->trace->count(TxnMetric::TRANSACTION_VA_REQUEST_ERROR_COUNT, $dimensions);
+
+            throw $ex;
+        }
     }
 
     /**
