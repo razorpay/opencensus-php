@@ -15396,6 +15396,10 @@ class Route
         'fund_account_create',
         'fund_account_list',
         'fund_account_get',
+        // FAV routes
+        'fund_account_validate',
+        'fund_account_validate_fetch',
+        'fund_account_validate_fetch_by_id',
 
         //payout related routes
         'payout_create',
