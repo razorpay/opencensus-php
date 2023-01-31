@@ -44,16 +44,16 @@ class ToggleSetting extends Component {
     const analyticsLabel = camelize(featureName);
     const analyticsObjName = featureName.toLowerCase() || this.props.featureObjectName;
 
-    if (isToggleTriggered && isFeatureEnabled) {
+    if (isToggleTriggered) {
       selfServeTrackInitiate({
-        selfServeAction: `${featureName} Enabled`,
+        selfServeAction: `${featureName} ${isFeatureEnabled ? 'Enabled' : 'Disabled'}`,
         page: 'Config',
         screen: 'Settings',
       });
     }
     if (selfServerTrack) {
       selfServeTrackSuccess({
-        selfServeAction: `${featureName} Enabled`,
+        selfServeAction: `${featureName} ${isFeatureEnabled ? 'Enabled' : 'Disabled'}`,
         page: 'Config',
         screen: 'Settings',
       });
@@ -81,11 +81,6 @@ class ToggleSetting extends Component {
       },
       should_sync: shouldSync,
     };
-    selfServeTrackInitiate({
-      selfServeAction: 'Mandate Page Skipped',
-      page: 'Config',
-      screen: 'Settings',
-    });
     this.analyticsForFeatureChange(true, isFeatureEnabled);
 
     try {

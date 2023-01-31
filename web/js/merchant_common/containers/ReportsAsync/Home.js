@@ -44,6 +44,11 @@ export default class ReportHome extends React.PureComponent {
       .then((data) => {
         /* istanbul ignore else */
         if (data) {
+          selfServeTrackSuccess({
+            selfServeAction: 'Report Generated',
+            page: 'Reports',
+            screen: 'Reports',
+          });
           const selectedConfig =
             this.props.configs.items &&
             this.props.configs.items.filter((item) => item.id === payload.config_id);
@@ -52,11 +57,6 @@ export default class ReportHome extends React.PureComponent {
               type: 'info',
               message:
                 'Request with same report type and date range is in processing. Please check your request history',
-            });
-            selfServeTrackSuccess({
-              selfServeAction: 'Report Generated',
-              page: 'Reports',
-              screen: 'Reports',
             });
             analyticsTrack({
               objectName: 'generate report',

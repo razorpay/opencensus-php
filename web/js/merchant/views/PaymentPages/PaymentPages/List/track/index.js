@@ -1,6 +1,7 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 function _track() {
   let lumberjackTrack = () => {};
@@ -54,6 +55,11 @@ function _track() {
     createPaymentPage: () => {
       sendToLumberjack('create.click_create');
       sendToSegment('create page', 'clicked', {}, true);
+      selfServeTrackInitiate({
+        selfServeAction: 'Create Payment Page',
+        page: 'Paymentpage',
+        screen: 'Payment Page',
+      });
       triggerHotjarRecording('PP_Creation');
     },
     paginate: (type, data) => {

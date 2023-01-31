@@ -112,11 +112,7 @@ class AddFundsContainer extends Component {
   };
 
   analyticsHandler = (amount, type) => {
-    selfServeTrackSuccess({
-      selfServeAction: `${type} Funds Added`,
-      page: 'Addfunds',
-      screen: 'My Account',
-    });
+    selfServeTrackSuccess(ANALYTICS_OBJ[type]);
     analyticsTrack({
       objectName: 'add funds',
       actionName: 'result',

@@ -63,16 +63,30 @@ class BatchCreate extends Component {
       data.schedule = schedule;
     }
 
+    const trackSelfServe = () => {
+      const batchType = this.props.batchType;
+      const routeBatchList = ['transfer_reversal', 'linked_account_create', 'payment_transfer'];
+      if (batchType === 'refund') {
+        selfServeTrackSuccess({
+          selfServeAction: 'Batch refund File Uploaded',
+          page: 'Batch Refunds',
+          screen: 'Transactions',
+        });
+      } else if (routeBatchList.includes(batchType)) {
+        selfServeTrackSuccess({
+          selfServeAction: 'Route New Batch Uploaded',
+          page: 'batchuploads',
+          screen: 'Route',
+        });
+      }
+    };
+
     this.props.trackUploadBatch('Create');
     this.setState({ isCreatingBatch: true }, () =>
       this.props
         .createBatch(data)
         .then((response) => {
-          selfServeTrackSuccess({
-            selfServeAction: 'Route New Batch Uploaded ',
-            page: 'batchuploads',
-            screen: 'Route',
-          });
+          trackSelfServe();
           this.props.onCreation(response);
         })
         .catch(() => {

@@ -12,7 +12,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import { luminateRow } from 'merchant/reducers/app';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import lazy from 'merchant/routes/LazyLoader';
 
 const CustomerCreation = lazy(() =>
@@ -32,7 +32,15 @@ export default class CustomersListContainer extends ListContainer {
       page: 'Customers',
       screen: 'Customers',
     });
-    return this.props.fetchCustomers(params);
+    const fetchCustomerPromise = this.props.fetchCustomers(params);
+    fetchCustomerPromise.then(() => {
+      selfServeTrackSuccess({
+        selfServeAction: 'Customer Details Fetched',
+        page: 'Customers',
+        screen: 'Customers',
+      });
+    });
+    return fetchCustomerPromise;
   }
 
   showCustomerModal = (customer = null) => {
@@ -59,6 +67,11 @@ export default class CustomersListContainer extends ListContainer {
   highlightRowAndClose = (customer) => {
     this.props.luminateRow(customer.id);
     this.props.closeModal();
+    selfServeTrackSuccess({
+      selfServeAction: 'New Customer Created',
+      page: 'Customers',
+      screen: 'Customers',
+    });
   };
 
   deleteCustomer = (customer) => {

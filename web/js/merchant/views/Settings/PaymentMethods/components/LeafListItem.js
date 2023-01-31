@@ -109,6 +109,11 @@ class LeafListItem extends React.Component {
       instrumentName: instrument.name,
       method: leafInstrument.name,
     });
+    selfServeTrackInitiate({
+      selfServeAction: 'Instrument Requested',
+      page: 'Payment-Methods',
+      screen: 'Settings',
+    });
     return this.props
       .createMerchantInstrumentRequest(requestSlug)
       .then(() => {
@@ -206,11 +211,6 @@ class LeafListItem extends React.Component {
     this.tracker('instrument', 'requested', 'settings', {
       instrumentName: instrument.name,
       method: leafInstrument.name,
-    });
-    selfServeTrackInitiate({
-      selfServeAction: 'Instrument Requested',
-      page: 'Payment-Methods',
-      screen: 'Settings',
     });
     this.props.openModal({
       component: (

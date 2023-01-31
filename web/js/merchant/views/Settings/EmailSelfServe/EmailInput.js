@@ -15,6 +15,7 @@ import NewID from './components/NewId/NewID';
 import SameTeam from './components/SameTeam/SameTeam';
 import DifferentTeam from './components/DifferentTeam/DifferentTeam';
 import { Modules } from 'common/constant/enums';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 // eslint-disable-next-line no-shadow
 const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmailStatus }) => {
@@ -54,6 +55,11 @@ const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmai
       .then((res) => {
         setDisabled(false);
         if (res.data && !res.data.is_user_exist) {
+          selfServeTrackSuccess({
+            selfServeAction: 'Login Details Updated',
+            page: 'Profile',
+            screen: 'My Account',
+          });
           analyticsTrackWithUserInfo({
             objectName: 'email update invitation',
             actionName: 'sent',

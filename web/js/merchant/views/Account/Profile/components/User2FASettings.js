@@ -25,7 +25,7 @@ class User2FASettings extends React.PureComponent {
 
   handleTwoFactorVerificationOnLoginToggle = (onToggleChange) => (flag, callback) => {
     selfServeTrackInitiate({
-      selfServeAction: 'Enable 2FA',
+      selfServeAction: '2fa Switch',
       page: 'Profile',
       screen: 'My Account',
     });

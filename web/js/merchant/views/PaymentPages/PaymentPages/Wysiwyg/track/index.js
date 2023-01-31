@@ -51,11 +51,6 @@ function _track() {
         page: 'Paymentpage',
         screen: 'Payment Page',
       });
-      selfServeTrackSuccess({
-        selfServeAction: 'Publish Page Success',
-        page: 'Paymentpage',
-        screen: 'Payment Page',
-      });
       sendToLumberjack('publish_page.success', { isNew });
       sendToSegment('publish page', 'success', { isNew }, true);
     },

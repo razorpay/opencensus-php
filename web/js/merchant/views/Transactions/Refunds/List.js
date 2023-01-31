@@ -10,7 +10,7 @@ import { openModal } from 'merchant_common/reducers/modals';
 import { analyticsTrack } from 'common/utils/analytics';
 import { bindActionCreators } from 'redux';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
-import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
+import { selfServerTrack, selfServeTrackResult } from 'merchant/views/Transactions/AnalyticsTrack';
 
 class RefundsListContainer extends ListContainer {
   componentDidMount() {
@@ -70,6 +70,8 @@ class RefundsListContainer extends ListContainer {
           form="refundListFilter"
           count={this.state.count}
           onSubmit={(args) => {
+            selfServerTrack({ type: 'refund', actionType: 'search' });
+
             analyticsTrack({
               objectName: 'refunds search',
               actionName: 'clicked',
@@ -82,6 +84,10 @@ class RefundsListContainer extends ListContainer {
             });
             this.search(args)
               .then(() => {
+                if (args.public_status) {
+                  selfServeTrackResult({ type: 'refund', actionType: 'filter' });
+                }
+                selfServeTrackResult({ type: 'refund', actionType: 'search' });
                 analyticsTrack({
                   objectName: 'refunds search',
                   actionName: 'status',

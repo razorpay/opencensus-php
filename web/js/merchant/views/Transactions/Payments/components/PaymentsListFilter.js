@@ -30,14 +30,7 @@ export default ({ showBatchIdFilter, ...props }) => {
     <ListFilter date={date} provider={provider} setProvider={setProvider} {...props}>
       <div className="form-group list-filter-item">
         <label>Payment Id</label>
-        <Field
-          name="id"
-          component="input"
-          class="form-control input-sm"
-          onChange={(...args) => {
-            track({ type: 'search', args });
-          }}
-        />
+        <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
       <div className="form-group datepicker-group">
@@ -50,14 +43,7 @@ export default ({ showBatchIdFilter, ...props }) => {
       {showBatchIdFilter && (
         <div className="form-group list-filter-item">
           <label>Batch Id</label>
-          <Field
-            name="batch_id"
-            component="input"
-            class="form-control input-sm"
-            onChange={(...args) => {
-              track({ type: 'search', args });
-            }}
-          />
+          <Field name="batch_id" component="input" class="form-control input-sm" />
         </div>
       )}
 
@@ -81,28 +67,12 @@ export default ({ showBatchIdFilter, ...props }) => {
 
       <div className="form-group list-filter-item">
         <label>Email</label>
-        <Field
-          name="email"
-          component="input"
-          type="email"
-          class="form-control input-sm"
-          onChange={(...args) => {
-            track({ type: 'search', args });
-          }}
-        />
+        <Field name="email" component="input" type="email" class="form-control input-sm" />
       </div>
 
       <div className="form-group list-filter-item">
         <label>Phone</label>
-        <Field
-          name="contact"
-          component="input"
-          type="tel"
-          className="form-control input-sm"
-          onChange={(...args) => {
-            track({ type: 'search', args });
-          }}
-        />
+        <Field name="contact" component="input" type="tel" className="form-control input-sm" />
       </div>
 
       {props.user?.isSingleReconEnabled &&
@@ -122,14 +92,7 @@ export default ({ showBatchIdFilter, ...props }) => {
 
       <div className="form-group list-filter-item">
         <label>Notes</label>
-        <Field
-          name="notes"
-          component="input"
-          class="form-control input-sm"
-          onChange={(...args) => {
-            track({ type: 'search', args });
-          }}
-        />
+        <Field name="notes" component="input" class="form-control input-sm" />
       </div>
 
       <ShowWhen
@@ -139,14 +102,7 @@ export default ({ showBatchIdFilter, ...props }) => {
       >
         <div className="form-group list-filter-item">
           <label>Bank Reference Number</label>
-          <Field
-            name="va_transaction_id"
-            component="input"
-            class="form-control input-sm"
-            onChange={(...args) => {
-              track({ type: 'search', args });
-            }}
-          />
+          <Field name="va_transaction_id" component="input" class="form-control input-sm" />
         </div>
       </ShowWhen>
 

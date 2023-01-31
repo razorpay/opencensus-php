@@ -11,6 +11,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import { bindActionCreators } from 'redux';
+import { selfServerTrack, selfServeTrackResult } from 'merchant/views/Transactions/AnalyticsTrack';
 
 const gaEvents = setGaTrack('Dashboard - Instant Refunds - BU');
 
@@ -28,6 +29,7 @@ class BatchListContainer extends ListContainer {
         gaEvents={gaEvents}
         paginate={this.paginate}
         onSubmit={(args) => {
+          selfServerTrack({ type: 'batchRefund', actionType: 'search' });
           analyticsTrack({
             objectName: 'batch refunds search',
             actionName: 'clicked',
@@ -38,7 +40,10 @@ class BatchListContainer extends ListContainer {
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
           });
-          this.search(args);
+
+          this.search(args).then(() => {
+            selfServeTrackResult({ type: 'batchRefund', actionType: 'search' });
+          });
         }}
         sampleUrl={SAMPLE_BATCH_REFUND_FILE_WITH_SPEED}
         docUrl={getCustomURL('https://razorpay.com/docs/payments/refunds/batch/')}

@@ -54,11 +54,13 @@ class NewInvitation extends Component {
     return this.props
       .onFormSubmit(body)
       .then(() => {
-        selfServeTrackSuccess({
-          selfServeAction: 'New Member Invited',
-          page: 'Team',
-          screen: 'My Account',
-        });
+        if (!is_edit) {
+          selfServeTrackSuccess({
+            selfServeAction: 'New Member Invited',
+            page: 'Team',
+            screen: 'My Account',
+          });
+        }
         analyticsTrack({
           objectName: 'invite new member',
           actionName: 'status',

@@ -9,26 +9,12 @@ export default (props) => {
     <ListFilter {...props}>
       <div class="form-group list-filter-item">
         <label>Order Id</label>
-        <Field
-          name="id"
-          component="input"
-          class="form-control input-sm"
-          onChange={(...args) => {
-            track({ type: 'search', args });
-          }}
-        />
+        <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Receipt</label>
-        <Field
-          name="receipt"
-          component="input"
-          class="form-control input-sm"
-          onChange={(...args) => {
-            track({ type: 'search', args });
-          }}
-        />
+        <Field name="receipt" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item">

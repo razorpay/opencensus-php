@@ -59,8 +59,12 @@ export default class CreateOfferWizard extends React.Component {
           isFormLocked: false,
         });
 
+        let selfServeActionName = 'New Offer Created';
+        if (this.CURRENT_FORM === 'no-cost-emi') {
+          selfServeActionName = 'New No Cost EMI Offer Created';
+        }
         selfServeTrackSuccess({
-          selfServeAction: 'New offer created',
+          selfServeAction: selfServeActionName,
           page: 'Offers',
           screen: 'Offers',
         });

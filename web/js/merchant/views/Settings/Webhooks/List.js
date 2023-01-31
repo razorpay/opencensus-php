@@ -19,7 +19,7 @@ import {
   ADD_NEW_WEBHOOK,
   ACTION_QUERY_PARAM_KEY,
 } from 'merchant/views/Settings/deeplink-constants';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
@@ -76,6 +76,11 @@ class WebhooksContainer extends ListContainer {
   highlightRowAndClose = (webhook) => {
     this.props.luminateRow(webhook.id);
     this.props.closeModal();
+    selfServeTrackSuccess({
+      selfServeAction: 'Webhook Added',
+      page: 'Webhooks',
+      screen: 'Settings',
+    });
   };
 
   render() {

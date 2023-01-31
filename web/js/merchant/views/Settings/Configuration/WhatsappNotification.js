@@ -8,7 +8,7 @@ import RTracking from 'react-tracking';
 import { WHATSAPP_NOTIF } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { fetchFeatureStatus as fnFetchFeatureStatus } from 'merchant/reducers/config';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { isOrgFeatureExist } from 'merchant/models/User';
 
 function WhatsappNotification({
@@ -128,6 +128,11 @@ function WhatsappNotification({
           showNotification({
             type: 'success',
             message: 'Your preference was saved',
+          });
+          selfServeTrackSuccess({
+            selfServeAction: 'Whatsapp Notifications Enabled',
+            page: 'Config',
+            screen: 'Settings',
           });
         } else {
           cb(false);

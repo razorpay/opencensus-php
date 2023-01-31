@@ -11,7 +11,7 @@ import {
   SHOPIFY_RECEIPT_PREFIX,
   ORDER_PENDING,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
-import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
+import { selfServerTrack, selfServeTrackResult } from 'merchant/views/Transactions/AnalyticsTrack';
 
 class OrdersListContainer extends ListContainer {
   componentDidMount() {
@@ -59,6 +59,7 @@ class OrdersListContainer extends ListContainer {
           form="orderListFilter"
           count={this.state.count}
           onSubmit={(args) => {
+            selfServerTrack({ type: 'order', actionType: 'search' });
             analyticsTrack({
               objectName: 'orders search',
               actionName: 'clicked',
@@ -71,6 +72,10 @@ class OrdersListContainer extends ListContainer {
             });
             this.search(args)
               .then(() => {
+                if (args.status) {
+                  selfServeTrackResult({ type: 'order', actionType: 'filter' });
+                }
+                selfServeTrackResult({ type: 'order', actionType: 'search' });
                 analyticsTrack({
                   objectName: 'orders search',
                   actionName: 'result',

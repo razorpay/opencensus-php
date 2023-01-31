@@ -23,26 +23,12 @@ class RefundListFilter extends React.Component {
       <ListFilter provider={provider} setProvider={this.setProvider} {...this.props}>
         <div class="form-group list-filter-item">
           <label>Refund Id</label>
-          <Field
-            name="id"
-            component="input"
-            class="form-control input-sm"
-            onChange={(...args) => {
-              track({ type: 'search', args });
-            }}
-          />
+          <Field name="id" component="input" class="form-control input-sm" />
         </div>
 
         <div class="form-group list-filter-item">
           <label>Payment Id</label>
-          <Field
-            name="payment_id"
-            component="input"
-            class="form-control input-sm"
-            onChange={(...args) => {
-              track({ type: 'search', args });
-            }}
-          />
+          <Field name="payment_id" component="input" class="form-control input-sm" />
         </div>
         {this.props.rs_filter ? (
           <div class="form-group list-filter-item">
@@ -77,14 +63,7 @@ class RefundListFilter extends React.Component {
 
         <div class="form-group list-filter-item">
           <label>Notes</label>
-          <Field
-            name="notes"
-            component="input"
-            class="form-control input-sm"
-            onChange={(...args) => {
-              track({ type: 'search', args });
-            }}
-          />
+          <Field name="notes" component="input" class="form-control input-sm" />
         </div>
 
         <div class="form-group list-filter-item count">

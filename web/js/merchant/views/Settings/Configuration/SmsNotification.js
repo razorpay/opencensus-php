@@ -55,14 +55,18 @@ function SmsNotification({ currentUser, showNotification }) {
       eventCategory: 'Dashboard - Settings',
       eventAction: `${action} - SMS notifications`,
     });
-
+    selfServeTrackInitiate({
+      selfServeAction: `SMS Notifications  ${action === 'Enable' ? 'Enable' : 'Disable'}`,
+      page: 'Config',
+      screen: 'Settings',
+    });
     analyticsTrack({
       objectName: 'sms notifications',
       actionName: 'toggled',
       screen: 'settings',
       properties: {
         location: 'configuration',
-        currentValue: action === 'Enable' ? 'Disable' : 'Enable',
+        currentValue: action === 'Enable' ? 'Enable' : 'Disable',
         newValue: action,
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
@@ -72,11 +76,6 @@ function SmsNotification({ currentUser, showNotification }) {
   const toggleSmsNotification = (sms_optin_checked, cb) => {
     if (sms_optin_checked) {
       analytics('Enable');
-      selfServeTrackInitiate({
-        selfServeAction: 'SMS Notifications Enabled',
-        page: 'Config',
-        screen: 'Settings',
-      });
     } else {
       analytics('Disable');
     }
@@ -86,7 +85,7 @@ function SmsNotification({ currentUser, showNotification }) {
         cb(true);
         setSmsOptin(response.data.enabled);
         selfServeTrackSuccess({
-          selfServeAction: 'SMS Notifications Enabled',
+          selfServeAction: `SMS Notifications  ${sms_optin_checked ? 'Enable' : 'Disable'}`,
           page: 'Config',
           screen: 'Settings',
         });

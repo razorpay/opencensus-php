@@ -297,11 +297,13 @@ class webhookForm extends Component {
               }),
             );
           }
-          selfServeTrackSuccess({
-            selfServeAction: `Webhook ${webhook ? 'Edited' : 'Added'}`,
-            page: 'Webhooks',
-            screen: 'Settings',
-          });
+          if (webhook) {
+            selfServeTrackSuccess({
+              selfServeAction: 'Webhook Edited',
+              page: 'Webhooks',
+              screen: 'Settings',
+            });
+          }
           analyticsTrack({
             objectName: `${webhook ? 'edit' : 'add'} webhooks`,
             actionName: 'result',

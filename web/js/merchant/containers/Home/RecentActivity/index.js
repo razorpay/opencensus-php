@@ -19,7 +19,7 @@ import GenericPanel, {
 import { tabs, tabsMeta } from './data';
 
 import { trackTabClick, trackEntityClick, trackGoToLinks, selfServeTracking } from './ga';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const shouldDisplayCompact = (windowWidth) => {
@@ -133,7 +133,7 @@ class RecentActivity extends Component {
 
   enableInstantRefunds = () => {
     selfServeTrackInitiate({
-      selfServeAction: 'Enable Instant Refund',
+      selfServeAction: 'Enable Instant Refund Page View',
       page: 'Home',
       screen: 'Home',
     });
@@ -149,6 +149,11 @@ class RecentActivity extends Component {
       properties: {
         location: 'recent activity',
       },
+    });
+    selfServeTrackSuccess({
+      selfServeAction: 'Enable Instant Refund Page View',
+      page: 'Home',
+      screen: 'Home',
     });
     this.props.tracking.trackEvent(
       window.rzpQ.merchantActions().initiated(`Click - Enable Now`, {

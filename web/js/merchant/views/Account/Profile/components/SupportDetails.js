@@ -15,7 +15,6 @@ import {
   UPDATE_SUPPORT_DETAILS,
 } from 'merchant/views/Account/Profile/deeplink-constants';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 @connect((state) => ({ support_detail: state.supportdetails.merchantSupportDetail }), {
   fetchSupportDetail,
   openModal,
@@ -30,11 +29,6 @@ export default class SupportDetails extends Component {
   openAddSupportDetailModal = (data) => {
     const is_edit = Object.keys(this.props.support_detail.data).length;
     if (is_edit) {
-      selfServeTrackInitiate({
-        selfServeAction: 'Merchant Support Details Updated',
-        page: 'Profile',
-        screen: 'My Account',
-      });
       analyticsTrack({
         objectName: 'support details edit',
         actionName: 'clicked',

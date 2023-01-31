@@ -112,7 +112,7 @@ const BankAccountDetailsContainer = ({
             },
           });
           selfServeTrackSuccess({
-            selfServeAction: 'Bank Account Update',
+            selfServeAction: 'Bank Account Updated',
             page: 'Profile',
             screen: 'My Account',
           });

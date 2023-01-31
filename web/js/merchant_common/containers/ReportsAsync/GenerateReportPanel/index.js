@@ -15,7 +15,7 @@ import SelectFormat from './SelectFormat';
 import EmailReport from './EmailReport';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { REPORT_CONFIG_TYPE } from 'merchant_common/containers/ReportsAsync/utils';
 import { connect } from 'react-redux';
 
@@ -111,13 +111,13 @@ class GenerateReportPanel extends React.PureComponent {
   })
   onGenerateReport = () => {
     const { selectedConfig, selectedAccount = {} } = this.state;
-    selfServeTrackInitiate({
-      selfServeAction: 'Report Downloaded',
-      page: 'Reports',
-      screen: 'Reports',
-    });
 
     if (selectedConfig.type === 'custom') {
+      selfServeTrackInitiate({
+        selfServeAction: 'Report Downloaded',
+        page: 'Reports',
+        screen: 'Reports',
+      });
       return this.generateCustomConfigReport();
     }
 
@@ -184,6 +184,11 @@ class GenerateReportPanel extends React.PureComponent {
     const { month, year } = this.selectPeriod.getCustomConfigYear();
 
     window.open(`/${mode}/reports/${selectedConfigId}/?year=${year}&month=${month}`, '_blank');
+    selfServeTrackSuccess({
+      selfServeAction: 'Report Downloaded',
+      page: 'Reports',
+      screen: 'Reports',
+    });
   };
 
   render() {

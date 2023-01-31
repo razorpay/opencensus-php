@@ -19,6 +19,7 @@ import { bindActionCreators, compose } from 'redux';
 import Input from 'common/new-ui/Input';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const GST_SUCCESS_MSG = 'Entered GSTIN will be applicable only from current month onwards.';
 
@@ -76,6 +77,11 @@ class AddGST extends Component {
 
       if (response) {
         this.props.fetchStatus();
+        selfServeTrackSuccess({
+          selfServeAction: 'GST Updated',
+          page: 'Profile',
+          screen: 'My Account',
+        });
         this.props.openModal({
           size: 'small',
           component: <ShowStatusMsg closeModal={this.props.closeModal} />,

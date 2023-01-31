@@ -152,7 +152,7 @@ class CheckoutTheme extends Component {
           message: 'File Uploaded Successfully',
         });
         selfServeTrackSuccess({
-          selfServeAction: 'Brand Logo Uploaded Successfully',
+          selfServeAction: 'Brand Logo Uploaded',
           page: 'Config',
           screen: 'Settings',
         });

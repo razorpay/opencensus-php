@@ -119,7 +119,6 @@ class EmailNotifications extends Component {
       return this.props
         .updateConfig(data)
         .then((_) => {
-          selfServeTrackSuccess(this.selfServeAnalytics('Email Notification Enabled'));
           this.props.showNotification({
             type: 'success',
             message: 'Emails Updated',
@@ -142,6 +141,8 @@ class EmailNotifications extends Component {
     selfServeTrackInitiate(this.selfServeAnalytics('Email Notification Enabled'));
     return this.handleUpdate({
       transaction_report_email: emails,
+    }).then(() => {
+      selfServeTrackSuccess(this.selfServeAnalytics('Email Notification Enabled'));
     });
   };
 

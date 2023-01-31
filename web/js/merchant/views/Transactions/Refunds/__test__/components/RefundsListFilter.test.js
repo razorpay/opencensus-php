@@ -59,28 +59,10 @@ describe('Refunds - RefundListFilter Component', () => {
     const { container } = render(<App />);
     [
       {
-        name: 'id',
-        type: 'input',
-        changed_value: 'lorem ipsum',
-        track_type: 'search',
-      },
-      {
-        name: 'payment_id',
-        type: 'input',
-        changed_value: 'ipsum lorem',
-        track_type: 'search',
-      },
-      {
         name: 'public_status',
         type: 'select',
         changed_value: 'processed',
         track_type: 'filter',
-      },
-      {
-        name: 'notes',
-        type: 'input',
-        changed_value: 'ipsum lorem ipsum',
-        track_type: 'search',
       },
     ].forEach((field, index) => {
       const fieldElement = container.querySelector(`${field.type}[name="${field.name}"]`);

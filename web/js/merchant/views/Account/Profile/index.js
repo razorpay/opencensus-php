@@ -412,7 +412,11 @@ class Profile extends Component {
             eventAction: 'Save brand name success',
             eventLabel: `${this.props.user.id}`,
           });
-
+          selfServeTrackSuccess({
+            selfServeAction: 'Brand Name Updated',
+            page: 'Profile',
+            screen: 'My Account',
+          });
           this.props.showNotification({
             type: 'success',
             message: 'Brand name updated successfully.',
@@ -579,7 +583,7 @@ class Profile extends Component {
             },
           });
           selfServeTrackSuccess({
-            selfServeAction: 'Bank Account Update',
+            selfServeAction: 'Bank Account Updated',
             page: 'Profile',
             screen: 'My Account',
           });

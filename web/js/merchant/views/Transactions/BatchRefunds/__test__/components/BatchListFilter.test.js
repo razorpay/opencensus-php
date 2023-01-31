@@ -1,5 +1,5 @@
 import BatchListFilter from 'merchant/views/Transactions/BatchRefunds/components/BatchListFilter';
-import { render, screen, fireEvent } from 'test-utils';
+import { render, screen } from 'test-utils';
 
 const mockTrack = jest.fn();
 
@@ -27,31 +27,6 @@ describe('Refunds - RefundListFilter Component', () => {
     // asserting fields input to be present
     ['id', 'count'].forEach((fieldInput) => {
       expect(container.querySelector(`input[name="${fieldInput}"]`)).toBeInTheDocument();
-    });
-  });
-
-  test('should call Analytics track with right type on filter fields input change', () => {
-    const { container } = render(<BatchListFilter {...initProps} />);
-    [
-      {
-        name: 'id',
-        type: 'input',
-        changed_value: 'lorem ipsum',
-        track_type: 'search',
-      },
-    ].forEach((field, index) => {
-      const fieldElement = container.querySelector(`${field.type}[name="${field.name}"]`);
-      expect(fieldElement).toBeInTheDocument();
-      fireEvent.change(fieldElement, {
-        target: {
-          value: field.changed_value,
-        },
-      });
-      const trackCallNumber = index + 1;
-      expect(mockTrack).toHaveBeenNthCalledWith(trackCallNumber, {
-        args: expect.anything(),
-        type: field.track_type,
-      });
     });
   });
 });

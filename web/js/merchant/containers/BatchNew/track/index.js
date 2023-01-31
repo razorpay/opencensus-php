@@ -1,5 +1,6 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 function _track() {
   // setting screen to default value incase it's not passed from callee
@@ -23,6 +24,11 @@ function _track() {
       sendToSegment('view documentation', 'click', feature ? titleCase(feature) : 'dashboard');
     },
     batchUpload: (feature) => {
+      selfServeTrackInitiate({
+        selfServeAction: 'Route New Batch Uploaded',
+        page: 'batchuploads',
+        screen: 'Route',
+      });
       sendToSegment('batch upload', 'click', feature ? titleCase(feature) : 'dashboard');
     },
   };

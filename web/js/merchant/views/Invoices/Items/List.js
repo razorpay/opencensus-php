@@ -20,7 +20,7 @@ import {
 } from 'merchant/reducers/onboarding';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { RZPFeatures } from 'merchant/helpers/data';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 @connect(
   (state) => ({
@@ -125,6 +125,11 @@ export default class ItemsListContainer extends ListContainer {
       eventCategory: 'Dashboard - Invoices',
       eventAction: `Submit Form - ${prevItem ? 'Edit' : 'New'} Item`,
       eventLabel: getKeysSeparatedByPipe(item),
+    });
+    selfServeTrackSuccess({
+      selfServeAction: 'New Item Created',
+      page: 'Items',
+      screen: 'Invoice',
     });
   };
 

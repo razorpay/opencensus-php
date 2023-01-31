@@ -66,7 +66,7 @@ class PaymentLinksSettings extends React.Component {
       .editRemindersMerchantConfigs(this.props.paymentLinkReminder.id, data)
       .then(() => {
         selfServeTrackSuccess({
-          selfServeAction: 'PL Reminder Updated',
+          selfServeAction: 'PL Reminder Created',
           page: 'Reminders',
           screen: 'Settings',
         });

@@ -74,7 +74,7 @@ class Toggle2FA extends Component {
         const twoFaStatus = second_factor_auth ? 'on' : 'off';
         const message = getToggle2FaSuccessMsg(twoFaStatus);
         selfServeTrackSuccess({
-          selfServeAction: '2fa Switch Result',
+          selfServeAction: '2fa Switch',
           page: 'Team',
           screen: 'My Account',
         });

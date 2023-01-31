@@ -104,12 +104,14 @@ class CongfigurationContainer extends Component {
           message: 'Configuration Updated',
           hidePrevious: true,
         });
-        if (config === 'theme') {
+        if (data.brand_color) {
           selfServeTrackSuccess({
             selfServeAction: 'Theme Color Changed',
             page: 'Config',
             screen: 'Settings',
           });
+        }
+        if (config === 'theme') {
           analyticsTrack({
             objectName: 'theme color save changes',
             actionName: 'result',

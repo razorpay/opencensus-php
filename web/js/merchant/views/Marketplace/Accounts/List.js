@@ -23,7 +23,7 @@ import ListContainer from 'merchant/containers/ListContainer';
 import AccountCreation from 'merchant/views/Marketplace/Accounts/New';
 import AccountDetails from 'merchant/views/Marketplace/Accounts/Details';
 import { isOrgFeatureExist } from 'merchant/models/User';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 @connect(
   (state) => {
@@ -183,6 +183,11 @@ export default class AccountsListContainer extends ListContainer {
 
   showAddAccountModal = () => {
     const { openModal } = this.props;
+    selfServeTrackInitiate({
+      selfServeAction: 'Route Account created',
+      page: 'Account',
+      screen: 'Route',
+    });
     openModal({
       size: 'small',
       component: <AccountCreation onSave={this.onAccountCreation} />,
@@ -217,7 +222,11 @@ export default class AccountsListContainer extends ListContainer {
       message: 'Your file will download shortly',
       hidePrevious: true,
     });
-
+    selfServeTrackInitiate({
+      selfServeAction: 'Route Accounts List Downloaded',
+      page: 'Account',
+      screen: 'Route',
+    });
     return exportAccountsCSV()
       .then((response) => {
         window.location.href = response.data.url;

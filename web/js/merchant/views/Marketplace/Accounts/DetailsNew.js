@@ -18,6 +18,7 @@ import { fetchBalance } from 'merchant/reducers/credits';
 import * as AccountActions from 'merchant/reducers/marketplace/accounts';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import { validateDashboardAccess, validateAllowRefundsMessages } from './List';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 @connect(
   (state) => {
@@ -219,7 +220,14 @@ export default class Details extends Component {
     }
   }
 
-  showEditAccountModal = (account) => (_) => {
+  showEditAccountModal = (account, trackSelfServe) => (_) => {
+    if (trackSelfServe) {
+      selfServeTrackInitiate({
+        selfServeAction: 'Email added',
+        page: 'Account',
+        screen: 'Route',
+      });
+    }
     this.props.openModal({
       size: 'small',
       component: <AccountCreation onSave={this.fetchData} accountData={account} />,
@@ -276,7 +284,7 @@ export default class Details extends Component {
                       )}
                       <button
                         class="btn btn-link no-padding"
-                        onClick={this.showEditAccountModal(account)}
+                        onClick={this.showEditAccountModal(account, true)}
                         disabled={isCreationDisabled}
                       >
                         Add Email
@@ -295,7 +303,7 @@ export default class Details extends Component {
                         )}
                         <button
                           class="btn btn-link no-padding"
-                          onClick={this.showEditAccountModal(account)}
+                          onClick={this.showEditAccountModal(account, true)}
                           title="Edit Email"
                           disabled={isCreationDisabled}
                         >

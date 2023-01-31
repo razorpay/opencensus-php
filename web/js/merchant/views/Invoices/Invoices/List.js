@@ -26,7 +26,8 @@ import EmptyList from 'merchant/components/EmptyList';
 
 import ListContainer from 'merchant/containers/ListContainer';
 
-import { track, trackSearchFilterForInternational } from '../ga';
+import { track, trackSearchFilterForInternational } from 'merchant/views/Invoices/ga';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 @withRouter
 @connect(
@@ -41,6 +42,7 @@ import { track, trackSearchFilterForInternational } from '../ga';
 )
 export default class InvoicesListContainer extends ListContainer {
   UNSAFE_componentWillMount() {
+    // eslint-disable-next-line babel/new-cap
     super.UNSAFE_componentWillMount();
 
     this.setState({ loadingAllList: true });
@@ -140,7 +142,11 @@ export default class InvoicesListContainer extends ListContainer {
         lastElementId: (invoices[0] || {}).id,
       });
     }
-
+    selfServeTrackInitiate({
+      selfServeAction: 'New Invoice Created',
+      page: 'Invoices',
+      screen: 'Invoices',
+    });
     this.setState(
       {
         isInvoiceView: true,

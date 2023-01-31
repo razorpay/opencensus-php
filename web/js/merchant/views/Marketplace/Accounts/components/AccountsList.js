@@ -10,6 +10,7 @@ import SwitchField from 'common/ui/Forms/SwitchField';
 
 import { getUser } from 'merchant/store';
 import { AccountStatusListView as AccountStatusLabel } from './AccountStatusLabel';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 export const ToggleField = ({
   onEdit,
@@ -94,7 +95,14 @@ const AccountsListItem = ({
             )}
             <button
               class="btn btn-link no-padding"
-              onClick={() => showEditAccountModal(account)}
+              onClick={() => {
+                selfServeTrackInitiate({
+                  selfServeAction: 'Email added',
+                  page: 'Account',
+                  screen: 'Route',
+                });
+                showEditAccountModal(account);
+              }}
               disabled={isCreationDisabled}
             >
               Add Email

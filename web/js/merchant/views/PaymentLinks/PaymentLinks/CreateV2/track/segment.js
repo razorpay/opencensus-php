@@ -1,5 +1,6 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 function _segmentTrack() {
   const template = {};
@@ -61,6 +62,11 @@ function _segmentTrack() {
           duplicateLink: duplicate,
           status: 'Success',
         };
+        selfServeTrackSuccess({
+          selfServeAction: 'Create Payment Link',
+          page: 'Paymentlink',
+          screen: 'Payment Links',
+        });
         return send('payment link', 'issued', 'Create Payment Link', properties);
       },
       fail: (error, duplicate) => {

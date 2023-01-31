@@ -36,6 +36,7 @@ import { getIsAllowedResetVAOnBoarding } from 'merchant/views/SmartCollect/OnBoa
 import { getVAQuickGuideIsClosed } from 'merchant/views/SmartCollect/QuickGuide';
 
 import EmptyList from 'merchant/components/EmptyList';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const EmptyComponent = () => (
   <EmptyList
@@ -210,6 +211,11 @@ export default class VirtualAccountsListContainer extends ListContainer {
                 class="btn btn-primary"
                 to="/smartcollect/virtualaccounts/new"
                 onClick={() => {
+                  selfServeTrackInitiate({
+                    selfServeAction: 'Virtual Account Created',
+                    page: 'Virtualaccounts',
+                    screen: 'Smart Collect',
+                  });
                   this.track('create');
                 }}
               >

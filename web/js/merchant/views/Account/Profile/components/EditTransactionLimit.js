@@ -22,14 +22,8 @@ import {
 } from 'merchant/views/Account/Profile/deeplink-constants';
 import { bindActionCreators } from 'redux';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 function linkHandler() {
-  selfServeTrackInitiate({
-    selfServeAction: 'International Payments Applied',
-    page: 'Profile',
-    screen: 'My Account',
-  });
   analyticsTrack({
     objectName: 'Apply for international',
     actionName: 'clicked',

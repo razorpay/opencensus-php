@@ -29,7 +29,11 @@ jest.mock('common/services/tracking/segment', () => ({
   ...jest.requireActual('common/services/tracking/segment'),
   analyticsTrack: jest.fn(),
 }));
-
+jest.mock('merchant/views/Transactions/AnalyticsTrack', () => ({
+  ...jest.requireActual('merchant/views/Transactions/AnalyticsTrack'),
+  selfServerTrack: jest.fn(),
+  selfServeTrackResult: jest.fn(),
+}));
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());
 

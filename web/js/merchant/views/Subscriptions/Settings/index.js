@@ -22,7 +22,7 @@ import {
   UPI_MAX_LIMIT_FOR_NON_BFSI,
 } from 'merchant/views/Subscriptions/constants';
 import analytics from 'merchant/views/Subscriptions/analytics';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const PAYMENT_METHODS = {
   UPI: 'upi',
@@ -73,12 +73,15 @@ export default class SubscriptionsSettings extends React.Component {
       enableDisableMap[data.setting_enabled]
     }_${methodName}`;
     analytics.track(eventLabel);
-
+    selfServeTrackInitiate({
+      selfServeAction: `Subscriptions ${methodName} ${checked ? 'disabled' : 'enabled'}`,
+      page: 'Settings',
+      screen: 'Subscriptions',
+    });
     return this.props
       .saveSettings(data)
       .then(() => {
         cb(true);
-
         selfServeTrackSuccess({
           selfServeAction: `Subscriptions ${methodName} ${checked ? 'disabled' : 'enabled'}`,
           page: 'Settings',

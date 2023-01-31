@@ -20,7 +20,7 @@ import { getCustomURL } from 'merchant/components/DocsLink';
 import { bindActionCreators } from 'redux';
 import EmptyList from 'merchant/components/EmptyList';
 import { isOrgFeatureExist } from 'merchant/models/User';
-import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
+import { selfServerTrack, selfServeTrackResult } from 'merchant/views/Transactions/AnalyticsTrack';
 
 const daysLeftInExpiry = (expiresOn) => {
   const daysLeft = daysFromToday(expiresOn);
@@ -82,6 +82,7 @@ class Dispute extends ListContainer {
           type="link"
           count={this.state.count}
           onSubmit={(args) => {
+            selfServerTrack({ type: 'dispute', actionType: 'search' });
             analyticsTrack({
               objectName: 'disputes search',
               actionName: 'clicked',
@@ -92,7 +93,12 @@ class Dispute extends ListContainer {
                 ...getCommonAnalyticsProperties(window.rzp_user),
               },
             });
-            this.search(args);
+            this.search(args).then(() => {
+              if (args.status || args.phase) {
+                selfServeTrackResult({ type: 'dispute', actionType: 'filter' });
+              }
+              selfServeTrackResult({ type: 'dispute', actionType: 'search' });
+            });
           }}
           onSearchAnalytics={this.onSearchAnalytics}
           onClearAnalytics={this.onClearAnalytics}

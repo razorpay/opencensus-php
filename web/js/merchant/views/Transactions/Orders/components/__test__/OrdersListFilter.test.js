@@ -43,28 +43,10 @@ describe('Orders - OrdersListFilter component', () => {
     const { container } = render(<OrdersListFilter {...initProps} />);
     [
       {
-        name: 'id',
-        type: 'input',
-        changed_value: 'lorem ipsum',
-        track_type: 'search',
-      },
-      {
-        name: 'receipt',
-        type: 'input',
-        changed_value: 'ipsum lorem',
-        track_type: 'search',
-      },
-      {
         name: 'status',
         type: 'select',
         changed_value: 'Paid',
         track_type: 'filter',
-      },
-      {
-        name: 'notes',
-        type: 'input',
-        changed_value: 'ipsum lorem ipsum',
-        track_type: 'search',
       },
     ].forEach((field, index) => {
       const fieldElement = container.querySelector(`${field.type}[name="${field.name}"]`);

@@ -1,5 +1,6 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 function _track() {
   let lumberjackTrack = () => {};
@@ -39,6 +40,11 @@ function _track() {
       sendToSegment('get code modal', 'close', { button_id });
     },
     createEnter: () => {
+      selfServeTrackInitiate({
+        selfServeAction: 'Create Payment Button',
+        page: 'Edit Payment Button',
+        screen: 'Button Create',
+      });
       sendToLumberjack('create.enter');
       sendToSegment('create payment button', 'click', {}, true);
     },

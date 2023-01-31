@@ -22,7 +22,8 @@ import {
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import ExpirySubscriptions from './ExpirySubscriptions';
-import analytics from '../../analytics';
+import analytics from 'merchant/views/Subscriptions/analytics';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const link = {
   title: 'Subscription Link',
@@ -106,7 +107,14 @@ export default class SubscriptionsListContainer extends ListContainer {
               <NavLink
                 class="btn btn-primary"
                 to="/subscriptions/new"
-                onClick={() => analytics.track('subscription.create.initiate')}
+                onClick={() => {
+                  selfServeTrackInitiate({
+                    selfServeAction: 'Subscription Created',
+                    page: 'Subscriptions',
+                    screen: 'Subscriptions',
+                  });
+                  analytics.track('subscription.create.initiate');
+                }}
               >
                 <i class="i i-plus" />
                 <span>Create New Subscription</span>

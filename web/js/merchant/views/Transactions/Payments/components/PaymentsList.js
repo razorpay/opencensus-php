@@ -23,6 +23,7 @@ import {
 import { isOrgFeatureExist } from 'merchant/models/User';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentFailureAnalysis from './PaymentFailureAnalysis';
+import { selfServerTrack, selfServeTrackResult } from 'merchant/views/Transactions/AnalyticsTrack';
 
 const EmptyRoutesComponent = () => (
   <EmptyList
@@ -197,8 +198,14 @@ export default class PaymentsListContainer extends ListContainer {
             if (!isRoute && user?.isFAEnabled) {
               this.fetchFailureAnalysisData(args);
             }
+            selfServerTrack({ type: 'payment', actionType: 'search' });
+
             this.search(args)
               .then(() => {
+                if (args.status) {
+                  selfServeTrackResult({ type: 'payment', actionType: 'filter' });
+                }
+                selfServeTrackResult({ type: 'payment', actionType: 'search' });
                 analyticsTrack({
                   objectName: 'payments search',
                   actionName: 'result',

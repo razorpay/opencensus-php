@@ -18,7 +18,6 @@ import Item from 'merchant/models/Item';
 import { isTaxOfTypeCess } from 'common/utils/rzp-utils';
 import Input from 'common/new-ui/Input';
 import CheckableItem from './components/CheckableItem';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const selector = formValueSelector('newItem');
 
@@ -320,11 +319,6 @@ export default class AddItem extends Component {
 
         return saveItem(props)
           .then((item) => {
-            selfServeTrackSuccess({
-              selfServeAction: 'New Item Created',
-              page: 'Items',
-              screen: 'Invoice',
-            });
             this.props.showNotification({
               type: 'success',
               message: 'Item saved successfully',

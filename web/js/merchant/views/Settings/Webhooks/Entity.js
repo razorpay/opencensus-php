@@ -18,6 +18,7 @@ import DocsLink from 'merchant/components/DocsLink';
 import * as WebhookActions from 'merchant/reducers/webhooks';
 import Collapsible from 'merchant/components/Collapsible';
 import AddEditWebhook from './AddEditWebhook';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 class WebhookEntity extends Component {
   state = {
@@ -30,7 +31,11 @@ class WebhookEntity extends Component {
 
   showWebhookModal = (webhook = null) => {
     const tracking = this.props.tracking;
-
+    selfServeTrackInitiate({
+      selfServeAction: 'Webhook Edited',
+      page: 'Webhooks',
+      screen: 'Settings',
+    });
     tracking.trackEvent(
       window.rzpQ.merchantActions().initiated('Webhook.editIntiated', {
         webhook_id: webhook.id,

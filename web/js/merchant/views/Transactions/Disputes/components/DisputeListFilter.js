@@ -29,26 +29,12 @@ export default (props) => {
     <ListFilter date={date} {...props}>
       <div class="form-group list-filter-item">
         <label>Dispute Id</label>
-        <Field
-          name="id"
-          component="input"
-          class="form-control input-sm"
-          onChange={(...args) => {
-            track({ type: 'search', args });
-          }}
-        />
+        <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item">
         <label>Payment Id</label>
-        <Field
-          name="payment_id"
-          component="input"
-          class="form-control input-sm"
-          onChange={(...args) => {
-            track({ type: 'search', args });
-          }}
-        />
+        <Field name="payment_id" component="input" class="form-control input-sm" />
       </div>
 
       <div className="form-group datepicker-group">

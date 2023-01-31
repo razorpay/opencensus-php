@@ -150,9 +150,9 @@ const OTPModal = ({
           setIsVerifyingOtp(false);
           if (res.success) {
             selfServeTrackSuccess({
-              selfServeAction: 'Email Updated',
+              selfServeAction: 'Login Details Updated',
               page: 'Profile',
-              screen,
+              screen: 'My Account',
             });
             analyticsTrackWithUserInfo({
               objectName: 'add email',

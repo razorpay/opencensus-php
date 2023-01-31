@@ -40,7 +40,7 @@ class EnableInstantRefundsModal extends Component {
 
   enableInstantRefunds = () => {
     selfServeTrackInitiate({
-      selfServeAction: 'Refund Speed Updated',
+      selfServeAction: `Enable ${this.props.speed === 'normal' ? 'normal' : 'instant'} refund`,
       page: 'Config',
       screen: 'Settings',
     });
@@ -323,6 +323,11 @@ class EnableInstantRefundsModal extends Component {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => {
+                    selfServeTrackInitiate({
+                      selfServeAction: 'Enable Normal Refund',
+                      page: 'Config',
+                      screen: 'Settings',
+                    });
                     window.rzpAnalytics?.({
                       eventCategory: 'Dashboard - Instant Refund',
                       eventAction: `Enable Normal Refund`,

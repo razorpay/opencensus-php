@@ -18,7 +18,6 @@ import { fetchStates } from 'merchant/reducers/states';
 
 import AddressEntry from 'merchant/views/Customers/components/AddressEntry';
 import Countries from 'merchant/helpers/countries.json';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const selector = formValueSelector('newCustomer');
 
@@ -209,11 +208,6 @@ export default class AddCustomer extends Component {
       })
       .then((customer) => {
         this.props.onSave(customer, shipping_same_as_billing);
-        selfServeTrackSuccess({
-          selfServeAction: 'New Customer Created',
-          page: 'Customers',
-          screen: 'Customers',
-        });
         this.props.showNotification({
           type: 'success',
           message: 'Customer saved successfully',

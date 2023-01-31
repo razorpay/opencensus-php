@@ -19,7 +19,7 @@ import { getItem, setItem } from 'common/utils/localStorage';
 import RequestInitiateModal from './components/InternationalConfigComponents/RequestInitiateModal';
 import RequestSubmittedModal from './components/InternationalConfigComponents/RequestSubmittedModal';
 import Questionnaire from './Questionnaire';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { trackFormSubmitted, trackRequestClicked } from './Questionnaire/analytics';
 
 const NO_ACTION_RECEIVED = 'no_action_received';
@@ -234,13 +234,11 @@ function withInternationalConfig(WrappedComponent) {
     )
     toggleInternationalization = (enableInternational, postActionCB) => {
       this.analytics(enableInternational ? 'Enable' : 'Disable');
-      if (enableInternational === 'Enable') {
-        selfServeTrackInitiate({
-          selfServeAction: 'International Payments Applied',
-          page: 'Config',
-          screen: 'Settings',
-        });
-      }
+      selfServeTrackInitiate({
+        selfServeAction: 'International Payments Applied',
+        page: 'Config',
+        screen: 'Settings',
+      });
       this.setState({ showStatusLabel: enableInternational });
 
       return merchantFetch({
@@ -253,6 +251,11 @@ function withInternationalConfig(WrappedComponent) {
         .then((resp) => {
           // Check if the response sets international as intended in this request
           if (resp.data.international === !!enableInternational) {
+            selfServeTrackSuccess({
+              selfServeAction: 'International Payments Applied',
+              page: 'Config',
+              screen: 'Settings',
+            });
             postActionCB(true);
             // Update user in store
             const user = new User({

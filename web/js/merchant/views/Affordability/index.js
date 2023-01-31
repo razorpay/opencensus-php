@@ -5,7 +5,6 @@ import { Route, Switch, withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 
 import DashboardBanner from 'common/ui/DashboardBanner';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 import AffordabilityWidget from './AffordabilityWidget';
 import { connect } from 'react-redux';
@@ -43,11 +42,6 @@ const Affordability = (props) => {
     if (window.rzpQ && window.rzpQ.merchantActions) {
       props.tracking.trackEvent(window.rzpQ.merchantActions().success('Affordability_rendered'));
     }
-    selfServeTrackInitiate({
-      selfServeAction: 'Affordability Fetched',
-      page: 'Affordability',
-      screen: 'Affordability',
-    });
     props.fetchDetails();
   }, []);
 
