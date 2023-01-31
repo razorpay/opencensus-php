@@ -32,6 +32,10 @@ jobs:
 
             It is the responsibility of PR owner that below suggestions are addressed before merging to _master_. Teams are responsible for setting up required changes for API routes owned by them.
 
+            **⚠️ You'll need to get a peer approval before raising it for review to Edge team**
+            **⚠️ All suggestions mentioned below are mandatory for final PR approval**
+
+
             #### 1️⃣ Changes around public or direct auth routes?
             All public and direct auth routes need to have rate limits (IP level or route level) set up on Edge to protect against DDoS attacks. This is important as any one unprotected route makes API infra wide open for DDoS attacks. You'll need to do the following:
             - Onboard route to Edge (if not already). You'll need to identify which host is used for the route. Based on that, changes need to be added in corresponding service entity on Edge. Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details on how to onboard routes to Edge.
@@ -41,6 +45,31 @@ jobs:
             #### 2️⃣ Changes around private auth routes?
             As part of the API decomposition effort, we've started rejecting invalid authentication requests at Edge itself. All private auth routes that require authentication need to be onboarded to Edge. Else, authentication might break for customers. You'll need to do the following:
             - Onboard route to Edge (if not already). You'll need to identify which host is used for the route. Based on that, changes need to be added in corresponding service entity on Edge. Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details on how to onboard routes to Edge.
+
+            #### 3️⃣ Changes around internal or proxy or admin auth routes?
+            > Is your route consumed by any cloud hosted external application like cron?
+
+            As part of the API decomposition effort, we'll soon start rejecting routes not registered on Edge. All externally exposed routes need to be onboarded to Edge. Else, integration might break for customers. You'll need to do the following:
+            - Onboard route to Edge (if not already). You'll need to identify which host is used for the route. Based on that, changes need to be added in corresponding service entity on Edge. Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details on how to onboard routes to Edge. eg. cron routes are onboarded [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/cron.tf)
+
+            > Is your route consumed by any merchant dashboard or admin dashboard?
+            
+            Using an externally exposed domain like api.razorpay.com for internal traffic introduces a security risk. In case of app secret leak, any attacker can use and impersonate itself as the Razorpay service. You'll need to do the following:
+            - Onboard route to Edge (if not already) for [merchant dashboard](https://github.com/razorpay/terraform-kong/blob/master/prod/api-dashboard/merchant-dashboard.tf) or [admin dashboard](https://github.com/razorpay/terraform-kong/blob/master/prod/api-dashboard/admin-dashboard.tf). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details on how to onboard routes to Edge.
+            - Block access of this route via externally exposed domain like api.razorpay.com. You can use request-termination plugin to achieve the same like [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/api.tf#L2548-L2558). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details.
+            
+            > Is your route consumed by any internal Razorpay service residing in cde cluster?
+
+            Using an externally exposed domain like api.razorpay.com for internal traffic introduces a security risk. In case of app secret leak, any attacker can use and impersonate itself as the Razorpay service. Additionally, all intra-cluster traffic should not be proxied via Edge. You'll need to do the following:
+            - Migrate your API host from api.razorpay.com to prod-api-int.razorpay.com
+            - Block access of this route via externally exposed domain like api.razorpay.com. You can use request-termination plugin to achieve the same like [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/api.tf#L2548-L2558). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details.
+
+            > Is your route consumed by any internal Razorpay service residing in non-cde cluster?
+
+            Using an externally exposed domain like api.razorpay.com for internal traffic introduces a security risk. In case of app secret leak, any attacker can use and impersonate itself as the Razorpay service. Additionally, all inter-cluster traffic should be proxied via Edge. You'll need to do the following:
+            - Migrate your API host from api.razorpay.com to api-graphql.razorpay.com
+            - Onboard route to Edge (if not already) [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/api-graphql.tf). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details on how to onboard routes to Edge.
+            - Block access of this route via externally exposed domain like api.razorpay.com. You can use request-termination plugin to achieve the same like [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/api.tf#L2548-L2558). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details.
 
             #### 🪧 Other changes?
             Ignore this notification.
