@@ -238,10 +238,11 @@ class Helper
             $metricName = $traceDetails[Constants::METRIC_CONSTANT];
 
             $metricDimensions = [
-                $mediumLabel                => $medium,
-                $methodLabel                => $traceDetails[Constants::METHOD],
-                MetricConstants::PRODUCT    => $product,
-                MetricConstants::PLATFORM   => self::getPlatform(),
+                $mediumLabel                   => $medium,
+                $methodLabel                   => $traceDetails[Constants::METHOD],
+                MetricConstants::PRODUCT       => $product,
+                MetricConstants::PLATFORM      => self::getPlatform(),
+                MetricConstants::SIGNUP_SOURCE => $input[Constants::SIGNUP_SOURCE] ?? "NA",
             ];
 
             if($traceDetails[Constants::SUCCESS] === false)

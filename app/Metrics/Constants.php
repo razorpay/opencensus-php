@@ -31,6 +31,7 @@ class Constants
   const USER_LOGIN_REQUEST_WITH_OAUTH_PROVIDER_COUNT    = 'user_login_request_with_oauth_provider_count';
   const PRODUCT                                         = 'product';
   const PLATFORM                                        = 'platform';
+  const SIGNUP_SOURCE                                   = 'signup_source';
   const USER_SIGNUP_DURATION                            = 'user_signup_duration';
   const SEND_SIGNUP_OTP_TRIGGERED_COUNT                 = 'send_signup_otp_triggered_count';
   const SEND_SIGNUP_OTP_FAILED_COUNT                    = 'send_signup_otp_failed_count';
