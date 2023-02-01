@@ -95,7 +95,6 @@ class Service extends Base\Service
             'partner_app_store',
             'bulk_payouts_improvements_rollout',
             'block_bank_account_update_merchant_dashboard',
-            'rx_opfin_announcement_v2',
             'whats-new-dec-2020',
             'AnnouncementIconJan2021',
             'TicketSystemSupport',

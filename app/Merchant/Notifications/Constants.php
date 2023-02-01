@@ -245,25 +245,6 @@ class Constants
             ],
         ],
         [
-            'title'       => 'Festive Special: Exclusive Offer For You',
-            'description' => "Get ₹5,00,000 of free credits & 3 months of Opfin’s Payroll software for free.",
-            'icon'        => '/dist/css/assets/products/opfin.svg',
-            'id'          => 'Nov20-Opfin-NitroV3',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Learn More',
-                    'url'   => '',
-                    'id'    => 'announcement-Nov20-Opfin-NitroV3-cta1',
-                ],
-            ],
-            'start_ts'    => 1609308877,
-            'end_ts'      => 1623994200,
-            'filters'     => [
-                'experiments_with_variant'  => ['rx_opfin_announcement_v2' => 'cohort-4'],
-            ],
-        ],
-        [
             'id'          => 'whats-new-upi-pl-jan2021',
             'title'       => 'You can now create & send UPI Payment Links',
             'description' => 'UPI Payment Link is an activated link that enables the user to complete successful payments by only entering their UPI PIN.',
@@ -450,25 +431,6 @@ class Constants
                     ],
                 ],
             ]
-        ],
-        [
-            'title'       => 'New Year Offer',
-            'description' => "Get ₹10,00,000 worth of free credits & 3 months of Opfin's Payroll software for free.",
-            'icon'        => '/dist/css/assets/products/opfin.svg',
-            'id'          => 'Nov20-Opfin-NitroV4',
-            'buttons'     => [
-                [
-                    'type'  => 'button',
-                    'label' => 'Learn More',
-                    'url'   => '',
-                    'id'    => 'announcement-Nov20-Opfin-NitroV4-cta1',
-                ],
-            ],
-            'start_ts'    => 1609922446,
-            'end_ts'      => 1623994200,
-            'filters'     => [
-                'experiments_with_variant'  => ['rx_opfin_announcement_v2' => 'cohort-5'],
-            ],
         ],
         [
             'title'       => 'Introducing Payroll by RazorpayX',
