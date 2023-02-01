@@ -3735,7 +3735,7 @@ class Core extends Base\Core
                     DetailConstants::ENTITY_ID => $merchant->getId(),
                     DetailConstants::CASE_TYPE => DetailConstants::CASE_TYPE_ACTIVATION,
                     DetailConstants::CLARIFICATION_DATA => $clarificationReasons,
-                    DetailConstants::AGENT_ID => optional($this->app['basicauth']->getAdmin())->getId() ?? ObserverConstants::UNDEFINED_AGENT,
+                    DetailConstants::AGENT_ID => optional($this->app['basicauth']->getAdmin())->getPublicId() ?? ObserverConstants::UNDEFINED_AGENT,
                     DetailConstants::AGENT_NAME => optional($this->app['basicauth']->getAdmin())->getName() ?? ObserverConstants::UNDEFINED_AGENT,
                 ])
             ];
