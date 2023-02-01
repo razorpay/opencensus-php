@@ -13,7 +13,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT                => 'required|integer|min:0',
         Entity::GATEWAY               => 'required|string',
         Entity::PAYER_VPA             => 'sometimes',
-        Entity::TRANSACTION_TIME      => 'sometimes',
+        Entity::TRANSACTION_TIME      => 'sometimes|epoch',
         Entity::PROVIDER_REFERENCE_ID => 'required|string',
         Entity::METHOD                => 'required|string|in:upi,card,bank_transfer',
         Entity::MERCHANT_REFERENCE    => 'required|string',

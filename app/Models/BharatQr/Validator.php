@@ -27,5 +27,6 @@ class Validator extends Base\Validator
         GatewayResponseParams::GATEWAY_MERCHANT_ID   => 'required_without:mpan|string',
         GatewayResponseParams::MPAN                  => 'required_without:gateway_merchant_id|string',
         GatewayResponseParams::NOTES                 => 'sometimes|string',
+        GatewayResponseParams::TRANSACTION_TIME      => 'sometimes|epoch',
     ];
 }

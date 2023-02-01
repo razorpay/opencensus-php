@@ -480,10 +480,31 @@ class Processor extends Base\Core
 
         if ($this->qrCode->isClosed())
         {
-            $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_PAYMENT_ON_CLOSED_QR_CODE);
+            $isPaymentExpected = false;
 
-            return;
+            if ($this->checkIfExperimentEnabledForExpiry($this->qrCode) === true and
+                $qrPayment->getTransactionTime() !== null)
+            {
+
+                if (($this->qrCode->getClosedAt() !== null) and
+                    ($this->qrCode->getClosedAt() > $qrPayment->getTransactionTime()))
+                {
+                    $isPaymentExpected = true;
+                }
+
+                if (($this->qrCode->getUsageType() === NonVirtualAccountQrCode\UsageType::SINGLE_USE) and
+                    ($this->qrCode->getPaymentsCountReceived() > 0))
+                {
+                    $isPaymentExpected = false;
+                }
+            }
+            if ($isPaymentExpected === false)
+            {
+                $qrPayment->setUnexpectedReason(UnexpectedPaymentReason::QR_PAYMENT_ON_CLOSED_QR_CODE);
+                return;
+            }
         }
+
 
         if (($this->qrCode->hasFixedAmount() === true) and
             ($qrPayment->getAmount() !== $this->qrCode->getAmount()))
@@ -502,6 +523,20 @@ class Processor extends Base\Core
         }
 
         $qrPayment->setExpected(true);
+    }
+
+    public function checkIfExperimentEnabledForExpiry($qrCode)
+    {
+        $variant = $this->app['razorx']->getTreatment($qrCode->getMerchantId(),
+                                                      RazorxTreatment::QR_PAYMENT_AUTO_CAPTURE_FOR_CLOSED_QR,
+                                                      $this->mode
+        );
+        if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

@@ -364,4 +364,15 @@ class Entity extends QrCode\Entity
     {
         return $this->hasOne('RZP\Models\BankAccount\Entity', BankAccount\Entity::ENTITY_ID, Entity::ID);
     }
+
+    public function getPaymentsCountReceived()
+    {
+        return $this->getAttribute(self::PAYMENTS_RECEIVED_COUNT);
+    }
+
+    public function getClosedAt()
+    {
+        return $this->getAttribute(self::CLOSED_AT);
+    }
+
 }

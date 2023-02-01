@@ -272,7 +272,7 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
         $dateTime = $row[self::DATE] . ' ' . $row[self::TIME];
 
         // Format date to required format .i.e 20200703202700
-        $formattedDate = Carbon::createFromFormat('d/m/Y H:i A', $dateTime)->format('YdmHis');
+        $formattedDate = Carbon::createFromFormat('d/m/Y H:i A', $dateTime)->format('YmdHis');
 
         $callbackData[UpiIciciFields::TXN_INIT_DATE] = $formattedDate;
         $callbackData[UpiIciciFields::TXN_COMPLETION_DATE] = $formattedDate;

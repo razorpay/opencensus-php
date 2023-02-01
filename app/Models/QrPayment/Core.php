@@ -10,6 +10,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\QrPayment\Metric;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\QrPaymentRequest;
+use RZP\Gateway\Upi\Icici\Fields;
 
 class Core extends Base\Core
 {
@@ -116,6 +117,11 @@ class Core extends Base\Core
             Entity::GATEWAY               => $gatewayInputQrData[BharatQr\GatewayResponseParams::GATEWAY],
             Entity::PAYER_VPA             => $gatewayInputQrData[BharatQr\GatewayResponseParams::VPA] ?? null,
         ];
+
+        if (array_key_exists(ENTITY::TRANSACTION_TIME, $gatewayInputQrData))
+        {
+            $input[Entity::TRANSACTION_TIME] = $gatewayInputQrData[BharatQr\GatewayResponseParams::TRANSACTION_TIME];
+        }
 
         if (array_key_exists(Entity::NOTES, $gatewayInputQrData) === true)
         {

@@ -1617,6 +1617,17 @@ class Gateway extends Base\Gateway
             BharatQr\GatewayResponseParams::PROVIDER_REFERENCE_ID => (string) $input[Fields::BANK_RRN],
         ];
 
+        if (array_key_exists(Fields::TXN_COMPLETION_DATE, $input) === true)
+        {
+            $transactionTime = Carbon::createFromFormat("YmdHis", $input[Fields::TXN_COMPLETION_DATE],
+                                           Timezone::IST);
+
+            if ($transactionTime !== false)
+            {
+                $qrData[BharatQr\GatewayResponseParams::TRANSACTION_TIME] = $transactionTime->getTimestamp();
+            }
+        }
+
         if(array_key_exists(Fields::REMARK, $input))
         {
             $qrData[BharatQr\GatewayResponseParams::NOTES] = (string) $input[Fields::REMARK];

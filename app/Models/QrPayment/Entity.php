@@ -211,4 +211,10 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::NOTES);
     }
+
+    public function getTransactionTime()
+    {
+        return $this->getAttribute(self::TRANSACTION_TIME);
+    }
+
 }
