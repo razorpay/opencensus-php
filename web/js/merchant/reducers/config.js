@@ -41,20 +41,38 @@ export const FETCH_WORKFLOWS =
 export const FETCH_TICKET =
   'care_service/merchant/twirp/rzp.care.freshdesk.v1.FreshdeskService/GetTicket';
 
+export const FETCH_TICKETS =
+  'care_service/merchant/twirp/rzp.care.freshdesk.v1.FreshdeskService/GetTickets';
+
 export const fetchConfigAjax = () => {
   return merchantFetch('account/config');
 };
 
-export const fetchSupportTicketsApiCall = (params, filter) => {
-  let url = TICKET_BASE_URL;
-  if (filter) {
-    const key = Object.keys(filter)[0];
-    url = `${url}?${key}=${filter[key]}`;
-  }
-  return merchantFetch({
-    url,
+export const fetchSupportTicketsApiCall = (params, filter, isFetchTicketsApiMigrationActive) => {
+  const requestPayload = {
+    url: TICKET_BASE_URL,
     mode: 'live',
-  }).then((res) => {
+  };
+
+  if (isFetchTicketsApiMigrationActive) {
+    requestPayload.url = FETCH_TICKETS;
+    requestPayload.method = 'post';
+    requestPayload.data = {
+      type: 'support_dashboard',
+    };
+    requestPayload.headers = {
+      'Content-Type': 'application/json',
+    };
+    if (filter) {
+      const key = Object.keys(filter)[0];
+      requestPayload.data[key] = filter[key];
+    }
+  } else if (filter) {
+    const key = Object.keys(filter)[0];
+    requestPayload.url = `${requestPayload.url}?${key}=${filter[key]}`;
+  }
+
+  return merchantFetch(requestPayload).then((res) => {
     const filteredResults = res?.data?.results?.filter(
       (item) => !item?.custom_fields?.cf_workflow_id,
     );
@@ -263,7 +281,7 @@ export const fetchFeatures = (currentUserId) => {
   };
 };
 
-export const fetchTicketsRaisedByAgents = () => {
+export const fetchTicketsRaisedByAgents = (isFetchTicketsApiMigrationActive = false) => {
   return {
     type: FETCH_TICKET_RAISED_BY_AGENTS,
     payload: fetchSupportTicketsApiCall(
@@ -274,14 +292,15 @@ export const fetchTicketsRaisedByAgents = () => {
       {
         cf_created_by: 'agent',
       },
+      isFetchTicketsApiMigrationActive,
     ),
   };
 };
 
-export const fetchSupportTickets = (params, filter) => {
+export const fetchSupportTickets = (params, filter, isFetchTicketsApiMigrationActive = false) => {
   return {
     type: FETCH_SUPPORT_TICKETS,
-    payload: fetchSupportTicketsApiCall(params, filter),
+    payload: fetchSupportTicketsApiCall(params, filter, isFetchTicketsApiMigrationActive),
   };
 };
 

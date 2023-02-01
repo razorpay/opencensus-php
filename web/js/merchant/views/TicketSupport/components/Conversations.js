@@ -28,6 +28,7 @@ import {
   TICKET_BASE_URL,
   FETCH_WORKFLOWS,
   FETCH_TICKET,
+  FETCH_TICKETS,
 } from 'merchant/reducers/config';
 import Reply from './Reply';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -153,18 +154,27 @@ export default class Conversations extends React.Component {
   };
 
   handleFetchWorkFlowTicket = () => {
-    const { match = {}, showNotification: _showNotification } = this.props;
+    const { match = {}, showNotification: _showNotification, user } = this.props;
 
     const payload = {
       cf_workflow_id: match?.params?.id,
       tags: ['workflow_ticket'],
     };
 
-    return merchantFetch({
+    const requestPayload = {
       url: TICKET_BASE_URL,
       mode: 'live',
       data: payload,
-    })
+    };
+    if (user.isFetchTicketsApiMigration) {
+      requestPayload.url = FETCH_TICKETS;
+      requestPayload.method = 'post';
+      requestPayload.data.type = 'support_dashboard';
+      requestPayload.headers = {
+        'Content-Type': 'application/json',
+      };
+    }
+    return merchantFetch(requestPayload)
       .then((e) => {
         const results = e?.data?.results || [];
         const ticket = results?.[0] || {};

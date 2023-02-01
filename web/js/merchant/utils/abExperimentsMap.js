@@ -499,6 +499,12 @@ export default {
     // prod
     'KoBK1DaiY2K5B3',
   ],
+  fetch_tickets_migration: [
+    // beta
+    'L0t2ATJrlpbk0f',
+    // prod
+    'L0zqe6gmKHp9xf',
+  ],
   partnership_capital: [
     // stage
     'L01gPBm1R1OpJG',

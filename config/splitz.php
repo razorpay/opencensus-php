@@ -238,6 +238,9 @@ return [
         // get ticket api migrated to care service
         'GET_TICKET_MIGRATION' => env('GET_TICKET_MIGRATION', ''),
 
+        // fetch all ticket api migrated to care service
+        'FETCH_TICKETS_MIGRATION' => env('FETCH_TICKETS_MIGRATION', ''),
+
         // affordability widget on dashboard
         'SHOW_AFFORDABILITY_WIDGET_EXP' => env('SHOW_AFFORDABILITY_WIDGET_EXP', ''),
         'SHOW_AFF_WIDGET_SHOPIFY_WAIT_LIST' => env('SHOW_AFF_WIDGET_SHOPIFY_WAIT_LIST', ''),

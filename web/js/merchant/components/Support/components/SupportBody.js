@@ -132,7 +132,8 @@ class SupportBody extends Component {
     };
 
     if (user.isMobileSignupCareActive) {
-      _fetchTickets();
+      const isFetchTicketsApiMigrationActive = user.isFetchTicketsApiMigration;
+      _fetchTickets(isFetchTicketsApiMigrationActive);
     }
 
     CreateTicketEmitter.on('create-ticket', (id, pcb, lcb) => {

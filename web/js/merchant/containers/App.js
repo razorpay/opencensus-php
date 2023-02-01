@@ -44,7 +44,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import RTracking from 'react-tracking';
 import qs from 'query-string';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
-import { fetchActiveTickets, fetchTicketsRaisedByAgents } from 'merchant/reducers/config.js';
+
 import { fetchTrustedBadgeStatus } from 'merchant/reducers/trustedBadge.js';
 import * as EventActions from 'merchant/reducers/trackEvents';
 import LogoutDialog from 'merchant/components/LogoutDialog';
@@ -1201,8 +1201,6 @@ const mapDispatchToProps = (dispatch) =>
       ...EventActions,
       updateTwoFactorVerified,
       fetchGST,
-      fetchTicketsRaisedByAgents,
-      fetchActiveTickets,
       resizeWindow,
       openModal,
       closeModal,

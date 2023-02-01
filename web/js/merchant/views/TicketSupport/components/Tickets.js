@@ -6,7 +6,7 @@ import { statuses, MAX_PAGE_SIZE } from './data';
 import { fetchSupportTickets } from 'merchant/reducers/config';
 import Spinner from 'common/ui/Spinner';
 import TicketBrief from './TicketBrief';
-import { raiseTicket } from '../utils';
+import { raiseTicket } from 'merchant/views/TicketSupport/utils';
 import FailedScreen from './FailedScreen';
 import { withRouter } from 'react-router';
 @withRouter
@@ -65,6 +65,7 @@ export default class Tickets extends React.Component {
   };
 
   goNext = (page, bypass) => {
+    const { user } = this.props;
     if (
       !(this.props.support_tickets.data[page] && this.props.support_tickets.data[page].length) ||
       bypass
@@ -79,7 +80,9 @@ export default class Tickets extends React.Component {
       if (this.props.match.params.ticketType === 'merchant') {
         filter = null;
       }
-      this.props.fetchSupportTickets(params, filter).then(() => {
+
+      const isFetchTicketsApiMigrationActive = user.isFetchTicketsApiMigration;
+      this.props.fetchSupportTickets(params, filter, isFetchTicketsApiMigrationActive).then(() => {
         window.rzpAnalytics?.({
           eventCategory: 'Ticket Dashboard',
           eventAction: 'support tickets fetched',

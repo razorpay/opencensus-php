@@ -1816,6 +1816,10 @@ export default class User {
     return getSplitzExperimentVariant('left_nav_revamp')?.variables?.result === 'on';
   }
 
+  get isFetchTicketsApiMigration() {
+    return getSplitzExperimentVariant('fetch_tickets_migration')?.variables?.result === 'on';
+  }
+
   get isPartnershipForCapitalEnabled() {
     const variant = getSplitzExperimentVariant('partnership_capital');
     return variant?.name === 'enable';
