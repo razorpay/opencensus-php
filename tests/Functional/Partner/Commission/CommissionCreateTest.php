@@ -2736,6 +2736,50 @@ class CommissionCreateTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
     }
 
+    public function testInvoiceCreateAutoApprovalFailedInvoiceYearCheckFailed()
+    {
+        Mail::fake();
+
+        $grossAmount = ( Invoice\Entity::MAX_AUTO_APPROVAL_AMOUNT + 100 );
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission([],[],[],[
+            'credit' => $grossAmount,
+            'debit'  => 0,
+            'fee'    => $grossAmount,
+            'tax'    => 762727,
+            'created_at' => '1669135053',
+            'updated_at' => '1669135053',
+        ]);
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+        $now = Carbon::now(Timezone::IST);
+        $testData['request']['content']['month']        = 11;
+        $testData['request']['content']['year']         = 2022;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        $this->createTaxes();
+
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
+
+        $this->startTest($testData);
+        // check that invoice is created with line items and amounts
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $invoiceExpectedData = [
+            'merchant_id'   => 'DefaultPartner',
+            'month'         => 11,
+            'year'          => 2022,
+            'status'        => 'issued',
+            'gross_amount'  => $grossAmount,
+            'tax_amount'    => 762727,
+        ];
+        $this->assertArraySelectiveEquals($invoiceExpectedData, $invoice->toArray());
+    }
+
     private function setupForInvoiceAutoApproval($testData, array $merchantDetail, array $partnerActivation, $merchant = null) {
         Mail::fake();
         if ($merchant) {
@@ -2811,6 +2855,7 @@ class CommissionCreateTest extends TestCase
             "id"            => $merchantId,
             "request_data"  => json_encode([
                 'invoice_year' => strval($invoiceYear),
+                'mid' => $merchantId,
             ]),
         ];
 

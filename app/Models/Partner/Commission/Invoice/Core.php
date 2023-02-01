@@ -122,7 +122,7 @@ class Core extends Base\Core
         }
 
         (new Validator())->validateMerchantToAllowChangeAction($input[Entity::ACTION]);
-        
+
         (new Validator())->validatePartnerInvoiceApprovalExpiry($invoice);
 
         if ($this->isFinanceAutoApprovalEnabled($invoice))
@@ -920,6 +920,9 @@ class Core extends Base\Core
 
     public function isPartnerInvoiceAutoApprovalEnabled(Merchant\Entity $partner, Entity $invoice): bool
     {
+        if ($invoice->getYear() <= 2022) {
+            return false;
+        }
         if (!$this->isPartnerInvoiceAutoApprovalExpEnabled($partner->getId(), $invoice->getYear()))
         {
             return false;
@@ -932,10 +935,10 @@ class Core extends Base\Core
         {
             return false;
         }
-        
+
         $merchant = $invoice->merchant;
         $merchantDetail = $merchant->merchantDetail;
-        
+
         if ($merchantDetail === null or !empty($merchantDetail->getGstin())) // GSTIN available then auto approval not applicable
         {
             return false;
@@ -948,7 +951,7 @@ class Core extends Base\Core
         $partnerType = $partner->getPartnerType();
         $isActivated = $partner->getActivated();
         $activationStatus = $merchantDetail->getActivationStatus();
-        
+
         if (($partnerType === Merchant\Constants::RESELLER) and (empty($activationStatus) === true)) {
             $activationStatus = ($partner->partnerActivation !== null) ? $partner->partnerActivation->getActivationStatus() : null;
             $isActivated = $activationStatus === PartnerActivationConstants::ACTIVATED;
@@ -1273,6 +1276,7 @@ class Core extends Base\Core
             'experiment_id' => $this->app['config']->get('app.partner_invoice_auto_approval_exp_id'),
             'request_data'  => json_encode([
                 'invoice_year' => strval($invoiceYear),
+                'mid' => $partnerId,
                 ]),
         ];
 
