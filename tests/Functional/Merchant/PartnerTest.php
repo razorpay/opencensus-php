@@ -1394,6 +1394,51 @@ class PartnerTest extends OAuthTestCase
         $this->assertEmpty($mapping);
     }
 
+    public function testRemovePartnerToPartnerAccessMap()
+    {
+        $this->allowAdminToAccessPartnerMerchant();
+
+        $partnerUser = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID)->primaryOwner();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator']);
+
+        $accessMap = $this->getAccessMapArray('application', $app->getId(), self::DEFAULT_MERCHANT_ID, self::DEFAULT_MERCHANT_ID);
+
+        $this->fixtures->create('merchant_access_map', $accessMap);
+
+        $this->ba->adminAuth();
+
+        $mapping = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_MERCHANT_ID)
+            ->where('user_id', '=', $partnerUser->getId())
+            ->get();
+
+        $this->assertNotEmpty($mapping);
+
+        $this->expectstorkInvalidateAffectedOwnersCacheRequest(self::DEFAULT_MERCHANT_ID);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $response = $this->sendRequest($testData['request']);
+
+        $response->assertStatus(204);
+
+        $partner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID);
+
+        $this->assertEquals(null, $partner->getReferrer());
+
+        $submerchantOwners = $partner->owners()->get()->toArrayPublic();
+
+        $this->assertEquals(1, $submerchantOwners['count']);
+
+        $mapping = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_MERCHANT_ID)
+            ->where('user_id', '=', $partnerUser->getId())
+            ->get();
+
+        $this->assertNotEmpty($mapping);
+    }
+
     public function testRemoveNonExistingPartnerAccessMap()
     {
         $this->allowAdminToAccessPartnerMerchant();

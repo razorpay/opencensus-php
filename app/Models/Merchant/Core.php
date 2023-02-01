@@ -4318,6 +4318,14 @@ class Core extends Base\Core
             return;
         }
 
+        // For some cases, we observed that partner was a submerchant of itself. In such cases,
+        // we cant delete the user access entry, but we need to delete the access map entry. Hence bypassing this flow.
+        // Thread: https://razorpay.slack.com/archives/C7WEGELHJ/p1674646080762319
+        if($submerchant->getId() === $partner->getId())
+        {
+            return;
+        }
+
         $this->repo->assertTransactionActive();
 
         $partnerUserId = $partner->primaryOwner()->getId();
