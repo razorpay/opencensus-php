@@ -24,6 +24,11 @@ final class Product
     const BANKING = 'banking';
 
     /**
+     * Capital Product
+     */
+    const CAPITAL = 'capital';
+
+    /**
      * @param string $product
      *
      * @return bool

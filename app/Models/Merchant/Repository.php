@@ -113,6 +113,14 @@ class Repository extends Base\Repository
         return (new MerchantWrapper())->FindOrFail($id, $merchantFromApi);
     }
 
+    /**
+     * Select merchants from the query that have requested tags
+     *
+     * @param $query
+     * @param $params
+     *
+     * @return void
+     */
     public function addQueryParamTags($query, $params)
     {
         $tags = $params[Constants::TAGS];
@@ -122,9 +130,36 @@ class Repository extends Base\Repository
         $tagsTable = 'tagging_tagged';
 
         $query->join($tagsTable, $tagsTable . '.taggable_id', 'merchants.id')
-            ->where($tagsTable . '.taggable_type', '=', E::MERCHANT)
-            ->whereIn($tagsTable . '.tag_slug', $tags)
-            ->distinct();
+              ->where($tagsTable . '.taggable_type', '=', E::MERCHANT)
+              ->whereIn($tagsTable . '.tag_slug', $tags)
+              ->distinct();
+    }
+
+    /**
+     * Select merchants from the query that do not have requested tags
+     *
+     * @param $query
+     * @param $params
+     *
+     * @return void
+     */
+    public function addQueryParamWithoutTags($query, $params): void
+    {
+        $tags = $params[Constants::WITHOUT_TAGS];
+
+        $tags = array_unique(array_map('mb_strtolower', array_map('str_slug', $tags)));
+
+        $tagsTable = 'tagging_tagged';
+
+        $query->whereNotIn(
+            'merchants.id',
+            function($query)
+            use ($tags, $tagsTable) {
+                $query->select($tagsTable . '.taggable_id')
+                      ->from($tagsTable)
+                      ->where($tagsTable . '.taggable_type', '=', E::MERCHANT)
+                      ->whereIn($tagsTable . '.tag_slug', $tags);
+            });
     }
 
     protected function validateAccountStatus($attribute, $value)
@@ -603,7 +638,7 @@ class Repository extends Base\Repository
 
     public function fetchReferredMerchants($merchantId)
     {
-        $tag = "ref-$merchantId";
+        $tag = Constants::PARTNER_REFERRAL_TAG_PREFIX.$merchantId;
 
         return $this->newQuery()
                     ->select(
@@ -869,12 +904,13 @@ class Repository extends Base\Repository
      * If the submerchant belongs to a non pure platform type partner,
      *      $appId should be the id of the internal partner app created.
      *
-     * @param string $submerchantId
-     * @param string $appId
+     * @param string     $submerchantId
+     * @param string     $appId
+     * @param array|null $params
      *
      * @return Entity
      */
-    public function findSubmerchantByIdAndConnectedAppId(string $submerchantId, string $appId): Entity
+    public function findSubmerchantByIdAndConnectedAppId(string $submerchantId, string $appId, array $params = null): Entity
     {
         //
         // To make use of existing function (buildQueryToFetchSubmerchantsByAppIds) which uses an array for appIds,
@@ -883,10 +919,15 @@ class Repository extends Base\Repository
         $appIds         = [$appId];
         $submerchantIds = [$submerchantId];
 
-        $submerchant = $this->buildQueryToFetchSubmerchantsByAppIds($appIds, $submerchantIds)
-                            ->firstOrFail();
+        $query = $this->buildQueryToFetchSubmerchantsByAppIds($appIds, $submerchantIds);
 
-        return $submerchant;
+        $this->buildQueryWithParams($query, $params);
+
+        $query->orderBy(Table::MERCHANT . '.' . Entity::CREATED_AT, 'desc')
+              ->orderBy(Table::MERCHANT . '.' . Entity::ID, 'desc');
+
+        return $query->firstOrFailPublic();
+
     }
 
     /**

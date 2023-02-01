@@ -153,6 +153,24 @@ class Core extends Base\Core
 
     const DEFAULT_IP_WHITELIST = '*';
 
+    /**
+     * @var CapitalSubmerchantUtility
+     */
+    protected CapitalSubmerchantUtility $capitalSubmerchantUtility;
+
+    /**
+     * @return CapitalSubmerchantUtility
+     */
+    protected function capitalSubmerchantUtility(): CapitalSubmerchantUtility
+    {
+        if(empty($this->capitalSubmerchantUtility) === true)
+        {
+            $this->capitalSubmerchantUtility = new CapitalSubmerchantUtility();
+        }
+
+        return $this->capitalSubmerchantUtility;
+    }
+
     public function create($input, $merchantDetailInputData = [])
     {
         (new UserCore())->validateAccountCreation(array_merge($input,$merchantDetailInputData));
@@ -3961,11 +3979,12 @@ class Core extends Base\Core
      * fully managed and aggregator type partners. The aggregator type will not get mapped
      * in the future, it is only kept for backward compatibility.
      *
-     * @param Entity $partner
-     * @param Entity $submerchant
+     * @param Entity      $partner
+     * @param Entity      $submerchant
      *
-     * @param null $appType
-     * @param string $role Defined in RZP\Models\User\Role
+     * @param null        $appType
+     * @param string|null $role
+     *
      * @return array
      * @throws BadRequestException
      * @throws Throwable
@@ -4443,7 +4462,7 @@ class Core extends Base\Core
     {
         $existingTags = $account->tagNames();
 
-        $refTag = 'ref-' . $aggregratorMerchant->getId();
+        $refTag = Constants::PARTNER_REFERRAL_TAG_PREFIX . $aggregratorMerchant->getId();
 
         if (in_array(strtolower($refTag), array_map('strtolower', $existingTags)) === true)
         {
@@ -4662,7 +4681,7 @@ class Core extends Base\Core
 
     protected function removeSubMerchantReferralTag(Entity $merchant, string $partnerId): array
     {
-        $tag = 'ref-' . $partnerId;
+        $tag = Constants::PARTNER_REFERRAL_TAG_PREFIX . $partnerId;
 
         $tags = $this->deleteTag($merchant->getPublicId(), $tag);
 
@@ -4712,8 +4731,8 @@ class Core extends Base\Core
                     ErrorCode::BAD_REQUEST_MISSING_APPLICATION_ID,
                     AccessMap\Entity::APPLICATION_ID,
                     [
-                        Entity::ID                => $partner->getId(),
-                        Entity::PARTNER_TYPE      => $partner->getPartnerType(),
+                        Entity::ID           => $partner->getId(),
+                        Entity::PARTNER_TYPE => $partner->getPartnerType(),
                     ]);
             }
 
@@ -4731,17 +4750,46 @@ class Core extends Base\Core
             $appId = $accessMaps->first()->getEntityId();
         }
 
-        $merchant = $this->repo->merchant->findSubmerchantByIdAndConnectedAppId($submerchantId, $appId);
+        $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
+
+        $actualProduct = $product;
+
+        $params = array();
+
+        if ($this->capitalSubmerchantUtility()->isCapitalPartnershipEnabledForPartner($partner->getId()) === true)
+        {
+            if ($product === Product::CAPITAL)
+            {
+                $product                 = Product::BANKING;
+                $params[ENTITY::PRODUCT] = Product::BANKING;
+                $params[Constants::TAGS] = [Constants::CAPITAL_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+            }
+            else
+            {
+                $params[ENTITY::PRODUCT] = $product;
+                $params[Constants::WITHOUT_TAGS] = [Constants::CAPITAL_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::PARTNER_FETCH_SUBMERCHANT_BY_ID_REQUEST,
+            [
+                "input"            => $input,
+                "product"          => $product,
+                "actual_product"   => $actualProduct,
+                "submerchant_id"   => $submerchantId
+            ],
+        );
+
+        $merchant = $this->repo->merchant->findSubmerchantByIdAndConnectedAppId($submerchantId, $appId, $params);
 
         $partnerUser = $partner->primaryOwner();
-
-        $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
 
         $merchant = $this->getPartnerSubmerchantData($merchant, $partner, $partnerUser, $product);
 
         $products = $this->fetchProductForMerchants([$merchant->getId()]);
 
-        if(count($products) > 0)
+        if (count($products) > 0)
         {
             $merchant[Entity::PRODUCT] = $products;
         }
@@ -4886,12 +4934,31 @@ class Core extends Base\Core
 
         $appIds = $this->getPartnerApplicationIds($partner);
 
-        $this->trace->info(TraceCode::PARTNER_FETCH_SUBMERCHANTS,
-                           [
-                               'partner_id' => $partner->getId(),
-                               'app_ids'    => $appIds,
-                               'params'     => $params,
-                           ]);
+        $product = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
+
+        if ($this->capitalSubmerchantUtility()->isCapitalPartnershipEnabledForPartner($partner->getId()) === true)
+        {
+            if ($product === Product::CAPITAL)
+            {
+                $product                 = Product::BANKING;
+                $params[ENTITY::PRODUCT] = Product::BANKING;
+                $params[Constants::TAGS] = [Constants::CAPITAL_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+            }
+            else
+            {
+                $params[Constants::WITHOUT_TAGS] = [Constants::CAPITAL_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::PARTNER_FETCH_SUBMERCHANTS,
+            [
+                'partner_id' => $partner->getId(),
+                'app_ids'    => $appIds,
+                'params'     => $params,
+                'product'    => $product,
+            ]
+        );
 
         if ((empty($params[MerchantApplications\Entity::TYPE]) === false) and (empty($appIds) === false))
         {
@@ -4915,8 +4982,6 @@ class Core extends Base\Core
 
         $applyProductFilter = array_key_exists(ENTITY::PRODUCT, $params);
 
-        $product = $params[ENTITY::PRODUCT] ?? Product::PRIMARY;
-
         $checkingProductUsage = array_key_exists(Constants::IS_USED, $params);
 
         $isExpEnabled = $this->isRazorxExperimentEnable($partner->getId(), RazorxTreatment::SUBMERCHANTS_FETCH_API_LATENCY_IMPROVE);
@@ -4925,7 +4990,7 @@ class Core extends Base\Core
 
         if ($applyProductFilter === true and ($isExpEnabled !== true or $checkingProductUsage === true))
         {
-            list($offset, $merchants) = Tracer::inspan(['name' => HyperTrace::FILTER_SUBMERCHANTS_ON_PRODUCT], function () use ($params, $appIds, $partner) {
+            list($offset, $merchants) = Tracer::inspan(['name' => HyperTrace::FILTER_SUBMERCHANTS_ON_PRODUCT], function() use ($params, $appIds, $partner) {
 
                 return $this->filterSubmerchantsOnProduct($params, $appIds, $partner->getId());
             });
@@ -4934,18 +4999,21 @@ class Core extends Base\Core
         {
             unset($params[Constants::IS_USED]);
 
-            $merchants = Tracer::inspan(['name' => HyperTrace::FETCH_SUBMERCHANTS_ON_APP_IDS], function () use ($params, $appIds, $partner) {
+            $merchants = Tracer::inspan(['name' => HyperTrace::FETCH_SUBMERCHANTS_ON_APP_IDS], function() use ($params, $appIds, $partner) {
 
                 return $this->repo->merchant->fetchSubmerchantsByAppIds($appIds, $params);
             });
         }
 
-        $this->trace->info(TraceCode::PARTNER_FETCH_SUBMERCHANTS_LIST,[
-            'partner_id'            => $partner->getId(),
-            'merchants'             => $merchants->getIds(),
-            'apply_product_filter'  => $applyProductFilter,
-            'product_usage'         => $checkingProductUsage
-        ]);
+        $this->trace->info(
+            TraceCode::PARTNER_FETCH_SUBMERCHANTS_LIST,
+            [
+                'partner_id'           => $partner->getId(),
+                'merchants'            => $merchants->getIds(),
+                'apply_product_filter' => $applyProductFilter,
+                'product_usage'        => $checkingProductUsage
+            ]
+        );
 
         $fetchSubMerchantsLatency = millitime() - $reqStartAt;
 
@@ -4968,11 +5036,8 @@ class Core extends Base\Core
         {
             $reqStartAt = millitime();
 
-            $merchants = $merchants->map(function($submerchant) use ($partnerUser, $product, $partner, $isExpEnabled)
-            {
-                return Tracer::inspan(['name' => HyperTrace::GET_PARTNER_SUBMERCHANT_DATA], function () use
-                ($submerchant, $partner, $partnerUser, $product, $isExpEnabled) {
-
+            $merchants = $merchants->map(function($submerchant) use ($partnerUser, $product, $partner, $isExpEnabled) {
+                return Tracer::inspan(['name' => HyperTrace::GET_PARTNER_SUBMERCHANT_DATA], function() use ($submerchant, $partner, $partnerUser, $product, $isExpEnabled) {
                     return $this->getPartnerSubmerchantData($submerchant, $partner, $partnerUser, $product, $isExpEnabled);
                 });
             });
@@ -4991,11 +5056,12 @@ class Core extends Base\Core
             );
         }
 
-        $this->trace->info(TraceCode::PARTNER_FETCH_SUBMERCHANTS_DATA,
+        $this->trace->info(
+            TraceCode::PARTNER_FETCH_SUBMERCHANTS_DATA,
             [
-                'partner_id'      => $partner->getId(),
-                'product'         => $product,
-                'merchants'       => $merchants->getIds()
+                'partner_id' => $partner->getId(),
+                'product'    => $product,
+                'merchants'  => $merchants->getIds()
             ]
         );
 
@@ -5253,7 +5319,7 @@ class Core extends Base\Core
      */
     protected function deleteAllSubmerchantRefTags(Base\PublicCollection $submerchants, Entity $partner)
     {
-        $tagName = 'ref-' . $partner->getId();
+        $tagName = Constants::PARTNER_REFERRAL_TAG_PREFIX . $partner->getId();
 
         foreach ($submerchants as $merchant)
         {

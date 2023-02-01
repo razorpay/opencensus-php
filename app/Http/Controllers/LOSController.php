@@ -135,7 +135,7 @@ class LOSController extends Controller
         return $response;
     }
 
-    protected function sendRequestAndParseResponse(
+    public function sendRequestAndParseResponse(
         string $url,
         array $body = [],
         array $headers = [],

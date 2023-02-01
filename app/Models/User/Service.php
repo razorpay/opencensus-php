@@ -790,7 +790,7 @@ class Service extends Base\Service
         if (empty($referrer) === false)
         {
             $tagInputData = [
-                'tags' => ['ref-' . $referrer],
+                'tags' => [Merchant\Constants::PARTNER_REFERRAL_TAG_PREFIX . $referrer],
             ];
 
             $this->merchantService->addTags($merchantData['id'], $tagInputData);

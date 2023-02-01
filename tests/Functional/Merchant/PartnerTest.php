@@ -52,15 +52,16 @@ class PartnerTest extends OAuthTestCase
     use CreateLegalDocumentsTrait;
     use TestsWebhookEvents;
 
-    const PARTNER                = 'partner';
-    const ACTIVATION             = 'activation';
-    const DEACTIVATION           = 'deactivation';
-    const DUMMY_APP_ID_1         = '8ckeirnw84ifke';
-    const DUMMY_APP_ID_2         = '10000RandomApp';
-    const DUMMY_APP_ID_3         = '11111RandomApp';
-    const DEFAULT_MERCHANT_ID    = '10000000000000';
-    const DEFAULT_SUBMERCHANT_ID = '10000000000009';
-    const RZP_ORG                = '100000razorpay';
+    const PARTNER                  = 'partner';
+    const ACTIVATION               = 'activation';
+    const DEACTIVATION             = 'deactivation';
+    const DUMMY_APP_ID_1           = '8ckeirnw84ifke';
+    const DUMMY_APP_ID_2           = '10000RandomApp';
+    const DUMMY_APP_ID_3           = '11111RandomApp';
+    const DEFAULT_MERCHANT_ID      = '10000000000000';
+    const DEFAULT_SUBMERCHANT_ID   = '10000000000009';
+    const DEFAULT_SUBMERCHANT_ID_2 = '10000000000010';
+    const RZP_ORG                  = '100000razorpay';
 
     protected function setUp(): void
     {
@@ -3551,6 +3552,35 @@ class PartnerTest extends OAuthTestCase
 
     }
 
+    protected function createResellerApp()
+    {
+        $app = Application\Entity::factory()->create(
+            [
+                'id'          => random_integer(10),
+                'merchant_id' => self::DEFAULT_MERCHANT_ID,
+                'type'        => Merchant\Constants::PARTNER
+            ]
+        );
+
+        $this->createMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::RESELLER, $app->getId());
+
+        return $app;
+
+    }
+
+    protected function createMerchantAccessMap(string $appId, string $submerchantId)
+    {
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'id'          => random_integer(14),
+                'entity_type' => 'application',
+                'entity_id'   => $appId,
+                'merchant_id' => $submerchantId,
+            ]
+        );
+    }
+
     public function createResellerPartnerSubmerchant()
     {
         $merchantId = self::DEFAULT_MERCHANT_ID;
@@ -3567,13 +3597,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
-        $app = Application\Entity::factory()->create([
-                                                              'id' => random_integer(10),
-                                                              'merchant_id' => self::DEFAULT_MERCHANT_ID,
-                                                              'type' => 'partner'
-                                                          ]);
-
-        $this->createMerchantApplication($app->merchant_id, 'reseller', $app->getId());
+        $app = $this->createResellerApp();
 
         $this->fixtures->on('test')->create('merchant_detail:sane',[
             'merchant_id' => $app->merchant_id,
@@ -3595,15 +3619,7 @@ class PartnerTest extends OAuthTestCase
         $this->fixtures->on('test')->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['name' => 'submerchant']);
         $this->fixtures->on('live')->edit('merchant', self::DEFAULT_SUBMERCHANT_ID, ['name' => 'submerchant']);
 
-        $this->fixtures->create(
-            'merchant_access_map',
-            [
-                'id'          => 'IBb9OU2WPuCC29',
-                'entity_type' => 'application',
-                'entity_id'   => $app->getId(),
-                'merchant_id' => self::DEFAULT_SUBMERCHANT_ID,
-            ]
-        );
+        $this->createMerchantAccessMap($app->getId(), self::DEFAULT_SUBMERCHANT_ID);
     }
 
     private function mockSalesForce(string $method, int $count)
@@ -3638,5 +3654,221 @@ class PartnerTest extends OAuthTestCase
 
         $this->app->razorx->method('getTreatment')
             ->willReturn('on');
+    }
+
+    protected function mockCapitalPartnershipSplitzExperiment()
+    {
+        $input = [
+            "experiment_id" => "L0rynez0HhIXHb",
+            "id" => self::DEFAULT_MERCHANT_ID,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($input, $output);
+
+    }
+
+    protected function createResellerPartnerAndAddBankingSubmerchants()
+    {
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, [
+            'partner_type' => Merchant\Constants::RESELLER,
+            'email'        => 'test@example.com',
+        ]);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID_2]);
+
+        $app = $this->createResellerApp();
+
+        $this->createMerchantAccessMap($app->getId(), self::DEFAULT_SUBMERCHANT_ID);
+        $this->createMerchantAccessMap($app->getId(), self::DEFAULT_SUBMERCHANT_ID_2);
+
+        $this->fixtures->user->createBankingUserForMerchant(self::DEFAULT_SUBMERCHANT_ID);
+        $this->fixtures->user->createBankingUserForMerchant(self::DEFAULT_SUBMERCHANT_ID_2);
+
+    }
+
+    protected function markBankingSubmerchantAsCapitalSubmerchant(string $merchantId)
+    {
+        $submerchant = $this->getDbEntityById('merchant', $merchantId, 'live');
+        (new Merchant\Core())->appendTag($submerchant, 'capital-cc-submerchant-'.self::DEFAULT_MERCHANT_ID);
+    }
+
+    /**
+     * Given: A partner
+     * When: Partner fetches submerchants with an invalid product, i.e., not one of primary, banking or capital
+     * Then: Partner receives a 400 bad request
+     *
+     * @return void
+     */
+    public function testFetchPartnerSubmerchantsWithInvalidProduct(): void
+    {
+        $this->createResellerPartnerAndAddBankingSubmerchants();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+    }
+
+    /**
+     * Given: A partner whitelisted under partnership for capital experiment with 2 capital submerchants
+     * When: Partner fetches capital submerchants
+     * Then: Partner should receive 2 capital submerchant
+     *
+     * @return void
+     */
+    public function testFetchPartnerSubmerchantsForCapital(): void
+    {
+        $this->createResellerPartnerAndAddBankingSubmerchants();
+
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID);
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID_2);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+    }
+
+    /**
+     * Given: A partner whitelisted under partnership for capital experiment with 2 capital submerchants
+     * When: Partner fetches capital submerchant by its ID
+     * Then: Partner should receive 1 capital submerchant with that ID
+     *
+     * @return void
+     */
+    public function testFetchPartnerSubmerchantsForCapitalById(): void
+    {
+        $this->createResellerPartnerAndAddBankingSubmerchants();
+
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID);
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID_2);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/submerchants/' . PartnerTest::DEFAULT_SUBMERCHANT_ID;
+
+        $testData['response']['content'] = [
+            'id'     => 'acc_' . PartnerTest::DEFAULT_SUBMERCHANT_ID,
+            'entity' => 'merchant',
+        ];
+
+        $this->startTest($testData);
+
+        $testData['request']['url'] = '/submerchants/' . PartnerTest::DEFAULT_SUBMERCHANT_ID_2;
+
+        $testData['response']['content'] = [
+            'id'     => 'acc_' . PartnerTest::DEFAULT_SUBMERCHANT_ID_2,
+            'entity' => 'merchant',
+        ];
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Given: A partner whitelisted under partnership for capital experiment with 2 capital submerchants
+     * When: Partner fetches capital submerchant by its ID
+     * Then: Partner should receive 1 capital submerchant with that ID
+     *
+     * @return void
+     */
+    public function testFetchPartnerSubmerchantsForCapitalByBankingSubmerchantId(): void
+    {
+        $this->createResellerPartnerAndAddBankingSubmerchants();
+
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/submerchants/' . PartnerTest::DEFAULT_SUBMERCHANT_ID_2;
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Given: A partner NOT whitelisted under partnership for capital experiment with 2 banking submerchant
+     * When: Partner fetches capital submerchants
+     * Then: Partner should receive 0 submerchants
+     *
+     * @return void
+     */
+    public function testFetchPartnerSubmerchantsForCapitalWhenPartnerNotEligible(): void
+    {
+        $this->createResellerPartnerAndAddBankingSubmerchants();
+
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID);
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID_2);
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Given: A partner whitelisted under partnership for capital experiment with 1 capital and 1 banking submerchant
+     * When: Partner fetches banking submerchants
+     * Then: Partner should receive 1 banking submerchant
+     *
+     * @return void
+     */
+    public function testFetchPartnerBankingSubmerchantsForCapital(): void
+    {
+        $this->createResellerPartnerAndAddBankingSubmerchants();
+
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Given: A partner whitelisted under partnership for capital experiment with 1 capital and 1 banking submerchant
+     * When: Partner fetches capital submerchants
+     * Then: Partner should receive 1 capital submerchant
+     *
+     * @return void
+     */
+    public function testFetchPartnerSubmerchantsForCapitalBankingSubmerchantsAlsoPresent(): void
+    {
+        $this->createResellerPartnerAndAddBankingSubmerchants();
+
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $this->mockRazorxTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 }

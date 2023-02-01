@@ -59,6 +59,7 @@ use RZP\Notifications\AdminDashboard\Handler;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\BankingAccount as BankingAccount;
 use RZP\Models\Workflow\Action as WorkflowAction;
+use RZP\Models\Merchant\CapitalSubmerchantUtility;
 use \RZP\Models\State\Entity as StateChangeEntity;
 use RZP\Models\Transaction\CreditType as CreditType;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -1994,16 +1995,61 @@ class Service extends Base\Service
 
         $referral = (new Referral\Core)->fetchReferralByReferralCode($refCode);
 
-        $referralProduct = optional($referral)->getProduct() ?? Product::PRIMARY;
+        if (empty($referral) === true)
+        {
+            unset($input[Entity::REFERRAL_CODE]);
+
+            return;
+        }
+
+        $referralProduct = $referral->getProduct() ?? Product::PRIMARY;
+
+        if ($referralProduct == Product::CAPITAL)
+        {
+            $actualReferralProduct = $referralProduct;
+
+            $referralProduct = Product::BANKING;
+
+            $this->trace->info(
+                TraceCode::PARTNER_REFERRAL_FOR_CAPITAL,
+                [
+                    "referral_code"           => $refCode,
+                    "referral_product"        => $referralProduct,
+                    "actual_referral_product" => $actualReferralProduct,
+                    "partner_id"              => $referral->getMerchantId(),
+                    "submerchant_id"          => $subMerchant->getId(),
+                ]
+            );
+
+            if ((new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($referral->getMerchantId()) === false)
+            {
+                unset($input[Entity::REFERRAL_CODE]);
+
+                return;
+            }
+
+            $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
+
+            CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant($partner, $subMerchant);
+
+            CapitalSubmerchantUtility::createCapitalApplicationForSubmerchant(
+                $subMerchant,
+                [
+                    Constants::LEAD_SOURCE    => "Partner",
+                    Constants::LEAD_SOURCE_ID => $partner->getId(),
+                    Constants::SOURCE_DETAILS => $partner->getName(),
+                    Constants::PRODUCT_ID     => Constants::CAPITAL_CORPORATE_CARD_PRODUCT_ID
+                ]
+            );
+        }
 
         $requestProduct = $this->auth->getRequestOriginProduct();
 
-        if (empty($referral) === false and
-            ($referralProduct === $requestProduct))
+        if ($referralProduct === $requestProduct)
         {
             $mappingInput = [
-                'partner_id' => $referral[Referral\Entity::MERCHANT_ID],
-                'source' => PartnerConstants::REFERRAL
+                'partner_id' => $referral->getMerchantId(),
+                'source'     => PartnerConstants::REFERRAL
             ];
 
             $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, $referralProduct);

@@ -191,7 +191,7 @@ class Validator extends Base\Validator
         Entity::NAME                    => 'filled|string|max:255',
         Entity::FILE                    => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE,
         Entity::FILE_ID                 => 'required_without:file|public_id',
-        Entity::CONFIG                  => 'required|array',
+        Entity::CONFIG                  => 'sometimes|array',
     ];
 
     protected static $partnerReferralFetchCreateRules = [

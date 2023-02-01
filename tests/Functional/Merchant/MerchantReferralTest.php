@@ -6,7 +6,11 @@ use DB;
 use App;
 use Mail;
 use Event;
+use Throwable;
 use RZP\Services\Elfin;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
+use RZP\Constants\Product;
 use RZP\Models\Merchant\Referral;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -278,5 +282,237 @@ class MerchantReferralTest extends OAuthTestCase
         ];
 
         $this->mockAllSplitzTreatment($output);
+    }
+
+    /**
+     * Asserts that the function returns the expected capital Referral Entity as well
+     * for a particular merchant whitelisted for the capital partnership experiment
+     * @return void
+     */
+    public function testCreateOrFetchMerchantReferralPartnerEligibleForCapital(): void
+    {
+        $input = [
+            'experiment_id' => 'L0rynez0HhIXHb',
+            'id'            => Constants::DEFAULT_MERCHANT_ID,
+        ];
+
+        $output = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::RESELLER
+            ]
+        );
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $bankingReferral = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => Constants::DEFAULT_MERCHANT_ID,
+                'product'     => Product::BANKING,
+            ],
+            Mode::LIVE
+        );
+
+        $capitalReferral = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => Constants::DEFAULT_MERCHANT_ID,
+                'product'     => Product::CAPITAL,
+            ],
+            Mode::LIVE
+        );
+
+        $pgReferral = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => Constants::DEFAULT_MERCHANT_ID,
+                'product'     => Product::PRIMARY,
+            ],
+            Mode::LIVE
+        );
+
+        $this->assertEquals($response['referrals']['primary']['ref_code'], $pgReferral->getReferralCode());
+        $this->assertEquals($response['referrals']['banking']['ref_code'], $bankingReferral->getReferralCode());
+        $this->assertEquals($response['referrals']['capital']['ref_code'], $capitalReferral->getReferralCode());
+
+        $this->assertEquals($response['referrals']['primary']['url'], $pgReferral->getReferralLink());
+        $this->assertEquals($response['referrals']['banking']['url'], $bankingReferral->getReferralLink());
+        $this->assertEquals($response['referrals']['capital']['url'], $capitalReferral->getReferralLink());
+    }
+
+    /**
+     * Asserts that the function does not return capital Referral Entity
+     * for a particular merchant NOT whitelisted for the capital partnership experiment
+     *
+     * @return void
+     */
+    public function testCreateOrFetchMerchantReferralPartnerNotEligibleForCapital(): void
+    {
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::RESELLER
+            ]
+        );
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $bankingReferral = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => Constants::DEFAULT_MERCHANT_ID,
+                'product'     => Product::BANKING,
+            ],
+            Mode::LIVE
+        );
+
+        $pgReferral = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => Constants::DEFAULT_MERCHANT_ID,
+                'product'     => Product::PRIMARY,
+            ],
+            Mode::LIVE
+        );
+
+        $this->assertEquals($response['referrals']['primary']['ref_code'], $pgReferral->getReferralCode());
+        $this->assertEquals($response['referrals']['banking']['ref_code'], $bankingReferral->getReferralCode());
+
+        $this->assertEquals($response['referrals']['primary']['url'], $pgReferral->getReferralLink());
+        $this->assertEquals($response['referrals']['banking']['url'], $bankingReferral->getReferralLink());
+
+        $this->assertArrayNotHasKey('capital', $response['referrals']);
+    }
+
+    /**
+     * Asserts that the function regenerates capital Referral as well
+     * for a particular merchant whitelisted for the capital partnership experiment
+     *
+     * @return void
+     * @throws Throwable
+     */
+    public function testRegenerateReferralLinksForCapital(): void
+    {
+        $input = [
+            'experiment_id' => 'L0rynez0HhIXHb',
+            'id'            => Constants::DEFAULT_MERCHANT_ID,
+        ];
+
+        $output = [
+            'response' => [
+                'variant' => [
+                    'name' => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::RESELLER
+            ]
+        );
+
+        $this->fixtures->merchant->createDummyPartnerApp();
+
+        $merchantId = Constants::DEFAULT_MERCHANT_ID;
+
+        $testData = &$this->testData['testCreateOrFetchReferral'];
+
+        $app = App::getFacadeRoot();
+
+        $app['elfin'] = (new Elfin\Mock\Service($app['config'], $app['trace']));
+
+        $this->ba->proxyAuth();
+
+        $testData['request']['url'] = "/merchant/referral";
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $bankingReferral       = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => $merchantId,
+                'product'     => 'banking'
+            ],
+            'live'
+        );
+        $oldBankingReferralUrl = $bankingReferral['url'];
+
+        $pgReferral       = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => $merchantId,
+                'product'     => 'primary'
+            ],
+            'live'
+        );
+        $oldPgReferralUrl = $pgReferral['url'];
+
+        $capitalReferral       = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => $merchantId,
+                'product'     => 'capital'
+            ],
+            'live'
+        );
+        $oldCapitalReferralUrl = $capitalReferral['url'];
+
+        $partners = $this->getDbEntities('merchant', ['id' => $merchantId]);
+
+        (new Referral\Core())->regenerate($partners);
+
+        $newPgReferral      = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => $merchantId,
+                'product'     => Product::PRIMARY,
+            ],
+            Mode::LIVE
+        );
+
+        $newBankingReferral = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => $merchantId,
+                'product'     => Product::BANKING,
+            ],
+            Mode::LIVE
+        );
+
+        $newCapitalReferral = $this->getDbEntity(
+            'referrals',
+            [
+                'merchant_id' => $merchantId,
+                'product'     => Product::CAPITAL,
+            ],
+            Mode::LIVE
+        );
+
+        $this->assertNotEquals($oldBankingReferralUrl, $newBankingReferral['url']);
+        $this->assertNotEquals($oldPgReferralUrl, $newPgReferral['url']);
+        $this->assertNotEquals($oldCapitalReferralUrl, $newCapitalReferral['url']);
     }
 }

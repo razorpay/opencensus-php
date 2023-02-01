@@ -37,7 +37,7 @@ trait MocksSplitz
     {
         if ($this->splitzMock === null)
         {
-            $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+            $this->splitzMock = Mockery::mock(SplitzService::class, [$this->app])->makePartial();
 
             $this->app->instance('splitzService', $this->splitzMock);
         }

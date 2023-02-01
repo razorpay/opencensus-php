@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Referral;
 
+use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\Tracer;
@@ -12,6 +13,7 @@ use RZP\Constants\Product;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Merchant\CapitalSubmerchantUtility;
 
 class Core extends Base\Core
 {
@@ -27,6 +29,28 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->elfin = $this->app['elfin'];
+    }
+
+    /**
+     * @return array[]
+     */
+    protected function getReferralConfig(): array
+    {
+        return [
+            Product::PRIMARY => [
+                "url"    => $this->config['applications.dashboard.url'],
+                "params" => [
+                    "referral_code" => null,
+                ]
+            ],
+            Product::BANKING => [
+                "url"    => $this->config['applications.banking_service_url'] . '/auth/',
+                "params" => [
+                    "referral_code" => null,
+                ]
+            ],
+        ];
+
     }
 
     /**
@@ -118,23 +142,22 @@ class Core extends Base\Core
 
     /**
      * Create Short url for merchant referral
+     * & append the url params
      *
-     * @param $refCode
-     * @param $dashboardUrl
+     * @param      $dashboardUrl
+     * @param null $urlParams
      *
      * @return String
      */
-    public function createShortenReferralUrl($refCode, $dashboardUrl): String
+    public function createShortenReferralUrl(string $dashboardUrl, array $urlParams = []): string
     {
         // Adds type label & dashboard path for referral.
 
-        $longUrl = $dashboardUrl . "signup?referral_code=";
+        $longUrl = $dashboardUrl . "signup?";
 
-        $longUrl = $longUrl . $refCode;
+        $longUrl = $longUrl . http_build_query($urlParams);
 
-        $shortenUrl = $this->elfin->shorten($longUrl);
-
-        return $shortenUrl;
+        return $this->elfin->shorten($longUrl);
     }
 
     /**
@@ -148,12 +171,29 @@ class Core extends Base\Core
     {
         $referrals = $this->repo->referrals->getReferralByMerchantId($merchant->getId());
 
-        $productConfig = array( Product::PRIMARY => $this->config['applications.dashboard.url'],
+        $productConfig = $this->getReferralConfig();
 
-                                Product::BANKING => $this->config['applications.banking_service_url'] . '/auth/');
+        $isExpEnabled = (new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($merchant->getId());
 
+        if ($isExpEnabled === true)
+        {
+            $this->trace->info(
+                TraceCode::PARTNER_REFERRAL_LINK_FOR_CAPITAL,
+                [
+                    "partner_id" => $merchant->getId(),
+                ]
+            );
 
-        $referrals = Tracer::inspan(['name' => HyperTrace::CREATE_REFERRAL_CORE], function () use($referrals, $merchant, $productConfig) {
+            $productConfig[Product::CAPITAL] = [
+                "url"    => $this->config['applications.banking_service_url'] . '/auth/',
+                "params" => [
+                    "referral_code" => null,
+                    "intent"        => Merchant\Attribute\Type::CORPORATE_CARDS,
+                ]
+            ];
+        }
+
+        $referrals = Tracer::inspan(['name' => HyperTrace::CREATE_REFERRAL_CORE], function() use ($referrals, $merchant, $productConfig) {
 
             if (empty($referrals) === true)
             {
@@ -174,27 +214,32 @@ class Core extends Base\Core
 
     /**
      * @param Merchant\Entity $merchant
-     * @param $productConfig
+     * @param array           $productConfigList
      *
      * @return array
      */
-    protected function create(Merchant\Entity $merchant, $productConfig)
+    protected function create(Merchant\Entity $merchant, array $productConfigList): array
     {
         // Calling this before the get call below to avoid calling validator
         // explicitly as build method will call it. The following get is to
 
         $newReferrals = [];
 
-        foreach($productConfig as $product => $dashboardUrl)
+        foreach ($productConfigList as $product => $productConfig)
         {
-            $refCode = Tracer::inspan(['name' => HyperTrace::GENERATE_REFERRAL_CODE], function () use($merchant) {
+            $refCode = Tracer::inspan(['name' => HyperTrace::GENERATE_REFERRAL_CODE], function() use ($merchant) {
 
                 return $this->generateReferralCode($merchant);
             });
 
             $input[Entity::REF_CODE] = $refCode;
 
-            $shortenUrl = $this->createShortenReferralUrl($refCode, $dashboardUrl);
+            $productConfig["params"]["referral_code"] = $refCode;
+
+            $shortenUrl = $this->createShortenReferralUrl(
+                $productConfig["url"],
+                $productConfig["params"]
+            );
 
             $input[Entity::URL] = $shortenUrl;
 
@@ -213,11 +258,13 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($newReferral);
 
-            $this->trace->count(Metric::MERCHANT_REFERRAL_CREATE_SUCCESS_TOTAL,
-                               [
-                                   'product' => $product,
-                                   'partner_type' => $merchant->getPartnerType()
-                               ]);
+            $this->trace->count(
+                Metric::MERCHANT_REFERRAL_CREATE_SUCCESS_TOTAL,
+                [
+                    'product'      => $product,
+                    'partner_type' => $merchant->getPartnerType()
+                ]
+            );
 
             $newReferrals[$product] = $newReferral->toArrayPublic();
         }
@@ -269,39 +316,56 @@ class Core extends Base\Core
         return $referrals->first();
     }
 
-    public function regenerate(PublicCollection $partners)
+    /**
+     * @param PublicCollection $partners
+     *
+     * @return void
+     * @throws Throwable
+     */
+    public function regenerate(PublicCollection $partners): void
     {
-        $productConfig = array( Product::PRIMARY => $this->config['applications.dashboard.url'],
+        $productConfig = $this->getReferralConfig();
 
-                                Product::BANKING => $this->config['applications.banking_service_url'] . '/auth/');
+        $productConfig[Product::CAPITAL] = [
+            "url"    => $this->config['applications.banking_service_url'] . '/auth/',
+            "params" => [
+                "referral_code" => null,
+                "intent"        => Merchant\Attribute\Type::CORPORATE_CARDS,
+            ]
+        ];
 
-        $this->repo->transactionOnLiveAndTest(function() use($partners, $productConfig) {
+        $this->repo->transactionOnLiveAndTest(function() use ($partners, $productConfig) {
 
             $ids = $partners->pluck(Entity::ID)->toArray();
 
             $oldReferrals = $this->repo->referrals->getReferralsByMerchantIds($ids);
 
-            foreach($oldReferrals as $referral)
+            foreach ($oldReferrals as $referral)
             {
                 $refCode = $referral->getReferralCode();
 
                 $oldUrl = $referral->getReferralLink();
 
-                $dashboardUrl = $productConfig[$referral->getProduct()];
+                $productConfig[$referral->getProduct()]["params"]["referral_code"] = $refCode;
 
-                $newShortUrl = $this->createShortenReferralUrl($refCode, $dashboardUrl);
+                $newShortUrl = $this->createShortenReferralUrl(
+                    $productConfig[$referral->getProduct()]["url"],
+                    $productConfig[$referral->getProduct()]["params"]
+                );
 
                 $referral[Entity::URL] = $newShortUrl;
 
                 $this->repo->saveOrFail($referral);
 
-                $this->trace->info(TraceCode::PARTNER_REFERRAL_LINK_REGENERATE,
-                                   [
-                                       'partner_id' => $referral->getMerchantId(),
-                                       'product'    => $referral->getProduct(),
-                                       'new_url'    => $referral->getReferralLink(),
-                                       'old_url'    => $oldUrl,
-                                   ]);
+                $this->trace->info(
+                    TraceCode::PARTNER_REFERRAL_LINK_REGENERATE,
+                    [
+                        'partner_id' => $referral->getMerchantId(),
+                        'product'    => $referral->getProduct(),
+                        'new_url'    => $referral->getReferralLink(),
+                        'old_url'    => $oldUrl,
+                    ]
+                );
 
             }
         });

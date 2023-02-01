@@ -2074,5 +2074,163 @@ return [
         'response' => [
             'content' => []
         ]
-    ]
+    ],
+
+    'testFetchPartnerSubmerchantsWithInvalidProduct' => [
+        'request'   => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'product' => 'corporatecard',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    "code"        => "BAD_REQUEST_ERROR",
+                    "description" => "The selected product is invalid.",
+                    "source"      => "business",
+                    "step"        => "payment_initiation",
+                    "reason"      => "input_validation_failed",
+                    "metadata"    => [],
+                    "field"       => "product",
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsForCapital' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'product' => 'capital',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'id'     => 'acc_10000000000010',
+                        'entity' => 'merchant',
+                    ],
+                    [
+                        'id'     => 'acc_10000000000009',
+                        'entity' => 'merchant',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsForCapitalById' => [
+        'request'  => [
+            'url'     => '/submerchants/{id}',
+            'method'  => 'GET',
+            'content' => [
+                'product' => 'capital',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => 'acc_10000000000010',
+                'entity' => 'merchant',
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsForCapitalWhenPartnerNotEligible' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'product' => 'capital',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count'  => 0,
+                'entity' => 'collection',
+                'items'  => [],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerBankingSubmerchantsForCapital' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'product' => 'banking',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'acc_10000000000010',
+                        'entity' => 'merchant',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsForCapitalBankingSubmerchantsAlsoPresent' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'GET',
+            'content' => [
+                'product' => 'capital',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'id'     => 'acc_10000000000009',
+                        'entity' => 'merchant',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchPartnerSubmerchantsForCapitalByBankingSubmerchantId' => [
+        'request'   => [
+            'url'     => '/submerchants/{id}',
+            'method'  => 'GET',
+            'content' => [
+                'product' => 'capital',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'No db records found.',
+                    'source'      => 'NA',
+                    "step"        => 'NA',
+                    'reason'      => 'NA',
+                    'metadata'    => []
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ],
+    ],
 ];

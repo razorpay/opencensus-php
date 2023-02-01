@@ -185,4 +185,28 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR,
         ],
     ],
+
+    'testCreateOrFetchMerchantReferralPartnerEligibleForCapital' => [
+        'request'  => [
+            'url'    => '/merchant/referral',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+            ],
+        ],
+    ],
+
+    'testCreateOrFetchMerchantReferralPartnerNotEligibleForCapital' => [
+        'request'  => [
+            'url'    => '/merchant/referral',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+            ],
+        ],
+    ],
 ];

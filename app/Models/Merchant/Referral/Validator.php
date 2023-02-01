@@ -12,7 +12,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::REF_CODE => 'required|string|max:14',
         Entity::URL      => 'sometimes|string|nullable',
-        Entity::PRODUCT  => 'required|string|in:primary,banking',
+        Entity::PRODUCT  => 'required|string|in:primary,banking,capital',
     ];
 
     protected static $editRules = [

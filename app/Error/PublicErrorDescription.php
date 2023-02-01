@@ -1124,6 +1124,8 @@ class PublicErrorDescription
     const BAD_REQUEST_PARTNER_ADD_MINIMUM_SUBM                                      = 'please add minimum of 3 subMerchants to view the invoices';
     const BAD_REQUEST_MERCHANT_FORM_UNDER_NEEDS_CLARIFICATION                       = 'Cannot save partner form details since merchant form is under needs clarification';
 
+    const BAD_REQUEST_ADDED_SUBMERCHANT_BUT_CC_APPLICATION_NOT_CREATED              = 'Capital sub-merchant has been added but corporate card application could not be created. Please contact support.';
+
     // Free payout
     const BAD_REQUEST_FREE_PAYOUT_SUPPORTED_MODES_ARRAY_DUPLICATE_VALUE         = 'Value in free payout supported modes array is duplicate.';
     const BAD_REQUEST_FREE_PAYOUT_UPDATE_ANOTHER_OPERATION_IN_PROGRESS          = 'Request failed because another operation is in progress';

@@ -80,7 +80,18 @@ final class Constants
     const FULLY_MANAGED                           = 'fully_managed';
     const PURE_PLATFORM                           = 'pure_platform';
     const PARTNER_INTENT                          = 'partner_intent';
+    const PARTNER_REFERRAL_TAG_PREFIX             = 'ref-';
     const TRANSLATE_WEBHOOK_GATEWAY               = 'translate_webhook_gateway';
+    const CAPITAL_PARTNERSHIP_TAG_PREFIX          = 'capital-cc-submerchant-';
+    const CAPITAL_CORPORATE_CARD_PRODUCT_ID       = 'EzKCyq0So3rVWU';
+    const CREATE_CAPITAL_APPLICATION_LOS_URL      = "twirp/rzp.capital.los.origination.v1.ApplicationAPI/CreateApplicationNew";
+
+    // Capital LOS CreateApplicationRequestNew payload fields
+    const TENURE                                  = "tenure";
+    const LEAD_SOURCE                             = "lead_source";
+    const LEAD_SOURCE_ID                          = "lead_source_id";
+    const SOURCE_DETAILS                          = "source_details";
+    const PRODUCT_ID                              = "product_id";
 
     const PENNY_TESTING_COUNT                     = 'penny_testing_count';
 
@@ -739,7 +750,8 @@ final class Constants
     const WHATSAPP_TEMPLATE      = 'whatsapp_template';
     const DASHBOARD_TEMPLATE_TAG = 'dashboard_template_tag';
 
-    const TAGS = 'tags';
+    const TAGS              = 'tags';
+    const WITHOUT_TAGS      = 'without_tags';
 
     // Bank LMS tag names
     const ENABLE_RBL_LMS_DASHBOARD = 'ENABLE_RBL_LMS_DASHBOARD';

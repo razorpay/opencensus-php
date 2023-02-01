@@ -32,6 +32,7 @@ use RZP\Constants\Product;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Merchant\Credits as FundCredits;
 use RZP\Models\Address;
+use RZP\Models\Batch\Header;
 use RZP\Models\Payment\Event;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Balance;
@@ -461,7 +462,7 @@ class Validator extends Base\Validator
         Constants::TO                     => 'integer',
         Constants::COUNT                  => 'integer|min:1|max:50',
         Constants::SKIP                   => 'integer',
-        ENTITY::PRODUCT                   => 'required_with:is_used|in:primary,banking',
+        Entity::PRODUCT                   => 'required_with:is_used|in:primary,banking,capital',
         Constants::IS_USED                => 'sometimes|in:0,1',
         Entity::MERCHANT_ID               => 'sometimes|array',
         MerchantApplications\Entity::TYPE => 'sometimes|string|in:managed,referred,oauth',
@@ -762,6 +763,47 @@ class Validator extends Base\Validator
     protected static $ipConfigCreateOrEditValidators = [
         'ip_whitelist_input'
     ];
+
+    protected static $partnerSubmerchantInviteCapitalRules = [
+        Detail\Entity::BUSINESS_NAME            => 'required|string|max:200',
+        Entity::EMAIL                           => 'required|email',
+        Entity::NAME                            => 'required|string|max:200',
+        Detail\Entity::CONTACT_MOBILE           => 'required|max:15|contact_syntax',
+        Header::ANNUAL_TURNOVER_MIN             => 'required|int|min:0',
+        Header::ANNUAL_TURNOVER_MAX             => 'required|int|min:0',
+        Detail\Entity::BUSINESS_TYPE            => 'sometimes|string',
+        Detail\Entity::PROMOTER_PAN             => 'sometimes|personalPan',
+        Header::BUSINESS_VINTAGE                => 'sometimes|string|in:UNKNOWN,LESS_THAN_3MONTHS,BETWEEN_3MONTHS_6MONTHS,BETWEEN_6MONTHS_12MONTHS,GREATER_THAN_12MONTHS',
+        Detail\Entity::GSTIN                    => 'sometimes|gstin',
+        Header::COMPANY_ADDRESS_LINE_1          => 'sometimes|string|max:255',
+        Header::COMPANY_ADDRESS_LINE_2          => 'sometimes|string|max:255',
+        Header::COMPANY_ADDRESS_CITY            => 'sometimes|string|max:255',
+        Header::COMPANY_ADDRESS_STATE           => 'sometimes|string|max:255',
+        Header::COMPANY_ADDRESS_COUNTRY         => 'sometimes|string|max:255',
+        Header::COMPANY_ADDRESS_PINCODE         => 'sometimes|string|max:255',
+        Entity::PRODUCT                         => 'required|in:capital'
+    ];
+
+    protected static $businessTypeValidators = [
+        'business_type',
+    ];
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateBusinessType(array $input)
+    {
+        if(isset($input[Detail\Entity::BUSINESS_TYPE]) === true)
+        {
+            $businessType = mb_strtolower($input[Detail\Entity::BUSINESS_TYPE]);
+            if(Detail\BusinessType::isValidBusinessType($businessType) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Invalid business type: $businessType", Detail\Entity::BUSINESS_TYPE);
+            }
+        }
+    }
+
 
     public function validateIpWhitelistInput(array $input)
     {

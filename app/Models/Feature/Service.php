@@ -3,31 +3,38 @@
 namespace RZP\Models\Feature;
 
 use Carbon\Carbon;
-
-use Illuminate\Support\Arr;
-
 use RZP\Exception;
-use RZP\Jobs\DCS\AssignFeatures;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
+use Illuminate\Support\Arr;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Base\RuntimeManager;
-use RZP\Constants\Environment;
+use RZP\Jobs\DCS\AssignFeatures;
 use RZP\Models\Merchant\Credits;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Feature\Metric as FeatureMetric;
+use RZP\Models\Merchant\CapitalSubmerchantUtility;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
 class Service extends Base\Service
 {
     const PAYOUT_SERVICE_IDEMPOTENCY_KEY_INTERMEDIATE_FEATURES_FETCH_LIMIT = 500;
+
+    const ALLOWED_INTERNAL_APPS_FOR_ENTITY_TYPE = [
+        'workflows',
+        'banking_account_service',
+        'capital_collections_client',
+        'capital_cards_client',
+        'loc'
+    ];
 
     public function addFeatures(
         array $input,
@@ -1082,6 +1089,57 @@ class Service extends Base\Service
         return $settings;
     }
 
+    /**
+     * Allow only the admins to provide the entity_type and entity_id from the input.
+     * If the merchant is hitting the route directly, only allow him to update his own account features.
+     * Allowing services mentioned in ALLOWED_INTERNAL_APPS_FOR_ENTITY_TYPE to add the feature:
+     *
+     * Allowing partners to add some capital features to submerchants.
+     *
+     * temp: Currently have to allow enabling of ONLY_DS flag for unauthenticated merchants to stick with compliance
+     *
+     * @param array $featureNames
+     *
+     * @return bool
+     */
+    protected function allowEntityTypeInInput(array $featureNames): bool
+    {
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            return true;
+        }
+
+        $internalApp = $this->app['basicauth']->getInternalApp();
+
+        if(in_array($internalApp, self::ALLOWED_INTERNAL_APPS_FOR_ENTITY_TYPE) === true)
+        {
+            return true;
+        }
+
+        if ($this->canCreateWithoutMerchantAuth($featureNames) === true)
+        {
+            return true;
+        }
+
+        // if partner uses batch upload feature to add sub-merchants,
+        // we receive X-Entity-Id header with partner ID.
+        $merchantId = $this->app['request']->header(RequestHeader::X_ENTITY_ID) ?? null;
+
+        // if the header is not present, partner might be adding sub-merchant from partner dashboard
+        // in this case get the partner ID from basicauth
+        if(empty($merchantId) === true)
+        {
+            $merchantId = optional($this->merchant)->getId() ?? null;
+        }
+
+        if(empty($merchantId) === false)
+        {
+            return (new CapitalSubmerchantUtility())->canPartnerAddFeatureForSubmerchant($featureNames, $merchantId);
+        }
+
+        return false;
+    }
+
     protected function buildFeatureParams(
         array $input,
         string $entityType = null,
@@ -1091,19 +1149,7 @@ class Service extends Base\Service
 
         $featureNames = $input[Constants::NAMES];
 
-        //
-        // Allow only the admins to provide the entity_type and entity_id from the input.
-        // If the merchant is hitting the route directly, only allow him to update his own account features.
-        //Allowing Banking account service to add the feature
-
-        // temp: Currently have to allow enabling of ONLY_DS flag for unauthenticated merchants to stick with compliance
-        if (($this->app['basicauth']->isAdminAuth() === true) or
-            ($this->app['basicauth']->isWorkflowsServiceApp() === true) or
-            ($this->app['basicauth']->isBankingAccountServiceApp() === true) or
-            ($this->app['basicauth']->isCapitalCollectionsApp() === true) or
-            ($this->app['basicauth']->isCapitalCardsApp() === true) or
-            ($this->app['basicauth']->isCapitalLOCApp() === true) or
-            $this->canCreateWithoutMerchantAuth($featureNames) === true)
+        if ($this->allowEntityTypeInInput($featureNames) === true)
         {
             $entityType = $entityType ?? $input[Entity::ENTITY_TYPE];
 

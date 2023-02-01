@@ -79,6 +79,7 @@ use RZP\Models\Merchant\Methods;
 use RZP\Constants\Mode as Modes;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Admin as MainAdmin;
+use RZP\Models\Merchant\Attribute;
 use RZP\Jobs\MerchantHoldFundsSync;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Admin\Org\Hostname;
@@ -94,6 +95,8 @@ use RZP\Exception\BadRequestException;
 use RZP\Models\Partner\RateLimitBatch;
 use RZP\Jobs\CallBackFillMerchantApps;
 use RZP\Models\Merchant\BusinessDetail;
+use RZP\Http\Controllers\LOSController;
+use RZP\Exception\IntegrationException;
 use RZP\Models\Merchant\RazorxTreatment;
 use Razorpay\Spine\DataTypes\Dictionary;
 use Razorpay\OAuth\Client as OAuthClient;
@@ -127,6 +130,7 @@ use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\Constants as PartnerConstants;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\PayoutLink\Service as PayoutLinkService;
 use RZP\Services\Pagination\Entity as PaginationEntity;
@@ -320,32 +324,69 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function createSubMerchantViaBatch(array $input)
+    /**
+     * Create sub-merchants via batch service
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws BadRequestValidationFailureException
+     * @throws IntegrationException
+     * @throws Throwable
+     */
+    public function createSubMerchantViaBatch(array $input): array
     {
         $merchantId = $this->app['request']->header(RequestHeader::X_ENTITY_ID) ?? null;
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $response = Tracer::inspan(['name' => HyperTrace::PARTNER_SUBMERCHANT_INVITE], function () use ($merchant, $input) {
+        list($inputCopy, $isCapitalSubmerchant) = (new CapitalSubmerchantUtility())->extractInputFromCapitalBatchInvite($input, $merchantId);
 
-            if ((isset($input[MerchantDetail::CONTACT_MOBILE]) === true) and ($input[MerchantDetail::CONTACT_MOBILE] === "##contact_mobile##"))
-            {
-                unset($input[MerchantDetail::CONTACT_MOBILE]);
-            }
+        $this->trace->info(
+            TraceCode::BATCH_SUBMERCHANT_ACCOUNT_CREATE_REQUEST,
+            [
+                'merchant_id'            => $merchantId,
+                'input'                  => $input,
+                'is_capital_submerchant' => $isCapitalSubmerchant,
+            ]
+        );
 
-            $createSubMerchantResponse = $this->createSubMerchant($input, $merchant, PartnerConstants::ADD_MULTIPLE_ACCOUNT);
+        $createSubMerchantResponse = Tracer::inspan(['name' => HyperTrace::PARTNER_SUBMERCHANT_INVITE], function() use ($merchant, $inputCopy) {
 
-            $data = [
-                'account_id'   => $createSubMerchantResponse['id'] ?? null,
-                'account_name' => $createSubMerchantResponse['name'] ?? null,
-                'email'        => $createSubMerchantResponse['email'] ?? null,
-                'status'       => 'success',
-            ];
+            $createSubMerchantResponse = $this->createSubMerchant(
+                $inputCopy,
+                $merchant,
+                PartnerConstants::ADD_MULTIPLE_ACCOUNT
+            );
 
-            $this->trace->info(TraceCode::SUBMERCHANT_ACCOUNT_CREATE_RESPONSE, $data);
+            $this->trace->info(
+                TraceCode::BATCH_SUBMERCHANT_ACCOUNT_CREATE_RESPONSE,
+                [
+                    'account_id'   => $createSubMerchantResponse[Entity::ID] ?? null,
+                    'account_name' => $createSubMerchantResponse[Entity::NAME] ?? null,
+                    'email'        => $createSubMerchantResponse[Entity::EMAIL] ?? null,
+                    'status'       => 'success',
+                ]
+            );
 
-            return $data;
+            return $createSubMerchantResponse;
         });
+
+        $response = [
+            'account_id'   => $createSubMerchantResponse['id'] ?? null,
+            'account_name' => $createSubMerchantResponse['name'] ?? null,
+            'email'        => $createSubMerchantResponse['email'] ?? null,
+            'status'       => 'success',
+        ];
+
+        if ($isCapitalSubmerchant === true)
+        {
+            $subMerchant = $this->repo->merchant->findOrFail(
+                Account\Entity::verifyIdAndSilentlyStripSign($createSubMerchantResponse[Entity::ID])
+            );
+
+            $response = $this->postProcessForCapitalSubmerchant($merchant, $subMerchant, $input, $response);
+        }
 
         return $response;
     }
@@ -451,9 +492,10 @@ class Service extends Base\Service
      * in a way that batch can call just core class functions.
      * Source param is to track the origin of sub-merchant creation in data lake. Bulk,Single,Admin,etc.
      *
-     * @param array         $input
-     * @param Entity|null   $merchant
-     * @param string        $source
+     * @param array       $input
+     * @param Entity|null $merchant
+     * @param string      $source
+     * @param bool        $optimizeCreationFlow
      *
      * @return array
      * @throws BadRequestException
@@ -6647,7 +6689,7 @@ class Service extends Base\Service
 
         if ($isLinkedAccount === false)
         {
-            SubMerchantTaggingJob::dispatch($this->mode, $merchant->getId(), $subMerchant->getId());
+            SubMerchantTaggingJob::dispatch($this->mode, $merchant->getId(), $subMerchant->getId(), Constants::PARTNER_REFERRAL_TAG_PREFIX);
 
             Tracer::inspan(['name' => HyperTrace::ATTACH_SUBMERCHANT_USER_IF_APPLICABLE], function () use ($ownerId, $subMerchant, $merchant, $product) {
 
@@ -7182,9 +7224,9 @@ class Service extends Base\Service
 
         $response = $result[0]->toArrayPartner();
 
-        if (array_key_exists(STATIC::OFFSET, $result) === true)
+        if (array_key_exists(self::OFFSET, $result) === true)
         {
-            $response[static::OFFSET] = $result[STATIC::OFFSET];
+            $response[self::OFFSET] = $result[self::OFFSET];
         }
 
         return $response;
@@ -11604,6 +11646,43 @@ class Service extends Base\Service
         }
 
         return  $this->getMerchantData($merchantId);
+    }
+
+    /**
+     * @param Entity $partner
+     * @param Entity $subMerchant
+     * @param array  $input
+     * @param array  $response
+     *
+     * @return array
+     * @throws BadRequestValidationFailureException
+     * @throws IntegrationException
+     * @throws Throwable
+     */
+    public function postProcessForCapitalSubmerchant(Entity $partner, Entity $subMerchant, array $input, array $response): array
+    {
+        $merchantDetailsInput = CapitalSubmerchantUtility::extractMerchantDetailsInput($input);
+
+        $createCapitalApplicationInput = CapitalSubmerchantUtility::extractCapitalApplicationInput($input, $partner);
+
+        $this->trace->info(
+            TraceCode::CAPITAL_SUBMERCHANT_POST_PROCESS,
+            [
+                'submerchant_id'           => $subMerchant->getId(),
+                'merchant_detail_input'    => $merchantDetailsInput,
+                'create_application_input' => $createCapitalApplicationInput
+            ]
+        );
+
+        CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant($partner, $subMerchant);
+
+        (new Detail\Service)->saveMerchantDetails($merchantDetailsInput, $subMerchant);
+
+        CapitalSubmerchantUtility::createCapitalApplicationForSubmerchant($subMerchant, $createCapitalApplicationInput);
+
+        $response[BatchHeader::CONTACT_MOBILE] = $merchantDetailsInput[BatchHeader::CONTACT_MOBILE];
+
+        return $response;
     }
 
     /**
