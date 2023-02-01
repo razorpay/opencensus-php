@@ -6720,6 +6720,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PG_ROUTER_ORDER_QUEUE_DELETE                        = 'PG_ROUTER_ORDER_QUEUE_DELETE';
 
+    const PG_ROUTER_BANK_ACCOUNT_MATCH                        = "PG_ROUTER_BANK_ACCOUNT_MATCH";
+    const PG_ROUTER_BANK_ACCOUNT_EMPTY_ERROR                  = "PG_ROUTER_BANK_ACCOUNT_EMPTY_ERROR";
+    const PG_ROUTER_BANK_ACCOUNT_MATCH_ERROR                  = "PG_ROUTER_BANK_ACCOUNT_MATCH_ERROR";
+
     const PAYOUT_SOURCE_ENTITY_CREATE_REQUEST                 = 'PAYOUT_SOURCE_ENTITY_CREATE_REQUEST';
     const PAYOUT_SOURCE_ENTITY_CREATED                        = 'PAYOUT_SOURCE_ENTITY_CREATED';
     const VAULT_ENCRYPTION_FAILED                             = 'VAULT_ENCRYPTION_FAILED';

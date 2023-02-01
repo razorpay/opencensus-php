@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Offer;
+use RZP\Trace\TraceCode;
 use RZP\Models\Order\OrderMeta\Order1cc\Fields;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
@@ -14,7 +15,9 @@ use RZP\Models\Transfer;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\UpiMandate;
+use RZP\Models\BankAccount;
 use RZP\Models\Payment\Config;
+use RZP\Constants\Entity as E;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Order\OrderMeta\Type;
@@ -720,6 +723,59 @@ class Entity extends Base\PublicEntity
     public function getProductId()
     {
         return $this->getAttribute(self::PRODUCT_ID);
+    }
+
+    public function getBankAccount()
+    {
+        $apiBankAccount = $this->bankAccount;
+
+        if ($this->isExternal() === false)
+        {
+            return $apiBankAccount;
+        }
+
+        if (empty($apiBankAccount) === true)
+        {
+            return $apiBankAccount;
+        }
+
+        $app = \App::getFacadeRoot();
+        try
+        {
+            $pgRouterBankAccountArray = $this->getAttribute("bank_account");
+            if (empty($pgRouterBankAccountArray) === false)
+            {
+                $pgRouterBankAccount = (new BankAccount\Entity())->forceFill($pgRouterBankAccountArray);
+
+                $pgRouterBankAccount->merchant()->associate($this->merchant);
+                $pgRouterBankAccount->setAttribute(BankAccount\Entity::TYPE, E::ORDER);
+
+                $accMatch = $pgRouterBankAccount->getAccountNumber() === $apiBankAccount->getAccountNumber();
+
+                $app['trace']->info(TraceCode::PG_ROUTER_BANK_ACCOUNT_MATCH,
+                    [
+                        "amatch" => $accMatch,
+                        "ifsc" => $pgRouterBankAccount->getIfscCode() === $apiBankAccount->getIfscCode(),
+                        "name" => $pgRouterBankAccount->getBeneficiaryName() === $apiBankAccount->getBeneficiaryName()
+                    ]
+                );
+            }
+            else
+            {
+                $app['trace']->info(TraceCode::PG_ROUTER_BANK_ACCOUNT_EMPTY_ERROR);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            $app['trace']->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::PG_ROUTER_BANK_ACCOUNT_MATCH_ERROR,
+                [
+                    'data' => $ex->getMessage()
+                ]);
+        }
+        return $apiBankAccount;
     }
 
     /** End Setters And Getters */

@@ -448,7 +448,7 @@ class Core extends Base\Core
         if ($merchant->isTPVRequired() === true)
         {
             // TODO: Change this after creating bank account entities for all the previous TPV orders
-            $accountNumber = empty($order->bankAccount) === true ? $order->getAccountNumber() : $order->bankAccount->getAccountNumber();
+            $accountNumber = empty($order->getBankAccount()) === true ? $order->getAccountNumber() : $order->getBankAccount()->getAccountNumber();
 
             $data += [
                 Entity::BANK           => $order->getBank(),
@@ -511,7 +511,7 @@ class Core extends Base\Core
 
     public function getAccountForRefund(Entity $order)
     {
-        $payerAccount = $order->bankAccount;
+        $payerAccount = $order->getBankAccount();
 
         // TODO: Change this after creating bank account entities for all the previous TPV orders
         if (empty($payerAccount) === true)
