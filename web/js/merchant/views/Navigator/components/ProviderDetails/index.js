@@ -118,7 +118,7 @@ export default class ProviderDetails extends Component {
                   {!isBlank(upiFeatures?.tpv) && (
                     <div className="list-group details-row-container">
                       <EntityDetailRow
-                        label="TPV Enabled"
+                        label="TPV"
                         value={() => getUPIOptionLabel(upiFeatures.tpv)}
                       />
                     </div>

@@ -1,6 +1,7 @@
 import React, { Fragment } from 'react';
 
 import Input from 'common/new-ui/Input';
+import Popover, { PopoverBody } from 'common/ui/Popover';
 
 import { TPV_OPTIONS } from 'merchant/views/Navigator/constants';
 
@@ -89,14 +90,26 @@ export function Step3({
               <div className="row tpv-field-wrapper">
                 <div className="col-xs-3">
                   <label for="name" className="gateway-detail-title">
-                    {label}
+                    <span>{label}</span>
+                    <small className="help-content ml-4">
+                      <i className="i i-info-circle" />
+                      <Popover align="top" theme="dark">
+                        <PopoverBody>
+                          <div>
+                            Third-Party Validation (TPV) of your customer’s bank accounts in
+                            real-time. It is a mandatory requirement for merchants in the BFSI
+                            (Banking, Financial Services and Insurance) sector.
+                          </div>
+                        </PopoverBody>
+                      </Popover>
+                    </small>
                   </label>
                 </div>
 
                 <div className="col-xs-9">
                   <Input.Radio
                     id={label}
-                    defaultValue={provider.Gateway_details?.TPV ?? -1}
+                    defaultValue={provider.Gateway_details?.TPV ?? 0}
                     options={TPV_OPTIONS}
                     name={label.toLowerCase()}
                     onChange={changeGatewayDetails}

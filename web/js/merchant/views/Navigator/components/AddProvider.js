@@ -112,24 +112,16 @@ export default class AddProvider extends React.Component {
       if (provider) {
         const { Gateway, Gateway_details } = provider;
 
-        let TPV = 0;
-
         if (HAVE_UPI_FEATURES.includes(Gateway)) {
-          TPV = Gateway_details[UPI_FEATURES]?.tpv ?? 0;
+          provider.Gateway_details.TPV = Gateway_details[UPI_FEATURES]?.tpv ?? 0;
         } else if (HAVE_NETBANKING_FEATURES.includes(Gateway)) {
-          TPV = Gateway_details[NETBANKING_FEATURES]?.tpv ?? 0;
+          provider.Gateway_details.TPV = Gateway_details[NETBANKING_FEATURES]?.tpv ?? 0;
         }
 
         this.setState({
           ...deepClone(INIT_FORM_STATE),
           selectedProvider: provider?.Gateway || '',
-          provider: {
-            ...provider,
-            Gateway_details: {
-              ...Gateway_details,
-              TPV,
-            },
-          },
+          provider,
         });
       }
     }
@@ -189,6 +181,7 @@ export default class AddProvider extends React.Component {
       },
       screen: 'Optimizer Add Provider',
     });
+
     this.setState((prevState) => {
       const provider_st = prevState.provider;
       provider_st.Gateway = provider;
@@ -214,6 +207,10 @@ export default class AddProvider extends React.Component {
             prevState.providers?.[provider]?.['Payment Methods']?.meta_data?.wallet_metadata
               ?.wallets || [],
         };
+      }
+
+      if ([...HAVE_NETBANKING_FEATURES, ...HAVE_UPI_FEATURES].includes(provider)) {
+        provider_st.Gateway_details.TPV = 0;
       }
 
       return { selectedProvider: provider, provider: provider_st };
@@ -347,26 +344,26 @@ export default class AddProvider extends React.Component {
     const { provider, providers } = this.state;
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
 
-    let isValid = true;
-
-    Object.keys(providers[selectedProviderWithAcquirer]).forEach((key) => {
+    for (const key of Object.keys(providers[selectedProviderWithAcquirer])) {
       const value = provider?.Gateway_details?.[key];
 
-      if (!['Payment Methods', 'Gateway Name'].includes(key) && !value) {
-        isValid = false;
-      } else if (key === 'Payment Methods' && value?.length === 0) {
-        isValid = false;
+      if (key === 'Payment Methods') {
+        if (value?.length === 0) {
+          return false;
+        }
+      } else if (!['Gateway Name', 'TPV'].includes(key) && !value) {
+        return false;
       }
-    });
+    }
 
     if (
       provider?.Gateway_details?.['Payment Methods'].indexOf('wallet') !== -1 &&
       provider?.Gateway_details?.wallet_metadata?.wallets?.length <= 0
     ) {
-      isValid = false;
+      return false;
     }
 
-    return isValid;
+    return true;
   };
 
   changeGatewayDetails = (event, item) => {
@@ -406,7 +403,7 @@ export default class AddProvider extends React.Component {
 
         return { provider };
       },
-      () => this.validateGatewayDetails(item),
+      () => this.validateGatewayDetails(id),
     );
   };
 
@@ -463,17 +460,22 @@ export default class AddProvider extends React.Component {
     const { closeModal, history, showNotification } = this.props;
 
     const Gateway_details = provider?.Gateway_details || {};
-    const upiFeatures = Gateway_details?.[UPI_FEATURES] || {};
-    const netBanking = Gateway_details?.[NETBANKING_FEATURES] || {};
-    const tpv = Number(Gateway_details?.TPV) ?? 0;
 
-    if (HAVE_UPI_FEATURES.includes(selectedProvider)) {
-      Gateway_details[UPI_FEATURES] = { ...upiFeatures, tpv };
-    } else if (HAVE_NETBANKING_FEATURES.includes(selectedProvider)) {
-      Gateway_details[NETBANKING_FEATURES] = { ...netBanking, tpv };
+    if (Gateway_details.hasOwnProperty('TPV')) {
+      const tpv = Number(Gateway_details?.TPV) ?? 0;
+
+      if (HAVE_UPI_FEATURES.includes(selectedProvider)) {
+        const upiFeatures = Gateway_details?.[UPI_FEATURES] || {};
+
+        Gateway_details[UPI_FEATURES] = { ...upiFeatures, tpv };
+      } else if (HAVE_NETBANKING_FEATURES.includes(selectedProvider)) {
+        const netBanking = Gateway_details?.[NETBANKING_FEATURES] || {};
+
+        Gateway_details[NETBANKING_FEATURES] = { ...netBanking, tpv };
+      }
+
+      delete Gateway_details?.TPV;
     }
-
-    delete Gateway_details?.TPV;
 
     const payload = {
       ...provider,
