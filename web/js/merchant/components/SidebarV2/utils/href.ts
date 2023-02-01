@@ -26,6 +26,7 @@ const ROUTE_REG = {
   loans: /^\/captial\/loans/,
   affordability: /^\/affordability(\/(widget))?/,
   developers: /^\/developers(\/(api|webhooks))?/,
+  wallet: /^\/(wallet)/,
 };
 
 const BASE_ROUTES = {
@@ -64,6 +65,7 @@ const BASE_ROUTES = {
   partner: '/submerchants',
   accountsettings: '/account-settings',
   affordability: 'affordability/widget',
+  wallet: '/wallet/accounts',
 };
 
 export const initializeRoutes = (location, user) => {
@@ -102,8 +104,9 @@ export const initializeRoutes = (location, user) => {
     )[0];
   } else if (ROUTE_REG.magic_checkout.test(pathname)) {
     routes.magic_checkout = pathname.match(ROUTE_REG.magic_checkout)[0];
-  }
-  if (user.isRegistrationLinkBasedRole) {
+  } else if (ROUTE_REG.wallet.test(pathname)) {
+    routes.wallet = pathname.match(ROUTE_REG.wallet)[0];
+  } else if (user.isRegistrationLinkBasedRole) {
     routes.chargeAtWill = 'registration_links';
   }
   return routes;

@@ -172,6 +172,11 @@ export const PRODUCTS_DATA = {
         'webhooks applications configuration api_keys profile credits add_funds team referrals',
       ) && user.isAccountAndSettingsRevampEnabled,
   },
+  wallet: {
+    icon: 'i-notes',
+    additionalCondition: (user: any) =>
+      user.isIssuingDashboardEnabled && user.isAccountAndSettingsRevampEnabled,
+  },
 };
 
 export const COMMON_PRODUCTS = [

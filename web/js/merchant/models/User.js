@@ -854,6 +854,10 @@ export default class User {
     return this.isFeatureEnabled('prevent_test_mode');
   }
 
+  get isIssuingDashboardEnabled() {
+    return this.getExpStatus('issuinghq_wallet_dashboard_enabled');
+  }
+
   get isRegistrationLinkTokenAndPaymentsEnabled() {
     return (
       this.userRole !== rolesList.REGISTRATION_LINK_AGENT &&

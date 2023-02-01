@@ -94,6 +94,14 @@ function MerchantNavLinks(props) {
       <div class="divider" />
 
       <MainNavLink
+        label="Wallet"
+        icon="i i-notes text-primary"
+        type="wallet"
+        to="/wallet/accounts"
+        additionalCondition={(currentUser) => currentUser.isIssuingDashboardEnabled}
+      />
+
+      <MainNavLink
         label="Loans (Cash Advance)"
         icon="i i-star text-warning"
         to="/capital/cash-advance/"

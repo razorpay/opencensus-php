@@ -238,6 +238,8 @@ const PayrollWidget = lazy(() =>
   import(/* webpackChunkName: "PayrollWidget" */ 'merchant/views/Payroll'),
 );
 
+const Wallet = lazy(() => import(/* webpackChunkName: "IssuingWallet" */ 'merchant/views/Wallet'));
+
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   return (
@@ -509,6 +511,13 @@ export default class Content extends Component {
               user.isAllowedView('payment_pages') &&
               !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages)
             }
+          />
+
+          <ShowWhenRoute
+            path="/wallet/accounts"
+            exact={false}
+            component={Wallet}
+            additionalCondition={(user) => user.isIssuingDashboardEnabled}
           />
 
           <Route path="/super-checkout">
