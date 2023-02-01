@@ -18,6 +18,7 @@ class KafkaMessageProcessor
     const RAW_ADDRESS_CONTACTS      = 'raw-address-contacts';
     const MERCHANT_WEBSITE_INFO     = 'merchant-website-info-result';
     const LEGAL_DOCUMENTS_EVENTS    = 'api-bvs-legal-document-result-events';
+    const INVALID_ADDRESS_EVENTS    = 'invalid-address-events';
 
     /** @var Application $app */
     protected $app;
@@ -125,6 +126,9 @@ class KafkaMessageProcessor
 
             case self::LEGAL_DOCUMENTS_EVENTS:
                 return new KafkaJobs\BvsLegalDocumentsJob($payload['data'], $mode);
+
+            case self::INVALID_ADDRESS_EVENTS:
+                return new InvalidAddressConsumer($payload, $mode);
 
             default:
                 return null;

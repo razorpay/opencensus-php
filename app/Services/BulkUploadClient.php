@@ -5,6 +5,7 @@ namespace RZP\Services;
 use App;
 
 use RZP\Jobs\Job;
+use RZP\Models\Address\Entity;
 use RZP\Services\Kafka;
 use RZP\Trace\TraceCode;
 use RZP\Models\Address\Type;
@@ -410,6 +411,75 @@ class BulkUploadClient extends Job
             }
         }
         return $firstAddress;
+    }
+
+    public function findAndDeleteInvalidAddress(array $message){
+        if($message['address_id'] === null || strlen($message['address_id']) === 0){
+
+            $this->trace->info(TraceCode::INVALID_ADDRESS_CONSUMER_CLIENT_PROCESSING,[
+                "Message" => "address id is empty",
+            ]);
+
+            return;
+        }
+
+        $this->trace->info(TraceCode::INVALID_ADDRESS_CONSUMER_CLIENT_PROCESSING,[
+            "Message" =>$message,
+        ]);
+
+        try{
+
+            $address = (new Address\Repository())->findOrFail($message['address_id']);
+
+        }catch (\Exception $ex){
+
+            $this->trace->traceException($ex);
+
+            $this->trace->info(TraceCode::INVALID_ADDRESS_CONSUMER_MESSAGE_FIND_REQUEST,[
+                "ExceptionMessage" => $ex->getMessage(),
+            ]);
+
+            $this->trace->count(TraceCode::ONE_CC_DELETE_ADDRESS_FIND_FAILED);
+            return;
+
+        }
+
+        $deleted_address = null;
+
+        try{
+
+            $deleted_address = (new Address\Core)->delete($address);
+
+        } catch (\Exception $ex){
+
+            $this->trace->traceException($ex);
+
+            $this->trace->info(TraceCode::INVALID_ADDRESS_CONSUMER_MESSAGE_DELETE_REQUEST,[
+                "ExceptionMessage" => $ex->getMessage(),
+            ]);
+
+            $this->trace->count(TraceCode::ONE_CC_DELETE_ADDRESS_DELETE_FAILED);
+
+            return;
+        }
+
+        if ($deleted_address === null)
+        {
+            $this->trace->info(TraceCode::INVALID_ADDRESS_CONSUMER_CLIENT_DELETE_SUCCESSFUL,[
+                "Message" =>$message,
+            ]);
+
+            $this->trace->count(TraceCode::ONE_CC_DELETE_ADDRESS_SUCCESSFUL);
+
+            return [];
+        }
+
+        $this->trace->info(TraceCode::INVALID_ADDRESS_CONSUMER_CLIENT_DELETE_FAILED,[
+            "Message" =>$message,
+        ]);
+
+        $this->trace->count(TraceCode::ONE_CC_DELETE_ADDRESS_DELETE_PROCESS_FAILED);
+        return;
     }
 
 }
