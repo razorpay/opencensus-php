@@ -152,7 +152,6 @@ class Service extends Base\Service
             'additional_domain_whitelist_self_serve',
             'remove_presignup_functionality',
             'rx_ca_self_serve_flow',
-            'rx_home_v2',
             'support_call',
             'rx_non_self_serve_ca_flow',
             'add_on_card_onboarding',
