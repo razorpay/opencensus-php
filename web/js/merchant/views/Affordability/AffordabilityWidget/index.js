@@ -82,7 +82,7 @@ const AffordabilityWidget = (props) => {
     <ProductWrapper
       tabsData={tabsData}
       extra={
-        <>
+        <div className="aff-product-nav">
           <TakeATourButton feature={RZPFeatures.AFFORDABILITY_WIDGET} />
           <DocsLink url="https://razorpay.com/docs/payments/payment-gateway/affordability/widget/" />
 
@@ -94,7 +94,7 @@ const AffordabilityWidget = (props) => {
               source={affordability.widget_enable_source}
             />
           ) : null}
-        </>
+        </div>
       }
     >
       <content>
