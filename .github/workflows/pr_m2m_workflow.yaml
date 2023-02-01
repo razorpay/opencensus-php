@@ -128,13 +128,14 @@ jobs:
         uses: actions/github-script@v3
         id: PARTNER_LMS_COMMIT_ID
         with:
-          path: partner-lms
+#          path: partner-lms
           github-token: ${{ secrets.GIT_TOKEN }}
           result-encoding: string
           script: |
             const response = await github.repos.listCommits({
                 owner: context.payload.repository.owner.login,
                 repo: 'frontend-x',
+                path: 'partner-lms',
                 sha: 'master',
                 per_page: 10
             })
