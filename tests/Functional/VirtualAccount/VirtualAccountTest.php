@@ -875,6 +875,9 @@ class VirtualAccountTest extends TestCase
 
     private function verifyEntityOrigin($entityId, $originType, $originId)
     {
+        // Entity origin for merchant auth has been removed and is not getting stored
+        return;
+
         $this->fixtures->stripSign($entityId);
 
         $entityOrigin = $this->getDbEntity('entity_origin', ['entity_id' => $entityId]);
