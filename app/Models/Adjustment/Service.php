@@ -5,9 +5,11 @@ namespace RZP\Models\Adjustment;
 use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Merchant\Balance;
+use RZP\Constants as DefaultConstants;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 
@@ -37,6 +39,14 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $adj = (new Adjustment\Core)->createAdjustment($input, $merchant);
+
+        $publicId = $adj->getPublicId();
+
+        if (($adj->isBalanceTypePrimary() === true) and
+            ($adj->getEntityType() !== DefaultConstants\Entity::DISPUTE))
+        {
+            (new Adjustment\Core)->createLedgerEntriesForManualAdjustment($adj, $merchant, $publicId);
+        }
 
         // Todo: need to check if we need to push to slack channel before final state of adj ?
         $this->logActionToSlack($merchant, SlackActions::ADD_ADJUSTMENT, $input);
@@ -238,4 +248,5 @@ class Service extends Base\Service
     {
         return (new Adjustment\Core)->createAdjustmentViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
     }
+
 }

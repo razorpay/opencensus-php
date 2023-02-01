@@ -212,7 +212,7 @@ class Core extends Base\Core
         }
     }
 
-    private function createLedgerEntriesForManualAdjustment(Adjustment\Entity $adj, Merchant\Entity $merchant, string $publicId)
+    public function createLedgerEntriesForManualAdjustment(Adjustment\Entity $adj, Merchant\Entity $merchant, string $publicId)
     {
         try
         {
