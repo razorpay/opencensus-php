@@ -128,6 +128,10 @@ function getSearchParams () {
     return params;
   }
 
+function parseDevstackLabel(){
+    return window.location.hostname.match(/^api-web-(.*)\.dev\.razorpay\.in$/)?.[1]
+}
+
 /**
  * Generates the config if any needs to be used
  */
@@ -136,12 +140,20 @@ function getRazorpayConfig () {
     var frameUrl;
     var RzpConfig = {};
 
+    if(parseDevstackLabel()){
+      frameUrl = '/test/checkout.html';
+    }
+
     if (params.branch) {
         frameUrl = '/test/checkout.html?branch=' + params.branch;
     }
 
     if (params.prod_build) {
         frameUrl = '/test/checkout.html?prod_build=' + params.prod_build;
+    }
+
+    if (params.build) {
+        frameUrl = '/test/checkout.html';
     }
 
     var config = {
@@ -198,9 +210,14 @@ $('#keys').onclick = t.onkeydown = e => {
     var isFunc = window.location.hostname.toLowerCase().indexOf('.func.razorpay.') >= 0;
     var isDark = window.location.hostname.toLowerCase().indexOf('api-dark') >= 0;
     var source = 'checkout.razorpay.com';
+    var devstackLabel = parseDevstackLabel();
 
-    if (getSearchParams().branch) {
+    if (getSearchParams().build) {
+      source = `betacdn.np.razorpay.in/checkout/builds/commit-builds/${getSearchParams().build}`
+    } else if (getSearchParams().branch) {
       source = `betacdn.np.razorpay.in/checkout/builds/branch-builds/${getSearchParams().branch}`
+    } else if (devstackLabel) {
+      source = `checkout-${devstackLabel}.dev.razorpay.in`
     } else if (getSearchParams().prod_build) {
       source = `betacdn.np.razorpay.in/checkout/builds/prod-builds/${getSearchParams().prod_build}`
     } else if (isStage) {

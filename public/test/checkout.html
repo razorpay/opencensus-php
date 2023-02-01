@@ -69,21 +69,27 @@
     return 'https://betacdn.np.razorpay.in/checkout/builds/prod-builds/' + prodBuild + '/';
   }
 
+  function getBuildBasedUrl(build) {
+    return 'https://betacdn.np.razorpay.in/checkout/builds/commit-builds/' + build + '/';
+  }
+
   function addAssets () {
     var params = getSearchParams();
 
     var base = getBranchBaseUrl('master');
 
-    if (params.branch) {
-       base = getBranchBaseUrl(params.branch);
+    if (params.build){
+      base = getBuildBasedUrl(params.build);
+    } else if (params.branch) {
+      base = getBranchBaseUrl(params.branch);
     } else if (params.prod_build) {
       base = getProdBuildBaseUrl(params.prod_build);
     }
 
-    addLink(base + 'v1/css/checkout.css');
-    if (params.magic_shopify_key) {
+    if (params.merchant_key) {
       addScript(base + 'v1/checkout-frame-lite.js');
     } else {
+      addLink(base + 'v1/css/checkout.css');
       addScript(base + 'v1/checkout-frame.js');
     }
   }
