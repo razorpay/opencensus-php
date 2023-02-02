@@ -72,7 +72,6 @@ class Service extends Base\Service
             'batch_scheduling_options',
             'emandate_subscription',
             'upi_caw',
-            'rx_payout_links_inactive',
             'rx_payout_links_ms',
             'upi_subscription',
             'rx_bulk_approvals',
