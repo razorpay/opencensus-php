@@ -227,11 +227,12 @@ class Helper
             }
 
             $traceData = [
-                $medium                     => $mediumValue,
-                $mediumLabel                => $medium,
-                $methodLabel                => $traceDetails[Constants::METHOD],
-                MetricConstants::PRODUCT    => $product,
-                MetricConstants::PLATFORM   => self::getPlatform(),
+                $medium                        => $mediumValue,
+                $mediumLabel                   => $medium,
+                $methodLabel                   => $traceDetails[Constants::METHOD],
+                MetricConstants::PRODUCT       => $product,
+                MetricConstants::PLATFORM      => self::getPlatform(),
+                MetricConstants::SIGNUP_SOURCE => $input[Constants::SIGNUP_SOURCE] ?? "NA",
             ];
 
             $traceCode  = $traceDetails[Constants::TRACE_CODE];
