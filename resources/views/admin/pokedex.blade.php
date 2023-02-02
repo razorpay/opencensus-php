@@ -32,3 +32,4 @@
 <!-- Blank interface init before loading the project entry file -->
 @include('partials/rzpq-interface')
 <script src="{{$cdn}}/dist/pokedex-entry.js"></script>
+@include('partials/blade-coverage-script')

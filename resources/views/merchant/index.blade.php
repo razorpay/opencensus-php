@@ -96,7 +96,7 @@
 
   <!-- Preload FA icons CSS -->
   <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" as="style">
-  
+
   <!-- head tag ends here -->
   @include('partials/common')
   <script defer src="https://www.googletagmanager.com/gtag/js?id=AW-928471290"></script>
@@ -186,4 +186,5 @@
   <script src="{{$cdnDashboardUrl}}/dist/newAuth-entry.js"></script>
 @endif
 
+@include('partials/blade-coverage-script')
 @include('partials/footer')

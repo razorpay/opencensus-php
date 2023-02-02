@@ -71,3 +71,5 @@
 </style>
 <body>
   <div id="react-root"></div>
+
+  @include('partials/blade-coverage-script')

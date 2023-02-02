@@ -30,4 +30,5 @@
 
 <script src="{{$cdnDashboardUrl}}/dist/merchantLA-entry.js"></script>
 
+@include('partials/blade-coverage-script')
 @include('partials/footer')
