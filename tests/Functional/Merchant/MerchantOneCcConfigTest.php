@@ -161,12 +161,6 @@ class MerchantOneCcConfigTest extends TestCase
         $this->startTest();
     }
 
-    public function testOneCcShippingInfoUrlMerchant1ccConfig() {
-        $this->ba->proxyAuth();
-        $this->setUpAuthConfigForMerchant();
-        $this->startTest();
-    }
-
     private function setUpAuthConfigForMerchant()
     {
         $app = App::getFacadeRoot();

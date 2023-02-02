@@ -1453,7 +1453,7 @@ return [
         'url'           => env('APP_SHIPPING_SERVICE_URL'),
         'username'      => 'api',
         'secret'        => env('APP_SHIPPING_SERVICE_SECRET'),
-        'timeout'       => env('APP_SHIPPING_SERVICE_TIMEOUT', 10),
+        'timeout'       => env('APP_SHIPPING_SERVICE_TIMEOUT', 3),
     ],
 
     'rto_prediction_service' => [

@@ -14794,20 +14794,4 @@ return [
         ],
     ],
 
-    'testOneCcShippingInfoUrlMerchant1ccConfig' => [
-        'request' => [
-            'url' => '/1cc/merchant/configs',
-            'method' => 'post',
-            'content' => [
-                "platform"=> "woocommerce",
-                "shipping_info"=> "http://fake.url",
-            ],
-            'convertContentToString' => false
-        ],
-        'response' => [
-            'content'     => [],
-            'status_code' => 200
-        ],
-    ],
-
 ];

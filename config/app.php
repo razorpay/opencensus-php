@@ -549,7 +549,5 @@ return array(
 
     'magic_apply_coupon_experiment_id' => env('MAGIC_APPLY_COUPON_EXPERIMENT_ID'),
 
-    'capital_partnership_experiment_id' => env('CAPITAL_PARTNERSHIP_EXPERIMENT_ID'),
-
-    '1cc_shipping_info_migration_splitz_experiment_id' => env('MAGIC_CHECKOUT_SHIPPING_INFO_MIGRATION_EXP_ID'),
+    'capital_partnership_experiment_id' => env('CAPITAL_PARTNERSHIP_EXPERIMENT_ID')
 );
