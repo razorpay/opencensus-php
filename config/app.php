@@ -463,6 +463,11 @@ return array(
     'partner_invoice_auto_approval_exp_id'=> env('PARTNER_INVOICE_AUTO_APPROVAL_EXP_ID'),
     'cmma_post_onboarding_foh_removal_splitz_experiment_id' => env('CMMA_POST_ONBOARDING_FOH_REMOVAL_SPLITZ_EXPERIMENT_ID'),
 
+    'permission_id_edit_merchant_hold_funds'  => env('EDIT_MERCHANT_HOLD_FUNDS'),
+    'permission_id_edit_merchant_suspend'     => env('EDIT_MERCHANT_SUSPEND'),
+    'permission_id_merchant_risk_alert_foh'   => env('MERCHANT_RISK_ALERT_FOH'),
+    'permission_id_edit_merchant_disable_live'=> env('EDIT_MERCHANT_DISABLE_LIVE'),
+
     'merchant_kyc_update_to_partner_exp_id'            => env('MERCHANT_KYC_UPDATE_TO_PARTNER_EXP_ID'),
     'send_weekly_activation_summary_to_partner_exp_id' => env('SEND_WEEKLY_ACTIVATION_SUMMARY_TO_PARTNER_EXP_ID'),
 

@@ -906,6 +906,7 @@ EOT;
         $query = $this->newQueryWithConnection($connectionType);
 
         return $query
+            ->whereNotNull(Payment\Entity::AUTHORIZED_AT)
             ->where(Payment\Entity::MERCHANT_ID, '=', $merchantId)
             ->whereBetween(Payment\Entity::CREATED_AT, [$from, time()])
             ->count();

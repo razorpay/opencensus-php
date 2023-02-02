@@ -46,17 +46,6 @@ class FOHRemovalDataCollector extends DbDataCollector
                                                   "viral.turakhia@razorpay.com",
                                                   "yashwanth.v@razorpay.com");
 
-    const PERMISSION_ID_LIST = array(Permission::EDIT_MERCHANT_HOLD_FUNDS,
-                                     Permission::EDIT_MERCHANT_SUSPEND,
-                                     Permission::MERCHANT_RISK_ALERT_FOH,
-                                     Permission::EDIT_MERCHANT_DISABLE_LIVE);
-
-
-    const WORKFLOW_ID_LIST = array(WorkflowConstants::WORKFLOW_TOGGLE_SUSPEND,
-                                   WorkflowConstants::WORKFLOW_TOGGLE_FUNDS,
-                                   WorkflowConstants::WORKFLOW_TOGGLE_MERCHANT_LIVE,
-                                   WorkflowConstants::WORKFLOW_MERCHANT_RISK_ALERT_FUNDS_ON_HOLD);
-
     const RISK_LEA_TAGS = array("RISK_LEA_DEBIT-FREEZE_",
                                 "RISK_LEA_FREEZING-ORDER_",
                                 "RISK_LEA_PROVISIONAL-ATTACHMENT-ORDER_",
@@ -100,8 +89,9 @@ class FOHRemovalDataCollector extends DbDataCollector
 
         $this->app["trace"]->info(TraceCode::FOH_REMOVAL_WORKFLOW_ENTITY_LIST, [
             'type'                        => Constants::FOH_REMOVAL,
+            'entity_ids_count'            => ($workflowEntityIds === null) ? 0 : count($workflowEntityIds),
             'workflow_action_entity_ids'  => $workflowEntityIds,
-            'entity_ids_count'            => ($workflowEntityIds === null) ? 0 : count($workflowEntityIds)
+
         ]);
 
         $merchantIdChunks = array_chunk($workflowEntityIds, 20);
@@ -179,6 +169,26 @@ class FOHRemovalDataCollector extends DbDataCollector
         return $emailIds;
     }
 
+    private function getWorkflowIds() : array
+    {
+        return [
+            env(WorkflowConstants::WORKFLOW_TOGGLE_SUSPEND),
+            env(WorkflowConstants::WORKFLOW_TOGGLE_FUNDS),
+            env(WorkflowConstants::WORKFLOW_TOGGLE_MERCHANT_LIVE),
+            env(WorkflowConstants::WORKFLOW_MERCHANT_RISK_ALERT_FUNDS_ON_HOLD),
+        ];
+    }
+
+    private function getPermissionIds() : array
+    {
+        return [
+            $this->app['config']->get('permission_id_app.edit_merchant_hold_funds'),
+            $this->app['config']->get('permission_id_app.edit_merchant_suspend'),
+            $this->app['config']->get('permission_id_app.merchant_risk_alert_foh'),
+            $this->app['config']->get('permission_id_app.edit_merchant_disable_live')
+        ];
+    }
+
     private function getWorkflowEntityIds(array $adminIdList) : array
     {
         $batch = 100;
@@ -193,8 +203,8 @@ class FOHRemovalDataCollector extends DbDataCollector
                 $batch,
                 $skip,
                 $adminIdList,
-                self::PERMISSION_ID_LIST,
-                self::WORKFLOW_ID_LIST,
+                self::getPermissionIds(),
+                self::getWorkflowIds(),
                 time(),
                 Carbon::parse($this->lastCronTime)->subDays(self::WORKFLOW_CREATED_PAST_DAYS)->getTimestamp()
             );

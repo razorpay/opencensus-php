@@ -28,7 +28,7 @@ class FOHRemovalAction extends BaseAction
         $this->app['trace']->info(TraceCode::FOH_REMOVAL_ACTION,[
             'total_merchant_count' => ($merchantIds === null) ? 0 : count($merchantIds),
             'mids'                 => $merchantIds,
-            'workflow_admin_id'    => $workflowAdmin->getId()
+            'workflow_admin_id'    => ($workflowAdmin === null) ? 0 : $workflowAdmin->getId()
         ]);
 
         if ($merchantIds === null or count($merchantIds) === 0 or $workflowAdmin === null)
@@ -36,7 +36,7 @@ class FOHRemovalAction extends BaseAction
             return new ActionDto(Cron\Constants::SKIPPED);
         }
 
-        $merchantIdChunks = array_chunk($merchantIds, 2);
+        $merchantIdChunks = array_chunk($merchantIds, 20);
 
         foreach ($merchantIdChunks as $merchantIdList) {
 
