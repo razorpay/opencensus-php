@@ -2159,7 +2159,6 @@ class Route
         'user_salesforce_event'                    => ['post',     'users/salesforce_event',                         'UserController@sendUserDetailsToSalesForceEvent'                   ],
 
         // Fetch user via OAuth (Private Auth)
-        'user_fetch_self'                          => ['get',      'users_self',                                     'UserController@getUserSelf'                                            ],
         'user_fetch'                               => ['get',      'users/{id}',                                     'UserController@getUser'                                            ],
         'user_fetch_internal'                      => ['get',      'users_internal/{id}',                            'UserController@getUser'                                            ],
         'user_fetch_entity'                        => ['get',      'users_entity/{id}',                              'UserController@getUserEntity'                                      ],
@@ -2596,7 +2595,6 @@ class Route
         'oauth_token_fetch_multiple'               => ['get',      'oauth/tokens',                                   'OAuthTokenController@getAll'                                       ],
         'oauth_token_fetch'                        => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@get'                                          ],
         'oauth_token_revoke'                       => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revoke'                                       ],
-        'oauth_token_create_for_apple_watch'       => ['post',     'oauth/tokens/apple-watch',                       'OAuthTokenController@createForAppleWatch'                          ],
         'oauth_application_create'                 => ['post',     'oauth/applications',                             'OAuthApplicationController@create'                                 ],
         'oauth_application_create_partner'         => ['post',     'oauth/applications/partner',                     'OAuthApplicationController@createPartner'                          ],
         'oauth_application_fetch_multiple'         => ['get',      'oauth/applications',                             'OAuthApplicationController@getMultiple'                            ],
@@ -4706,7 +4704,6 @@ class Route
         'update_cod_slabs',
         'banking_axis_invitations_send',
 
-        'user_fetch_self',
         '1cc_merchant_preferences',
 
           // Tokenisation Bin crud routes
@@ -5620,7 +5617,6 @@ class Route
         'user_patch_password',
         'user_access',
         'user_fetch',
-        'user_fetch_self',
         'user_change_password',
         'user_merchant_upgrade',
         'user_edit_self',
@@ -6578,7 +6574,6 @@ class Route
         //payout status reason mapping
         'payout_status_to_reason_mapping',
 
-        'oauth_token_create_for_apple_watch',
         'capital_virtual_cards_generate_token',
 
         //CAC
@@ -9677,7 +9672,6 @@ class Route
         'purpose_code_fetch'                  => Permission::VIEW_MERCHANT,
         'merchant_patch_purpose_code'         => Permission::EDIT_MERCHANT,
         'user_fetch_purpose_code'             => '*',
-        'oauth_token_create_for_apple_watch' => '*',
         'oauth_token_fetch_multiple'          => Permission::MERCHANT_GET_OAUTH_TOKEN,
 
         // HS code
@@ -11379,8 +11373,6 @@ class Route
             '1cc_cod_order_review',
 
             'growth_get_public_asset_details',
-
-            'oauth_token_create_for_apple_watch',
 
             //CAC
             'cac_privileges_fetch',
@@ -15752,8 +15744,6 @@ class Route
         'delete_low_balance_config_admin',
         'list_low_balance_config_admin',
 
-        'oauth_token_create_for_apple_watch',
-
         'payout_upload_attachment',
         'payout_update_attachments',
         'payout_download_attachments',
@@ -15789,7 +15779,6 @@ class Route
     const OAUTH_SPECIFIC_ROUTES = [
         'payouts_summary',
         'banking_accounts_list',
-        'user_fetch_self',
 //        'payout_create_2FA'    // TODO: check if this is needed
 //        'payout_send_2FA_otp'  // TODO: check if this is needed
     ];
@@ -16099,7 +16088,6 @@ class Route
         'merchant_get_tags'                                 => HeartbeatLagChecker::MASTER,
         'merchant_activation_details'                       => HeartbeatLagChecker::MASTER,
         'user_fetch'                                        => HeartbeatLagChecker::MASTER,
-        'user_fetch_self'                                   => HeartbeatLagChecker::MASTER,
         'invoice_fetch'                                     => HeartbeatLagChecker::MASTER,
         'invoice_view_live'                                 => HeartbeatLagChecker::MASTER,
         'merchant_features_fetch'                           => HeartbeatLagChecker::MASTER,
@@ -16162,7 +16150,6 @@ class Route
         'payout_links_shopify_app_customers_redact'         => HeartbeatLagChecker::SLAVE,
         'payout_links_shopify_app_shop_redact'              => HeartbeatLagChecker::SLAVE,
         'payout_links_shopify_customers_data_request'       => HeartbeatLagChecker::SLAVE,
-        'oauth_token_create_for_apple_watch'                => HeartbeatLagChecker::MASTER,
         'create_local_tokens_from_consents_bulk'            => HeartbeatLagChecker::SLAVE,
     ];
 

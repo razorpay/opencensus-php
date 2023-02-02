@@ -8712,37 +8712,6 @@ class UserTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetUserViaOAuth()
-    {
-        $this->fixtures->edit('merchant',
-            '10000000000000',
-            ['activated' => true, 'business_banking' => true]);
-
-        $client = Client\Entity::factory()->create(['environment' => 'prod']);
-
-        $this->fixtures->feature->create([
-            Feature\Entity::ENTITY_TYPE => Feature\Constants::APPLICATION,
-            Feature\Entity::ENTITY_ID   => $client->application_id,
-            Feature\Entity::NAME        => Feature\Constants::RAZORPAYX_FLOWS_VIA_OAUTH
-        ]);
-
-        $user = $this->fixtures->create('user', [
-            'contact_mobile'    => '9876543210',
-        ]);
-
-        $accessToken = $this->generateOAuthAccessToken([
-            'scopes'=> ['apple_watch_read_write'],
-            'mode' => 'live',
-            'client_id' => $client->getId(),
-            'user_id'   => $user['id']
-        ], 'prod');
-
-        $this->ba->oauthBearerAuth($accessToken->toString());
-
-        $this->startTest();
-    }
-
-
     public function testOrg2faEnforced()
     {
         $this->fixtures->edit('user', UserFixture::MERCHANT_USER_ID,
