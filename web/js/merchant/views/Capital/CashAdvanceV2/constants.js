@@ -1,10 +1,5 @@
-export const CASH_ADVANCE_CONTENT = {
-  heading: 'Cash Advance',
-  subheading: `Get additional money whenever required, repay and borrow again up to your limit any number of times.`,
-  description: 'You will be re-directed to the Cash Advance application.',
-};
+import { CAPITAL_PRODUCT_CODES } from 'merchant/views/Capital/Loans/constants';
 
-export const FAQ_URL = 'https://razorpay.com/knowledgebase/#merchant';
 export const CASH_ADVANCE_ADVANTAGES = [
   {
     title: '1st withdrawal is free',
@@ -153,7 +148,7 @@ export const FINAL_STEP_CONFIG = [
   {
     parentName: 'Hurray! Withdrawal activated. 🎉',
     stageName: 'STAGE_4',
-    subText: 'Your Cash Advance line is now active.',
+    subText: 'Your credit line is now active.',
     actionButtonText: 'Start Withdrawing',
   },
 ];
@@ -173,7 +168,7 @@ export const DOCUMENT_STATUSES = {
 };
 
 const REJECTED_CONFIG = {
-  title: 'You are not eligible for Cash Advance',
+  title: 'You are not eligible',
   description:
     "Sorry, your application doesn't meet our lending partner's credit requirement at the moment. Suggestions to improve your business eligibility",
   tips: [
@@ -230,4 +225,28 @@ export const SIGNATORY_STATUS = {
 export const APPLICATION_NOT_SUBMITTED = 'record not found';
 
 export const CASH_ADVANCE_LINK = `https://x.razorpay.com/cash-advance?from=dashboard`;
-export const CASH_ADVANCE_WITHDRAWAL_ROUTE = '/capital/cash-advance/withdrawals';
+
+export const PRODUCT_CONFIG = {
+  [CAPITAL_PRODUCT_CODES.CASH_ADVANCE]: {
+    faqUrl: 'https://razorpay.com/knowledgebase/#merchant',
+    applicationUrl: 'https://x.razorpay.com/cash-advance/?from=dashboard',
+    dashboardUrl: '/capital/cash-advance/withdrawals',
+    content: {
+      heading: 'Cash Advance',
+      title: 'Your Cash Advance Application',
+      subheading:
+        'Get additional money whenever required, repay and borrow again up to your limit any number of times.',
+    },
+  },
+  [CAPITAL_PRODUCT_CODES.LOC_EMI]: {
+    faqUrl: 'https://razorpay.com/x/line-of-credit/#faqs',
+    applicationUrl:
+      'https://x.razorpay.com/line-of-credit/application/?intent=capital_loc_emi&from=dashboard',
+    dashboardUrl: 'https://x.razorpay.com/line-of-credit/?from=dashboard',
+    content: {
+      heading: 'Line of Credit',
+      title: 'Your Line of Credit Application',
+      subheading: `Get additional money whenever required, repay and borrow again up to your limit any number of times.`,
+    },
+  },
+};

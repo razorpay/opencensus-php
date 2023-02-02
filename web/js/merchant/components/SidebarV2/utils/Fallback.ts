@@ -118,6 +118,12 @@ export const FALLBACK_PRODUCTS = [
         category: 'popular',
         tags: [],
       },
+      {
+        title: 'Line of Credit',
+        product_id: 'line_of_credit',
+        category: 'popular',
+        tags: [],
+      },
     ],
     max_default_options: 3,
   },

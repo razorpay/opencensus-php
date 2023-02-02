@@ -32,6 +32,7 @@ import {
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 
 const ApiKeysAndPlugins = lazy(() =>
   import(/* webpackChunkName: "ApiKeysAndPlugins" */ 'merchant/views/ApiKeysAndPlugins'),
@@ -827,16 +828,28 @@ export default class Content extends Component {
             additionalCondition={(user) => user.isAllowedView('optimizer')}
           />
           <ShowWhenRoute path="/paypal_onboard_redirect" component={PaypalOnboardRedirect} />
-          <ShowWhenRoute strict path="/capital/:product/apply" component={LoanDetails} />
+          <ShowWhenRoute exact path="/capital/:product/apply" component={LoanDetails} />
           <Redirect exact from="/capital/loans" to="/capital/loans/apply" />
           <ShowWhenRoute
             path="/capital/cash-advance/repayments-schedule"
             component={RepaymentsSchedule}
           />
-          <ShowWhenRoute path="/capital/cash-advance/:section" component={CashAdvance} />
+          <ShowWhenRoute
+            path="/capital/cash-advance/:section"
+            component={CashAdvance}
+            additionalCondition={canViewCashAdvanceProduct}
+            defaultPath="/capital/line-of-credit"
+          />
           <ShowWhenRoute path="/capital/loans/:section" component={LoansCollections} />
           <ShowWhenRoute path="/capital/non-fldg-loans" component={NonFldgLoans} />
-          <ShowWhenRoute path="/capital/cash-advance" component={FlashCreditLandingPage} />
+          <ShowWhenRoute
+            exact
+            path="/capital/:product(cash-advance|line-of-credit)"
+            component={FlashCreditLandingPage}
+            additionalCondition={(user) =>
+              canViewCashAdvanceProduct(user) || canViewLOCEMIProduct(user)
+            }
+          />
           <ShowWhenRoute path="/capital/corporate-cards" component={CorporateCards} />
           <ShowWhenRoute
             path="/payroll"

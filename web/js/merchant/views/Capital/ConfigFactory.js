@@ -30,6 +30,7 @@ export default class ConfigFactory {
 
   create() {
     switch (this.productName) {
+      case CAPITAL_PRODUCT_CODES.LOC_EMI: // not being used for onboarding loc_emi but being used without null check so keeping same as CASH_ADVANCE
       case CAPITAL_PRODUCT_CODES.CASH_ADVANCE:
         return this.getLOCConfigLoader();
       case CAPITAL_PRODUCT_CODES.LOAN:

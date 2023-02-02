@@ -140,6 +140,7 @@ export const AUTOMATED_WITHDRAWAL_DISABLE_OPTIONS = [
   { label: 'Other reasons', value: 'Other reasons' },
 ];
 export const CASH_ADVANCE_BASE_URL = '/capital/cash-advance/';
+export const LINE_OF_CREDIT_BASE_URL = '/capital/line-of-credit/';
 
 export const CASH_ADVANCE_SECTIONS = {
   OVERVIEW: 'overview',

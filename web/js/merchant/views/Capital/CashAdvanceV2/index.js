@@ -4,29 +4,30 @@ import { withRouter } from 'react-router-dom';
 
 import CardsCollection from './Card';
 import {
-  CASH_ADVANCE_CONTENT,
   CASH_ADVANCE_ADVANTAGES,
   APPLICATION_DISABLED_STATES,
   APPLICATION_STATE_SEQUENCE_STAGES,
   APPLICATION_NAVIGATION_CONFIG,
   APPLICATION_STATES,
   INITIAL_APPLICATION_STATE,
-  CASH_ADVANCE_LINK,
-  CASH_ADVANCE_WITHDRAWAL_ROUTE,
-  FAQ_URL,
+  PRODUCT_CONFIG,
 } from './constants';
+import { isLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { trackLandingonCashAdvanceV2, trackApplyNow, trackApplicationStatus } from './TrackEvents';
 import './CashAdvance.styl';
 import { getApplicationByParamData } from 'merchant/reducers/capital';
+import { CAPITAL_PRODUCT_CODES } from 'merchant/views/Capital/Loans/constants';
 import { getFormattedApplicationData } from './utils';
 import RightSideNavigation from './RightSideTracking';
 import StepComponent from './StepComponent';
 import DisabledStateComponent from './DisabledState';
 
 const CashAdvance = (props) => {
-  const { showApplyNow, applicationId } = props;
+  const { showApplyNow, applicationId, productCode } = props;
   const [applicationData, setApplicationData] = useState(INITIAL_APPLICATION_STATE);
   const currentNavigationStatus = applicationData?.navigation?.current;
+  const productConfig =
+    PRODUCT_CONFIG[productCode] || PRODUCT_CONFIG[CAPITAL_PRODUCT_CODES.CASH_ADVANCE];
 
   const getApplicationData = async () => {
     const response = await getApplicationByParamData({
@@ -50,10 +51,16 @@ const CashAdvance = (props) => {
   const handleRedirection = (objectName = '') => {
     showApplyNow ? trackApplyNow() : trackApplicationStatus(objectName);
     if (currentNavigationStatus === APPLICATION_STATES.STATE_COMPLETED) {
-      props.history.push(CASH_ADVANCE_WITHDRAWAL_ROUTE);
-    } else {
-      window.open(CASH_ADVANCE_LINK, '_self');
+      // withdrawal dashboard
+      if (isLOCEMIProduct(productCode)) {
+        window.open(productConfig.dashboardUrl, '_self');
+        return;
+      }
+      props.history.push(productConfig.dashboardUrl);
+      return;
     }
+    // application URL
+    window.open(productConfig.applicationUrl, '_self');
   };
 
   const getCurrentStep = () => {
@@ -72,10 +79,10 @@ const CashAdvance = (props) => {
     <div className={`cash-advance-v2-wrapper ${showApplyNow ? 'default' : 'plain'}`}>
       <div className="cash-advance-v2-wrapper-flex">
         <div className="left-side">
-          <div className="heading">{CASH_ADVANCE_CONTENT.heading}</div>
+          <div className="heading">{productConfig.content.heading}</div>
           <div className="divider" />
           <div className={`sub-heading ${!showApplyNow ? 'with-border' : ''}`}>
-            {CASH_ADVANCE_CONTENT.subheading}
+            {productConfig.content.subheading}
           </div>
           {showApplyNow && (
             <button className="btn btn-primary" onClick={handleRedirection}>
@@ -89,7 +96,7 @@ const CashAdvance = (props) => {
             <div>
               <div className="heading-flex">
                 <div>
-                  <div className="right-heading">Your Cash Advance Application</div>
+                  <div className="right-heading">{productConfig.content.title}</div>
                   <div className="right-sub-heading">Cash_ID{applicationId}</div>{' '}
                 </div>
                 {!disabledApplicationExists && (
@@ -114,7 +121,7 @@ const CashAdvance = (props) => {
             <div className="right-footer">
               <div>
                 <i className="fa fa-question-circle-o" />
-                <a target="_blank" href={FAQ_URL} rel="noreferrer noopener">
+                <a target="_blank" href={productConfig.faqUrl} rel="noreferrer noopener">
                   Show FAQ
                 </a>
               </div>
@@ -135,6 +142,8 @@ CashAdvance.defaultProps = {
 
 CashAdvance.propTypes = {
   showApplyNow: PropTypes.bool,
+  applicationId: PropTypes.string,
+  productCode: PropTypes.oneOf(['LOC', 'LOC_EMI']),
 };
 
 export default withRouter(CashAdvance);

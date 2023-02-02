@@ -5,14 +5,14 @@ import {
   APPLICATION_STATE_SEQUENCE,
   CAPITAL_PRODUCT_CODES,
   ERROR_STATES,
-} from '../Loans/constants';
+} from 'merchant/views/Capital/Loans/constants';
 import * as LocalStorageService from 'common/utils/localStorage';
 import {
   COLLECTIONS_PRODUCT_TYPES,
   CASH_ADVANCE_PRODUCT_TYPES,
   CASH_ON_CARD_RENDER_DATE_KEY,
-} from '../CashAdvance/constants';
-import api from '../Loans/LoansCollections/api';
+} from 'merchant/views/Capital/CashAdvance/constants';
+import api from 'merchant/views/Capital/Loans/LoansCollections/api';
 import store from 'merchant/store';
 
 export const calculatePercentageAmount = (rateInBPS, credit_amount) => {
@@ -55,6 +55,8 @@ export const isLoanProduct = (productName) => productName === CAPITAL_PRODUCT_CO
 
 export const isCashAdvanceProduct = (productName) =>
   productName === CAPITAL_PRODUCT_CODES.CASH_ADVANCE;
+
+export const isLOCEMIProduct = (productCode) => productCode === CAPITAL_PRODUCT_CODES.LOC_EMI;
 
 export const getApplicationSteps = (applicationStateGroups) => {
   return Object.entries(applicationStateGroups).reduce(
@@ -254,6 +256,22 @@ export const disableFutureMonths = (date) => {
 
 export const getProductType = (user) => {
   return user.isFeatureEnabled('cash_on_card') ? CASH_ADVANCE_PRODUCT_TYPES.CASH_ON_CARD : '';
+};
+
+export const canViewCashAdvanceProduct = (user) => {
+  // All Cash Adance merchants should have loc feature flag(withdraw_loc is common for LOC and LOC_EMI)
+  // isAllowedView has checks for current user role and white labelled orgs
+  return (user.isAllowedView('cash_advance') && user.isLOCEnabled) || user.isCashOnCardEnabled;
+};
+
+export const isCashAdvanceProductActive = (user) => {
+  return (
+    (canViewCashAdvanceProduct(user) && user.isWithdrawFeatureEnabled) || user.isCashOnCardEnabled
+  );
+};
+
+export const canViewLOCEMIProduct = (user) => {
+  return !canViewCashAdvanceProduct(user) && user.isAllowedView('cash_advance') && user.isOrgRZP;
 };
 
 export function getCashOnCardRenderDateKey() {

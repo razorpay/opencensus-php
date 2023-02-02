@@ -11,7 +11,11 @@ import {
   getDisabledReasons,
   getProductNames,
   isCashAdvanceProduct,
+  isLOCEMIProduct,
   isLoanProduct,
+  isCashAdvanceProductActive,
+  canViewCashAdvanceProduct,
+  canViewLOCEMIProduct,
 } from 'merchant/views/Capital/utils';
 import Spinner from 'merchant/views/Capital/components/Spinner';
 import ApplicationOnboardingForm from './Forms/ApplicationOnboardingForm';
@@ -24,6 +28,7 @@ import {
   APPLICATION_STATES,
   LOANS_BASE_URL,
   LOANS_SECTIONS,
+  CAPITAL_PRODUCT_CODES,
 } from './constants';
 import EditPanModal from './EditPanModal';
 import CircularProgress from 'common/new-ui/CircularProgress';
@@ -44,6 +49,11 @@ import { OnBoardingWrapper } from 'merchant/components/OnBoarding';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import api from './LoansCollections/api';
 import { PLAN_STATUS } from './LoansCollections/constants';
+import {
+  CASH_ADVANCE_BASE_URL,
+  LINE_OF_CREDIT_BASE_URL,
+  CASH_ADVANCE_SECTIONS,
+} from 'merchant/views/Capital/CashAdvance/constants';
 
 const CashAdvanceV2 = lazy(() =>
   import(/* webpackChunkName: 'CashAdvanceV2' */ '../CashAdvanceV2'),
@@ -185,7 +195,11 @@ export default class LoanApplicationOverview extends React.Component {
   };
 
   validateProduct = () => {
-    const allowedProducts = ['LOAN', 'LOC'];
+    const allowedProducts = [
+      CAPITAL_PRODUCT_CODES.LOAN,
+      CAPITAL_PRODUCT_CODES.CASH_ADVANCE,
+      CAPITAL_PRODUCT_CODES.LOC_EMI,
+    ];
     const productCode = this.getProductCode();
     if (!productCode || !allowedProducts.includes(productCode)) this.redirectToHome();
   };
@@ -196,6 +210,17 @@ export default class LoanApplicationOverview extends React.Component {
 
     const params = new URLSearchParams(history.location.search);
     const action = params.get('action');
+    const productCode = this.getProductCode();
+
+    if (isLoanProduct(productCode)) {
+      return !user.isLoansEnabled && this.redirectToHome();
+    }
+    // early exit condition for non cash advance and loc emi since we dont want below conditions execute for other products such as loans.
+    if (!isLOCEMIProduct(productCode) && !isCashAdvanceProduct(productCode)) {
+      return this.redirectToHome();
+    }
+    const isCashAdvanceEligible = canViewCashAdvanceProduct(user);
+    const isLOCEMIEligible = canViewLOCEMIProduct(user);
 
     // When cash-advance is clicked in the left nav, we take the user to
     // for cash-advance application page. But if the user's application
@@ -206,25 +231,23 @@ export default class LoanApplicationOverview extends React.Component {
     // application instead of redirecting user to cash-advance because the
     // application process is completed. Hence check url params to validate
     // before redirection.
-    if (isCashAdvanceProduct(this.getProductCode()) && user.isWithdrawFeatureEnabled && !action) {
-      this.redirectToCashAdvanceHome();
+    if (isCashAdvanceProductActive(user) && !action) {
+      return history.push(`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`);
     }
-    if (isCashAdvanceProduct(this.getProductCode()) && user.isCashAdvanceStage2Enabled && !action) {
-      this.redirectToCashAdvanceHome();
+    if (isCashAdvanceEligible && user.isCashAdvanceStage2Enabled && !action) {
+      return history.push(CASH_ADVANCE_BASE_URL);
     }
-    if (isCashAdvanceProduct(this.getProductCode()) && !(user.isLOCEnabled && user.isLOSEnabled)) {
-      return this.redirectToHome();
+    if (isCashAdvanceEligible && !isCashAdvanceProduct(productCode)) {
+      // Edge case: incase merchant directly visits line of credit apply page and not eligible
+      return history.push(`${CASH_ADVANCE_BASE_URL}apply`);
     }
-    if (isLoanProduct(this.getProductCode()) && !user.isLoansEnabled) {
-      return this.redirectToHome();
+    if (isLOCEMIEligible && !isLOCEMIProduct(productCode)) {
+      // Edge case: incase merchant directly visits cash advance apply page and not eli
+      return history.push(`${LINE_OF_CREDIT_BASE_URL}apply`);
     }
 
     return false;
   };
-
-  redirectToCashAdvanceHome() {
-    this.props.history.push('/capital/cash-advance/');
-  }
 
   redirectLoansOverview() {
     this.props.history.push(`${LOANS_BASE_URL}${LOANS_SECTIONS.OVERVIEW}`);
@@ -479,7 +502,7 @@ export default class LoanApplicationOverview extends React.Component {
   getUIConfig = () => {
     const { loanApplicationDetails } = this.props;
 
-    return loanApplicationDetails.meta.configuration.ui;
+    return loanApplicationDetails.meta.configuration?.ui;
   };
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -553,19 +576,25 @@ export default class LoanApplicationOverview extends React.Component {
     const isFetchingLoanDisabledReason = this.state.loanDisabledReason.fetching;
 
     const hasApplication = loanApplicationDetails?.meta?.data?.application;
-    const isProductCashAdvance = window.location.pathname.includes('cash-advance');
+    const productCode = this.getProductCode();
+    const isProductCashAdvance = isCashAdvanceProduct(productCode);
+    const isProductLOCEMI = isLOCEMIProduct(productCode);
 
-    if (isProductCashAdvance) {
+    if (isProductCashAdvance || isProductLOCEMI) {
       if (hasApplication) {
         return (
           <SuspenseWithLoader>
-            <CashAdvanceV2 showApplyNow={!hasApplication} applicationId={hasApplication?.id} />
+            <CashAdvanceV2
+              productCode={productCode}
+              showApplyNow={!hasApplication}
+              applicationId={hasApplication?.id}
+            />
           </SuspenseWithLoader>
         );
       } else {
         return (
           <SuspenseWithLoader>
-            <PreApprovedOnboarding />
+            <PreApprovedOnboarding productCode={productCode} />
           </SuspenseWithLoader>
         );
       }

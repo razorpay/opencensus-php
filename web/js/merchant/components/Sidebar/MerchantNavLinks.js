@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import MainNavLink from 'merchant_common/components/MainNavLink';
 import MagicCheckoutNavLink from 'merchant/components/Sidebar/MagicCheckoutNavLink';
+import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, isMobileResolution } from 'common/utils/rzp-utils';
 import {
@@ -104,15 +105,16 @@ function MerchantNavLinks(props) {
       <MainNavLink
         label="Loans (Cash Advance)"
         icon="i i-star text-warning"
-        to="/capital/cash-advance/"
+        to="/capital/cash-advance"
         isLive
-        additionalCondition={(currentUser) =>
-          currentUser.isAllowedView('cash_advance') &&
-          (currentUser.isLOCEnabled ||
-            currentUser.isCashAdvanceStage2Enabled ||
-            currentUser.isWithdrawFeatureEnabled ||
-            currentUser.isCashOnCardEnabled)
-        }
+        additionalCondition={canViewCashAdvanceProduct}
+      />
+      <MainNavLink
+        label="Line of Credit"
+        icon="i i-star text-warning"
+        to="/capital/line-of-credit"
+        isLive
+        additionalCondition={canViewLOCEMIProduct}
       />
 
       <MainNavLink

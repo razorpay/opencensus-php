@@ -1,5 +1,6 @@
 import { isMobileResolution } from 'common/utils/rzp-utils';
 import { isOrgFeatureExist } from 'merchant/models/User';
+import { canViewCashAdvanceProduct, canViewLOCEMIProduct } from 'merchant/views/Capital/utils';
 
 export const PRODUCTS_DATA = {
   home: {
@@ -148,13 +149,12 @@ export const PRODUCTS_DATA = {
       user.isAllowedView('payment_links') && !user.findTag('i18_hide_payment_links'),
   },
   cash_advance: {
-    icon: 'i-star',
-    additionalCondition: (user: any): boolean =>
-      user.isAllowedView('cash_advance') &&
-      (user.isLOCEnabled ||
-        user.isCashAdvanceStage2Enabled ||
-        user.isWithdrawFeatureEnabled ||
-        user.isCashOnCardEnabled),
+    icon: 'i-rupee',
+    additionalCondition: canViewCashAdvanceProduct,
+  },
+  line_of_credit: {
+    icon: 'i-rupee',
+    additionalCondition: canViewLOCEMIProduct,
   },
   invoices: {
     icon: 'i-notes',

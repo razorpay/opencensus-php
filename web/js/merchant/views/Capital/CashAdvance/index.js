@@ -9,8 +9,12 @@ import {
   fetchWithdrawals,
   fetchFunctionalWithdrawalConfigByMerchantID,
 } from 'merchant/reducers/capital/withdrawals';
-import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS } from './constants';
-import { getProductType } from 'merchant/views/Capital/utils';
+import { CASH_ADVANCE_BASE_URL, CASH_ADVANCE_SECTIONS, LINE_OF_CREDIT_BASE_URL } from './constants';
+import {
+  getProductType,
+  canViewCashAdvanceProduct,
+  isCashAdvanceProductActive,
+} from 'merchant/views/Capital/utils';
 
 @connect(
   (state) => ({
@@ -43,11 +47,7 @@ class WithdrawalsRoot extends Component {
   componentDidMount() {
     const { user } = this.props;
 
-    // fetchSeedData();
-    const hasWithdrawFeature = user.isWithdrawFeatureEnabled;
-    const isCashOnCardEnabled = user.isCashOnCardEnabled;
-
-    if (hasWithdrawFeature || isCashOnCardEnabled) {
+    if (isCashAdvanceProductActive(user)) {
       this.fetchWithdrawalConfiguration();
       this.props.fetchWithdrawals({
         product_type: this.productType,
@@ -124,13 +124,8 @@ class WithdrawalsRoot extends Component {
     } = this.props;
 
     const withdrawalConfigurationDetails = this.props.withdrawalConfigurationDetails.data;
-
     const hasLOCStage2Feature = user.isCashAdvanceStage2Enabled;
-    const hasWithdrawFeature = user.isWithdrawFeatureEnabled;
-    const isLOSEnabled = user.isLOSEnabled;
-    const isLOCEnabled = user.isLOCEnabled;
-    const isCashOnCardEnabled = user.isCashOnCardEnabled;
-
+    const isCashAdvanceEligible = canViewCashAdvanceProduct(user);
     const hasWC = !!withdrawalConfigurationDetails;
 
     if (list.loading || configLoading)
@@ -141,30 +136,30 @@ class WithdrawalsRoot extends Component {
         </div>
       );
 
-    const OnboardingSection = (
-      <Onboarding
-        leadGenerated={true}
-        hasLOCStage2Feature={true}
-        hasWithdrawalConfiguration={hasWC}
-        createFDTicket={WithdrawalsRoot.createCapitalFDTicket}
-        onRaiseRequest={this.onRaiseRequest}
-        withdrawalConfiguration={withdrawalConfigurationDetails}
-        trackGA={this.gaEventDispatcher}
-      />
-    );
-
-    if (hasWithdrawFeature || isCashOnCardEnabled) {
+    if (isCashAdvanceProductActive(user)) {
       if (wcError) {
         return 'Error while loading WC.';
       }
       return <Redirect to={`${CASH_ADVANCE_BASE_URL}${CASH_ADVANCE_SECTIONS.OVERVIEW}`} />; // nosemgrep : https://semgrep.dev/s/w48P
-    } else if (hasLOCStage2Feature) {
-      return OnboardingSection;
-    } else if (isLOSEnabled && isLOCEnabled) {
-      return <Redirect to={`${CASH_ADVANCE_BASE_URL}apply`} />; // nosemgrep : https://semgrep.dev/s/w48P
-    } else {
-      return <Redirect to="/" />;
     }
+    if (isCashAdvanceEligible && hasLOCStage2Feature) {
+      // Edge Case: update the URL to capital/cash-advance incase cash advance merchant directly visited line-of-credit. rare scenario so not handling it to avoid complexity
+      return (
+        <Onboarding
+          leadGenerated={true}
+          hasLOCStage2Feature={true}
+          hasWithdrawalConfiguration={hasWC}
+          createFDTicket={WithdrawalsRoot.createCapitalFDTicket}
+          onRaiseRequest={this.onRaiseRequest}
+          withdrawalConfiguration={withdrawalConfigurationDetails}
+          trackGA={this.gaEventDispatcher}
+        />
+      );
+    }
+    if (isCashAdvanceEligible) {
+      return <Redirect to={`${CASH_ADVANCE_BASE_URL}apply`} />; // nosemgrep : https://semgrep.dev/s/w48P
+    }
+    return <Redirect to={`${LINE_OF_CREDIT_BASE_URL}apply`} />;
   }
 }
 
