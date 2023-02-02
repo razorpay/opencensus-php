@@ -57,7 +57,7 @@ export const DisableSignupContainer = Styled(View)`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #fff;
+  background: #FFFFFF;
   @media ${media.mobile} {
     height: auto;
     margin-bottom: 30px;

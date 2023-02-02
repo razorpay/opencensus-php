@@ -4,6 +4,7 @@ const size = {
   tab: '769px',
   tabBig: '900px',
   desktop: '992px',
+  mobileTabMax: '1170px',
 };
 
 export const media = {
@@ -12,4 +13,5 @@ export const media = {
   tab: `(min-width: ${size.tab})`,
   tabBig: `(min-width: ${size.tab}) and (max-width: ${size.tabBig})`,
   desktop: `(min-width: ${size.desktop})`,
+  mobileTabMax: `(max-width: ${size.mobileTabMax})`,
 };

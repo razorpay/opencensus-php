@@ -8,6 +8,7 @@ import Size from '@razorpay/blade-old/src/atoms/Size';
 import { FullPageLoader } from '../common/components/Loader'; // eslint-disable-line
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme';
 import { ROUTES } from './utils';
+import splitz from './splitz';
 
 __webpack_public_path__ = `${window.cdnDashboardUrl || ''}/dist/`; // eslint-disable-line
 
@@ -39,6 +40,10 @@ const App = () => {
       location.href = '/signin';
     }
   }, [route]);
+
+  useEffect(() => {
+    splitz();
+  }, []);
 
   const getComponentBasedOnRoute = (route) => {
     switch (route) {

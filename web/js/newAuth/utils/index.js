@@ -145,6 +145,10 @@ export const getHostName = () => {
   return window.location.hostname;
 };
 
+export const redirectToLogIn = () => {
+  window.location = '/';
+};
+
 export const isPasswordUXImprovementEnabled = () => {
   return window.isPasswordUXExpEnabled || location.search.includes('password_ux=true'); // set from optimize
 };

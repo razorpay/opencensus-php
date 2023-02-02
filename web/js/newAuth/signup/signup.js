@@ -21,6 +21,8 @@ import { setCookie } from 'common/utils/cookies';
 import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
 import { fetchOrg } from 'newAuth/apis';
 import { FullPageLoader } from 'common/components/Loader';
+import PartnerSignup from './components/PartnerSignup';
+import { isNewPartnerSignup } from 'newAuth/splitz/index';
 
 const SignUp = () => {
   const [programDsCheck, setProgramDsCheck] = useState(false);
@@ -134,6 +136,8 @@ const SignUp = () => {
   if (window.location.host === 'dashboard.curlec.com') {
     disableSignup = false;
   }
+
+  if (!disableSignup && isNewPartnerSignup()) return <PartnerSignup />;
 
   return (
     <ThemeProvider theme={theme}>

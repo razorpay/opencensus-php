@@ -1,0 +1,103 @@
+// stylelint-disable color-function-notation
+$black-color = #000;
+
+.Modal {
+  font-family: Lato, sans-serif;
+  margin: 65px auto;
+  padding: 0;
+  border: 0;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.3);
+  background-color: #FAFAFA;
+  border-radius: 2px;
+
+  .modal-header {
+    padding: 24px 24px 0;
+    border-bottom: 0;
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 1.25em;
+    }
+
+    .close {
+      margin: 0;
+    }
+  }
+
+  .modal-body {
+    padding: 16px 24px 24px;
+  }
+
+  .Modal__actions {
+    padding-top: 8px;
+  }
+}
+
+.Modal--regular {
+  max-width: 625px;
+
+  @media (max-width 625px) {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+.Modal--medium {
+  max-width: 375px;
+
+  @media (max-width 625px) {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+.Modal--med-large {
+  max-width: 473px;
+
+  @media (max-width 625px) {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+.Modal--small {
+  max-width: 328px;
+
+  @media (max-width 328px) {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+.Modal--large {
+  max-width: 756px;
+
+  @media (max-width 756px) {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+.Modal--xlarge {
+  max-width: 850px;
+
+  @media (max-width 756px) {
+    max-width: 756px;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+}
+
+.Modal--full-screen {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  top: 0;
+  bottom: 0;
+}
+
+.Modal--signup-info {
+  margin: auto 104px auto auto;
+  border-radius: 15px;
+}

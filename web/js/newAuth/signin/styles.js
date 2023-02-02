@@ -114,7 +114,7 @@ export const LinkButton = Styled(View)`
 
 export const CaptchaTextView = Styled(View)`
   position: relative;
-  background-color: #fff;
+  background-color: #FFFFFF;
   top: -3px;
   left: 0;
   right: 0;

@@ -100,6 +100,8 @@
     "build:pokedex": "node tools/build.js --project=pokedex",
     "build:newAuth": "node tools/build.js --project=newAuth",
     "build:merchantTnc": "node tools/build.js --project=merchantTnc",
+    "watch:newAuth": "nodemon --exec \"STAGE=staging npm run build:newAuth\"",
+    "watch:merchant": "nodemon --exec \"STAGE=staging npm run build:merchant\"",
     "staging:build": "STAGE=staging run-p build:*",
     "production:build": "STAGE=production run-p build:*",
     "storybook": "start-storybook -p 6006 -s ../public",
