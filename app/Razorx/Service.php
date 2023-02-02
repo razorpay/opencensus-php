@@ -129,7 +129,6 @@ class Service extends Base\Service
             'instant-activations-functionality',
             'mandatory_aadhar_ekyc',
             'rx_vendor_portal_rollout',
-            'rx_taxpayments_tin_change',
             'payments_extra_refund_details',
             'recurring_more_account_type',
             'mtu_coupon_code',
