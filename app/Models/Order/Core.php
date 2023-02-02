@@ -60,6 +60,8 @@ class Core extends Base\Core
             return $this->app['pg_router']->createOrder($input, true);
         }
 
+        unset($input[Entity::OLD_BANK_FORMAT]);
+
         $inputTrace = $input;
 
         unset($inputTrace['bank_account']['account_number'], $inputTrace['bank_account']['name'],

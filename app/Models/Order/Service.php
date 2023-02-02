@@ -354,11 +354,19 @@ class Service extends Base\Service
             ],
         ];
 
+        $oldBankFormat = [
+                Entity::ACCOUNT_NUMBER => (isset($input[Entity::ACCOUNT_NUMBER])?$input[Entity::ACCOUNT_NUMBER]:""),
+                Entity::PAYER_NAME => (isset($input[Entity::PAYER_NAME])?$input[Entity::PAYER_NAME]:""),
+        ];
+
+        $input[Entity::OLD_BANK_FORMAT] = $oldBankFormat;
+
         unset($input[Entity::ACCOUNT_NUMBER]);
 
         unset($input[Entity::PAYER_NAME]);
 
         $input = array_merge($input, $additionalInput);
+
     }
 
     /**
