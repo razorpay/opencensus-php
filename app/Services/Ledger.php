@@ -521,11 +521,6 @@ class Ledger
                 // if RX VA case, prevent deletion of VA's reverse shadow merchants
                 $ledgerReverseShadowMerchantIds = $this->repo->feature->getMerchantIdsHavingFeature(Feature\Constants::LEDGER_REVERSE_SHADOW, $requestBody[self::MERCHANT_IDS]);
             }
-            else if (empty($requestBody[self::ENTITIES][self::BANKING_ACCOUNT_STMT_DETAIL_ID]) === false)
-            {
-                // if RX DA case, prevent deletion of DA's reverse shadow merchants
-                $ledgerReverseShadowMerchantIds = $this->repo->feature->getMerchantIdsHavingFeature(Feature\Constants::DA_LEDGER_REVERSE_SHADOW, $requestBody[self::MERCHANT_IDS]);
-            }
 
             $requestBody[self::MERCHANT_IDS] = empty($ledgerReverseShadowMerchantIds) ? $requestBody[self::MERCHANT_IDS] : array_diff($requestBody[self::MERCHANT_IDS], $ledgerReverseShadowMerchantIds);
         }

@@ -2874,35 +2874,6 @@ return [
         ]
     ],
 
-    'testDALedgerReverseShadowFeatureManualAddition' => [
-        'request'   => [
-            'content' => [
-                'names'       => ['da_ledger_reverse_shadow'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000'
-            ],
-            'url'     => '/features',
-            'method'  => 'POST',
-            'server'  => [
-                'HTTP_X-Dashboard'                => 'true',
-                'HTTP_X-Dashboard-Admin-Username' => 'admin',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Manually enabling/disabling ledger feature da_ledger_reverse_shadow is not allowed.'
-                ]
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ]
-    ],
-
     'testLedgerReverseShadowFeatureAdditionWhenLedgerJournalWritesIsDisabled' => [
         'request'   => [
             'content' => [
@@ -3048,34 +3019,6 @@ return [
         ]
     ],
 
-    'testDALedgerReverseShadowFeatureManualAdditionFromBulk' => [
-        'request'  => [
-            'content' => [
-                'name'        => 'da_ledger_reverse_shadow',
-                'entity_ids'  => ['10000000000000', '10000000000001'],
-                'entity_type' => 'merchant'
-            ],
-            'url'     => '/features/assign',
-            'method'  => 'POST',
-            'server'  => [
-                'HTTP_X-Dashboard'                => 'true',
-                'HTTP_X-Dashboard-Admin-Username' => 'admin',
-                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'successful' => [],
-                'failed'     => [
-                    'da_ledger_reverse_shadow' => [
-                        '10000000000000',
-                        '10000000000001'
-                    ],
-                ],
-            ]
-        ],
-    ],
-
     'testDualCheckoutFeature' => [
         'request'  => [
             'url'     => '/features',
@@ -3116,33 +3059,6 @@ return [
                 'successful' => [],
                 'failed'     => [
                     'ledger_reverse_shadow' => [
-                        '10000000000000',
-                        '10000000000001'
-                    ],
-                ],
-            ]
-        ]
-    ],
-
-    'testDALedgerReverseShadowFeatureManualRemoveFromBulk' => [
-        'request'  => [
-            'content' => [
-                'entity_type' => 'merchant',
-                'name'       => 'da_ledger_reverse_shadow',
-                'entity_ids' => ['10000000000000', '10000000000001']
-            ],
-            'url'     => '/features/remove',
-            'method'  => 'POST',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'successful' => [],
-                'failed'     => [
-                    'da_ledger_reverse_shadow' => [
                         '10000000000000',
                         '10000000000001'
                     ],

@@ -150,13 +150,6 @@ class Service extends Base\Service
                 $bankingAccount = (new BankingAccount\Repository)->findByPublicId($bankingAccountId);
                 $transaction = $this->constructTransactionForSharedBalanceFromLedgerResponse($id, $bankingAccount, $merchantBalanceLedgerEntry, $body);
             }
-            else if (($balanceAccountType === self::DIRECT) and ($this->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW) === true))
-            {
-                $reverseShadowFeature = Feature\Constants::DA_LEDGER_REVERSE_SHADOW;
-                $bankingAccountStmtDetailId = $merchantBalanceLedgerEntry[LedgerProcessor\Base::ACCOUNT_ENTITIES][self::BANKING_ACCOUNT_STMT_DETAILS_ID][0];
-                $bankingAccountStmtDetail = (new BankingAccountStatement\Details\Repository)->findByPublicId($bankingAccountStmtDetailId);
-                $transaction = $this->constructTransactionForDirectBalanceFromLedgerResponse($id, $bankingAccountStmtDetail, $body);
-            }
         }
         catch (\Throwable $e)
         {

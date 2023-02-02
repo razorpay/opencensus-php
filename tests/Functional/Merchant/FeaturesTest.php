@@ -3181,13 +3181,6 @@ Regards,
         $this->startTest();
     }
 
-    public function testDALedgerReverseShadowFeatureManualAddition()
-    {
-        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
-
-        $this->startTest();
-    }
-
     public function testLedgerReverseShadowFeatureManualAdditionFromBulk()
     {
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
@@ -3195,21 +3188,7 @@ Regards,
         $this->startTest();
     }
 
-    public function testDALedgerReverseShadowFeatureManualAdditionFromBulk()
-    {
-        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
-
-        $this->startTest();
-    }
-
     public function testLedgerReverseShadowFeatureManualRemoveFromBulk()
-    {
-        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
-
-        $this->startTest();
-    }
-
-    public function testDALedgerReverseShadowFeatureManualRemoveFromBulk()
     {
         $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
 

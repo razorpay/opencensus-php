@@ -1227,7 +1227,6 @@ class Constants
      * All Ledger Features for RX Direct accounting release
      */
     const DA_LEDGER_JOURNAL_WRITES = 'da_ledger_journal_writes';
-    const DA_LEDGER_REVERSE_SHADOW = 'da_ledger_reverse_shadow';
 
     /**
      * Ledger Features for PG release
@@ -2241,7 +2240,6 @@ class Constants
         self::ADDRESS_REQUIRED                => true,
         self::LEDGER_JOURNAL_WRITES           => true,
         self::DA_LEDGER_JOURNAL_WRITES        => true,
-        self::DA_LEDGER_REVERSE_SHADOW        => true,
         self::PG_LEDGER_JOURNAL_WRITES        => true,
         self::LEDGER_JOURNAL_READS            => true,
         self::LEDGER_REVERSE_SHADOW           => true,
@@ -3467,7 +3465,6 @@ class Constants
         self::LEDGER_JOURNAL_READS,
         self::LEDGER_REVERSE_SHADOW,
         self::DA_LEDGER_JOURNAL_WRITES,
-        self::DA_LEDGER_REVERSE_SHADOW
     ];
 
     // Payout service related features

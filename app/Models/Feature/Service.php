@@ -122,9 +122,9 @@ class Service extends Base\Service
         foreach ($input as $request) {
 
             $result = [
-                Constants::IDEMPOTENCY_KEY => $request[Constants::IDEMPOTENCY_KEY],
-                Constants::MERCHANT_ID     => $request[Constants::MERCHANT_ID],
-                Constants::STATUS          => 'success'
+                Constants::IDEMPOTENCY_KEY  => $request[Constants::IDEMPOTENCY_KEY],
+                Constants::MERCHANT_ID      => $request[Constants::MERCHANT_ID],
+                Constants::STATUS           => 'success'
             ];
 
             try
@@ -327,32 +327,6 @@ class Service extends Base\Service
                     // The case below removes feature flag from merchant
                     case 'da_shadow_merchant_offboard':
                         $featureFlag = Constants::DA_LEDGER_JOURNAL_WRITES;
-                        $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
-                            EntityConstants::MERCHANT,
-                            $merchant->getId(),
-                            $featureFlag);
-
-                        if (!empty($feature)) {
-                            (new Core)->delete($feature);
-                        }
-                        break;
-
-                    case 'da_reverse_shadow_merchant_onboard':
-                        // first sending the request to ledger because if anything fails we don't add the feature
-                        $this->ledgerAccountCreateRequestForDirect($merchant, Constants::DA_LEDGER_REVERSE_SHADOW);
-
-                        // Add DA_LEDGER_REVERSE_SHADOW feature to merchant
-                        (new Core)->create(
-                            [
-                                Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
-                                Entity::ENTITY_ID => $merchant->getId(),
-                                Entity::NAME => Constants::DA_LEDGER_REVERSE_SHADOW,
-                            ]);
-                        break;
-
-                    // The case below removes feature flag from merchant
-                    case 'da_reverse_shadow_merchant_offboard':
-                        $featureFlag = Constants::DA_LEDGER_REVERSE_SHADOW;
                         $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
                             EntityConstants::MERCHANT,
                             $merchant->getId(),

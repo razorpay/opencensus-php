@@ -317,9 +317,7 @@ class Core extends Base\Core
 
         $daLedgerJournalWritesEnabled = $creditLogs->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_JOURNAL_WRITES);
 
-        $daLedgerReverseShadowEnabled = $creditLogs->merchant->isFeatureEnabled(Feature\Constants::DA_LEDGER_REVERSE_SHADOW);
-
-        if ($ledgerJournalWritesEnabled === false and $daLedgerJournalWritesEnabled === false and $daLedgerReverseShadowEnabled === false)
+        if ($ledgerJournalWritesEnabled === false and $daLedgerJournalWritesEnabled === false)
         {
             return;
         }
