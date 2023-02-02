@@ -45,7 +45,7 @@ describe('SectionCard', () => {
       actionName: 'Clicked',
       screen: 'Account & Settings',
       properties: {
-        clickedElement: selectedSubSection.title,
+        clickedElement: defaultProps.title,
         section: selectedSubSection.title,
       },
     });

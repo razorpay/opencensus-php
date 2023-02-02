@@ -13,6 +13,7 @@ import rolesList from 'merchant/helpers/permissions/roles-list';
 import { storeWithInitialState } from 'merchant/store';
 import { testNewStylesUsingFlowRevamped } from 'merchant/views/AccountAndSettings/__test__/mocks/fixtures';
 import 'jest-location-mock';
+import { Modules } from 'common/constant/enums';
 
 jest.mock('merchant/views/Account/Profile/components/UserContactMobile', () => ({
   __esModule: true,
@@ -135,8 +136,8 @@ describe('Contact Details', () => {
         expect(selfServeTrackInitiateMock).toHaveBeenCalled();
         expect(selfServeTrackInitiateMock).toHaveBeenCalledWith({
           selfServeAction: 'Display Name Updated',
-          page: 'Profile',
-          screen: 'My Account',
+          page: 'Contact Details',
+          screen: Modules.BusinessSettings,
         });
       });
 

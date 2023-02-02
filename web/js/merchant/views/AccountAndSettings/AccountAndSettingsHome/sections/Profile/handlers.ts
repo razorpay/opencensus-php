@@ -10,12 +10,29 @@ import {
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
 import EmailSelfServeModal from 'merchant/views/Settings/EmailSelfServe/EmailInput';
 import AddEmailModal from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/AddEmail';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { Modules } from 'common/constant/enums';
 
 export const updateDisplayNameHandler = (componentScope) => (attributes) => {
   return componentScope
     .updateMerchantConfig(attributes)
     .then((resp) => {
       if (resp.success) {
+        selfServeTrackSuccess({
+          selfServeAction: 'Display Name Updated',
+          page: 'Personal Profile',
+          screen: Modules.AccountAndSettings,
+        });
+        analyticsTrackWithUserInfo({
+          objectName: 'display name update',
+          actionName: 'status',
+          screen: Modules.AccountAndSettings,
+          properties: {
+            status: 'success',
+            newDisplayName: attributes.display_name,
+          },
+        });
         componentScope.showNotification({
           type: 'success',
           message: 'Display name changed successfully.',

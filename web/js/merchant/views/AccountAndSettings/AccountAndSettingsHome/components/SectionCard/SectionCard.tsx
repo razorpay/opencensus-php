@@ -18,7 +18,7 @@ const SectionCard = ({
   isMobile,
   history,
 }: SectionCardPropsInterface): JSX.Element => {
-  const onNavLinkClick = ({ href, title }: SubSection) => {
+  const onNavLinkClick = ({ href, title: linkTitle }: SubSection) => {
     history.push(href);
     analyticsTrackWithUserInfo({
       objectName: 'Business Profile',
@@ -26,7 +26,7 @@ const SectionCard = ({
       screen: Modules.AccountAndSettings,
       properties: {
         clickedElement: title,
-        section: title,
+        section: linkTitle,
       },
     });
   };

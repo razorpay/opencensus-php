@@ -6,7 +6,7 @@ import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils'
 import { analyticsTrack } from 'common/utils/analytics';
 import UserContactMobile from 'merchant/views/Account/Profile/components/UserContactMobile';
 import Popover, { PopoverBody } from 'common/ui/Popover';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import TextHighlighter from 'common/ui/TextHighlighter';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
 import {
@@ -21,6 +21,7 @@ import * as ModalActions from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import * as ProfileActions from 'merchant/reducers/profile';
 import { ContactDetailsProps } from 'merchant/views/AccountAndSettings/BusinessSettings/typings';
+import { Modules } from 'common/constant/enums';
 
 const ContactDetails = ({
   user,
@@ -45,6 +46,11 @@ const ContactDetails = ({
               newDisplayName: args.display_name,
               ...getCommonAnalyticsProperties(window.rzp_user),
             },
+          });
+          selfServeTrackSuccess({
+            selfServeAction: 'Display Name Updated',
+            page: 'Contact Details',
+            screen: Modules.BusinessSettings,
           });
           showNotification({
             type: 'success',
@@ -140,8 +146,8 @@ const ContactDetails = ({
                   onClick={() => {
                     selfServeTrackInitiate({
                       selfServeAction: 'Display Name Updated',
-                      page: 'Profile',
-                      screen: 'My Account',
+                      page: 'Contact Details',
+                      screen: Modules.BusinessSettings,
                     });
                     analyticsTrack({
                       objectName: 'dispay name edit',
