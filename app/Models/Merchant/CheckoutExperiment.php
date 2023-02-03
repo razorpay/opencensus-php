@@ -47,7 +47,9 @@ class CheckoutExperiment
             'cb_redesign_v1_5'                                   => false,
             'recurring_redesign_v1_5'                            => false,
             'reuse_upi_paymentId'                                => false,
-            'recurring_upi_intent_qr'                            => false,
+            'recurring_upi_intent'                               => false,
+            'recurring_upi_qr'                                   => false,
+            'recurring_payment_method_configuration'             => false,
             'recurring_upi_all_psp'                              => false,
             'banking_redesign_v15'                               => false,
             'remove_default_tokenization_flag'                   => false,
@@ -173,9 +175,25 @@ class CheckoutExperiment
 
         $this->fillExperimentData(
             UniqueIdEntity::generateUniqueId(),
-            'app.checkout_recurring_upi_intent_qr_splitz_experiment_id',
-            'RecurringUpiIntentQr',
-            'recurring_upi_intent_qr',
+            'app.checkout_recurring_upi_intent_splitz_experiment_id',
+            'RecurringUpiIntent',
+            'recurring_upi_intent',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_recurring_upi_qr_splitz_experiment_id',
+            'RecurringUpiQr',
+            'recurring_upi_qr',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_recurring_payment_method_configuration_splitz_experiment_id',
+            'RecurringUpiPaymentMethodConfiguration',
+            'recurring_payment_method_configuration',
             ['merchant_id' => $this->merchantId]
         );
 
@@ -357,44 +375,32 @@ class CheckoutExperiment
         return $variant === 'variant_on';
     }
 
-    private function handleRecurringUpiIntentQrResponse($response): bool
+    private function handleRecurringUpiIntentResponse($response): bool
     {
-        $variant = $response['variant'] ?? '';
+        $variant = $response['variant']['name'] ?? '';
 
-        if($variant)
-        {
-            $variantArray =  $variant["variables"] ?? [];
+        return $variant === 'variant_on';
+    }
 
-            foreach ($variantArray as $eachVariant)
-            {
-                if($eachVariant["value"] === "on")
-                {
-                    return true;
-                }
-            }
-        }
+    private function handleRecurringUpiQrResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
 
-        return false;
+        return $variant === 'variant_on';
+    }
+
+    private function handleRecurringUpiPaymentMethodConfigurationResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
     }
 
     private function handleRecurringUpiPspResponse($response): bool
     {
-        $variant = $response['variant'] ?? '';
+        $variant = $response['variant']['name'] ?? '';
 
-        if($variant)
-        {
-            $variantArray =  $variant["variables"] ?? [];
-
-            foreach ($variantArray as $eachVariant)
-            {
-                if($eachVariant["value"] === "on")
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
+        return $variant === 'variant_on';
     }
 
     private function handleBankingRedesignResponse($response): bool
