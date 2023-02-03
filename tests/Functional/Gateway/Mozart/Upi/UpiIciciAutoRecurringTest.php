@@ -31,7 +31,7 @@ class UpiIciciAutoRecurringTest extends TestCase
 
         $this->gateway = 'mozart';
 
-        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_terminal', [
+        $this->terminal = $this->fixtures->create('terminal:dedicated_upi_icici_recurring_terminal', [
             'gateway_merchant_id' => '400660',
         ]);
 
@@ -2008,6 +2008,7 @@ class UpiIciciAutoRecurringTest extends TestCase
 
         $firstTerminal = $this->fixtures->create('terminal:dedicated_upi_icici_recurring_terminal', [
             'gateway_merchant_id' => '400661',
+            'id'                  => '104IciciRcrTml',
         ]);
 
         $secondTerminal = $this->fixtures->create('terminal:dedicated_upi_icici_recurring_terminal', [

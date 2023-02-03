@@ -19,7 +19,7 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
 
         $this->gateway = 'mozart';
 
-        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_terminal');
+        $this->terminal = $this->fixtures->create('terminal:dedicated_upi_icici_recurring_terminal');
 
         $this->fixtures->create('customer');
 
@@ -269,8 +269,8 @@ class UpiIciciRecurringTest extends UpiInitialRecurringTestCase
 
     protected function enableRecurringTpv()
     {
-        // Create shared terminal for TPV Payment
-        $this->fixtures->create('terminal:shared_upi_icici_tpv_terminal', ['tpv' => 2]);
+        // Create dedicated terminal for TPV Payment
+        $this->fixtures->create('terminal:dedicated_upi_icici_tpv_terminal', ['tpv' => 2]);
 
         // Enable Merchant TPV Feature
         $this->fixtures->merchant->enableTpv('10000000000000');

@@ -25,7 +25,7 @@ class UpiMindgateRecurringTestOld extends TestCase
 
         $this->gateway = 'mozart';
 
-        $this->fixtures->create('terminal:shared_mindgate_recurring_terminal');
+        $this->fixtures->create('terminal:dedicated_mindgate_recurring_terminal');
 
         $this->fixtures->create('customer');
 

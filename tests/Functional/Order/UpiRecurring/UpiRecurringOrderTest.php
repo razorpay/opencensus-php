@@ -30,7 +30,7 @@ class UpiRecurringOrderTest extends TestCase
 
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
 
-        $this->fixtures->create('terminal:shared_mindgate_recurring_terminal', ['merchant_id'=> '10000000000000']);
+        $this->fixtures->create('terminal:dedicated_mindgate_recurring_terminal', ['merchant_id'=> '10000000000000']);
     }
 
     public function testCreateUpiRecurringOrder()

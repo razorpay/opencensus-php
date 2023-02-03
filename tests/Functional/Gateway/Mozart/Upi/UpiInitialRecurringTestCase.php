@@ -218,7 +218,7 @@ class UpiInitialRecurringTestCase extends TestCase
 
     public function testRecurringMandateCreateViaIntent($encrypted=false, $tpv=false, $bankAccount=[])
     {
-        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_intent_terminal');
+        $this->terminal = $this->fixtures->create('terminal:dedicated_upi_icici_intent_recurring_terminal');
 
         $orderId = $this->createUpiRecurringOrder();
 
@@ -278,7 +278,7 @@ class UpiInitialRecurringTestCase extends TestCase
             Payment\Entity::ORDER_ID        => substr($orderId, 6),
             Payment\Entity::CUSTOMER_ID     => '100000customer',
             Payment\Entity::STATUS          => 'created',
-            Payment\Entity::TERMINAL_ID     => '1IcicRcrIntTml'
+            Payment\Entity::TERMINAL_ID     => '103IciciRcrTml'
         ], $payment->toArray());
 
         $this->assertArraySubset([
@@ -488,7 +488,7 @@ class UpiInitialRecurringTestCase extends TestCase
 
     public function testRecurringMandateCreateViaIntentRejected()
     {
-        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_intent_terminal');
+        $this->terminal = $this->fixtures->create('terminal:dedicated_upi_icici_intent_recurring_terminal');
 
         $orderId = $this->createUpiRecurringOrder();
 
@@ -616,7 +616,7 @@ class UpiInitialRecurringTestCase extends TestCase
 
     public function testRecurringMandateCreateViaIntentDebitFailed()
     {
-        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_intent_terminal');
+        $this->terminal = $this->fixtures->create('terminal:dedicated_upi_icici_intent_recurring_terminal');
 
         $orderId = $this->createUpiRecurringOrder();
 
@@ -719,7 +719,7 @@ class UpiInitialRecurringTestCase extends TestCase
 
     public function testRecurringMandateCreateViaIntentDebitCallbackFailed()
     {
-        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_intent_terminal');
+        $this->terminal = $this->fixtures->create('terminal:dedicated_upi_icici_intent_recurring_terminal');
 
         $orderId = $this->createUpiRecurringOrder();
 

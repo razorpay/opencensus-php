@@ -659,6 +659,8 @@ class Selector extends Base\Core
 
         $selectedTerminals = $this->sortTerminals($selectedTerminals, $applicableRules, $verbose);
 
+        $this->removeSharedTerminalFromFallbackIfApplicable($selectedTerminals, $payment);
+
         return $selectedTerminals;
 
     }
@@ -1361,6 +1363,25 @@ class Selector extends Base\Core
         else
         {
             return false;
+        }
+    }
+
+    private function removeSharedTerminalFromFallbackIfApplicable(&$selectedTerminals, $payment)
+    {
+        // for upi autopay, after oc101, we can only use shared terminals for exisiting mandates subsequent debit.
+        // so, basically only for auto payments of older mandates, never for initial payments (new mandate registrations).
+        if(($payment->isUpiRecurring() === true) and
+           ($payment->isRecurringTypeAuto() === false))
+        {
+            $selectedTerminals = array_filter($selectedTerminals, function ($terminal) {
+                return $terminal['merchant_id'] !== "100000Razorpay";
+            });
+
+            $this->trace->info(
+                TraceCode::UPI_RECURRING_FALLBACK_REMOVED_SHARED_TERMINAL,
+                [
+                    'Removed shared terminal in the fallback'        => $selectedTerminals,
+                ]);
         }
     }
 }

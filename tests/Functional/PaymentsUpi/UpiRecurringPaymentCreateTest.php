@@ -21,7 +21,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->create('terminal:shared_mindgate_recurring_terminal');
+        $this->fixtures->create('terminal:dedicated_mindgate_recurring_terminal');
 
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
@@ -131,7 +131,7 @@ class UpiRecurringPaymentCreateTest extends TestCase
 
     public function testCreateIntentRecurringPayment()
     {
-        $this->terminal = $this->fixtures->create('terminal:shared_icici_recurring_intent_terminal');
+        $this->terminal = $this->fixtures->create('terminal:dedicated_upi_icici_intent_recurring_terminal');
 
         $orderId = $this->createUpiRecurringOrder();
 
