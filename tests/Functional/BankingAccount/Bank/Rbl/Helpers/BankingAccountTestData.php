@@ -258,7 +258,19 @@ return [
                     'sales_team' => 'sme',
                     'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
                     'sales_poc_phone_number' => '1234554321',
-                    'additional_details' => json_encode(["green_channel" => true]),
+                    'additional_details' => json_encode([
+                        'green_channel' => true,
+                        'entity_proof_documents'    => [
+                            [
+                                'document_type' => 'gst_certificate',
+                                'file_id'       => 'test',
+                            ],
+                            [
+                                'document_type' => 'business_pan',
+                                'file_id'       => 'test',
+                            ]
+                        ],
+                    ]),
                 ]
             ],
         ],
@@ -267,7 +279,19 @@ return [
                 'channel'     => 'rbl',
                 'status'      => 'created',
                 'banking_account_activation_details' => [
-                    'additional_details' => json_encode(["green_channel" => true]),
+                    'additional_details' => json_encode([
+                        'green_channel' => true,
+                        'entity_proof_documents'    => [
+                            [
+                                'document_type' => 'gst_certificate',
+                                'file_id'       => 'test',
+                            ],
+                            [
+                                'document_type' => 'business_pan',
+                                'file_id'       => 'test',
+                            ]
+                        ],
+                    ]),
                 ]
             ],
         ],
@@ -3547,7 +3571,19 @@ return [
                 'sales_poc_id' => 'admin_'. Org::SUPER_ADMIN,
                 'rm_name' => 'Test RM',
                 'rm_phone_number' => '9234567890',
-                'additional_details' => ["api_onboarding_login_date" => "26-Jun-2020"],
+                'additional_details' => [
+                    'api_onboarding_login_date' => '26-Jun-2020',
+                    'entity_proof_documents'    => [
+                        [
+                            'document_type' => 'gst_certificate',
+                            'file_id'       => 'test',
+                        ],
+                        [
+                            'document_type' => 'business_pan',
+                            'file_id'       => 'test',
+                        ]
+                    ],
+                ],
             ],
         ],
         'response' => [
@@ -3557,7 +3593,19 @@ return [
                 'expected_monthly_gmv' => '10000',
                 'account_type' => 'zero_balance',
                 "is_documents_walkthrough_complete" => '1',
-                'additional_details' => ["green_channel" => false,"api_onboarding_login_date"=> '1593109800'],
+                'additional_details' => [
+                    'api_onboarding_login_date' => '1593109800',
+                    'entity_proof_documents'    => [
+                        [
+                            'document_type' => 'gst_certificate',
+                            'file_id'       => 'test',
+                        ],
+                        [
+                            'document_type' => 'business_pan',
+                            'file_id'       => 'test',
+                        ]
+                    ],
+                ],
             ],
         ],
     ],

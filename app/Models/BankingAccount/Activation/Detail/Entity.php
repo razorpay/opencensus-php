@@ -116,6 +116,10 @@ class Entity extends Base\PublicEntity
 
     const SALES_PITCH_COMPLETED = 'sales_pitch_completed';
 
+    const ENTITY_PROOF_DOCUMENTS = 'entity_proof_documents';
+
+    const DOCUMENT_TYPE = 'document_type';
+
     const GSTIN_PREFILLED_ADDRESS = 'gstin_prefilled_address';
 
     const RBL_NEW_ONBOARDING_FLOW_DECLARATIONS = 'rbl_new_onboarding_flow_declarations';

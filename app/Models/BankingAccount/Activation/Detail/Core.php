@@ -36,6 +36,8 @@ class Core extends Base\Core
 
         $validator->validateInput($inputValidationOp, $input);
 
+        $validator->validateEntityProofDocumentType($input);
+
         $validator->validateAccountTypeForChannel($activationDetail->bankingAccount, $input);
 
         $this->repo->saveOrFail($activationDetail);
@@ -70,6 +72,8 @@ class Core extends Base\Core
         $validator = new Validator;
 
         $validator->validateInput('edit', $input);
+
+        $validator->validateEntityProofDocumentType($input);
 
         $validator->validateAccountTypeForChannel($activationDetail->bankingAccount, $input);
 
@@ -127,21 +131,17 @@ class Core extends Base\Core
 
         $rblNewOnboardingDeclarations = $additionalDetails[Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS] ?? [];
 
-        $gstinPrefilledAddress = $additionalDetails[Entity::GSTIN_PREFILLED_ADDRESS] ?? null;
-
         $availableAtPreferredAddressToCollectDocs = $rblNewOnboardingDeclarations[Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS] ?? null;
 
         $signatoriesAvailableAtPreferredAddress = $rblNewOnboardingDeclarations[Entity::SIGNATORIES_AVAILABLE_AT_PREFERRED_ADDRESS] ?? null;
 
-        if (is_null($gstinPrefilledAddress) ||
-            is_null($availableAtPreferredAddressToCollectDocs) ||
+        if (is_null($availableAtPreferredAddressToCollectDocs) ||
             is_null($signatoriesAvailableAtPreferredAddress)
         )
         {
             throw new LogicException('Declarations cannot be null if merchant is eligible for SKIP_DWT experiment',
             null,
                 [
-                    'gstin_prefilled_address'                           => $gstinPrefilledAddress,
                     'available_at_preferred_address_to_collect_docs'    => $availableAtPreferredAddressToCollectDocs,
                     'signatories_available_at_preferred_address'        => $signatoriesAvailableAtPreferredAddress,
                 ]);
@@ -149,8 +149,7 @@ class Core extends Base\Core
 
         $skipDwt = 0;
 
-        if ($gstinPrefilledAddress === 1 &&
-            $availableAtPreferredAddressToCollectDocs === 1 &&
+        if ($availableAtPreferredAddressToCollectDocs === 1 &&
             $signatoriesAvailableAtPreferredAddress === 1)
         {
             $skipDwt = 1;
@@ -160,7 +159,6 @@ class Core extends Base\Core
             TraceCode::MERCHANT_ELIGIBLE_FOR_SKIP_DWT_EXPERIMENT,
             [
                 'skip_dwt'                                          => $skipDwt,
-                'gstin_prefilled_address'                           => $gstinPrefilledAddress,
                 'available_at_preferred_address_to_collect_docs'    => $availableAtPreferredAddressToCollectDocs,
                 'signatories_available_at_preferred_address'        => $signatoriesAvailableAtPreferredAddress,
             ]);

@@ -403,6 +403,16 @@ class Validator extends Base\Validator
         Entity::GREEN_CHANNEL
     ];
 
+    protected static $allowedEntityProofDocumentTypes = [
+        'gst_certificate',
+        'business_pan',
+        'certificate_of_incorporation',
+        'partnership_deed',
+        'shops_and_establishment_certificate',
+        'iec_certificate',
+        'other_entity_proof'
+    ];
+
     public function validateBusinessCategory($attribute, $value)
     {
         if (in_array($value, self::$allowedBusinessCategories) === false)
@@ -459,6 +469,27 @@ class Validator extends Base\Validator
            and (empty($commentInput) === true))
         {
            throw new BadRequestValidationFailureException("Comment is required when changing Assignee team");
+        }
+    }
+
+    public function validateEntityProofDocumentType(array $input)
+    {
+        if(isset($input[Entity::ADDITIONAL_DETAILS]) === false)
+        {
+            // no validations required
+            return;
+        }
+
+        $additionalDetails = json_decode($input[Entity::ADDITIONAL_DETAILS], true);
+
+        $entityProofDocuments = $additionalDetails[Entity::ENTITY_PROOF_DOCUMENTS] ?? [];
+
+        foreach($entityProofDocuments as $entityProofDocument)
+        {
+            if (in_array($entityProofDocument[Entity::DOCUMENT_TYPE], self::$allowedEntityProofDocumentTypes) === false)
+            {
+                throw new BadRequestValidationFailureException('Invalid Entity Proof Document');
+            }
         }
     }
 

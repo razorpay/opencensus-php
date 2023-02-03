@@ -6970,7 +6970,15 @@ class BankingAccountTest extends TestCase
     public function testUpdateAdditionalDetailswithDifferentValues()
     {
         $bankingAccount = $this->testCreateActivationDetail([
-                                                                ActivationDetail\Entity::ADDITIONAL_DETAILS => json_encode(["green_channel" => false])
+            ActivationDetail\Entity::ADDITIONAL_DETAILS => json_encode([
+                'green_channel' => false,
+                'entity_proof_documents'    => [
+                    [
+                        'document_type' => 'gst_certificate',
+                        'file_id'       => 'test',
+                    ]
+                ],
+            ])
         ]);
 
         $bankingAccountId = $bankingAccount['id'];
@@ -11220,7 +11228,7 @@ class BankingAccountTest extends TestCase
             'rbl_new_onboarding_flow_declarations' => [
                 'available_at_preferred_address_to_collect_docs' => 1,
                 'seal_available' => 1,
-                'signatories_available_at_preferred_address' => 1,
+                'signatories_available_at_preferred_address' => 0,
                 'signboard_available' => 1
             ]
         ];
