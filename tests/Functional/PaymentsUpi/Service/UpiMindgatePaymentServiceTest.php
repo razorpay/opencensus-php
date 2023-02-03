@@ -285,6 +285,22 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
 
         $this->setMockGatewayTrue();
 
+        $this->fixtures->merchant->addFeatures(['enable_addtl_info_upi']);
+
+        $this->payment['notes']['Application Id'] = 'alphaNum123';
+
+        $requestAsserted = false;
+
+        $this->mockServerRequestFunction(function (&$content, $action = null) use (&$requestAsserted)
+        {
+            if ($action === 'authorize')
+            {
+                $requestAsserted = true;
+
+                $this->assertEquals($this->payment['notes']['Application Id'], $content['metadata']['application_id']);
+            }
+        });
+
         $order = $this->createTpvOrder();
 
         $this->payment['amount'] = $order['amount'];
@@ -305,6 +321,8 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
 
         $upiEntity['gateway_payment_id'] = '12234';
         $upiEntity['payment_id'] = $payment['id'];
+
+        $this->assertTrue($requestAsserted);
 
         $content = $this->mockServer('upi_mindgate')->getAsyncCallbackContent($upiEntity, $payment);
 
@@ -1018,5 +1036,10 @@ class UpiMindgatePaymentServiceTest extends UpiPaymentServiceTest
     protected function mockServerContentFunction($closure)
     {
         $this->upiPaymentService->shouldReceive('content')->andReturnUsing($closure);
+    }
+
+    protected function mockServerRequestFunction($closure)
+    {
+        $this->upiPaymentService->shouldReceive('request')->andReturnUsing($closure);
     }
 }

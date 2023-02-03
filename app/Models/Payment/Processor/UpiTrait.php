@@ -490,7 +490,37 @@ trait UpiTrait
             'remark'            => $this->getRemark($payment),
         ];
 
+        $this->addUdfParameterForMindgateIfApplicable($payment, $gatewayData, $metadata);
+
         $gatewayData['metadata'] = $metadata;
+    }
+
+    /**
+     * adds application_id (UDF parameter) to metadata if applicable
+     *
+     * @param Payment\Entity $payment
+     * @param array $gatewayData
+     * @param array $metadata
+     * @return void
+     */
+    protected function addUdfParameterForMindgateIfApplicable(Payment\Entity $payment, array $gatewayData, array &$metadata)
+    {
+        if ($payment->getGateway() !== Payment\Gateway::UPI_MINDGATE)
+        {
+            return;
+        }
+
+        if ($gatewayData['merchant']->isFeatureEnabled(Feature::ENABLE_ADDITIONAL_INFO_UPI) === false)
+        {
+            return;
+        }
+
+        $notes = $payment->getNotes();
+
+        if ((empty($notes) === false) and (empty($notes['Application Id']) === false))
+        {
+            $metadata['application_id'] = $notes['Application Id'];
+        }
     }
 
     /**

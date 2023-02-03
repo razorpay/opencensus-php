@@ -43,6 +43,8 @@ class Service extends UpiPaymentService
      */
     protected function authorize(array $content): array
     {
+        $this->request($content, __FUNCTION__);
+
         $description = $content['payment']['description'];
 
         $remark = 'Test Merchant ' . preg_replace('/[^a-zA-Z0-9 ]+/', '', $description);
