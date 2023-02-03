@@ -11,7 +11,7 @@
   </details>
 </header>
 
-The scope of this document is for local setup only. If you want to use the development environment, follow [using the devstack](./dashboard-devstack.md) guide.
+The scope of this document is for local setup only. If you have already done the local setup and want to use the development environment, check out [using the devstack](./dashboard-devstack.md) guide.
 
 - [1. Prerequisites](#1-prerequisites)
 - [2. Common Setup](#2-common-setup)
@@ -189,12 +189,6 @@ git clone git@github.com:razorpay/dashboard.git
 ### 3. Two sides of a coin
 
 There are different setups for frontend and backend, you can follow either of them based on what you want to setup and that should be enough _or if you are curious enough, just go ahead and do both._
-
-- [1. Prerequisites](#1-prerequisites)
-- [2. Common Setup](#2-common-setup)
-- [3. Two sides of a coin](#3-two-sides-of-a-coin)
-- [4. For Frontend](#4-for-frontend)
-- [5. For Backend](#5-for-backend)
 
 ![](https://i.redd.it/v69pvxl9bga41.jpg 'Adieu Friend')
 

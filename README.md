@@ -10,11 +10,13 @@ Following docs will help you with various common tasks on the merchant dashboard
 - [Local Setup](./wiki/local-setup.md) - setup dashboard on your local machine
 - [Using Devstack](./wiki/dashboard-devstack.md) - use the dev environment and see your code running
 - [Contributing Guide](./CONTRIBUTING.md) - guidelines to help you start contributing to the dashboard
+- [PR Strategy](./wiki/pr-strategy.md) - learn strategies for creating and managing Pull requests
 - [Deployment Guide](./wiki/deployment-guide.md) - ship your code to millions of users
 - [Backend Architecture](./wiki/backend-architecture.md) - take a look at how things are working under the hood for dashboard backend
 
 ### ❓ How to
 
+- [Write Docs on Dashboard](./wiki/write-docs.md)
 - [Write Unit tests on Dashboard](./wiki/unit-tests-runbook.md)
 - [Write Better CSS on Dashboard](./wiki/css-guide.md)
 - [Lazy Load Components to optimize the application](./wiki/lazyloading-components.md)
