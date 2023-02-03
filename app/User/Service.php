@@ -176,6 +176,7 @@ class Service extends Base\Service
             $mediumLabel    = $isLogin ? MetricConstants::LOGIN_MEDIUM : MetricConstants::SIGNUP_MEDIUM;
             $medium         = "MEDIUM_NA";
             $mediumValue    = "UNKNOWN";
+            $signupSource   = $input[Constants::SIGNUP_SOURCE] ?? "NA";
 
             if(isset($input[Constants::EMAIL]) === true)
             {
@@ -189,19 +190,20 @@ class Service extends Base\Service
             }
 
             $this->trace->info($traceCode, [
-                $medium  => $mediumValue,
-                'medium' => $medium,
-                'product'=> $product,
-
+                $medium         => $mediumValue,
+                'medium'        => $medium,
+                'product'       => $product,
+                'signup_source' => $signupSource,
             ]);
 
             $this->metrics->count(
                 $metricConstant ,
                 EVENT_TRIGGER_COUNT,
                 [
-                    $methodLabel                => $method,
-                    $mediumLabel                => $medium,
-                    MetricConstants::PRODUCT    => $product,
+                    $methodLabel                   => $method,
+                    $mediumLabel                   => $medium,
+                    MetricConstants::PRODUCT       => $product,
+                    MetricConstants::SIGNUP_SOURCE => $signupSource,
                 ]
             );
         }
