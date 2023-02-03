@@ -215,6 +215,404 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
     }
 
+    /*
+     * Merchant Country => IN
+     * IIN Country => IN
+     */
+    public function testPaymentAuthorizedWithIndiaIINAndMerchantIndia()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->enableCpsConfig();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal)
+            {
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test12',
+                        ],
+                    ],
+                    'payment' => [
+                        'auth_type' => null,
+                        'terminal_id'  => $terminal->getId(),
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                ];
+            });
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card["international"], false);
+
+        $this->assertEquals($payment["currency"], "INR");
+
+        $this->assertEquals($payment["international"], false);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals($terminal->getId(), $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+    }
+
+    /*
+     * Merchant Country => IN
+     * IIN Country => US
+     */
+    public function testPaymentAuthorizedWithUSIINAndMerchantIndia()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'disable_native_currency']);
+
+        $this->enableCpsConfig();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'max_international_payment_amount' => 1000000
+        ]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->iin->edit('401200', [
+            'country' => 'US'
+        ]);
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal)
+            {
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test12',
+                        ],
+                    ],
+                    'payment' => [
+                        'auth_type' => null,
+                        'terminal_id'  => $terminal->getId(),
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                ];
+            });
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card["international"], true);
+
+        $this->assertEquals($payment["currency"], "INR");
+
+        $this->assertEquals($payment["international"], true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals($terminal->getId(), $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+    }
+
+    /*
+     * Merchant Country => MY
+     * IIN Country => MY
+     */
+    public function testPaymentAuthorizedWithMalaysiaIINAndMerchantMalaysia()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $this->enableCpsConfig();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->iin->edit('401200', [
+            'country' => 'MY'
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'country_code'                     => 'MY',
+            'convert_currency'                 => null
+        ]);
+
+        $this->app['config']->set('applications.pg_router.mock', true);
+        $paymentInit = $this->fixtures->create('payment:authorized', [
+            'currency' => 'MYR',
+            'amount'   => $payment['amount']
+        ]);
+
+        $payment['id'] = $paymentInit->getId();
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], "MYR", 0, true);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card["international"], false);
+
+        $this->assertEquals($payment["currency"], "MYR");
+
+        $this->assertEquals($payment["international"], false);
+
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+
+    /*
+     * Merchant Country => IN
+     * IIN Country => Unknown
+     */
+    public function testPaymentAuthorizedWithUnknownIINAndMerchantIN()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'disable_native_currency']);
+
+        $this->enableCpsConfig();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'max_international_payment_amount' => 1000000
+        ]);
+
+        $this->fixtures->iin->edit('401200', [
+            'country' => null
+        ]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal)
+            {
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test12',
+                        ],
+                    ],
+                    'payment' => [
+                        'auth_type' => null,
+                        'terminal_id'  => $terminal->getId(),
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                ];
+            });
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card["international"], true);
+
+        $this->assertEquals($payment["currency"], "INR");
+
+        $this->assertEquals($payment["international"], true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals($terminal->getId(), $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+    }
+
+    /*
+     * Merchant Country => IN
+     * IIN Country => MY
+     */
+    public function testPaymentAuthorizedWithMYIINAndMerchantIndia()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json', 'disable_native_currency']);
+
+        $this->enableCpsConfig();
+
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'max_international_payment_amount' => 1000000
+        ]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => '10000000000000',
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $this->fixtures->iin->edit('401200', [
+            'country' => 'MY'
+        ]);
+
+        $cardService = \Mockery::mock('RZP\Services\CardPaymentService')->makePartial();
+
+        $this->app->instance('card.payments', $cardService);
+
+        $cardService->shouldReceive('sendRequest')
+            ->with('POST', Mockery::type('string'), Mockery::type('array'))
+            ->andReturnUsing(function (string $method, string $url, array $input) use ($terminal)
+            {
+                return [
+                    'data' => [
+                        'acquirer' => [
+                            'reference2' => 'test12',
+                        ],
+                    ],
+                    'payment' => [
+                        'auth_type' => null,
+                        'terminal_id'  => $terminal->getId(),
+                        'authentication_gateway' => 'mpi_blade'
+                    ],
+                ];
+            });
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals($card["international"], true);
+
+        $this->assertEquals($payment["currency"], "INR");
+
+        $this->assertEquals($payment["international"], true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals($terminal->getId(), $payment['terminal_id']);
+        $this->assertEquals('mpi_blade', $payment['authentication_gateway']);
+    }
+
+
+    /*
+     * Merchant Country => MY
+     * IIN Country => IN
+     *
+     * Note : In this func, all the steps related to payment creation (validation, transformation, is international check etc.) are not
+     * done. This payment creation request for Malaysian merchants is directed to pg router which has been mocked and we are creating  payment entity using mocked
+     * data to perform the assertions.
+     */
+    public function testPaymentAuthorizedWithIndiaIINAndMerchantMalaysia()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $this->enableCpsConfig();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'country_code'                     => 'MY',
+            'convert_currency'                 => null
+        ]);
+
+        $this->app['config']->set('applications.pg_router.mock', true);
+        $paymentInit = $this->fixtures->create('payment:authorized', [
+            'currency'      => 'MYR',
+            'amount'        => $payment['amount'],
+            'international' => true
+        ]);
+
+        $payment['id'] = $paymentInit->getId();
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], "MYR", 0, true);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertEquals($payment["currency"], "MYR");
+
+        $this->assertEquals($payment["international"], true);
+
+        $this->assertEquals('captured', $payment['status']);
+    }
+
+    /*
+     * Merchant Country => MY
+     * IIN Country => Unknown
+     *
+     * Note : In this func, all the steps related to payment creation (validation, transformation, is international check etc.) are not
+     * done. This payment creation request is directed to pg router which has been mocked and we are creating  payment entity using mocked
+     * data to perform the assertions.
+     */
+    public function testPaymentAuthorizedWithUnknownIINAndMerchantMalaysia()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $this->enableCpsConfig();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->merchant->edit('10000000000000', [
+            'country_code'                     => 'MY',
+            'convert_currency'                 => null
+        ]);
+
+        $this->fixtures->iin->edit('401200', [
+            'country' => null
+        ]);
+
+        $this->app['config']->set('applications.pg_router.mock', true);
+        $paymentInit = $this->fixtures->create('payment:authorized', [
+            'currency'      => 'MYR',
+            'amount'        => $payment['amount'],
+            'international' => true
+        ]);
+
+        $payment['id'] = $paymentInit->getId();
+
+        $this->doAuthAndCapturePayment($payment, $payment['amount'], "MYR", 0, true);
+
+        $payment = $this->getLastEntity('payment');
+
+        $this->assertEquals($payment["currency"], "MYR");
+
+        $this->assertEquals($payment["international"], true);
+
+        $this->assertEquals('captured', $payment['status']);
+    }
+
     public function testAuthorizeViaCpsPaymentUpdateHandleErrorResponse()
     {
         $terminal = $this->fixtures->create('terminal:shared_hdfc_terminal');

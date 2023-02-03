@@ -108809,15 +108809,21 @@ class IIN
         return in_array($iin, self::$prepaidIins);
     }
 
-    public static function isDomesticBin($binCountry='IN', $merchantCountry='IN')
+    public static function isDomesticBin($binCountry, $merchantCountry)
     {
-        $binCountry = $binCountry ?? 'IN';
-        $merchantCountry = $merchantCountry ?? 'IN';
+        // To ensure that for empty and null countrycode, flow must goes through international payment flow only
+        // i18 team change with caution
+        if (empty($binCountry) === true ||
+            empty($merchantCountry) === true)
+        {
+            return false;
+        }
+
         return $binCountry === $merchantCountry;
     }
 
-    public static function isInternational($binCountry='IN', $merchantCountry='IN')
+    public static function isInternational($binCountry, $merchantCountry)
     {
-        return self::isDomesticBin($binCountry,$merchantCountry) === false;
+        return self::isDomesticBin($binCountry, $merchantCountry) === false;
     }
 }
