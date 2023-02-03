@@ -11299,7 +11299,7 @@ class BankingAccountTest extends TestCase
             'account_type'          => 'current',
             'merchant_id'           => self::DefaultMerchantId,
             'channel'               => 'rbl',
-            'status'                => 'created',
+            'status'                => 'activated',
             'pincode'               => '560038',
             'bank_reference_number' => '',
             'account_ifsc'          => 'RATN0000156',

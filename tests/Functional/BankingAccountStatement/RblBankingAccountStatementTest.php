@@ -10047,6 +10047,73 @@ class RblBankingAccountStatementTest extends TestCase
         $this->assertNull($basDetail);
     }
 
+    public function testActiveBankingAccountIsPickedInBalanceFetch()
+    {
+        $basDetail = $this->getDbLastEntity('banking_account_statement_details');
+
+        $this->assertNotNull($basDetail);
+
+        $mozartServiceMock = Mockery::mock('RZP\Services\Mozart')->makePartial();
+
+        $mozartServiceMock->shouldReceive('sendMozartRequest')
+                          ->andReturnUsing(function(string $service, string $channel, string $action, array $request) {
+                              $accountNumber = $request['source_account']['account_number'];
+
+                              self::assertEquals(2224440041626905, $accountNumber);
+
+                              return [
+                                  'data' => [
+                                      'success'                       => true,
+                                      Rbl\Fields::GET_ACCOUNT_BALANCE => [
+                                          Rbl\Fields::BODY => [
+                                              Rbl\Fields::BAL_AMOUNT => [
+                                                  Rbl\Fields::AMOUNT_VALUE => 5
+                                              ]
+                                          ]
+                                      ]
+                                  ]
+                              ];
+                          });
+
+        $this->app->instance('mozart', $mozartServiceMock);
+
+        /** @var Balance\Entity $balance */
+        $balance = $this->getDbEntity(EntityConstants::BALANCE, [BaEntity::MERCHANT_ID => '10000000000000']);
+
+        $this->fixtures->create('banking_account', [
+            'account_number'        => '2224440041626906',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000000',
+            'balance_id'            => $balance->getId(),
+            'channel'               => 'rbl',
+            'status'                => 'archived',
+            'pincode'               => '1',
+            'bank_reference_number' => '',
+            'account_ifsc'          => 'RATN0000156',
+        ]);
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'method' => 'put',
+            'url'    => '/banking_accounts/gateway/rbl/balance',
+        ];
+        $this->makeRequestAndGetContent($request);
+
+        /** @var BankingAccount\Entity $bankingAccount */
+        $bankingAccount = $this->getDbEntity(EntityConstants::BANKING_ACCOUNT,
+                                             [BaEntity::CHANNEL => BankingAccount\Channel::RBL,
+                                              BaEntity::STATUS  => BankingAccount\Status::ACTIVATED]);
+
+        $basDetail = $this->getDbEntities('banking_account_statement_details');
+
+        $this->assertCount(1, $basDetail);
+
+        $this->assertEquals(500, $basDetail[0][BasDetails\Entity::GATEWAY_BALANCE]);
+
+        $this->assertNotNull($basDetail[0][BasDetails\Entity::GATEWAY_BALANCE_CHANGE_AT]);
+    }
+
     // Due to discrepancies on bank side where new records can appear in few seconds, we prefer not to save
     // latest records within time range set using $offset to maintain order.
     // Ref. rbl incident: https://razorpay.slack.com/archives/CM9230B5Y/p1615457898201700

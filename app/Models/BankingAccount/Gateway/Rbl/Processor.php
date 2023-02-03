@@ -71,7 +71,7 @@ class Processor extends BankingAccount\Gateway\Processor
             $channel = $input[Entity::CHANNEL];
 
             /** @var Entity $bankingAccount */
-            $this->bankingAccount = $this->repo->banking_account->getBankingAccountByMerchantIdAndChannel($merchantId, $channel);
+            $this->bankingAccount = $this->repo->banking_account->getActiveBankingAccountByMerchantIdAndChannel($merchantId, $channel);
         }
     }
 

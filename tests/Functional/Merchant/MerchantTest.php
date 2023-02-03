@@ -17995,7 +17995,7 @@ The same has been enabled for the account.
             'account_type'          => 'current',
             'merchant_id'           => '100ghi000ghi00',
             'channel'               => 'rbl',
-            'status'                => 'created',
+            'status'                => 'activated',
             'pincode'               => '560038',
             'bank_reference_number' => '',
             'account_ifsc'          => 'RATN0000156',

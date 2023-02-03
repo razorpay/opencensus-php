@@ -119,11 +119,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getBankingAccountByMerchantIdAndChannel($merchantId, string $channel)
+    public function getActiveBankingAccountByMerchantIdAndChannel($merchantId, string $channel)
     {
         $bankingAccountBalanceIdColumn = $this->dbColumn(Entity::BALANCE_ID);
         $channelColumn                 = $this->dbColumn(Entity::CHANNEL);
         $merchantIdColumn              = $this->dbColumn(Entity::MERCHANT_ID);
+        $statusColumn                  = $this->dbColumn(Entity::STATUS);
 
         $balanceIdColumn            = $this->repo->balance->dbColumn(Entity::ID);
         $balanceAccountTypeColumn   = $this->repo->balance->dbColumn(Merchant\Balance\Entity::ACCOUNT_TYPE);
@@ -133,6 +134,7 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->select($bankingAccountAttrs)
+                    ->where($statusColumn, '=', Status::ACTIVATED)
                     ->where($merchantIdColumn, '=', $merchantId)
                     ->join(Table::BALANCE, $bankingAccountBalanceIdColumn, '=', $balanceIdColumn)
                     ->where($balanceAccountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
@@ -249,7 +251,7 @@ class Repository extends Base\Repository
     {
         $bankingAccountStateStatusColumn = $this->repo->banking_account_activation_detail->dbColumn(Activation\Detail\Entity::ACCOUNT_TYPE);
         $filterActivationAccountType = $params[Constants::ACTIVATION_ACCOUNT_TYPE];
-        
+
         $this->joinQueryActivationDetail($query);
         $query->select($this->dbColumn('*'));
 
