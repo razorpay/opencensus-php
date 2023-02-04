@@ -220,9 +220,10 @@ class Core extends Base\Core
         // Adding this to support the retry cases
         // to pass the last day for the merchant invoice creation
         // here we need to avoid the scenario of 12 AM midnight
-        $documentDate = Carbon::now(Timezone::IST)
-                                ->subDay()
-                                ->format('d/m/Y');
+        // to set the date to last day of previous month
+        $documentDate = Carbon::createFromDate($eInvoiceEntity->getYear(), $eInvoiceEntity->getMonth(), 1, Timezone::IST)
+                        ->endOfMonth()
+                        ->format('d/m/Y');
 
         return [
             Constants::DOCUMENT_TYPE    => $eInvoiceEntity->getDocumentType(),

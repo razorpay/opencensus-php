@@ -449,10 +449,6 @@ class KubernetesClient
                                     'requests' => [
                                         'cpu' => $cpuRequest,
                                         'memory' => $memoryRequest
-                                    ],
-                                    'limits' => [
-                                        'cpu' => '500m',
-                                        'memory' => '2048Mi'
                                     ]
                                 ],
                                 'livenessProbe' => [

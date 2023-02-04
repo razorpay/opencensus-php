@@ -191,8 +191,9 @@ class PgEInvoice extends Core
                 }
 
                 // adding this step here considering we are only creating for the INV not for CRN/DBN in same PDF
-                $eInvoiceSuccessTimeStamp = Carbon::createFromTimestamp($eInvoice->getUpdatedAt(), Timezone::IST)
-                                                        ->subDay()
+                // to set the date to last day of previous month
+                $eInvoiceSuccessTimeStamp = Carbon::createFromDate($year, $month, 1, Timezone::IST)
+                                                        ->endOfMonth()
                                                         ->format('d/m/Y');
 
                 $eInvoiceData[self::E_INVOICE_COMPLETE_GENERATION_DATE] = $eInvoiceSuccessTimeStamp;
