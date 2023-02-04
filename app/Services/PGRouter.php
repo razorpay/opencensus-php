@@ -551,6 +551,8 @@ class PGRouter
                 $response['body']['notes'] = json_decode($response['body']['notes']);
             }
 
+            $response['body']['bank_account_data'] = $response['body']['bank_account'];
+
             $order = (new Order\Entity())->forceFill($response['body']);
 
             if (isset($response['body']['order_metas']) === true)

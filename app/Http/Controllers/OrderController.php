@@ -218,6 +218,15 @@ class OrderController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function internalCreateOrderBankAccountRelations()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->internalCreateOrderBankAccountRelations($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateCustomerDetailsFor1CCOrder(string $orderId)
     {
         $input = Request::all();

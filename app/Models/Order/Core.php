@@ -450,7 +450,7 @@ class Core extends Base\Core
         if ($merchant->isTPVRequired() === true)
         {
             // TODO: Change this after creating bank account entities for all the previous TPV orders
-            $accountNumber = empty($order->getBankAccount()) === true ? $order->getAccountNumber() : $order->getBankAccount()->getAccountNumber();
+            $accountNumber = empty($order->bankAccount) === true ? $order->getAccountNumber() : $order->bankAccount->getAccountNumber();
 
             $data += [
                 Entity::BANK           => $order->getBank(),
@@ -513,7 +513,7 @@ class Core extends Base\Core
 
     public function getAccountForRefund(Entity $order)
     {
-        $payerAccount = $order->getBankAccount();
+        $payerAccount = $order->bankAccount;
 
         // TODO: Change this after creating bank account entities for all the previous TPV orders
         if (empty($payerAccount) === true)
@@ -846,6 +846,28 @@ class Core extends Base\Core
         if (isset($input['convenience_fee_config']) === true)
         {
             $data['convenience_fee_config_id'] = $this->createConvenienceFeeConfigIfApplicable($input, $order);
+        }
+
+        return $data;
+    }
+
+    public function internalCreateOrderBankAccountRelations($input)
+    {
+        $data = null;
+
+        $order = (new Entity())->forceFill($input);
+
+        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+
+        $this->merchant = $merchant;
+
+        $bankAccount = $this->createBankAccountForTpv($input, $order);
+
+        if (empty($bankAccount) === false)
+        {
+            $data['bank_account_number'] = $bankAccount->getAccountNumber();
+
+            $data['bank_account_beneficiary'] = $bankAccount->getBeneficiaryName();
         }
 
         return $data;

@@ -727,44 +727,44 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRODUCT_ID);
     }
 
-    public function getBankAccount()
+    public function getBankAccountAttribute()
     {
-        $apiBankAccount = $this->bankAccount;
-
-        if ($this->isExternal() === false)
-        {
-            return $apiBankAccount;
-        }
-
-        if (empty($apiBankAccount) === true)
-        {
-            return $apiBankAccount;
-        }
-
         $app = \App::getFacadeRoot();
+
+        if ($this->relationLoaded('bankAccount') === true)
+        {
+            return $this->getRelation('bankAccount');
+        }
+
+        $apiBankAccount = $this->bankAccount()->first();
+
+        if (isset($apiBankAccount) === true)
+        {
+            return $apiBankAccount;
+        }
+
+        $app['trace']->info(TraceCode::ORDER_API_BANK_ACCOUNT_EMPTY);
+
         try
         {
-            $pgRouterBankAccountArray = $this->getAttribute("bank_account");
+            $pgRouterBankAccountArray = $this->getAttribute('bank_account_data');
             if (empty($pgRouterBankAccountArray) === false)
             {
                 $pgRouterBankAccount = (new BankAccount\Entity())->forceFill($pgRouterBankAccountArray);
 
                 $pgRouterBankAccount->merchant()->associate($this->merchant);
                 $pgRouterBankAccount->setAttribute(BankAccount\Entity::TYPE, E::ORDER);
+                $pgRouterBankAccount->setAttribute(BankAccount\Entity::ENTITY_ID, $this->getId());
 
-                $accMatch = $pgRouterBankAccount->getAccountNumber() === $apiBankAccount->getAccountNumber();
+                $this->setRelation('bankAccount', $pgRouterBankAccount);
 
-                $app['trace']->info(TraceCode::PG_ROUTER_BANK_ACCOUNT_MATCH,
-                    [
-                        "amatch" => $accMatch,
-                        "ifsc" => $pgRouterBankAccount->getIfscCode() === $apiBankAccount->getIfscCode(),
-                        "name" => $pgRouterBankAccount->getBeneficiaryName() === $apiBankAccount->getBeneficiaryName()
-                    ]
-                );
+                return $pgRouterBankAccount;
             }
             else
             {
                 $app['trace']->info(TraceCode::PG_ROUTER_BANK_ACCOUNT_EMPTY_ERROR);
+
+                return $apiBankAccount;
             }
         }
         catch (\Exception $ex)
@@ -777,6 +777,7 @@ class Entity extends Base\PublicEntity
                     'data' => $ex->getMessage()
                 ]);
         }
+        
         return $apiBankAccount;
     }
 

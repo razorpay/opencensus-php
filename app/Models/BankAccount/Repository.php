@@ -112,6 +112,15 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function getBankAccountsForOrder($orderId)
+    {
+        $query = $this->newQuery()
+            ->where(Entity::ENTITY_ID, '=', $orderId)
+            ->where(Entity::TYPE, '=', Type::ORDER);
+
+        return $query->first();
+    }
+
     public function getRazorpayBankAccountsForCustomer($customer, $ifsc = 'RAZR')
     {
         return $this->getBankAccountsForCustomer($customer, $ifsc);

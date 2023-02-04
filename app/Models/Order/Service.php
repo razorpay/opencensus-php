@@ -913,6 +913,16 @@ class Service extends Base\Service
        return (new Core)->internalCreateOrderRelations($input);
     }
 
+    public function internalCreateOrderBankAccountRelations($input)
+    {
+        if (isset($input['merchant_id']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(PublicErrorDescription::BAD_REQUEST_MERCHANT_ID_IS_REQUIRED);
+        }
+
+        return (new Core)->internalCreateOrderBankAccountRelations($input);
+    }
+
     public function sendSelfServeSuccessAnalyticsEventToSegmentForFetchingOrderDetails($input)
     {
         [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();

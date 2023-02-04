@@ -6723,6 +6723,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const PG_ROUTER_BANK_ACCOUNT_MATCH                        = "PG_ROUTER_BANK_ACCOUNT_MATCH";
     const PG_ROUTER_BANK_ACCOUNT_EMPTY_ERROR                  = "PG_ROUTER_BANK_ACCOUNT_EMPTY_ERROR";
+    const ORDER_API_BANK_ACCOUNT_EMPTY                        = "ORDER_API_BANK_ACCOUNT_EMPTY";
     const PG_ROUTER_BANK_ACCOUNT_MATCH_ERROR                  = "PG_ROUTER_BANK_ACCOUNT_MATCH_ERROR";
 
     const PAYOUT_SOURCE_ENTITY_CREATE_REQUEST                 = 'PAYOUT_SOURCE_ENTITY_CREATE_REQUEST';

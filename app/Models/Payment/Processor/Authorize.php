@@ -3191,7 +3191,7 @@ trait Authorize
         if ($payment->hasOrder() === true)
         {
             $gatewayInput['order'] = $payment->order->toArray();
-            $orderBankAccount = $payment->order->getBankAccount();
+            $orderBankAccount = $payment->order->bankAccount;
 
             if ($orderBankAccount !== null)
             {
@@ -6580,9 +6580,9 @@ trait Authorize
             {
                 $order = $payment->getOrderAttribute();
 
-                $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] = $order->getBankAccount()->getAccountNumber() ?? null;
+                $saveMethodInput[Token\Entity::ACCOUNT_NUMBER] = $order->bankAccount->getAccountNumber() ?? null;
 
-                $saveMethodInput[Token\Entity::IFSC] = $order->getBankAccount()->getIfscCode() ?? null;
+                $saveMethodInput[Token\Entity::IFSC] = $order->bankAccount->getIfscCode() ?? null;
             }
         }
 
