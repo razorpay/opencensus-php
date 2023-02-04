@@ -616,6 +616,8 @@ class Validator extends Base\Validator
         Entity::EMI_SUBVENTION             => 'sometimes|in:customer,merchant',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::NOTES                      => 'sometimes|string',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $cybersourceTerminalRules = [
@@ -683,6 +685,8 @@ class Validator extends Base\Validator
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::CURRENCY                   => 'sometimes|array',
         Entity::NOTES                      => 'sometimes|string',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+        Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
     protected static $isgEditTerminalRules = [
