@@ -28,6 +28,7 @@ class Constants
 	const AsyncBalanceUpdateEnabled = 'async_balance_update_enabled';
 	const AsyncTransactionUpdateEnabled = 'async_transaction_update_enabled';
 	const AutoRefundsDisabled = 'auto_refunds_disabled';
+	const ImportSettlement = 'import_settlement';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -53,6 +54,7 @@ class Constants
         self::AsyncBalanceUpdateEnabled => "rzp/pg/merchant/payments/ledger/Features",
         self::AsyncTransactionUpdateEnabled => "rzp/pg/merchant/payments/ledger/Features",
         self::AutoRefundsDisabled => "rzp/pg/merchant/payments/refunds/Features",
+        self::ImportSettlement => "rzp/pg/merchant/settlements/OPGSPFeatures",
     ];
 
     /**
@@ -80,6 +82,7 @@ class Constants
         APIFeaturesConstants::ASYNC_BALANCE_UPDATE => self::AsyncBalanceUpdateEnabled,
         APIFeaturesConstants::ASYNC_TXN_FILL_DETAILS => self::AsyncTransactionUpdateEnabled,
         APIFeaturesConstants::DISABLE_AUTO_REFUNDS => self::AutoRefundsDisabled,
+        self::ImportSettlement => self::ImportSettlement,
     ];
 
     /**
@@ -106,7 +109,8 @@ class Constants
         self::EnableMerchantExpiryForPL => APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PL,
         self::EnableMerchantExpiryForPP => APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PP,
         self::EnableMerchantCreateOwnTemplate => APIFeaturesConstants::ENABLE_CREATE_OWN_TEMPLATE,
-        self::EnableCustomerAmount => APIFeaturesConstants::ENABLE_CUSTOMER_AMOUNT
+        self::EnableCustomerAmount => APIFeaturesConstants::ENABLE_CUSTOMER_AMOUNT,
+        self::ImportSettlement => self::ImportSettlement,
     ];
 
     /**
@@ -121,7 +125,8 @@ class Constants
         self::EnableMerchantExpiryForPL => 'direct',
         self::EnableMerchantExpiryForPP => 'direct',
         self::EnableMerchantCreateOwnTemplate => 'direct',
-        self::EnableCustomerAmount => 'direct'
+        self::EnableCustomerAmount => 'direct',
+        self::ImportSettlement => 'direct',
     ];
 
     public static function isShadowFeature($variant)
