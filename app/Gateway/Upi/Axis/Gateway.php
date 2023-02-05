@@ -266,7 +266,7 @@ class Gateway extends Base\Gateway
 
         $this->action = Action::VERIFY;
 
-        $request = $this->getPaymentVerifyRequestArray($input, $gatewayPayment);
+        $request = $this->getPaymentVerifyRequestArrayV2($input, $gatewayPayment);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -1011,6 +1011,39 @@ class Gateway extends Base\Gateway
             list($data[Fields::CHECK_STATUS_MERCH_ID],
                 $data[Fields::CHECK_STATUS_MERCH_CHAN_ID]) = $this->getAggregatorIds($this->terminal);
         }
+
+        $dataStr = implode('', $data);
+
+        $checksum = $this->encrypt($dataStr);
+
+        $data[Fields::CHECK_STATUS_CHECKSUM] = bin2hex($checksum);
+
+        $content = json_encode($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers']['Content-Type'] = 'application/json';
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'request'       => $request,
+                'gateway'       => $this->gateway,
+            ]);
+
+        return $request;
+    }
+
+    protected function getPaymentVerifyRequestArrayV2($input, $gatewayPayment)
+    {
+        $payment = $input['payment'];
+
+        $data = [
+            Fields::CHECK_STATUS_MERCH_ID       => $this->getMerchantId(),
+            Fields::CHECK_STATUS_MERCH_CHAN_ID  => $this->getMerchantId2(),
+            Fields::CHECK_STATUS_UNQ_TXN_ID     => $payment['id'],
+            Fields::CHECK_STATUS_MOBILE_NO      => $this->getMobileNumber(),
+        ];
 
         $dataStr = implode('', $data);
 

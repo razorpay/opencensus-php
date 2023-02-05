@@ -1808,6 +1808,32 @@ class UpiAxisGatewayTest extends TestCase
         $this->assertFalse($response['success']);
     }
 
+    /**
+     *  Test Multiple credit payment
+     */
+    public function testMultipleCreditPayment()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->fixtures->payment->edit($payment['id'],['vpa' => 'multipleRRN@axisbank']);
+
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $content['terminal']['gateway'] = 'upi_axis';
+
+        $content['upi']['merchant_reference'] = $payment->getId();
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        // Failing the verify response to assert the  verify request change
+        $this->assertEmpty($response['payment_id']);
+
+        $this->assertFalse($response['success']);
+    }
+
+
     protected function makeUnexpectedPaymentAndGetContent(array $content)
     {
         $request = [

@@ -218,7 +218,7 @@ class Server extends Base\Mock\Server
             Fields::DATA => [
                 [
                     Fields::CODE                    => '00',
-                    Fields::RESULT                  => 'S',
+                    Fields::RESULT                  => ($input['merchid'] !== 'RAZORPPROD4264718195' && $payment['vpa'] === 'multipleRRN@axisbank') ? 'F' :'S',
                     Fields::CHECK_STATUS_UNQ_TXN_ID => $payment['id'] ?? $input[Fields::CHECK_STATUS_UNQ_TXN_ID],
                     Fields::CHECK_STATUS_REF_ID     => '714513318376',
                     Fields::CHECK_STATUS_DATE_TIME  => '25/07/18 17:42:16',
