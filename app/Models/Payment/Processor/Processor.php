@@ -5292,23 +5292,28 @@ class Processor
         }
     }
 
-    protected function createPaymentEntity(array $input, Payment\Entity $payment = null): Payment\Entity
+    protected function isAffordabilityPaymentCreateWithOtt($input)
     {
-        $this->tracePaymentNewRequest($input);
-
         if (($input['method'] === Payment\Method::CARDLESS_EMI) === true or ($input['method'] === Payment\Method::PAYLATER) === true)
         {
             if ((isset($input['ott']) === true) and
                 (isset($input['payment_id']) === true))
             {
-                $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($input['payment_id']));
-
-                // this is to ensure request tempering
-                unset($input['affordability_skip_order_attempt']);
-                // This is to ensure we do not increase order attempt in 2nd callback for affordability instruments
-                $input['affordability_skip_order_attempt'] = true;
+                return true;
 
             }
+        }
+        return false;
+    }
+
+    protected function createPaymentEntity(array $input, Payment\Entity $payment = null): Payment\Entity
+    {
+        $this->tracePaymentNewRequest($input);
+
+        if ($this->isAffordabilityPaymentCreateWithOtt($input) === true)
+        {
+                $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($input['payment_id']));
+
         }
 
         if ($payment == null)
@@ -5691,16 +5696,13 @@ class Processor
                     ]);
             }
 
-            unset($input['affordability_skip_order_attempt']);
 
             return;
         }
 
         // for cardless emi and paylater, /create route is called twice in same payment flow hence we need not increment order attempt in 2nd call
-        if (isset($input['affordability_skip_order_attempt']) and $input['affordability_skip_order_attempt'] === true)
+        if ($this->isAffordabilityPaymentCreateWithOtt($input) === true)
         {
-            unset($input['affordability_skip_order_attempt']);
-
             return;
         }
 
