@@ -3965,6 +3965,30 @@ return [
         ]
     ],
 
+    'testCreateBilldeskOptimizerUpiTerminal'        => [
+        'request' => [
+            'url'     => '/merchants/10000000000000/terminals',
+            'content' => [
+                'gateway'                       => 'billdesk_optimizer',
+                'gateway_acquirer'              => 'billdesk_optimizer',
+                'gateway_merchant_id'           => '12344',
+                'gateway_secure_secret2'        => '12344',
+                'upi'                           => 1,
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'direct_settlement_with_refund' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => '12344',
+                'enabled'                   => true
+            ]
+        ]
+    ],
+
     'testCreateCashfreeUpiTerminal'        => [
         'request' => [
             'url'     => '/merchants/10000000000000/terminals',

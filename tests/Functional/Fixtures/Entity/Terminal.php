@@ -459,17 +459,31 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createBilldeskOptimizerTerminal()
+    public function createBilldeskOptimizerIntentTerminal()
+    {
+        $attributes = [
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ];
+
+        return $this->createBilldeskOptimizerTerminal($attributes);
+    }
+
+    public function createBilldeskOptimizerTerminal(array $override)
     {
         $attributes = [
             'merchant_id'            => '10000000000000',
             'gateway'                => 'billdesk_optimizer',
             'card'                   => 1,
+            'upi'                    => 1,
             'netbanking'             => 0,
             'gateway_merchant_id'    => 'abcd',
-            'gateway_secure_secret2'  => 'secret',
+            'gateway_secure_secret2' => 'secret',
             'mode'                   => 2,
         ];
+        $attributes = array_merge($attributes, $override);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }

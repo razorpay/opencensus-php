@@ -311,6 +311,14 @@ class PayInitData extends Base\Mock\Server
         return $response;
     }
 
+    public function billdesk_optimizer($entities)
+    {
+        if ($this->isV2Mock($entities['payment']['description']))
+        {
+            return $this->upiMozartV2($entities);
+        }
+    }
+
     public function wallet_phonepe($entities)
     {
         $this->gateway = $entities['payment']['gateway'];

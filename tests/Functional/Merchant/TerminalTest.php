@@ -1868,6 +1868,37 @@ class TerminalTest extends TestCase
         $this->assertEquals( ["non_recurring", "direct_settlement_with_refund"], $content['type']);
     }
 
+    public function testEditBilldeskOptimizerUpiTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'billdesk_optimizer',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret2' => "1231424",
+                'upi' => 0,
+                'card' => 1,
+                'mode' => 3,
+                'type'    => [
+                    'direct_settlement_with_refund' => '1'
+                ],
+            ]);
+        $tid = $terminal['id'];
+
+        $data = [
+            'upi' => "1",
+            'type'    => [
+                'non_recurring' => '1'
+            ],
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+        $this->assertEquals( "1", $content['upi']);
+        $this->assertEquals( ["non_recurring", "direct_settlement_with_refund"], $content['type']);
+    }
+
     public function testEditPayuEmiTerminal()
     {
         $terminal = $this->fixtures->create(
@@ -3245,6 +3276,15 @@ class TerminalTest extends TestCase
     }
 
     public function testCreatePayuUpiTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateBilldeskOptimizerUpiTerminal()
     {
         $url = '/merchants/10000000000000/terminals';
 

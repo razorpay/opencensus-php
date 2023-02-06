@@ -1671,6 +1671,7 @@ class Gateway
             self::PAYTM,
             self::PINELABS,
             self::HDFC_EZETAP,
+            self::BILLDESK_OPTIMIZER,
         ],
 
         Method::AEPS => [
@@ -1844,6 +1845,7 @@ class Gateway
         self::PAYU,
         self::PAYTM,
         self::PINELABS,
+        self::BILLDESK_OPTIMIZER,
     ];
 
     public static $immediateVerifyGateways = [
@@ -2938,6 +2940,7 @@ class Gateway
         Gateway::ATOM,
         Gateway::NETBANKING_RBL,
         Gateway::NETBANKING_HDFC,
+        Gateway::BILLDESK_OPTIMIZER,
     ];
 
     /**
@@ -3447,6 +3450,7 @@ class Gateway
         Gateway::CASHFREE,
         Gateway::PAYTM,
         Gateway::PAYU,
+        Gateway::BILLDESK_OPTIMIZER,
     ];
 
     public static $upiQrGateways = [

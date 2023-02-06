@@ -99,6 +99,26 @@ class PreProcess extends Base\Mock\Server
         return $response->toArray();
     }
 
+    public function billdesk_optimizer($entities)
+    {
+        $data = json_decode($entities['body'], true);
+        $paymentId = $data['orderid'];
+        $response = [
+            'data' =>
+                [
+                    'paymentId' => $paymentId,
+                    'status' => 'pre_process_successful',
+                    '_raw' => '{\"payment_method_type\":\"upi\",\"discount\":\"0.00\",\"charge_amount\":\"10.05\",\"auth_status\":\"0399\",\"transaction_error_desc\":\"Collect expired\",\"transaction_date\":\"2023-01-23T19:18:59+05:30\",\"txn_process_type\":\"collect\",\"bankid\":\"HD5\",\"currency\":\"356\",\"objectid\":\"transaction\",\"mercid\":\"NEWINDINP2\",\"transactionid\":\"XHD50970836821\",\"transaction_error_code\":\"TRPPE0038\",\"transaction_error_type\":\"payment_processing_error\",\"additional_info\":{\"additional_info6\":\"NA\",\"additional_info1\":\"NA\",\"additional_info10\":\"NA\",\"additional_info3\":\"NA\",\"additional_info2\":\"NA\",\"additional_info5\":\"NA\",\"additional_info4\":\"NA\",\"additional_info7\":\"NA\",\"additional_info9\":\"NA\",\"additional_info8\":\"NA\"},\"itemcode\":\"DIRECT\",\"surcharge\":\"0.00\",\"amount\":\"10.05\",\"orderid\":\"'.$paymentId.'\"}',
+                ],
+            'error' => NULL,
+            'external_trace_id' => 'DUMMY_REQUEST_ID',
+            'mozart_id' => 'DUMMY_MOZART_ID',
+            'next' => [],
+            'success' => true,
+        ];
+        return $response;
+    }
+
     public function mozart($entities)
     {
         $gateway = $entities['gateway']['gateway'] ?? 'mozart';

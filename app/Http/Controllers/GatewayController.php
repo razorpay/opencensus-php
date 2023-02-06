@@ -540,6 +540,16 @@ class GatewayController extends Controller
                 // For emandate, already handled there.
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                 break;
+
+            case Gateway::BILLDESK_OPTIMIZER:
+                $input = [
+                    'payment' => [
+                        'gateway' => $gateway,
+                    ],
+                    'body'    => Request::getContent()
+                ];
+                $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
+                break;
             // Need to whitelist upi_yesbank at bank end
             case Gateway::UPI_YESBANK:
             case 'upi_yesb':
