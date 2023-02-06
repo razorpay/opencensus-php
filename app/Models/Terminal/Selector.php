@@ -890,10 +890,6 @@ class Selector extends Base\Core
 
             $merchantId = $payment->getMerchantId();
 
-            $variantFlag = $this->app->razorx->getTreatment($merchantId, "API_ROUTER_NEW_CONTRACT",  $this->mode);
-
-             if ($variantFlag === 'on')
-             {
                  $data = [
                      'payment'                   => $paymentData,
                      'merchant'                  => $merchantData,
@@ -903,21 +899,6 @@ class Selector extends Base\Core
                      'gateway_tokens'            => $this->input['gateway_tokens'],
                      'charge_account_merchant'   => $chargeAccountMerchantData,
                  ];
-             }
-            else {
-                $data = [
-                    'payment' => $paymentData,
-                    'merchant' => $merchantData,
-                    'terminals' => array_values($allTerminals),
-                    'filtered_terminals' => array_values($sortedTerminals),
-                    'gateway_downtime' => $downtimes,
-                    'mode' => $this->mode,
-                    'failed_terminals' => array_values($failedTerminalIds),
-                    'gateway_tokens' => $this->input['gateway_tokens'],
-                    'chance' => $this->options->getChance(),
-                    'charge_account_merchant' => $chargeAccountMerchantData,
-                ];
-            }
 
             $tracePayment = $data['payment'];
 
@@ -944,7 +925,6 @@ class Selector extends Base\Core
             $this->trace->info(
                 TraceCode::SMART_ROUTING_REQUEST,
                 [
-                    'razorx_value'        => $variantFlag,
                     'payment'             => $tracePayment,
                     'mode'                => $this->mode,
                     'merchant'            => $data['merchant'],
