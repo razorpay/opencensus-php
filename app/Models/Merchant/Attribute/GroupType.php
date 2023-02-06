@@ -48,6 +48,7 @@ class GroupType
             Type::CLARITY_CONTEXT,
             Type::SKIP_DWT_ELIGIBLE,
             Type::CA_ONBOARDING_STATE_MACHINE,
+            Type::CA_ONBOARDING_FASTER_DOC_COLLECTION
         ],
 
         Group::X_MERCHANT_INTENT => [

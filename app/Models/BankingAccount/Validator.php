@@ -394,9 +394,17 @@ class Validator extends Base\Validator
         }
     }
 
-    public function checkFosLeadCities(string $merchantCity)
+    public function checkFosLeadCities(string $merchantCity): bool
     {
-        return in_array($merchantCity, Constants::FOS_CITIES);
+        foreach (Constants::FOS_CITIES as $city)
+        {
+            if (strtolower($city) === strtolower($merchantCity))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function validateUpdatePermissions(Entity $bankingAccount, $admin)

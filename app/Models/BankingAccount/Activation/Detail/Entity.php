@@ -113,6 +113,8 @@ class Entity extends Base\PublicEntity
     const REVIVED_LEAD = 'revived_lead';
     const DOCKET_DELIVERED_DATE = 'docket_delivered_date';
     const MID_OFFICE_POC_NAME = 'mid_office_poc_name';
+    const SKIP_MID_OFFICE_CALL = 'skip_mid_office_call';
+    const APPOINTMENT_SOURCE = 'appointment_source';
 
     const SALES_PITCH_COMPLETED = 'sales_pitch_completed';
 
@@ -260,6 +262,9 @@ class Entity extends Base\PublicEntity
     const OPS = "ops";
     const SALES = "sales";
     const BANK_OPS = "bank_ops";
+
+    // appointment source
+    const MID_OFFICE = 'mid_office';
 
 
     protected $entity = 'banking_account_activation_detail';

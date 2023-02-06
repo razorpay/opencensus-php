@@ -40,6 +40,7 @@ class Type
     const CLARITY_CONTEXT               = 'clarity_context'; // Valid values - enabled,completed
     const SKIP_DWT_ELIGIBLE             = 'skip_dwt_eligible';
     const CA_ONBOARDING_STATE_MACHINE   = 'ca_onboarding_state_machine'; // Valid values = new,old
+    const CA_ONBOARDING_FASTER_DOC_COLLECTION = 'ca_onboarding_faster_doc_collection'; // Valid values - active,inactive
 
     //INTENT Types
     const CURRENT_ACCOUNT               = 'current_account';

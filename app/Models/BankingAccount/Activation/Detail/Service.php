@@ -13,7 +13,6 @@ use RZP\Models\BankingAccount;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccount\State;
 use RZP\Exception\BadRequestException;
-use RZP\Exception\IntegrationException;
 use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Activation\Notification\Notifier;
@@ -49,6 +48,7 @@ class Service extends Base\Service
             (new Validator)->setStrictFalse()->validateInput(Validator::SALES_POC_ID, $input);
         }
 
+        /** @var Entity $activationDetail */
         $activationDetail = $this->repo->transaction(function () use ($bankingAccount, $input, $validatorOP)
         {
             // Adding Sales POC to admin_audit_map table
@@ -56,6 +56,8 @@ class Service extends Base\Service
             {
                 $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
             }
+
+            $input = $this->updateInputForSkipMidOfficeCallAndAppointmentSource($bankingAccount, null, $input);
 
             if(array_key_exists(Entity::ADDITIONAL_DETAILS, $input) === true)
             {
@@ -263,6 +265,8 @@ class Service extends Base\Service
         {
             (new Validator())->validateCommentOnAssigneeTeamChange($activationDetail, $input, $commentInput);
         }
+
+        $input = $this->updateInputForSkipMidOfficeCallAndAppointmentSource($bankingAccount, $activationDetail, $input);
 
         if (array_key_exists(Entity::ADDITIONAL_DETAILS, $input) === true)
         {
@@ -706,18 +710,94 @@ class Service extends Base\Service
     public function calculateCustomerBookingAppointmentDate($activationDetails, &$activationDetailInput)
     {
 
-        $customerAppointmentDate = BankingAccount\Activation\Detail\Entity::CUSTOMER_APPOINTMENT_DATE;
+        $customerAppointmentDate = Entity::CUSTOMER_APPOINTMENT_DATE;
 
-        $customerBookingAppointmentDate = BankingAccount\Activation\Detail\Entity::CUSTOMER_APPOINTMENT_BOOKING_DATE;
+        $customerBookingAppointmentDate = Entity::CUSTOMER_APPOINTMENT_BOOKING_DATE;
 
         if (array_key_exists($customerAppointmentDate, $activationDetailInput))
         {
             if ($activationDetails[$customerAppointmentDate] !== $activationDetailInput[$customerAppointmentDate])
             {
-                $activationDetailInput[BankingAccount\Activation\Detail\Entity::RBL_ACTIVATION_DETAILS][$customerBookingAppointmentDate] = Carbon::now()->timestamp;
+                $activationDetailInput[Entity::RBL_ACTIVATION_DETAILS][$customerBookingAppointmentDate] = Carbon::now()->timestamp;
             }
         }
 
+    }
+
+    public function updateInputForSkipMidOfficeCallAndAppointmentSource(BankingAccount\Entity $bankingAccount, Entity $activationDetail = null, array $input): array
+    {
+        $additionalDetails = Entity::ADDITIONAL_DETAILS;
+
+        // If sales pitch is completed, we can't update the decision
+        if ($activationDetail && empty($activationDetail->getAdditionalDetails()) === false)
+        {
+            $details = json_decode($activationDetail->getAdditionalDetails(), true);
+
+            if (empty($details[Entity::SALES_PITCH_COMPLETED]) === false)
+            {
+                return $input;
+            }
+        }
+
+        // No change
+        if ($bankingAccount->isFasterDocCollectionEnabled() === false)
+        {
+            return $input;
+        }
+
+        if (empty($input[$additionalDetails]) == false && is_string($input[$additionalDetails]))
+        {
+            $input[$additionalDetails] = json_decode($input[$additionalDetails], true);
+        }
+
+        if($this->shouldSkipMidOfficeCall($bankingAccount, $activationDetail, $input) === true)
+        {
+            $input[$additionalDetails][Entity::SKIP_MID_OFFICE_CALL] = 1;
+            $input[$additionalDetails][Entity::APPOINTMENT_SOURCE] = Entity::SALES;
+        }
+        else
+        {
+            $input[$additionalDetails][Entity::SKIP_MID_OFFICE_CALL] = 0;
+            $input[$additionalDetails][Entity::APPOINTMENT_SOURCE] = Entity::MID_OFFICE;
+        }
+
+        return $input;
+    }
+
+    public function shouldSkipMidOfficeCall(BankingAccount\Entity $bankingAccount, Entity $activationDetail = null, array $input)
+    {
+        $bankingAccountService = new BankingAccount\Service();
+
+        if($bankingAccountService->isFosLead($bankingAccount) === true)
+        {
+            return true;
+        }
+
+        $check = $input;
+
+        // To handle for both create and update
+        if ($activationDetail != null && empty($activationDetail->getAdditionalDetails()) === false && empty($input[Entity::ADDITIONAL_DETAILS]) === false)
+        {
+            $check = [
+                Entity::ADDITIONAL_DETAILS => array_merge(
+                    json_decode($activationDetail->getAdditionalDetails(), true),
+                    $input[Entity::ADDITIONAL_DETAILS])
+            ];
+        }
+
+        $expected = [
+            Entity::ADDITIONAL_DETAILS => [
+                Entity::GSTIN_PREFILLED_ADDRESS => 1,
+                Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS => [
+                    Entity::SIGNATORIES_AVAILABLE_AT_PREFERRED_ADDRESS => 1,
+                    Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS => 1
+                ]
+            ]
+        ];
+
+        $match = check_array_selective_equals_recursive($expected, $check);
+
+        return $match;
     }
 
 }

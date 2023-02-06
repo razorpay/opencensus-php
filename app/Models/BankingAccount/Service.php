@@ -96,6 +96,7 @@ class Service extends Base\Service
 
             $validatorOp = 'create';
         }
+
         $account = $this->core->createBankingAccount($input, $this->merchant, $activationDetailInput, $validatorOp);
 
         return $account->toArrayPublic();
@@ -169,6 +170,35 @@ class Service extends Base\Service
 
         // Adding rbl Pincode serviceability and businessType supported to response
         return array_merge($account->toArrayPublic() , $resp);
+    }
+
+    public function isFosLead(Entity $bankingAccount)
+    {
+
+        $pinCode = $bankingAccount->getPincode();
+
+        if (empty($pinCode))
+        {
+            return false;
+        }
+
+        try
+        {
+            $resp = $this->pincodeSearch->fetchCityAndStateFromPincode($pinCode);
+        }
+        catch (BadRequestException|BadRequestValidationFailureException|IntegrationException $e)
+        {
+            $this->trace->error(TraceCode::PINCODE_SEARCH_ERROR, [$pinCode, $e->getMessage()]);
+
+            return false;
+        }
+
+        if ((isset($resp['city']) === true) && ((new Validator())->checkFosLeadCities($resp['city'])))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**

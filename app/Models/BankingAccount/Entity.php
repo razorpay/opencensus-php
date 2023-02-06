@@ -192,6 +192,7 @@ class Entity extends Base\PublicEntity
     const USING_NEW_STATES = 'using_new_states';
     const OLD_STATE_MACHINE = 'old';
     const NEW_STATE_MACHINE = 'new';
+    const FASTER_DOC_COLLECTION_ENABLED = 'faster_doc_collection_enabled';
 
     // Response attributes
     const BALANCE_TYPE       = 'balance_type';
@@ -350,6 +351,7 @@ class Entity extends Base\PublicEntity
         self::STATUS_LAST_UPDATED_AT,
         self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
         self::USING_NEW_STATES,
+        self::FASTER_DOC_COLLECTION_ENABLED,
     ];
 
     protected $relations = [
@@ -366,6 +368,7 @@ class Entity extends Base\PublicEntity
         self::STATUS_LAST_UPDATED_AT,
         self::BANKING_ACCOUNT_ACTIVATION_DETAILS,
         self::USING_NEW_STATES,
+        self::FASTER_DOC_COLLECTION_ENABLED,
     ];
 
     // ---------------------------- Setters ----------------------------------- //
@@ -970,6 +973,11 @@ class Entity extends Base\PublicEntity
         $array[self::USING_NEW_STATES] = $this->usingNewStates() ? self::NEW_STATE_MACHINE : self::OLD_STATE_MACHINE;
     }
 
+    public function setPublicFasterDocCollectionEnabledAttribute(array &$array)
+    {
+        $array[self::FASTER_DOC_COLLECTION_ENABLED] = $this->isFasterDocCollectionEnabled() ? true : false;
+    }
+
     public function getDashboardEntityLink()
     {
         $publicId = $this->getPublicId();
@@ -1070,6 +1078,25 @@ class Entity extends Base\PublicEntity
     public function usingNewStates()
     {
         return true;
+    }
+
+    public function isFasterDocCollectionEnabled()
+    {
+        $preferences = (new Attribute\Core)->fetchKeyValues(
+            $this->merchant,
+            Product::BANKING,
+            Attribute\Group::X_MERCHANT_CURRENT_ACCOUNTS,
+            [Attribute\Type::CA_ONBOARDING_FASTER_DOC_COLLECTION]
+        );
+
+        $preferences = $preferences->toArray();
+
+        if (count($preferences) > 0)
+        {
+            return $preferences[0][Attribute\Entity::VALUE] === 'active';
+        }
+
+        return false;
     }
 
     public function isAlreadyInOldTerminalState()

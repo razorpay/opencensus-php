@@ -1194,3 +1194,46 @@ if(! function_exists('getOrigin'))
         return $origin_value;
     }
 }
+
+if(! function_exists('check_array_selective_equals_recursive'))
+{
+    /**
+     * Use this to check match between nested data fields for two array recursively
+     */
+    function check_array_selective_equals_recursive(array $expected, array $actual): bool
+    {
+        $result = true;
+
+        foreach ($expected as $key => $value)
+        {
+            $result = isset($actual[$key]);
+
+            if ($result === false) {
+                return false;
+            }
+
+            if (is_array($value))
+            {
+                if (is_array($actual[$key]))
+                {
+                    $result = check_array_selective_equals_recursive($expected[$key], $actual[$key]);
+                }
+                else
+                {
+                    // expected value is an array but actual value is not array
+                    $result = false;
+                }
+            }
+            else
+            {
+                $result = ($value === $actual[$key]);
+            }
+
+            if ($result === false) {
+                return false;
+            }
+        }
+
+        return $result;
+    }
+}
