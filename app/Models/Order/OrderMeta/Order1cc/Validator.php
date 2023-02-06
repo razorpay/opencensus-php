@@ -102,6 +102,7 @@ class Validator extends Base\Validator
         Entity::TO                                  => 'integer',
         Entity::COUNT                               => 'integer|min:1|max:50',
         Entity::SKIP                                => 'integer',
+        Fields::REVIEW_MODE => 'sometimes|in:automation,manual',
     ];
 
     protected static $actionRules = [

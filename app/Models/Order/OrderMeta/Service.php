@@ -431,6 +431,44 @@ class Service extends \RZP\Models\Base\Service
         return $responses;
     }
 
+    public function review1ccOrder($input): array
+    {
+
+        $merchantId = $input['merchant_id'];
+
+        unset($input['merchant_id']);
+
+        try
+        {
+            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+        }
+        catch (\Exception $ex)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_MERCHANT_ID);
+        }
+
+        if ($this->merchant->get1ccConfigFlagStatus('manual_control_cod_order'))
+        {
+            $this->app['basicauth']->setMerchant($this->merchant);
+
+            return $this->updateActionFor1ccOrders($input, $this->merchant, 'automation_intelligence@razorpay.com');
+        }
+
+        $response = [];
+        foreach ($input[Order\Entity::ID] as $orderId)
+        {
+            $orderResponse = [
+                Order\Entity::ID => $orderId,
+                Order1cc\Constants::ACTION_STATUS => Order1cc\Constants::FAILURE,
+                Order1cc\Constants::ACTION_ERROR => [
+                    Order1cc\Constants::ACTION_ERROR_CODE => Order1cc\Constants::BAD_REQUEST_MERCHANT_DISABLED_MANUAL_REVIEW,
+                ]
+            ];
+            $response[] = $orderResponse;
+        }
+        return $response;
+    }
+
 
     public function updateActionFor1ccOrder($input,$merchant, string $userEmail)
     {

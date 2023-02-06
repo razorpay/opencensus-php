@@ -317,4 +317,14 @@ class OrderController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function review1ccOrder(){
+
+        $input = Request::all();
+
+        $data = (new OrderMeta\Service())->review1ccOrder($input);
+
+        return ApiResponse::json($data);
+
+    }
 }

@@ -68,6 +68,7 @@ class Fields
     const REVIEW_STATUS = 'review_status';
     const REVIEWED_AT   = 'reviewed_at';
     const REVIEWED_BY   = 'reviewed_by';
+    const REVIEW_MODE = 'review_mode';
 
     const ONE_CLICK_CHECKOUT = 'one_click_checkout';
     const GSTIN              = 'gstin';

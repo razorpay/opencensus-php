@@ -1463,6 +1463,10 @@ return [
         'timeout'       => env('APP_RTO_PREDICTION_SERVICE_TIMEOUT', 10),
     ],
 
+    'rto_prediction_service_api_web' => [
+        'secret'        => env('APP_RTO_PREDICTION_SERVICE_API_WEB_SECRET')
+    ],
+
     'address_service' => [
         'secret'  => env('APP_ADDRESS_SERVICE_SECRET')
     ],

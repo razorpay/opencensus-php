@@ -24,6 +24,9 @@ class Service
     const CREATED_BY                 = "created_by";
     const MERCHANT_ID                = "merchant_id";
 
+    const GET_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES    = "get_merchant_order_review_automation_rules";
+    const UPSERT_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES = "upsert_merchant_order_review_automation_rules";
+
     const PARAMS = [
         self::COD_ELIGIBILITY_EVALUATE  =>   [
             self::PATH   => 'twirp/rzp.rto_prediction.cod_eligibility.v1.CODEligibilityAPI/Evaluate',
@@ -39,6 +42,12 @@ class Service
         ],
         self::DELETE_BY_COD_ELIGIBILITY_ATTRIBUTE => [
             self::PATH => 'twirp/rzp.rto_prediction.cod_eligibility_attribute.v1.CODEligibilityAttributeAPI/DeleteByCODEligibilityAttribute',
+        ],
+        self::GET_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES => [
+            self::PATH => 'twirp/rzp.rto_prediction.merchant_order_review_automation.v1.MerchantOrderReviewAutomationAPI/GetRuleConfigs',
+        ],
+        self::UPSERT_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES => [
+            self::PATH => 'twirp/rzp.rto_prediction.merchant_order_review_automation.v1.MerchantOrderReviewAutomationAPI/UpsertRuleConfigs',
         ]
     ];
 
@@ -235,4 +244,21 @@ class Service
 
         return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
     }
+
+    public function getMerchantOrderReviewAutomationRuleConfigs($merchantId)
+    {
+        $input[self::MERCHANT_ID] = $merchantId;
+
+        $params = self::PARAMS[self::GET_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES];
+
+        return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+    }
+
+    public function upsertMerchantOrderReviewAutomationRuleConfigs($input)
+    {
+        $params = self::PARAMS[self::UPSERT_MERCHANT_ORDER_REVIEW_AUTOMATION_RULES];
+
+        return $this->app['rto_prediction_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+    }
+
 }

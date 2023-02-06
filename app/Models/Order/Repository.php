@@ -262,6 +262,8 @@ class Repository extends Base\Repository
 
         $this->addQueryParamReviewStatus($query, $params);
 
+        $this->addQueryParamReviewMode($query, $params);
+
         $this->buildQueryWithParams($query,$params);
 
         $query->orderBy($this->dbColumn(Common::CREATED_AT), 'desc');
@@ -309,6 +311,32 @@ class Repository extends Base\Repository
 
             unset($params[Fields::COD_ELIGIBILITY_RISK_TIER]);
         }
+    }
+
+    private function addQueryParamReviewMode($query,array & $params)
+    {
+        $orderMetaTable = Table::ORDER_META;
+
+        $valueCol = $orderMetaTable.'.'.\RZP\Models\Order\OrderMeta\Entity::VALUE;
+
+        $reviewedByFilter = $valueCol.'->'.Fields::REVIEWED_BY;
+
+        if (isset($params[Fields::REVIEW_MODE]))
+        {
+
+            if($params[Fields::REVIEW_MODE] == Order1cc\Constants::AUTOMATION_FLAG){
+
+                $query->where($reviewedByFilter, '=', Order1cc\Constants::COD_AUTOMATION_REVIEW_EMAIL);
+
+            }else{
+
+                $query->where($reviewedByFilter. '!=', Order1cc\Constants::COD_AUTOMATION_REVIEW_EMAIL);
+
+            }
+
+        }
+
+        unset($params[Fields::REVIEW_MODE]);
     }
 
     private function addQueryParamReviewStatus($query,array & $params)

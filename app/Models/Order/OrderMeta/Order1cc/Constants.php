@@ -20,6 +20,12 @@ final class Constants
     const APPROVED                  = 'approved';
     const CANCELED                  = 'canceled';
 
+   const COD_AUTOMATION_REVIEW_EMAIL = "automation_intelligence@razorpay.com";
+
+   const AUTOMATION_FLAG = 'automation';
+
+   const MANUAL_FLAG = 'manual';
+
 
     const COUNT     = 'count';
     const ITEMS     = 'items';
@@ -56,5 +62,6 @@ final class Constants
     const BAD_REQUEST_ACTION_TAKEN_BY_SOMEONE_CODE      = 'BAD_REQUEST_ACTION_TAKEN_BY_SOMEONE';
     const BAD_REQUEST_ACTION_ON_ORDER_IN_PROGRESS_CODE  = 'BAD_REQUEST_ACTION_ON_ORDER_IN_PROGRESS';
     const BAD_REQUEST_ORDER_NOT_FOUND_CODE              = 'BAD_REQUEST_ORDER_NOT_FOUND';
+    const BAD_REQUEST_MERCHANT_DISABLED_MANUAL_REVIEW   = 'BAD_REQUEST_MERCHANT_DISABLED_MANUAL_REVIEW';
 
 }

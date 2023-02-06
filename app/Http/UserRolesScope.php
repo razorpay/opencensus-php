@@ -1194,6 +1194,8 @@ class UserRolesScope
             'fetch_international_virtual_accounts'                => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'payment_update_b2b_invoice'                          => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
             'create_international_virtual_accounts'               => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE],
+            '1cc_merchant_order_review_automation_rule_configs_get' => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE, Role::OPERATIONS],
+            '1cc_merchant_order_review_automation_rule_configs_upsert' => [Role::OWNER, Role::ADMIN, Role::MANAGER, Role::FINANCE, Role::OPERATIONS],
         ];
 
         /*

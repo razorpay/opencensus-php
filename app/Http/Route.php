@@ -4013,12 +4013,16 @@ class Route
         '1cc_cod_eligibility_attribute_delete'              => ['delete', '1cc/rto_prediction_service/cod_eligibility_attribute/{id}',        'CODEligibilityAttributeController@delete'     ],
         '1cc_cod_eligibility_attribute_delete_by_attribute' => ['delete',   '1cc/rto_prediction_service/cod_eligibility_attribute/{cod_eligibility_type}/{attribute_type}/{attribute_value}',        'CODEligibilityAttributeController@deleteByAttribute'     ],
 
+        '1cc_merchant_order_review_automation_rule_configs_get'    => ['get',  '1cc/orders/review/automation/rule_configs', 'MerchantOrderReviewAutomationController@get'],
+        '1cc_merchant_order_review_automation_rule_configs_upsert' => ['post', '1cc/orders/review/automation/rule_configs', 'MerchantOrderReviewAutomationController@upsert'],
+
         '1cc_merchant_file_upload_audit_create'        => ['post', '1cc/rto_prediction_service/file_upload_audits/create', 'RtoMerchantFileUploadAuditsController@createFileUploadAudit'],
         '1cc_merchant_file_upload_audit_list'          => ['get', '1cc/rto_prediction_service/file_upload_audits/list', 'RtoMerchantFileUploadAuditsController@listFileUploadAudits'],
 
         '1cc_rto_dashboard_list'                     => ['post',   '1cc/rto_prediction_service/dashboard', 'RtoDashboardController@list' ],
         '1cc_cod_order_list'                         => ['get', '1cc/cod/orders', 'OrderController@getCODOrders'],
         '1cc_cod_order_review'                       => ['post', '1cc/orders/cod/review','OrderController@updateActionFor1ccOrder'],
+        'internal_1cc_order_review'              => ['post', 'internal/1cc/orders/review','OrderController@review1ccOrder'],
 
         // 1 click checkout shopify integration
         '1cc_shopify_checkout'                      => ['post',       '1cc/shopify/checkout',                                  'OneClickCheckoutController@shopifyCreateCheckout'                ],
@@ -5605,6 +5609,8 @@ class Route
         'terminal_toggle_internal',
 
         'merchant_validate_public_auth_over_internal_auth',
+
+        'internal_1cc_order_review',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -6565,6 +6571,8 @@ class Route
         '1cc_merchant_file_upload_audit_create',
         '1cc_merchant_file_upload_audit_list',
         '1cc_cod_order_review',
+        '1cc_merchant_order_review_automation_rule_configs_get',
+        '1cc_merchant_order_review_automation_rule_configs_upsert',
 
         // splitz
         'splitz_evaluate_bulk_proxy',
@@ -11366,6 +11374,8 @@ class Route
             '1cc_cod_eligibility_attribute_upsert_bulk',
             '1cc_cod_eligibility_attribute_delete',
             '1cc_cod_eligibility_attribute_delete_by_attribute',
+            '1cc_merchant_order_review_automation_rule_configs_get',
+            '1cc_merchant_order_review_automation_rule_configs_upsert',
             'country_fetch',
             'state_fetch',
             '1cc_rto_dashboard_list',
@@ -14810,7 +14820,10 @@ class Route
         ],
         'magic_checkout_service' => [
             'internal_1cc_configs_get',
-        ]
+        ],
+        'rto_prediction_service_api_web' => [
+            'internal_1cc_order_review',
+        ],
     ];
 
     //
