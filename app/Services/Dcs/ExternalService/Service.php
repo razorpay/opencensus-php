@@ -3,6 +3,7 @@
 namespace RZP\Services\Dcs\ExternalService;
 
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use \WpOrg\Requests\Hooks as Requests_Hooks;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -47,7 +48,7 @@ class Service
     public function sendRequest(array $input)
     {
         $request = [
-            'url'     => $this->getBaseUrl() . '/dcs/config/set',
+            'url'     => $this->getBaseUrl() . '/v1/dcs/config/set',
             'method'  => 'POST',
             'content' => $input,
             'headers' => $this->getDefaultHeaders()
@@ -236,7 +237,7 @@ class Service
         $request['key'] = $key;
         if($mode === Mode::LIVE)
         {
-            $request['liveMode'] = true;
+            $request['live_mode'] = true;
         }
 
         $request['entity_id'] = $entity_id;
