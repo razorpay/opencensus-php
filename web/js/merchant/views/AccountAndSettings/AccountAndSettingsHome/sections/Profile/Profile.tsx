@@ -13,6 +13,7 @@ import MerchantDetails from 'merchant/views/AccountAndSettings/AccountAndSetting
 import ProfilePhoto from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/ProfilePhoto';
 import UserInfo from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/UserInfo';
 import Verification from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/Verification';
+import { getRole } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/config/profile';
 import {
   InfoDataInterface,
   PersonalProfileFields,
@@ -75,7 +76,8 @@ const makeAnalyticsCall = ({
 
 const Profile = (props: ProfilePropsInterface): JSX.Element => {
   const { isMobile, openModal, user, profile } = props;
-  const { id: merchantId, contact_name: merchantName, logo_url: imageUrl } = user;
+  const { id: merchantId, logo_url: imageUrl, user: loggedInUser } = user;
+  const { name: loggedInUserName } = loggedInUser;
   const [isShowMore, setIsShowMore] = useState<boolean>(false);
   const infoData = getInfoData({ user, profile });
 
@@ -131,16 +133,20 @@ const Profile = (props: ProfilePropsInterface): JSX.Element => {
     }
   };
 
+  const userRole = getRole({ user });
+
   return isMobile ? (
     <MobileProfileContainer>
       <MobileProfileView isOpen={isShowMore}>
         <ProfileDetail>
           <ProfilePhoto imageUrl={imageUrl} />
           <Details>
-            <Heading size="small">{titleCase(merchantName)}</Heading>
-            <Text type="subdued" size="small">
-              Owner
-            </Text>
+            <Heading size="small">{loggedInUserName ? titleCase(loggedInUserName) : '--'}</Heading>
+            {userRole && (
+              <Text type="subdued" size="small">
+                {userRole}
+              </Text>
+            )}
           </Details>
         </ProfileDetail>
         <Link onClick={() => setIsShowMore((prevState) => !prevState)} variant="button">
@@ -165,8 +171,8 @@ const Profile = (props: ProfilePropsInterface): JSX.Element => {
         <UserProfile>
           <ProfilePhoto imageUrl={imageUrl} />
           <Details>
-            <Heading size="small">{titleCase(merchantName)}</Heading>
-            <Subheading>Owner</Subheading>
+            <Heading size="small">{loggedInUserName ? titleCase(loggedInUserName) : '--'}</Heading>
+            {userRole && <Subheading>{userRole}</Subheading>}
             <MerchantDetails merchantId={merchantId} isMobile={isMobile} />
             <Divider />
             <Verification isMobile={isMobile} />

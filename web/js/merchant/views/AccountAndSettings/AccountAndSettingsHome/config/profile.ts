@@ -1,3 +1,4 @@
+import { agentRole, RBLRoles, RegistrationLinkRoles, roles } from 'merchant/helpers/data';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import {
   CHANGE_PASSWORD,
@@ -10,6 +11,13 @@ import {
   StoredInfoDataInterface,
   User,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
+
+const Roles = { ...roles, ...agentRole, ...RBLRoles, ...RegistrationLinkRoles };
+
+export const getRole = ({ user }) => {
+  const role = user.userRole;
+  return Roles[role]?.label;
+};
 
 export const InfoDataConfig: StoredInfoDataInterface[] = [
   {

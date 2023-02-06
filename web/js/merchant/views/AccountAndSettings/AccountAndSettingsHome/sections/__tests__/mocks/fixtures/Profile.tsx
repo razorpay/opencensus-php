@@ -59,6 +59,7 @@ export const getState = ({ userData = {}, userProfile = {}, appConfig = {} } = {
         contact_mobile: '7798586889',
         email: 'kapil.thakur+150@razorpay.com',
         signup_via_email: 1,
+        name: 'Kamlesh J',
       },
       userRole: 'owner',
       role: 'owner',

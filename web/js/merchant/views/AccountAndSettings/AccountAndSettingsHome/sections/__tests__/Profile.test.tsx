@@ -25,7 +25,7 @@ describe('Merchant Profile Section', () => {
       initialState,
     });
     expect(screen.getByText('Your profile')).toBeInTheDocument();
-    expect(screen.getByText(titleCase(initialState.session.user.contact_name))).toBeInTheDocument();
+    expect(screen.getByText(titleCase(initialState.session.user.user.name))).toBeInTheDocument();
     expect(screen.getByText('Owner')).toBeInTheDocument();
     expect(screen.getByText(initialState.session.user.id)).toBeInTheDocument();
   });
@@ -39,6 +39,9 @@ describe('Merchant Profile Section', () => {
             ksbuindYYH: {},
             DrrhtsbYYH: {},
           },
+          contact_mobile: '7798586889',
+          signup_via_email: 1,
+          name: 'Kamlesh J',
           email: '',
         },
         userRole: 'admin',
@@ -50,8 +53,8 @@ describe('Merchant Profile Section', () => {
     renderApp({
       initialState,
     });
-    expect(screen.getByText(titleCase(initialState.session.user.contact_name))).toBeInTheDocument();
-    expect(screen.getByText('Owner')).toBeInTheDocument();
+    expect(screen.getByText(titleCase(initialState.session.user.user.name))).toBeInTheDocument();
+    expect(screen.getByText('Admin')).toBeInTheDocument();
     const showMoreBtn = screen.getByRole('button', { name: 'Show more' });
     expect(showMoreBtn).toBeInTheDocument();
     await userEvent.click(showMoreBtn);
