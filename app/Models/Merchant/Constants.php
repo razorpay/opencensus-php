@@ -1194,7 +1194,7 @@ final class Constants
             self::TYPE           => 'qr_code',
             self::TITLE          => 'QR',
             self::DESCRIPTION    => 'Generate QR codes on the go',
-            self::IS_NEW_PRODUCT => true
+            self::IS_NEW_PRODUCT => false
         ],
 
         self::SUBSCRIPTIONS => [
@@ -1208,7 +1208,7 @@ final class Constants
             self::TYPE           => 'payment_button',
             self::TITLE          => 'Payment button',
             self::DESCRIPTION    => 'Add a quick checkout button on your website/app for one-time or recurring payments',
-            self::IS_NEW_PRODUCT => false
+            self::IS_NEW_PRODUCT => true
         ],
     ];
 
