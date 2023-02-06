@@ -49,6 +49,16 @@ class Sbi extends Base
     // redis key format: emi:sbi_emi_ref_no_<payment_id>
     const REDIS_KEY_FMT = 'emi:sbi_emi_ref_no_%s';
 
+    //processing fee
+    const PROCESSING_FEES = [
+        3  => '0000',
+        6  => '9900',
+        9  => '9900',
+        12 => '9900',
+        18 => '1990',
+        24 => '1990',
+    ];
+
     /**
      * @var $file FileStore\Entity
      */
@@ -241,6 +251,14 @@ class Sbi extends Base
 
                         $this->cache->set($redisKey, $uniqueReferenceNum, self::REDIS_KEY_TTL);
 
+                        $this->trace->info(
+                            TraceCode::SBI_EMI_FILE_UNIQUE_REFERENCE_NUM,
+                            [
+                                'payment_id'              => $emiPayment['id'],
+                                'unique_reference_num'     => $uniqueReferenceNum,
+                            ]
+                        );
+
                     } catch (\Exception $e) {
                         $this->trace->info(TraceCode::MISC_TRACE_CODE, ['cache_val_set_error' => $uniqueReferenceNum]);
                     }
@@ -250,9 +268,11 @@ class Sbi extends Base
 
                     $rate = $emiPlan->getRate() / 100;
 
-                    $tenure = $emiPlan->getDuration();
+                $tenure = $emiPlan->getDuration();
 
-                    $businessName = $this->getBusinessName($merchantDetail);
+                $processingFees = self::PROCESSING_FEES[$tenure];
+
+                $businessName = $this->getBusinessName($merchantDetail);
 
                     $emiAmount = $this->getEmiAmount($principalAmount, $rate, $tenure);
 
@@ -263,30 +283,30 @@ class Sbi extends Base
                         $card = $emiPayment->token->card;
                     }
 
-                    $body[] =
-                        'DD' .    // record type always DD
-                        'R' . $this->numpad($uniqueReferenceNum, 14) .
-                        $this->strpad('Razor Pay', 40) .
-                        $this->numpad($card->getLast4(), 19) .
-                        $this->numpad($principalAmount, 17) .
-                        $this->numpad($tenure, 3) .
-                        $this->strpad($this->getAuthCode($emiPayment), 6) .
-                        Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
-                        $this->strpad('Razor Pay', 40) .
-                        $this->numpad($mid, 16) .
-                        $this->strpad($businessName, 40) .
-                        $this->strpad($tid, 8) .
-                        str_pad($emiPlan->getRate(), 7, '0', STR_PAD_RIGHT) .
-                        $this->strpad('', 40) .
-                        $this->numpad($principalAmount, 17) .
-                        'F' .
-                        '0' .
-                        'A' .
-                        $this->numpad('9900', 7) .
-                        $this->strpad('GG0001' . substr($mid, -4), 20) .
-                        $this->numpad('0', 17) .
-                        $this->numpad($emiAmount, 17) .
-                        $this->strpad('', 108);
+                $body[] =
+                    'DD' .    // record type always DD
+                    'R' . $this->numpad($uniqueReferenceNum, 14) .
+                    $this->strpad('Razor Pay', 40) .
+                    $this->numpad($card->getLast4(), 19) .
+                    $this->numpad($principalAmount, 17) .
+                    $this->numpad($tenure, 3) .
+                    $this->strpad($this->getAuthCode($emiPayment), 6) .
+                    Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
+                    $this->strpad('Razor Pay', 40) .
+                    $this->numpad($mid, 16) .
+                    $this->strpad($businessName, 40) .
+                    $this->strpad($tid, 8) .
+                    str_pad($emiPlan->getRate(), 7, '0', STR_PAD_RIGHT) .
+                    $this->strpad('', 40) .
+                    $this->numpad($principalAmount, 17) .
+                    'F' .
+                    '0' .
+                    'A' .
+                    $this->numpad($processingFees, 7) .
+                    $this->strpad('GG0001' . substr($mid, -4), 20) .
+                    $this->numpad('0', 17) .
+                    $this->numpad($emiAmount, 17) .
+                    $this->strpad('', 108);
 
                     $rowLength = strlen(end($body));
 
@@ -476,7 +496,7 @@ class Sbi extends Base
 
         $count = $this->repo->gateway_file->fetchFileSentCountFromStart(Type::EMI, GatewayFileConstants::SBI, $start);
 
-        return static::FILE_NAME . (string)($count + 1) . Carbon::now()->setTimezone(Timezone::IST)->format('YmdHis');
+        return static::FILE_NAME . (string)(1) . Carbon::now()->setTimezone(Timezone::IST)->format('YmdHis');
     }
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)

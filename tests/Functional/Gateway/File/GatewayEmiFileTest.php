@@ -588,7 +588,7 @@ class GatewayEmiFileTest extends TestCase
 
         $fileStoreEntity = $this->getDbLastEntity('file_store')->toArray();
 
-        $startString = 'GGCMS2';
+        $startString = 'GGCMS1';
 
         $length = strlen($startString);
 

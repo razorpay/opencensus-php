@@ -227,8 +227,6 @@ class SbiNce extends Base
                         ]);
                 }
 
-                $totalTransactions++;
-
                 $uniqueReferenceNum++;
 
                 $principalAmount = $emiPayment->getAmount();
@@ -289,7 +287,7 @@ class SbiNce extends Base
                             'payment_id'    => $emiPayment['id'],
                         ]);
                 }
-
+                $totalTransactions++;
             }
             catch (\Exception $e)
             {
@@ -461,7 +459,7 @@ class SbiNce extends Base
 
         $count = $this->repo->gateway_file->fetchFileSentCountFromStart(Type::EMI, GatewayFileConstants::SBI_NCE, $start);
 
-        return static::FILE_NAME . (string)($count + 1) . '.' . Carbon::now()->setTimezone(Timezone::IST)->format('dmY');
+        return static::FILE_NAME . (string)(1) . '.' . Carbon::now()->setTimezone(Timezone::IST)->format('dmY');
     }
 
     protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
