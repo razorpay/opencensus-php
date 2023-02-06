@@ -853,24 +853,42 @@ class Core extends Base\Core
 
     public function internalCreateOrderBankAccountRelations($input)
     {
-        $data = null;
-
         $order = (new Entity())->forceFill($input);
 
-        $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+        $mutex = $this->app['api.mutex'];
 
-        $this->merchant = $merchant;
+        return $mutex->acquireAndRelease('bank_account_' . $order->getId(),
+            function () use ($input, $order)
+            {
+                $data = null;
 
-        $bankAccount = $this->createBankAccountForTpv($input, $order);
+                $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
 
-        if (empty($bankAccount) === false)
-        {
-            $data['bank_account_number'] = $bankAccount->getAccountNumber();
+                $this->merchant = $merchant;
 
-            $data['bank_account_beneficiary'] = $bankAccount->getBeneficiaryName();
-        }
+                $apiBankAccount = $this->repo->bank_account->getBankAccountsForOrder($order->getId());
 
-        return $data;
+                if (isset($apiBankAccount) === true)
+                {
+                    $data['already_exist'] = $apiBankAccount->getId();
+
+                    return $data;
+                }
+
+                $bankAccount = $this->createBankAccountForTpv($input, $order);
+
+                if (empty($bankAccount) === false)
+                {
+                    $data['bank_account_number'] = $bankAccount->getAccountNumber();
+
+                    $data['bank_account_beneficiary'] = $bankAccount->getBeneficiaryName();
+                }
+
+                return $data;
+            },
+            60,
+            ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS
+        );
     }
 
     private function createBankAccountForTpv($input, $order)

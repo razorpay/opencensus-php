@@ -20,6 +20,7 @@ use RZP\Models\Payment\Config;
 use RZP\Constants\Entity as E;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Currency\Currency;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Order\OrderMeta\Type;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\SubscriptionRegistration;
@@ -777,7 +778,7 @@ class Entity extends Base\PublicEntity
                     'data' => $ex->getMessage()
                 ]);
         }
-        
+
         return $apiBankAccount;
     }
 
