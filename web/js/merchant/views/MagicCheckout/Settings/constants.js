@@ -7,51 +7,100 @@ import CheckoutSettingsTab from 'merchant/views/MagicCheckout/MagicSettings/cont
 import NativeCoupons from 'merchant/views/MagicCheckout/MagicSettings/components/native/CheckoutSettings';
 import NativeShippingWrapper from 'merchant/views/MagicCheckout/MagicSettings/containers/native/ShippingWrapper';
 
+import CODOrderAutomation from 'merchant/views/MagicCheckout/CODOrderAutomation';
+
 export const PLATFORMS = {
   SHOPIFY: 'shopify',
   WOOCOMMERCE: 'woocommerce',
   NATIVE: 'native',
 };
 
+export const ACCESS_ROLES = ['owner', 'admin'];
+
 export const TABS = {
   [PLATFORMS.SHOPIFY]: [
     {
+      className: 'magic-checkout-settings',
+      path: '/magic/settings',
       label: 'Store Settings',
       Component: CheckoutSettingsTab,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
+      className: 'intelligence-settings',
+      path: '/magic/settings/magic-intelligence',
       label: 'Magic Intelligence',
       Component: MagicIntelligenceTab,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'automation-settings',
+      path: '/magic/settings/cod-review-workflow',
+      label: 'COD Review Workflow',
+      Component: CODOrderAutomation,
+      condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
     },
   ],
   [PLATFORMS.WOOCOMMERCE]: [
     {
+      className: 'magic-checkout-settings',
+      path: '/magic/settings',
       label: 'Checkout Settings',
       Component: WoocCoupons,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
+      className: 'shipping-settings',
+      path: '/magic/settings/shipping',
       label: 'Shipping Settings',
       Component: WoocShippingTab,
       tabHeading: 'Shipping Settings',
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
+      className: 'intelligence-settings',
+      path: '/magic/settings/magic-intelligence',
       label: 'Magic Intelligence',
       Component: MagicIntelligenceTab,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'automation-settings',
+      path: '/magic/settings/cod-review-workflow',
+      label: 'COD Review Workflow',
+      Component: CODOrderAutomation,
+      condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
     },
   ],
   [PLATFORMS.NATIVE]: [
     {
+      className: 'magic-checkout-settings',
+      path: '/magic/settings',
       label: 'Checkout Settings',
       Component: NativeCoupons,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
+      className: 'shipping-settings',
+      path: '/magic/settings/shipping',
       label: 'Shipping Settings',
       Component: NativeShippingWrapper,
       tabHeading: 'Shipping Settings',
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
     },
     {
+      className: 'intelligence-settings',
+      path: '/magic/settings/magic-intelligence',
       label: 'Magic Intelligence',
       Component: MagicIntelligenceTab,
+      condition: (_user) => ACCESS_ROLES.includes(_user.role),
+    },
+    {
+      className: 'automation-settings',
+      path: '/magic/settings/cod-review-workflow',
+      label: 'COD Review Workflow',
+      Component: CODOrderAutomation,
+      condition: (_user) => _user.isMagicCODOrderAutomationEnabled,
     },
   ],
 };

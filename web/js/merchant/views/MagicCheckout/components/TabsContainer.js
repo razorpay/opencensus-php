@@ -3,6 +3,7 @@ import { NavLink, Redirect, Switch } from 'react-router-dom';
 import Spinner from 'common/ui/Spinner';
 import magicCheckoutRoutes from 'merchant/views/MagicCheckout/MagicCheckoutRoutes';
 import { ShowWhenRoute } from 'merchant/components/ShowWhen';
+import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
 
 let redirectPath;
 const RouteContainer = ({ user, isCODIntelligenceEnabled, isCODOrderControlEnabled }) => {
@@ -11,11 +12,17 @@ const RouteContainer = ({ user, isCODIntelligenceEnabled, isCODOrderControlEnabl
       if (item.tabName === 'RTO Analytics' && !isCODIntelligenceEnabled) return null;
       if (item.tabName === 'COD Orders' && !isCODOrderControlEnabled) return null;
       if (item.condition && !item.condition(user)) return null;
+      if (
+        item.tabName === 'Settings' &&
+        !ACCESS_ROLES.includes(user.role) &&
+        !isCODOrderControlEnabled
+      )
+        return null;
       if (!redirectPath) {
         redirectPath = item.path;
       }
       return (
-        <NavLink key={item.path} to={item.path} exact>
+        <NavLink key={item.path} to={item.path}>
           {item.tabName}
         </NavLink>
       );
@@ -39,7 +46,6 @@ const RouteContainer = ({ user, isCODIntelligenceEnabled, isCODOrderControlEnabl
                 <ShowWhenRoute
                   path={item.path}
                   key={item.path}
-                  exact
                   component={item.Component}
                   additionalCondition={(_user) => !item.condition || item.condition(_user)}
                 />

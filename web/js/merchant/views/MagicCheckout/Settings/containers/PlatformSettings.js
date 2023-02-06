@@ -17,6 +17,7 @@ import { DisplayNotificationTxt } from 'merchant/views/MagicCheckout/common/comp
 import { showNotification } from 'merchant_common/reducers/notifications';
 import Spinner from 'common/ui/Spinner';
 import { analyticsTrack } from 'common/utils/analytics';
+import { ACCESS_ROLES } from 'merchant/views/MagicCheckout/Settings/constants';
 
 const PlatformSettings = ({
   settings,
@@ -25,6 +26,7 @@ const PlatformSettings = ({
   fetchSettings,
   displayNotification,
   user,
+  path,
 }) => {
   const { nested_view_type, status, has_saved_config, platform } = settings;
 
@@ -86,10 +88,10 @@ const PlatformSettings = ({
     }
   }, [status]);
 
-  const getNestedVerticalTab = () => {
+  const getNestedVerticalTab = (path) => {
     const { one_click_checkout } = settings;
     if (!(platform === PLATFORMS.VALUES.SHOPIFY && !one_click_checkout)) {
-      return <NestedVerticalTab />;
+      return <NestedVerticalTab path={path} />;
     }
     return null;
   };
@@ -105,19 +107,21 @@ const PlatformSettings = ({
     <div className="platform-settings-container">
       <div className="platform-settings magic-settings-container">
         <div>
-          <div className="padding-16 bg-settings platform-heading-container">
-            <div className="font-bold font-20 platform-heading">Platform Settings</div>
-            <PlatformSubText
-              {...settings}
-              updatePage={handleUpdatePage}
-              merchantId={merchantId}
-              user={user}
-            />
-          </div>
+          {ACCESS_ROLES.includes(user.role) ? (
+            <div className="padding-16 bg-settings platform-heading-container">
+              <div className="font-bold font-20 platform-heading">Platform Settings</div>
+              <PlatformSubText
+                {...settings}
+                updatePage={handleUpdatePage}
+                merchantId={merchantId}
+                user={user}
+              />
+            </div>
+          ) : null}
           {nested_view_type === NESTED_VIEW_TYPE.PLATFORM_SELECTION ? (
             <Settings />
           ) : (
-            getNestedVerticalTab()
+            getNestedVerticalTab(path)
           )}
         </div>
       </div>

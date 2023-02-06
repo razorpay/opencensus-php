@@ -41,6 +41,7 @@ const CanceledOrdersTab = (props) => {
     loading,
     skip,
     hasMoreOrders,
+    reviewMode,
   } = codOrdersData;
 
   const [itemsArray, setItemsArray] = useState([]);
@@ -68,6 +69,7 @@ const CanceledOrdersTab = (props) => {
       count,
       skip,
       review_status: REVIEWED_ORDERS_CATEGORY.canceled,
+      review_mode: reviewMode,
     });
   }, [fetchCODOrders, codOrdersData]);
 
@@ -82,6 +84,7 @@ const CanceledOrdersTab = (props) => {
       from: '',
       to: '',
       selectedPresetFromParent: presets[0],
+      reviewMode: '',
     });
   }, [updateFilters]);
 
@@ -131,6 +134,7 @@ const CanceledOrdersTab = (props) => {
         onSubmitHandler={onSubmitHandler}
         resetHandler={resetHandler}
         onDatesChange={onDatesChange}
+        showReviewModeFilter
       />
       <DataTable
         title="orders"

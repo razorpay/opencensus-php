@@ -45,8 +45,19 @@ const OnHoldOrdersTab = (props) => {
     closeModal,
   } = props;
 
-  const { id, receipt, riskTier, count, from, to, items, loading, skip, hasMoreOrders } =
-    codOrdersData || {};
+  const {
+    id,
+    receipt,
+    riskTier,
+    count,
+    from,
+    to,
+    items,
+    loading,
+    skip,
+    hasMoreOrders,
+    reviewMode,
+  } = codOrdersData || {};
 
   const [itemsArray, setItemsArray] = useState(items);
   const [isCheckedAll, setIsCheckedAll] = useState(false);
@@ -90,6 +101,7 @@ const OnHoldOrdersTab = (props) => {
       count,
       skip,
       review_status: REVIEWED_ORDERS_CATEGORY.hold,
+      review_mode: reviewMode,
     });
   }, [fetchCODOrders, codOrdersData]);
 
@@ -105,6 +117,7 @@ const OnHoldOrdersTab = (props) => {
       from: '',
       to: '',
       selectedPresetFromParent: presets[0],
+      reviewMode: '',
     });
   }, [updateFilters]);
 
@@ -209,6 +222,7 @@ const OnHoldOrdersTab = (props) => {
         onSubmitHandler={onSubmitHandler}
         resetHandler={resetHandler}
         onDatesChange={onDatesChange}
+        showReviewModeFilter
       />
       <MultiSelectHeader
         onSelect={onMutilSelect}

@@ -454,7 +454,15 @@ export default class User {
   }
 
   get isMagicSettingsEnabled() {
-    return [rolesList.OWNER, rolesList.ADMIN].indexOf(this.userRole) > -1;
+    return (
+      [
+        rolesList.OWNER,
+        rolesList.ADMIN,
+        rolesList.MANAGER,
+        rolesList.OPERATIONS,
+        rolesList.FINANCE,
+      ].indexOf(this.userRole) > -1
+    );
   }
 
   get isMagicRTOAnalyticsEnabled() {
@@ -463,6 +471,20 @@ export default class User {
 
   get isMagicRTOAnalyticsV2Enabled() {
     return this.getExpStatus('magic_rto_analytics_v2_live');
+  }
+
+  get isMagicCODOrderAutomationEnabled() {
+    const accessRoles = [
+      rolesList.OWNER,
+      rolesList.ADMIN,
+      rolesList.MANAGER,
+      rolesList.OPERATIONS,
+      rolesList.FINANCE,
+    ];
+    return (
+      this.getExpStatus('magic_cod_orders_automation_live') &&
+      accessRoles.indexOf(this.userRole) > -1
+    );
   }
 
   get isShopifyMagicEnabled() {

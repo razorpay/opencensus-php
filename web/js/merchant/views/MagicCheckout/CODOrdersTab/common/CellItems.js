@@ -113,6 +113,14 @@ export const actions = (onReview, isChecked) => ({
 
 export const reviewedBy = {
   title: 'Reviewed By',
-  value: (item) => item.reviewed_by ?? '-',
+  value: (item) => {
+    if (!item.reviewed_by) {
+      return '-';
+    }
+
+    return item.reviewed_by !== 'automation_intelligence@razorpay.com'
+      ? item.reviewed_by
+      : 'Automation';
+  },
   columnClass: 'reviewed-by-col',
 };

@@ -171,6 +171,7 @@ class Service extends Base\Service
             'magic_bulk_address_live',
             'magic_rto_analytics_live',
             'magic_rto_analytics_v2_live',
+            'magic_cod_orders_automation_live',
             'loans_allow_custom_amount_repayment',
             'rx_payout_link_workflow',
             'capital_xca_pay_now',

@@ -5,11 +5,13 @@ import moment from 'moment';
 import ListFilter from 'merchant/components/ListFilter';
 import Input from 'common/new-ui/Input';
 import DateRangePicker from 'common/ui/DateRangePicker';
+import CODAutomationBanner from 'merchant/views/MagicCheckout/CODOrdersTab/common/CODAutomationBanner';
 import { updateFilters } from 'merchant/reducers/magicCheckout/codOrders/action';
 import {
   RISK_TIERS,
   DATE_RANGE_PRESETS,
   MIN_START_DATE,
+  REVIEW_MODE,
 } from 'merchant/views/MagicCheckout/CODOrdersTab/constants';
 
 const COUNT = [
@@ -27,8 +29,9 @@ const OrderFilters = ({
   onDatesChange,
   orderFiltersData,
   updateFilters,
+  showReviewModeFilter,
 }) => {
-  const { id, receipt, riskTier, count, selectedPresetFromParent } = orderFiltersData;
+  const { id, receipt, riskTier, count, selectedPresetFromParent, reviewMode } = orderFiltersData;
 
   const setField = useCallback(
     (e) => {
@@ -53,50 +56,73 @@ const OrderFilters = ({
   const isOutsideRange = (day) => day.isAfter(moment()) || day.isBefore(moment(MIN_START_DATE));
 
   return (
-    <ListFilter form={`${formName}-form`} onSubmit={onSubmitHandler} resetHandler={resetHandler}>
-      <div className="form-group list-filter-item">
-        <label>Razorpay Order Id</label>
-        <input
-          type="text"
-          name="id"
-          className="form-control input-sm"
-          value={id}
-          onChange={setField}
-        />
-      </div>
-      <div className="form-group list-filter-item">
-        <label>Receipt</label>
-        <input
-          type="text"
-          name="receipt"
-          className="form-control input-sm"
-          value={receipt}
-          onChange={setField}
-        />
-      </div>
-      <div className="form-group list-filter-item">
-        <label>RTO Risk</label>
-        <Input.Select name="riskTier" options={RISK_TIERS} value={riskTier} onChange={setField} />
-      </div>
-      <div className="form-group datepicker-group">
-        <label>Duration</label>
-        <DateRangePicker
-          presets={DATE_RANGE_PRESETS}
-          onDatesChange={onDatesChange}
-          defaultPreset={defaultPreset}
-          hideCustomPreset
-          onSelectPreset={onSelectPreset}
-          callPresetChangeOnCustomOption
-          selectedPresetFromParent={selectedPresetFromParent}
-          isOutsideRange={isOutsideRange}
-          minStartDate={moment(MIN_START_DATE)}
-        />
-      </div>
-      <div className="form-group list-filter-item count">
-        <label>Count</label>
-        <Input.Select name="count" options={COUNT} value={count} onChange={setField} />
-      </div>
-    </ListFilter>
+    <>
+      <CODAutomationBanner />
+      <ListFilter form={`${formName}-form`} onSubmit={onSubmitHandler} resetHandler={resetHandler}>
+        <div className="form-group list-filter-item">
+          <label for="order-id">Razorpay Order Id</label>
+          <input
+            id="order-id"
+            type="text"
+            name="id"
+            className="form-control input-sm"
+            value={id}
+            onChange={setField}
+          />
+        </div>
+        <div className="form-group list-filter-item">
+          <label for="receipt">Receipt</label>
+          <input
+            id="receipt"
+            type="text"
+            name="receipt"
+            className="form-control input-sm"
+            value={receipt}
+            onChange={setField}
+          />
+        </div>
+        <div className="form-group list-filter-item">
+          <label for="riskTier">RTO Risk</label>
+          <Input.Select
+            id="riskTier"
+            name="riskTier"
+            options={RISK_TIERS}
+            value={riskTier}
+            onChange={setField}
+          />
+        </div>
+        <div className="form-group datepicker-group">
+          <label>Duration</label>
+          <DateRangePicker
+            presets={DATE_RANGE_PRESETS}
+            onDatesChange={onDatesChange}
+            defaultPreset={defaultPreset}
+            hideCustomPreset
+            onSelectPreset={onSelectPreset}
+            callPresetChangeOnCustomOption
+            selectedPresetFromParent={selectedPresetFromParent}
+            isOutsideRange={isOutsideRange}
+            minStartDate={moment(MIN_START_DATE)}
+          />
+        </div>
+        {showReviewModeFilter ? (
+          <div className="form-group list-filter-item">
+            <label for="reviewMode">Review Mode</label>
+            <Input.Select
+              id="reviewMode"
+              name="reviewMode"
+              options={REVIEW_MODE}
+              value={reviewMode}
+              onChange={setField}
+            />
+          </div>
+        ) : null}
+        <div className="form-group list-filter-item count">
+          <label for="count">Count</label>
+          <Input.Select id="count" name="count" options={COUNT} value={count} onChange={setField} />
+        </div>
+      </ListFilter>
+    </>
   );
 };
 

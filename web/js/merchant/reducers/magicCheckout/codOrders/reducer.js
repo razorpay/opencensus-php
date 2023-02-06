@@ -15,6 +15,7 @@ const initialState = {
   error: null,
   selectedPresetFromParent: null,
   hasMoreOrders: true,
+  reviewMode: '',
 };
 
 export const magicCODOrdersReducer = (state = initialState, action) => {

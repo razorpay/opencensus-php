@@ -1,0 +1,180 @@
+$danger-color = #F04F50
+
+.automation-settings
+  padding: 24px
+
+.magic-settings-tabs > .tabs-content.automation-settings > .tabs-component
+  height: 100%
+  margin: 0
+
+  .tabs-component-wrapper
+    height: 100%
+
+    .spinner-container
+      background: #FFF
+      display: flex
+      height: 100%
+
+.cod-order-automation-container
+  padding: 16px
+  height: 100%
+
+  .tab-content
+    padding: 24px
+    background: #FFF
+    color: #162F56
+    height: 100%
+
+  .tab-content > h3
+    margin-bottom: 4px
+
+  .tab-content > p
+    color: #546582
+
+  .tab-content > hr
+    margin: 16px 0
+    border: 1px solid #ECF0F1
+
+  .tab-content > .config-container
+    background: #FAFCFF
+    border: 1px solid #F3F8FE
+    border-radius: 4px
+    padding: 16px
+
+    .config-labels-container
+      gap: 60px
+
+    .config-inputs-wrapper
+      gap: 40px
+
+      .config-close
+        margin-top: 12px
+        color: $danger-color
+        font-weight: 700
+        position: relative
+        left: -20px
+
+      .config-close > .i-close
+        font-size: 120%
+
+    .config-input-header
+      padding: 0
+      font-weight: 700
+
+    .config-input
+      padding: 0
+      display: flex
+      flex-direction: column
+      gap: 2px
+
+      .Input
+        margin: 12px 0 0
+
+      .Input--empty
+        color: #5A6870
+
+      .Input--disabled
+        opacity: 1
+
+      .Input-elWrapper.Select-elWrapper
+        &::before
+          right: 12px
+          top: -2px
+
+      .Input-elWrapper > .Input-el
+        height: 36px
+
+        &:disabled
+          color: inherit
+          background: #FFF
+
+      .Input.required
+        .Input-el
+          border: 1px solid $danger-color
+
+      .required-text
+        color: $danger-color
+
+    .add-configs-cta
+      color: #528FF0
+      margin-top: 12px
+      font-size: 13px
+
+  .save-settings-cta-container
+    padding: 20px 0
+    display: flex
+    align-items: center
+    justify-content: flex-end
+
+    .btn
+      margin-right: 0
+
+  .saved-configs-wrapper
+    background: #FAFCFF
+    padding: 20px
+
+    .saved-configs-container
+      background: #FFF
+      padding: 16px
+      border: 1px solid #E0E8F4
+      border-radius: 4px
+      width: 460px
+
+    .saved-configs-header
+      display: flex
+      align-items: center
+      justify-content: space-between
+      color: #162F56DE
+      font-weight: 700
+      font-size: 16px
+
+      .configs-edit
+        color: #2B83EA
+        font-size: 14px
+        font-weight: 400
+        display: flex
+        align-items: center
+
+      .configs-edit > .i-edit_board
+        margin-right: 8px
+
+    hr
+      border: 1px solid #ECF0F1
+      margin: 10px 0
+
+    .saved-configs-values-container
+      display: flex
+      flex-direction: column
+      gap: 12px
+
+      .saved-config > .saved-config-condition
+        color: #5A6870
+
+      .saved-config > .saved-config-action
+        color: #000
+        font-weight: 600
+
+.ReactModal__Content.remove-configs-confirmation-modal
+  max-width: 400px
+
+  .confirmation-modal
+    padding: 24px
+
+  .confirmation-modal > .modal-header
+    padding: 0
+    color: #262D3A
+    font-size: 16px
+
+  .confirmation-modal > .confirmation-modal-subtext
+    margin-top: 14px
+
+  .confirmation-modal > .confirmation-modal-ctas-container
+    margin-top: 8px
+
+    .confirmation-modal-primary-cta
+      padding: 8px 20px
+      background: #F04F50
+      border-radius: 2px
+
+    .confirmation-modal-secondary-cta
+      margin-right: 16px
