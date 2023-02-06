@@ -358,6 +358,11 @@ class Processor
      */
     const S2S_IVR_OTP_CARD_PAYMENTS_VIA_PGROUTER = 'ivr_otp_s2s_card_payments_via_pg_router_v2';
 
+    /**
+     * Razorx flag to block merchant on re-arch flow for payments card
+     */
+    const BLOCK_MERCHANTS_ON_REARCH_CPS = 'block_merchant_on_rearch_cps';
+
     const CAPTURE_VERIFY_METRO_TOPIC        = 'rearch-capture-verify';
 
     const FORCE_AUTHORIZE_FAILED_ALLOW_GATEWAYS = [
@@ -625,6 +630,12 @@ class Processor
             if ((empty($input['currency']) === false) and
                 ($input['currency'] !== Currency\Currency::INR))
             {
+                return false;
+            }
+
+            //Ultimate flag to stop re-arch traffic, merchants added in this flag will be blocked from CPS re-arch traffic
+            $result = $this->app->razorx->getTreatment($merchant->getId(), self::BLOCK_MERCHANTS_ON_REARCH_CPS, $this->mode);
+            if ($result === 'on') {
                 return false;
             }
 
