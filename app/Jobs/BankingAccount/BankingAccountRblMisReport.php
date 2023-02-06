@@ -15,7 +15,8 @@ class BankingAccountRblMisReport extends Job
 
     const RETRY_INTERVAL = 300;
 
-    public $timeout = 300;
+    // increasing code level timeout
+    public $timeout = 600;
 
     protected $metricsEnabled = true;
 

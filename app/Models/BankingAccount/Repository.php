@@ -901,14 +901,7 @@ class Repository extends Base\Repository
         // case insensitive exact match for merchant email
         $fosCity = $params[Entity::FOS_CITY];
 
-        // Temporarily the Documentation process (in terms of delivering)
-        // is different for Bangalore and Non-Bangalore. Hence, this temporary provision
-        // to allow not check.
-        // In future, once processes get streamlined, this may be unnecessary.
-
-        // if in feet on street cities // otherwise Non_FOS will give all non fos cities
-
-        if (!((new Validator())->checkFosLeadCities($fosCity)))
+        if ($fosCity === Constants::NON_FOS)
         {
             $query->whereNotIn($merchantCityColumn, Constants::FOS_CITIES);
         }

@@ -2909,7 +2909,7 @@ return [
                 'items' => [
                     [
                         'banking_account_activation_details' => [
-                            'merchant_city' => 'Delhi'
+                            'merchant_city' => 'Indore'
                         ]
                     ]
                 ]

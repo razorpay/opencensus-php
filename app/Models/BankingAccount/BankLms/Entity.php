@@ -18,7 +18,6 @@ class Entity extends BankingAccount\Entity
     const BANK_POC_USER_ID = 'bank_poc_user_id';
     const MERCHANT_NAME = 'merchant_name';
     const SENT_TO_BANK_DATE = 'sent_to_bank_date';
-    const BANK_POC_NAME = 'bank_poc_name';
     const COMPLETED_STAGES = 'completed_stages';
     const LEAD_FOLLOW_UP_DATE = 'lead_follow_up_date';
 
@@ -45,7 +44,6 @@ class Entity extends BankingAccount\Entity
         self::BANKING_ACCOUNT_ACTIVATION_DETAILS,
         self::MERCHANT_NAME,
         self::SENT_TO_BANK_DATE,
-        self::BANK_POC_NAME,
         self::COMPLETED_STAGES,
         self::LEAD_FOLLOW_UP_DATE,
         self::STATUS_LAST_UPDATED_AT,
@@ -62,7 +60,6 @@ class Entity extends BankingAccount\Entity
         self::BANKING_ACCOUNT_ACTIVATION_DETAILS,
         self::MERCHANT_NAME,
         self::SENT_TO_BANK_DATE,
-        self::BANK_POC_NAME,
         self::COMPLETED_STAGES,
         self::LEAD_FOLLOW_UP_DATE,
         self::USING_NEW_STATES,
@@ -97,7 +94,6 @@ class Entity extends BankingAccount\Entity
         self::BANKING_ACCOUNT_ACTIVATION_DETAILS,
         self::MERCHANT_NAME,
         self::SENT_TO_BANK_DATE,
-        self::BANK_POC_NAME,
         self::COMPLETED_STAGES,
         self::LEAD_FOLLOW_UP_DATE,
         self::STATUS_LAST_UPDATED_AT,
@@ -134,7 +130,6 @@ class Entity extends BankingAccount\Entity
         self::BANKING_ACCOUNT_ACTIVATION_DETAILS,
         self::MERCHANT_NAME,
         self::SENT_TO_BANK_DATE,
-        self::BANK_POC_NAME,
         self::COMPLETED_STAGES,
         self::LEAD_FOLLOW_UP_DATE,
         self::STATUS_LAST_UPDATED_AT,
@@ -177,20 +172,6 @@ class Entity extends BankingAccount\Entity
         }
 
         $array[self::SENT_TO_BANK_DATE] = $sentToBankLog->pluck(self::CREATED_AT)->last();
-    }
-
-    public function setPublicBankPocNameAttribute(array & $array)
-    {
-        $bankPocUser = $this->bankingAccountActivationDetails->getBankPOCUser();
-
-        if(empty($bankPocUser))
-        {
-            $array[self::BANK_POC_NAME] = null;
-
-            return;
-        }
-
-        $array[self::BANK_POC_NAME] = $bankPocUser->getName();
     }
 
     public function setPublicCompletedStagesAttribute(array & $array)

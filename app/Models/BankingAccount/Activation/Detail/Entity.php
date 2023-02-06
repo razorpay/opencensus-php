@@ -157,6 +157,7 @@ class Entity extends Base\PublicEntity
 
     // For Assigning Leads to Bank POC
     const BANK_POC_USER_ID = 'bank_poc_user_id';
+    const BANK_POC_NAME = 'bank_poc_name';
     const BANK_POC_ASSIGNED_DATE = 'bank_poc_assigned_date';
 
     const RBL_ACTIVATION_DETAILS = 'rbl_activation_details';
@@ -471,6 +472,7 @@ class Entity extends Base\PublicEntity
         self::UPI_ACTIVATION_COMPLETION_DATE,
         self::UPI_ACTIVATION_TAT,
         self::CUSTOMER_ONBOARDING_TAT,
+        self::BANK_POC_NAME,
     ];
 
     protected $dates = [
@@ -851,4 +853,19 @@ class Entity extends Base\PublicEntity
         $array[self::CUSTOMER_ONBOARDING_TAT] =
             self::hourDifferenceBetweenTimestamps($docCollectionDate, $apiIRClosedDate);
     }
+
+    public function setPublicBankPocNameAttribute(array & $array)
+    {
+        $bankPocUser = $this->getBankPOCUser();
+
+        if(empty($bankPocUser))
+        {
+            $array[self::BANK_POC_NAME] = null;
+
+            return;
+        }
+
+        $array[self::BANK_POC_NAME] = $bankPocUser->getName();
+    }
+
 }

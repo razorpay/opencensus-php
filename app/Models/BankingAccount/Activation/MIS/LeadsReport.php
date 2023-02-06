@@ -27,6 +27,7 @@ class LeadsReport extends Leads
         {
             $input = array_merge($this->input, [
                 BankingAccount\Entity::STATUS => [
+                    Status::PICKED,
                     Status::INITIATED,
                     Status::VERIFICATION_CALL,
                     Status::DOC_COLLECTION,

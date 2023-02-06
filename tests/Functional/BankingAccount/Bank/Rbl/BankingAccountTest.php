@@ -5128,7 +5128,7 @@ class BankingAccountTest extends TestCase
     {
 
         $this->testCreateActivationDetail([
-            ActivationDetail\Entity::MERCHANT_CITY => 'Delhi'
+            ActivationDetail\Entity::MERCHANT_CITY => 'Indore'
         ]);
 
         $this->ba->adminAuth();
@@ -11039,6 +11039,10 @@ class BankingAccountTest extends TestCase
 
         $this->ba->addXBankLMSOriginHeader();
 
+        $user->setName('RBL MO POC User');
+
+        $user->saveOrFail();
+
         $data = [
             ActivationDetail\Entity::BANK_POC_USER_ID => $user->getId()
         ];
@@ -11054,6 +11058,7 @@ class BankingAccountTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals($user->getId(), $response["banking_account_activation_details"]["bank_poc_user_id"]);
+        $this->assertEquals($user->getName(), $response["banking_account_activation_details"]["bank_poc_name"]);
 
         Mail::assertQueued(ActivationMails\BankPartnerPocAssigned::class, function ($mail) use ($user)
         {
