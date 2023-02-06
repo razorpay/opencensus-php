@@ -134,7 +134,11 @@ capturing it in the dashboard.</p>
 </td>
                   <td class="shortwrapper last" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; padding-right: 0px;">
                     <table class="four columns" style="border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; text-align: left; margin: 0 auto; width: 180px;"><tr style="padding: 0; vertical-align: top; text-align: left;">
-<td class="darktext right-text-pad" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; font-size: 14px; line-height: 25px; color: #484B4C; text-align: right; padding: 0px 0px 10px; padding-right: 10px;">INR {{{number_format($payment['amount']/100, 2)}}}</td>
+                            @if (isset($payment['currency'])=== true)
+                                <td class="darktext right-text-pad" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; font-size: 14px; line-height: 25px; color: #484B4C; text-align: right; padding: 0px 0px 10px; padding-right: 10px;"> {{{$payment['currency']}}} {{{number_format($payment['amount']/100, 2)}}}</td>
+                            @else
+                                <td class="darktext right-text-pad" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; font-size: 14px; line-height: 25px; color: #484B4C; text-align: right; padding: 0px 0px 10px; padding-right: 10px;">INR {{{number_format($payment['amount']/100, 2)}}}</td>
+                            @endif
                         <td class="expander" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; visibility: hidden; width: 0px; padding: 0 !important;"></td>
                       </tr></table>
 </td>
@@ -143,7 +147,7 @@ capturing it in the dashboard.</p>
             </tr></table>
           @endforeach
           @include('emails.partials.footer', ['message' => $message])
-        
+
         @if ($custom_branding)
           <table class="row" style="border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;">
             <tr style="padding: 0; text-align: left; vertical-align: top;">
