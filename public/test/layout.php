@@ -216,7 +216,7 @@ $('#keys').onclick = t.onkeydown = e => {
       source = `betacdn.np.razorpay.in/checkout/builds/commit-builds/${getSearchParams().build}`
     } else if (getSearchParams().branch) {
       source = `betacdn.np.razorpay.in/checkout/builds/branch-builds/${getSearchParams().branch}`
-    } else if (devstackLabel) {
+    } else if (devstackLabel && getSearchParams().checkout_devstack) {
       source = `checkout-${devstackLabel}.dev.razorpay.in`
     } else if (getSearchParams().prod_build) {
       source = `betacdn.np.razorpay.in/checkout/builds/prod-builds/${getSearchParams().prod_build}`
