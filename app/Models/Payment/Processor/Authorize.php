@@ -11803,7 +11803,8 @@ trait Authorize
 
     protected function pushCardMetaDataEvent($input, Payment\Entity $payment){
 
-        if ($this->app->runningUnitTests() === false) {
+        if ($this->app->runningUnitTests() === false)
+        {
             try
             {
                 $data = [];
@@ -11834,12 +11835,17 @@ trait Authorize
                     // create a payload to send from input
                     if (empty($input['card']['number']) === false)
                     {
-                        if (isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == true) {
-                            $iin_token = substr($input['card']['number'], 0, 9);
+
+                        $trimmed_number = str_replace(' ', '', trim($input['card']['number']));
+                        $trimmed_number = str_replace('-', '', $trimmed_number);
+
+                        if (isset($input[Payment\Entity::CARD][Card\Entity::TOKENISED]) == true && $input[Payment\Entity::CARD][Card\Entity::TOKENISED] == true)
+                        {
+                            $iin_token = substr($trimmed_number, 0, 9);
                             $iin_number = Card\IIN\IIN::getTransactingIinforRange($iin_token) ?? substr($iin_token,0,6);
                         }
-                        else {
-                            $trimmed_number = str_replace(' ', '', trim($input['card']['number']));
+                        else
+                        {
                             $iin_number = substr($trimmed_number, 0, 6);
                         }
                     }
@@ -11861,7 +11867,8 @@ trait Authorize
                     "iin" => $iin_number,
                 ];
 
-                if (empty($data) === false) {
+                if (empty($data) === false)
+                {
 
                     $topic = 'events.payments-card-meta.v1.' . $this->mode;  //'events.payments-card-meta.v1.live'
 
@@ -11881,7 +11888,8 @@ trait Authorize
                     (new KafkaProducer($topic, stringify($event)))->Produce();
                 }
             }
-            catch(\Exception $ex){
+            catch(\Exception $ex)
+            {
                 $this->trace->traceException(
                     $ex,
                     500,
