@@ -5,6 +5,8 @@ namespace RZP\Http\BasicAuth;
 use ApiResponse;
 use Razorpay\Trace\Logger as Trace;
 use Razorpay\OAuth\Client as OAuthClient;
+
+use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Models\Key;
@@ -18,6 +20,7 @@ use RZP\Http\RequestContext;
 use RZP\Base\RepositoryManager;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Trace\Tracer;
 
 
 abstract class AuthCreds
@@ -232,7 +235,10 @@ abstract class AuthCreds
 
         if ($this->merchant->isActivated() === false)
         {
-            $isPrivateXRouteAccessible = $this->canNonKycActivatedMerchantAccessPrivateXRoutes();
+            $isPrivateXRouteAccessible = Tracer::inspan(['name' => HyperTrace::AUTH_CRED_CAN_NON_KYC_ACTIVATED_MERCHANT_ACCESS_PRIVATE_X_ROUTES], function ()
+                {
+                    return $this->canNonKycActivatedMerchantAccessPrivateXRoutes();
+                });
 
             if ($isPrivateXRouteAccessible === true)
             {
@@ -252,9 +258,15 @@ abstract class AuthCreds
      */
     public function canNonKycActivatedMerchantAccessPrivateXRoutes(): bool
     {
-        $isMerchantCaActivated = (new Merchant\Core())->isCurrentAccountActivated($this->merchant);
+        $isMerchantCaActivated = Tracer::inspan(['name' => HyperTrace::AUTH_CRED_IS_CURRENT_ACCOUNT_ACTIVATED], function ()
+        {
+            return (new Merchant\Core())->isCurrentAccountActivated($this->merchant);
+        });
 
-        $isMerchantVaActivated = (new Merchant\Core())->isXVaActivated($this->merchant);
+        $isMerchantVaActivated = Tracer::inspan(['name' => HyperTrace::AUTH_CRED_IS_X_VA_ACTIVATED], function ()
+        {
+            return (new Merchant\Core())->isXVaActivated($this->merchant);
+        });
 
         if ($isMerchantCaActivated === true || $isMerchantVaActivated === true)
         {
@@ -279,9 +291,12 @@ abstract class AuthCreds
             }
 
             //TODO : Need to remove this experiment after sometime
-            $variant = $this->razorx->getTreatment($route,
-                RazorxTreatment::RAZORPAY_X_AUTHORISE_CA_ACTIVATED_MERCHANT_TO_ACCESS_X_PRIVATE_ROUTES,
-                $this->getMode());
+            $variant =  Tracer::inspan(['name' => HyperTrace::AUTH_CRED_GET_TREATMENT], function () use ($route)
+            {
+                return $this->razorx->getTreatment($route,
+                    RazorxTreatment::RAZORPAY_X_AUTHORISE_CA_ACTIVATED_MERCHANT_TO_ACCESS_X_PRIVATE_ROUTES,
+                    $this->getMode());
+            });
 
             $log = [
                 'merchant_id'  => $this->merchant->getId(),

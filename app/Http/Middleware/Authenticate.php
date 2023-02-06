@@ -408,8 +408,10 @@ class Authenticate
             return true;
         }
 
+        // https://razorpay.slack.com/archives/C012ZGQQFDJ/p1674198992232559
+        return false;
         // if the experiment is enabled for this request to use passport
-        return $this->isRazorXEnabledForResolvingOAuthLocally();
+        //return $this->isRazorXEnabledForResolvingOAuthLocally();
     }
 
     //TODO : Need to remove this experiment after sometime

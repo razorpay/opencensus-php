@@ -7450,8 +7450,11 @@ class Core extends Base\Core
      */
     public function checkIfCurrentAccountIsActivated(Entity $merchant): bool
     {
-        $bankingAccounts = $this->repo->banking_account->fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(
-            $merchant->getMerchantId(), BankingAccount\Channel::RBL, BankingAccount\AccountType::CURRENT, BankingAccount\Status::ACTIVATED);
+        $bankingAccounts = Tracer::inspan(['name' => HyperTrace::MERCHANT_CORE_FETCH_BANKING_ACCOUNT_BY_MERCHANT_ID_ACCOUNT_TYPE_CHANNEL_AND_STATUS], function () use ($merchant)
+            {
+                return $this->repo->banking_account->fetchBankingAccountByMerchantIdAccountTypeChannelAndStatus(
+                    $merchant->getMerchantId(), BankingAccount\Channel::RBL, BankingAccount\AccountType::CURRENT, BankingAccount\Status::ACTIVATED);
+            });
 
         // RBL
         if(empty($bankingAccounts) === false)
@@ -7463,7 +7466,10 @@ class Core extends Base\Core
             // ICICI, Axis, Yes Bank (CAs implemented in BAS)
             $repo = new BalanceRepo();
 
-            $balance = $repo->getBalanceByMerchantIdChannelsAndAccountType($merchant->getMerchantId(), BankingAccountService\Channel::getDirectTypeChannels(), Balance\AccountType::DIRECT);
+            $balance = Tracer::inspan(['name' => HyperTrace::MERCHANT_CORE_GET_BALANCE_BY_MERCHANT_ID_CHANNELS_AND_ACCOUNT_TYPE], function () use ($repo, $merchant)
+                {
+                    return  $repo->getBalanceByMerchantIdChannelsAndAccountType($merchant->getMerchantId(), BankingAccountService\Channel::getDirectTypeChannels(), Balance\AccountType::DIRECT);
+                });
 
             $businessId = '';
 

@@ -6,8 +6,10 @@ use ApiResponse;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Application as OAuthApp;
 
+use RZP\Constants\HyperTrace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Tracer;
 
 class ClientAuthCreds extends AuthCreds
 {
@@ -49,10 +51,14 @@ class ClientAuthCreds extends AuthCreds
 
         try
         {
-            $this->partnerClient = (new OAuthClient\Repository)->getClientByIdAndEnv(
-                $keyId,
-                self::$clientModes[$this->getMode()]
-            );
+            $this->partnerClient = Tracer::inspan(['name' => HyperTrace::CLIENT_AUTH_CRED_IS_KEY_EXISTING], function ()  use ($keyId)
+            {
+                return  (new OAuthClient\Repository)->getClientByIdAndEnv(
+                    $keyId,
+                    self::$clientModes[$this->getMode()]
+                );
+            });
+
 
             $this->partnerApplicationId = $this->partnerClient->getApplicationId();
         }
@@ -139,7 +145,10 @@ class ClientAuthCreds extends AuthCreds
     {
         $merchantId = $this->partnerClient->getMerchantId();
 
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = Tracer::inspan(['name' => HyperTrace::CLIENT_AUTH_CRED_MERCHANT], function () use ($merchantId)
+        {
+            return $this->repo->merchant->findOrFail($merchantId);
+        });
 
         $this->setMerchant($merchant);
 
@@ -167,6 +176,6 @@ class ClientAuthCreds extends AuthCreds
 
     public function unsetPartnerApplicationId()
     {
-        $this->partnerApplicationId = null;   
+        $this->partnerApplicationId = null;
     }
 }

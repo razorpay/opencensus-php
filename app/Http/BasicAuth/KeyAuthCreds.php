@@ -5,9 +5,11 @@ namespace RZP\Http\BasicAuth;
 use Crypt;
 use ApiResponse;
 
+use RZP\Constants\HyperTrace;
 use RZP\Models\Key;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Tracer;
 
 class KeyAuthCreds extends AuthCreds
 {
@@ -76,7 +78,12 @@ class KeyAuthCreds extends AuthCreds
 
         $keyEntity = $this->key;
 
-        if ($keyEntity->getDecryptedSecret() !== $secret)
+        $decryptedSecret = Tracer::inspan(['name' => HyperTrace::KEY_AUTH_CRED_GET_DECRYPTED_SECRET], function ()  use ($keyEntity)
+        {
+            return $keyEntity->getDecryptedSecret();
+        });
+
+        if ($decryptedSecret !== $secret)
         {
             $this->trace->info(
                 TraceCode::BAD_REQUEST_INVALID_API_SECRET, [self::KEY_ID => $this->getKey()]);
@@ -94,9 +101,15 @@ class KeyAuthCreds extends AuthCreds
     {
         $merchantId = $this->key->getMerchantId();
 
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = Tracer::inspan(['name' => HyperTrace::KEY_AUTH_CRED_MERCHANT], function () use ($merchantId)
+        {
+            return $this->repo->merchant->findOrFail($merchantId);
+        });
 
-        $this->setAndCheckMerchantActivatedForLive($merchant);
+        Tracer::inspan(['name' => HyperTrace::KEY_AUTH_CRED_SET_AND_CHECK_MERCHANT_ACTIVATED_FOR_LIVE], function () use ($merchant)
+        {
+            return $this->setAndCheckMerchantActivatedForLive($merchant);
+        });
 
         return $this->merchant;
     }
@@ -114,7 +127,10 @@ class KeyAuthCreds extends AuthCreds
         // But to be on safe side, in case some cases are not handled in request.ctx and keyId exists here in this flow
         // continue with cache(fallback db query).
         //
-        $this->key = $this->reqCtx->getKeyEntity() ?: $this->repo->key->find($keyId);
+        $this->key = Tracer::inspan(['name' => HyperTrace::KEY_AUTH_CRED_IS_KEY_EXISTING], function ()  use ($keyId)
+        {
+            return $this->reqCtx->getKeyEntity() ?: $this->repo->key->find($keyId);
+        });
 
         return $this->key;
     }
