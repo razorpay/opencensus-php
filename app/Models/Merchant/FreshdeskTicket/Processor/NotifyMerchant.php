@@ -22,7 +22,7 @@ class NotifyMerchant extends Base
             return $ticket->getFdInstance() == $input[Constants::FD_INSTANCE];
         })->firstOrFail();
 
-        $this->notifyMerchantIfApplicable($ticket, $input[Constants::NOTIFICATION_EVENT]);
+        $this->notifyMerchantIfApplicable($ticket, $input[Constants::NOTIFICATION_EVENT], $this->extractRequesterItem($input));
 
         return [Constants::SUCCESS => true];
     }

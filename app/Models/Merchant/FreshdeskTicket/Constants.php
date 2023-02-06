@@ -143,6 +143,10 @@ class Constants
     // All custom fields allowed to be queried
     const CUSTOM_FIELDS_LIST_FOR_QUERY = [self::CF_REQUESTOR_CATEGORY, self::CF_REQUESTOR_SUBCATEGORY , self::CF_REQUESTOR_ITEM, self::CF_CREATED_BY, self::CF_WORKFLOW_ID,
                                           self::CF_NEW_REQUESTOR_CATEGORY, self::CF_NEW_REQUESTOR_SUBCATEGORY, self::CF_NEW_REQUESTOR_ITEM];
+
+    // Requester items allowed for whatsapp notification
+    const TICKET_NEW_REQUESTER_ITEMS_FOR_WA_NOTIFICATION = ['Reports', 'Credits Enquiry', 'Pricing Enquiry', 'Email Address Update', 'Update GST', 'FIRC Request', 'Add additional website', 'Add new website', 'Product/Feature assistance', 'Bank account change', 'Website replacement', 'Refund credits', 'Transaction Related Issues', 'Settlement related issue', 'Cards', 'Netbanking', 'Wallet', 'EMI', 'UPI'];
+
     // Fd instances to find ticket details
     const FD_INSTANCES_LIST_FOR_FETCHING_CUSTOMER_TICKETS = [self::RZPIND];
 

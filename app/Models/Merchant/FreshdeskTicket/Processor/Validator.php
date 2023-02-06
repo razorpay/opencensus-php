@@ -52,6 +52,7 @@ class Validator extends BaseValidator
         Entity::TICKET_ID             => 'required',
         Constants::NOTIFICATION_EVENT => 'required|custom:NotificationEvent',
         Constants::FD_INSTANCE        => 'required|custom:fd_instance',
+        Constants::CUSTOM_FIELDS      => 'required|array',
     ];
 
     protected function validateNotificationEvent($attribute, $value)

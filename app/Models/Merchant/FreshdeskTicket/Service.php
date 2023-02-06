@@ -925,7 +925,7 @@ class Service extends Base\Service
 
         try
         {
-            $this->notifyMerchantIfApplicable($ticketEntity, Notifications\Support\Events::TICKET_CREATED);
+            $this->notifyMerchantIfApplicable($ticketEntity, Notifications\Support\Events::TICKET_CREATED, $this->extractRequesterItem($ticketCreateResponse));
         }
         catch (\Throwable $throwable)
         {
@@ -2177,11 +2177,22 @@ class Service extends Base\Service
         return Constants::RZPIND;
     }
 
-    protected function notifyMerchantIfApplicable(Entity $ticketEntity, string $event)
+    protected function notifyMerchantIfApplicable(Entity $ticketEntity, string $event, string $ticketRequesterItem)
     {
         (new Notifications\Support\Handler([
-            'ticket'    => $ticketEntity,
+            'ticket' => $ticketEntity,
+            'ticketNewRequesterItem' => $ticketRequesterItem
         ]))->sendForEvent($event);
+    }
+
+    protected function extractRequesterItem($input)
+    {
+        if (array_key_exists(Constants::CF_NEW_REQUESTOR_ITEM, $input[Constants::CUSTOM_FIELDS]))
+        {
+            return $input[Constants::CUSTOM_FIELDS][Constants::CF_NEW_REQUESTOR_ITEM];
+        }
+
+        return "";
     }
 
     protected function addMerchantDetailsToInput($input) : array
