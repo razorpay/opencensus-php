@@ -360,11 +360,11 @@ trait RecurringTrait
         return ($payment['method'] === 'upi' and $payment['recurring_type'] === 'initial');
     }
 
-    public function upiRecurringUpdateGatewayStatus($response)
+    public function upiRecurringUpdateGatewayStatus($statusDesc, $statusCode)
     {
-        $payerResponseCode = explode("|", $response['status_desc']);
+        $payerResponseCode = explode("|", $statusDesc);
         $gatewayData = [];
-        $gatewayData[Constants::GATEWAY_STATUS_CODE] = $response['status_code'];
+        $gatewayData[Constants::GATEWAY_STATUS_CODE] = $statusCode;
         $gatewayData[Constants::GATEWAY_STATUS_DESC] = rtrim($payerResponseCode[0]);
 
         if((isset($payerResponseCode[1])) and
@@ -573,7 +573,7 @@ trait RecurringTrait
         if((isset($response['status_desc'])) and
             (empty($response['status_desc']) === false))
         {
-            $payerResponseCodeDes = $this->upiRecurringUpdateGatewayStatus($response);
+            $payerResponseCodeDes = $this->upiRecurringUpdateGatewayStatus($response['status_desc'], $response['status_code']);
             $attributes[Entity::GATEWAY_DATA] += $payerResponseCodeDes;
 
             $this->trace->info(TraceCode::UPI_RECURRING_PAYER_RESPONSE_CODE, [

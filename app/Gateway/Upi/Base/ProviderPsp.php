@@ -28,6 +28,7 @@ class ProviderPsp
     const BHIM_SBIPAY       = 'bhim_sbipay';
     const IDFC              = 'idfc';
     const TATA_NEU          = 'tata_neu';
+    const JUPITER_MONEY     = 'jupiter_money';
 
     // used only for testing.
     const RAZORPAY      = 'razorpay';

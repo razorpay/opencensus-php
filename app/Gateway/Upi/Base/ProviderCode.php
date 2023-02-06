@@ -437,6 +437,7 @@ class ProviderCode
         ProviderPsp::BHIM_SBIPAY,
         ProviderPsp::IDFC,
         ProviderPsp::TATA_NEU,
+        ProviderPsp::JUPITER_MONEY,
     ];
 
     /**
@@ -475,6 +476,7 @@ class ProviderCode
         self::SBI           => ProviderPsp::BHIM_SBIPAY,
         self::FAM           => ProviderPsp::IDFC,
         self::TAPICICI      => ProviderPsp::TATA_NEU,
+        self::JUPITERAXIS   => ProviderPsp::JUPITER_MONEY,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
