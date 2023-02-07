@@ -1,10 +1,16 @@
 import React from 'react';
-import { APPLICATION_DISABLED_STATES } from '../constants';
+import { APPLICATION_DISABLED_STATES } from 'merchant/views/Capital/CashAdvanceV2/constants';
+import { CAPITAL_PRODUCT_CODES } from 'merchant/views/Capital/Loans/constants';
 import Button from 'common/new-ui/Button';
 import './DisabledState.styl';
 
+const PRODUCT_NAME = {
+  [CAPITAL_PRODUCT_CODES.CASH_ADVANCE]: 'Cash Advance',
+  [CAPITAL_PRODUCT_CODES.LOC_EMI]: 'Line of Credit',
+};
+
 const DisabledStateComponent = (props) => {
-  const { currentNavigationStatus, handleCtaClick } = props;
+  const { currentNavigationStatus, handleCtaClick, productCode } = props;
 
   const {
     title = '',
@@ -14,7 +20,7 @@ const DisabledStateComponent = (props) => {
     description = '',
     ctaText = '',
   } = APPLICATION_DISABLED_STATES[currentNavigationStatus];
-  const entity = 'Cash Advance';
+  const entity = PRODUCT_NAME[productCode] || PRODUCT_NAME[CAPITAL_PRODUCT_CODES.CASH_ADVANCE];
 
   const handleOnCtaClick = () => {
     handleCtaClick(ctaText);

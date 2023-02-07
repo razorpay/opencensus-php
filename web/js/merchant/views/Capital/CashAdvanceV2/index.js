@@ -108,6 +108,7 @@ const CashAdvance = (props) => {
                   <DisabledStateComponent
                     currentNavigationStatus={currentNavigationStatus}
                     handleCtaClick={handleRedirection}
+                    productCode={productCode}
                   />
                 ) : (
                   <RightSideNavigation
