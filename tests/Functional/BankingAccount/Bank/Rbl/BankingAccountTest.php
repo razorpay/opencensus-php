@@ -11298,7 +11298,6 @@ class BankingAccountTest extends TestCase
             'url'     => '/banking_accounts/activation/' . $bankingAccount->getPublicId() . '/details',
             'content' => [
                 ActivationDetail\Entity::ADDITIONAL_DETAILS => [
-                    ActivationDetail\Entity::GSTIN_PREFILLED_ADDRESS => 1,
                     ActivationDetail\Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS => [
                         ActivationDetail\Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS => 1,
                         ActivationDetail\Entity::SEAL_AVAILABLE => 0,
@@ -11324,6 +11323,98 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(0, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
     }
 
+    public function testSkipMidOfficeCallDashboardDecisionChange()
+    {
+        $this->fixtures->terminal->createBankAccountTerminalForBusinessBanking();
+
+        $this->addFasterDocCollectionAttribute();
+
+        // Turn on the 'allow_all_merchants' feature for admin
+        DB::table('admins')->update(['allow_all_merchants' => 1]);
+
+        Mail::fake();
+
+        $this->ba->adminAuth();
+
+        $data = [
+            Entity::PINCODE     => '560030',
+            Entity::CHANNEL     => 'rbl',
+            'activation_detail' => [
+                ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
+                ActivationDetail\Entity::SALES_TEAM        => 'sme',
+                ActivationDetail\Entity::COMMENT           => 'first comment on lead',
+                ActivationDetail\Entity::SALES_POC_ID      => 'admin_'. Org::SUPER_ADMIN,
+                ActivationDetail\Entity::SALES_POC_PHONE_NUMBER     => '1234554321',
+                ActivationDetail\Entity::MERCHANT_POC_NAME => 'Sample Name',
+                ActivationDetail\Entity::MERCHANT_POC_DESIGNATION => 'Financial Consultant',
+                ActivationDetail\Entity::MERCHANT_POC_EMAIL         => 'sample@sample.com',
+                ActivationDetail\Entity::MERCHANT_POC_PHONE_NUMBER  => '9876556789',
+                ActivationDetail\Entity::MERCHANT_DOCUMENTS_ADDRESS => 'x, y, z',
+                ActivationDetail\Entity::INITIAL_CHEQUE_VALUE => 100,
+                ActivationDetail\Entity::ACCOUNT_TYPE => 'insignia',
+                ActivationDetail\Entity::MERCHANT_CITY => 'Bangalore',
+                ActivationDetail\Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE => true,
+                ActivationDetail\Entity::MERCHANT_REGION => 'South',
+                ActivationDetail\Entity::EXPECTED_MONTHLY_GMV => 10000,
+                ActivationDetail\Entity::AVERAGE_MONTHLY_BALANCE => 0,
+                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                    ActivationDetail\Entity::GSTIN_PREFILLED_ADDRESS => 1,
+                ],
+            ]
+        ];
+
+        $request = [
+            'method'  => 'post',
+            'url'     => '/banking_accounts_admin',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => $data
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertNotEmpty($bankingAccount['id']);
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $additionalDetails = json_decode($bankingAccountActivationDetail->getAdditionalDetails(), true);
+
+        $this->assertEquals(ActivationDetail\Entity::MID_OFFICE, $additionalDetails[ActivationDetail\Entity::APPOINTMENT_SOURCE]);
+
+        $this->assertEquals(0, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
+
+        $request  = [
+            'method'  => 'PATCH',
+            'url'     => '/banking_accounts/activation/' . $bankingAccount->getPublicId() . '/details',
+            'content' => [
+                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                    ActivationDetail\Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS => [
+                        ActivationDetail\Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS => 1,
+                        ActivationDetail\Entity::SEAL_AVAILABLE => 0,
+                        ActivationDetail\Entity::SIGNATORIES_AVAILABLE_AT_PREFERRED_ADDRESS => 1,
+                        ActivationDetail\Entity::SIGNBOARD_AVAILABLE => 0,
+                    ],
+                ],
+            ]
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $bankingAccount = $this->getDbLastEntity('banking_account');
+
+        $this->assertNotEmpty($bankingAccount['id']);
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        $additionalDetails = json_decode($bankingAccountActivationDetail->getAdditionalDetails(), true);
+
+        $this->assertEquals(ActivationDetail\Entity::SALES, $additionalDetails[ActivationDetail\Entity::APPOINTMENT_SOURCE]);
+
+        $this->assertEquals(1, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
+    }
 
     /**
      * @param $merchant

@@ -773,29 +773,31 @@ class Service extends Base\Service
             return true;
         }
 
-        $check = $input;
+        $additionalDetails = $activationDetail ? json_decode($activationDetail->getAdditionalDetails(), true) : [];
 
-        // To handle for both create and update
-        if ($activationDetail != null && empty($activationDetail->getAdditionalDetails()) === false && empty($input[Entity::ADDITIONAL_DETAILS]) === false)
+        if (empty($input[Entity::ADDITIONAL_DETAILS]) === false)
         {
-            $check = [
-                Entity::ADDITIONAL_DETAILS => array_merge(
-                    json_decode($activationDetail->getAdditionalDetails(), true),
-                    $input[Entity::ADDITIONAL_DETAILS])
-            ];
+            $additionalDetails = array_merge($additionalDetails, $input[Entity::ADDITIONAL_DETAILS]);
         }
 
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_FASTER_DOC_COLLECTION_CHECK,
+            [
+                'banking_account_id'    => $bankingAccount->getId(),
+                'activation_details'    => $activationDetail ? $activationDetail->getAdditionalDetails() : null,
+                'input'                 => $input,
+                'check'                 => $additionalDetails,
+            ]);
+
         $expected = [
-            Entity::ADDITIONAL_DETAILS => [
-                Entity::GSTIN_PREFILLED_ADDRESS => 1,
-                Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS => [
-                    Entity::SIGNATORIES_AVAILABLE_AT_PREFERRED_ADDRESS => 1,
-                    Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS => 1
-                ]
+            Entity::GSTIN_PREFILLED_ADDRESS => 1,
+            Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS => [
+                Entity::SIGNATORIES_AVAILABLE_AT_PREFERRED_ADDRESS => 1,
+                Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS => 1
             ]
         ];
 
-        $match = check_array_selective_equals_recursive($expected, $check);
+        $match = check_array_selective_equals_recursive($expected, $additionalDetails);
 
         return $match;
     }
