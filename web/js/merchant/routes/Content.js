@@ -714,7 +714,7 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/profile"
             component={MyAccount}
-            additionalCondition={isProfileViewAllowed}
+            additionalCondition={(user) => isProfileViewAllowed(user) || !user.userRole}
           />
 
           <ShowWhenRoute
