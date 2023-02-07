@@ -72,7 +72,8 @@ class Service extends \RZP\Models\Base\Service
                 $shippingMethod = $input[Order1cc\Fields::SHIPPING_METHOD];
             }
             $customerInfo = $input[Order1cc\Fields::CUSTOMER_DETAILS];
-            if (isset($customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]) === true) {
+            if (isset($customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]) === true &&
+                isset($customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]['country']) === true) {
                 $country = $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]['country'];
                 $state = $customerInfo[Order1cc\Fields::CUSTOMER_DETAILS_SHIPPING_ADDRESS]['state'];
                 $address[0] = [
