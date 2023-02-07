@@ -433,7 +433,7 @@ class Core extends Base\Core
         }
         else
         {
-            // if a user associated with the inout email exists, raise an error
+            // if a user associated with the input email exists, raise an error
             $receiver = $input[Entity::EMAIL];
 
             if ($this->checkIfEmailAlreadyExists($receiver)) {

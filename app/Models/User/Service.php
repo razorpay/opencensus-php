@@ -613,47 +613,35 @@ class Service extends Base\Service
 
     public function verifySignupOtp(array $input, string $operation = 'createOTPSignup'): array
     {
-        $referrer = $input['ref'] ?? '';
+        $response = [];
+        $this->trace->count(Merchant\Metric::SIGNUP_TOTAL);
 
         $m2mReferralInput = $this->m2mReferralService->extractFriendBuyParams($input);
 
-        $businessName = $input['business_name'] ?? '';
-
-        $partnerIntent = $input[Merchant\Constants::PARTNER_INTENT] ?? false;
-
-        $this->trace->count(Merchant\Metric::SIGNUP_TOTAL);
-
-        // $this->app->hubspot->trackSignupEvent($input);
-        // TODO: @kartik.sayani- is this needed with mobile/email + otp signup?
-        $partnerInvitation      = $this->handleUserInvitation($input);
-        $user                   = $partnerInvitation['user'];
-        $invitation             = $partnerInvitation['invitation'];
-        $invitationToken        = $partnerInvitation['invitationToken'];
-
         $signupCampaign = $input[DeviceDetail\Entity::SIGNUP_CAMPAIGN] ?? null;
-
         unset($input[DeviceDetail\Entity::SIGNUP_CAMPAIGN]);
 
         $isPhantomOnboardingFlow = Merchant\PhantomUtility::checkIfPhantomOnBoardingFlow($input);
 
         $verifySuccess = $this->core->verifySignupOtp($input);
 
-        if ($verifySuccess === true)
-        {
-            $heimdallTokenData = $this->handleHeimdallInvitation($input);
+        $this->repo->transactionOnLiveAndTest(function() use ($input, $signupCampaign, $m2mReferralInput, $verifySuccess, $operation, $isPhantomOnboardingFlow, &$response) {
 
-            $countryCode = $input['country_code'] ?? 'IN';
+            if ($verifySuccess === true) {
 
-            if (empty($user) === true)
-            {
+                $referrer = $input['ref'] ?? '';
+                $businessName = $input['business_name'] ?? '';
+                $partnerIntent = $input[Merchant\Constants::PARTNER_INTENT] ?? false;
+
+                $heimdallTokenData = $this->handleHeimdallInvitation($input);
+
+                $countryCode = $input['country_code'] ?? 'IN';
+
                 $input[Entity::NAME] = $input[Entity::NAME] ?? '';
 
-                if (isset($input[Entity::CONTACT_MOBILE]) === true)
-                {
+                if (isset($input[Entity::CONTACT_MOBILE]) === true) {
                     $input[Entity::SIGNUP_VIA_EMAIL] = 0;
-                }
-                else
-                {
+                } else {
                     $input[Entity::SIGNUP_VIA_EMAIL] = 1;
                 }
 
@@ -666,10 +654,8 @@ class Service extends Base\Service
                     MBD\Constants::OTHERS
                 ];
 
-                foreach ($paymentsAvenueInput as $payInput)
-                {
-                    if (isset($input[$payInput]) === true)
-                    {
+                foreach ($paymentsAvenueInput as $payInput) {
+                    if (isset($input[$payInput]) === true) {
                         $businessDetailsInput[MBD\Entity::WEBSITE_DETAILS][$payInput] = $input[$payInput];
                         unset($input[$payInput]);
                     }
@@ -685,27 +671,14 @@ class Service extends Base\Service
 
                 $userEntity = $this->repo->user->findByPublicId($user[Entity::ID]);
                 $this->core->setContactMobileOrEmailVerify($input, $userEntity);
-            }
 
-            /**
-             * These two conditions are exclusive
-             * One cannot accept an invitation and create a merchant account at the same time
-             */
-            if (empty($invitationToken) === false)
-            {
-                $this->acceptInvite($user, $invitation);
-                $data = ['login'=>true];
-            }
-            else
-            {
                 $merchantData = $this->createMerchant($user, $referrer, $businessName, $countryCode, $partnerIntent, $input, $heimdallTokenData, false);
 
-                if (empty($signupCampaign) === false)
-                {
+                if (empty($signupCampaign) === false) {
                     $ddInput = [
-                        DeviceDetail\Entity::MERCHANT_ID        => $merchantData['id'],
-                        DeviceDetail\Entity::USER_ID            => $user['id'],
-                        DeviceDetail\Entity::SIGNUP_CAMPAIGN    => $signupCampaign,
+                        DeviceDetail\Entity::MERCHANT_ID => $merchantData['id'],
+                        DeviceDetail\Entity::USER_ID => $user['id'],
+                        DeviceDetail\Entity::SIGNUP_CAMPAIGN => $signupCampaign,
                     ];
 
                     (new DeviceDetail\Core)->createDeviceDetail($ddInput);
@@ -713,18 +686,17 @@ class Service extends Base\Service
 
                 $data = $this->get($user['id']);
 
-                if (empty($businessDetailsInput[MBD\Entity::WEBSITE_DETAILS]) === false)
-                {
+                if (empty($businessDetailsInput[MBD\Entity::WEBSITE_DETAILS]) === false) {
                     (new Merchant\BusinessDetail\Service)->saveBusinessDetailsForMerchant($merchantData['id'], $businessDetailsInput);
                 }
+
+                $signupMethod = Constants::OTP;
+                $this->signUpSuccess($user, $partnerIntent, $signupMethod, $m2mReferralInput, $isPhantomOnboardingFlow);
+                $response = $data;
             }
+        });
 
-            $signupMethod = Constants::OTP;
-
-            $this->signUpSuccess($user, $partnerIntent, $signupMethod,$m2mReferralInput, $isPhantomOnboardingFlow);
-
-            return $data;
-        }
+        return $response;
     }
 
     protected function pushSegmentSignupEvent($userId, $customProperties)
