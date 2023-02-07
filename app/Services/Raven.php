@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Metric;
 use RZP\Http\Request\Requests;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Account;
@@ -112,27 +113,43 @@ class Raven
      */
     public function generateOtp(array $input, $mockInTestMode = true): array
     {
-        if (($this->mode === Mode::TEST) and
-            ($mockInTestMode === true))
+        try
         {
-            return [
-                self::OTP        => self::MOCK_VALID_OTPS[0],
-                self::EXPIRES_AT => Carbon::now()->addMinutes(30)->timestamp,
+            if (($this->mode === Mode::TEST) and
+                ($mockInTestMode === true))
+            {
+                return [
+                    self::OTP        => self::MOCK_VALID_OTPS[0],
+                    self::EXPIRES_AT => Carbon::now()->addMinutes(30)->timestamp,
+                ];
+            }
+
+            $response = $this->sendRequest(self::RAVEN_URLS['generate-otp'], 'post', $input);
+
+            // Note: this is a hack to prevent rare eventuality. Issue: Request wasn't (probably)
+            // reaching Raven but here in API, we were receiving response with 200. For details refer
+            // to the slack thread: https://razorpay.slack.com/archives/C012KKG1STS/p1617873425033100
+            if (empty($response['otp']) === true)
+            {
+                $this->trace->info(TraceCode::RAVEN_INVALID_OTP_RESPONSE, compact('response'));
+
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_RESPONSE_OTP_GENERATE_RAVEN);
+            }
+
+            return $response;
+        }
+        catch (\Exception $e)
+        {
+            $dimensions = [
+                Metric::LABEL_ROUTE => self::RAVEN_URLS['generate-otp'],
+                Metric::LABEL_ACTION => $data['action'] ?? '',
+                Metric::LABEL_MESSAGE => $e->getMessage() ?? '',
             ];
+
+            $this->trace->count(Metric::RAVEN_REQUEST_FAILED, $dimensions);
+
+            throw $e;
         }
-
-        $response = $this->sendRequest(self::RAVEN_URLS['generate-otp'], 'post', $input);
-
-        // Note: this is a hack to prevent rare eventuality. Issue: Request wasn't (probably)
-        // reaching Raven but here in API, we were receiving response with 200. For details refer
-        // to the slack thread: https://razorpay.slack.com/archives/C012KKG1STS/p1617873425033100
-        if (empty($response['otp']) === true)
-        {
-            $this->trace->info(TraceCode::RAVEN_INVALID_OTP_RESPONSE, compact('response'));
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_RESPONSE_OTP_GENERATE_RAVEN);
-        }
-
-        return $response;
     }
 
     /**
@@ -188,33 +205,49 @@ class Raven
 
     public function verifyOtp(array $input, bool $mock = false): array
     {
-        $app = App::getFacadeRoot();
-
-        $response = null;
-
-        if ($app->environment(Environment::PRODUCTION) === false)
+        try
         {
-            if (in_array($input['otp'], self::MOCK_VALID_OTPS) === false)
+            $app = App::getFacadeRoot();
+
+            $response = null;
+
+            if ($app->environment(Environment::PRODUCTION) === false)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+                if (in_array($input['otp'], self::MOCK_VALID_OTPS) === false)
+                {
+                    throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_OTP);
+                }
+                else
+                {
+                    $response['success'] = true;
+                }
             }
             else
             {
-                $response['success'] = true;
+                // If mock is true, don't send request to raven service
+                if ($mock === true)
+                {
+                    return $this->verifyTestOtp($input);
+                }
+
+                $response = $this->sendRequest(self::RAVEN_URLS['verify-otp'], 'post', $input);
             }
+
+            return $response;
         }
-        else
+        catch (\Exception $e)
         {
-            // If mock is true, don't send request to raven service
-            if ($mock === true)
-            {
-                return $this->verifyTestOtp($input);
-            }
+            $dimensions = [
+                Metric::LABEL_ROUTE => self::RAVEN_URLS['verify-otp'],
+                Metric::LABEL_ACTION => $data['action'] ?? '',
+                Metric::LABEL_MESSAGE => $e->getMessage() ?? ''
+            ];
 
-            $response = $this->sendRequest(self::RAVEN_URLS['verify-otp'], 'post', $input);
+            $this->trace->count(Metric::RAVEN_REQUEST_FAILED, $dimensions);
+
+            throw $e;
         }
 
-        return $response;
     }
 
     public function smsCallback($gateway, $input)

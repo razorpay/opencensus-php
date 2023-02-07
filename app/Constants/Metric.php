@@ -48,6 +48,7 @@ class Metric
     const ARCHIVED_ENTITY_FETCH_TIME_TAKEN      = 'archived_entity_fetch_time_taken';
     const DB_CONNECTION_CLASSIFICATION          = 'db_connection_classification';
     const MERCHANT_RELATED_ENTITIES_READ_TRAFFIC_TOTAL    = 'merchant_related_entities_read_traffic_total';
+    const RAVEN_REQUEST_FAILED                  = 'raven_request_failed';
 
 
     // Summary type metric names
@@ -102,6 +103,7 @@ class Metric
     const LABEL_HOST                            = 'host';
     const LABEL_TABLE_NAME                      = 'table_name';
     const LABEL_ACTION                          = 'action';
+    const LABEL_MESSAGE                         = 'message';
     const LABEL_IS_SUCCESS                      = 'is_success';
     const LABEL_ERROR_CODE                      = 'error_code';
     const LABEL_ROUTE_NAME                      = 'route_name';

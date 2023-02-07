@@ -1058,8 +1058,6 @@ class customerTest extends TestCase
     {
         $this->ba->directAuth();
 
-        $this->mockRaven();
-
         $contact = '+919988776666';
 
         // send OTP

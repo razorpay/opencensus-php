@@ -3367,6 +3367,24 @@ return [
         ]
     ],
 
+    'testMetricSentInGenerateOtpFailedForCreatePayoutLinkWithSecureOtpContext' => [
+        'request' => [
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Something went wrong, please try again after sometime'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_RESPONSE_OTP_GENERATE_RAVEN,
+        ]
+    ],
+
     'testPayoutLinkCreationWithSecureOtpContext' => [
         'request' => [
             'url' => '/payout-links',

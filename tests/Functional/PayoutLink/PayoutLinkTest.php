@@ -14,6 +14,7 @@ use RZP\Models\Payout;
 use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Metric;
 use RZP\Services\RazorXClient;
 use RZP\Models\PayoutLink\Core;
 use RZP\Mail\PayoutLink\Failed;
@@ -33,6 +34,7 @@ use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Mail\PayoutLink\SuccessInternal;
 use RZP\Mail\PayoutLink\SendLinkInternal;
 use RZP\Mail\PayoutLink\SendReminderInternal;
+use Razorpay\Metrics\Manager as MetricManager;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Models\PayoutLink\Entity as PayoutLink;
@@ -41,6 +43,7 @@ use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Mail\PayoutLink\SendProcessingExpiredInternal;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class PayoutLinkTest extends TestCase
 {
@@ -4201,6 +4204,158 @@ class PayoutLinkTest extends TestCase
         $ravenMock->shouldReceive('verifyOtp')->andReturn(['success' => true]);
 
         $this->app->instance('raven', $ravenMock);
+    }
+
+    protected function mockRavenSendRequest()
+    {
+        app('config')->get('applications.raven')['mock'] = false;
+
+        $this->expectException(BadRequestException::class);
+
+        $ravenMock = Mockery::mock(\RZP\Services\Raven::class, [$this->app])->makePartial();
+
+        $ravenMock->shouldReceive('sendRequest')
+            ->andReturnUsing(function() {
+                throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_RESPONSE_OTP_GENERATE_RAVEN);
+            });
+
+        $this->app->instance('raven', $ravenMock);
+    }
+
+    protected function createMetricsMock(array $methods = ['count', 'gauge', 'histogram', 'summary'])
+    {
+        $mock = $this->getMockBuilder(MetricManager::class)
+            ->setMethods($methods)
+            ->getMock();
+
+        $this->app['trace']->setMetricsManager($mock);
+
+        return $mock;
+    }
+
+    protected function validateTraceMock()
+    {
+        $traceMock = $this->createMetricsMock();
+        $traceMock->expects($this->once())
+            ->method('count')
+            ->will($this->returnCallback(function(string $metric, array $dimensions) {
+                if ($metric === Metric::RAVEN_REQUEST_FAILED)
+                {
+                    if (isset($dimensions[Metric::LABEL_ROUTE]) and isset($dimensions[Metric::LABEL_ACTION]) and isset($dimensions[Metric::LABEL_MESSAGE]))
+                    {
+                        return true;
+                    }
+                    // to make the test fail
+                    throw new \Exception("dimensions not set correctly in metric");
+                }
+                return true;
+            }));
+    }
+
+    public function testMetricSentInGenerateOtpFailedForCreatePayoutLinkWithSecureOtpContext()
+    {
+        // mocking experiment
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        // mocking payout links service
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $this->app->instance('payout-links', $plMock);
+
+        // mocking raven external request
+        $this->mockRavenSendRequest();
+
+        // generate-otp flow
+        $this->ba->proxyAuthLive();
+
+        $this->sendRequest($this->testData['testGenerateOtpForCreatePayoutLinkWithSecureOtpContext']['request']);
+
+        $this->validateTraceMock();
+
+        $plMock->shouldNotHaveReceived('create');
+
+        app('config')->get('applications.raven')['mock'] = true;
+    }
+
+    public function testMetricSentInGenerateOtpFailedForCreatePayoutLinkWithSecureOtpContextNotSet()
+    {
+        // mocking experiment
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'off']);
+
+        // mocking payout links service
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $this->app->instance('payout-links', $plMock);
+
+        // mocking raven
+        $this->mockRavenSendRequest();
+
+        // generate-otp flow
+        $this->ba->proxyAuth();
+
+        $this->sendRequest($this->testData['testGenerateOtpForCreatePayoutLinkWithSecureOtpContext']['request']);
+
+        $this->validateTraceMock();
+
+        $plMock->shouldNotHaveReceived('create');
+
+        app('config')->get('applications.raven')['mock'] = true;
+    }
+
+    public function testMetricSentInVerifyOtpFailedForCreatePayoutLinkWithSecureOtpContextSet()
+    {
+        // mocking experiment
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        // mocking payout links service
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $this->app->instance('payout-links', $plMock);
+
+        // mocking raven
+        $this->mockRavenSendRequest();
+
+        // verify otp flow
+        $createPlTestData = $this->testData['testPayoutLinkCreationWithSecureOtpContext'];
+        $createPlTestData['request']['content']['otp'] = '1234';
+
+        $this->ba->proxyAuth();
+
+        $this->sendRequest($createPlTestData['request']);
+
+        $this->validateTraceMock();
+
+        $plMock->shouldNotHaveReceived('create');
+
+        app('config')->get('applications.raven')['mock'] = true;
+    }
+
+    public function testMetricSentInVerifyOtpFailedForCreatePayoutLinkWithSecureOtpContextNotSet()
+    {
+        // mocking experiment
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'off']);
+
+        // mocking payout links service
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $this->app->instance('payout-links', $plMock);
+
+        // mocking raven
+        $this->mockRavenSendRequest();
+
+        // verify otp flow
+        $createPlTestData = $this->testData['testPayoutLinkCreationWithSecureOtpContext'];
+        $createPlTestData['request']['content']['otp'] = '1234';
+
+        $this->ba->proxyAuth();
+
+        $this->sendRequest($createPlTestData['request']);
+
+        $this->validateTraceMock();
+
+        $plMock->shouldNotHaveReceived('create');
+
+        app('config')->get('applications.raven')['mock'] = true;
     }
 
     public function testGenerateAndVerifyOtpForCreatePayoutLinkWithSecureOtpContext()
