@@ -428,6 +428,35 @@ class AccountV2Test extends TestCase
         $this->assertTrue($metricCaptured);
     }
 
+    public function testFetchAccountV2WithNullAdditionalWebsites()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics();
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testFetchAccountV2'];
+
+        $this->fixtures->on('test')->edit('merchant_detail', $result['id'], ["additional_websites" => null]);
+
+        $this->fixtures->on('live')->edit('merchant_detail', $result['id'], ["additional_websites" => null]);
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->startTest($testData);
+
+        $this->assertTrue($metricCaptured);
+    }
+
     public function testDeleteAccountV2()
     {
         $this->setUpPartnerWithKycHandled();

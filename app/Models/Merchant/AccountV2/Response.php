@@ -154,7 +154,7 @@ class Response extends Core
     {
         $website = $accountDetails->getWebsite();
 
-        $additionalWebsites = $accountDetails->getAdditionalWebsites();
+        $additionalWebsites = $accountDetails->getAdditionalWebsites() ?? [];
 
         if (empty($website) === true and empty($additionalWebsites) === true)
         {
