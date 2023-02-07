@@ -20,6 +20,7 @@ use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Detail\ActivationFlow\Factory;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use RZP\Models\Merchant\BusinessDetail\Constants as BDConstants;
 use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 
@@ -355,6 +356,14 @@ class Validator extends Base\Validator
         Entity::REJECTION_REASONS               => 'filled|array',
         Entity::REJECTION_OPTION                => 'sometimes|string|max:30',
         Constants::WORKFLOW_MAKER_ADMIN_ID      => 'required|string|max:30',
+    ];
+
+    protected static $merchantConsentRules = [
+        'consents'                              => 'filled|array',
+        'is_provided'                           => ['required|boolean'],
+        'documents_detail'                      => 'filled|array',
+        'type'                                  => ['required|in:' . ConsentConstant::VALID_LEGAL_DOC_KEYS],
+        'url'                                   => ['required|string|custom:active_url']
     ];
 
     protected  static $bulkEditRules = [

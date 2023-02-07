@@ -4288,11 +4288,11 @@ return [
                 'documents_detail'            => [
                     [
                         'type'    => 'Privacy Policy',
-                        'url'=>'abc.com'
+                        'url'=>'https://razorpay.com/terms/'
                     ],
                     [
                         'type'=>'Service Agreement',
-                        'url'=>'xyz.com'
+                        'url'=>'https://razorpay.com/terms/'
                     ]
                 ]
             ],

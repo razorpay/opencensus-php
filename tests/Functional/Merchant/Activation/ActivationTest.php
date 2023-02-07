@@ -5404,25 +5404,13 @@ class ActivationTest extends OAuthTestCase
                 'status' => "success",
                 'documents_details' => [
                     [
-                        'type' => 'Terms and Conditions',
+                        'type' => 'L2_Terms and Conditions',
                         'acceptance_timestamp' => "1651060634",
                         'status' => "success"
                     ]
                 ]
             ]
         ];
-
-        (new KafkaMessageProcessor)->process('api-bvs-legal-document-result-events', $kafkaEventPayload, 'test');
-
-        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
-
-        $this->assertEquals('success', $consentDetail['status']);
-
-        // test for X consents
-        $this->fixtures->edit('merchant_consents', $merchantConsent->getId(), [
-            'consent_for' => 'X_Terms and Conditions',
-            'status' => 'failed'
-        ]);
 
         (new KafkaMessageProcessor)->process('api-bvs-legal-document-result-events', $kafkaEventPayload, 'test');
 
@@ -5451,18 +5439,6 @@ class ActivationTest extends OAuthTestCase
                 ]
             ]
         ];
-
-        (new KafkaMessageProcessor)->process('api-bvs-legal-document-result-events', $kafkaEventPayload, 'test');
-
-        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
-
-        $this->assertEquals('failed', $consentDetail['status']);
-
-        // test for X consents
-        $this->fixtures->edit('merchant_consents', $merchantConsent->getId(), [
-            'consent_for' => 'X_Terms and Conditions',
-            'status' => 'failed'
-        ]);
 
         (new KafkaMessageProcessor)->process('api-bvs-legal-document-result-events', $kafkaEventPayload, 'test');
 

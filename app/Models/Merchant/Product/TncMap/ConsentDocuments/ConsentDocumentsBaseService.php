@@ -66,7 +66,7 @@ class ConsentDocumentsBaseService extends Base\Service
                 return;
             }
 
-            if ($this->merchantDetailService->checkIfConsentsPresent($merchant->getId()) === true)
+            if ($this->merchantDetailService->checkIfConsentsPresent($merchant->getId(), ConsentConstant::VALID_LEGAL_DOC_L2) === true)
             {
                 $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
                     'message' => 'Consents are already present.'

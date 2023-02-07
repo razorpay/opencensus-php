@@ -1031,7 +1031,7 @@ class Service extends Base\Service
         }
 
         // for test cases
-        if (isset($merchant->merchantDetail) === false) 
+        if (isset($merchant->merchantDetail) === false)
         {
             return false;
         }
@@ -11408,6 +11408,13 @@ class Service extends Base\Service
     public function getMerchantConsents($merchantId)
     {
         return (new Consent\Core())->getMerchantConsents($merchantId);
+    }
+
+    public function saveMerchantConsents($input)
+    {
+        (new Consent\Core())->saveMerchantConsents($input);
+
+        return ['success' => true];
     }
 
     /**

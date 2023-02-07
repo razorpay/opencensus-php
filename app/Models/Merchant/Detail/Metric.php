@@ -54,4 +54,6 @@ final class Metric
 
     const AUTOFILL_BVS_DETAILS_ATTEMPT_EXHAUSTED = 'autofill_bvs_details_attempt_exhausted';
 
+    const FETCH_CONSENT_SUCCESS                  = 'bvs_fetch_consent_success';
+
 }

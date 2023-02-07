@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Service;
+use RZP\Models\Merchant\Consent;
 use RZP\Exception\LogicException;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -598,25 +599,11 @@ class Core extends Base\Core
 
         foreach ($documentsDetail as $documentDetail)
         {
-            //To make this code extensible, prefix can be replaced with a check on new legal doc column in
-            // merchant consents table
             $status = $documentDetail['status'];
 
-            $consentFor = "L2_" . $documentDetail['type'];
+            $merchantConsentDetail = $this->repo->merchant_consents->getConsentDetailsForRequestId($id, $documentDetail['type']);
 
-            $consentForX = "X_" . $documentDetail['type'];
-
-            // Both PG & X consents won't be stored with the same request_id
-            // So, if one is not present, check for the other.
-            $merchantDetail = $this->repo->merchant_consents->getConsentDetailsForRequestId($id, $consentFor);
-
-            if (empty($merchantDetail) === true)
-            {
-                // PG consents are not present. This means, consents are stored for X
-                $merchantDetail = $this->repo->merchant_consents->getConsentDetailsForRequestId($id, $consentForX);
-            }
-
-            if (empty($merchantDetail) === true)
+            if (empty($merchantConsentDetail) === true)
             {
                 // Safety check: If merchant details are still null, return at this point
                 return;
@@ -624,21 +611,22 @@ class Core extends Base\Core
 
             $input = [
                 'status'     => $status,
-                'updated_at' => Carbon::now()->getTimestamp()
+                'updated_at' => Carbon::now()->getTimestamp(),
+                'metadata'   => (new Consent\Core())->mergeJson($merchantConsentDetail['metadata'], ['ufh_file_id' => $documentDetail['ufh_file_id']])
             ];
 
             try
             {
-                $merchantDetail->edit($input, 'edit');
+                $merchantConsentDetail->edit($input, 'edit');
 
-                $this->repo->merchant_consents->saveOrFail($merchantDetail);
+                $this->repo->merchant_consents->saveOrFail($merchantConsentDetail);
             }
             catch (\Throwable $e)
             {
                 throw new LogicException($e->getMessage(), $e->getCode());
             }
 
-            $retryCount = $merchantDetail->retry_count;
+            $retryCount = $merchantConsentDetail->retry_count;
 
             $this->trace->info(TraceCode::CRON_ATTEMPT_COMPLETE, [
                 'count' => $retryCount

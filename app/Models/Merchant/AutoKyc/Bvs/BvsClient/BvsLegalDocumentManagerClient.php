@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\AutoKyc\Bvs\BvsClient;
 
 
 use Carbon\Carbon;
+use RZP\Exception\TwirpException;
 use RZP\Exception\IntegrationException;
 use Platform\Bvs\Legaldocumentmanager\V1 as legalDocumentManagerV1;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
@@ -13,6 +14,7 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Trace\TraceCode;
 use Twirp\Error;
 use Platform\Bvs\Legaldocumentmanager\V1\TwirpError;
+use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\FetchLegalDocumentBaseResponse;
 
 class BvsLegalDocumentManagerClient extends BaseClient
 {
@@ -74,10 +76,24 @@ class BvsLegalDocumentManagerClient extends BaseClient
 
             return $response;
         }
+        catch(TwirpError $ex)
+        {
+            $error =  [
+                'code'    => $ex->getErrorCode(),
+                'msg'     => $ex->getMessage(),
+                'meta'    => $ex->getMetaMap(),
+            ];
+
+            $this->trace->info(TraceCode::CONSENT_CREATION_ERROR, [
+                "input"       => $error,
+            ]);
+
+            throw new TwirpException($error);
+        }
         catch (\Throwable $e)
         {
             $this->trace->info(TraceCode::BVS_RESPONSE_CREATE_CONSENTS, [
-                'error' => $e->getErrorCode(),
+                'error'         => $e->getErrorCode(),
                 'error_message' => $e->getMessage()
             ]);
 
@@ -195,5 +211,53 @@ class BvsLegalDocumentManagerClient extends BaseClient
         $fetchLegalDocument->setPlatform($requestBody['platform']);
 
         return $fetchLegalDocument;
+    }
+
+    public function getLegalDocumentsByRequestId(array $requestBody)
+    {
+        $legalDocument = new legalDocumentManagerV1\GetLegalDocumentsRequest($requestBody);
+
+        $requestSuccess = false;
+
+        try
+        {
+            $response = $this->legalDocumentManagerApiClient->GetLegalDocuments($this->apiClientCtx, $legalDocument);
+
+            $requestSuccess = true;
+
+            return new FetchLegalDocumentBaseResponse($response);
+        }
+        catch(TwirpError $ex)
+        {
+            $error =  [
+                'code'    => $ex->getErrorCode(),
+                'msg'     => $ex->getMessage(),
+                'meta'    => $ex->getMetaMap(),
+            ];
+
+            $this->trace->info(TraceCode::FETCH_CONSENT_FAILURE, [
+                "input"       => $error,
+            ]);
+
+            throw new TwirpException($error);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(TraceCode::FETCH_CONSENT_FAILURE, [
+                'error'         => $e->getErrorCode(),
+                'error_message' => $e->getMessage()
+            ]);
+
+            throw new IntegrationException('
+                Could not receive proper response from BVS service');
+        }
+        finally
+        {
+            $dimension = [
+                Constant::SUCCESS       => $requestSuccess,
+            ];
+
+            $this->trace->count(Metric::FETCH_CONSENT_SUCCESS, $dimension);
+        }
     }
 }

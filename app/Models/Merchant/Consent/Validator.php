@@ -22,11 +22,15 @@ class Validator extends Base\Validator
         Entity::METADATA                               => 'sometimes|array',
         Entity::METADATA . '.' . Constants::IP         => 'sometimes|ip|nullable',
         Entity::METADATA . '.' . Constants::USER_AGENT => 'sometimes|nullable',
+        Entity::CREATED_AT                             => 'sometimes',
+        Entity::ENTITY_ID                              => 'sometimes|nullable',
+        Entity::ENTITY_TYPE                            => 'sometimes|nullable',
+        Entity::ID                                     => 'sometimes',
     ];
 
     protected static $editRules   = [
         Entity::REQUEST_ID  => 'sometimes|string|size:14|nullable',
-        Entity::STATUS      => 'required|string|nullable|in:success,failed,pending,initiated',
+        Entity::STATUS      => 'sometimes|string|nullable|in:success,failed,pending,initiated',
         Entity::METADATA    => 'sometimes|array',
         Entity::UPDATED_AT  => 'sometimes',
         Entity::RETRY_COUNT => 'sometimes|integer'

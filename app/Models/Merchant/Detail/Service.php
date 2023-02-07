@@ -422,7 +422,7 @@ class Service extends Base\Service
                 try {
 
                     //if legal documents are not present already, store them in database
-                    if($this->checkIfConsentsPresent($merchantId) === false)
+                    if($this->checkIfConsentsPresent($merchantId, ConsentConstant::VALID_LEGAL_DOC_L2) === false)
                     {
                         $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
                             'message' => 'Consents are not present.'
@@ -3571,7 +3571,7 @@ class Service extends Base\Service
         return true;
     }
 
-    public function checkIfConsentsPresent($merchantId, $validDocTypes = ConsentConstant::VALID_LEGAL_DOC)
+    public function checkIfConsentsPresent($merchantId, $validDocTypes)
     {
         $consentDetails = $this->repo->merchant_consents->getConsentDetailsForMerchantIdAndConsentFor($merchantId, $validDocTypes);
 
@@ -3583,7 +3583,7 @@ class Service extends Base\Service
         return true;
     }
 
-    public function storeConsents(string $merchantId, array $input, string $userId = null)
+    public function storeConsents(string $merchantId, array $input, string $userId = null, string $status = ConsentConstant::PENDING, string $requestId = null)
     {
         $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL] ?? null;
 
@@ -3596,54 +3596,54 @@ class Service extends Base\Service
 
         foreach ($documentDetailsInput as $documentDetailInput)
         {
-            $details = new MerchantConsentDetails();
+            $merchantConsentDetail = new MerchantConsentDetails();
 
             $createdAt = $input[DEConstants::DOCUMENTS_ACCEPTANCE_TIMESTAMP] ?? Carbon::now()->getTimestamp();
 
             $id = (new Entity)->generateUniqueIdFromTimestamp($createdAt);
 
-            $details->setId($id);
+            $merchantConsentDetailInput = [
+                'id'         => $id,
+                'url'        => $documentDetailInput[DEConstants::URL],
+                'created_at' => $createdAt
+            ];
 
-            $details->setURL($documentDetailInput[DEConstants::URL]);
-
-            $details->setCreatedAt($createdAt);
-
-            $merchant_consent = new MerchantConsent();
-
-            $merchant_consent->setMerchantId($merchantId);
+            $merchantConsent = new MerchantConsent();
 
             //This to know the milestone at which consents are stored and this value
             // should be unique for each merchant to avoid duplicate submission of same legal document.
-            $merchant_consent->setConsentFor($input[Entity::ACTIVATION_FORM_MILESTONE] . '_' . $documentDetailInput[DEConstants::TYPE]);
-
-            $merchant_consent->setDetailsId($id);
-
-            $merchant_consent->setStatus(ConsentConstant::PENDING);
-
-            $merchant_consent->setCreatedAt($createdAt);
+            $consentType = $input[Entity::ACTIVATION_FORM_MILESTONE] ? ($input[Entity::ACTIVATION_FORM_MILESTONE] . '_' . $documentDetailInput[DEConstants::TYPE]) : $documentDetailInput[DEConstants::TYPE];
 
             $metadata = [
                 ConsentConstant::IP_ADDRESS => $input[DEConstants::IP_ADDRESS] ?? $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
                 ConsentConstant::USER_AGENT => $this->app['request']->header('X-User-Agent') ?? $this->app['request']->header('User-Agent') ?? null,
             ];
 
-            $merchant_consent->setMetadata($metadata);
-
-            $merchant_consent->setUserId($userId ?? $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID));
-
-            $merchant_consent->setEntityId($input[MerchantConsent::ENTITY_ID]);
-
-            $merchant_consent->setEntityType($input[MerchantConsent::ENTITY_TYPE]);
-
-            $merchant_consent->setId((new Entity)->generateUniqueId());
+            $merchantConsentInput = [
+                'merchant_id' => $merchantId,
+                'consent_for' => $consentType,
+                'details_id'  => $id,
+                'status'      => $status,
+                'created_at'  => $createdAt,
+                'metadata'    => $metadata,
+                'user_id'     => $userId ?? $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID),
+                'entity_id'   => $input[MerchantConsent::ENTITY_ID],
+                'entity_type' => $input[MerchantConsent::ENTITY_TYPE],
+                'id'          => (new Entity)->generateUniqueId(),
+                'request_id'  => $requestId
+            ];
 
             try
             {
-                $this->repo->transaction(function () use ($details, $merchant_consent){
+                $this->repo->transaction(function() use ($merchantConsentDetail, $merchantConsent, $merchantConsentDetailInput, $merchantConsentInput) {
 
-                    $this->repo->merchant_consent_details->saveOrFail($details);
+                    $merchantConsentDetail->build($merchantConsentDetailInput);
 
-                    $this->repo->merchant_consents->saveOrFail($merchant_consent);
+                    $this->repo->merchant_consent_details->saveOrFail($merchantConsentDetail);
+
+                    $merchantConsent->build($merchantConsentInput);
+
+                    $this->repo->merchant_consents->saveOrFail($merchantConsent);
 
                 });
             }
@@ -3837,8 +3837,10 @@ class Service extends Base\Service
 
         foreach ($documentDetailsInput as $documentDetailInput)
         {
+            $consentType = $input[Entity::ACTIVATION_FORM_MILESTONE] ? ($input[Entity::ACTIVATION_FORM_MILESTONE] . '_' . $documentDetailInput[DEConstants::TYPE]) : $documentDetailInput[DEConstants::TYPE];
+
             $document_detail = [
-                "type"         => $documentDetailInput['type'],
+                "type"         => $consentType,
                 "content_type" => "html",
                 "content"      => !$isTestingEnvironment ? $this->getFileContentInHtml($documentDetailInput['url']) : "Dummy Content",
             ];

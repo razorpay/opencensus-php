@@ -28,7 +28,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getUniqueMerchantIdsWithConsentsNotSuccess(array $validLegalDocs, $intervalTime)
+    public function getUniqueMerchantIdsWithConsentsNotSuccess($intervalTime, $validLegalDocs)
     {
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
                     ->select(Entity::MERCHANT_ID)
@@ -49,20 +49,24 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getFailedConsentDetailsForMerchants($merchantId)
+    public function getFailedConsentDetailsForMerchants($merchantId, $validLegalDocs)
     {
         $consentDetailsIdColumn = $this->dbColumn(Entity::DETAILS_ID);
         $detailIdColumn         = $this->repo->merchant_consent_details->dbColumn(ConsentDetails\Entity::ID);
 
-        $url        = $this->repo->merchant_consent_details->dbColumn(ConsentDetails\Entity::URL);
-        $consentFor = $this->dbColumn(Entity::CONSENT_FOR);
-        $retryCount = $this->dbColumn(Entity::RETRY_COUNT);
+        $url                = $this->repo->merchant_consent_details->dbColumn(ConsentDetails\Entity::URL);
+        $consentFor         = $this->dbColumn(Entity::CONSENT_FOR);
+        $retryCount         = $this->dbColumn(Entity::RETRY_COUNT);
+        $createdAt          = $this->dbColumn(Entity::CREATED_AT);
+        $metadata           = $this->dbColumn(Entity::METADATA);
 
         $userAttrs = [
             $url,
             $consentDetailsIdColumn,
             $consentFor,
-            $retryCount
+            $retryCount,
+            $createdAt,
+            $metadata
         ];
 
         return $this->newQuery()
@@ -71,6 +75,7 @@ class Repository extends Base\Repository
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::STATUS, '<>', Constants::SUCCESS)
                     ->where(Entity::RETRY_COUNT, '<', Constants::STORE_CONSENTS_MAX_ATTEMPT)
+                    ->whereIn(Entity::CONSENT_FOR, $validLegalDocs)
                     ->whereNotNull(Entity::DETAILS_ID)
                     ->get();
     }
@@ -90,6 +95,25 @@ class Repository extends Base\Repository
                     ->where(Entity::CONSENT_FOR, '=', $type)
                     ->where(Entity::STATUS, '<>', Constants::SUCCESS)
                     ->first();
+    }
+
+    public function fetchMerchantConsentForTypeAndDetailsId($merchantId, $type, $detailsId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::CONSENT_FOR, '=', $type)
+                    ->where(Entity::STATUS, '<>', Constants::SUCCESS)
+                    ->where(Entity::DETAILS_ID, '=', $detailsId)
+                    ->first();
+    }
+
+    public function fetchAllConsentForMerchantIdAndConsentType($merchantId, $validLegalDocs)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereIn(Entity::CONSENT_FOR, $validLegalDocs)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->get();
     }
 
 }

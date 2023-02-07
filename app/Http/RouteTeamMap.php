@@ -364,6 +364,11 @@ class RouteTeamMap
         'user_device_detail_save'                         => [self::TEAM_PAYMENTS_GROWTH],
         'friend_buy_reward_validation'                    => [self::TEAM_PAYMENTS_GROWTH],
         'mailmodo_l1_form_submission'                     => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_consents_save'                          => [self::TEAM_PAYMENTS_GROWTH],
+        'retry_store_legal_documents_cron'                => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_consents_admin_fetch'                   => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_website_plugin_save'                    => [self::TEAM_PAYMENTS_GROWTH],
+        'merchant_document_url_fetch'                     => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_fetch_verification_details'             => [self::TEAM_PAYMENTS_GROWTH],
         'merchant_process_verification_details'           => [self::TEAM_PAYMENTS_GROWTH],
 

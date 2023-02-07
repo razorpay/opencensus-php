@@ -9,8 +9,10 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Exception\LogicException;
 use Illuminate\Support\Facades\DB;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Consent\Processor\Factory;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
+use RZP\Models\Merchant\Consent\Processor\Factory as ProcessorFactory;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\FetchLegalDocumentBaseResponse;
 use RZP\Models\Merchant\AutoKyc\Bvs\BaseResponse\LegalDocumentBaseResponse;
 use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
@@ -99,9 +101,6 @@ class Core extends Base\Core
         });
     }
 
-    /**
-     * @throws LogicException
-     */
     public function retryStoreLegalDocuments()
     {
         $this->trace->info(TraceCode::MERCHANT_STORE_CONSENTS_CRON_RETRY,
@@ -110,15 +109,9 @@ class Core extends Base\Core
                            ]);
 
         $merchantIdList = $this->repo->merchant_consents->getUniqueMerchantIdsWithConsentsNotSuccess(
-            array_merge(Constants::VALID_LEGAL_DOC, Constants::VALID_LEGAL_DOC_FOR_PARTNERSHIP),
-            Carbon::now()->subDays(Constants::DEFAULT_LAST_CRON_SUB_DAYS)->getTimestamp());
+            Carbon::now()->subDays(Constants::DEFAULT_LAST_CRON_SUB_DAYS)->getTimestamp(), array_keys(ConsentConstant::VALID_LEGAL_DOC));
 
-
-        $merchantIdListForX = $this->repo->merchant_consents->getUniqueMerchantIdsWithConsentsNotSuccess(
-            Constants::VALID_LEGAL_DOC_FOR_X,
-            Carbon::now()->subDays(Constants::DEFAULT_LAST_CRON_SUB_DAYS)->getTimestamp());
-
-        if (empty($merchantIdList) === true && empty($merchantIdListForX) === true)
+        if (empty($merchantIdList) === true)
         {
             $this->trace->info(TraceCode::CRON_ATTEMPT_SKIPPED, [
                 'type'   => 'retry Store Legal Documents cron',
@@ -130,52 +123,71 @@ class Core extends Base\Core
         }
 
         $this->processRetryStoreLegalDocuments($merchantIdList);
-
-        $this->processRetryStoreLegalDocuments($merchantIdListForX, Constants::RX);
     }
 
     /**
-     * @throws LogicException
+     * @param array  $merchantIdList
+     * @param string $platform
      */
-    public function processRetryStoreLegalDocuments(array $merchantIdList, string $platform = Constants::PG)
+    public function processRetryStoreLegalDocuments(array $merchantIdList)
     {
         foreach ($merchantIdList as $merchantId)
         {
-            $this->merchant = $this->repo->merchant->findOrFail($merchantId);
-
-            $this->app['basicauth']->setMerchant($this->merchant);
-
-            $consentDetailsForMerchant = $this->repo->merchant_consents->getFailedConsentDetailsForMerchants($merchantId);
-
-            $documents_detail = $this->getDocumentsDetails($consentDetailsForMerchant);
-
-            $legalDocumentsInput = [
-                DEConstants::DOCUMENTS_DETAIL => $documents_detail
-            ];
-
-            $processor = (new Factory())->getLegalDocumentProcessor();
-
-            $response = $processor->processLegalDocuments($legalDocumentsInput, $platform);
-
-            $responseData = $response->getResponseData();
-
-            foreach ($consentDetailsForMerchant as $consentDetailForMerchant)
+            try
             {
-                $type = $consentDetailForMerchant->consent_for;
+                $this->merchant = $this->repo->merchant->findOrFail($merchantId);
 
-                $merchantConsentDetail = $this->repo->merchant_consents->fetchMerchantConsentDetails($merchantId, $type);
+                $this->app['basicauth']->setMerchant($this->merchant);
 
-                $retryCount = $merchantConsentDetail->retry_count + 1;
+                $consentDetailsForMerchant = $this->repo->merchant_consents->getFailedConsentDetailsForMerchants($merchantId, array_keys(ConsentConstant::VALID_LEGAL_DOC));
 
-                $input = [
-                    'status'      => ConsentConstant::INITIATED,
-                    'updated_at'  => Carbon::now()->getTimestamp(),
-                    'request_id'  => $responseData['id'],
-                    'retry_count' => $retryCount
-                ];
+                foreach ($consentDetailsForMerchant as $consentDetailForMerchant)
+                {
+                    $consents = [
+                        'url'  => $consentDetailForMerchant['url'],
+                        'type' => $consentDetailForMerchant['consent_for']
+                    ];
 
-                $this->updateConsentDetails($merchantConsentDetail, $input);
+                    $consentDetails[DEConstants::DOCUMENTS_DETAIL] = [$consents];
 
+                    $documents_detail = (new DetailService())->getDocumentsDetails($consentDetails);
+
+                    $legalDocumentsInput = [
+                        DEConstants::DOCUMENTS_DETAIL               => $documents_detail,
+                        DEConstants::IP_ADDRESS                     => $consentDetailForMerchant['metadata']['ip_address'],
+                        DEConstants::DOCUMENTS_ACCEPTANCE_TIMESTAMP => $consentDetailForMerchant['created_at'],
+                    ];
+
+                    $processor = (new Factory())->getLegalDocumentProcessor();
+
+                    $response = $processor->processLegalDocuments($legalDocumentsInput, $this->getPlatform($consentDetailForMerchant['consent_for']));
+
+                    $responseData = $response->getResponseData();
+
+                    $type = $consentDetailForMerchant['consent_for'];
+
+                    $merchantConsentDetail = $this->repo->merchant_consents->fetchMerchantConsentForTypeAndDetailsId($merchantId, $type, $consentDetailForMerchant['details_id']);
+
+                    $input = [
+                        'status'      => ConsentConstant::INITIATED,
+                        'updated_at'  => Carbon::now()->getTimestamp(),
+                        'request_id'  => $responseData['id'],
+                        'retry_count' => $merchantConsentDetail->retry_count + 1
+                    ];
+
+                    $this->updateConsentDetails($merchantConsentDetail, $input);
+
+                }
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->error(
+                    TraceCode::RETRY_LEGAL_DOCUMENT_SAVE_CRON_FAILED,
+                    [
+                        'message'     => $e->getMessage(),
+                        'merchant_id' => $this->merchant->getId(),
+                    ]
+                );
             }
         }
     }
@@ -210,52 +222,91 @@ class Core extends Base\Core
     /**
      * @param string $merchantId
      *
-     * @return
+     * @return array
      */
-    public function getMerchantConsents($merchantId)
+    public function getMerchantConsents(string $merchantId)
     {
-        $detailService = new DetailService();
+        $consents = $this->repo->merchant_consents->fetchAllConsentForMerchantIdAndConsentType($merchantId, array_keys(ConsentConstant::VALID_LEGAL_DOC));
 
-        $validDocTypesForPg = array_merge(ConsentConstant::VALID_LEGAL_DOC, ConsentConstant::VALID_LEGAL_DOC_FOR_PARTNERSHIP);
-
-        $pgConsents = $detailService->checkIfConsentsPresent($merchantId, $validDocTypesForPg) ? $this->processAndGetConsents($merchantId, Constants::PG) : [];
-
-        $xConsents = $detailService->checkIfConsentsPresent($merchantId, ConsentConstant::VALID_LEGAL_DOC_FOR_X) ? $this->processAndGetConsents($merchantId, Constants::RX) : [];
-
-        return array_merge($pgConsents, $xConsents);
-    }
-
-    protected function processAndGetConsents($merchantId, $platform)
-    {
-        $responseData = [];
-
-        $bvsResponse = $this->callBVSToGetLegalDocumentsByOwnerId($merchantId, $platform);
-
-        $bvsResponseData = $bvsResponse->getResponseData();
-
-        $documentCount = $bvsResponseData['count'];
-
-        $documentDetail = $bvsResponseData['documents_detail'];
-
-        for ($count = 0; $count < $documentCount; $count++)
+        if($consents != null)
         {
-            $fileStoreId = $documentDetail[$count]->getUfhFileId();
+            $responseData = [];
 
-            $ufhService        = $this->app['ufh.service'];
-            $signedUrlResponse = $ufhService->getSignedUrl($fileStoreId, [], $merchantId)['signed_url'];
+            foreach ($consents as $consent)
+            {
+                try
+                {
+                    $fileStoreId = $consent['metadata']['ufh_file_id'] ??  $this->fetchAndSaveFileId($consent);
 
-            $data = [
-                'file_store_id' => $fileStoreId,
-                'merchant_id'   => $merchantId,
-                'created_at'    => $documentDetail[$count]->getAcceptanceTimestamp(),
-                'signed_url'    => $signedUrlResponse,
-                'consent_type'  => $documentDetail[$count]->getType()
-            ];
+                    $ufhService        = $this->app['ufh.service'];
 
-            $responseData[] = $data;
+                    $signedUrlResponse = $ufhService->getSignedUrl($fileStoreId, [], $merchantId)['signed_url'];
+
+                    $data = [
+                        'file_store_id' => $fileStoreId,
+                        'merchant_id'   => $merchantId,
+                        'created_at'    => $consent['created_at'],
+                        'signed_url'    => $signedUrlResponse,
+                        'consent_type'  => $consent['consent_for']
+                    ];
+
+                    $responseData[] = $data;
+                }
+                catch (\Throwable $e)
+                {
+                    $this->trace->traceException($e);
+                }
+            }
+
+            return $responseData;
         }
 
-        return $responseData;
+        return [];
+    }
+
+    /**
+     * @param $input
+     *
+     * @throws LogicException
+     * @throws BadRequestException
+     */
+    public function saveMerchantConsents($input)
+    {
+        $merchant = $this->merchant;
+
+        $merchantDetails = $this->merchant->merchantDetail;
+
+        $merchantDetails->getValidator()->validateInput('merchantConsent', $input);
+
+        $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
+            "merchant_id" => $merchant->getId(),
+            "input"       => $input['consents'],
+        ]);
+
+        if($this->checkIfConsentProvided($input['consents']) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+                null,
+                [
+                    'merchant_id'      => $merchant->getId(),
+                    'consent_provided' => false,
+                ]);
+        }
+
+        $documentsDetail = $this->createAggregatedDocumentDetails($input['consents']);
+
+        $legalDocumentsInput = [
+            DEConstants::DOCUMENTS_DETAIL  => (new DetailService())->getDocumentsDetails($documentsDetail),
+        ];
+
+        $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
+
+        $response = $processor->processLegalDocuments($legalDocumentsInput);
+
+        $responseData = $response->getResponseData();
+
+        (new DetailService())->storeConsents($merchant->getId(), $documentsDetail, null, $responseData['status'], $responseData['id']);
     }
 
     /**
@@ -277,29 +328,87 @@ class Core extends Base\Core
         return new FetchLegalDocumentBaseResponse($response);
     }
 
-    /**
-     * @param $consentDetailsForMerchant
-     *
-     * @return array
-     */
-    private function getDocumentsDetails($consentDetailsForMerchant): array
+    private function checkIfConsentProvided($consents)
+    {
+        foreach ($consents as $consent)
+        {
+            $docType = $consent['documents_detail']['type'];
+
+            if (array_key_exists($docType, ConsentConstant::VALID_LEGAL_DOC) === true)
+            {
+                if(ConsentConstant::VALID_LEGAL_DOC[$docType][ConsentConstant::MANDATORY] === true and $consent['is_provided'] == false)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function createAggregatedDocumentDetails($consents)
     {
         $documents_detail = [];
 
-        foreach ($consentDetailsForMerchant as $consentDetailForMerchant)
+        foreach ($consents as $consent)
         {
-            $type = explode("_", $consentDetailForMerchant->consent_for)[1];
-
-            $document_detail = [
-                "type"         => $type,
-                "content_type" => "html",
-                "content"      => (new DetailService())->getFileContentInHtml($consentDetailForMerchant->url)
-            ];
-
-            array_push($documents_detail, $document_detail);
+            array_push($documents_detail, $consent[DEConstants::DOCUMENTS_DETAIL]);
         }
 
-        return $documents_detail;
+        return [
+            DEConstants::DOCUMENTS_DETAIL => $documents_detail
+        ];
     }
 
+    private function getPlatform(string $type)
+    {
+        return ConsentConstant::VALID_LEGAL_DOC[$type][ConsentConstant::PLATFORM];
+    }
+
+    private function fetchAndSaveFileId($consent)
+    {
+        $requestBody = [
+            "id"                      => $consent['request_id']
+        ];
+
+        $bvsResponse = app('bvs_legal_document_manager')->getLegalDocumentsByRequestId($requestBody);
+
+        $bvsResponseData = $bvsResponse->getResponseData();
+
+        $documentCount = $bvsResponseData['count'];
+
+        $documentDetail = $bvsResponseData['documents_detail'];
+
+        for ($count = 0; $count < $documentCount; $count++)
+        {
+            if($documentDetail[$count]->getType() === $consent['consent_for'])
+            {
+                $input['metadata'] = $this->mergeJson($consent['metadata'], [
+                    'ufh_file_id' => $documentDetail[$count]->getUfhFileId()]);
+
+                $this->updateConsentDetails($consent, $input);
+
+                return $documentDetail[$count]->getUfhFileId();
+            }
+        }
+
+        return null;
+    }
+
+    public function mergeJson($existingDetails, $newDetails)
+    {
+        if (empty($newDetails) === false)
+        {
+            foreach ($newDetails as $key => $value)
+            {
+                $existingDetails[$key] = $value;
+            }
+        }
+
+        return $existingDetails;
+    }
 }

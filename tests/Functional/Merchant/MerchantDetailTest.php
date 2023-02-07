@@ -9455,6 +9455,23 @@ We look forward to transacting with you!
         return [$merchant, $subMerchantUser, $managedApp];
     }
 
+    public function testSaveMerchantConsentNotProvided()
+    {
+        Config::set('services.bvs.mock', true);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+    }
+
     public function testCreateMerchantProductDuringMerchantActivationIfNotExist()
     {
         $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'aggregator']);
@@ -9526,6 +9543,29 @@ We look forward to transacting with you!
         $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
 
         $this->startTest();
+    }
+
+    public function testSaveMerchantConsentProvided()
+    {
+        Config::set('services.bvs.mock', true);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertEquals($merchantId, $consentDetail['merchant_id']);
+
+        $this->assertEquals('initiated', $consentDetail['status']);
     }
 
     public function testErrorWhenExpIsNotEnabledForProvidedPartnerIdDuringActivation()

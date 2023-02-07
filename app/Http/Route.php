@@ -819,7 +819,8 @@ class Route
         'admin_website_section_save'               => ['post',     'merchant/{id}/website/section',                 'MerchantController@saveAdminWebsiteSection'                                ],
         'admin_website_section_fetch'              => ['get',      'merchant/{id}/website/section',                 'MerchantController@getAdminWebsiteSection'                                ],
 
-        'merchant_consents_admin_fetch'            => ['get',       'merchant/consents/{mid}',                      'MerchantController@getMerchantConsents'                          ],
+        'merchant_consents_admin_fetch'            => ['get',       'merchant/consents/{mid}',                      'MerchantController@getMerchantConsents'                            ],
+        'merchant_consents_save'                   => ['post',      'merchant/consents',                            'MerchantController@saveMerchantConsents'                           ],
 
         'merchant_website_plugin_save'             => ['post',      'onboarding/merchants/{mid}/plugin',             'MerchantController@saveWebsitePlugin'                              ],
 
@@ -5738,6 +5739,7 @@ class Route
     //
 
     public static $proxy = [
+        'merchant_consents_save',
         'merchant_identity_verification',
         'merchant_process_verification_details',
         'merchant_activation_clarifications_fetch',
@@ -7873,6 +7875,7 @@ class Route
         'public_merchant_website_section_pages'           => Permission::VIEW_MERCHANT,
         'merchant_consents_admin_fetch'                   => Permission::VIEW_MERCHANT,
         'merchant_website_plugin_save'                    => Permission::VIEW_MERCHANT,
+        'merchant_consents_save'                          => Permission::EDIT_MERCHANT,
         'merchant_identity_verification'                  => Permission::EDIT_MERCHANT,
         'merchant_process_verification_details'           => Permission::EDIT_MERCHANT,
         //'banking_account_bank_lms_fetch_multiple'      => Permission::RBL_BANK_MID_OFFICE,
@@ -10095,6 +10098,7 @@ class Route
         ],
 
         'merchant_dashboard' => [
+            'merchant_consents_save',
             'merchant_identity_verification',
             'merchant_process_verification_details',
             'merchant_activation_clarifications_fetch',

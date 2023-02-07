@@ -2505,6 +2505,8 @@ class MerchantController extends Controller
      */
     public function retryStoreLegalDocuments()
     {
+        RuntimeManager::setTimeLimit(600);
+
         $response = $this->service()->retryStoreLegalDocuments();
 
         return ApiResponse::json($response);
@@ -3752,6 +3754,15 @@ class MerchantController extends Controller
     public function getMerchantConsents(string $merchantId)
     {
         $response = $this->service()->getMerchantConsents($merchantId);
+
+        return ApiResponse::json($response);
+    }
+
+    public function saveMerchantConsents()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->saveMerchantConsents($input);
 
         return ApiResponse::json($response);
     }

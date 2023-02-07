@@ -950,12 +950,12 @@ final class FactoryData
                                                                           'merchant_id'   => '10000000000000',
                                                                       ]
         );
-        
+
         $factory(\RZP\Models\Merchant\Consent\Entity::class, [
                                                                'id'            => 'KdSCny9TA9OrmI',
                                                                'merchant_id'   => '10000000000000',
                                                                'user_id'       => 'KbA4mhZRhV3RBq',
-                                                               'metadata'      => [],
+                                                               'metadata'      => ["ip_address" => "", "ufh_file_id" => "file_123"],
                                                                'status'        => 'failed',
                                                                'request_id'    => 'KdRvpX6ffYF7yG',
                                                                'details_id'    => 'KdwZeHbUYIqVnW',

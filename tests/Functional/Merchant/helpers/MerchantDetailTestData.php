@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
 
@@ -5035,6 +5036,57 @@ return [
         'response' => [
             'content' => [
             ],
+        ],
+    ],
+
+    'testSaveMerchantConsentNotProvided' => [
+        'request' => [
+            'content' => [
+                'consents' => [
+                    [
+                        'is_provided'      => false,
+                        'documents_detail' => [
+                            'type'         => 'DIGILOCKER_TERMS_AND_CONDITIONS',
+                            'url'          => 'https://razorpay.com/terms/'
+                        ]
+                    ]
+                ]
+            ],
+            'url'     => '/merchant/consents',
+            'method'  => 'POST',
+        ],
+        'response'  =>[
+            'content' =>[
+                'error'  => [
+                    'code' =>  ErrorCode::BAD_REQUEST_ERROR
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+        ],
+    ],
+
+    'testSaveMerchantConsentProvided' => [
+        'request' => [
+            'content' => [
+                'consents' => [
+                    [
+                        'is_provided'      => true,
+                        'documents_detail' => [
+                            'type'         => 'DIGILOCKER_TERMS_AND_CONDITIONS',
+                            'url'          => 'https://razorpay.com/terms/'
+                        ]
+                    ]
+                ]
+            ],
+            'url'     => '/merchant/consents',
+            'method'  => 'POST',
+        ],
+        'response'  =>[
+            'content' =>['success' => true],
         ],
     ],
 
