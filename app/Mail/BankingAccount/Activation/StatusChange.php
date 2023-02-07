@@ -23,6 +23,14 @@ class StatusChange extends Base
         $this->newStatus = Status::transformFromInternalToExternal($eventDetails[Constants::PROPERTIES][Constants::NEW_STATUS]);
     }
 
+    protected function addRecipients()
+    {
+        // Temp fix since emails are not being delivered to Google Groups
+        $this->to('x-caonboarding@razorpay.com','X-CA-Onboarding');
+
+        return $this;
+    }
+
     protected function getSubject()
     {
         return sprintf(self::SUBJECT, $this->merchantBusinessName, $this->newStatus);

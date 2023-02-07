@@ -1940,7 +1940,11 @@ class BankingAccountTest extends TestCase
         {
             $mail->build();
 
-            return ($mail->subject === ActivationMails\AccountOpeningWebhookDataAmbiguity::SUBJECT && $mail->to[0]['address'] === 'x-onboarding@razorpay.com');
+            $recipientEmails = array_column($mail->to,'address');
+
+            $this->assertArraySelectiveEquals(['x-onboarding@razorpay.com','x-caonboarding@razorpay.com'],$recipientEmails);
+
+            return ($mail->subject === ActivationMails\AccountOpeningWebhookDataAmbiguity::SUBJECT);
         });
     }
 
@@ -1986,6 +1990,10 @@ class BankingAccountTest extends TestCase
         Mail::assertQueued(ActivationMails\AccountOpeningWebhookDataAmbiguity::class, function ($mail) use($bankingAccount)
         {
             $mail->build();
+
+            $recipientEmails = array_column($mail->to,'address');
+
+            $this->assertArraySelectiveEquals(['x-onboarding@razorpay.com','x-caonboarding@razorpay.com'],$recipientEmails);
 
             return ($mail->subject === ActivationMails\AccountOpeningWebhookDataAmbiguity::SUBJECT && $mail->to[0]['address'] === 'x-onboarding@razorpay.com');
         });
@@ -9867,6 +9875,17 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals(Status::API_ONBOARDING, $bankingAccountResponse[Entity::STATUS]);
         $this->assertEquals(Status::IN_REVIEW, $bankingAccountResponse[Entity::SUB_STATUS]);
+
+        Mail::assertQueued(ActivationMails\StatusChange::class, function ($mail)
+        {
+            $mail->build();
+
+            $recipientEmails = array_column($mail->to,'address');
+
+            $this->assertArraySelectiveEquals(['x-onboarding@razorpay.com','x-caonboarding@razorpay.com'],$recipientEmails);
+
+            return true;
+        });
 
         // Bank Due date based on Account Open Date for API Onboarding Stage
         $activationDetailsResponse = $bankingAccountResponse[Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS];

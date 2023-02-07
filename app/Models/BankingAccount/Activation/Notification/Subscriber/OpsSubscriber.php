@@ -52,12 +52,6 @@ class OpsSubscriber extends Base
             ];
         }
 
-        if($event->getName() === Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY)
-        {
-            array_push($emails, ['name' => 'Akshay', 'email' => 'akshay.sharma@razorpay.com']);
-            array_push($emails, ['name' => 'Anshul', 'email' => 'anshul.jhalani@razorpay.com']);
-        }
-
         return $emails;
     }
 
