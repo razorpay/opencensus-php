@@ -45,4 +45,9 @@ class Constants
     const DELIVERED_AT    = 'delivered_at';
     const CARD_MANDATE    = 'card_mandate';
     const DEBIT_TIME      = 'debit_time';
+
+    const XID                   = 'xid';
+    const CAVV2                 = 'cavv2';
+    const BILLDESK_SIHUB        = 'billdesk_sihub';
+
 }

@@ -70,7 +70,11 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
 
         $gatewayInput = $this->getGatewayInputForPayment($payment, $processor);
         $gatewayInput['acs_afa_authentication'] = array();
-        if ($gatewayInput['card']['network_code'] == "VISA" && $validatePayment['validate_payment']['afa_required'] == true) {
+        if ($gatewayInput['card']['network_code'] == "VISA" &&
+            (($validatePayment['validate_payment']['afa_required'] === true) ||
+                (isset($validatePayment['validate_payment']['gateway']) &&
+                    ($validatePayment['validate_payment']['gateway'] === 'billdesk_sihub'))))
+        {
             $gatewayInput['acs_afa_authentication'] = array(
                 'xid'   => $validatePayment['validate_payment']['xid'],
                 'cavv2' => $validatePayment['validate_payment']['cavv2']

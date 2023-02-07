@@ -93,6 +93,16 @@ class BillDeskSIHub extends CardMandate\MandateHubs\BaseHub
         {
             throw new BadRequestValidationFailureException('Subsequent payment validation failed.');
         }
+
+        if (isset($response['data'][Constants::XID]) &&
+            isset($response['data'][Constants::CAVV2]))
+        {
+            $response[Constants::XID] = $response['data'][Constants::XID];
+            $response[Constants::CAVV2] = $response['data'][Constants::CAVV2];
+            $response[Constants::GATEWAY] = Constants::BILLDESK_SIHUB;
+        }
+
+        return $response;
     }
 
     /**
