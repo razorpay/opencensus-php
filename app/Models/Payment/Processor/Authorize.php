@@ -1845,6 +1845,8 @@ trait Authorize
 
     public function authorizeFailedPayment(Payment\Entity $payment): array
     {
+        $payment->reload();
+
         $this->setPayment($payment);
 
         if ($payment->isStatusCreatedOrFailed() === false)

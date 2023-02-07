@@ -1019,11 +1019,6 @@ trait Callback
         }
     }
 
-    protected function getCallbackMutexResource(Payment\Entity $payment): string
-    {
-        return 'callback_' . $payment->getId();
-    }
-
     protected function getRedirectMutexResource(Payment\Entity $payment): string
     {
         return 'redirect_' . $payment->getId();

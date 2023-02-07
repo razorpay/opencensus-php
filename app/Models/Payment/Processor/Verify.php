@@ -589,6 +589,11 @@ trait Verify
      */
     protected function updatePaymentVerified(Payment\Entity $payment, $verifyStatus, $gatewayData = null)
     {
+        // as verify flow does not have any lock in place. Reloading the payment here
+        // and adding condition in `updateErrorInPaymentFromGatewayIfApplicable` to update error codes
+        // only if payment is in failed state.
+        $payment->reload();
+
         $payment->setVerified($verifyStatus);
 
         $this->updateErrorInPaymentFromGatewayIfApplicable($payment, $gatewayData);
@@ -596,9 +601,9 @@ trait Verify
         $this->repo->saveOrFail($payment);
     }
 
-    protected function updateErrorInPaymentFromGatewayIfApplicable($payment, $data)
+    protected function updateErrorInPaymentFromGatewayIfApplicable(Payment\Entity $payment, $data)
     {
-        if (empty($data['error']) === true)
+        if ((empty($data['error']) === true) or ($payment->isStatusCreatedOrFailed() === false))
         {
             return;
         }

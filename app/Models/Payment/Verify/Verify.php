@@ -12,6 +12,7 @@ use RZP\Models\Payment;
 use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Card\Network;
 use Razorpay\Trace\Logger as Trace;
@@ -1764,8 +1765,20 @@ class Verify extends Base\Core
 
             try
             {
-                // Attempt to authorize payments whose verification failed
-                $this->processor($merchant)->authorizeFailedPayment($payment);
+                $processor = $this->processor($merchant);
+
+                $resource = $processor->getCallbackMutexResource($payment);
+
+                $this->mutex->acquireAndRelease($resource, function() use ($processor, $payment)
+                {
+                    // Attempt to authorize payments whose verification failed
+                    $processor->authorizeFailedPayment($payment);
+                },
+                    60,
+                    ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+                    20,
+                    1000,
+                    2000);
             }
             catch (Exception\BadRequestValidationFailureException $ex)
             {

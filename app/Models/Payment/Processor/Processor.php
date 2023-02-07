@@ -8011,4 +8011,8 @@ class Processor
         }
     }
 
+    public function getCallbackMutexResource(Payment\Entity $payment): string
+    {
+        return 'callback_' . $payment->getId();
+    }
 }
