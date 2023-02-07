@@ -379,6 +379,8 @@ class Name
     const REFUNDS_BANK_FILE_UPLOAD            = 'refunds_bank_file_upload';
     const CAPITAL_LOS_CREATE_APPLICATION      = 'capital_los_create_application';
     const DEVELOPER_CONSOLE_ADMIN             = 'developer_console_admin';
+    const MAGIC_RTO_CONFIGS_EDIT              = 'magic_rto_configs_edit';
+    const MAGIC_RTO_CONFIGS_VIEW              = 'magic_rto_configs_view';
 
     const CAPITAL_LOS_APPLICATION_READ                              = 'capital_los_application_read';
     const CAPITAL_LOS_APPLICATION_EDIT                              = 'capital_los_application_edit';

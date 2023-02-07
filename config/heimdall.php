@@ -1147,6 +1147,14 @@ return [
                 'description' => 'Allows performing bulk role assignment on the admin users',
                 'assignable'  => true,
             ],
+            Permission::MAGIC_RTO_CONFIGS_VIEW => [
+                'description' => 'Allows viewing magic rto configs',
+                'assignable'  => true,
+            ],
+            Permission::MAGIC_RTO_CONFIGS_EDIT => [
+                'description' => 'Allows updating magic rto configs',
+                'assignable'  => true,
+            ],
         ],
 
         // Permissions

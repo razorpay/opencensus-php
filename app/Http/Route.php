@@ -4020,6 +4020,16 @@ class Route
         '1cc_merchant_file_upload_audit_create'        => ['post', '1cc/rto_prediction_service/file_upload_audits/create', 'RtoMerchantFileUploadAuditsController@createFileUploadAudit'],
         '1cc_merchant_file_upload_audit_list'          => ['get', '1cc/rto_prediction_service/file_upload_audits/list', 'RtoMerchantFileUploadAuditsController@listFileUploadAudits'],
 
+        //1cc rto mlmodel configs
+        '1cc_rto_mlmodel_configs_create_admin'        => ['post', '1cc/rto_prediction_service/mlmodel_configs', 'RtoPredictionConfigsController@createMLModelConfigs'],
+        '1cc_rto_mlmodel_configs_get_admin'           => ['get', '1cc/rto_prediction_service/mlmodel_configs', 'RtoPredictionConfigsController@getMLModelConfigs'],
+        '1cc_rto_mlmodel_configs_update_admin'        => ['patch', '1cc/rto_prediction_service/mlmodel_configs', 'RtoPredictionConfigsController@updateMLModelConfigs'],
+        //1cc rto merchant model configs
+        '1cc_rto_merchant_model_configs_get_admin'           => ['get', '1cc/rto_prediction_service/merchant_mlmodels/configs', 'RtoPredictionConfigsController@getMerchantConfigs'],
+        '1cc_rto_merchant_model_configs_update_admin'        => ['patch', '1cc/rto_prediction_service/merchant_mlmodels/configs', 'RtoPredictionConfigsController@updateMerchantConfigs'],
+        '1cc_rto_merchant_model_configs_delete_admin'        => ['delete', '1cc/rto_prediction_service/merchant_mlmodels/configs', 'RtoPredictionConfigsController@deleteMerchantConfigs'],
+        '1cc_rto_merchant_mlmodel_update_admin'              => ['patch', '1cc/rto_prediction_service/merchant_mlmodels/model', 'RtoPredictionConfigsController@updateMerchantModel'],
+
         '1cc_rto_dashboard_list'                     => ['post',   '1cc/rto_prediction_service/dashboard', 'RtoDashboardController@list' ],
         '1cc_cod_order_list'                         => ['get', '1cc/cod/orders', 'OrderController@getCODOrders'],
         '1cc_cod_order_review'                       => ['post', '1cc/orders/cod/review','OrderController@updateActionFor1ccOrder'],
@@ -7850,6 +7860,15 @@ class Route
         'workflow_config_update_admin',
         'workflow_config_delete_admin',
         'workflow_config_create_bulk_admin',
+
+        //1cc rto model configs
+        '1cc_rto_mlmodel_configs_create_admin',
+        '1cc_rto_mlmodel_configs_get_admin',
+        '1cc_rto_mlmodel_configs_update_admin',
+        '1cc_rto_merchant_model_configs_get_admin',
+        '1cc_rto_merchant_model_configs_update_admin',
+        '1cc_rto_merchant_model_configs_delete_admin',
+        '1cc_rto_merchant_mlmodel_update_admin'
     ];
 
     public static $routePermission = [
@@ -8024,6 +8043,13 @@ class Route
         'schedule_assign'                          => Permission::SCHEDULE_ASSIGN,
         'admin_fetch_merchant_ids_new'             => Permission::ADMIN_FETCH_MERCHANTS,
         'admin_fetch_merchants_new'                => Permission::ADMIN_FETCH_MERCHANTS,
+        '1cc_rto_mlmodel_configs_create_admin'     => Permission::MAGIC_RTO_CONFIGS_EDIT,
+        '1cc_rto_mlmodel_configs_get_admin'        => Permission::MAGIC_RTO_CONFIGS_VIEW,
+        '1cc_rto_mlmodel_configs_update_admin'     => Permission::MAGIC_RTO_CONFIGS_EDIT,
+        '1cc_rto_merchant_model_configs_get_admin' => Permission::MAGIC_RTO_CONFIGS_VIEW,
+        '1cc_rto_merchant_model_configs_update_admin' => Permission::MAGIC_RTO_CONFIGS_EDIT,
+        '1cc_rto_merchant_model_configs_delete_admin' => Permission::MAGIC_RTO_CONFIGS_EDIT,
+        '1cc_rto_merchant_mlmodel_update_admin'    => Permission::MAGIC_RTO_CONFIGS_EDIT,
         'admin_fetch_partner_activation'           => Permission::ADMIN_FETCH_MERCHANTS,
         'permission_create'                        => Permission::CREATE_PERMISSION,
         'permission_edit'                          => Permission::EDIT_PERMISSION,
@@ -13612,6 +13638,14 @@ class Route
 
             '1cc_configs_update',
             '1cc_configs_get',
+            '1cc_rto_mlmodel_configs_create',
+            '1cc_rto_mlmodel_configs_get',
+            '1cc_rto_mlmodel_configs_update',
+            '1cc_rto_merchant_model_configs_create',
+            '1cc_rto_merchant_model_configs_get',
+            '1cc_rto_merchant_model_configs_update',
+            '1cc_rto_merchant_model_configs_delete',
+            '1cc_rto_merchant_mlmodel_update',
         ],
 
         //
