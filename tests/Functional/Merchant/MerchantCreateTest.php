@@ -1779,6 +1779,23 @@ class MerchantCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testLinkedAccountFetchWithoutBusinessType()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace','route_no_doc_kyc']);
+
+        $this->ba->proxyAuth();
+
+        $tesData = $this->testData['testCreateMarketplaceLinkedAccount'];
+
+        $linkedAccount = $this->makeRequestAndGetContent($tesData['request']);
+
+        $tesData = $this->testData[__FUNCTION__];
+
+        $tesData['request']['url'] = '/beta/accounts/acc_'.$linkedAccount['id'];
+
+        $this->runRequestResponseFlow($tesData);
+    }
+
     public function testUpdateLinkedAccountConfigMutualFundDistributorMerchant()
     {
         $this->createUserMerchantMapping('10000000000000', 'owner');

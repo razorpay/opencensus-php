@@ -381,6 +381,11 @@ class ValidationFields
     {
         if ($isLinkedAccount === true)
         {
+            if(empty($businessType) === true)
+            {
+                return RequiredFields::MARKETPLACE_ACCOUNT_FIELDS;
+            }
+
             switch ($businessType)
             {
                 case BusinessType::NOT_YET_REGISTERED:

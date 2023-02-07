@@ -866,6 +866,20 @@ return [
         ],
     ],
 
+    'testLinkedAccountFetchWithoutBusinessType' => [
+        'request'       => [
+            'url'       =>  '/beta/accounts',
+            'method'    => 'GET',
+        ],
+        'response'      =>  [
+            'content'   =>  [
+                'entity'    =>  "account",
+                'name'      =>  "Linked Account 2",
+                'email'     =>  "linkedaccount@razorpay.com"
+            ],
+        ],
+    ],
+
     'testCreateMarketplaceLinkedAccountWithRefundAllowed' => [
         'request'  => [
             'url'     => '/submerchants',
