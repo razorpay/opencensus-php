@@ -226,12 +226,12 @@ return [
         // enable product led onboarding
         'PRODUCT_LED_ONBOARDING' => env('PRODUCT_LED_ONBOARDING', ''),
 
-        // Left Nav revamp 
+        // Left Nav revamp
         'LEFT_NAV_REVAMP' => env('LEFT_NAV_REVAMP', ''),
 
         // Account Settings Revamp
         'ACCOUNT_SETTINGS_REVAMP'  => env('ACCOUNT_SETTINGS_REVAMP', ''),
-        
+
         // payroll wdiget on dashboard
         'SHOW_PAYROLL_WIDGET_EXP' => env('SHOW_PAYROLL_WIDGET_EXP', ''),
 
@@ -245,11 +245,14 @@ return [
         'SHOW_AFFORDABILITY_WIDGET_EXP' => env('SHOW_AFFORDABILITY_WIDGET_EXP', ''),
         'SHOW_AFF_WIDGET_SHOPIFY_WAIT_LIST' => env('SHOW_AFF_WIDGET_SHOPIFY_WAIT_LIST', ''),
         'SHOW_AFF_WIDGET_WOOC_WAIT_LIST' => env('SHOW_AFF_WIDGET_WOOC_WAIT_LIST', ''),
-        
+
         // disable ticket creation for international activation
         'DISABLE_INTERNATIONAL_ACTIVATION' => env('DISABLE_INTERNATIONAL_ACTIVATION', ''),
 
         // Partnership for Capital
         'PARTNERSHIP_CAPITAL' => env('PARTNERSHIP_CAPITAL', ''),
+
+        // settlement dashboard visibility
+        'SETTLEMENT_DASHBOARD_VISIBILITY' => env('SETTLEMENT_DASHBOARD_VISIBILITY', '')
     ]
 ];

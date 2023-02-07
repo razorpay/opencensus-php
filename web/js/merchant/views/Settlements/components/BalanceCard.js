@@ -1,0 +1,62 @@
+import React from 'react';
+import Amount from 'common/ui/Amount';
+import SettleNow from './SettleNow';
+import SettlementCard from './SettlementCard';
+import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
+import { HEADING_INFO } from './utils';
+import { CashAdvanceWrapper } from './styledUtils';
+
+const BalanceCard = ({
+  user,
+  current_balance,
+  isSettlementOnHold,
+  settlementExists,
+  esOndemandSettlementEnabled,
+  checkIfFirstEverSettlement,
+  isNodalAccountBalanceLowBlocked,
+}) => {
+  let amount = current_balance?.data?.balance || 0;
+  let amountClassName = 'amount-current-balance';
+
+  if (amount < 0) {
+    amount = Math.abs(amount);
+    amountClassName += ' negative-balance';
+  }
+
+  const content = (
+    <>
+      <Amount aria-label="amount" value={amount} currency="INR" className={amountClassName} />
+      <CashAdvanceWrapper>
+        <CashAdvanceNudge />
+      </CashAdvanceWrapper>
+    </>
+  );
+
+  const footer = !isSettlementOnHold &&
+    user?.isOndemandSettlementEnabled &&
+    user?.isAllowedView('early_settlement') && (
+      <SettleNow
+        settlementExists={settlementExists}
+        esOndemandSettlementEnabled={esOndemandSettlementEnabled}
+        checkIfFirstEverSettlement={checkIfFirstEverSettlement}
+        isNodalAccountLowBalanceBlocked={isNodalAccountBalanceLowBlocked}
+        showLeftBorder={false}
+      />
+    );
+
+  const customCardStyle = `
+    border: 0;
+  `;
+
+  return (
+    <SettlementCard
+      heading="Current balance"
+      headingInfo={HEADING_INFO.CURRENT_BALANCE}
+      content={content}
+      footer={footer}
+      customCardStyle={customCardStyle}
+    />
+  );
+};
+
+export default BalanceCard;

@@ -20,6 +20,7 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import SettlementsHeader from './components/SettlementsHeader';
+import SettlementsHeaderV2 from './components/SettlementsHeaderV2';
 import { AsyncBtn } from 'common/new-ui/Button';
 import { fetchCurrentBalance as fnFetchCurrentBalance } from 'merchant/reducers/home';
 import { fetchSettlementConfig as fnFetchSettlementConfig } from 'merchant/reducers/settlements/details';
@@ -162,11 +163,19 @@ const Settlements = ({
         </ShowWhen>
       </div>
 
-      <SettlementsHeader
-        settlementExists={settlementExists}
-        esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
-        checkIfFirstEverSettlement={checkIfFirstEverSettlement}
-      />
+      {user?.isSettlementDashboardVisibilityEnabled ? (
+        <SettlementsHeaderV2
+          settlementExists={settlementExists}
+          esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
+          checkIfFirstEverSettlement={checkIfFirstEverSettlement}
+        />
+      ) : (
+        <SettlementsHeader
+          settlementExists={settlementExists}
+          esOndemandSettlementEnabled={isPartialOndemandSettlementEnabled}
+          checkIfFirstEverSettlement={checkIfFirstEverSettlement}
+        />
+      )}
 
       <tabbed-container>
         <header>

@@ -92,3 +92,38 @@ export const TIMELINE_EVENTS = {
   SETTLEMENT_INFO: 'SETTLEMENT_INFO',
   HOLIDAY_INFO: 'HOLIDAY_INFO',
 };
+
+export const SETTLEMENT_SLA_IN_HOURS = 3;
+
+export const SETTLEMENT_RETRY_SLA_IN_HOURS = 7;
+
+export const HEADING_INFO = {
+  CURRENT_BALANCE:
+    'This is the total amount that is due to be deposited in your bank account after deduction of taxes, platform fees, any other applicable charges, and adjustment of refunds and credits',
+  SETTLEMENT_DUE_TODAY:
+    'This is the amount initiated for deposit into your bank account and is in processing',
+  PREVIOUS_SETTLEMENT:
+    'This is the last amount initiated for deposit into your bank account (the settlement may have either processed or failed)',
+  UPCOMING_SETTLEMENT:
+    'This is the amount that’ll be deposited into your bank account next as per your settlement cycle.',
+};
+
+export const ALERT_INTENT = {
+  NOTICE: 'notice',
+  NEGATIVE: 'negative',
+};
+
+export const SETTLEMENT_STATUS = {
+  CREATED: 'created',
+  FAILED: 'failed',
+  PROCESSED: 'processed',
+};
+
+export const BADGE_INFO = {
+  CREATED: 'The due settlement is sent to the bank for further processing',
+  FAILED: 'When the due settlement could not be deposited in your bank account',
+  PROCESSED:
+    'The due settlement deposit is successful and complete from our end (The settlement amount may take 2-3 hours to reflect in your account depending on the bank)',
+  DELAYED: 'The settlement processing is taking more than the usual time',
+  BLOCKED: 'All upcoming settlements are on-hold for your account',
+};

@@ -94,6 +94,7 @@ describe('SettleNow', () => {
       };
       render(<App initialState={initialState} />);
       expect(screen.getByText('Settle Now')).toBeInTheDocument();
+      expect(screen.getByText('Settle Now').parentElement).toHaveClass('box-left-pad10-inline');
       expect(screen.getByRole('img')).toHaveAttribute('alt', 'settle-now-thunder');
       expect(screen.getByRole('img')).toHaveAttribute('class', 'settlement-icon-thunder');
     });
@@ -121,6 +122,32 @@ describe('SettleNow', () => {
         expect(gaEventSpy).toHaveBeenCalledWith('Settlements');
         expect(modalsSpy).toHaveBeenCalledTimes(1);
       });
+    });
+
+    test('should render settle now without border', () => {
+      const initialState = {
+        ...state,
+        session: {
+          user: {
+            isFeatureEnabled: () => true,
+          },
+          mode: 'live',
+        },
+        home: {
+          ...state.home,
+          ondemand_restrictions: {
+            data: {
+              attempts_left: true,
+              settlable_amount: true,
+            },
+          },
+        },
+      };
+      render(<App initialState={initialState} showLeftBorder={false} />);
+      expect(screen.getByText('Settle Now')).toBeInTheDocument();
+      expect(screen.getByText('Settle Now').parentElement).not.toHaveClass('box-left-pad10-inline');
+      expect(screen.getByRole('img')).toHaveAttribute('alt', 'settle-now-thunder');
+      expect(screen.getByRole('img')).toHaveAttribute('class', 'settlement-icon-thunder');
     });
   });
 

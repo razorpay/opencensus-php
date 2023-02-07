@@ -524,4 +524,11 @@ export default {
     // prod
     'KxZesk2B03J9ar',
   ],
+
+  settlement_dashboard_visibility: [
+    // stage
+    'L55TvxKxYtYueE',
+    //prod
+    'L55JOo4EAhZC93',
+  ],
 };

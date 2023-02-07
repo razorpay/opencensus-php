@@ -23,6 +23,7 @@ const SettleNow = (props) => {
     openModal,
     fetchOndemandRestrictions,
     isNodalAccountLowBalanceBlocked,
+    showLeftBorder = true,
   } = props;
 
   const isOnDemandDisabled = () => {
@@ -91,7 +92,7 @@ const SettleNow = (props) => {
   }, []);
 
   return (
-    <div className="box-left-pad10-inline">
+    <div className={showLeftBorder ? 'box-left-pad10-inline' : ''}>
       <SettleNowButton
         disabled={checkIfSettlementDisabled}
         merchantId={user.current}

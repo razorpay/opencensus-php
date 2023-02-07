@@ -1071,6 +1071,12 @@ export default class User {
     return this.getExpStatus('refund_source_fallback_enabled');
   }
 
+  get isSettlementDashboardVisibilityEnabled() {
+    return (
+      getSplitzExperimentVariant('settlement_dashboard_visibility')?.variables?.result === 'on'
+    );
+  }
+
   get isReserveBalanceSelfServeEnabled() {
     return this.getExpStatus('reserve_bal_self_serve');
   }
