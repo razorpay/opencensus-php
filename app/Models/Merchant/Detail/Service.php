@@ -508,7 +508,7 @@ class Service extends Base\Service
         }
 
         // for test cases
-        if (isset($merchant->merchantDetail) === false) 
+        if (isset($merchant->merchantDetail) === false)
         {
             return false;
         }
@@ -1268,7 +1268,7 @@ class Service extends Base\Service
         }
 
         // for test cases
-        if (isset($merchant->merchantDetail) === false) 
+        if (isset($merchant->merchantDetail) === false)
         {
             return false;
         }
@@ -3772,7 +3772,7 @@ class Service extends Base\Service
 
             foreach ($documentsDetail as $documentDetailInput)
             {
-                $type = DEConstants::X_SUBMISSION.'_'.$documentDetailInput['type'] ;
+                $type = $documentDetailInput['type'] ;
 
                 $merchantConsentDetail = $this->repo->merchant_consents->fetchMerchantConsentDetails($merchant->getId(), $type);
 

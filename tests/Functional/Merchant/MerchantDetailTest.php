@@ -3588,7 +3588,7 @@ We look forward to transacting with you!
 
         $response = $this->runRequestResponseFlow($testData);
 
-        $this->assertCount(2, $response);
+        $this->assertCount(1, $response);
     }
 
     public function testBulkAssignReviewer()
