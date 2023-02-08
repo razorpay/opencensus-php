@@ -25,6 +25,7 @@ const CODOrdersTab = ({ updateFilters }) => {
       skip: 0,
       selectedPresetFromParent: null,
       items: [],
+      reviewMode: '',
     });
   }, [activeNav]);
 
