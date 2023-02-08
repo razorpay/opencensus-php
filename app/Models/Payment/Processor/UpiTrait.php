@@ -324,7 +324,6 @@ trait UpiTrait
             $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_ERROR,
                 [
                     'payment'       => $payment->toArray(),
-                    'message'       => $ex->getMessage(),
                     'stack_trace'   => $ex->getTrace(),
                 ]
             );
