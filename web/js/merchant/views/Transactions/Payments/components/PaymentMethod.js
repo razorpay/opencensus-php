@@ -31,6 +31,7 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {}, onUPI
     aeps: 'aeps',
     cardless_emi: 'cardless_emi',
     paylater: 'paylater',
+    fpx: 'bank',
   };
 
   const cardDetails = card || {};
@@ -39,12 +40,18 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {}, onUPI
 
   if (methodKeyMap[paymentMethod]) {
     let paymentMethodText = payment[methodKeyMap[paymentMethod]];
-
     paymentMethodText =
       paymentMethod !== 'netbanking' ? titleCase(paymentMethodText) : paymentMethodText;
+    let paymentMethodName = titleCase(paymentMethod);
+
+    if (paymentMethodName === 'Fpx') {
+      // bank name and fpx are represented in capital in MY
+      paymentMethodName = paymentMethodName.toUpperCase();
+      paymentMethodText = paymentMethodText.toUpperCase();
+    }
     el = (
       <Definition>
-        <span>{`${paymentMethodText}' '${titleCase(paymentMethod)}`}</span>
+        <span>{`${paymentMethodText}' '${paymentMethodName}`}</span>
       </Definition>
     );
   } else if (['card', 'emi'].indexOf(paymentMethod) !== -1) {
