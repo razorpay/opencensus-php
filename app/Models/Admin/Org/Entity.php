@@ -4,6 +4,7 @@ namespace RZP\Models\Admin\Org;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use App;
 use RZP\Models\Feature;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Base;
@@ -463,11 +464,18 @@ class Entity extends Base\Entity
 
         $cacheTags = Feature\Entity::getCacheTagsForNames($this->entity, $this->getId());
 
-        $this->loadedFeatures = $this->features()
-            ->remember($cacheTtl)
-            ->cacheTags($cacheTags)
-            ->pluck(Feature\Entity::NAME)
-            ->toArray();
+        $apiResponse = $this->features()
+                            ->remember($cacheTtl)
+                            ->cacheTags($cacheTags)
+                            ->pluck(Feature\Entity::NAME)
+                            ->toArray();
+
+        $dcs = App::getFacadeRoot()['dcs'];
+        $dcsResponse = $dcs->getDcsEnabledFeatures(Feature\Constants::ORG, $this->getId())
+                           ->pluck(Feature\Entity::NAME)
+                           ->toArray();
+        $this->loadedFeatures = array_unique(array_merge($apiResponse, $dcsResponse));
+
         return $this->loadedFeatures;
     }
 

@@ -3,8 +3,10 @@
 namespace RZP\Services\Dcs\Features;
 
 use Razorpay\Dcs\Kv\V1\ApiException;
+use Razorpay\Trace\Logger;
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\Base\Collection;
 use RZP\Models\Feature\Metric as FeatureMetric;
 use RZP\Services\Dcs\ExternalService;
 use RZP\Services\Dcs\ExternalService\Constants;
@@ -92,7 +94,7 @@ class Service extends Base
             {
                 $this->handleDcsFeatures($entity, $isAssignment, $mode);
             }
-            elseif (self::isDcsNewFeature($dcsFeatureName) === true)
+            elseif (DcsConstants::isDcsNewFeature($dcsFeatureName, true) === true)
             {
                 $ex = new Exception\ServerErrorException('dcs service is disabled, please check with dcs team',
                     ErrorCode::BAD_REQUEST_DCS_DISABLED,
@@ -105,7 +107,7 @@ class Service extends Base
         catch (\Exception $e)
         {
             $this->trace->count(Metric::DCS_FEATURE_EDIT_FAILURE_TOTAL, $dimension);
-            if (self::isDcsNewFeature($dcsFeatureName) === true)
+            if (DcsConstants::isDcsNewFeature($dcsFeatureName, true) === true)
             {
                 throw $e;
             }
@@ -127,6 +129,42 @@ class Service extends Base
             }
             return;
         }
+    }
+
+    public function getDcsEnabledFeatures(string $entityType, string $entityId, string $mode = null) : \Illuminate\Support\Collection
+    {
+        $res = collect();
+        if ($mode === null || $mode = '')
+        {
+            $mode = $this->getMode();
+        }
+
+        $dimension = [
+            'feature_name' => 'many',
+            'mode' => $mode,
+            'function' => __FUNCTION__
+        ];
+        try {
+            $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
+            $dcsFeatures = array_keys(DcsConstants::dcsReadEnabledFeaturesByEntityType($entityType, true));
+            if( sizeof($dcsFeatures) === 0)
+            {
+                return $res;
+            }
+            $response = $this->fetchByEntityIdAndFeatureNames($entityId, $dcsFeatures, ($mode === null) ? $this->getAppMode() : $mode);
+            $res = collect($response);
+        } catch (\Exception $e) {
+            $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
+            $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
+        }
+
+        return $res;
+    }
+
+    protected function getMode()
+    {
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+        return $mode;
     }
 
     /**
@@ -422,11 +460,6 @@ class Service extends Base
     public static function isDcsFeature($featureName)
     {
         return key_exists($featureName, DcsConstants::$featureToDCSKeyMapping) || key_exists($featureName, DcsConstants::$apiFeatureNameToDCSFeatureName);
-    }
-
-    public static function isDcsNewFeature($featureName)
-    {
-        return key_exists($featureName, DcsConstants::$dcsNewFeatures);
     }
 
     public function handleDcsFeatures(Entity $entity, $value , $mode = Mode::TEST)

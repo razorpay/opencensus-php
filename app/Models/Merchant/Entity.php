@@ -1252,12 +1252,17 @@ class Entity extends Base\PublicEntity
         {
             $cacheTags = Feature\Entity::getCacheTagsForNames($this->entity, $this->getId());
         }
+        $apiResponse = $this->features()
+                             ->remember($cacheTtl)
+                             ->cacheTags($cacheTags)
+                             ->pluck(Feature\Entity::NAME)
+                             ->toArray();
+        $dcs = App::getFacadeRoot()['dcs'];
+        $dcsResponse = $dcs->getDcsEnabledFeatures(Feature\Constants::MERCHANT, $this->getId())
+                           ->pluck(Feature\Entity::NAME)
+                           ->toArray();
 
-        $this->loadedFeatures = $this->features()
-                                     ->remember($cacheTtl)
-                                     ->cacheTags($cacheTags)
-                                     ->pluck(Feature\Entity::NAME)
-                                     ->toArray();
+        $this->loadedFeatures = array_unique(array_merge($apiResponse, $dcsResponse));
 
         return $this->loadedFeatures;
     }

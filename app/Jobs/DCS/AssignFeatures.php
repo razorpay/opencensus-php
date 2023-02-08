@@ -15,7 +15,7 @@ class AssignFeatures extends Job
 
     public $timeout = 7200;
 
-    const LIMIT = 400;
+    const LIMIT = 500;
     protected $input;
 
     public function __construct($input, $mode)
@@ -30,7 +30,7 @@ class AssignFeatures extends Job
     {
         parent::handle();
 
-        RuntimeManager::setMemoryLimit('4096M');
+        RuntimeManager::setMemoryLimit('2048M');
 
         RuntimeManager::setTimeLimit($this->timeout);
 
@@ -48,7 +48,7 @@ class AssignFeatures extends Job
             {
                 $merchantIds = $this->repoManager
                     ->feature
-                    ->fetchMerchantIdsWithFeatureInChunks(Feature\Constants::ES_AUTOMATIC_RESTRICTED, $offset, self::LIMIT);
+                    ->fetchMerchantIdsWithFeatureInChunks($this->input['name'], $offset, self::LIMIT);
 
                 $i++;
 

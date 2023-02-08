@@ -1,6 +1,7 @@
 <?php
 
 namespace RZP\Services\Mock;
+use Illuminate\Support\Collection;
 use Razorpay\Dcs\Kv\V1\ApiException;
 use RZP\Constants\Mode;
 use RZP\Models\Feature\Entity;
@@ -76,6 +77,19 @@ class DcsServiceClient
     public function fetchByEntityIdAndEntityType(string $entityType, string $entityId, $mode = Mode::TEST)
     {
         return [];
+    }
+
+    /**
+     * throws Server exception in case of request failures
+     *
+     * @param string $entityType
+     * @param string $entityId
+     * @param string $mode
+     * @return Collection
+     */
+    public function getDcsEnabledFeatures(string $entityType, string $entityId, $mode = Mode::TEST)
+    {
+        return collect();
     }
 
     /**

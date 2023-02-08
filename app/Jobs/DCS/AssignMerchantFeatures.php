@@ -43,6 +43,7 @@ class AssignMerchantFeatures extends Job
 
             $entity = (new Entity)->build($data);
             $entity->setEntityId($this->entityId);
+            $entity->setEntityType($this->entityType);
             app('dcs')->editFeature($entity, $this->variant , true, $this->mode);
         }
         catch (\Exception $ex)

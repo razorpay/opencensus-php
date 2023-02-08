@@ -34,30 +34,13 @@ class Repository extends Base\Repository
 
     public function fetchByEntityTypeAndEntityId(string $entityType, string $entityId, string $mode = null)
     {
-        $res = collect();
         $cacheTtl = $this->getCacheTtl();
         $cacheTags = Entity::getCacheTagsForEntities($entityType, $entityId);
 
         $query = ($mode === null) ? $this->newQuery() : $this->newQueryWithConnection($mode);
-        $dimension = [
-            'feature_name' => 'many',
-            'mode' => $this->getAppMode(),
-            'function' => __FUNCTION__
-        ];
 
-        try
-        {
-            $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
-            $dcs = $this->app['dcs'];
-            $dcsFeatures = array_keys(DcsFeaturesConstants::$dcsNewFeatures);
-            $response = $dcs->fetchByEntityIdAndFeatureNames($entityId, $dcsFeatures, ($mode === null) ? $this->getAppMode() : $mode);
-            $res = collect($response);
-        }
-        catch(\Exception $e)
-        {
-            $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
-            $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
-        }
+        $dcs = $this->app['dcs'];
+        $res = $dcs->getDcsEnabledFeatures($entityType, $entityId, $mode);
 
         $apiResponse = $query->where(Entity::ENTITY_TYPE, $entityType)
             ->where(Entity::ENTITY_ID, $entityId)
@@ -70,7 +53,7 @@ class Repository extends Base\Repository
 
     public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)
     {
-        if (key_exists($featureName, DcsFeaturesConstants::$dcsNewFeatures))
+        if (DcsFeaturesConstants::isDcsNewFeature($featureName) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -99,7 +82,7 @@ class Repository extends Base\Repository
 
     public function findByEntityTypeEntityIdAndName(string $entityType, string $entityId, string $featureName)
     {
-        if (key_exists($featureName, DcsFeaturesConstants::$dcsNewFeatures))
+        if (DcsFeaturesConstants::isDcsNewFeature($featureName) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -129,7 +112,7 @@ class Repository extends Base\Repository
 
     public function findByEntityIdAndNameOnConnection(string $entityId, string $featureName, string $mode)
     {
-        if (key_exists($featureName, DcsFeaturesConstants::$dcsNewFeatures))
+        if (DcsFeaturesConstants::isDcsNewFeature($featureName) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -188,13 +171,16 @@ class Repository extends Base\Repository
 
         try
         {
-            $dcsFeatures = array_intersect($featureNames, array_keys(DcsFeaturesConstants::$dcsNewFeatures));
+            $dcsFeatures = array_intersect($featureNames, array_keys(
+                DcsFeaturesConstants::dcsReadEnabledFeaturesByEntityType(
+                    Constants::MERCHANT)
+            ));
             if (sizeof($dcsFeatures) !== 0) {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
                 $response = $dcs->fetchByEntityIdAndFeatureNames($merchantId, $dcsFeatures, $this->getAppMode());
                 $dcsRes = collect($response);
-                $apiFeatures = array_diff($featureNames, array_keys(DcsFeaturesConstants::$dcsNewFeatures));
+                $apiFeatures = array_diff($featureNames, $dcsFeatures);
                 if (sizeof($apiFeatures) === 0)
                 {
                     return $dcsRes;
@@ -229,13 +215,16 @@ class Repository extends Base\Repository
 
         try
         {
-            $dcsFeatures = array_intersect($featureNames, array_keys(DcsFeaturesConstants::$dcsNewFeatures));
+            $dcsFeatures = array_intersect($featureNames, array_keys(
+                DcsFeaturesConstants::dcsReadEnabledFeaturesByEntityType(
+                    Constants::MERCHANT)
+            ));
             if (sizeof($dcsFeatures) !== 0) {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
                 $response = $dcs->fetchByEntityIdAndFeatureNames($merchantId, $dcsFeatures, $mode);
                 $dcsRes = collect($response)->pluck(Entity::NAME)->toArray();
-                $apiFeatures = array_diff($featureNames, array_keys(DcsFeaturesConstants::$dcsNewFeatures));
+                $apiFeatures = array_diff($featureNames, $dcsFeatures);
                 if (sizeof($apiFeatures) === 0) {
                     return $dcsRes;
                 }
@@ -326,7 +315,7 @@ class Repository extends Base\Repository
 
     public function getMerchantIdsHavingFeature(string $featureName, array $merchantIds)
     {
-        if (key_exists($featureName, DcsFeaturesConstants::$dcsNewFeatures))
+        if (DcsFeaturesConstants::isDcsNewFeature($featureName) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
