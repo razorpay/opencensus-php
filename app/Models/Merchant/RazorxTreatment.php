@@ -714,8 +714,8 @@ final class RazorxTreatment
     /** Experiment used check whether mapns to be de-tokenized or not **/
     const DETOKENIZE_MPANS = "detokenize_mpans";
 
-    // Experiment to use new Pricing plan for upi autopay
-    const UPI_AUTOPAY_PRICING = 'upi_autopay_pricing';
+    // Experiment to use old Pricing plan for upi autopay
+    const UPI_AUTOPAY_PRICING_BLACKLIST = 'upi_autopay_pricing_blacklist';
 
     // Experiment to enable async bulk approval or not
     const PAYOUT_BULK_APPROVE_ASYNC = 'payout_bulk_approve_async';

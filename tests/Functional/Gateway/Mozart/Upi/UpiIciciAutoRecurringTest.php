@@ -55,6 +55,8 @@ class UpiIciciAutoRecurringTest extends TestCase
             return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
         });
 
+        $this->setAutopayPricing();
+
          // Enable UPI payment service in config
          $this->app['config']->set(['applications.upi_payment_service.enabled' => true]);
     }
@@ -2115,9 +2117,7 @@ class UpiIciciAutoRecurringTest extends TestCase
     {
         Carbon::setTestNow(Carbon::parse('first day of this month', 'UTC'));
 
-        $this->setMockRazorxTreatment(['upi_autopay_pricing' => 'control']);
-
-        $this->setAutopayPricing();
+        $this->setMockRazorxTreatment(['upi_autopay_pricing_blacklist' => 'on']);
 
         $this->createDbUpiMandate([
             'frequency'         => 'as_presented',
@@ -2276,9 +2276,7 @@ class UpiIciciAutoRecurringTest extends TestCase
     {
         Carbon::setTestNow(Carbon::parse('first day of this month', 'UTC'));
 
-        $this->setMockRazorxTreatment(['upi_autopay_pricing' => 'on']);
-
-        $this->setAutopayPricing();
+        $this->setMockRazorxTreatment(['upi_autopay_pricing_blacklist' => 'control']);
 
         $this->createDbUpiMandate([
             'frequency'         => 'as_presented',

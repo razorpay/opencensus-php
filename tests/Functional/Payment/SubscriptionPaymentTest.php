@@ -11,6 +11,7 @@ use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Customer;
 use RZP\Constants\Entity;
+use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Token;
 use RZP\Models\Plan\Subscription;
 use RZP\Tests\Functional\TestCase;
@@ -110,6 +111,12 @@ class SubscriptionPaymentTest extends TestCase
         // -- Add eMandate payment details END---
 
         $this->mandateHqTerminal = $this->fixtures->create('terminal:shared_mandate_hq_terminal');
+
+        // use old autopay pricing for old test cases
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
+        });
     }
 
     public function testCreateInitialPaymentCard()
@@ -1248,5 +1255,43 @@ class SubscriptionPaymentTest extends TestCase
             'pricing_plan_id' => $planInitial['plan_id'],
             'fee_bearer'      => FeeBearer::PLATFORM,
         ]);
+    }
+
+    /**
+     * returns a mock response of the razorx request
+     *
+     * @param string $inputFeature
+     * @param string $expectedFeature
+     * @param string $variant
+     * @return string
+     */
+    protected function getRazoxVariant(string $inputFeature, string $expectedFeature, string $variant): string
+    {
+        if ($expectedFeature === $inputFeature)
+        {
+            return $variant;
+        }
+
+        return 'control';
+    }
+
+    /**
+     * sets the razox mock
+     *
+     * @param [type] $closure
+     * @return void
+     */
+    protected function setRazorxMock($closure)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback($closure));
     }
 }

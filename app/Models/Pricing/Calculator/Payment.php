@@ -108,6 +108,9 @@ class Payment extends Base
 
     protected function getAddOnPricingRule(Pricing\Plan $pricing, array $features, $entityName)
     {
+        // this is for upi autopay pricing changes.
+        // if new upi autopay pricing rule is picked, itll have subtype value that is initial/auto.
+        // in that case we should not add recurring addon rule
         if (($this->entity->getEntity() === Entity::PAYMENT) and
             ($this->entity->isUpiRecurring() === true) and
             (in_array(Pricing\Feature::RECURRING, $features)) and
@@ -532,11 +535,11 @@ class Payment extends Base
 
             $upiAutopayPricingVariant = $this->app->razorx->getTreatment(
                 $payment->getMerchantId(),
-                RazorxTreatment::UPI_AUTOPAY_PRICING,
+                RazorxTreatment::UPI_AUTOPAY_PRICING_BLACKLIST,
                 $this->mode
             );
-            
-            if($upiAutopayPricingVariant !== "on")
+
+            if($upiAutopayPricingVariant === "on")
             {
                 $recurringType = null;
             }

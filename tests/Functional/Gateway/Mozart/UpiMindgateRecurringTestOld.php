@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Mozart;
 use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Gateway\Upi\Base;
+use RZP\Services\RazorXClient;
 use RZP\Models\Customer\Token;
 use RZP\Models\UpiMandate\Entity;
 use RZP\Models\UpiMandate\Status;
@@ -36,6 +37,12 @@ class UpiMindgateRecurringTestOld extends TestCase
         $this->payment = $this->getDefaultUpiRecurringPaymentArray();
 
         $this->setMockGatewayTrue();
+
+        // use old autopay pricing for old test cases
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
+        });
     }
 
     public function testRecurringMandateCreate()
@@ -279,6 +286,44 @@ class UpiMindgateRecurringTestOld extends TestCase
         $content = $this->mockServer()->getAsyncCallbackResponseFirstDebitForMindgate($payment);
 
         $this->makeS2sCallbackAndGetContent($content, 'upi_mindgate');
+    }
+
+    /**
+     * returns a mock response of the razorx request
+     *
+     * @param string $inputFeature
+     * @param string $expectedFeature
+     * @param string $variant
+     * @return string
+     */
+    protected function getRazoxVariant(string $inputFeature, string $expectedFeature, string $variant): string
+    {
+        if ($expectedFeature === $inputFeature)
+        {
+            return $variant;
+        }
+
+        return 'control';
+    }
+
+    /**
+     * sets the razox mock
+     *
+     * @param [type] $closure
+     * @return void
+     */
+    protected function setRazorxMock($closure)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback($closure));
     }
 }
 

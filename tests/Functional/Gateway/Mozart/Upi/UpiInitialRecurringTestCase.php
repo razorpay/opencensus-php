@@ -50,6 +50,8 @@ class UpiInitialRecurringTestCase extends TestCase
             return $this->getRazoxVariant($feature, 'api_upi_icici_pre_process_v1', 'upi_icici');
         });
 
+        $this->setAutopayPricing();
+
         // Enable UPI payment service in config
         $this->app['config']->set(['applications.upi_payment_service.enabled' => true]);
 
@@ -1873,5 +1875,116 @@ class UpiInitialRecurringTestCase extends TestCase
         $this->app->razorx
             ->method('getTreatment')
             ->will($this->returnCallback($closure));
+    }
+
+    public function setAutopayPricing()
+    {
+        $this->ba->adminAuth();
+
+        $upiAutopayPlan = [
+            'plan_name'              => 'TestPlan1',
+            'procurer'               => 'razorpay',
+            'payment_method'         => 'upi',
+            'payment_method_subtype' => 'initial',
+            'feature'                => 'payment',
+            'payment_method_type'    => null,
+            'payment_network'        => null,
+            'payment_issuer'         => null,
+            'percent_rate'           => 100,
+            'fixed_rate'             => 200,
+            'type'                   => 'pricing',
+            'international'          => 0,
+            'amount_range_active'    => '0',
+            'amount_range_min'       => null,
+            'amount_range_max'       => null,
+        ];
+
+        $planId = $this->createPricingPlan($upiAutopayPlan)['id'];
+
+        $upiPricingPlan = [
+            'plan_name'              => 'TestPlan1',
+            'procurer'               => 'razorpay',
+            'payment_method'         => 'upi',
+            'feature'                => 'payment',
+            'payment_method_type'    => null,
+            'payment_network'        => null,
+            'payment_issuer'         => null,
+            'percent_rate'           => 100,
+            'fixed_rate'             => 100,
+            'type'                   => 'pricing',
+            'international'          => 0,
+            'amount_range_active'    => '0',
+            'amount_range_min'       => null,
+            'amount_range_max'       => null,
+        ];
+
+        $recurringPricingPlan = [
+            'plan_name'              => 'TestPlan1',
+            'procurer'               => 'razorpay',
+            'payment_method'         => 'upi',
+            'feature'                => 'recurring',
+            'payment_method_type'    => null,
+            'payment_network'        => null,
+            'payment_issuer'         => null,
+            'percent_rate'           => 300,
+            'fixed_rate'             => 300,
+            'type'                   => 'pricing',
+            'international'          => 0,
+            'amount_range_active'    => '0',
+            'amount_range_min'       => null,
+            'amount_range_max'       => null,
+        ];
+
+        $upiAutoAutopayPlan = [
+            'plan_name'              => 'TestPlan1',
+            'procurer'               => 'razorpay',
+            'payment_method'         => 'upi',
+            'payment_method_subtype' => 'auto',
+            'feature'                => 'payment',
+            'payment_method_type'    => null,
+            'payment_network'        => null,
+            'payment_issuer'         => null,
+            'percent_rate'           => 100,
+            'fixed_rate'             => 600,
+            'type'                   => 'pricing',
+            'international'          => 0,
+            'amount_range_active'    => '0',
+            'amount_range_min'       => null,
+            'amount_range_max'       => null,
+        ];
+
+        $this->addPricingPlanRule($planId, $upiPricingPlan);
+
+        $this->addPricingPlanRule($planId, $upiAutoAutopayPlan);
+
+        $this->addPricingPlanRule($planId, $recurringPricingPlan);
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $planId]);
+    }
+
+    protected function addPricingPlanRule($id, $rule = [])
+    {
+        $defaultRule = [
+            'payment_method' => 'card',
+            'payment_method_type'  => 'credit',
+            'payment_network' => 'MAES',
+            'payment_issuer' => 'HDFC',
+            'percent_rate' => 1000,
+            'international' => 0,
+            'amount_range_active' => '0',
+            'amount_range_min' => null,
+            'amount_range_max' => null,
+        ];
+
+        $rule = array_merge($defaultRule, $rule);
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/pricing/'.$id.'/rule',
+            'content' => $rule);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
     }
 }

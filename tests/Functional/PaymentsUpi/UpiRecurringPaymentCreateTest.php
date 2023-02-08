@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 
+use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -26,6 +27,12 @@ class UpiRecurringPaymentCreateTest extends TestCase
         $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
 
         $this->fixtures->merchant->addFeatures([Feature::CHARGE_AT_WILL]);
+
+        // use old autopay pricing for old test cases
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'upi_autopay_pricing_blacklist', 'on');
+        });
     }
 
     public function testCreateFirstUpiRecurringPayment()
@@ -192,5 +199,43 @@ class UpiRecurringPaymentCreateTest extends TestCase
         $data = ['test_app_token' => $appToken];
 
         $this->session($data);
+    }
+
+    /**
+     * returns a mock response of the razorx request
+     *
+     * @param string $inputFeature
+     * @param string $expectedFeature
+     * @param string $variant
+     * @return string
+     */
+    protected function getRazoxVariant(string $inputFeature, string $expectedFeature, string $variant): string
+    {
+        if ($expectedFeature === $inputFeature)
+        {
+            return $variant;
+        }
+
+        return 'control';
+    }
+
+    /**
+     * sets the razox mock
+     *
+     * @param [type] $closure
+     * @return void
+     */
+    protected function setRazorxMock($closure)
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->onlyMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx
+            ->method('getTreatment')
+            ->will($this->returnCallback($closure));
     }
 }
