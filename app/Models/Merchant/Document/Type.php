@@ -110,7 +110,7 @@ class Type
     const FORM_20_20b_21_21b                = 'form_20_20b_21_21b';
     const INVOICE                           = 'invoice';
     const SLA_DEALERSHIP_AGREEMENT          = 'sla_dealership_agreement';
-    const RESELLER_AGREEMENT                = 'reseller_agreeement';
+    const RESELLER_AGREEMENT                = 'reseller_agreement';
     const LIQUOR_LICENSE                    = 'liquor_license';
     const FORM_8A                           = 'form_8a';
     const FORM_10AC                         = 'form_10ac';

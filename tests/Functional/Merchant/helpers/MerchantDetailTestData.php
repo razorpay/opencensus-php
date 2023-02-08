@@ -1526,7 +1526,7 @@ return [
             "form_20_20b_21_21b"                => "Form 20/21/20B/21B",
             "invoice"                           => "Invoice",
             "sla_dealership_agreement"          => "SLA/Dealership agreement",
-            "reseller_agreeement"               => "Re-seller agreement",
+            "reseller_agreement"               => "Re-seller agreement",
             "liquor_license"                    => "Brewery addendum or Liquor license",
             "form_8a"                           => "Form 8A",
             "form_10ac"                         => "Form 10AC",
