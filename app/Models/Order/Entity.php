@@ -1136,7 +1136,7 @@ class Entity extends Base\PublicEntity
                 continue;
             }
 
-            $pricingResponse = (new Merchant\OneClickCheckout\Core())->get1CcPricingObject($orderMeta);
+            $pricingResponse = (new Merchant\OneClickCheckout\Core())->get1CcPricingObject($this->getPublicId());
 
             $fee += $pricingResponse[Merchant\OneClickCheckout\Constants::FINAL_ADJUSTED_COD_VALUE];
         }

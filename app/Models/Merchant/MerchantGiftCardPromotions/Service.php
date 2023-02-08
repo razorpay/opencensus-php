@@ -504,7 +504,7 @@ class Service extends Base\Service
                         $amountUsedFromGiftCard = $amountUsedFromGiftCard + $amountAdjustedForCod;
                     }
 
-                    $promotions[$key][OrderOneCCFields::PROMOTIONS_VALUE] = $amountUsedFromGiftCard = $result[Constants::GIFT_CARD_PARTIAL_REDEMPTION] === 1 ? $amountUsedFromGiftCard : $giftCardBalance;
+                    $promotions[$key][OrderOneCCFields::PROMOTIONS_VALUE] = $result[Constants::GIFT_CARD_PARTIAL_REDEMPTION] === 1 ? $amountUsedFromGiftCard : $giftCardBalance;
                 }
             }
         }

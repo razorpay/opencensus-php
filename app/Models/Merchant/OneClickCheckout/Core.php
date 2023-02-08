@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\OneClickCheckout;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant\MerchantGiftCardPromotions\Service as MerchantGiftCardPromotionService;
+use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Order;
 use RZP\Trace\TraceCode;
@@ -35,7 +36,9 @@ class Core extends Base\Core
         return (new Order\OrderMeta\Core)->update1CCOrder($orderId, $orderMetaInput);
     }
 
-    public function get1CcPricingObject(Order\OrderMeta\Entity $orderMeta) {
+    public function get1CcPricingObject(string $orderId) {
+
+        list($order, $orderMeta) = (new CommonUtils())->getOneCcOrderMeta($orderId);
 
         $value = $orderMeta->getValue();
 
