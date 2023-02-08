@@ -145,6 +145,11 @@ class Core extends Base\Core
             return;
         }
 
+        if (in_array($terminal->getGateway(), Payment\Gateway::TOKENISATION_GATEWAYS) === true)
+        {
+            return;
+        }
+
         if($merchant->isFeatureEnabled(Constants::ONLY_DS) === true)
         {
             $type = $terminal->getType();
