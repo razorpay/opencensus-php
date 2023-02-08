@@ -218,6 +218,8 @@ class Checkout
         
         $this->fill1ccEnableV165Experiment($merchant, $data);
 
+        $this->fill1ccOffersWithCouponsExperiment($merchant,$data);
+
         return $data;
     }
 
@@ -2393,6 +2395,37 @@ class Checkout
         catch (\Throwable $e)
         {
             $data['experiments']['1cc_enable_v165_exp'] = null;
+        }
+    }
+
+     /**
+     * Since order amount is mutable in magic checkout due to application of coupons and shipping charges.
+     * Percent based offers were returning discount wrt original amount in preferences call,
+     * hence this API will fetch offers associated with order based final order amount on payment screen.
+     * This experiment will be helpful in ramping up the deployment for this fix.
+     * @param Entity merchant
+     * @param array data
+     */
+    protected function fill1ccOffersWithCouponsExperiment(Entity $merchant, array &$data): void
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return;
+        }
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.magic_offers_fix_splitz_experiment_id'),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $data['experiments']['1cc_offers_fix_exp'] = $response['response']['variant']['name'] ?? null;
+        }
+        catch (\Throwable $e)
+        {
+            $data['experiments']['1cc_offers_fix_exp'] = null;
         }
     }
 
