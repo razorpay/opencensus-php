@@ -367,6 +367,24 @@ class EdgeThrottleController extends Controller
     }
 
     /**
+     * list the consumer for the given id/username
+     *
+     * @throws BadRequestException
+     * @throws NotFoundException|InvalidArgumentException
+     */
+    public function getConsumer($id)
+    {
+        $request = Request::instance();
+        $method = $request->method();
+        $path = '/consumers/' . $id;
+        $response = $this->request($method, $path);
+        return $this->finalizeResponse($response, [
+            'id',
+            'username'
+        ]);
+    }
+
+    /**
      * construct the query param which has to be sent to edge
      *
      * @return string

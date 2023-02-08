@@ -3297,7 +3297,7 @@ class Route
         'edge_delete_rate_limit_limit'            => ['delete',   'edge/rate_limiter/limit/{id}',                              'EdgeThrottleController@deleteLimit'                        ],
         'edge_update_rate_limit_spinnaker'        => ['patch',    'spinnaker/edge/rate_limiter/limit/{id}',                    'EdgeThrottleController@updateLimit'                        ],
         'waf_rule_signed_url'                     => ['get',      'edge/waf_rules_url',                                        'EdgeThrottleController@getWAFRulesSignedURL'               ],
-
+        'edge_get_consumer'                       => ['get',      'edge/consumers/{id}',                                       'EdgeThrottleController@getConsumer'                        ],
         'developer_console_action'                => ['post',     'developer_console/{type}/fetch/{action}',                   'DeveloperConsoleController@dashboardSearch'                ],
         'developer_console_maintenance'           => ['post',     'developer_console/{type}/re-arrange',                       'DeveloperConsoleController@runMaintenance'                 ],
         'developer_console_merchant_action'       => ['post',     'developer_console/merchant/{path?}',                        'DeveloperConsoleController@merchantDashboard'              ],
@@ -7382,6 +7382,7 @@ class Route
         'edge_list_rate_limit_limits',
         'edge_update_rate_limit_limit',
         'edge_delete_rate_limit_limit',
+        'edge_get_consumer',
         'waf_rule_signed_url',
 
 
@@ -8778,6 +8779,7 @@ class Route
         'edge_list_rate_limit_limits'              => Permission::VIEW_THROTTLE_SETTINGS,
         'edge_update_rate_limit_limit'             => Permission::EDIT_THROTTLE_SETTINGS,
         'edge_delete_rate_limit_limit'             => Permission::EDIT_THROTTLE_SETTINGS,
+        'edge_get_consumer'                        => Permission::VIEW_THROTTLE_SETTINGS,
         'waf_rule_signed_url'                      => Permission::VIEW_THROTTLE_SETTINGS,
 
         'excel_store_list_pages'                   => Permission::ACCESS_EXCEL_STORE,
@@ -11880,6 +11882,7 @@ class Route
             'edge_list_rate_limit_limits',
             'edge_update_rate_limit_limit',
             'edge_delete_rate_limit_limit',
+            'edge_get_consumer',
             'waf_rule_signed_url',
             'edit_merchant_balance_config',
             'edit_throttle_settings',

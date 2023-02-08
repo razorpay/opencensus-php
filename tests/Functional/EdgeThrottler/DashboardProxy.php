@@ -475,6 +475,82 @@ class DashboardProxy extends TestCase
         $response->assertNoContent();
     }
 
+    public function testGetConsumerSuccess()
+    {
+        $mockResponse = new Response(200, [], '{
+            "status_code": 200,
+            "success": true,
+            "data": {
+                "id": "987d9062-1faf-4b49-b750-11b087bca7f1",
+                "username": "JyNwL6yP1A6naO"
+            },
+          }'
+        );
+
+        $httpClient = app('throttler_http_client');
+        $httpClient->addResponse($mockResponse);
+
+        $response = $this->sendRequest([
+            'url' => 'edge/consumers/JyNwL6yP1A6naO',
+            'method' => 'GET',
+        ]);
+
+        $this->assertCount(1, $httpClient->getRequests());
+
+        $req = $httpClient->getRequests()[0];
+
+        $this->assertSame('GET', $req->getMethod());
+        $this->assertSame('/consumers/JyNwL6yP1A6naO', $req->getUri()->getPath());
+
+        $response->assertOk();
+        $response->assertExactJson([
+            'status_code' => 200,
+            'success'     => true,
+            'data'        => [
+                'id'         => '987d9062-1faf-4b49-b750-11b087bca7f1',
+                'username'   => 'JyNwL6yP1A6naO'
+            ]
+        ]);
+    }
+
+    public function testGetConsumerFailure()
+    {
+        $mockResponse = new Response(400, [], '{
+            "status_code": 400,
+            "success": false,
+            "errors": [
+                "Bad request",
+                "Status Code: 400"
+            ],
+          }'
+        );
+
+        $httpClient = app('throttler_http_client');
+        $httpClient->addResponse($mockResponse);
+
+        $response = $this->sendRequest([
+            'url' => 'edge/consumers/JyNwL6yP1A6na',
+            'method' => 'GET',
+        ]);
+
+        $this->assertCount(1, $httpClient->getRequests());
+
+        $req = $httpClient->getRequests()[0];
+
+        $this->assertSame('GET', $req->getMethod());
+        $this->assertSame('/consumers/JyNwL6yP1A6na', $req->getUri()->getPath());
+
+        $response->assertOk();
+        $response->assertExactJson([
+            'status_code' => 400,
+            'success'     => false,
+            'errors'        => [
+                'Bad request',
+                'Status Code: 400'
+            ]
+        ]);
+    }
+
     public function testRequestFailure()
     {
         try
