@@ -31,6 +31,7 @@ import {
 
 import PartnerOnbr from 'merchant/views/PartnerDashboard/Onboarding/partnerOnbr';
 import AddMerchant from './AddMerchant';
+import ConfirmGenerateReport from './components/ConfirmGenerateReport';
 import ListFilter from './ListFilter';
 import {
   trackSearchAnalytics,
@@ -403,6 +404,15 @@ class ProductSubMerchantsList extends ListContainer {
       });
   };
 
+  confirmAndDownload = () => {
+    this.props.openModal({
+      size: 'large',
+      component: (
+        <ConfirmGenerateReport onDownload={this.onDownload} closeModal={this.props.closeModal} />
+      ),
+    });
+  };
+
   onDownload = () => {
     this.trackUserEvent('partnerships.dashboard.affiliate_account.export');
     const { user } = this.props;
@@ -631,7 +641,7 @@ class ProductSubMerchantsList extends ListContainer {
                   />
                   <button
                     class="btn btn-default export-all-btn"
-                    onClick={this.onDownload}
+                    onClick={this.confirmAndDownload}
                     disabled={this.state.affiliatesDownloading}
                   >
                     {!this.state.affiliatesDownloading ? (
