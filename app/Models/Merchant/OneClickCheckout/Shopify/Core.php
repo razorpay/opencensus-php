@@ -1089,6 +1089,15 @@ class Core extends Base\Core
             ]);
         }
 
+        if (empty($rzpOrder['notes']['cart_id']) === false)
+        {
+            array_push($noteAttributes,
+            [
+                'name'  => 'cart_token',
+                'value' => $rzpOrder['notes']['cart_id']
+            ]);
+        }
+
         $body['note_attributes'] = $noteAttributes;
 
         // We override the subtotal price to account for the Re 1 payment in case of 100% discount coupons

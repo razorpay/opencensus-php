@@ -350,9 +350,11 @@ class Checkout extends Base\Core
 
         $checkoutId = $order->getNotes()['storefront_id'];
 
+        $cartId = $order->getNotes()['cart_id'];
+
         $client = $this->getShopifyClientByMerchant();
 
-        $this->addMagicCheckoutUrlToShopifyCheckout(array_merge($input, ['checkout_id' => $checkoutId]));
+        $this->addMagicCheckoutUrlToShopifyCheckout(array_merge($input, ['checkout_id' => $checkoutId], ['cart_id' => $cartId]));
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_UPDATE_RETARGETING_URL,
@@ -537,6 +539,8 @@ class Checkout extends Base\Core
 
         $checkoutId = $input['checkout_id'];
 
+        $cartId = $input['cart_id'];
+
         $mutation = (new Mutations)->checkoutAttributesUpdateMutation();
 
         $graphqlQuery = [
@@ -548,6 +552,10 @@ class Checkout extends Base\Core
                         [
                             'key'   => 'magic_checkout_url',
                             'value' => $checkoutUrl
+                        ],
+                        [
+                            'key'   => 'cart_token',
+                            'value' => $cartId
                         ]
                     ],
                     'note' => $input['cart_note']
