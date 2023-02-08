@@ -6,6 +6,8 @@ on:
   issue_comment:
     types:
       - created
+  pull_request_review:
+    types: [submitted]
 env:
   APP_NAME: dashboard
   HOME: /actions-runner/_work
@@ -19,11 +21,18 @@ env:
 
 jobs:  
   build-and-run-e2e:
-    name: Run E2E Tests on PR Comment or on master
-    if: ${{ github.event_name == 'pull_request' && contains(github.event.comment.body, '/run-e2e')}} || ${{ github.ref == 'refs/heads/master' && !github.event.comment.body }}
+    name: Run E2E Tests on PR Comment or PR approval or on master merge
+    if: ${{ github.event_name == 'pull_request' && contains(github.event.comment.body, '/run-e2e')}} || ${{ github.ref == 'refs/heads/master' && !github.event.comment.body }} || ${{ github.event.review.state == 'approved' }}
     timeout-minutes: 60
     runs-on: [self-hosted]
     steps:
+      - name: Echo conditions
+        run: |
+          echo "Review State: ${{ github.event_name == 'pull_request'}}"
+          echo "Github Event: ${{ github.event }}"
+          echo "Github Ref: ${{ github.ref }}"
+          echo "Body not present: ${{ !github.event.comment.body }}"
+          echo "Review state: ${{ github.event.review.state == 'approved' }}"
       - name: Fetch data of comment's associated PR
         uses: xt0rted/pull-request-comment-branch@v1
         id: comment-branch
@@ -38,6 +47,11 @@ jobs:
 
       - name: Set Commit ID if its on master
         if: ${{ github.ref == 'refs/heads/master' && !github.event.comment.body }}
+        run: |
+          echo "COMMIT_ID=${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Set Commit ID if it's a PR approval
+        if: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}
         run: |
           echo "COMMIT_ID=${{ github.sha }}" >> $GITHUB_ENV
 
