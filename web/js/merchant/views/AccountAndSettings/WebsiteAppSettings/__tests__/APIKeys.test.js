@@ -1,6 +1,6 @@
 import React from 'react';
 import APIKeysTab from 'merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/ApiKeys';
-import { render, screen, waitFor, server, userEvent, delay } from 'test-utils';
+import { render, screen, waitFor, server, userEvent } from 'test-utils';
 import * as profileActions from 'merchant/reducers/profile';
 import { fetchAddWebsiteWorkflowStatusHandler } from './mocks/handlers';
 
@@ -78,12 +78,11 @@ describe('API Keys', () => {
     await waitFor(() => {
       expect(fetchAddWebsiteWorkflowStatusSpy).toBeCalled();
     });
-    const addWebsiteBtn = screen.queryByTestId('add-website');
+    const addWebsiteBtn = screen.getByRole('button', { name: /Add website/i });
     expect(addWebsiteBtn).toBeInTheDocument();
 
     await userEvent.click(addWebsiteBtn);
     const workflowStatus = screen.queryByText('true');
     expect(workflowStatus).toBeInTheDocument();
-    await delay();
   });
 });

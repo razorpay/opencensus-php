@@ -8,7 +8,6 @@ export const fetchAddWebsiteWorkflowStatusHandler = () =>
         success: true,
         data: false,
       }),
-      ctx.delay(50),
     );
   });
 
