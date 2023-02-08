@@ -61,6 +61,7 @@ use RZP\Models\BankingAccount as BankingAccount;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Models\Merchant\CapitalSubmerchantUtility;
 use \RZP\Models\State\Entity as StateChangeEntity;
+use \WpOrg\Requests\Exception as RequestsException;
 use RZP\Models\Transaction\CreditType as CreditType;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Workflow\Service as WorkflowService;
@@ -84,6 +85,7 @@ use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 use \RZP\Models\DeviceDetail\Attribution\Core as AttributionCore;
 use RZP\Models\Merchant\FreshdeskTicket\Entity as FDTicketEntity;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\Invoice\Service as MerchantInvoiceService;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApp;
 use RZP\Models\Merchant\Detail\RejectionReasons as RejectionReasons;
@@ -390,6 +392,40 @@ class Service extends Base\Service
         $consent = $input[DEConstants::CONSENT] ?? null;
 
         $merchantId = $this->merchant->getMerchantId();
+
+        // send the request to merchant onboarding service
+        // this should not affect the current flow, hence wrapped in try catch
+        try
+        {
+
+            $pgosProxyController = new MerchantOnboardingProxyController();
+
+            $input['merchantId'] = $merchantId;
+
+            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant);
+
+            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                'response' => $response
+            ]);
+
+            unset($input['merchantId']);
+        }
+        catch (RequestsException $e) {
+            unset($input['merchantId']);
+            if (checkRequestTimeout($e) === true) {
+                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
+                    'merchant_id' => $merchantId,
+                ]);
+            }
+
+        }
+        catch (\Throwable $exception) {
+            unset($input['merchantId']);
+            // this should not introduce error counts as it is running in shadow mode
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'error_message' => $exception->getMessage()
+            ]);
+        }
 
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 

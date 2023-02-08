@@ -7,6 +7,8 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use \WpOrg\Requests\Exception as RequestsException;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 
 class Core extends Base\Core
 {
@@ -16,11 +18,43 @@ class Core extends Base\Core
         $userId = $user['id'];
         $merchantId = $this->merchant->getId();
 
-        $this->trace->info(TraceCode::USER_DEVICE_CREATE_DETAIL_REQUEST,[
+        $this->trace->info(TraceCode::USER_DEVICE_CREATE_DETAIL_REQUEST, [
             "merchant_id" => $merchantId,
-            "user_id"     => $userId,
-            "data"        => $input
+            "user_id" => $userId,
+            "data" => $input
         ]);
+
+        try {
+
+            $createWorkflowRequestBody = [
+                'account_id' => $merchantId,
+                'account_type' => "merchant"
+            ];
+
+            $pgosProxyController = new MerchantOnboardingProxyController();
+
+            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_sign_up', $createWorkflowRequestBody, $this->merchant);
+
+            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response' => $response,
+            ]);
+        }
+        catch (RequestsException $e) {
+
+            if (checkRequestTimeout($e) === true) {
+                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
+                    'merchant_id' => $merchantId,
+                ]);
+            }
+
+        }
+        catch (\Throwable $exception) {
+            // this should not introduce error counts as it is running in shadow mode
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'error_message' => $exception->getMessage()
+            ]);
+        }
 
         try
         {
@@ -38,7 +72,7 @@ class Core extends Base\Core
             $gaClientId = $_COOKIE[Constants::G_CLIENT_ID] ?? Cookie::get(Constants::G_CLIENT_ID);
             if (empty($gaClientId) == false)
             {
-                $gaClientId = substr($gaClientId,6);
+                $gaClientId = substr($gaClientId, 6);
             }
 
             $input[Entity::METADATA][Constants::CLIENT_IP] = $clientIpAddress;
@@ -88,9 +122,9 @@ class Core extends Base\Core
         $deviceDetail->generateId();
 
         $this->trace->info(TraceCode::USER_DEVICE_CREATE_DETAIL, [
-            'merchant_id'  => $input[Entity::MERCHANT_ID],
-            'user_id'      => $input[Entity::USER_ID],
-            'input'        => $input
+            'merchant_id' => $input[Entity::MERCHANT_ID],
+            'user_id' => $input[Entity::USER_ID],
+            'input' => $input
         ]);
 
         $deviceDetail->build($input);

@@ -496,6 +496,12 @@ return [
         'secret'  => env('FRESHDESK_WEBHOOK_SECRET'),
     ],
 
+    'pgos' => [
+        'secret'       => env('PGOS_SERVICE_API_SECRET'),
+        'password'     => env('PGOS_SERVICE_PASSWORD'),
+    ],
+
+
     'friend_buy' => [
         // Api url for merchant risks service.
         'url'                => env('FRIEND_BUY_URL'),

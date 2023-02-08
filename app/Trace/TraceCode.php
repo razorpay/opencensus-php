@@ -3231,6 +3231,13 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const USER_DEVICE_DETAIL_SAVE_FAILED                        = 'USER_DEVICE_DETAIL_SAVE_FAILED';
     const USER_DEVICE_CREATE_DETAIL_REQUEST                     = 'USER_DEVICE_CREATE_DETAIL_REQUEST';
 
+    //Trace codes for PGOS service
+
+    const PGOS_PROXY_REQUEST = "PGOS_PROXY_REQUEST";
+    const PGOS_PROXY_RESPONSE = "PGOS_PROXY_RESPONSE";
+    const PGOS_PROXY_ERROR = "PGOS_PROXY_ERROR";
+    const PGOS_PROXY_TIMEOUT = "PGOS_PROXY_TIMEOUT";
+
     //Trace codes for 2fa features
     const LOCKED_USER_LOGIN                                     = 'LOCKED_USER_LOGIN';
     const USER_LOGIN_2FA_ENABLED                                = 'USER_LOGIN_2FA_ENABLED';
@@ -8995,7 +9002,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SKIPPING_HITACHI_AUTOMATIC_ONBOARDING_UNSUPPORTED_NETWORK  = 'SKIPPING_HITACHI_AUTOMATIC_ONBOARDING_UNSUPPORTED_NETWORK';
 
     const BAD_REQUEST_ADDED_SUBMERCHANT_BUT_CC_APPLICATION_NOT_CREATED = 'BAD_REQUEST_ADDED_SUBMERCHANT_BUT_CC_APPLICATION_NOT_CREATED';
-  
+
     const SBI_EMI_FILE_UNIQUE_REFERENCE_NUM             = 'SBI_EMI_FILE_UNIQUE_REFERENCE_NUM';
 
     protected static $messages = [

@@ -422,6 +422,8 @@ return array(
 
     'cmma_limit_breach_trigger_new_experiment_id' => env('CMMA_LIMIT_BREACH_TRIGGER_NEW_EXPERIMENT_ID'),
 
+    'pgos_shadow_mode_experiment_id' => env('PGOS_SHADOW_MODE_EXPERIMENT_ID'),
+
     'capital_migration_experiment_id' => env('CAPITAL_MIGRATION_EXPERIMENT_ID'),
 
     'cmma_soft_limit_breach_trigger_experiment_id' => env('CMMA_SOFT_LIMIT_BREACH_TRIGGER_EXPERIMENT_ID'),

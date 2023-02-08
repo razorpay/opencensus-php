@@ -117,6 +117,12 @@ return [
         'cron_password' => env('CMMA_CRON_PASSWORD'),
     ],
 
+    'pgos' => [
+        'url'           => env('PGOS_SERVICE_HOST'),
+        'user'          => env('PGOS_SERVICE_USER'),
+        'password'      => env('PGOS_SERVICE_PASSWORD')
+    ],
+
     'merchants_risk' => [
         // Api url for merchant risks service.
         'url'                => env('MERCHANT_RISKS_URL'),
