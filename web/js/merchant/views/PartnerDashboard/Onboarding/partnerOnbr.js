@@ -52,7 +52,7 @@ export default class BaseScreen extends React.Component {
     this.screenName = isAppStorePage ? 'app store' : 'home page';
     this.partnerOnboardingClass = 'partner-onboarding-base-screen new-screen';
     if (this.props?.user?.isOrgCurlec) {
-      this.partnerOnboardingClass = `${this.partnerOnboardingClass} hide-onboarding-img`;
+      this.partnerOnboardingClass = `${this.partnerOnboardingClass} curlec-onboarding-img`;
     }
   }
 

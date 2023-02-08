@@ -110,13 +110,9 @@ const S2 = ({
   return (
     <>
       <div className="partner-onbr-info step-2">
-        <ShowWhen
-          additionalCondition={(user) =>
-            !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PartnerIllustration)
-          }
-        >
-          <div className="partner-illustration" />
-        </ShowWhen>
+        <div
+          className={`partner-illustration${isOrgCurlec ? ' curlec-partner-illustration' : ''}`}
+        />
         <div className="title">Choose your Partnership&nbsp;Type</div>
         <div className="options-group select-partner-type-options">
           <PartnerSelectBox
@@ -168,7 +164,13 @@ const S2 = ({
                 </a>{' '}
                 integration to get automated&nbsp;commissions
               </li>
-              <li>Not applicable for RazorpayX Current account and Corporate Cards</li>
+              <ShowWhen
+                additionalCondition={(user) =>
+                  !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PartnershipProgram)
+                }
+              >
+                <li>Not applicable for RazorpayX Current account and Corporate Cards</li>
+              </ShowWhen>
             </ul>
           </PartnerSelectBox>
         </div>

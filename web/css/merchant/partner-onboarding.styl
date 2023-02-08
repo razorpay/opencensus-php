@@ -13,10 +13,6 @@
     padding: 25px 50px 35px;
   }
 
-  &.hide-onboarding-img {
-    background-size: 0;
-  }
-
   .partner-onbr-info {
     height: 360px;
 
@@ -365,6 +361,10 @@
     background-image: url("assets/onboarding/prt-bkg.png");
     transition: background-image 5s ease-in-out;
 
+    &.curlec-onboarding-img {
+      background-image: url("assets/onboarding/curlec_prt_bkg.png");
+    }
+
     &.step-2 {
       background-image: none;
 
@@ -376,6 +376,11 @@
         bottom: 0;
         right: 0;
         background-size: 50%, contain;
+
+        &.curlec-partner-illustration {
+          background: url("assets/onboarding/curlec_partner_illustration.png") no-repeat 72% 52px, linear-gradient(to bottom right, transparent 0%, transparent 50%, #67DEAF 50%, #67DEAF 100%);
+          background-size: 50%, contain;
+        }
       }
     }
 
