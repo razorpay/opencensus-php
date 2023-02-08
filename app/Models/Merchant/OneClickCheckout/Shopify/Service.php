@@ -1043,14 +1043,7 @@ class Service extends Base\Service
 
     public function validateGiftCard(array $input, string $merchantId = ''):array
     {
-        if(empty($input['email']))
-        {
-            return (new Errors)->emailRequired();
-        }
-        else
-        {
-            return (new GiftCards)->validateGiftCard($input, $merchantId);
-        }
+        return (new GiftCards)->validateGiftCard($input, $merchantId);
     }
 
     public function checkForGiftCardPayment($order, $payment, $merchant, $fromShopifyApi)
@@ -1068,6 +1061,7 @@ class Service extends Base\Service
 
             $promotionsGC = [];
             $promotionsAll = [];
+            $promotionsRefund = [];
 
             if(!empty($promotions))
             {
@@ -1099,10 +1093,18 @@ class Service extends Base\Service
                     {
                         if($promotionGC['description'] === 'invalid'){
 
-                            foreach ($promotionsGC as $promotionGC)
+                            foreach ($promotionsAll as $promotionAll)
                             {
-                                (new GiftCards)->refundGiftCard($promotionGC, $order, $payment, $this->merchant->getId());
+                                $gcResponse = (new GiftCards)->refundGiftCard($promotionAll, $order, $payment, $this->merchant->getId());
+
+                                array_push($promotionsRefund, $gcResponse);
                             }
+
+                            $value['promotions'] = $promotionsRefund;
+
+                            $orderMeta->setValue($value);
+
+                            $this->repo->order_meta->saveOrFail($orderMeta);
 
                             throw new Exception\BadRequestException(
                                 ErrorCode::BAD_REQUEST_ERROR,

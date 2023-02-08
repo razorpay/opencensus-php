@@ -128,6 +128,22 @@ final class Metric
     const SHOPIFY_CUSTOMER_SEARCH_ERROR_COUNT         = 'shopify_customer_search_error_count';
     const SHOPIFY_CUSTOMER_SEARCH_CALL_TIME           = 'shopify_customer_search_call_time';
 
+    const SHOPIFY_GIFT_CARD_VALIDATE_REQUEST_COUNT  = 'shopify_gift_card_validate_request_count';
+    const SHOPIFY_GIFT_CARD_VALIDATE_ERROR_COUNT    = 'shopify_gift_card_validate_error_count';
+    const SHOPIFY_GIFT_CARD_VALIDATE_SUCCESS_COUNT  = 'shopify_gift_card_validate_success_count';
+
+    const SHOPIFY_APPLY_GIFT_CARD_REQUEST_COUNT     = 'shopify_gift_card_validate_request_count';
+    const SHOPIFY_APPLY_GIFT_CARD_ERROR_COUNT       = 'shopify_gift_card_validate_error_count';
+    const SHOPIFY_APPLY_GIFT_CARD_SUCCESS_COUNT     = 'shopify_gift_card_validate_success_count';
+
+    const SHOPIFY_ORDER_REFUND_REQUEST_COUNT        = 'shopify_order_refund_request_count';
+    const SHOPIFY_ORDER_REFUND_SUCCESS_COUNT        = 'shopify_order_refund_success_count';
+    const SHOPIFY_ORDER_REFUND_ERROR_COUNT          = 'shopify_order_refund_error_count';
+
+    const SHOPIFY_GIFT_CARD_REFUND_REQUEST_COUNT    = 'shopify_gift_card_refund_request_count';
+    const SHOPIFY_GIFT_CARD_REFUND_SUCCESS_COUNT    = 'shopify_gift_card_refund_success_count';
+    const SHOPIFY_GIFT_CARD_REFUND_ERROR_COUNT      = 'shopify_gift_card_refund_error_count';
+
     const SHOPIFY_ADD_TAG_SUCCESS_COUNT             = 'shopify_add_tag_success_count';
     const SHOPIFY_ADD_TAG_ERROR_COUNT               = 'shopify_add_tag_status_error_count';
     const SHOPIFY_ADD_TAG_CALL_TIME                 = 'shopify_add_tag_call_time';
