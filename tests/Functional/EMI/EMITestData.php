@@ -333,4 +333,31 @@ return [
             ],
         ],
     ],
+
+    'testAddFDRLEmiPlansWithMerchant' => [
+        'request' => [
+            'content' => [
+                'bank'        => 'FDRL',
+                'duration'    => 3,
+                'rate'        => 1045,
+                'methods'     => 'card',
+                'min_amount'  => 400000,
+                'merchant_id' => '100000Razorpay',
+                'type'        => 'credit',
+            ],
+            'method' => 'POST',
+            'url'    => '/emi',
+        ],
+        'response' => [
+            'content' => [
+                'bank'             => 'FDRL',
+                'duration'         => 3,
+                'rate'             => 1045,
+                'methods'          => 'card',
+                'min_amount'       => 400000,
+                'merchant_payback' => 172,
+                'merchant_id'      => '100000Razorpay',
+            ],
+        ],
+    ],
 ];

@@ -3271,6 +3271,7 @@ class Gateway
         IFSC::CITI,
         IFSC::SBIN,
         IFSC::BARB,
+        IFSC::FDRL,
     ];
 
     // in case of any changes in gateway config, please contact smart routing team
@@ -3289,6 +3290,7 @@ class Gateway
         IFSC::HSBC,
         IFSC::STCB,
         IFSC::IDFB,
+        IFSC::FDRL,
     ];
 
     public static $emiBanksUsingCardAndEmiTerminals = [

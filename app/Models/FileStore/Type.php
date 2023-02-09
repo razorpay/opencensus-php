@@ -261,7 +261,8 @@ class Type
     const CITI_EMI_FILE                     = 'citi_emi_file';
     const BOB_EMI_FILE                      = 'bob_emi_file';
     const RECON_AUTOMATIC_FILE_FETCH        = 'recon_automatic_file_fetch';
-    const INDUS_IND_DEBIT_EMI_FILE           = 'indusind_debit_emi_file';
+    const INDUS_IND_DEBIT_EMI_FILE          = 'indusind_debit_emi_file';
+    const FEDERAL_EMI_FILE                  = 'federal_emi_file';
 
     const AXIS_CARD_SETTLEMENT_FILE         = 'axis_cardsettlement_file';
     const AXIS_CARD_SETTLEMENT_OUTPUT_FILE  = 'axis_cardsettlement_output_file';
@@ -478,6 +479,7 @@ class Type
             self::APM_ONBOARD_REQUEST_FILE,
             self::RECON_AUTOMATIC_FILE_FETCH,
             self::INDUS_IND_DEBIT_EMI_FILE,
+            self::FEDERAL_EMI_FILE,
         ],
 
         Constants\Entity::BATCH => [
@@ -682,6 +684,7 @@ class Type
         self::PAYMENT_LIMIT,
         self::RECON_AUTOMATIC_FILE_FETCH,
         self::INDUS_IND_DEBIT_EMI_FILE,
+        self::FEDERAL_EMI_FILE,
     ];
 
     /**
@@ -752,6 +755,7 @@ class Type
             self::AXIS_CARD_SETTLEMENT_FILE,
             self::HSBC_EMI_FILE,
             self::INDUS_IND_DEBIT_EMI_FILE,
+            self::FEDERAL_EMI_FILE,
         ],
 
         self::BATCH_SERVICE_BUCKET_CONFIG => [

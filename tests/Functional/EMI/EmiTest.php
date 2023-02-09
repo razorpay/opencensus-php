@@ -290,6 +290,13 @@ class EmiTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddFDRLEmiPlansWithMerchant()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testAddMultipleEmiPlansWithSameDuration()
     {
         $this->ba->adminAuth();

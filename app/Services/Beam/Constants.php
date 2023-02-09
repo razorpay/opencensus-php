@@ -76,4 +76,6 @@ class Constants
 
     const INDUS_IND_DEBIT_EMI_FILE_JOB_NAME = 'indusind_debit_emi_push';
 
+    const FEDERAL_EMI_FILE_JOB_NAME   = 'federal_emi_push';
+
 }
