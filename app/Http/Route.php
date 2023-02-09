@@ -4316,7 +4316,9 @@ class Route
         'mob_fetch_multiple_intents',
         'mob_get_workflow',
         'mob_save_workflow',
-        'merchant_consents_admin_fetch'
+        'merchant_consents_admin_fetch',
+        'ufh_admin_upload_file',
+        'ufh_get_file_signed_url_by_mid'
     ];
 
     /**
