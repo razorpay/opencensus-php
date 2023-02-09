@@ -44,6 +44,17 @@ class OpsSubscriber extends Base
             ]
         ];
 
+        if (($event->getName() === Event::STATUS_CHANGE &&
+            $event->getProperties()[Constants::NEW_STATUS] === BankingAccount\Status::API_ONBOARDING) ||
+            $event->getName() === Event::ACCOUNT_OPENING_WEBHOOK_DATA_AMBIGUITY
+        )
+        {
+            $emails[] = [
+                'name' => 'X-CA-Onboarding',
+                'email'=> 'x-caonboarding@razorpay.com'
+            ];
+        }
+
         if (empty($reviewer) === false)
         {
             $emails[] = [

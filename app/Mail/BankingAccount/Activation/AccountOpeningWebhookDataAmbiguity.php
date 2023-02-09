@@ -18,13 +18,6 @@ class AccountOpeningWebhookDataAmbiguity extends Base
         parent::__construct($bankingAccountId, $eventDetails);
     }
 
-    protected function addRecipients()
-    {
-        // Temp fix since emails are not being delivered to Google Groups
-        $this->to('x-caonboarding@razorpay.com','X-CA-Onboarding');
-        return $this;
-    }
-
     protected function addMailData()
     {
         $data = [
