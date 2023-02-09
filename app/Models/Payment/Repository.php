@@ -3460,7 +3460,7 @@ EOT;
     {
         try
         {
-            $result = $this->newQueryWithConnection($this->getSlaveConnection())
+            $result = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
                            ->from(\DB::raw('`payments` FORCE INDEX (payments_merchant_id_status_created_at_index_all_replicas)'))
                            ->where(Entity::MERCHANT_ID, "=", $merchantId)
                            ->where(Entity::BASE_AMOUNT, ">", 0)
