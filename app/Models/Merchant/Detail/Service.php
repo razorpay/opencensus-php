@@ -2040,6 +2040,8 @@ class Service extends Base\Service
 
         $referralProduct = $referral->getProduct() ?? Product::PRIMARY;
 
+        $isCapitalPartnershipExpEnabled = false;
+
         if ($referralProduct == Product::CAPITAL)
         {
             $actualReferralProduct = $referralProduct;
@@ -2057,26 +2059,14 @@ class Service extends Base\Service
                 ]
             );
 
-            if ((new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($referral->getMerchantId()) === false)
+            $isCapitalPartnershipExpEnabled = (new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($referral->getMerchantId());
+
+            if ($isCapitalPartnershipExpEnabled === false)
             {
                 unset($input[Entity::REFERRAL_CODE]);
 
                 return;
             }
-
-            $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
-
-            CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant($partner, $subMerchant);
-
-            CapitalSubmerchantUtility::createCapitalApplicationForSubmerchant(
-                $subMerchant,
-                [
-                    Constants::LEAD_SOURCE    => "Partner",
-                    Constants::LEAD_SOURCE_ID => $partner->getId(),
-                    Constants::SOURCE_DETAILS => $partner->getName(),
-                    Constants::PRODUCT_ID     => Constants::CAPITAL_CORPORATE_CARD_PRODUCT_ID
-                ]
-            );
         }
 
         $requestProduct = $this->auth->getRequestOriginProduct();
@@ -2089,6 +2079,28 @@ class Service extends Base\Service
             ];
 
             $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, $referralProduct);
+
+            if (($isCapitalPartnershipExpEnabled === true) and ($referralProduct === Product::BANKING))
+            {
+                $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
+
+                CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant($partner->getId(), $subMerchant);
+
+                $productIds = CapitalSubmerchantUtility::getLOSProductIds();
+
+                $locProductId = $productIds[Constants::CAPITAL_LOC_EMI_PRODUCT_NAME];
+
+                CapitalSubmerchantUtility::createCapitalApplicationForSubmerchant(
+                    $subMerchant,
+                    [
+                        Constants::LEAD_SOURCE    => "Partner",
+                        Constants::LEAD_SOURCE_ID => $partner->getId(),
+                        Constants::SOURCE_DETAILS => $partner->getName(),
+                        Constants::PRODUCT_ID     => $locProductId
+                    ]
+                );
+
+            }
         }
 
         unset($input[Entity::REFERRAL_CODE]);

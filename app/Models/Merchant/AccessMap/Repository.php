@@ -3,16 +3,16 @@
 namespace RZP\Models\Merchant\AccessMap;
 
 use DB;
-
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
+use RZP\Constants\Product;
 use RZP\Base\ConnectionType;
+use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
-use RZP\Models\Base\PublicCollection;
-use \RZP\Models\Merchant\MerchantApplications;
+use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 use RZp\Models\Merchant\MerchantApplications as MerchantApp;
 
@@ -428,5 +428,57 @@ public function getAllMappingsByApplicationTypeWithTrashed(string $appType, stri
         }
 
         return $query->get()->pluck(Entity::MERCHANT_ID)->toArray();
+    }
+
+    public function filterSubmerchantIdsLinkedToAppIdsForProduct(
+        array $applicationIds,
+        array $submerchantIds,
+        string $product = Product::PRIMARY,
+        array $tags = []
+    )
+    {
+        if (empty($applicationIds) === true)
+        {
+            return new Base\PublicCollection;
+        }
+
+        $accessMapsEntityId   = $this->dbColumn(Entity::ENTITY_ID);
+        $accessMapsDeletedAt  = $this->dbColumn(Base\Entity::DELETED_AT);
+        $accessMapsEntityType = $this->dbColumn(Entity::ENTITY_TYPE);
+        $accessMapsMerchantId = $this->dbColumn(Base\PublicEntity::MERCHANT_ID);
+
+        // filter merchant_access_map for application IDs
+        $query = $this->newQuery()
+                      ->select([$accessMapsMerchantId])
+                      ->where($accessMapsEntityType, Entity::APPLICATION)
+                      ->whereIn($accessMapsEntityId, $applicationIds)
+                      ->whereNull($accessMapsDeletedAt);
+
+        // filter merchant_access_map for submerchant IDs
+        if (empty($submerchantIds) === false)
+        {
+            $query->whereIn($accessMapsMerchantId, $submerchantIds);
+        }
+
+        // join with merchant_users table to filter on product
+        $merchantUsersRepo       = $this->repo->merchant_user;
+        $merchantUsersMerchantId = $merchantUsersRepo->dbColumn(Merchant\MerchantUser\Entity::MERCHANT_ID);
+        $merchantUsersProduct    = $merchantUsersRepo->dbColumn(Merchant\MerchantUser\Entity::PRODUCT);
+
+        $query->join(Table::MERCHANT_USERS, $accessMapsMerchantId, '=', $merchantUsersMerchantId)
+              ->where($merchantUsersProduct, $product)
+              ->distinct();
+
+        // join with tagging_tagged table to filter on tags
+        $tags = array_unique(array_map('mb_strtolower', array_map('str_slug', $tags)));
+
+        $tagsTable = 'tagging_tagged';
+
+        $query->join($tagsTable, $tagsTable . '.taggable_id', $accessMapsMerchantId)
+              ->where($tagsTable . '.taggable_type', '=', E::MERCHANT)
+              ->whereIn($tagsTable . '.tag_slug', $tags)
+              ->distinct();
+
+        return $query->get();
     }
 }

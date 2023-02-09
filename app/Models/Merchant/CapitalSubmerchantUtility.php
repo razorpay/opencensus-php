@@ -3,7 +3,6 @@
 namespace RZP\Models\Merchant;
 
 use Throwable;
-use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -11,7 +10,9 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\User\Role;
 use RZP\Constants\Product;
+use Illuminate\Http\Response;
 use RZP\Base\RepositoryManager;
+use Illuminate\Http\JsonResponse;
 use Razorpay\Trace\Logger as Trace;
 use Illuminate\Support\Facades\App;
 use RZP\Jobs\SubMerchantTaggingJob;
@@ -19,7 +20,6 @@ use RZP\Error\PublicErrorDescription;
 use Illuminate\Foundation\Application;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
-use RZP\Http\Controllers\LOSController;
 use RZP\Models\Batch\Header as BatchHeader;
 use RZP\Models\Merchant\Detail\BusinessType;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -89,6 +89,57 @@ class CapitalSubmerchantUtility
         }
 
         return $this->merchantCore;
+    }
+
+    /**
+     * Fetch capital applications in bulk for $product from LOS Service for list of $merchantIds
+     *
+     * @param array  $merchantIds
+     * @param string $productId
+     *
+     * @return JsonResponse|Response
+     * @throws IntegrationException
+     * @throws Throwable
+     */
+    public function fetchApplicationsForSubmerchantsForProduct(array $merchantIds, string $productId): JsonResponse|Response
+    {
+        try
+        {
+            $response = $this->app['losService']->sendRequest(
+                Constants::GET_CAPITAL_APPLICATIONS_BULK_URL,
+                [
+                    "merchant_ids"        => $merchantIds,
+                    Constants::PRODUCT_ID => $productId,
+                ],
+                [
+                    'X-Service-Name' => $this->app['basicauth']->getInternalApp() ?? '',
+                    'X-Auth-Type'    => 'internal',
+                ]
+            );
+
+            $response = $this->app['losService']->parseResponse($response);
+
+            $this->trace->info(
+                TraceCode::FETCH_CAPITAL_APPLICATIONS_FOR_SUBMERCHANTS_RESPONSE,
+                [
+                    'response' => $response,
+                ]
+            );
+
+            return $response;
+        }
+        catch (Throwable $ex)
+        {
+            $this->trace->error(
+                TraceCode::BAD_REQUEST_COULD_NOT_FETCH_SUBMERCHANT_CAPITAL_APPLICATIONS,
+                [
+                    'exception'   => $ex,
+                    'description' => 'Could not fetch capital submerchant applications.',
+                ]
+            );
+
+            throw $ex;
+        }
     }
 
     /**
@@ -171,14 +222,42 @@ class CapitalSubmerchantUtility
      */
     static function extractCapitalApplicationInput(array $input, Entity $partner): array
     {
+        $productIds = self::getLOSProductIds();
+
+        $locProductId = $productIds[Constants::CAPITAL_LOC_EMI_PRODUCT_NAME];
+
         return [
             BatchHeader::ANNUAL_TURNOVER_MIN => $input[BatchHeader::ANNUAL_TURNOVER_MIN],
             BatchHeader::ANNUAL_TURNOVER_MAX => $input[BatchHeader::ANNUAL_TURNOVER_MAX],
             Constants::LEAD_SOURCE           => "Partner",
             Constants::LEAD_SOURCE_ID        => $partner->getId(),
             Constants::SOURCE_DETAILS        => $partner->getName(),
-            Constants::PRODUCT_ID            => Constants::CAPITAL_CORPORATE_CARD_PRODUCT_ID
+            Constants::PRODUCT_ID            => $locProductId
         ];
+    }
+
+    /**
+     * @return array
+     */
+    static function getLOSProductIds(): array
+    {
+        $headers = [
+            'X-Service-Name' => app('basicauth')->getInternalApp() ?? '',
+            'X-Auth-Type'    => 'internal',
+        ];
+
+        $response = app('losService')->sendRequest(Constants::GET_PRODUCTS_LOS_URL, [], $headers);
+
+        $products = json_decode($response->body, true);
+
+        $productIds = [];
+
+        foreach ($products['products'] as $product)
+        {
+            $productIds[$product['name']] = $product['id'];
+        }
+
+        return $productIds;
     }
 
     /**
@@ -210,34 +289,34 @@ class CapitalSubmerchantUtility
     }
 
     /**
-     * @param Entity $partner
+     * @param string $partnerId
      * @param Entity $subMerchant
      *
      * @return void
      * @throws BadRequestValidationFailureException
      */
-    static function addTagAndAttributeForCapitalSubmerchant(Entity $partner, Entity $subMerchant): void
+    static function addTagAndAttributeForCapitalSubmerchant(string $partnerId, Entity $subMerchant): void
     {
         app('trace')->info(
             TraceCode::CAPITAL_SUBMERCHANT_TAG,
             [
-                'partner_id'     => $partner->getId(),
+                'partner_id'     => $partnerId,
                 'submerchant_id' => $subMerchant->getId(),
-                'tag_prefix'     => Constants::CAPITAL_PARTNERSHIP_TAG_PREFIX,
+                'tag_prefix'     => Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX,
             ]
         );
 
         // append the tag in current mode
         SubMerchantTaggingJob::dispatch(
-            Mode::LIVE, $partner->getId(),
+            Mode::LIVE, $partnerId,
             $subMerchant->getId(),
-            Constants::CAPITAL_PARTNERSHIP_TAG_PREFIX
+            Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX
         );
         SubMerchantTaggingJob::dispatch(
             Mode::TEST,
-            $partner->getId(),
+            $partnerId,
             $subMerchant->getId(),
-            Constants::CAPITAL_PARTNERSHIP_TAG_PREFIX
+            Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX
         );
 
         /**
@@ -270,11 +349,11 @@ class CapitalSubmerchantUtility
         app('trace')->info(
             TraceCode::CAPITAL_SUBMERCHANT_ATTRIBUTE,
             [
-                'partner_id'      => $partner->getId(),
+                'partner_id'      => $partnerId,
                 'submerchant_id'  => $subMerchant->getId(),
                 'attribute_group' => Attribute\Group::X_MERCHANT_INTENT,
                 'attribute_value' => [
-                    "type"  => Attribute\Type::CORPORATE_CARDS,
+                    "type"  => Attribute\Type::CAPITAL_LOC_EMI,
                     "value" => "true",
                 ],
             ]
@@ -284,7 +363,7 @@ class CapitalSubmerchantUtility
             Attribute\Group::X_MERCHANT_INTENT,
             [
                 [
-                    "type"  => Attribute\Type::CORPORATE_CARDS,
+                    "type"  => Attribute\Type::CAPITAL_LOC_EMI,
                     "value" => "true",
                 ]
             ],
@@ -330,11 +409,13 @@ class CapitalSubmerchantUtility
 
         try
         {
-            $response = (new LOSController())->sendRequestAndParseResponse(
+            $response = app('losService')->sendRequest(
                 $url,
                 $createCapitalApplicationInput,
                 $headers
             );
+
+            $response = app('losService')->parseResponse($response);
 
             app('trace')->info(
                 TraceCode::CAPITAL_SUBMERCHANT_APPLICATION_RESPONSE,

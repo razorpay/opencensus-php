@@ -813,6 +813,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPartnerships();
 
+        $this->registerLOSService();
+
         $this->registerSmartCollect();
 
         $this->registerCdsHttpClients();
@@ -2378,6 +2380,21 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton(PayoutService\Workflow::PAYOUT_SERVICE_WORKFLOW, function($app)
         {
             return new PayoutService\Workflow($app);
+        });
+    }
+
+    protected function registerLOSService()
+    {
+        $this->app->singleton('losService', function ($app) {
+
+            $mock = $app['config']->get('applications.loan_origination_system.mock');
+
+            if ($mock === true)
+            {
+                return new RZP\Services\Mock\LOSService();
+            }
+
+            return new RZP\Services\LOSService();
         });
     }
 

@@ -840,6 +840,7 @@ return [
     ],
 
     'loan_origination_system' => [
+        'mock'          => env('APP_LOAN_ORIGINATION_SYSTEM_MOCK', false),
         'url'           => env('APP_LOAN_ORIGINATION_SYSTEM_URL'),
         'username'      => 'key',
         'secret'        => env('APP_LOAN_ORIGINATION_SYSTEM_SECRET'),

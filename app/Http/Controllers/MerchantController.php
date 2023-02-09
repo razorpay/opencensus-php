@@ -3887,4 +3887,17 @@ class MerchantController extends Controller
     {
         return $this->service()->validatePublicAuthOverInternalAuth(Request::instance());
     }
+
+    /**
+     * Fetches the capital applications for a given product for sub-merchants of a partner
+     *
+     * @return HttpResponse|HttpJsonResponse
+     */
+    public function getCapitalApplicationsForSubmerchants(): HttpResponse|HttpJsonResponse
+    {
+        $input = Request::all();
+
+        return $this->service()->getCapitalApplicationsForSubmerchants($input);
+    }
+
 }

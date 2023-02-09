@@ -28,6 +28,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Terminal\Category;
 use RZP\Models\TrustedBadge\Constants as TrustedBadgeConstants;
 use RZP\Models\Partner\Activation;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\State\Entity as ActionState;
 use RZP\Models\Base\QueryCache\CacheQueries;
@@ -936,7 +937,7 @@ class Repository extends Base\Repository
      *
      * @param array $relations
      *
-     * @return Base\PublicCollection
+     * @return PublicCollection
      */
     public function fetchSubmerchantsByAppIds(array $applicationIds, array $params = [], array $relations = []): Base\PublicCollection
     {
@@ -982,8 +983,6 @@ class Repository extends Base\Repository
      * @param array $submerchantIds
      *
      * @param array $relations
-     *
-     * @return Base\BuilderEx
      */
     protected function buildQueryToFetchSubmerchantsByAppIds(array $applicationIds, array $submerchantIds = [], array $relations = [])
     {

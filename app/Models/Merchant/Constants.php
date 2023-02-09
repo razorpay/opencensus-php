@@ -80,11 +80,17 @@ final class Constants
     const FULLY_MANAGED                           = 'fully_managed';
     const PURE_PLATFORM                           = 'pure_platform';
     const PARTNER_INTENT                          = 'partner_intent';
-    const PARTNER_REFERRAL_TAG_PREFIX             = 'ref-';
     const TRANSLATE_WEBHOOK_GATEWAY               = 'translate_webhook_gateway';
-    const CAPITAL_PARTNERSHIP_TAG_PREFIX          = 'capital-cc-submerchant-';
-    const CAPITAL_CORPORATE_CARD_PRODUCT_ID       = 'EzKCyq0So3rVWU';
-    const CREATE_CAPITAL_APPLICATION_LOS_URL      = "twirp/rzp.capital.los.origination.v1.ApplicationAPI/CreateApplicationNew";
+
+    const CAPITAL_CORPORATE_CARD_PARTNERSHIP_TAG_PREFIX = 'capital-cc-submerchant-';
+    const CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX            = 'capital-loc-submerchant-';
+    const PARTNER_REFERRAL_TAG_PREFIX                   = 'ref-';
+    const CAPITAL_CORPORATE_CARD_PRODUCT_NAME           = 'CARDS';
+    const CAPITAL_LOC_EMI_PRODUCT_NAME                  = 'LOC_EMI';
+    const CREATE_CAPITAL_APPLICATION_LOS_URL            = "twirp/rzp.capital.los.origination.v1.ApplicationAPI/CreateApplicationNew";
+    const GET_PRODUCTS_LOS_URL                          = "twirp/rzp.capital.los.admin.v1.ProductAPI/GetProducts";
+    const GET_CAPITAL_APPLICATIONS_BULK_URL             = "twirp/rzp.capital.los.origination.v1.ApplicationAPI/GetApplicationsForPartnerBulk";
+
 
     // Capital LOS CreateApplicationRequestNew payload fields
     const TENURE                                  = "tenure";

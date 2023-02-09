@@ -804,6 +804,36 @@ class Validator extends Base\Validator
         }
     }
 
+    protected static array $capitalSubmerchantApplicationFetchRequestRules = [
+        Constants::PRODUCT_ID   => 'required|string',
+        Constants::MERCHANT_ID  => 'required|array',
+    ];
+
+    protected static array $capitalSubmerchantApplicationFetchRequestValidators = [
+        'product_id'
+    ];
+
+    /**
+     * @param array $input
+     *
+     * @return void
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateProductId(array $input): void
+    {
+        $productIds = CapitalSubmerchantUtility::getLOSProductIds();
+
+        if(isset($input[Constants::PRODUCT_ID]) === true)
+        {
+            $productId = $input[Constants::PRODUCT_ID];
+
+            if (in_array($productId, array_values($productIds)) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Invalid product ID: $productId", Constants::PRODUCT_ID);
+            }
+        }
+    }
 
     public function validateIpWhitelistInput(array $input)
     {

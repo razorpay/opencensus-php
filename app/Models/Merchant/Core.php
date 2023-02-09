@@ -52,6 +52,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Admin\Admin;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Admin\Action;
+use Illuminate\Http\Response;
 use RZP\Constants\BankingDemo;
 use RZP\Constants\Entity as CE;
 use RZP\Jobs\MailingListUpdate;
@@ -61,6 +62,7 @@ use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Terminal\Category;
 use RZP\Models\User\BankingRole;
 use RZP\Models\Admin\Permission;
+use Illuminate\Http\JsonResponse;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Partner\Activation;
@@ -4770,12 +4772,15 @@ class Core extends Base\Core
             {
                 $product                 = Product::BANKING;
                 $params[ENTITY::PRODUCT] = Product::BANKING;
-                $params[Constants::TAGS] = [Constants::CAPITAL_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+                $params[Constants::TAGS] = [Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
             }
             else
             {
                 $params[ENTITY::PRODUCT] = $product;
-                $params[Constants::WITHOUT_TAGS] = [Constants::CAPITAL_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+                $params[Constants::WITHOUT_TAGS] = [
+                    Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
+                    Constants::CAPITAL_CORPORATE_CARD_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
+                ];
             }
         }
 
@@ -4950,11 +4955,14 @@ class Core extends Base\Core
             {
                 $product                 = Product::BANKING;
                 $params[ENTITY::PRODUCT] = Product::BANKING;
-                $params[Constants::TAGS] = [Constants::CAPITAL_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+                $params[Constants::TAGS] = [Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
             }
             else
             {
-                $params[Constants::WITHOUT_TAGS] = [Constants::CAPITAL_PARTNERSHIP_TAG_PREFIX . $partner->getId()];
+                $params[Constants::WITHOUT_TAGS] = [
+                    Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
+                    Constants::CAPITAL_CORPORATE_CARD_PARTNERSHIP_TAG_PREFIX . $partner->getId(),
+                ];
             }
         }
 
@@ -9146,5 +9154,43 @@ class Core extends Base\Core
         ];
 
         CapturePartnershipConsents::dispatch($this->mode, $input, $merchantId, Constants::OAUTH);
+    }
+
+    /**
+     * Fetches the capital applications for a given product for sub-merchants of a partner
+     *
+     * @param Entity $partner
+     * @param array  $input
+     *
+     * @return JsonResponse|Response
+     * @throws BadRequestException
+     * @throws Throwable
+     */
+    public function fetchCapitalApplicationsForSubmerchants(Entity $partner, array $input): JsonResponse|Response
+    {
+        $appIds = $this->getPartnerApplicationIds($partner);
+
+        // filter out the sub-merchants that the partner actually has access to.
+        $merchantIds = $this->repo->merchant_access_map->filterSubmerchantIdsLinkedToAppIdsForProduct(
+            $appIds,
+            $input[Base\PublicEntity::MERCHANT_ID],
+            Product::BANKING,
+            [Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . $partner->getId()]
+        );
+        $merchantIds = $merchantIds->pluck(Base\PublicEntity::MERCHANT_ID)->toArray();
+
+        $this->trace->info(
+            TraceCode::FETCH_CAPITAL_APPLICATIONS_FOR_SUBMERCHANTS_REQUEST,
+            [
+                "merchants" => $merchantIds,
+                "input"     => $input
+            ]
+        );
+
+        return $this->capitalSubmerchantUtility()
+                    ->fetchApplicationsForSubmerchantsForProduct(
+                        $merchantIds,
+                        $input[Constants::PRODUCT_ID]
+                    );
     }
 }

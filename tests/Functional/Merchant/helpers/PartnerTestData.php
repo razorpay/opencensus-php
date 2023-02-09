@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant\Partner;
 use RZP\Error\ErrorCode;
 use RZP\Models\Batch\Header;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Merchant\Constants;
 use RZP\Error\PublicErrorDescription;
 
 return [
@@ -2242,6 +2243,151 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ],
+    ],
+
+    'testFetchCapitalApplicationsForSubmerchants' => [
+        'request'  => [
+            'url'     => '/submerchants/capital/applications',
+            'method'  => 'POST',
+            'content' => [
+                'product_id'  => 'JsP6pHbeMKn10E',
+                'merchant_id' => ['10000000000009', '10000000000010'],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                "response" => [
+                    "10000000000009" => [
+                        "partner_applications" => [
+                            [
+                                "id"                           => "L6P5IPYtcjt7jp",
+                                "stage"                        => "Bureau Submission",
+                                "state"                        => "STATE_CREATED",
+                                "business_name"                => "Nice Technologies",
+                                "account_name"                 => "Nice Technologies",
+                                "contact_mobile"               => "+918877665",
+                                "email"                        => "nice.new.tech+17@gmail.com",
+                                "annual_turnover_min"          => "100000",
+                                "annual_turnover_max"          => "2000000",
+                                "company_address_line_1"       => "Dimholt Industries Pvt. Ltd, BH11",
+                                "company_address_line_2"       => "Bada Mandir, MIDC Phase 5",
+                                "company_address_city"         => "Balapur",
+                                "company_address_state"        => "MH",
+                                "company_address_line_country" => "India",
+                                "company_address_pincode"      => "442004",
+                                "business_type"                => "PROPRIETORSHIP",
+                                "business_vintage"             => "UNKNOWN",
+                                "gstin"                        => "37ABCBS1234N1Z1",
+                                "promoter_pan"                 => "ABCPS1234N",
+                                "created_at"                   => "2023-01-20T10:46:39Z",
+                                "updated_at"                   => "2023-01-20T15:14:01Z"
+                            ]
+                        ]
+                    ],
+                    "10000000000010" => [
+                        "partner_applications" => [
+                            [
+                                "id"                           => "L6PKlqh6cgCI5W",
+                                "stage"                        => "Bureau Submission",
+                                "state"                        => "STATE_CREATED",
+                                "business_name"                => "Nice Technologies",
+                                "account_name"                 => "Nice Technologies",
+                                "contact_mobile"               => "+918877665",
+                                "email"                        => "nice.new.tech+18@gmail.com",
+                                "annual_turnover_min"          => "100000",
+                                "annual_turnover_max"          => "2000000",
+                                "company_address_line_1"       => "Dimholt Industries Pvt. Ltd, BH11",
+                                "company_address_line_2"       => "Bada Mandir, MIDC Phase 5",
+                                "company_address_city"         => "Balapur",
+                                "company_address_state"        => "MH",
+                                "company_address_line_country" => "India",
+                                "company_address_pincode"      => "442004",
+                                "business_type"                => "PROPRIETORSHIP",
+                                "business_vintage"             => "UNKNOWN",
+                                "gstin"                        => "37ABCBS1234N1Z1",
+                                "promoter_pan"                 => "ABCPS1234N",
+                                "created_at"                   => "2023-01-20T11:01:18Z",
+                                "updated_at"                   => "2023-01-20T15:14:02Z"
+                            ]
+                        ]
+                    ],
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchCapitalApplicationsForSubmerchantsPartnerNotEligible' => [
+        'request'   => [
+            'url'     => '/submerchants/capital/applications',
+            'method'  => 'POST',
+            'content' => [
+                'product_id' => 'JsP6pHbeMKn10E',
+                'merchant_id' => ['10000000000009', '10000000000010'],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'The requested URL was not found on the server.',
+                    'source'      => 'NA',
+                    "step"        => 'NA',
+                    'reason'      => 'NA',
+                    'metadata'    => []
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
+        ],
+    ],
+
+    'testFetchCapitalApplicationsForSubmerchantsIgnoreBankingSubmerchant' => [
+        'request'  => [
+            'url'     => '/submerchants/capital/applications',
+            'method'  => 'POST',
+            'content' => [
+                'product_id'  => 'JsP6pHbeMKn10E',
+                'merchant_id' => ['10000000000009', '10000000000010'],
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                "response" => [
+                    "10000000000009" => [
+                        "partner_applications" => [
+                            [
+                                "id"                           => "L6P5IPYtcjt7jp",
+                                "stage"                        => "Bureau Submission",
+                                "state"                        => "STATE_CREATED",
+                                "business_name"                => "Nice Technologies",
+                                "account_name"                 => "Nice Technologies",
+                                "contact_mobile"               => "+918877665",
+                                "email"                        => "nice.new.tech+17@gmail.com",
+                                "annual_turnover_min"          => "100000",
+                                "annual_turnover_max"          => "2000000",
+                                "company_address_line_1"       => "Dimholt Industries Pvt. Ltd, BH11",
+                                "company_address_line_2"       => "Bada Mandir, MIDC Phase 5",
+                                "company_address_city"         => "Balapur",
+                                "company_address_state"        => "MH",
+                                "company_address_line_country" => "India",
+                                "company_address_pincode"      => "442004",
+                                "business_type"                => "PROPRIETORSHIP",
+                                "business_vintage"             => "UNKNOWN",
+                                "gstin"                        => "37ABCBS1234N1Z1",
+                                "promoter_pan"                 => "ABCPS1234N",
+                                "created_at"                   => "2023-01-20T10:46:39Z",
+                                "updated_at"                   => "2023-01-20T15:14:01Z"
+                            ]
+                        ]
+                    ],
+                ]
+            ],
+            'status_code' => 200,
         ],
     ],
 ];

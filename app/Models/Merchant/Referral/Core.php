@@ -188,7 +188,7 @@ class Core extends Base\Core
                 "url"    => $this->config['applications.banking_service_url'] . '/auth/',
                 "params" => [
                     "referral_code" => null,
-                    "intent"        => Merchant\Attribute\Type::CORPORATE_CARDS,
+                    "intent"        => Merchant\Attribute\Type::CAPITAL_LOC_EMI,
                 ]
             ];
         }
@@ -330,7 +330,7 @@ class Core extends Base\Core
             "url"    => $this->config['applications.banking_service_url'] . '/auth/',
             "params" => [
                 "referral_code" => null,
-                "intent"        => Merchant\Attribute\Type::CORPORATE_CARDS,
+                "intent"        => Merchant\Attribute\Type::CAPITAL_LOC_EMI,
             ]
         ];
 

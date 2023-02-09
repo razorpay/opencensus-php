@@ -3741,7 +3741,10 @@ class PartnerTest extends OAuthTestCase
     protected function markBankingSubmerchantAsCapitalSubmerchant(string $merchantId)
     {
         $submerchant = $this->getDbEntityById('merchant', $merchantId, 'live');
-        (new Merchant\Core())->appendTag($submerchant, 'capital-cc-submerchant-'.self::DEFAULT_MERCHANT_ID);
+        (new Merchant\Core())->appendTag(
+            $submerchant,
+            Merchant\Constants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX . self::DEFAULT_MERCHANT_ID
+        );
     }
 
     /**
@@ -3911,6 +3914,72 @@ class PartnerTest extends OAuthTestCase
         $this->mockCapitalPartnershipSplitzExperiment();
 
         $this->mockRazorxTreatment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Given: A partner whitelisted under partnership for capital experiment with 2 capital submerchants
+     * When: Partner fetches capital submerchants' applications from LOS Service
+     * Then: Partner should receive applications for 2 capital submerchants'
+     *
+     * @return void
+     */
+    public function testFetchCapitalApplicationsForSubmerchants(): void
+    {
+        $this->app['config']->set('applications.loan_origination_system.mock', true);
+
+        $this->createResellerPartnerAndAddBankingSubmerchants();
+
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID);
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID_2);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Given: A partner NOT whitelisted under partnership for capital experiment with 2 capital submerchants
+     * When: Partner fetches capital submerchants' applications from LOS Service
+     * Then: Partner should receive BAD_REQUEST_URL_NOT_FOUND
+     *
+     * @return void
+     */
+    public function testFetchCapitalApplicationsForSubmerchantsPartnerNotEligible(): void
+    {
+        $this->app['config']->set('applications.loan_origination_system.mock', true);
+
+        $this->createResellerPartnerAndAddBankingSubmerchants();
+
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID);
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID_2);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Given: A partner whitelisted under partnership for capital experiment with 1 capital and 1 banking submerchant
+     * When: Partner fetches capital both submerchants' applications from LOS Service
+     * Then: Partner should receive applications for only 1 capital submerchants' applications
+     *
+     * @return void
+     */
+    public function testFetchCapitalApplicationsForSubmerchantsIgnoreBankingSubmerchant(): void
+    {
+        $this->app['config']->set('applications.loan_origination_system.mock', true);
+
+        $this->createResellerPartnerAndAddBankingSubmerchants();
+
+        $this->markBankingSubmerchantAsCapitalSubmerchant(PartnerTest::DEFAULT_SUBMERCHANT_ID);
+
+        $this->mockCapitalPartnershipSplitzExperiment();
 
         $this->ba->proxyAuth();
 

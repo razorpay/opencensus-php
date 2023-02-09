@@ -11681,7 +11681,7 @@ class Service extends Base\Service
             ]
         );
 
-        CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant($partner, $subMerchant);
+        CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant($partner->getId(), $subMerchant);
 
         (new Detail\Service)->saveMerchantDetails($merchantDetailsInput, $subMerchant);
 
@@ -11690,5 +11690,32 @@ class Service extends Base\Service
         $response[BatchHeader::CONTACT_MOBILE] = $merchantDetailsInput[BatchHeader::CONTACT_MOBILE];
 
         return $response;
+    }
+
+    /**
+     * Fetches the capital applications for a given product for sub-merchants of a partner
+     *
+     * @param $input
+     *
+     * @return JsonResponse|Response
+     * @throws BadRequestValidationFailureException
+     * @throws IntegrationException
+     * @throws Throwable
+     */
+    public function getCapitalApplicationsForSubmerchants($input): JsonResponse|Response
+    {
+        $validator = new Validator();
+
+        $validator->validateInput('capital_submerchant_application_fetch_request', $input);
+
+        $partner = $this->fetchPartner();
+
+        if((new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($partner->getId()) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
+        }
+
+        return $this->core()->fetchCapitalApplicationsForSubmerchants($partner, $input);
     }
 }
