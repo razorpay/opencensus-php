@@ -15,6 +15,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Metric;
+use RZP\Constants\Timezone;
 use RZP\Services\RazorXClient;
 use RZP\Models\PayoutLink\Core;
 use RZP\Mail\PayoutLink\Failed;
@@ -4486,6 +4487,244 @@ class PayoutLinkTest extends TestCase
         $this->startTest();
 
         $plMock->shouldNotHaveReceived('adminActions');
+    }
+
+    /*
+     * Verify OTP for Payout Link create
+     * 1. OTP not present in payload
+     * 2. Invalid OTP present in payload
+     * 4. Token not present in payout
+     * 5. validateInput() should be called
+     * 6a. Valid action 'create_payout_link' & 6b.Raven verify-otp success
+     *
+    */
+
+    public function testPayoutLinkVerifyOtpWithoutOtp()
+    {
+        // mocking payout links service
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $plMock->shouldNotHaveReceived('create');
+    }
+
+    public function testPayoutLinkVerifyOtpWithInvalidOtp()
+    {
+        // mocking payout links service
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $plMock->shouldNotHaveReceived('create');
+    }
+
+    public function testPayoutLinkVerifyOtpWithoutToken()
+    {
+        // mocking payout links service
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $plMock->shouldNotHaveReceived('create');
+    }
+
+    public function testPayoutLinkVerifyOtpWithUserValidator()
+    {
+        // mocking payout links service
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('create')->andReturn(['id' => 'poutlk_ABCDE12345']);
+
+        $this->app->instance('payout-links', $plMock);
+
+        // mocking user validator
+        $userValidator = Mockery::mock('RZP\Models\User\Validator');
+
+        $this->app->instance('user', $userValidator);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $plMock->shouldHaveReceived('create');
+
+        $userValidator->shouldReceive('validateInput');
+    }
+
+    public function testPayoutLinkVerifyOtpWithValidAction()
+    {
+        // mocking experiment
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        // mocking payout links service
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('create')->andReturn(['id' => 'poutlk_ABCDE12345']);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $expectedPayload = [
+            'context' => 'cd5398fc703ddffbee86526824243063cfb6b3cdcc4fba70cefe5b6c0f2c5df530ef2cc079c85144ae64f5dc89308e0d93fff6aa01e9d6fd0b74640388b42452',
+            'receiver' => 'merchantuser01@razorpay.com',
+            'source' => 'api',
+            'otp' => '0007',
+        ];
+
+        // mocking raven
+        $raven = Mockery::mock('RZP\Services\Raven');
+
+        $raven->shouldReceive('verifyOtp')
+            ->with($expectedPayload, true)
+            ->andReturn(['success' => true]);
+
+        $this->app->instance('raven', $raven);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $plMock->shouldHaveReceived('create');
+    }
+
+    /*
+     * Generate and Send OTP for Payout Link create
+     * 1. Invalid action - 'create_payout_link'
+     * 2. Raven generate-otp success
+     * 3. send-sms Payload contains amount, account_number, purpose
+    */
+
+    public function testPayoutLinkGenerateOtpWithValidActionAndWithToken()
+    {
+        // mocking experiment
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        $expectedPayload = [
+            'context' => 'cd5398fc703ddffbee86526824243063cfb6b3cdcc4fba70cefe5b6c0f2c5df530ef2cc079c85144ae64f5dc89308e0d93fff6aa01e9d6fd0b74640388b42452',
+            'receiver' => 'merchantuser01@razorpay.com',
+            'source' => 'api'
+        ];
+
+        // mocking raven
+        $raven = Mockery::mock('RZP\Services\Raven');
+
+        $raven->shouldReceive('generateOtp')
+            ->with($expectedPayload, true)
+            ->andReturn([
+                'otp' => '0007',
+                'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            ]);
+
+        $this->app->instance('raven', $raven);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testPayoutLinkGenerateOtpWithValidActionAndDynamicToken()
+    {
+        // mocking experiment
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        // mocking payout links service
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('create')->andReturn(['id' => 'poutlk_ABCDE12345']);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testPayoutLinkGenerateOtpWithValidActionRavenSuccess()
+    {
+        // mocking experiment
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        $expectedPayload = [
+            'context' => 'cd5398fc703ddffbee86526824243063cfb6b3cdcc4fba70cefe5b6c0f2c5df530ef2cc079c85144ae64f5dc89308e0d93fff6aa01e9d6fd0b74640388b42452',
+            'receiver' => 'merchantuser01@razorpay.com',
+            'source' => 'api',
+        ];
+
+        // mocking raven
+        $raven = Mockery::mock('RZP\Services\Raven');
+
+        $raven->shouldReceive('generateOtp')
+            ->with($expectedPayload, true)
+            ->andReturn(['success' => true]);
+
+        $this->app->instance('raven', $raven);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testPayoutLinkSendOtpValidatePayload()
+    {
+        // mocking experiment
+        $this->setMockRazorxTreatment([RazorxTreatment::SECURE_OTP_CONTEXT => 'on']);
+
+        $expiryTimestamp = Carbon::now()->addMinutes(30)->timestamp;
+
+        $expectedGenerateOtpPayload = [
+            'context' => 'cd5398fc703ddffbee86526824243063cfb6b3cdcc4fba70cefe5b6c0f2c5df530ef2cc079c85144ae64f5dc89308e0d93fff6aa01e9d6fd0b74640388b42452',
+            'receiver' => 'merchantuser01@razorpay.com',
+            'source' => 'api'
+        ];
+
+        $expectedSendOtpPayload = [
+            'context' => 'cd5398fc703ddffbee86526824243063cfb6b3cdcc4fba70cefe5b6c0f2c5df530ef2cc079c85144ae64f5dc89308e0d93fff6aa01e9d6fd0b74640388b42452',
+            'receiver' => null,
+            'source' => 'api.user.create_payout_link',
+            'template' => 'sms.user.create_payout_link',
+            'params' => [
+                'otp' => '0007',
+                'amount' => '1.00',
+                'validity' => Carbon::createFromTimestamp($expiryTimestamp, Timezone::IST)->format('H:i:s'),
+                'account_number' => 'XXXXXXXXXXXX7998',
+                'purpose' => 'refund'
+            ]
+        ];
+
+        // mocking raven
+        $raven = Mockery::mock('RZP\Services\Raven');
+
+        $raven->shouldReceive('generateOtp')
+            ->with($expectedGenerateOtpPayload, true)
+            ->andReturn([
+                'otp' => '0007',
+                'expires_at' => $expiryTimestamp,
+            ]);
+
+        $raven->shouldReceive('sendOtp')
+            ->with($expectedSendOtpPayload, true)
+            ->andReturn([
+                'otp' => '0007',
+                'expires_at' => Carbon::now()->addMinutes(30)->timestamp,
+            ]);
+
+        $this->app->instance('raven', $raven);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
     }
 }
 

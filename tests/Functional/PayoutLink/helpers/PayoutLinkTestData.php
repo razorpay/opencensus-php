@@ -4,6 +4,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 
 return [
     'testWebhooksEnabled' => [
@@ -3454,6 +3455,239 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testPayoutLinkVerifyOtpWithoutOtp' => [
+        'request' => [
+            'url' => '/payout-links',
+            'method' => 'POST',
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj',
+                'account_number' => '4564563559247998',
+                'amount' => 100,
+                'contact' => [
+                    'name' => 'testing',
+                    'contact' => '9090909090',
+                    'email' => 'test@razorpay.com',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The otp field is required.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testPayoutLinkVerifyOtpWithInvalidOtp' => [
+        'request' => [
+            'url' => '/payout-links',
+            'method' => 'POST',
+            'content' => [
+                'otp' => '1234',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'account_number' => '4564563559247998',
+                'amount' => 100,
+                'contact' => [
+                    'name' => 'testing',
+                    'contact' => '9090909090',
+                    'email' => 'test@razorpay.com',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Verification failed because of incorrect OTP.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCORRECT_OTP,
+        ]
+    ],
+
+    'testPayoutLinkVerifyOtpWithoutToken' => [
+        'request' => [
+            'url' => '/payout-links',
+            'method' => 'POST',
+            'content' => [
+                'otp' => '0007',
+                'account_number' => '4564563559247998',
+                'amount' => 100,
+                'contact' => [
+                    'name' => 'testing',
+                    'contact' => '9090909090',
+                    'email' => 'test@razorpay.com',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The token field is required.'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testPayoutLinkVerifyOtpWithUserValidator' => [
+        'request' => [
+            'url' => '/payout-links',
+            'method' => 'POST',
+            'content' => [
+                'otp' => '0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'account_number' => '4564563559247998',
+                'amount' => 100,
+                'contact' => [
+                    'name' => 'testing',
+                    'contact' => '9090909090',
+                    'email' => 'test@razorpay.com',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'poutlk_ABCDE12345'
+            ]
+        ]
+    ],
+
+    'testPayoutLinkVerifyOtpWithValidAction' => [
+        'request' => [
+            'url' => '/payout-links',
+            'method' => 'POST',
+            'content' => [
+                'otp' => '0007',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'account_number' => '4564563559247998',
+                'amount' => 100,
+                'contact' => [
+                    'name' => 'testing',
+                    'contact' => '9090909090',
+                    'email' => 'test@razorpay.com',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'poutlk_ABCDE12345'
+            ]
+        ]
+    ],
+
+    'testPayoutLinkGenerateOtpWithValidActionAndWithToken' => [
+        'request' => [
+            'url' => '/users/otp/send',
+            'method' => 'POST',
+            'content' => [
+                'action' => 'create_payout_link',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'purpose' => 'refund',
+                'account_number' => '4564563559247998',
+                'amount' => 100,
+                'contact' => [
+                    'name' => 'testing',
+                    'contact' => '9090909090',
+                    'email' => 'test@razorpay.com',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj'
+            ]
+        ]
+    ],
+
+    'testPayoutLinkGenerateOtpWithValidActionAndDynamicToken' => [
+        'request' => [
+            'url' => '/users/otp/send',
+            'method' => 'POST',
+            'content' => [
+                'action' => 'create_payout_link',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'purpose' => 'refund',
+                'account_number' => '4564563559247998',
+                'amount' => 100,
+                'contact' => [
+                    'name' => 'testing',
+                    'contact' => '9090909090',
+                    'email' => 'test@razorpay.com',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj'
+            ]
+        ]
+    ],
+
+    'testPayoutLinkGenerateOtpWithValidActionRavenSuccess' => [
+        'request' => [
+            'url' => '/users/otp/send',
+            'method' => 'POST',
+            'content' => [
+                'action' => 'create_payout_link',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'purpose' => 'refund',
+                'account_number' => '4564563559247998',
+                'amount' => 100,
+                'contact' => [
+                    'name' => 'testing',
+                    'contact' => '9090909090',
+                    'email' => 'test@razorpay.com',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj'
+            ]
+        ]
+    ],
+
+    'testPayoutLinkSendOtpValidatePayload' => [
+        'request' => [
+            'url' => '/users/otp/send',
+            'method' => 'POST',
+            'content' => [
+                'action' => 'create_payout_link',
+                'token' => 'BUIj3m2Nx2VvVj',
+                'purpose' => 'refund',
+                'account_number' => '4564563559247998',
+                'amount' => 100,
+                'contact' => [
+                    'name' => 'testing',
+                    'contact' => '9090909090',
+                    'email' => 'test@razorpay.com',
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'token' => 'BUIj3m2Nx2VvVj'
+            ]
         ]
     ],
 ];
