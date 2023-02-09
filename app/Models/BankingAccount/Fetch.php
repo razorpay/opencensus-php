@@ -30,7 +30,7 @@ class Fetch extends BaseFetch
             Entity::MERCHANT_EMAIL                      => 'sometimes|string',
             Entity::MERCHANT_BUSINESS_NAME              => 'sometimes|string',
             Entity::MERCHANT_POC_CITY                   => 'sometimes|string',
-            Entity::FOS_CITY                            => 'sometimes|string|in:Noida,Gurgaon,Mumbai,Pune,Bengaluru,Non_FOS',
+            Entity::FOS_CITY                            => 'sometimes|string',
             Entity::IS_DOCUMENTS_WALKTHROUGH_COMPLETE   => 'sometimes|boolean',
             Entity::SALES_TEAM                          => 'sometimes|string',
             Entity::BUSINESS_PAN_VALIDATION             => 'sometimes|string',
