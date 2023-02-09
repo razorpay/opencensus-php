@@ -2795,11 +2795,11 @@ class TerminalMigrationTest extends TestCase
             'terminal_id' => 'term_'.$terminal['id'],
         ];
 
-        $mock->expects($this->at(5))
+        $mock->expects($this->at(6))
             ->method('count')
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess1);
 
-        $mock->expects($this->at(6))
+        $mock->expects($this->at(7))
             ->method('count')
             ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess2);
 
