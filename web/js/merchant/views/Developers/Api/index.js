@@ -85,7 +85,7 @@ const Api = () => {
   const isOutsideRange = (day) => {
     return (
       day.isAfter(moment().endOf('day')) ||
-      day.isBefore(moment().startOf('day').subtract(14, 'days').startOf('day'))
+      day.isBefore(moment().startOf('day').subtract(7, 'days').startOf('day'))
     );
   };
 
@@ -94,7 +94,7 @@ const Api = () => {
       <p className="api-logs-title content-wrapper">API Logs</p>
       <div className="filters-container content-wrapper mb-20">
         <div className="form-group datepicker-group">
-          <label>Duration (can only be fetched for max. past 14 days)</label>
+          <label>Duration (can only be fetched for max. past 7 days)</label>
           <DateRangePicker
             presets={dateRangePresets}
             onDatesChange={onDatesChange}
