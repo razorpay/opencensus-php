@@ -60,6 +60,7 @@ use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
 use RZP\Services\PayoutService\MerchantConfig as PayoutServiceMerchantConfig;
 use RZP\Services\PayoutService\DashboardScheduleTimeSlots as PayoutServiceDashboardScheduleTimeSlots;
 
+// Todo:: Change all the client mocks to be same as mockPayoutServiceQueuedInitiate
 class PayoutServiceTest extends TestCase
 {
     use PayoutTrait;
@@ -286,7 +287,7 @@ class PayoutServiceTest extends TestCase
         $this->app->instance(PayoutServiceGet::PAYOUT_SERVICE_GET, $payoutServiceGetMock);
     }
 
-    public function mockPayoutServiceQueuedInitiate($fail = false, $request = [])
+    public function mockPayoutServiceQueuedInitiate($fail = false, $request = [], &$success = true)
     {
         // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request content that
         // is going to be sent to payout service.
@@ -299,7 +300,7 @@ class PayoutServiceTest extends TestCase
 
         $payoutServiceQueuedInitiateMock->shouldReceive('sendRequest')
                                         ->withArgs(
-                                            function($arg) use ($request) {
+                                            function($arg) use ($request, &$success) {
                                                 try
                                                 {
                                                     // json decoding the content so that we can assert the keys of content.
@@ -311,15 +312,18 @@ class PayoutServiceTest extends TestCase
 
                                                     if (empty($request['content']['balance_ids']) === false)
                                                     {
-                                                        return ($request['content']['balance_ids'] ===
-                                                                $arg['content']['balance_ids']);
+                                                        $success = ($request['content']['balance_ids'] ===
+                                                                    $arg['content']['balance_ids']);
+                                                    }
+                                                    else
+                                                    {
+                                                        $success = true;
                                                     }
 
-                                                    return true;
                                                 }
                                                 catch (\Throwable $e)
                                                 {
-                                                    return false;
+                                                    $success = false;
                                                 }
                                             }
                                         )
@@ -3196,7 +3200,9 @@ class PayoutServiceTest extends TestCase
 
         $request['content']['balance_ids'] = $balanceId;
 
-        $this->mockPayoutServiceQueuedInitiate($request);
+        $success = true;
+
+        $this->mockPayoutServiceQueuedInitiate(false, $request, $success);
 
         $this->testCreateQueuedPayoutViaPayoutService($balanceId, 'pout_Gg7sgBZgvYjAAA');
 
@@ -3220,6 +3226,8 @@ class PayoutServiceTest extends TestCase
         ];
 
         $this->assertEquals($expectedResponse, $response);
+
+        $this->assertTrue($success);
 
         $payout1->reload();
 
@@ -3237,7 +3245,9 @@ class PayoutServiceTest extends TestCase
         // from service and hence it'll behave as if the request to service failed.
         $request['content']['balance_ids'] = "random_balance_id";
 
-        $this->mockPayoutServiceQueuedInitiate($request);
+        $success = true;
+
+        $this->mockPayoutServiceQueuedInitiate(false, $request, $success);
 
         $this->testCreateQueuedPayoutViaPayoutService($balanceId, 'pout_Gg7sgBZgvYjAAA');
 
@@ -3263,6 +3273,8 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($expectedResponse, $response);
 
         $payout1->reload();
+
+        $this->assertTrue($success);
 
         $this->assertEquals('queued', $payout1->getStatus());
     }

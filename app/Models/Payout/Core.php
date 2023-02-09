@@ -2656,8 +2656,8 @@ class Core extends Base\Core
             {
 
                 $payoutServiceInput = [
-                                        Entity::BALANCE_IDS => []
-                    ];
+                    Entity::BALANCE_IDS => $balanceIdList
+                ];
 
                 $this->trace->info(
                     TraceCode::PAYOUT_QUEUED_INITIATE_DISPATCH_TO_PAYOUT_SERVICE,
