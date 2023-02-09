@@ -14863,6 +14863,7 @@ class Route
             'customer_fetch_by_id_global',
             '1cc_get_shopify_configs',
             '1cc_shopify_order',
+            'order_fetch_by_id_internal',
         ],
         'address_service' => [
             'internal_1cc_configs_get',

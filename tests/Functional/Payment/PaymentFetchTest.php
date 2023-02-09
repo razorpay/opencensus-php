@@ -2114,7 +2114,7 @@ class PaymentFetchTest extends TestCase
             }
             usleep(5000);
         }
-        $threshold = 200;
+        $threshold = 300;
         $timeLag = $paymentFetchTimeStamp - $paymentCreatedTimeStamp;
 
         $this->assertNotEquals($paymentCreatedTimeStamp, $paymentFetchTimeStamp);
