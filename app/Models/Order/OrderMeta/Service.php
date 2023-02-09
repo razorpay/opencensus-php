@@ -5,9 +5,12 @@ namespace RZP\Models\Order\OrderMeta;
 use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\OneCCReviewCODOrder;
+use RZP\Models\Merchant\Entity;
+use RZP\Models\Merchant\OneClickCheckout\Utils\CommonUtils;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Merchant\ShippingInfo;
 use RZP\Models\Merchant\Metric;
@@ -17,6 +20,9 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Order;
 use Throwable;
 use RZP\Models\Merchant\OneClickCheckout\Core as OneClickCheckoutCore;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Methods;
+use RZP\Models\Payment;
 
 
 class Service extends \RZP\Models\Base\Service
@@ -624,5 +630,78 @@ class Service extends \RZP\Models\Base\Service
             throw new BadRequestException(ErrorCode::BAD_REQUEST_SHIPPING_INFO_NOT_FOUND, null, null, "shipping method not found");
         }
         return $selectedMethod;
+    }
+
+    /**
+     * since order amount is mutable in magic checkout due to application of coupons and shipping charges.
+     * Percent based offers were returning discount wrt original amount in preferences call,
+     * hence this API will fetch offers associated with order based final order amount on payment screen.
+     * @param string $orderId
+     * @param array $input
+     * @return array
+     * @throws \Throwable
+     */
+    public function getOffersForOrder(string $orderId, array $input): array
+    {
+        try {
+
+            $action = function () use ($orderId, $input) {
+
+                $data = [];
+
+                $merchant = $this->merchant;
+
+                $input['order_id'] = $orderId;
+
+                $this->validateRequestForFetchOffersForOrder($input);
+
+                (new Merchant\Checkout())->fillPaymentMethodsForOrder($input, $data, $merchant);
+
+                (new Merchant\Checkout())->checkAndFillOfferDetails($merchant, $input, $data, $this->mode);
+
+                $offers = empty($data['offers']) === false ? $data['offers'] : [];
+
+                return ['offers' => $offers];
+            };
+
+            $mutexKey = (new CommonUtils())->get1ccUpdateOrderMutex($orderId);
+
+            return $this->mutex->acquireAndRelease(
+                $mutexKey,
+                $action,
+                Order1cc\Constants::ORDER_ACTION_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::SERVER_ERROR_MUTEX_RESOURCE_NOT_ACQUIRED,
+                Order1cc\Constants::ORDER_ACTION_MUTEX_RETRY_COUNT
+            );
+
+        } catch (\Throwable $e) {
+            $this->trace->error(TraceCode::FETCH_OFFER_FOR_1CC_ORDER_FAILED,
+                [
+                    'error' => $e->getMessage(),
+                ]
+            );
+            throw $e;
+        }
+    }
+
+    /**
+     * @param array $input
+     * @throws \Throwable
+     */
+    protected function validateRequestForFetchOffersForOrder(array $input): void
+    {
+
+        (new Core)->validateActive1CCOrderId($input['order_id']);
+
+        $order = $this->repo->order->findByPublicIdAndMerchant($input['order_id'], $this->merchant);
+
+        if (empty($input['amount']) == true || $order->getAmount() != $input['amount']) {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                PublicErrorDescription::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
+        }
+
     }
 }

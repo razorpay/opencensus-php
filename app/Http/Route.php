@@ -4000,6 +4000,7 @@ class Route
         '1cc_update_shipping_provider_config'       => ['post',       '1cc/shipping-provider/configs',                           'MerchantController@updateShippingProviderConfig'],
         '1cc_get_shopify_configs'                   => ['get',        '1cc/merchant/shopify/configs',                            'MerchantController@getShopify1ccConfigs'],
         'internal_1cc_shopify_customer_addresses_get' => ['get',        'internal/1cc/shopify/merchants/{id}/customer_addresses',                   'MerchantController@getInternalShopifyCustomerAddresses'],
+        'offers_fetch_for_order'                    => ['get',        'order/{id}/payment_offers',                               'OrderController@getOffersForOrder'],
 
         '1cc_shipping_service_merchant_config_create'               => ['post',      '1cc/shipping_service/merchant_config/create',                     'MerchantConfigController@create'],
         '1cc_shipping_service_merchant_config_update_by_type'       => ['post',      '1cc/shipping_service/merchant_config/update_by_type',             'MerchantConfigController@updateByType'],
@@ -4261,6 +4262,7 @@ class Route
         '1cc_order_notes_update',
         '1cc_apply_gift_card',
         '1cc_remove_gift_card',
+        'offers_fetch_for_order'
     ];
 
     public static $device = [
@@ -10022,6 +10024,7 @@ class Route
         '1cc_shopify_order',
         'customer_fetch_tokens_internal',
         'checkout_personalisation_internal',
+        'offers_fetch_for_order'
     ];
 
     /**

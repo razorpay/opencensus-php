@@ -2429,4 +2429,25 @@ class Checkout
         }
     }
 
+    /**
+     * Filling payment methods enabled for merchant associated with order.
+     * @param array $input
+     * @param array $data
+     * @param Entity $merchant
+     */
+    public function fillPaymentMethodsForOrder(array $input, array &$data, Entity $merchant): void
+    {
+        $this->checkAndAddDetailsForOrder($input, $merchant, $data);
+
+        $data[Entity::METHODS] = (new Methods\Core)->getFormattedMethods($merchant);
+
+        $data[Entity::METHODS] = (new Methods\Core)->addUpiType($merchant, $data[Entity::METHODS]);
+
+        $this->filterMethodsBasedOnAmount($data, $input);
+
+        $this->checkAndAddCustomProviders($data);
+
+        $this->filterMethodBasedOnRecurring($data, $input);
+    }
+
 }

@@ -3047,4 +3047,39 @@ class OrderTest extends TestCase
 
         $this->startTest();
     }
+
+    public function test1CCOrderWithOffer()
+    {
+        $this->fixtures->merchant->addFeatures(FeatureConstants::ONE_CLICK_CHECKOUT);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $orderData = [
+            Order\Entity::AMOUNT    => 100000,
+            Order\Entity::RECEIPT   => 'R1',
+            Order\Entity::CURRENCY  => 'INR'
+        ];
+
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1
+        ], $orderData);
+
+        $this->fixtures->create('order_meta',
+            [
+                'order_id' => $order->getId(),
+                'value'    => ['line_items_total' => $order->getAmount()],
+                'type'     => 'one_click_checkout',
+            ]);
+
+        $testData['request']['url'] = '/order/'.$order->getPublicId().'/payment_offers';
+
+        $this->ba->publicAuth();
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
+    }
+
 }

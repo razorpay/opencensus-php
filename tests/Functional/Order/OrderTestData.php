@@ -2695,5 +2695,29 @@ return [
                 ]
             ],
         ],
-    ]
+    ],
+
+    'test1CCOrderWithOffer' => [
+        'request' => [
+            'method' => 'GET',
+            'content' => [
+                'amount' => 100000,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'offers' => [
+                    [
+                        'name' => "Test Offer",
+                        'payment_method' => "card",
+                        'payment_network' => "VISA",
+                        'issuer' => "HDFC",
+                        'type' => "instant",
+                        'original_amount' => 100000,
+                        'amount' => 90000,
+                    ]
+                ]
+            ],
+        ],
+    ],
 ];

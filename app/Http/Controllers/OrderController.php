@@ -327,4 +327,13 @@ class OrderController extends Controller
         return ApiResponse::json($data);
 
     }
+
+    public function getOffersForOrder(string $orderId)
+    {
+        $input = Request::all();
+
+        $data = (new OrderMeta\Service())->getOffersForOrder($orderId, $input);
+
+        return ApiResponse::json($data, 200);
+    }
 }
