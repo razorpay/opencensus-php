@@ -59,6 +59,15 @@ class Sbi extends Base
         24 => '1990',
     ];
 
+    //processing fee flag
+    const PROCESSING_FEES_FLAG = [
+        3  => ' ',
+        6  => 'A',
+        9  => 'A',
+        12 => 'A',
+        18 => 'A',
+        24 => 'A',
+    ];
     /**
      * @var $file FileStore\Entity
      */
@@ -301,7 +310,7 @@ class Sbi extends Base
                     $this->numpad($principalAmount, 17) .
                     'F' .
                     '0' .
-                    'A' .
+                    self::PROCESSING_FEES_FLAG[$tenure] .
                     $this->numpad($processingFees, 7) .
                     $this->strpad('GG0001' . substr($mid, -4), 20) .
                     $this->numpad('0', 17) .
