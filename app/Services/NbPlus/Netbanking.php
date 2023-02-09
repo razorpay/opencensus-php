@@ -30,7 +30,7 @@ class Netbanking extends Service
     const CREDIT_ACCOUNT_NUMBER  = 'credit_account_number';
     const CUSTOMER_ID            = 'customer_id';
 
-    protected $transactionType = self::RETAIL;
+    protected string $transactionType = self::RETAIL;
 
     public function action(string $method, string $gateway, string $action, array $input)
     {
@@ -60,7 +60,7 @@ class Netbanking extends Service
             return true;
         }
 
-        if(($this->action === Action::CALLBACK) and (empty($input['gateway']) === true))
+        if (($this->action === Action::CALLBACK) and (empty($input['gateway']) === true))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT);

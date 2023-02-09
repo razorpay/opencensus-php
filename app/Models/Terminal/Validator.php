@@ -1139,11 +1139,7 @@ class Validator extends Base\Validator
     protected static $walletPayzappTerminalRules = [
         Entity::GATEWAY                    => 'required|in:wallet_payzapp',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
-        Entity::GATEWAY_MERCHANT_ID2       => 'required|integer|digits:8',
         Entity::GATEWAY_TERMINAL_ID        => 'required|integer|digits:8',
-        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
-        Entity::GATEWAY_ACCESS_CODE        => 'required|numeric|digits:4',
-        Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|alpha_num|size:16',
         Entity::TYPE                       => 'sometimes|array',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
@@ -2901,7 +2897,7 @@ class Validator extends Base\Validator
         $type = $input[Entity::TYPE] ?? [];
 
         $isBharatQr = (bool)($type[Type::BHARAT_QR] ?? null);
-        
+
         if ($isBharatQr === true)
         {
             $this->validateInput('vpa_length_for_bqr', [Entity::VPA => $vpa]);

@@ -3361,11 +3361,11 @@ class Processor
             return;
         }
 
-        if (Payment\Gateway::gatewayMigratedToNbPlusOnMerchantLevel($payment->getGateway()) === true)
+        if (Payment\Gateway::gatewayMigratedToNbPlusOnTerminalLevel($payment->getGateway()) === true)
         {
             $featureFlag = "nb_" . $payment->getGateway() . "_nbplus_merchant_whitelisting";
 
-            $variant = $this->app->razorx->getTreatment($payment->getMerchantId(), $featureFlag, $this->mode);
+            $variant = $this->app->razorx->getTreatment($payment->getTerminalId(), $featureFlag, $this->mode);
 
             if($variant === "nbplusps")
             {

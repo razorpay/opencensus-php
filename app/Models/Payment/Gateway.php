@@ -4553,13 +4553,13 @@ class Gateway
         return (in_array($gateway, $gatewayPartiallyMigrated, true));
     }
 
-    public static function gatewayMigratedToNbPlusOnMerchantLevel($gateway): bool
+    public static function gatewayMigratedToNbPlusOnTerminalLevel($gateway): bool
     {
-        $gatewayToNbPlusOnMerchantLevel = [
+        $gateways = [
             self::WALLET_PAYZAPP
         ];
 
-        return (in_array($gateway, $gatewayToNbPlusOnMerchantLevel, true));
+        return (in_array($gateway, $gateways, true));
     }
 
     public static function isNbPlusServiceGateway($gateway, $payment = null): bool
