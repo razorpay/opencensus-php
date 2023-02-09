@@ -10,7 +10,13 @@ import { fetchLeftNavItems as fetchNavigationItems } from 'merchant/reducers/lef
 import { isOrgFeatureExist } from 'merchant/models/User';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ActivationProgress from 'merchant/components/SidebarV2/components/ActivationProgress';
-import { RZP_LOGO_URL, ONBOARDING_STEPS_URL, KYC_URL, ACTIVATION_URL } from './constants/constants';
+import {
+  RZP_LOGO_URL,
+  ONBOARDING_STEPS_URL,
+  KYC_URL,
+  ACTIVATION_URL,
+  EASY_DASHBOARD_NC_LANDING_URL,
+} from './constants/constants';
 import { getActiveTab, initializeRoutes } from './utils/href';
 import {
   SidebarContainer,
@@ -36,6 +42,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
     org,
     isMobile,
     isTagsLoading,
+    isNcEligibile,
   } = props;
   const { location, history } = props;
 
@@ -52,7 +59,9 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   }, []);
 
   const handleActivationClick = () => {
-    if (user.isOnboardingV2Enabled && isMobile) {
+    if (isNcEligibile && user.activation_status === 'needs_clarification') {
+      window.open(EASY_DASHBOARD_NC_LANDING_URL, '_self', 'noopener');
+    } else if (user.isOnboardingV2Enabled && isMobile) {
       history.push(ONBOARDING_STEPS_URL);
     } else if (user.isActivationFormFullView) {
       history.push(KYC_URL);
@@ -161,6 +170,7 @@ const mapStateToProps = (state) => {
     leftNavItems: state.leftNav,
     showAcceptPayments: state.home.instantActivations.showAcceptPayments,
     org: state.session.org,
+    isNcEligibile: state.home.isNcEligibile,
     isMobile: state.app.isMobileResolution,
     isTagsLoading: !state.session.isTagsLoaded,
   };

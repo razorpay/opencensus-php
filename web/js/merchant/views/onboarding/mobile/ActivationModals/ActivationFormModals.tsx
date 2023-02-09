@@ -4,7 +4,7 @@ import { withRouter, RouteComponentProps } from 'react-router-dom';
 import View from '@razorpay/blade-old/src/atoms/View';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import Text from '@razorpay/blade-old/src/atoms/Text';
-import { Modal, ModalBody } from 'common/components/Modal';
+import { Modal } from 'common/components/Modal';
 import { getModalContent, ModalTypeT } from './ModalContent';
 import useTrackEvents from 'merchant/hooks/useTrackEvents';
 import { isMobileDevice } from 'merchant/components/Home/data';
@@ -19,8 +19,15 @@ interface ActivationModalPropsT extends RouteComponentProps {
 }
 
 const Container = styled(View)`
-  margin: 40px auto 20px;
+  margin: ${(props) => (props.isNewNC ? '16px auto' : '40px auto 20px')};
   text-align: center;
+`;
+
+const ModalBody = styled(Text)`
+  margin-top: ${({ theme }) => theme.bladeOld.spacings.large};
+  margin-bottom: ${({ theme }) => theme.bladeOld.spacings.large};
+  margin-left: ${({ theme }) => theme.bladeOld.spacings.large};
+  margin-right: ${({ theme }) => theme.bladeOld.spacings.large};
 `;
 
 const ActivationModal: React.FC<ActivationModalPropsT> = ({
@@ -39,7 +46,11 @@ const ActivationModal: React.FC<ActivationModalPropsT> = ({
     dedupeStatus,
   );
   const trackEvents = useTrackEvents();
-
+  const newNC = [
+    'needs_clarification_payments_settlement_enabled',
+    'needs_clarification_with_payments_enabled',
+    'needs_clarification_with_payment_disabled',
+  ];
   const isNewNC = isNewNcActivationStatus(modalType);
 
   useEffect(() => {
@@ -74,7 +85,9 @@ const ActivationModal: React.FC<ActivationModalPropsT> = ({
 
   const canShowCloseButton = () => {
     if (
-      ['poi_initiated', 'payment_enable', 'payment_disable', 'under_review'].includes(modalType)
+      ['poi_initiated', 'payment_enable', 'payment_disable', 'under_review', ...newNC].includes(
+        modalType,
+      )
     ) {
       return false;
     }
@@ -119,7 +132,7 @@ const ActivationModal: React.FC<ActivationModalPropsT> = ({
       closeable={canShowCloseButton()}
     >
       <ModalBody>
-        <Container>
+        <Container isNewNC={isNewNC}>
           {image}
           <Space margin={[1.5, 0, 0]}>
             <View>
@@ -139,17 +152,7 @@ const ActivationModal: React.FC<ActivationModalPropsT> = ({
               </Space>
               <Text
                 size="medium"
-                align={
-                  [
-                    'under_review',
-                    'tnc',
-                    'needs_clarification_payments_settlement_enabled',
-                    'needs_clarification_with_payments_enabled',
-                    'needs_clarification_with_payment_disabled',
-                  ].includes(modalType)
-                    ? 'justify'
-                    : 'center'
-                }
+                align={['under_review', 'tnc', ...newNC].includes(modalType) ? 'justify' : 'center'}
               >
                 {description}
                 {additionalDesc}

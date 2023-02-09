@@ -87,7 +87,7 @@ const KYCStatusModal = ({
       },
     });
     onClose();
-    window.open(needsClarificationOnEasyUrl);
+    window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
   };
 
   const goToActivationForm = () => {

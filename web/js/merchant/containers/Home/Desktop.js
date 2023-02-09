@@ -538,7 +538,7 @@ class AnalyticsDesktop extends Component {
       });
       const needsClarificationOnEasyUrl = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
       onNcModalClose();
-      window.open(needsClarificationOnEasyUrl);
+      window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
     };
 
     return (

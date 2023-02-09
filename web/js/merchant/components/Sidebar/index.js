@@ -180,7 +180,7 @@ export default class Sidebar extends Component {
           deviceType: isMobileDevice(768) ? 'mweb' : 'dweb',
         },
       });
-      window.open(needsClarificationOnEasyUrl);
+      window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
     } else if (user.isOnboardingV2Enabled && isMobileDevice()) {
       this.props.history.push('/onboarding/steps');
     } else if (user.isActivationFormFullView) {

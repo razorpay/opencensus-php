@@ -19,6 +19,7 @@ import useTrackEvents from 'merchant/hooks/useTrackEvents';
 import VideoModal from 'merchant/components/VideoModal';
 import { getNcExpiryDate } from 'merchant/views/onboarding/mobile/services/utils';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import ImgNcKyc from 'assets/onboarding/ncKyc.svg';
 
 export type ModalTypeT =
   | 'dedupe'
@@ -38,6 +39,10 @@ export type ModalTypeT =
 const InlineText = styled(View)`
   color: ${({ color }) => color};
   margin-top: 20px;
+`;
+
+const NCImg = styled.img`
+  width: 100%;
 `;
 
 export const getModalContent = (
@@ -174,7 +179,11 @@ export const getModalContent = (
     if (submerchantId) {
       history.push(formUrl);
     } else {
-      window.open(`${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`);
+      window.open(
+        `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`,
+        '_self',
+        'noopener',
+      );
     }
   };
 
@@ -450,7 +459,7 @@ export const getModalContent = (
 
     case 'needs_clarification_payments_settlement_enabled':
       title = Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title;
-      image = <img src={NeedsClarification} />;
+      image = <NCImg src={ImgNcKyc} />;
       description = `You will not be able to receive payments in your bank account if the required details are
           not updated before ${expiryDate} `;
 
@@ -464,7 +473,7 @@ export const getModalContent = (
 
     case 'needs_clarification_with_payments_enabled':
       title = Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title;
-      image = <img src={NeedsClarification} />;
+      image = <NCImg src={ImgNcKyc} />;
       description = (
         <>
           You’ll be able to receive collected payments in your account only after the required
@@ -481,7 +490,7 @@ export const getModalContent = (
 
     case 'needs_clarification_with_payment_disabled':
       title = Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title;
-      image = <img src={NeedsClarification} />;
+      image = <NCImg src={ImgNcKyc} />;
       description = (
         <>
           You’ll be able to collect payments and receive them in your bank account only after the

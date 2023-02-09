@@ -42,6 +42,7 @@ export interface SidebarPropsInterface extends RouteComponentProps {
   hideAcceptPaymentsModal: () => void;
   isMobile: boolean;
   isTagsLoading: boolean;
+  isNcEligibile: boolean;
 }
 
 export interface NavLinkItemInterface extends RouteComponentProps {

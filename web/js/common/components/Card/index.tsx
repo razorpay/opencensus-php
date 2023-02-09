@@ -16,6 +16,7 @@ const styles = {
 const StyledCard = styled(View)`
   background-color: ${styles.backgroundColor};
   box-shadow: 0px 4px 10px ${styles.shadowColor};
+  border-radius: 4px;
 `;
 
 export interface CardPropsT {

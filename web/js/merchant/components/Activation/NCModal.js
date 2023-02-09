@@ -5,6 +5,8 @@ import {
   getNcExpiryDate,
   isNewNcActivationStatus,
 } from 'merchant/components/Activation/ActivationUtils';
+import ImgNcKyc from 'assets/onboarding/ncKyc.svg';
+import Image from 'common/ui/Image';
 import { analyticsTrack } from 'common/utils/analytics';
 import { isMobileDevice } from 'merchant/components/Home/data';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
@@ -106,8 +108,10 @@ const NCModal = ({
     if (showNewNCModal) {
       return (
         <ModalMask>
-          <Modal className="pan-status-modal nc-modal" onClose={onClose}>
-            <div className="modal-header" />
+          <Modal className="pan-status-modal nc-modal" showCloseBtn={false}>
+            <div className="modal-header">
+              <Image src={ImgNcKyc} alt="nc kyc" className="nc-img" />
+            </div>
             <div className="modal-body">
               {content.pill ? <span className="status-pill">{content.pill}</span> : null}
               <h1>{content.title}</h1>
