@@ -621,4 +621,56 @@ return [
             ]
         ]
     ],
+
+    'testEdgeProxyForAccountingIntegrationsSuccessProxyAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/accounting-integrations/rules/rule_testid',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'rule_testid',
+                'type' => 'rx_contact'
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testEdgeProxyForAccountingIntegrations5xxProxyAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/accounting-integrations/rules/rule_testid',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'request could not be completed due to internal error',
+                'details' => [
+                    'code' => 'INTERNAL_SERVER_ERROR'
+                ]
+            ],
+            'status_code' => 500
+        ]
+    ],
+
+    'testEdgeProxyForAccountingIntegrationsDirectAuth' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/direct/accounting-integrations/callback',
+            'server' => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'integration completed successfully'
+            ],
+            'status_code' => 200
+        ]
+    ],
 ];

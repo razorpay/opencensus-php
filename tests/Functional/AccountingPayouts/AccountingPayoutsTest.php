@@ -6,6 +6,7 @@ use Mockery;
 
 use App;
 
+use Nyholm\Psr7\Factory\HttplugFactory;
 use RZP\Models\User\BankingRole;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\TestCase;
@@ -840,6 +841,72 @@ class AccountingPayoutsTest extends TestCase
         $this->startTest();
 
         $apMock->shouldHaveReceived('checkIfBankMappingRequired');
+    }
+
+    public function testEdgeProxyForAccountingIntegrationsSuccessProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $data = [
+            'id' => 'rule_testid',
+            'type' => 'rx_contact'
+        ];
+
+        $httpMock = $this->mockEdgeProxyHttpClient($data, 200);
+
+        $this->app->instance('edge_proxy_http_client', $httpMock);
+
+        $this->startTest();
+
+        $httpMock->shouldHaveReceived('sendRequest');
+    }
+
+    public function testEdgeProxyForAccountingIntegrations5xxProxyAuth()
+    {
+        $this->ba->proxyAuth();
+
+        $data = [
+            'message' => 'request could not be completed due to internal error',
+            'details' => [
+                'code' => 'INTERNAL_SERVER_ERROR'
+            ]
+        ];
+
+        $httpMock = $this->mockEdgeProxyHttpClient($data, 500);
+
+        $this->app->instance('edge_proxy_http_client', $httpMock);
+
+        $this->startTest();
+
+        $httpMock->shouldHaveReceived('sendRequest');
+    }
+
+    public function testEdgeProxyForAccountingIntegrationsDirectAuth()
+    {
+        $this->ba->directAuth();
+
+        $data = [
+            'message' => 'integration completed successfully'
+        ];
+
+        $httpMock = $this->mockEdgeProxyHttpClient($data, 200);
+
+        $this->app->instance('edge_proxy_http_client', $httpMock);
+
+        $this->startTest();
+
+        $httpMock->shouldHaveReceived('sendRequest');
+    }
+
+    protected function mockEdgeProxyHttpClient(array $data, int $statusCode)
+    {
+        $expectedResp = (new HttplugFactory)->createResponse($statusCode, null, [], json_encode($data));
+
+        $httpMock = Mockery::mock('RZP\Base\Http');
+
+        $httpMock->shouldReceive('sendRequest')->andReturn($expectedResp);
+
+        return $httpMock;
     }
 
     /**

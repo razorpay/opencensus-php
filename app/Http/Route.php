@@ -1901,6 +1901,10 @@ class Route
         // Business-Reporting
         'business_reporting_all_proxy_routes'      => ['any',      'business-reporting/{path?}',               'EdgeProxyController@proxy'                                               ],
 
+        // Accounting Integrations
+        'accounting_integrations_proxy_routes'      => ['any',      'accounting-integrations/{path?}',          'EdgeProxyController@proxy'                                               ],
+        'accounting_integrations_callback'          => ['get',      'direct/accounting-integrations/callback',  'EdgeProxyController@proxy'                                               ],
+
         // Accounting Payouts (inside vendor payments)
         'accounting_payouts_integration_status'                 => ['get',     'accounting-payouts/integration/status',          'AccountingPayoutsController@integrationStatus'         ],
         'accounting_payouts_integration_app_get_url'            => ['get',     'accounting-payouts/integration/{app}',           'AccountingPayoutsController@integrationAppGetURL'      ],
@@ -6390,6 +6394,9 @@ class Route
         'invite_to_vendor_portal',
         'resend_invite_to_vendor_portal',
 
+        // Generic Accounting Integrations
+        'accounting_integrations_proxy_routes',
+
         // Accounting Payouts
         'accounting_payouts_integration_status',
         'accounting_payouts_cash_flow_list_ba',
@@ -6602,6 +6609,7 @@ class Route
         //payout status reason mapping
         'payout_status_to_reason_mapping',
 
+        'accounting_integrations_proxy_routes',
         'capital_virtual_cards_generate_token',
 
         //CAC
@@ -6630,7 +6638,6 @@ class Route
 
         'merchant_ip_config_fetch',
         'merchant_ip_config_create',
-
         // checkout service routes
         'invoice_fetch_for_checkout_internal',
         'checkout_personalisation_internal',
@@ -9506,6 +9513,7 @@ class Route
         'vendor_portal_update_vendor_preferences'      => Permission::VENDOR_PORTAL_PERMISSION,
         'x_apps_get_all_settings'                      => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
         'x_apps_add_or_update_settings'                => Permission::UPDATE_TAX_PAYMENT_SETTINGS,
+        'accounting_integrations_proxy_routes'         => '*',
         'accounts_receivable_all_routes'               => '*',
         'business_reporting_all_proxy_routes'          => '*',
         'tax_get_meta_states'                          => Permission::VIEW_TAX_STATES,
@@ -9897,6 +9905,9 @@ class Route
         'freshdesk_raise_grievance',
         'freshdesk_account_recovery_create_ticket',
 
+        // Generic Accounting Integration Callback
+        'accounting_integrations_callback',
+
         //Accounting Payouts Callback
         'accounting_payouts_callback',
         'reward_terms',
@@ -10212,6 +10223,7 @@ class Route
             'account_list',
             'accounting_payouts_app_credentials',
             'accounting_payouts_callback',
+            'accounting_integrations_callback',
             'accounting_payouts_delete_integration',
             'accounting_payouts_integration_app_get_url',
             'accounting_payouts_integration_app_initiate',
@@ -11338,6 +11350,7 @@ class Route
             'vendor_invoice_get_by_id',
             'vendor_portal_invoice_get_signed_url',
             'vendor_portal_invites_list',
+            'accounting_integrations_proxy_routes',
             'x_apps_get_all_settings',
             'x_apps_add_or_update_settings',
             'accounts_receivable_all_routes',
@@ -11542,6 +11555,7 @@ class Route
             'account_list',
             'accounting_payouts_app_credentials',
             'accounting_payouts_callback',
+            'accounting_integrations_callback',
             'accounting_payouts_delete_integration',
             'accounting_payouts_integration_app_get_url',
             'accounting_payouts_integration_app_initiate',
@@ -15609,6 +15623,7 @@ class Route
         'vendor_payment_get_invoice_zip_file',
         'vendor_payment_get_quick_filter_amounts',
         'vendor_payment_get_auto_processed_invoice',
+        'accounting_integrations_proxy_routes',
 
         'vendor_invoices_list',
         'vendor_invoice_create',

@@ -34,6 +34,7 @@ class EdgeProxyController extends Controller
 {
     const METRIC_REQUEST_ERROR_TOTAL = 'edge_proxy_request_error_total';
     const METRIC_REQUEST_LATENCY_MS  = 'edge_proxy_request_latency_ms.histogram';
+    const CONTENT_TYPE_JSON          = 'application/json';
 
     /**
      * @var \Psr\Http\Client\ClientInterface
@@ -91,8 +92,19 @@ class EdgeProxyController extends Controller
         $body        = $request->getContent();
         $contentType = $request->getContentType();
         $auth        = $hostCfg['auth'];
+        $devServeHeader = $request->header(RequestHeader::DEV_SERVE_USER);
+
+        if (isset($devServeHeader) === false)
+        {
+            $devServeHeader = '';
+        }
+        if (isset($contentType) === false)
+        {
+            $contentType = self::CONTENT_TYPE_JSON;
+        }
+
         $headers     = [
-            RequestHeader::DEV_SERVE_USER => $request->header(RequestHeader::DEV_SERVE_USER)
+            RequestHeader::DEV_SERVE_USER => $devServeHeader
         ];
 
         if (($request->method() === 'GET') and
