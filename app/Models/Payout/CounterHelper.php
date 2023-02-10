@@ -39,8 +39,9 @@ class CounterHelper extends Base\Core
      */
     public function updateFreePayoutConsumedIfApplicable(Balance\Entity $balance)
     {
-        if ($balance->getType() !== Balance\Type::BANKING ||
-            $balance->merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true)
+        if (($balance->getType() !== Balance\Type::BANKING) or
+            (($balance->merchant->isFeatureEnabled(Constants::PAYOUT_SERVICE_ENABLED) === true) and
+             ($balance->getAccountType() === Balance\AccountType::SHARED)))
         {
             return null;
         }
