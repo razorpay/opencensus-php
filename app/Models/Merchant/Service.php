@@ -10662,7 +10662,7 @@ class Service extends Base\Service
     /**
      * @throws BadRequestException
      */
-    protected function validateAndSortSlabs(array $slabs): array
+    public function validateAndSortSlabs(array $slabs): array
     {
         $validator = (new Validator);
 
@@ -11691,7 +11691,6 @@ class Service extends Base\Service
 
         return $response;
     }
-
     /**
      * Fetches the capital applications for a given product for sub-merchants of a partner
      *

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\ShippingInfo;
 
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Merchant\OneClickCheckout\ShippingMethodProvider\FeeRule;
 use RZP\Models\Order\OrderMeta\Order1cc\Fields;
 use RZP\Models\Order\ProductType;
@@ -187,94 +189,77 @@ class Service extends Base\Service
                 if (empty($decodedResponse['use_fallback']) === false) {
                     unset($decodedResponse['use_fallback']);
                     if ($shippingMethodProviderConfig !== null) {
-                        $decodedResponse = (new Providers())->shippingResponseFromShippingProviderConfig(
+                        $decodedResponse = $this->shippingProviderOldFlow(
+                            $shippingMethodProviderConfig,
                             $orderId,
                             $order,
                             $orderMeta,
                             $address,
-                            $shippingMethodProviderConfig);
+                            $decodedResponse,
+                            $merchantOrderId,
+                            $mockResponse,
+                            $dimensions);
                     }
                 }
             }
             else
             {
-                if ($shippingMethodProviderConfig !== null)
+                $payload = [
+                    'id'            => UniqueIdEntity::generateUniqueId(),
+                    'experiment_id' => $this->app['config']->get('app.1cc_shipping_info_migration_splitz_experiment_id'),
+                    'request_data'  => json_encode(
+                        [
+                            'merchant_id' =>  $this->merchant->getId(),
+                        ]),
+                ];
+                $evaluationResult = (new SplitzExperimentEvaluator())->evaluateExperiment($payload, true, 'var_on','', $dimensions, TraceCode::SHIPPING_MIGRATION_SPLITZ_ERROR);
+                $this->trace->info(TraceCode::SHIPPING_MIGRATION_SPLITZ_RESPONSE,
+                    array_merge($dimensions,
+                        [
+                            'splitz_evaluation_result' => $evaluationResult,
+                        ])
+                );
+                if (empty($evaluationResult) === false &&
+                    empty($evaluationResult['experiment_enabled']) === false &&
+                    $evaluationResult['experiment_enabled'] === true)
                 {
-                    $decodedResponse = (new Providers())->shippingResponseFromShippingProviderConfig(
-                        $orderId,
-                        $order,
-                        $orderMeta,
-                        $address,
-                        $shippingMethodProviderConfig);
-                }
-                else
-                {
-
-                    $serviceabilityUrlConfig = $this->merchant->getShippingInfoUrlConfig();
-
-                    if ($serviceabilityUrlConfig === null)
-                    {
-                        $ex = new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_URL_NOT_CONFIGURED);
-                        throw $ex;
-                    }
-
-                    $serviceabilityUrl = $serviceabilityUrlConfig->getValue();
-
-                    try
-                    {
-                        // Sending array for backward compatibility (bulk api)
-                        $response = $this->sendMerchantShippingInfoRequest(
+                    try {
+                        $decodedResponse = (new Providers())->shippingProviderMigrationFlow(
+                            $shippingMethodProviderConfig,
+                            $address,
                             $orderId,
-                            $merchantOrderId,
-                            [array_merge($address, [self::SHIPPING_INFO_ID => 0])],
-                            $serviceabilityUrl,
-                            $mockResponse,
-                            $dimensions);
-
-                        $decodedResponse = json_decode($response->body, true);
-                        $decodedResponse = $decodedResponse[self::SHIPPING_INFO_ADDRESSES][0];
-                        if (isset($decodedResponse[self::SHIPPING_INFO_ID]))
-                        {
-                            unset($decodedResponse[self::SHIPPING_INFO_ID]);
-                        }
-                    }
-                    catch(Throwable $exception)
-                    {
-                        $this->trace->error(TraceCode::ERROR_EXCEPTION, ['error' => $exception->getMessage()]);
-
-                        $ex = new Exception\BadRequestException(
-                            ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION, null,null, 'Unable to check pincode serviceability right now. Try again in some time');
-                        throw $ex;
-                    }
-
-                    if (json_last_error() !== JSON_ERROR_NONE || !isset($response) || $response->status_code !== 200)
-                    {
-                        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
-                            array_merge($dimensions,
-                                ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]
-                            )
-                        );
-                        $ex = new Exception\BadRequestException(
-                            ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION, null,null, 'Unable to check pincode serviceability right now. Try again in some time');
-                        throw $ex;
-                    }
-
-                    try
-                    {
-                        (new Validator())->setStrictFalse()->validateInput("addressShippingInfoResponse", $decodedResponse);
+                            $orderMeta->getValue()['line_items_total'],
+                            $order->toArrayPublic()['notes'],
+                            $merchantOrderId);
+                        $this->trace->info(TraceCode::SHIPPING_MIGRATION_GET_API_RESPONSE,
+                            [
+                                'shipping_response' => $decodedResponse,
+                            ]);
                     }
                     catch (Throwable $e)
                     {
-                        $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
-                            array_merge(
-                                $dimensions,
-                                ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]
-                            )
-                        );
-
-                        $ex = new Exception\BadRequestException(
-                            ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION, null,null, 'Unable to check pincode serviceability right now. Try again in some time');
+                        $ex = $e;
+                        throw $ex;
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        $decodedResponse = $this->shippingProviderOldFlow(
+                            $shippingMethodProviderConfig,
+                            $orderId,
+                            $order,
+                            $orderMeta,
+                            $address,
+                            $decodedResponse,
+                            $merchantOrderId,
+                            $mockResponse,
+                            $dimensions);
+                    }
+                    catch (Throwable $e)
+                    {
+                        $ex = $e;
                         throw $ex;
                     }
                 }
@@ -686,6 +671,88 @@ class Service extends Base\Service
     protected function isZipcodeResponseValid(array $response): bool
     {
         return ($response['city'] !== '' && $response['state'] !== '' && $response['state_code'] !== '');
+    }
+
+
+    /**
+     * @param $shippingMethodProviderConfig
+     * @param $orderId
+     * @param Base\PublicEntity $order
+     * @param $orderMeta
+     * @param $address
+     * @param array $decodedResponse
+     * @param Exception\BadRequestException $ex
+     * @param $merchantOrderId
+     * @param $mockResponse
+     * @param array $dimensions
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    protected function shippingProviderOldFlow($shippingMethodProviderConfig, $orderId, Base\PublicEntity $order, $orderMeta, $address, array $decodedResponse, $merchantOrderId, $mockResponse, array $dimensions): array
+    {
+        if ($shippingMethodProviderConfig !== null) {
+            return (new Providers())->shippingResponseFromShippingProviderConfig(
+                $orderId,
+                $order,
+                $orderMeta,
+                $address,
+                $shippingMethodProviderConfig);
+        }
+
+        $serviceabilityUrlConfig = $this->merchant->getShippingInfoUrlConfig();
+
+        if ($serviceabilityUrlConfig === null) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_SERVICEABILITY_URL_NOT_CONFIGURED);
+        }
+
+        $serviceabilityUrl = $serviceabilityUrlConfig->getValue();
+
+        try {
+            // Sending array for backward compatibility (bulk api)
+            $response = $this->sendMerchantShippingInfoRequest(
+                $orderId,
+                $merchantOrderId,
+                [array_merge($address, [self::SHIPPING_INFO_ID => 0])],
+                $serviceabilityUrl,
+                $mockResponse);
+
+            $decodedResponse = json_decode($response->body, true);
+            $decodedResponse = $decodedResponse[self::SHIPPING_INFO_ADDRESSES][0];
+            if (isset($decodedResponse[self::SHIPPING_INFO_ID])) {
+                unset($decodedResponse[self::SHIPPING_INFO_ID]);
+            }
+        } catch (Throwable $exception) {
+            $this->trace->error(TraceCode::ERROR_EXCEPTION, ['error' => $exception->getMessage()]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION,
+                null,
+                null,
+                'Unable to check pincode serviceability right now. Try again in some time');
+        }
+        if (json_last_error() !== JSON_ERROR_NONE || !isset($response) || $response->status_code !== 200) {
+            $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
+                array_merge(
+                    $dimensions,
+                    ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]
+                )
+            );
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION, null, null, 'Unable to check pincode serviceability right now. Try again in some time');
+        }
+
+        try {
+            (new Validator())->setStrictFalse()->validateInput("addressShippingInfoResponse", $decodedResponse);
+        } catch (Throwable $e) {
+            $this->trace->count(Metric::MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT,
+                ['errorcode' => ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_MERCHANT_SERVICEABILITY_EXTERNAL_CALL_EXCEPTION, null, null, 'Unable to check pincode serviceability right now. Try again in some time');
+        }
+
+        return $decodedResponse;
     }
 
     /**

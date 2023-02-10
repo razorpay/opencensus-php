@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Services\KafkaProducer;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Service as MerchantService;
+use RZP\Models\Merchant\OneClickCheckout\ShippingMethods\Service as ShippingService;
 use RZP\Models\Key;
 
 class Service extends Base\Service
@@ -55,6 +56,7 @@ class Service extends Base\Service
             (new Validator())->setStrictFalse()->validateInput(Constants::NATIVE, $input);
         }
 
+        global $shippingProvider;
         $this->repo->transaction(
             function () use ($input)
             {
@@ -93,7 +95,7 @@ class Service extends Base\Service
                         $updatePlatform
                     );
                 }
-
+                $GLOBALS['shippingProvider'] = [];
                 if ($updatePlatform !== Constants::SHOPIFY)
                 {
                     foreach ($input as $key => $value)
@@ -101,6 +103,7 @@ class Service extends Base\Service
                         switch ($key)
                         {
                             case "shipping_info":
+                                $GLOBALS['shippingProvider'] = array_merge($GLOBALS['shippingProvider'], ["url" => $value]);
                                 (new Core)->associateMerchant1ccConfig(
                                     Type::SHIPPING_INFO_URL,
                                     $value
@@ -119,9 +122,11 @@ class Service extends Base\Service
                                 );
                                 break;
                             case "shipping_slabs":
+                                $GLOBALS['shippingProvider'] = array_merge($GLOBALS['shippingProvider'], ["shipping_slabs" => $value]);
                                 (new \RZP\Models\Merchant\Service())->updateShippingSlabs(['slabs' => $value]);
                                 break;
                             case "cod_slabs":
+                                $GLOBALS['shippingProvider'] = array_merge($GLOBALS['shippingProvider'], ["cod_slabs" => $value]);
                                 (new \RZP\Models\Merchant\Service())->updateCodSlabs(['slabs' => $value]);
                                 break;
                         }
@@ -253,6 +258,8 @@ class Service extends Base\Service
         );
 
         $this->update1ccIntelligenceConfig($input);
+
+        $this->updateShippingInfoConfig($shippingProvider);
 
         if ( $input['platform'] === Constants::SHOPIFY && (isset($input[Type::ONE_CLICK_CHECKOUT]) || isset($input[Type::ONE_CC_BUY_NOW_BUTTON]))) {
 
@@ -743,6 +750,50 @@ class Service extends Base\Service
         return $result;
     }
 
+    /**
+     * @param $shippingProvider
+     * @return void
+     * @throws BadRequestException
+     */
+    protected function updateShippingInfoConfig($shippingProvider): void
+    {
+        if (empty($shippingProvider) !== true && empty($shippingProvider['url']) !== true) {
+            $codFeeRule = [];
+            $shippingFeeRule = [];
+            if (empty($shippingProvider['cod_slabs']) !== true) {
+                $codSlabs = (new MerchantService())->validateAndSortSlabs($shippingProvider['cod_slabs']);
+                $codFeeRule = (new ShippingService())->covertToNewSlabFormat($codSlabs);
+            }
+            if (empty($shippingProvider['shipping_slabs']) !== true) {
+                $shippingSlabs = (new MerchantService())->validateAndSortSlabs($shippingProvider['shipping_slabs']);
+                $shippingFeeRule = (new ShippingService())->covertToNewSlabFormat($shippingSlabs);
+            }
+            $req = [
+                'provider_type' => 'merchant',
+                'provider_id' => $this->merchant->getId(),
+                'merchant' => [
+                    'url' => $shippingProvider['url'],
+                ],
+            ];
+            if (empty($codFeeRule) === false) {
+                $req['cod_fee_rule'] = $codFeeRule;
+            }
+            if (empty($shippingFeeRule) === false) {
+                $req['shipping_fee_rule'] = $shippingFeeRule;
+            }
+            $this->mutex->acquireAndRelease(
+                self::MUTEX_KEY . ':' . $this->merchant->getId() . ':' . Type::SHIPPING_INFO_URL,
+                function () use ($req) {
+                    $this->app['shipping_provider_service']->create($req, $this->merchant->getId());
 
-
+                },
+                self::MUTEX_LOCK_TTL_SEC,
+                ErrorCode::BAD_REQUEST_ANOTHER_1CC_CONFIG_OPERATION_IN_PROGRESS,
+                self::MAX_RETRY_COUNT,
+                self::MAX_RETRY_DELAY_MILLIS - 500,
+                self::MAX_RETRY_DELAY_MILLIS,
+                true
+            );
+        }
+    }
 }
