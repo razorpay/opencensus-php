@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use DateTime;
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Base\RuntimeManager;
 use RZP\Constants\HyperTrace;
 use RZP\Exception;
 use RZP\Exception\BadRequestException;
@@ -612,11 +613,9 @@ class Service extends Base\Service
 
         $processedCount = 0;
 
-        $skip = 0;
-
         do
         {
-            $input['skip']  =  $skip;
+            $input['skip']  =  $processedCount;
 
             $startTime = microtime(true);
 
@@ -638,8 +637,6 @@ class Service extends Base\Service
             VirtualAccountsAutoCloseInactive::dispatch($this->mode, $inactiveVirtualAccountIds->toArray());
 
             $processedCount += sizeof($inactiveVirtualAccountIds);
-
-            $skip += $processedCount;
         }
         while(sizeof($inactiveVirtualAccountIds) === $input['count']);
 
@@ -668,7 +665,9 @@ class Service extends Base\Service
 
         return [
             'closed_virtual_accounts'   =>  $closedVirtualAccounts,
-            'failed_virtual_accounts'   =>  $failedVirtualAccounts
+            'failed_virtual_accounts'   =>  $failedVirtualAccounts,
+            'success_count'             => count($closedVirtualAccounts),
+            'failure_count'             => count($failedVirtualAccounts)
         ];
     }
 

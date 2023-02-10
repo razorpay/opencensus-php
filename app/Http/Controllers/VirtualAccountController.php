@@ -377,6 +377,10 @@ class VirtualAccountController extends Controller
 
     public function autoCloseInactiveVirtualAccounts()
     {
+        RuntimeManager::setTimeLimit(900);
+
+        RuntimeManager::setMemoryLimit('1024M');
+
         $input = Request::all();
 
         $response = $this->service()->autoCloseInactiveVirtualAccounts($input);
