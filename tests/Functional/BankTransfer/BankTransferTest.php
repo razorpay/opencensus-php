@@ -5707,6 +5707,116 @@ class BankTransferTest extends TestCase
 
     }
 
+    /**
+     * We are checking banktransfer to Virtual Account of merchant which is not live on PG but live on X.
+     * in such a case, bank transfer will be processed and no refund will be sent.
+     */
+
+    public function testBankTransferToVirtualAccountMerchantNotLiveOnPgButLiveOnX()
+    {
+        Mail::fake();
+
+        $this->setupForIciciXFundLoading();
+
+        $this->fixtures->edit('merchant', 10000000000000, ['live' => 0]);
+
+        $this->fixtures->on('live')->create('merchant_attribute',
+            [
+                'merchant_id'   => '10000000000000',
+                'product'       => 'banking',
+                'group'         => 'products_enabled',
+                'type'          => 'X',
+                'value'         => 'true',
+                'updated_at'    => time(),
+                'created_at'    => time()
+            ]);
+
+        list($countOfPaymentsBeforeFundLoading,
+            $countOfTransactionsBeforeFundLoading,
+            $countOfBankTransfersBeforeFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        $utr = strtoupper(random_alphanum_string(22));
+
+        $payeeAccount = $this->bankAccount;
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['content']['payee_account'] = $payeeAccount->getAccountNumber();
+
+        $request['content']['payee_ifsc'] = 'ICIC0000104';
+
+        $request['content']['transaction_id'] = $utr;
+
+        $whitelistedAccounts = [
+            [
+                'account_number' => $request['content']['payer_account'],
+                'ifsc_code'      => $request['content']['payer_ifsc']
+            ]];
+
+        $this->setupGlobalWhitelistPayerAccounts($whitelistedAccounts);
+
+        $this->ba->batchAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($utr, $response['transaction_id']);
+
+        list($countOfPaymentsAfterFundLoading,
+            $countOfTransactionsAfterFundLoading,
+            $countOfBankTransfersAfterFundLoading
+            ) = $this->listCountOfPaymentTransactionPayoutAndBankTransferEntities('live');
+
+        // Assert that no new payment was created.
+        $this->assertEquals($countOfPaymentsBeforeFundLoading, $countOfPaymentsAfterFundLoading);
+
+        // Assert that exactly one of these entities was created during fund loading request.
+        $this->assertEquals($countOfBankTransfersBeforeFundLoading + 1, $countOfBankTransfersAfterFundLoading);
+        $this->assertEquals($countOfTransactionsBeforeFundLoading + 1,  $countOfTransactionsAfterFundLoading);
+
+        $transaction = $this->getDbLastEntity('transaction', 'live');
+
+        $bankTransfer = $this->getDbLastEntity('bank_transfer', 'live');
+        $this->assertEquals(S::PROCESSED, $bankTransfer['status']);
+        $expectedAmount = $request['content']['amount'] . '00';
+
+        $merchantId = $this->bankingBalance->getMerchantId();
+
+        // Assertions on transaction entity created
+        $this->assertEquals($merchantId, $transaction->getMerchantId());
+        $this->assertEquals($expectedAmount, $transaction->getAmount());
+        $this->assertEquals('bank_transfer', $transaction->getType());
+        $this->assertEquals($bankTransfer->getId(), $transaction->getEntityId());
+
+        // Assertions on bank transfer entity created (Internal linking)
+        $this->assertEquals($merchantId, $bankTransfer->getMerchantId());
+        $this->assertEquals($this->virtualAccount->getId(), $bankTransfer->getVirtualAccountId());
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals('icici', $bankTransfer->getGateway());
+
+        // Assertions on payer bank account for bank transfer
+        $this->assertNotNull($bankTransfer->getPayerBankAccountId());
+
+        $payerBankAccount = $bankTransfer->payerBankAccount;
+
+        $this->assertEquals($request['content']['payer_account'], $payerBankAccount->getAccountNumber());
+        $this->assertEquals($request['content']['payer_ifsc'], $payerBankAccount->getIfscCode());
+        $this->assertEquals($request['content']['payer_name'], $payerBankAccount->getBeneficiaryName());
+
+        // Assertions on bank transfer entity created (Request Params)
+        $this->assertEquals($expectedAmount, $bankTransfer->getAmount());
+        $this->assertEquals($request['content']['payer_ifsc'], $bankTransfer->getPayerIfsc());
+        $this->assertEquals($request['content']['payer_name'], $bankTransfer->getPayerName());
+        $this->assertEquals($request['content']['payer_account'], $bankTransfer->getPayerAccount());
+        $this->assertEquals($request['content']['payee_account'], $bankTransfer->getPayeeAccount());
+        $this->assertEquals($request['content']['payee_ifsc'], $bankTransfer->getPayeeIfsc());
+        $this->assertEquals($request['content']['description'], $bankTransfer->getDescription());
+        $this->assertEquals($utr, $bankTransfer->getUtr());
+
+        // Since this was a global whitelisted account, we shall not send the Fund Loading failed email
+        Mail::assertNotQueued(FundLoadingFailed::class);
+    }
+
     public function testBankTransferForCustomerFeeBearerWithPercentRate()
     {
         $pricingPlanId = $this->fixtures->create('pricing:bank_transfer_percent_pricing_plan', ['fee_bearer' => 'customer']);

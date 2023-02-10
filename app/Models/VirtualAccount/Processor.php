@@ -512,15 +512,19 @@ abstract class Processor extends Base\Core
         /** @var Merchant\Entity $merchant */
         $merchant = $this->virtualAccount->merchant;
 
-        if (($merchant->isLive() === false) and
+        $isBusinessBankingVa = $this->virtualAccount->isBalanceTypeBanking();
+
+        $isLive = $isBusinessBankingVa === true ?
+                  (($merchant->isLive() === true) or ((new Merchant\Core())->isXVaActivated($merchant) === true)) :
+                  ($merchant->isLive() === true);
+
+        if (($isLive === false) and
             ($this->isLiveMode() === true))
         {
             $this->setUnexpectedReason($entity, self::VIRTUAL_ACCOUNT_MERCHANT_NOT_LIVE);
 
             return true;
         }
-
-        $isBusinessBankingVa = $this->virtualAccount->isBalanceTypeBanking();
 
         if ($this->virtualAccount->isClosed() === true)
         {
