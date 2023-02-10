@@ -1,5 +1,5 @@
-import React from 'react';
 import { readableFileSize } from 'common/utils/rzp-utils';
+import React from 'react';
 
 const avlblFileTypeIcons = ['pdf', 'jpg', 'png', 'csv', 'xlsx'];
 
@@ -65,12 +65,13 @@ export default class Staged extends React.Component {
       preUploadedImgFileUrl,
       removeFileButtonLabel,
       hideLoader = false,
+      showOnlyFileSize,
     } = this.props;
 
     const loader = this.getProgress();
 
     return (
-      <div class={`Dropzone-content ${size}`} key={name}>
+      <div class={`Dropzone-content staged-content ${size}`} key={name}>
         {!isDocPreUploaded && (
           <img
             class="Dropzone-file-icon"
@@ -105,9 +106,14 @@ export default class Staged extends React.Component {
             )
           ) : (
             <React.Fragment>
-              <p class="Dropzone-content-desc--primary text-muted">
+              <p class="Dropzone-content-desc--primary staged-desc text-muted">
                 {file.name} {showFileSize && readableFileSize(file.size)}
               </p>
+              {showOnlyFileSize && (
+                <p class="Dropzone-content-desc--primary text-muted">
+                  {readableFileSize(file.size)}
+                </p>
+              )}
               {showStagedFileStatus && (
                 // eslint-disable-next-line no-use-before-define
                 <p class="text-muted text-small">{stagedStatusMsgMap[currentStatus]}</p>

@@ -68,7 +68,8 @@ import {
 } from 'merchant/reducers/websitecompliance';
 import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-
+import WorkflowStatus from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/WorkflowStatus';
+import { isBankAccountDetailsAllowed } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
 const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
 
@@ -1082,6 +1083,11 @@ export default class HomeContainer extends Component {
       });
     }
 
+    const isShowBankAccountWokrflow =
+      user.isAccountAndSettingsRevampEnabled &&
+      user.isBankAccountUpdateRevampEnabled &&
+      isBankAccountDetailsAllowed(user);
+
     const hasLakhmiVilasBankAcc =
       user && user.bank_branch_ifsc && user.bank_branch_ifsc.substring(0, 4) === 'LAVB';
 
@@ -1144,7 +1150,7 @@ export default class HomeContainer extends Component {
               )}
             </>
           )}
-
+          {isShowBankAccountWokrflow && <WorkflowStatus isHomepageWorkflow />}
           {/* Show Diwali Promotional Banner */}
 
           {user.showInstantActivation &&

@@ -232,6 +232,9 @@ return [
         // Account Settings Revamp
         'ACCOUNT_SETTINGS_REVAMP'  => env('ACCOUNT_SETTINGS_REVAMP', ''),
 
+         // Bank Account update Revamp
+        'BANK_ACCOUNT_UPDATE_REVAMP'  => env('BANK_ACCOUNT_UPDATE_REVAMP', ''),
+        
         // payroll wdiget on dashboard
         'SHOW_PAYROLL_WIDGET_EXP' => env('SHOW_PAYROLL_WIDGET_EXP', ''),
 

@@ -17,6 +17,7 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import Radio from '@razorpay/blade-old/src/atoms/Radio';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import { showWorkflowStatus } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
@@ -33,7 +34,12 @@ const handleWatchSampleVideoClick = () => {
   });
 };
 
-const BankAccountUpdateAsyncFlow = ({ closeModal, showNotification, fetchWorkflowStatus }) => {
+const BankAccountUpdateAsyncFlow = ({
+  closeModal,
+  showNotification,
+  fetchWorkflowStatus,
+  user,
+}) => {
   const [isFileUploaded, setIsFileUploaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [files, setFiles] = useState([]);
@@ -89,6 +95,7 @@ const BankAccountUpdateAsyncFlow = ({ closeModal, showNotification, fetchWorkflo
         });
         setIsFileUploaded(true);
         fetchWorkflowStatus(WORKFLOW_TYPES.BANK_DETAIL_UPDATE);
+        showWorkflowStatus(user.id);
       })
       .catch(({ errors }) => {
         showNotification({
@@ -195,4 +202,7 @@ const mapDispatchToProps = (dispatch) => {
   );
 };
 
-export default connect(null, mapDispatchToProps)(BankAccountUpdateAsyncFlow);
+export default connect(
+  (state) => ({ user: state.session.user }),
+  mapDispatchToProps,
+)(BankAccountUpdateAsyncFlow);

@@ -10,6 +10,14 @@ jest.mock(
   }),
 );
 
+jest.mock(
+  'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2',
+  () => ({
+    __esModule: true,
+    default: () => <div>BankAccountDetailsV2</div>,
+  }),
+);
+
 jest.mock('merchant/views/Account/Profile/components/SettlementDetails', () => ({
   __esModule: true,
   default: () => <div>SettlementDetails</div>,

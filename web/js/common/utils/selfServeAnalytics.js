@@ -5,7 +5,14 @@ const IS_LUMBER_JACK = true;
 const InitiateAction = 'Initiated';
 const SuccessAction = 'Success';
 
-const instrumentAnalytics = ({ toLumberjack = false, action, selfServeAction, page, screen }) => {
+const instrumentAnalytics = ({
+  toLumberjack = false,
+  action,
+  selfServeAction,
+  page,
+  screen,
+  props = {},
+}) => {
   analyticsTrackWithUserInfo({
     objectName: OBJECT_NAME,
     actionName: action,
@@ -15,6 +22,7 @@ const instrumentAnalytics = ({ toLumberjack = false, action, selfServeAction, pa
       page,
       screen,
       source: getDeviceSource(),
+      ...props,
     },
     toLumberjack,
   });

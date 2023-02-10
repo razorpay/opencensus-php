@@ -1836,6 +1836,10 @@ export default class User {
     return getSplitzExperimentVariant('product_led_onboarding')?.variables?.result === 'on';
   }
 
+  get isBankAccountUpdateRevampEnabled() {
+    return getSplitzExperimentVariant('bank_account_update_revamp')?.variables?.result === 'on';
+  }
+
   get isGetTicketApiMigration() {
     return getSplitzExperimentVariant('get_ticket_migration')?.variables?.result === 'on';
   }

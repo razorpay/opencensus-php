@@ -22,7 +22,6 @@ import {
   getResponseTime,
   trackBankAccountDetailsChange,
 } from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps';
-import moment from 'moment';
 import {
   AnyObject,
   BankAccountDetailsContainerProps,
@@ -123,17 +122,6 @@ const BankAccountDetailsContainer = ({
             });
             fetchWorkflowStatus(WORKFLOW_TYPES.BANK_DETAIL_UPDATE);
           } else {
-            // penny-testing failure or timeout
-            const workflowStatusKey = `${WORKFLOW_TYPES.BANK_DETAIL_UPDATE}--${user.id}`;
-            const workflowStatus = JSON.parse(localStorage.getItem('workflow_status') || '{}');
-            const newWorkflowStatus = {
-              ...workflowStatus,
-              [workflowStatusKey]: {
-                expireAt: moment().add(15, 'days').format(),
-                isVisible: true,
-              },
-            };
-            localStorage.setItem('workflow_status', JSON.stringify(newWorkflowStatus));
             setBankDetailsStepCallback({
               state: 'sync-failed-async-started',
             });

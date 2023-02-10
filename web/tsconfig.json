@@ -22,7 +22,7 @@
         "name": "typescript-styled-plugin"
       }
     ],
-    "lib": ["DOM"]
+    "lib": ["DOM", "es2020"]
   },
   "include": [
     "typings/**/*",

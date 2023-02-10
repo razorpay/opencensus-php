@@ -459,6 +459,12 @@ export default {
     // prod experiment ids
     'L2p1FFt2dWFOPd',
   ],
+  bank_account_update_revamp: [
+    // beta experiment ids
+    'LEPe4jOAsG7UJ6',
+    // prod experiment ids
+    'LDbgxp2vBKgkRO',
+  ],
   show_payroll_widget_exp: [
     //beta experiment ids
     'KmA4axC7yCGMZe',

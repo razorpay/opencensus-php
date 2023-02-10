@@ -1,7 +1,7 @@
+import { classList, isBlank, readableFileSize, titleCase } from 'common/utils/rzp-utils';
 import React from 'react';
-import { readableFileSize, titleCase, classList, isBlank } from 'common/utils/rzp-utils';
-import Staged from './Staged';
 import { videoTypesMap } from './constants';
+import Staged from './Staged';
 
 import FilePlaceholderImage from 'assets/files/file-placeholder.svg';
 
@@ -346,6 +346,9 @@ export default class FileUpload extends React.Component {
       hideLoader,
       customClassName = '', // for adding custom css over the fileupload component
       isDragDropDisabled,
+      uploadSubtitle,
+      showOnlyFileSize,
+      hideMaxSize,
     } = this.props;
     const { isDocPreUploaded } = this.state;
 
@@ -400,11 +403,16 @@ export default class FileUpload extends React.Component {
                   <div className="Dropzone-content-desc">
                     <p className="Dropzone-content-desc--primary upload-file-heading">
                       Drop file here or <b class="text-primary">click to upload</b>{' '}
-                      {maxSize && (
+                      {maxSize && !hideMaxSize ? (
                         <React.Fragment>({readableFileSize(maxSize)} Max)</React.Fragment>
-                      )}
+                      ) : null}
                     </p>
                     {this.showAcceptedFileTypes(showAcceptInfo)}
+                    {uploadSubtitle ? (
+                      <p className="Dropzone-content-desc--primary upload-file-heading">
+                        {uploadSubtitle}
+                      </p>
+                    ) : null}
                   </div>
                   <input
                     type="file"
@@ -463,6 +471,7 @@ export default class FileUpload extends React.Component {
                 hideLoader={
                   hideLoader && (index !== files.length - 1 || stagedFileStatus !== 'process')
                 }
+                showOnlyFileSize={showOnlyFileSize}
               >
                 {renderStagedChildren(index)}
               </Staged>

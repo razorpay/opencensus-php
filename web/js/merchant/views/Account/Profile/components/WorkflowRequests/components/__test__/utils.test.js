@@ -1,5 +1,10 @@
 import '@testing-library/jest-dom/extend-expect';
-import { isWorkflowInClarification, isVisible, hideWorkflowStatus } from '../../utils';
+import {
+  isWorkflowInClarification,
+  isVisible,
+  hideWorkflowStatus,
+  showWorkflowStatus,
+} from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 import moment from 'moment';
 
 describe('WorkflowRequests utils', () => {
@@ -75,6 +80,18 @@ describe('WorkflowRequests utils', () => {
 
     test('should not hide workflow status when it is not present in the localStorage', () => {
       expect(hideWorkflowStatus('123')).toBeFalsy();
+    });
+  });
+
+  describe('showWorkflowStatus function', () => {
+    test('should set workflow status expireAt & isVisible values in the localStorage', () => {
+      showWorkflowStatus('123');
+      const { isVisible, expireAt } = JSON.parse(localStorage.getItem('workflow_status'))[
+        'bank_detail_update--123'
+      ];
+      expect(expireAt).toBeTruthy();
+      expect(isVisible).toBeTruthy();
+      localStorage.removeItem('workflow_status');
     });
   });
 });

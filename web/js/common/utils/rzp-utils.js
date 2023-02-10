@@ -1320,7 +1320,7 @@ export function getAttachmentExpiryTime(awsURL, defaultUnit, UNIT_TYPE) {
 /* This Function is used to validate the bank details and respond back accordingly */
 export function validateBankDetails(value, type) {
   const typeMapRegx = {
-    accNo: /^([a-zA-Z0-9]){5,35}$/i,
+    accNo: /^\d{9,18}$/,
     ifsc: /^[A-Z]{4}0[A-Z0-9]{6}$/i,
     name: /^([a-zA-Z0-9\s-_()/.']){4,120}$/i,
   };

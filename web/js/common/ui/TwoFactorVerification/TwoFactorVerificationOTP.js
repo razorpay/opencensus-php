@@ -164,7 +164,16 @@ class TwoFactorVerificationOTP extends React.Component {
               pendingState="Verifying OTP..."
               type="submit"
               className="Button--full-width"
-              onClick={this.onConfirm}
+              onClick={(...e) => {
+                this.onAnalyticsTrack({
+                  objectName: '2fa setup popup',
+                  actionName: 'clicked',
+                  properties: {
+                    action: 'confirm',
+                  },
+                });
+                this.onConfirm(...e);
+              }}
             >
               Confirm
             </AsyncBtn.Primary>

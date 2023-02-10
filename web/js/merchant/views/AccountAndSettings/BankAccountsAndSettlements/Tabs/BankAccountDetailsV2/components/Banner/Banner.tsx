@@ -1,0 +1,45 @@
+import React, { useEffect } from 'react';
+import { data, BannerType, trackBannerDisplayed } from './config';
+import { Alert } from '@razorpay/blade/components';
+import { connect } from 'react-redux';
+import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
+import { BankData } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/typings';
+import User from 'merchant/models/User';
+
+export interface BannerProps {
+  type: BannerType;
+  openModal: (data: {
+    size?: 'regular' | 'small' | 'medium' | 'med-large' | 'large' | 'xlarge';
+    component: JSX.Element;
+    className?: string;
+    overlayStyles?: Record<string, string>;
+  }) => void;
+  bankAccount?: BankData;
+  user: User;
+  workflowEta?: string;
+}
+
+const Banner = ({
+  type,
+  openModal,
+  bankAccount,
+  user,
+  workflowEta = '--',
+}: BannerProps): JSX.Element | null => {
+  useEffect(() => {
+    trackBannerDisplayed(type);
+  }, []);
+
+  if (!bankAccount) {
+    return null;
+  }
+  const alertProps = data({ type, openModal, bankAccount, user, workflowEta });
+  return <Alert {...alertProps} />;
+};
+
+export default connect(
+  (state) => ({ bankAccount: state.profile.bankAccount, user: state.session.user }),
+  {
+    openModal: fnOpenModal,
+  },
+)(Banner);

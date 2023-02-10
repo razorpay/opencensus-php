@@ -5,7 +5,7 @@ import {
   NC_INCREASE_TXN_LIMIT,
   NC_UPDATE_BANK_ACC,
   NC_UPDATE_GSTIN,
-} from '../../deeplink-constants';
+} from 'merchant/views/Account/Profile/deeplink-constants';
 
 /**
  * @constant
@@ -55,3 +55,8 @@ export const getWorkflowNameForRoute = (route) => {
 export const getWorkflowTypeForRoute = (route) => {
   return worklowTypesMap[route];
 };
+
+/**
+ * @description number of days to show workflow accecpted and rejected status banner.
+ */
+export const WorkflowStatusDisplayDays = 15;

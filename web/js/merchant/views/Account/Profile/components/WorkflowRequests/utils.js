@@ -1,4 +1,4 @@
-import { WORKFLOW_TYPES } from './constants';
+import { WORKFLOW_TYPES, WorkflowStatusDisplayDays } from './constants';
 import moment from 'moment';
 
 export const isWorkflowInClarification = (workflow, statuses) => {
@@ -20,11 +20,23 @@ export const isVisible = (isBankAccountUpdateWorkflow, merchantId) => {
   return true;
 };
 
+export const showWorkflowStatus = (merchantId) => {
+  const workflowStatusKey = `${WORKFLOW_TYPES.BANK_DETAIL_UPDATE}--${merchantId}`;
+  const workflowStatus = JSON.parse(localStorage.getItem('workflow_status') || '{}');
+  const newWorkflowStatus = {
+    ...workflowStatus,
+    [workflowStatusKey]: {
+      expireAt: moment().add(WorkflowStatusDisplayDays, 'days').format(),
+      isVisible: true,
+    },
+  };
+  localStorage.setItem('workflow_status', JSON.stringify(newWorkflowStatus));
+};
+
 export const hideWorkflowStatus = (merchantId) => {
-  const workflowStatus = JSON.parse(localStorage.getItem('workflow_status'));
+  const workflowStatus = JSON.parse(localStorage.getItem('workflow_status') || '{}');
   const workflowStatusKey = `${WORKFLOW_TYPES.BANK_DETAIL_UPDATE}--${merchantId}`;
   if (workflowStatus?.[workflowStatusKey]) {
-    const workflowStatus = JSON.parse(localStorage.getItem('workflow_status'));
     const newWorkflowStatus = {
       ...workflowStatus,
       [workflowStatusKey]: {
