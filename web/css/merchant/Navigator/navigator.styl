@@ -14,6 +14,10 @@ $celticBlue = #0B70E7
 $meteor = #CD8214
 $carnation = #F05050
 $whitish-grey = #F2F3F5
+$phantom-blue = #008CB1
+$phantom-blue-100 = #008CB117
+$phantom-blue-500 = #008CB152
+$spacer = 8px
 
 .input-select-container
   background: $white
@@ -67,6 +71,29 @@ $whitish-grey = #F2F3F5
   .select-search-wrapper
     padding: 8px
     border-bottom: 1px solid $whitish-grey
+
+.routing-navigator
+  .my-2
+    margin-top: $spacer * 2
+    margin-bottom: $spacer * 2
+
+  .mt-1
+    margin-top: $spacer * 1
+
+  .mt-2
+    margin-top: $spacer * 2
+
+  .mb-2
+    margin-bottom: $spacer * 2
+
+  .p-0
+    padding: 0
+
+  .pr-0
+    padding-right: 0
+
+  .p-0
+    padding-left: 0
 
 .operator-btn
   position: absolute
@@ -351,11 +378,11 @@ $whitish-grey = #F2F3F5
     max-width: 20px
     max-height: 20px
 
-.popular-gateways-header
+.popular-gateways-header,
+.all-gateways-header
   font-size: 12px
   line-height: 18px
   color: $darkGray
-  margin-bottom: 12px
 
   img
     margin-right: 7px
@@ -597,8 +624,8 @@ $whitish-grey = #F2F3F5
     .gateway-detail-title
       margin-top: 27px
 
-    .col-xs-10
-      padding-left: 0
+    .precondition-div > .row > .col-xs-10
+      padding-inline: 0
 
     .expression-row.expression-row-readonly::after
       left: 9px
@@ -629,6 +656,14 @@ $whitish-grey = #F2F3F5
           background: $white
           border-width: 1px
           border-color: $gray
+
+    .Input--radioLabels
+      display: flex
+      margin-bottom: 16px
+
+      label
+        max-width: 250px
+        margin-top: "calc(%s / 2)" % $spacer
 
   .provider-expression-row
     padding-left: 7px
@@ -770,9 +805,6 @@ h3.provider-h
   font-weight: bold
   font-size: 14px
   background: transparent
-
-  i
-    margin-right: 5px
 
 .between-inp-div
   input
@@ -1145,14 +1177,10 @@ tr.is_current
   cursor: pointer
   color: $darkGray
   font-weight: bold
-  line-height: 17px
+  line-height: 18px
 
-.all-gateways-header
-  font-size: 12px
-  line-height: 20px
-  color: $darkGray
-  margin-top: 18px
-  margin-bottom: 12px
+  i.i-close
+    vertical-align: middle
 
 .gateway-no-cursor
   cursor: default
@@ -1230,15 +1258,11 @@ tr.is_current
     margin-top: 4px
     cursor: pointer
 
-    .i.i-help
-      vertical-align: middle
-      margin-right: 3px
-
 .enable-seamless-info-msg
   .seamless-header
-    .i.i-info-outline
-      color: $meteor
-      margin-right: 8px
+    i.i-info-outline
+      color: $blueZodiac
+      margin-right: $spacer
       vertical-align: middle
       font-size: 130%
 
@@ -1283,8 +1307,22 @@ tr.is_current
 
 .enable-seamless-info-msg
   padding: 16px
-  background: #FAF3E8
+  border: 1px solid transparent
   border-radius: 4px
+
+  &.info
+    background-color: $phantom-blue-100
+    border-color: $phantom-blue-500
+
+    .seamless-header i.i-info-outline
+      color: $phantom-blue
+
+  &.warning
+    background-color: #FAF3E8
+    border-color: $meteor
+
+    .seamless-header i.i-info-outline
+      color: $meteor
 
   .seamless-header
     font-weight: bold
@@ -1298,24 +1336,35 @@ tr.is_current
   .seamless-how-to-block
     margin-left: 25px
 
+    .for-more--anchor
+      color: $royalBlue
+
+      i.i-redirect
+        color: $royalBlue
+        font-size: 75%
+        vertical-align: middle
+
+      &:hover,
+      &:focus,
+      &:hover i.i-redirect,
+      &:focus i.i-redirect
+        color: $celticBlue
+
     .seamless-how-to
-      font-weight: bold
+      display: inline-flex
+      align-items: center
+      color: $celticBlue
       font-size: 12px
       line-height: 18px
-      color: $celticBlue
+      font-weight: bold
+      background-color: transparent
+      box-shadow: none
 
-      .i.i-help
-        margin-right: 5px
-        font-size: 125%
+      .arrow-img
+        margin-left: 6px
+        width: 10px
 
-      span
-        cursor: pointer
-
-        .arrow-img
-          margin-left: 6px
-          width: 10px
-
-        .arrow-img-rotate
+        &.arrow-img-rotate
           transform: rotate(180deg)
 
     .seamless-how-to-details

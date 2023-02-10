@@ -22,7 +22,7 @@ export function Step3({
 
   // Filter out the fields that are required in this step i.e step 3.
   const fields = Object.entries(selectedProviderDetails).reduce((acc, [label, value]) => {
-    if (['Gateway Name'].includes(label)) {
+    if (['Gateway Name', 'optimizer_seamless_disabled'].includes(label)) {
       return acc;
     }
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter, Link, Redirect } from 'react-router-dom';
+import qs from 'query-string';
 import { CSSTransition } from 'react-transition-group';
 
 import Spinner from 'common/ui/Spinner';
@@ -12,6 +13,16 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 
 import { trackOptimizerEvents, trackAPIResults } from 'merchant/views/Navigator/track';
 import { addProvider, editProvider } from 'merchant/views/Navigator/service';
+
+import FullPageCover from './FullPageCover';
+import FullPageCoverHeader from './FullPageCoverHeader';
+import { HowToGetDetails } from './Provider/HowToGetDetails';
+import { Step1, Step2, Step3 } from './AddProvider/index';
+import {
+  popularGateways,
+  gatewayLogos,
+  getSelectedProviderWithAcquirer as getSelectedProvider,
+} from './util';
 import {
   INIT_PROVIDER_STATE,
   INIT_FORM_STATE,
@@ -19,17 +30,8 @@ import {
   HAVE_UPI_FEATURES,
   NETBANKING_FEATURES,
   UPI_FEATURES,
+  SKIP_VALIDATION_KEYS,
 } from 'merchant/views/Navigator/constants';
-
-import FullPageCover from './FullPageCover';
-import FullPageCoverHeader from './FullPageCoverHeader';
-import {
-  popularGateways,
-  gatewayLogos,
-  getSelectedProviderWithAcquirer as getSelectedProvider,
-} from './util';
-import { HowToGetDetails } from './Provider/HowToGetDetails';
-import { Step1, Step2, Step3 } from './AddProvider/index';
 
 @withRouter
 @connect(
@@ -43,38 +45,35 @@ import { Step1, Step2, Step3 } from './AddProvider/index';
   { openModal, closeModal, showNotification },
 )
 export default class AddProvider extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      redirect: null,
-      provider: deepClone(INIT_PROVIDER_STATE),
-      terminalId: props?.match?.params?.id,
-      steps: {
-        1: {
-          edit: true,
-          show: true,
-        },
-        2: {
-          edit: false,
-          show: false,
-        },
-        3: {
-          edit: false,
-          show: false,
-        },
+  state = {
+    redirect: null,
+    provider: deepClone(INIT_PROVIDER_STATE),
+    terminalId: this.props?.match?.params?.id,
+    steps: {
+      1: {
+        edit: true,
+        show: true,
       },
-      providers: {},
-      filteredProviders: [],
-      selectedProvider: null,
-      isGatewaySearch: false,
-      validationErrors: {},
-      isEdit: false,
-      loadingProviders: true,
-      isSaving: false,
-      isProviderNameValid: true,
-      allDetailsValid: false,
-    };
-  }
+      2: {
+        edit: false,
+        show: false,
+      },
+      3: {
+        edit: false,
+        show: false,
+      },
+    },
+    providers: {},
+    filteredProviders: [],
+    selectedProvider: null,
+    isGatewaySearch: false,
+    validationErrors: {},
+    isEdit: false,
+    loadingProviders: true,
+    isSaving: false,
+    isProviderNameValid: true,
+    allDetailsValid: false,
+  };
 
   componentDidMount() {
     const params = {
@@ -157,21 +156,6 @@ export default class AddProvider extends React.Component {
     };
   };
 
-  goNext = (i) => {
-    this.setState((prevState) => {
-      const steps = { ...prevState.steps };
-      steps[i] = {
-        edit: false,
-        show: true,
-      };
-      steps[i + 1] = {
-        show: true,
-        edit: true,
-      };
-      return { steps };
-    });
-  };
-
   selectProvider = (provider) => {
     trackOptimizerEvents({
       objectName: 'gateway',
@@ -252,7 +236,7 @@ export default class AddProvider extends React.Component {
       <>
         {!isGatewaySearch && Object.keys(providers).length > 0 && (
           <>
-            <div className="col-xs-12 popular-gateways-header">
+            <div className="col-xs-12 popular-gateways-header my-2">
               <img
                 alt="popular"
                 src="https://cdn.razorpay.com/static/assets/merchant-dash/popular_provider.svg"
@@ -260,7 +244,7 @@ export default class AddProvider extends React.Component {
               <span>Popular Gateways</span>
             </div>
             {popularGateways.map((provider, index) => this.viewProvider(provider, index))}
-            <div className="col-xs-12 all-gateways-header">All Gateways</div>
+            <div className="col-xs-12 all-gateways-header mb-2">All Gateways</div>
           </>
         )}
         {Object.keys(providers).map((provider, index) => this.viewProvider(provider, index))}
@@ -268,20 +252,73 @@ export default class AddProvider extends React.Component {
     );
   };
 
-  nextButton = (step, isDisabled) => {
+  disableStep = (step) => {
+    const { providers, selectedProvider, provider, isProviderNameValid } = this.state;
+    const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
+
+    // check if gateway level seamless option is enabled
+    const seamlessOptionExist = providers?.[selectedProvider]?.hasOwnProperty(
+      'optimizer_seamless_disabled',
+    );
+
+    // check if radio button is toggled
+    const seamlessRadioValue = provider?.Gateway_details?.hasOwnProperty(
+      'optimizer_seamless_disabled',
+    );
+
+    let isDisabled = false;
+    switch (step) {
+      case 1:
+        if (!selectedProviderWithAcquirer) {
+          isDisabled = true;
+          break;
+        }
+
+        if (seamlessOptionExist && !seamlessRadioValue) {
+          isDisabled = true;
+        }
+        break;
+      case 2:
+        if (
+          !(provider?.Provider_name?.trim() && isProviderNameValid && provider?.Description?.trim())
+        ) {
+          isDisabled = true;
+        }
+        break;
+      default:
+        break;
+    }
+
+    return isDisabled;
+  };
+
+  goNext = (i) => {
+    this.setState((prevState) => {
+      const steps = { ...prevState.steps };
+      steps[i] = {
+        edit: false,
+        show: true,
+      };
+      steps[i + 1] = {
+        show: true,
+        edit: true,
+      };
+      return { steps };
+    });
+  };
+
+  nextButton = (step) => {
     return (
-      <>
+      <div className="panel-footer">
         <button
-          disabled={isDisabled}
-          onClick={() => {
-            this.goNext(step);
-          }}
           className="btn btn-primary pull-right"
+          disabled={this.disableStep(step)}
+          onClick={() => this.goNext(step)}
         >
           Next <i className="i i-arrow-forward" />
         </button>
         <div className="clearfix" />
-      </>
+      </div>
     );
   };
 
@@ -293,6 +330,31 @@ export default class AddProvider extends React.Component {
       provider: deepClone(INIT_PROVIDER_STATE),
       filteredProviders: providers,
       isGatewaySearch: false,
+    });
+  };
+
+  toggleSeamless = (bool) => {
+    const { isEdit, selectedProvider } = this.state;
+
+    trackOptimizerEvents({
+      screen: `Optimizer ${isEdit ? 'Update' : 'Add'} Provider`,
+      objectName: 'Seamless option',
+      actionName: 'select',
+      properties: {
+        gateway: selectedProvider,
+        'Integration Type': bool ? 'Instant (beta)' : 'Server-to-Server',
+      },
+    });
+
+    this.setState((prevState) => {
+      const { Gateway_details, ...rest } = prevState.provider;
+
+      return {
+        provider: {
+          ...rest,
+          Gateway_details: { ...Gateway_details, optimizer_seamless_disabled: bool },
+        },
+      };
     });
   };
 
@@ -351,7 +413,7 @@ export default class AddProvider extends React.Component {
         if (value?.length === 0) {
           return false;
         }
-      } else if (!['Gateway Name', 'TPV'].includes(key) && !value) {
+      } else if (!SKIP_VALIDATION_KEYS.includes(key) && !value) {
         return false;
       }
     }
@@ -484,13 +546,13 @@ export default class AddProvider extends React.Component {
     };
 
     trackOptimizerEvents({
+      screen: `Optimizer ${isEdit ? 'Update' : 'Add'} Provider`,
       objectName: `${isEdit ? 'update' : 'add'} provider submit`,
       actionName: 'click',
       properties: {
         gateway: payload?.Gateway,
         payment_methods: payload?.Gateway_details?.['Payment Methods'],
       },
-      screen: `Optimizer ${isEdit ? 'Edit' : 'Add'} Provider`,
     });
 
     this.setState({ isSaving: true });
@@ -570,10 +632,12 @@ export default class AddProvider extends React.Component {
       selectedProvider,
     } = this.state;
 
-    if (redirect) {
-      return <Redirect to={redirect} />;
-    }
+    if (redirect) return <Redirect to={redirect} />;
+
+    const _params = qs.parse(this.props?.location?.search);
+    const onCloseLink = _params?.from ?? '/optimizer/rules';
     const selectedProviderWithAcquirer = this.getSelectedProviderWithAcquirer();
+
     return (
       <FullPageCover>
         <FullPageCoverHeader>
@@ -586,7 +650,7 @@ export default class AddProvider extends React.Component {
                   </div>
                   <div className="col-xs-5" />
                   <div className="col-xs-3">
-                    <Link to="/optimizer/rules" onClick={this.trackEventOnClose}>
+                    <Link to={onCloseLink} onClick={this.trackEventOnClose}>
                       <span className="pull-right add-provider-close">
                         Close <i className="i i-close" />
                       </span>
@@ -613,7 +677,7 @@ export default class AddProvider extends React.Component {
                       <div className="panel-header">
                         <h2 className="payment-gateway-title">
                           Select Gateway
-                          {!steps[1].edit && !isEdit ? (
+                          {!steps?.[1]?.edit ? (
                             <button
                               onClick={this.updateStep(1, {
                                 edit: !steps[1].edit,
@@ -635,18 +699,16 @@ export default class AddProvider extends React.Component {
                           steps={steps}
                           providers={providers}
                           selectedProvider={selectedProviderWithAcquirer}
+                          gatewayDetails={provider?.Gateway_details}
                           filterProvidersOnSearch={this.filterProvidersOnSearch}
                           filteredProviders={filteredProviders}
                           listProviders={this.listProviders}
                           changeGateway={this.changeGateway}
+                          toggleSeamless={this.toggleSeamless}
                           isEdit={isEdit}
                         />
                       </div>
-                      {steps[1].edit ? (
-                        <div className="panel-footer">
-                          {this.nextButton(1, !selectedProviderWithAcquirer)}
-                        </div>
-                      ) : null}
+                      {steps[1].edit ? this.nextButton(1) : null}
                     </div>
                   </CSSTransition>
                 )}
@@ -685,16 +747,7 @@ export default class AddProvider extends React.Component {
                           isProviderNameValid={isProviderNameValid}
                         />
                       </div>
-                      {steps?.[2]?.edit ? (
-                        <div className="panel-footer">
-                          {this.nextButton(
-                            2,
-                            !provider?.Provider_name?.trim() ||
-                              !isProviderNameValid ||
-                              !provider?.Description?.trim(),
-                          )}
-                        </div>
-                      ) : null}
+                      {steps?.[2]?.edit ? this.nextButton(2) : null}
                     </div>
                   </CSSTransition>
                 ) : null}

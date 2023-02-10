@@ -1541,3 +1541,17 @@ export const i18CurrencyConversionFromCommonUnitToMinorUnit = (amount) => {
   amount = (Number(amount) * 100).toFixed(0);
   return Number(amount);
 };
+
+/**
+ * @param {String} str -'/notes/{category}?noteId={noteId}'
+ * @param {Object} replacer - { category: 'development', noteId: '1' }
+ * @returns {String} - '/notes/development?noteId=1'
+ */
+
+export const stringTemplate = (str = '', replacer = {}) => {
+  let strCopy = str;
+  for (let key in replacer) {
+    strCopy = strCopy.replace(new RegExp('{' + key + '}', 'g'), replacer[key] ?? '');
+  }
+  return strCopy;
+};

@@ -30,6 +30,8 @@ export const INIT_FORM_STATE = {
   },
 };
 
+export const SKIP_VALIDATION_KEYS = ['Gateway Name', 'TPV', 'optimizer_seamless_disabled'];
+
 export const TPV_OPTIONS = [
   { label: 'Non TPV', value: 0 },
   { label: 'TPV Only', value: 1 },
@@ -38,3 +40,91 @@ export const TPV_OPTIONS = [
 
 export const HAVE_UPI_FEATURES = ['upi_mindgate', 'upi_icici', 'upi_axis'];
 export const HAVE_NETBANKING_FEATURES = ['atom'];
+
+/** Seamless option constants - Start **/
+
+export const SEAMLESS_PROVIDERS = ['paytm'];
+export const SEAMLESS_OPTIONS = [
+  { label: 'Instant (beta)', value: true },
+  { label: 'Server-to-Server', value: false },
+];
+export const SEAMLESS_CONTENT = {
+  paytm: {
+    disable: {
+      headerText: 'Enable Instant (beta)',
+      infoBlock: (
+        <div>
+          <p>Go live with your Paytm PG account instantly via 'Instant' integration mode.</p>
+          <p>
+            This is a beta release and supports the following payment methods - Debit Cards, Credit
+            Cards, Netbanking, Paytm Wallet.
+          </p>
+        </div>
+      ),
+      buttonText: 'Please note that `Instant` integration mode does not support the following:',
+      listPoints: (
+        <ul>
+          <li>
+            <b>UPI Payments via Paytm</b>&nbsp;
+            <span>
+              - UPI payments via Paytm PG are currently not supported on this Integration mode. By
+              default UPI payments will be routed to Razorpay PG. You can &nbsp;
+              <a
+                href="https://razorpay.com/docs/payments/optimizer/create-custom-rule"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                configure a new rule
+              </a>
+              &nbsp; to change this if required.
+            </span>
+          </li>
+          <li>
+            <b>Refunds for Paytm payments</b>&nbsp;
+            <span>
+              - Refunds for Paytm PG payments will need to be processed from your Paytm dashboard.
+              Please visit &nbsp;
+              <a
+                href="https://dashboard.paytm.com/login/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                https://dashboard.paytm.com/login/
+              </a>
+            </span>
+          </li>
+        </ul>
+      ),
+      footerLink: 'https://razorpay.com/docs/payments/optimizer/paytm-instant',
+      footerText: (
+        <p>
+          If you are keen on offering all payment methods and supporting refunds from Razorpay
+          dashboard, please explore ‘Server-to-Server’ integration mode.
+        </p>
+      ),
+    },
+    enable: {
+      headerText: 'Enable Server-to-Server',
+      infoBlock: (
+        <div>
+          <p>
+            To integrate your Paytm PG account via ‘Server-to-Server’ mode, please ensure the below
+            mentioned steps have been completed.
+          </p>
+        </div>
+      ),
+      buttonText: 'Prerequisites',
+      listPoints: [
+        '{gatewayName} has enabled ‘seamless’',
+        '‘Disable retry’ has been enabled',
+        '‘Refund processing’ has been enabled',
+        'Production & Staging URL webhooks have been configured',
+        'UPI Intent and collect flows have been enabled',
+      ],
+      footerLink: 'https://razorpay.com/docs/payments/optimizer/paytm-s2s',
+      footerText: null,
+    },
+  },
+};
+
+/** Seamless option constants - End **/

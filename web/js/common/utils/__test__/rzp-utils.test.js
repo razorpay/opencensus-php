@@ -1,4 +1,4 @@
-import { getCurrentFinancialYear } from 'common/utils/rzp-utils';
+import { getCurrentFinancialYear, stringTemplate } from 'common/utils/rzp-utils';
 
 describe('test for getCurrentFinancialYear', () => {
   it('should return correct financial year for 31st march', () => {
@@ -16,4 +16,11 @@ describe('test for getCurrentFinancialYear', () => {
     expect(nextYear).toBe(2023);
     jest.useRealTimers();
   });
+});
+
+test('stringTemplate', () => {
+  const str = '/notes/{category}?noteId={noteId}';
+  const replacer = { category: 'development', noteId: '1' };
+
+  expect(stringTemplate(str, replacer)).toBe('/notes/development?noteId=1');
 });
