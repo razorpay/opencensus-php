@@ -14,12 +14,14 @@ import InviteMerchant from './Invite';
 import { trackListEvents } from 'merchant/views/PartnerDashboard/ga';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
+import { fetchProducts } from 'merchant/reducers/capital';
 
 @withRouter
 @connect(
   (state) => ({
     user: state.session.user,
     isSubMerchantKycResellerEnabled: state.session.user.isSubMerchantKycResellerEnabled,
+    capitalProducts: state.loanApplicationDetails.products,
     ...state.submerchant,
   }),
   {
@@ -28,6 +30,7 @@ import { isMobileAndTablet } from 'common/utils/rzp-utils';
     switchMerchant,
     openModal,
     showNotification,
+    fetchProducts,
   },
 )
 @RTracking(() => window.rzpQ.component('SubmerchantDetailsContainer '))
@@ -41,13 +44,19 @@ export default class SubmerchantDetailsContainer extends Component {
     this.isSubMerchantKYCAccess = this.props.user.isFeatureEnabled('partner_sub_kyc_access');
   }
 
+  isCapitalProduct = () => {
+    if (this.props.history.location.pathname.startsWith('/partners/submerchants/capital')) {
+      return true;
+    }
+    return false;
+  };
   getPannelData = () => {
     let product = PRODUCT_TYPE.PG;
     if (this.props.history.location.pathname.startsWith('/partners/submerchants/x')) {
       product = PRODUCT_TYPE.X;
     }
 
-    if (this.props.history.location.pathname.startsWith('/partners/submerchants/capital')) {
+    if (this.isCapitalProduct()) {
       product = PRODUCT_TYPE.CAPITAL;
     }
 
@@ -58,6 +67,11 @@ export default class SubmerchantDetailsContainer extends Component {
   };
 
   componentDidMount() {
+    const { fetchProducts } = this.props;
+    if (this.isCapitalProduct()) {
+      fetchProducts();
+    }
+
     this.getPannelData();
     if (!!this.props.closeUrl) {
       trackListEvents('Open Details');
@@ -150,6 +164,7 @@ export default class SubmerchantDetailsContainer extends Component {
       error,
       switchMerchant: _switchMerchant,
       isSubMerchantKycResellerEnabled,
+      capitalProducts,
     } = this.props;
     return (
       <div>
@@ -166,6 +181,7 @@ export default class SubmerchantDetailsContainer extends Component {
           onResendInvite={this.handleResendInvite}
           product={this.state.product}
           isSubMerchantKYCAccess={this.isSubMerchantKYCAccess}
+          capitalProducts={capitalProducts}
         />
       </div>
     );

@@ -6,7 +6,6 @@ import AsyncButton from 'react-async-button';
 
 import { create } from 'merchant/reducers/submerchant';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { closeModal } from 'merchant_common/reducers/modals';
 import {
   createPartnerSubmerchantBatch as createBatch,
   validatePartnerSubmerchantBatch as validateBatch,
@@ -38,9 +37,11 @@ import type {
   NewMerchant,
 } from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant.types';
 import { classList } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
 
+// TODO replace window.rzpQ with analyticsTrack for entire file. currently handled only for capital
 class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   onAddSuccess: () => void;
   isPartnershipForXEnabled: boolean;
@@ -58,29 +59,29 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     this.isPartnershipForCapitalEnabled = isPartnershipForCapitalEnabled;
   }
 
+  isCapitalProduct = (): boolean => this.state.merchantType === PRODUCT_TYPE.CAPITAL;
+
   sampleUrl = () => {
     const { merchantType } = this.state;
     if (merchantType !== PRODUCT_TYPE.CAPITAL && this.isPartnershipForXEnabled) {
       return '/files/sample_submerchant_batch.xlsx';
     }
-    if (merchantType === PRODUCT_TYPE.CAPITAL) {
+    if (this.isCapitalProduct()) {
       return '/files/sample_capital_submerchant_batch.xlsx';
     }
     return '/files/sample_submerchant_link.xlsx';
   };
 
   batchType = () => {
-    const { merchantType } = this.state;
-    if (merchantType === PRODUCT_TYPE.CAPITAL) {
+    if (this.isCapitalProduct()) {
       return 'partner_submerchant_invite_capital';
     }
     return 'partner_submerchant_invite';
   };
 
   validateBatchType = () => {
-    const { merchantType } = this.state;
     const { validateBatch, validateCapitalBatch } = this.props;
-    if (merchantType === PRODUCT_TYPE.CAPITAL) {
+    if (this.isCapitalProduct()) {
       return validateCapitalBatch;
     }
     return validateBatch;
@@ -94,7 +95,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
       case 2:
         return merchantType === PRODUCT_TYPE.X
           ? 'Add New Merchants - RazorpayX'
-          : merchantType === PRODUCT_TYPE.CAPITAL
+          : this.isCapitalProduct()
           ? 'Add New Merchants - Corporate Card'
           : 'Add New Merchants - Razorpay Payments';
       case 3:
@@ -232,14 +233,27 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     } = this.props;
     const { bulkContactsCount, file_id, merchantType } = this.state;
     gaEvents.trackUploadBatch('Partner submerchant');
-    tracking?.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.submerchant.add.multiple.upload.invite', {
-        partnerID: user.id,
-        contactsCount: bulkContactsCount,
-      }),
-    );
+    if (this.isCapitalProduct()) {
+      analyticsTrack({
+        screen: 'Add Merchant modal',
+        objectName: 'partnerships.capital.bulk.upload.invite',
+        actionName: 'contacts button clicked',
+        properties: {
+          partner_id: user.id,
+          contactsCount: bulkContactsCount,
+        },
+        toLumberjack: true,
+      });
+    } else {
+      tracking?.trackEvent(
+        window.rzpQ.onbr().interaction('partnerships.submerchant.add.multiple.upload.invite', {
+          partnerID: user.id,
+          contactsCount: bulkContactsCount,
+        }),
+      );
+    }
     trackAddNewMerchantEvents('Add Multiple - Invite Contacts');
-    if (merchantType === PRODUCT_TYPE.CAPITAL) {
+    if (this.isCapitalProduct()) {
       return createCapitalBatch?.({
         file_id,
         config: {
@@ -247,13 +261,6 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
         },
       })
         .then(() => {
-          this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.upload', {
-            Action: 'Invite',
-            success: bulkContactsCount,
-          });
-          this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.invite', {
-            success: bulkContactsCount,
-          });
           showNotification?.({
             type: 'success',
             message:
@@ -263,12 +270,23 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
           closeModal();
         })
         .catch((error) => {
-          this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.upload', {
-            Action: 'Invite',
-            error: error && error[0],
+          analyticsTrack({
+            screen: 'Add Merchant modal',
+            objectName: 'partnerships.submerchant.add.product.group.multiple.upload',
+            actionName: 'bulk upload error',
+            properties: {
+              error: error && error[0],
+            },
+            toLumberjack: true,
           });
-          this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.invite', {
-            error: error && error[0],
+          analyticsTrack({
+            screen: 'Add Merchant modal',
+            objectName: 'partnerships.submerchant.add.product.group.multiple.invite',
+            actionName: 'bulk upload error',
+            properties: {
+              error: error && error[0],
+            },
+            toLumberjack: true,
           });
           showNotification?.({
             type: 'error',
@@ -319,16 +337,30 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   onValidation = (response, _name) => {
     const { user, tracking } = this.props;
     if (response && response.file_id) {
+      const bulkContactsCount = response.processable_count || 0;
       this.setState({
         file_id: response.file_id,
-        bulkContactsCount: response.processable_count || 0,
+        bulkContactsCount,
       });
-      tracking?.trackEvent(
-        window.rzpQ.onbr().interaction('partnerships.submerchant.add.multiple.upload.success', {
-          partnerID: user.id,
-          contactsCount: response.processable_count || 0,
-        }),
-      );
+      if (this.isCapitalProduct()) {
+        analyticsTrack({
+          screen: 'Add Merchant modal',
+          objectName: 'partnerships.capital.bulk upload',
+          actionName: 'bulk file uploaded',
+          properties: {
+            partner_id: user.id,
+            no_of_leads_added: bulkContactsCount,
+          },
+          toLumberjack: true,
+        });
+      } else {
+        tracking?.trackEvent(
+          window.rzpQ.onbr().interaction('partnerships.submerchant.add.multiple.upload.success', {
+            partnerID: user.id,
+            contactsCount: bulkContactsCount,
+          }),
+        );
+      }
       trackAddNewMerchantEvents('Add Multiple - Success');
     } else {
       this.setState({ file_id: '' });
@@ -362,7 +394,19 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     } else if (mode === ADD_MODE.single) {
       this.setState({ addMode: ADD_MODE.single, file_id: '' });
     } else {
-      this.trackUserEvent('partnerships.submerchant.add.product_group.socialLink');
+      if (this.isCapitalProduct()) {
+        analyticsTrack({
+          screen: 'Add Merchant modal',
+          objectName: 'partnerships.capital.link invites.tab clicked',
+          actionName: 'invites.tab clicked',
+          properties: {
+            partner_id: user.id,
+          },
+          toLumberjack: true,
+        });
+      } else {
+        this.trackUserEvent('partnerships.submerchant.add.product_group.socialLink');
+      }
       this.setState({
         addMode: ADD_MODE.social,
         file_id: '',
@@ -378,7 +422,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     if (merchantType === PRODUCT_TYPE.X) {
       return 'X';
     }
-    if (merchantType === PRODUCT_TYPE.CAPITAL) {
+    if (this.isCapitalProduct()) {
       return 'Capital';
     }
     return '';
@@ -405,8 +449,8 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   handleNextClick = () => {
     this.setState((prevState) => ({ step: prevState.step + 1 }));
 
-    const { step, merchantType } = this.state;
-    if (merchantType === PRODUCT_TYPE.CAPITAL) {
+    const { step } = this.state;
+    if (this.isCapitalProduct()) {
       this.setState({ addMode: ADD_MODE.bulk });
     }
     if (step === 1) {
@@ -416,7 +460,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   };
 
   handleBackClick = () => {
-    this.setState((prevState) => ({ step: prevState.step - 1 }));
+    this.setState((prevState) => ({ step: prevState.step - 1, file_id: '' }));
   };
 
   isNumber = (str: string) => {
@@ -491,15 +535,41 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   }
 
   sampleFileDownloadAnalytics = () => {
-    this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.action', {
-      action: 'Download Sample file',
-    });
+    const { user } = this.props;
+    if (this.isCapitalProduct()) {
+      analyticsTrack({
+        screen: 'Add Merchant modal',
+        objectName: 'partnerships.capital.bulk upload',
+        actionName: 'download sample file clicked',
+        properties: {
+          partner_id: user.id,
+        },
+        toLumberjack: true,
+      });
+    } else {
+      this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.action', {
+        action: 'Download Sample file',
+      });
+    }
   };
 
   clickToUploadAnalytics = () => {
-    this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.action', {
-      action: 'Click to upload',
-    });
+    const { user } = this.props;
+    if (this.isCapitalProduct()) {
+      analyticsTrack({
+        screen: 'Add Merchant modal',
+        objectName: 'partnerships.capital.bulk upload.file',
+        actionName: 'upload option clicked',
+        properties: {
+          partner_id: user.id,
+        },
+        toLumberjack: true,
+      });
+    } else {
+      this.trackUserEvent('partnerships.submerchant.add.product_group.multiple.action', {
+        action: 'Click to upload',
+      });
+    }
   };
 
   modalCloseClick = () => {
@@ -602,7 +672,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                       onClick={() => {
                         this.setState({ merchantType: PRODUCT_TYPE.CAPITAL });
                       }}
-                      checked={merchantType === PRODUCT_TYPE.CAPITAL}
+                      checked={this.isCapitalProduct()}
                     />
                   </ShowWhen>
                 </div>
@@ -675,6 +745,17 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                         </span>
                       </div>
                       <div className="bulk-actions">
+                        <ShowWhen
+                          additionalCondition={() =>
+                            this.isPartnershipForCapitalEnabled && this.isCapitalProduct()
+                          }
+                        >
+                          <div>
+                            <Button.Transparent onClick={this.handleBackClick}>
+                              Back
+                            </Button.Transparent>
+                          </div>
+                        </ShowWhen>
                         <AsyncButton
                           type="button"
                           className="btn btn-primary"
@@ -687,10 +768,10 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                   ) : null}
                   <ShowWhen
                     additionalCondition={() =>
-                      this.isPartnershipForCapitalEnabled && merchantType === PRODUCT_TYPE.CAPITAL
+                      this.isPartnershipForCapitalEnabled && this.isCapitalProduct() && !file_id
                     }
                   >
-                    <div className={classList(file_id ? 'bulk_back_button_container' : '')}>
+                    <div className="bulk_back_button_container">
                       <Button.Transparent onClick={this.handleBackClick}>Back</Button.Transparent>
                     </div>
                   </ShowWhen>
@@ -866,7 +947,6 @@ export default compose<ComponentType<AddMerchantPropsT>>(
   connect((state) => ({ ...state.session, isMobileResolution: state.app.isMobileResolution }), {
     create,
     showNotification,
-    closeModal,
     createBatch,
     validateBatch,
     validateCapitalBatch,

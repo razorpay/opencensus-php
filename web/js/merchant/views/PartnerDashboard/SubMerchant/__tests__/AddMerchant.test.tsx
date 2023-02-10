@@ -42,7 +42,7 @@ const state = {
 
 jest.mock('merchant/containers/BatchNew/Validate', () => ({
   __esModule: true,
-  default: ({ validateBatch, onValidation }) => {
+  default: ({ validateBatch, onValidation, clickToUploadAnalytics }) => {
     return (
       <div>
         <input
@@ -51,6 +51,7 @@ jest.mock('merchant/containers/BatchNew/Validate', () => ({
           onChange={() => {
             validateBatch();
             onValidation({ file_id: 'files1234', processable_count: 2 }, 'uploadFile');
+            clickToUploadAnalytics();
           }}
         />
       </div>
@@ -72,6 +73,7 @@ describe('AddMerchant', () => {
       onbr: () => {
         return {
           interaction: jest.fn(),
+          clicked: jest.fn(),
         };
       },
     };
@@ -150,6 +152,17 @@ describe('AddMerchant', () => {
     expect(screen.queryByText('Invite using Email')).not.toBeInTheDocument();
   });
 
+  test('should close the modal when close button is clicked', async () => {
+    renderAppWithCapitalSecondStep();
+    const closeButton = screen.getByTestId('modal-header-close-btn');
+    expect(closeButton).toBeInTheDocument();
+
+    await userEvent.click(closeButton);
+    await waitFor(() => {
+      expect(mockCloseModal).toBeCalled();
+    });
+  });
+
   test('should copy the link', async () => {
     renderAppWithCapitalSecondStep();
 
@@ -214,6 +227,53 @@ describe('AddMerchant', () => {
           'Your file has been successfully processed. Status of account creation will be sent to you within 2 hours.',
         ),
       ).toBeInTheDocument();
+    });
+  });
+
+  test('should show error notification if invite API fails after uploading file and clicking on invite', async () => {
+    server.use(
+      rest.post('*/merchant/api/test/batches/validate', (req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            status_code: 200,
+            success: true,
+            data: fileUploadResponse,
+          }),
+          ctx.delay(50),
+        );
+      }),
+    );
+    server.use(
+      rest.post('*/merchant/api/test/batches', (req, res, ctx) => {
+        return res(
+          ctx.status(400),
+          ctx.json({
+            status_code: 400,
+            success: true,
+            data: ['error'],
+          }),
+          ctx.delay(50),
+        );
+      }),
+    );
+    renderAppWithCapitalSecondStep();
+    const uploadButton = screen.getByTestId('upload-input');
+    const str = JSON.stringify([{ name: 'razorpay' }]);
+    const blob = new Blob([str]);
+    const file = new File([blob], 'hello.xlsx', { type: 'image/csv' });
+    expect(uploadButton).toBeInTheDocument();
+    await userEvent.upload(uploadButton, file);
+
+    await waitFor(() => {
+      expect(screen.getByText('2 contacts have been identified.')).toBeInTheDocument();
+    });
+    const inviteButton = screen.getByRole('button', { name: 'Invite 2 contacts' });
+    expect(inviteButton).toBeInTheDocument();
+    await userEvent.click(inviteButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to invite.')).toBeInTheDocument();
     });
   });
 });

@@ -75,6 +75,12 @@ export default function SocialShareGroup({ referralUrl, tracking, product, partn
         productGroup: 'Payments',
       });
     }
+    if (product === PRODUCT_TYPE.CAPITAL) {
+      trackUserEvent('partnerships.capital.link_invites.copy_link_clicked', {
+        referral_link: referralUrl,
+        partner_id: partnerID,
+      });
+    }
     if (product === PRODUCT_TYPE.X) {
       trackUserEvent('partnerships.submerchant.referral.x.copy');
       trackUserEvent('partnerships.submerchant.referral.product_group.copy', {

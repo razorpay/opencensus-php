@@ -95,18 +95,31 @@ export default class SubMerchantsList extends Component {
   };
 
   handleShareReferralLink = () => {
-    this.trackUserEvent('partnerships.submerchant.referral');
-    analyticsTrack({
-      objectName: 'Share Referral Link',
-      actionName: 'clicked',
-      screen: 'affiliate accounts',
-      properties: {
-        location: 'submerchant list',
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-      toCleverTap: true,
-    });
+    const { user } = this.props;
     const product = this.getProductType();
+    if (product === PRODUCT_TYPE.CAPITAL) {
+      analyticsTrack({
+        screen: 'Affiliate accounts',
+        objectName: 'partnerships.capital.affiliate accounts',
+        actionName: 'share referral link clicked',
+        properties: {
+          partner_id: user.id,
+        },
+        toLumberjack: true,
+      });
+    } else {
+      this.trackUserEvent('partnerships.submerchant.referral');
+      analyticsTrack({
+        objectName: 'Share Referral Link',
+        actionName: 'clicked',
+        screen: 'affiliate accounts',
+        properties: {
+          location: 'submerchant list',
+          ...getCommonAnalyticsProperties(window.rzp_user),
+        },
+        toCleverTap: true,
+      });
+    }
     this.props.openModal({
       size: 'med-large',
       component: (
@@ -149,12 +162,24 @@ export default class SubMerchantsList extends Component {
     );
   };
 
-  sendAnalytics = (e, type) => {
+  sendAnalytics = (type) => {
+    const { user } = this.props;
     if (type === 'navlink-Payments') {
       this.trackUserEvent('partnerships.dashboard.affiliate_account.payments');
     }
     if (type === 'navlink-X') {
       this.trackUserEvent('partnerships.dashboard.affiliate_account.x');
+    }
+    if (type === 'navlink-Capital') {
+      analyticsTrack({
+        screen: 'Affiliate accounts',
+        objectName: 'partnerships.capital',
+        actionName: 'affiliate accounts.tab clicked',
+        properties: {
+          partner_id: user.id,
+        },
+        toLumberjack: true,
+      });
     }
   };
 
@@ -181,7 +206,7 @@ export default class SubMerchantsList extends Component {
               <NavLink
                 exact
                 to="/partners/submerchants"
-                onClick={(e) => this.sendAnalytics(e, 'navlink-Payments')}
+                onClick={() => this.sendAnalytics('navlink-Payments')}
               >
                 Payments Affiliate Accounts
               </NavLink>
@@ -193,13 +218,17 @@ export default class SubMerchantsList extends Component {
                 <NavLink
                   exact
                   to="/partners/submerchants/x"
-                  onClick={(e) => this.sendAnalytics(e, 'navlink-X')}
+                  onClick={() => this.sendAnalytics('navlink-X')}
                 >
                   RazorpayX Affiliate Accounts
                 </NavLink>
               </ShowWhen>
               <ShowWhen additionalCondition={() => isPartnershipForCapitalEnabled}>
-                <NavLink exact to="/partners/submerchants/capital">
+                <NavLink
+                  exact
+                  to="/partners/submerchants/capital"
+                  onClick={() => this.sendAnalytics('navlink-Capital')}
+                >
                   Corporate Credit Card Affiliate Accounts
                 </NavLink>
               </ShowWhen>

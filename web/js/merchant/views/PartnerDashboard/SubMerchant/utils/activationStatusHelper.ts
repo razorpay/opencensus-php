@@ -2,46 +2,6 @@ import { merchantFetch } from 'merchant/utils/ajax';
 import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 import { CAPITAL_STATUS } from 'merchant/views/PartnerDashboard/constants';
 
-const filterApplications = (data: TODO_PD): TODO_PD => {
-  if (data.length > 0) {
-    let dataIndex;
-    let value;
-    data.forEach((item, index) => {
-      if (index === 0) {
-        value = item.created_at;
-        dataIndex = index;
-      }
-      if (item.created_at > value) {
-        dataIndex = index;
-        value = item.created_at;
-      }
-    });
-    return data[dataIndex];
-  }
-  return null;
-};
-
-export const getActivationStatusData = async (merchantId: string): Promise<TODO_PD> => {
-  const body = {
-    product_id: 'EzKCyq0So3rVWU',
-    merchant_id: merchantId.replace('acc_', ''),
-    states: ['STATE_CREATED', 'STATE_COMPLETED'],
-  };
-  const response = await merchantFetch({
-    url: `los/service/twirp/rzp.capital.los.origination.v1.ApplicationAPI/GetApplicationsByParam`,
-    method: 'post',
-    data: body,
-  });
-  if (response?.status_code === 200 && response?.data) {
-    const {
-      data: { applications },
-    } = response;
-    return filterApplications(applications);
-  } else {
-    return null;
-  }
-};
-
 export const activationStatusMap = (status: string): string => {
   switch (status.toLocaleLowerCase()) {
     case CAPITAL_STATUS.bureau_submission:
@@ -90,4 +50,64 @@ export const activationStatusMap = (status: string): string => {
     default:
       return '';
   }
+};
+
+const getUnixTimeStamp = (date: string): number => Math.floor(new Date(date).getTime() / 1000);
+
+export const filterApplications = (data: TODO_PD): TODO_PD => {
+  if (data.length > 0) {
+    let dataIndex;
+    let value;
+    data.forEach((item, index) => {
+      if (index === 0) {
+        value = getUnixTimeStamp(item.created_at);
+        dataIndex = index;
+      }
+      if (getUnixTimeStamp(item.created_at) > value) {
+        dataIndex = index;
+        value = getUnixTimeStamp(item.created_at);
+      }
+    });
+    return data[dataIndex];
+  }
+  return null;
+};
+
+export const getFormattedCapitalResponse = (data: TODO_PD, subMerchantData: TODO_PD): TODO_PD => {
+  if (data?.response) {
+    const { response } = data;
+    const formattedResponse = subMerchantData.map((item) => {
+      const status: TODO_PD = Object.keys(response)
+        .filter((key) => key === item.id.replace('acc_', ''))
+        .reduce((cur, key) => {
+          return response[key];
+        }, {});
+      if (status?.partner_applications?.length > 0) {
+        const { partner_applications } = status;
+        const filteredApplication = filterApplications(partner_applications);
+        return {
+          ...item,
+          capitalActivationStatus: activationStatusMap(filteredApplication.stage),
+        };
+      }
+      return { ...item, capitalActivationStatus: '' };
+    });
+    return formattedResponse;
+  }
+  return subMerchantData;
+};
+
+export const getActivationStatusBulk = async (
+  merchantId: string[],
+  productId: string,
+): Promise<TODO_PD> => {
+  const body = {
+    product_id: productId,
+    merchant_id: merchantId,
+  };
+  return merchantFetch({
+    url: `submerchants/capital/applications`,
+    method: 'post',
+    data: body,
+  });
 };

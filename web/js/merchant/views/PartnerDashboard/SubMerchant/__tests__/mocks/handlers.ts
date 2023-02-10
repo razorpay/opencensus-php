@@ -1,5 +1,5 @@
 import { rest } from 'msw';
-import { accountsListResponse, items, getByParamsResponse } from './fixtures';
+import { accountsListResponse, items, productResponse, bulkResponse } from './fixtures';
 
 export const subMerchantListHandlers = [
   rest.get('*/merchant/api/test/submerchants', (req, res, ctx) => {
@@ -14,16 +14,27 @@ export const subMerchantListHandlers = [
   }),
 
   rest.post(
-    '*/merchant/api/test/los/service/twirp/rzp.capital.los.origination.v1.ApplicationAPI/GetApplicationsByParam',
+    '*/merchant/api/*/los/service/twirp/rzp.capital.los.admin.v1.ProductAPI/GetProducts',
     (req, res, ctx) => {
       return res(
         ctx.status(200),
         ctx.json({
           status_code: 200,
           success: true,
-          data: getByParamsResponse,
+          data: productResponse,
         }),
       );
     },
   ),
+
+  rest.post('*/merchant/api/test/submerchants/capital/applications', (req, res, ctx) => {
+    return res(
+      ctx.status(200),
+      ctx.json({
+        status_code: 200,
+        success: true,
+        data: bulkResponse,
+      }),
+    );
+  }),
 ];

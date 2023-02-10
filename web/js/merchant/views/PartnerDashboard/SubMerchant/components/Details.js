@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 
 import Spinner from 'common/ui/Spinner';
@@ -20,8 +20,9 @@ import SubMerchantKycStatusLabel from './SubMerchantKycStatusLabel';
 import DetailsAction from './DetailsAction';
 import { numberDifferentiation } from 'merchant/views/PartnerDashboard/SubMerchant/utils/index';
 import {
-  getActivationStatusData,
   activationStatusMap,
+  getActivationStatusBulk,
+  filterApplications,
 } from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
 
 export default (props) => {
@@ -36,6 +37,7 @@ export default (props) => {
     getPannelData,
     trackUserEvent,
     isSubMerchantKYCAccess,
+    capitalProducts,
   } = props;
 
   const isPGProduct = product === PRODUCT_TYPE.PG;
@@ -49,30 +51,59 @@ export default (props) => {
   const isShowLargeWrapper = isReseller && isSubMerchantKycResellerEnabled && !smallWrapper;
   const [capitalDetails, setCapitalDetails] = useState();
   const [showMoreDetails, setShowMoreDetails] = useState(false);
+  const [isCapitalLoading, setIsCapitalLoading] = useState(false);
+  const isCapitalAddress =
+    capitalDetails?.company_address_line_1 ||
+    capitalDetails?.company_address_line_2 ||
+    capitalDetails?.company_address_city ||
+    capitalDetails?.company_address_state;
+
+  const getCapitalData = useCallback(
+    (id) => {
+      setIsCapitalLoading(true);
+      if (capitalProducts?.data?.length > 0) {
+        const { data } = capitalProducts;
+        const product = data.filter((item) => {
+          return item.name === 'CARDS';
+        });
+        const productId = product[0].id;
+        const subMerchantId = [id.replace('acc_', '')];
+        getActivationStatusBulk(subMerchantId, productId)
+          .then((capitalData) => {
+            if (capitalData?.data?.response?.[subMerchantId]?.partner_applications?.length > 0) {
+              const {
+                data: { response },
+              } = capitalData;
+              const data = response[subMerchantId].partner_applications;
+
+              setCapitalDetails(filterApplications(data));
+              setIsCapitalLoading(false);
+            } else {
+              setIsCapitalLoading(false);
+            }
+          })
+          .catch(() => {
+            setIsCapitalLoading(false);
+          });
+      } else {
+        setIsCapitalLoading(false);
+      }
+    },
+    [capitalProducts],
+  );
 
   useEffect(() => {
-    const activationStatusData = async (id) => {
-      const response = await getActivationStatusData(id);
-      setCapitalDetails(response);
-    };
-    if (submerchant?.id) {
-      activationStatusData(submerchant.id);
+    if (isCapitalProduct && submerchant?.id && !capitalProducts?.loading) {
+      getCapitalData(submerchant.id);
     }
-  }, [submerchant]);
-
-  const getBusinessVintage = (vintage) => {
-    if (vintage.toLowerCase() === 'business_tenure_unknown') {
-      return 'Unknown';
-    }
-    return vintage;
-  };
+  }, [isCapitalProduct, submerchant, capitalProducts, getCapitalData]);
 
   const handleDetailsToggle = () => {
     setShowMoreDetails((currentValue) => !currentValue);
   };
   return (
     <div class={`content-wrapper txn-details ${isShowLargeWrapper ? 'content-lg' : 'content-sm'}`}>
-      {isLoading ? (
+      {isLoading || isCapitalLoading ? (
         <div class="page-spinner-container">
           <Spinner />
         </div>
@@ -216,11 +247,11 @@ export default (props) => {
                   />
                 )}
                 <ShowWhen additionalCondition={() => isCapitalProduct}>
-                  {submerchant?.application && (
-                    <EntityDetailRow value={submerchant.application?.id} label="Application ID" />
-                  )}
                   {capitalDetails && showMoreDetails && (
                     <>
+                      {capitalDetails?.id && (
+                        <EntityDetailRow value={capitalDetails.id} label="Application ID" />
+                      )}
                       {(capitalDetails?.stage || capitalDetails.stage == '') && (
                         <EntityDetailRow label="Activation Status">
                           {capitalDetails?.stage !== '' ? (
@@ -232,59 +263,59 @@ export default (props) => {
                           )}
                         </EntityDetailRow>
                       )}
-                      {capitalDetails?.business?.legal_name && (
+                      {capitalDetails?.business_name ? (
                         <EntityDetailRow
-                          value={capitalDetails.business.legal_name}
+                          value={capitalDetails.business_name}
                           label="Business Name"
                         />
-                      )}
-                      {capitalDetails?.business?.applicants.length > 0 &&
-                        capitalDetails?.business?.applicants[0].kyc && (
-                          <EntityDetailRow label="POC Name">
-                            {capitalDetails.business.applicants[0].kyc.first_name}{' '}
-                            {capitalDetails.business.applicants[0].kyc.second_name}
-                          </EntityDetailRow>
-                        )}
-                      {capitalDetails?.business?.addresses?.length > 0 && (
-                        <>
-                          <EntityDetailRow label="Company Address">
-                            {capitalDetails.business.addresses[0].address_line1}{' '}
-                            {capitalDetails.business.addresses[0].address_line2}{' '}
-                            {capitalDetails.business.addresses[0].city},
-                            {capitalDetails.business.addresses[0].state}
-                          </EntityDetailRow>
-                          <EntityDetailRow
-                            value={capitalDetails.business.addresses[0].pincode}
-                            label="Company Pincode"
-                          />
-                        </>
-                      )}
-                      {capitalDetails?.business?.deed_type && (
+                      ) : null}
+                      {capitalDetails?.account_name ? (
+                        <EntityDetailRow label="POC Name">
+                          {capitalDetails.account_name}
+                        </EntityDetailRow>
+                      ) : null}
+                      {isCapitalAddress ? (
+                        <EntityDetailRow label="Company Address">
+                          {capitalDetails.company_address_line_1}{' '}
+                          {capitalDetails.company_address_line_2}{' '}
+                          {capitalDetails.company_address_city},
+                          {capitalDetails.company_address_state}
+                        </EntityDetailRow>
+                      ) : null}
+
+                      {capitalDetails?.company_address_pincode ? (
                         <EntityDetailRow
-                          value={capitalDetails.business.deed_type}
+                          value={capitalDetails.company_address_pincode}
+                          label="Company Pincode"
+                        />
+                      ) : null}
+
+                      {capitalDetails?.business_type ? (
+                        <EntityDetailRow
+                          value={capitalDetails.business_type}
                           label="Business Type"
                         />
-                      )}
-                      {capitalDetails?.business?.tenure && (
+                      ) : null}
+                      {capitalDetails?.business_vintage ? (
                         <EntityDetailRow
-                          value={getBusinessVintage(capitalDetails.business.tenure)}
+                          value={capitalDetails.business_vintage}
                           label="Business Vintage"
                         />
-                      )}
-                      {capitalDetails?.business?.annual_turnover_max &&
-                        capitalDetails?.business?.annual_turnover_min && (
-                          <EntityDetailRow label="Annual Revenue Slab">
-                            {numberDifferentiation(capitalDetails?.business?.annual_turnover_min)} -{' '}
-                            {numberDifferentiation(capitalDetails?.business?.annual_turnover_max)}
-                          </EntityDetailRow>
-                        )}
+                      ) : null}
+                      {capitalDetails?.annual_turnover_max &&
+                      capitalDetails?.annual_turnover_min ? (
+                        <EntityDetailRow label="Annual Revenue Slab">
+                          {numberDifferentiation(capitalDetails.annual_turnover_min)} -{' '}
+                          {numberDifferentiation(capitalDetails.annual_turnover_max)}
+                        </EntityDetailRow>
+                      ) : null}
                     </>
                   )}
-                  {capitalDetails && (
+                  {capitalDetails ? (
                     <button className="link_button" onClick={handleDetailsToggle}>
                       {showMoreDetails ? 'show less details' : 'show more details'}
                     </button>
-                  )}
+                  ) : null}
                 </ShowWhen>
               </div>
             </div>

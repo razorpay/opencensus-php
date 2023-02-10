@@ -103,6 +103,27 @@ describe('AccountsList', () => {
     expect(screen.getByText('Copy Link')).toBeInTheDocument();
   });
 
+  test('should show error notification and status as Not Available if bulk API return error', async () => {
+    server.use(
+      rest.post('*/merchant/api/test/submerchants/capital/applications', (req, res, ctx) => {
+        return res(
+          ctx.status(200),
+          ctx.json({
+            status_code: 400,
+            success: false,
+            data: ['something went wrong!'],
+          }),
+          ctx.delay(50),
+        );
+      }),
+    );
+    renderApp();
+
+    await waitFor(() => {
+      expect(screen.getByText('There was an error while fetching Status')).toBeInTheDocument();
+    });
+  });
+
   test('should render the list once the data is fetched and is not empty', async () => {
     renderApp();
 
@@ -115,5 +136,10 @@ describe('AccountsList', () => {
     expect(screen.getByText(items[0].id)).toBeInTheDocument();
     expect(screen.getByText(items[0].name)).toBeInTheDocument();
     expect(screen.getByText(items[0].email)).toBeInTheDocument();
+    expect(screen.getByText(items[1].id)).toBeInTheDocument();
+    expect(screen.getByText(items[1].name)).toBeInTheDocument();
+    expect(screen.getByText(items[1].email)).toBeInTheDocument();
+    expect(screen.getByText('Bureau Submission')).toBeInTheDocument();
+    expect(screen.getByText('Not Available')).toBeInTheDocument();
   });
 });

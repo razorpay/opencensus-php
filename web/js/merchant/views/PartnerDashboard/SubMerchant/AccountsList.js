@@ -52,9 +52,10 @@ import AddNewSubMerchants from 'assets/onboarding/add-new-sub-merchants.png';
 import ShareReferralLink from 'assets/onboarding/share-referral-link.png';
 import Image from 'common/ui/Image';
 import {
-  getActivationStatusData,
-  activationStatusMap,
+  getActivationStatusBulk,
+  getFormattedCapitalResponse,
 } from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
+import { fetchProducts } from 'merchant/reducers/capital';
 
 const email = {
   title: 'Registered Email',
@@ -193,6 +194,7 @@ class ProductSubMerchantsList extends ListContainer {
   state = {
     capitalLoading: false,
     capitalItems: [],
+    isDataLoaded: false,
   };
 
   constructor(props) {
@@ -203,39 +205,58 @@ class ProductSubMerchantsList extends ListContainer {
     this.isCapitalProduct = this.props.product === PRODUCT_TYPE.CAPITAL;
   }
 
-  getCapitalAcivationStatus = (subMerchantData) => {
-    this.setState({ capitalLoading: true });
-    const promises = [];
-    subMerchantData.forEach((items) => {
-      promises.push(getActivationStatusData(items.id));
-    });
-
-    // Once all promises are resolved, update the state
-    Promise.allSettled(promises)
-      .then((responses) => {
-        const data = responses.map((response, index) => {
-          if (response.status === 'fulfilled') {
-            return {
-              ...subMerchantData[index],
-              capitalActivationStatus: activationStatusMap(response.value.stage),
-            };
-          }
-          return {
-            ...subMerchantData[index],
-            capitalActivationStatus: '',
-          };
+  getActivationBulkData = (items) => {
+    const { showNotification, products, loading } = this.props;
+    const isDataFetched = !loading && !products?.loading;
+    if (isDataFetched) {
+      this.setState({ capitalLoading: true, isDataLoaded: true });
+      if (products?.data?.length > 0 && items.length > 0) {
+        const product = products.data.filter((item) => {
+          return item.name === 'CARDS';
         });
-        this.setState({ capitalItems: data, capitalLoading: false });
-      })
-      .catch(() => {
-        this.setState({ capitalLoading: false });
-      });
+        const productId = product[0].id;
+        const merchantIds = items.map((item) => item.id.replace('acc_', ''));
+        getActivationStatusBulk(merchantIds, productId)
+          .then((response) => {
+            if (response?.data) {
+              const { data } = response;
+              const formattedData = getFormattedCapitalResponse(data, items);
+              this.setState({ capitalItems: formattedData, capitalLoading: false });
+            } else {
+              this.setState({ capitalItems: items, capitalLoading: false });
+            }
+          })
+          .catch(() => {
+            this.setState({ capitalItems: items, capitalLoading: false });
+            showNotification?.({
+              type: 'error',
+              message: 'There was an error while fetching Status',
+            });
+          });
+      } else {
+        this.setState({ capitalItems: items, capitalLoading: false });
+      }
+    }
   };
 
+  capitalSearchHandler = () => {
+    this.setState({ isDataLoaded: false });
+  };
+  componentDidMount() {
+    if (this.isCapitalProduct) {
+      const { fetchProducts } = this.props;
+      fetchProducts();
+    }
+  }
   componentDidUpdate(prevProps) {
-    const { items } = this.props;
-    if (this.isCapitalProduct && prevProps.items !== items && items?.length > 0) {
-      this.getCapitalAcivationStatus(items);
+    const { products, loading, location, items } = this.props;
+    const { isDataLoaded } = this.state;
+
+    if (this.isCapitalProduct && (!products?.loading || !loading) && !isDataLoaded) {
+      this.getActivationBulkData(items);
+    }
+    if (this.isCapitalProduct && prevProps?.location?.search !== location?.search) {
+      this.capitalSearchHandler();
     }
   }
 
@@ -634,7 +655,6 @@ class ProductSubMerchantsList extends ListContainer {
                     form="SubmerchantListFilter"
                     type="link"
                     count={this.state.count}
-                    onSubmit={this.search}
                     onSearchAnalytics={trackSearchAnalytics}
                     onClearAnalytics={trackClearAnalytics}
                     showAppIdFilter={user.isPartner('pure_platform')}
@@ -655,7 +675,8 @@ class ProductSubMerchantsList extends ListContainer {
                   </button>
                 </div>
               )}
-              {!isNonEmptyList && isFilterSearchUsed ? (
+              {(!isNonEmptyList || (this.isCapitalProduct && !isNonEmptyCapitalList)) &&
+              isFilterSearchUsed ? (
                 <div style={{ flex: 2, textAlign: 'center' }}>
                   <div>
                     <h3 class="sub-title">No Search results found</h3>
@@ -790,6 +811,7 @@ const getDispatchToProps = (productType = PRODUCT_TYPE.PG) => {
     closeModal,
     switchMerchant,
     showNotification,
+    fetchProducts,
   };
 };
 
@@ -816,6 +838,7 @@ export const CapitalSubMerchantList = connect(
   (state) => ({
     user: state.session.user,
     mode: state.session.mode,
+    products: state.loanApplicationDetails.products,
     ...state.submerchants,
   }),
   getDispatchToProps(PRODUCT_TYPE.CAPITAL),

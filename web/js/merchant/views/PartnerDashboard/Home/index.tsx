@@ -40,6 +40,7 @@ const Home = ({ user, showNotification, openModal, closeModal, tracking }: Partn
   const merchant = user.merchants[user.current];
   const partnerName = merchant.name;
   const { isPartnershipForCapitalEnabled } = user;
+  const partnerId = user?.merchant?.id;
 
   const loadData = async () => {
     try {
@@ -109,7 +110,7 @@ const Home = ({ user, showNotification, openModal, closeModal, tracking }: Partn
       method: 'post',
       url: 'https://hooks.zapier.com/hooks/catch/12775470/bwyqe0h/',
       data: {
-        partner_id: user?.merchant?.id,
+        partner_id: partnerId,
         phone_number,
         name: user?.name,
         email: user?.email,
@@ -150,14 +151,14 @@ const Home = ({ user, showNotification, openModal, closeModal, tracking }: Partn
     tracking?.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.partner_aggr_req.initiate _agg_req', {
         device: isMobileAndTablet() ? 'mobile' : 'desktop',
-        mid: user?.merchant?.id,
+        mid: partnerId,
       }),
     );
 
     tracking?.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.partner_aggr_req.open_form', {
         device: isMobileAndTablet ? 'mobile' : 'desktop',
-        mid: user?.merchant?.id,
+        mid: partnerId,
       }),
     );
 
@@ -171,7 +172,7 @@ const Home = ({ user, showNotification, openModal, closeModal, tracking }: Partn
             isMobileAndTablet={isMobileAndTablet()}
             handleSubmitAggregator={handleSubmitAggregator}
             contactNumber={Number(user?.contact_mobile)}
-            mid={user?.merchant?.id}
+            mid={partnerId}
           />
         </Suspense>
       ),
@@ -213,7 +214,7 @@ const Home = ({ user, showNotification, openModal, closeModal, tracking }: Partn
         />
       </ShowWhen>
       <ShowWhen additionalCondition={() => isPartnershipForCapitalEnabled}>
-        <CapitalReferralCard handleReferClient={handleReferClient} />
+        <CapitalReferralCard handleReferClient={handleReferClient} mid={partnerId} />
       </ShowWhen>
     </div>
   );

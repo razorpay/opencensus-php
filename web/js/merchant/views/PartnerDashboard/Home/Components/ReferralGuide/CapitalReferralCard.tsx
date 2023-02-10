@@ -1,19 +1,43 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '@razorpay/blade/components';
 import BackgroundImage from 'assets/capital-background.svg';
 import ReferIcon from 'assets/capital-refer.svg';
 import { AddMerchantSource } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { analyticsTrack } from 'common/utils/analytics';
 
 interface CapitalReferralCardProps {
   handleReferClient: (source: AddMerchantSource, type?: string) => void;
+  mid: string;
 }
 export const CapitalReferralCard = ({
   handleReferClient,
+  mid,
 }: CapitalReferralCardProps): JSX.Element => {
   const handleRefer = (): void => {
+    analyticsTrack({
+      screen: 'Home screen Capital Banner',
+      objectName: 'partnerships.capital.new merchant',
+      actionName: 'refer now button clicked',
+      properties: {
+        partner_id: mid,
+      },
+      toLumberjack: true,
+    });
     handleReferClient('referral-guide-capital', PRODUCT_TYPE.CAPITAL);
   };
+
+  useEffect(() => {
+    analyticsTrack({
+      screen: 'Home screen Capital Banner',
+      objectName: 'partnerships.capital.new merchant',
+      actionName: 'banner viewed',
+      properties: {
+        partner_id: mid,
+      },
+      toLumberjack: true,
+    });
+  }, [mid]);
 
   return (
     <div className="capital-referral-guide-card">
