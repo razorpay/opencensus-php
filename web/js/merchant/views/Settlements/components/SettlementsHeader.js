@@ -9,6 +9,8 @@ import SettlementsBanner from './SettlementsBanner';
 import BalanceDetails from './BalanceDetails';
 import SettleNow from './SettleNow';
 import { fetchOnDemandBlocked as fnFetchOnDemandBlocked } from 'merchant/reducers/settlements/details';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 function SettlementsHeader(props) {
   const {
@@ -30,6 +32,9 @@ function SettlementsHeader(props) {
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
   const isOnHold = no_settlement?.on_hold;
   const isSettlementOnHold = isOnTemporaryHold || isOnHold;
+  const leftBorderClassName = user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+    ? ''
+    : 'border-left';
 
   const viewSettlementCycle = () => {
     openModal({
@@ -77,17 +82,23 @@ function SettlementsHeader(props) {
             </div>
           </div>
           <div className="right-content">
-            <span>
-              <a
-                className="btn btn-link"
-                href="http://razorpay.com/settlement"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                How settlements work? <i className="i i-external-link link-icon" />
-              </a>
-            </span>
-            <span className="border-left">
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+              }
+            >
+              <span>
+                <a
+                  className="btn btn-link"
+                  href="http://razorpay.com/settlement"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  How settlements work? <i className="i i-external-link link-icon" />
+                </a>
+              </span>
+            </ShowWhen>
+            <span className={leftBorderClassName}>
               <span className="btn btn-link" onClick={viewSettlementCycle}>
                 <i className="i i-clock clock-icon" /> View Settlement Cycle
               </span>

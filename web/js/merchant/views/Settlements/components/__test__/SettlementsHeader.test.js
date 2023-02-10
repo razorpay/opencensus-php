@@ -19,6 +19,7 @@ jest.mock('merchant/views/Settlements/components/BalanceDetails', () => ({ amoun
 
 jest.mock(
   'merchant/views/Settlements/components/SettleNow',
+  // prettier-ignore
   () => ({ showOndemandSettlementForm }) => (
     <>
       <div>Settle Now Widget</div>
@@ -35,6 +36,7 @@ const state = {
       isOndemandSettlementEnabled: true,
       isOrgAllowedFunctionality: () => true,
       isAllowedView: () => true,
+      findTag: jest.fn(),
     },
     mode: 'live',
   },

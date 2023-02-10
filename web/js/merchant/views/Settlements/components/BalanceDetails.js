@@ -9,6 +9,7 @@ import SettlementDetail from 'merchant/views/Settlements/Settlements/components/
 import CashAdvanceNudge from 'merchant/views/Capital/CashAdvanceNudges';
 
 const BalanceDetails = (props) => {
+  // eslint-disable-next-line prettier/prettier
   const {
     mode,
     user,
@@ -17,6 +18,7 @@ const BalanceDetails = (props) => {
     settlementConfig,
     openModal,
     payments,
+    // eslint-disable-next-line prettier/prettier
   } = props;
 
   const { no_settlement } = settlement_amount.data;
@@ -27,6 +29,7 @@ const BalanceDetails = (props) => {
 
   let balance = current_balance.data.balance || 0;
   let currentBalanceClassName = 'amount-current-balance';
+  const currency = user.merchant.currency;
 
   if (balance < 0) {
     balance = Math.abs(balance);
@@ -56,7 +59,7 @@ const BalanceDetails = (props) => {
           <Amount
             aria-label="amount"
             value={balance}
-            currency="INR"
+            currency={currency}
             className={currentBalanceClassName}
           />
         </strong>
@@ -69,7 +72,7 @@ const BalanceDetails = (props) => {
             <strong>
               <Amount
                 value={settlement_amount.data.settlement_amount}
-                currency="INR"
+                currency={currency}
                 className="amount-settlement"
               />
             </strong>

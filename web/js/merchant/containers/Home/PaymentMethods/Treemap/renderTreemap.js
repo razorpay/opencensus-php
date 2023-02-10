@@ -139,6 +139,19 @@ function main(
     }
   }
 
+  function methodText(d) {
+    if (d.key.indexOf('__bank') >= 0) {
+      return d.key.replace('__bank', '');
+    }
+    if (groupTitleMap[d.key]) {
+      return groupTitleMap[d.key];
+    }
+    if (d.key === 'fpx') {
+      return d.key.toUpperCase();
+    }
+    return titleCase(d.key);
+  }
+
   // Aggregate the values for internal nodes. This is normally done by the
   // treemap layout, but not here because of our custom implementation.
   // We also take a snapshot of the original children (_children) to avoid
@@ -147,10 +160,7 @@ function main(
     d.displayText = '';
 
     if (d.key) {
-      d.displayText =
-        d.key.indexOf('__bank') >= 0
-          ? d.key.replace('__bank', '')
-          : groupTitleMap[d.key] || titleCase(d.key);
+      d.displayText = methodText(d);
     }
 
     // eslint-disable-next-line no-cond-assign

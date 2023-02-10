@@ -7,7 +7,11 @@ import { storeWithInitialState } from 'merchant/store';
 
 const state = {
   session: {
-    user: {},
+    user: {
+      merchant: {
+        currency: 'INR',
+      },
+    },
     mode: 'test',
   },
   home: {
