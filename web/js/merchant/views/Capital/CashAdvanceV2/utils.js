@@ -29,6 +29,7 @@ export const computeCashAdvanceApplicationStatus = ({ application, applicant }) 
       APPLICATION_STATES.STATE_REJECTED,
       APPLICATION_STATES.RZP_REJECTED,
       APPLICATION_STATES.STATE_CLOSED,
+      APPLICATION_STATES.STATE_COMPLETED,
     ]?.includes(application.state)
   ) {
     return application.state;
@@ -90,6 +91,7 @@ export const computeCorporateCardApplicationStatus = ({
       APPLICATION_STATES.STATE_REJECTED,
       APPLICATION_STATES.RZP_REJECTED,
       APPLICATION_STATES.STATE_CLOSED,
+      APPLICATION_STATES.STATE_COMPLETED,
     ]?.includes(application?.state)
   ) {
     return application?.state;
