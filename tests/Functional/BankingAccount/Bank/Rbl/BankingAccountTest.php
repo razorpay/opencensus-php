@@ -9123,7 +9123,6 @@ class BankingAccountTest extends TestCase
 
     public function testBankLmsEndToEndRevivedLeadWithoutSentToBank()
     {
-
         $attribute = ['activation_status' => 'activated'];
 
         $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
@@ -9166,41 +9165,75 @@ class BankingAccountTest extends TestCase
 
     public function testBankLmsEndToEndRevivedLeadWithSentToBank()
     {
-
         $response = $this->setupBankLMSTest();
 
         $user = $response['user'];
 
-        $response = $response['bankingAccount'];
+        $bankingAccount = $response['bankingAccount'];
 
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::PICKED, Status::INITIATED,
             null, null,
             null, null,
-            $response);
-
-        $this->assertUpdateBankingAccountStatusFromTo(
-            Status::INITIATED, Status::ARCHIVED,
-            null, null,
-            null, null,
-            $response);
-
+            $bankingAccount);
 
         $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
 
         $this->ba->addXBankLMSOriginHeader();
 
+        // Bank updates RM Details
         $dataToReplace = [
-            'url' => '/banking_accounts/rbl/lms/banking_account/' . $response['id'],
+            'url' => '/banking_accounts/rbl/lms/banking_account/' . $bankingAccount['id'],
             'method' => 'PATCH',
             'content' => [
-                'status' => 'initiated'
+                'activation_detail' => [
+                    'rm_name' => 'Test RM'
+                ]
+            ]
+        ];
+
+        $result = $this->makeRequestAndGetContent($dataToReplace);
+    
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::INITIATED, Status::ARCHIVED,
+            null, null,
+            null, null,
+            $bankingAccount);
+
+        $this->assertUpdateBankingAccountStatusFromTo(
+            Status::ARCHIVED, Status::PICKED,
+            null, null,
+            null, null,
+            $bankingAccount);
+
+        $bankingAccountActivationDetail = $this->getDbLastEntity('banking_account_activation_detail');
+
+        // Data is not reset at RZP Processing stage
+        $this->assertEquals('Test RM', $bankingAccountActivationDetail[ActivationDetail\Entity::RM_NAME]);
+
+        $additionalDetails = json_decode($bankingAccountActivationDetail[ActivationDetail\Entity::ADDITIONAL_DETAILS], true);
+
+        $this->assertEquals(true, $additionalDetails[BankingAccount\Activation\Detail\Entity::REVIVED_LEAD]);
+
+        // Now when we move it to Sent to Bank, data should be reset
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $dataToReplace = [
+            'url' => '/banking_accounts/rbl/lms/banking_account/' . $bankingAccount['id'],
+            'method' => 'PATCH',
+            'content' => [
+                'status' => 'initiated',
+                'sub_status' => 'none'
             ]
         ];
 
         $response = $this->makeRequestAndGetContent($dataToReplace);
 
-        $additionalDetails = json_decode($response[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ADDITIONAL_DETAILS],true);
+        $this->assertEquals(null, $response[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::RM_NAME]);
+
+        $additionalDetails = json_decode($response[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ADDITIONAL_DETAILS], true);
 
         $this->assertEquals(true, $additionalDetails[BankingAccount\Activation\Detail\Entity::REVIVED_LEAD]);
 

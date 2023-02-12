@@ -801,8 +801,10 @@ class Core extends Base\Core
 
         if ($isRevivedLead === true)
         {
-            $this->makeRevivedLeadChanges($input);
+            $this->updateRevivedFlag($input);
         }
+
+        $this->resetFieldsForSentToBank($input);
 
         $this->updateInputAssigneeTeamBasedOnStatusOrSubStatusChange($bankingAccount, $input, $isAutomatedUpdate);
 
@@ -817,8 +819,6 @@ class Core extends Base\Core
         $input = $processor->formatInputParametersIfRequired($input);
 
         $oldStatus = $bankingAccount->getStatus();
-
-        $alreadyInTermnialState = $bankingAccount->isAlreadyInOldTerminalState();
 
         if($fromDashboard === true)
         {
@@ -884,9 +884,7 @@ class Core extends Base\Core
                 $bankingAccountSubStatusChanged,
                 $isAutomatedUpdate,
                 $fromDashboard,
-                $fromPartnerDashboard,
-                $alreadyInTermnialState,
-                $isRevivedLead)
+                $fromPartnerDashboard)
         {
             // Updating BankingAccount
             $this->repo->saveOrFail($bankingAccount);
@@ -1006,14 +1004,17 @@ class Core extends Base\Core
         return $bankingAccount;
     }
 
-
-    public function makeRevivedLeadChanges(&$input)
+    protected function resetFieldsForSentToBank(&$input)
     {
-        if (isset($input[Entity::ACTIVATION_DETAIL]) === false)
+        if (!(isset($input[Entity::STATUS]) && 
+            $input[Entity::STATUS] === Status::INITIATED && 
+            isset($input[Entity::SUB_STATUS]) && 
+            $input[Entity::SUB_STATUS] === Status::NONE))
         {
-            $input[Entity::ACTIVATION_DETAIL] = [];
+            return;
         }
 
+        $input[Entity::ACTIVATION_DETAIL] = [];
 
         $input[Entity::ACTIVATION_DETAIL] = array_merge($input[Entity::ACTIVATION_DETAIL], [
 
@@ -1038,7 +1039,6 @@ class Core extends Base\Core
 
                 ActivationDetail\Entity::ADDITIONAL_DETAILS => [
 
-                    ActivationDetail\Entity::REVIVED_LEAD => true,
                     ActivationDetail\Entity::MID_OFFICE_POC_NAME => null,
                     ActivationDetail\Entity::API_ONBOARDING_LOGIN_DATE => null,
                     ActivationDetail\Entity::API_ONBOARDED_DATE => null,
@@ -1070,7 +1070,13 @@ class Core extends Base\Core
                 ]
             ]
         );
+    }
 
+    public function updateRevivedFlag(&$input)
+    {
+        $input[Entity::ACTIVATION_DETAIL]
+            [ActivationDetail\Entity::ADDITIONAL_DETAILS]
+                [ActivationDetail\Entity::REVIVED_LEAD] = true;
 
     }
 
