@@ -148,18 +148,7 @@ class PaymentCreateController extends Controller
 
         $data += (new CheckoutView())->addOrgInformationInResponse($merchant);
 
-        if (isset($this->app['rzp.mode']) and $this->app['rzp.mode'] === 'test' and isset($data['method']) === true and
-            $data['method'] === Gateway::CARDLESS_EMI)
-        {
-            $trackId = $data['payment_id'];
-            $redirectUrl = $this->route->getUrl('payment_redirect_to_authenticate_get', ['id' => $trackId]);
-            $data['request']['url'] = $redirectUrl;
-            $response = $this->generateRedirectJson($data);
-        }
-        else
-        {
-            $response = $this->processCoprotoJsonData($data);
-        }
+        $response = $this->processCoprotoJsonData($data);
 
         $this->logResponseIfApplicable($response);
 
@@ -1409,9 +1398,9 @@ class PaymentCreateController extends Controller
                 return $this->generateUpiJson($data);
             }
             elseif (($data['type'] === 'respawn') and
-                ($data['method'] === Payment\Method::PAYLATER))
+                (($data['method'] === Payment\Method::CARDLESS_EMI) or ($data['method'] === Payment\Method::PAYLATER)))
             {
-                return $this->generatePaylaterJson($data);
+                return $this->generatePaylaterCardlessEmiJson($data);
             }
             elseif ($data['type'] === 'application')
             {
@@ -1422,15 +1411,20 @@ class PaymentCreateController extends Controller
         return $data;
     }
 
-    protected function generatePaylaterJson($data){
+    protected function generatePaylaterCardlessEmiJson($data){
 
+        $paymentId = $data['payment_id'];
+
+        $strippedPaymentId = Payment\Entity::verifyIdAndStripSign($paymentId);
 
         $response['razorpay_payment_id'] = $data['payment_id'];
+
+        $redirectUrl = $this->route->getUrl('payment_redirect_to_authenticate_get',['id' => $strippedPaymentId]);
 
         $next = [
             [
                 'action' => 'redirect',
-                'url' => $data['payment_authenticate_url']
+                'url' => $redirectUrl
             ],
         ];
 

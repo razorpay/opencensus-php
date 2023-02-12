@@ -2078,17 +2078,17 @@ class Processor
 
             case Payment\Method::CARDLESS_EMI:
                 $coproto = $this->preProcessPaymentInputsForCardlessEmi($input, $payment);
+                (new Payment\Service())->cachePaylaterCardlessEmiResponseIfApplicable($payment, $coproto);
                 break;
 
             case Payment\Method::PAYLATER:
                 $coproto = $this->preProcessPaymentInputsForPayLater($input, $payment);
-                if ($coproto != null)
-                {
-                    (new Payment\Service())->cachePaylaterResponseIfApplicable($payment, $coproto);
-                }
+                (new Payment\Service())->cachePaylaterCardlessEmiResponseIfApplicable($payment, $coproto);
+
 
         break;
         }
+
 
         return $coproto;
     }
@@ -5303,7 +5303,7 @@ class Processor
         }
     }
 
-    protected function isAffordabilityPaymentCreateWithOtt($input)
+    protected function isAffordabilityReusePayment($input)
     {
         if (($input['method'] === Payment\Method::CARDLESS_EMI) === true or ($input['method'] === Payment\Method::PAYLATER) === true)
         {
@@ -5313,6 +5313,16 @@ class Processor
                 return true;
 
             }
+            // in case of flexmoney ott would not be present in payment request
+
+            if ((isset($input['payment_id']) === true) and isset($input['provider']) === true )
+            {
+                if (((empty($input['emi_duration']) === false) and
+                    (Payment\Gateway::isCardlessEmiProviderAndRedirectFlowProvider($input['provider']) === true)) )
+                {
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -5321,7 +5331,7 @@ class Processor
     {
         $this->tracePaymentNewRequest($input);
 
-        if ($this->isAffordabilityPaymentCreateWithOtt($input) === true)
+        if ($this->isAffordabilityReusePayment($input) === true)
         {
                 $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($input['payment_id']));
 
@@ -5712,7 +5722,7 @@ class Processor
         }
 
         // for cardless emi and paylater, /create route is called twice in same payment flow hence we need not increment order attempt in 2nd call
-        if ($this->isAffordabilityPaymentCreateWithOtt($input) === true)
+        if ($this->isAffordabilityReusePayment($input) === true)
         {
             return;
         }

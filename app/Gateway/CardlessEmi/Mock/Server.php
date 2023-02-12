@@ -51,6 +51,14 @@ class Server extends Base\Mock\Server
             ];
         }
 
+        if ($jsonRequest['mobile_number'] === "+919918899021")
+        {
+            $content = [
+                'account_exists'   => false,
+                'error_code'       => 'USER_DNE',
+                'status_code'      => 404,
+            ];
+        }
         $this->content($content, 'check_account');
 
         $content = json_encode($content);

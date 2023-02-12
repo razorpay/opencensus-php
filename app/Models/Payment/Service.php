@@ -15,6 +15,7 @@ use RZP\Base\RuntimeManager;
 
 use RZP\Jobs;
 use RZP\Diag\EventCode;
+use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Risk;
 use RZP\Exception;
 use RZP\Error;
@@ -926,7 +927,7 @@ class Service extends Base\Service
 
     protected function getResponseDataFromCache($payment)
     {
-        if (!($payment->getGateway() === Gateway::PAYSECURE or $payment->getMethod() === Gateway::PAYLATER) )
+        if (!($payment->getGateway() === Gateway::PAYSECURE or $payment->getMethod() === Gateway::PAYLATER or $payment->getMethod() === Gateway::CARDLESS_EMI) )
         {
             return;
         }
@@ -973,10 +974,14 @@ class Service extends Base\Service
         $this->cachePaymentResponse($payment, $data);
     }
 
-    public function cachePaylaterResponseIfApplicable($payment, $data)
+    public function cachePaylaterCardlessEmiResponseIfApplicable($payment, $data)
     {
+        if ($data == null)
+        {
+            return;
+        }
 
-        if ($payment->getMethod() !== Gateway::PAYLATER)
+        if (!($payment->getMethod() === Gateway::PAYLATER or $payment->getMethod() === Gateway::CARDLESS_EMI))
         {
             return;
         }
@@ -985,7 +990,7 @@ class Service extends Base\Service
 
         if ($route->getCurrentRouteName() === "payment_create_private_json")
         {
-            if ((empty($data['method']) === false and $data['method'] === 'paylater')
+            if ((empty($data['method']) === false and ($data['method'] === 'paylater') or ($data['method'] === 'cardless_emi'))
                 and (empty($data['type']) === false and $data['type'] === 'respawn'))
             {
                 $this->cachePaymentResponse($payment, $data);
@@ -1007,6 +1012,21 @@ class Service extends Base\Service
         $this->app['cache']->put($key, $payload, Processor\Processor::REDIRECT_CACHE_RESPONSE_TTL);
     }
 
+    // This is hack for s2s json support for paylater abd cardless emi payments
+    protected function isCardlessEmiPaylaterPaymentCachedForRedirect($payment, $mode)
+    {
+        if ($payment->getWallet() === Gateway::GETSIMPL and $mode === Mode::LIVE)
+        {
+            return true;
+        }
+        else if($payment->getWallet() === CardlessEmi::EARLYSALARY or
+                ($payment->getMethod() === Method::CARDLESS_EMI and (in_array($payment->getWallet(), CardlessEmi::$fullNameForSupportedBanks, true))))
+        {
+            return true;
+        }
+        return false;
+
+    }
     //
     // Since, redirectToAuthorize is a direct auth we don't have any
     // merchant/auth/mode. We set merchant in basic auth and return
@@ -1031,7 +1051,7 @@ class Service extends Base\Service
 
         $this->app['basicauth']->setMerchant($merchant);
 
-        if ($payment->getWallet() === Gateway::GETSIMPL)
+        if ($this->isCardlessEmiPaylaterPaymentCachedForRedirect($payment, $mode) === true)
         {
             if (($payment->isCreated() === false))
             {

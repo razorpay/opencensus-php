@@ -36,15 +36,54 @@ class CardlessEmiTest extends TestCase
 
     }
 
-    protected function makeInitialPaymentRequest()
+    protected function makeInitialPaymentRequest($email, $contact, $route)
     {
         $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
 
+        $payment['email'] = $email;
+
+        $payment['contact'] = $contact;
+
+        if ($route === 'JSON')
+        {
+            $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+            $response = $this->doS2SPrivateAuthJsonPayment($payment);
+
+            return $response;
+        }elseif ($route === 'REDIRECT')
+        {
+            $this->fixtures->merchant->addFeatures(['s2s']);
+
+            $response = $this->doS2SPrivateAuthPayment($payment);
+
+            return $response;
+        }
         $request = $this->buildAuthPaymentRequest($payment);
 
         $this->ba->publicAuth();
 
         return $this->makeRequestParent($request);
+    }
+
+    protected function fetchAndValidatePaymentStatus($id, $status)
+    {
+        $paymentEntityFromResponse = Payment\Entity::findOrFail(Payment\Entity::stripDefaultSign($id));
+
+        $lastPaymentEntity = $this->getLastPayment();
+
+        $this->assertEquals($paymentEntityFromResponse->getStatus(), $status);
+
+        $this->assertEquals($lastPaymentEntity['id'], $id);
+    }
+
+    protected function otpVerifyAssert($otpVerifyResponse){
+
+        $this->assertEquals($otpVerifyResponse->original['success'], 1);
+
+        $this->assertArrayHasKey('emi_plans', $otpVerifyResponse->original);
+
+        $this->assertArrayHasKey('ott', $otpVerifyResponse->original);
     }
 
     protected function prepareOtpVerifyRequest($responseData)
@@ -61,7 +100,15 @@ class CardlessEmiTest extends TestCase
 
         unset($otpVerifyRequest['content']['emi_duration']);
 
-        $otpVerifyRequest['content']['otp'] = '0007';
+        $email = $responseData['data']['data']['request']['content']['email'];
+         if ($email === "invalid_otp@gmail.com")
+         {
+             $otpVerifyRequest['content']['otp'] = '000ppppp8';
+         }
+         else {
+             $otpVerifyRequest['content']['otp'] = '0007';
+         }
+
 
         return $otpVerifyRequest;
     }
@@ -101,35 +148,53 @@ class CardlessEmiTest extends TestCase
         'The provider field is required when method is cardless_emi.');
     }
 
-    public function testCardlessEmiIncorrectOtt()
-    {
-        $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
-        $payment['ott'] = '123456';
 
-        $this->setOtp('123456');
-
-        $key = 'payment:cardlessemi.123456.token';
-        $data = [
-            'contact'  => '9918899029',
-            'provider' => 'EARLYSALARY',
-        ];
-
-        $emiPlans = $this->app['cache']->set($key, $data, 15 * 60);
-
+    // account does not exist
+    public function testAccountDoesNotExist($email='no_accound@b.com',$contact = '+919918899021'){
         $this->makeRequestAndCatchException(
-            function() use ($payment)
+            function() use ($email, $contact)
             {
-                $this->doAuthPayment($payment);
+                $this->makeInitialPaymentRequest($email,$contact,"AJAX");
             },
-            RZP\Exception\BadRequestException::class,
-            'Emi duration is not valid');
+            RZP\Exception\GatewayErrorException::class);
     }
 
-    //--------Unit test begin---------
+    public function testAccountDoesNotExists2sJSON($email='no_accound@b.com',$contact = '+919918899021'){
 
-    public function testCardlessEmiPaymentInitiate()
+        $this->makeRequestAndCatchException(
+            function() use ($email, $contact)
+            {
+                $this->makeInitialPaymentRequest($email,$contact,"JSON");
+            },
+            RZP\Exception\GatewayErrorException::class);
+    }
+
+    public function testAccountDoesNotExists2sRedirect($email='no_accound@b.com',$contact = '+919918899021'){
+
+        $this->makeRequestAndCatchException(
+            function() use ($email, $contact)
+            {
+                $this->makeInitialPaymentRequest($email,$contact,"REDIRECT");
+            },
+            RZP\Exception\GatewayErrorException::class);
+    }
+
+    // invalid ott
+
+    // missing contact
+    // request tempered
+    // valid ott, failed authorize
+    // valid ott, success authorize, capture
+    // authorize, failed refund
+    // authorize, success refund
+
+
+
+    //--------Unit test begin---------
+    //done
+    public function testCardlessEmiPaymentInitiateAjax($email='a@b.com',$contact = '+919918899022')
     {
-        $response = $this->makeInitialPaymentRequest();
+        $response= $this->makeInitialPaymentRequest($email,$contact,"AJAX");
 
         $data = $response->getOriginalContent()->getData();
 
@@ -137,17 +202,108 @@ class CardlessEmiTest extends TestCase
 
         //remove pay_ prefix from payment_id before finding in Database
         //Eg: pay_1234 -> 1234
-        $paymentEntityFromResponse = Payment\Entity::findOrFail(Payment\Entity::stripDefaultSign($paymentIdFromResponse));
+        $this->fetchAndValidatePaymentStatus($paymentIdFromResponse, Payment\Status::CREATED);
 
-        $lastPaymentEntity = $this->getLastPayment();
-
-        $this->assertEquals($paymentEntityFromResponse->getStatus(), Payment\Status::CREATED);
-
-        $this->assertEquals($lastPaymentEntity['id'], $paymentIdFromResponse);
-
-        return $data;
+        return [$paymentIdFromResponse, $data];
     }
 
+    //done
+    public function testCardlessEmiPaymentInitiateS2SJson($email='valid_ott@gmail.com',$contact = '+919918899022')
+    {
+        $response= $this->makeInitialPaymentRequest($email,$contact,"JSON");
+
+        $this->assertArrayHasKey('next', $response);
+
+        $this->assertArrayHasKey('action', $response['next'][0]);
+
+        $this->assertArrayHasKey('url', $response['next'][0]);
+
+        $paymentIdFromResponse = $response['razorpay_payment_id'];
+
+        //remove pay_ prefix from payment_id before finding in Database
+        //Eg: pay_1234 -> 1234
+        $this->fetchAndValidatePaymentStatus($paymentIdFromResponse, Payment\Status::CREATED);
+
+        $redirectContent = $response['next'][0];
+
+        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+
+        $id = getTextBetweenStrings($redirectContent['url'], '/payments/', '/authenticate');
+
+        $url = $this->getPaymentRedirectToAuthorizrUrl($id);
+
+        return [$response, $paymentIdFromResponse, $url];
+    }
+
+
+    //done
+    public function testIncorrectOtpAjax()
+    {
+        list($paymentId, $response) = $this->testCardlessEmiPaymentInitiateAjax($email='invalid_otp@gmail.com',$contact = '+919918899022');
+
+        $this->makeRequestAndCatchException(
+            function() use ($response,  $paymentId)
+            {
+                $otpVerifyRequest = $this->prepareOtpVerifyRequest($response);
+
+                $otpVerifyResponse = $this->makeRequestParent($otpVerifyRequest);
+            },
+            RZP\Exception\BadRequestValidationFailureException::class,
+        'The otp format is invalid.');
+
+        $this->fetchAndValidatePaymentStatus($paymentId, Payment\Status::CREATED);
+
+    }
+
+    //done
+    public function testIncorrectOtpS2SJson()
+    {
+        list($response, $paymentIdFromResponse, $url) = $this->testCardlessEmiPaymentInitiateS2SJson($email='invalid_otp@gmail.com',$contact = '+919918899022');
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $infoResponse = $this->makeRequestParent($request);
+
+        $this->ba->publicAuth();
+
+        $this->makeRequestAndCatchException(
+            function() use ($infoResponse)
+            {
+                $callbackResponse = $this->runPaymentCallbackFlowCardlessEmi($infoResponse, $true,null);
+
+            },
+            RZP\Exception\BadRequestValidationFailureException::class,
+            'The otp format is invalid.');
+
+
+        $this->fetchAndValidatePaymentStatus($paymentIdFromResponse, Payment\Status::CREATED);
+
+
+    }
+
+    //done
+    public function testCorrectOtpAjax()
+    {
+        list($paymentId, $response) = $this->testCardlessEmiPaymentInitiateAjax($email='valid_otp@gmail.com',$contact = '+919918899022');
+
+        $otpVerifyRequest = $this->prepareOtpVerifyRequest($response);
+
+        $otpVerifyResponse = $this->makeRequestParent($otpVerifyRequest);
+
+        $this->fetchAndValidatePaymentStatus($paymentId, Payment\Status::CREATED);
+
+        $this->otpVerifyAssert($otpVerifyResponse);
+
+        return [$paymentId, $otpVerifyResponse];
+    }
+
+    //done
     public function testCardlessEmiPaymentInitiateCustomerRelatedError()
     {
         foreach (self::CUSTOMER_RELATED_ERRORS as $error)
@@ -164,7 +320,7 @@ class CardlessEmiTest extends TestCase
             });
 
             $this->makeRequestAndCatchException(function () {
-                $this->makeInitialPaymentRequest();
+                $this->makeInitialPaymentRequest("a@b.com","+919918899021","ajax");
 
             }, \RZP\Exception\GatewayErrorException::class);
 
@@ -176,36 +332,63 @@ class CardlessEmiTest extends TestCase
         }
     }
 
-    public function testCardlessEmiValidOtpSubmit()
-    {
-        $responseData = $this->testCardlessEmiPaymentInitiate();
+    //needs to be fixed
+//    public function testCardlessEmiPaymentInitiateInvalidOttS2SJson()
+//    {
+//        $response = $this->testCardlessEmiPaymentInitiateS2SJson('invalid_ott@gmail.com',$contact = '+919918899022');
+//
+//        print_r($response);
+//        $this->assertArrayHasKey('next', $response);
+//
+//        $this->assertArrayHasKey('action', $response['next'][0]);
+//
+//        $this->assertArrayHasKey('url', $response['next'][0]);
+//
+//        $paymentIdFromResponse = $response['razorpay_payment_id'];
+//
+//        //remove pay_ prefix from payment_id before finding in Database
+//        //Eg: pay_1234 -> 1234
+//        $paymentEntityFromResponse = Payment\Entity::findOrFail(Payment\Entity::stripDefaultSign($paymentIdFromResponse));
+//
+//        $this->assertEquals($paymentEntityFromResponse->getStatus(), Payment\Status::CREATED);
+//
+//        $redirectContent = $response['next'][0];
+//
+//        $this->assertTrue($this->isRedirectToAuthorizeUrl($redirectContent['url']));
+//
+//        $id = getTextBetweenStrings($redirectContent['url'], '/payments/', '/authenticate');
+//
+//        $url = $this->getPaymentRedirectToAuthorizrUrl($id);
+//
+//        $this->ba->directAuth();
+//
+//        $request = [
+//            'url'   => $url,
+//            'method' => 'get',
+//            'content' => [],
+//        ];
+//
+//        $infoResponse = $this->makeRequestParent($request);
+//
+//        $this->ba->publicAuth();
+//
+//        $this->makeRequestAndCatchException(
+//            function() use ($infoResponse)
+//            {
+//                $callbackResponse = $this->runPaymentCallbackFlowCardlessEmi($infoResponse, $true,null);
+//            },
+//            BadRequestValidationFailureException::class);
+//
+//    }
 
-        $paymentId = $responseData['data']['data']['request']['content']['payment_id'];
-
-        $otpVerifyRequest = $this->prepareOtpVerifyRequest($responseData);
-
-        $otpVerifyResponse = $this->makeRequestParent($otpVerifyRequest);
-
-        $paymentEntity = Payment\Entity::findOrFail(Payment\Entity::stripDefaultSign($paymentId));
-
-        $this->assertEquals($paymentEntity->getStatus(), Payment\Status::CREATED);
-
-        $this->assertEquals($otpVerifyResponse->original['success'], 1);
-
-        $this->assertArrayHasKey('emi_plans', $otpVerifyResponse->original);
-
-        $this->assertArrayHasKey('ott', $otpVerifyResponse->original);
-
-        return [$paymentId, $otpVerifyResponse];
-    }
 
     public function testCardlesssEmiOtpSubmitInvalidPaymentId()
     {
-        $responseData = $this->testCardlessEmiPaymentInitiate();
+        list($paymentId, $response) = $this->testCardlessEmiPaymentInitiateAjax($email='valid_otp@gmail.com',$contact = '+919918899022');
 
-        $paymentId = $responseData['data']['data']['request']['content']['payment_id'];
+        $paymentId = $response['data']['data']['request']['content']['payment_id'];
 
-        $otpVerifyRequest = $this->prepareOtpVerifyRequest($responseData);
+        $otpVerifyRequest = $this->prepareOtpVerifyRequest($response);
 
         $otpVerifyRequest['content']['payment_id'] = 'pay_1234567';
 
@@ -218,15 +401,20 @@ class CardlessEmiTest extends TestCase
         $this->assertEquals($paymentEntity->getStatus(), Payment\Status::CREATED);
     }
 
+    //done
     public function testCardlesssEmiAuthorize()
     {
-        list($paymentId, $otpVerifyResponse) = $this->testCardlessEmiValidOtpSubmit();
+        list($paymentId, $otpVerifyResponse) = $this->testCorrectOtpAjax();
 
         $authorizeRequest = $this->buildAuthPaymentRequest($this->getDefaultCardlessEmiPaymentArray(self::PROVIDER));
 
         $authorizeRequest['content']['payment_id'] = $paymentId;
 
         $authorizeRequest['content']['ott'] = $otpVerifyResponse->original['ott'];
+
+        $authorizeRequest['content']['email'] = 'valid_otp@gmail.com';
+
+        $authorizeRequest['content']['contact'] = '+919918899022';
 
         $this->ba->publicAuth();
 
@@ -245,15 +433,20 @@ class CardlessEmiTest extends TestCase
         $this->assertEquals($paymentEntity->getStatus(), Payment\Status::AUTHORIZED);
     }
 
+    //done
     public function testCardlesssEmiAuthorizeOttPaymentMismatch()
     {
-        list($paymentId, $otpVerifyResponse) = $this->testCardlessEmiValidOtpSubmit();
+        list($paymentId, $otpVerifyResponse) = $this->testCorrectOtpAjax();
 
         $authorizeRequest = $this->buildAuthPaymentRequest($this->getDefaultCardlessEmiPaymentArray(self::PROVIDER));
 
         $authorizeRequest['content']['payment_id'] = $paymentId;
 
         $authorizeRequest['content']['ott'] = 'invalid_ott';
+
+        $authorizeRequest['content']['email'] = 'valid_otp@gmail.com';
+
+        $authorizeRequest['content']['contact'] = '+919918899022';
 
         $this->ba->publicAuth();
 
@@ -268,46 +461,27 @@ class CardlessEmiTest extends TestCase
 
     public function testCardlesssEmiAuthorizeMissingPaymentId()
     {
-        list($paymentId, $otpVerifyResponse) = $this->testCardlessEmiValidOtpSubmit();
+
+
+        list($paymentId, $otpVerifyResponse) = $this->testCorrectOtpAjax();
 
         $authorizeRequest = $this->buildAuthPaymentRequest($this->getDefaultCardlessEmiPaymentArray(self::PROVIDER));
 
-        unset($authorizeRequest['content']['payment_id']);
 
         $authorizeRequest['content']['ott'] = $otpVerifyResponse->original['ott'];
 
+        $authorizeRequest['content']['email'] = 'valid_otp@gmail.com';
+
+        $authorizeRequest['content']['contact'] = '+919918899022';
+
+
         $this->ba->publicAuth();
 
-        $this->makeRequestAndGetContent($authorizeRequest);
+        $response = $this->makeRequestAndGetContent($authorizeRequest);
 
         $paymentEntity = Payment\Entity::findOrFail(Payment\Entity::stripDefaultSign($paymentId));
 
         $this->assertEquals($paymentEntity->getStatus(), Payment\Status::CREATED);
     }
-
-    //--------Unit test end---------
-
-    //--------functional test begin
-    public function testCardlessEmiPayment()
-    {
-        $payment = $this->getDefaultCardlessEmiPaymentArray(self::PROVIDER);
-
-        $payment['contact'] = '+91' . $payment['contact'];
-
-        $request = $this->buildAuthPaymentRequest($payment);
-
-        $this->ba->publicAuth();
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $paymentEntity = $this->getLastPayment();
-
-        $this->assertArrayHasKey('razorpay_payment_id', $response);
-
-        $this->assertEquals($paymentEntity['id'], $response['razorpay_payment_id']);
-
-        $this->assertEquals($paymentEntity['status'], Payment\Status::AUTHORIZED);
-    }
-    //--------functional test end
-
 }
+

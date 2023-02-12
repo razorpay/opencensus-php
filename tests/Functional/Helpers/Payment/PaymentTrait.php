@@ -689,11 +689,17 @@ trait PaymentTrait
 
     protected function makeOtpVerifyCallback($url, $email, $contact)
     {
+        $otp = '0007';
+
+        if ($email === "invalid_otp@gmail.com"){
+            $otp = 'sasad12';
+        }
+
         $request = [
             'url'       => $url,
             'method'    => 'POST',
             'content'   => [
-                'otp'   => '0007',
+                'otp'   => $otp,
                 'email'  => $email,
                 'contact' => $contact,
             ],
