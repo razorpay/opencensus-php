@@ -124,8 +124,6 @@ abstract class Base extends EMandate\Base
 
     protected function createGatewayEntities(PublicCollection $tokens)
     {
-        $gateway = $this->gatewayFile->getTarget();
-
         foreach ($tokens as $token)
         {
             $paymentId = $token['payment_id'];
@@ -141,12 +139,6 @@ abstract class Base extends EMandate\Base
             {
                 continue;
             }
-
-            $this->trace->info(TraceCode::EMANDATE_DEBIT_ENTITY_CREATE,
-                [
-                    "payment_id" => $paymentId,
-                    "gateway" => $gateway
-                ]);
 
             $this->createGatewayEntity($token);
         }

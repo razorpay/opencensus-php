@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Gateway\File\Processor\Nach\Cancel;
 
+use RZP\Mail\Gateway\Nach\Base as NachMail;
+use Mail;
 use Storage;
 use Carbon\Carbon;
 
@@ -26,6 +28,7 @@ class CombinedNachIcici extends Base
     const ACQUIRER  = Payment\Gateway::ACQUIRER_ICIC;
     const EXTENSION = FileStore\Format::ZIP;
     const FILE_TYPE = FileStore\Type::ICICI_NACH_COMBINED_CANCEL;
+    const GATEWAY   = Payment\Gateway::NACH_ICICI;
     const S3_PATH   = 'icicibank/nach/input_file/';
     const FILE_NAME = 'MMS-CANCEL-ICIC-ICIC406434-{$date}-API0{$count}-INP';
     const ZIP_FILE  = 'MMS-CANCEL-ICIC-ICIC406434-{$date}-API000001-INP';
@@ -46,6 +49,8 @@ class CombinedNachIcici extends Base
 
             foreach ($data as $key => $xmls)
             {
+                $recordCount = 0;
+
                 foreach ($xmls as $count => $xml)
                 {
                     $count = str_pad(++$count, 5, '0', STR_PAD_LEFT);
@@ -57,9 +62,16 @@ class CombinedNachIcici extends Base
                     $xmlFilePath = $dirName . DIRECTORY_SEPARATOR . $fileName . '.xml';
 
                     Storage::put($xmlFilePath, $xml);
+
+                    $recordCount++;
                 }
 
                 $this->generateZipFile($dirName);
+
+                $fileNameForMail = basename($dirName) . '.' . self::EXTENSION;
+
+                $this->mailData[$fileNameForMail]['count'] = $recordCount;
+
             }
 
             $this->gatewayFile->setStatus(Status::FILE_GENERATED);
@@ -106,5 +118,11 @@ class CombinedNachIcici extends Base
         ];
 
         $this->sendBeamRequest($data, [], $mailInfo, true);
+
+        $type = self::GATEWAY . '_' . self::STEP;
+
+        $mailable = new NachMail(['mailData' => $this->mailData], $type, $this->gatewayFile->getRecipients());
+
+        Mail::queue($mailable);
     }
 }

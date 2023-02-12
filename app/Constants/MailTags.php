@@ -123,6 +123,7 @@ class MailTags
 
     const ICICI_ENACH_DEBIT_MAIL           = 'icici_enach_debit_mail';
     const ICICI_NACH_REGISTER_MAIL         = 'icici_nach_register_mail';
+    const ICICI_NACH_CANCEL_MAIL           = 'icici_nach_cancel_mail';
 
     const RBL_ENACH_DEBIT_MAIL             = 'rbl_enach_debit_mail';
     const RBL_ENACH_REGISTER_MAIL          = 'rbl_enach_register_mail';
