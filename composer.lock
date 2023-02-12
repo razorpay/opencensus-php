@@ -10777,12 +10777,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/config-proto.git",
-                "reference": "1107bf785c8d090b879d943edfc6b04ff6439fa0"
+                "reference": "343e06d4d704971f52daefde040d821afb71ff54"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/1107bf785c8d090b879d943edfc6b04ff6439fa0",
-                "reference": "1107bf785c8d090b879d943edfc6b04ff6439fa0",
+                "url": "https://api.github.com/repos/razorpay/config-proto/zipball/343e06d4d704971f52daefde040d821afb71ff54",
+                "reference": "343e06d4d704971f52daefde040d821afb71ff54",
                 "shasum": ""
             },
             "require": {
@@ -10808,7 +10808,7 @@
                 "dcs-config",
                 "razorpay"
             ],
-            "time": "2023-01-27T09:20:12+00:00"
+            "time": "2023-02-08T07:33:10+00:00"
         },
         {
             "name": "razorpay/dcs-php-sdk",
@@ -10816,12 +10816,12 @@
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/dcs-php-sdk.git",
-                "reference": "ef9e6545c91d1860e4ef7368814fff01882151d2"
+                "reference": "beb7f96d935e9960ebf50e567914fc0a5336b6b8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/ef9e6545c91d1860e4ef7368814fff01882151d2",
-                "reference": "ef9e6545c91d1860e4ef7368814fff01882151d2",
+                "url": "https://api.github.com/repos/razorpay/dcs-php-sdk/zipball/beb7f96d935e9960ebf50e567914fc0a5336b6b8",
+                "reference": "beb7f96d935e9960ebf50e567914fc0a5336b6b8",
                 "shasum": ""
             },
             "require": {
@@ -10868,7 +10868,7 @@
                 "dcs-php-sdk",
                 "razorpay"
             ],
-            "time": "2023-01-28T17:15:50+00:00"
+            "time": "2023-02-12T14:10:20+00:00"
         },
         {
             "name": "razorpay/ec2-metadata",
@@ -15674,12 +15674,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "fd9e963bb80ccbf5d83ce813f9058aacc67cdb98"
+                "reference": "f9c7affe77a00ae32ca127ca6833d034e6d33f25"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/fd9e963bb80ccbf5d83ce813f9058aacc67cdb98",
-                "reference": "fd9e963bb80ccbf5d83ce813f9058aacc67cdb98",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/f9c7affe77a00ae32ca127ca6833d034e6d33f25",
+                "reference": "f9c7affe77a00ae32ca127ca6833d034e6d33f25",
                 "shasum": ""
             },
             "require": {
@@ -15750,7 +15750,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-01-26T09:26:14+00:00"
+            "time": "2023-01-30T17:25:47+00:00"
         },
         {
             "name": "symfony/polyfill-php72",
