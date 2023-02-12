@@ -383,6 +383,16 @@ class InvoiceController extends Controller
         // email and sms statuses to sent/viewed, after delivery confirmation.
     }
 
+    public function maskAccountNumber(array & $data) {
+
+        $accountNumber = $data['invoice']['subscription_registration']['bank_account']['account_number'] ?? null;
+
+        if($accountNumber !== null)
+        {
+            $data['invoice']['subscription_registration']['bank_account']['account_number'] = mask_except_last4($accountNumber);
+        }
+    }
+
     public function getInvoiceView(string $invoiceId)
     {
         $error = Request::get('error');
@@ -438,6 +448,8 @@ class InvoiceController extends Controller
                 unset($data['merchant']['pan']);
                 unset($data['invoice']['customer_details']);
             }
+
+            $this->maskAccountNumber($data);
 
             $view = 'invoice.auth_link';
         }
@@ -544,6 +556,8 @@ class InvoiceController extends Controller
 
         if (isset($data['invoice']) and $data['invoice']['entity_type'] === Constants\Entity::SUBSCRIPTION_REGISTRATION)
         {
+            $this->maskAccountNumber($data);
+            
             $view = 'invoice.auth_link';
         }
 
