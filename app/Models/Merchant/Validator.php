@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use App;
 use Hash;
 
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 use Razorpay\Trace\Logger as Trace;
@@ -3389,5 +3390,11 @@ class Validator extends Base\Validator
                 null,
                 'zipcode is required for India');
         }
+    }
+
+    public function validateOrgDetails(Entity $merchant){
+
+        ORG_ENTITY::isOrgCurlec($merchant->getOrgId()) &&  $this->validateIsActivated($merchant);
+
     }
 }

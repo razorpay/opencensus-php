@@ -235,6 +235,7 @@ class Org extends Base
 
         // Default organisation to be used for tests
         $org = $this->fixtures->create('org', [
+            'id'                      => 'KjWRtYXwpK6VfK',
             'email'                   => 'admin@curlec.com',
             'from_email'              => 'noreplay@curlec.com',
             'cross_org_access'        => true,
@@ -299,7 +300,7 @@ class Org extends Base
         $permissions = $this->fixtures->create('permission:default_permissions');
 
         // Default organisation to be used for tests
-        // org is synced in test and live dbs 
+        // org is synced in test and live dbs
         $org = $this->fixtures->create('org', [
             'id'                      => self::RZP_ORG,
             'email'                   => 'admin@razorpay.com',

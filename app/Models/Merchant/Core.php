@@ -4419,7 +4419,7 @@ class Core extends Base\Core
         $name = $merchant->getName();
 
         // Default value is required because website is a required field to create oauth applications
-        $website = $merchant->getWebsite() ?: 'https://www.razorpay.com';
+        $website = $merchant->getWebsite() ?: $this->getDefaultPartnerWebsite($merchant);
 
         $defaultAppInput = [
             'name'     => $name,
@@ -4439,6 +4439,10 @@ class Core extends Base\Core
         $app = app('authservice')->createApplication($appInput, $merchant->getId(), OAuthApp\Type::PARTNER);
 
         return $app;
+    }
+
+    public function getDefaultPartnerWebsite(Entity $merchant){
+        return Org::isOrgCurlec($merchant->getOrgId()) ?  "https://www.curlec.com" : "https://www.razorpay.com";
     }
 
     /**

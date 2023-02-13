@@ -1863,6 +1863,92 @@ return [
         ],
     ],
 
+    'testUpdateActivatedCurlecPartnerTypeAsResellerUsingProxyAuth'   => [
+        'request'   => [
+            'url'       => '/merchant/partner_type',
+            'method'    => 'PATCH',
+            'content'   => [
+                'partner_type'      => 'reseller',
+            ],
+        ],
+        'response'  => [
+            'content'       => [
+                'partner_type'              => 'reseller',
+                'has_commission_configs'    => true,
+            ],
+        ],
+    ],
+
+    'testUpdateActivatedCurlecPartnerTypeAsAggregatorUsingProxyAuth'   => [
+        'request'   => [
+            'url'       => '/merchant/partner_type',
+            'method'    => 'PATCH',
+            'content'   => [
+                'partner_type'      => 'aggregator',
+            ],
+        ],
+        'response'  => [
+            'content'       => [
+                'partner_type'              => 'aggregator',
+                'has_commission_configs'    => true,
+            ],
+        ],
+    ],
+
+    'testUpdateInActiveCurlecPartnerTypeAsResellerUsingProxyAuth'   => [
+        'request'   => [
+            'url'       => '/merchant/partner_type',
+            'method'    => 'PATCH',
+            'content'   => [
+                'partner_type'      => 'reseller',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The merchant has not been activated. This action can only be taken for activated merchants',
+                    'source'        => 'NA',
+                    'step'        => 'NA',
+                    'reason'        => 'NA',
+                    'field'         => 'activated',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception'     => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+        ],
+    ],
+
+    'testUpdateInActiveCurlecPartnerTypeAsAggregatorUsingProxyAuth'   => [
+        'request'   => [
+            'url'       => '/merchant/partner_type',
+            'method'    => 'PATCH',
+            'content'   => [
+                'partner_type'      => 'aggregator',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The merchant has not been activated. This action can only be taken for activated merchants',
+                    'source'        => 'NA',
+                    'step'        => 'NA',
+                    'reason'        => 'NA',
+                    'field'         => 'activated',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception'     => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED,
+        ],
+    ],
+
     'testCreateLegalDocsConsentForResellerPartner'   => [
         'request'   => [
             'url'       => '/merchant/partner_type',

@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Controllers\MerchantController;
 use RZP\Jobs\CapturePartnershipConsents;
+use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
 use RZP\Models\Card\Network;
 use RZP\Models\Card\Type;
 use RZP\Models\Emi\DebitProvider;
@@ -7119,7 +7120,12 @@ class Service extends Base\Service
 
     public function updatePartnerType(array $input): array
     {
-        (new Validator)->validateInput('update_partner_type', $input);
+
+        $validator = new Validator;
+
+        $validator->validateInput('update_partner_type', $input);
+
+        $validator->validateOrgDetails($this->merchant);
 
         $response = Tracer::inspan(['name' => HyperTrace::UPDATE_PARTNER_TYPE_CORE,
                      'attributes' => array ( Entity::PARTNER_TYPE =>  $input[Entity::PARTNER_TYPE], 'merchantId'=> $this->merchant->getId())], function () use ($input) {

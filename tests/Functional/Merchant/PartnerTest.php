@@ -10,6 +10,8 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use App\User\Constants;
 use RZP\Constants\Timezone;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Batch;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
@@ -2748,6 +2750,188 @@ class PartnerTest extends OAuthTestCase
 
         Mail::assertQueued(PartnerOnBoarded::class);
     }
+
+    public function testUpdateActivatedCurlecPartnerTypeAsResellerUsingProxyAuth()
+    {
+        Mail::fake();
+
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $app = ['id'=>'8ckeirnw84ifke'];
+
+        $org = $this->fixtures->create('org:curlec_org');
+
+        $this->fixtures->merchant->edit( self::DEFAULT_MERCHANT_ID, [
+            'org_id'    => $org->getId(),
+            'country_code'=> 'MY'
+        ]);
+
+        $this->mockAuthServiceCreateApplication($merchant, $app);
+
+        $this->fixtures->merchant->createDummyCurlecPartnerApp(['partner_type' => 'reseller']);
+
+        $now = Carbon::now()->getTimestamp();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID,
+            [
+                'activated'    => true,
+                'activated_at' => $now
+            ]);
+
+        $this->fixtures->create('merchant_detail:sane',
+            [
+                'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+                'activation_status' => 'activated'
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        //check if referral links are created for the partner
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::LIVE));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::LIVE));
+
+        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $applicationTypes = $merchantApplications->pluck(Entity::TYPE)->toArray();
+
+        $applicationType = $applicationTypes[0];
+
+        $this->assertEquals($applicationType, MerchantApplications\Entity::REFERRED);
+
+        $this->assertTrue($expectedPartner->isResellerPartner());
+
+        Mail::assertQueued(PartnerOnBoarded::class);
+    }
+
+
+
+    public function testUpdateActivatedCurlecPartnerTypeAsAggregatorUsingProxyAuth()
+    {
+        Mail::fake();
+
+        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $org = $this->fixtures->create('org:curlec_org');
+
+        $this->fixtures->merchant->edit( self::DEFAULT_MERCHANT_ID, [
+            'org_id'    => $org->getId(),
+            'country_code'=> 'MY'
+        ]);
+
+        $now = Carbon::now()->getTimestamp();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID,
+            [
+                'activated'    => true,
+                'activated_at' => $now
+            ]);
+
+        $this->fixtures->create('merchant_detail:sane',
+            [
+                'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+                'activation_status' => 'activated'
+            ]);
+
+        $requestParams1 = [
+            'merchant_id' => $merchant->getId(),
+            'name'     => $merchant->getName(),
+            'website'  => $merchant->getWebsite() ?: 'https://www.curlec.com',
+            'type'     => self::PARTNER,
+        ];
+
+        $requestParams2 = [
+            'merchant_id' => $merchant->getId(),
+            'name'     => Merchant\Entity::REFERRED_APPLICATION,
+            'website'  => $merchant->getWebsite() ?: 'https://www.curlec.com',
+            'type'     => self::PARTNER,
+        ];
+
+        $this->authServiceMock
+            ->expects($this->exactly(2))
+            ->method('sendRequest')
+            ->with('applications', 'POST', $this->logicalOr($requestParams1, $requestParams2))
+            ->will($this->returnCallback(
+                function($route, $method, $params) {
+                    if($params['name'] === Merchant\Entity::REFERRED_APPLICATION) {
+                        return ['id'=>'8ckeirnw84ifkf'];
+                    }
+                    return ['id'=>'8ckeirnw84ifke'];
+                }
+            ));
+
+        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], false);
+
+        $this->fixtures->merchant->createDummyReferredAppForManaged(['partner_type' => 'aggregator'], false);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        //check if referral links are created for the partner
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::TEST));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::LIVE));
+        $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::LIVE));
+
+        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+
+        $applicationTypes = $merchantApplications->pluck(Entity::TYPE)->toArray();
+
+        $expectedAppTypes = ['managed', 'referred'];
+
+        $this->assertArraySelectiveEqualsWithCount($expectedAppTypes, $applicationTypes);
+
+        $this->assertTrue($expectedPartner->isAggregatorPartner());
+
+        Mail::assertQueued(PartnerOnBoarded::class);
+    }
+
+    public function testUpdateInActiveCurlecPartnerTypeAsResellerUsingProxyAuth()
+    {
+
+        Mail::fake();
+
+        $org = $this->fixtures->create('org:curlec_org');
+
+        $this->fixtures->merchant->edit( self::DEFAULT_MERCHANT_ID, [
+            'org_id'    => $org->getId(),
+            'country_code'=> 'MY'
+        ]);
+
+        $this->fixtures->merchant->createDummyCurlecPartnerApp(['partner_type' => 'reseller']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testUpdateInActiveCurlecPartnerTypeAsAggregatorUsingProxyAuth()
+    {
+
+        Mail::fake();
+
+        $org = $this->fixtures->create('org:curlec_org');
+
+        $this->fixtures->merchant->edit( self::DEFAULT_MERCHANT_ID, [
+            'org_id'    => $org->getId(),
+            'country_code'=> 'MY'
+        ]);
+
+        $this->fixtures->merchant->createDummyCurlecPartnerApp(['partner_type' => 'aggregator']);
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
 
     public function testUpdatePartnerTypeAsBankOnboardingPartner()
     {
