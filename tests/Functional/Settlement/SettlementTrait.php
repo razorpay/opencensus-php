@@ -2,12 +2,35 @@
 
 namespace RZP\Tests\Functional\Settlement;
 
+use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Settlement\Holidays;
 
 trait SettlementTrait
 {
+    protected function getSettlementsMerchantDashboardServiceMock()
+    {
+        $settlementsMerchantDashboardMock = Mockery::mock('RZP\Services\Settlements\MerchantDashboard', [$this->app])->makePartial();
+
+        $settlementsMerchantDashboardMock->shouldAllowMockingProtectedMethods();
+
+        $this->app['settlements_merchant_dashboard'] = $settlementsMerchantDashboardMock;
+
+        return $settlementsMerchantDashboardMock;
+    }
+
+    protected function getSettlementsDashboardServiceMock()
+    {
+        $settlementsDashboardMock = Mockery::mock('RZP\Services\Settlements\Dashboard', [$this->app])->makePartial();
+
+        $settlementsDashboardMock->shouldAllowMockingProtectedMethods();
+
+        $this->app['settlements_dashboard'] = $settlementsDashboardMock;
+
+        return $settlementsDashboardMock;
+    }
+
     protected function createPaymentAndRefundEntities(int $count = 5, $dt = null)
     {
         $prEntities = [];

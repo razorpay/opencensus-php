@@ -90,6 +90,10 @@ class Constants
 
     const ADDITIONAL_WEBSITE                       = 'additional_website';
 
+    const UPDATE_DATE                              = 'update_date';
+
+    const LAST_3                                   = 'last_3';
+
     const WORKFLOW_PERMISSION_VS_NEEDS_CLARIFICATION_EVENT = [
         PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL   => Events::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW,
         PermissionName::UPDATE_MERCHANT_WEBSITE        => Events::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW,

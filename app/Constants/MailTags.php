@@ -240,7 +240,7 @@ class MailTags
     const USER_CONTACT_MOBILE_UPDATED                   = 'user_contact_mobile_updated';
 
     // Admin Emails
-    const ADMIN_ACCOUNT_LOCKED                           = 'admin_account_locked';
+    const ADMIN_ACCOUNT_LOCKED                          = 'admin_account_locked';
 
     //Downtime Emails
     const DOWNTIME_NOTIFICATION                         = 'downtime_notification';
@@ -252,7 +252,7 @@ class MailTags
     const PAYOUT_DOWNTIME_NOTIFICATION                  = 'payout_downtime_notification';
 
     //international_enablement
-    const INTERNATIONAL_ENABLEMENT                       = 'international_enablement';
+    const INTERNATIONAL_ENABLEMENT                      = 'international_enablement';
 
     // Merchant Risk Alert tags
     const MERCHANT_RISK_ALERT_FUNDS_ON_HOLD             = 'merchant_risk_alert_funds_on_hold';
@@ -272,6 +272,14 @@ class MailTags
     const DISABLE_NON_3DS_SUCCESS                       = 'disable_non_3ds_success';
 
     const ENABLE_NON_3DS_REQUEST_SUCCESS                = 'enable_non_3ds_request_success';
+
+    const BANK_ACCOUNT_UPDATE_SUCCESS                   = 'merchant_bank_account_update_success';
+    const BANK_ACCOUNT_UPDATE_UNDER_REVIEW              = 'merchant_bank_account_update_under_review';
+    const BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW          = 'merchant_bank_account_update_soh_under_review';
+    const BANK_ACCOUNT_UPDATE_REJECTED                  = 'merchant_bank_account_update_rejected';
+    const BANK_ACCOUNT_UPDATE_SOH_REJECTED              = 'merchant_bank_account_update_soh_rejected';
+    const BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION       = 'merchant_bank_account_update_needs_clarification';
+    const BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION   = 'merchant_bank_account_update_soh_needs_clarification';
 
     // Mail tags for needs clarification on workflow
     const MERCHANT_CLARIFICATION_ON_BANK_ACCOUNT_WORKFLOW        =  'merchant_clarification_on_bank_account_workflow';

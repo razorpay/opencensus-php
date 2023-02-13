@@ -14,7 +14,7 @@ class Constants
     const BANK_ACCOUNT_UPDATE_PENNY_TESTING_CACHE_KEY = 'bank_account_update_penny_testing_%s';
     const BANK_ACCOUNT_UPDATE_MUTEX_RESOURCE          = 'bank_account_update_mutex_resource_%s';
 
-    const BANK_ACCOUNT_UPDATE_SYNC_ONLY_TTL           = 60 * 60; // in seconds
+    const BANK_ACCOUNT_UPDATE_SYNC_ONLY_TTL           = 360 * 60; // in seconds
     const BANK_ACCOUNT_UPDATE_SYNC_ONLY_CACHE_KEY     = 'new_bank_account_update_data_%s';
 
 
@@ -48,4 +48,5 @@ class Constants
     const CREATE_WORKFLOW                                   = 'create_workflow';
     const TIMEOUT                                           = 'timeout';
     const SYNC_ONLY                                         = 'sync_only';
+    const SUPER_ADMIN_WORKFLOW_CHECKER_EMAIL                = 'SUPER_ADMIN_WORKFLOW_CHECKER_EMAIL';
 }

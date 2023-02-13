@@ -105,6 +105,10 @@ class Constants
 
     const WORKFLOW_STATUS                    = 'workflow_status';
 
+    const WORKFLOW_CREATED_AT                = 'workflow_created_at';
+
+    const WORKFLOW_REJECTED_AT               = 'workflow_rejected_at';
+
     const REJECTION_REASON_MESSAGE           = 'rejection_reason_message';
 
     const SHOW_REJECTION_REASON_ON_DASHBOARD = 'show_on_dashboard';

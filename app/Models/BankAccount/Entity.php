@@ -135,6 +135,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::MOBILE_BANKING_ENABLED,
         self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -145,6 +146,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::NOTES,
         self::ACCOUNT_NUMBER,
+        self::UPDATED_AT,
     ];
 
     protected $hosted = [

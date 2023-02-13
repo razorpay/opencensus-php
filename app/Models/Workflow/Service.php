@@ -405,6 +405,11 @@ class Service extends Base\Service
 
         $response = [Observer\Constants::WORKFLOW_EXISTS => true, Observer\Constants::WORKFLOW_STATUS => $actionEntity->getState()];
 
+        if ($actionEntity->isOpen() === true)
+        {
+            $response[Observer\Constants::WORKFLOW_CREATED_AT] = $actionEntity->getAttribute(Action\Entity::CREATED_AT);
+        }
+
         if ($actionEntity->getState() === Name::REJECTED)
         {
             $observerData = $this->getWorkflowObserverDataByActionId($actionEntity);
@@ -418,7 +423,10 @@ class Service extends Base\Service
 
                 if (key_exists(Observer\Constants::MESSAGE_BODY, $rejectionReason))
                 {
-                    $response = array_merge($response, [Observer\Constants::REJECTION_REASON_MESSAGE => $rejectionReason[Observer\Constants::MESSAGE_BODY]]);
+                    $response = array_merge($response, [
+                        Observer\Constants::REJECTION_REASON_MESSAGE => $rejectionReason[Observer\Constants::MESSAGE_BODY],
+                        Observer\Constants::WORKFLOW_REJECTED_AT => $actionEntity->getAttribute(Action\Entity::UPDATED_AT),
+                    ]);
                 }
             }
         }

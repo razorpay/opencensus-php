@@ -1484,6 +1484,8 @@ class PublicErrorDescription
     const BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_LIMIT                          = 'Invalid negative limit for Balance Config creation';
     const BAD_REQUEST_BALANCE_CONFIG_INVALID_NEGATIVE_TRANSACTION_FLOW               = 'Invalid transaction flows for Balance Config creation';
 
+    const BAD_REQUEST_MERCHANT_REQUESTED_BANK_ACCOUNT_SAME_AS_CURRENT_BANK_ACCOUNT   = 'Merchant requested bank account is same as the current active bank account';
+
     const BAD_REQUEST_LOW_BALANCE_CONFIG_ALREADY_EXISTS_FOR_ACCOUNT_NUMBER           = 'Low balance config already exists for account number';
     const BAD_REQUEST_LOW_BALANCE_CONFIG_IS_NOT_SUPPORTED_IN_TEST_MODE               = 'Low balance config is not supported in test mode';
     const BAD_REQUEST_LOW_BALANCE_CONFIG_AUTH_NOT_SUPPORTED                          = 'Invalid parameters for current auth.';

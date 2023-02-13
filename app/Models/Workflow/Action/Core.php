@@ -10,19 +10,23 @@ use ReflectionMethod;
 use RZP\Exception;
 use RZP\Models\State;
 use RZP\Constants\Mode;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Role;
 use RZP\Models\Admin\Admin;
+use  RZP\Models\BankAccount;
 use RZP\Models\Workflow\Helper;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\BulkWorkflowAction;
 use RZP\Models\Comment\Core as CommentCore;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Settlement\Service as SettlementService;
 use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Notifications\Dashboard\Events as DashboardEvents;
@@ -1117,6 +1121,14 @@ class Core extends Base\Core
 
         $event = MerchantNotificationsConstants::WORKFLOW_PERMISSION_VS_NEEDS_CLARIFICATION_EVENT[$workflowPermission];
 
+        if (($workflowPermission === Permission\Name::EDIT_MERCHANT_BANK_DETAIL) and
+            ($merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID))
+        {
+            $this->sendNotificationForBankAccountUpdate($merchant);
+
+            return;
+        }
+
         $params = array_merge($payload, [
             MerchantNotificationsConstants::MERCHANT_NAME                      => $merchant->getName(),
             MerchantNotificationsConstants::MESSAGE_SUBJECT                    => $input[Constants::MESSAGE_SUBJECT],
@@ -1210,5 +1222,41 @@ class Core extends Base\Core
                 $merchant, $segmentProperties, $segmentEventName
             );
         }
+    }
+
+    protected function sendNotificationForBankAccountUpdate($merchant, $event = DashboardEvents::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION)
+    {
+        $merchantBankAccount = $this->repo->bank_account->getBankAccount($merchant);
+
+        $bankAccountNumber = $merchantBankAccount->getAccountNumber();
+
+        $last_3 = substr($bankAccountNumber, -3);
+
+        $merchantConfig = [];
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::NEW_SETTLEMENT_SERVICE) === true)
+        {
+            $input[Merchant\Constants::MERCHANT_ID] = $merchant->getMerchantId();
+
+            $merchantConfig = (new SettlementService)->merchantConfigGet($input);
+        }
+
+        $isMerchantSettlementsOnHold = (new BankAccount\Core)->isMerchantSettlementsOnHold($merchantConfig);
+
+        if ($isMerchantSettlementsOnHold === true)
+        {
+            $event = DashboardEvents::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION;
+        }
+
+        $args = [
+            Merchant\Constants::MERCHANT     => $merchant,
+            DashboardEvents::EVENT           => $event,
+            Merchant\Constants::PARAMS       => [
+                MerchantNotificationsConstants::MERCHANT_NAME => $merchant[Merchant\Entity::NAME],
+                MerchantNotificationsConstants::LAST_3        => '**' . $last_3,
+            ]
+        ];
+
+        (new DashboardNotificationHandler($args))->send();
     }
 }

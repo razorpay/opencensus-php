@@ -4,10 +4,14 @@
 namespace RZP\Models\Workflow\Observer;
 
 use App;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Models\BankAccount;
 use RZP\Models\State\Name as StateName;
 use RZP\Models\Workflow\Action\Differ\Entity;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Settlement\Service as SettlementService;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Notifications\Dashboard\Events as DashboardEvents;
 use RZP\Notifications\Dashboard\Constants as DashboardConstants;
@@ -119,6 +123,14 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 
             $event = self::PERMISSION_VS_EVENTS[$this->permissionName];
 
+            if (($this->permissionName === PermissionName::EDIT_MERCHANT_BANK_DETAIL) and
+                ($merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID))
+            {
+                $this->sendNotificationForBankAccountUpdate($merchant);
+
+                return;
+            }
+
             $args = [
                 Merchant\Constants::MERCHANT     => $merchant,
                 DashboardEvents::EVENT           => $event,
@@ -190,7 +202,6 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
         return $segmentProperties;
     }
 
-
     protected function trackSelfServeEvent(string $workflowState, array $additionalProperties = [])
     {
         if(key_exists($this->permissionName, self::PERMISSION_VS_SEGMENTS))
@@ -206,5 +217,41 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
             $this->segmentAnalytics->pushIdentifyAndTrackEvent(
                 $merchant, $segmentProperties, self::PERMISSION_VS_SEGMENTS[$this->permissionName]);
         }
+    }
+
+    protected function sendNotificationForBankAccountUpdate($merchant, $event = DashboardEvents::BANK_ACCOUNT_UPDATE_REJECTED)
+    {
+        $merchantBankAccount = $this->repo->bank_account->getBankAccount($merchant);
+
+        $bankAccountNumber = $merchantBankAccount->getAccountNumber();
+
+        $last_3 = substr($bankAccountNumber, -3);
+
+        $merchantConfig = [];
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::NEW_SETTLEMENT_SERVICE) === true)
+        {
+            $input[Merchant\Constants::MERCHANT_ID] = $merchant->getMerchantId();
+
+            $merchantConfig = (new SettlementService)->merchantConfigGet($input);
+        }
+
+        $isMerchantSettlementsOnHold = (new BankAccount\Core)->isMerchantSettlementsOnHold($merchantConfig);
+
+        if ($isMerchantSettlementsOnHold === true)
+        {
+            $event = DashboardEvents::BANK_ACCOUNT_UPDATE_SOH_REJECTED;
+        }
+
+        $args = [
+            Merchant\Constants::MERCHANT     => $merchant,
+            DashboardEvents::EVENT           => $event,
+            Merchant\Constants::PARAMS       => [
+                DashboardConstants::MERCHANT_NAME => $merchant[Merchant\Entity::NAME],
+                DashboardConstants::LAST_3        => '**' . $last_3,
+            ]
+        ];
+
+        (new DashboardNotificationHandler($args))->send();
     }
 }

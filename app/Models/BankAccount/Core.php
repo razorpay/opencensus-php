@@ -2,6 +2,7 @@
 
 namespace RZP\Models\BankAccount;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
@@ -23,6 +24,7 @@ use RZP\Exception\ServerErrorException;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Comment\Core as CommentCore;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Merchant\Document\FileHandler;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -31,12 +33,17 @@ use RZP\Models\Workflow\Service as WorkflowService;
 use RZP\Models\Merchant\AutoKyc\Bvs\Core as BvsCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Document\Core as DocumentCore;
+use RZP\Models\Settlement\Service as SettlementService;
 use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Detail\DeDupe\Core as DedupeCore;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BvsConstant;
+use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
+use RZP\Models\Workflow\Action\Checker\Entity as CheckerEntity;
+use RZP\Services\Settlements\Dashboard as SettlementsDashboard;
 use RZP\Notifications\Dashboard\Events as MerchantDashboardEvent;
 use RZP\Models\Merchant\Detail\PennyTesting as DetailsPennyTesting;
+use RZP\Notifications\Dashboard\Constants as MerchantDashboardConstants;
 use RZP\Models\Workflow\Observer\Constants as WorkflowObserverConstants;
 use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
@@ -275,6 +282,24 @@ class Core extends Base\Core
         }
     }
 
+    public function isMerchantSettlementsOnHold($merchantConfig)
+    {
+        if ((isset($merchantConfig) === true) and
+            (isset($merchantConfig[SettlementsDashboard::CONFIG]) === true) and
+            (isset($merchantConfig[SettlementsDashboard::CONFIG][SettlementsDashboard::FEATURES]) === true) and
+            (((isset($merchantConfig[SettlementsDashboard::CONFIG][SettlementsDashboard::FEATURES][SettlementsDashboard::BLOCK]) === true) and
+            (isset($merchantConfig[SettlementsDashboard::CONFIG][SettlementsDashboard::FEATURES][SettlementsDashboard::BLOCK][SettlementsDashboard::STATUS]) === true) and
+            ($merchantConfig[SettlementsDashboard::CONFIG][SettlementsDashboard::FEATURES][SettlementsDashboard::BLOCK][SettlementsDashboard::STATUS] === true)) or
+            ((isset($merchantConfig[SettlementsDashboard::CONFIG][SettlementsDashboard::FEATURES][SettlementsDashboard::HOLD]) === true) and
+            (isset($merchantConfig[SettlementsDashboard::CONFIG][SettlementsDashboard::FEATURES][SettlementsDashboard::HOLD][SettlementsDashboard::STATUS]) === true) and
+            ($merchantConfig[SettlementsDashboard::CONFIG][SettlementsDashboard::FEATURES][SettlementsDashboard::HOLD][SettlementsDashboard::STATUS] === true))))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * This takes the oldBank Account as it's last parameter
      *
@@ -328,10 +353,12 @@ class Core extends Base\Core
                 // email only once and not again after the workflow has been approved.
                 //
                 if (($this->app['api.route']->isWorkflowExecuteOrApproveCall() === false) and
-                    ($sendAccountChangeRequestMail === true))
+                    ($sendAccountChangeRequestMail === true) and
+                    ($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID))
                 {
                     $this->sendBankAccountChangeNotification($ba, $merchant, MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_REQUEST);
                 }
+
 
                 if ($isWorkflowRequired === true)
                 {
@@ -586,7 +613,7 @@ class Core extends Base\Core
         return $ba;
     }
 
-    protected function sendBankAccountChangeNotification($newBankAccount, $merchant, $event = MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_SUCCESSFUL)
+    protected function sendBankAccountChangeNotification($newBankAccount, $merchant, $event = MerchantDashboardEvent::BANK_ACCOUNT_UPDATE_SUCCESS)
     {
         if ($this->shouldNotifyViaEmail($merchant) === false)
         {
@@ -595,11 +622,28 @@ class Core extends Base\Core
 
         $newBankAccount = $newBankAccount->toArray();
 
+        $dateTwoDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
+
+        $newBankAccount['update_date'] = $dateTwoDaysLater;
+
+        $merchantBankAccount = $this->repo->bank_account->getBankAccount($merchant);
+
+        $bankAccountNumber = $merchantBankAccount->getAccountNumber();
+
+        $last_3 = substr($bankAccountNumber, -3);
+
+        if (($event === MerchantDashboardEvent::BANK_ACCOUNT_UPDATE_SUCCESS) and
+            ($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID))
+        {
+            $event = MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_SUCCESSFUL;
+        }
+
         $args = [
             Merchant\Constants::MERCHANT  => $merchant,
             MerchantDashboardEvent::EVENT => $event,
             Merchant\Constants::PARAMS    => array_merge($newBankAccount, [
-                Entity::NAME => $merchant->getName()
+                Entity::NAME                        => $merchant->getName(),
+                MerchantDashboardConstants::LAST_3  => '**' . $last_3,
             ]),
         ];
 
@@ -717,6 +761,20 @@ class Core extends Base\Core
             ]);
     }
 
+    private function makeAsyncBvsCallAfterDocumentUpload($input, $merchant)
+    {
+        $this->app['config']->set('services.bvs.sync.flow', false);
+
+        $payload = $this->getBankAccountUpdateBvsPayload($input, $merchant);
+
+        $validation = (new BvsCore($this->merchant, $this->merchant->merchantDetail))->verify($this->merchant->getId(), $payload);
+
+        // for sanity purpose
+        $this->app['config']->set('services.bvs.sync.flow', true);
+
+        return $validation;
+    }
+
     /**
      * @throws Exception\ServerErrorException
      * @throws BadRequestException
@@ -754,9 +812,7 @@ class Core extends Base\Core
             $this->createWorkflowForBankAccountUpdateWithFileDetails($merchant, $data);
         }
 
-        $cacheKey = $this->getBankAccountUpdateSyncOnlyCacheKey($merchant);
-
-        $this->app['cache']->delete($cacheKey);
+        $validation = $this->makeAsyncBvsCallAfterDocumentUpload($data['input'], $merchant);
 
         return ['success' => true];
     }
@@ -821,7 +877,15 @@ class Core extends Base\Core
         if (isset($input[Constants::SYNC_ONLY]) === true)
         {
             $newFlow = $input[Constants::SYNC_ONLY] === 'true';
+
             unset($input[Constants::SYNC_ONLY]);
+        }
+
+        $isWorkflowOpen = (new Merchant\Service())->isBankAccountChangeWorkflowOpen($merchant->getMerchantId());
+
+        if ($isWorkflowOpen === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_IN_PROGRESS);
         }
 
         // If auth type is not admin then only validate feature for account update request.
@@ -848,8 +912,15 @@ class Core extends Base\Core
         $this->validateBankAccountUpdatePennyTestingNotInProgress($merchant);
 
         // if not found, this will throw an exception -> doesnt allow bank account update if it doesnt exist now
-        (new Service)->getOwnBankAccount();
+        $currentBankAccount = (new Service)->getOwnBankAccount();
 
+        // New account details should not be the same as old account details
+        // Comparing IFSC from merchant's existing bank account as publicArray has IFSC and not IFSC_CODE
+        if (($currentBankAccount[Entity::ACCOUNT_NUMBER] === $input[Entity::ACCOUNT_NUMBER]) and
+            ($currentBankAccount[Entity::IFSC] === $input[Entity::IFSC_CODE]))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_REQUESTED_BANK_ACCOUNT_SAME_AS_CURRENT_BANK_ACCOUNT);
+        }
         // here we are rolling back the transaction as there is no need to save the new bank account
         // if penny testing suceeds, we will create it at that time
         // we just need a bank account entity (in memory) to trigger penny testing/for sending mail
@@ -870,8 +941,39 @@ class Core extends Base\Core
         }
     }
 
+    private function checkIfPreviousBankAccount($input, $previousBankAccounts)
+    {
+        foreach ($previousBankAccounts as $bankAccount)
+        {
+            if (($bankAccount[Entity::ACCOUNT_NUMBER] === $input[Entity::ACCOUNT_NUMBER]) and
+                ($bankAccount[Entity::IFSC_CODE] === $input[Entity::IFSC_CODE]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private function syncOnlyBankAccountUpdateFlow($input, $merchant, $newBankAccount)
     {
+        /*
+         *         To be un-commented later once the delete function is overridden for fetching previous bank accounts
+
+            $previousBankAccounts = $this->repo->bank_account->getMerchantPreviousBankAccounts($merchant);
+
+            $isPreviousBankAccount = $this->checkIfPreviousBankAccount($input, $previousBankAccounts);
+
+            if ($isPreviousBankAccount === true)
+            {
+                $bankAccount = $this->createOrChangeBankAccount($input, $merchant, false);
+
+                return $bankAccount;
+            }
+
+        *
+        */
+
         $validation = $this->triggerBankAccountBvsValidationForSyncOnlyFlow($input, $merchant, true, $newBankAccount);
 
         if ((is_array($validation) === true) and
@@ -909,7 +1011,10 @@ class Core extends Base\Core
 
         $this->saveBankAccountUpdateSyncOnlyDataInCache($merchant, $data);
 
-        $this->sendBankAccountChangeNotification($newBankAccount, $merchant, MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_REQUEST);
+        if ($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            $this->sendBankAccountChangeNotification($newBankAccount, $merchant, MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_REQUEST);
+        }
 
         $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_INITIATED, [
             Merchant\BvsValidation\Entity::VALIDATION_ID => $validationId
@@ -958,7 +1063,10 @@ class Core extends Base\Core
 
         $this->saveBankAccountUpdatePennyTestingData($merchant, $data);
 
-        $this->sendBankAccountChangeNotification($newBankAccount, $merchant, MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_REQUEST);
+        if ($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            $this->sendBankAccountChangeNotification($newBankAccount, $merchant, MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_REQUEST);
+        }
 
         $this->trace->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_INITIATED, [
             Merchant\BvsValidation\Entity::VALIDATION_ID => $validationId
@@ -1072,21 +1180,49 @@ class Core extends Base\Core
     {
         list($data, $cacheKey, $status) = $this->getBankAccountUpdatePennyTestingStatus($validation, $merchant, $merchantDetails);
 
-        switch ($validation->getValidationStatus())
+        // Data should be present in the async penny testing cache key
+        // If data is not present there, then request has been raised from the self serve flow from merchnat dashboard.
+        // Data should be present in sync penny testing cache key.
+        if ($data === null)
         {
-            case BvsConstant::SUCCESS:
-                $this->handleBankAccountUpdateCallbackSuccess($merchant, $data, $status);
-                break;
-            default:
-                $this->handleBankAccountUpdateCallbackFailure($merchant, $data, $status);
+            $cacheKey = $this->getBankAccountUpdateSyncOnlyCacheKey($merchant);
+
+            $data = $this->app->cache->get($cacheKey);
         }
 
-        $this->app['cache']->delete($cacheKey);
+        // If data is not present then cache data has been expired. Don't do anything.
+        if ($data !== null)
+        {
+            switch ($validation->getValidationStatus())
+            {
+                case BvsConstant::SUCCESS:
+                    $this->handleBankAccountUpdateCallbackSuccess($merchant, $data, $status);
+                    break;
+                default:
+                    $this->handleBankAccountUpdateCallbackFailure($merchant, $data, $status);
+            }
+
+            $this->app['cache']->delete($cacheKey);
+        }
+
+        else
+        {
+            $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_CACHE_DATA_MISSING, [
+                Entity::MERCHANT_ID => $merchant->getId()
+            ]);
+        }
     }
 
     protected function handleBankAccountUpdateCallbackSuccess($merchant, $data, $status)
     {
         (new DetailsPennyTesting())->setBankDetailsVerificationStatusAndUpdatedAt($merchant->merchantDetail, $status);
+
+        $isWorkflowOpen = (new Merchant\Service())->isBankAccountChangeWorkflowOpen($merchant->getMerchantId());
+
+        if ($isWorkflowOpen === true)
+        {
+            $this->closeBankAccountUpdateWorkflowAction($merchant);
+        }
 
         $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false, false);
 
@@ -1094,7 +1230,64 @@ class Core extends Base\Core
 
         $this->stopShowingRejectionReasonForBankAccountUpdateSelfServe($merchant->bankAccount->getId(), $merchant->bankAccount->getEntityName());
 
-        $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS, ["merchant_id"=>$merchant->getId(),"status"=>$status]);
+        $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_VIA_PENNY_TESTING_SUCCESS, [
+            Entity::MERCHANT_ID => $merchant->getId(),
+            "status" => $status
+        ]);
+    }
+
+    public function getSuperAdminChecker()
+    {
+        $checkerOrgId = Org\Entity::RAZORPAY_ORG_ID;
+
+        $checkerEmail = env(Constants::SUPER_ADMIN_WORKFLOW_CHECKER_EMAIL);
+
+        $checker = $this->repo->admin->findByOrgIdAndEmail($checkerOrgId, $checkerEmail);
+
+        return $checker;
+    }
+
+    protected function closeBankAccountUpdateWorkflowAction($merchant)
+    {
+        $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
+
+        $workflowActions = (new WorkFlowActionCore())->fetchOpenActionOnEntityOperation(
+            $oldBankAccount->getId(), $oldBankAccount->getEntity(), \RZP\Models\Admin\Permission\Name::EDIT_MERCHANT_BANK_DETAIL);
+
+        // Ideally should have only one workflow action
+        foreach ($workflowActions as $action)
+        {
+            $checker = $this->getSuperAdminChecker();
+
+            $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_WORKFLOW_ACTION_CLOSED, [
+                DifferEntity::ACTION_ID   => $action->getId(),
+                CheckerEntity::CHECKER_ID => $checker->getId(),
+            ]);
+
+            $this->closeWorkflowIfApplicable($action, $checker);
+        }
+    }
+
+    protected function closeWorkflowIfApplicable($workflowAction, $checker)
+    {
+        try
+        {
+            if (isset($workflowAction) === false)
+            {
+                return;
+            }
+
+            if ($workflowAction->isExecuted() === false)
+            {
+                (new WorkFlowActionCore())->close($workflowAction, $checker, true);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::BANK_ACCOUNT_UPDATE_CLOSE_WORKFLOW_ACTION_FAILED, [
+                'workflow_action_id'  => $workflowAction->getId(),
+            ]);
+        }
     }
 
     protected function stopShowingRejectionReasonForBankAccountUpdateSelfServe($entityId, $entity)
@@ -1116,9 +1309,27 @@ class Core extends Base\Core
 
     protected function handleBankAccountUpdateCallbackFailure($merchant, $data, $status)
     {
-        $this->createWorkflowForBankAccountUpdate($merchant, $data);
+        $isWorkflowOpen = (new Merchant\Service())->isBankAccountChangeWorkflowOpen($merchant->getMerchantId());
 
-        $this->addCommentsForBankAccountUpdateWorkFlow($merchant, $status, $data);
+        // If self serve update flow has been used from the merchant dashboard, and manual verification workflow is open
+        // then no need to create any new workflow.
+        if ($isWorkflowOpen === false)
+        {
+            $merchantBankAccount = $this->repo->bank_account->getBankAccount($merchant);
+
+            // Merchant details have been updated with the new details. Agent might have approved the workflow raised
+            // during manual verification so no open workflow is present and no need to create a new workflow.
+            if (($merchantBankAccount->getBeneficiaryName() === $data['input'][Entity::BENEFICIARY_NAME]) and
+                ($merchantBankAccount->getIfscCode() === $data['input'][Entity::IFSC_CODE]) and
+                ($merchantBankAccount->getAccountNumber() === $data['input'][Entity::ACCOUNT_NUMBER]))
+            {
+                return;
+            }
+
+            $this->createWorkflowForBankAccountUpdate($merchant, $data);
+
+            $this->addCommentsForBankAccountUpdateWorkFlow($merchant, $status, $data);
+        }
     }
 
     protected function createWorkflowForBankAccountUpdate($merchant, $data)
@@ -1140,7 +1351,23 @@ class Core extends Base\Core
                 return $this->createBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, $this->mode);
             });
 
-            $this->sendBankAccountChangeNotification($newBankAccount, $merchant, MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE);
+            $merchantConfig = [];
+
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::NEW_SETTLEMENT_SERVICE) === true)
+            {
+                $merchantConfig = (new SettlementService)->merchantDashboardConfigGet([
+                    Merchant\Constants::MERCHANT_ID => $merchant->getMerchantId()
+                ]);
+            }
+
+            $eventName = $this->isMerchantSettlementsOnHold($merchantConfig) ? MerchantDashboardEvent::BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW : MerchantDashboardEvent::BANK_ACCOUNT_UPDATE_UNDER_REVIEW;
+
+            if ($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+            {
+                $eventName = MerchantDashboardEvent::BANK_ACCOUNT_CHANGE_PENNY_TESTING_FAILURE;
+            }
+
+            $this->sendBankAccountChangeNotification($newBankAccount, $merchant, $eventName);
 
             $oldBankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
@@ -1149,7 +1376,7 @@ class Core extends Base\Core
                 $orgId = $data[Constants::ADMIN_ORG] ?? Org\Entity::RAZORPAY_ORG_ID;
 
                 // replacing the below implementation by findByOrgIdAndEmail, one email can be part of multiple org
-                // for backward compatibility keeping RZP_ORG as default 
+                // for backward compatibility keeping RZP_ORG as default
                 // $maker = $this->repo->admin->findByEmail($data[Constants::ADMIN_EMAIL]);
                 $maker = $this->repo->admin->findByOrgIdAndEmail($orgId, $data[Constants::ADMIN_EMAIL]);
 
@@ -1229,7 +1456,7 @@ class Core extends Base\Core
         if (is_null($workFlowAction) === true)
         {
             $this->trace->error(TraceCode::BANK_ACCOUNT_UPDATE_WORKFLOW_ACTION_NOT_FOUND, [
-                'merchant_id' => $merchant->getId(),
+                Entity::MERCHANT_ID => $merchant->getId(),
             ]);
         }
         else
@@ -1449,6 +1676,8 @@ class Core extends Base\Core
 
     public function bankAccountUpdatePostPennyTestingWorkflow(MerchantEntity $merchant, array $input)
     {
+        $this->validateMerchantFundsAreNotOnHold($merchant);
+
         $data = $this->createOrChangeBankAccount($input[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false);
 
         $this->sendSelfServeSuccessAnalyticsEventToSegmentForBankAccountUpdateViaWorkflow($merchant);

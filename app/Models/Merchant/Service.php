@@ -2987,6 +2987,11 @@ class Service extends Base\Service
                 ($this->getBankAccountChangeViaPennyTestingStatus($id)));
     }
 
+    public function isBankAccountChangeWorkflowOpen($id)
+    {
+        return ($this->getBankAccountChangeViaWorkflowStatus($id) === true);
+    }
+
     public function getProductInternationalStatus() :array
     {
         $merchantCore = new Merchant\Core;
@@ -8992,7 +8997,6 @@ class Service extends Base\Service
         if (empty($oldBankAccount) === true) {
             return false;
         }
-
 
         $actions = (new Action\Core())->fetchOpenActionOnEntityOperation(
             $oldBankAccount->getId(), $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);

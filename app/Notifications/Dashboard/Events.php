@@ -73,6 +73,19 @@ class Events
 
     const ENABLE_NON_3DS_ALERT                                          = 'ENABLE_NON_3DS_ALERT';
 
+    const BANK_ACCOUNT_UPDATE_SUCCESS                                   = 'BANK_ACCOUNT_UPDATE_SUCCESS';
+
+    const BANK_ACCOUNT_UPDATE_UNDER_REVIEW                              = 'BANK_ACCOUNT_UPDATE_UNDER_REVIEW';
+
+    const BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW                          = 'BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW';
+
+    const BANK_ACCOUNT_UPDATE_REJECTED                                  = 'BANK_ACCOUNT_UPDATE_REJECTED';
+
+    const BANK_ACCOUNT_UPDATE_SOH_REJECTED                              = 'BANK_ACCOUNT_UPDATE_SOH_REJECTED';
+
+    const BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                       = 'BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION';
+
+    const BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION                   = 'BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION';
 
     // Event vs sms templates mapping
     const SMS_TEMPLATES = [
@@ -103,6 +116,13 @@ class Events
         self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => 'sms.dashboard.merchant_additional_website_successful',
         self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => 'sms.dashboard.merchant_additional_website_rejection',
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => 'sms.dashboard.merchant_additional_website_clarification',
+        self::BANK_ACCOUNT_UPDATE_SUCCESS                               => 'sms.dashboard.bank_account_update_success',
+        self::BANK_ACCOUNT_UPDATE_UNDER_REVIEW                          => 'sms.dashboard.bank_account_update_under_review',
+        self::BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW                      => 'sms.dashboard.bank_account_update_under_review',
+        self::BANK_ACCOUNT_UPDATE_REJECTED                              => 'sms.dashboard.bank_account_update_rejected',
+        self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => 'sms.dashboard.bank_account_update_rejected',
+        self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => 'sms.dashboard.bank_account_update_needs_clarification',
+        self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => 'sms.dashboard.bank_account_update_needs_clarification',
     ];
 
     /**
@@ -137,6 +157,13 @@ class Events
         self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => [Constants::MERCHANT_NAME, Constants::ADDITIONAL_WEBSITE],
         self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => [Constants::MERCHANT_NAME],
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => [Constants::MERCHANT_NAME],
+        self::BANK_ACCOUNT_UPDATE_SUCCESS                               => [],
+        self::BANK_ACCOUNT_UPDATE_UNDER_REVIEW                          => [Constants::UPDATE_DATE],
+        self::BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW                      => [Constants::UPDATE_DATE],
+        self::BANK_ACCOUNT_UPDATE_REJECTED                              => [],
+        self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => [],
+        self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => [],
+        self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => [],
     ];
 
     // Event vs whatsapp templates mapping
@@ -168,6 +195,13 @@ class Events
         self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => 'whatsapp.merchant.dashboard.merchant_additional_website_successful',
         self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => 'whatsapp.merchant.dashboard.merchant_additional_website_rejection',
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => 'whatsapp.merchant.dashboard.merchant_additional_website_clarification',
+        self::BANK_ACCOUNT_UPDATE_SUCCESS                               => 'whatsapp.merchant.dashboard.bank_account_update_success',
+        self::BANK_ACCOUNT_UPDATE_UNDER_REVIEW                          => 'whatsapp.merchant.dashboard.bank_account_update_under_review',
+        self::BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW                      => 'whatsapp.merchant.dashboard.bank_account_update_soh_under_review5',
+        self::BANK_ACCOUNT_UPDATE_REJECTED                              => 'whatsapp.merchant.dashboard.bank_account_update_rejected',
+        self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => 'whatsapp.merchant.dashboard.bank_account_update_soh_rejected',
+        self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => 'whatsapp.merchant.dashboard.bank_account_update_needs_clarification',
+        self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => 'whatsapp.merchant.dashboard.bank_account_update_soh_needs_clarification',
     ];
 
     /**
@@ -201,6 +235,13 @@ class Events
         self::ADD_ADDITIONAL_WEBSITE_SUCCESS                            => [Constants::MERCHANT_NAME, Constants::ADDITIONAL_WEBSITE],
         self::ADD_ADDITIONAL_WEBSITE_REJECTION_REASON                   => [Constants::MERCHANT_NAME],
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => [Constants::MERCHANT_NAME],
+        self::BANK_ACCOUNT_UPDATE_SUCCESS                               => [Constants::MERCHANT_NAME, Constants::ACCOUNT_NUMBER, Constants::IFSC_CODE],
+        self::BANK_ACCOUNT_UPDATE_UNDER_REVIEW                          => [Constants::MERCHANT_NAME, Constants::UPDATE_DATE, Constants::ACCOUNT_NUMBER, Constants::IFSC_CODE, Constants::LAST_3],
+        self::BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW                      => [Constants::MERCHANT_NAME, Constants::UPDATE_DATE, Constants::ACCOUNT_NUMBER, Constants::IFSC_CODE, Constants::LAST_3],
+        self::BANK_ACCOUNT_UPDATE_REJECTED                              => [Constants::MERCHANT_NAME, Constants::LAST_3],
+        self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => [Constants::MERCHANT_NAME, Constants::LAST_3],
+        self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => [Constants::MERCHANT_NAME, Constants::LAST_3],
+        self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => [Constants::MERCHANT_NAME, Constants::LAST_3],
     ];
 
     // Event vs email templates mapping
@@ -236,6 +277,13 @@ class Events
         self::COUPON_EXPIRY_ALERT                                       => 'emails.coupon.coupon_expiry_alert',
         self::DISABLE_NON_3DS_ALERT                                     => 'emails.merchant.disable_non_3ds_alert',
         self::ENABLE_NON_3DS_ALERT                                      => 'emails.merchant.enable_non_3ds_alert',
+        self::BANK_ACCOUNT_UPDATE_SUCCESS                               => 'emails.merchant.bank_account_update_success',
+        self::BANK_ACCOUNT_UPDATE_UNDER_REVIEW                          => 'emails.merchant.bank_account_update_under_review',
+        self::BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW                      => 'emails.merchant.bank_account_update_soh_under_review',
+        self::BANK_ACCOUNT_UPDATE_REJECTED                              => 'emails.merchant.bank_account_update_rejected',
+        self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => 'emails.merchant.bank_account_update_soh_rejected',
+        self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => 'emails.merchant.bank_account_update_needs_clarification',
+        self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => 'emails.merchant.bank_account_update_soh_needs_clarification',
     ];
 
     // Event vs email Tags mapping
@@ -270,6 +318,13 @@ class Events
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => MailTags::MERCHANT_CLARIFICATION_ON_ADDITIONAL_WEBSITE_WORKFLOW,
         self::DISABLE_NON_3DS_ALERT                                     => MailTags::DISABLE_NON_3DS_SUCCESS,
         self::ENABLE_NON_3DS_ALERT                                      => MailTags::ENABLE_NON_3DS_REQUEST_SUCCESS,
+        self::BANK_ACCOUNT_UPDATE_SUCCESS                               => MailTags::BANK_ACCOUNT_UPDATE_SUCCESS,
+        self::BANK_ACCOUNT_UPDATE_UNDER_REVIEW                          => MailTags::BANK_ACCOUNT_UPDATE_UNDER_REVIEW,
+        self::BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW                      => MailTags::BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW,
+        self::BANK_ACCOUNT_UPDATE_REJECTED                              => MailTags::BANK_ACCOUNT_UPDATE_REJECTED,
+        self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => MailTags::BANK_ACCOUNT_UPDATE_SOH_REJECTED,
+        self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => MailTags::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION,
+        self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => MailTags::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION,
     ];
 
     // Event vs email subject mapping
@@ -304,6 +359,13 @@ class Events
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => '%s',
         self::DISABLE_NON_3DS_ALERT                                     => 'Non-3D Secure Card Transactions Disabled for your Razorpay Account',
         self::ENABLE_NON_3DS_ALERT                                      => 'Non-3D Secure Card Transactions Enabled for your Razorpay Account',
+        self::BANK_ACCOUNT_UPDATE_SUCCESS                               => 'Bank account change request successful',
+        self::BANK_ACCOUNT_UPDATE_UNDER_REVIEW                          => 'Bank account change request under review',
+        self::BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW                      => 'Bank account change request under review',
+        self::BANK_ACCOUNT_UPDATE_REJECTED                              => 'Bank account change request rejected',
+        self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => 'Bank account change request rejected',
+        self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => 'Action required: Bank account change request',
+        self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => 'Action required: Bank account change request',
     ];
 
     // Event vs recipients role mapping
@@ -338,6 +400,13 @@ class Events
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => [UserRole::OWNER],
         self::DISABLE_NON_3DS_ALERT                                     => [UserRole::OWNER],
         self::ENABLE_NON_3DS_ALERT                                      => [UserRole::OWNER],
+        self::BANK_ACCOUNT_UPDATE_SUCCESS                               => [UserRole::OWNER],
+        self::BANK_ACCOUNT_UPDATE_UNDER_REVIEW                          => [UserRole::OWNER],
+        self::BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW                      => [UserRole::OWNER],
+        self::BANK_ACCOUNT_UPDATE_REJECTED                              => [UserRole::OWNER],
+        self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => [UserRole::OWNER],
+        self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => [UserRole::OWNER],
+        self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => [UserRole::OWNER],
     ];
 
     // Event vs supported channel mapping
@@ -372,5 +441,12 @@ class Events
         self::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW    => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::DISABLE_NON_3DS_ALERT                                     => [Channel::EMAIL],
         self::ENABLE_NON_3DS_ALERT                                      => [Channel::EMAIL],
+        self::BANK_ACCOUNT_UPDATE_SUCCESS                               => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::BANK_ACCOUNT_UPDATE_UNDER_REVIEW                          => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::BANK_ACCOUNT_UPDATE_SOH_UNDER_REVIEW                      => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::BANK_ACCOUNT_UPDATE_REJECTED                              => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
     ];
 }

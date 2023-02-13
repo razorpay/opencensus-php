@@ -3143,7 +3143,7 @@ return [
         ]
     ],
 
-    'testBankAccountFileUploadTimeout' => [
+    'testBankAccountFileUploadOnBvsTimeout' => [
         'request'  => [
             'content' => [],
             'url'     => '/merchants/bank_account/file/upload',
@@ -3264,6 +3264,34 @@ return [
         ],
         'exception' => [
             'internal_error_code' => 'BAD_REQUEST_MERCHANT_BANK_ACCOUNT_UPDATE_IN_PROGRESS',
+            'class'               => BadRequestException::class,
+        ]
+    ],
+
+    'testUpdateBankAccountSameBankDetailsAsCurrentFail' => [
+        'request'  => [
+            'content' => [
+                'ifsc_code'        => 'RZPB0000000',
+                'account_number'   => '10010101011',
+                'beneficiary_name' => 'Test R4zorpay:',
+            ],
+            'server'    => [
+                'HTTP_X-Dashboard-User-2FA-Verified'    => 'true',
+            ],
+            'url'     => '/merchants/bank_account/update',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'          => 'BAD_REQUEST_ERROR',
+                    'description'   => 'Merchant requested bank account is same as the current active bank account',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'internal_error_code' => 'BAD_REQUEST_MERCHANT_REQUESTED_BANK_ACCOUNT_SAME_AS_CURRENT_BANK_ACCOUNT',
             'class'               => BadRequestException::class,
         ]
     ],

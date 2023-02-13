@@ -3687,13 +3687,6 @@ class MerchantTest extends TestCase
             'account_number'    => '10010101011',
         ]);
 
-        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) {
-
-            $this->assertEquals('emails.merchant.bankaccount_change_request', $mail->view);
-
-            return true;
-        });
-
         $afterCount = $this->getBankAccountsCount($merchantId);
 
         $this->assertEquals($beforeCount, $afterCount);
@@ -3855,13 +3848,6 @@ class MerchantTest extends TestCase
             'account_number'    => '10010101011',
         ]);
 
-        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) {
-
-            $this->assertEquals('emails.merchant.bankaccount_change_request', $mail->view);
-
-            return true;
-        });
-
         $afterCount = $this->getBankAccountsCount($merchantId);
 
         $this->assertEquals($beforeCount, $afterCount);
@@ -4017,6 +4003,18 @@ class MerchantTest extends TestCase
 
         $org = $this->createCustomBrandingOrgAndAssignMerchant($merchantId);
 
+        $permission = $this->fixtures->create('permission', ['name' => PermissionName::EDIT_MERCHANT_BANK_DETAIL]);
+
+        $permissionMapData = [
+            'permission_id'   => $permission->getId(),
+            'entity_id'       => $org['id'],
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
+
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
 
         $this->startTest();
@@ -4109,6 +4107,159 @@ class MerchantTest extends TestCase
         $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
             substr($workflowAction['id'], 9))[0]['_source'];
 
+        // see comments in setupWorkflowForBankAccountUpdate for why we are asserting maker id
+        $this->assertEquals($merchantId, $action['maker_id']);
+        $this->assertEquals('merchant', $action['maker_type']);
+        $this->assertEquals($merchant->toArray()['name'], $action['maker']);
+
+        $this->assertEquals('open', $action['state']);
+        $this->assertEquals( 'POST', $action['method']);
+        $this->assertEquals('RZP\Http\Controllers\MerchantController@putBankAccountUpdatePostPennyTestingWorkflow', $action['controller']);
+        $this->assertEquals('merchant_bank_account_update', $action['route']);
+        $this->assertEquals('edit_merchant_bank_detail', $action['permission']);
+        $this->assertArraySelectiveEquals( [
+            'input'        => [
+                'ifsc_code'         => 'ICIC0001206',
+                'account_number'    => '0000009999999999999',
+                'beneficiary_name'  => 'Test R4zorpay:',
+                'address_proof_url' => '1cXSLlUU8V9sXl',
+            ],
+            'merchant_id'           => $merchantId,
+            'new_bank_account_array'=> [
+                'entity'           => 'bank_account',
+                'ifsc'             => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'name'             => 'Test R4zorpay:',
+                'bank_name'        => 'ICICI Bank',
+                'address_proof_url'=> '1cXSLlUU8V9sXl', // updateUploadDocumentData always creates a file with this value
+                'notes'            => [],
+            ],
+            'old_bank_account_array'=> [
+                'id'               => $oldBankAccount['id'],
+                'entity'           => 'bank_account',
+                'ifsc'             => 'RZPB0000000',
+                'name'             => $oldBankAccount['name'],
+                'bank_name'        => 'Razorpay',
+                'account_number'   => '10010101011',
+                'address_proof_url'=> 'old_address_proof_file_url',
+                'notes'            => [],
+
+            ],
+
+        ], $action['payload']);
+        $this->assertEquals([], $action['route_params']);
+
+        $this->assertArraySelectiveEquals( [
+            'old' => [
+                'id'                    => $oldBankAccount['id'],
+                'ifsc'                  => 'RZPB0000000',
+                'name'                  => $oldBankAccount['name'],
+                'bank_name'             => 'Razorpay',
+                'account_number'        => '10010101011',
+                'address_proof_url'     => 'old_address_proof_file_url',
+            ],
+            'new' => [
+                'ifsc'             => 'ICIC0001206',
+                'account_number'   => '0000009999999999999',
+                'name'             => 'Test R4zorpay:',
+                'bank_name'        => 'ICICI Bank',
+                'address_proof_url'=> '1cXSLlUU8V9sXl', // updateUploadDocumentData always creates a file with this value
+            ],
+        ], $action['diff']);
+
+        $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function($mail) {
+            return true;
+        });
+
+        $this->assertBankAccountUpdateRequestAndPennyTestingFailedMailQueued();
+
+        return $merchantId;
+    }
+
+    public function testUpdateBankAccountSameBankDetailsAsCurrentFail()
+    {
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+
+        $this->startTest();
+
+        $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testUpdateBankAccountRequestUnderReviewOnHold()
+    {
+        Config(['services.bvs.mock' => true]);
+
+        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $dateTwoDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
+
+        $expectedStorkParametersForBankAccountChangeUnderReviewTemplate = [
+            'update_date'        => $dateTwoDaysLater,
+        ];
+
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_update_under_review', '1234567890', $expectedStorkParametersForBankAccountChangeUnderReviewTemplate);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $settlementsResponse = [];
+        $settlementsResponse['config']['features']['block']['reason'] = "";
+        $settlementsResponse['config']['features']['block']['status'] = false;
+        $settlementsResponse['config']['features']['hold']['status'] = "";
+        $settlementsResponse['config']['features']['hold']['status'] = true;
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true, [], $settlementsResponse);
+
+        $this->fixtures->create('feature', [
+            'entity_id'   => $merchantId,
+            'name'        => 'new_settlement_service',
+            'entity_type' => 'merchant',
+        ]);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $oldBankAccount = $this->getDbLastEntity('bank_account', 'test')->toArrayAdmin();
+
+        $this->mockStorkForBankAccountUpdateOnHoldUnderReview($storkMock, $merchantId, $dateTwoDaysLater);
+
+        $this->startTest();
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'RULE_EXECUTION_FAILED');
+
+        $this->processBvsResponse($bvsResponse);
+
+        // as a workflow is created, assert bank account is not changed for the merchant still
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'RZPB0000000',
+            'account_number'    => '10010101011',
+        ]);
+
+        Mail::assertNotQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            if ($mail->view === 'emails.merchant.bankaccount_change')
+            {
+                return true;
+            }
+
+            return false;
+        });
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $action = $this->esDao->searchByIndexTypeAndActionId('workflow_action_test_testing', 'action',
+            substr($workflowAction['id'], 9))[0]['_source'];
 
         // see comments in setupWorkflowForBankAccountUpdate for why we are asserting maker id
         $this->assertEquals($merchantId, $action['maker_id']);
@@ -4152,7 +4303,6 @@ class MerchantTest extends TestCase
         ], $action['payload']);
         $this->assertEquals([], $action['route_params']);
 
-
         $this->assertArraySelectiveEquals( [
             'old' => [
                 'id'                    => $oldBankAccount['id'],
@@ -4171,16 +4321,207 @@ class MerchantTest extends TestCase
             ],
         ], $action['diff']);
 
-
         $this->assertTrue($this->getBankAccountChangeStatusForMerchant($merchantId));
 
-        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function($mail) {
-            return true;
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function($mail){
+            $viewData = $mail->viewData;
+
+            if ($mail->view === 'emails.merchant.bank_account_update_soh_under_review')
+            {
+                $this->assertOrgDataForBankAccountUpdateMail(null, $viewData);
+
+                return true;
+            }
         });
 
-        $this->assertBankAccountUpdateRequestAndPennyTestingFailedMailQueued();
+        return $merchantId;
+    }
+
+    public function testUpdateBankAccountPennyTestingFailWorkflowOnHoldMerchantReject()
+    {
+        Config(['services.bvs.mock' => true]);
+
+        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
+
+        $this->mockStorkForBankAccountUpdateOnHoldRejectionReason();
+
+        $this->setupWorkflowForBankAccountUpdate();
+
+        $settlementsResponse = [];
+
+        $settlementsResponse['config']['features']['block']['reason'] = "";
+        $settlementsResponse['config']['features']['block']['status'] = true;
+        $settlementsResponse['config']['features']['hold']['status'] = "";
+        $settlementsResponse['config']['features']['hold']['status'] = false;
+
+        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true, [], $settlementsResponse);
+        
+        $this->fixtures->create('feature', [
+            'entity_id'   => $merchantId,
+            'name'        => 'new_settlement_service',
+            'entity_type' => 'merchant',
+        ]);
+
+        $beforeCount = $this->getBankAccountsCount($merchantId);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
+
+        $this->startTest();
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'NO_PROVIDER_ERROR');
+
+        $this->processBvsResponse($bvsResponse);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        $this->esClient->indices()->refresh();
+
+        $this->rejectWorkFlowWithRejectionReason($workflowAction['id']);
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'RZPB0000000',
+            'account_number'    => '10010101011',
+        ]);
+
+        Mail::assertNotQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) {
+
+            if ($mail->view === 'emails.merchant.bankaccount_change')
+            {
+                return true;
+            }
+
+            return false;
+        });
+
+        Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
+        {
+            if ($mail->view === 'emails.merchant.bank_account_update_soh_rejected')
+            {
+                $data = $mail->viewData;
+
+                $this->assertEquals('testname', $data['name']);
+
+                $this->assertEquals('**011', $data['last_3']);
+
+                return true;
+            }
+        });
+
+        $afterCount = $this->getBankAccountsCount($merchantId);
+
+        $this->assertEquals($beforeCount, $afterCount);
+
+        $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+    }
+
+    public function testBankAccountUpdateWorkflowApproveFailedAsMerchantIsRiskFoh()
+    {
+        $merchantId = $this->testUpdateBankAccountRequestUnderReviewOnHold();
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->fixtures->merchant->holdFunds($merchantId, true);
+
+        $workflowAction = $this->getLastEntity('workflow_action', true);
+
+        try
+        {
+            $this->performWorkflowAction($workflowAction['id'], true);
+        }
+        catch (BadRequestException $e)
+        {
+            $this->assertEquals(
+                'Bank account can not be updated due to funds are on hold',
+                $e->getMessage());
+
+            $caughtException = true;
+        }
+
+        $this->assertEquals(true, $caughtException);
+
+        $merchant = $this->getDbEntityById('merchant', $merchantId);
+
+        $this->assertEquals(true, $merchant->isFundsOnHold());
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'RZPB0000000',
+            'account_number'    => '10010101011',
+        ]);
+    }
+
+    public function testBankAccountUpdateWorkflowSettlementsOnHoldNeedsClarification()
+    {
+        // triggers a bank account update workflow for on hold merchant
+        $merchantId = $this->testUpdateBankAccountRequestUnderReviewOnHold();
+
+        $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
+            'expected_whatsapp_text'    => 'Hi testname,
+We need a few more details for your bank account verification.
+Note: Settlements to your existing active account ending with **011 are on-hold.
+To submit or check details, go to the ‘Account and Settings’ section on your Razorpay dashboard: https://dashboard.razorpay.com/app/bank-accounts-settlements/bank-account-details
+Thank you,
+Team Razorpay',
+            'expected_index_of_comment' => 2,
+            'expected_sms_template'     => 'sms.dashboard.bank_account_update_needs_clarification',
+        ]);
 
         return $merchantId;
+    }
+
+    protected function mockStorkForBankAccountUpdateUnderReview($storkMock, $merchantId, $dateTwoDaysLater)
+    {
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Hi testname,
+Your bank account change request is under review. We’ll verify your details in a few days and share an update by ' . $dateTwoDaysLater . '
+The details given by you are:
+Account Number: 0000009999999999999
+IFSC Code: ICIC0001206
+Note: Settlements are currently active on your existing account ending with **011 until then.
+To check details, go to the ‘Account and Settings’ section on your Razorpay dashboard: https://dashboard.razorpay.com/app/bank-accounts-settlements/bank-account-details
+Thank you,
+Team Razorpay',
+            '1234567890'
+        );
+    }
+
+    protected function mockStorkForBankAccountUpdateOnHoldUnderReview($storkMock, $merchantId, $dateTwoDaysLater)
+    {
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Hi testname
+Your bank account change request is under review. We’ll verify your details in a few days and share an update by ' . $dateTwoDaysLater . '
+The details given by you are
+Account Number: 0000009999999999999
+IFSC Code: ICIC0001206
+Note: Settlements to your existing active account ending with **011 are on-hold until then.
+To check details, go to the ‘Account and Settings’ section on your Razorpay dashboard: https://dashboard.razorpay.com/app/bank-accounts-settlements/bank-account-details
+Thank you,
+Team Razorpay',
+            '1234567890'
+        );
+    }
+
+    protected function mockStorkForBankAccountUpdateOnHoldRejectionReason()
+    {
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_update_rejected', '1234567890');
+
+        $this->expectStorkWhatsappRequest($storkMock,
+            'Hi testname,
+Your bank account change request is rejected.
+The new bank account details you submitted couldn’t be verified. Check your details and submit a new bank account change request to try again.
+Note: Settlements to your existing active account ending with **011 are on-hold until then.
+To check details, go to the ‘Account and Settings’ section on your Razorpay dashboard: https://dashboard.razorpay.com/app/bank-accounts-settlements/bank-account-details
+Thank you,
+Team Razorpay',
+            '1234567890'
+        );
     }
 
     public function testAddCommentForBankAccountUpdateWorkflow()
@@ -4312,30 +4653,21 @@ class MerchantTest extends TestCase
 
         $this->app->instance('stork_service', $storkMock);
 
-        $expectedStorkParametersForBankAccountChangeRequestTemplate = [
-            'name'              => 'testname',
-            'beneficiary_name'  => 'Test R4zorpay:',
-            'account_number'    => '0000009999999999999',
-            'ifsc_code'         => 'ICIC0001206'
+        $dateTwoDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
+
+        $expectedStorkParametersForBankAccountChangeUnderReviewTemplate = [
+            'update_date'        => $dateTwoDaysLater,
         ];
 
-        $expectedStorkParametersForBankAccountChangeSuccessfulTemplate = [
-            'beneficiary_name'  => 'Test R4zorpay:',
-            'account_number'    => '0000009999999999999',
-            'ifsc_code'         => 'ICIC0001206'
-        ];
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_update_under_review', '1234567890', $expectedStorkParametersForBankAccountChangeUnderReviewTemplate);
 
-        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_change_request', '1234567890', $expectedStorkParametersForBankAccountChangeRequestTemplate);
-
-        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_change_penny_testing_failure', '1234567890', []);
-
-        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_change_successful', '1234567890', $expectedStorkParametersForBankAccountChangeSuccessfulTemplate);
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_update_success', '1234567890', []);
 
         $this->setupWorkflowForBankAccountUpdate();
 
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
 
-        $this->mockStorkForBankAccountUpdate($storkMock, $merchantId);
+        $this->mockStorkForBankAccountUpdate($storkMock, $merchantId, $dateTwoDaysLater);
 
         $beforeCount = $this->getBankAccountsCount($merchantId);
 
@@ -4359,7 +4691,7 @@ class MerchantTest extends TestCase
             'name'             => 'Test R4zorpay:',
         ]);
 
-        $this->assertBankAccountUpdateAllMailQueued();
+        $this->assertBankAccountUpdateAllMailQueued(null, $dateTwoDaysLater);
 
         $afterCount = $this->getBankAccountsCount($merchantId);
 
@@ -4373,16 +4705,16 @@ class MerchantTest extends TestCase
         // triggers a bank account update workflow
         $merchantId = $this->testUpdateBankAccountPennyTestingEventNameMismatch();
 
-        $expectedStorkParametersForSMSTemplate = [
-            'merchant_name'  => 'testname',
-        ];
-
         $this->raiseNeedWorkflowClarificationFromMerchantAndAssert([
-            'expected_whatsapp_text'    => 'Hi testname, we need a few more details to process the request on updating your Razorpay bank account number. Please click https://dashboard.razorpay.com/app/profile/clarification_update_bank_account to share the details. -Team Razorpay',
+            'expected_whatsapp_text'    => 'Hi testname,
+We need a few more details for your bank account verification.
+Note: Settlements are currently active on your bank account ending with **011
+To submit or check details, go to the ‘Account and Settings’ section on your Razorpay dashboard: https://dashboard.razorpay.com/app/bank-accounts-settlements/bank-account-details
+Thank you,
+Team Razorpay',
             'expected_index_of_comment' => 2,
-            'expected_sms_template'     => 'sms.dashboard.merchant_bank_account_needs_clarification',
-            'expected_deep_link'        => 'https://dashboard.razorpay.com/app/profile/clarification_update_bank_account'
-        ], $expectedStorkParametersForSMSTemplate);
+            'expected_sms_template'     => 'sms.dashboard.bank_account_update_needs_clarification',
+        ]);
 
         return $merchantId;
     }
@@ -4394,31 +4726,29 @@ class MerchantTest extends TestCase
         $this->getNeedsClarificationQueryAndAssert($merchantId, 'bank_detail_update');
     }
 
-    protected function mockStorkForBankAccountUpdate($storkMock, $merchantId)
+    protected function mockStorkForBankAccountUpdate($storkMock, $merchantId, $dateTwoDaysLater)
     {
         $this->expectStorkWhatsappRequest($storkMock,
-            'We have received a request for changing the bank account for testname. The details for the request are as follows :
-Beneficiary Name Test R4zorpay:
-Account Number 0000009999999999999
-IFSC Code ICIC0001206
-We will update you once the changes have been approved.
--Team Razorpay',
+            'Hi testname,
+Your bank account change request is under review. We’ll verify your details in a few days and share an update by ' . $dateTwoDaysLater . '
+The details given by you are:
+Account Number: 0000009999999999999
+IFSC Code: ICIC0001206
+Note: Settlements are currently active on your existing account ending with **011 until then.
+To check details, go to the ‘Account and Settings’ section on your Razorpay dashboard: https://dashboard.razorpay.com/app/bank-accounts-settlements/bank-account-details
+Thank you,
+Team Razorpay',
             '1234567890'
         );
 
         $this->expectStorkWhatsappRequest($storkMock,
-            'Thank you for raising a request from your dashboard to update your bank account details.
-We checked and see that the penny drop testing for the mentioned bank account has failed. Our experts are looking into this and will get back to you with an update within the next 24 hours.
--Team Razorpay',
-            '1234567890'
-        );
-
-        $this->expectStorkWhatsappRequest($storkMock,
-            'Your Bank Account details have been updated successfully. The details are provided below.
-Beneficiary Name Test R4zorpay:
-Account Number 0000009999999999999
-IFSC Code  ICIC0001206
--Team Razorpay',
+            'Hi testname,
+Your bank account change request was successful. Settlements are now active on the given account:
+Account Number: 0000009999999999999
+IFSC Code: ICIC0001206
+To check details, go to the ‘Account and Settings’ section on your Razorpay dashboard: https://dashboard.razorpay.com/app/bank-accounts-settlements/bank-account-details
+Thank you,
+Team Razorpay',
             '1234567890'
         );
     }
@@ -4534,6 +4864,23 @@ IFSC Code  ICIC0001206
 
         $pennyTestingFailMailCount     = 0;
 
+        if (is_null($org) === true)
+        {
+            Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($org)
+            {
+                $viewData = $mail->viewData;
+
+                if ($mail->view === 'emails.merchant.bank_account_update_under_review')
+                {
+                    $this->assertOrgDataForBankAccountUpdateMail($org, $viewData);
+
+                    return true;
+                }
+            });
+
+            return false;
+        }
+
         Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($org, & $accountChangeRequestMailCount, & $pennyTestingFailMailCount)
         {
             $viewData = $mail->viewData;
@@ -4567,6 +4914,23 @@ IFSC Code  ICIC0001206
 
         $accountChangedMailCount       = 0;
 
+        if (is_null($org) === true)
+        {
+            Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($org)
+            {
+                $viewData = $mail->viewData;
+
+                if ($mail->view === 'emails.merchant.bank_account_update_success')
+                {
+                    $this->assertOrgDataForBankAccountUpdateMail($org, $viewData);
+
+                    return true;
+                }
+            });
+
+            return false;
+        }
+
         Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($org, & $accountChangeRequestMailCount, & $accountChangedMailCount)
         {
             $viewData = $mail->viewData;
@@ -4594,13 +4958,53 @@ IFSC Code  ICIC0001206
         $this->assertEquals(1, $accountChangeRequestMailCount);
     }
 
-    protected function assertBankAccountUpdateAllMailQueued($org = null)
+    protected function assertBankAccountUpdateAllMailQueued($org = null, $dateTwoDaysLater = "")
     {
         $accountChangeRequestMailCount = 0;
 
         $pennyTestingFailMailCount     = 0;
 
         $accountChangedMailCount       = 0;
+
+        if (is_null($org) === true)
+        {
+            Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($org, & $accountChangeRequestMailCount, & $pennyTestingFailMailCount ,& $accountChangedMailCount, $dateTwoDaysLater)
+            {
+                $viewData = $mail->viewData;
+
+                $view = $mail->view;
+
+                $this->assertTrue(in_array($view, ['emails.merchant.bank_account_update_under_review', 'emails.merchant.bank_account_update_success']));
+
+                if ($view === 'emails.merchant.bank_account_update_under_review')
+                {
+                    $pennyTestingFailMailCount = $pennyTestingFailMailCount + 1;
+                    $this->assertEquals('testname', $viewData['name']);
+                    $this->assertEquals('0000009999999999999', $viewData['account_number']);
+                    $this->assertEquals('ICIC0001206', $viewData['ifsc_code']);
+                    $this->assertEquals('**011', $viewData['last_3']);
+                    $this->assertEquals($dateTwoDaysLater, $viewData['update_date']);
+                }
+
+                elseif ($view === 'emails.merchant.bank_account_update_success')
+                {
+                    $accountChangedMailCount = $accountChangedMailCount + 1;
+                    $this->assertEquals('testname', $viewData['name']);
+                    $this->assertEquals('0000009999999999999', $viewData['account_number']);
+                    $this->assertEquals('ICIC0001206', $viewData['ifsc_code']);
+                }
+
+                $this->assertOrgDataForBankAccountUpdateMail($org, $viewData);
+
+                return true;
+            });
+
+            $this->assertEquals(1, $accountChangedMailCount);
+
+            $this->assertEquals(1, $pennyTestingFailMailCount);
+
+            return;
+        }
 
         Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($org, & $accountChangeRequestMailCount, & $pennyTestingFailMailCount ,& $accountChangedMailCount)
         {
@@ -4660,11 +5064,23 @@ IFSC Code  ICIC0001206
 
         $this->testData[__FUNCTION__] = $this->testData['testUpdateBankAccountViaPennyTesting'];
 
-        $this->setupWorkflowForBankAccountUpdate();
-
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
 
         $org = $this->createCustomBrandingOrgAndAssignMerchant($merchantId);
+
+        $this->setupWorkflowForBankAccountUpdate($org['id']);
+
+        $permission = $this->fixtures->create('permission', ['name' => PermissionName::EDIT_MERCHANT_BANK_DETAIL]);
+
+        $permissionMapData = [
+            'permission_id'   => $permission->getId(),
+            'entity_id'       => $org['id'],
+            'entity_type'     => 'org',
+            'enable_workflow' => true
+        ];
+
+        DB::connection('test')->table('permission_map')->insert($permissionMapData);
+        DB::connection('live')->table('permission_map')->insert($permissionMapData);
 
         $this->startTest();
 
@@ -4725,11 +5141,13 @@ IFSC Code  ICIC0001206
 
         Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail)
         {
-            if ($mail->view === 'emails.merchant.rejection_reason_notification')
+            if ($mail->view === 'emails.merchant.bank_account_update_rejected')
             {
                 $data = $mail->viewData;
 
-                $this->assertEquals('Test body', $data['messageBody']);
+                $this->assertEquals('testname', $data['name']);
+
+                $this->assertEquals('**011', $data['last_3']);
 
                 return true;
             }
@@ -4748,10 +5166,16 @@ IFSC Code  ICIC0001206
 
         $this->app->instance('stork_service', $storkMock);
 
-        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_rejection', '1234567890');
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_update_rejected', '1234567890');
 
         $this->expectStorkWhatsappRequest($storkMock,
-            'Hi testname, Your request for updating the Razorpay bank account has been rejected. Please click on https://dashboard.razorpay.com/app/profile/rejection_update_bank_account to know more -Team Razorpay',
+            'Hi testname,
+Your bank account change request is rejected.
+The new bank account details you submitted couldn’t be verified. Check your details and submit a new bank account change request to try again.
+Note: Settlements are currently active on your bank account ending with **011
+To check details, go to the ‘Account and Settings’ section on your Razorpay dashboard: https://dashboard.razorpay.com/app/bank-accounts-settlements/bank-account-details
+Thank you,
+Team Razorpay',
             '1234567890'
         );
     }
@@ -12989,9 +13413,19 @@ IFSC Code  ICIC0001206
         );
     }
 
-    protected function setupMerchantForBankAccountUpdateTestViaPennyTesting($testcasename, $createBankAccount = true, $merchantDetails = [])
+    protected function setupMerchantForBankAccountUpdateTestViaPennyTesting($testcasename, $createBankAccount = true, $merchantDetails = [], $settlementsResponse = [])
     {
         Mail::fake();
+
+        if (empty($settlementsResponse) === true)
+        {
+            $settlementsResponse['config']['features']['block']['reason'] = "";
+            $settlementsResponse['config']['features']['block']['status'] = false;
+            $settlementsResponse['config']['features']['hold']['status'] = "";
+            $settlementsResponse['config']['features']['hold']['status'] = false;
+        }
+
+        $this->mockSettlementsConfigData($settlementsResponse);
 
         $this->updateUploadDocumentData($testcasename, 'address_proof_url');
 
@@ -13027,7 +13461,7 @@ IFSC Code  ICIC0001206
         return sprintf(BankAccountConstants::BANK_ACCOUNT_UPDATE_SYNC_ONLY_CACHE_KEY, $merchantId);
     }
 
-    public function testBankAccountFileUploadTimeout()
+    public function testBankAccountFileUploadOnBvsTimeout()
     {
         $this->setupWorkflowForBankAccountUpdate();
 
@@ -13044,7 +13478,6 @@ IFSC Code  ICIC0001206
                 'ifsc_code' => 'ICIC0001206',
                 'account_number' => '0000009999999999999',
                 'beneficiary_name' => 'Test R4zorpay:'
-
             ],
             'old_bank_account_array' => [
                 $bankAccount->toArray()
@@ -13093,13 +13526,29 @@ IFSC Code  ICIC0001206
         $this->assertNotEmpty($action['payload']['new_bank_account_array']['address_proof_url']);
     }
 
-    public function testBankAccountFileUploadFail()
+    public function testBankAccountFileUploadOnSyncBvsFailAsyncSuccess()
     {
         Config(['services.bvs.mock' => true]);
 
         Config(['services.bvs.sync.flow' => true]);
 
         Config(['services.bvs.response' => 'failure']);
+
+        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $dateTwoDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
+
+        $expectedStorkParametersForBankAccountChangeUnderReviewTemplate = [
+            'update_date'        => $dateTwoDaysLater,
+        ];
+
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_update_under_review', '1234567890', $expectedStorkParametersForBankAccountChangeUnderReviewTemplate);
+
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_update_success', '1234567890', []);
 
         $testData = $this->testData['testUpdateBankAccountViaPennyTestingSyncFlow'];
 
@@ -13116,13 +13565,22 @@ IFSC Code  ICIC0001206
             'promoter_pan_name' => 'pan_name'
         ]);
 
+        $this->mockStorkForBankAccountUpdate($storkMock, $merchantId, $dateTwoDaysLater);
+
         $this->startTest();
 
-        $this->testData[__FUNCTION__] = $this->testData['testBankAccountFileUploadTimeout'];
+        $this->testData[__FUNCTION__] = $this->testData['testBankAccountFileUploadOnBvsTimeout'];
 
         $this->updateUploadDocumentData(__FUNCTION__, 'address_proof_url');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        Config(['services.bvs.response' => 'success']);
+
+        $this->fixtures->create('admin', [
+            'org_id'  => '100000razorpay',
+            'email'   => 'shashank@razorpay.com',
+        ]);
 
         $this->startTest();
 
@@ -13144,32 +13602,54 @@ IFSC Code  ICIC0001206
         $this->assertNotEmpty($action['payload']['old_bank_account_array']['address_proof_url']);
 
         $this->assertNotEmpty($action['payload']['new_bank_account_array']['address_proof_url']);
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'success');
+
+        $this->processBvsResponse($bvsResponse);
+
+        $actionId = substr($workflowAction['id'], 9);
+
+        $workflow = $this->getDbEntityById('workflow_action', $actionId);
+
+        $this->assertEquals($workflow['state'], 'closed');
+
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'            => 'bank_account',
+            'ifsc'              => 'ICIC0001206',
+            'account_number'    => '0000009999999999999',
+        ]);
+
+        $this->assertBankAccountUpdateAllMailQueued(null, $dateTwoDaysLater);
     }
 
-
-    public function testBankAccountFileUploadSuccess()
+    public function testBankAccountFileUploadOnSyncBvsFailAsyncFail()
     {
         Config(['services.bvs.mock' => true]);
 
         Config(['services.bvs.sync.flow' => true]);
 
-        Config(['services.bvs.response' => 'success']);
+        Config(['services.bvs.response' => 'failure']);
+
+        $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
+
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $dateTwoDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
+
+        $expectedStorkParametersForBankAccountChangeUnderReviewTemplate = [
+            'update_date'        => $dateTwoDaysLater,
+        ];
+
+        $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_update_under_review', '1234567890', $expectedStorkParametersForBankAccountChangeUnderReviewTemplate);
 
         $testData = $this->testData['testUpdateBankAccountViaPennyTestingSyncFlow'];
 
         $testData['response']['content'] = [
-            'new_bank_account' => [
-                'notes' => [],
-                'beneficiary_country' => 'IN',
-                'ifsc_code' => 'ICIC0001206',
-                'account_number' => '0000009999999999999',
-                'beneficiary_name' => 'Test R4zorpay:',
-                'type' => 'merchant',
-                'name' => 'Test R4zorpay:',
-                'ifsc' =>  'ICIC0001206',
-                'mpin_set' => FALSE,
-                'bank_name' => 'ICICI Bank',
-            ],
+            'create_workflow' => true,
             'sync_flow' => true,
         ];
 
@@ -13181,15 +13661,24 @@ IFSC Code  ICIC0001206
             'promoter_pan_name' => 'pan_name'
         ]);
 
+        $this->mockStorkForBankAccountUpdateUnderReview($storkMock, $merchantId, $dateTwoDaysLater);
+
         $this->startTest();
 
-        $this->testData[__FUNCTION__] = $this->testData['testBankAccountFileUploadTimeout'];
+        $this->testData[__FUNCTION__] = $this->testData['testBankAccountFileUploadOnBvsTimeout'];
 
         $this->updateUploadDocumentData(__FUNCTION__, 'address_proof_url');
 
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
-        $response = $this->startTest();
+        Config(['services.bvs.response' => 'success']);
+
+        $this->fixtures->create('admin', [
+            'org_id'  => '100000razorpay',
+            'email'   => 'shashank@razorpay.com',
+        ]);
+
+        $this->startTest();
 
         $workflowAction = $this->getLastEntity('workflow_action', true);
 
@@ -13209,6 +13698,28 @@ IFSC Code  ICIC0001206
         $this->assertNotEmpty($action['payload']['old_bank_account_array']['address_proof_url']);
 
         $this->assertNotEmpty($action['payload']['new_bank_account_array']['address_proof_url']);
+
+        $bvsValidationEntity = $this->getDbLastEntity('bvs_validation')->toArray();
+
+        $bvsResponse = $this->getBvsResponse($bvsValidationEntity['validation_id'], 'failed', 'NO_PROVIDER_ERROR');
+
+        $this->processBvsResponse($bvsResponse);
+
+        $workflow = $this->getLastEntity('workflow_action', true);
+
+        // In case of Async bvs failure, no new workflow is created.
+        $this->assertEquals($workflow['id'], $workflowAction['id']);
+
+        $this->assertEquals($workflow['state'], 'open');
+
+        // Workflow is still open and merchant details have not been updated yet.
+        $this->assertBankAccountForMerchant($merchantId, [
+            'entity'         => 'bank_account',
+            'ifsc'           => 'RZPB0000000',
+            'account_number' => '10010101011',
+        ]);
+
+        $this->assertBankAccountUpdateRequestAndPennyTestingFailedMailQueued();
     }
 
     public function testBankAccountFileUploadNoDataInCacheFailure()
@@ -13274,6 +13785,15 @@ IFSC Code  ICIC0001206
     {
         Mail::fake();
 
+        $settlementsResponse = [];
+
+        $settlementsResponse['config']['features']['block']['reason'] = "";
+        $settlementsResponse['config']['features']['block']['status'] = false;
+        $settlementsResponse['config']['features']['hold']['status'] = "";
+        $settlementsResponse['config']['features']['hold']['status'] = false;
+
+        $this->mockSettlementsConfigData($settlementsResponse);
+
         $merchant = $this->fixtures->create('merchant', ['name' => 'testname']);
 
         $this->fixtures->user->createUserMerchantMappingForDefaultUser($merchant->id);
@@ -13312,14 +13832,14 @@ IFSC Code  ICIC0001206
         $this->assertArraySelectiveEquals($expectedBankAccount, $actualBankAccount);
     }
 
-    private function setupWorkflowForBankAccountUpdate(): void
+    private function setupWorkflowForBankAccountUpdate($orgId = '100000razorpay'): void
     {
         $org = (new OrgRepository)->getRazorpayOrg();
 
         $this->fixtures->on('live')->create('org:workflow_users', ['org' => $org]);
 
         $this->createWorkflow([
-            'org_id' => '100000razorpay',
+            'org_id' => $orgId,
             'name' => 'merchant bank account update workflow',
             'permissions' => ['edit_merchant_bank_detail'],
             'levels' => [
@@ -15923,6 +16443,23 @@ The same has been enabled for the account.
         );
     }
 
+    protected function mockSettlementsConfigData($data)
+    {
+        $settlementsMerchantDashboardMock = $this->getSettlementsMerchantDashboardServiceMock();
+
+        $settlementsDashboardMock = $this->getSettlementsDashboardServiceMock();
+
+        $settlementsMerchantDashboardMock->shouldReceive('merchantDashboardConfigGet')
+                                         ->andReturnUsing(static function() use ($data) {
+                                             return $data;
+                                         });
+
+        $settlementsDashboardMock->shouldReceive('merchantConfigGet')
+                                         ->andReturnUsing(static function() use ($data) {
+                                             return $data;
+                                         });
+    }
+
     protected function mockDruidRiskDataForNonCtsAndNonFtsMerchant()
     {
         $druidService = $this->getMockBuilder(MockDruidService::class)
@@ -16332,7 +16869,7 @@ The same has been enabled for the account.
         $this->assertEquals('merchant/gst', $headers['api-path-pattern'][0]);
     }
 
-    protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data, $expectedStorkParametersForSMSTemplate)
+    protected function raiseNeedWorkflowClarificationFromMerchantAndAssert($data, $expectedStorkParametersForSMSTemplate = [])
     {
         $this->setMockRazorxTreatment(['whatsapp_notifications' => 'on']);
 
@@ -16394,7 +16931,10 @@ The same has been enabled for the account.
 
         $this->assertEquals('awaiting-customer-response', $res['tagged'][0]);
 
-        $this->assertWorkflowNeedsClarificationMailQueued($data['expected_deep_link']);
+        if (isset($data['expected_deep_link']) === true)
+        {
+            $this->assertWorkflowNeedsClarificationMailQueued($data['expected_deep_link']);
+        }
     }
 
     protected function assertWorkflowNeedsClarificationMailQueued($deepLink, $messageBody = 'needs clarification body')

@@ -1330,7 +1330,8 @@ class Service extends Base\Service
     public function merchantDashboardConfigGet(array $input) : array
     {
         $merchant = $this->merchant;
-        $mid=$merchant->getId();
+
+        $mid = $merchant->getId();
 
         $isNewService = $this->repo->feature->getMerchantIdsHavingFeature(Constants::NEW_SETTLEMENT_SERVICE, array($mid));
 
