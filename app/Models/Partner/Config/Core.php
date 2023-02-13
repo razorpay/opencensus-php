@@ -534,7 +534,9 @@ class Core extends Base\Core
             'entity_id'             => $entity[Entity::ID],
             'entity_type'           => $params['entity_name'],
             'actor_id'              => $params['actor_id'],
+            'actor_type'            => $params['actor_type'],
             'actor_email'           => $params['actor_email'],
+            'meta_data'             => $params['meta_data'],
             'entity_data'           => json_decode(json_encode($entity)),
             'modified_at'           => $entity[Entity::UPDATED_AT]
         ];
