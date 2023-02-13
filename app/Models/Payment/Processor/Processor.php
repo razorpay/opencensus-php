@@ -88,6 +88,7 @@ use RZP\Services\NbPlus as NbPlusPaymentService;
 use RZP\Tests\Functional\Payment\OtpPaymentTest;
 use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Transfer\Constant as TransferConstant;
+use RZP\Models\UpiMandate\Status as UpiMandateStatus;
 use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
 use RZP\Models\UpiMandate\RecurringType as UPIMandateRecurringType;
 use RZP\Models\Payment\Method;
@@ -5988,7 +5989,15 @@ class Processor
         // As we are going to increment the used count
         $this->repo->upi_mandate->lockForUpdateAndReload($this->upiMandate);
 
-        $this->upiMandate->incrementUsedCount();
+        // This will handle upi autopay initial retry payment sequence count
+        $current = (int) $this->upiMandate->getUsedCount();
+
+        if(!(($current === 1) and
+            ($this->upiMandate->getStatus() === UpiMandateStatus::CONFIRMED) and
+            (isset($input[Payment\Entity::TOKEN]) === false)))
+        {
+            $this->upiMandate->incrementUsedCount();
+        }
 
         $this->repo->saveOrFail($this->upiMandate);
     }

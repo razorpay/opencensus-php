@@ -9,6 +9,7 @@ use RZP\Models\Order;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Constants;
 
 class Core extends Base\Core
 {
@@ -100,20 +101,25 @@ class Core extends Base\Core
     // transformer, which will use these params and convert them to the standard start_time and end_time fields.
     protected function transformTokenParamsForUpi(array &$input)
     {
-        $startTime = $input['start_at'] ?? Carbon::now()->getTimestamp();
+        if (isset($input[Entity::START_TIME]) === false) {
+            $startTime = $input['start_at'] ?? Carbon::now()->getTimestamp();
 
-        //Default end time to 10 years from current timestamp.
-        $endTime = $input['expire_at'] ?? Carbon::now()->addYears(10)->getTimestamp();
+            $input[Entity::START_TIME] = $startTime;
 
-        $input[Entity::START_TIME] = $startTime;
+            unset($input['start_at']);
+        }
 
-        $input[Entity::END_TIME] = $endTime;
+        if (isset($input[Entity::END_TIME]) === false) {
+            //Default end time to 10 years from current timestamp.
+            $endTime = $input['expire_at'] ?? Carbon::now()->addYears(10)->getTimestamp();
+
+            $input[Entity::END_TIME] = $endTime;
+
+            unset($input['expire_at']);
+        }
 
         // We default the frequency to as_presented if merchant does not pass us this parameter.
         $input['frequency'] = $input['frequency'] ?? Frequency::AS_PRESENTED;
-
-        unset($input['start_at']);
-        unset($input['expire_at']);
 
         return $input;
     }

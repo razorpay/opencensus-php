@@ -456,7 +456,6 @@ class SubscriptionPaymentTest extends TestCase
         $this->assertEquals($this->upiPayment['vpa'], $payment->getVpa());
 
         $upiMandate = $this->getDbLastEntity(Entity::UPI_MANDATE);
-
         $this->assertEquals(UPIMandateFrequency::AS_PRESENTED, $upiMandate->getFrequency());
         $this->assertEquals($this->subscription->getEndAt() + 604800, $upiMandate->getEndTime());
     }

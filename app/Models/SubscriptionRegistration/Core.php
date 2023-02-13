@@ -184,8 +184,8 @@ class Core extends Base\Core
                         UpiMandate\Entity::MAX_AMOUNT      => $maxAmount,
                         UpiMandate\Entity::FREQUENCY       => $frequency,
                         UpiMandate\Entity::START_TIME      => Carbon::now()->addDay(1)->getTimestamp(),
-                        UpiMandate\Entity::END_TIME        => isset($input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['end_time'])
-                                                                ? $input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['end_time']
+                        UpiMandate\Entity::END_TIME        => isset($input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['expire_at'])
+                                                                ? $input[Constants\Entity::SUBSCRIPTION_REGISTRATION]['expire_at']
                                                                 : Carbon::now()->addYear(10)->getTimestamp(),
                     ]
             ];
