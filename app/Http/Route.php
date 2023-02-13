@@ -13669,14 +13669,13 @@ class Route
 
             '1cc_configs_update',
             '1cc_configs_get',
-            '1cc_rto_mlmodel_configs_create',
-            '1cc_rto_mlmodel_configs_get',
-            '1cc_rto_mlmodel_configs_update',
-            '1cc_rto_merchant_model_configs_create',
-            '1cc_rto_merchant_model_configs_get',
-            '1cc_rto_merchant_model_configs_update',
-            '1cc_rto_merchant_model_configs_delete',
-            '1cc_rto_merchant_mlmodel_update',
+            '1cc_rto_mlmodel_configs_create_admin',
+            '1cc_rto_mlmodel_configs_get_admin',
+            '1cc_rto_mlmodel_configs_update_admin',
+            '1cc_rto_merchant_model_configs_get_admin',
+            '1cc_rto_merchant_model_configs_update_admin',
+            '1cc_rto_merchant_model_configs_delete_admin',
+            '1cc_rto_merchant_mlmodel_update_admin',
         ],
 
         //
