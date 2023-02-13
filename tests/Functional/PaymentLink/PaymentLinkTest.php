@@ -2225,7 +2225,7 @@ class PaymentLinkTest extends TestCase
             'name' => Constants::HIDE_NO_EXPIRY_FOR_PP
         ]);
 
-        $expireBy = Carbon::now(Timezone::IST)->addSeconds(120)->getTimestamp();
+        $expireBy = Carbon::now(Timezone::IST)->addDays(30)->getTimestamp();
 
         $this->testData[__FUNCTION__]['request']['content']['expire_by'] = $expireBy;
 
@@ -2272,6 +2272,183 @@ class PaymentLinkTest extends TestCase
 
         $this->startTest();
     }
+
+    // updating expiry should work as payer_name is not present in original PP
+    public function testCreatePaymentPageUpdateWithPositive()
+    {
+         $this->ba->proxyAuth();
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::ENABLE_PAYER_NAME_FOR_PP,
+        ]);
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::HIDE_NO_EXPIRY_FOR_PP
+        ]);
+
+        $pl = $this->createPaymentLink(self::TEST_PL_ID, [
+            'expire_by' => null,
+            'view_type' => 'page'
+        ]);
+
+        $this->startTest();
+    }
+
+    // update should work as payer_name is present, but patch request does has udf schema
+    public function testCreatePaymentPageUpdateWithPositive2()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::ENABLE_PAYER_NAME_FOR_PP,
+        ]);
+
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::HIDE_NO_EXPIRY_FOR_PP
+        ]);
+
+        $pl = $this->createPaymentLink(self::TEST_PL_ID, [
+            'expire_by' => null,
+            'view_type' => 'page',
+        ]);
+
+        $settings = [
+            "partner_webhook_settings" => [
+                "partner_shiprocket" => "1",
+            ],
+            "udf_schema" => "[{\"name\":\"payer__name\",\"required\":true,\"title\":\"Customer_Name\",\"type\":\"string\",\"settings\":{\"position\":1}},{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":0}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":1}},{\"name\":\"name\",\"title\":\"Name\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":3}},{\"name\":\"address\",\"title\":\"Address\",\"required\":true,\"type\":\"string\",\"options\":{\"cmp\":\"textarea\",\"is_shiprocket\":true},\"settings\":{\"position\":4}},{\"name\":\"city\",\"title\":\"City\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":5}},{\"name\":\"state\",\"title\":\"State\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":6}},{\"name\":\"pincode\",\"title\":\"Pincode\",\"required\":true,\"type\":\"number\",\"minLength\":5,\"maxLength\":7,\"pattern\":\"number\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":7}}]",
+        ];
+
+        $pl->getSettingsAccessor()->upsert($settings)->save();
+
+        $this->startTest();
+    }
+
+
+    // update should work as payer_name is present, patch request tries to set expiry_by to a timestamp
+    public function testCreatePaymentPageUpdateWithPositive3()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::ENABLE_PAYER_NAME_FOR_PP,
+        ]);
+
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::HIDE_NO_EXPIRY_FOR_PP
+        ]);
+
+        $pl = $this->createPaymentLink(self::TEST_PL_ID, [
+            'expire_by' => null,
+            'view_type' => 'page',
+        ]);
+
+        $settings = [
+            "partner_webhook_settings" => [
+                "partner_shiprocket" => "1",
+            ],
+            "udf_schema" => "[{\"name\":\"payer__name\",\"required\":true,\"title\":\"Customer_Name\",\"type\":\"string\",\"settings\":{\"position\":1}},{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":0}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":1}},{\"name\":\"name\",\"title\":\"Name\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":3}},{\"name\":\"address\",\"title\":\"Address\",\"required\":true,\"type\":\"string\",\"options\":{\"cmp\":\"textarea\",\"is_shiprocket\":true},\"settings\":{\"position\":4}},{\"name\":\"city\",\"title\":\"City\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":5}},{\"name\":\"state\",\"title\":\"State\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":6}},{\"name\":\"pincode\",\"title\":\"Pincode\",\"required\":true,\"type\":\"number\",\"minLength\":5,\"maxLength\":7,\"pattern\":\"number\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":7}}]",
+        ];
+
+        $pl->getSettingsAccessor()->upsert($settings)->save();
+
+        $expireBy = Carbon::now(Timezone::IST)->addDays(30)->getTimestamp();
+
+        $this->testData[__FUNCTION__]['request']['content']['expire_by'] = $expireBy;
+
+        $this->startTest();
+    }
+
+    // update should not work as payer_name is present, request contains udf schema but not payer name
+    public function testCreatePaymentPageUpdateWithNegative()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::ENABLE_PAYER_NAME_FOR_PP,
+        ]);
+
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::HIDE_NO_EXPIRY_FOR_PP
+        ]);
+
+        $pl = $this->createPaymentLink(self::TEST_PL_ID, [
+            'expire_by' => null,
+            'view_type' => 'page',
+        ]);
+
+        $settings = [
+            "partner_webhook_settings" => [
+                "partner_shiprocket" => "1",
+            ],
+            "udf_schema" => "[{\"name\":\"payer__name\",\"required\":true,\"title\":\"Customer_Name\",\"type\":\"string\",\"settings\":{\"position\":1}},{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":0}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":1}},{\"name\":\"name\",\"title\":\"Name\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":3}},{\"name\":\"address\",\"title\":\"Address\",\"required\":true,\"type\":\"string\",\"options\":{\"cmp\":\"textarea\",\"is_shiprocket\":true},\"settings\":{\"position\":4}},{\"name\":\"city\",\"title\":\"City\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":5}},{\"name\":\"state\",\"title\":\"State\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":6}},{\"name\":\"pincode\",\"title\":\"Pincode\",\"required\":true,\"type\":\"number\",\"minLength\":5,\"maxLength\":7,\"pattern\":\"number\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":7}}]",
+        ];
+
+        $pl->getSettingsAccessor()->upsert($settings)->save();
+
+        $expireBy = Carbon::now(Timezone::IST)->addDays(30)->getTimestamp();
+
+        $this->testData[__FUNCTION__]['request']['content']['expire_by'] = $expireBy;
+
+        $this->startTest();
+    }
+
+
+    // update should work as payer_name is present, request tries to set expires_by to no_expiry
+    public function testCreatePaymentPageUpdateWithNegative2()
+    {
+        $this->ba->proxyAuth();
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::ENABLE_PAYER_NAME_FOR_PP,
+        ]);
+
+
+        $this->fixtures->create('feature', [
+            'entity_id' => '100000razorpay',
+            'entity_type' => 'org',
+            'name' => Constants::HIDE_NO_EXPIRY_FOR_PP
+        ]);
+
+        $pl = $this->createPaymentLink(self::TEST_PL_ID, [
+            'expire_by' => null,
+            'view_type' => 'page',
+        ]);
+
+        $settings = [
+            "partner_webhook_settings" => [
+                "partner_shiprocket" => "1",
+            ],
+            "udf_schema" => "[{\"name\":\"payer__name\",\"required\":true,\"title\":\"Customer_Name\",\"type\":\"string\",\"settings\":{\"position\":1}},{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":0}},{\"name\":\"phone\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":[],\"settings\":{\"position\":1}},{\"name\":\"name\",\"title\":\"Name\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":3}},{\"name\":\"address\",\"title\":\"Address\",\"required\":true,\"type\":\"string\",\"options\":{\"cmp\":\"textarea\",\"is_shiprocket\":true},\"settings\":{\"position\":4}},{\"name\":\"city\",\"title\":\"City\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":5}},{\"name\":\"state\",\"title\":\"State\",\"required\":true,\"type\":\"string\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":6}},{\"name\":\"pincode\",\"title\":\"Pincode\",\"required\":true,\"type\":\"number\",\"minLength\":5,\"maxLength\":7,\"pattern\":\"number\",\"options\":{\"is_shiprocket\":true},\"settings\":{\"position\":7}}]",
+        ];
+
+        $pl->getSettingsAccessor()->upsert($settings)->save();
+
+        $this->startTest();
+    }
+
+
 
     public function testPaymentHandleUpdate()
     {

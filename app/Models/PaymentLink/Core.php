@@ -428,6 +428,8 @@ class Core extends Base\Core
      */
     public function update(Entity $paymentLink, array $input): Entity
     {
+        $udfSchema = $paymentLink->getSettings(Entity::UDF_SCHEMA);
+
         $this->trace->info(
             TraceCode::PAYMENT_LINK_UPDATE_REQUEST,
             [
@@ -435,7 +437,8 @@ class Core extends Base\Core
                 Entity::INPUT => $input,
             ]);
 
-        (new Validator())->validatePayerNameAndExpiryForUpdate($this->merchant, $input);
+
+        (new Validator())->validatePayerNameAndExpiryForUpdate($this->merchant, $input, $udfSchema);
 
         $settingCustomDomain = $paymentLink->getSettings(Entity::CUSTOM_DOMAIN);
         $settingCustomDomain = is_string($settingCustomDomain) ? $settingCustomDomain : "";

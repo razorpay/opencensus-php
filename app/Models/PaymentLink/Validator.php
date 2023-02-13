@@ -587,26 +587,7 @@ class Validator extends Base\Validator
 
     public function validatePayerNameAndExpiryForCreate($merchant, $input)
     {
-        if ($merchant->org->isFeatureEnabled(Feature::ENABLE_PAYER_NAME_FOR_PP) === true)
-        {
-            $settings = $input[Entity::SETTINGS] ?? [];
-
-            if (isset($settings[Entity::UDF_SCHEMA])) {
-
-                $udf_schema = json_decode($settings[Entity::UDF_SCHEMA], true);
-
-                if (($udf_schema !== null) and (in_array(Entity::PAYER_NAME, array_column($udf_schema, 'name')) === false))
-                {
-                    throw new BadRequestValidationFailureException(
-                        'Mandatory field Payer Name missing.');
-                }
-            }
-            else
-            {
-                throw new BadRequestValidationFailureException(
-                    'Mandatory field Payer Name missing.');
-            }
-        }
+        $this->validatePayerName($merchant, $input, true);
 
         if (($merchant->org->isFeatureEnabled(Feature::HIDE_NO_EXPIRY_FOR_PP) === true) and
             ($merchant->isEnableMerchantExpiryForPPEnabled() === false))
@@ -640,17 +621,55 @@ class Validator extends Base\Validator
             }
         }
 
+    }
+
+    public function validatePayerName($merchant, $input, $create)
+    {
+        if ($merchant->org->isFeatureEnabled(Feature::ENABLE_PAYER_NAME_FOR_PP) === true)
+        {
+            $settings = $input[Entity::SETTINGS] ?? [];
+
+            if (isset($settings[Entity::UDF_SCHEMA])) {
+
+                $udf_schema = json_decode($settings[Entity::UDF_SCHEMA], true);
+ 
+                if (($udf_schema !== null) and (in_array(Entity::PAYER_NAME, array_column($udf_schema, 'name')) === false))
+                {
+                    throw new BadRequestValidationFailureException(
+                        'Mandatory field Payer Name missing.');
+                }
+            }
+            else if ($create === true)
+            {
+                throw new BadRequestValidationFailureException(
+                    'Mandatory field Payer Name missing.');
+            }
+        }
+    }
+
+    public function validatePayerNameAndExpiryForUpdate($merchant, $input,string $udfSchema)
+    {
+        $udfSchema = json_decode($udfSchema, true);
+
+        if (($udfSchema !== null) and
+            (in_array(Entity::PAYER_NAME, array_column($udfSchema, 'name')) === false))
+        {
+            return;
         }
 
+        $this->validatePayerName($merchant, $input, false);
 
-    public function validatePayerNameAndExpiryForUpdate($merchant, $input)
-    {
         if (($merchant->org->isFeatureEnabled(Feature::HIDE_NO_EXPIRY_FOR_PP) === true) and
             ($merchant->isEnableMerchantExpiryForPPEnabled() === false))
         {
-            if (is_null($input[Entity::EXPIRE_BY])) {
+
+            // allow update only if expiry_by is not null
+
+            if ((array_key_exists(Entity::EXPIRE_BY, $input) === true) and
+                ((is_null($input[Entity::EXPIRE_BY]) === true) or ($input[Entity::EXPIRE_BY] === ""))) {
+
                 throw new BadRequestValidationFailureException(
-                    'Mandatory field Expires By must be set ' . $input[Entity::EXPIRE_BY]);
+                    'Mandatory field Expires By must be set');
             }
         }
     }
