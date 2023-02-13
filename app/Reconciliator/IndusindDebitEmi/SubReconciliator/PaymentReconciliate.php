@@ -11,6 +11,7 @@ use RZP\Models\Base\PublicEntity;
 class PaymentReconciliate extends Base\SubReconciliator\PaymentReconciliate
 {
     const COLUMN_PAYMENT_AMOUNT = ReconciliationFields::LOAN_AMOUNT;
+    const BLACKLISTED_COLUMNS = [];
 
     public function getPaymentId(array $row)
     {
