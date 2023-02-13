@@ -25,14 +25,16 @@ class Core extends Base\Core
     {
         (new Order1cc\Validator())->validateInput('edit1CCOrder', $orderMetaInput);
 
-        // preprocess for gift cards if any
-        $updatedPromotions = (new MerchantGiftCardPromotionService())->preProcessGiftCards($orderId, $orderMetaInput, $mockResponse);
+        // preprocess for gift cards if any. Disable if the merchant is not set.
+        if (!empty($this->merchant))
+        {
+            $updatedPromotions = (new MerchantGiftCardPromotionService())->preProcessGiftCards($orderId, $orderMetaInput, $mockResponse);
 
-        $orderMetaInput = array_merge($orderMetaInput,
-            [
-                 'promotions' => $updatedPromotions
-            ]);
-
+            $orderMetaInput = array_merge($orderMetaInput,
+                [
+                     'promotions' => $updatedPromotions
+                ]);
+        }
         return (new Order\OrderMeta\Core)->update1CCOrder($orderId, $orderMetaInput);
     }
 
@@ -83,4 +85,3 @@ class Core extends Base\Core
     }
 
 }
-
