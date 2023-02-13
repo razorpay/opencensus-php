@@ -66,10 +66,14 @@ class Repository extends Base\Repository
         //This is for the feature in devstack where the host name will be appended with label as a preview URL
         $isMatched = preg_match('/dashboard-(.*).dev.razorpay.in/', $hostname, $matches);
 
-        if ($isMatched === 1)
+        // we want to allow multiple hosts for devstack for supporting multiple orgs, orgs are identified by hostname
+        $isBankingMatched = preg_match('/dashboard-banking(.*).dev.razorpay.in/', $hostname, $bankingMatches);
+
+        if ($isMatched === 1 and $isBankingMatched !== 1)
         {
             $hostname = \RZP\Models\Admin\Org\Constants::DEVSERVE_HOST_URL ;
         }
+
         $orgId = $this->dbColumn(Entity::ID);
         $orgColumnNames = $this->dbColumn('*');
 

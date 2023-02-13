@@ -660,6 +660,20 @@ return [
         ],
     ],
 
+    'testGetOrgByHostnameDevstack' => [
+        'request' => [
+            'url' => '/orgs/hostname/dashboard-bankingaxis.dev.razorpay.in',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'email'                => 'bankingtest@axis.com',
+                'hostname'             => 'dashboard-bankingaxis.dev.razorpay.in',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testFeatureForOrg' => [
         'request' => [
             'url' => '/orgs/hostname/dashboard.razorpay.com',

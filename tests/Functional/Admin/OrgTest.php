@@ -471,6 +471,20 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetOrgByHostnameDevstack()
+    {
+        $org = $this->fixtures->create('org', ['email' => 'bankingtest@axis.com']);
+
+        $this->orgHostName = $this->fixtures->create('org_hostname', [
+            'org_id'        => $org->getId(),
+            'hostname'      => 'dashboard-bankingaxis.dev.razorpay.in',
+        ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     public function testFeatureForOrg()
     {
         $this->ba->dashboardGuestAppAuth();
