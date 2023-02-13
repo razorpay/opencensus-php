@@ -37,6 +37,15 @@ class TerminalOnboardingController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function putTerminalEnableBulk()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->enableTerminalBulk($input);
+
+        return $response;
+    }
+
     public function fetchTerminals()
     {
         $input = Request::all();

@@ -2887,6 +2887,70 @@ class TerminalTest extends TestCase
         $this->assertEquals($updatedTerminal2['status'], 'activated');
     }
 
+    public function testTerminalsEnableBulk()
+    {
+        $this->ba->adminAuth();
+
+        $terminal = $this->fixtures->create('terminal', [
+            'status'    =>  'pending',
+            'gateway'   =>  'worldline',
+            'enabled'   => false
+        ]);
+
+        $terminal2 = $this->fixtures->create('terminal', [
+            'status'    =>  'activated',
+            'gateway'   =>  'worldline',
+            'enabled'   => false
+        ]);
+
+        $terminal3 = $this->fixtures->create('terminal', [
+            'status'    =>  'deactivated',
+            'gateway'   =>  'worldline',
+            'enabled'   => false
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'terminal_ids'  =>  [
+                $terminal['id'], $terminal2['id'],$terminal3['id'], 'notexisttermid'
+            ],
+        ];
+
+        $this->testData[__FUNCTION__]['response']['content'] = [
+            'failedIds'  =>  [
+                $terminal['id'], 'notexisttermid'
+            ],
+        ];
+
+        $this->startTest();
+
+        $updatedTerminal = $this->getEntityById(
+            'terminal',
+            $terminal->getId(),
+            true
+        );
+
+        $updatedTerminal2 = $this->getEntityById(
+            'terminal',
+            $terminal2->getId(),
+            true
+        );
+
+        $updatedTerminal3 = $this->getEntityById(
+            'terminal',
+            $terminal3->getId(),
+            true
+        );
+
+        $this->assertEquals($updatedTerminal['status'], 'pending');
+        $this->assertEquals($updatedTerminal['enabled'], false);
+
+        $this->assertEquals($updatedTerminal2['status'], 'activated');
+        $this->assertEquals($updatedTerminal2['enabled'], true);
+
+        $this->assertEquals($updatedTerminal3['status'], 'activated');
+        $this->assertEquals($updatedTerminal3['enabled'], true);
+    }
+
     public function testUpdateTerminalsBulkTryEnablingFailedTerminal()
     {
         $this->ba->adminAuth();

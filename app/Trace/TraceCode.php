@@ -49,6 +49,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MERCHANT_UPDATE_VALIDATION_STATUS                     = 'MERCHANT_UPDATE_VALIDATION_STATUS';
     const MERCHANT_UPDATE_VALIDATION_STATUS_DONE                = 'MERCHANT_UPDATE_VALIDATION_STATUS_DONE';
+    const TERMINAL_BULK_ENABLE_REQUEST                         = 'TERMINAL_BULK_ENABLE_REQUEST';
+    const TERMINAL_BULK_ENABLE_FAILED                          = 'TERMINAL_BULK_ENABLE_FAILED';
+    const TERMINAL_BULK_ENABLE_RESPONSE                        = 'TERMINAL_BULK_ENABLE_RESPONSE';
 
     const FTS_HOLIDAY_DEBUG                                     = "FTS_HOLIDAY_DEBUG";
 

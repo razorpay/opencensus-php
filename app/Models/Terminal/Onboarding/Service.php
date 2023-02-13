@@ -124,6 +124,66 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
+    public function enableTerminalBulk(array $input)
+    {
+        $this->trace->info(
+            TraceCode::TERMINAL_BULK_ENABLE_REQUEST,
+            $input
+        );
+
+        $terminalIds = $input['terminal_ids'];
+
+        $successCount = $failedCount = 0;
+
+        $failedIds = [];
+
+        if(count($terminalIds) > 50) {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ONLY_50_TERMINALS_ENABLED_IN_BULK);
+        }
+
+        foreach ($terminalIds as $terminalId)
+        {
+            try
+            {
+                $terminal = $this->repo->terminal->findOrFailPublic($terminalId);
+
+                $terminal = (new Terminal\Core)->enableActivatedOrDeactivatedTerminal($terminal);
+
+                $this->repo->terminal->saveOrFail($terminal, ['shouldSync' => true]);
+
+                $successCount++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex,
+                    Trace::ERROR,
+                    TraceCode::TERMINAL_BULK_ENABLE_FAILED,
+                    [
+                        'terminal_id'   =>  $terminalId
+                    ]);
+
+                $failedCount++;
+
+                $failedIds[] = $terminalId;
+            }
+        }
+
+        $response = [
+            'total'     => count($terminalIds),
+            'success'   => $successCount,
+            'failed'    => $failedCount,
+            'failedIds' => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::TERMINAL_BULK_ENABLE_RESPONSE,
+            $response
+        );
+
+        return $response;
+    }
+
     public function fetchTerminals(array $input)
     {
         $this->verifyPartnerTerminalOnboardingAccess();

@@ -542,6 +542,21 @@ class Core extends Base\Core
         return $terminal;
     }
 
+    public function enableActivatedOrDeactivatedTerminal(Entity $terminal)
+    {
+        if(in_array($terminal->getStatus(), [Status::DEACTIVATED, Status::ACTIVATED])) {
+
+            $terminal->setStatus(Status::ACTIVATED);
+
+            $terminal = $this->toggle($terminal, true);
+        } else {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_ACTIVATED_OR_DEACTIVATED_TERMINAL_CAN_BE_BULK_ENABLED);
+        }
+
+        return $terminal;
+    }
+
     public function validateExistingTerminal($terminal)
     {
         // If procurer is merchant, them merchant can procure terminals having same attributes. E.g. merchant can have two same paytm terminals

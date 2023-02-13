@@ -476,6 +476,10 @@ return [
                 'description' => 'Edits a Terminal',
                 'workflow'   => true
             ],
+            Permission::ENABLE_TERMINALS_BULK               => [
+                'description' => 'Edits a Terminal',
+                'workflow'   => true
+            ],
             Permission::EDIT_TERMINAL_GOD_MODE              => [
                 'description' => 'Edits a Terminal',
                 'workflow'   => true

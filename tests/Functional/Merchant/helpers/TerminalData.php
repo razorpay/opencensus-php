@@ -3463,6 +3463,26 @@ return [
         ]
     ],
 
+    'testTerminalsEnableBulk'    =>  [
+        'request' => [
+            'method'  => 'PUT',
+            'url'     => '/terminals/enable/bulk',
+            'content' => [
+                'terminal_ids' => [
+
+                ],
+            ],
+        ],
+        'response' => [
+            'content'   =>  [
+                'total'     => 4,
+                'success'   => 2,
+                'failed'    => 2,
+                'failedIds' =>  []
+            ]
+        ]
+    ],
+
     'testUpdateTerminalsBulkTryEnablingFailedTerminal'    =>  [
         'request' => [
             'method'  => 'PATCH',
