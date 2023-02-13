@@ -498,6 +498,7 @@ class Validator extends Base\Validator
         Terminal\Entity::GATEWAY_ACQUIRER      => 'sometimes',
         'currency_code'                        => 'sometimes',
         'identifiers'                          => 'sometimes',
+        Terminal\Entity::GATEWAY_MERCHANT_ID   => 'sometimes',
     ];
 
     protected static $onboardMerchantInputHitachiRules = [
@@ -508,6 +509,7 @@ class Validator extends Base\Validator
     protected static $onboardMerchantInputPaysecureRules = [
         Terminal\Entity::GATEWAY               => 'required|in:paysecure',
         Terminal\Entity::GATEWAY_ACQUIRER      => 'required|in:axis',
+        Terminal\Entity::GATEWAY_MERCHANT_ID   => 'sometimes',
     ];
 
     protected static $onboardMerchantInputFulcrumRules = [
