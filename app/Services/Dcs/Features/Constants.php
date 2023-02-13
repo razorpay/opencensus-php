@@ -2,7 +2,6 @@
 
 namespace RZP\Services\Dcs\Features;
 
-use phpDocumentor\Reflection\Types\Self_;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Feature\Constants as APIFeaturesConstants;
@@ -30,6 +29,7 @@ class Constants
 	const AsyncBalanceUpdateEnabled = 'async_balance_update_enabled';
 	const AsyncTransactionUpdateEnabled = 'async_transaction_update_enabled';
 	const AutoRefundsDisabled = 'auto_refunds_disabled';
+    const EnableRoutePartnerships = 'route_for_partnerships_enabled';
 	const ImportSettlement = 'import_settlement';
 
     /**
@@ -56,6 +56,7 @@ class Constants
         self::AsyncBalanceUpdateEnabled => "rzp/pg/merchant/payments/ledger/Features",
         self::AsyncTransactionUpdateEnabled => "rzp/pg/merchant/payments/ledger/Features",
         self::AutoRefundsDisabled => "rzp/pg/merchant/payments/refunds/Features",
+        self::EnableRoutePartnerships => "rzp/platform/partner/route/Features",
         self::ImportSettlement => "rzp/pg/merchant/settlements/OPGSPFeatures",
     ];
 
@@ -84,6 +85,7 @@ class Constants
         APIFeaturesConstants::ASYNC_BALANCE_UPDATE => self::AsyncBalanceUpdateEnabled,
         APIFeaturesConstants::ASYNC_TXN_FILL_DETAILS => self::AsyncTransactionUpdateEnabled,
         APIFeaturesConstants::DISABLE_AUTO_REFUNDS => self::AutoRefundsDisabled,
+        APIFeaturesConstants::ROUTE_PARTNERSHIPS => self::EnableRoutePartnerships,
         self::ImportSettlement => self::ImportSettlement,
     ];
 
@@ -112,6 +114,7 @@ class Constants
         self::EnableMerchantExpiryForPP => APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PP,
         self::EnableMerchantCreateOwnTemplate => APIFeaturesConstants::ENABLE_CREATE_OWN_TEMPLATE,
         self::EnableCustomerAmount => APIFeaturesConstants::ENABLE_CUSTOMER_AMOUNT,
+        self::EnableRoutePartnerships => APIFeaturesConstants::ROUTE_PARTNERSHIPS,
         self::ImportSettlement => self::ImportSettlement,
     ];
 
@@ -128,6 +131,7 @@ class Constants
         self::EnableMerchantExpiryForPP => 'direct',
         self::EnableMerchantCreateOwnTemplate => 'direct',
         self::EnableCustomerAmount => 'direct',
+        self::EnableRoutePartnerships => 'direct',
         self::ImportSettlement => 'direct',
     ];
 
@@ -138,7 +142,7 @@ class Constants
 
     public static function dcsReadEnabledFeaturesByEntityType(string $entityType = null, bool $withDcsNames = false): array
     {
-        if (($entityType === Type::MERCHANT) || ($entityType === Type::PARTNER) || ($entityType === Type::MERCHANT) )
+        if (($entityType === Type::PARTNER) || ($entityType === Type::MERCHANT) )
         {
             $featureNames = self::$dcsNewFeatures;
         }

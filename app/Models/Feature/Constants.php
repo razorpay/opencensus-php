@@ -289,6 +289,14 @@ class Constants
     const AUTO_COMM_INV_DISABLED          = 'auto_comm_inv_disabled';
 
     /**
+     * When partner auth is used, this feature flag enables the partner to
+     * 1. Create payments for sub-merchants and put them on hold for settlement
+     * 2. Make route transfers
+     * 3. Release a payment for settlement
+     */
+    const ROUTE_PARTNERSHIPS = 'route_partnerships';
+
+    /**
      * When creating submerchant in bulk, merchant name is synced with business name which is same for all submerchants
      * of a partner. To avoid syncing business_name with merchant_name, this feature flag is used.
      */
@@ -2417,6 +2425,7 @@ class Constants
         DcsConstants::EmailOptionalOnCheckout => true,
         DcsConstants::ShowEmailOnCheckout => true,
         self::AUTO_COMM_INV_DISABLED          => true,
+        self::ROUTE_PARTNERSHIPS => true,
         DcsConstants::EnableMerchantExpiryForPP => true,
         DcsConstants::EnableMerchantExpiryForPL => true,
         DcsConstants::EnableCustomerAmount => true,
@@ -3378,6 +3387,11 @@ class Constants
         self::AUTO_COMM_INV_DISABLED => [
             'feature'       => self::AUTO_COMM_INV_DISABLED,
             'display_name'  => 'Commission invoice Partner auto approval disable',
+            'documentation' => '',
+        ],
+        self::ROUTE_PARTNERSHIPS => [
+            'feature'       => self::ROUTE_PARTNERSHIPS,
+            'display_name'  => 'Enables the partner to hold/release payment settlement of sub-merchants and create transfers',
             'documentation' => '',
         ],
         self::QR_CUSTOM_TXN_NAME => [
