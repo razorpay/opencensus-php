@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
 use RZP\Http\RequestHeader;
+use RZP\Constants\Environment;
 use RZP\Models\Terminal\Status;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
@@ -332,9 +333,9 @@ class Service extends Base\Service
         return $result;
     }
 
-    private function validateCallbackSignature(string $gateway, array $input)
+    private function validateCallbackSignature(string $gateway)
     {
-        if ($gateway === Entity::WALLET_PAYPAL)
+        if (($gateway === Entity::WALLET_PAYPAL) and ($this->app['env'] === Environment::PRODUCTION))
         {
             $headers = [
                 'signature'         => $this->app['request']->header(RequestHeader::PAYPAL_SIGNATURE),
@@ -361,7 +362,7 @@ class Service extends Base\Service
                     'missing_headers' => $missingHeaders,
                 ]);
 
-                return;
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
             }
 
             $webhookId = $this->app['config']->get('applications.paypal.merchant_on_boarding_completed_webhook_id');
@@ -374,15 +375,6 @@ class Service extends Base\Service
 
             $pubKey = openssl_pkey_get_public($cert);
 
-            $details = openssl_pkey_get_details($pubKey);
-
-            $key = '';
-
-            if (array_key_exists('key', $details) === true)
-            {
-                $key = $details['key'];
-            }
-
             $inputString = implode('|', [$headers['transmission_id'], $headers['transmission_time'], $webhookId, $crc]);
 
             $result = openssl_verify(
@@ -392,25 +384,26 @@ class Service extends Base\Service
                 'sha256WithRSAEncryption'
             );
 
-            $result2 = openssl_verify(
-                $inputString,
-                base64_decode($headers['signature']),
-                $key,
-                'sha256WithRSAEncryption'
-            );
+            if ($result !== 1)
+            {
+                $this->trace->info(TraceCode::TERMINAL_ONBOARDING_CALLBACK_HEADERS_VERIFICATION, [
+                    'error' => 'paypal header verification failed',
+                    'result' => $result,
+                ]);
 
-            $this->trace->info(TraceCode::TERMINAL_ONBOARDING_CALLBACK_HEADERS_VERIFICATION, [
-                'result1' => $result,
-                'result2' => $result2
-            ]);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_UNAUTHORIZED);
+            }
         }
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     */
     public function processTerminalOnboardCallback(string $gateway, array $input)
     {
         $this->app['trace']->info(TraceCode::TERMINAL_ONBOARDING_CALLBACK_RECEIVED, $input);
 
-        $this->validateCallbackSignature($gateway, $input);
+        $this->validateCallbackSignature($gateway);
 
         $response = $this->app['terminals_service']->terminalOnboardCallback($gateway, $input);
 

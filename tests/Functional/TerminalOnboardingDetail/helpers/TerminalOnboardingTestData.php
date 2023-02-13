@@ -1,4 +1,5 @@
 <?php
+
 return [
     'testTerminalOnboardCallback' => [
         'request' => [
@@ -12,6 +13,51 @@ return [
             'content' => [
                 'success' => true
             ],
+        ],
+    ],
+
+    'testTerminalOnboardCallbackAuthorizationErrorWithoutHeaders' => [
+        'request' => [
+            'url'       => '/terminals/onboard/wallet_paypal/callback/test',
+            'method'    => 'POST',
+            'content'   => [
+                'foo'   => 'bar',
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
+    'testTerminalOnboardCallbackAuthorizationErrorWithHeaders' => [
+        'request' => [
+            'url'       => '/terminals/onboard/wallet_paypal/callback/test',
+            'method'    => 'POST',
+            'server' => [
+                'HTTP_paypal-auth-algo'          =>'SHA256withRSA',
+                'HTTP_paypal-cert-url'           =>'https://api.sandbox.paypal.com/v1/notifications/certs/CERT-360caa42-fca2a594-5a29e601',
+                'HTTP_paypal-transmission-sig'   =>'123',
+                'HTTP_paypal-transmission-time'  =>'2023-01-12T19:32:58Z',
+                'HTTP_paypal-transmission-id'    => 'eb9b29a0-92af-11ed-80ef-0d7c791d2660',
+            ],
+            'content'   => [
+                'foo'   => 'bar',
+            ]
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => 'BAD_REQUEST_ERROR',
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
         ],
     ],
 

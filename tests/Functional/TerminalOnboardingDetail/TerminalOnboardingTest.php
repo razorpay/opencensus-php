@@ -46,6 +46,24 @@ class TerminalOnboardingTest extends TestCase
         $this->startTest();
     }
 
+    public function testTerminalOnboardCallbackAuthorizationErrorWithoutHeaders()
+    {
+        $this->ba->directAuth();
+
+        $this->changeEnvToNonTest();
+
+        $this->startTest();
+    }
+
+    public function testTerminalOnboardCallbackAuthorizationErrorWithHeaders()
+    {
+        $this->ba->directAuth();
+
+        $this->changeEnvToNonTest();
+
+        $this->startTest();
+    }
+
     public function testTerminalOnboardCallbackTerminalsServiceError()
     {
         $this->mockTerminalsServiceSendRequest(function () {
