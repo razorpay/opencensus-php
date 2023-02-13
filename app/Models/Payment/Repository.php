@@ -1820,7 +1820,7 @@ EOT;
 
     protected function addWDAQueryParamGatewayTerminalId($wdaQueryBuilder, $params)
     {
-        $this->joinWDAQueryToken($wdaQueryBuilder);
+        $this->joinWDAQueryTerminal($wdaQueryBuilder);
 
         $terminalTable = Table::getTableNameForEntity(Constants\Entity::TERMINAL);
 
@@ -2008,7 +2008,7 @@ EOT;
 
         foreach ($cardQueryParams as $key => $value)
         {
-            $wdaQueryBuilder->filetrs($wdaQueryBuilder, $key, [$value], Symbol::EQ);
+            $wdaQueryBuilder->filters($cardTableName, $key, [$value], Symbol::EQ);
         }
     }
 

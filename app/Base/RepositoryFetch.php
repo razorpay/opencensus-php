@@ -1567,7 +1567,7 @@ trait RepositoryFetch
     {
         Merchant\Entity::verifyIdAndStripSign($params[Common::MERCHANT_ID]);
 
-        $wdaQueryBuilder->filter($this->getTableName(), "merchant_id", [$params[Common::MERCHANT_ID]], Symbol::EQ);
+        $wdaQueryBuilder->filters($this->getTableName(), Common::MERCHANT_ID, [$params[Common::MERCHANT_ID]], Symbol::EQ);
     }
 
     /**
