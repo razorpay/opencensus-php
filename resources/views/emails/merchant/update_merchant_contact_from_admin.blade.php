@@ -8,10 +8,10 @@
 <div>
     <p>Hello,</p>
     <p>
-        The mobile number associated with Razorpay account has been changed from <a href="{{$old_contact_number}}" target="_blank" >{{$old_contact_number}}</a> to <a href="{{$new_contact_number}}" target="_blank" >{{$new_contact_number}}</a>
+        The mobile number associated with Razorpay account has been changed from {{$old_contact_number}} to {{$new_contact_number}}
     </p>
     <p>
-        You can now use <a href="{{$new_contact_number}}" target="_blank" >{{$new_contact_number}}</a> to login to your Razorpay account.
+        You can now use {{$new_contact_number}} to login to your Razorpay account.
     </p>
     <p>
         Regards,

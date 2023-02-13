@@ -7,7 +7,7 @@
 
 <div>
     <p>
-        Hi <a href="{{$merchant_name}}" target="_blank" >{{$merchant_name}}
+        Hi {{$merchant_name}}
     </p>
     <p>
         We have successfully added the <a href="{{$additional_website}}" target="_blank" >{{$additional_website}} to your Razorpay account. You can now start accepting payments from it.

@@ -7,13 +7,13 @@
 
 <div>
     <p>
-        Hi <a href="{{$merchant_name}}" target="_blank" >{{$merchant_name}}
+        Hi {{$merchant_name}}
     </p>
     <p>
         Greetings for the day!
     </p>
     <p>
-        With regards to the request we received an update from the partner banks to increase the transaction limit to ₹<a href="{{$updated_transaction_limit}}" target="_blank" >{{$updated_transaction_limit}}
+        With regards to the request we received an update from the partner banks to increase the transaction limit to ₹{{$updated_transaction_limit}}
     </p>
     <p>
         The same has been enabled for the account.
