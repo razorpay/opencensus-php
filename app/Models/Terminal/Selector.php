@@ -549,32 +549,11 @@ class Selector extends Base\Core
 
     protected function getTerminals()
     {
-        $response = $this->app->razorx->getTreatment($this->input['merchant']->getId(), 'payments_fetch_config_parent_terminal',
-                    $this->mode);
 
         $chargeAccountmerchant = (empty($this->input['charge_account_merchant']) === false) ? $this->input['charge_account_merchant'] : null;
 
         $merchant = $this->input['merchant'];
 
-        if ($response === 'on')
-        {
-            // Fetch all terminals (enabled/disabled) for both the current merchant, parent merchant and the shared Merchant
-            $merchantTerminals = $this->repo
-                                      ->terminal
-                                      ->getTerminalForMerchantParentMerchantAndSharedMerchant($merchant);
-
-            if ($chargeAccountmerchant !== null)
-            {
-                $chargeAccountMerchantTerminals = $this->repo
-                                                   ->terminal
-                                                   ->getTerminalForMerchantParentMerchantAndSharedMerchant($chargeAccountmerchant);
-
-                $merchantTerminals = $merchantTerminals->merge($chargeAccountMerchantTerminals);
-
-            }
-        }
-        else
-        {
             // Fetch all terminals (enabled/disabled) for both the current merchant and the shared Merchant
             $merchantTerminals = $this->repo
                                       ->terminal
@@ -588,7 +567,6 @@ class Selector extends Base\Core
 
                 $merchantTerminals = $merchantTerminals->merge($chargeAccountMerchantTerminals);
             }
-        }
 
         $payment = $this->input['payment'];
 
