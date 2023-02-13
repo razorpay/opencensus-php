@@ -1,16 +1,24 @@
 import React from 'react';
 import SlideContoller from './SlideController';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const S1 = (props) => {
   return (
     <>
       <div className="partner-onbr-info">
         <div class="title">Welcome to your Partner Dashboard</div>
-        <div className="line-box brd-primary">
-          <p className="info info-green">
-            Get ₹500 bonus and 0.1% commission on all your referrals.
-          </p>
-        </div>
+        <ShowWhen
+          additionalCondition={(userData) =>
+            !userData.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PartnerCommission)
+          }
+        >
+          <div className="line-box brd-primary">
+            <p className="info info-green">
+              Get ₹500 bonus and 0.1% commission on all your referrals.
+            </p>
+          </div>
+        </ShowWhen>
         <div style={{ marginTop: '21px', padding: '2px' }}>
           <p className="">
             Get started with referring merchants and track your commissions directly from your

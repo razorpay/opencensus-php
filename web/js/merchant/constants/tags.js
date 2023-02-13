@@ -51,4 +51,5 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   PartnershipProgram: 'i18_hide_partnership_program',
   PartnerIllustration: 'i18_hide_partner_illustration',
   ReferalLinks: 'i18_hide_referal_links',
+  PartnerCommission: 'i18_hide_partner_commission',
 };

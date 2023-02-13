@@ -5,7 +5,7 @@ import { getCustomURL } from 'merchant/components/DocsLink';
 import { isOrgFeatureExist, ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
 
-const FOOTER_LINKS = [
+export const FOOTER_LINKS = [
   {
     label: 'Merchant Agreement',
     link: 'https://razorpay.com/agreement/',
@@ -20,7 +20,7 @@ const FOOTER_LINKS = [
   },
 ];
 
-const MALAYSIAN_FOOTER_LINKS = [
+export const MALAYSIAN_FOOTER_LINKS = [
   {
     label: 'Terms of Use',
     link: 'https://curlec.com/terms-of-service/',

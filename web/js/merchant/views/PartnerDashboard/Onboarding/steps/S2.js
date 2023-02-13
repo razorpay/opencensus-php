@@ -12,6 +12,17 @@ import {
 import { ONBOARDING_LABELS } from 'merchant/views/PartnerDashboard/constants';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { MALAYSIAN_FOOTER_LINKS, FOOTER_LINKS } from 'merchant/components/Footer/index';
+
+const TERM_CONDITION_LINK = {
+  rzp: 'https://razorpay.com/s/terms-partners/',
+  curlec: 'https://curlec.com/partnerships-terms-and-conditions/',
+};
+
+const PRIVACY_LINK = {
+  rzp: FOOTER_LINKS[2].link,
+  curlec: MALAYSIAN_FOOTER_LINKS[1].link,
+};
 
 const S2 = ({
   role,
@@ -26,10 +37,12 @@ const S2 = ({
   businessTypeName,
   screenName,
   onCompleteClick,
+  orgDetails,
   isOrgCurlec,
 }) => {
-  const rzpProductText = 'I just want to use Razorpay products';
-  const curlecProductText = 'I just want to use Curlec products';
+  const orgCode = orgDetails.custom_code;
+  const orgName = orgDetails.business_name;
+
   const handleNextClick = () => {
     tracking.trackEvent(
       window.rzpQ.onbr().interaction('partnerships.partner.type.next', {
@@ -205,13 +218,13 @@ const S2 = ({
                 color: '#57666E',
               }}
             >
-              {isOrgCurlec ? curlecProductText : rzpProductText}
+              I just want to use {orgName} products
             </a>
           </p>
           <p>
             By signing up you agree to our{' '}
             <a
-              href="https://razorpay.com/privacy/"
+              href={PRIVACY_LINK[orgCode]}
               target="_blank"
               onClick={onPrivacyPolicyClicked}
               rel="noopener noreferrer"
@@ -220,7 +233,7 @@ const S2 = ({
             </a>{' '}
             and{' '}
             <a
-              href="https://razorpay.com/s/terms-partners/"
+              href={TERM_CONDITION_LINK[orgCode]}
               target="_blank"
               className="highlight"
               onClick={onTnCClicked}

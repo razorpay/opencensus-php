@@ -230,7 +230,8 @@ export default class BaseScreen extends React.Component {
   };
 
   render() {
-    const { user } = this.props;
+    const { user, session } = this.props;
+    const orgDetails = session.org;
     const isHidePartnerType = user?.isOnboardAsResellers && user.role === 'owner';
     return (
       <div className={this.partnerOnboardingClass}>
@@ -268,7 +269,8 @@ export default class BaseScreen extends React.Component {
                   lpFold={this.state.lpFold}
                   businessTypeName={this.state.businessTypeName}
                   onCompleteClick={this.onCompleteClick}
-                  isOrgCurlec={user?.isOrgCurlec}
+                  orgDetails={orgDetails}
+                  isOrgCurlec={user.isOrgCurlec}
                 />
               )
             : null}
