@@ -36,17 +36,18 @@ class PaymentReconciliate extends SubReconciliator\PaymentReconciliate
 
 //        $onusIndicator = $this->getOnusIndicator($row);
 
-        $rrn = $this->getReferenceNumber($row);
+        $arn = $row[ReconciliationFields::ARN] ?? null;
+
+        return trim(str_replace("'", '', $arn ?? null));
 
 //        if ($onusIndicator === self::ONUS_INDICATOR)
 //        {
 //            // Only in case of ONUS transactions, we want to store RRN
 //            // In all the other cases, we want to store ARN only.
 //            return $rrn;
-//        }
-
-        return $rrn;
+//
     }
+
 
     protected function getOnusIndicator($row)
     {

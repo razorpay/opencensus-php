@@ -4,6 +4,8 @@ namespace RZP\Reconciliator\CardFssSbi\SubReconciliator;
 
 class ReconciliationFields
 {
+    const ARN                   =  'ARN';
+
     const MERCHANT_TXN_NO       = 'MERCHANT_TXNNO';
 
     const TRANSACTION_AMOUNT    = 'TXN_AMT';
