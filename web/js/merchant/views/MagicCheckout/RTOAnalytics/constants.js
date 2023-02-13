@@ -16,15 +16,18 @@ export const TABS = {
   OVERVIEW: {
     label: 'Overview',
     Component: Overview,
+    eventName: 'Overview',
   },
   RISK_REPORT: {
     label: 'Risk Report',
     condition: (_user) => _user.isMagicRTOAnalyticsV2Enabled,
     Component: RiskReport,
+    eventName: 'RiskReport',
   },
   ORDER_INSIGHTS: {
     label: 'RTO Insights',
     Component: OrderInsights,
+    eventName: 'RTOInsights',
   },
 };
 

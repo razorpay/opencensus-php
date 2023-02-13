@@ -13,6 +13,7 @@ import {
 
 import { getStartDateFromDiff } from 'common/utils/rzp-utils';
 import { getWidgetData } from 'merchant/views/MagicCheckout/RTOAnalytics/utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 import {
   TABS,
@@ -86,10 +87,34 @@ const RTOAnalytics = ({
     }
   }, [requestCount]);
 
+  const callTabSwitchAnalyticTrack = useCallback(
+    (tab) => {
+      analyticsTrack({
+        objectName: `1ccMdClickedOn${tab.eventName}`,
+        actionName: 'clicked',
+        screen: `${tab.tabName} tab l1`,
+        properties: {
+          merchant_id: user?.merchant?.id,
+        },
+      });
+
+      analyticsTrack({
+        objectName: `1ccMdViewed${tab.eventName}`,
+        actionName: 'render',
+        screen: `${tab.tabName} tab l1`,
+        properties: {
+          merchant_id: user?.merchant?.id,
+        },
+      });
+    },
+    [user],
+  );
+
   const onTabClick = (tab) => {
     if (label === tab.label) return;
 
     setActiveTab(tab);
+    callTabSwitchAnalyticTrack(tab);
   };
 
   const getTab = useCallback(
@@ -98,6 +123,35 @@ const RTOAnalytics = ({
     },
     [label],
   );
+
+  useEffect(() => {
+    analyticsTrack({
+      objectName: '1ccMdClickedOnRtoAnalyticsTab',
+      actionName: 'clicked',
+      screen: 'RTO analytics tab l1',
+      properties: {
+        merchant_id: user?.merchant?.id,
+      },
+    });
+
+    analyticsTrack({
+      objectName: '1ccMdViewedRTOAnalytics',
+      actionName: 'render',
+      screen: 'RTO Insights tab l1',
+      properties: {
+        merchant_id: user?.merchant?.id,
+      },
+    });
+
+    analyticsTrack({
+      objectName: '1ccMdViewedOverview',
+      actionName: 'render',
+      screen: 'Overview tab l1',
+      properties: {
+        merchant_id: user?.merchant?.id,
+      },
+    });
+  }, []);
 
   return (
     <div className="display-flex rto-magic-container">
