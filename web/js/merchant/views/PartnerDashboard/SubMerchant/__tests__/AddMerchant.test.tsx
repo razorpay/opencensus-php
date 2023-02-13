@@ -114,9 +114,9 @@ describe('AddMerchant', () => {
   test('should render correctly Corporate Card option with props', () => {
     renderApp();
 
-    expect(screen.getByText('Corporate Credit Card')).toBeInTheDocument();
+    expect(screen.getByText('Line Of Credit')).toBeInTheDocument();
     expect(
-      screen.getByText('Refer merchants to Capital products like Corporate Cards'),
+      screen.getByText('Refer merchants to Capital products like Line Of Credit'),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument();
   });
@@ -124,20 +124,20 @@ describe('AddMerchant', () => {
   test('should not show Corporate card option if experiment is false', () => {
     renderApp({ isPartnershipForCapitalEnabled: false });
 
-    const heading = screen.queryByText('Corporate Credit Card');
+    const heading = screen.queryByText('Line Of Credit');
     expect(heading).not.toBeInTheDocument();
   });
 
   test('should navigate to next screen when merchant type is selected and next button is clicked', async () => {
     renderApp();
-    const merchantBox = screen.getByText('Corporate Credit Card');
+    const merchantBox = screen.getByText('Line Of Credit');
     await userEvent.click(merchantBox);
 
     const nextButton = screen.getByRole('button', { name: 'Next' });
     await userEvent.click(nextButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Add New Merchants - Corporate Card')).toBeInTheDocument();
+      expect(screen.getByText('Add New Merchants - Line Of Credit')).toBeInTheDocument();
     });
 
     expect(screen.getByText('Invite Multiple Clients')).toBeInTheDocument();

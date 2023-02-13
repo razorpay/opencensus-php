@@ -33,16 +33,13 @@ describe('CapitalReferralCard', () => {
 
     const heading = screen.getByText((content, node) => {
       const hasText = (node: TODO_PD) =>
-        node.textContent === 'Now refer for RazorpayX Corporate Card.';
+        node.textContent === 'Now refer for RazorpayX Line Of Credit.';
       const isNodeHasText = hasText(node);
       return isNodeHasText;
     });
     expect(heading).toBeInTheDocument();
 
-    const detailCurrent = screen.getByText('Refer merchants to RazorpayX Current Account');
-    expect(detailCurrent).toBeInTheDocument();
-
-    const detailCorporate = screen.getByText('Refer merchants to RazorpayX Corporate Credit Cards');
+    const detailCorporate = screen.getByText('Refer merchants to RazorpayX Line Of Credit');
     expect(detailCorporate).toBeInTheDocument();
 
     const referButton = screen.getByRole('button', { name: 'Refer Now' });

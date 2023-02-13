@@ -64,7 +64,7 @@ export default (props) => {
       if (capitalProducts?.data?.length > 0) {
         const { data } = capitalProducts;
         const product = data.filter((item) => {
-          return item.name === 'CARDS';
+          return item.name === 'LOC_EMI';
         });
         const productId = product[0].id;
         const subMerchantId = [id.replace('acc_', '')];

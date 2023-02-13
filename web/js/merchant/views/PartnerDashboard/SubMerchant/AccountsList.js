@@ -212,7 +212,7 @@ class ProductSubMerchantsList extends ListContainer {
       this.setState({ capitalLoading: true, isDataLoaded: true });
       if (products?.data?.length > 0 && items.length > 0) {
         const product = products.data.filter((item) => {
-          return item.name === 'CARDS';
+          return item.name === 'LOC_EMI';
         });
         const productId = product[0].id;
         const merchantIds = items.map((item) => item.id.replace('acc_', ''));
@@ -567,6 +567,11 @@ class ProductSubMerchantsList extends ListContainer {
     }
   };
 
+  handleCapitalPaginate = (params) => {
+    this.paginate(params);
+    this.capitalSearchHandler();
+  };
+
   render() {
     const { user, product, referralData, location, isSubMerchantKycResellerEnabled } = this.props;
     const { capitalLoading, capitalItems } = this.state;
@@ -717,7 +722,7 @@ class ProductSubMerchantsList extends ListContainer {
                   title="Sub Merchants"
                   count={this.state.count}
                   skip={this.state.skip}
-                  paginate={this.paginate}
+                  paginate={(params) => this.handleCapitalPaginate(params)}
                   columns={[this.capitalName(), id, email, addedOn, capitalStatus]}
                   items={capitalItems}
                 />

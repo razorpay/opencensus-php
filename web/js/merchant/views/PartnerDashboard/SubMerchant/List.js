@@ -1,6 +1,6 @@
 import { Fragment, Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink, Route, Switch } from 'react-router-dom';
+import { NavLink, Route, Switch, withRouter } from 'react-router-dom';
 
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -18,7 +18,7 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { trackAddNewMerchantEvents } from 'merchant/views/PartnerDashboard/ga';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-
+@withRouter
 @connect(
   (state) => ({
     user: state.session.user,
@@ -37,7 +37,12 @@ export default class SubMerchantsList extends Component {
   state = {};
 
   componentDidMount() {
-    const { user } = this.props;
+    const { user, location } = this.props;
+    if (location?.state?.addType) {
+      if (location.state.addType === PRODUCT_TYPE.CAPITAL) {
+        this.handleAddMerchant();
+      }
+    }
     this.trackUserEvent('partnerships.dashboard.open', {
       fux: user?.isPartnershipFUX,
     });
@@ -79,10 +84,10 @@ export default class SubMerchantsList extends Component {
     });
 
     trackAddNewMerchantEvents('Click - Navbar');
-    const { closeModal } = this.props;
+    const { closeModal, openModal } = this.props;
     const { referralData } = this.state;
     const addMerchantType = this.getProductType();
-    this.props.openModal({
+    openModal({
       size: 'med-large',
       component: (
         <AddMerchant
@@ -208,7 +213,7 @@ export default class SubMerchantsList extends Component {
                 to="/partners/submerchants"
                 onClick={() => this.sendAnalytics('navlink-Payments')}
               >
-                Payments Affiliate Accounts
+                Payments
               </NavLink>
               <ShowWhen
                 additionalCondition={(currentUser) =>
@@ -220,16 +225,12 @@ export default class SubMerchantsList extends Component {
                   to="/partners/submerchants/x"
                   onClick={() => this.sendAnalytics('navlink-X')}
                 >
-                  RazorpayX Affiliate Accounts
+                  RazorpayX
                 </NavLink>
               </ShowWhen>
               <ShowWhen additionalCondition={() => isPartnershipForCapitalEnabled}>
-                <NavLink
-                  exact
-                  to="/partners/submerchants/capital"
-                  onClick={() => this.sendAnalytics('navlink-Capital')}
-                >
-                  Corporate Credit Card Affiliate Accounts
+                <NavLink exact to="/partners/submerchants/capital">
+                  Line Of Credit
                 </NavLink>
               </ShowWhen>
             </div>

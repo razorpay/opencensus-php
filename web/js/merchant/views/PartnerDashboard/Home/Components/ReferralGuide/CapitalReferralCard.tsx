@@ -43,19 +43,13 @@ export const CapitalReferralCard = ({
     <div className="capital-referral-guide-card">
       <div className="details-container">
         <div className="heading-title">
-          Now refer for Razorpay<span>X</span> Corporate Card.
+          Now refer for Razorpay<span>X</span> Line Of Credit.
         </div>
         <div className="details">
           <div className="details-with-icon">
             <img src={ReferIcon} alt="refer" width="40" height="40" />
             <div className="details-text">
-              Refer merchants to RazorpayX <br /> Current Account
-            </div>
-          </div>
-          <div className="details-with-icon">
-            <img src={ReferIcon} alt="refer" width="40" height="40" />
-            <div className="details-text">
-              Refer merchants to RazorpayX <br /> Corporate Credit Cards
+              Refer merchants to RazorpayX <br /> Line Of Credit
             </div>
           </div>
           <div className="details-with-icon">

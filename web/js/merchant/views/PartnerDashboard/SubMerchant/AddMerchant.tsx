@@ -96,7 +96,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
         return merchantType === PRODUCT_TYPE.X
           ? 'Add New Merchants - RazorpayX'
           : this.isCapitalProduct()
-          ? 'Add New Merchants - Corporate Card'
+          ? 'Add New Merchants - Line Of Credit'
           : 'Add New Merchants - Razorpay Payments';
       case 3:
         return 'Merchant Added Successfully';
@@ -667,8 +667,8 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                   />
                   <ShowWhen additionalCondition={() => this.isPartnershipForCapitalEnabled}>
                     <SelectBox
-                      label="Corporate Credit Card"
-                      description="Refer merchants to Capital products like Corporate Cards"
+                      label="Line Of Credit"
+                      description="Refer merchants to Capital products like Line Of Credit"
                       onClick={() => {
                         this.setState({ merchantType: PRODUCT_TYPE.CAPITAL });
                       }}

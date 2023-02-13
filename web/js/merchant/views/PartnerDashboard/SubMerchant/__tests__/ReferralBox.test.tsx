@@ -54,10 +54,10 @@ describe('ReferralBox', () => {
 
   test('should render referralBox with props', () => {
     renderApp();
-    expect(screen.getByText('Corporate Credit Card')).toBeInTheDocument();
+    expect(screen.getByText('Line Of Credit')).toBeInTheDocument();
     expect(screen.getByText('Copy Link')).toBeInTheDocument();
     expect(
-      screen.getByText('Refer merchants to Capital products like corporate cards'),
+      screen.getByText('Refer merchants to Capital products like Line Of Credit'),
     ).toBeInTheDocument();
   });
 });

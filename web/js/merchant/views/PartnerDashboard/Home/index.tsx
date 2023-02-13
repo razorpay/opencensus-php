@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import rTracking from 'react-tracking';
 import axios from 'axios';
+import { withRouter } from 'react-router-dom';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -21,6 +22,7 @@ import 'merchant/views/PartnerDashboard/Home/home.styl';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import Loader from 'common/ui/Loader';
 import DashboardBanner from 'common/ui/DashboardBanner';
+import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { CapitalReferralCard } from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/CapitalReferralCard';
 
 const AggregatorFormLazy = React.lazy(() =>
@@ -30,7 +32,14 @@ const AggregatorSuccessLazy = React.lazy(() =>
   import('merchant/views/PartnerDashboard/Home/Components/ReferralGuide/AggregatorSuccess'),
 );
 
-const Home = ({ user, showNotification, openModal, closeModal, tracking }: PartnerHomeT) => {
+const Home = ({
+  user,
+  showNotification,
+  openModal,
+  closeModal,
+  tracking,
+  history,
+}: PartnerHomeT): JSX.Element => {
   const [FUXStatus, setFUXStatus] = useState<FUXStatusStateT>({
     value: null,
     isFetching: true,
@@ -90,6 +99,13 @@ const Home = ({ user, showNotification, openModal, closeModal, tracking }: Partn
           source={source}
         />
       ),
+    });
+  };
+
+  const handleCapitalRefer = (): void => {
+    history.push({
+      pathname: '/partners/submerchants/capital',
+      state: { addType: PRODUCT_TYPE.CAPITAL },
     });
   };
 
@@ -214,7 +230,7 @@ const Home = ({ user, showNotification, openModal, closeModal, tracking }: Partn
         />
       </ShowWhen>
       <ShowWhen additionalCondition={() => isPartnershipForCapitalEnabled}>
-        <CapitalReferralCard handleReferClient={handleReferClient} mid={partnerId} />
+        <CapitalReferralCard handleReferClient={handleCapitalRefer} mid={partnerId} />
       </ShowWhen>
     </div>
   );
@@ -234,5 +250,6 @@ export default compose<any>(
   rTracking({
     page: 'PartnerHome',
   }),
+  withRouter,
   connect(mapStateToProps, getDispatchToProps()),
 )(Home);

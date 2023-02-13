@@ -117,8 +117,8 @@ export default function ReferralBox({
         </SelectBox>
         <ShowWhen additionalCondition={() => user.isPartnershipForCapitalEnabled}>
           <SelectBox
-            label="Corporate Credit Card"
-            description="Refer merchants to Capital products like corporate cards"
+            label="Line Of Credit"
+            description="Refer merchants to Capital products like Line Of Credit"
             onClick={() => setProductType(PRODUCT_TYPE.CAPITAL)}
             checked={isCapitalProduct}
           >
