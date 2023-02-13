@@ -23,6 +23,7 @@ import {
   isBankAccountDetailsAllowed,
   isProfileViewAllowed,
   shouldShowFIRCSection,
+  shouldShowTeamInvitations,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import {
   User,
@@ -158,6 +159,12 @@ export const Sections: SectionCardInterface[] = [
         title: 'Manage team',
         href: ROUTES_INFO.MANAGE_TEAM_DETAILS,
         additionalCondition: () => (user: User): boolean => isTeamManagementAllowed(user),
+      },
+      {
+        id: BusinessSettingsFields.INVITATIONS,
+        title: 'Invitations',
+        href: ROUTES_INFO.TEAM_INVITATIONS,
+        additionalCondition: () => (user: User): boolean => shouldShowTeamInvitations(user),
       },
       {
         id: BusinessSettingsFields.SUPPORT_TICKETS,

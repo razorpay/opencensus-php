@@ -392,4 +392,38 @@ describe('Condition Utils', () => {
       );
     });
   });
+
+  describe('shouldShowTeamInvitations', () => {
+    test('should return true when user has invitations', () => {
+      const shouldShowTeamInvitations = conditionalUtils.shouldShowTeamInvitations({
+        ...user,
+        user: {
+          invitations: [
+            {
+              id: '253693',
+              merchant_id: 'djwfjeSTzODQ',
+            },
+          ],
+        },
+      });
+      expect(shouldShowTeamInvitations).toBe(true);
+    });
+
+    test('should return false when user does not have invitations', () => {
+      const shouldShowTeamInvitations = conditionalUtils.shouldShowTeamInvitations({
+        ...user,
+        user: {
+          invitations: [],
+        },
+      });
+      expect(shouldShowTeamInvitations).toBe(false);
+    });
+
+    test('should return false when user does not have invitations key', () => {
+      const shouldShowTeamInvitations = conditionalUtils.shouldShowTeamInvitations({
+        ...user,
+      });
+      expect(shouldShowTeamInvitations).toBe(false);
+    });
+  });
 });

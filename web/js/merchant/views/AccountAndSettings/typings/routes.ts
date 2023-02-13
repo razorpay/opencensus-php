@@ -25,6 +25,7 @@ export enum ROUTES_INFO {
   GST_DETAILS = '/business-settings/gst',
   CUSTOMER_SUPPORT_DETAILS = '/business-settings/customer-support',
   MANAGE_TEAM_DETAILS = '/business-settings/team',
+  TEAM_INVITATIONS = '/business-settings/invitations',
   SUPPORT_TICKETS_MERCHANT = '/business-settings/ticket-support/tickets/merchant',
   SUPPORT_TICKETS_AGENT = '/business-settings/ticket-support/tickets/agent',
   BANK_ACCOUNT_DETAILS = '/bank-accounts-settlements/bank-account-details',

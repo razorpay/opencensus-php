@@ -33,6 +33,7 @@ export enum BusinessSettingsFields {
   ACCOUNT_DETAILS = 'account_details',
   MANAGE_TEAM = 'manage_team',
   SUPPORT_TICKETS = 'support_tickets',
+  INVITATIONS = 'invitations',
 }
 
 export enum PaymentRefundsFields {

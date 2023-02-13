@@ -48,11 +48,17 @@ jest.mock('merchant/views/TicketSupport/components/Conversations', () => ({
   default: () => <>Conversations</>,
 }));
 
+jest.mock('merchant/views/AccountAndSettings/BusinessSettings/Tabs/TeamInvitations', () => ({
+  __esModule: true,
+  default: () => <>TeamInvitations</>,
+}));
+
 jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
   isGstDetailsEnabled: jest.fn(),
   isTeamManagementAllowed: jest.fn(),
   isAccountDetailsEnabled: jest.fn(),
   isSupportTicketEnabled: jest.fn(),
+  shouldShowTeamInvitations: jest.fn(),
 }));
 
 const renderApp = ({ user, pathname } = {}) => {
@@ -101,6 +107,16 @@ describe('Business Settings', () => {
     });
   });
 
+  test('should show TeamInvitations when shouldShowTeamInvitations is true', async () => {
+    conditionalUtils.shouldShowTeamInvitations.mockReturnValue(true);
+    renderApp();
+    await waitFor(() => {
+      // Since components are lazy loaded
+      expect(screen.queryByRole('loader')).not.toBeInTheDocument();
+    });
+    expect(screen.getByText('TeamInvitations')).toBeInTheDocument();
+  });
+
   testBreadCrumb(renderApp, 'Contact details', ROUTES_INFO.CONTACT_DETAILS);
 
   test('should render default links', () => {
@@ -134,9 +150,10 @@ describe('Business Settings', () => {
       ['GST details', 'isGstDetailsEnabled', ROUTES_INFO.GST_DETAILS],
       ['Manage team', 'isTeamManagementAllowed', ROUTES_INFO.MANAGE_TEAM_DETAILS],
       ['Support Tickets', 'isSupportTicketEnabled', '/business-settings/ticket-support/tickets'],
+      ['Invitations', 'shouldShowTeamInvitations', ROUTES_INFO.TEAM_INVITATIONS],
     ]);
 
-    test('should render Support history as link name when isSupportTicketEnabled and isMobileSignupCareActive', () => {
+    test('should render Support history as link name when isSupportTicketEnabled and isMobileSignupCareActive', () => {
       conditionalUtils.isSupportTicketEnabled.mockReturnValueOnce(true);
       renderApp({
         user: {

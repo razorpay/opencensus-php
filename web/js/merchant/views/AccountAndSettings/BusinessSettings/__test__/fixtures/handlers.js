@@ -47,3 +47,39 @@ export const updateMerchantConfigErrorHandler = () => {
     );
   });
 };
+
+export const acceptInvitationHandler = ({ isErrorCase = false, errors = [] } = {}) => {
+  return rest.post('*/settings/invitations/:inviteId/accept', (req, res, ctx) => {
+    return res(
+      isErrorCase
+        ? ctx.json({
+            status_code: 400,
+            success: false,
+            errors,
+          })
+        : ctx.json({
+            status_code: 200,
+            success: true,
+          }),
+      ctx.delay(50),
+    );
+  });
+};
+
+export const rejectInvitationHandler = ({ isErrorCase = false, errors = [] } = {}) => {
+  return rest.post('*/invitations/:inviteId/reject', (req, res, ctx) => {
+    return res(
+      isErrorCase
+        ? ctx.json({
+            status_code: 400,
+            success: false,
+            errors,
+          })
+        : ctx.json({
+            status_code: 200,
+            success: true,
+          }),
+      ctx.delay(50),
+    );
+  });
+};

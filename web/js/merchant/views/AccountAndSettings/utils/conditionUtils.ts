@@ -117,3 +117,6 @@ export const accountAccessHoverDescription = (user: User): boolean => {
     ? ATTR_DETAILS.curlec_restricted_access_user_account.desc
     : ATTR_DETAILS.restricted_access_user_account.desc;
 };
+
+export const shouldShowTeamInvitations = (user: User): boolean =>
+  user.user?.invitations?.length > 0;

@@ -2,7 +2,7 @@ import React, { Suspense } from 'react';
 import { Route, NavLink, Switch, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-import ShowWhen from 'merchant/components/ShowWhen';
+import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import Breadcrumb from 'common/components/Breadcrumb';
@@ -23,6 +23,7 @@ import {
   isTeamManagementAllowed,
   isAccountDetailsEnabled,
   isSupportTicketEnabled,
+  shouldShowTeamInvitations,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 
@@ -62,6 +63,10 @@ const Conversations = lazy(() =>
   ),
 );
 
+const TeamInvitations = lazy(() =>
+  import(/* webpackChunkName: "TeamInvitations" */ './Tabs/TeamInvitations'),
+);
+
 const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Element => {
   if (!user.isAccountAndSettingsRevampEnabled) {
     const path = location.pathname;
@@ -99,6 +104,9 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
           <ShowWhen additionalCondition={(user) => isTeamManagementAllowed(user)}>
             <NavLink to={ROUTES_INFO.MANAGE_TEAM_DETAILS}>Manage team</NavLink>
           </ShowWhen>
+          <ShowWhen additionalCondition={(user) => shouldShowTeamInvitations(user)}>
+            <NavLink to={ROUTES_INFO.TEAM_INVITATIONS}>Invitations</NavLink>
+          </ShowWhen>
           <ShowWhen additionalCondition={(user) => isSupportTicketEnabled(user)}>
             <NavLink to="/business-settings/ticket-support/tickets">
               {user.isMobileSignupCareActive ? `Support History` : `Support Tickets`}
@@ -128,6 +136,11 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
                     <Route
                       path="/business-settings/ticket-support/:instance/:id/:ticketType/conversation"
                       component={Conversations}
+                    />
+                    <ShowWhenRoute
+                      path={ROUTES_INFO.TEAM_INVITATIONS}
+                      component={TeamInvitations}
+                      additionalCondition={(user) => shouldShowTeamInvitations(user)}
                     />
                   </Switch>
                 </main>
