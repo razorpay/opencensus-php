@@ -222,6 +222,7 @@ export interface InputFormPropsInterface
     NotificationAction {
   saveBankAccountChangesAutomate: (userId: string, formData: FormData) => Promise<AnyObject>;
   fetchBankAccount: () => Promise<void>;
+  fetchWorkflowStatus: (workflow: string) => Promise<void>;
 }
 
 export interface InputErrorPropsInterface extends ModalActions, Device {

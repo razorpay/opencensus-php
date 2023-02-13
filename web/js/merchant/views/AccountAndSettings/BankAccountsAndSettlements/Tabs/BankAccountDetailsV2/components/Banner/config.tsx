@@ -1,11 +1,11 @@
 import { AlertProps } from '@razorpay/blade/components';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import { hideWorkflowStatus } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 import BankAccountUpdateFlow from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/steps/BankAccountUpdateFlow';
 import { BANK_ACCOUNT_UPDATE_STEPS } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/typings';
+import { trackBankAccountUpdateEvent } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/utils/track';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 import React from 'react';
-import { hideWorkflowStatus } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
-import { trackBankAccountUpdateEvent } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/utils/track';
 import { BannerProps } from './Banner';
 
 export enum BannerType {
@@ -24,6 +24,15 @@ export enum BannerType {
   RISK_FOH = 'risk_foh',
   SOH = 'soh',
 }
+
+export const isBankAccountReq = (type) => {
+  return ![
+    BannerType.COMPLETE_KYC,
+    BannerType.INACTIVE_SETTLEMENT_REJECTED,
+    BannerType.RISK_FOH,
+    BannerType.SOH,
+  ].includes(type);
+};
 
 type Data = Required<BannerProps>;
 
@@ -77,13 +86,7 @@ const ncActions = ({ openModal }: Pick<Data, 'openModal'>) => ({
   },
 });
 
-export const data = ({
-  type,
-  openModal,
-  bankAccount: { account_number },
-  user,
-  workflowEta,
-}: Data): AlertProps => {
+export const data = ({ type, openModal, bankAccount, user, workflowEta }: Data): AlertProps => {
   const {
     SUCCESS,
     ACTIVE_SETTLEMENT_UNDER_REVIEW,
@@ -100,7 +103,10 @@ export const data = ({
     SOH,
     RISK_FOH,
   } = BannerType;
-  const maskedAccountNumber = `***${account_number.slice(-3)}`;
+
+  const maskedAccountNumber = bankAccount?.account_number
+    ? `***${bankAccount.account_number.slice(-3)}`
+    : '******';
 
   const onDismiss = (): void => {
     hideWorkflowStatus(user.id);

@@ -29,6 +29,8 @@ import {
   isFormInputValid,
 } from './utils';
 import { Modules } from 'common/constant/enums';
+import { fetchWorkflowStatus as fetchWorkflowStatusAction } from 'merchant/reducers/workflows';
+import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 
 const Form = ({
   user,
@@ -40,6 +42,7 @@ const Form = ({
   showNotification,
   saveBankAccountChangesAutomate,
   fetchBankAccount,
+  fetchWorkflowStatus,
 }: InputFormPropsInterface): JSX.Element => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [shouldShowBranch, setShouldShowBranch] = useState(false);
@@ -110,6 +113,7 @@ const Form = ({
             },
           });
           fetchBankAccount();
+          fetchWorkflowStatus(WORKFLOW_TYPES.BANK_DETAIL_UPDATE);
           setView(BANK_ACCOUNT_UPDATE_STEPS.PENNY_TESTING_SUCCESS);
         } else {
           const { retries } = state;
@@ -238,6 +242,7 @@ const mapDispatchToProps = (dispatch) => {
     {
       saveBankAccountChangesAutomate,
       fetchBankAccount,
+      fetchWorkflowStatus: fetchWorkflowStatusAction,
     },
     dispatch,
   );

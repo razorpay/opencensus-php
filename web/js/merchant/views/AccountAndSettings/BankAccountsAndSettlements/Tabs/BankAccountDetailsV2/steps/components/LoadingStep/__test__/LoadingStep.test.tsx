@@ -15,7 +15,7 @@ describe('Bank Account Update - LoadingStep', () => {
 
   test.each(Object.keys(LOADING_STATE))(
     'should render %s loading with correct details',
-    async (loadingTypeKey) => {
+    (loadingTypeKey) => {
       const loadingTypeData = LOADING_STATE[loadingTypeKey];
       const { title, subTitle, description, closeCTALabel } = LOADING_STEP_DATA[loadingTypeData];
       render(<LoadingStep type={loadingTypeData} />);
@@ -26,7 +26,7 @@ describe('Bank Account Update - LoadingStep', () => {
         expect(screen.getByText(description)).toBeInTheDocument();
       }
       if (closeCTALabel) {
-        const closeCTA = await screen.getByRole('button', {
+        const closeCTA = screen.getByRole('button', {
           name: closeCTALabel,
         });
         expect(closeCTA).toBeInTheDocument();

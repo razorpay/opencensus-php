@@ -45,10 +45,10 @@ const WorkflowStatus = ({
 
   useEffect(() => {
     // Only fetch request if user is owner, other users shouldn't see the workflow
-    if (user.role === rolesList.OWNER && worflow.loading) {
+    if (user.role === rolesList.OWNER && (worflow.loading || isHomepageWorkflow)) {
       fetchWorkflowStatus(workflowType);
     }
-  }, [fetchWorkflowStatus, user.role, worflow.loading]);
+  }, [fetchWorkflowStatus, user.role, worflow.loading, isHomepageWorkflow]);
 
   const workflow = workflows[workflowType];
   if (workflow.loading) return null;

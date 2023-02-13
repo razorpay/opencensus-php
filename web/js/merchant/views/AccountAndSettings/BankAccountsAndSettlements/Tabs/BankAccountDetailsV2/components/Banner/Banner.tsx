@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { data, BannerType, trackBannerDisplayed } from './config';
+import { data, BannerType, trackBannerDisplayed, isBankAccountReq } from './config';
 import { Alert } from '@razorpay/blade/components';
 import { connect } from 'react-redux';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
@@ -14,7 +14,7 @@ export interface BannerProps {
     className?: string;
     overlayStyles?: Record<string, string>;
   }) => void;
-  bankAccount?: BankData;
+  bankAccount: BankData | null;
   user: User;
   workflowEta?: string;
 }
@@ -30,9 +30,10 @@ const Banner = ({
     trackBannerDisplayed(type);
   }, []);
 
-  if (!bankAccount) {
+  if (!bankAccount && isBankAccountReq(type)) {
     return null;
   }
+
   const alertProps = data({ type, openModal, bankAccount, user, workflowEta });
   return <Alert {...alertProps} />;
 };
