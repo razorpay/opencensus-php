@@ -26,6 +26,7 @@ class CardVault extends Base\Core
     const NUMBER                           = 'number';
     const TOKEN                            = 'token';
     const TEMP_VAULT_TOKEN_PREFIX          = 'pay_';
+    const TEMP_VAULT_KMS_TOKEN_PREFIX      = 'pay2_';
 
     const TOKEN_NOT_FOUND = 'TOKEN_NOT_FOUND';
 
@@ -216,7 +217,8 @@ class CardVault extends Base\Core
     {
         try
         {
-           if (str_contains($card->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX) === false)
+           if ((str_contains($card->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX) === false) and
+               (str_contains($card->getVaultToken(), self::TEMP_VAULT_KMS_TOKEN_PREFIX) === false))
            {
                return [];
            }
@@ -271,7 +273,8 @@ class CardVault extends Base\Core
     {
         try
         {
-            if (str_contains($card->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX) === false)
+            if ((str_contains($card->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX) === false) and
+                (str_contains($card->getVaultToken(), self::TEMP_VAULT_KMS_TOKEN_PREFIX) === false))
             {
                 return [];
             }

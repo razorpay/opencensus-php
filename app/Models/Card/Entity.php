@@ -108,6 +108,8 @@ class Entity extends Base\PublicEntity
 
     const TEMP_VAULT_TOKEN_PREFIX = 'pay_';
 
+    const TEMP_VAULT_KMS_TOKEN_PREFIX = 'pay2_';
+
     protected static $sign = 'card';
 
     protected $entity = 'card';
@@ -1052,7 +1054,13 @@ class Entity extends Base\PublicEntity
 
         $isVaultTokenEmpty = (empty($this->getVaultToken()) === true);
 
-        $isTempVaultToken = str_contains($this->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX);
+        $isTempVaultToken = false;
+
+        if ((str_contains($this->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX)) or
+            (str_contains($this->getVaultToken(), self::TEMP_VAULT_KMS_TOKEN_PREFIX)))
+        {
+            $isTempVaultToken = true;
+        }
 
         $isNetworkToken = $this->isNetworkTokenisedCard();
 
@@ -1763,7 +1771,8 @@ class Entity extends Base\PublicEntity
 
         if (($skip === false) and
             (isset($this->cardMetadata[$key]) === false) and
-            (str_contains($this->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX) === true) and
+            ((str_contains($this->getVaultToken(), self::TEMP_VAULT_TOKEN_PREFIX) === true) or
+             (str_contains($this->getVaultToken(), self::TEMP_VAULT_KMS_TOKEN_PREFIX) === true)) and
             ($isAllowedIfInternalApp === true))
         {
             $this->cardMetadata = (new Card\CardVault)->getCardMetaData($this, $routeName);
