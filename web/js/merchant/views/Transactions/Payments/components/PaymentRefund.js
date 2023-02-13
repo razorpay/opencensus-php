@@ -26,6 +26,14 @@ import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
  * will display refund status and actions
  */
 
+/**
+ * Gateway Refund Not Supported
+ *
+ * optimizer_provider === "" for razorpay payment
+ * optimizer_provider !== "" for optimizer payment
+ * gateway_refund_support dependent on gateway config
+ */
+
 const NumRefunds = ({ refunds, titleCase = false }) => {
   const refundItems = refunds.items || [];
 
@@ -86,6 +94,75 @@ const RefundDetails = ({ items = [] }) => {
   );
 };
 
+const RefundDefinition = ({ refundStatus, payment, refunds, gatewayRefundNotSupported }) => {
+  const { amount_refunded: amountRefunded, currency } = payment;
+
+  if (refundStatus === 'partial') {
+    return (
+      <Definition>
+        <span>
+          <Amount value={amountRefunded} currency={currency} /> Refunded
+        </span>
+        <span>
+          Partially refunded in <NumRefunds refunds={refunds} />
+        </span>
+      </Definition>
+    );
+  }
+
+  // TODO: handle text 'Paytm' to be dynamic when extending this feature for other payment providers
+  if (gatewayRefundNotSupported) {
+    return (
+      <Definition>
+        <span>
+          We currently do not support refunds for Paytm &apos;Instant (beta)&apos; integration. You
+          can process this refund from your{' '}
+          <a
+            className="visit-link"
+            href="https://dashboard.paytm.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Paytm Business Dashboard <i className="i i-redirect" />
+          </a>
+        </span>
+      </Definition>
+    );
+  }
+
+  return <Definition>No refunds issued yet</Definition>;
+};
+
+const IssueRefund = ({ refundStatus, payment, onRefundStatusClick, gatewayRefundNotSupported }) => {
+  const { gateway_refund_support: gatewayRefundSupport } = payment;
+
+  if (gatewayRefundNotSupported) return null;
+
+  const hasOpenNonFraudDisputes =
+    payment?.disputes?.items?.filter(
+      ({ status, phase }) => ['open', 'under_review'].indexOf(status) > -1 && phase !== 'fraud',
+    )?.length ?? 0;
+
+  return (
+    <>
+      <button
+        type="button"
+        className="btn btn-default"
+        onClick={onRefundStatusClick}
+        disabled={hasOpenNonFraudDisputes || !gatewayRefundSupport}
+      >
+        {refundStatus === 'partial' ? 'Issue another Refund' : 'Issue Refund'}
+      </button>
+      {Boolean(hasOpenNonFraudDisputes) && (
+        <p className="text-danger">
+          Refunds are disabled as there {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open&nbsp;
+          {hasOpenNonFraudDisputes > 1 ? 'disputes' : 'dispute'} on this payment
+        </p>
+      )}
+    </>
+  );
+};
+
 const PaymentRefund = ({
   payment,
   refunds,
@@ -93,25 +170,16 @@ const PaymentRefund = ({
   onToggleClick = () => {},
   isQrCode = false,
 }) => {
-  const paymentStatus = payment.status;
-  const refundStatus = payment.refund_status;
-  const refundAmount = payment.amount_refunded;
-  const currency = payment.currency;
-  const errorReason = payment.error_reason;
+  const { status: paymentStatus, refund_status: refundStatus, error_reason: errorReason } = payment;
+
+  const gatewayRefundNotSupported =
+    Boolean(payment?.optimizer_provider) && !payment?.gateway_refund_support;
 
   const onRefundStatusClick = () => {
-    if (isQrCode) {
-      analyticsTrack({
-        objectName: 'qr payment detail refund issued',
-        actionName: 'clicked',
-        screen: 'qrcode payment detail',
-        properties: payment.analyticsPayload(),
-      });
-    }
     analyticsTrack({
-      objectName: 'action items on sidebar',
+      objectName: isQrCode ? 'qr payment detail refund issued' : 'action items on sidebar',
       actionName: 'clicked',
-      screen: 'home page',
+      screen: isQrCode ? 'qrcode payment detail' : 'home page',
       properties: payment.analyticsPayload(),
     });
     return openRefundModal();
@@ -125,13 +193,8 @@ const PaymentRefund = ({
       </Definition>
     );
   } else if (paymentStatus === 'captured') {
-    const hasOpenNonFraudDisputes =
-      payment.disputes &&
-      payment.disputes.items.filter(
-        ({ status, phase }) => ['open', 'under_review'].indexOf(status) > -1 && phase !== 'fraud',
-      ).length;
     return (
-      <div>
+      <div className="payment-refund--captured">
         <ShowWhen
           additionalCondition={(user) =>
             !user.isRefundAllowed ||
@@ -140,18 +203,12 @@ const PaymentRefund = ({
           }
         >
           <div className="m-b">
-            {refundStatus === 'partial' ? (
-              <Definition>
-                <span>
-                  <Amount value={refundAmount} currency={currency} /> Refunded
-                </span>
-                <span>
-                  Partially refunded in <NumRefunds refunds={refunds} />
-                </span>
-              </Definition>
-            ) : (
-              <Definition>No refunds issued yet</Definition>
-            )}
+            <RefundDefinition
+              refundStatus={refundStatus}
+              payment={payment}
+              refunds={refunds}
+              gatewayRefundNotSupported={gatewayRefundNotSupported}
+            />
           </div>
         </ShowWhen>
         <ShowWhen
@@ -162,20 +219,12 @@ const PaymentRefund = ({
               ['card', 'emi'].indexOf(payment.method) === -1)
           }
         >
-          <button
-            className="btn btn-default"
-            onClick={onRefundStatusClick}
-            disabled={hasOpenNonFraudDisputes}
-          >
-            {refundStatus === 'partial' ? 'Issue another Refund' : 'Issue Refund'}
-          </button>
-          {hasOpenNonFraudDisputes ? (
-            <p className="text-danger">
-              Refunds are disabled as there {hasOpenNonFraudDisputes > 1 ? 'are ' : 'is an '} open
-              dispute
-              {hasOpenNonFraudDisputes > 1 && 's'} on this payment
-            </p>
-          ) : null}
+          <IssueRefund
+            refundStatus={refundStatus}
+            payment={payment}
+            onRefundStatusClick={onRefundStatusClick}
+            gatewayRefundNotSupported={gatewayRefundNotSupported}
+          />
         </ShowWhen>
         <ShowWhen
           additionalCondition={(user) =>

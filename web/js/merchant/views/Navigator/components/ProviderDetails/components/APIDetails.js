@@ -11,7 +11,10 @@ function APIDetails({ providerDetails }) {
         value={() => (
           <div className="provider-api-details">
             {providerDetails.map(([key, values], index) => {
-              if (!['Payment Methods', 'UPI Features'].includes(key) && !key.includes('metadata')) {
+              if (
+                !['Payment Methods', 'UPI Features', 'optimizer_seamless_disabled'].includes(key) &&
+                !key.includes('metadata')
+              ) {
                 return (
                   <Fragment key={index}>
                     <div className="key-name">{titleCase(key)}</div>

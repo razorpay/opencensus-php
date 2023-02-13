@@ -26,7 +26,7 @@ describe('PaymentMethod', () => {
         }}
       />,
     );
-    expect(screen.getByText("SBI' 'Netbanking")).toBeInTheDocument();
+    expect(screen.getByText('SBI Netbanking')).toBeInTheDocument();
   });
 
   test('should render payment method details when payment method is wallet', () => {
@@ -38,7 +38,7 @@ describe('PaymentMethod', () => {
         }}
       />,
     );
-    expect(screen.getByText("Paytm' 'Wallet")).toBeInTheDocument();
+    expect(screen.getByText('Paytm Wallet')).toBeInTheDocument();
   });
 
   test('should render payment method details when payment method is card', () => {

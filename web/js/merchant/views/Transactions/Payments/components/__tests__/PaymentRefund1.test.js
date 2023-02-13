@@ -1,6 +1,6 @@
 import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
-import { render, screen, fireEvent, checkIfComponentIsEmpty } from 'test-utils';
+import { render, screen, getByText, fireEvent, checkIfComponentIsEmpty } from 'test-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { refund } from 'merchant/views/Transactions/Refunds/__test__/mocks/fixtures';
 import {
@@ -118,6 +118,41 @@ describe('PaymentRefund', () => {
       expect(screen.getByText('No refunds issued yet')).toBeInTheDocument();
     });
 
+    test('should render non-partial payment refund details for optimizer', () => {
+      render(
+        <App
+          payment={{
+            ...payment,
+            refund_status: null,
+            optimizer_provider: 'ABC123',
+            gateway_refund_support: true,
+          }}
+        />,
+      );
+      expect(screen.getByText('No refunds issued yet')).toBeInTheDocument();
+    });
+
+    test('should render seamless option is not enabled details', () => {
+      const { container } = render(
+        <App
+          payment={{
+            ...payment,
+            refund_status: null,
+            optimizer_provider: 'ABC123',
+            gateway_refund_support: false,
+          }}
+        />,
+      );
+
+      const expectedText =
+        "We currently do not support refunds for Paytm 'Instant (beta)' integration. You can process this refund from your Paytm Business Dashboard ";
+
+      const link = getByText(container, 'Paytm Business Dashboard');
+
+      expect(container.textContent).toEqual(expectedText);
+      expect(link.getAttribute('href')).toBe('https://dashboard.paytm.com/');
+    });
+
     describe('When refund is allowed', () => {
       describe('Issue Refund button', () => {
         const checkIssueRefundButton = (props = {}) => {
@@ -125,6 +160,7 @@ describe('PaymentRefund', () => {
             <App
               payment={{
                 ...payment,
+                gateway_refund_support: true,
                 refund_status: null,
                 analyticsPayload: jest.fn(),
               }}
@@ -153,6 +189,26 @@ describe('PaymentRefund', () => {
             screen: 'qrcode payment detail',
           });
         });
+      });
+    });
+
+    describe('When gateway refund support is not enabled for optimizer provider', () => {
+      const issueRefundButtonHidden = (props = {}) => {
+        render(
+          <App
+            {...props}
+            payment={{
+              ...payment,
+              optimizer_provider: 'ABC123',
+              gateway_refund_support: false,
+            }}
+          />,
+        );
+      };
+
+      test('should not render issue refund button', () => {
+        issueRefundButtonHidden();
+        expect(screen.queryByText('Issue Refund')).not.toBeInTheDocument();
       });
     });
   });

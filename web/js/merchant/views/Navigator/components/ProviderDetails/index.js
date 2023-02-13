@@ -16,6 +16,7 @@ import { gatewayLogos, WalletLabels } from 'merchant/views/Navigator/components/
 import APIDetails from './components/APIDetails';
 import NoProviderFound from './components/NoProviderFound';
 import { getUPIOptionLabel } from './util';
+import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
 
 @withRouter
 @connect(
@@ -47,11 +48,18 @@ export default class ProviderDetails extends Component {
 
     if (provider) {
       const providerDetails = Object.entries(provider?.Gateway_details || {});
+
       const wallets = provider.Gateway_details?.wallet_metadata?.wallets || [];
       const walletsNames = wallets.map((wallet) => WalletLabels[wallet] || titleCase(wallet));
+      const seamlessOptionExist =
+        SEAMLESS_PROVIDERS?.includes(provider?.Gateway) &&
+        provider?.Gateway_details?.hasOwnProperty('optimizer_seamless_disabled');
 
-      const { 'UPI Features': upiFeatures, 'Payment Methods': paymentMethods } =
-        provider?.Gateway_details || {};
+      const {
+        'UPI Features': upiFeatures,
+        'Payment Methods': paymentMethods,
+        optimizer_seamless_disabled,
+      } = provider?.Gateway_details || {};
 
       return (
         <div className="content-wrapper content-sm txn-details optimizer-provider-detail">
@@ -120,6 +128,15 @@ export default class ProviderDetails extends Component {
                       <EntityDetailRow
                         label="TPV"
                         value={() => getUPIOptionLabel(upiFeatures.tpv)}
+                      />
+                    </div>
+                  )}
+
+                  {seamlessOptionExist && (
+                    <div className="list-group details-row-container">
+                      <EntityDetailRow
+                        label="Integration type"
+                        value={optimizer_seamless_disabled ? 'Instant (beta)' : 'Server-to-Server'}
                       />
                     </div>
                   )}

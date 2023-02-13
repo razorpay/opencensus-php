@@ -51,7 +51,7 @@ export default ({ payment, card = {}, bankTransfer = {}, upiTransfer = {}, onUPI
     }
     el = (
       <Definition>
-        <span>{`${paymentMethodText}' '${paymentMethodName}`}</span>
+        <span>{`${paymentMethodText} ${titleCase(paymentMethod)}`}</span>
       </Definition>
     );
   } else if (['card', 'emi'].indexOf(paymentMethod) !== -1) {
