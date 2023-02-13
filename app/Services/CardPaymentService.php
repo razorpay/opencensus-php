@@ -1594,6 +1594,7 @@ class CardPaymentService
                     $trid = $tokenisedTerminal[Entity::GATEWAY_MERCHANT_ID2];
                     break;
 
+                case Card\Network::AMEX:
                 case Card\Network::VISA:
                     $trid = $tokenisedTerminal[Entity::GATEWAY_TERMINAL_ID];
                     break;

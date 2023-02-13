@@ -946,6 +946,7 @@ class Processor
                     $trid = $tokenisedTerminal[E::GATEWAY_MERCHANT_ID2];
                     break;
 
+                case Card\Network::AMEX:
                 case Card\Network::VISA:
                     $trid = $tokenisedTerminal[E::GATEWAY_TERMINAL_ID];
                     break;
