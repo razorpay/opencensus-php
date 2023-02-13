@@ -205,10 +205,6 @@ export default class CreationForm extends React.Component {
       payload.payment_amount = rupeesToPaise(formData.payment_amount);
     }
 
-    if (formData.fixed_amount === '0') {
-      delete payload.payment_amount;
-    }
-
     if (customer && customer.id) {
       payload.customer_id = customer.id;
     }
@@ -221,7 +217,19 @@ export default class CreationForm extends React.Component {
       delete payload.close_by;
     }
 
-    payload.fixed_amount = parseInt(payload.fixed_amount, 10);
+    if (
+      this.props.user.isQRCodeDedicatedTerminalEnabled &&
+      formData.type === 'upi_qr' &&
+      formData.usage === 'single_use'
+    ) {
+      payload.fixed_amount = 1;
+    } else {
+      payload.fixed_amount = parseInt(payload.fixed_amount, 10);
+    }
+
+    if (!payload.fixed_amount) {
+      delete payload.payment_amount;
+    }
 
     this.setState({
       isSubmitting: true,
@@ -280,6 +288,9 @@ export default class CreationForm extends React.Component {
     const { props, state } = this;
     const isSubmitDisabled = state.isSubmitting || state.isSubmitDisabled;
     const { formData, showAdditionalOptions, isSubmitting } = state;
+    const isDedicatedTerminalEnabled = this.props.user.isQRCodeDedicatedTerminalEnabled;
+    const hideCloseBy =
+      isDedicatedTerminalEnabled && formData.type === 'upi_qr' && formData.usage === 'multiple_use';
 
     return (
       <div class="QRCode--Create-wizard">
@@ -320,44 +331,75 @@ export default class CreationForm extends React.Component {
                 onBlur={this.onFieldBlur}
               />
 
-              <Input.Radio
-                autoRender
-                label="Accept only fixed amount on this QR?"
-                name="fixed_amount"
-                class="Input--vTop"
-                labelClass="pb-8"
-                defaultValue={FIXED_AMOUNT_OPTIONS[0].value}
-                options={FIXED_AMOUNT_OPTIONS}
-                disabled={isSubmitting}
-                onBlur={this.onFieldBlur}
-              />
+              {isDedicatedTerminalEnabled &&
+              formData.type === 'upi_qr' &&
+              formData.usage === 'single_use' ? (
+                <Input.Group
+                  class="InputGroup--inline Input--vTop"
+                  required
+                  label="Enter the amount"
+                >
+                  <div class="Input-content">
+                    <Input.CurrencySelect
+                      autoRender
+                      disabled
+                      name="currency"
+                      parentQuerySelector=".Modal-body"
+                    />
+                    <Input
+                      autoRender
+                      required
+                      class="Input--vTop"
+                      name="payment_amount"
+                      placeholder="0.00"
+                      validator={amountValidator}
+                      disabled={isSubmitting}
+                      onBlur={this.onFieldBlur}
+                    />
+                  </div>
+                </Input.Group>
+              ) : (
+                <>
+                  <Input.Radio
+                    autoRender
+                    label="Accept only fixed amount on this QR?"
+                    name="fixed_amount"
+                    class="Input--vTop"
+                    labelClass="pb-8"
+                    defaultValue={formData.fixed_amount}
+                    options={FIXED_AMOUNT_OPTIONS}
+                    disabled={isSubmitting}
+                    onBlur={this.onFieldBlur}
+                  />
 
-              {formData.fixed_amount === '1' && (
-                <div class="Input--custom">
-                  <Input.Group
-                    class="InputGroup--inline"
-                    required
-                    label={<small class="help-content">Enter the amount</small>}
-                  >
-                    <div class="Input-content">
-                      <Input.CurrencySelect
-                        autoRender
-                        disabled
-                        name="currency"
-                        parentQuerySelector=".Modal-body"
-                      />
-                      <Input
-                        autoRender
+                  {formData.fixed_amount === '1' && (
+                    <div class="Input--custom">
+                      <Input.Group
+                        class="InputGroup--inline"
                         required
-                        name="payment_amount"
-                        placeholder="0.00"
-                        validator={amountValidator}
-                        disabled={isSubmitting}
-                        onBlur={this.onFieldBlur}
-                      />
+                        label={<small class="help-content">Enter the amount</small>}
+                      >
+                        <div class="Input-content">
+                          <Input.CurrencySelect
+                            autoRender
+                            disabled
+                            name="currency"
+                            parentQuerySelector=".Modal-body"
+                          />
+                          <Input
+                            autoRender
+                            required
+                            name="payment_amount"
+                            placeholder="0.00"
+                            validator={amountValidator}
+                            disabled={isSubmitting}
+                            onBlur={this.onFieldBlur}
+                          />
+                        </div>
+                      </Input.Group>
                     </div>
-                  </Input.Group>
-                </div>
+                  )}
+                </>
               )}
 
               <Input
@@ -387,7 +429,9 @@ export default class CreationForm extends React.Component {
                   <div class="heading">
                     {showAdditionalOptions ? 'Hide' : 'View'} Advance Options
                   </div>
-                  <div class="description">QR Name, auto-closing date, and internal notes.</div>
+                  <div class="description">
+                    QR Name {!hideCloseBy && ', auto-closing date'} and internal notes
+                  </div>
                 </div>
                 <i
                   class={classList('i', showAdditionalOptions ? 'i-chevron-up' : 'i-chevron-down')}
@@ -396,45 +440,49 @@ export default class CreationForm extends React.Component {
 
               {showAdditionalOptions && (
                 <div class="AdditionalOptions">
-                  <Input.Check
-                    autoRender
-                    label={
-                      <>
-                        Close By <small>(Optional)</small>
-                      </>
-                    }
-                    fieldLabel="Close this QR code after"
-                    labelClass="pb-8"
-                    class="Input--vTop"
-                    onChange={this.handleHasNoCloseBy}
-                  />
-
-                  <Input.Group
-                    class="InputGroup--near InputGroup--inline closeBy"
-                    disabled={!state.noCloseBy}
-                  >
-                    <div class="Input-content">
-                      <Input.ToCalendar
-                        readOnly
-                        allowToday
-                        disablePastDates
-                        placeholder="DD-MM-YYYY"
-                        placement="topLeft"
-                        size="half"
-                        ref={this.closeByRef}
-                        onChange={this.onDateChange}
-                        addonAfter={<i class="i i-date-range" />}
+                  {!hideCloseBy && (
+                    <>
+                      <Input.Check
+                        autoRender
+                        label={
+                          <>
+                            Close By <small>(Optional)</small>
+                          </>
+                        }
+                        fieldLabel="Close this QR code after"
+                        labelClass="pb-8"
+                        class="Input--vTop"
+                        onChange={this.handleHasNoCloseBy}
                       />
-                      {!!formData.close_by && (
-                        <Input.TimePicker
-                          readOnly
-                          placeholder="11:59PM"
-                          onChange={this.onTimeChange}
-                          addonAfter={<i class="i i-time" />}
-                        />
-                      )}
-                    </div>
-                  </Input.Group>
+
+                      <Input.Group
+                        class="InputGroup--near InputGroup--inline closeBy"
+                        disabled={!state.noCloseBy}
+                      >
+                        <div class="Input-content">
+                          <Input.ToCalendar
+                            readOnly
+                            allowToday
+                            disablePastDates
+                            placeholder="DD-MM-YYYY"
+                            placement="topLeft"
+                            size="half"
+                            ref={this.closeByRef}
+                            onChange={this.onDateChange}
+                            addonAfter={<i class="i i-date-range" />}
+                          />
+                          {!!formData.close_by && (
+                            <Input.TimePicker
+                              readOnly
+                              placeholder="11:59PM"
+                              onChange={this.onTimeChange}
+                              addonAfter={<i class="i i-time" />}
+                            />
+                          )}
+                        </div>
+                      </Input.Group>
+                    </>
+                  )}
 
                   <div class="Input Input--vTop Input--SelectCustomer">
                     <div class="Input-label pb-8">
@@ -458,7 +506,7 @@ export default class CreationForm extends React.Component {
                         Name <small>(Optional)</small>
                       </>
                     }
-                    description="This will appear on your dashboard."
+                    description="This will appear on your dashboard"
                     labelClass="pb-8"
                     disabled={isSubmitting}
                     onBlur={this.onFieldBlur}

@@ -541,6 +541,10 @@ export default class User {
     return this.isFeatureEnabled('qr_codes');
   }
 
+  get isQRCodeDedicatedTerminalEnabled() {
+    return this.getExpStatus('dedicated_terminal_qr_code');
+  }
+
   get isOwner() {
     return this.userRole === rolesList.OWNER;
   }

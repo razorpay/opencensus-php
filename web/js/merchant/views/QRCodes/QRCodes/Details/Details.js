@@ -24,6 +24,7 @@ export default function Details(props) {
     onClose,
     // onMakeTestPaymentClick,
     customers,
+    user,
     // isTestMode,
     showPreview,
     downloadQRCode,
@@ -31,7 +32,11 @@ export default function Details(props) {
     viewAllPayments,
   } = props;
 
-  const isClosed = qrCode.status === 'closed';
+  const isQRClosed = qrCode.status === 'closed';
+  const hideQRCloseButton =
+    user.isQRCodeDedicatedTerminalEnabled &&
+    qrCode.type === 'upi_qr' &&
+    qrCode.usage === 'multiple_use';
 
   // const showTestPaymentBtn = isTestMode && qrCode.status === 'active';
 
@@ -82,8 +87,7 @@ export default function Details(props) {
                 <EntityDetailRow label="Status">
                   <div class="status">
                     <QRCodeStatusLabel status={qrCode.status} />
-
-                    {!isClosed && (
+                    {!isQRClosed && !hideQRCloseButton && (
                       <button class="btn btn-link" onClick={onClose}>
                         Close
                       </button>

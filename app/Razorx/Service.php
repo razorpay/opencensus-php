@@ -225,7 +225,8 @@ class Service extends Base\Service
             'rx_ba_sync_survey',
             'sync_call_for_fresh_balance',
             'issuinghq_wallet_dashboard_enabled',
-            'sync_call_for_fresh_balance'
+            'sync_call_for_fresh_balance',
+            'dedicated_terminal_qr_code'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

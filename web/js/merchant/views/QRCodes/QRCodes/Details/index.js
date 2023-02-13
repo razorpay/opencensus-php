@@ -12,7 +12,7 @@ import { fetchPayments, fetchDetails } from './model';
 import { fetchCustomersForAutocomplete } from 'merchant/reducers/customers';
 import { closeQR } from 'merchant/reducers/qrCodes/list';
 import CreateTestPayment from './CreateTestPayment';
-import QRCodePreviewModal from '../components/QRPreviewModal';
+import QRCodePreviewModal from 'merchant/views/QRCodes/QRCodes/components/QRPreviewModal';
 import track from './track';
 
 const QR_CODE_DETAILS_HOTJAR = {
@@ -25,6 +25,7 @@ const QR_CODE_DETAILS_HOTJAR = {
     return {
       isTestMode: state.session.mode === 'test',
       customers: state.customers,
+      user: state.session.user,
     };
   },
   {
@@ -205,6 +206,7 @@ export default class QRCodeDetailsContainer extends React.Component {
         statusMsg={statusMsg}
         onClose={this.closeAccount}
         customers={this.props.customers}
+        user={this.props.user}
         isTestMode={this.props.isTestMode}
         onMakeTestPaymentClick={this.openTestPaymentModal}
         showPreview={this.showPreview}
