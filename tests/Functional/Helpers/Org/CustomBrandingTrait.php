@@ -64,6 +64,11 @@ trait CustomBrandingTrait
 
         $org = $this->fixtures->create('org', array_merge($defaultOrgData, $orgData));
 
+        $this->fixtures->create('org_hostname', [
+            'org_id'    => $org->getId(),
+            'hostname'  => 'www.xyz.com'
+        ]);
+
         $this->enableCustomBrandingForOrg($org);
 
         return $org;

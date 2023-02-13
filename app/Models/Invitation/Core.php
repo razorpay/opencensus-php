@@ -15,7 +15,9 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Http\Request\Requests;
 use RZP\Mail\Base\Constants;
+use RZP\Mail\Base\OrgWiseConfig;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Feature;
 use RZP\Models\User;
@@ -453,6 +455,8 @@ class Core extends Base\Core
     {
         $product = $invitation->getProduct();
 
+        $org = OrgWiseConfig::getOrgDataForEmail($this->merchant);
+
         $this->trace->info(
             TraceCode::INVITATION_EMAIL,
             [
@@ -461,18 +465,23 @@ class Core extends Base\Core
                 'email'         => $invitation->getEmail(),
                 'name'          => $this->merchant->getName(),
                 'user_id'       => $invitation->getUserId(),
+                'merchant_id'   =>  $this->merchant->getId(),
                 'product'       => $product,
+                'custom_code'   => $this->merchant->org->getCustomCode(),
             ]);
 
         if ($product === Product::PRIMARY)
         {
+
             $data = [
                 'sender_name' => $senderName,
                 'email'       => $invitation->getEmail(),
                 'name'        => $this->merchant->getName(),
                 'token'       => $invitation->getToken(),
                 'user_id'     => $invitation->getUserId(),
+                'merchant_id' => $this->merchant->getId(),
                 'product'     => $product,
+                'org'         => $org
             ];
 
             $invitationMail = new InvitationMail($data);

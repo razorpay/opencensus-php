@@ -139,6 +139,7 @@ class Constants
 
     const CURLEC_MAIL_ADDRESSES = [
         self::NOREPLY                   => 'no-reply@curlec.com',
+        self::SUPPORT                   => 'no-reply@curlec.com',
     ];
 
     const DEFAULT_MAIL_ADDRESSES = self::MAIL_ADDRESSES;
@@ -196,15 +197,16 @@ class Constants
 
     const CURLEC_HEADERS = [
         self::NOREPLY                 => 'Team Curlec',
+        self::SUPPORT                 => 'Team Curlec',
     ];
 
     const DEFAULT_HEADERS = self::HEADERS;
 
-    // this map stores the headers for the mail addresses used by org, 
-    // this is required only if a org uses custom branding 
+    // this map stores the headers for the mail addresses used by org,
+    // this is required only if a org uses custom branding
     // by deafult rzp mail org mail addresses and headers are used
     const ORG_HEADERS_MAP = [
-        'rzp'       => self::MAIL_ADDRESSES,
+        'rzp'       => self::DEFAULT_HEADERS,
         'curlec'    => self::CURLEC_HEADERS,
     ];
 

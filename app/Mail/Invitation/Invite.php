@@ -2,6 +2,7 @@
 
 namespace RZP\Mail\Invitation;
 
+use RZP\Mail\Base\Constants;
 use Symfony\Component\Mime\Email;
 
 use RZP\Mail\Base\Common;
@@ -30,7 +31,17 @@ class Invite extends Mailable
 
     protected function addSubject()
     {
-        $subject = 'Invitation to join a team | Razorpay';
+
+        $orgName = "Razorpay";
+
+        if (!empty($this->data['org']['custom_branding']) and
+            (isset($this->data['org']['custom_code']) === true) and
+            ($this->data['org']['custom_code'] == 'curlec'))
+        {
+            $orgName = $this->data['org']['org_name'];
+        }
+
+        $subject = "Invitation to join a team | " . $orgName;
 
         $this->subject($subject);
 
@@ -39,19 +50,19 @@ class Invite extends Mailable
 
     protected function addMailData()
     {
-        parent::addMailData();
 
         $emailParams = [
             'sender_name'   => $this->data['sender_name'],
             'merchant_name' => $this->data['name'],
             'token'         => $this->data['token'],
             'product'       => $this->data['product'],
+            'email_logo'    => $this->data['org']['email_logo'],
+            'org_name'      => $this->data['org']['org_name'],
+            'hostname'      => $this->data['org']['hostname'],
+            'custom_code'   => $this->data['org']['custom_code'],
+            'custom_branding'   => $this->data['org']['custom_branding'],
+            'checkout_logo'   => $this->data['org']['checkout_logo'],
         ];
-
-        if (isset($this->data['user_id']))
-        {
-            $emailParams['data'] = $this->getUserOrgData($this->data['user_id']);
-        }
 
         $this->with(array_merge($emailParams, $this->data));
 
@@ -76,6 +87,33 @@ class Invite extends Mailable
             $headers->addTextHeader(MailTags::HEADER, MailTags::MERCHANT_INVITATION_MAIL);
         });
 
+
         return $this;
     }
+
+    protected function addSender()
+    {
+        $fromEmail = $this->getSenderEmail();
+
+        $fromHeader = $this->getSenderHeader();
+
+        $this->from($fromEmail, $fromHeader);
+
+        return $this;
+    }
+
+    protected function getSenderEmail(): string
+    {
+        $orgCode = $this->data['org']['custom_code'] ?? '';
+
+        return Constants::getSenderEmailForOrg($orgCode, Constants::SUPPORT);
+    }
+
+    protected function getSenderHeader(): string
+    {
+        $orgCode = $this->data['org']['custom_code'] ?? '';
+
+        return Constants::getSenderNameForOrg($orgCode, Constants::SUPPORT);
+    }
+
 }

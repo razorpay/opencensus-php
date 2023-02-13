@@ -21,6 +21,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Mail\Invitation\RazorpayX\Invite as xInvitationMail;
 use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class InvitationTest extends TestCase
 {
@@ -280,6 +281,77 @@ class InvitationTest extends TestCase
             $this->assertArrayHasKey('token', $viewData);
 
             $this->assertEquals('emails.invitation.existing', $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testPostSendInvitationToExistingCurlecUser()
+    {
+        Mail::fake();
+
+        $this->merchantUser = $this->fixtures->create('user',
+            [
+                'id'    => '1000InviteUser',
+                'email' => 'existinginvite@razorpay.com'
+            ]);
+
+        $org = $this->fixtures->create('org:curlec_org');
+
+        $this->fixtures->org->addFeatures([FeatureConstants::ORG_CUSTOM_BRANDING],$org->getId());
+
+        $this->fixtures->merchant->edit( self::DEFAULT_MERCHANT_ID, [
+            'org_id'    => $org->getId()
+        ]);
+
+        $this->startTest();
+
+        Mail::assertQueued(InvitationMail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
+            $this->assertEquals('no-reply@curlec.com', $mail->from[0]['address']);
+
+            $this->assertEquals('emails.invitation.existing', $mail->view);
+
+            return true;
+        });
+    }
+
+
+    public function testPostSendInvitationToNewCurlecUser()
+    {
+        Mail::fake();
+
+        $org = $this->fixtures->create('org:curlec_org');
+
+        $this->fixtures->org->addFeatures([FeatureConstants::ORG_CUSTOM_BRANDING],$org->getId());
+
+        $this->fixtures->merchant->edit( self::DEFAULT_MERCHANT_ID, [
+            'org_id'    => $org->getId()
+        ]);
+
+        $this->startTest();
+
+        Mail::assertQueued(InvitationMail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('email_logo', $viewData);
+
+            $this->assertArrayHasKey('org_name', $viewData);
+
+            $this->assertArrayHasKey('custom_branding', $viewData);
+
+            $this->assertEquals('no-reply@curlec.com', $mail->from[0]['address']);
+
+            $this->assertEquals('emails.invitation.new', $mail->view);
 
             return true;
         });

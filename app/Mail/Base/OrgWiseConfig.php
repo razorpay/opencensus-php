@@ -255,6 +255,11 @@ class OrgWiseConfig
             $data['org_name'] = $orgDetails->getDisplayName();
 
             $data['checkout_logo'] = $orgDetails->getCheckoutLogo();
+
+            $data['hostname'] = $orgDetails->getPrimaryHostName();
+
+            $data['custom_code'] = $orgDetails->getCustomCode();
+
         }
         else
         {
@@ -265,6 +270,10 @@ class OrgWiseConfig
             $data['org_name'] = $razorpayOrg->getDisplayName();
 
             $data['checkout_logo'] = $razorpayOrg->getCheckoutLogo();
+
+            $data['hostname'] = $razorpayOrg->getPrimaryHostName();
+
+            $data['custom_code'] = $razorpayOrg->getCustomCode();
         }
 
         $data['custom_branding'] = $customBranding;

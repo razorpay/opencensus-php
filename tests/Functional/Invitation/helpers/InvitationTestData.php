@@ -136,7 +136,48 @@ return [
         ]
     ],
 
+
+    'testPostSendInvitationToNewCurlecUser' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'POST',
+            'content' => [
+                'email'       => 'testteaminvite@razorpay.com',
+                'role'        => 'manager',
+                'sender_name' => 'sender_name'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '1000InviteMerc',
+                'email'       => 'testteaminvite@razorpay.com',
+                'role'        => 'manager'
+            ]
+        ]
+    ],
+
     'testPostSendInvitationToExistingUser' => [
+        'request' => [
+            'url'     => '/invitations',
+            'method'  => 'POST',
+            'content' => [
+                'email'       => 'existinginvite@razorpay.com',
+                'role'        => 'manager',
+                'token'       => str_random(40),
+                'sender_name' => 'sender_name'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'role'        => 'manager',
+                'user_id'     => '1000InviteUser',
+                'email'       => 'existinginvite@razorpay.com',
+                'merchant_id' => '1000InviteMerc',
+            ]
+        ]
+    ],
+
+    'testPostSendInvitationToExistingCurlecUser' => [
         'request' => [
             'url'     => '/invitations',
             'method'  => 'POST',

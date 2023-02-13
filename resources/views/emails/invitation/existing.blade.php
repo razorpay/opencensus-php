@@ -14,7 +14,7 @@ See you soon!
 
 <br>
 
-@if (isset($data['custom_branding']) && $data['custom_branding'] === false)
+@if (isset($custom_branding) && $custom_branding === false)
     <div>
         <p>
         --<br/>
@@ -25,7 +25,7 @@ See you soon!
             <img style="width:200px; height:auto;" src="<?php echo $message->embed(public_path().'/img/logo_black.png'); ?>">
         </a>
     </div>
-@elseif (isset($data['custom_branding']) && $data['custom_branding'] === true)
+@elseif (isset($custom_branding) && $custom_branding === true)
     <div>
         <p>
         --<br/>
