@@ -9,6 +9,7 @@ use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Illuminate\Support\Arr;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\RazorxTreatment;
 use Illuminate\Contracts\Container\Container;
@@ -22,11 +23,23 @@ class Handler extends ExceptionHandler
     protected $throwExceptionInTesting = true;
 
     /**
-     * A list of the exception types that should not be reported to Sentry
+     * A list of the exception types that should not be logged
      *
      * @var array
      */
     protected $dontReport = [
+        ProcessTimedOutException::class,
+        MethodNotAllowedHttpException::class,
+        EarlyWorkflowResponse::class,
+        TwirpException::class,
+    ];
+
+    /**
+     * A list of the exception types that should not be reported to Sentry
+     *
+     * @var array
+     */
+    protected $dontReportToSentry = [
         RecoverableException::class,
         MethodNotAllowedHttpException::class,
         ThrottleException::class,
@@ -59,19 +72,85 @@ class Handler extends ExceptionHandler
     /**
      * Report or log an exception.
      *
-     * This is a great spot to send exceptions to Sentry, Bugsnag, etc.
+     * This is a great spot to send exceptions to Sumologic, Sentry, Bugsnag, etc.
      *
      * @param Exception $e
      * @return void
      */
     public function report(Exception |\Throwable $e)
     {
-        if ($this->shouldntReport($e) === true)
+        if ($this->shouldntReportToSentry($e) === false)
         {
-            return;
+            $this->logExceptionInSentry($e);
         }
 
-        $this->logExceptionInSentry($e);
+        $level = null;
+        $code  = null;
+        $extraData = [];
+
+        switch (true)
+        {
+            // Order should not be changed,
+            // GatewayErrorException, GatewayFileException extends
+            // RecoverableException
+            case $e instanceof GatewayErrorException:
+                $level = Trace::INFO;
+                $code = TraceCode::RECOVERABLE_EXCEPTION;
+
+                if ($e->isCritical() === true)
+                {
+                    $level = Trace::CRITICAL;
+                    $code = TraceCode::ERROR_EXCEPTION;
+                }
+                break;
+
+            case $e instanceof GatewayFileException:
+                $level = $e->getTraceLevel();
+                $code = $e->getTraceCode();
+                $extraData = $e->getData();
+                break;
+
+            case $e instanceof ServerErrorException:
+                if ($this->isToStringException($e) === true)
+                {
+                    $level = Trace::WARNING;
+                    $code = TraceCode::MISC_TOSTRING_ERROR;
+                    $extraData = $this->getExceptionDetails($e);
+                }
+                // Else condition handled in default case;
+                break;
+
+            case $e instanceof BaseException:
+            case $e instanceof RecoverableException:
+                $level = Trace::INFO;
+                $code = TraceCode::RECOVERABLE_EXCEPTION;
+                $extraData = $this->getExceptionDetails($e);
+                break;
+
+            case $e instanceof BlockException:
+                $level = Trace::ALERT;
+                $code = TraceCode::THROTTLE_REQUEST_BLOCKED;
+                break;
+
+            case $e instanceof ThrottleException:
+                $level = Trace::ALERT;
+                $code = TraceCode::THROTTLE_REQUEST_THROTTLED;
+                break;
+
+            case $e instanceof \Razorpay\OAuth\Exception\BadRequestException:
+                $level = Trace::WARNING;
+                $code = TraceCode::RECOVERABLE_EXCEPTION;
+                break;
+        }
+
+        $this->traceException($e, $level, $code, $extraData);
+    }
+
+    protected function shouldntReportToSentry(Throwable $e)
+    {
+        $dontReport = array_merge($this->dontReportToSentry, $this->internalDontReport);
+
+        return (is_null(Arr::first($dontReport, fn ($type) => $e instanceof $type)) === false);
     }
 
     /**
@@ -111,8 +190,12 @@ class Handler extends ExceptionHandler
                 $response = ApiResponse::httpMethodNotAllowed();
                 break;
 
+            case $e instanceof BlockException:
+                $response = ApiResponse::requestBlocked();
+                break;
+
             case $e instanceof ThrottleException:
-                $response = $this->throttleExceptionHandler($e);
+                $response = ApiResponse::rateLimitExceeded();
                 break;
 
             case $e instanceof EarlyWorkflowResponse:
@@ -144,8 +227,6 @@ class Handler extends ExceptionHandler
 
     public function oauthRecoverableErrorResponse(bool $debug, Exception $exception = null)
     {
-        $this->traceException($exception, Trace::WARNING, TraceCode::RECOVERABLE_EXCEPTION);
-
         $this->ifTestingThenRethrowException($exception);
 
         $httpStatusCode = $exception->getHttpStatusCode();
@@ -196,8 +277,6 @@ class Handler extends ExceptionHandler
             return $this->toStringExceptionResponse($this->isDebug(), $exception);
         }
 
-        $this->traceException($exception);
-
         $this->ifTestingThenRethrowException($exception);
 
         return $this->generateServerErrorResponse($this->isDebug(), $exception);
@@ -221,22 +300,6 @@ class Handler extends ExceptionHandler
         }
     }
 
-    protected function throttleExceptionHandler(ThrottleException $exception)
-    {
-        if ($exception instanceof BlockException)
-        {
-            $this->traceException($exception, Trace::ALERT, TraceCode::THROTTLE_REQUEST_BLOCKED);
-
-            return ApiResponse::requestBlocked();
-        }
-        else
-        {
-            $this->traceException($exception, Trace::ALERT, TraceCode::THROTTLE_REQUEST_THROTTLED);
-
-            return ApiResponse::rateLimitExceeded();
-        }
-    }
-
     public function baseExceptionHandler(BaseException $exception)
     {
         // ServerError is fatal error and shoudn't be encountered
@@ -247,26 +310,11 @@ class Handler extends ExceptionHandler
             return;
         }
 
-        $this->trace->info(
-            TraceCode::RECOVERABLE_EXCEPTION,
-            $this->getExceptionDetails($exception));
-
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
 
     protected function gatewayExceptionHandler(GatewayErrorException $exception)
     {
-        $level = Trace::INFO;
-        $code = TraceCode::RECOVERABLE_EXCEPTION;
-
-        if ($exception->isCritical() === true)
-        {
-            $level = Trace::CRITICAL;
-            $code = TraceCode::ERROR_EXCEPTION;
-        }
-
-        $this->traceException($exception, $level, $code);
-
         $data = $exception->getData();
 
         if (Payment\Gateway::isNachNbResponseFlow($data) === true)
@@ -292,11 +340,6 @@ class Handler extends ExceptionHandler
 
     protected function gatewayFileExceptionHandler(GatewayFileException $exception)
     {
-        $level = $exception->getTraceLevel();
-        $code = $exception->getTraceCode();
-
-        $this->traceException($exception, $level, $code, $exception->getData());
-
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
 
@@ -374,10 +417,6 @@ class Handler extends ExceptionHandler
         {
             return false;
         }
-
-        $this->trace->warning(
-            TraceCode::MISC_TOSTRING_ERROR,
-            $this->getExceptionDetails($exception));
 
         return true;
     }
