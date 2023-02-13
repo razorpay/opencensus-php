@@ -1814,6 +1814,54 @@ class Service extends Base\Service
         return $validTokenIds;
     }
 
+    public function createTokenForRearch($input)
+    {
+        if (empty($input['payment_id']) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_ID
+            );
+        }
+
+        $payment = $this->repo->payment->findOrFail($input['payment_id']);
+
+        $card = $payment->card;
+
+        $cardInput = $this->core->buildCardInputForTokenisation($card);
+
+        $customer = $payment->customer;
+
+        if ($customer->isGlobal() === true)
+        {
+            $customer->merchant()->associate($payment->merchant);
+        }
+
+        try
+        {
+            list($token, $serviceProviderTokens) = $this->core->createTokenForRearch($card, $cardInput, $payment->merchant, $payment, $customer);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->warning(TraceCode::VAULT_TOKEN_MIGRATION_ERROR, [
+                'error' => $e,
+                'level' => Trace::WARNING,
+                'payment_id' => $payment->getId()
+            ]);
+
+            throw $e;
+        }
+
+        $customer->merchant()->associate($this->repo->merchant->getSharedAccount());
+
+        $token->incrementUsedCount();
+
+        $token->setUsedAt($payment->getAuthorizeTimestamp());
+
+        $this->repo->saveOrFail($token);
+
+        return $token->toArrayPublic();
+    }
+
     public function generateFetchMerchantsWithTokenMockResponse($input)
     {
         unset($input['card']);

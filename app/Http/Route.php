@@ -3921,6 +3921,7 @@ class Route
         'internal_payment_pricing'                   => ['get',        'internal/payments/{id}/pricing',                       'PaymentController@internalPricingFetchForPayment'                         ],
         'internal_pricing'                           => ['get',        'internal/entity/{entityType}/{entityId}/pricing',     'PaymentController@internalPricingFetch'                         ],
         'internal_merchant_risk_notification'        => ['post',       'internal/payments/{id}/risk_notification',            'PaymentController@internalRiskNotificationForRearch'                      ],
+        'internal_token_create'                      => ['post',       'internal/tokens',                                      'TokenController@internalTokenCreateForRearch'                      ],
         'internal_sign_payload'                      => ['post',       'internal/payments/signer',                             'PaymentController@signPayloadInternal'                      ],
         'internal_generate_coproto'                  => ['post',       'internal/payments/coproto',                           'PaymentCreateController@generateCoprotoForRearch'            ],
 
@@ -5466,6 +5467,7 @@ class Route
         'internal_payment_pricing',
         'internal_pricing',
         'internal_merchant_risk_notification',
+        'internal_token_create',
         'internal_sign_payload',
         'internal_generate_coproto',
         'update_token_on_authorized',
@@ -14602,6 +14604,7 @@ class Route
             'fetch_iin_by_token_iin',
             'payment_fetch_card_metadata',
             'update_token_on_authorized',
+            'internal_token_create',
         ],
 
         'nbplus_payment_service' => [
@@ -14648,6 +14651,7 @@ class Route
             'internal_merchant_risk_notification',
             'internal_sign_payload',
             'internal_generate_coproto',
+            'internal_token_create',
         ],
 
         'freshdesk_webhook' => [

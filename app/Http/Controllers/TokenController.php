@@ -181,4 +181,14 @@ class TokenController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function internalTokenCreateForRearch()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createTokenForRearch($input);
+
+        return ApiResponse::json($data);
+
+    }
 }

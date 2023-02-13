@@ -781,4 +781,16 @@ return [
             ],
         ],
     ],
+
+    'testCreateTokenForRearch' => [
+        'request'  => [
+            'url'      => '/internal/tokens',
+            'method'   => 'post',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content'     => [],
+        ],
+    ],
 ];

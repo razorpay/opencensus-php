@@ -1964,7 +1964,12 @@ class Core extends Base\Core
 
         list($card, $serviceProviderTokens) = (new Card\Core)->createTokenizedCard($input, $this->merchant);
 
-         $this->trace->info(
+        return $this->createTokenforTokenisedCard($card, $serviceProviderTokens, $this->merchant, $customer, $input);
+    }
+
+    public function createTokenforTokenisedCard($card, $serviceProviderTokens, $merchant, $customer = null, $input = [])
+    {
+        $this->trace->info(
             TraceCode::TOKEN_CREATE_FOR_TOKENIZED_CARD
         );
 
@@ -1996,7 +2001,7 @@ class Core extends Base\Core
 
         $token->setExpiredAt($card->getTokenExpiryTimestamp());
 
-        $token->merchant()->associate($this->merchant);
+        $token->merchant()->associate($merchant);
 
         if (empty($customer) === false)
         {
@@ -2041,6 +2046,23 @@ class Core extends Base\Core
         (new Card\CardVault)->updateToken($card->getVaultToken(), $updateData);
 
         return [$token, $serviceProviderTokens];
+    }
+
+    public function createTokenForRearch($card, $cardInput, $merchant, $payment, $customer)
+    {
+        $networkCode = $card->getNetworkCode();
+
+        $onboardedNetworks = (new Terminal\Core())->getMerchantTokenisationOnboardedNetworks($merchant->getId());
+
+        if (in_array($networkCode, $onboardedNetworks,true) === false) {
+
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_NOT_ONBOARDED_FOR_TOKENISATION);
+
+        }
+
+        list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($card, $merchant, $cardInput, $payment);
+
+        return $this->createTokenforTokenisedCard($card, $serviceProviderTokens, $payment->merchant, $customer);
     }
 
     public function fetchDualTokenStatus($serviceProviderTokens){

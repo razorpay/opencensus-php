@@ -324,6 +324,11 @@ class Processor
     const SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER = 'saved_card_token_payments_via_pg_router';
 
     /**
+     * Razorx flag to indicate if a payment with save option should go via PG Router and CPS or just via API service
+     */
+    const SAVED_CARD_PAYMENTS_VIA_PGROUTER = 'saved_card_payments_via_pg_router';
+
+    /**
      * Razorx flag to indicate which method and gateway are supported by barricade service
      */
     const BARRICADE_PAYMENT_METHOD = 'barricade_payment_method';
@@ -582,7 +587,6 @@ class Processor
                 (empty($input[Payment\Entity::SUBSCRIPTION_ID]) === false) or
                 (empty($input[Payment\Entity::INVOICE_ID]) === false) or
                 (empty($input[Payment\Entity::TOKEN_ID]) === false) or
-                (empty($input[Payment\Entity::SAVE]) === false) or
                 (empty($input[Payment\Entity::OFFER_ID]) === false) or
                 (empty($input[Payment\Entity::CHARGE_ACCOUNT]) === false) or
                 ((empty($input['reward_ids']) === false) and ($merchant->getId() !== '2aTeFCKTYWwfrF')) or
@@ -783,6 +787,25 @@ class Processor
                 ((bool) Admin\ConfigKey::get(Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED, false) === false))
             {
                 return false;
+            }
+
+            if (empty($input[Payment\Entity::SAVE]) === false && $iin->getNetworkCode() !== Card\Network::RUPAY)
+            {
+                $library = null;
+                if((isset($input['_']) === true) and
+                    (isset($input['_']['library']) === true))
+                {
+                    $library = $input['_']['library'];
+                }
+
+                if ($library !== null && $library !== Payment\Analytics\Metadata::CHECKOUTJS)
+                {
+                    return false;
+                }
+
+                $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+
+                return ($result === 'on');
             }
 
             if ($merchant->isFeatureEnabled('openwallet') === true)
