@@ -112,24 +112,60 @@ class PaymentRetrieveTest extends TestCase
     {
         $this->ba->proxyAuth();
 
+        $contact = '987654321';
+
         $this->fixtures->create('payment', [
-            'contact'    => '+919876543210',
+            'contact'    => '+91' . $contact,
+        ]);
+
+        $this->fixtures->create('payment', [
+            'contact'    => $contact,
         ]);
 
         $this->fixtures->create('payment', [
             'contact'    => '+918888888888',
         ]);
 
-        $contact = '+919876543210';
-
         $request = $this->request;
+
         $request['content'] = array('contact' => $contact);
 
-        $payment = $this->makeRequestAndGetContent($request);
+        $payments = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(1, $payment['count']);
-        $this->assertEquals($contact, $payment['items'][0]['contact']);
-        $this->assertEquals('payment', $payment['items'][0]['entity']);
+        $this->assertEquals(1, $payments['count']);
+        $this->assertEquals('payment', $payments['items'][0]['entity']);
+        $this->assertEquals($contact, $payments['items'][0]['contact']);
+    }
+
+    public function testRetrievePaymentsOnMerchantDashboardWhenInputContactAndCountryCodeIsGivenExpectsPaymentsOfGivenContactWithAndWithoutCountryCode()
+    {
+        $this->ba->proxyAuth();
+
+        $contact = '987654321';
+
+        $this->fixtures->create('payment', [
+            'contact'    => '+91' . $contact,
+        ]);
+
+        $this->fixtures->create('payment', [
+            'contact'    => $contact,
+        ]);
+
+        $this->fixtures->create('payment', [
+            'contact'    => '+918888888888',
+        ]);
+
+        $request = $this->request;
+
+        $request['content'] = array('country_code' => '+91', 'contact' => $contact);
+
+        $payments = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(2, $payments['count']);
+        $this->assertEquals('payment', $payments['items'][0]['entity']);
+        $this->assertEquals('payment', $payments['items'][1]['entity']);
+        $this->assertEquals($contact, $payments['items'][0]['contact']);
+        $this->assertEquals('+91' . $contact, $payments['items'][1]['contact']);
     }
 
     public function testRetrievePaymentHavingNullContact()

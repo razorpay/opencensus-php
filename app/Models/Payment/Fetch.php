@@ -13,7 +13,8 @@ class Fetch extends BaseFetch
     const RULES = [
         self::DEFAULTS => [
             Entity::EMAIL                        => 'sometimes|email',
-            Entity::CONTACT                      => 'sometimes|string|max:15',
+            Merchant\Entity::COUNTRY_CODE        => 'sometimes|string|max:7',
+            Entity::CONTACT                      => 'sometimes|string|max:15|required_with:country_code',
             Entity::ORDER_ID                     => 'sometimes|string|size:20',
             Entity::INVOICE_ID                   => 'sometimes|public_id|size:18',
             Entity::TRANSFERRED                  => 'sometimes|boolean|in:0,1',
@@ -95,6 +96,7 @@ class Fetch extends BaseFetch
             Entity::BATCH_ID,
             Entity::TERMINAL_ID,
             Entity::SETTLED_BY,
+            Merchant\Entity::COUNTRY_CODE,
         ],
         AuthType::ADMIN_AUTH => [
             Entity::VERIFIED,

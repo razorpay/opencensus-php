@@ -1515,6 +1515,31 @@ trait RepositoryFetch
         throw new LogicException('Delete operation not supported on WDA');
     }
 
+    protected function addQueryParamContact($query, $params): void
+    {
+        $contactColumn = $this->dbColumn(PaymentEntity::CONTACT);
+
+        $contact = $params[PaymentEntity::CONTACT];
+
+        $contacts = array($contact);
+
+        if (isset($params['country_code']) === true)
+        {
+            $contacts[] = $params['country_code'] . $contact;
+
+            unset($params['country_code']);
+        }
+
+        $query->whereIn($contactColumn, $contacts);
+    }
+
+    protected function addQueryParamCountryCode($query, $params): void
+    {
+        // Empty function as we don't have country code column in payments table.
+        // Country code is getting used in addQueryParamContact for fetching
+        // payments of given contact with and without country code.
+    }
+
     protected function doesEntityUseSoftdeletes() : bool
     {
         $entity = $this->getEntityClass();
