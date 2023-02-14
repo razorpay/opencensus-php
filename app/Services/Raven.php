@@ -89,7 +89,9 @@ class Raven
 
         $input = $this->appendOrgIdInContext($input);
 
-        if ($app->environment(Environment::PRODUCTION) === false)
+        // We need SMS/OTP to work for Axis Env
+        if (($app->environment(Environment::PRODUCTION) === false) and
+            ($app->environment(Environment::AXIS) === false))
         {
             $response[self::SMS_ID] = self::TEST_SMS_ID;
         }
@@ -211,7 +213,9 @@ class Raven
 
             $response = null;
 
-            if ($app->environment(Environment::PRODUCTION) === false)
+        // We need SMS/OTP to work for Axis Env
+        if (($app->environment(Environment::PRODUCTION) === false) and
+            ($app->environment(Environment::AXIS) === false))
             {
                 if (in_array($input['otp'], self::MOCK_VALID_OTPS) === false)
                 {

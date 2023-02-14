@@ -10,6 +10,7 @@ use RZP\Constants\Beam;
 use RZP\Encryption\Type;
 use RZP\Trace\TraceCode;
 use RZP\Foundation\Application;
+use RZP\Constants\Environment;
 use Illuminate\Support\Facades\Config;
 
 class Service
@@ -59,6 +60,8 @@ class Service
         $this->config = $app['config']->get('applications.beam');
 
         $this->mode   = $app['rzp.mode'];
+
+        $this->env = $app['env'];
     }
 
     /**
@@ -136,7 +139,8 @@ class Service
 
         $route = self::PUSH_ROUTE;
 
-        if ($this->mode === Mode::TEST)
+        // We need beam jobs to work for Axis Env
+        if ($this->mode === Mode::TEST and $this->env != Environment::AXIS)
         {
             $route = self::TEST_ROUTE;
 

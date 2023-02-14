@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use Illuminate\Support\Str;
+use RZP\Constants\Environment;
 use View, Request, ApiResponse;
 use Illuminate\Support\Facades\DB;
 
@@ -161,7 +162,6 @@ class PublicController extends Controller
         ($merchant->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2) === true)) or ($merchant->org->isFeatureEnabled(Feature\Constants::HDFC_CHECKOUT_2)))
         {
             $script = $this->config->get('url.cdn.production') . '/static/hosted/standard-vas.js';
-           
         }
 
         $app['trace']->info(TraceCode::HDFC_CHECKOUT_2, [
@@ -188,6 +188,15 @@ class PublicController extends Controller
 
         if ($this->ba->authCreds->getMerchant()->getOrgId() === '6dLbNSpv5XbCOG') {
             $meta['type'] = 'hdfcvas';
+        }
+
+        $app = \App::getFacadeRoot();
+
+        if($app['env'] === Environment::AXIS)
+        {
+            if ($this->ba->authCreds->getMerchant()->getOrgId() === 'HFRjdj3PKjhIM1') {
+                $meta['type'] = 'hdfcvas';
+            }
         }
 
         return $this->getEmbeddedCommon($meta);
