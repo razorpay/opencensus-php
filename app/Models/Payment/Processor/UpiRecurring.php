@@ -577,13 +577,26 @@ trait UpiRecurring
         $metadata       = $this->getUpiMetadataForPayment($payment);
         $internalStatus = $data['upi']['internal_status'] ?? null;
 
+        $this->trace->info(
+            TraceCode::UPI_RECURRING_METADATA_STATUS_DURING_AUTHORIZE_FLOW,
+            [
+                'metadata_entity_status'  => $metadata->getInternalStatus() ??  null,
+                'gateway_internal_status' => $internalStatus ?? null,
+                'payment_id'              => $payment->getId(),
+                'payment_status'          => $payment->getStatus(),
+                'payment_recurring_status'=> $payment->getRecurringType(),
+            ]
+        );
         // For Auto Recurring
         if ($payment->isUpiAutoRecurring() === true)
         {
             // When the metadata status is ReminderInProgressForAuthorized or AuthorizeInitiated
             // Then we will check for internal status if any sent from gateway
+            // for recon flow failed to authorized flow, we will have internal status as failed as well, so that time,
+            // we will use verify to get internal status as authorized and should return false
             if (($metadata->isInternalStatus(UpiMetadata\InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE)) or
-                ($metadata->isInternalStatus(UpiMetadata\InternalStatus::AUTHORIZE_INITIATED)))
+                ($metadata->isInternalStatus(UpiMetadata\InternalStatus::AUTHORIZE_INITIATED)) or
+                ($metadata->isInternalStatus(UpiMetadata\InternalStatus::FAILED)))
             {
                 // If gateway is explicitly telling that the payment is authorized at gateways end
                 // We will not skip authorize for those cases
@@ -660,12 +673,27 @@ trait UpiRecurring
             // If reminder fails, the payment is already in pending state
         }
         // Second case where the response is coming from gateway, Gateway might also send Authorize initiated
+        // failed in case for recon flow
         else if (($metadata->isInternalStatus(InternalStatus::REMINDER_IN_PROGRESS_FOR_AUTHORIZE) === true) or
-                 ($metadata->isInternalStatus(InternalStatus::AUTHORIZE_INITIATED)))
+                 ($metadata->isInternalStatus(InternalStatus::AUTHORIZE_INITIATED)) or
+                 (($metadata->isInternalStatus(InternalStatus::FAILED)) and
+                  (isset($data['upi'][Metadata::INTERNAL_STATUS]) === true) and
+                  ($data['upi'][Metadata::INTERNAL_STATUS] === InternalStatus::AUTHORIZED)))
         {
             $upiEdit = array_only($data['upi'], $metadata->getFillable());
 
             $internalStatus = $data['upi'][Metadata::INTERNAL_STATUS];
+
+            $this->trace->info(
+                TraceCode::UPI_RECURRING_METADATA_STATUS_DURING_AUTHORIZE_FLOW,
+                [
+                    'metadata_entity_status'  => $metadata->getInternalStatus() ??  null,
+                    'gateway_internal_status' => $internalStatus ?? null,
+                    'payment_id'              => $payment->getId(),
+                    'payment_status'          => $payment->getStatus(),
+                    'payment_recurring_status'=> $payment->getRecurringType(),
+                ]
+            );
 
             $metadata->edit($upiEdit);
 

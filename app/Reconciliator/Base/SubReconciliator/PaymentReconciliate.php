@@ -677,7 +677,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         if ((($this->allowForceAuthorization === true) or
              ($this->isforceAuthFlagSetInRow($row) === true)) and
             ($this->source !== RequestProcessor\Base::MAILGUN) and
-            (in_array($this->payment->getGateway(), Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS, true) === true))
+            (in_array($this->payment->getGateway(), Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS, true) === true) and
+            ($this->payment->isUpiRecurring() === false))
         {
             return $this->handleForceAuthorization($row);
         }

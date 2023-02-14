@@ -536,7 +536,8 @@ class Payment extends Base
             $upiAutopayPricingVariant = $this->app->razorx->getTreatment(
                 $payment->getMerchantId(),
                 RazorxTreatment::UPI_AUTOPAY_PRICING_BLACKLIST,
-                $this->mode
+                $this->mode,
+                3
             );
 
             if($upiAutopayPricingVariant === "on")
