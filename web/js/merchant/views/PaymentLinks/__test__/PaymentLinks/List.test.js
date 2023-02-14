@@ -1,6 +1,5 @@
 import React from 'react';
-import '@testing-library/jest-dom/extend-expect';
-import { render, checkIfComponentIsEmpty, screen } from 'test-utils';
+import { render, checkIfComponentIsEmpty, screen, userEvent } from 'test-utils';
 import {
   App,
   org,
@@ -9,6 +8,11 @@ import {
   EasterEggApp,
   EmptyComponentApp,
 } from 'merchant/views/PaymentLinks/__test__/mocks/fixtures/List';
+import track from 'merchant/views/PaymentLinks/PaymentLinks/track';
+
+jest.spyOn(track, 'onReminderSettingClick').mockImplementation(() => {});
+jest.spyOn(track, 'onDocumentClick').mockImplementation(() => {});
+jest.spyOn(track, 'searchCount').mockImplementation(() => {});
 
 describe('PaymentLink - List Component', () => {
   /*
@@ -16,13 +20,27 @@ describe('PaymentLink - List Component', () => {
    * @return <New /> component file
    */
   beforeAll(() => {
+    window.scrollTo = jest.fn();
     window.rzpQ = {
+      component: jest.fn(),
       onbr: () => {},
+      paymentLinks: () => ({
+        interaction: jest.fn(),
+        success: jest.fn(),
+      }),
     };
   });
 
+  afterEach(() => {
+    track.onDocumentClick.mockClear();
+    track.onReminderSettingClick.mockClear();
+    track.searchCount.mockClear();
+  });
+
   const renderApp = (props = {}) => {
-    return render(<App {...props} />, { initialState: { session: { user, org } } });
+    return render(<App {...props} tracking={{ track: jest.fn() }} />, {
+      initialState: { session: { user, org } },
+    });
   };
 
   test('should render EasterEggApp component without errors', () => {
@@ -51,16 +69,28 @@ describe('PaymentLink - List Component', () => {
     expect(screen.getByText('Create Payment Link')).toBeInTheDocument();
   });
 
-  test('should have Search filters Button Available', () => {
+  test('should have reminder settings', async () => {
     renderApp();
-    expect(screen.getByText('Search')).toBeInTheDocument();
-    expect(screen.getByText('Clear')).toBeInTheDocument();
-    expect(screen.getByText('Show All Filters')).toBeInTheDocument();
+    const reminderBtn = screen.getByText(/reminder settings/i);
+    expect(reminderBtn).toBeInTheDocument();
+    await userEvent.click(reminderBtn);
+    expect(track.onReminderSettingClick).toHaveBeenCalled();
   });
 
-  test('should have reminder settings', () => {
+  test('should have Documentation clickable link', async () => {
     renderApp();
-    expect(screen.getByText(/reminder settings/i)).toBeInTheDocument();
+    const documentationBtn = screen.getAllByText(/Documentation/i)[0];
+    expect(documentationBtn).toBeInTheDocument();
+    await userEvent.click(documentationBtn);
+    expect(track.onDocumentClick).toHaveBeenCalled();
+  });
+
+  test('should have restart tour flow', async () => {
+    renderApp();
+    const tourBtn = screen.getByText('Need help? Take a tour');
+    expect(tourBtn).toBeInTheDocument();
+    await userEvent.click(tourBtn);
+    expect(screen.getByText(/Restart the Tour?/i)).toBeInTheDocument();
   });
 
   test('should have filters', async () => {
@@ -71,5 +101,13 @@ describe('PaymentLink - List Component', () => {
     expect(await screen.findByText(/notes/i)).toBeInTheDocument();
     expect(await screen.findByText(/payment link status/i)).toBeInTheDocument();
     expect(await screen.findByText(/count/i)).toBeInTheDocument();
+  });
+
+  test('should have Search filters Button Available', () => {
+    renderApp();
+    const searchBtn = screen.getByText('Search');
+    const clearBtn = screen.getByText('Clear');
+    expect(searchBtn).toBeInTheDocument();
+    expect(clearBtn).toBeInTheDocument();
   });
 });

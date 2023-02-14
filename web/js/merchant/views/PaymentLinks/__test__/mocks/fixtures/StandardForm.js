@@ -1,24 +1,53 @@
 import StandardForm from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/Forms/StandardForm';
-import { render } from 'test-utils';
-import store from 'merchant/store';
-const stateSpy = jest.spyOn(store, 'getState');
-const defaultState = stateSpy.mockReturnValue({
-  session: {
-    user: { isOrgAllowedFunctionality: jest.fn() },
-    org: {
-      features: ['enable_payer_name_for_pl'],
-    },
+
+jest.mock(
+  'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields/ReferenceId',
+  () => () => {
+    return <div>Reference Id</div>;
   },
-});
-const formData = {};
-const remindersConfig = {};
-const renderApp = ({ initialState = {} } = {}) => {
-  return render(
-    <StandardForm showPayerName={true} formData={formData} remindersConfig={remindersConfig} />,
-    {
-      initialState: { ...defaultState, ...initialState },
-    },
-  );
+);
+
+jest.mock(
+  'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields/LinkExpiry',
+  () => () => {
+    return <div>Link Expiry</div>;
+  },
+);
+
+jest.mock(
+  'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields/Reminders',
+  () => () => {
+    return <div>Reminders</div>;
+  },
+);
+
+jest.mock(
+  'merchant/views/PaymentLinks/PaymentLinks/CreateV2/components/Fields/PartialPayments',
+  () => () => {
+    return <div>PartialPayments</div>;
+  },
+);
+
+jest.mock('common/utils/localStorage', () => ({
+  setItem: jest.fn(),
+  getItem: jest.fn().mockReturnValue(true),
+  removeItem: jest.fn(),
+}));
+
+const defaultProps = {
+  formData: {
+    currency: 'INR',
+    amount: '200',
+  },
 };
 
-export { renderApp, defaultState };
+export const enablePayerNameProps = {
+  user: { isOrgAllowedFunctionality: jest.fn() },
+  org: {
+    features: ['enable_payer_name_for_pl'],
+  },
+};
+
+export const App = (props = {}) => {
+  return <StandardForm {...defaultProps} {...props} />;
+};

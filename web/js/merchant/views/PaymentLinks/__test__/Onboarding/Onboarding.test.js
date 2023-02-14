@@ -18,12 +18,13 @@ describe('Payment link Onboarding Screen', () => {
       }),
       productOnboarding: () => ({
         success: jest.fn(),
+        initiated: jest.fn(),
       }),
     };
   });
 
   const renderApp = (props = {}) => {
-    render(<App {...props} closeOnboarding={() => {}} />, {
+    render(<App {...props} />, {
       initialState: {
         session: { user: { isPaymentLinksEnabled: true } },
         onboarding,
@@ -50,7 +51,11 @@ describe('Payment link Onboarding Screen', () => {
   });
 
   test('should load feature page of pl onboarding module', async () => {
-    renderApp();
+    const closeOnboardingMock = jest.fn();
+    const props = {
+      closeOnboarding: closeOnboardingMock,
+    };
+    renderApp(props);
     const readMoreCTA = screen.getByRole('button', {
       name: /Read More/,
     });
@@ -80,5 +85,7 @@ describe('Payment link Onboarding Screen', () => {
     expect(goBackCTA).toBeInTheDocument();
     expect(getStartedCTA).toBeInTheDocument();
     expect(skipAndGetStartedCTA).toBeInTheDocument();
+    await userEvent.click(skipAndGetStartedCTA);
+    expect(closeOnboardingMock).toHaveBeenCalled();
   });
 });

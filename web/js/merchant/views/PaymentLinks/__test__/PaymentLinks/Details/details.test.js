@@ -1,5 +1,4 @@
 import React from 'react';
-import '@testing-library/jest-dom/extend-expect';
 import {
   App,
   generateUser,
@@ -101,7 +100,6 @@ describe('Payment Link Details', () => {
 
   test('should render the Customer Details in the document', async () => {
     renderApp();
-    screen.debug();
     const customerDetails = await screen.findByText(/Customer Details/i);
     expect(customerDetails).toBeInTheDocument();
     expect(customerDetails).toHaveClass('pair-label');
@@ -181,25 +179,6 @@ describe('Payment Link Details', () => {
     expect(resendLinkCTA).toBeInTheDocument();
     await userEvent.click(resendLinkCTA);
     expect(notifyCustomerFnMock).toHaveBeenCalled();
-  });
-
-  test('should render Resend link and user should be able to click on the resend link', () => {
-    const data = {
-      upiLink: true,
-      status: 'partially_paid',
-      partial_payment: true,
-      expire_by: false,
-    };
-    const getPaymentLinkConfig = paymentLinkConfig(data);
-    const props = {
-      getPaymentLinkConfig,
-      isLoading: false,
-      isPaymentLinksRemindersEnabled: true,
-      isAutoRemindersUpdating: true,
-      notifyCustomer: notifyCustomerFnMock,
-    };
-    renderApp(props);
-    screen.debug();
   });
 
   test('should render "UPI Payment Link" as payment link type', () => {
