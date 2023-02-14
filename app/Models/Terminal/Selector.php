@@ -1176,12 +1176,6 @@ class Selector extends Base\Core
             return true;
         }
 
-        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false
-            && $payment[Entity::METHOD] === Method::NETBANKING)
-        {
-            return false;
-        }
-
         $merchantId = $payment->getMerchantId();
 
         $variantFlag = $this->app->razorx->getTreatment($merchantId, "API_ROUTER_NEW_CONTRACT_2",  $this->mode);
