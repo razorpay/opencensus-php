@@ -155,6 +155,8 @@ class TraceCode
 
     const GRAPH_REQUEST_OPERATION_WITH_USER_ID      = 'GRAPH_REQUEST_OPERATION_WITH_USER_ID';
 
+    const FTUX_DASHBOARD_REDIRECTION_FAILED         = 'FTUX_DASHBOARD_REDIRECTION_FAILED';
+
     // User API tracecodes
     const GET_USER_ROUTE_INFO                    = 'GET_USER_ROUTE_INFO';
     const GET_MERCHANT_DETAILS_ROUTE_INFO        = 'GET_MERCHANT_DETAILS_ROUTE_INFO';
@@ -220,6 +222,8 @@ class TraceCode
 
     const LOGIN_BLOCKED_EPOS_APP                    = 'LOGIN_BLOCKED_EPOS_APP';
     const ROUTE_BLOCKED_EPOS_APP                    = 'ROUTE_BLOCKED_EPOS_APP';
+
+    const GET_CONFIG_STORE_KEYS_FAILED              = 'GET_CONFIG_STORE_KEYS_FAILED';
 
     protected static $messages = array(
         self::ERROR_EXCEPTION                       => 'Unhandled critical exception occured',

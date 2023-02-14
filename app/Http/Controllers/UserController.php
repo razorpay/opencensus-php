@@ -16,8 +16,10 @@ use App\User\Constants;
 use App\Trace\TraceCode;
 use App\Http\AppResponse;
 use App\Base\UniqueIdEntity;
+use App\Admin\ApiRequestAny;
 use Illuminate\Http\Response;
 use App\User\RecoverableException;
+use Razorpay\Api\Errors\ErrorCode;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Http\RedirectResponse;
@@ -98,6 +100,11 @@ class UserController extends Controller
                     Cookie::make('rzp_merchant_id', $details['id'], $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
                     Cookie::make('rzp_user_id', $details['user']['id'], $ttl, null, env('SECOND_LEVEL_DOMAIN'), true, false),
                 ]);
+            }
+
+            if($this->isRedirectionApplicableForFtux($details) === true)
+            {
+                return redirect(env('EASY_DASHBOARD_URL') . '/onboarding/overview');
             }
 
             $signupCampaign = $details['user']['signup_campaign'] ?? null;
@@ -1328,5 +1335,80 @@ class UserController extends Controller
         $isOauthLogin = Session::get(User\Constants::OAUTH_LOGIN, false);
 
         return $isOauthLogin === true ? MetricConstants::OAUTH : MetricConstants::PASSWORD;
+    }
+
+    private function isRedirectionApplicableForFtux($details)
+    {
+        try
+        {
+            $signupCampaign = $details['user']['signup_campaign'] ?? null;
+
+            if ($signupCampaign !== 'easy_onboarding')
+            {
+                return false;
+            }
+
+            if($this->isFtuxExperimentEnabled($details) === false)
+            {
+                return false;
+            }
+
+            if(empty($_COOKIE['ftuxSession']) === false)
+            {
+                return false;
+            }
+
+            if($details['activation_status'] !== 'activated' or $details['activation_status'] !== 'activated_mcc_pending')
+            {
+                return true;
+            }
+
+            if($details['isTransacted'] === false)
+            {
+                return true;
+            }
+
+            $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+            list($configError, $configData) = $request->send("merchants/config/store?namespace=onboarding", "GET");
+
+            if(empty($configError) === false)
+            {
+                $this->trace->info(TraceCode::GET_CONFIG_STORE_KEYS_FAILED, [
+                    'error' => $configError[0],
+                    'code'  => ErrorCode::BAD_REQUEST_ERROR
+                ]);
+
+                return false;
+            }
+
+            if($configData['show_ftux_final_screen'] === true)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::FTUX_DASHBOARD_REDIRECTION_FAILED,
+                [
+                    "exception" => $e->getMessage()
+                ]
+            );
+
+            return false;
+        }
+
+    }
+
+    private function isFtuxExperimentEnabled($details)
+    {
+        $experimentId = config('splitz.experiments')['ONBOARDING_FTUX'];
+
+        $data = (new SplitzService())->getVariantBulk($details['current'], [$experimentId], [], "splitz/bulkEvaluate");
+
+        return ($data[$experimentId]['variables']['result'] ?? null) === 'on';
     }
 }
