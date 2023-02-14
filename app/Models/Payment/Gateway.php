@@ -557,6 +557,11 @@ class Gateway
         self::PAYTM,
     ];
 
+    const SKIP_TPV_EDIT_OPTIMIZER_GATEWAYS = [
+        self::UPI_MINDGATE,
+        self::UPI_AXIS
+    ];
+
     /**
     * Gateways for which we may need to force authorize payments
     * since their verify API's stop working after a certain time

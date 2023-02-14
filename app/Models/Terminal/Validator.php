@@ -3300,6 +3300,14 @@ class Validator extends Base\Validator
             return false;
         }
 
+        if (($terminal != null) and
+            ($terminal->merchant->isFeatureEnabled(Feature\Constants::RAAS) === true) and
+            (in_array($terminal->gateway, Payment\Gateway::SKIP_TPV_EDIT_OPTIMIZER_GATEWAYS, true)) and
+            (in_array('optimizer', $terminal->getType()) === true))
+        {
+            return true;
+        }
+
         if(isset($input['terminal_edit_god_mode']) === true &&
             ($input['terminal_edit_god_mode'] === true || $input['terminal_edit_god_mode']) == '1')
         {
