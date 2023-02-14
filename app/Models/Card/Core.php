@@ -992,11 +992,9 @@ class Core extends Base\Core
         return false;
     }
 
-    public function getCardInputFromCryptogram($cryptogram, $card, $input, $recurringTokenNumber = null, $recurring = false)
+    public function getCardInputFromCryptogram($cryptogram, $card, $input, $recurringTokenNumber = null)
     {
-        $cvv = $input['card']['cvv'] ?? null;
-
-        $cardInput = [
+        $input = [
             Card\Entity::NUMBER                 => $cryptogram['token_number'] ?? $cryptogram['card']['number'],
             Card\Entity::NAME                   => $card->getName(),
             Card\Entity::TOKEN_EXPIRY_MONTH     => $cryptogram['token_expiry_month'] ?? null,
@@ -1008,24 +1006,16 @@ class Core extends Base\Core
             Card\Entity::TOKENISED              => true,
             Card\Entity::VAULT                  => "rzpvault",
             CARD\Entity::IS_CVV_OPTIONAL        => false,
-            Card\Entity::CVV                    => $cvv ?? '123',
+            Card\Entity::CVV                    => $input['card']['cvv'] ?? "123", // adding dummy cvv
             Card\Entity::TOKEN_PROVIDER         => 'Razorpay',
             Card\Entity::TOKEN                  => $input['token'] ?? "",
         ];
 
-        if ($card->isVisa() && $recurring === false)
-        {
-            $this->trace->info(TraceCode::CVV_OPTIONAL, [
-                'is_cvv_null' => empty($cvv)
-            ]);
-
-            $cardInput[Card\Entity::CVV] = $cvv;
-        }
 
         if ( $card->getVault() === Card\Vault::HDFC)
         {
-            $cardInput[Card\Entity::TOKEN_EXPIRY_MONTH ] = $cryptogram['card']['expiry_month'] ?? null;
-            $cardInput[Card\Entity::TOKEN_EXPIRY_YEAR ] =  $cryptogram['card']['expiry_year'] ?? null;
+            $input[Card\Entity::TOKEN_EXPIRY_MONTH ] = $cryptogram['card']['expiry_month'] ?? null;
+            $input[Card\Entity::TOKEN_EXPIRY_YEAR ] =  $cryptogram['card']['expiry_year'] ?? null;
         }
 
         if ($card->getVault() === Card\Vault::AXIS || ($card->getVault() === Card\Vault::PROVIDERS && $cryptogram === null && $card->getIssuer() === Card\Issuer::UTIB)) {
@@ -1034,7 +1024,7 @@ class Core extends Base\Core
 
         if($recurringTokenNumber !== null)
         {
-            $cardInput = array_merge($cardInput, [
+            $input = array_merge($input, [
                 Card\Entity::NUMBER                 => $recurringTokenNumber,
                 Card\Entity::TOKEN_EXPIRY_MONTH     => $card->getTokenExpiryMonth() ?? null,
                 Card\Entity::TOKEN_EXPIRY_YEAR      => $card->getTokenExpiryYear()?? null,
@@ -1043,10 +1033,10 @@ class Core extends Base\Core
 
         if(isset($cryptogram["cvv"]) === true && Card\Network::getFullName(Network::AMEX) === $card->getNetwork())
         {
-            $cardInput["cvv"] = $cryptogram["cvv"];
+            $input["cvv"] = $cryptogram["cvv"];
         }
 
-        return $cardInput;
+        return $input;
     }
 
     public function fillCardDetailsWithVaultToken($input, $merchant): array
