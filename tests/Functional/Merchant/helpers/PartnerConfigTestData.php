@@ -1066,6 +1066,25 @@ return [
         ],
     ],
 
+    'testFetchConfigByPartnerWithDefaultValues' => [
+        'request'  => [
+            'url'     => '/partner_config',
+            'method'  => 'GET',
+            'content' => [
+                'partner_id'     => 'DefaultPartner',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'partner_metadata' => [
+                    'brand_color' => '528FF0',
+                    'text_color'  => 'FFFFFF',
+                    'brand_name'  => 'Business Partner'
+                ],
+            ],
+        ],
+    ],
+
     'testFetchPartnerConfigByInternalAppAuth' => [
         'request'  => [
             'url'     => '/partner_config_guest',

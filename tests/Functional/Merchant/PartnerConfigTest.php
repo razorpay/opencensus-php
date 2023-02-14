@@ -662,6 +662,8 @@ class PartnerConfigTest extends OAuthTestCase
             ]
         );
 
+        $this->fixtures->create('merchant_detail:sane', ['merchant_id' => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID]);
+
         $this->createOAuthApplication(
             [
                 'merchant_id' => Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID,
@@ -1079,6 +1081,35 @@ class PartnerConfigTest extends OAuthTestCase
         ];
 
         $this->createConfigForPartnerApp($app->getId(), null, [Entity::PARTNER_METADATA => $partnerMeteData]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());
+
+        $this->ba->proxyAuth('rzp_test_' . $partner->getId(), $merchantUser['id']);
+
+        $splitzOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzOutput);
+
+        $response = $this->startTest();
+
+        $this->checkResponseFieldsForProxyOrInternalAuth($response);
+    }
+
+    public function testFetchConfigByPartnerWithDefaultValues()
+    {
+        list($partner, $app) = $this->createPartnerAndApplication();
+
+        $this->fixtures->edit('merchant', $partner->id, ['partner_type' => 'aggregator']);
+
+        $this->fixtures->edit('merchant_detail', $partner->id, ['business_name' => 'Business Partner']);
+
+        $this->createConfigForPartnerApp($app->getId());
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($partner->getId());
 

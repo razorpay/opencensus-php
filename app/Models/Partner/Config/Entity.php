@@ -7,9 +7,12 @@ use Config;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use RZP\Models\Merchant;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\AccessMap;
 use RZP\Constants as AppConstants;
+use RZP\Models\Merchant\MerchantApplications\Repository as MerchantAppRepo;
+use RZP\Models\Merchant\MerchantApplications\Entity as MerchantAppEntity;
 
 class Entity extends PublicEntity
 {
@@ -284,6 +287,11 @@ class Entity extends PublicEntity
         $this->attributes[self::IMPLICIT_EXPIRY_AT] = $value;
     }
 
+    public function setPartnerMetaData($metaData)
+    {
+        $this->setAttribute(self::PARTNER_METADATA, $metaData);
+    }
+
     // --------------------- END -----------------------------
 
     public function isExplicitRecordOnly(): bool
@@ -301,6 +309,8 @@ class Entity extends PublicEntity
         if ($app['basicauth']->isAdminAuth() === false and $app['basicauth']->isDashboardApp() === true)
         {
             $response = array_only($response, Constants::PARTNER_CONFIG_PUBLIC);
+
+            $response[self::PARTNER_METADATA] = array_merge($this->getDefaultPartnerMetaData(), array_filter($this->getPartnerMetadata()??[]));
         }
 
         return $response;
@@ -346,5 +356,29 @@ class Entity extends PublicEntity
 
         // In DB, we are storing the base URL. The actual URL has the respective size appended to it.
         return $this->getLogoUrlBasedOnSize($baseLogoUrl, $size);
+    }
+
+    private function getDefaultPartnerMetaData() : array
+    {
+        $defaultMetaData = Constants::PARTNER_METADATA_DEFAULT_VALUES;
+
+        $defaultMetaData[Constants::BRAND_NAME] = $this->getDefaultPartnerBrandName();
+
+        return $defaultMetaData;
+    }
+
+    private function getDefaultPartnerBrandName()
+    {
+        $app = App::getFacadeRoot();
+
+        $merchant = $app['basicauth']->getMerchant();
+
+        if (empty($merchant) === true)
+        {
+            $application = (new MerchantAppRepo())->fetchMerchantApplication($this->getEntityId(), MerchantAppEntity::APPLICATION_ID);
+            $merchant = (new Merchant\Service)->getMerchantFromMid($application[0][self::MERCHANT_ID]);
+        }
+
+        return ($merchant->merchantDetail->getBusinessName())??($merchant->getName());
     }
 }

@@ -77,4 +77,9 @@ class Constants
         self::TEXT_COLOR,
         self::LOGO_URL
     ];
+
+    const PARTNER_METADATA_DEFAULT_VALUES = [
+        self::BRAND_COLOR  => '528FF0',
+        self::TEXT_COLOR   => 'FFFFFF'
+    ];
 }
