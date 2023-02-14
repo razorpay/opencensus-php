@@ -467,10 +467,13 @@ class Service
             {
                 $originalDataArray = $originalData->toArray();
 
-                //Unsetting Merchant Website (in case of Merchant Detail Entity), so these aren't synced with ES.
-                //Sending merchant_website is causing unprecedented growth of fields on this ES index
-                //because every website is considered as a new field in ES (because of JSON structure).
+                //Unsetting Merchant Website and Merchant business detail (in case of Merchant Detail Entity), so these aren't synced with ES.
+                //Sending merchant_website and merchant_business_detail is causing unprecedented growth of fields on this ES index
+                //because every website and business_detail.plugin_details is considered as a new field in ES (because of JSON structure).
                 unset($originalDataArray['merchant_website']);
+
+                unset($originalDataArray['merchant_business_detail']);
+
 
                 // Set entity
                 $this->setEntity($originalData->getEntityName());
@@ -486,10 +489,12 @@ class Service
             {
                 $dirtyDataArray = $dirtyData->toArray();
 
-                //Unsetting Merchant Website (in case of Merchant Detail Entity), so these aren't synced with ES.
-                //Sending merchant_website is causing unprecedented growth of fields on this ES index
-                //because every website is considered as a new field in ES (because of JSON structure).
+                //Unsetting Merchant Website and Merchant business detail (in case of Merchant Detail Entity), so these aren't synced with ES.
+                //Sending merchant_website and merchant_business_detail is causing unprecedented growth of fields on this ES index
+                //because every website and business_detail.plugin_details is considered as a new field in ES (because of JSON structure).
                 unset($dirtyDataArray['merchant_website']);
+
+                unset($dirtyDataArray['merchant_business_detail']);
 
                 // Set entity (redundant if it already got set above from $originalData)
                 $this->setEntity($dirtyData->getEntityName());
