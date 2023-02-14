@@ -530,11 +530,16 @@ export default {
     // prod
     'KxZesk2B03J9ar',
   ],
-
   settlement_dashboard_visibility: [
     // stage
     'L55TvxKxYtYueE',
     //prod
     'L55JOo4EAhZC93',
+  ],
+  onboarding_ftux: [
+    // beta experiment ids
+    'L5840z96U9qWxT',
+    // prod experiment ids
+    'L580akR73oKnIr',
   ],
 };

@@ -1,5 +1,6 @@
 interface Window {
   analytics: any;
+  trackHubs: any;
   session_id: string;
   rzpQ: any;
   RZP: Record<string, unknown>;

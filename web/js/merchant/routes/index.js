@@ -6,6 +6,7 @@ import {
 } from 'merchant_common/routes';
 import { isMobileResolution } from 'common/utils/rzp-utils';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { getProvidedChannels } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/utils';
 
 import lazy from './LazyLoader';
 
@@ -298,6 +299,10 @@ const WebhookEventDetails = lazy(() =>
 
 const AppSupport = lazy(() =>
   import(/* webpackChunkName: "AppSupport" */ 'merchant/views/AppSupport'),
+);
+
+const ApiKeysAndPlugins = lazy(() =>
+  import(/* webpackChunkName: "ApiKeysAndPlugins" */ 'merchant/views/ApiKeysAndPlugins'),
 );
 
 /*
@@ -615,6 +620,13 @@ const fullPageViewsMap = {
   '/onboarding/form': {
     component: isFromEasyL1 && !isSourceRX ? routeEasyOnboarding : ActivationForm,
     additionalCondition: (user) => user.isOnboardingV2Enabled,
+  },
+  '/onboarding/api-keys': {
+    component: () => <ApiKeysAndPlugins isFullScreenMode={true} />,
+    additionalCondition: (user) =>
+      !!getProvidedChannels(user).length &&
+      (user.isFtuxEnabled ||
+        ((user.isProductLedOnboardingRZP || user.isApiKeysRevampEnabled) && user.activated)),
   },
   '/kyc': {
     component: isFromEasyL1 && !isSourceRX ? routeEasyOnboarding : ActivationFullViewContainer,

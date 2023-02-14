@@ -6,6 +6,12 @@ export const PLATFORM_TITLE: Record<Platform, string> = {
   [Platform.IOS]: 'iOS App',
 };
 
+export const PLATFORM_CHECK_MAP: Record<Platform, string> = {
+  [Platform.WEBSITE]: 'website_present',
+  [Platform.ANDROID]: 'android_app_present',
+  [Platform.IOS]: 'ios_app_present',
+};
+
 export const INTEGRATION_TITLE: Record<Platform, string> = {
   [Platform.WEBSITE]: 'Website',
   [Platform.ANDROID]: 'Android',

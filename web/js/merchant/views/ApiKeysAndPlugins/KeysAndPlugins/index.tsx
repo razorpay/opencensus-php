@@ -9,7 +9,7 @@ import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { isPgMerchant } from 'merchant/components/Activation/ActivationUtils';
 import { Platform, Plugins } from './types';
 import { INTEGRATION_TITLE, NO_PLUGIN_OPTION, PLATFORM_TITLE } from './constants';
-import { getAvailablePlatform, getAvailablePlugin } from './utils';
+import { getAvailablePlatform, getAvailablePlugin, getProvidedChannels } from './utils';
 import { trackCTAClick, trackPluginSelect } from './events';
 import {
   AddLink,
@@ -34,11 +34,14 @@ const KeysAndPluginsSection = ({
   fetchMerchantPlugin,
   fetchSupportedPlugins,
   showNotification,
+  showProvidedChannels = false,
 }) => {
-  const defaultPlatform = getAvailablePlatform(user);
-  const [selectedPlatform, setSelectedPlatform] = useState<Platform>(defaultPlatform);
+  const providedChannels = getProvidedChannels(user);
+  const defaultPlatform = getAvailablePlatform(user, { showProvidedChannels });
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>(defaultPlatform as Platform);
   const platformURL = user[selectedPlatform];
   const isWebsitePlatform = selectedPlatform === Platform.WEBSITE;
+  const tabs = showProvidedChannels ? providedChannels : Object.values(Platform);
   const product = isPgMerchant(user) ? 'PG' : 'PH';
 
   //* Priority for showing default plugin - Merchant Selected Plugin > WhatCMS Suggested Plugin > Empty Select box
@@ -136,19 +139,21 @@ const KeysAndPluginsSection = ({
             Let’s integrate payments with your website/app
           </div>
 
-          <TabSwitcher defaultTab={defaultPlatform} onChange={onTabChange}>
-            {Object.values(Platform).map((platform) => (
-              <Tab key={platform} id={platform}>
-                <i
-                  className={`i ${
-                    platform === Platform.WEBSITE ? 'i-payment-page' : 'i-smartphone'
-                  }`}
-                />
-                <span className="hidden-sm">{PLATFORM_TITLE[platform]}</span>
-                <span className="display-sm">{INTEGRATION_TITLE[platform]}</span>
-              </Tab>
-            ))}
-          </TabSwitcher>
+          {tabs.length > 1 ? (
+            <TabSwitcher defaultTab={defaultPlatform} onChange={onTabChange}>
+              {tabs.map((platform) => (
+                <Tab key={platform} id={platform}>
+                  <i
+                    className={`i ${
+                      platform === Platform.WEBSITE ? 'i-payment-page' : 'i-smartphone'
+                    }`}
+                  />
+                  <span className="hidden-sm">{PLATFORM_TITLE[platform]}</span>
+                  <span className="display-sm">{INTEGRATION_TITLE[platform]}</span>
+                </Tab>
+              ))}
+            </TabSwitcher>
+          ) : null}
           {isWebsitePlatform && platformURL && (
             <div>
               <label className="control-label">Website platform</label>

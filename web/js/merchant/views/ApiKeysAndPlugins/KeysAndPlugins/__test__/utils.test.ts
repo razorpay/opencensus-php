@@ -1,8 +1,9 @@
 import {
+  getProvidedChannels,
   getLatestKey,
   getAvailablePlatform,
   getAvailablePlugin,
-} from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/utils';
+} from './../utils';
 import store, { getUser } from 'merchant/store';
 import { Platform } from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/types';
 import {
@@ -84,6 +85,33 @@ describe('getLatestKey', () => {
     const { keys } = store.getState().keys;
     const latestKey = getLatestKey(keys);
     expect(latestKey).toBeNull();
+  });
+
+  test('should not return AppStore if it was not selected and showProvidedChannels is true', () => {
+    updateUser(getStateSpy, {
+      business_website: '',
+      appstore_url: PLATFORM_LINKS.SUCCESS.appstore_url,
+      playstore_url: '',
+    });
+    const user = getUser();
+    const platform = getAvailablePlatform(user, { showProvidedChannels: true });
+    expect(platform).toBe(Platform.WEBSITE);
+  });
+
+  test('should return ios if it was selected and provided and showProvidedChannels is true', () => {
+    updateUser(getStateSpy, {
+      business_website: '',
+      appstore_url: PLATFORM_LINKS.SUCCESS.appstore_url,
+      playstore_url: '',
+      merchant_business_detail: {
+        website_details: {
+          ios_app_present: true,
+        },
+      },
+    });
+    const user = getUser();
+    const platform = getAvailablePlatform(user, { showProvidedChannels: true });
+    expect(platform).toBe(Platform.IOS);
   });
 });
 
@@ -171,5 +199,42 @@ describe('getAvailablePlugin', () => {
       suggestedPlugin,
     });
     expect(plugin).toBe(merchantSelectedPlugin);
+  });
+});
+
+describe('getProvidedChannels', () => {
+  test('should return only selected and url provided channels', () => {
+    updateUser(getStateSpy, {
+      business_website: PLATFORM_LINKS.SUCCESS.business_website,
+      appstore_url: PLATFORM_LINKS.SUCCESS.appstore_url,
+      playstore_url: PLATFORM_LINKS.SUCCESS.playstore_url,
+      merchant_business_detail: {
+        website_details: {
+          ios_app_present: true,
+        },
+      },
+    });
+    const user = getUser();
+    const channels = getProvidedChannels(user);
+    expect(channels.length).toBe(1);
+    expect(channels?.[0]).toBe(Platform.IOS);
+  });
+
+  test('should return only selected and url provided channels', () => {
+    updateUser(getStateSpy, {
+      business_website: PLATFORM_LINKS.SUCCESS.business_website,
+      appstore_url: PLATFORM_LINKS.SUCCESS.appstore_url,
+      playstore_url: PLATFORM_LINKS.SUCCESS.playstore_url,
+      merchant_business_detail: {
+        website_details: {
+          ios_app_present: true,
+          android_app_present: true,
+          website_present: true,
+        },
+      },
+    });
+    const user = getUser();
+    const channels = getProvidedChannels(user);
+    expect(channels.length).toBe(3);
   });
 });

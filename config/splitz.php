@@ -256,6 +256,9 @@ return [
         'PARTNERSHIP_CAPITAL' => env('PARTNERSHIP_CAPITAL', ''),
 
         // settlement dashboard visibility
-        'SETTLEMENT_DASHBOARD_VISIBILITY' => env('SETTLEMENT_DASHBOARD_VISIBILITY', '')
+        'SETTLEMENT_DASHBOARD_VISIBILITY' => env('SETTLEMENT_DASHBOARD_VISIBILITY', ''),
+
+        // FTUX for Onboarding
+        'ONBOARDING_FTUX' => env('ONBOARDING_FTUX', ''),
     ]
 ];

@@ -5,6 +5,16 @@
     padding-top: 12px
 
   > .tabbed-container
+    > .scrollable-tab-header
+      @media screen and (max-width $screen-xs-max) {
+        overflow: initial;
+      }
+
+      .dropdown-menu {
+        right: 0;
+        left: initial;
+      }
+
     > .content
       @media (max-width $screen-sm-max) {
         background: transparent;

@@ -754,9 +754,9 @@ const isPgMerchant = (userData) => {
     merchant_business_detail?.website_details || {};
 
   return (
-    business_website ||
-    playstore_url ||
-    appstore_url ||
+    !!business_website ||
+    !!playstore_url ||
+    !!appstore_url ||
     website_present ||
     ios_app_present ||
     android_app_present

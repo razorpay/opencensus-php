@@ -1869,6 +1869,10 @@ export default class User {
     const variant = getSplitzExperimentVariant('partnership_for_phantom');
     return variant?.name === 'enable';
   }
+
+  get isFtuxEnabled() {
+    return getSplitzExperimentVariant('onboarding_ftux')?.variables?.result === 'on';
+  }
 }
 
 function _isAllowed(userRole, moduleName, permissionsMap) {

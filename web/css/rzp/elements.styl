@@ -16,7 +16,7 @@ tabbed-container,
     background-color: #FFF;
     padding: 0 12px 0 24px;
 
-    a {
+    a:not(.dropdown a) {
       color: #555;
       border-bottom: 3px solid transparent;
       display: inline-block;
@@ -31,7 +31,7 @@ tabbed-container,
       }
     }
 
-    > a:first-child {
+    > a:not(.dropdown a):first-child {
       margin-left: 0;
     }
   }

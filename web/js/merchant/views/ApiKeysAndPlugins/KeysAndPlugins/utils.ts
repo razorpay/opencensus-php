@@ -1,18 +1,38 @@
 import { Platform } from './types';
-import { NO_PLUGIN_OPTION } from './constants';
+import { NO_PLUGIN_OPTION, PLATFORM_CHECK_MAP } from './constants';
 /**
  * Get available platform submitted by the merchant
  * Priority - Website > Android > iOS
  * Default - Website if none of them are present
  * @param {*} user - session user
+ * @param {*} showProvidedChannels show platform channels selected and url provided by merchants
  * @return {*} {Platform}
  */
-export const getAvailablePlatform = (user): Platform => {
+export const getAvailablePlatform = (user, { showProvidedChannels = false } = {}): Platform => {
+  const merchantChannels = user?.merchant_business_detail?.website_details;
+
   for (const platform of Object.values(Platform)) {
-    if (user[platform]) return platform;
+    if (
+      (!showProvidedChannels && user[platform]) ||
+      (showProvidedChannels && user[platform] && merchantChannels?.[PLATFORM_CHECK_MAP[platform]])
+    )
+      return platform;
   }
 
   return Platform.WEBSITE;
+};
+
+/**
+ * Get channels provided by the merchant during onboarding
+ * @param {*} user - session user
+ * @return {Platform[]} list of provided channels
+ */
+export const getProvidedChannels = (user): Platform[] => {
+  const merchantChannels = user?.merchant_business_detail?.website_details;
+
+  return Object.values(Platform).filter((platform) => {
+    return merchantChannels?.[PLATFORM_CHECK_MAP[platform]] && user[platform];
+  });
 };
 
 interface GetAvailablePluginProps {

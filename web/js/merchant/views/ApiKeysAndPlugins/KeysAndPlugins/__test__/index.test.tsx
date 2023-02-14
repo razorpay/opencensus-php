@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, server, userEvent, waitFor } from 'test-utils';
+import { render, server, userEvent, waitFor, screen } from 'test-utils';
 import { rest } from 'msw';
 import KeysAndPlugins from 'merchant/views/ApiKeysAndPlugins/KeysAndPlugins/index';
 import { Provider } from 'react-redux';
@@ -59,17 +59,17 @@ const getInitialState = ({ userDetails = {}, keyDetails = {}, pluginDetails = {}
   };
 };
 
-describe('Keys and Plugins Section', () => {
-  const renderApp = ({ initialState = {}, props = {} } = {}) =>
-    render(
-      <Provider store={storeWithInitialState(initialState)}>
-        <KeysAndPlugins {...props} />
-      </Provider>,
-      {
-        initialState,
-      },
-    );
+const renderApp = ({ initialState = {}, props = {} } = {}) =>
+  render(
+    <Provider store={storeWithInitialState(initialState)}>
+      <KeysAndPlugins {...props} />
+    </Provider>,
+    {
+      initialState,
+    },
+  );
 
+describe('KeysAndPlugins', () => {
   beforeAll(() => {
     // showNotificationSpy = jest.spyOn(NotificationsActions, 'showNotification');
     analyticsTrackSpy = jest.spyOn(analytics, 'analyticsTrack');
@@ -383,5 +383,56 @@ describe('Keys and Plugins Section', () => {
     await waitFor(() => {
       expect(getByTestId('plugin-option-Wix')).toBeInTheDocument();
     });
+  });
+});
+
+describe('KeysAndPlugins FullScreen Mode', () => {
+  test('should not tabs if only one channel link is present', () => {
+    const initialState = getInitialState({
+      userDetails: {
+        business_website: PLATFORM_LINKS.SUCCESS.business_website,
+        playstore_url: '',
+        appstore_url: '',
+        merchant_business_detail: {
+          website_details: {
+            website_present: true,
+          },
+        },
+      },
+    });
+
+    renderApp({
+      initialState,
+      props: {
+        showProvidedChannels: true,
+      },
+    });
+    expect(screen.queryByTestId('active-tab')).not.toBeInTheDocument();
+  });
+
+  test('should not show tab if link is not present', () => {
+    const initialState = getInitialState({
+      userDetails: {
+        business_website: PLATFORM_LINKS.SUCCESS.business_website,
+        playstore_url: PLATFORM_LINKS.SUCCESS.playstore_url,
+        appstore_url: '',
+        merchant_business_detail: {
+          website_details: {
+            website_present: true,
+            android_app_present: true,
+            ios_app_present: false,
+          },
+        },
+      },
+    });
+
+    renderApp({
+      initialState,
+      props: {
+        showProvidedChannels: true,
+      },
+    });
+    expect(screen.getByTestId('active-tab').textContent).toMatch(PLATFORM_TITLE.business_website);
+    expect(screen.getByTestId('tab').textContent).toMatch(PLATFORM_TITLE.playstore_url);
   });
 });
