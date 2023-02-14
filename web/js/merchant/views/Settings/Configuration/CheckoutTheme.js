@@ -258,7 +258,7 @@ class CheckoutTheme extends Component {
 
   analyticsForFeatureChange = (featureName, isFeatureEnabled, optionalProperties = {}) => {
     const analyticsLabel = camelize(featureName);
-    const analyticsObjName = featureName.toLowerCase();
+    const analyticsObjName = featureName.toLowerCase().replace(/_/g, '-');
 
     analyticsTrack({
       objectName: `${analyticsObjName} toggle`,
@@ -318,7 +318,7 @@ class CheckoutTheme extends Component {
     });
 
     analyticsTrack({
-      objectName: 'save_email_address_preference',
+      objectName: 'save-email-address-preference',
       actionName: 'clicked',
       screen: 'settings',
       properties: {
