@@ -5865,6 +5865,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DB_WAIT_TIMEOUT_FILE_READ_FAILED                      = 'DB_WAIT_TIMEOUT_FILE_READ_FAILED';
     const DB_PROXY_SQL_FILE_READ_FAILED                         = 'DB_PROXY_SQL_FILE_READ_FAILED';
+    const PROXY_SQL_CONNECTION                                  = 'PROXY_SQL_CONNECTION';
 
     // Terminal Service Proxy Traces
     const TERMINALS_SERVICE_ADMIN_FETCH_TERMINAL_BY_ID_COMPARISON_FAILED      = 'TERMINALS_SERVICE_ADMIN_FETCH_TERMINAL_BY_ID_COMPARISON_FAILED';

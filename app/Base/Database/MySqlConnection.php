@@ -135,8 +135,10 @@ class MySqlConnection extends BaseMySqlConnection
         if ($this->causedByLostConnection($e->getPrevious())) {
             $dbConfig = $this->getConfig();
 
+            $proxysqlActive = App::getFacadeRoot()['proxysql.config']->isProxySqlActive();
+
             if ((App::getFacadeRoot()->environment() !== 'automation') and
-                (isset($dbConfig['unix_socket']) === true))
+                ($proxysqlActive === true))
             {
                 $this->trace->traceException($e,
                     Trace::ERROR,
@@ -148,6 +150,7 @@ class MySqlConnection extends BaseMySqlConnection
                 );
 
                 App::getFacadeRoot()['proxysql.config']->unsetSocketFromDatabaseConfig($this->getName());
+                App::getFacadeRoot()['proxysql.config']->resetDatabaseConnectionHostAndPort($this->getName());
             }
 
             $this->reconnect();

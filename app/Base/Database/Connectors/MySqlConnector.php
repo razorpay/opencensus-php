@@ -46,6 +46,8 @@ class MySqlConnector extends BaseMySqlConnector
     {
         $socketConnection = (empty($config['unix_socket']) === false);
 
+        $proxysqlActive = $this->app['proxysql.config']->isProxySqlActive();
+
         try
         {
             $connection = parent::connect($config);
@@ -53,14 +55,13 @@ class MySqlConnector extends BaseMySqlConnector
         catch (Exception $e)
         {
             if ($this->causedByLostConnection($e)) {
-                // If it was socket connection that failed then,
+                // If it was proxysql connection that failed then,
                 // create connection using mysql host now.
-
                 if ((App::getFacadeRoot()->environment() !== 'func') and
-                    ($socketConnection === true))
+                    ($proxysqlActive === true))
                 {
                     $this->app['proxysql.config']->unsetSocketFromDatabaseConfig($config['name']);
-
+                    $this->app['proxysql.config']->resetDatabaseConnectionHostAndPort($config['name']);
                     unset($config['unix_socket']);
 
                     $this->app['trace']->traceException($e,

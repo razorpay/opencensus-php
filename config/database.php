@@ -650,6 +650,11 @@ return array(
             ],
 
         'proxy_sql_unix_socket' => env('PROXY_SQL_UNIX_SOCKET'),
+
+        'proxy_sql_service_config' => [
+            'host'  => env('PROXY_SQL_SERVICE_HOST'),
+            'port'  => env('PROXY_SQL_SERVICE_PORT')
+        ],
     ],
 
     /*

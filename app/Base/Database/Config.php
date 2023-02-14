@@ -5,13 +5,16 @@ namespace RZP\Base\Database;
 use App;
 
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Environment;
 
 class Config
 {
     const DATABASE_CONFIG       = 'database.connections';
 
-    const PROXY_SQL_CONFIG      = 'proxy_sql_unix_socket';
+    const PROXY_SQL_SIDECAR_CONFIG = 'proxy_sql_unix_socket';
+
+    const PROXY_SQL_SERVICE_CONFIG = 'proxy_sql_service_config';
 
     const PROXY_SQL_ENABLE      = 'PROXY_SQL_ENABLE';
 
@@ -20,6 +23,10 @@ class Config
     const WORKER_CONFIG         = 'worker';
 
     const ENABLE                = 'enable';
+
+    const PROXYSQL_SIDECAR      = 'proxysql_sidecar';
+
+    const PROXYSQL_SERVICE      = 'proxysql_service';
 
     const TEST                  = 'test';
 
@@ -32,7 +39,11 @@ class Config
         'slave-live',
     ];
 
-    public $isProxySqlActive;
+    public bool $isProxySqlSidecarActive;
+
+    public bool $isProxySqlServiceActive;
+
+    public array $originalConnectionConfig;
 
     protected $app;
 
@@ -42,14 +53,51 @@ class Config
 
         // If middleware proxysql is removed or not called,
         // proxysql is assumed disabled because of this.
-        $this->isProxySqlActive = false;
+        $this->isProxySqlSidecarActive = false;
+
+        $this->isProxySqlServiceActive = false;
     }
 
     public function setDatabaseHostsIfApplicable()
     {
-        $this->isProxySqlActive = $this->canUseProxySql();
+        $waitTimeoutActive = $this->app['db.connector.mysql']->isWaitTimeoutActive();
 
-        if ($this->isProxySqlActive === false)
+        // if wait timeout is already enabled then do not use proxySQL
+        if ($waitTimeoutActive === true)
+        {
+            return;
+        }
+
+        // Worker only makes a db connection once. So we will not need proxySQL for this.
+        // (Not needed but this is just extra security.)
+        $isWorkerPod = $this->app['config']->get(self::WORKER_CONFIG . '.' . self::IS_WORKER_POD);
+
+        if ($isWorkerPod === true)
+        {
+            return;
+        }
+
+        // this is kept to rollback at later stage
+        // we can just change env and re-deploy to disable proxysql.
+        // values of PROXY_SQL_ENABLE can be:
+        // disable - to disable proxysql.
+        // enable or proxysql_sidecar - to enable proxysql sidecar.
+        // proxysql_service - to enable proxysql service.
+        // test - if the mode is test, to enable proxysql service or sidecar.
+        $proxySqlEnable = env(self::PROXY_SQL_ENABLE, self::DISABLE);
+
+        if($proxySqlEnable === self::DISABLE)
+        {
+            return;
+        }
+
+        $mode = (empty($this->app['request.ctx']) === true) ? Mode::LIVE : $this->app['request.ctx']->getMode();
+
+        $this->isProxySqlServiceActive = $this->canUseProxySqlService($proxySqlEnable, $mode);
+
+        $this->isProxySqlSidecarActive = $this->canUseProxySqlSidecar($proxySqlEnable, $mode);
+
+        if (($this->isProxySqlSidecarActive === false) and ($this->isProxySqlServiceActive === false))
         {
             return;
         }
@@ -58,7 +106,7 @@ class Config
 
         $configs = $app['config']->get(self::DATABASE_CONFIG);
 
-        $proxySqlSocket = $this->app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_CONFIG);
+        $user = null;
 
         try
         {
@@ -67,20 +115,93 @@ class Config
                 if ((in_array($connectionName, self::PROXY_CONNECTIONS, true) === true) and
                     (is_array($config) === true))
                 {
-                    // by default if port and unix_socket both are present. Laravel will prioritise socket over port
-                    if (empty($config['read']) === false)
+                    if($this->isProxySqlServiceActive === true)
                     {
-                        $app['config']->set(self::DATABASE_CONFIG . '.' . $connectionName . '.read.unix_socket', $proxySqlSocket);
-                    }
+                        $proxySqlServiceConfig = $this->app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_SERVICE_CONFIG);
 
-                    if (empty($config['write']) === false)
-                    {
-                        $app['config']->set(self::DATABASE_CONFIG . '.' . $connectionName . '.write.unix_socket', $proxySqlSocket);
-                    }
+                        $proxySqlServiceHost = $proxySqlServiceConfig['host'];
 
-                    if (empty($config['host']) === false)
+                        $proxySqlServicePort = $proxySqlServiceConfig['port'];
+
+                        if (empty($config['read']) === false)
+                        {
+                            $user = $app['config']->get(self::DATABASE_CONFIG . '.' . $connectionName . '.read.username');
+
+                            $this->originalConnectionConfig[$connectionName]['read'] = [
+                                'host' => $app['config']->get(self::DATABASE_CONFIG . '.' . $connectionName . '.read.host'),
+                                'port' => $app['config']->get(self::DATABASE_CONFIG . '.' . $connectionName . '.read.port'),
+                            ];
+
+                            $app['config']->set(self::DATABASE_CONFIG . '.' . $connectionName . '.read.host', $proxySqlServiceHost);
+                            $app['config']->set(self::DATABASE_CONFIG . '.' . $connectionName . '.read.port', $proxySqlServicePort);
+                        }
+
+                        if (empty($config['write']) === false)
+                        {
+                            $user = $app['config']->get(self::DATABASE_CONFIG . '.' . $connectionName . '.write.username');
+
+                            $this->originalConnectionConfig[$connectionName]['write'] = [
+                                'host' => $app['config']->get(self::DATABASE_CONFIG . '.' . $connectionName . '.write.host'),
+                                'port' => $app['config']->get(self::DATABASE_CONFIG . '.' . $connectionName . '.write.port'),
+                            ];
+
+                            $app['config']->set(self::DATABASE_CONFIG . '.' . $connectionName . '.write.host', $proxySqlServiceHost);
+                            $app['config']->set(self::DATABASE_CONFIG . '.' . $connectionName . '.write.port', $proxySqlServicePort);
+                        }
+
+                        if (empty($config['host']) === false)
+                        {
+                            $this->originalConnectionConfig[$connectionName][''] = [
+                                'host' => $app['config']->get(self::DATABASE_CONFIG . '.' . $connectionName . '.host'),
+                            ];
+
+                            $app['config']->set(self::DATABASE_CONFIG . '.' . $connectionName . '.host', $proxySqlServiceHost);
+                        }
+
+                        if (empty($config['port']) === false)
+                        {
+                            $this->originalConnectionConfig[$connectionName][''] = [
+                                'port' => $app['config']->get(self::DATABASE_CONFIG . '.' . $connectionName . '.port'),
+                            ];
+
+                            $app['config']->set(self::DATABASE_CONFIG . '.' . $connectionName . '.port', $proxySqlServicePort);
+                        }
+
+                        if (empty($config['username']) === false)
+                        {
+                            $user = $config['username'];
+                        }
+
+                        $this->traceProxysqlConnection(self::PROXYSQL_SERVICE,  $proxySqlServiceConfig, $user);
+                    }
+                    else if($this->isProxySqlSidecarActive === true)
                     {
-                        $app['config']->set(self::DATABASE_CONFIG . '.' . $connectionName . '.unix_socket', $proxySqlSocket);
+                        $proxySqlSocket = $this->app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_SIDECAR_CONFIG);
+
+                        // by default if port and unix_socket both are present. Laravel will prioritise socket over port
+                        if (empty($config['read']) === false)
+                        {
+                            $user = $app['config']->get(self::DATABASE_CONFIG . '.' . $connectionName . '.read.username');
+                            $app['config']->set(self::DATABASE_CONFIG . '.' . $connectionName . '.read.unix_socket', $proxySqlSocket);
+                        }
+
+                        if (empty($config['write']) === false)
+                        {
+                            $user = $app['config']->get(self::DATABASE_CONFIG . '.' . $connectionName . '.write.username');
+                            $app['config']->set(self::DATABASE_CONFIG . '.' . $connectionName . '.write.unix_socket', $proxySqlSocket);
+                        }
+
+                        if (empty($config['host']) === false)
+                        {
+                            $app['config']->set(self::DATABASE_CONFIG . '.' . $connectionName . '.unix_socket', $proxySqlSocket);
+                        }
+
+                        if (empty($config['username']) === false)
+                        {
+                            $user = $config['username'];
+                        }
+
+                        $this->traceProxysqlConnection(self::PROXYSQL_SIDECAR, $proxySqlSocket, $user);
                     }
                 }
             }
@@ -111,22 +232,36 @@ class Config
         }
     }
 
-    public function isProxySqlActive()
+    public function resetDatabaseConnectionHostAndPort($name)
     {
-        return $this->isProxySqlActive === true;
+        $app = $this->app;
+
+        $connectionTypes = ['read', 'write', ''];
+
+        foreach ($connectionTypes as $connectionType)
+        {
+            if (($app['config']->has(self::DATABASE_CONFIG . '.' . $name . '.' . $connectionType . '.host') === true) and
+                (isset($this->originalConnectionConfig[$name][$connectionType]['host']) === true))
+            {
+                $app['config']->set(self::DATABASE_CONFIG . '.' . $name . '.' . $connectionType . '.host', $this->originalConnectionConfig[$name][$connectionType]['host']);
+            }
+
+            if (($app['config']->has(self::DATABASE_CONFIG . '.' . $name . '.' . $connectionType . '.port') === true) and
+                (isset($this->originalConnectionConfig[$name][$connectionType]['port']) === true))
+            {
+                $app['config']->set(self::DATABASE_CONFIG . '.' . $name . '.' . $connectionType . '.port', $this->originalConnectionConfig[$name][$connectionType]['port']);
+            }
+        }
     }
 
-    protected function canUseProxySql()
+    public function isProxySqlActive()
     {
-        $waitTimeoutActive = $this->app['db.connector.mysql']->isWaitTimeoutActive();
+        return (($this->isProxySqlSidecarActive === true) or ($this->isProxySqlServiceActive === true));
+    }
 
-        // if wait timeout is already enabled then do not use proxySQL
-        if ($waitTimeoutActive === true)
-        {
-            return false;
-        }
-
-        $proxySqlSocket = $this->app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_CONFIG);
+    protected function canUseProxySqlSidecar($proxySqlEnable, $mode)
+    {
+        $proxySqlSocket = $this->app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_SIDECAR_CONFIG);
 
         // cron env and workers will not have this file.
         if ((empty($proxySqlSocket) === true) or (file_exists($proxySqlSocket) === false))
@@ -134,32 +269,43 @@ class Config
             return false;
         }
 
-        // Worker only makes a db connection once. So we will not need proxySQL for this.
-        // (Not needed but this is just extra security.)
-        $isWorkerPod = $this->app['config']->get(self::WORKER_CONFIG . '.' . self::IS_WORKER_POD);
-
-        if ($isWorkerPod === true)
-        {
-            return false;
-        }
-
-        // this is kept to rollback at later stage
-        // we can just change env and re deploy to disable proxysql.
-        // values of PROXY_SQL_ENABLE can be disable, test and enable
-        $proxySqlEnable = env(self::PROXY_SQL_ENABLE, self::DISABLE);
-
-        if ($proxySqlEnable === self::ENABLE)
-        {
-            return true;
-        }
-
-        $mode = (empty($this->app['request.ctx']) === true) ? Mode::LIVE : $this->app['request.ctx']->getMode();
-
-        if (($proxySqlEnable === self::TEST) && ($mode === Mode::TEST))
+        // keeping enable value also on sidecar as current setup uses it for this.
+        if (($proxySqlEnable === self::PROXYSQL_SIDECAR) or
+            ($proxySqlEnable === self::ENABLE) or
+            (($proxySqlEnable === self::TEST) and ($mode === Mode::TEST)))
         {
             return true;
         }
 
         return false;
+    }
+
+    protected function canUseProxySqlService($proxySqlEnable, $mode)
+    {
+        $proxySqlServiceConfig = $this->app['config']->get(self::DATABASE_CONFIG . '.' . self::PROXY_SQL_SERVICE_CONFIG);
+
+        if ((empty($proxySqlServiceConfig) === true) or
+            (empty($proxySqlServiceConfig['host']) === true) or
+                (empty($proxySqlServiceConfig['port']) === true ))
+        {
+            return false;
+        }
+
+        if (($proxySqlEnable === self::PROXYSQL_SERVICE) or
+            (($proxySqlEnable === self::TEST) and ($mode === Mode::TEST)))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function traceProxysqlConnection($type, $proxysqlConfig, $user) {
+        //TODO: control logging from env variable as we might want to disable logging due to high volume.
+        $this->app['trace']->info(TraceCode::PROXY_SQL_CONNECTION, [
+            'type'              => $type,
+            'proxy_sql_config'  => $proxysqlConfig,
+            'user'              => $user,
+        ]);
     }
 }
