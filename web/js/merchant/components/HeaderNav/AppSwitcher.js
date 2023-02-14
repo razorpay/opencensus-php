@@ -10,8 +10,8 @@ import Payouts from 'assets/products/blue-theme/payouts.svg';
 import Payroll from 'assets/products/blue-theme/payroll.svg';
 import Thirdwatch from 'assets/products/thirdwatch.svg';
 import PrepayCod from 'assets/products/prepay-cod.svg';
-import WorkingCapitalLoans from 'assets/products/blue-theme/working-capital-loans.svg';
 import CorporateCreditCards from 'assets/products/blue-theme/corporate-credit-cards.svg';
+import RupeeSolidRounded from 'assets/products/blue-theme/rupee-solid-rounded.svg';
 
 const closeButtonClass = 'close';
 
@@ -74,10 +74,10 @@ const appListRiskAndFraud = [
 
 const appListLending = [
   {
-    icon: WorkingCapitalLoans,
-    name: 'Working Capital Loans',
-    link: 'https://razorpay.com/capital/working-capital-loans/',
-    desc: 'Avail collateral-free business loans',
+    icon: RupeeSolidRounded,
+    name: 'Line of Credit',
+    link: 'https://razorpay.com/x/line-of-credit/',
+    desc: 'Better short-term - Use, Repay, Repeat',
     showForUnregisteredBusiness: false,
   },
   {
