@@ -12725,7 +12725,7 @@ return [
                         'failure_code'   => 'INVALID_COUPON',
                         'failure_reason' => 'Coupon Code has expired',
                     ],
-                    'status_code' => 400,
+                    'status_code' => 422,
                 ]
             ],
         ],
@@ -12734,7 +12734,7 @@ return [
                 'failure_code'   => 'INVALID_COUPON',
                 'failure_reason' => 'Coupon Code has expired',
             ],
-            'status_code' => 400,
+            'status_code' => 422,
         ],
     ],
 

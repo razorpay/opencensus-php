@@ -351,7 +351,7 @@ class Service extends Base\Service
                         break;
                     case 400:
                         (new Validator)->setStrictFalse()->validateInput('applyCouponInvalidRequestResponse', $decodedResponse);
-                        return ['status_code' => 400, 'data' => $decodedResponse];
+                        return ['status_code' => 422, 'data' => $decodedResponse];
                 }
             } catch (\Throwable $e) {
                 $this->trace->count(Metric::MERCHANT_EXTERNAL_COUPON_VALIDITY_REQUEST_INVALID_RESPONSE_COUNT, $dimensions);
