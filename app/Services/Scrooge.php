@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use App;
+use RZP\Error\PublicErrorCode;
 use RZP\Exception;
 use \WpOrg\Requests\Exception as Requests_Exception;
 use RZP\Error\ErrorCode;
@@ -1027,6 +1028,9 @@ class Scrooge
                     case ErrorCode::BAD_REQUEST_ONLY_INSTANT_REFUND_SUPPORTED:
                     case ErrorCode::BAD_REQUEST_REFUND_NOT_SUPPORTED_BY_THE_BANK:
                         $args = [constant(ErrorCode::class . '::' . $internalErrorCode), null, null, $publicErrorMessage];
+                        break;
+                    case ErrorCode::BAD_REQUEST_TOTAL_REFUND_AMOUNT_IS_GREATER_THAN_THE_PAYMENT_AMOUNT:
+                        $args = [PublicErrorCode::BAD_REQUEST_ERROR, null, null, PublicErrorDescription::BAD_REQUEST_TOTAL_REFUND_AMOUNT_IS_GREATER_THAN_THE_PAYMENT_AMOUNT];
                         break;
                     default:
                         $args = [constant(ErrorCode::class . '::' . $internalErrorCode)];

@@ -719,4 +719,7 @@ final class RazorxTreatment
 
     // Experiment to enable async bulk approval or not
     const PAYOUT_BULK_APPROVE_ASYNC = 'payout_bulk_approve_async';
+
+    // Experiment to ramp up international refunds
+    const SCROOGE_INTERNATIONAL_REFUND = 'scrooge_international_refund';
 }

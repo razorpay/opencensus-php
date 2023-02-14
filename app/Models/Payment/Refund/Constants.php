@@ -31,6 +31,8 @@ class Constants
     const DISCOUNT_RATIO                       = 'discount_ratio';
     const DISCOUNTED_AMOUNT                    = 'discounted_amount';
     const GATEWAY_AMOUNT                       = 'gateway_amount';
+    const MIN_CURRENCY_AMOUNT                  = 'min_currency_amount';
+
     /**
      * We get the last 10 days refunds created of a gateway.
      * We run the cron for this once a day.
@@ -235,6 +237,9 @@ class Constants
     const BASE_AMOUNT_UNREFUNDED   = 'base_amount_unrefunded';
     const IS_UPI_OTM               = 'is_upi_otm';
     const CURRENCY_CONVERSION_RATE = 'currency_conversion_rate';
+    const PAYMENT_RAW_AMOUNT       = 'payment_raw_amount';
+    const PAYMENT_RAW_CURRENCY     = 'payment_raw_currency';
+
 
     // to revert payment attributes on transaction create failure
     const COMPENSATE_PAYMENT = 'compensate_payment';

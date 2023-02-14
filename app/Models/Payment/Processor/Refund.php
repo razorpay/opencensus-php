@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 
 use RZP\Diag\EventCode;
 use RZP\Exception;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Ledger\RefundJournalEvents;
 use RZP\Models\Vpa;
 use RZP\Models\Batch;
@@ -4224,10 +4225,22 @@ trait Refund
 
     public function isRefundRequestV1_1(string $merchantId, Payment\Entity $payment): bool
     {
-        if (($payment->getCurrency() !== Currency\Currency::INR) or
-            ($payment->isDCC() === true) or
-            (($payment->isTransferred() === true) and
-                ($payment->isTransfer() === false)))
+        $v2Variant = $this->app->razorx->getTreatment($payment->getId(),
+            Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
+            $this->mode);
+
+        $this->trace->info(TraceCode::SCROOGE_INTERNATIONAL_REFUND, [
+            'variant'   => $v2Variant,
+            'paymentId' => $payment->getId(),
+            'merchantId'=> $merchantId,
+        ]);
+
+        if (($payment->isTransferred() === true) and ($payment->isTransfer() === false))
+        {
+            return false;
+        }
+
+        if ($v2Variant !== 'on' and (($payment->getCurrency() !== Currency\Currency::INR) or ($payment->isDCC() === true)))
         {
             return false;
         }
@@ -4243,10 +4256,21 @@ trait Refund
 
     public function isBatchRefundRequestV1_1(Payment\Entity $payment): bool
     {
-        if (($payment->getCurrency() !== Currency\Currency::INR) or
-            ($payment->isDCC() === true) or
-            (($payment->isTransferred() === true) and
-                ($payment->isTransfer() === false)))
+        $v2Variant = $this->app->razorx->getTreatment($payment->getId(),
+            Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
+            $this->mode);
+
+        $this->trace->info(TraceCode::SCROOGE_INTERNATIONAL_REFUND, [
+            'variant'   => $v2Variant,
+            'paymentId' => $payment->getId(),
+        ]);
+
+        if ($v2Variant !== 'on' and (($payment->getCurrency() !== Currency\Currency::INR) or ($payment->isDCC() === true)))
+        {
+            return false;
+        }
+
+        if (($payment->isTransferred() === true) and ($payment->isTransfer() === false))
         {
             return false;
         }
@@ -4262,10 +4286,21 @@ trait Refund
 
     public function isNonMerchantRefundRequestV1_1(Payment\Entity $payment): bool
     {
-        if (($payment->getCurrency() !== Currency\Currency::INR) or
-            ($payment->isDCC() === true) or
-            (($payment->isTransferred() === true) and
-                ($payment->isTransfer() === false)))
+        $v2Variant = $this->app->razorx->getTreatment($payment->getId(),
+            Merchant\RazorxTreatment::SCROOGE_INTERNATIONAL_REFUND,
+            $this->mode);
+
+        $this->trace->info(TraceCode::SCROOGE_INTERNATIONAL_REFUND, [
+            'variant'   => $v2Variant,
+            'paymentId' => $payment->getId(),
+        ]);
+
+        if ($v2Variant !== 'on' and (($payment->getCurrency() !== Currency\Currency::INR) or ($payment->isDCC() === true)))
+        {
+            return false;
+        }
+
+        if (($payment->isTransferred() === true) and ($payment->isTransfer() === false))
         {
             return false;
         }

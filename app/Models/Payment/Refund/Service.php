@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Error\Error;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
@@ -884,6 +885,10 @@ class Service extends Base\Service
                     {
                         $data = $payment->toArrayGateway();
 
+                        $data[RefundConstants::PAYMENT_RAW_AMOUNT] = $payment->getAmount();
+
+                        $data[RefundConstants::PAYMENT_RAW_CURRENCY] = $payment->getCurrency();
+
                         $data[RefundConstants::AMOUNT_UNREFUNDED]=$payment->getAmountUnrefunded();
 
                         $data[RefundConstants::BASE_AMOUNT_UNREFUNDED]=$payment->getBaseAmountUnrefunded();
@@ -903,6 +908,9 @@ class Service extends Base\Service
                         $data[RefundConstants::IS_HDFC_VAS_DS_CUSTOMER_FEE_BEARER] = $payment->isHdfcVasDSCustomerFeeBearerSurcharge();
 
                         $data[RefundConstants::DISCOUNT_RATIO] = $payment->getDiscountRatioIfApplicable();
+
+                        $data[RefundConstants::MIN_CURRENCY_AMOUNT] = Currency::getMinAmount($payment->getCurrency());
+
                     }
 
                     $response[RefundConstants::ENTITIES][Constants\Entity::PAYMENT][RefundConstants::DATA] = $data;
