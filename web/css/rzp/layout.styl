@@ -437,26 +437,48 @@ body {
   }
 }
 
-.navbar-default .navbar-nav {
-  .dropdown > a.dropdown__trigger {
-    display: inline-block;
-    color: #777;
-    cursor: pointer;
-    padding: 15px;
+.navbar-default .navbar-nav
+  .dropdown > a.dropdown__trigger
+    display: inline-block
+    color: #777
+    cursor: pointer
+    padding: 15px
 
-    &:hover {
-      text-decoration: none;
-    }
+    &:hover
+      text-decoration: none
 
-    &.dropdown-toggle--large-icon {
-      padding: 15px 15px 12px;
-    }
+    &.dropdown-toggle--large-icon
+      padding: 15px 15px 12px
 
-    @media screen and (max-width $screen-sm-min) {
-      padding: 15px 10px;
-    }
-  }
-}
+    @media screen and (max-width $screen-sm-min)
+      padding: 15px 10px
+
+  > li.offers-for-you
+    margin-left: 15px
+    top: 2px
+
+    > a
+      display: flex
+      color: #2B83EA
+      font-weight: 700
+
+      .lottie-wrapper
+        position: absolute
+        width: 23%
+        top: 7px
+        left: -17px
+
+      &:hover
+        &::after
+          border-radius: 5px
+          height: 33px
+          width: 141px
+          position: absolute
+          content: ""
+          left: -22px
+          top: 8px
+          z-index: -1
+          background-color: #3987F017
 
 .pagefooter {
   position: absolute;
@@ -1721,35 +1743,6 @@ ul.switch-modes-menu.nav.nav-stacked {
 .lottie-wrapper
   > div:first-child
     display: flex
-
-li.offers-for-you
-  margin-left: 15px
-  top: 2px
-
-  a
-    display: flex
-    // stylelint-disable-next-line declaration-no-important
-    color: #2B83EA !important
-    // stylelint-disable-next-line declaration-no-important
-    font-weight: 700 !important
-
-    .lottie-wrapper
-      position: absolute
-      width: 23%
-      top: 7px
-      left: -17px
-
-    &:hover
-      &::after
-        border-radius: 5px
-        height: 33px
-        width: 141px
-        position: absolute
-        content: ""
-        left: -22px
-        top: 8px
-        z-index: -1
-        background: rgb(57 135 240 / 0.09)
 
 li.offers-for-you-mobile
   max-width: 70px
