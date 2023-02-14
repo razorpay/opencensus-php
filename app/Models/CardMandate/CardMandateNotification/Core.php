@@ -43,10 +43,17 @@ class Core extends Base\Core
         try
         {
             $notification = $mandateHub->CreatePreDebitNotification($cardMandate, $payment, $input);
+
+            (new CardMandate\Metric())->generateMetric(CardMandate\Metric::CARD_MANDATE_CREATE_PDN,
+                ['mandate_hub' => $cardMandate->getMandateHub()]);
         }
         catch (\Exception $e)
         {
             $this->handlePreDebitNotificationToHubFailed($cardMandateNotification, $payment, $e);
+
+            (new CardMandate\Metric())->generateMetric(CardMandate\Metric::CARD_MANDATE_CREATE_PDN_ERROR,
+                ['mandate_hub' => $cardMandate->getMandateHub()]);
+
             throw $e;
         }
 

@@ -7802,6 +7802,9 @@ trait Authorize
                 }
 
                 $this->updateTokenOnAuthorized($payment, []);
+
+                (new CardMandate\Metric())->generateMetric(CardMandate\Metric::CARD_RECURRING_TOKENISATION_AND_HUB_UPDATES,
+                    ['mandate_hub' => $cardMandate->getMandateHub()]);
             }
         }
         catch(\Exception $e)
@@ -7825,6 +7828,11 @@ trait Authorize
                 ]);
 
             $this->updateTokenOnRecurringTokenisationFailure($payment, $data);
+
+            $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($payment->localToken->getCardMandateId(), $payment->merchant);
+
+            (new CardMandate\Metric())->generateMetric(CardMandate\Metric::CARD_RECURRING_TOKENISATION_AND_HUB_UPDATES_ERROR,
+                ['mandate_hub' => $cardMandate->getMandateHub()]);
         }
     }
 
