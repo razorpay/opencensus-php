@@ -254,6 +254,10 @@ export default class PaymentPagesV3Entity extends React.Component {
     track.duplicatePage();
   };
 
+  onClickEditPage = () => {
+    track.editPage();
+  };
+
   trackEditNotes = (changeType, modified) => {
     if (changeType === 'Save Notes') {
       track.saveNotes(modified);
@@ -338,7 +342,10 @@ export default class PaymentPagesV3Entity extends React.Component {
                 {isRoleAllowedEdit && <DropdownSettings paymentPageEntity={paymentPageEntity} />}
 
                 {isRoleAllowedEdit && (
-                  <Link to={`/paymentpages/${paymentPageEntity.id}/edit`}>
+                  <Link
+                    to={`/paymentpages/${paymentPageEntity.id}/edit`}
+                    onClick={this.onClickEditPage}
+                  >
                     <Button.Primary>
                       <i className="i i-edit icon-border-bottom" /> Edit Page
                     </Button.Primary>

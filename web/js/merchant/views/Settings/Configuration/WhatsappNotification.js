@@ -105,13 +105,13 @@ function WhatsappNotification({
   };
 
   const toggleWhatsappNotification = (whatsapp_optin_checked, cb) => {
+    selfServeTrackInitiate({
+      selfServeAction: 'Whatsapp Notifications Enabled',
+      page: 'Config',
+      screen: 'Settings',
+    });
     if (whatsapp_optin_checked) {
       analytics('Enable');
-      selfServeTrackInitiate({
-        selfServeAction: 'Whatsapp Notifications Enabled',
-        page: 'Config',
-        screen: 'Settings',
-      });
     } else {
       analytics('Disable');
     }

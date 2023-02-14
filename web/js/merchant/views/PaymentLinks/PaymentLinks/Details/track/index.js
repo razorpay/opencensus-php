@@ -1,5 +1,6 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, humanize } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const commonProp = {
   origin: 'dashboard',
@@ -181,6 +182,11 @@ function _track() {
       const prop = {
         type: paymentLinkType,
       };
+      selfServeTrackInitiate({
+        selfServeAction: 'Create Payment Link',
+        page: 'Paymentlink',
+        screen: 'Payment Links',
+      });
       sendToLumberjack(`pl.update.clone.start`, prop);
       sendToSegment(`payment link update clone start`, 'clicked', prop);
     },

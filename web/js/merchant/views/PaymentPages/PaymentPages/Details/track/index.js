@@ -1,5 +1,6 @@
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 function _track() {
   let lumberjackTrack = () => {};
@@ -21,6 +22,14 @@ function _track() {
         ...getCommonAnalyticsProperties(window.rzp_user),
         ...properties,
       },
+    });
+  }
+
+  function trackSelfServeInitiate() {
+    selfServeTrackInitiate({
+      selfServeAction: 'Create Payment Page',
+      page: 'Paymentpage',
+      screen: 'Payment Page',
     });
   }
 
@@ -56,7 +65,15 @@ function _track() {
     duplicatePage: () => {
       sendToLumberjack('duplicate_page');
       sendToSegment('duplicate page', 'click');
+      trackSelfServeInitiate();
     },
+
+    editPage: () => {
+      sendToLumberjack('edit_page');
+      sendToSegment('edit page', 'click');
+      trackSelfServeInitiate();
+    },
+
     addNewNote: () => {
       sendToLumberjack('add_new_note');
       sendToSegment('add new note', 'clicked');
@@ -100,10 +117,12 @@ function _track() {
     receiptSettings: () => {
       sendToLumberjack('receipt_settings');
       sendToSegment('receipt settings', 'clicked');
+      trackSelfServeInitiate();
     },
     pageSettings: () => {
       sendToLumberjack('page_settings');
       sendToSegment('page settings', 'clicked');
+      trackSelfServeInitiate();
     },
     searchPaymentId: (event) => {
       sendToLumberjack('payment_id_enter', { value: event.target.value });

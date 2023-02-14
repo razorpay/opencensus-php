@@ -212,7 +212,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
                 to="/smartcollect/virtualaccounts/new"
                 onClick={() => {
                   selfServeTrackInitiate({
-                    selfServeAction: 'Virtual Account Created',
+                    selfServeAction: 'Customer Identifier Created',
                     page: 'Virtualaccounts',
                     screen: 'Smart Collect',
                   });
