@@ -124,6 +124,8 @@ class Entity extends Base\PublicEntity
 
     const GSTIN_PREFILLED_ADDRESS = 'gstin_prefilled_address';
 
+    const GSTIN = 'gstin';
+
     const RBL_NEW_ONBOARDING_FLOW_DECLARATIONS = 'rbl_new_onboarding_flow_declarations';
 
     const AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS = 'available_at_preferred_address_to_collect_docs';
@@ -563,6 +565,26 @@ class Entity extends Base\PublicEntity
     public function setContactMobileVerified(bool $verified)
     {
         $this->setAttribute(self::CONTACT_VERIFIED, $verified);
+    }
+
+    public function isPoEVerified()
+    {
+        return empty($this->extractFieldFromJSONField($this->getAdditionalDetails(), self::GSTIN)) === false;
+    }
+
+    public function isPoAVerified()
+    {
+        return empty($this->extractFieldFromJSONField($this->getAdditionalDetails(), self::GSTIN_PREFILLED_ADDRESS)) === false;
+    }
+
+    public function getAppointmentSource()
+    {
+        return $this->extractFieldFromJSONField($this->getAdditionalDetails(), self::APPOINTMENT_SOURCE);
+    }
+
+    public function getSkipMidOfficeCall()
+    {
+        return $this->extractFieldFromJSONField($this->getAdditionalDetails(), self::SKIP_MID_OFFICE_CALL);
     }
 
     public function setBankPOCUserId(string $userId)

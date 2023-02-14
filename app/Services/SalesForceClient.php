@@ -677,8 +677,9 @@ class SalesForceClient
         return $this->baseUrl . '/services/data/v53.0/sobjects/CX_CurrentAccount_Event__e';
     }
 
-    protected function generateUrlForOpportunityUpsert(){
-        return $this->baseUrl . '/services/apexrest/DashboardOpportunityUpsert';
+    protected function generateUrlForOpportunityUpsert()
+    {
+        return $this->baseUrl . self::DASHBOARD_UPSERT_URL;
     }
 
     protected function generateUrlForCreateUserDetails()

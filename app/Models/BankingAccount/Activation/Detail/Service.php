@@ -71,6 +71,8 @@ class Service extends Base\Service
             return $activationDetail;
         });
 
+        $this->upsertSalesforceLeadDetails($bankingAccount, $activationDetail);
+
         return $activationDetail->toArrayPublic();
     }
 
@@ -312,6 +314,8 @@ class Service extends Base\Service
             $this->initiatePanVerification($activationDetail, $bankingAccount, $isBusinessNameEdit, $isMerchantPocNameEdit, $isPanEdit);
 
             $this->checkAndPushEventForRmAssigned($bankingAccount, $input, $activationDetail, $isRmNotAssigned);
+
+            $this->upsertSalesforceLeadDetails($bankingAccount, $activationDetail);
 
             if ($activationDetail->isAssigneeTeamUpdated() === true  && $captureState === true)
             {
@@ -750,7 +754,9 @@ class Service extends Base\Service
             $input[$additionalDetails] = json_decode($input[$additionalDetails], true);
         }
 
-        if($this->shouldSkipMidOfficeCall($bankingAccount, $activationDetail, $input) === true)
+        $skipMidOfficeCall = $this->shouldSkipMidOfficeCall($bankingAccount, $activationDetail, $input);
+
+        if($skipMidOfficeCall)
         {
             $input[$additionalDetails][Entity::SKIP_MID_OFFICE_CALL] = 1;
             $input[$additionalDetails][Entity::APPOINTMENT_SOURCE] = Entity::SALES;
@@ -802,4 +808,17 @@ class Service extends Base\Service
         return $match;
     }
 
+    protected function upsertSalesforceLeadDetails(BankingAccount\Entity $bankingAccount, Entity $activationDetails)
+    {
+        $salesforceUpsertInput = [
+            'merchant_id'                       => $bankingAccount->getMerchantId(),
+            'product_name'                      => 'Current_Account',
+            'PoE_verified'                      => $activationDetails->isPoEVerified() ? 'true' : 'false',
+            'PoA_verified'                      => $activationDetails->isPoAVerified() ? 'true' : 'false',
+            'Appointment_during_Sales_pitch'    => $activationDetails->getSkipMidOfficeCall() === 1 ? 'true' : 'false',
+            'PoA_document'                      => $activationDetails->isPoEVerified() ? Entity::GSTIN : 'N/A',
+        ];
+
+        $this->app->salesforce->sendCaLeadDetails($salesforceUpsertInput);
+    }
 }
