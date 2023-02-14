@@ -264,4 +264,59 @@ trait ReconTrait
 
         return $upiEntity->toArrayAdmin();
     }
+
+    protected function buildUnexpectedPaymentRequest()
+    {
+        $this->fixtures->merchant->createAccount('100DemoAccount');
+        $this->fixtures->merchant->enableUpi('100DemoAccount');
+
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        unset($content['upi']['account_number']);
+        unset($content['upi']['ifsc']);
+        unset($content['upi']['gateway_data']);
+
+        $content['terminal']['gateway']             = $this->gateway;
+        $content['terminal']['gateway_merchant_id'] = $this->terminal->getGatewayMerchantId();
+        $content['upi']['gateway_merchant_id']      = $this->terminal->getGatewayMerchantId();
+
+        return $content;
+    }
+
+    protected function makeUnexpectedPaymentAndGetContent(array $content)
+    {
+        $request = [
+            'url' => '/payments/create/upi/unexpected',
+            'method' => 'POST',
+            'content' => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function makeAuthorizeFailedPaymentAndGetPayment(array $content)
+    {
+        $request = [
+            'url'      => '/payments/authorize/upi/failed',
+            'method'   => 'POST',
+            'content'  => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function buildUpiAuthorizeFailedPaymentRequest(string $payment_id)
+    {
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        $content['payment']['id'] = $payment_id;
+
+        $content['upi']['gateway'] = $this->gateway;
+
+        return $content;
+    }
 }

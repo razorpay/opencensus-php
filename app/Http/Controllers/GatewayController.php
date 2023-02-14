@@ -368,6 +368,23 @@ class GatewayController extends Controller
         }
         else
         {
+            // We are disabling unexpected payments for some gateways,
+            // this is either for new gateways or to delay refunds
+            if (Gateway::isUnexpectedPaymentOnCallbackDisabled($gatewayDriver) === true)
+            {
+                unset($input['payment']['vpa']);
+
+                $this->trace->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
+                    'input'         => $input,
+                    'gateway'       => $gatewayDriver,
+                    'unexpected'    => 1,
+                    'skipped'       => 1,
+                ]);
+                // Throw expection
+                throw new Exception\RuntimeException('Unexpected payment on callback is not supported',[
+                    'gateway' => $gatewayDriver,
+                ]);
+            }
             $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
         }
 
@@ -487,6 +504,7 @@ class GatewayController extends Controller
             // Special case because we need the raw request body
             case Gateway::UPI_RBL:
             case Gateway::UPI_AIRTEL:
+            case Gateway::UPI_KOTAK:
                 $input = Request::getContent();
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                 break;

@@ -5509,6 +5509,12 @@ class Service extends Base\Service
                 ]);
         }
 
+        if ($payment->isFailed() === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Non failed payment given for authorization');
+        }
+
         if (($input['meta']['force_auth_payment'] === true) and
             ($this->isForceAuthAllowed($gateway) ===true))
         {

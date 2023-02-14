@@ -3877,6 +3877,27 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiKotakTerminal(array $attributes)
+    {
+        $defaultValues = [
+            'id'                        => Shared::UPI_KOTAK_RAZORPAY_TERMINAL,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_kotak',
+            'gateway_merchant_id'       => 'Razorpay01',
+            'gateway_merchant_id2'      => '919000000000',
+            'upi'                       => 1,
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+//                'collect'       => '1',
+            ]
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedUpiCitiTerminal(array $attributes)
     {
         $defaultValues = [

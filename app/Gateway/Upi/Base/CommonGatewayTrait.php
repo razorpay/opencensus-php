@@ -197,9 +197,11 @@ trait CommonGatewayTrait
 
         $gateways = [
             Payment\Gateway::UPI_SBI,
+            Payment\Gateway::UPI_KOTAK,
             Payment\Gateway::UPI_AXIS,
             Payment\Gateway::UPI_AIRTEL,
             Payment\Gateway::UPI_MINDGATE
+
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -723,6 +725,97 @@ trait CommonGatewayTrait
         $description = $input['merchant']->getFilteredDba() . ' ' . $filteredPaymentDescription;
 
         $input[Entity::UPI][Entity::REMARK] = $description ? substr($description, 0, 50) : 'Pay via Razorpay';
+    }
+
+    protected function upiIsDuplicateUnexpectedPaymentV2($input)
+    {
+        $rrn = $input['upi']['npci_reference_id'];
+
+        $gateway = $input['terminal']['gateway'];
+
+        $upiEntity = $this->upiGetRepository()->fetchByNpciReferenceIdAndGateway($rrn, $gateway);
+
+        if (empty($upiEntity) === false)
+        {
+            // TODO: To fix this logic later by freezing one rrn i.e updating old payment rrn and create new payment
+
+            if ($upiEntity->getAmount() === (int) ($input['payment']['amount']))
+            {
+                throw new Exception\LogicException(
+                    'Duplicate Unexpected payment with same amount',
+                    null,
+                    [
+                        'callbackData' => $input
+                    ]
+                );
+            }
+        }
+    }
+
+    protected function upiAuthorizePushV2($input)
+    {
+        list ($paymentId, $content) = $input;
+
+        // Create attributes for upi entity.
+        $attributes = [
+            Entity::TYPE                => Upi\Base\Type::PAY,
+            Entity::RECEIVED            => 1,
+        ];
+
+        $attributes = array_merge($attributes, $content['upi']);
+
+        $payment  = $content['payment'];
+
+        $upi      = $content['upi'];
+
+        $gateway = $content['terminal']['gateway'];
+
+        // Create input structure for upi entity.
+        $input = [
+            'payment'    => [
+                'id'       => $paymentId,
+                'gateway'  => $gateway,
+                'vpa'      => $upi['vpa'],
+                'amount'   => $payment['amount'],
+            ],
+        ];
+
+        // Call to set the input in gateway
+        parent::action($input, Action::AUTHORIZE);
+
+        $gatewayPayment = $this->upiCreateGatewayEntity($input, $attributes);
+
+        return [
+            'acquirer' => [
+                Payment\Entity::VPA           => $gatewayPayment->getVpa(),
+                Payment\Entity::REFERENCE16   => $gatewayPayment->getNpciReferenceId(),
+            ]
+        ];
+    }
+
+    /**
+     * Check if its a valid Unexpected Payment
+     * @param array $callbackData
+     * @throws Exception\LogicException
+     * @throws GatewayErrorException
+     */
+    protected function upiIsValidUnexpectedPaymentV2($callbackData)
+    {
+        //
+        // Verifies if the payload specified in the server callback is valid.
+        //
+        $input = [
+            'payment' => [
+                'id'      => $callbackData['upi']['merchant_reference'],
+                'gateway' => $this->gateway,
+                'vpa'     => $callbackData['upi']['vpa'],
+                'amount'  => (int) ($callbackData['payment']['amount']),
+                'status'  => 'authorized', // Setting status as authorized in verify request for verify request to validate with gateway.
+            ],
+            'terminal' => $this->terminal,
+        ];
+
+        $this->app['upi.payments']->action(Action::VERIFY, $input, $input['payment']['gateway']);
     }
 
     /**

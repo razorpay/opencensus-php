@@ -437,4 +437,59 @@ class PreProcess extends Base\Mock\Server
 
         return $response;
     }
+
+    public function upi_kotak(array $entities): array
+    {
+        return $this->upi($entities);
+    }
+
+    protected function upi(array $entities): array
+    {
+        assertTrue($entities['gateway']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE);
+        $payload = json_decode($entities['gateway']['payload'], true);
+        $response = MozartUpiResponse::getDefaultInstanceForV2();
+        $payerVPA = 'vishnu@icici';
+        $statusCode = '00';
+        $amount = (string) $payload['amount'];
+
+        switch ($payload[Payment\Entity::DESCRIPTION])
+        {
+            case 'payment_failed':
+                $statusCode = 'U30';
+                $response->setSuccess(false);
+                $response->setError([
+                    'description'               => 'Debit has been failed',
+                    'gateway_error_code'        => 'U30',
+                    'gateway_error_description' => 'Debit has been failed',
+                    'gateway_status_code'       => 200,
+                    'internal_error_code'       => 'GATEWAY_ERROR_DEBIT_FAILED',
+                ]);
+                break;
+            case 'amount_mismatch':
+                $amount = '1001';
+        }
+
+        $response->mergeUpi([
+            'vpa' => $payload['vpa'] ?? $payerVPA,
+            'status_code' => $statusCode,
+            'npci_reference_id' => '002002002002',
+            'merchant_reference' => $payload['id'],
+        ]);
+
+        $response->setPayment([
+            'currency' => 'INR',
+            'amount_authorized' => $amount
+        ]);
+
+        $response->setTerminal([
+            'id' => $payload['terminal_id'],
+        ]);
+
+        $response = $response->toArray();
+
+        unset($response['next']);
+
+        return $response;
+
+    }
 }

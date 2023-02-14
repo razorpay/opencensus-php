@@ -1121,6 +1121,13 @@ class Gateway extends Base\Gateway
 
         switch ($gateway)
         {
+            case Payment\Gateway::UPI_KOTAK:
+                $data = [
+                    'payload'       => $input,
+                    'gateway'       => $gateway,
+                    'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
+                ];
+                return $this->upiPreProcess($data);
             case Payment\Gateway::UPI_AIRTEL:
                 return $this->preProcessServerCallbackForUpiAirtel($input, $mode);
             case Payment\Gateway::UPI_JUSPAY:
@@ -1196,6 +1203,7 @@ class Gateway extends Base\Gateway
         switch ($gateway)
         {
             case Payment\Gateway::UPI_AIRTEL:
+            case Payment\Gateway::UPI_KOTAK:
                 $version = $response['data']['version'] ?? '';
 
                 if ($version === 'v2')
@@ -3221,6 +3229,16 @@ class Gateway extends Base\Gateway
 
     public function validatePush($input)
     {
+        if ((isset($input['meta']['version']) === true) and
+            ($input['meta']['version'] === 'api_v2'))
+        {
+            $this->upiIsDuplicateUnexpectedPaymentV2($input);
+
+            $this->upiIsValidUnexpectedPaymentV2($input);
+
+            return;
+        }
+
         $version = $input['data']['version'] ?? '';
         if ($version === 'v2')
         {
@@ -3290,6 +3308,12 @@ class Gateway extends Base\Gateway
     public function authorizePush($input)
     {
         list($paymentId , $callbackData) = $input;
+
+        if ((isset($callbackData['meta']['version']) === true) and
+            ($callbackData['meta']['version'] === 'api_v2'))
+        {
+            return $this->upiAuthorizePushV2($input);
+        }
 
         $version = $callbackData['data']['version'] ?? '';
 

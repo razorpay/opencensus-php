@@ -164,6 +164,7 @@ class Service extends UpiPaymentService
         {
             assertTrue($content['data']['terminal'], $content['gateway']);
         }
+
         $payload = $content['data']['gateway']['payload'];
         $payload = json_decode($payload, true);
 
@@ -213,6 +214,10 @@ class Service extends UpiPaymentService
 
     protected function callback(array $content): array
     {
+        if (Payment\Gateway::isUpiPaymentServiceFullyRamped($content['gateway']) === true)
+        {
+            return $this->callbackFullyRamped($content);
+        }
         assertTrue($content['data']['data'] != null);
         $data = $content['data']['data'];
         $error = $content['data']['error'] ?? null;
@@ -237,6 +242,50 @@ class Service extends UpiPaymentService
         }
 
         $responseError = $this->content($error, $this->action);
+
+        $response = [
+            'data'      => $responseData,
+            'gateway'   => $gateway,
+            'error'     => $responseError,
+        ];
+
+        return [$response, $statusCode];
+    }
+
+    protected function callbackFullyRamped(array $content): array
+    {
+        $gateway = $content['gateway'];
+        $upi = $content['data']['data']['upi'];
+        $payment = $content['data']['data']['payment'];
+        $responseData = [
+            'acquirer' => [
+                'vpa'         => $upi['vpa'],
+                'reference16' => $upi['npci_reference_id'],
+            ],
+            'amount_authorized' => (string) $payment['amount_authorized'],
+            'currency'          => $payment['currency'],
+        ];
+
+        $statusCode = 200;
+        $responseError = [];
+        // If mozart pre-process has returned an error block,
+        // We need to convert that to UPS error block
+        if (!empty($content['data']['error']) === true)
+        {
+            $error = $content['data']['error'];
+            $responseError = [
+                'internal' => [
+                    'code'          => $error['internal_error_code'],
+                    'description'   => 'GATEWAY_ERROR',
+                    'metadata'      => [
+                        'description'               => $error['description'],
+                        'gateway_error_code'        => $error['gateway_error_code'],
+                        'gateway_error_description' => $error['gateway_error_description'],
+                        'internal_error_code'       => $error['internal_error_code']
+                    ]
+                ]
+            ];
+        }
 
         $response = [
             'data'      => $responseData,

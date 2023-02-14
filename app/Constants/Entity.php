@@ -416,6 +416,7 @@ class Entity
     const NETBANKING_UJJIVAN     = 'netbanking_ujjivan';
     const NETBANKING_DBS         = 'netbanking_dbs';
     const CURRENCY_CLOUD         = 'currency_cloud';
+    const UPI_KOTAK              = 'upi_kotak';
 
     // P2P Service Entities
     const P2P_VPA                = 'p2p_vpa';
@@ -1282,6 +1283,7 @@ class Entity
         self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
         self::UPI_CITI               => \RZP\Gateway\Mozart::class,
+        self::UPI_KOTAK              => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,
         self::GETSIMPL               => \RZP\Gateway\Mozart::class,
@@ -1520,6 +1522,7 @@ class Entity
         self::PINELABS               => \RZP\Gateway\Upi\Base::class,
         self::PAYU                   => \RZP\Gateway\Upi\Base::class,
         self::PAYTM                  => \RZP\Gateway\Upi\Base::class,
+        self::UPI_KOTAK              => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI             => \RZP\Gateway\Aeps\Base::class,
 

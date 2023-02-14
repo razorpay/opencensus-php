@@ -120,6 +120,7 @@ class Gateway
     const UPI_HULK               = 'upi_hulk';
     const UPI_RBL                = 'upi_rbl';
     const UPI_YESBANK            = 'upi_yesbank';
+    const UPI_KOTAK              = 'upi_kotak';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
     const PAYSECURE              = 'paysecure';
@@ -1839,6 +1840,7 @@ class Gateway
         self::UPI_AIRTEL,
         self::UPI_CITI,
         self::UPI_JUSPAY,
+        self::UPI_KOTAK,
         self::WALLET_PHONEPE,
         self::CRED,
         self::CASHFREE,
@@ -2931,6 +2933,7 @@ class Gateway
         Gateway::WALLET_PHONEPE,
         Gateway::UPI_CITI,
         Gateway::UPI_JUSPAY,
+        Gateway::UPI_KOTAK,
         Gateway::PAYU,
         Gateway::PAYTM,
         // Cybersource does not make s2s callback, Google Pay makes s2s callback for payments
@@ -2961,6 +2964,7 @@ class Gateway
         Gateway::NETBANKING_RBL,
         Gateway::NETBANKING_HDFC,
         Gateway::PAYU,
+        Gateway::UPI_KOTAK,
     ];
 
     /**
@@ -3449,6 +3453,7 @@ class Gateway
         Gateway::UPI_SBI,
         Gateway::UPI_AIRTEL,
         Gateway::UPI_YESBANK,
+        Gateway::UPI_KOTAK,
         Gateway::CASHFREE,
         Gateway::PAYTM,
         Gateway::PAYU,
@@ -4729,6 +4734,7 @@ class Gateway
             self::UPI_ICICI,
             self::UPI_AXIS,
             self::UPI_MINDGATE,
+            self::UPI_KOTAK,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -4739,6 +4745,25 @@ class Gateway
         $gateways = [
             self::UPI_AIRTEL,
             self::UPI_YESBANK,
+            self::UPI_KOTAK,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
+    public static function isUpiPaymentServiceFullyRamped($gateway): bool
+    {
+        $gateways = [
+            self::UPI_KOTAK,
+        ];
+
+        return (in_array($gateway, $gateways, true));
+    }
+
+    public static function isUnexpectedPaymentOnCallbackDisabled($gateway): bool
+    {
+        $gateways = [
+            self::UPI_KOTAK,
         ];
 
         return (in_array($gateway, $gateways, true));

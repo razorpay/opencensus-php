@@ -142,6 +142,7 @@ class Validator extends Base\Validator
         Payment\Gateway::WALLET_FREECHARGE,
         Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::UPI_AIRTEL,
+        Payment\Gateway::UPI_KOTAK,
         Payment\Gateway::ISG,
         Payment\Gateway::PAYLATER,
         Payment\Gateway::CARDLESS_EMI,
@@ -241,6 +242,16 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'required|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $upiKotakTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_kotak',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::VPA                        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
@@ -1084,6 +1095,17 @@ class Validator extends Base\Validator
         Entity::UPI                        => 'sometimes|boolean|in:1',
         Entity::TYPE                       => 'sometimes|array',
         Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $upiKotakEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:upi_kotak',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::VPA                        => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',

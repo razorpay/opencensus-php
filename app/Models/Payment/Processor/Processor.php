@@ -3326,6 +3326,10 @@ class Processor
      */
     protected function getRazorxVariantForUPS(Payment\Entity $payment)
     {
+        if (Payment\Gateway::isUpiPaymentServiceFullyRamped($payment->getGateway()) === true) {
+            return 'upips';
+        }
+
         $feature = 'api'. '_' . $payment->getGateway() . '_v1';
 
         $requestOptions = [
