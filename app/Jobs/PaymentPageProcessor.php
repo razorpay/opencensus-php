@@ -32,6 +32,8 @@ class PaymentPageProcessor extends Job
     // Once all slugs are migrated this const will be removed
     const NOCODE_CUSTOM_URL_UPSERT_FROM_HOSTED_FLOW = 'NOCODE_CUSTOM_URL_UPSERT_FROM_HOSTED_FLOW';
 
+    const NO_CODE_APPS_PAYMENT_EVENT = 'NO_CODE_APPS_PAYMENT_EVENT';
+
     /**
      * {@inheritDoc}
      */
@@ -128,6 +130,48 @@ class PaymentPageProcessor extends Job
 
         $this->trace->histogram(PaymentLink\Metric::PAYMENT_PAGE_PROCESSOR_TOTAL_TIME_TO_COMPLETE_JOB,
             $totalTimeTaken, $this->context);
+    }
+
+    protected function handleNoCodeAppsPaymentEvent()
+    {
+        $this->trace->info(TraceCode::NO_CODE_APPS_PAYMENT_EVENT_RECEIVED, $this->context);
+
+        $paymentId  = $this->params->get('payment_id');
+
+        if (empty($paymentId) === true)
+        {
+            $this->delete();
+
+            return;
+        }
+
+        /** @var $payment Payment\Entity*/
+        $payment = $this->repoManager->payment->find($paymentId);
+
+        $traceContext = $this->context + [
+                'payment_id' => $payment->getId()
+            ];
+
+        if ($payment->getStatus() !== Payment\Status::CAPTURED
+            && $payment->getStatus() !== Payment\Status::REFUNDED)
+        {
+            /**
+             * The status might not have synced yet. Retry the job
+             */
+            $this->retry($this->attempts() * self::RETRY_DELAY);
+
+            $this->trace->info(TraceCode::NO_CODE_APPS_PAYMENT_EVENT_RETRY, $traceContext + [
+                    "attempt"   => $this->attempts()
+                ]);
+
+            return;
+        }
+
+        $this->core = new PaymentLink\Core;
+
+        $this->core->processNocodeAppsPaymentEvent($payment);
+
+        $this->delete();
     }
 
     protected function handlePaymentCaptureEvent()
@@ -249,7 +293,7 @@ class PaymentPageProcessor extends Job
 
             $this->setMerchant($merchant);
 
-            $paymentHandle = $this->service->createPaymentHandle();
+            $paymentHandle = $this->service->createPaymentHandle($merchantId);
 
             $context = [
                 PaymentLink\Entity::ID      => $paymentHandle[PaymentLink\Entity::ID],

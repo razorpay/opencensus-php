@@ -359,6 +359,29 @@ class UserRolesScope
             'payment_button_set_merchant_details'      => Role::WRITER_ROLES,
             'payment_button_fetch_merchant_details'    => Role::WRITER_ROLES,
 
+            // Store
+            'nca_store_create'                         => Role::WRITER_ROLES,
+            'nca_store_list'                           => Role::WRITER_ROLES,
+            'nca_store_details'                        => Role::WRITER_ROLES,
+            'nca_store_update'                         => Role::WRITER_ROLES,
+            'nca_store_delete'                         => Role::WRITER_ROLES,
+            'nca_store_payments'                       => Role::WRITER_ROLES,
+            'nca_store_activate'                       => Role::WRITER_ROLES,
+            'nca_store_deactivate'                     => Role::WRITER_ROLES,
+            'nca_store_order_line_item'                => Role::WRITER_ROLES,
+
+            'store_category_create'                    => Role::WRITER_ROLES,
+            'store_category_list'                      => Role::WRITER_ROLES,
+            'store_category_details'                   => Role::WRITER_ROLES,
+            'store_category_update'                    => Role::WRITER_ROLES,
+            'store_category_delete'                    => Role::WRITER_ROLES,
+
+            'store_catalog_create'                     => Role::WRITER_ROLES,
+            'store_catalog_list'                       => Role::WRITER_ROLES,
+            'store_catalog_details'                    => Role::WRITER_ROLES,
+            'store_catalog_update'                     => Role::WRITER_ROLES,
+            'store_catalog_delete'                     => Role::WRITER_ROLES,
+
             'patch_dispute_contest_by_id'              => Role::READER_ROLES,
             'post_dispute_accept_by_id'                => Role::READER_ROLES,
 

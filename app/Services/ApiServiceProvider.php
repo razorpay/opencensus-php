@@ -531,6 +531,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             return new PaymentLinkService($app);
         });
 
+        $this->app->singleton('nocodeappsservice', function($app)
+        {
+            return new \NoCodeAppsService($app);
+        });
+
         $this->app->singleton('bbpsService', function($app)
         {
             return new Bbps\Service($app);
@@ -894,6 +899,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
             'freshdesk_client',
             'token_service',
             'terminals_service',
+            'nocodeappsservice',
             'paymentlinkservice',
             'credcase_http_client',
             'pg_router',

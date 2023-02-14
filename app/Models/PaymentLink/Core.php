@@ -14,6 +14,7 @@ use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\User;
 use RZP\Models\Order;
+use RZP\Services\NoCodeAppsService;
 use Illuminate\Support\Facades\Config;
 use RZP\Services\Elfin\Service as ElfinService;
 use RZP\Trace\Tracer;
@@ -729,10 +730,10 @@ class Core extends Base\Core
                 'order_id is required to create payment for payment page'
             );
         }
-
         $order = $this->repo->order->findByPublicIdAndMerchant(
-                $input[Payment\Entity::ORDER_ID],
-                $this->merchant);
+            $input[Payment\Entity::ORDER_ID],
+            $this->merchant);
+
 
         $paymentLinkId = $input[Payment\Entity::PAYMENT_LINK_ID];
 
@@ -828,6 +829,28 @@ class Core extends Base\Core
                 self::AMOUT_QUANTITY_TAMPERED
             );
         }
+    }
+
+    public function handleNocodeAppsPaymentEvent(Payment\Entity $payment)
+    {
+        $this->trace->info(TraceCode::NO_CODE_APPS_PAYMENT_EVENT_RECEIVED, [
+            'payment'   => $this->getPaymentContextForLogging($payment),
+        ]);
+
+        $env = $this->app['env'];
+
+        if (Environment::isEnvironmentQA($env) || $env === Environment::TESTING)
+        {
+            $this->processNocodeAppsPaymentEvent($payment);
+
+            return;
+        }
+
+        PaymentPageProcessor::dispatch($this->mode, [
+            'payment_id'    => $payment->getId(),
+            'start_time'    => millitime(),
+            'event'         => PaymentPageProcessor::NO_CODE_APPS_PAYMENT_EVENT,
+        ]);
     }
 
     public function postPaymentCaptureUpdatePaymentPage(Payment\Entity $payment)
@@ -1353,6 +1376,15 @@ class Core extends Base\Core
         $existingComputedSettings[Entity::CAPTURED_PAYMENTS_COUNT] = $count;
 
         $entity->getComputedSettingsAccessor()->upsert($existingComputedSettings)->save();
+    }
+
+    public function processNocodeAppsPaymentEvent(Payment\Entity $payment)
+    {
+        $ncaService = new NoCodeAppsService($this->app);
+
+        $res = $ncaService->sendS2SPaymentEvent($payment);
+
+        $this->trace->info(TraceCode::NOCODE_SERVICE_RESPONSE_RECIEVED, [$res]);
     }
 
     protected function addAdditionalDataToSettings(array & $settings, Entity $paymentLink)

@@ -578,9 +578,14 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onPaymentCaptured($payment)
     {
-        if ($payment->hasPaymentLink() === true)
+        if ($payment->hasPaymentLink() === true || $this->isForNocodeApps($payment))
         {
             (new PaymentLink\Core)->postPaymentCaptureUpdatePaymentPage($payment);
+        }
+
+        if ($payment->hasOrder() === true && $this->isForNocodeApps($payment))
+        {
+            (new PaymentLink\Core)->handleNocodeAppsPaymentEvent($payment);
         }
 
         if($payment->order !== null)
@@ -633,6 +638,13 @@ class ApiEventSubscriber extends Base\Core
         $payload = $this->getPaymentPayload($payment);
         $this->dispatchEventToStork($payload);
     }
+
+    protected function isForNocodeApps(Payment\Entity $payment): bool
+    {
+        return $payment->hasOrder() === true and ($payment->order->getProductType() === ProductType::PAYMENT_STORE);
+    }
+
+
     protected function pushForPaymentLinks(Payment\Entity $payment)
     {
 
@@ -1015,6 +1027,11 @@ class ApiEventSubscriber extends Base\Core
         if ($refund->payment->hasPaymentLink() === true)
         {
             (new PaymentLink\Core)->postPaymentRefundUpdatePaymentPageDispatcher($refund);
+        }
+
+        if ($refund->payment->hasOrder() === true && $this->isForNocodeApps($refund->payment))
+        {
+            (new PaymentLink\Core)->handleNocodeAppsPaymentEvent($refund->payment);
         }
 
         $payload = $this->getRefundPayload($refund);

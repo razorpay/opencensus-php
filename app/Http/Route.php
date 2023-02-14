@@ -1428,6 +1428,29 @@ class Route
 
         //end of payment button section
 
+        // NoCode Service Routes
+        'nca_store_create'                 => ['post',            'stores', 'NoCodeAppsController@sendRequest'],
+        'nca_store_list'                   => ['get',             'stores', 'NoCodeAppsController@sendRequest'],
+        'nca_store_details'                => ['get',             'stores/{id}', 'NoCodeAppsController@sendRequest'],
+        'nca_store_update'                 => ['patch',           'stores/{id}', 'NoCodeAppsController@sendRequest'],
+        'nca_store_delete'                 => ['delete',          'stores/{id}', 'NoCodeAppsController@sendRequest'],
+        'nca_store_payments'               => ['get',             'stores/{id}/payments', 'NoCodeAppsController@sendRequest'],
+        'nca_store_activate'               => ['patch',           'stores/{id}/deactivate', 'NoCodeAppsController@sendRequest'],
+        'nca_store_deactivate'             => ['patch',           'stores/{id}/activate', 'NoCodeAppsController@sendRequest'],
+        'nca_store_order_line_item'        => ['get',             'stores/orders/{id}/line_items', 'NoCodeAppsController@sendRequest'],
+
+        'store_category_create'            => ['post',            'stores/categories',                                       'NoCodeAppsController@sendRequest'                                  ],
+        'store_category_list'              => ['get',             'stores/categories',                                       'NoCodeAppsController@sendRequest'                                  ],
+        'store_category_details'           => ['get',             'stores/categories/{id}',                                  'NoCodeAppsController@sendRequest'                                  ],
+        'store_category_update'            => ['put',             'stores/categories/{id}',                                  'NoCodeAppsController@sendRequest'                                  ],
+        'store_category_delete'            => ['delete',          'stores/categories/{id}',                                  'NoCodeAppsController@sendRequest'                                  ],
+
+        'store_catalog_create'             => ['post',            'stores/catalogs',                                         'NoCodeAppsController@sendRequest'                                  ],
+        'store_catalog_list'               => ['get',             'stores/catalogs',                                         'NoCodeAppsController@sendRequest'                                  ],
+        'store_catalog_details'            => ['get',             'stores/catalogs/{id}',                                    'NoCodeAppsController@sendRequest'                                  ],
+        'store_catalog_update'             => ['patch',           'stores/catalogs/{id}',                                    'NoCodeAppsController@sendRequest'                                  ],
+        'store_catalog_delete'             => ['delete',          'stores/catalogs/{id}',                                    'NoCodeAppsController@sendRequest'                                  ],
+
         // payment link service end points
         'payment_links_service_hosted_page'        => ['get,post',        'hosted/payment_links/{path?}',                   'PlinkController@sendRequest'                                       ],
         'payment_links_get'                        => ['get',             'payment_links/{id}',                             'PlinkController@sendRequest'                                       ],
@@ -6128,6 +6151,29 @@ class Route
         'payment_button_fetch_merchant_details',
         'payment_button_set_merchant_details',
         'payment_button_save_receipt_for_payment',
+
+        'nca_store_create',
+        'nca_store_list',
+        'nca_store_details',
+        'nca_store_update',
+        'nca_store_delete',
+        'nca_store_payments',
+        'nca_store_activate',
+        'nca_store_deactivate',
+        'nca_store_order_line_item',
+
+        'store_category_create',
+        'store_category_list',
+        'store_category_details',
+        'store_category_update',
+        'store_category_delete',
+
+        'store_catalog_create',
+        'store_catalog_list',
+        'store_catalog_details',
+        'store_catalog_update',
+        'store_catalog_delete',
+
         'submerchants_fetch',
         'submerchants_fetch_multiple',
         'submerchants_fetch_capital_applications',
@@ -10938,6 +10984,29 @@ class Route
             'payment_button_set_merchant_details',
             'payment_button_get_receipt_details',
             'payment_button_save_receipt_for_payment',
+
+            'nca_store_create',
+            'nca_store_list',
+            'nca_store_details',
+            'nca_store_update',
+            'nca_store_delete',
+            'nca_store_payments',
+            'nca_store_activate',
+            'nca_store_deactivate',
+            'nca_store_order_line_item',
+
+            'store_category_create',
+            'store_category_list',
+            'store_category_details',
+            'store_category_update',
+            'store_category_delete',
+
+            'store_catalog_create',
+            'store_catalog_list',
+            'store_catalog_details',
+            'store_catalog_update',
+            'store_catalog_delete',
+
             'payment_payout',
             'payment_redirect_3ds',
             'payment_redirect_3ds_get',
@@ -12789,6 +12858,29 @@ class Route
             'payment_button_set_merchant_details',
             'payment_button_get_receipt_details',
             'payment_button_save_receipt_for_payment',
+
+            'nca_store_create',
+            'nca_store_list',
+            'nca_store_details',
+            'nca_store_update',
+            'nca_store_delete',
+            'nca_store_payments',
+            'nca_store_activate',
+            'nca_store_deactivate',
+            'nca_store_order_line_item',
+
+            'store_category_create',
+            'store_category_list',
+            'store_category_details',
+            'store_category_update',
+            'store_category_delete',
+
+            'store_catalog_create',
+            'store_catalog_list',
+            'store_catalog_details',
+            'store_catalog_update',
+            'store_catalog_delete',
+
             'payment_payout',
             'payment_redirect_3ds',
             'payment_redirect_3ds_get',
@@ -14159,6 +14251,15 @@ class Route
             'payment_links_sign_payload_internal',
             'payment_refund',
             'entity_origin_create',
+        ],
+
+        'no_code_apps' => [
+            'order_create',
+            'merchant_fetch_config_internal',
+            'payment_fetch_by_id_internal',
+            'order_fetch_by_id_internal',
+            'order_fetch_by_id',
+            'user_fetch_internal',
         ],
 
         'mandate_hq' => [

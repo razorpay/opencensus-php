@@ -2869,6 +2869,10 @@ class ErrorCode
     const BAD_REQUEST_CRYPTOGRAM_NOT_SUPPORTED                                     = 'BAD_REQUEST_CRYPTOGRAM_NOT_SUPPORTED';
     const BAD_REQUEST_INCORRECT_PARTNER_MAP                                        = 'BAD_REQUEST_INCORRECT_PARTNER_MAP';
     const BAD_REQUEST_OPTIMIZER_ONLY_MERCHANT_HAS_RAAS_DISABLED                    = 'BAD_REQUEST_OPTIMIZER_ONLY_MERCHANT_HAS_RAAS_DISABLED';
+
+    // NoCode Service Error Codes
+    const SERVER_ERROR_NOCODE_APPS_SERVICE_FAILURE                                 = 'SERVER_ERROR_NOCODE_APPS_SERVICE_FAILURE';
+
     static function getConstants()
     {
         $oClass = new \ReflectionClass(__CLASS__);
