@@ -20,6 +20,7 @@ const WidgetDisabledBanner = (props) => {
     showNotification,
     trialDays,
     updateWidgetStatus,
+    mode,
   } = props;
 
   useEffect(() => {
@@ -63,6 +64,9 @@ const WidgetDisabledBanner = (props) => {
           pricing={pricing}
           source="banner"
           trialDays={trialDays}
+          user={user}
+          mode={mode}
+          showNotification={showNotification}
         />
       ),
       size: 'xlarge',
@@ -87,6 +91,8 @@ export default compose(
     (state) => {
       return {
         ...state,
+        user: state.session.user,
+        mode: state.session.mode,
       };
     },
     {

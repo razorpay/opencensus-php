@@ -7,7 +7,6 @@ import { compose } from 'redux';
 import Rtracking from 'react-tracking';
 import track from './track';
 import { updateWidgetStatus } from 'merchant/reducers/affordability/affordabilityWidget';
-import rolesList from 'merchant/helpers/permissions/roles-list';
 
 const EnableWidgetButton = ({ enabled, openModal, closeModal, ...props }) => {
   const {
@@ -17,26 +16,11 @@ const EnableWidgetButton = ({ enabled, openModal, closeModal, ...props }) => {
     showNotification,
     onEnable,
     updateWidgetStatus,
+    mode,
   } = props;
   const { pricing, trial_period_in_days } = affordability;
 
   const handleWidgetEnablement = async () => {
-    if (!user?.merchant?.activated) {
-      showNotification({
-        type: 'error',
-        message: 'Please activate your Razorpay account to enable the widget.',
-      });
-      return;
-    }
-
-    if (![rolesList.OWNER, rolesList.ADMIN].includes(user.role)) {
-      showNotification({
-        type: 'error',
-        message: "You don't have suffiecient permission to enable the affordability widget",
-      });
-      return;
-    }
-
     const data = {
       features: {
         affordability_widget_set: true,
@@ -79,6 +63,9 @@ const EnableWidgetButton = ({ enabled, openModal, closeModal, ...props }) => {
           closeModal={closeModal}
           source={source}
           trialDays={trial_period_in_days}
+          user={user}
+          mode={mode}
+          showNotification={showNotification}
         />
       ),
     });
@@ -111,6 +98,7 @@ export default compose(
     (state) => {
       return {
         user: state.session.user,
+        mode: state.session.mode,
       };
     },
     {

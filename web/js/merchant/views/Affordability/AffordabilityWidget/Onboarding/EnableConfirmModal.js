@@ -6,6 +6,8 @@ import 'merchant/views/Affordability/AffordabilityWidget/affordability-widget-co
 import { compose } from 'redux';
 import RTracking from 'react-tracking';
 import track from './track';
+import rolesList from 'merchant/helpers/permissions/roles-list';
+import { TEST_MODE } from 'merchant/containers/Home/OnboardingCard/data';
 
 const EnableConfirmModal = ({ closeModal, pricing, onConfirm, source, ...props }) => {
   const setupSource =
@@ -13,7 +15,7 @@ const EnableConfirmModal = ({ closeModal, pricing, onConfirm, source, ...props }
       ? 'disable_banner'
       : `${source === 'others' ? 'native' : source}_set_up_page`;
 
-  const { trialDays } = props;
+  const { trialDays, user, showNotification, mode } = props;
 
   useEffect(() => {
     track.enableConfirmRender(setupSource);
@@ -26,6 +28,37 @@ const EnableConfirmModal = ({ closeModal, pricing, onConfirm, source, ...props }
 
   const [tncAccepted, setTncAccepted] = useState(false);
   const showPricing = pricing && pricing.rate;
+
+  const handleWidgetEnable = () => {
+    // If the user is not activated prevent widget enablement
+    if (!user.merchant?.activated) {
+      showNotification({
+        type: 'error',
+        message: 'Please activate your Razorpay account to enable the widget.',
+      });
+      return;
+    }
+
+    // If the user is not admin prevent widget enablement
+    if (![rolesList.OWNER, rolesList.ADMIN].includes(user.role)) {
+      showNotification({
+        type: 'error',
+        message: "You don't have suffiecient permission to enable the affordability widget",
+      });
+      return;
+    }
+
+    // If the merchant is on test mode prevent widgte enablement
+    if (mode === TEST_MODE) {
+      showNotification({
+        type: 'error',
+        message: 'Please enable live mode to enable affordability widget',
+      });
+      return;
+    }
+
+    handleConfirmClick();
+  };
 
   return (
     <div className="confirm-enable-modal">
@@ -71,7 +104,7 @@ const EnableConfirmModal = ({ closeModal, pricing, onConfirm, source, ...props }
             disabled={!tncAccepted && showPricing}
             class="btn btn-primary"
             text="Yes, enable"
-            onClick={handleConfirmClick}
+            onClick={handleWidgetEnable}
           />
         </div>
       </div>
