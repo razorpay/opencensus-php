@@ -1415,6 +1415,18 @@ class Service extends Base\Service
         ];
     }
 
+    public function getCustomerAppointmentDateOptions(string $city, array $input): array
+    {
+        if (empty($city))
+        {
+            throw new BadRequestValidationFailureException(
+                'The city param is required',
+                'city');
+        }
+
+        return CustomerAppointmentDate::getCustomerAppointmentDateOptions($city);
+    }
+
     protected function preProcessActivationDetailCreateInput(array $input = null): ?array
     {
         if (empty($input) === true)

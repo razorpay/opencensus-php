@@ -3239,6 +3239,7 @@ class Route
          . '_internal'                            => ['post',     '/banking_accounts/internal/webhooks/account_info/{channel}','BankingAccountController@processAccountInfoWebhook'        ],
 
         'banking_account_webhook_data_reset'      => ['post',     'banking_accounts/{id}/webhooks/account_info/reset',         'BankingAccountController@resetWebhookData'                 ],
+        'banking_account_customer_appointment_dates'      => ['get',     'banking_accounts/customer_appointment_dates/{city}',  'BankingAccountController@getCustomerAppointmentDateOptions'],
 
         'banking_account_activation_status_'
         . 'change_log'                            => ['get',      'banking_accounts/activation/{id}/status_change_log',        'BankingAccountController@getActivationStatusChangeLog'   ],
@@ -7358,6 +7359,7 @@ class Route
         'banking_account_comments_list',
         'banking_account_call_log_list',
         'banking_account_comment_edit',
+        'banking_account_customer_appointment_dates',
         'banking_account_bulk_assign_reviewer',
         'banking_account_activation_detail_create',
         'banking_account_statement_details_create',
@@ -8875,6 +8877,7 @@ class Route
         'get_channel_action'                       => Permission::SETTLEMENT_BULK_UPDATE,
         'banking_account_create_dashboard_admin'   => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_statement_details_create' => Permission::VIEW_ACTIVATION_FORM,
+        'banking_account_customer_appointment_dates' => Permission::VIEW_ACTIVATION_FORM,
 
         'update_to_ca_onboarding_partner_type'     => Permission::VIEW_ACTIVATION_FORM,
         'banking_account_bank_lms_assign_to_partner_bulk' => Permission::VIEW_ACTIVATION_FORM,
@@ -11767,6 +11770,7 @@ class Route
             'banking_account_activation_status_change_log',
             'banking_account_bulk_assign_reviewer',
             'banking_account_comment_edit',
+            'banking_account_customer_appointment_dates',
             'banking_account_comments_create',
             'co_created_reset_password_admin',
             'banking_account_comments_list',

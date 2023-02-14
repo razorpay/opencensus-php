@@ -157,6 +157,15 @@ class BankingAccountController extends Controller
 
     // End Of Bank LMS
 
+    public function getCustomerAppointmentDateOptions(string $city)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getCustomerAppointmentDateOptions($city, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function updateDashboard(string $id)
     {
         $input = Request::all();

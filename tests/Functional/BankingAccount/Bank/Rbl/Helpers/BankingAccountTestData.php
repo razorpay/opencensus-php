@@ -4785,6 +4785,23 @@ return [
         ],
     ],
 
+    'testCustomerAppointmentDateOptions' => [
+        'request' => [
+            'url'     => '/banking_accounts/customer_appointment_dates/{city}',
+            'method'  => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'city' => 'ghaziabad',
+                'startDate' => '2023-01-21',
+                'rblBankHolidays' => [
+                    '2023-01-26'
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testArchiveAccount' => [
         'request' => [
             'url'      => '/banking_account/{id}/archive',

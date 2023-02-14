@@ -10495,6 +10495,21 @@ class BankingAccountTest extends TestCase
         Mail::assertNotQueued(BankingAccountMails\Reports\LeadMisReport::class);
     }
 
+    public function testCustomerAppointmentDateOptions()
+    {
+        $this->ba->adminAuth();
+
+        $city = 'ghaziabad';
+
+        $dataToReplace = [
+            'request' => [
+                'url'     => '/banking_accounts/customer_appointment_dates/'.$city,
+            ],
+        ];
+
+        $this->startTest($dataToReplace);
+    }
+
     public function testBankingAccountLeadsMISDownloadByBank()
     {
         // Make merchant as Bank CA Onboarding Partner
