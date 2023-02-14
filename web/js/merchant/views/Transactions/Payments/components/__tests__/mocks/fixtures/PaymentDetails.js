@@ -16,7 +16,7 @@ jest.mock('merchant/views/Transactions/Payments/components/OptimizerDetails', ()
     </div>
   ),
 }));
-
+// prettier-ignore
 jest.mock(
   'merchant/views/Transactions/Payments/components/PaymentTransfers',
   () => ({ onCreateTransfer }) => (
@@ -28,7 +28,7 @@ jest.mock(
     </>
   ),
 );
-
+// prettier-ignore
 jest.mock(
   'merchant/views/Settlements/components/SettlementInfo',
   () => ({
@@ -65,7 +65,7 @@ jest.mock('merchant/views/Transactions/Payments/components/PaymentDisputes', () 
 
 jest.mock('merchant/components/Mask/Email', () => () => <div>Masked Email</div>);
 jest.mock('merchant/components/Mask/Contact', () => () => <div>Masked Contact</div>);
-
+// prettier-ignore
 jest.mock(
   'merchant/views/Transactions/Payments/components/PaymentMethod',
   () => ({ onUPIClick }) => (
@@ -77,7 +77,7 @@ jest.mock(
     </>
   ),
 );
-
+// prettier-ignore
 jest.mock(
   'merchant/views/Transactions/Payments/components/PaymentRefund',
   () => ({ onToggleClick }) => (
@@ -89,7 +89,7 @@ jest.mock(
     </>
   ),
 );
-
+// prettier-ignore
 jest.mock(
   'merchant/views/Transactions/Payments/components/PaymentReceipt',
   () => ({ onUpdateReferenceId }) => (
@@ -181,6 +181,9 @@ export const defaultProps = {
     isOptimizerEnabled: true,
     isUxRevampPhase2Enabled: true,
     isPaymentPageReceiptsEnabled: true,
+    merchant: {
+      currency: 'INR',
+    },
   },
   org: {},
   terminalProviders: [],

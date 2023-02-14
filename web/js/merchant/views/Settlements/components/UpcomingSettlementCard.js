@@ -7,7 +7,12 @@ import moment from 'moment/moment';
 import { BADGE_INFO, HEADING_INFO } from './utils';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 
-const UpcomingSettlementCard = ({ next_settlement, settlementConfig, current_balance }) => {
+const UpcomingSettlementCard = ({
+  next_settlement,
+  settlementConfig,
+  current_balance,
+  currency,
+}) => {
   const balance = current_balance?.data?.balance || 0;
   const no_settlement = next_settlement?.no_settlement;
 
@@ -69,7 +74,7 @@ const UpcomingSettlementCard = ({ next_settlement, settlementConfig, current_bal
         <Amount
           aria-label="amount"
           value={next_settlement?.settlement_amount}
-          currency="INR"
+          currency={currency}
           className="amount-current-balance"
         />
       ) : (

@@ -11,7 +11,7 @@ const RenderColumn = ({ title, comp }) => (
   </td>
 );
 
-const ComponentRow = ({ breakupItem, newResponse }) => {
+const ComponentRow = ({ breakupItem, newResponse, currency }) => {
   const { type, component, count, amount, fee, tax, settled_amount } = breakupItem;
   let customClass = 'highlight-debit';
   /* istanbul ignore else */
@@ -35,20 +35,24 @@ const ComponentRow = ({ breakupItem, newResponse }) => {
       </td>
       <RenderColumn title="Type" comp={<span>{titleCase(type)}</span>} />
       <RenderColumn title="Count" comp={count ? <span>{count}</span> : '-'} />
-      <RenderColumn title="Amount" comp={<Amount value={amount} currency="INR" />} />
-      {newResponse && <RenderColumn title="Fee" comp={<Amount value={fee} currency="INR" />} />}
-      {newResponse && <RenderColumn title="Tax" comp={<Amount value={tax} currency="INR" />} />}
+      <RenderColumn title="Amount" comp={<Amount value={amount} currency={currency} />} />
+      {newResponse && (
+        <RenderColumn title="Fee" comp={<Amount value={fee} currency={currency} />} />
+      )}
+      {newResponse && (
+        <RenderColumn title="Tax" comp={<Amount value={tax} currency={currency} />} />
+      )}
       {newResponse && (
         <RenderColumn
           title="Settled Amount"
           comp={
             type === 'debit' ? (
               <span>
-                - <Amount value={settled_amount * -1} currency="INR" />
+                - <Amount value={settled_amount * -1} currency={currency} />
               </span>
             ) : (
               <span>
-                <Amount value={settled_amount} currency="INR" />
+                <Amount value={settled_amount} currency={currency} />
               </span>
             )
           }

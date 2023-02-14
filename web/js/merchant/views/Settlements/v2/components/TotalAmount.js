@@ -2,14 +2,14 @@ import React from 'react';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 import Amount from 'common/ui/Amount';
 
-const TotalAmount = ({ type, value, infoText, infoComp, isNew }) => {
+const TotalAmount = ({ type, value, infoText, infoComp, isNew, currency }) => {
   return (
     <span class="settled-amount">
       Total {type} amount:{' '}
       {isNew && type === 'debit' ? (
-        <Amount value={value * -1} currency="INR" />
+        <Amount value={value * -1} currency={currency} />
       ) : (
-        <Amount value={value} currency="INR" />
+        <Amount value={value} currency={currency} />
       )}
       <i class="i i-info-circle">
         <PopoverComponent align="bottom" theme="dark" data-testid="total-amount-popover">

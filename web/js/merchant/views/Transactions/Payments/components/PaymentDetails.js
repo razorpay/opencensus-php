@@ -68,6 +68,7 @@ function PaymentDetails(props) {
   const scroller = useRef();
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
   const [isUPIVisible, setUPIVisible] = useState(false);
+  const currency = user.merchant.currency;
 
   const getProductType = useCallback(() => {
     const isQrCode = () => {
@@ -165,6 +166,14 @@ function PaymentDetails(props) {
 
   const trackSettlementClose = () => {
     track.settlementClose(`${getProductType()} detail popup closed`, getProductType());
+  };
+
+  const chargedFeeLabelText = () => {
+    const orgName = org?.business_name || 'Razorpay';
+    if (hideRazorpayTextLink) {
+      return '';
+    }
+    return orgName;
   };
 
   return (
@@ -374,8 +383,7 @@ function PaymentDetails(props) {
                 </ShowWhen>
 
                 <ShowWhen
-                  additionalCondition={(currUser) =>
-                    !currUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements) &&
+                  additionalCondition={() =>
                     user.isUxRevampPhase2Enabled &&
                     payment.transaction &&
                     (!user.isSingleReconEnabled ||
@@ -436,13 +444,13 @@ function PaymentDetails(props) {
                 >
                   <EntityDetailRow label="Total Fee">
                     <Definition>
-                      <Amount value={getPaymentFees()} />
+                      <Amount value={getPaymentFees()} currency={currency} />
                       <span>
-                        {hideRazorpayTextLink ? '' : 'Razorpay '}Fee -&nbsp;
-                        <Amount value={getPaymentFees() - payment.tax} currency="INR" />
+                        {chargedFeeLabelText()}Fee -&nbsp;
+                        <Amount value={getPaymentFees() - payment.tax} currency={currency} />
                       </span>
                       <span>
-                        GST - <Amount value={payment.tax} currency="INR" />
+                        GST - <Amount value={payment.tax} currency={currency} />
                       </span>
                     </Definition>
                   </EntityDetailRow>

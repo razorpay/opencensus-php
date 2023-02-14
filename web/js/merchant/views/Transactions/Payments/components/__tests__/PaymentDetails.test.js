@@ -16,7 +16,7 @@ describe('PaymentDetails', () => {
   });
 
   test('should not render payment details when loading', () => {
-    render(<App isLoading user={{}} payment={{}} />);
+    render(<App isLoading user={{ merchant: { currency: 'INR' } }} payment={{}} />);
     expect(screen.queryByText('Payment Id:')).not.toBeInTheDocument();
     expect(screen.queryByText('paymentID')).not.toBeInTheDocument();
     expect(screen.queryByText('PaymentPageDetails')).not.toBeInTheDocument();

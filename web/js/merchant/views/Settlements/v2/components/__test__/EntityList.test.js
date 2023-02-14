@@ -16,6 +16,11 @@ const defaultProps = {
   breakupDetails: settlementTabBreakupDetails,
   settlementId: 'test-settlement-id',
   activeTab: settlementTabBreakupDetails.items[0].component,
+  user: {
+    merchant: {
+      currency: 'INR',
+    },
+  },
 };
 
 jest.mock('merchant/components/StatusLabel', () => ({
@@ -269,7 +274,13 @@ describe('EntityList', () => {
       server.use(transactionDetailsSuccessHandler([optimizerProviderItem]));
       const { container } = renderApp({
         initialState: {
-          session: { user: { isSingleReconEnabled: true, isOptimizerEnabled: true } },
+          session: {
+            user: {
+              isSingleReconEnabled: true,
+              isOptimizerEnabled: true,
+              merchant: { currency: 'INR' },
+            },
+          },
         },
       });
       await waitForLoadingToFinish();
@@ -282,7 +293,13 @@ describe('EntityList', () => {
     test('should only move provider key to the first index if optimizer provider exists', async () => {
       const { container } = renderApp({
         initialState: {
-          session: { user: { isSingleReconEnabled: true, isOptimizerEnabled: true } },
+          session: {
+            user: {
+              isSingleReconEnabled: true,
+              isOptimizerEnabled: true,
+              merchant: { currency: 'INR' },
+            },
+          },
         },
       });
       await waitForLoadingToFinish();
@@ -293,7 +310,11 @@ describe('EntityList', () => {
 
     test('should not render settled_by header', async () => {
       server.use(transactionDetailsSuccessHandler([settledByItem]));
-      const { container } = renderApp();
+      const { container } = renderApp({
+        initialState: {
+          session: { user: { merchant: { currency: 'INR' } } },
+        },
+      });
       await waitForLoadingToFinish();
 
       const columnsLengthWithoutSettledByHeader = Object.keys(settledByItem).length - 1;

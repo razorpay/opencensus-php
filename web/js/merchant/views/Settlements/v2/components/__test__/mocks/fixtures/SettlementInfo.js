@@ -27,8 +27,12 @@ jest.mock('merchant/views/Transactions/Payments/components/PaymentOptimizerProvi
   default: () => <div data-testid="payment-optimizer-provider" />,
 }));
 
-const defaultState = { session: { user: { enableCustomSettlements: false } } };
-const enableCustomSettlementsState = { session: { user: { enableCustomSettlements: true } } };
+const defaultState = {
+  session: { user: { enableCustomSettlements: false, merchant: { currency: 'INR' } } },
+};
+const enableCustomSettlementsState = {
+  session: { user: { enableCustomSettlements: true, merchant: { currency: 'INR' } } },
+};
 
 const renderApp = ({ initialState = {} } = {}) => {
   return render(<SettlementInfo settlementId="test-settlement-id" />, {

@@ -79,7 +79,11 @@ const defaultInitialState = {
     },
   },
   session: {
-    user: {},
+    user: {
+      merchant: {
+        currency: 'INR',
+      },
+    },
     mode: 'test',
   },
 };
@@ -179,6 +183,7 @@ describe('Settlement v2 Details', () => {
           user: {
             isSingleReconEnabled: true,
             isOptimizerEnabled: true,
+            merchant: { currency: 'INR' },
           },
         },
       },
@@ -202,6 +207,7 @@ describe('Settlement v2 Details', () => {
           user: {
             isSingleReconEnabled: true,
             isOptimizerEnabled: true,
+            merchant: { currency: 'INR' },
           },
         },
         settlement: {

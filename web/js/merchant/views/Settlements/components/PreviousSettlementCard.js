@@ -6,7 +6,7 @@ import SettlementCard from './SettlementCard';
 import { BADGE_INFO, HEADING_INFO, SETTLEMENT_STATUS } from './utils';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 
-const PreviousSettlementCard = ({ settlementsList }) => {
+const PreviousSettlementCard = ({ settlementsList, currency }) => {
   const amount = settlementsList?.[0]?.amount || 0;
 
   let badge;
@@ -64,7 +64,7 @@ const PreviousSettlementCard = ({ settlementsList }) => {
           <Amount
             aria-label="amount"
             value={amount}
-            currency="INR"
+            currency={currency}
             className="amount-current-balance"
           />
           {badge}

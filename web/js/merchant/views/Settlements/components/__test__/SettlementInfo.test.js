@@ -11,7 +11,11 @@ import { titleCase } from 'common/utils/rzp-utils';
 
 const state = {
   session: {
-    user: {},
+    user: {
+      merchant: {
+        currency: 'INR',
+      },
+    },
   },
   home: {
     settlement_amount: { data: {} },

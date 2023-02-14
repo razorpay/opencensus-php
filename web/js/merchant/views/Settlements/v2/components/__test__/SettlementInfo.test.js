@@ -85,7 +85,15 @@ describe('SettlementInfo', () => {
 
   test('should show PaymentOptimizerProvider if user has necessary permissions', async () => {
     renderApp({
-      initialState: { session: { user: { isSingleReconEnabled: true, isOptimizerEnabled: true } } },
+      initialState: {
+        session: {
+          user: {
+            isSingleReconEnabled: true,
+            isOptimizerEnabled: true,
+            merchant: { currency: 'INR' },
+          },
+        },
+      },
     });
     await waitForLoadingToFinish();
     expect(screen.getByText(/Payment Provider/i)).toBeInTheDocument();

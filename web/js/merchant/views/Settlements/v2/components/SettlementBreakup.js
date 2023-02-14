@@ -10,7 +10,9 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 const SettlementBreakup = (props) => {
   const {
     breakupDetails: { items, isBreakupNew, loading, error },
+    user,
   } = props;
+  const currency = user.merchant.currency;
 
   useEffect(() => {
     props.fetchBreakupDetails({
@@ -46,12 +48,18 @@ const SettlementBreakup = (props) => {
         value={calculatedAmounts.credit}
         type="credit"
         isNew={isBreakupNew}
+        currency={currency}
       />
       <table>
         <tbody>
           {items.map((breakupItem, index) => {
             return breakupItem.type === 'credit' ? (
-              <ComponentRow key={index} breakupItem={breakupItem} newResponse={isBreakupNew} />
+              <ComponentRow
+                key={index}
+                breakupItem={breakupItem}
+                newResponse={isBreakupNew}
+                currency={currency}
+              />
             ) : null;
           })}
         </tbody>
@@ -62,6 +70,7 @@ const SettlementBreakup = (props) => {
           value={calculatedAmounts.debit}
           type="debit"
           isNew={isBreakupNew}
+          currency={currency}
         />
       )}
       <table>
@@ -80,6 +89,7 @@ const SettlementBreakup = (props) => {
 const mapStateToProps = (state) => {
   return {
     breakupDetails: state.settlement.breakupDetails,
+    user: state.session.user,
   };
 };
 

@@ -17,6 +17,7 @@ const BalanceCard = ({
 }) => {
   let amount = current_balance?.data?.balance || 0;
   let amountClassName = 'amount-current-balance';
+  const currency = user.merchant.currency;
 
   if (amount < 0) {
     amount = Math.abs(amount);
@@ -25,7 +26,7 @@ const BalanceCard = ({
 
   const content = (
     <>
-      <Amount aria-label="amount" value={amount} currency="INR" className={amountClassName} />
+      <Amount aria-label="amount" value={amount} currency={currency} className={amountClassName} />
       <CashAdvanceWrapper>
         <CashAdvanceNudge />
       </CashAdvanceWrapper>

@@ -4,6 +4,12 @@ import BalanceCard from 'merchant/views/Settlements/components/BalanceCard';
 import { render, screen } from 'test-utils';
 import { HEADING_INFO } from 'merchant/views/Settlements/components/utils';
 
+const user = {
+  merchant: {
+    currency: 'INR',
+  },
+};
+
 describe('BalanceCard', () => {
   const App = (props) => <BalanceCard {...props} />;
 
@@ -13,7 +19,7 @@ describe('BalanceCard', () => {
         balance: 10099,
       },
     };
-    render(<App current_balance={current_balance} />);
+    render(<App current_balance={current_balance} user={user} />);
     expect(screen.getByText('Current balance')).toBeInTheDocument();
     expect(screen.getByText('100')).toBeInTheDocument();
     expect(screen.getByText('.99')).toBeInTheDocument();
@@ -29,7 +35,7 @@ describe('BalanceCard', () => {
         balance: -10099,
       },
     };
-    render(<App current_balance={current_balance} />);
+    render(<App current_balance={current_balance} user={user} />);
     expect(screen.getByText('Current balance')).toBeInTheDocument();
     expect(screen.getByText('100')).toBeInTheDocument();
     expect(screen.getByText('.99')).toBeInTheDocument();

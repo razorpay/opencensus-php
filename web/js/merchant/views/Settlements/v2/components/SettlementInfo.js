@@ -18,6 +18,11 @@ import { fetchBankSettleStatus, customSettlementEnabled } from 'merchant/views/S
 import LoaderDots from 'common/ui/LoaderDots';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
+const ORG_BANK_LABEL_NAME = {
+  rzp: 'UTR',
+  curlec: 'Reference Number',
+};
+
 const SettlementInfo = (props) => {
   const {
     error,
@@ -27,6 +32,7 @@ const SettlementInfo = (props) => {
     terminalProviders,
     showNotification,
     fetchIsAdminAsMerchant,
+    org,
   } = props;
 
   const [state, setState] = useState({
@@ -35,6 +41,8 @@ const SettlementInfo = (props) => {
     bankSettleStatus: '',
     showCustomSettlDetails: false,
   });
+  const currency = user.merchant.currency;
+  const orgCode = org?.custom_code || 'rzp';
 
   const getCustomSettleDetails = () => {
     const { settlementId } = props;
@@ -122,6 +130,7 @@ const SettlementInfo = (props) => {
 
   if (error) return null;
 
+  // prettier-ignore
   const {
     customSettlementLoading,
     adminAsMerchant,
@@ -158,15 +167,15 @@ const SettlementInfo = (props) => {
 
       <EntityDetailRow
         label="Fees"
-        value={() => <Amount value={settlement?.fees} currency="INR" />}
+        value={() => <Amount value={settlement?.fees} currency={currency} />}
       />
 
       <EntityDetailRow
         label="Tax"
-        value={() => <Amount value={settlement?.tax} currency="INR" />}
+        value={() => <Amount value={settlement?.tax} currency={currency} />}
       />
       <ShowWhen additionalCondition={() => !showCustomSettlDetails || adminAsMerchant}>
-        <EntityDetailRow label="UTR" value={settlement?.utr} />
+        <EntityDetailRow label={ORG_BANK_LABEL_NAME[orgCode]} value={settlement?.utr} />
       </ShowWhen>
       <ShowWhen additionalCondition={() => customSettlementLoading}>
         <LoaderDots />
@@ -189,6 +198,7 @@ const mapStateToProps = (state) => {
     loading: settlement.loading,
     error: settlement.error,
     user: session.user,
+    org: session.org,
     terminalProviders: navigator.terminalProviders,
   };
 };

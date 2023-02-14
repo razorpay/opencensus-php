@@ -129,6 +129,7 @@ const ListItem = ({ item, source, user, terminalProviders }) => {
   } = item;
 
   const KEYS = sortKeys(item, user);
+  const currency = user.merchant.currency;
 
   return (
     <EntityItemRow id={id}>
@@ -142,21 +143,21 @@ const ListItem = ({ item, source, user, terminalProviders }) => {
           case 'amount':
             row = (
               <td key={idx}>
-                <Amount value={amount} currency="INR" />
+                <Amount value={amount} currency={currency} />
               </td>
             );
             break;
           case 'fee':
             row = (
               <td key={idx}>
-                <Amount value={fee} currency="INR" />
+                <Amount value={fee} currency={currency} />
               </td>
             );
             break;
           case 'tax':
             row = (
               <td key={idx}>
-                <Amount value={tax} currency="INR" />
+                <Amount value={tax} currency={currency} />
               </td>
             );
             break;

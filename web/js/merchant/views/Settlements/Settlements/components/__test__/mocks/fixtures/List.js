@@ -47,6 +47,9 @@ const terminalProviders = [
 const user = {
   isSingleReconEnabled: true,
   isOptimizerEnabled: true,
+  merchant: {
+    currency: 'INR',
+  },
 };
 
 const settlements = [

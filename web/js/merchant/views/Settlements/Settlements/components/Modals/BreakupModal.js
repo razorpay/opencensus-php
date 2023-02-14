@@ -62,7 +62,9 @@ class BreakdownModal extends Component {
   }
 
   render() {
-    const { settlementId, loading, error, isBreakupNew, items } = this.props;
+    const { settlementId, breakupDetails, user } = this.props;
+    const { loading, error, isBreakupNew, items } = breakupDetails;
+    const currency = user.merchant.currency;
 
     // If items not yet ready, showing spinner
     if (loading) {
@@ -85,12 +87,13 @@ class BreakdownModal extends Component {
             loading={loading}
             columnNames={items.length ? Object.keys(items[0]) : []}
             isNew={isBreakupNew}
+            currency={currency}
           />
 
           <div class="Modal__actions text-right settlement-amount-row">
             <span class="settled-amount">
               Total Settled Amount:{' '}
-              <Amount value={calculateSettledAmount(items, isBreakupNew)} currency="INR" />
+              <Amount value={calculateSettledAmount(items, isBreakupNew)} currency={currency} />
             </span>
             <button class="btn btn-default" onClick={this.props.closeModal}>
               Close
@@ -103,7 +106,7 @@ class BreakdownModal extends Component {
 }
 
 const mapStateToProps = (state) => {
-  return state.settlement.breakupDetails;
+  return { breakupDetails: state.settlement.breakupDetails, user: state.session.user };
 };
 
 const mapDispatchToProps = (dispatch) => {

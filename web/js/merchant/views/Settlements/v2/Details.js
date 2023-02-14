@@ -19,6 +19,7 @@ const SettlementDetails = (props) => {
   const [detailsCollapse, setdetailsCollapse] = useState(true);
   const [checkAmounts, setCheckAmounts] = useState({});
   const { match } = props; // better start destructuring props here
+  const currency = props.user.merchant.currency;
 
   useEffect(() => {
     const { user, fetchProviders, match } = props;
@@ -118,10 +119,12 @@ const SettlementDetails = (props) => {
                       debitAmount={calculatedAmounts.debit}
                       totalAmount={totalAmount}
                       isNew={isBreakupNew}
+                      currency={currency}
                     />
                   }
                   value={totalAmount}
                   type="settled"
+                  currency={currency}
                 />
               ) : (
                 <LoaderDots />
@@ -164,31 +167,31 @@ const SettlementDetails = (props) => {
   );
 };
 
-const InfoComponent = ({ creditAmount, debitAmount, totalAmount, isNew }) => {
+const InfoComponent = ({ creditAmount, debitAmount, totalAmount, isNew, currency }) => {
   return (
     <div class="settlement-info-popup">
       <div class="amount-row">
         Total credit amount:{' '}
         <span class="amount-value">
-          + <Amount value={creditAmount} currency="INR" />
+          + <Amount value={creditAmount} currency={currency} />
         </span>
       </div>
       <div class="amount-row">
         Total debit amount:
         {isNew ? (
           <span class="amount-value">
-            - <Amount value={debitAmount * -1} currency="INR" />
+            - <Amount value={debitAmount * -1} currency={currency} />
           </span>
         ) : (
           <span class="amount-value">
-            - <Amount value={debitAmount} currency="INR" />
+            - <Amount value={debitAmount} currency={currency} />
           </span>
         )}
       </div>
       <div class="settled-amount-row">
         Total settled amount:{' '}
         <span class="amount-value">
-          <Amount value={totalAmount} currency="INR" />
+          <Amount value={totalAmount} currency={currency} />
         </span>
       </div>
     </div>

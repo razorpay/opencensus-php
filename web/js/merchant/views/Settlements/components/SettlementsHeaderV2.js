@@ -42,6 +42,8 @@ import {
   Documentation,
   SettlementCycle,
 } from './styledUtils';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const SettlementsHeaderV2 = ({
   user,
@@ -76,6 +78,7 @@ const SettlementsHeaderV2 = ({
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
   const isOnHold = no_settlement?.on_hold;
   const isSettlementOnHold = isOnTemporaryHold || isOnHold;
+  const currency = user.merchant.currency;
 
   const viewSettlementCycle = () => {
     openModal({
@@ -151,19 +154,25 @@ const SettlementsHeaderV2 = ({
                 My Settlement Cycle
               </Link>
             </SettlementCycle>
-            <Documentation>
-              <Link
-                variant="anchor"
-                size="medium"
-                icon={ExternalLinkIcon}
-                iconPosition="right"
-                href="http://razorpay.com/settlement"
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                Documentation
-              </Link>
-            </Documentation>
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+              }
+            >
+              <Documentation>
+                <Link
+                  variant="anchor"
+                  size="medium"
+                  icon={ExternalLinkIcon}
+                  iconPosition="right"
+                  href="http://razorpay.com/settlement"
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  Documentation
+                </Link>
+              </Documentation>
+            </ShowWhen>
           </SummaryHeaderSection>
         </SummaryHeader>
         <SettlementSummary>
@@ -179,15 +188,18 @@ const SettlementsHeaderV2 = ({
           <SettlementDueTodayCard
             settlementsList={previousSettlementsList}
             settlementConfig={settlementConfig}
+            currency={currency}
           />
           <PreviousSettlementCard
             settlementsList={previousSettlementsList}
             settlementConfig={settlementConfig}
+            currency={currency}
           />
           <UpcomingSettlementCard
             current_balance={current_balance}
             next_settlement={settlement_amount?.data}
             settlementConfig={settlementConfig}
+            currency={currency}
           />
         </SettlementSummary>
       </div>

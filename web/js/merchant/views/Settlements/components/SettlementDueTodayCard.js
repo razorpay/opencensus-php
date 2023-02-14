@@ -8,7 +8,7 @@ import { BADGE_INFO, HEADING_INFO, SETTLEMENT_SLA_IN_HOURS, SETTLEMENT_STATUS } 
 import { FlexBetween, CardFooterIcon, TextFooter } from './styledUtils';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 
-const SettlementDueTodayCard = ({ settlementsList, settlementConfig }) => {
+const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency }) => {
   const initiatedSettlements = settlementsList?.filter(
     (setl) => setl?.status?.toLowerCase() === SETTLEMENT_STATUS.CREATED,
   );
@@ -32,7 +32,7 @@ const SettlementDueTodayCard = ({ settlementsList, settlementConfig }) => {
       <Amount
         aria-label="amount"
         value={totalTransferAmount}
-        currency="INR"
+        currency={currency}
         className="amount-current-balance"
       />
       {delayedTransferAmount > 0 && !isDelayedSettlement ? (

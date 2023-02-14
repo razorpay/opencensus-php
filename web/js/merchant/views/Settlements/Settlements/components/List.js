@@ -10,6 +10,7 @@ import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/compo
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 
 const SettlementsListItem = ({ settlement, handleBreakupClick, user, terminalProviders }) => {
+  const currency = user.merchant.currency;
   const handleTracking = () => {
     analyticsTrack({
       objectName: 'settlement id',
@@ -40,13 +41,13 @@ const SettlementsListItem = ({ settlement, handleBreakupClick, user, terminalPro
         </td>
       )}
       <td className="text-right">
-        <Amount value={settlement.amount} currency="INR" />
+        <Amount value={settlement.amount} currency={currency} />
       </td>
       <td className="text-right">
-        <Amount value={settlement.fees} currency="INR" />
+        <Amount value={settlement.fees} currency={currency} />
       </td>
       <td className="text-right">
-        <Amount value={settlement.tax} currency="INR" />
+        <Amount value={settlement.tax} currency={currency} />
       </td>
       <td>
         <Time value={settlement.created_at} format="DD MMM YYYY, hh:mm:ss a" />
