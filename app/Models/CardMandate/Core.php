@@ -447,27 +447,20 @@ class Core extends Base\Core
 
         $mandateHub = (new MandateHubs\MandateHubSelector)->GetMandateHubForCardMandate($cardMandate);
 
-        if ($payment->isFailed() === true)
-        {
-            try
-            {
-               $mandateHub->reportSubsequentPayment($cardMandate, $payment);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException($e,
-                    Trace::ERROR,
-                    TraceCode::CARD_MANDATE_REPORT_SUBSEQUENT_PAYMENT_FAILED,
-                    [
-                        'card_mandate_id' => $cardMandate->getId(),
-                        'payment_id'      => $payment->getId(),
-                        'exception'       => $e->getMessage(),
-                    ]);
-            }
-        }
-        else
+        try
         {
             $mandateHub->reportSubsequentPayment($cardMandate, $payment);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::CARD_MANDATE_REPORT_SUBSEQUENT_PAYMENT_FAILED,
+                [
+                    'card_mandate_id' => $cardMandate->getId(),
+                    'payment_id'      => $payment->getId(),
+                    'exception'       => $e->getMessage(),
+                ]);
         }
     }
 

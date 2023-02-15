@@ -17,6 +17,17 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
     {
         $payment = (new Payment\Core)->retrievePaymentById($id);
 
+        if($payment->isAuthorized() === true or $payment->isCaptured() === true)
+        {
+            $this->trace->info(TraceCode::PAYMENT_ALREADY_CAPTURED_OR_AUTHORIZED, [
+                'paymentId'    => $payment->getId(),
+                'isAuthorized' => $payment->isAuthorized(),
+                'isCaptured'   => $payment->isCaptured(),
+            ]);
+
+            return [];
+        }
+
         $processor = (new Payment\Processor\Processor($payment->merchant));
 
         $processor->setPayment($payment);
