@@ -1855,6 +1855,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::OPTIMIZER) === true);
     }
 
+    public function isDisableOptimiserRefunds()
+    {
+        return ($this->isTypeApplicable(TYPE::DISABLE_OPTIMISER_REFUNDS) === true);
+    }
+
     public function isOnline()
     {
         return ($this->isTypeApplicable(Type::ONLINE) === true);

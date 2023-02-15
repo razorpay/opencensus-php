@@ -1868,6 +1868,48 @@ class TerminalTest extends TestCase
         $this->assertEquals( ["non_recurring", "direct_settlement_with_refund"], $content['type']);
     }
 
+    public function testEditPaytmTerminalOptimiser()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id'                       => 'AqdfGh5460opVt',
+                'merchant_id'              => '10000000000000',
+                'gateway'                  => 'paytm',
+                'gateway_terminal_id'      => '12344',
+                'gateway_access_code'      => '12344',
+                'gateway_merchant_id'      => '12344',
+                'gateway_secure_secret'    => '12345',
+                'procurer'                 => 'merchant',
+                'type'                     => [
+                    'direct_settlement_with_refund' => '1',
+                    'optimizer'                     => '1',
+                    'disable_optimizer_refunds'     => '1',
+                ],
+            ]);
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'id'                       => 'AqdfGh5460opVt',
+            'merchant_id'              => '10000000000000',
+            'gateway'                  => 'paytm',
+            'gateway_terminal_id'      => '12344',
+            'gateway_access_code'      => '12344',
+            'gateway_merchant_id'      => '12344',
+            'gateway_secure_secret'    => '12345',
+            'procurer'                 => 'merchant',
+            'type'    => [
+                'direct_settlement_with_refund' => '1',
+                'optimizer'                     => '1',
+                'disable_optimizer_refunds'     => '0',
+            ],
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+        $this->assertEquals( ["direct_settlement_with_refund", "optimizer"], $content['type']);
+    }
+
     public function testEditBilldeskOptimizerUpiTerminal()
     {
         $terminal = $this->fixtures->create(

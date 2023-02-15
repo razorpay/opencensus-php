@@ -72,6 +72,9 @@ class Type
     // Terminals for Optimizer
     const OPTIMIZER                        = 'optimizer';
 
+    // Terminals For Optimiser With Refunds Disabled
+    const DISABLE_OPTIMISER_REFUNDS        = 'disable_optimizer_refunds';
+
     const ONLINE                           = 'online';
 
     const OFFLINE                          = 'offline';
@@ -101,6 +104,7 @@ class Type
         self::TOKENISATION,
         self::MANDATE_HUB,
         self::OPTIMIZER,
+        self::DISABLE_OPTIMISER_REFUNDS,
         self::POS,
         self::ONLINE,
         self::OFFLINE,
@@ -134,6 +138,7 @@ class Type
         self::ONLINE                           => 24,
         self::OFFLINE                          => 25,
         self::IN_APP                           => 26,
+        self::DISABLE_OPTIMISER_REFUNDS        => 27,
     ];
 
     /**
