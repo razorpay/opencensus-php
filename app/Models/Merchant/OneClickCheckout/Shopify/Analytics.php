@@ -14,7 +14,7 @@ class Analytics extends Base\Core
     const SHOPIFY_ANALYTICS_CACHE_KEY = 'shopify_1cc_analytics';
     const SHOPIFY_ANALYTICS_CACHE_KEY_TTL = 14 * 1440; // 14 days
     const MAGIC_ANALYTICS_CUSTOMER_INFO_CACHE_KEY = 'magic_analytics:customer_info:';
-    const MAGIC_ANALYTICS_GA_ID_CACHE_KEY_TTL = 1440; // 1 day
+    const MAGIC_ANALYTICS_CUSTOMER_INFO_CACHE_KEY_TTL = 1440; // 1 day
 
     protected $cache;
     protected $monitoring;
@@ -159,10 +159,10 @@ class Analytics extends Base\Core
         return '';
     }
 
-    public function sendPurchaseEvent(array $shopifyOrder, array $rzpOrder, string $customerInfo)
+    public function sendPurchaseEvent(array $shopifyOrder, array $rzpOrder, string $customerInfo, array $providerTypeList=[Constants::GOOGLE_UNIVERSAL_ANALYTICS])
     {
         $customerInfoObj = json_decode($customerInfo, true);
-        $purchaseEventPayload = $this->constructPurchaseEventPayload($shopifyOrder['order'], $rzpOrder, $customerInfoObj);
+        $purchaseEventPayload = $this->constructPurchaseEventPayload($shopifyOrder['order'], $rzpOrder, $customerInfoObj, $providerTypeList);
         $merchantId = $this->merchant->getId();
 
         $this->trace->info(
@@ -173,9 +173,15 @@ class Analytics extends Base\Core
         $this->app['magic_analytics_provider_service']->triggerEvent($purchaseEventPayload, [Constants::MERCHANT_ID => $merchantId]);
     }
 
-    protected function constructPurchaseEventPayload(array $shopifyOrder, array $rzpOrder, array $customerInfo): array
+    protected function constructPurchaseEventPayload(array $shopifyOrder, array $rzpOrder, array $customerInfo, array $providerTypeList): array
     {
         $products = $this->transformToProducts($shopifyOrder['line_items'], Constants::PURCHASE);
+
+        $eventSourceUrl = '';
+        if (array_key_exists('fb_analytics', $customerInfo))
+        {
+           $eventSourceUrl = $customerInfo['fb_analytics']['event_source_url'] ?? '';
+        }
 
         $customerInfo = $this->constructCustomerInfo($shopifyOrder, $customerInfo);
 
@@ -185,9 +191,19 @@ class Analytics extends Base\Core
             $promotions = stringify($rzpOrder[Constants::PROMOTIONS][0]['code']);
         }
 
+
+        $shopifyCheckoutId = '';
+        if (isset($rzpOrder[Constants::NOTES]))
+        {
+            $shopifyCheckoutId = $rzpOrder[Constants::NOTES][Constants::STOREFRONT_ID] ?? '';
+        }
+
         return [
+            Constants::PROVIDER_TYPE_LIST => $providerTypeList,
+            Constants::SHOPIFY_CHECKOUT_ID => $shopifyCheckoutId,
             Constants::EVENT_TYPE => Constants::PURCHASE,
             Constants::EVENT_TIME => round(microtime(true) * 1000),
+            Constants::EVENT_SOURCE_URL  => $eventSourceUrl,
             Constants::CUSTOMER_INFO => $customerInfo,
             Constants::PURCHASE_EVENT => [
                 Constants::PRODUCTS => $products,
@@ -249,6 +265,11 @@ class Analytics extends Base\Core
             $customerDetails[Constants::PHONE] = $shopifyOrder[Constants::PHONE];
         }
 
+        if(!empty($customerInfo[Constants::FB_ANALYTICS]))
+        {
+            $customerDetails[CONSTANTS::FB_ANALYTICS] = $customerInfo[Constants::FB_ANALYTICS];
+        }
+
         return $customerDetails;
     }
 
@@ -286,7 +307,7 @@ class Analytics extends Base\Core
         $this->cache->set(
             $this->getCacheKeyForAnalyticsCustomerInfo($rzpOrderId),
             $customerInfo,
-            self::MAGIC_ANALYTICS_GA_ID_CACHE_KEY_TTL
+            self::MAGIC_ANALYTICS_CUSTOMER_INFO_CACHE_KEY_TTL
         );
     }
 

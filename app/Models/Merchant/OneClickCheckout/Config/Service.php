@@ -241,6 +241,16 @@ class Service extends Base\Service
                         {
                             $this->app['magic_analytics_provider_service']->toggleBEGAAnalytics($this->merchant->getId(), $value);
                         }
+
+                        /*
+                         * Merchant can enable/disable fb_analytics from merchant dashboard
+                         * Browser and Server side fb analytics will be enabled/disabled
+                         * The following piece of code flips server side fb analytics events for a merchant
+                         */
+                        if($key === Constants::ONE_CC_FB_ANALYTICS)
+                        {
+                            $this->app['magic_analytics_provider_service']->toggleBEFbAnalytics($this->merchant->getId(), $value);
+                        }
                     }
 
                     if (in_array($key, Constants::GIFT_CARD_CONFIGS) === true && $updatePlatform !== Constants::NATIVE) {

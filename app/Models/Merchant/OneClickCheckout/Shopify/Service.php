@@ -18,6 +18,7 @@ use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 use RZP\Constants;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Order\OrderMeta;
+use RZP\Models\Merchant\OneClickCheckout\Shopify\Constants as ShopifyConstants;
 
 class Service extends Base\Service
 {
@@ -236,7 +237,7 @@ class Service extends Base\Service
      */
     public function createOrderAndGetPreferences(array $input, array $customerInfo): array
     {
-        unset($input['ga_id']);
+        unset($input['ga_id'], $input['fb_analytics']);
 
         // To support backward compatibility of Shopify API version update from 2022-01 to 2022-10
         $input = $this->versionBasedInput($input);
@@ -605,34 +606,41 @@ class Service extends Base\Service
 
         $analytics->setShopifyOrderInCache($shopifyOrder, $orderArray, $payment->getMethod());
 
-        // send purchase event only on async flow
+        // send GA purchase event only on async flow
         // todo: remove this if condition when we enable events for sync flow too
         if ($fromShopifyApi === false)
         {
-            try
-            {
-                $customerInfo = $analytics->getAnalyticsCustomerInfoFromCache($order->getPublicId());
-                if (!empty($customerInfo))
-                {
-                    $analytics->sendPurchaseEvent($shopifyOrder, $orderArray, $customerInfo);
-                }
-                else
-                {
-                    $this->trace->count(TraceCode::MAGIC_CHECKOUT_PURCHASE_EVENT_FAILED);
-                }
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::MAGIC_CHECKOUT_PURCHASE_EVENT_FAILED,
-                    []
-                );
+            $providerTypeList = [ShopifyConstants::GOOGLE_UNIVERSAL_ANALYTICS, ShopifyConstants::FB_ANALYTICS];
+        }
+        else
+        {
+            $providerTypeList = [ShopifyConstants::FB_ANALYTICS];
+        }
 
+        try
+        {
+            $customerInfo = $analytics->getAnalyticsCustomerInfoFromCache($order->getPublicId());
+            if (!empty($customerInfo))
+            {
+                $analytics->sendPurchaseEvent($shopifyOrder, $orderArray, $customerInfo, $providerTypeList);
+            }
+            else
+            {
                 $this->trace->count(TraceCode::MAGIC_CHECKOUT_PURCHASE_EVENT_FAILED);
             }
         }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MAGIC_CHECKOUT_PURCHASE_EVENT_FAILED,
+                []
+            );
+
+            $this->trace->count(TraceCode::MAGIC_CHECKOUT_PURCHASE_EVENT_FAILED);
+        }
+
         $countryCode = $orderArray['customer_details']['shipping_address']['country'];
 
         // NOTE: promotions is not set if the 1ccResetAPI call fails, until CX team fixes it

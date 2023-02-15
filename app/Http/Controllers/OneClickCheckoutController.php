@@ -66,11 +66,15 @@ class OneClickCheckoutController extends Controller
         {
             $userAgent = $headers['x-user-agent'][0] ?? $headers['user-agent'][0] ?? null;
             // todo: this will be done in FE for now we are doing it to unblock BE
-            $ga = $input['ga_id'];
+
+            $ga = $input['ga_id'] ?? '';
             $parsedGa = explode(".", $ga);
             $parsedGaId = array_slice($parsedGa, -2);
             $gaId = join(".", $parsedGaId);
-            $customerInfo = ['user_agent' => $userAgent, 'ga_id' => $gaId];
+
+            $fbAnalytics = $input['fb_analytics'] ?? array();
+
+            $customerInfo = ['user_agent' => $userAgent, 'ga_id' => $gaId, 'fb_analytics' => $fbAnalytics];
             $result = (new Shopify\Service)->createOrderAndGetPreferences($input, $customerInfo);
             return ApiResponse::json($result, 200);
         }

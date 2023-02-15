@@ -107,4 +107,35 @@ class Service
         }
     }
 
+    /**
+     * @throws \Exception
+     */
+    public function toggleBEFbAnalytics($merchant_id, $value): void
+    {
+        $url = self::PARAMS[self::ANALYTICS_EVENTS_CONFIG_API][self::PATH] . $merchant_id;
+
+        $input = [
+            'provider_type' => 'fb_analytics',
+            'one_cc_be_fb_analytics' => $value,
+        ];
+
+        try
+        {
+            $this->app['integration_service_client']->sendRequest($url, Requests::POST, $input);
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::MAGIC_ANALYTICS_CONFIG_BE_FB_ANALYTICS_FAILED,
+                []
+            );
+
+            $this->app['trace']->count(TraceCode::MAGIC_ANALYTICS_CONFIG_BE_FB_ANALYTICS_FAILED);
+
+            throw $e;
+        }
+    }
+
 }

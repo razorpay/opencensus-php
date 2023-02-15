@@ -23,6 +23,7 @@ class Constants
 
     const EVENT_TYPE            = 'event_type';
     const EVENT_TIME            = 'event_time';
+    const EVENT_SOURCE_URL      = 'event_source_url';
     const PRODUCTS              = 'products';
     const ID                    = 'id';
     const SKU                   = 'sku';
@@ -52,4 +53,10 @@ class Constants
     const PROMOTIONS            = 'promotions';
     const GA_ID                 = 'ga_id';
     const USER_AGENT            = 'user_agent';
+    const FB_ANALYTICS          = 'fb_analytics';
+    const PROVIDER_TYPE_LIST         = 'provider_type_list';
+    const GOOGLE_UNIVERSAL_ANALYTICS = 'google_universal_analytics';
+    const SHOPIFY_CHECKOUT_ID        = 'shopify_checkout_id';
+    const STOREFRONT_ID              = 'storefront_id';
+    const NOTES                      = 'notes';
 }
