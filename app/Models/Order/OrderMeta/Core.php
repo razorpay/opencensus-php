@@ -356,7 +356,7 @@ class Core extends Base\Core
     {
         $this->merchant = $this->repo->merchant->find($merchantId);
 
-        return (new OneClickCheckoutCore)->update1CcOrder($orderId,$orderMetaInput);
+        return $this->update1CCOrder($orderId,$orderMetaInput);
     }
 
     /**
