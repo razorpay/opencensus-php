@@ -15064,7 +15064,9 @@ class Route
     ];
 
     protected static $checkoutRoutes = [
-        'payment_create_checkout'
+        'payment_create_checkout',
+        'payment_redirect_3ds',
+        'payment_redirect_3ds_get'
     ];
 
     protected static $ajaxRoutes = [
