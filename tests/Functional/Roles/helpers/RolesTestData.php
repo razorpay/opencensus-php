@@ -1,5 +1,8 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 return [
 
     'testGetRolesForPermissionName' => [
@@ -882,6 +885,43 @@ return [
         ],
         'response' => [
             'content' => array ()
+        ],
+    ],
+
+    'testFetchAuthZRolesByRoleIdSuccess' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'   => '/cac/role/100customRole2/authz_roles',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => array (
+                'role_id' => '100customRole2',
+                'authz_roles' =>
+                    array (
+                        0 => 'authz_roles_1',
+                        1 => 'authz_roles_2',
+                        2 => 'authz_roles_3',
+                    ),
+            ),
+        ],
+    ],
+    'testFetchAuthZRolesByRoleIdFailure' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'   => '/cac/role/100customRole2/authz_roles',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'description' => PublicErrorDescription::BAD_REQUEST_AUTHZ_ROLES_NOT_FOUND,
+                ],
+            ],
+            'status_code' => 404,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHZ_ROLES_NOT_FOUND ,
         ],
     ],
 ];

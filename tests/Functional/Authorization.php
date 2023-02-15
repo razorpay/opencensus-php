@@ -1093,6 +1093,15 @@ class Authorization
         $this->appAuth('rzp_' . $mode, $pwd);
     }
 
+    public function capitalCardsAuth($mode = 'test')
+    {
+        $cardsServiceConfig = \Config::get('applications.capital_cards_client');
+
+        $pwd = $cardsServiceConfig['secret'];
+
+        $this->appAuth('rzp_'. $mode, $pwd);
+    }
+
     public function capitalCollectionsAuth($mode = 'test')
     {
         $capitalCollectionsConfig = \Config::get('applications.capital_collections_client');

@@ -4130,6 +4130,7 @@ class Route
         'admin_fetch_role_map'               => ['get',                    'cac/admin/role_map',                                               'RolesController@listRolesMapForAdmin'],
         'view_cac_role'                         => ['get',                    'cac/role/{id}',                                                  'RolesController@getRole'],
         'role_self_get'                         => ['get',                    'cac/self/role',                                                   'RolesController@getSelfRole'                                    ],
+        'fetch_authz_roles_by_role_id'             => ['get',                    'cac/role/{id}/authz_roles',                                                   'RolesController@fetchAuthZRolesByRoleId'  ],
         //'delete_cac_role'                       => ['delete',                 'cac/role/{id}',                                                  'RolesController@deleteRole'                                 ],
         'cac_privileges_fetch'                  => ['get',                    'cac/privileges',                                          'AccessControlPrivilegesController@listPrivileges'],
         'create_cac_role'                       => ['post',                   'cac/role',                                                   'RolesController@create'],
@@ -5654,8 +5655,10 @@ class Route
 
         'partner_config_fetch_guest',
         'terminal_toggle_internal',
-
         'merchant_validate_public_auth_over_internal_auth',
+
+        // CAC-RBAC
+        'fetch_authz_roles_by_role_id',
 
         'internal_1cc_order_review',
     ];
@@ -14328,7 +14331,8 @@ class Route
             'internal_merchant_fetch',
             'capital_cards_mail',
             'feature_add_internal',
-            'internal_fd_create_ticket'
+            'internal_fd_create_ticket',
+            'fetch_authz_roles_by_role_id',
         ],
 
         'capital_collections_client' => [

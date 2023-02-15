@@ -1728,4 +1728,6 @@ class PublicErrorDescription
     const BAD_REQUEST_INCORRECT_PARTNER_MAP                                         = 'The provided Partner Id is either not found or of invalid partner type';
 
     const BAD_REQUEST_OPTIMIZER_ONLY_MERCHANT_HAS_RAAS_DISABLED                     = 'Error : Payments have not been configured for this merchant.';
+
+    const BAD_REQUEST_AUTHZ_ROLES_NOT_FOUND                                         = 'AuthZ Roles not found for the role id.';
 }

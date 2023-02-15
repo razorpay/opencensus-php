@@ -5,6 +5,8 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class RolesController extends Controller
 {
@@ -78,5 +80,22 @@ class RolesController extends Controller
         $data = $this->service()->deleteRole($id);
 
         return ApiResponse::json($data);
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function fetchAuthZRolesByRoleId(string $id)
+    {
+        $response = [];
+
+        $response["role_id"] = $id;
+        $response["authz_roles"] = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($id);
+
+        if (empty($response['authz_roles']) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_AUTHZ_ROLES_NOT_FOUND);
+        }
+        return ApiResponse::json($response);
     }
 }

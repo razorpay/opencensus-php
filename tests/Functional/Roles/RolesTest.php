@@ -576,4 +576,50 @@ class RolesTest extends TestCase
 
         $this->assertCount(1, $result);
     }
+
+    public function testFetchAuthZRolesByRoleIdSuccess()
+    {
+        $this->createPrivileges();
+
+        $merchant = $this->fixtures->create('merchant',[ 'id' => self::DEFAULT_X_MERCHANT_ID ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'activation_status' => 'activated',
+            'merchant_id'       => self::DEFAULT_X_MERCHANT_ID,
+            'business_type'     => '2',
+        ]);
+
+        $user1 = $this->fixtures->user->createEntityInTestAndLive('user', []);
+
+        $customRole1 = $this->fixtures->create('roles', ['name' => 'CAC 2', 'id' => '100customRole2', 'org_id' => "100000razorpay"]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/cac/role/'.$customRole1['id'].'/authz_roles';
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = $merchant['id'];
+
+        $this->createMerchantUserMappingInLiveAndTest($user1['id'], self::DEFAULT_X_MERCHANT_ID, 'owner');
+
+        $this->fixtures->create('role_access_policy_map',
+            [
+                'role_id' => '100customRole2',
+                'authz_roles'   => ['authz_roles_1', 'authz_roles_2', 'authz_roles_3'],
+                'access_policy_ids' => ['accessPolicy10', 'accessPolicy11', 'accessPolicy13'],
+            ]);
+
+        $this->ba->capitalCardsAuth();
+
+        $this->startTest();
+
+        $lastRoleMapEntity = $this->getDbLastEntity('role_access_policy_map')->toArrayPublic();
+
+        $authZRoles = $lastRoleMapEntity['authz_roles'];
+
+        $this->assertEquals($this->testData[__FUNCTION__]['response']['content']['authz_roles'], $authZRoles);
+    }
+
+    public function testFetchAuthZRolesByRoleIdFailure()
+    {
+        $this->ba->capitalCardsAuth();
+
+        $this->startTest();
+    }
 }

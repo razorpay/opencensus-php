@@ -654,6 +654,10 @@ class Error extends Support\Fluent
             case ErrorCode::BAD_REQUEST_CONFLICT_ANOTHER_OPERATION_PROGRESS_SAME_IDEM_KEY:
                 $httpStatusCode = 409;
                 break;
+            case ErrorCode::BAD_REQUEST_AUTHZ_ROLES_NOT_FOUND:
+                $httpStatusCode = 404;
+                break;
+
         }
 
         $this->setPublicErrorCode(PublicErrorCode::BAD_REQUEST_ERROR);
