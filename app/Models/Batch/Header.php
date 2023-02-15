@@ -1717,6 +1717,14 @@ class Header
             ],
         ],
 
+        Type::HITACHI_FULCRUM_ONBOARD => [
+            self::INPUT => [
+                self::MERCHANT_ID,
+                self::TERMINAL_CREATION_GATEWAY,
+                self::TERMINAL_CREATION_CATEGORY
+            ],
+        ],
+
         Type::UPI_TERMINAL_ONBOARDING   =>  [
             self::INPUT => [
                 self::UPI_TERMINAL_ONBOARDING_MERCHANT_ID,

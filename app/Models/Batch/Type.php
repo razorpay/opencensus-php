@@ -204,6 +204,8 @@ class Type
 
     const UPI_TERMINAL_ONBOARDING     = 'upi_terminal_onboarding';
 
+    const HITACHI_FULCRUM_ONBOARD     = 'hitachi_fulcrum_onboard';
+
     const EMANDATE_DEBIT_HDFC         = 'emandate_debit_hdfc';
 
     const ENACH_NPCI_NETBANKING       = 'enach_npci_netbanking';
@@ -312,6 +314,7 @@ class Type
         self::SUBMERCHANT_TYPE_UPDATE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
+        self::HITACHI_FULCRUM_ONBOARD,
         self::WEBSITE_CHECKER,
         self::HITACHI_CBK_MASTERCARD,
         self::HITACHI_CBK_VISA,
@@ -420,6 +423,7 @@ class Type
         self::MERCHANT_CAPITAL_TAGS,
         self::CREDIT,
         self::UPI_TERMINAL_ONBOARDING,
+        self::HITACHI_FULCRUM_ONBOARD,
         self::VAULT_MIGRATE_TOKEN_NS,
         self::MERCHANT_UPLOAD_MIQ,
     ];
@@ -542,6 +546,7 @@ class Type
         self::PARTNER_REFERRAL_FETCH,
         self::VAULT_MIGRATE_TOKEN_NS,
         self::MERCHANT_UPLOAD_MIQ,
+        self::HITACHI_FULCRUM_ONBOARD,
     ];
 
     /**
@@ -625,6 +630,7 @@ class Type
         self::VAULT_MIGRATE_TOKEN_NS,
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
         self::MERCHANT_UPLOAD_MIQ,
+        self::HITACHI_FULCRUM_ONBOARD,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
@@ -648,6 +654,7 @@ class Type
         self::TERMINAL_CREATION                  => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::TERMINAL                           => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::UPI_TERMINAL_ONBOARDING            => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
+        self::HITACHI_FULCRUM_ONBOARD            => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::INTERNAL_INSTRUMENT_REQUEST        => Name::INTERNAL_INSTRUMENT_CREATE_BULK,
         self::PAYOUT_LINK_BULK                   => Name::PAYOUT_LINKS_ADMIN_BULK_CREATE,
         self::TALLY_PAYOUT                       => Name::TALLY_PAYOUT_BULK_CREATE,
