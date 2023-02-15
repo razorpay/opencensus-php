@@ -17015,8 +17015,6 @@ class PayoutTest extends OAuthTestCase
 
         Queue::fake();
 
-        $this->fixtures->merchant->addFeatures([Feature\Constants::APPS_STATUS_UPDATE_VIA_PS]);
-
         $payout = $this->fixtures->create('payout', [
             'status'            =>      'created',
             'pricing_rule_id'   =>      '1nvp2XPMmaRLxb',

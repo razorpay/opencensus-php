@@ -1253,7 +1253,6 @@ class Constants
     // To enable workflow payouts creation via payouts service
     const WORKFLOW_VIA_PAYOUTS_MS = 'workflow_via_payouts_ms';
     const ORG_AXIS_WHATSAPP = 'axis_whatsapp';
-    const APPS_STATUS_UPDATE_VIA_PS = 'apps_status_update_via_ps';
     const AXIS_WHATSAPP_ENABLE = 'axis_whatsapp_enable';
     /**
      * Feature flag to redirect user to the Gateway
@@ -2366,7 +2365,6 @@ class Constants
         self::CAN_ROLE_VIEW_TRXN_CARDS    => true,
         self::RX_BLOCK_REPORT_DOWNLOAD_ROLE_CHECK  => true,
         self::ORG_NUMERIC_OPTION_FALSE        => true,
-        self::APPS_STATUS_UPDATE_VIA_PS       => true,
         self::ONE_CLICK_DUAL_CHECKOUT         => true,
         self::HDFC_SINGLE_TID                 => true,
         self::ORG_POOL_ACCOUNT_SETTLEMENT     => true,

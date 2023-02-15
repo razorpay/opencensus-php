@@ -1681,8 +1681,7 @@ class Entity extends Base\PublicEntity
 
         $this->setAttribute(self::STATUS, $status);
 
-        if ($this->getIsPayoutService() === true &&
-            $this->merchant->isFeatureEnabled(Features::APPS_STATUS_UPDATE_VIA_PS) === true)
+        if ($this->getIsPayoutService() === true)
         {
             return;
         }
