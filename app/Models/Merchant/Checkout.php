@@ -215,7 +215,7 @@ class Checkout
         $this->fill1ccCouponDropOffExperiment($merchant, $data);
 
         $this->fill1ccMultipleShippingExperiment($merchant, $data);
-        
+
         $this->fill1ccEnableV165Experiment($merchant, $data);
 
         $this->fill1ccOffersWithCouponsExperiment($merchant,$data);
@@ -236,6 +236,25 @@ class Checkout
         $data['methods'] = $this->getMerchantPaymentMethodsForCheckout($input, $merchant, $order);
 
         $this->addOfferDetailsAndUpdateMethodsForCheckout($merchant, $order, $data);
+
+        $expectedAsDictionaries = [
+            'app',
+            'card_networks',
+            'card_subtype',
+            'cardless_emi',
+            'debit_emi_providers',
+            'emi_options',
+            'emi_plans',
+            'netbanking',
+            'paylater',
+        ];
+
+        foreach ($expectedAsDictionaries as $key) {
+            // Type-casting these to objects to ensure that empty values go as
+            // `{}` instead of `[]` as these are declared as maps in checkout-service
+            // proto files.
+            $data['methods'][$key] = (object) ($data['methods'][$key] ?? []);
+        }
 
         return $data;
     }

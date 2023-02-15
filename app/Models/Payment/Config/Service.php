@@ -39,7 +39,10 @@ class Service extends Base\Service
 
         $checkoutConfig = $this->core->getFormattedConfigForCheckout($configId, $this->merchant->getId());
 
-        return $checkoutConfig ?? [];
+        // Type-casting the response to object as the golang checkout-service
+        // wouldn't be able to parse empty array `[]` as response as it expects
+        // an empty json `{}` response
+        return (object) ($checkoutConfig ?? []);
     }
 
     public function internalFetchById($id)
