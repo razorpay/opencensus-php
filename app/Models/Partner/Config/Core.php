@@ -4,6 +4,7 @@ namespace RZP\Models\Partner\Config;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -525,7 +526,7 @@ class Core extends Base\Core
         );
 
         $request = $this->getAuditData($entity, $params);
-        return $this->app->partnerships->createAuditLog($request);
+        return $this->app->partnerships->createAuditLog($request, Mode::LIVE);
     }
 
     private function getAuditData($entity, $params)

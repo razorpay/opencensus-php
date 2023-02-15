@@ -7,7 +7,7 @@ use \RZP\Services\Partnerships\PartnershipsService as BasePartnerships;
 
 class PartnershipsService extends BasePartnerships
 {
-    public function createAuditLog($parameters)
+    public function createAuditLog($parameters, $mode)
     {
         $resp = new \WpOrg\Requests\Response;
         $resp->success     = true;

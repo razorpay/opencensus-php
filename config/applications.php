@@ -769,12 +769,15 @@ return [
     ],
 
     'partnerships'   => [
-        'mock'            => env('PARTNERSHIPS_MOCK', false),
-        'url'             => env('PARTNERSHIPS_URL'),
-        'username'        => 'api',
-        'secret'   => env('PARTNERSHIPS_API_SECRET'),
-        'request_timeout' => env('PARTNERSHIPS_REQUEST_TIMEOUT', 0.1),
-        'skip_jwt_passport'=> env('PARTNERSHIPS_SKIP_PASSPORT_AUTH', true),
+        'mock'              => env('PARTNERSHIPS_MOCK', false),
+        'url'               => [
+            'live'          => env('PARTNERSHIPS_LIVE_URL'),
+            'test'          => env('PARTNERSHIPS_TEST_URL')
+        ],
+        'username'          => 'api',
+        'secret'            => env('PARTNERSHIPS_API_SECRET'),
+        'request_timeout'   => env('PARTNERSHIPS_REQUEST_TIMEOUT', 0.1),
+        'skip_jwt_passport' => env('PARTNERSHIPS_SKIP_PASSPORT_AUTH', true),
     ],
 
     'user_2fa' => [

@@ -6,6 +6,7 @@ namespace RZP\Services\Partnerships;
 use App;
 use Request;
 use ApiResponse;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Http\RequestHeader;
@@ -66,11 +67,6 @@ class PartnershipsService extends Base\Service
     /**
      * @var string
      */
-    protected $baseUrl;
-
-    /**
-     * @var string
-     */
     protected $key;
 
     /**
@@ -91,15 +87,29 @@ class PartnershipsService extends Base\Service
 
     protected $skipPassport;
 
+    /**
+     * @var string
+     */
+    protected string $baseLiveUrl;
+
+    /**
+     * @var string
+     */
+    protected string $baseTestUrl;
+
     public function __construct()
     {
         $app = App::getFacadeRoot();
         $this->trace = $app['trace'];
         $this->env = $app['env'];
         $PartnershipsConfig = $app['config']['applications.partnerships'];
-        $this->baseUrl = $PartnershipsConfig['url'];
+
+        $this->baseLiveUrl = $PartnershipsConfig['url']['live'];
+        $this->baseTestUrl = $PartnershipsConfig['url']['test'];
+
         $this->key = $PartnershipsConfig['username'];
         $this->secret = $PartnershipsConfig['secret'];
+
         $this->skipPassport = $PartnershipsConfig['skip_jwt_passport'];
         $this->requestTimeout = $PartnershipsConfig['request_timeout'];
         $this->auth = $app['basicauth'];
@@ -169,11 +179,11 @@ class PartnershipsService extends Base\Service
         return $this->sendRequest($parameters, self::UPDATE_RULE_CONFIG_MAPPING, Requests::POST);
     }
 
-    public function createAuditLog($parameters)
+    public function createAuditLog($parameters, $mode)
     {
         (new Validator())->validateInput(Validator::CREATE_AUDIT_LOG, $parameters);
 
-        return $this->sendRequest($parameters, self::CREATE_AUDIT_LOG, Requests::POST);
+        return $this->sendRequest($parameters, self::CREATE_AUDIT_LOG, Requests::POST, $mode);
     }
 
     public function listAuditLogByEntityIds($parameters)
@@ -201,9 +211,9 @@ class PartnershipsService extends Base\Service
         return $this->sendRequest($parameters, $path, $method);
     }
 
-    public function sendRequest($parameters, $path, $method)
+    public function sendRequest($parameters, $path, $method, $mode = null)
     {
-        $requestParams = $this->getRequestParams($parameters, $path, $method);
+        $requestParams = $this->getRequestParams($parameters, $path, $method, $mode);
 
         try {
             $response = Requests::request(
@@ -219,9 +229,17 @@ class PartnershipsService extends Base\Service
         }
     }
 
-    public function getRequestParams($parameters, $path, $method)
+    public function getRequestParams($parameters, $path, $method, $mode = null)
     {
-        $url = $this->baseUrl . $path;
+        if ($mode === null)
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
+        else
+        {
+            $this->mode = $mode;
+        }
+        $url = $this->getBaseUrl() . $path;
 
         $headers = [];
 
@@ -237,7 +255,7 @@ class PartnershipsService extends Base\Service
 
         $jwt = null;
         if ($this->skipPassport === false) {
-            $jwt = $this->auth->getPassportJwt($this->baseUrl);
+            $jwt = $this->auth->getPassportJwt($this->getBaseUrl());
         }
         if ($jwt == null) {
             $options['auth'] = [$this->key, $this->secret];
@@ -253,6 +271,17 @@ class PartnershipsService extends Base\Service
             'options'   => $options,
             'method'    => $method,
         ];
+    }
+
+    private function getBaseUrl()
+    {
+        if($this->mode === Mode::LIVE) {
+            return $this->baseLiveUrl;
+        }
+        else
+        {
+            return $this->baseTestUrl;
+        }
     }
 
     protected function parseAndReturnResponse($res)
