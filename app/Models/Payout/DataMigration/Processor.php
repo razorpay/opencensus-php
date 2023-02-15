@@ -16,6 +16,8 @@ use RZP\Models\Payout\DataMigration\Reversal as ReversalMigration;
 use RZP\Models\Payout\DataMigration\PayoutDetails as PayoutDetailsMigration;
 use RZP\Models\Payout\DataMigration\PayoutLogs as PayoutLogsMigration;
 use RZP\Models\Payout\DataMigration\PayoutSource as PayoutSourceMigration;
+use RZP\Models\Workflow\Service\EntityMap\Entity as WorkflowEntityMapEntity;
+use RZP\Models\Payout\DataMigration\WorkflowStateMap as WorkflowStateMapMigration;
 use RZP\Models\Payout\DataMigration\WorkflowEntityMap as WorkflowEntityMapMigration;
 use RZP\Models\Payout\DataMigration\PayoutStatusDetails as PayoutStatusDetailsMigration;
 
@@ -32,6 +34,7 @@ class Processor
     const PAYOUT_DETAILS        = 'payout_details';
     const PAYOUT_SOURCES        = 'payout_sources';
     const WORKFLOW_ENTITY_MAP   = 'workflow_entity_map';
+    const WORKFLOW_STATE_MAP   = 'workflow_state_map';
     const PAYOUT_STATUS_DETAILS = 'payout_status_details';
 
     const PS_TABLE_PREFIX     = 'ps_';
@@ -179,6 +182,7 @@ class Processor
         $payoutServiceData[$this->getPSTableName(self::PAYOUT_DETAILS)]        = [];
         $payoutServiceData[$this->getPSTableName(self::PAYOUT_SOURCES)]        = [];
         $payoutServiceData[$this->getPSTableName(self::WORKFLOW_ENTITY_MAP)]   = [];
+        $payoutServiceData[$this->getPSTableName(self::WORKFLOW_STATE_MAP)]   = [];
         $payoutServiceData[$this->getPSTableName(self::PAYOUT_STATUS_DETAILS)] = [];
 
         foreach ($payouts as $payout)
@@ -210,11 +214,27 @@ class Processor
                     (new PayoutDetailsMigration)->getPayoutServicePayoutDetailsForApiPayout($payout)
                 );
 
+            $payoutServiceWorkflowEntityMapForApiPayout = (new WorkflowEntityMapMigration)
+                ->getPayoutServiceWorkflowEntityMapForApiPayout($payout);
+
             $payoutServiceData[$this->getPSTableName(self::WORKFLOW_ENTITY_MAP)] =
                 array_merge(
                     $payoutServiceData[$this->getPSTableName(self::WORKFLOW_ENTITY_MAP)],
-                    (new WorkflowEntityMapMigration)->getPayoutServiceWorkflowEntityMapForApiPayout($payout)
+                    $payoutServiceWorkflowEntityMapForApiPayout
                 );
+
+            if (empty($payoutServiceWorkflowEntityMapForApiPayout) === false)
+            {
+                foreach ($payoutServiceWorkflowEntityMapForApiPayout as $WorkflowEntityMap) {
+                    $workflowId = $WorkflowEntityMap[WorkflowEntityMapEntity::WORKFLOW_ID];
+
+                    $payoutServiceData[$this->getPSTableName(self::WORKFLOW_STATE_MAP)] =
+                        array_merge(
+                            $payoutServiceData[$this->getPSTableName(self::WORKFLOW_STATE_MAP)],
+                            (new WorkflowStateMapMigration())->getPayoutServiceWorkflowStateMapForApiPayout($workflowId)
+                        );
+                }
+            }
 
             $payoutServiceData[$this->getPSTableName(self::PAYOUT_STATUS_DETAILS)] =
                 array_merge(

@@ -16,4 +16,13 @@ class Repository extends Base\Repository
                     ->where($stateIdColumn, '=', $stateId)
                     ->first();
     }
+
+    public function getByWorkflowId($workflowId)
+    {
+        $workflowIdColumn = $this->dbColumn(Entity::WORKFLOW_ID);
+
+        return $this->newQuery()
+                    ->where($workflowIdColumn, '=', $workflowId)
+                    ->get();
+    }
 }

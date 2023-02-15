@@ -7542,7 +7542,7 @@ class Core extends Base\Core
         $buffer = (int) (new AdminService)->getConfigKey(
             ['key' => ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_BUFFER]);
 
-        if (empty($limit) === true)
+        if (empty($buffer) === true)
         {
             $buffer = self::BUFFER_FOR_DATA_MIGRATION;
         }

@@ -1936,6 +1936,94 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(1, $response['clean_up_count']);
     }
 
+    public function testDataMigrationWithWorkflowDetails()
+    {
+        (new Admin\Service)->setConfigKeys([
+                                               Admin\ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS  => 2,
+                                               Admin\ConfigKey::PAYOUT_SERVICE_DATA_MIGRATION_LIMIT_PER_BATCH => 2
+                                           ]);
+
+        $this->createPayout([
+                                'id'              => 'IwHCToefEWVgph',
+                                'merchant_id'     => '10000000000000',
+                                'status'          => 'pending',
+                                'purpose'         => 'payout',
+                                'purpose_type'    => 'refund',
+                                'transaction_id'  => '00000000000001',
+                                'created_at'      => Carbon::now()->subMinutes(20)->getTimestamp(),
+                            ]);
+
+        /** @var Payout\Entity $payout1 */
+        $payout1 = $this->getDbLastEntity('payout');
+
+       $workflowEntityMapParams = [
+            'id'              => 'IwHCToefEWVgas',
+            'workflow_id'     => 'IwHCToefEWVgwo',
+            'entity_id'       =>  $this ->payout -> getId(),
+            'entity_type'     => 'payout',
+            'merchant_id'     => '10000000000000',
+            'config_id'       => 'IwHCToefEWVgco',
+            'org_id'          => 'IwHCToefEWVgor',
+            'created_at'      => Carbon::now()->subMinutes(20)->getTimestamp(),
+            'updated_at'      => Carbon::now()->subMinutes(20)->getTimestamp(),
+        ];
+
+        $workflowEntityMap = $this->fixtures->create('workflow_entity_map', $workflowEntityMapParams);
+
+        $this->createWorkflowStateMap('0');
+
+        $this->createWorkflowStateMap('1');
+
+        Config::set('database.default', 'test');
+
+        $this->ba->cronAuth();
+
+        $input = [
+            Payout\DataMigration\Processor::FROM => $payout1->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout1->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout1->getBalanceId(),
+        ];
+
+        (new PayoutServiceDataMigration('test', $input))->handle();
+
+        $migratedPayouts = \DB::connection('live')->select("select * from ps_payouts");
+
+        $this->assertCount(1, $migratedPayouts);
+        $this->assertEquals($payout1->getId(), $migratedPayouts[0]->id);
+
+        $migratedWorkflowEntityMap = \DB::connection('live')->select("select * from ps_workflow_entity_map");
+
+        $this->assertEquals($workflowEntityMap->getId(), $migratedWorkflowEntityMap[0]->id);
+        $this->assertEquals($workflowEntityMap->getOrgId(), $migratedWorkflowEntityMap[0]->org_id);
+        $this->assertEquals($workflowEntityMap->getConfigId(), $migratedWorkflowEntityMap[0]->config_id);
+        $this->assertEquals($workflowEntityMap->getEntityId(), $migratedWorkflowEntityMap[0]->entity_id);
+        $this->assertEquals($workflowEntityMap->getCreatedAt(), $migratedWorkflowEntityMap[0]->created_at);
+        $this->assertEquals($workflowEntityMap->getEntityType(), $migratedWorkflowEntityMap[0]->entity_type);
+        $this->assertEquals($workflowEntityMap->getWorkflowId(), $migratedWorkflowEntityMap[0]->workflow_id);
+        $this->assertEquals($workflowEntityMap->getMerchantId(), $migratedWorkflowEntityMap[0]->merchant_id);
+
+        $workflowStateMaps = $this->getDbEntities('workflow_state_map');
+
+        $migratedWorkflowStateMaps = \DB::connection('live')->select("select * from ps_workflow_state_map");
+
+        $count = 0;
+        foreach ($workflowStateMaps as $stateMap) {
+
+            $this->assertEquals($stateMap->getId(), $migratedWorkflowStateMaps[$count]->id);
+            $this->assertEquals($stateMap->getCreatedAt(), $migratedWorkflowStateMaps[$count]->created_at);
+            $this->assertEquals($stateMap->getWorkflowId(), $migratedWorkflowStateMaps[$count]->workflow_id);
+            $this->assertEquals($stateMap->getMerchantId(), $migratedWorkflowStateMaps[$count]->merchant_id);
+            $this->assertEquals($stateMap->getStateId(), $migratedWorkflowStateMaps[$count]->state_id);
+            $this->assertEquals($stateMap->getType(), $migratedWorkflowStateMaps[$count]->type);
+            $this->assertEquals($stateMap->getGroupName(), $migratedWorkflowStateMaps[$count]->group_name);
+            $this->assertEquals($stateMap->getStatus(), $migratedWorkflowStateMaps[$count]->state_status);
+            $this->assertEquals($stateMap->getActorTypeValue(), $migratedWorkflowStateMaps[$count]->actor_role);
+
+            $count++;
+        }
+
+    }
+
     public function testCreatePayoutWithPayoutLimitFeatureFlagEnabled()
     {
         $this->fixtures->merchant->addFeatures([Feature\Constants::INCREASE_PAYOUT_LIMIT]);
@@ -33783,5 +33871,29 @@ class PayoutTest extends OAuthTestCase
         // assert that the payout was pushed for async processing
         Queue::assertPushed(ApprovedPayoutDistribution::class);
     }
- }
+
+    /**
+     * @return array|mixed
+     */
+    private function createWorkflowStateMap(string $suffix)
+    {
+        $workflowStateMapParams = [
+            'id'               => 'IwHCToefEWVgi'.$suffix,
+            'workflow_id'      => 'IwHCToefEWVgwo',
+            'actor_type_key'   => 'role',
+            'actor_type_value' => 'finance_l'.$suffix,
+            'merchant_id'      => '10000000000000',
+            'state_id'         => 'IwHCToefEWVgst',
+            'state_name'       => 'Dummy_l'.$suffix,
+            'status'           => 'processed',
+            'group_name'       => '1',
+            'type'             => 'checker',
+            'org_id'           => 'IwHCToefEWVgor',
+            'created_at'       => Carbon::now()->subMinutes(20)->getTimestamp(),
+            'updated_at'       => Carbon::now()->subMinutes(20)->getTimestamp(),
+        ];
+
+        return $this->fixtures->create('workflow_state_map', $workflowStateMapParams);
+    }
+}
 

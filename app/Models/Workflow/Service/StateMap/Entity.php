@@ -132,6 +132,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTOR_TYPE_VALUE);
     }
 
+    public function getStateId()
+    {
+        return $this->getAttribute(self::STATE_ID);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    public function getGroupName()
+    {
+        return $this->getAttribute(self::GROUP_NAME);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
     // ============================= END GETTERS =============================
 
     // ============================= SETTERS =============================
