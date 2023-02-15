@@ -28,6 +28,28 @@ return [
         ]
     ],
 
+    'testAddPrimaryBalanceForMalaysianCurrency' => [
+        'request' => [
+            'url' => '/adjustments',
+            'method' => 'POST',
+            'content' => [
+                'amount'        =>  500000,
+                'type'          =>  'primary',
+                'merchant_id'   =>  '100abc000abc00',
+                'currency'      =>  'MYR',
+                'description'   =>  'primary balance add'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'        => 'adjustment',
+                'amount'        => 500000,
+                'currency'      => 'MYR',
+                'description'   => 'primary balance add',
+            ],
+        ]
+    ],
+
     'testAddAdjustmentOnCapitalBalance' => [
         'request' => [
             'url' => '/adjustments',

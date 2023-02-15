@@ -53,7 +53,7 @@ class Core extends Base\Core
         $merchantInvoiceInput = $input;
 
         // Checking validations on input array
-        (new Validator)->validateAdjustmentCreateInput($input);
+        (new Validator)->validateAdjustmentCreateInput($input, $merchant);
 
         $amount = $input[Entity::AMOUNT] ?? 0;
 

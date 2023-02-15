@@ -36,7 +36,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::AMOUNT        => 'required|integer',
         Entity::CHANNEL       => 'sometimes|string|max:32|custom',
-        Entity::CURRENCY      => 'required|in:INR',
+        Entity::CURRENCY      => 'required|in:INR,MYR',
         Entity::DESCRIPTION   => 'required|min:10|max:255',
         Entity::SETTLEMENT_ID => 'sometimes|size:14',
     ];
@@ -75,8 +75,11 @@ class Validator extends Base\Validator
         DisputeEntity::PAYMENT_ID => 'required|string',
     ];
 
-    public function validateAdjustmentCreateInput(array $input)
+    public function validateAdjustmentCreateInput(array $input, Merchant\Entity $merchant)
     {
+        // Throw exception when input currency is not same as merchant currency
+        $this->validateCurrency($input, $merchant);
+
         // Presence of all three keys is not allowed
         if (isset($input[Entity::AMOUNT]) === true and
             isset($input[MerchantInvoice\Entity::TAX]) === true and
@@ -126,6 +129,22 @@ class Validator extends Base\Validator
                 throw new Exception\BadRequestValidationFailureException(
                     'Amount should be passed for reserve balance.');
             }
+        }
+    }
+
+    /**
+     * This validation if for checking currency while adding adjustment for a merchant.
+     *
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    private function validateCurrency(array $input, Merchant\Entity $merchant)
+    {
+        if ($input[Entity::CURRENCY] != $merchant->getCurrency()) {
+            throw new Exception\BadRequestValidationFailureException(
+                'Currency should be same as merchant currency'
+            );
         }
     }
 
