@@ -16,10 +16,9 @@ import { getFormattedAmount } from 'common/utils/rzp-utils';
 
 const BannerWrapper = styled.div(
   ({ theme }) => `
-    margin: ${theme.spacing[6]}px;
-    margin-bottom: 0;
+    padding: ${theme.spacing[6]}px;
+    padding-bottom: ${theme.spacing[1]}px;;
     overflow-x: auto;
-    box-shadow: ${theme.shadows.offsetX.level[1]}px ${theme.shadows.offsetY.level[1]}px ${theme.shadows.blurRadius.level[1]}px ${theme.shadows.color.level[1]};
 `,
 );
 
