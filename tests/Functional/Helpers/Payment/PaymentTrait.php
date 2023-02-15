@@ -3619,6 +3619,7 @@ trait PaymentTrait
             "yesg",
             "axb",
             "fam",
+            "rapl",
         ];
 
         return $vpaHandles;

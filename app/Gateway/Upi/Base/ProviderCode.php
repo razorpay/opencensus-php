@@ -178,6 +178,7 @@ class ProviderCode
     const YESG               = 'yesg';
     const AXB                = 'axb';
     const FAM                = 'fam';
+    const RAPL                = 'rapl';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -347,6 +348,7 @@ class ProviderCode
         self::YESG               => IFSC::YESB,
         self::AXB                => IFSC::UTIB,
         self::FAM                => self::PPIW,
+        self::RAPL               => IFSC::RATN,
     ];
 
     /**
@@ -367,6 +369,7 @@ class ProviderCode
         self::APL           => ProviderPsp::AMAZON_PAY,
         self::YAPL          => ProviderPsp::AMAZON_PAY,
         self::BARODAMPAY    => ProviderPsp::BHIM_BARODAPAY,
+        self::RAPL          => ProviderPsp::AMAZON_PAY,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
