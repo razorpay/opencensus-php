@@ -104,6 +104,14 @@ class ArtReconProcess extends Job
 
             if (isset($response['body']['response']) === true)
             {
+                $this->trace->info(
+                    TraceCode::ART_REFUND_RECON_SCROOGE_RESPONSE,
+                    [
+                        'failure_count'         => $response['body']['response']['failure_count'],
+                        'art_request_id'        => $this->data['art_request_id'],
+                        'gateway'               => $this->data['gateway'],
+                    ]
+                );
                 (new Service)->reconcileRefundsAfterScroogeRecon($response['body']['response'], false);
             }
 

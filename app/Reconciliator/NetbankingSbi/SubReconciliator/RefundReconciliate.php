@@ -286,9 +286,10 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
         if ((empty($paymentId) === true) or (empty($sequenceNumber) === true))
         {
             $this->trace->info(
-                TraceCode::RECON_INFO,
+                TraceCode::RECON_MISMATCH,
                 [
-                    'message'         => 'Sequence number or payment id not found',
+                    'info_code'       => InfoCode::REFUND_ABSENT,
+                    'message'         => 'Sequence number or payment id not found in request',
                     'payment_id'      => $paymentId,
                     'refund'          => $sequenceNumber,
                     'gateway'         => Gateway::NETBANKING_SBI,
@@ -316,6 +317,7 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
                 TraceCode::RECON_MISMATCH,
                 [
                     'info_code'             => InfoCode::REFUND_ABSENT,
+                    'message'               => 'Refund id not found from payment id and sequence number',
                     'payment_id'            => $paymentId,
                     'sequence_number'       => $sequenceNumber,
                     'data'                  => $scroogeReconData
@@ -368,6 +370,8 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
             $scroogeReconData['status'] = null;
         }
+
+        $this->repo->saveOrFail($refundEntity);
 
         return $scroogeReconData;
     }
