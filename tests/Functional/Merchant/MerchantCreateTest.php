@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
+use App;
 use Mail;
 use Queue;
 use Mockery;
@@ -10,7 +11,9 @@ use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\User\Role;
+use RZP\Constants\Product;
 use RZP\Constants\Timezone;
+use WpOrg\Requests\Response;
 use RZP\Models\Card\Network;
 use RZP\Models\Batch\Header;
 use RZP\Models\Merchant\Core;
@@ -20,7 +23,9 @@ use RZP\Mail\User\MappedToAccount;
 use RZP\Models\Settlement\Channel;
 use RZP\Models\Admin\Permission;
 use RZP\Tests\Functional\TestCase;
+use Illuminate\Support\Facades\Bus;
 use RZP\Models\Pricing\DefaultPlan;
+use RZP\Jobs\SubMerchantTaggingJob;
 use Illuminate\Support\Facades\Redis;
 use RZP\Models\Partner\RateLimitBatch;
 use RZP\Exception\BadRequestException;
@@ -39,10 +44,12 @@ use RZP\Tests\Functional\Helpers\TerminalTrait;
 use RZP\Models\User\Repository as UserRepository;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use Razorpay\OAuth\Application\Entity as OAuthApp;
+use RZP\Services\Mock\LOSService as MockLOSService;
 use RZP\Models\Partner\Constants as PartnerConstants;
 use RZP\Mail\User\PasswordReset as PasswordResetMail;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Partner\PartnershipsRateLimiter;
+use RZP\Models\Merchant\Attribute as MerchantAttribute;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 use RZP\Models\Merchant\Repository as MerchantRepository;
@@ -53,6 +60,8 @@ use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerMail;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMail;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantPartner as CreateSubMerchantPartnerForX;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateMailForX;
+use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantPartner as CreateSubMerchantPartnerForLOC;
+use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForLOC;
 use RZP\Tests\Traits\MocksSplitz;
 
 class MerchantCreateTest extends TestCase
@@ -62,13 +71,16 @@ class MerchantCreateTest extends TestCase
     use TerminalTrait;
     use BatchTestTrait;
 
+    protected mixed $repo;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantCreateTestData.php';
 
         parent::setUp();
 
-
+        $this->app = App::getFacadeRoot();
+        $this->repo = $this->app['repo'];
 
         $this->mockApachePinot();
 
@@ -1493,7 +1505,125 @@ class MerchantCreateTest extends TestCase
 
         $this->startTest($testData);
 
+        $userValidator->shouldAllowMockingProtectedMethods();
+
         $userValidator->shouldNotReceive('validateCaptcha');
+    }
+
+    /**
+     * Given: A partner whitelisted under partnership for capital experiment
+     * When: Partner uploads a batch file with 1 submerchant to be added for LOC
+     * Then:
+     *   - submerchant is added
+     *   - submerchant user is created for banking
+     *   - submerchant is mapped to partner's reseller application
+     *   - submerchant receives email and sms with password reset link
+     *   - partner receives no email since we are processing in batch
+     *   - LOS Service should receive 1 request to create capital application
+     *   - merchant_attribute for capital_loc_emi is created for submerchant
+     *   - capital loc tag is added to submerchant
+     *
+     * @return void
+     */
+    public function testCreateSubMerchantByResellerBatchForLOC()
+    {
+        Mail::fake();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        //Bus::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping(MerchantConstants::RESELLER);
+
+        $this->ba->batchAppAuth();
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        // assert that LOS Service gets one request to get product list and one request to create capital application
+        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
+                                  ->makePartial()
+                                  ->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('losService', $losServiceMock);
+
+        $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
+
+        $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        // assert that stork receives a sendSms request
+        $storkMock = \Mockery::mock('RZP\Services\Stork', [$this->app])
+                             ->makePartial()
+                             ->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('stork_service', $storkMock);
+
+        $expectedParams = [
+            'subMerchantName' => 'Erebor Travels'
+        ];
+
+        (new MerchantTest())->expectStorkSmsRequest(
+            $storkMock,
+            'sms.onboarding.partner_submerchant_invite_line_of_credit',
+            '+91' . $testData['request']['content']['contact_mobile'],
+            $expectedParams
+        );
+
+        // start test
+        $this->startTest();
+
+        // assert that submerchant received an email
+        Mail::assertQueued(CreateSubMerchantAffiliateForLOC::class, function($mail) use ($testData) {
+            return $mail->hasTo($testData['request']['content']['email']);
+        });
+
+        // assert that partner is not sent an email, since it's batch service
+        Mail::assertNotQueued(CreateSubMerchantPartnerForLOC::class);
+
+        $submerchant = $this->getLastEntity('merchant', true);
+
+        // assert that partner's reseller app is mapped to submerchant in merchant_access_map
+        $this->verifyAccessMapEntries($app, $submerchant);
+
+        // assert that new submerchant's user is created and email/contact number match
+        $submerchantUser = $this->getLastEntity('user', true);
+
+        $this->assertEquals($testData['request']['content']['email'], $submerchantUser['email']);
+
+        $this->assertEquals('+91' . $testData['request']['content']['contact_mobile'], $submerchantUser['contact_mobile']);
+
+        // assert that submerchant user is given access to banking product
+        $mapping = $this->fixtures->user->getMerchantUserMapping(
+            $submerchant['id'],
+            $submerchantUser['id'],
+            'banking'
+        );
+
+        $this->assertEquals(1, count($mapping));
+
+        // assert that contact mobile is also saved in merchant detail with a +91
+        $submerchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertEquals(
+            '+91' . $testData['request']['content']['contact_mobile'],
+            $submerchantDetail['contact_mobile']
+        );
+
+        // assert that merchant attribute for X_MERCHANT_INTENT:CAPITAL_LOC_EMI is added in live mode
+        $res = $this->repo->merchant_attribute->connection(Mode::LIVE)
+                                              ->getKeyValues(
+                                                  $submerchant["id"],
+                                                  Product::BANKING,
+                                                  MerchantAttribute\Group::X_MERCHANT_INTENT,
+                                                  [MerchantAttribute\Type::CAPITAL_LOC_EMI]
+                                              );
+
+        $this->assertNotEmpty($res);
+
+        //// assert that submerchant tagging job is dispatched with capital loc prefix
+        //// ToDo: This can be fixed if lqext BusDispatcher extends QueueingDispatcher instead of Dispatcher
+        //Bus::assertDispatched(SubMerchantTaggingJob::class, function (SubMerchantTaggingJob $job) {
+        //    return $job->getTagPrefix() === MerchantConstants::CAPITAL_LOC_PARTNERSHIP_TAG_PREFIX;
+        //});
     }
 
     public function testCreateSubMerchantWithInvalidEmailByAdminForAggregatorBatch()
@@ -3224,5 +3354,62 @@ class MerchantCreateTest extends TestCase
         $paymentConfig = $this->getDbEntity('config', ['merchant_id' => $merchantId]);
 
         $this->assertNotNull($paymentConfig);
+    }
+
+    protected function mockCapitalPartnershipSplitzExperiment()
+    {
+        $input = [
+            "experiment_id" => "L0rynez0HhIXHb",
+            "id"            => "10000000000000",
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($input, $output);
+    }
+
+    protected function mockCreateApplicationRequestOnLOSService($mockLOSService)
+    {
+        $mockLOSService->shouldReceive('sendRequest')
+                       ->atLeast()
+                       ->once()
+                       ->with(
+                           MerchantConstants::CREATE_CAPITAL_APPLICATION_LOS_URL,
+                           Mockery::type('array'),
+                           Mockery::type('array')
+                       );
+
+        $mockLOSService->shouldReceive('parseResponse')->times(1);
+    }
+
+    protected function mockGetProductsRequestOnLOSService($mockLOSService)
+    {
+        $mockLOSService->shouldReceive('sendRequest')
+                       ->atLeast()
+                       ->once()
+                       ->with(
+                           MerchantConstants::GET_PRODUCTS_LOS_URL,
+                           Mockery::type('array'),
+                           Mockery::type('array')
+                       )
+                       ->andReturnUsing(
+                           function() {
+                               $resp              = new Response;
+                               $resp->success     = true;
+                               $resp->status_code = 200;
+                               $resp->body        = json_encode(
+                                   [
+                                       "products" => MockLOSService::PRODUCT_LIST
+                                   ]
+                               );
+
+                               return $resp;
+                           }
+                       );
     }
 }

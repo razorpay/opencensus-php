@@ -207,6 +207,7 @@ class CapitalSubmerchantUtility
                     Entity::EMAIL                  => $input[Entity::EMAIL],
                     MerchantDetail::CONTACT_MOBILE => $input[MerchantDetail::CONTACT_MOBILE],
                     Entity::PRODUCT                => Product::BANKING,
+                    "actual_product"               => Product::CAPITAL
                 ];
             }
         }

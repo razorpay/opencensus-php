@@ -8,6 +8,111 @@ use RZP\Services\LOSService as BaseLOSService;
 
 class LOSService extends BaseLOSService
 {
+    const PRODUCT_LIST = [
+        [
+            "id"          => "EoGaaFNzL1EWBg",
+            "name"        => "LOAN",
+            "description" => "Loaan ley lo",
+            "attributes"  => [
+                "limits"                  => [
+                    [
+                        "limit_type" => "credit_limit",
+                        "upper"      => 100000,
+                        "lower"      => 1000
+                    ]
+                ],
+                "credit_offer_attributes" => [
+                ]
+            ]
+        ],
+        [
+            "id"          => "EqKB9PdCTKCFXo",
+            "name"        => "LOC",
+            "description" => "Loc ley lo",
+            "attributes"  => [
+                "limits"                  => [
+                    [
+                        "limit_type" => "credit_limit",
+                        "upper"      => 100000,
+                        "lower"      => 1000
+                    ]
+                ],
+                "credit_offer_attributes" => [
+                ]
+            ]
+        ],
+        [
+            "id"          => "EzKCyq0So3rVWU",
+            "name"        => "CARDS",
+            "description" => "Credit CARD",
+            "attributes"  => [
+                "limits"                  => [
+                    [
+                        "limit_type" => "credit_limit",
+                        "upper"      => 100000,
+                        "lower"      => 1000
+                    ]
+                ],
+                "credit_offer_attributes" => [
+                ]
+            ]
+        ],
+        [
+            "id"          => "GUFPH0c7xFrkB5",
+            "name"        => "Loan",
+            "description" => "Loc ley lo",
+            "attributes"  => [
+                "limits"                  => [
+                    [
+                        "limit_type" => "credit_limit",
+                        "upper"      => 100000,
+                        "lower"      => 1000
+                    ]
+                ],
+                "credit_offer_attributes" => [
+                ]
+            ]
+        ],
+        [
+            "id"          => "HkZwK1B5L02mD9",
+            "name"        => "MARKETPLACE_ES",
+            "description" => "Lending for Marketplace sellers",
+            "attributes"  => [
+                "limits"                  => [
+                ],
+                "credit_offer_attributes" => [
+                ]
+            ]
+        ],
+        [
+            "id"          => "JsP6pHbeMKn10D",
+            "name"        => "LOC_CLI",
+            "description" => "Line of Credit CLI",
+            "attributes"  => [
+                "limits"                  => [
+                ],
+                "credit_offer_attributes" => [
+                ]
+            ]
+        ],
+        [
+            "id"          => "JsP6pHbeMKn10E",
+            "name"        => "LOC_EMI",
+            "description" => "Line of Credit EMI",
+            "attributes"  => [
+                "limits"                  => [
+                    [
+                        "limit_type" => "credit_limit",
+                        "upper"      => 100000,
+                        "lower"      => 1000
+                    ]
+                ],
+                "credit_offer_attributes" => [
+                ]
+            ]
+        ],
+    ];
+
     public function sendRequest(
         string $url,
         array  $body = [],
@@ -24,110 +129,7 @@ class LOSService extends BaseLOSService
         if ($url === Constants::GET_PRODUCTS_LOS_URL)
         {
             $response = [
-                "products" => [
-                    [
-                        "id"          => "EoGaaFNzL1EWBg",
-                        "name"        => "LOAN",
-                        "description" => "Loaan ley lo",
-                        "attributes"  => [
-                            "limits"                   => [
-                                [
-                                    "limit_type" => "credit_limit",
-                                    "upper"      => 100000,
-                                    "lower"      => 1000
-                                ]
-                            ],
-                            "credit_offer_attributes"  => [
-                            ]
-                        ]
-                    ],
-                    [
-                        "id"          => "EqKB9PdCTKCFXo",
-                        "name"        => "LOC",
-                        "description" => "Loc ley lo",
-                        "attributes"  => [
-                            "limits"                   => [
-                                [
-                                    "limit_type" => "credit_limit",
-                                    "upper"      => 100000,
-                                    "lower"      => 1000
-                                ]
-                            ],
-                            "credit_offer_attributes"  => [
-                            ]
-                        ]
-                    ],
-                    [
-                        "id"          => "EzKCyq0So3rVWU",
-                        "name"        => "CARDS",
-                        "description" => "Credit CARD",
-                        "attributes"  => [
-                            "limits"                   => [
-                                [
-                                    "limit_type" => "credit_limit",
-                                    "upper"      => 100000,
-                                    "lower"      => 1000
-                                ]
-                            ],
-                            "credit_offer_attributes"  => [
-                            ]
-                        ]
-                    ],
-                    [
-                        "id"          => "GUFPH0c7xFrkB5",
-                        "name"        => "Loan",
-                        "description" => "Loc ley lo",
-                        "attributes"  => [
-                            "limits"                   => [
-                                [
-                                    "limit_type" => "credit_limit",
-                                    "upper"      => 100000,
-                                    "lower"      => 1000
-                                ]
-                            ],
-                            "credit_offer_attributes"  => [
-                            ]
-                        ]
-                    ],
-                    [
-                        "id"          => "HkZwK1B5L02mD9",
-                        "name"        => "MARKETPLACE_ES",
-                        "description" => "Lending for Marketplace sellers",
-                        "attributes"  => [
-                            "limits"                   => [
-                            ],
-                            "credit_offer_attributes"  => [
-                            ]
-                        ]
-                    ],
-                    [
-                        "id"          => "JsP6pHbeMKn10D",
-                        "name"        => "LOC_CLI",
-                        "description" => "Line of Credit CLI",
-                        "attributes"  => [
-                            "limits"                   => [
-                            ],
-                            "credit_offer_attributes"  => [
-                            ]
-                        ]
-                    ],
-                    [
-                        "id"          => "JsP6pHbeMKn10E",
-                        "name"        => "LOC_EMI",
-                        "description" => "Line of Credit EMI",
-                        "attributes"  => [
-                            "limits"                   => [
-                                [
-                                    "limit_type" => "credit_limit",
-                                    "upper"      => 100000,
-                                    "lower"      => 1000
-                                ]
-                            ],
-                            "credit_offer_attributes"  => [
-                            ]
-                        ]
-                    ],
-                ]
+                "products" => self::PRODUCT_LIST,
             ];
         }
 

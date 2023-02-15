@@ -3900,7 +3900,6 @@ class PartnerTest extends OAuthTestCase
             ]
         ];
         $this->mockSplitzTreatment($input, $output);
-
     }
 
     protected function createResellerPartnerAndAddBankingSubmerchants()

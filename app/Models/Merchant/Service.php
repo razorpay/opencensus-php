@@ -161,6 +161,10 @@ use RZP\Mail\Merchant\CreateSubMerchantPartner as CreateSubMerchantPartnerForPG;
 use RZP\Mail\Merchant\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForPG;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantPartner as CreateSubMerchantPartnerForX;
 use RZP\Mail\Merchant\RazorpayX\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForX;
+use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantPartner as CreateSubMerchantPartnerForLOC;
+use RZP\Mail\Merchant\Capital\CorporateCards\CreateSubMerchantPartner as CreateSubMerchantPartnerForCC;
+use RZP\Mail\Merchant\Capital\LineOfCredit\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForLOC;
+use RZP\Mail\Merchant\Capital\CorporateCards\CreateSubMerchantAffiliate as CreateSubMerchantAffiliateForCC;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\TrustedBadge;
 use RZP\Models\Partner\Commission\Core as PartnerCommissionCore;
@@ -1155,10 +1159,7 @@ class Service extends Base\Service
 
         if (empty($user) === false)
         {
-            if ($product === Product::BANKING)
-            {
-                $this->sendSubMerchantCreationSMSForX($subMerchant, $aggregator, $user, $createdNewUser);
-            }
+            $this->sendSubMerchantCreationSMSForProduct($product, $subMerchant, $aggregator, $user, $createdNewUser);
 
             $args      = [
                 MerchantConstants::MERCHANT => $subMerchant,
@@ -1218,20 +1219,20 @@ class Service extends Base\Service
     }
 
     /**
-     * @param array $subMerchant
-     * @param array $aggregator
-     * @param string $product
+     * @param array            $subMerchant
+     * @param array            $aggregator
+     * @param string           $product
      * @param User\Entity|null $user
-     * @param bool $createdNewUser
-     * @param bool $retry
+     * @param bool             $createdNewUser
+     * @param bool             $retry
      */
     protected function sendNewSubMerchantCreationMails(
-        array $subMerchant,
-        array $aggregator,
-        string $product,
+        array       $subMerchant,
+        array       $aggregator,
+        string      $product,
         User\Entity $user = null,
-        bool $createdNewUser = false,
-        bool $retry = false)
+        bool        $createdNewUser = false,
+        bool        $retry = false)
     {
         // This mail goes to the partner who has added the sub-merchant. If the partner is adding the merchant then mail
         // is sent to both partner and merchant but when partner sends the mail as a reminder to merchant for setting
@@ -1250,6 +1251,11 @@ class Service extends Base\Service
 
                 case Product::BANKING:
                     $createSubMerchantPartnerMail = new CreateSubMerchantPartnerForX($subMerchant, $aggregator);
+                    Mail::queue($createSubMerchantPartnerMail);
+                    break;
+
+                case Product::CAPITAL:
+                    $createSubMerchantPartnerMail = new CreateSubMerchantPartnerForLOC($subMerchant, $aggregator);
                     Mail::queue($createSubMerchantPartnerMail);
                     break;
             }
@@ -1286,25 +1292,38 @@ class Service extends Base\Service
                 $createSubMerchantAffiliateMail = new CreateSubMerchantAffiliateForX($subMerchant, $aggregator, $org, $mailUserData);
                 Mail::queue($createSubMerchantAffiliateMail);
                 break;
+
+            case Product::CAPITAL:
+                $createSubMerchantAffiliateMail = new CreateSubMerchantAffiliateForLOC($subMerchant, $aggregator, $org, $mailUserData);
+                Mail::queue($createSubMerchantAffiliateMail);
+                break;
         }
     }
 
     /**
-     * Send an SMS to sub-merchant when added via partner dashboard for X
+     * Send an SMS to sub-merchant when added via partner dashboard for X or Capital
      *
-     * @param Entity           $subMerchant
-     * @param Entity           $merchant
-     * @param string           $product
-     * @param User\Entity|null $user
-     * @param bool             $isNewUser
+     * @param string      $product
+     * @param Entity      $subMerchant
+     * @param Entity      $merchant
+     * @param User\Entity $user
+     * @param bool        $isNewUser
+     *
+     * @return void
      */
-    protected function sendSubMerchantCreationSMSForX(
+    protected function sendSubMerchantCreationSMSForProduct(
+        string      $product,
         Entity      $subMerchant,
         Entity      $merchant,
         User\Entity $user,
         bool        $isNewUser
     )
     {
+        if ($product === Product::PRIMARY)
+        {
+            return;
+        }
+
         $subMerchantDetails = (new MerchantDetailCore())->getMerchantDetails($subMerchant);
 
         $submContactMobile = $subMerchantDetails->getContactMobile();
@@ -1326,7 +1345,7 @@ class Service extends Base\Service
 
         $token = $user->getPasswordResetToken();
 
-        if(empty($token) === true)
+        if (empty($token) === true)
         {
             $token = (new User\Service())->getTokenWithExpiry(
                 $user->getId(),
@@ -1340,7 +1359,6 @@ class Service extends Base\Service
         $contentParams = [
             'subMerchantName'   => $subMerchant->getName(),
             'partnerName'       => $merchant->getName(),
-            'subMerchantEmail'  => $subMerchant->getEmail(),
             'resetPasswordLink' => $this->app['elfin']->shorten($passwordResetLink)
         ];
 
@@ -1351,7 +1369,6 @@ class Service extends Base\Service
             'destination'       => $submContactMobile,
             'orgId'             => $subMerchant->getOrgId(),
             'ownerId'           => $subMerchant->getId(),
-            'templateName'      => 'sms.onboarding.partner_submerchant_invite',
             'contentParams'     => $contentParams,
             'sender'            => 'RZPAYX'
         ];
@@ -1360,18 +1377,34 @@ class Service extends Base\Service
             'submerchant_id'      => $subMerchant->getId(),
             'partner_id'          => $merchant->getId(),
             'submerchant_user_id' => $user->getId(),
-            'sms_template'        => 'sms.onboarding.partner_submerchant_invite'
         ];
+
+        $traceCode      = TraceCode::SEND_SUBMERCHANT_X_ONBOARDING_SMS;
+        $errorTraceCode = TraceCode::SUBMERCHANT_X_ONBOARDING_SMS_FAILED;
+
+        if ($product === Product::BANKING)
+        {
+            $smsPayload['contentParams']['subMerchantEmail'] = $subMerchant->getEmail();
+            $smsPayload['templateName']                      = 'sms.onboarding.partner_submerchant_invite';
+            $tracePayload['sms_template']                    = 'sms.onboarding.partner_submerchant_invite';
+        }
+        elseif ($product === Product::CAPITAL)
+        {
+            $smsPayload['templateName']   = 'sms.onboarding.partner_submerchant_invite_line_of_credit';
+            $tracePayload['sms_template'] = 'sms.onboarding.partner_submerchant_invite_line_of_credit';
+            $traceCode                    = TraceCode::SEND_SUBMERCHANT_LOC_ONBOARDING_SMS;
+            $errorTraceCode               = TraceCode::SUBMERCHANT_LOC_ONBOARDING_SMS_FAILED;
+        }
 
         try
         {
             $this->app->stork_service->sendSms($this->mode, $smsPayload);
 
-            $this->trace->info(TraceCode::SEND_SUBMERCHANT_X_ONBOARDING_SMS, $tracePayload);
+            $this->trace->info($traceCode, $tracePayload);
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::CRITICAL, TraceCode::SUBMERCHANT_X_ONBOARDING_SMS_FAILED, $tracePayload);
+            $this->trace->traceException($e, Trace::CRITICAL, $errorTraceCode, $tracePayload);
         }
     }
 
@@ -6799,6 +6832,10 @@ class Service extends Base\Service
 
         $product = $input[Entity::PRODUCT] ?? Product::PRIMARY;
 
+        $actualProduct = $input['actual_product'] ?? $product;
+
+        unset($input['actual_product']);
+
        //block P.G sub merchant creation
         if ($isLinkedAccount === false)
         {
@@ -6836,7 +6873,7 @@ class Service extends Base\Service
             $this->app->hubspot->skipMerchantOnboardingComm($subMerchant->getEmail());
         }
 
-        Tracer::inspan(['name' => HyperTrace::SEND_MAIL_TO_SUBMERCHANT], function () use ($merchant, $isLinkedAccount, $newUser, $subMerchant, $createdNew, $product) {
+        Tracer::inspan(['name' => HyperTrace::SEND_MAIL_TO_SUBMERCHANT], function () use ($merchant, $isLinkedAccount, $newUser, $subMerchant, $createdNew, $actualProduct) {
 
             // Sends email to marketplace LA dashboard enabled users.
             if ((empty($newUser) === false) and (($merchant->isMarketplace() and $isLinkedAccount) === true))
@@ -6846,7 +6883,7 @@ class Service extends Base\Service
             else if (((($merchant->isMarketplace() === true) and ($isLinkedAccount === true)) === false) and
                      ($merchant->canCommunicateWithSubmerchant() === true))
             {
-                $this->communicateSubMerchantCreation($subMerchant, $merchant, $product, $newUser, $createdNew);
+                $this->communicateSubMerchantCreation($subMerchant, $merchant, $actualProduct, $newUser, $createdNew);
             }
         });
 
