@@ -36,6 +36,7 @@ use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Jobs\SubmerchantFirstTransactionEvent;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Tests\Functional\Helpers\TerminalTrait;
+use RZP\Models\User\Repository as UserRepository;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use Razorpay\OAuth\Application\Entity as OAuthApp;
 use RZP\Models\Partner\Constants as PartnerConstants;
@@ -1240,6 +1241,21 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(1, $counter);
 
         $submerchantUser = $this->getLastEntity('user', true);
+
+        // - For X sub-merchants, if a mobile number is sent in the bulk upload file, we send a password reset
+        //   link to email as well as sms.
+        // - When the email is sent, `(new User\Service())->getTokenWithExpiry` is called.
+        // - The same thing happens when an SMS is to be sent.
+        // - `getTokenWithExpiry` replaces the previously generated token.
+        // = So, the password reset link sent in the email cannot be used to reset the password and log in.
+        // - The sub-merchant must request a new link from forgot password flow.
+        // - This assertion here checks that when SMS is sent, the password reset token sent in the email
+        //   is the same as the one saved in user entity
+        $user = (new UserRepository)->findOrFailPublic($submerchantUser['id']);
+
+        $mail = Mail::queued(CreateSubMerchantAffiliateMailForX::class)->first();
+
+        $this->assertEquals($user->getPasswordResetToken(), $mail->viewData["token"]);
 
         $this->assertEquals('testsub@razorpay.com', $submerchantUser['email']);
 

@@ -1322,10 +1322,17 @@ class Service extends Base\Service
             return;
         }
 
-        $token = (new User\Service())->getTokenWithExpiry(
-            $user->getId(),
-            User\Constants::SUBMERCHANT_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME
-        );
+        $user = $this->repo->user->findOrFailPublic($user->getId());
+
+        $token = $user->getPasswordResetToken();
+
+        if(empty($token) === true)
+        {
+            $token = (new User\Service())->getTokenWithExpiry(
+                $user->getId(),
+                User\Constants::SUBMERCHANT_ACCOUNT_CREATE_PASSOWRD_TOKEN_EXPIRY_TIME
+            );
+        }
 
         $passwordResetLink = 'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)
                              . '/forgot-password#token=' . $token . '&email=' . $subMerchant->getEmail();
