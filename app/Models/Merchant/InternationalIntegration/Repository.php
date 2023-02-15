@@ -35,4 +35,12 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function getByIntegrationKey($integrationKey)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::INTEGRATION_KEY, $integrationKey)
+            ->where(Entity::DELETED_AT, null)
+            ->get();
+    }
+
 }

@@ -38,6 +38,7 @@ class Constants
     const MERCHANT_WORKFLOW_CLARIFICATION   = 'merchant_workflow_clarification';
     const B2B_EXPORT_INVOICE                = 'b2b_export_invoice';
     const APM_ONBOARDING                    = 'apm_onboarding';
+    const OPGSP_INVOICE                     = 'opgsp_invoice';
 
     const PURPOSE_TYPE = [
         self::KYC_PROOF,
@@ -46,6 +47,7 @@ class Constants
         self::INTERNATIONAL_ENABLEMENT,
         self::MERCHANT_WORKFLOW_CLARIFICATION,
         self::B2B_EXPORT_INVOICE,
-        self::APM_ONBOARDING
+        self::APM_ONBOARDING,
+        self::OPGSP_INVOICE
     ];
 }

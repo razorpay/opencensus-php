@@ -410,6 +410,15 @@ class Repository extends Base\Repository
                       ->get();
     }
 
+    public function getDisputesForAdjustmentIds($merchantId, $adjustmentIds)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::DEDUCTION_SOURCE_TYPE, 'adjustment')
+            ->whereIn(Entity::DEDUCTION_SOURCE_ID, $adjustmentIds)
+            ->get();
+    }
+
     public function getNonDaoLostAndWonDisputes($merchantId)
     {
         return $this->newQuery()
@@ -418,5 +427,4 @@ class Repository extends Base\Repository
             ->where(Entity::DEDUCT_AT_ONSET, '=', true)
             ->first();
     }
-
 }

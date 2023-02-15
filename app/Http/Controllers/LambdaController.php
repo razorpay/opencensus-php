@@ -47,4 +47,13 @@ class LambdaController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function processLambdaOpgspSettlementRepatriation()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->processLambdaOpgspSettlementRepatriation($input);
+
+        return ApiResponse::json($data);
+    }
 }

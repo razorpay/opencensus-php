@@ -324,7 +324,7 @@ class Core extends Base\Core
             $bank_accounts = [];
 
             foreach($bank_accounts_map as $key => $account)
-            {                
+            {
                 $preferredRoutingCode = $this->getPreferredRoutingCodeByCurrency($account[self::VA_CURRENCY],$account[self::ROUTING_DETAILS]);
 
                 unset($account[self::ROUTING_DETAILS]);
@@ -389,5 +389,10 @@ class Core extends Base\Core
             }
             return $routing_detail[0];
         }
+    }
+
+    public function getByIntegrationKey($integrationKey)
+    {
+        return $this->repo->merchant_international_integrations->getByIntegrationKey($integrationKey);
     }
 }

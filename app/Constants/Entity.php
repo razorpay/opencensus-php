@@ -671,9 +671,6 @@ class Entity
     const MERCHANT_INTERNATIONAL_INTEGRATIONS = 'merchant_international_integrations';
     const SETTLEMENT_INTERNATIONAL_REPATRIATION = 'settlement_international_repatriation';
 
-    //Payment supporting documents
-    const PAYMENT_SUPPORTING_DOCUMENTS = 'payment_supporting_documents';
-
     // merchant owner details entity
     const MERCHANT_OWNER_DETAILS = 'merchant_owner_details';
 
@@ -1409,7 +1406,6 @@ class Entity
         self::REWARD_COUPON     => \RZP\Models\Reward\RewardCoupon::class,
         self::MERCHANT_INTERNATIONAL_INTEGRATIONS  => \RZP\Models\Merchant\InternationalIntegration::class,
         self::SETTLEMENT_INTERNATIONAL_REPATRIATION => \RZP\Models\Settlement\InternationalRepatriation::class,
-        self::PAYMENT_SUPPORTING_DOCUMENTS => \RZP\Models\Payment\PaymentSupportingDocuments::class,
         self::MERCHANT_OWNER_DETAILS => \RZP\Models\Merchant\OwnerDetail::class,
 
         self::TRUSTED_BADGE          => \RZP\Models\TrustedBadge::class,

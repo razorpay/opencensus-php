@@ -7081,23 +7081,6 @@ ALTER TABLE merchant_consents
     ADD COLUMN retry_count INTEGER DEFAULT 0,
     ADD INDEX (created_at);
 
-CREATE TABLE IF NOT EXISTS payment_supporting_documents (
-  id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
-  payment_id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
-  merchant_id CHAR(14) COLLATE utf8mb4_bin NOT NULL,
-  document_type VARCHAR(45) DEFAULT NULL,
-  document_number VARCHAR(45) DEFAULT NULL,
-  document_owner VARCHAR(45) DEFAULT NULL,
-  file_id CHAR(14) DEFAULT NULL,
-  created_at INT NOT NULL,
-  updated_at INT DEFAULT NULL,
-  deleted_at INT DEFAULT NULL,
-  PRIMARY KEY (id),
-  INDEX `idx_payment_supporting_doc_payment_id` (`payment_id`)
-  INDEX `idx_payment_supporting_doc_document_number` (`document_number`)
-  INDEX `idx_payment_supporting_doc_created_at` (`created_at`)
-) DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_bin;
-
 ALTER TABLE merchant_documents
   ADD metadata json DEFAULT NULL;
 

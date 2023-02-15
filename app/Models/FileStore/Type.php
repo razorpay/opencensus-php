@@ -274,6 +274,7 @@ class Type
     const NIUM_SETTLEMENT_FILE              = 'nium_settlement_file';
     const HDFC_COLLECT_NOW_SETTLEMENT_FILE  = 'custom_org_settlement_file';
     const APM_ONBOARD_REQUEST_FILE          = 'apm_onboard_request_file';
+    const ICICI_OPGSP_IMPORT_SETTLEMENT_FILE= 'icici_opgsp_import_settlement_file';
 
     const AP_SOUTH_DEFAULT_SETTLEMENT_BUCKET_CONFIG = 'ap_south_default_settlement_bucket_config';
     const AP_SOUTH_ACTIVATION_BUCKET_CONFIG         = 'ap_south_activation_bucket_config';
@@ -478,6 +479,7 @@ class Type
             self::NIUM_SETTLEMENT_FILE,
             self::APM_ONBOARD_REQUEST_FILE,
             self::RECON_AUTOMATIC_FILE_FETCH,
+            self::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE,
             self::INDUS_IND_DEBIT_EMI_FILE,
             self::FEDERAL_EMI_FILE,
         ],
@@ -683,6 +685,7 @@ class Type
         self::APM_ONBOARD_REQUEST_FILE,
         self::PAYMENT_LIMIT,
         self::RECON_AUTOMATIC_FILE_FETCH,
+        self::ICICI_OPGSP_IMPORT_SETTLEMENT_FILE,
         self::INDUS_IND_DEBIT_EMI_FILE,
         self::FEDERAL_EMI_FILE,
     ];

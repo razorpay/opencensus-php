@@ -72,6 +72,10 @@ class Validator extends Base\Validator
         Constants::FILE    => 'mimes:pdf,jpeg,jpg,png,jfif',
     ];
 
+    protected static $opgspInvoiceMimeRules = [
+        Constants::FILE    => 'mimes:pdf,jpeg,jpg,png',
+    ];
+
     protected $mimeValidators = [
         Constants::KYC_PROOF                        => 'kyc_mime',
         Constants::TRADEMARK_LOGO                   => 'logo_mime',
@@ -80,6 +84,7 @@ class Validator extends Base\Validator
         Constants::MERCHANT_WORKFLOW_CLARIFICATION  => 'merchant_workflow_clarification_mime',
         Constants::B2B_EXPORT_INVOICE               => 'b2b_export_invoice_mime',
         Constants::APM_ONBOARDING                   => 'apm_onboarding_mime',
+        Constants::OPGSP_INVOICE                    => 'opgsp_invoice_mime',
     ];
 
     public function validateMimeType(array $input)

@@ -181,7 +181,6 @@ class Table
     const VIRTUAL_ACCOUNT_PRODUCTS   = 'virtual_account_products';
     const MERCHANT_INTERNATIONAL_INTEGRATIONS = 'merchant_international_integrations';
     const SETTLEMENT_INTERNATIONAL_REPATRIATION = 'settlement_international_repatriation';
-    const PAYMENT_SUPPORTING_DOCUMENTS = 'payment_supporting_documents';
     const MERCHANT_OWNER_DETAILS     = 'merchant_owner_details';
 
 

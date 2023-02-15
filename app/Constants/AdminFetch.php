@@ -2936,6 +2936,8 @@ class AdminFetch
                         'invoice',
                         'dcc_inv',
                         'dcc_crn',
+                        'opgsp_invoice',
+                        'opgsp_awb',
                     ],
                 ],
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,

@@ -72,6 +72,11 @@ use RZP\Models\Payment\Fraud;
 use RZP\Constants\Shield as ShieldConstants;
 use RZP\Services\Harvester\Constants as HarvesterConstants;
 use RZP\Models\Batch\Processor\Nach\ErrorCodes\RegisterErrorCodes;
+use RZP\Models\Invoice\Service as InvoiceService;
+use RZP\Models\Invoice\Entity as InvoiceEntity;
+use RZP\Models\Invoice\Constants as InvoiceConstants;
+use RZP\Models\Invoice\Type as InvoiceType;
+use RZP\Models\GenericDocument\Service as DocumentService;
 
 class Service extends Base\Service
 {
@@ -2037,7 +2042,75 @@ class Service extends Base\Service
 
         $payments = $this->repo->payment->fetchPaymentWithForceIndex($input, $merchantId);
 
+        // Get payment supporting documents for opgsp import flow on dashboard.
+        if($this->auth->isProxyAuth() === true and
+            $this->merchant->isOpgspImportEnabled())
+        {
+           return $this->fetchPaymentDocumentsThroughInvoice($payments, $merchantId);
+        }
+
         return $payments->toArrayPublic();
+    }
+
+    protected function fetchPaymentDocumentsThroughInvoice($payments, $merchantId)
+    {
+        try
+        {
+            $paymentIds = $this->getPaymentIds($payments);
+
+            $paymentDocuments = (new InvoiceService())->findByPaymentIds($paymentIds, $merchantId);
+
+            $paymentDocumentTypeMap = [];
+            foreach($paymentDocuments as $document)
+            {
+                if(isset($paymentDocumentTypeMap[$document[InvoiceEntity::ENTITY_ID]]))
+                {
+                    $documentTypeMap = [];
+                    $documentTypeMap[$document[InvoiceEntity::TYPE]] =  $document[InvoiceEntity::REF_NUM];
+                    $paymentDocumentTypeMap[$document[InvoiceEntity::ENTITY_ID]] =  $documentTypeMap;
+                }
+                else
+                {
+                    $paymentDocumentTypeMap[$document[InvoiceEntity::ENTITY_ID]][$document[InvoiceEntity::TYPE]] =
+                        $document[InvoiceEntity::REF_NUM];
+                }
+            }
+
+            $paymentsResponse = $payments->toArrayPublic();
+
+            foreach ($paymentsResponse['items'] as &$paymentResponse)
+            {
+                if(!isset($paymentDocumentTypeMap[substr($paymentResponse['id'],4)]))
+                {
+                    continue;
+                }
+                $documentData = $paymentDocumentTypeMap[substr($paymentResponse['id'],4)];
+
+                $paymentResponse[InvoiceType::OPGSP_INVOICE . '_doc'] =
+                    $documentData[InvoiceType::OPGSP_INVOICE];
+            }
+
+            return $paymentsResponse;
+        } catch (\Exception $e)
+        {
+            $this->trace->error(TraceCode::FETCH_PAYMENT_DOCUMENT_FOR_PAYMENTS_FAILED, [
+                'merchantId' => $merchantId,
+            ]);
+
+            throw $e;
+        }
+    }
+
+    protected function getPaymentIds($payments)
+    {
+        $ids = [];
+
+        foreach ($payments as $payment)
+        {
+            array_push($ids, $payment->getId());
+        }
+
+        return $ids;
     }
 
     private function modifyInputForVATransaction(&$input)
@@ -6001,6 +6074,212 @@ class Service extends Base\Service
             ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         $response['b2b_invoice_updated'] = $isB2BInvoiceUpdated;
+
+        return $response;
+    }
+
+    /*
+     * This method is used to save merchant documents for a payment.
+     * Used for OPGSP import payments.
+     */
+    public function updateMerchantDocumentForPayment($id,$input)
+    {
+        try{
+            (new Validator)->validateInput("updateMerchantDocumentDetails", $input);
+        }
+        catch (\Throwable $e)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILED,null,[
+                'error_description' => $e->getMessage(),
+                'error_code'        => $e->getCode(),
+            ]);
+        }
+
+        $response = [];
+
+        if (isset($id) === false)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_NOT_FOUND_TO_UPDATE_MERCHANT_DOC,
+                [
+                    'payment_id'    => $id,
+                    'document_type' => $input["document_type"],
+                ]);
+
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_INVALID_PAYMENT_ID);
+        }
+
+        $documentId = $input["document_id"];
+        $documentType = $input["document_type"];
+
+        $merchant = $this->merchant;
+
+        $mutexKey = InvoiceConstants::MUTEX_MERCHANT_PAYMENT_DOCUMENT_UPLOAD_PREFIX . $documentType . "_" . $id;
+
+        $isDocumentUpdated = $this->mutex->acquireAndRelease($mutexKey,
+            function() use ($id,$documentId,$merchant,$documentType)
+            {
+                $payment = $this->repo->payment->findByIdAndMerchant($id, $merchant);
+
+                if (!isset($payment)) {
+                    $this->trace->info(
+                        TraceCode::PAYMENT_NOT_FOUND_TO_UPDATE_MERCHANT_DOC,
+                        [
+                            'payment_id' => $id,
+                            'document_type' => $documentType,
+                        ]);
+
+                    throw new Exception\BadRequestException(
+                        Error\ErrorCode::BAD_REQUEST_INVALID_PAYMENT_ID);
+                }
+
+                if(!$payment->merchant->isOpgspImportEnabled())
+                {
+                    throw new Exception\BadRequestException(
+                        Error\ErrorCode::BAD_REQUEST_INVALID_PAYMENT_ID);
+                }
+
+                $paymentDocument = (new InvoiceService())->findByPaymentIdDocumentType($id, $documentType);
+
+                if(!isset($paymentDocument))
+                {
+                    $this->trace->info(
+                        TraceCode::PAYMENT_SUPPORTING_DOC_NOT_FOUND,
+                        [
+                            'payment_id' => $id,
+                            'document_type' => $documentType,
+                        ]);
+
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Invoice not found.', 'invoice number');
+                }
+
+                if(isset($paymentDocument[InvoiceEntity::REF_NUM]))
+                {
+                    $this->trace->info(
+                        TraceCode::PAYMENT_DOCUMENT_UPLOAD_DUPLICATE_REQUEST,
+                        [
+                            'payment_id' => $id,
+                            'document_type' => $documentType,
+                        ]);
+
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Duplicate request for invoice', 'invoice number');
+                }
+
+                // this is required as writes can't be done on slave DB
+                // and entity id field is only indexed on slave.
+                $paymentDocument = $this->repo->invoice->findOrFail($paymentDocument->getId());
+                $paymentDocument->setRefNum($documentId);
+                $this->repo->invoice->saveOrFail($paymentDocument);
+
+                $this->trace->info(TraceCode::PAYMENT_UPDATED_WITH_MERCHANT_DOC,
+                    [
+                        'payment_id' => $id,
+                        'document_id' => $documentId,
+                        'document_type' => $documentType,
+                    ]);
+
+                $data = [
+                    'merchant_id'   => $merchant->getId(),
+                    'action'        => Jobs\ImportFlowSettlementProcessor::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT,
+                    'payment_id'    => $id
+                ];
+
+                Jobs\ImportFlowSettlementProcessor::dispatch($data)->delay(rand(60, 1000) % 601);
+
+                return true;
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        $response['document_updated'] = $isDocumentUpdated;
+
+        return $response;
+    }
+
+    public function uploadPaymentSupportingDocument($input)
+    {
+
+        (new Payment\Validator)->validateUploadPaymentSupportingDocument($input);
+
+        $response = [];
+
+        $fileData = $_FILES['file'];
+
+        $documentNumber = substr($fileData['name'], 0 , (strrpos($fileData['name'], ".")));
+
+        $merchant = $this->merchant;
+
+        $mutexKey = InvoiceConstants::MUTEX_MERCHANT_PAYMENT_DOCUMENT_UPLOAD_PREFIX
+            . $merchant->getId() . "_" . $input['purpose'] . "_" . $documentNumber;
+
+        $isDocumentUpdated = $this->mutex->acquireAndRelease($mutexKey,
+            function() use ($input, $merchant, $documentNumber)
+            {
+                $paymentDocument = (new InvoiceService())
+                    ->findByMerchantIdDocumentTypeDocumentNumber($merchant->getId(),$input['purpose'], $documentNumber);
+
+                if(!isset($paymentDocument))
+                {
+                    $this->trace->info(
+                        TraceCode::PAYMENT_NOT_FOUND_TO_UPDATE_MERCHANT_DOC,
+                        [
+                            'fileName'   => $documentNumber,
+                            'merchantId' => $merchant->getId(),
+                        ]);
+
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Invoice number is not found.', 'invoice number');
+                }
+
+                if(isset($paymentDocument[InvoiceEntity::REF_NUM]))
+                {
+                    $this->trace->info(
+                        TraceCode::PAYMENT_DOCUMENT_UPLOAD_DUPLICATE_REQUEST,
+                        [
+                            'payment_id' => $paymentDocument[InvoiceEntity::ENTITY_ID],
+                            'document_type' => $paymentDocument[InvoiceEntity::TYPE],
+                            'document_number' => $paymentDocument[InvoiceEntity::RECEIPT],
+                        ]);
+
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Duplicate request for invoice', 'invoice number');
+                }
+
+                $uploadResponse = (new DocumentService())->uploadDocument($input);
+
+                // this is required as writes can't be done on slave DB
+                // and merchant id + receipt field is only indexed on slave.
+                $paymentDocument = $this->repo->invoice->findOrFail($paymentDocument->getId());
+
+                $paymentDocument->setRefNum(substr($uploadResponse['id'],4));
+
+                $this->repo->invoice->saveOrFail($paymentDocument);
+
+                $this->trace->info(TraceCode::PAYMENT_UPDATED_WITH_MERCHANT_DOC,
+                    [
+                        'payment_id' => $paymentDocument[InvoiceEntity::ENTITY_ID],
+                        'document_type' => $paymentDocument[InvoiceEntity::TYPE],
+                        'document_id' => $uploadResponse['id'],
+                    ]);
+
+                $data = [
+                    'merchant_id'   => $merchant->getId(),
+                    'action'        => Jobs\ImportFlowSettlementProcessor::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT,
+                    'payment_id'    => $paymentDocument[InvoiceEntity::ENTITY_ID],
+                ];
+
+                Jobs\ImportFlowSettlementProcessor::dispatch($data)->delay(rand(60, 1000) % 601);
+
+                return true;
+
+            },
+            20,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        $response['document_updated'] = $isDocumentUpdated;
 
         return $response;
     }

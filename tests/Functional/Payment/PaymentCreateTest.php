@@ -10188,11 +10188,10 @@ class PaymentCreateTest extends TestCase
         $firstResponse=$this->sendRequest($firstRequest);
 
         $paymentEntity = $this->getDbLastPayment();
-        $paymentSupportingDocs = $this->getLastEntity('payment_supporting_documents', true);
-        $this->assertEquals($paymentSupportingDocs['payment_id'], $paymentEntity['id'] );
-        $this->assertEquals($paymentSupportingDocs['document_owner'],'merchant');
-        $this->assertEquals($paymentSupportingDocs['document_type'],'invoice');
-        $this->assertEquals($paymentSupportingDocs['document_number'],'INV123');
+        $paymentSupportingDocs = $this->getLastEntity('invoice', true);
+        $this->assertEquals($paymentSupportingDocs['entity_id'], $paymentEntity['id'] );
+        $this->assertEquals($paymentSupportingDocs['type'],'opgsp_invoice');
+        $this->assertEquals($paymentSupportingDocs['receipt'],'INV123');
         $this->validatePaymentBillingAddress($paymentEntity, $content['billing_address']);
 
     }
@@ -10271,13 +10270,113 @@ class PaymentCreateTest extends TestCase
         $firstResponse=$this->sendRequest($firstRequest);
 
         $paymentEntity = $this->getDbLastPayment();
-        $paymentSupportingDocs = $this->getLastEntity('payment_supporting_documents', true);
-        $this->assertEquals($paymentSupportingDocs['payment_id'], $paymentEntity['id'] );
-        $this->assertEquals($paymentSupportingDocs['document_owner'],'merchant');
-        $this->assertEquals($paymentSupportingDocs['document_type'],'invoice');
-        $this->assertEquals($paymentSupportingDocs['document_number'],'INV123');
+        $paymentSupportingDocs = $this->getLastEntity('invoice', true);
+        $this->assertEquals($paymentSupportingDocs['entity_id'], $paymentEntity['id'] );
+        $this->assertEquals($paymentSupportingDocs['type'],'opgsp_invoice');
+        $this->assertEquals($paymentSupportingDocs['receipt'],'INV123');
+        $this->validatePaymentBillingAddress($paymentEntity, $content['billing_address']);
+    }
+
+    public function testUpdateMerchantDocumentForPayment()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['amount'] = '1000000';
+        $payment['notes'] = [
+            'invoice_number' => 'INV123',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+
+        $this->assertArrayHasKey('next', $responseContent);
+
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToAddressCollectUrl($redirectContent['url']));
+
+        $id = getTextBetweenStrings($redirectContent['url'], '/payments/', '/address_collect');
+
+        $this->redirectToAddressCollect= true;
+
+        $url = $this->getPaymentRedirectToAddressCollectUrl($id);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $infoResponse = $this->makeRequestParent($request);
+        $this->ba->publicAuth();
+
+        $content = $infoResponse->getContent();
+        $this->redirectToUpdateAndAuthorize = true;
+
+        list($url, $method, $content) = $this->getFormDataFromResponse($content, 'http://localhost');
+
+        $content['billing_address'] = $this->getDefaultBillingAddressArray();
+        $content['billing_address']['first_name'] = 'First';
+        $content['billing_address']['last_name'] = 'Rahul';
+
+        $firstRequest = [
+            'content'=>$content,
+            'method'=>$method,
+            'url'=>$url
+        ];
+        $firstResponse=$this->sendRequest($firstRequest);
+
+        $paymentEntity = $this->getDbLastPayment();
+        $paymentSupportingDocs = $this->getLastEntity('invoice', true);
+        $this->assertEquals($paymentSupportingDocs['entity_id'], $paymentEntity['id'] );
+        $this->assertEquals($paymentSupportingDocs['type'],'opgsp_invoice');
+        $this->assertEquals($paymentSupportingDocs['receipt'],'INV123');
         $this->validatePaymentBillingAddress($paymentEntity, $content['billing_address']);
 
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId , $merchantUser['id']);
+
+        $request = [
+            'url'    => '/payment/'.$paymentEntity['id'].'/update_merchant_doc',
+            'method' => 'patch',
+            'content' => [
+                'document_id' => "doc_1234567890",
+                'document_type' => "opgsp_invoice"
+            ]
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['document_updated']);
+
+        $paymentSupportingDocs = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($paymentSupportingDocs['ref_num'],'doc_1234567890');
     }
 
     /**

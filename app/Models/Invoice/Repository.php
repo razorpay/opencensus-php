@@ -600,6 +600,34 @@ class Repository extends Base\Repository
         return $invoice;
     }
 
+    public function findByPaymentIdDocumentType($paymentId, $entityType, $documentType)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::ENTITY_ID, $paymentId)
+            ->where(Entity::ENTITY_TYPE, $entityType)
+            ->where(Entity::TYPE, $documentType)
+            ->first();
+    }
+
+    public function findByPaymentIds($paymentIds, $entityType, $merchantId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->whereIn(Entity::ENTITY_ID, $paymentIds)
+            ->where(Entity::ENTITY_TYPE, $entityType)
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->get();
+    }
+
+    public function findByMerchantIdDocumentTypeDocumentNumber(
+        string $merchantId, string $documentType , string $documentNumber)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::RECEIPT, $documentNumber)
+            ->where(Entity::TYPE, $documentType)
+            ->first();
+    }
+
     protected function addQueryParamPaymentId(BuilderEx $query, array $params)
     {
         $this->joinQueryPayment($query);

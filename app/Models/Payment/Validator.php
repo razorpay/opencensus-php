@@ -10,6 +10,7 @@ use Lib\PhoneBook;
 
 use RZP\Base;
 use RZP\Diag\EventCode;
+use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Vpa;
@@ -482,6 +483,11 @@ class Validator extends Base\Validator
 
     protected static $updateB2BInvoiceDetailsRules = [
         'document_id'                       => 'required',
+    ];
+
+    protected static $updateMerchantDocumentDetailsRules = [
+        'document_id'                       => 'required',
+        'document_type'                     => 'required',
     ];
 
     protected function validateRange(array $input)
@@ -1955,6 +1961,20 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED_FEATURE_FORCE_TERMINAL_ID_NOT_ENABLED);
+        }
+    }
+
+    public function validateUploadPaymentSupportingDocument($input)
+    {
+        if(!isset($_FILES) or !sizeof($_FILES)>0 or !isset($_FILES['file']))
+        {
+            throw new Exception\BadRequestException(Error\ErrorCode::BAD_REQUEST_FILE_NOT_FOUND);
+        }
+
+        if(!in_array($input['purpose'], \RZP\Models\GenericDocument\Constants::PURPOSE_TYPE))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid purpose type.', 'purpose');
         }
     }
 }

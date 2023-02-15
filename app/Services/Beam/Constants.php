@@ -72,6 +72,10 @@ class Constants
 
     const NIUM_PROD_JOB_NAME = 'nium_prod';
 
+    const ICICI_OPGSP_PROD_JOB_NAME = 'icici_opgsp_prod';
+
+    const ICICI_OPGSP_INVOICES_PROD_JOB_NAME = 'icici_opgsp_invoices_prod';
+
     const EMERCHANTPAY_ONBOARDING_STAGE_JOB_NAME = 'emerchantpay_onboarding_stage';
 
     const EMERCHANTPAY_ONBOARDING_PROD_JOB_NAME = 'emerchantpay_onboarding_prod';

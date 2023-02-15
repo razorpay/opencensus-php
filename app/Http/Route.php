@@ -2334,6 +2334,13 @@ class Route
         'hs_code_admin_fetch'                      => ['get',      'hscode',                                    'MerchantController@getHsCodeDetails'                          ],
         'admin_patch_hs_code'                      => ['patch',    'hscode',                                    'MerchantController@patchHsCode'],
         'fetch_admin_hs_code'                      => ['get',      'merchant/{id}/hs/code',                             'MerchantController@getAdminMerchantHsCode'                                     ],
+        'payment_update_merchant_document'         => ['patch',    'payment/{id}/update_merchant_doc',        'PaymentController@updateMerchantDocumentForPayment'                     ],
+        'payment_bulk_update_merchant_document'    => ['post',     'payment/merchant_documents',        'PaymentController@uploadPaymentSupportingDocument'                     ],
+        'merchant_invoice_reminder'                => ['post',     'merchant/invoice/reminder',        'MerchantController@sendInvoiceRemindersForInternationalIntegration'                     ],
+        'process_on_hold_transactions_for_import'  => ['post',     'import/transactions/onhold/clear',  'SettlementController@onholdClearForImportFlow'                                  ],
+        'generate_settlement_file_opgsp_import'    => ['post',     'settlements/import/generate',  'SettlementController@sendIciciOpgspImportSettlementFile'                                  ],
+        'send_opgsp_import_invoices'               => ['post',     'import/invoices/send',  'SettlementController@sendIciciOpgspImportInvoices'                                  ],
+
 
         //Location Route
         'country_fetch'                            => ['get',      'countries',                                       'LocationController@getCountryDetails'                              ],
@@ -2353,6 +2360,8 @@ class Route
 
         // Settlement Repatriation
         'process_settlement_repatriation'          => ['post',      'settlements/nium/repat',               'LambdaController@processLambdaSettlementRepatriation'                  ],
+
+        'process_opgsp_settlement_repatriation'          => ['post', 'settlements/opgsp/repat',       'LambdaController@processLambdaOpgspSettlementRepatriation'                  ],
 
         //cyber-helpdesk admin route
         'cyber_helpdesk_admin_upload_document' => [
@@ -4802,6 +4811,10 @@ class Route
         'salesforce_converge_get_merchant_details',
         'salesforce_converge_get_terminal_details',
         'generate_nium_settlement_file',
+        'merchant_invoice_reminder',
+        'process_on_hold_transactions_for_import',
+        'generate_settlement_file_opgsp_import',
+        'send_opgsp_import_invoices',
         'merchant_settlements_events_cron',
         'create_test_payouts_for_downtime_detection_icici',
         'create_test_payouts_for_downtime_detection_yesb',
@@ -5079,6 +5092,7 @@ class Route
         'firs_document_categorize',
         'automate_merchant_master_firs',
         'process_settlement_repatriation',
+        'process_opgsp_settlement_repatriation',
         'setcronjob_webhook',
         'bank_transfer_payment_receiver_backfill',
         'refund_processed_at_backfill',
@@ -5987,6 +6001,8 @@ class Route
         'hs_code_fetch',
         'merchant_patch_hs_code',
         'fetch_hs_code',
+        'payment_update_merchant_document',
+        'payment_bulk_update_merchant_document',
         'firs_document_fetch',
         'firs_document_download',
         'emerchantpay_get_request_data',
@@ -10703,6 +10719,8 @@ class Route
             'hs_code_fetch',
             'merchant_patch_hs_code',
             'fetch_hs_code',
+            'payment_update_merchant_document',
+            'payment_bulk_update_merchant_document',
             'merchant_checkout_preferences',
             'merchant_create_key',
             'merchant_create_key_with_otp',
@@ -14028,6 +14046,10 @@ class Route
             'gateway_file_create',
             'generate_gifu_file',
             'generate_nium_settlement_file',
+            'merchant_invoice_reminder',
+            'process_on_hold_transactions_for_import',
+            'generate_settlement_file_opgsp_import',
+            'send_opgsp_import_invoices',
             'reports_refund_irctc',
             'merchant_payout_mail',
             'geoip_update',
@@ -14499,6 +14521,7 @@ class Route
             'firs_document_categorize',
             'automate_merchant_master_firs',
             'process_settlement_repatriation',
+            'process_opgsp_settlement_repatriation',
         ],
 
         'merchants-risk' => [

@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use App;
 use Carbon\Carbon;
 use Mail;
+use RZP\Constants\Mode;
 use RZP\Models\Transaction\Type;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
@@ -20,12 +21,16 @@ class MerchantCrossborderEmail extends Job
     const MAX_RETRY_DELAY = 300;
 
     const DEFAULT_BUSINESS_NAME = 'Team';
+
     const DEFAULT_MONTH_YEAR = 'last';
+
+    const DEFAULT_PREV_DAYS = 15;
 
     const UPLOADED = 'uploaded';
     const CREATED = 'created';
 
     const FIRS_AVAILABLE_NOTIFICATION = 'FIRS_AVAILABLE_NOTIFICATION';
+    const OPGSP_IMPORT_INVOICE_REMINDER = 'OPGSP_IMPORT_INVOICE_REMINDER';
 
     /**
      * @var string
@@ -74,18 +79,20 @@ class MerchantCrossborderEmail extends Job
 
             switch($action)
             {
+                case self::OPGSP_IMPORT_INVOICE_REMINDER :
+                    $this->sendInvoiceReminderEmailForOpgspImport();
+                    break;
                 case self::FIRS_AVAILABLE_NOTIFICATION:
                     $this->sendFIRSAvailableToDownloadEmail();
                     break;
                 default:
-                    $this->trace->info(TraceCode::CROSS_BORDER_MERCHANT_EMAIL_JOB_COMPLETED,[
-                        'payload'  => $this->payload,
-                        'message'  => 'invalid action provided'
+                    $this->trace->info(TraceCode::CROSS_BORDER_MERCHANT_EMAIL_INVALID_ACTION,[
+                        'payload' => $this->payload,
                     ]);
             }
 
             $this->trace->info(TraceCode::CROSS_BORDER_MERCHANT_EMAIL_JOB_COMPLETED,[
-                'payload'  => $this->payload,
+                'payload' => $this->payload,
             ]);
 
             $this->delete();
@@ -140,6 +147,55 @@ class MerchantCrossborderEmail extends Job
     {
         if (array_key_exists(self::MODE, $payload) === true) {
             $this->mode = $payload[self::MODE];
+        }
+        else {
+            $this->mode = Mode::LIVE;
+        }
+    }
+
+    protected function sendInvoiceReminderEmailForOpgspImport()
+    {
+        $merchantId = $this->payload['merchant_id'];
+
+        // fetch merchant detail entity to get business name and contact email
+        $merchantDetail = $this->repo->merchant_detail->getByMerchantId($merchantId);
+
+        $contactEmail = $merchantDetail->getContactEmail();
+        if (!isset($contactEmail) or empty($contactEmail))
+        {
+            $this->delete();
+
+            $this->trace->info(TraceCode::CROSS_BORDER_MERCHANT_EMAIL_JOB_DELETED, [
+                'payload'           => $this->payload,
+                'message'           => 'Deleting the job as contact email address is not present.'
+            ]);
+            return;
+        }
+        $businessName = $merchantDetail->getBusinessName();
+
+        $prev_days = $input['prev_days'] ?? self::DEFAULT_PREV_DAYS;
+
+        // get payments count/amount from last 15 days with on_hold true
+        $startTime = Carbon::now()->subDays($prev_days)->getTimestamp();
+        $endTime = Carbon::now()->getTimestamp();
+
+        $transactions = $this->repo->transaction
+            ->getCountAndAmountByMerchantAndOnholdAndTypes($merchantId, true, [Type::PAYMENT], $startTime, $endTime);
+
+        if (isset($transactions) and
+            isset($transactions['count']) and
+            $transactions['count'] > 0) {
+
+            $mailPayload = [
+                'business_name' => (isset($businessName) and !empty($businessName)) ? $businessName : self::DEFAULT_BUSINESS_NAME,
+                "contact_email" => $contactEmail,
+                "count" => $transactions['count'],
+                "total_credit" => $transactions['total_credit']/100,
+
+            ];
+
+            $mail = new MerchantEmail\MerchantInvoiceReminderMail($mailPayload);
+            Mail::Send($mail);
         }
     }
 
@@ -199,5 +255,4 @@ class MerchantCrossborderEmail extends Job
         $mail = new MerchantEmail\FirsAvailableMail($mailPayload);
         Mail::Send($mail);
     }
-
 }

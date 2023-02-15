@@ -35,6 +35,11 @@ class HsCodeList
         return self::$hsCodeDescriptionMappings[$hsCode];
     }
 
+    public static function isGoodsMerchant($hsCode): bool
+    {
+        return in_array($hsCode,self::GOODS_CODES);
+    }
+
     public static function getHsCode(): array
     {
         $data = array();

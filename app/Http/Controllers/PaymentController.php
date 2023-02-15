@@ -879,6 +879,28 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateMerchantDocumentForPayment($id)
+    {
+        $input = Request::all();
+
+        $data = $this->service()->updateMerchantDocumentForPayment($id,$input);
+
+        return ApiResponse::json($data);
+    }
+
+    /*
+     * This api is used to upload payment supporting documents and map to a payment.
+     * Currently used for OPGSP import.
+     */
+    public function uploadPaymentSupportingDocument()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->uploadPaymentSupportingDocument($input);
+
+        return ApiResponse::json($data);
+    }
+
     protected function pushForBarricade($data, $id): void
     {
         $sqsPush = $this->app->razorx->getTreatment($id, self::BARRICADE_MERCHANT_INTEGRATION_FETCH_ID_FLOW, $this->app['rzp.mode']);

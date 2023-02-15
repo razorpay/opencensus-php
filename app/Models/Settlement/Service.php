@@ -43,6 +43,10 @@ use RZP\Models\Schedule\Task as scheduleTask;
 use Symfony\Component\HttpFoundation\File\File;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Batch;
+use RZP\Jobs;
+use RZP\Models\Merchant\InternationalIntegration\Entity as MIIEntity;
+
+
 
 const CAPTURE              = 'capture';
 
@@ -384,7 +388,7 @@ class Service extends Base\Service
 
         $org = $this->repo->org->findOrFail($orgId);
 
-        if (($org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === false) and 
+        if (($org->isFeatureEnabled(Feature\Constants::ORG_POOL_ACCOUNT_SETTLEMENT) === false) and
             ($org->isFeatureEnabled(Feature\Constants::ORG_SETTLE_TO_BANK) === false))
         {
             throw new Exception\BadRequestException(
@@ -456,6 +460,131 @@ class Service extends Base\Service
             $fileProcessor->sendGifuFile();
         }
         return $ufhResponse;
+    }
+
+    public function onholdClearForImportFlow($input)
+    {
+
+        $response = [];
+        try {
+
+            $merchantIntegrationInfo = $this->repo->merchant_international_integrations
+                ->getByIntegrationKey($input['integration_entity']);
+
+            foreach ($merchantIntegrationInfo as $mii)
+            {
+                $merchantId = $mii[MIIEntity::MERCHANT_ID];
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                if($merchant->isOpgspImportSettlementEnabled() === true)
+                {
+                    $data = [
+                        'merchant_id' => $merchantId,
+                        'action' => Jobs\ImportFlowSettlementProcessor::OPGSP_IMPORT_CLEAR_ON_HOLD_SETTLEMENT_BULK,
+                        // this is required when someone wants to manually trigger the cron
+                        // default is 15 days.
+                        'prev_days' => $input['prev_days'] ?? null,
+                    ];
+                    Jobs\ImportFlowSettlementProcessor::dispatch($data)->delay(rand(60, 1000) % 601);
+                }
+            }
+
+            $response['success'] = true;
+
+        }catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::IMPORT_FLOW_BULK_ON_HOLD_CLEAR_FAILED,[
+                    '$input' => $input,
+                ]
+            );
+            $response['success'] = false;
+        }
+
+        return $response;
+    }
+
+    public function sendIciciOpgspImportSettlementFile($input)
+    {
+
+        $this->app['rzp.mode'] = 'live';
+
+        $response = [];
+        try {
+
+            $merchantIntegrationInfo = $this->repo->merchant_international_integrations
+                ->getByIntegrationKey($input['integration_entity']);
+
+            foreach ($merchantIntegrationInfo as $mii)
+            {
+                $data = [
+                    'merchant_id' => $mii[MIIEntity::MERCHANT_ID],
+                    'action'      => Jobs\ImportFlowSettlementProcessor::OPGSP_IMPORT_GENERATE_SETTLEMENT_FILE,
+                    'send_file'   => $input['send_file'] ?? false,
+                    'from'        => $input['from'] ?? null,
+                    'to'          => $input['to'] ?? null,
+                ];
+
+                Jobs\ImportFlowSettlementProcessor::dispatch($data)->delay(rand(60, 1000) % 601);
+            }
+
+            $response['success'] = true;
+
+        }catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::OPGSP_IMPORT_FLOW_GENERATE_FILE_ERROR,[
+                    '$input' => $input,
+                ]
+            );
+            $response['success'] = false;
+        }
+
+        return $response;
+    }
+
+    public function sendIciciOpgspImportInvoices($input)
+    {
+
+        $this->app['rzp.mode'] = 'live';
+
+        $response = [];
+        try {
+
+            $merchantIntegrationInfo = $this->repo->merchant_international_integrations
+                ->getByIntegrationKey($input['integration_entity']);
+
+            foreach ($merchantIntegrationInfo as $mii)
+            {
+                $data = [
+                    'merchant_id' => $mii[MIIEntity::MERCHANT_ID],
+                    'action'      => Jobs\ImportFlowSettlementProcessor::OPGSP_IMPORT_SEND_INVOICES,
+                    'from'        => $input['from'] ?? null,
+                    'to'          => $input['to'] ?? null,
+                ];
+
+                Jobs\ImportFlowSettlementProcessor::dispatch($data)->delay(rand(60, 1000) % 601);
+            }
+
+            $response['success'] = true;
+
+        }catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::IMPORT_FLOW_BULK_ON_HOLD_CLEAR_FAILED,[
+                    '$input' => $input,
+                ]
+            );
+            $response['success'] = false;
+        }
+
+        return $response;
     }
 
     /**

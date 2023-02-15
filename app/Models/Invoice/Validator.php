@@ -623,7 +623,7 @@ class Validator extends Base\Validator
                                         ->merchant
                                         ->isFeatureEnabled(Features::INVOICE_NO_RECEIPT_UNIQUE);
 
-            if($this->entity->isPaymentPageInvoice() === true)
+            if($this->entity->isPaymentPageInvoice() === true or $this->entity->isTypeOPGSPInvoice() === true)
             {
                 $skipUniquenessCheck = true;
             }
@@ -926,6 +926,9 @@ class Validator extends Base\Validator
             case Type::DCC_CRN:
             case Type::DCC_INV:
                 $this->validateInvoiceIssueForDCCEInvoiceType($invoice);
+                break;
+            case Type::OPGSP_INVOICE:
+            case Type::OPGSP_AWB:
                 break;
             default:
                 $this->validateInvoiceIssueForOtherTypes($invoice);

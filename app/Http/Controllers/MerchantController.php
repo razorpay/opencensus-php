@@ -3662,6 +3662,18 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    // Send email reminders for invoice upload to international integrated merchants.
+    // Currently for OPGSP_IMPORT
+    public function sendInvoiceRemindersForInternationalIntegration()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_INTERNATIONAL_INTEGRATIONS)
+            ->sendInvoiceRemindersForInternationalIntegration($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function disable1ccMagicCheckout()
     {
         $input = Request::all();

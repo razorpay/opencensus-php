@@ -7,12 +7,16 @@ use Request;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Error\PublicErrorDescription;
+use RZP\Excel\Import as ExcelImport;
 use RZP\Exception;
+use RZP\Exception\ServerErrorException;
 use RZP\Jobs\MerchantCrossborderEmail;
 use RZP\Mail\Base\Constants;
 use RZP\Models\Base;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Batch;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Gateway\File\Constants as GatewayConstants;
 use RZP\Services\Beam\Constants as BeamConstants;
 use RZP\Services\Beam\Service as BeamService;
@@ -65,6 +69,9 @@ class Service extends Base\Service
     const LEDGER_TYPE_PAYOUTS = 'Payouts';
     const LEDGER_TYPE_RECEIVE = 'Receive';
     const NIUM_REPAT_FILE_TYPE = 'acct';
+
+    const OPGSP_TRAN_REF_NO = 'opgsptranrefno';
+    const REMITTANCE_CURRENCY = 'currency';
 
     protected static $headers = [
         'MID',
@@ -750,6 +757,149 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::REPATRIATION_SUCESS, $fileDetails);
         $response['success'] = true;
         return $response;
+    }
+
+    public function processLambdaOpgspSettlementRepatriation(array $input)
+    {
+        try
+        {
+            $this->trace->info(TraceCode::OPGSP_REPATRIATION_LAMBDA_REQUEST, [
+                'input' => $input
+            ]);
+
+            list($file, $locationType) = $this->getFileDetails($input, 'opgsp_settlement_repatriation', true);
+            $fileDetails = $this->fileProcessor->getFileDetails($file, $locationType, false);
+            $fileName = $file->getFilename();
+
+            $this->trace->info(TraceCode::OPGSP_REPATRIATION_LAMBDA_REQUEST, [
+                'fileNameDetails'   => $fileDetails,
+                'fileName'         => $fileName,
+            ]);
+
+            if ($input['partner'] === self::ICICI)
+            {
+                $excelReader = (new ExcelImport(1))->toArray($fileDetails['file_path']);
+
+                if (count($excelReader) >= 3)
+                {
+                    $this->trace->info(TraceCode::OPGSP_REPATRIATION_AMLOCK_FILE_FOUND, [
+                        'input' => $input,
+                        'fileNameDetails' => $fileDetails,
+                        'fileName' => $fileName,
+                    ]);
+                }
+                else if (count($excelReader) < 2)
+                {
+                    $this->trace->info(TraceCode::OPGSP_REPATRIATION_INVALID_FILE, [
+                        'message' => 'sheet count is less than two',
+                        'input' => $input,
+                        'fileNameDetails' => $fileDetails,
+                        'fileName' => $fileName,
+                    ]);
+                    return ['success' => false];
+                }
+
+                $consolidatedDetails = $excelReader[0];
+                $transactionLevelDetails = $excelReader[1];
+
+                if (count($consolidatedDetails) !== 1 or count($transactionLevelDetails) === 0)
+                {
+                    $this->trace->info(TraceCode::OPGSP_REPATRIATION_INVALID_FILE, [
+                        'message' => 'repatriation sheet does not have appropriate number of entries',
+                        'input' => $input,
+                        'fileNameDetails' => $fileDetails,
+                        'fileName' => $fileName,
+                    ]);
+                    return ['success' => false];
+                }
+                $consolidatedDetails = $consolidatedDetails[0];
+
+                $totalSettlementAmount = 0;
+                $totalINRAmount = 0;
+                foreach ($transactionLevelDetails as $transaction)
+                {
+                    $totalSettlementAmount += $transaction['settlement_amount'];
+                    $totalINRAmount += ($transaction['settlement_amount'] * $transaction['exchange_rate']);
+                }
+                $formattedCreditAmount = number_format((float)$totalSettlementAmount, 2, '.', '') * 100;
+                $formattedAmount = number_format((float)$totalINRAmount, 2, '.', '') * 100;
+
+                $settlementId = $consolidatedDetails[self::OPGSP_TRAN_REF_NO];
+                if (!isset($settlementId) or strlen($settlementId) !== SEntity::ID_LENGTH)
+                {
+                    $this->trace->info(TraceCode::OPGSP_REPATRIATION_INVALID_FILE, [
+                        'message' => 'Settlement ID not found in the file',
+                        'settlement_id' => $settlementId,
+                        'input' => $input,
+                        'fileNameDetails' => $fileDetails,
+                        'fileName' => $fileName,
+                    ]);
+                    return ['success' => false];
+                }
+                $settlement = $this->repo->settlement->findOrFail($settlementId);
+
+                if ($formattedAmount != $settlement->getAmount())
+                {
+                    $this->trace->info(TraceCode::OPGSP_REPATRIATION_INVALID_AMOUNT, [
+                        'fileDetails' => $fileDetails,
+                        'amount' => $formattedAmount,
+                        'settlement' => $settlementId,
+                    ]);
+                    return ['success' => false];
+                }
+
+                $repatriationEntity = [];
+
+                $repatriationEntity[RepatEntity::SETTLED_AT] = $settlement->getUpdatedAt();
+                $repatriationEntity[RepatEntity::CURRENCY] = Currency::INR;
+                $repatriationEntity[RepatEntity::CREDIT_CURRENCY] = $consolidatedDetails[self::REMITTANCE_CURRENCY];
+                $repatriationEntity[RepatEntity::PARTNER_TRANSACTION_ID] = $transactionLevelDetails[0]['track_number'];
+                $repatriationEntity[RepatEntity::AMOUNT] = $formattedAmount;
+                $repatriationEntity[RepatEntity::CREDIT_AMOUNT] = $formattedCreditAmount;
+                $repatriationEntity[RepatEntity::MERCHANT_ID] = $settlement->getMerchantId();
+                $repatriationEntity[RepatEntity::UPDATED_AT] = time();
+                $repatriationEntity[RepatEntity::SETTLEMENT_IDS] = [$settlementId];
+                $repatriationEntity[RepatEntity::INTEGRATION_ENTITY] = $input['partner'];
+
+                if ($repatriationEntity[RepatEntity::CREDIT_AMOUNT] > 0 &&
+                    $repatriationEntity[RepatEntity::AMOUNT] > 0)
+                {
+                    $forexRate = $repatriationEntity[RepatEntity::CREDIT_AMOUNT] / $repatriationEntity[RepatEntity::AMOUNT];
+                    $forexRateFormatted = number_format((float)$forexRate, 6, '.', '');
+                    $repatriationEntity[RepatEntity::FOREX_RATE] = $forexRateFormatted;
+                }
+                else
+                {
+                    $this->trace->info(TraceCode::OPGSP_REPATRIATION_INVALID_AMOUNT, [
+                        'fileDetails' => $fileDetails,
+                        'amount' => $repatriationEntity[RepatEntity::AMOUNT],
+                        'creditAmount' => $repatriationEntity[RepatEntity::CREDIT_AMOUNT],
+                        'settlement' => $settlementId,
+                    ]);
+                    return ['success' => false];
+                }
+
+                $this->saveRepatriationDetails($repatriationEntity);
+            }
+            else
+            {
+                $this->trace->info(TraceCode::OPGSP_REPATRIATION_INVALID_FILE, $fileDetails);
+                return ['success' => false];
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::OPGSP_REPATRIATION_FAILED, [
+                'input' => $input,
+                'error_message' => $e->getMessage(),
+            ]);
+            $this->trace->traceException($e);
+            return ['success' => false];
+        }
+
+        $this->trace->info(TraceCode::OPGSP_REPATRIATION_SUCCESS, $fileDetails);
+        return ['success' => true];
     }
 
     // To save repatriation details into DB

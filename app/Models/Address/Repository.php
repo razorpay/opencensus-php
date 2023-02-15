@@ -204,4 +204,12 @@ class Repository extends Base\Repository
             (new MerchantStakeholderWrapper())->SaveOrFailAddress($stakeholderEntity, $addressEntity);
         });
     }
+
+    public function fetchByEntityIds($entityIds, $entityType)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::ENTITY_TYPE, $entityType)
+            ->whereIn(Entity::ENTITY_ID,  $entityIds)
+            ->get();
+    }
 }

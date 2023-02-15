@@ -1040,7 +1040,12 @@ class Entity extends Base\PublicEntity
         return in_array($this->getType(), Type::getDCCEInvoiceTypes(), true);
     }
 
-   public function isFullyPaid(Payment\Entity $payment)
+    public function isTypeOPGSPInvoice(): bool
+    {
+        return in_array($this->getType(), Type::getOPGSPInvoiceTypes(), true);
+    }
+
+    public function isFullyPaid(Payment\Entity $payment)
     {
         $trace = App::getFacadeRoot()['trace'];
 
@@ -1390,6 +1395,11 @@ class Entity extends Base\PublicEntity
     public function setRefNum(string $refNum = null)
     {
         $this->setAttribute(self::REF_NUM, $refNum);
+    }
+
+    public function setReceipt(string $receipt = null)
+    {
+        $this->setAttribute(self::RECEIPT, $receipt);
     }
 
     public function setMerchantLabel(string $merchantLabel)

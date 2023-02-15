@@ -2745,6 +2745,48 @@ class Repository extends Base\Repository
         }
     }
 
+    public function getBySettlementIdAndTypesWithOffset($settlementId, $types, $offset =0, $limit = 10000)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::SETTLEMENT_ID, $settlementId)
+            ->whereIn(Entity::TYPE, $types)
+            ->offset($offset)
+            ->limit($limit)
+            ->get();
+    }
+
+    public function getCountBySettlementIdAndTypes($settlementId, $types)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::SETTLEMENT_ID, $settlementId)
+            ->whereIn(Entity::TYPE, $types)
+            ->count();
+    }
+
+    public function getCountAndAmountByMerchantAndOnholdAndTypes($merchantId, $onhold, $types, $start, $end)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->selectRaw('COUNT(' . $this->dbColumn(Entity::ID) . ') AS count, SUM(' . $this->dbColumn(Entity::CREDIT) . ') AS total_credit')
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::ON_HOLD, $onhold)
+            ->whereIn(Entity::TYPE, $types)
+            ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end])
+            ->first()
+            ->toArray();
+    }
+
+    public function getTransactionsByMerchantAndOnholdAndTypes(
+        $merchantId, $onhold, $types, $start, $end, $limit = 1000)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::ON_HOLD, $onhold)
+            ->whereIn(Entity::TYPE, $types)
+            ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$start, $end])
+            ->limit($limit)
+            ->get();
+    }
+
     public function getDisputesBySettlementId($settlementId, $connection = null)
     {
         try {

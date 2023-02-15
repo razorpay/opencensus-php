@@ -20,6 +20,7 @@ use RZP\Models\Payment\Processor\App;
 use RZP\Services\Reminders;
 use RZP\Services\TerminalsService;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\MerchantCrossborderEmail;
 
 class Service extends Base\Service
 {
@@ -619,5 +620,38 @@ class Service extends Base\Service
         }
 
         return $mii_notes;
+    }
+
+    public function sendInvoiceRemindersForInternationalIntegration($input)
+    {
+        $response = [];
+
+        try {
+
+            $merchantIntegrations = (new Core())
+                ->getByIntegrationKey($input['integration_entity']);
+
+            foreach ($merchantIntegrations as $mii) {
+
+                $data = [
+                    'merchant_id' => $mii[Entity::MERCHANT_ID],
+                    'action'      => MerchantCrossborderEmail::OPGSP_IMPORT_INVOICE_REMINDER,
+                    // this is required when someone wants to manually trigger the cron
+                    // default is 15 days.
+                    'prev_days' => $input['prev_days'] ?? null,
+                ];
+
+                MerchantCrossborderEmail::dispatch($data)->delay(rand(60, 1000) % 601);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+            throw $e;
+        }
+
+        $response['success'] = true;
+        return $response;
+
     }
 }

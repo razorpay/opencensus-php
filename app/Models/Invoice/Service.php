@@ -797,6 +797,31 @@ class Service extends Base\Service
         return ['success' => true];
     }
 
+    public function createPaymentSupportingDocuments(array $input, $payment): Entity
+    {
+        return (new OPGSPImportInvoiceCore())->create($input, $payment->merchant, null, null, $payment);
+    }
+
+    public function findByPaymentIdDocumentType($paymentId, $documentType)
+    {
+        return (new OPGSPImportInvoiceCore())->findByPaymentIdDocumentType($paymentId, $documentType);
+    }
+
+    public function findByPaymentIds($paymentIds, $merchantId)
+    {
+        return (new OPGSPImportInvoiceCore())->findByPaymentIds($paymentIds,$merchantId);
+    }
+
+    public function findByMerchantIdDocumentTypeDocumentNumber($merchantId, $documentType, $documentNumber)
+    {
+        return (new OPGSPImportInvoiceCore())->findByMerchantIdDocumentTypeDocumentNumber($merchantId, $documentType, $documentNumber);
+    }
+
+    public function findByPaymentId($paymentId)
+    {
+        return (new OPGSPImportInvoiceCore())->findByPaymentId($paymentId);
+    }
+
     protected function serializeOrgPropertiesForHostedForPaymentLinkService()
     {
         $org = $this->merchant->org;

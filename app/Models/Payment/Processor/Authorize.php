@@ -100,9 +100,10 @@ use RZP\Jobs\SavedCardTokenisationJob;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Currency\Currency as CurrencyCurrency;
 use RZP\Models\Payment\TokenisationExperiment;
-use RZP\Models\Payment\PaymentSupportingDocuments\Service as PaymentDocumentsService;
-use RZP\Models\Payment\PaymentSupportingDocuments\Entity as PaymentDocumentsEntity;
-use RZP\Models\Payment\PaymentSupportingDocuments\Constants as PaymentDocumentsConstants;
+use RZP\Models\Invoice\Service as InvoiceService;
+use RZP\Models\Invoice\Entity as InvoiceEntity;
+use RZP\Models\Invoice\Constants as InvoiceConstants;
+use RZP\Models\Invoice\Type as InvoiceType;
 
 trait Authorize
 {
@@ -187,7 +188,14 @@ trait Authorize
 
         $this->pushCardMetaDataEvent($input, $payment);
 
-        return $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
+        $authPaymentData = $this->gatewayRelatedProcessing($payment, $input, $gatewayInput);
+
+        // creating invoice entity for opgsp payment requires payment entity
+        // to be present which happens at this stage.
+        // all validation for opgsp payment happens inside `runPaymentInputValidations`
+        $this->saveOpgspImportDataIfApplicable($payment);
+
+        return $authPaymentData;
     }
 
     /**
@@ -1969,7 +1977,7 @@ trait Authorize
 
             $this->validateProviderIfApplicable($payment, $input);
 
-            $this->validateOpgspImport($payment);
+            $this->validateOpgspImportDataIfApplicable($payment);
 
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_INPUT_VALIDATIONS2_PROCESSED, $payment);
         }
@@ -3668,12 +3676,10 @@ trait Authorize
         $this->validateInternationalRecurringPaymentsAllowed($payment);
     }
 
-    protected function validateOpgspImport(Payment\Entity $payment)
+    protected function validateOpgspImportDataIfApplicable(Payment\Entity $payment)
     {
-
         if($payment->merchant->isOpgspImportEnabled() === true)
         {
-
             $library = (new Payment\Service)->getLibraryFromPayment($payment);
 
             if(in_array($library, Analytics\Metadata::OPGSP_SUPPORTED_LIBRARIES) === false)
@@ -3712,7 +3718,7 @@ trait Authorize
             $paymentNotes = $payment->getNotes()->toArray();
 
             // Validate invoice number is present in notes
-            if (empty($paymentNotes[PaymentDocumentsConstants::INVOICE_NUMBER]))
+            if (empty($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]))
             {
                 $this->trace->error(
                     TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT,
@@ -3722,10 +3728,17 @@ trait Authorize
                     'Invoice number field is required with in the notes.', 'notes');
             }
 
-            $this->saveDocumentForOpgspPayment($payment);
-
+            // Validate length of invoice number
+            if (strlen($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]) > InvoiceConstants::INVOICE_NUMBER_LENGTH)
+            {
+                $this->trace->error(
+                    TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT,
+                    ['payment_id' => $payment->getId()]
+                );
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invoice number should be less than or equal to ' . InvoiceConstants::INVOICE_NUMBER_LENGTH . ' characters.', 'notes');
+            }
         }
-
     }
 
     protected function runFraudChecksIfApplicable(Payment\Entity $payment, $input = [])
@@ -12824,28 +12837,34 @@ trait Authorize
         return false;
     }
 
-      protected function saveDocumentForOpgspPayment($payment){
-
-          $paymentDocumentEntity = [];
-
-          try{
+    protected function saveOpgspImportDataIfApplicable($payment)
+    {
+        if($payment->merchant->isOpgspImportEnabled() === false)
+        {
+            return;
+        }
+        $invoiceEntity = [];
+        try
+        {
             $paymentNotes = $payment->getNotes()->toArray();
 
-            $paymentSupportingDocument[PaymentDocumentsEntity::MERCHANT_ID] = $payment->merchant->getId();
-            $paymentSupportingDocument[PaymentDocumentsEntity::PAYMENT_ID] = $payment->getId();
-            $paymentSupportingDocument[PaymentDocumentsEntity::DOCUMENT_TYPE] = PaymentDocumentsConstants::DOCUMENT_TYPE_INVOICE;
-            $paymentSupportingDocument[PaymentDocumentsEntity::DOCUMENT_OWNER] = PaymentDocumentsConstants::DOCUMENT_OWNER_MERCHANT;
-            $paymentSupportingDocument[PaymentDocumentsEntity::DOCUMENT_NUMBER] = $paymentNotes[PaymentDocumentsConstants::INVOICE_NUMBER];
-            $paymentSupportingDocument[PaymentDocumentsEntity::UPDATED_AT] = time();
+            // todo: add check for type in future to support AWB
+            $invoiceEntity[InvoiceEntity::TYPE] = InvoiceType::OPGSP_INVOICE;
 
-            (new PaymentDocumentsService())->createPaymentSupportingDocuments($paymentSupportingDocument);
-        }catch (\Throwable $e){
-            $this->trace->error(
-                TraceCode::PAYMENT_SUPPORTING_DOCUMENTS_SAVE_FAILED,
-                ['paymentDocumentEntity' => $paymentDocumentEntity]
-            );
-            $this->trace->traceException($e);
-            throw new ServerErrorException(PublicErrorDescription::SERVER_ERROR, ErrorCode::REPO_FAILED_TO_SAVE);
+            $invoice = (new InvoiceService())->createPaymentSupportingDocuments($invoiceEntity, $payment);
+
+            $invoice->setReceipt($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]);
+            $this->repo->saveOrFail($invoice);
         }
-      }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(
+                TraceCode::OPGSP_INVOICE_SAVE_FAILED, [
+                    'payment' => $payment,
+                    'invoiceEntity' => $invoiceEntity,
+                ]);
+            $this->trace->traceException($e);
+            throw new Exception\ServerErrorException(Error\PublicErrorDescription::SERVER_ERROR, ErrorCode::REPO_FAILED_TO_SAVE);
+        }
+    }
 }

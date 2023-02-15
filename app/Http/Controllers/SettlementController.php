@@ -546,6 +546,33 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function onholdClearForImportFlow()
+    {
+        $input = Request::all();
+        $this->increaseAllowedSystemLimits();
+        $data = $this->service()->onholdClearForImportFlow($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function sendIciciOpgspImportSettlementFile()
+    {
+        $input = Request::all();
+        $this->increaseAllowedSystemLimits();
+        $data = $this->service()->sendIciciOpgspImportSettlementFile($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function sendIciciOpgspImportInvoices()
+    {
+        $input = Request::all();
+        $this->increaseAllowedSystemLimits();
+        $data = $this->service()->sendIciciOpgspImportInvoices($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function replaySettlementTransactions()
     {
         $input = Request::all();
