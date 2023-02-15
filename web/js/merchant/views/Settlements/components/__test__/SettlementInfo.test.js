@@ -30,7 +30,18 @@ const state = {
 };
 
 describe('Settlement Info', () => {
-  const fetchSettlementTimelineSpy = jest.spyOn(fetchSettlement, 'fetchSettlementTimeline');
+  const fetchSettlementTimelineSpy = jest
+    .spyOn(fetchSettlement, 'fetchSettlementTimeline')
+    .mockReturnValue({
+      type: 'SETTLEMENT_TIMELINE_FETCH',
+      payload: {
+        data: {
+          holidays: [1, 2, 3],
+          eligible_at: '1 Jan 2022',
+          started_at: '1 Apr 2022',
+        },
+      },
+    });
   const modalsSpy = jest.spyOn(modals, 'openModal');
 
   const App = ({ initialState, ...rest }) => {

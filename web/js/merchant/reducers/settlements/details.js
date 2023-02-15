@@ -267,6 +267,13 @@ export default (state = initialState, action) => {
         data: initialState.settleNowButtonDisabled.data,
       });
 
+    case `${SETTLEMENT_TIMELINE_FETCH}::PENDING`:
+      return set(state, 'timeline', {
+        loading: true,
+        data: null,
+        error: null,
+      });
+
     case `${SETTLEMENT_TIMELINE_FETCH}::SUCCESS`:
       return set(state, 'timeline', {
         loading: false,

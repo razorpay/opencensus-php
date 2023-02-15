@@ -16,6 +16,7 @@ import {
 import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from 'merchant/reducers/profile';
 import { TIMELINE_EVENTS } from './utils';
 import ShowWhen from 'merchant/components/ShowWhen';
+import Spinner from 'common/ui/Spinner';
 
 class SettlementInfo extends Component {
   componentDidMount() {
@@ -76,7 +77,7 @@ class SettlementInfo extends Component {
       settlementConfig,
       showTimeline = false,
       entityType,
-      settlementTimelineDetails,
+      settlementTimeline,
       user,
       terminalProviders,
       page,
@@ -87,6 +88,9 @@ class SettlementInfo extends Component {
       viewSettlementOverview,
       integratedGateways,
     } = this.props;
+
+    const settlementTimelineDetails = settlementTimeline?.data;
+    const timelineLoading = settlementTimeline?.loading;
 
     const { no_settlement } = settlement_amount.data;
 
@@ -278,7 +282,7 @@ class SettlementInfo extends Component {
       jsx = '--';
     }
 
-    return jsx;
+    return timelineLoading ? <Spinner /> : jsx;
   }
 }
 
@@ -287,7 +291,7 @@ const mapStateToProps = (state) => {
     user: state.session.user,
     settlement_amount: state.home.settlement_amount,
     settlementConfig: state.settlement.config,
-    settlementTimelineDetails: state.settlement.timeline.data,
+    settlementTimeline: state.settlement.timeline,
     terminalProviders: state.navigator.terminalProviders,
   };
 };
