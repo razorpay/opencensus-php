@@ -9,30 +9,37 @@ use GuzzleHttp\Client as HttpClient;
  */
 class Farzi
 {
-    const FARZI_COUPON_STAGE_URL = 'https://boat-api.farziengineer.co/discount';
 
-    public function addFarziCoupon(string $code, string $cartId)
+    const BeMinimalisticShopName = 'minimalistfphapi';
+
+    public function addFarziCoupon(string $code, string $cartId,string $shopName)
     {
         $body = [
             'code' => $code,
             'cartId' => $cartId
         ];
+        if($shopName == self::BeMinimalisticShopName)
+        {
+            $body['app'] = 'custom_app';
+        }
 
         $this->sendCouponRequest(
             json_encode($body),
-            'POST'
+            'POST',
+            $shopName
         );
+
     }
 
-    public function sendCouponRequest($body, string $method)
+    public function sendCouponRequest($body, string $method, string $shopName)
     {
         $headers = [
             'Content-type' => 'application/json',
         ];
-        
+
         try
         {
-            (new HttpClient)->request($method, self::FARZI_COUPON_STAGE_URL, [
+            (new HttpClient)->request($method, $this->getFarziUrl($shopName), [
                 'headers' => $headers,
                 'body' => $body
             ]);
@@ -41,5 +48,9 @@ class Farzi
         {
             //Executing the next lines of code irrespective of the response
         }
+    }
+
+    private function getFarziUrl($shopName){
+        return 'https://'.$shopName.'.farziengineer.co/discount';
     }
 }
