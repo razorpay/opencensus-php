@@ -1555,3 +1555,5 @@ export const stringTemplate = (str = '', replacer = {}) => {
   }
   return strCopy;
 };
+
+export const isProductionEnv = () => window.APP_ENV === 'production';

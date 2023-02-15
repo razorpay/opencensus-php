@@ -1,7 +1,8 @@
 import experimentDataMap from './experimentDataMap';
 import { init, getVariants } from './splitzSetup';
+import { isProductionEnv } from 'common/utils/rzp-utils';
 
-const isProdEnv = window.location.hostname === 'dashboard.razorpay.com';
+const isProdEnv = isProductionEnv();
 
 export default async function Splitz() {
   const PROD_API_BASE_URL = 'api.razorpay.com';
