@@ -261,7 +261,7 @@ class Service extends Base\Service
         }
         else if ( $entity === Entity::PAYMENT && isset($input['contact']))
         {
-            $entity = $this->fetchEntityByNameAndId($entity, $id, $input, $this->repo->payment->getPaymentFetchReplicaConnection()); 
+            $entity = $this->fetchEntityByNameAndId($entity, $id, $input, $this->repo->payment->getPaymentFetchReplicaConnection());
         }
         else if ( $entity === Entity::PAYMENT OR $entity === Entity::ORDER )
         {
@@ -358,6 +358,26 @@ class Service extends Base\Service
         {
             if (Entity::validateExternalServiceEntity($entity) === true)
             {
+                try
+                {
+                    if($this->app['api.route']->isWDAServiceRoute() === true)
+                    {
+                        $this->trace->info(TraceCode::WDA_HANDLE_EXTERNAL_ENTITY, [
+                            'input_params'    => $input,
+                            'entity_name'     => $entity,
+                            'route_auth'      => $this->auth->getAuthType(),
+                            'route_name'      => $this->app['api.route']->getCurrentRouteName(),
+                        ]);
+                    }
+                }
+                catch(\Exception $ex)
+                {
+                    $this->trace->error(TraceCode::WDA_SERVICE_LOGGING_ERROR, [
+                        'error_message'    => $ex->getMessage(),
+                        'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+                    ]);
+                }
+
                 $class = Entity::getExternalServiceClass($entity);
 
                 $entityName = Entity::getExternalEntityName($entity, $class);
@@ -881,6 +901,25 @@ class Service extends Base\Service
 
     public function generateScorecard(array $input)
     {
+        try
+        {
+            if($this->app['api.route']->isWDAServiceRoute() === true)
+            {
+                $this->trace->info(TraceCode::WDA_ADMIN_SCORECARD, [
+                    'input'         => $input,
+                    'route_auth'    => $this->auth->getAuthType(),
+                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->error(TraceCode::WDA_SERVICE_LOGGING_ERROR, [
+                'error_message'    => $ex->getMessage(),
+                'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
         $data = (new Scorecard)->generateScorecard($input);
 
         return $data;

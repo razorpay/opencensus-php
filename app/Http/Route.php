@@ -16582,6 +16582,13 @@ class Route
     public static $fetchFromWDAService = [
         'admin_fetch_entity_by_id',
         'admin_fetch_entity_multiple',
+        'payment_fetch_multiple',
+        'scorecard',
+        'merchant_fetch_payment_failure_analysis',
+        'order_fetch',
+        'order_payments',
+        'transaction_statement_fetch_multiple_for_banking',
+        'external_admin_fetch_entity_multiple',
     ];
 
     /**

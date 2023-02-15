@@ -450,6 +450,26 @@ EOT;
 
         $connection = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
+        try
+        {
+            if($this->app['api.route']->isWDAServiceRoute() === true)
+            {
+                $this->trace->info(TraceCode::WDA_FETCH_PAYMENT_WITH_FORCE_INDEX, [
+                    'input_params'     => $params,
+                    'expand_params'    => $expands,
+                    'route_auth'       => $this->auth->getAuthType(),
+                    'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->error(TraceCode::WDA_SERVICE_LOGGING_ERROR, [
+                'error_message'    => $ex->getMessage(),
+                'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
         if (!is_null($merchantId) &&
             count(array_diff(array_keys($params), ["skip", "count", "from", "to"])) === 0)
         {

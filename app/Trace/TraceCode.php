@@ -8951,6 +8951,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const COMPARE_WDA_ERROR                              = 'COMPARE_WDA_ERROR';
     const WDA_SERVICE                                    = 'WDA_SERVICE';
     const WDA_SERVICE_QUERY                              = 'WDA_SERVICE_QUERY';
+    const WDA_SERVICE_LOGGING_ERROR                      = 'WDA_SERVICE_LOGGING_ERROR';
+    const WDA_FETCH_INPUT_LOG                            = 'WDA_FETCH_INPUT_LOG';
+    const WDA_FETCH_PAYMENT_WITH_FORCE_INDEX             = 'WDA_FETCH_PAYMENT_WITH_FORCE_INDEX';
+    const WDA_ADMIN_SCORECARD                            = 'WDA_ADMIN_SCORECARD';
+    const WDA_GET_PAYMENT_FAILURE_ANALYSIS               = 'WDA_GET_PAYMENT_FAILURE_ANALYSIS';
+    const WDA_HANDLE_EXTERNAL_ENTITY                     = 'WDA_HANDLE_EXTERNAL_ENTITY';
 
     //3DS2.0 callback view experiment
     const CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR            = "CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR";

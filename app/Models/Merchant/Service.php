@@ -1857,6 +1857,26 @@ class Service extends Base\Service
 
         $merchant = app('basicauth')->getMerchant();
 
+        try
+        {
+            if($this->app['api.route']->isWDAServiceRoute() === true)
+            {
+                $this->trace->info(TraceCode::WDA_GET_PAYMENT_FAILURE_ANALYSIS, [
+                    'input'         => $input,
+                    'route_auth'    => $this->auth->getAuthType(),
+                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->error(TraceCode::WDA_SERVICE_LOGGING_ERROR, [
+                'error_message'    => $ex->getMessage(),
+                'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+
         $startTime = microtime(true);
         $failureAnalysisData = $this->repo->payment->fetchPaymentsFailureAnalysisData($input['from'], $input['to'], $merchant->getId());
 

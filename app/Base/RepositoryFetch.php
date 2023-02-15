@@ -158,6 +158,26 @@ trait RepositoryFetch
 
         $this->attachRoleBasedQueryParams($params);
 
+        try
+        {
+            if($this->app['api.route']->isWDAServiceRoute() === true)
+            {
+                $this->trace->info(TraceCode::WDA_FETCH_INPUT_LOG, [
+                    'input_params'     => $params,
+                    'expand_params'    => $expands,
+                    'route_auth'       => $this->auth->getAuthType(),
+                    'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->error(TraceCode::WDA_SERVICE_LOGGING_ERROR, [
+                'error_message'    => $ex->getMessage(),
+                'route_name'       => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
         $query = $this->newQuery();
 
         $baseQueryPresent = false;
