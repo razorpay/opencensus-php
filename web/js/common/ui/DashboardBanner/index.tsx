@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import { fetchBanners as fetchBannersProp } from '../../../merchant/reducers/growthService';
+import { fetchBanners as fetchBannersProp } from 'merchant/reducers/growthService';
 import BannerComponent from './BannerComponent';
 import { DashboardBannerProps } from './TypesDeclare/DashboardBannerTypes';
 import { getCTAArray } from './util';
-import { routeToRouteNameMap } from '../../../merchant/models/GrowthService/data';
+import { routeToRouteNameMap } from 'merchant/models/GrowthService/data';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 import { withRouter } from 'react-router';
 
@@ -14,12 +14,13 @@ const DashboardBanner = ({
   loading,
   banners,
   history,
+  location,
 }: DashboardBannerProps): React.ReactElement | Array<React.ReactElement> | Array<null> | null => {
-  const routeName = routeToRouteNameMap[window.location.pathname] || '';
+  const routeName = routeToRouteNameMap[location.pathname] || '';
 
   useEffect(() => {
-    fetchBanners({ fromWhere: window.location.pathname });
-  }, []);
+    fetchBanners({ fromWhere: location.pathname });
+  }, [location.pathname]);
 
   let contentToShow: any = null;
 

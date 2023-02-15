@@ -17,6 +17,7 @@ import PaymentMethods from 'merchant/views/Settings/PaymentMethods';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import { fetchAddWebsiteWorkflowStatus } from 'merchant/reducers/profile';
 import DashboardBanner from 'common/ui/DashboardBanner';
+import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isPaymentMethodEnabled } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
@@ -92,6 +93,7 @@ class Settings extends Component {
       <>
         <div className="banner-container">
           <DashboardBanner />
+          <CSATSurveyBanner user={user} />
         </div>
         <tabbed-container>
           {/* To make the header scrollable we just need to add this new class to the header component */}

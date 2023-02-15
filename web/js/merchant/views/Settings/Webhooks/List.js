@@ -12,8 +12,6 @@ import { luminateRow } from 'merchant/reducers/app';
 import DocsLink from 'merchant/components/DocsLink';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
-import DashboardBanner from 'common/ui/DashboardBanner';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import {
   ADD_NEW_WEBHOOK,
@@ -113,10 +111,6 @@ class WebhooksContainer extends ListContainer {
                 + Add New Webhook
               </button>
             </span>
-          </div>
-          <div className="banner-container">
-            <DashboardBanner />
-            <CSATSurveyBanner user={this.props.user} />
           </div>
           <div className="content-wrapper" style={{ minHeight: '350px' }}>
             {error ? <Alert type="error" message={error} /> : null}

@@ -14,6 +14,7 @@ import Spinner from 'common/ui/Spinner';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchStore } from 'merchant/reducers/storefront';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import track from './Onboarding/track';
 
 @connect(
@@ -83,6 +84,9 @@ export default class StoresContainer extends React.Component {
     } else if (store.entity.data.id) {
       content = (
         <>
+          <div className="banner-container">
+            <DashboardBanner />
+          </div>
           {isSettingsOpen && <StoresSettingsModal onClose={this.toggleSettingsModal} />}
           <tabbed-container>
             <div class="store-header">

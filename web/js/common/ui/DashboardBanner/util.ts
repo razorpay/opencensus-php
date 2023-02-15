@@ -1,10 +1,11 @@
 import { BannerButton, CTA } from './TypesDeclare/DashboardBannerTypes';
 import { getClickHandler } from './handlers';
 import { externalURLTest } from './data';
+import { RouteComponentProps } from 'react-router-dom';
 
 const getCTAArray = (
   buttons: Array<BannerButton>,
-  history: History,
+  history: RouteComponentProps['history'],
   tracking_id: string,
 ): Array<CTA> | undefined => {
   return buttons?.map(({ id, type, label, style, url, sub_asset, handler }) => {

@@ -1,4 +1,5 @@
-import { bannerThemes, textStyle } from '../data';
+import { bannerThemes, textStyle } from 'common/ui/DashboardBanner/data';
+import { RouteComponentProps } from 'react-router-dom';
 
 interface FetchBannersProps {
   fromWhere: string;
@@ -62,11 +63,10 @@ interface SubAsset {
   id: string;
 }
 
-interface DashboardBannerProps {
+interface DashboardBannerProps extends RouteComponentProps {
   banners: Array<Banner> | [];
   loading: boolean;
   fetchBanners: ({ fromWhere }: FetchBannersProps) => void;
-  history: any;
 }
 
 interface CTA extends BannerButton {

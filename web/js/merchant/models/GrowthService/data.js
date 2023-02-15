@@ -29,151 +29,163 @@ export const routeToChannelIDMap = {
       stage: 'HTdu8cC7FJEIHC',
       production: 'HpP3cspZ3AcuV2',
     },
-    '/app/dashboard': {
+    '/dashboard': {
       dev: 'HTdu8cC7FJEIHC',
       beta: 'HTdu8cC7FJEIHC',
       stage: 'HTdu8cC7FJEIHC',
       production: 'HpP3cspZ3AcuV2',
     },
-    '/app/payments': {
+    '/payments': {
       dev: 'IUaC3BpMmsMI2A',
       beta: 'IUaC3BpMmsMI2A',
       stage: 'IUaC3BpMmsMI2A',
       production: 'IUaTjGosLMxwHF',
     },
-    '/app/settlements': {
+    '/settlements': {
       dev: 'IUaDYoZPVkmx8F',
       beta: 'IUaDYoZPVkmx8F',
       stage: 'IUaDYoZPVkmx8F',
       production: 'IUaU0WNV5we4Gj',
     },
-    '/app/affordability/widget': {
+    '/affordability/widget': {
       dev: 'L7zp8I03kDXAcG',
       beta: 'L7zp8I03kDXAcG',
       stage: 'L7zp8I03kDXAcG',
       production: 'L7zkfTu5Mwxg8a',
     },
-    '/app/invoices': {
+    '/invoices': {
       dev: 'IUaEJoC102u2MY',
       beta: 'IUaEJoC102u2MY',
       stage: 'IUaEJoC102u2MY',
       production: 'IUaUPbpq4u89ZO',
     },
-    '/app/paymentlinks': {
+    '/paymentlinks': {
       dev: 'IUaFCF3xi8B5aj',
       beta: 'IUaFCF3xi8B5aj',
       stage: 'IUaFCF3xi8B5aj',
       production: 'IUaUgQA3iTRYBt',
     },
-    '/app/paymentpages': {
+    '/paymentpages': {
       dev: 'IUaFl6ClE3CyCc',
       beta: 'IUaFl6ClE3CyCc',
       stage: 'IUaFl6ClE3CyCc',
       production: 'IUaUvIJtwrOXqg',
     },
-    '/app/stores/products': {
+    '/stores/products': {
       dev: 'IUaGWo5r2SBZst',
       beta: 'IUaGWo5r2SBZst',
       stage: 'IUaGWo5r2SBZst',
       production: 'IUaV9sQYsKE8PX',
     },
-    '/app/paymentbuttons': {
+    '/paymentbuttons': {
       dev: 'IUaHAE8m0BVaxg',
       beta: 'IUaHAE8m0BVaxg',
       stage: 'IUaHAE8m0BVaxg',
       production: 'IUaVRJ3uI18czJ',
     },
-    '/app/route/payments': {
+    '/route/payments': {
       dev: 'IUaJDiIuC3Ma5N',
       beta: 'IUaJDiIuC3Ma5N',
       stage: 'IUaJDiIuC3Ma5N',
       production: 'IUaVr2gSHbw6v1',
     },
-    '/app/subscriptions': {
+    '/subscriptions': {
       dev: 'IUaJkRqdyoYArL',
       beta: 'IUaJkRqdyoYArL',
       stage: 'IUaJkRqdyoYArL',
       production: 'IUaW6AAEZmcbnD',
     },
-    '/app/qr_codes': {
+    '/qr_codes': {
       dev: 'IUaKIZbM3ytwlz',
       beta: 'IUaKIZbM3ytwlz',
       stage: 'IUaKIZbM3ytwlz',
       production: 'IUaWIpskrvdFP2',
     },
-    '/app/smartcollect/virtualaccounts': {
+    '/smartcollect/virtualaccounts': {
       dev: 'IUaLUkKau2dl29',
       beta: 'IUaLUkKau2dl29',
       stage: 'IUaLUkKau2dl29',
       production: 'IUaWYvMsEbgQiC',
     },
-    '/app/customers': {
+    '/customers': {
       dev: 'IUaM60NSKGqnDl',
       beta: 'IUaM60NSKGqnDl',
       stage: 'IUaM60NSKGqnDl',
       production: 'IUaWp3TH7ppWW2',
     },
-    '/app/offers': {
+    '/offers': {
       dev: 'IUaMYGpvSygfIH',
       beta: 'IUaMYGpvSygfIH',
       stage: 'IUaMYGpvSygfIH',
       production: 'IUaX1E61elMmNg',
     },
-    '/app/checkout-rewards': {
+    '/checkout-rewards': {
       dev: 'IUaNRiUJnEfx1R',
       beta: 'IUaNRiUJnEfx1R',
       stage: 'IUaNRiUJnEfx1R',
       production: 'IUaXIyfL0ASQp1',
     },
-    '/app/capital/loans/apply': {
+    '/capital/loans/apply': {
       dev: 'IUaObMY3yXgx4H',
       beta: 'IUaObMY3yXgx4H',
       stage: 'IUaObMY3yXgx4H',
       production: 'IUaXYSKLAxNTeZ',
     },
-    '/app/capital/cash-advance/apply': {
+    '/capital/cash-advance/apply': {
       dev: 'IUaPBJVqZtAImJ',
       beta: 'IUaPBJVqZtAImJ',
       stage: 'IUaPBJVqZtAImJ',
       production: 'IUaXuV8iZbFgky',
     },
-    '/app/reports': {
+    '/reports': {
       dev: 'IUaPaPexx0avd9',
       beta: 'IUaPaPexx0avd9',
       stage: 'IUaPaPexx0avd9',
       production: 'IUaY7X3lSY4lv6',
     },
-    '/app/config': {
+    '/config': {
       dev: 'IUaQ0XzWCgbVIt',
       beta: 'IUaQ0XzWCgbVIt',
       stage: 'IUaQ0XzWCgbVIt',
       production: 'IUaYKXvc1LZBhQ',
     },
-    '/app/webhooks': {
+    '/webhooks': {
       dev: 'IUaQbhno9K0l8v',
       beta: 'IUaQbhno9K0l8v',
       stage: 'IUaQbhno9K0l8v',
       production: 'IUaYYg6KskPVD4',
     },
-    '/app/keys': {
+    '/website-app-settings/webhooks': {
+      dev: 'IUaQbhno9K0l8v',
+      beta: 'IUaQbhno9K0l8v',
+      stage: 'IUaQbhno9K0l8v',
+      production: 'IUaYYg6KskPVD4',
+    },
+    '/keys': {
       dev: 'IUaR9YPtVKsZCa',
       beta: 'IUaR9YPtVKsZCa',
       stage: 'IUaR9YPtVKsZCa',
       production: 'IUaYlo9q0VNBiQ',
     },
-    '/app/partners': {
+    '/website-app-settings/keys': {
+      dev: 'IUaR9YPtVKsZCa',
+      beta: 'IUaR9YPtVKsZCa',
+      stage: 'IUaR9YPtVKsZCa',
+      production: 'IUaYlo9q0VNBiQ',
+    },
+    '/partners': {
       dev: 'KYvkH86N9Sy9A1',
       beta: 'KYvkH86N9Sy9A1',
       stage: 'KYvkH86N9Sy9A1',
       production: 'KYvhzKIY0r6zhJ',
     },
-    '/app/reminders': {
+    '/reminders': {
       dev: 'IUaRTtAP1X04ub',
       beta: 'IUaRTtAP1X04ub',
       stage: 'IUaRTtAP1X04ub',
       production: 'IUaZ1RoGho5Qrr',
     },
-    '/app/payment-methods': {
+    '/payment-methods': {
       dev: 'IUaSEhwWpxdzIZ',
       beta: 'IUaSEhwWpxdzIZ',
       stage: 'IUaSEhwWpxdzIZ',
@@ -213,127 +225,127 @@ export const routeToChannelIDMap = {
       axis: 'ILpOiPdxsl62QN',
       production: 'IMN6odavPeZlSu',
     },
-    '/app/dashboard': {
+    '/dashboard': {
       dev: 'ILpOiPdxsl62QN',
       beta: 'ILpOiPdxsl62QN',
       stage: 'ILpOiPdxsl62QN',
       production: 'IMN6odavPeZlSu',
     },
-    '/app/payments': {
+    '/payments': {
       dev: 'IUb1kW61O1a1sn',
       beta: 'IUb1kW61O1a1sn',
       stage: 'IUb1kW61O1a1sn',
       production: 'IUbWdEiYB6IxSB',
     },
-    '/app/settlements': {
+    '/settlements': {
       dev: 'IUb2EU3ls3pQLg',
       beta: 'IUb2EU3ls3pQLg',
       stage: 'IUb2EU3ls3pQLg',
       production: 'IUbXroZ4IPnvkR',
     },
-    '/app/invoices': {
+    '/invoices': {
       dev: 'IUb5o9jQC6R1hD',
       beta: 'IUb5o9jQC6R1hD',
       stage: 'IUb5o9jQC6R1hD',
       production: 'IUbYLs6dyCRWhh',
     },
-    '/app/paymentlinks': {
+    '/paymentlinks': {
       dev: 'IUb6CfTLkVm8s7',
       beta: 'IUb6CfTLkVm8s7',
       stage: 'IUb6CfTLkVm8s7',
       production: 'IUbYVElJZVNx5x',
     },
-    '/app/paymentpages': {
+    '/paymentpages': {
       dev: 'IUb6eyS4S1zwfR',
       beta: 'IUb6eyS4S1zwfR',
       stage: 'IUb6eyS4S1zwfR',
       production: 'IUbYeNUVHsQLM6',
     },
-    '/app/stores/products': {
+    '/stores/products': {
       dev: 'IUb7DoNEIlAkKS',
       beta: 'IUb7DoNEIlAkKS',
       stage: 'IUb7DoNEIlAkKS',
       production: 'IUbYn1kthGbK0x',
     },
-    '/app/paymentbuttons': {
+    '/paymentbuttons': {
       dev: 'IUb7ijf9pXz3Q0',
       beta: 'IUb7ijf9pXz3Q0',
       stage: 'IUb7ijf9pXz3Q0',
       production: 'IUbYwjH0lHvjPm',
     },
-    '/app/route/payments': {
+    '/route/payments': {
       dev: 'IUb8YwQK2N7dfm',
       beta: 'IUb8YwQK2N7dfm',
       stage: 'IUb8YwQK2N7dfm',
       production: 'IUbZ5CbI3TeBx1',
     },
-    '/app/subscriptions': {
+    '/subscriptions': {
       dev: 'IUb90sQ9cmNMhv',
       beta: 'IUb90sQ9cmNMhv',
       stage: 'IUb90sQ9cmNMhv',
       production: 'IUbZDiBID4fXIw',
     },
-    '/app/qr_codes': {
+    '/qr_codes': {
       dev: 'IUb9g3PdI2PGmp',
       beta: 'IUb9g3PdI2PGmp',
       stage: 'IUb9g3PdI2PGmp',
       production: 'IUbZOOi4EU6bvu',
     },
-    '/app/smartcollect/virtualaccounts': {
+    '/smartcollect/virtualaccounts': {
       dev: 'IUbADeNSX35iuU',
       beta: 'IUbADeNSX35iuU',
       stage: 'IUbADeNSX35iuU',
       production: 'IUbZZkLAJ5XnKG',
     },
-    '/app/customers': {
+    '/customers': {
       dev: 'IUbAeUDtGRZrOG',
       beta: 'IUbAeUDtGRZrOG',
       stage: 'IUbAeUDtGRZrOG',
       production: 'IUbZk3MqXMfgKh',
     },
-    '/app/offers': {
+    '/offers': {
       dev: 'IUbB9ZsTW5w20b',
       beta: 'IUbB9ZsTW5w20b',
       stage: 'IUbB9ZsTW5w20b',
       production: 'IUbZsR2rdNx29o',
     },
-    '/app/checkout-rewards': {
+    '/checkout-rewards': {
       dev: 'IUbBsS8RXrjU8H',
       beta: 'IUbBsS8RXrjU8H',
       stage: 'IUbBsS8RXrjU8H',
       production: 'IUba0UJJyPGfeO',
     },
-    '/app/capital/loans/apply': {
+    '/capital/loans/apply': {
       dev: 'IUbCPobTU3JHED',
       beta: 'IUbCPobTU3JHED',
       stage: 'IUbCPobTU3JHED',
       production: 'IUba9EcskyTQmQ',
     },
-    '/app/capital/cash-advance/apply': {
+    '/capital/cash-advance/apply': {
       dev: 'IUbCxRZ2bffOZl',
       beta: 'IUbCxRZ2bffOZl',
       stage: 'IUbCxRZ2bffOZl',
       production: 'IUbb8B9ToT7j9h',
     },
-    '/app/reports': {
+    '/reports': {
       dev: 'IUbDdKRISX7Xwq',
       beta: 'IUbDdKRISX7Xwq',
       stage: 'IUbDdKRISX7Xwq',
       production: 'IUbbSOgci9PkPz',
     },
-    '/app/config': {
+    '/config': {
       dev: 'IUbDwb4z5eLdHn',
       beta: 'IUbDwb4z5eLdHn',
       stage: 'IUbDwb4z5eLdHn',
       production: 'IUbbcfgEzt1ZLz',
     },
-    '/app/webhooks': {
+    '/webhooks': {
       dev: 'IUbERxCXGMKSxs',
       beta: 'IUbERxCXGMKSxs',
       stage: 'IUbERxCXGMKSxs',
       production: 'IUbbuXtxtNKVwo',
     },
-    '/app/keys': {
+    '/keys': {
       dev: 'IUbF3iX5UE62gt',
       beta: 'IUbF3iX5UE62gt',
       stage: 'IUbF3iX5UE62gt',
@@ -373,31 +385,33 @@ export const routeToChannelIDMap = {
 };
 
 export const routeToRouteNameMap = {
-  '/app/dashboard': 'home',
-  '/app/payments': 'transactions',
-  'app/settlements': 'settlements',
-  '/app/affordability/widget': 'affordability-widget',
-  'app/invoices': 'invoices',
-  'app/paymentlinks': 'payment-links',
-  'app/paymentpages': 'payment-pages',
-  '/app/stores/products': 'stores',
-  '/app/paymentbuttons': 'payment-buttons',
-  '/app/route/payments': 'route',
-  '/app/subscriptions': 'subscriptions',
-  'app/qr_codes': 'qr_codes',
-  '/app/smartcollect/virtualaccounts': 'smart-collect',
-  '/app/customers': 'customers',
-  '/app/offers': 'offers',
-  '/app/checkout-rewards': 'checkout-rewards',
-  '/app/capital/loans/apply': 'loans',
-  '/app/capital/cash-advance/apply': 'cash-advance',
-  '/app/reports': 'reports',
-  '/app/config': 'settings-config',
-  '/app/webhooks': 'settings-webhooks',
-  '/app/partners': 'partners',
-  '/app/keys': 'settings-keys',
-  '/app/reminders': 'settings-reminders',
-  '/app/payment-methods': 'settings-payment-methods',
+  '/dashboard': 'home',
+  '/payments': 'transactions',
+  '/settlements': 'settlements',
+  '/affordability/widget': 'affordability-widget',
+  '/invoices': 'invoices',
+  '/paymentlinks': 'payment-links',
+  '/paymentpages': 'payment-pages',
+  '/stores/products': 'stores',
+  '/paymentbuttons': 'payment-buttons',
+  '/route/payments': 'route',
+  '/subscriptions': 'subscriptions',
+  '/qr_codes': 'qr_codes',
+  '/smartcollect/virtualaccounts': 'smart-collect',
+  '/customers': 'customers',
+  '/offers': 'offers',
+  '/checkout-rewards': 'checkout-rewards',
+  '/capital/loans/apply': 'loans',
+  '/capital/cash-advance/apply': 'cash-advance',
+  '/reports': 'reports',
+  '/config': 'settings-config',
+  '/webhooks': 'settings-webhooks',
+  '/website-app-settings/webhooks': 'settings-webhooks',
+  '/website-app-settings/keys': 'settings-webhooks',
+  '/keys': 'settings-keys',
+  '/partners': 'partners',
+  '/reminders': 'settings-reminders',
+  '/payment-methods': 'settings-payment-methods',
 };
 
 export const eventToGrowthEventTypeMap = {

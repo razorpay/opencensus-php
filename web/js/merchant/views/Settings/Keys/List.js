@@ -12,8 +12,6 @@ import RollKey from 'merchant/views/Settings/Keys/components/RollKey';
 import NewKey from 'merchant/views/Settings/Keys/components/NewKey';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import CSATSurveyBanner from 'merchant/components/Announcements/CSATSurveyBanner';
-import DashboardBanner from 'common/ui/DashboardBanner';
 import WebsiteComplianceNudge from 'merchant/views/Account/WebsiteAppDetails/Nudge';
 import { shouldShowWebsiteComplianceModal } from 'merchant/views/Account/WebsiteAppDetails/utils';
 import WebsiteComplianceMobilePrompt from 'merchant/views/Account/WebsiteAppDetails/Prompt.mobile';
@@ -137,12 +135,10 @@ class KeysListContainer extends ListContainer {
 
     return (
       <>
-        <WebsiteComplianceNudge screen="API Keys" />
         <div className="banner-container">
-          <DashboardBanner />
           {!isMobileResolution ? <WebsiteComplianceBanner screen="API Keys" /> : null}
-          <CSATSurveyBanner user={this.props.session.user} />
         </div>
+        <WebsiteComplianceNudge screen="API Keys" />
         <div class="content-wrapper">
           <Alert type={status.type} message={status.message} />
           <KeysList
