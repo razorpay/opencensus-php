@@ -66,7 +66,7 @@ class Repository extends Base\Repository
                 $dcs = $this->app['dcs'];
                 return $dcs->fetchByEntityIdAndName($entityId, $featureName, $this->getAppMode());
             }
-            catch(\Exception $e)
+            catch(\Throwable $e)
             {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
@@ -96,7 +96,7 @@ class Repository extends Base\Repository
                 $dcs = $this->app['dcs'];
                 return $dcs->fetchByEntityIdAndName($entityId, $featureName, $this->getAppMode());
             }
-            catch(\Exception $e)
+            catch(\Throwable $e)
             {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
@@ -126,7 +126,7 @@ class Repository extends Base\Repository
                 $dcs = $this->app['dcs'];
                 return $dcs->fetchByEntityIdAndName($entityId, $featureName, $this->getAppMode());
             }
-            catch(\Exception $e)
+            catch(\Throwable $e)
             {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
@@ -187,7 +187,7 @@ class Repository extends Base\Repository
                 }
             }
         }
-        catch(\Exception $e)
+        catch(\Throwable $e)
         {
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
@@ -230,7 +230,7 @@ class Repository extends Base\Repository
                 }
             }
         }
-        catch(\Exception $e)
+        catch(\Throwable $e)
         {
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
@@ -329,7 +329,7 @@ class Repository extends Base\Repository
                 $dcs = $this->app['dcs'];
                 return $dcs->fetchByEntityIdsAndName($merchantIds, $featureName, $this->getAppMode());
             }
-            catch(\Exception $e)
+            catch(\Throwable $e)
             {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
@@ -359,7 +359,7 @@ class Repository extends Base\Repository
                 $this->assignOnDCS($feature, $this->getAppMode());
                 $this->repo->saveOrFail($feature);
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $this->removeOnDCS($feature, $this->getAppMode());
                 throw $e;
@@ -389,7 +389,7 @@ class Repository extends Base\Repository
                 $this->removeOnDCS($feature, $this->getAppMode());
                 $this->deleteOrFail($feature);
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $this->assignOnDCS($feature, $this->getAppMode());
                 throw $e;
@@ -448,7 +448,7 @@ class Repository extends Base\Repository
                     $this->cloneAndSaveToModeOrFail($entity, Mode::LIVE);
                 }
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $this->removeOnDCS($entity, Mode::TEST, true);
                 $this->removeOnDCS($entity, Mode::LIVE, true);
@@ -488,7 +488,7 @@ class Repository extends Base\Repository
                     $this->syncToEs($entity, EsRepository::DELETE, null, Mode::LIVE);
                 }
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $this->assignOnDCS($entity, Mode::TEST, true);
                 $this->assignOnDCS($entity, Mode::LIVE, true);

@@ -4,6 +4,8 @@ namespace RZP\Services\Dcs\Features;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Admin\ConfigKey;
+use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as APIFeaturesConstants;
 use RZP\Services\Dcs\Features\Constants as DcsConstants;
 
@@ -121,7 +123,7 @@ class Constants
     /**
      * Stores the mapping of the Merchant features to their corresponding handlers
      */
-    public static $dcsNewFeatures = [
+    public static $dcsNewMerchantFeatures = [
         self::RefundEnabled => 'direct',
         self::DisableAutoRefund => 'direct',
         self::EligibilityEnabled => 'client',
@@ -142,22 +144,30 @@ class Constants
 
     public static function dcsReadEnabledFeaturesByEntityType(string $entityType = null, bool $withDcsNames = false): array
     {
+
+        $adminService = new AdminService;
+
+        $dcsReadEnabledFeatures = $adminService->getConfigKey(['key' => ConfigKey::DCS_READ_WHITELISTED_FEATURES]);
+        if ($dcsReadEnabledFeatures === null)
+        {
+            return [];
+        }
         if (($entityType === Type::PARTNER) || ($entityType === Type::MERCHANT) )
         {
-            $featureNames = self::$dcsNewFeatures;
+            $featureNames = $dcsReadEnabledFeatures[Type::MERCHANT]?:[];
         }
         elseif ($entityType === Type::ORG)
         {
-            $featureNames = self::$dcsNewOrgFeatures;
+            $featureNames =  $dcsReadEnabledFeatures[Type::ORG]?:[];
         }
         else
         {
-            $featureNames = array_merge(self::$dcsNewFeatures, self::$dcsNewOrgFeatures);
+            $featureNames = array_merge($dcsReadEnabledFeatures[Type::ORG]?:[], $dcsReadEnabledFeatures[Type::MERCHANT]?:[]);
         }
 
-        if ($withDcsNames === false)
+        if ($withDcsNames === true)
         {
-            return self::getAPIFeatureNamesFromDcsNames($featureNames);
+            return self::getDcsFeatureNamesFromApiNames($featureNames);
         }
 
         return  $featureNames;
@@ -176,14 +186,14 @@ class Constants
         return $apiFeatureNames;
     }
 
-    public static function getDcsFeatureNamesFromApiNames(array $featureNames) :array
+    public static function getDcsFeatureNamesFromApiNames($featureNames) :array
     {
         $dcsFeatureNames = [];
         foreach ($featureNames as $featureName => $value)
         {
-            if (key_exists($featureName, self::$dcsFeatureNameToAPIFeatureName) === true)
+            if (key_exists($featureName, self::$apiFeatureNameToDCSFeatureName) === true)
             {
-                $apiFeatureNames[self::$apiFeatureNameToDCSFeatureName[$featureName]] = $value;
+                $dcsFeatureNames[self::$apiFeatureNameToDCSFeatureName[$featureName]] = $value;
             }
         }
         return $dcsFeatureNames;
@@ -237,18 +247,7 @@ class Constants
 
     public static function isDcsNewFeature($featureName, $isDcsName = false)
     {
-        if ($isDcsName === true) {
-            return (key_exists($featureName, DcsConstants::$dcsNewFeatures) === true ||
-                key_exists($featureName, DcsConstants::$dcsNewOrgFeatures) === true);
-        }
-
-        if (key_exists($featureName, self::$apiFeatureNameToDCSFeatureName) === true)
-        {
-            return key_exists(self::$apiFeatureNameToDCSFeatureName[$featureName], DcsConstants::$dcsNewFeatures) ||
-                key_exists(self::$apiFeatureNameToDCSFeatureName[$featureName], DcsConstants::$dcsNewOrgFeatures);
-        }
-
-        return false;
+        return (key_exists($featureName, self::dcsReadEnabledFeaturesByEntityType("", $isDcsName)) === true);
     }
 
     public static function isNewFeature($variant)

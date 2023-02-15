@@ -40,7 +40,7 @@ class Service extends Base
      * @param string $mode
      * @return void
      * @throws Exception\ServerErrorException
-     * @throws \Exception
+     * @throws \Exception|\Throwable
      */
     public function editFeature(Entity $entity, string $variant, bool $isAssignment, $mode = Mode::TEST)
     {
@@ -94,7 +94,7 @@ class Service extends Base
             {
                 $this->handleDcsFeatures($entity, $isAssignment, $mode);
             }
-            elseif (DcsConstants::isDcsNewFeature($dcsFeatureName, true) === true)
+            elseif (key_exists($dcsFeatureName, array_merge(DcsConstants::$dcsNewMerchantFeatures, DcsConstants::$dcsNewOrgFeatures)) === true)
             {
                 $ex = new Exception\ServerErrorException('dcs service is disabled, please check with dcs team',
                     ErrorCode::BAD_REQUEST_DCS_DISABLED,
@@ -104,10 +104,10 @@ class Service extends Base
                 throw $ex;
             }
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->count(Metric::DCS_FEATURE_EDIT_FAILURE_TOTAL, $dimension);
-            if (DcsConstants::isDcsNewFeature($dcsFeatureName, true) === true)
+            if (key_exists($dcsFeatureName, array_merge(DcsConstants::$dcsNewMerchantFeatures, DcsConstants::$dcsNewOrgFeatures)) === true)
             {
                 throw $e;
             }
@@ -147,13 +147,19 @@ class Service extends Base
         try {
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
             $dcsFeatures = array_keys(DcsConstants::dcsReadEnabledFeaturesByEntityType($entityType, true));
+            $this->trace->info(TraceCode::DCS_FETCH_ENABLED_FEATURES,[
+                "dimension" => $dimension,
+                "entity_type" => $entityType,
+                "dcs_features" => $dcsFeatures,
+                "entity_id" => $entityId,
+            ]);
             if( sizeof($dcsFeatures) === 0)
             {
                 return $res;
             }
             $response = $this->fetchByEntityIdAndFeatureNames($entityId, $dcsFeatures, ($mode === null) ? $this->getAppMode() : $mode);
             $res = collect($response);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
             $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
         }
@@ -256,7 +262,6 @@ class Service extends Base
             'feature_names' => $featureNames,
             'id' =>  $entityId,
             'data' => $data,
-            'key' => $key,
             'mode' => $mode,
         ]);
 

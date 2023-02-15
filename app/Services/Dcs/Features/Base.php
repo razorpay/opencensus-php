@@ -114,12 +114,12 @@ class Base
     /**
      * throws Server exception in case of request failures
      *
-     * @param \Exception $e
+     * @param \Throwable $e
      * @param bool $throwException
      * @return void
      * @throws Exception\ServerErrorException
      */
-    protected function throwServerRequestException(\Exception $e,bool $throwException =  true)
+    protected function throwServerRequestException(\Throwable $e,bool $throwException =  true)
     {
         $errorCode = ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE;
 

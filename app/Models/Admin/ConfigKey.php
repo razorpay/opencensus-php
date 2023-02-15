@@ -362,6 +362,9 @@ class ConfigKey
     // UPI turbo
     const UPI_TURBO_POPULAR_BANK_LIST           = self::PREFIX . 'upi_turbo_popular_bank_list';
 
+    // DCS READ ENABLED
+    const DCS_READ_WHITELISTED_FEATURES           = self::PREFIX . 'dcs_reads_whitelisted_features';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,
@@ -511,6 +514,7 @@ class ConfigKey
         self::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA,
         self::RISK_FOH_TEAM_EMAIL_IDS,
         self::UPI_TURBO_POPULAR_BANK_LIST,
+        self::DCS_READ_WHITELISTED_FEATURES,
     ];
 
     const REDIS_CONFIG_MAP = [
@@ -538,7 +542,7 @@ class ConfigKey
         self::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA => [Name::SET_MERCHANT_SLA_FOR_ON_HOLD_PAYOUTS],
         self::RX_BLACKLISTED_VPA_REGEXES_FOR_MERCHANT_PAYOUTS => [Name::SET_BLACKLISTED_VPA_REGEXES_FOR_MERCHANTS],
         self::TENANT_ROLES_ENTITY => [Name::SET_TENANT_ROLES_CONFIG],
-        self::TENANT_ROLES_ROUTES => [Name::SET_TENANT_ROLES_CONFIG],
+        self::DCS_READ_WHITELISTED_FEATURES => [Name::SET_DCS_READ_WRITE_CONFIG],
     ];
 
     /**

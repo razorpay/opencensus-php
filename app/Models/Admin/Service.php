@@ -844,7 +844,11 @@ class Service extends Base\Service
         $key = $input['key'];
 
         $config = $this->app['cache']->get($key, []);
-
+        $this->trace->info(TraceCode::REDIS_KEY_FETCH,
+            [
+                "key" => $key,
+                "config" => $config
+            ]);
         return $config;
     }
 

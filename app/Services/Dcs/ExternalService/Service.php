@@ -118,7 +118,7 @@ class Service
         {
             return $this->sendRequest($input);
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $this->throwServiceErrorException($ex);
         }
@@ -149,7 +149,7 @@ class Service
 
                 return $response;
             }
-            catch(\Requests_Exception $e)
+            catch(\Throwable $e)
             {
                 $this->trace->traceException($e);
 
