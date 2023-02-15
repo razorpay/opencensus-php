@@ -1088,6 +1088,71 @@ class NeedsClarificationTest extends TestCase
         $this->assertEmpty($partnerKycClarificationReasons);
     }
 
+    public function testReasonComposerForSpamDetection()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace','route_no_doc_kyc']);
+
+        $linkedAccount = $this->fixtures->create('merchant:marketplace_account');
+
+        app('basicauth')->setMerchant($linkedAccount);
+
+        $input          = [
+            'merchant_id'                            => $linkedAccount->getId(),
+            'poi_verification_status'                => 'verified',
+            'bank_details_verification_status'       => 'failed',
+            'business_type'                          => 2
+        ];
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
+
+        $mid = $merchantDetail->getId();
+
+        $this->mockRazorxTreatment('on');
+
+        $this->fixtures->create('bvs_validation', [
+            'owner_id'          => $mid,
+            'artefact_type'     => 'bank_account',
+            'error_code'        => 'SPAM_DETECTED_ERROR',
+            'error_description' => 'max retry exceeded for given input',
+            'validation_status' => 'failed'
+        ]);
+
+        $reason = (new Core())->composeNeedsClarificationReason($merchantDetail);
+
+        s($reason);
+
+        $expectedReasons = [
+            "additional_details" => [
+                "bank_account_name" => [
+                    [
+                        "reason_type" => "predefined",
+                        "field_type" => "text",
+                        "field_value" => "test",
+                        "reason_code" => "bank_account_spam_detected"
+                    ]
+                ],
+                "bank_account_number" => [
+                    [
+                        "reason_type" => "predefined",
+                        "field_type" => "text",
+                        "field_value" => "123456789012345",
+                        "reason_code" => "bank_account_spam_detected"
+                    ]
+                ],
+                "bank_branch_ifsc" => [
+                    [
+                        "reason_type" => "predefined",
+                        "field_type" => "text",
+                        "field_value" => "ICIC0000001",
+                        "reason_code" => "bank_account_spam_detected"
+                    ]
+                ]
+            ]
+            ];
+
+        $this->assertArraySelectiveEquals($expectedReasons, $reason);
+    }
+
+
     public function testReasonComposerForIncorrectPersonalPan() {
         $input          = [
             'poi_verification_status'               => 'incorrect_details',

@@ -101,6 +101,30 @@ class BankAccountClarificationComposer extends BaseClarificationReasonComposer
 
         $latestBankValidationError = $this->getLatestBankAccountValidationError();
 
+        if ($this->merchantDetails->merchant->isLinkedAccount() === true)
+        {
+            if( (isset(Constants::LINKED_ACCOUNT_VERIFICATION_RESPONSE_ERROR_CODES[$latestBankValidationError]) === true) and
+                (Constants::LINKED_ACCOUNT_VERIFICATION_RESPONSE_ERROR_CODES[$latestBankValidationError] === Constants::SPAM_DETECTED))
+            {
+                $response = [];
+
+                $reasonCode =  NeedsClarificationReasonsList::BANK_ACCOUNT_SPAM_DETECTED;
+
+                foreach ($this->clarificationMetaData[NCConstants::ADDITIONAL_DETAILS][NCConstants::FIELDS] as $field) {
+                    $response[$field[NCConstants::FIELD_NAME]] = [[
+                        NCConstants::REASON_TYPE => Merchant\Constants::PREDEFINED_REASON_TYPE,
+                        NCConstants::FIELD_TYPE => $field[NCConstants::FIELD_TYPE],
+                        NCConstants::FIELD_VALUE => $this->merchantDetails->getAttribute($field[NCConstants::FIELD_NAME]),
+                        NCConstants::REASON_CODE => $reasonCode
+                    ]];
+                }
+
+                return [
+                    $this->merchantDetails::ADDITIONAL_DETAILS => $response
+                ];
+            }
+        }
+
         If(isset(Constants::VERIFICATION_RESPONSE_ERROR_CODES[$latestBankValidationError]) === true) {
             $response = [];
             foreach ($this->clarificationMetaData[NCConstants::ADDITIONAL_DETAILS][NCConstants::FIELDS] as $field) {

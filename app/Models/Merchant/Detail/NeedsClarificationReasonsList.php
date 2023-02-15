@@ -69,6 +69,7 @@ class NeedsClarificationReasonsList
     const PERSONAL_PAN_SPAM_DETECTED                        = 'personal_pan_spam_detected';
     const COMPANY_PAN_SPAM_DETECTED                         = 'company_pan_spam_detected';
     const GSTIN_SPAM_DETECTED                               = 'gstin_spam_detected';
+    const BANK_ACCOUNT_SPAM_DETECTED                        = 'bank_account_spam_detected';
 
     //SignatoryName & CompanyName Not Matched.
     const SIGNATORY_NAME_NOT_MATCHED                = 'signatory_name_not_matched';
@@ -193,6 +194,9 @@ class NeedsClarificationReasonsList
         ],
         self::GSTIN_SPAM_DETECTED                             => [
             NeedsClarificationMetaData::DESCRIPTION => 'Max retry exceeded for GSTIN Number.'
+        ],
+        self::BANK_ACCOUNT_SPAM_DETECTED            =>  [
+            NeedsClarificationMetaData::DESCRIPTION => 'Max retry exceeded for bank account details.'
         ],
         self::NO_DOC_LIMIT_BREACH                                     => [
             NeedsClarificationMetaData::DESCRIPTION => 'Your GMV limit has been breached, kindly share additional details to get your account reactivated.',],

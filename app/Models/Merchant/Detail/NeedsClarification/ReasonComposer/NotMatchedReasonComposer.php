@@ -59,8 +59,7 @@ class NotMatchedReasonComposer extends BaseClarificationReasonComposer
 
             $merchant = app('repo')->merchant->findOrFail($merchantId);
 
-            if( ($merchant->isLinkedAccount() === true) and
-                ($merchant->isRouteNoDocKycEnabledForParentMerchant() === true))
+            if($merchant->isLinkedAccount() === true)
             {
                 $fieldName  = $this->clarificationMetaData[ClarificationConstants::FIELD_NAME];
                 $fieldType  = $this->clarificationMetaData[ClarificationConstants::FIELD_TYPE];

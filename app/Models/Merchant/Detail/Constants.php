@@ -281,6 +281,8 @@ class Constants
 
     const SEARCH_STRING = 'search_string';
 
+    const SPAM_DETECTED = 'SPAM_DETECTED';
+
     const L1_SUBMISSION = 'L1';
     const L2_SUBMISSION = 'L2';
     const X_SUBMISSION  = 'X';
@@ -565,6 +567,10 @@ class Constants
         BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::INPUT_DATA_ISSUE . 'KC27'                       => 'INVALID_ACCOUNT',
         BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::INPUT_DATA_ISSUE . 'KC40'                       => 'INVALID_BENEFICIARY_IFSC_CODE_OR_NBIN',
         BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::RULE_EXECUTION_FAILED                           => 'NOT_MATCHED',
+    ];
+
+    const LINKED_ACCOUNT_VERIFICATION_RESPONSE_ERROR_CODES = [
+        BVSConstants::BANK_ACCOUNT . BvsValidationConstants::IDENTIFIER . BvsValidationConstants::SPAM_DETECTED_ERROR . 'max '                    => 'SPAM_DETECTED',
     ];
 
     const NO_DOC_ONBOARDING_DEDUPE_CHECK_FIELDS_REGISTERED = [
