@@ -824,7 +824,6 @@ class Gateway
         IFSC::SYNB,
         IFSC::UJVN,
         IFSC::UCBA,
-        IFSC::IOBA,
     ];
 
     const EMANDATE_NB_DIRECT_BANKS = [
