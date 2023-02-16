@@ -1,5 +1,5 @@
 [app]
-    hostname = "https://api.razorpay.com"
+    hostname = "https://api-web.int.dev.razorpay.com"
 
 [paymentpage]
     user = "7HQnhEQDgBIdlv"
