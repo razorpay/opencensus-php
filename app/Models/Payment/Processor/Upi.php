@@ -66,6 +66,7 @@ class Upi
     const COLX = 'COLX';
     const CORP = 'CORP';
     const COSB = 'COSB';
+    const CRGB = 'CRGB';
     const CRUB = 'CRUB';
     const CSBK = 'CSBK';
     const CSBX = 'CSBX';
@@ -297,6 +298,7 @@ class Upi
         self::COLX,
         self::CORP,
         self::COSB,
+        self::CRGB,
         self::CRUB,
         self::CSBK,
         self::CSBX,
