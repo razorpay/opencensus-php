@@ -45,7 +45,7 @@ class WhatsappNotificationService extends BaseNotificationService
 
         $isEmptyPhone = empty($this->getPhone()) === true;
 
-        $isRequesterItemEligibleForNotification = array_key_exists(trim($this->args['ticketNewRequesterItem']), Merchant\FreshdeskTicket\Constants::TICKET_NEW_REQUESTER_ITEMS_FOR_WA_NOTIFICATION);
+        $isRequesterItemEligibleForNotification = in_array(trim($this->args['ticketNewRequesterItem']), Merchant\FreshdeskTicket\Constants::TICKET_NEW_REQUESTER_ITEMS_FOR_WA_NOTIFICATION);
 
         $canSend = ($isExperimentEnabled === true) && ($isEmptyPhone === false) && ($isRequesterItemEligibleForNotification === true);
 
