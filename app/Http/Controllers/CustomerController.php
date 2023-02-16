@@ -3,9 +3,11 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
+use Illuminate\Http\JsonResponse;
 use Request;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
+use RZP\Models\Customer\Service;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BaseException;
 use RZP\Exception\RuntimeException;
@@ -497,6 +499,20 @@ class CustomerController extends Controller
     public function fetchGlobalCustomerByID($id)
     {
         $response = $this->service()->fetchGlobalCustomerByID($id);
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * @return JsonResponse
+     *
+     * @see Service::getCustomerDetailsForCheckout()
+     */
+    public function getCustomerDetailsForCheckout(): JsonResponse
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getCustomerDetailsForCheckout($input);
 
         return ApiResponse::json($response);
     }

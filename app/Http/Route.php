@@ -1177,6 +1177,7 @@ class Route
         'customer_update'                          => ['put',      'customers/{id}',                                 'CustomerController@updateCustomer'                                 ],
         'customer_fetch_by_id'                     => ['get',      'customers/{id}',                                 'CustomerController@getCustomer'                                    ],
         'customer_fetch_by_id_internal'            => ['get',      'customers/{id}/merchant/{merchant_id}',          'CustomerController@getCustomerByCustomerAndMerchantId'             ],
+        'customer_fetch_internal_for_checkout'     => ['get',      'internal/customers/checkout',                    'CustomerController@getCustomerDetailsForCheckout'                  ],
         'customer_fetch_multiple'                  => ['get',      'customers',                                      'CustomerController@getCustomers'                                   ],
         'customer_add_bank_account'                => ['post',     'customers/{id}/bank_account',                    'CustomerController@postBankAccount'                                ],
         'customer_fetch_bank_account'              => ['get',      'customers/{id}/bank_account',                    'CustomerController@getBankAccounts'                                ],
@@ -6701,15 +6702,14 @@ class Route
         'workflow_config_delete',
         'payouts_bulk_reject_owner',
         'payout_links_bulk_reject_owner',
+        'merchant_ip_config_fetch',
+        'merchant_ip_config_create',
 
         // Checkout Service Routes
         'customer_fetch_tokens_internal',
-
-        'merchant_ip_config_fetch',
-        'merchant_ip_config_create',
-        // checkout service routes
         'invoice_fetch_for_checkout_internal',
         'checkout_personalisation_internal',
+        'customer_fetch_internal_for_checkout',
         'fetch_payment_config_checkout_internal',
         'order_fetch_internal_checkout',
         'merchant_methods_offers_checkout_internal',
@@ -10110,11 +10110,10 @@ class Route
         '1cc_shopify_order',
         'customer_fetch_tokens_internal',
         'checkout_personalisation_internal',
+        'customer_fetch_internal_for_checkout',
         'offers_fetch_for_order'
     ];
-
     /**
-     * Throttling middleware (and hence, rate limiting) is applied for all routes, except for the ones
      * defined here
      *
      * Todo-
@@ -14984,6 +14983,7 @@ class Route
             'merchant_validate_public_auth_over_internal_auth',
             'customer_fetch_tokens_internal',
             'checkout_personalisation_internal',
+            'customer_fetch_internal_for_checkout',
         ],
 
         'trusted_badge' => [

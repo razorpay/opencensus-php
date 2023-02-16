@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Customer;
 
 use Carbon\Carbon;
+use JetBrains\PhpStorm\NoReturn;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Payout;
@@ -1384,6 +1385,55 @@ class customerTest extends TestCase
         $this->assertNotContains($payment1->getPublicId(), $paymentIds);
 
         $this->assertContains($payment2->getPublicId(), $paymentIds);
+    }
+
+    public function testGetGlobalCustomerDetailsForCheckoutService(): void
+    {
+        $this->mockSession();
+
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetLocalCustomerDetailsForCheckoutService(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $customerId = 'zMRVsGfjoQyc9w';
+
+        $this->fixtures->create('customer', [
+            'id' => $customerId,
+            'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+            'contact' => '+919876543210',
+            'email' => 'testlocalcustomer@razorpay.com',
+        ]);
+
+        $card = $this->fixtures->create('card', [
+                'merchant_id'   => Merchant\Account::TEST_ACCOUNT,
+                'issuer'        => 'HDFC',
+                'network'       => 'Visa',
+                'last4'         => '1111',
+                'type'          => 'debit',
+                'vault'         => 'visa',
+                'vault_token'   => 'test_token',
+            ]
+        );
+
+        $this->fixtures->create('token', [
+                'customer_id'     => $customerId,
+                'token'           => '1000lcardtoken',
+                'method'          => 'card',
+                'card_id'         => $card->getId(),
+                'used_at'         => Carbon::now()->getTimestamp(),
+                'merchant_id'     => Merchant\Account::TEST_ACCOUNT,
+                'acknowledged_at' => Carbon::now()->getTimestamp(),
+                'expired_at'      => '9999999999',
+                'status'          => 'active',
+            ]
+        );
+
+        $this->startTest();
     }
 
     protected function getPaymentIdsFromSupportPageFetchPaymentResponse(array $response): array

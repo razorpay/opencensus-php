@@ -9,6 +9,8 @@ use Request;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Customer\Account\Metrics\Metric;
+use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Payout;
 use RZP\Models\Address;
 use RZP\Models\Payment;
@@ -116,6 +118,98 @@ class Service extends Base\Service
         $customer = $this->core->createGlobalCustomer($input);
 
         return $customer->toArrayPublic();
+    }
+
+    /**
+     * Fetches the both Global & Local Customer details for Checkout based on
+     * app_token in session or customer_id.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function getCustomerDetailsForCheckout(array $input): array
+    {
+        $input[Payment\Entity::APP_TOKEN] = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+
+        $isGlobalCustomer = empty($input['customer_id']);
+
+        /** @var Entity $customer */
+        $customer = null;
+
+        $customerData = [
+            'email' => '',
+            'contact' =>  '',
+            'global' => $isGlobalCustomer,
+            'saved_card_tokens' => false,
+            'saved_addresses' => false,
+            '1cc_consent_banner_views' => 0,
+        ];
+
+        $response['customer'] = &$customerData;
+
+        if (empty($input[Payment\Entity::APP_TOKEN]) && empty($input['customer_id'])) {
+            if (!empty($input['contact']) && !empty($input['device_token'])) {
+                $contact = Customer\Validator::validateAndParseContact($input['contact']);
+
+                $customer = $this->repo->customer->findByContactAndMerchant($contact, $this->merchant);
+            }
+        } else {
+            [$customer, $appToken] = $this->core->getCustomerAndApp($input, $this->merchant, $isGlobalCustomer);
+        }
+
+        if ($customer === null) {
+            return $response;
+        }
+
+        $customerData['email'] = $customer->getEmail();
+        $customerData['contact'] =  $customer->getContact();
+        $customerData['global'] = $customer->isGlobal();
+
+        if ($appToken !== null &&
+            Base\Utility::isUpdatedAndroidSdk($input) &&
+            ($appToken->getMerchantId() === Account::SHARED_ACCOUNT)
+        ) {
+            return $response;
+        }
+
+        // This case comes when customer_id is sent in the input (always local customer).
+        if ($customer->isLocal() === true) {
+            $customerData['customer_id'] = $customer->getPublicId();
+        }
+
+        $customerTokensCount = $this->getCardTokensCountByCustomer($customer, $this->merchant);
+
+        if ($customerTokensCount > 0) {
+            $customerData['saved_card_tokens'] = true;
+        }
+
+        if ($this->merchant->isFeatureEnabled(Constants::ONE_CLICK_CHECKOUT)) {
+            $rzpAddresses = $this->core->fetchRzpAddressesFor1CC($customer);
+
+            $addressConsentView = $this->core->fetchAddressConsentViewsFor1CC($customer);
+
+            $thirdPartyAddresses = $this->core->fetchThirdPartyAddressesFor1cc($customer);
+
+            $addresses = array_merge($rzpAddresses, $thirdPartyAddresses);
+
+            $customerData['addresses'] = $addresses;
+
+            if (count($addresses) > 0) {
+                $customerData['saved_addresses'] = true;
+            }
+
+            $customerData['1cc_consent_banner_views'] = $addressConsentView;
+
+            $customerData['1cc_customer_consent'] = $this->core->fetchCustomerConsentFor1CC(
+                $customer->getContact(),
+                $this->merchant->getId()
+            );
+        }
+
+        $response['customer'] = $customerData;
+
+        return $response;
     }
 
     /**

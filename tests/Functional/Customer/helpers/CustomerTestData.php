@@ -1626,4 +1626,45 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testGetGlobalCustomerDetailsForCheckoutService' => [
+        'request' => [
+            'url' => '/internal/customers/checkout',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'customer' => [
+                    'email' => 'test@razorpay.com',
+                    'contact' => '+919988776655',
+                    'global' => true,
+                    'saved_card_tokens' => false,
+                    'saved_addresses' => false,
+                    '1cc_consent_banner_views' => 0,
+                ],
+            ],
+        ],
+    ],
+
+    'testGetLocalCustomerDetailsForCheckoutService' => [
+        'request' => [
+            'url' => '/internal/customers/checkout',
+            'method' => 'GET',
+            'content' => [
+                'customer_id' => 'cust_zMRVsGfjoQyc9w', // Filled by the Test
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer' => [
+                    'email' => 'testlocalcustomer@razorpay.com',
+                    'contact' => '+919876543210',
+                    'global' => false,
+                    'saved_card_tokens' => true,
+                    'saved_addresses' => false,
+                    '1cc_consent_banner_views' => 0,
+                ],
+            ],
+        ],
+    ],
 ];
