@@ -77,7 +77,15 @@ class Service
 
         $params = self::PARAMS[self::CREATE_SHIPPING_PROVIDER];
 
-        return $this->app['shipping_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+        $response =  $this->app['shipping_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+
+        $this->app['shipping_service_merchant_config']->disableShopifyAsShippingProvider([
+            'merchant_ids' => [
+                $merchantId,
+            ]
+        ]);
+
+        return $response;
     }
 
     public function update($input, $merchantId)
@@ -99,7 +107,12 @@ class Service
 
         $params = self::PARAMS[self::DELETE_SHIPPING_PROVIDER];
 
-        return $this->app['shipping_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+        $response =  $this->app['shipping_service_client']->sendRequest($params[self::PATH], $input, Requests::POST);
+
+        $this->handleShopifyAssignment($merchantId);
+
+        return $response;
+
     }
 
     public function connect($input)
@@ -115,5 +128,33 @@ class Service
         $input['merchant_id'] = $merchantId;
 
         return $input;
+    }
+
+    protected function handleShopifyAssignment($merchantId): void
+    {
+
+        $listResponse = $this->app['shipping_provider_service']->list('', $merchantId);
+        $assignShopify = true;
+
+        foreach ($listResponse['items'] as $providers)
+        {
+            if ($providers['provider_type'] == 'shiprocket'
+                || $providers['provider_type'] == 'delhivery')
+            {
+                $assignShopify = false;
+                break;
+            }
+        }
+
+        if ($assignShopify === true)
+        {
+            $this->app['shipping_service_merchant_config']->assignShopifyAsShippingProvider([
+                'merchant_ids' => [
+                    $merchantId,
+                ],
+                'type' => 'create'
+            ]);
+        }
+
     }
 }
