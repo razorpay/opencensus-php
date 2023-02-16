@@ -1285,7 +1285,7 @@ class Core extends Base\Core
             return $orderMeta->getType() === Order\OrderMeta\Type::ONE_CLICK_CHECKOUT;
         });
 
-        if(empty($orderMeta) === false)
+        if(empty($orderMeta) === false && strtolower($rzpPayment['method']) === 'cod')
         {
             $value = $orderMeta->getValue();
 
@@ -1316,14 +1316,13 @@ class Core extends Base\Core
     
                 array_push($noteAttributes,
                 [   
-                    'name'  => 'RTO Reasons',
+                    'name'  => 'Risk Reasons',
                     'value' => $rtoString
                 ]);
     
                 $body['note_attributes'] = $noteAttributes;
             }   
         }
-
         return $body;
     }
 
