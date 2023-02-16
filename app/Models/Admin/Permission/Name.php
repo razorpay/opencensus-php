@@ -504,6 +504,7 @@ class Name
 
     // Permission to access capital-los service
     const LOANS_EDIT                          = 'loans_edit';
+    const LOS_BASIC                           = 'los_basic';
 
     const LOS_CARDS                           = 'los_cards';
 

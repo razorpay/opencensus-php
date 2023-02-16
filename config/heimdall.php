@@ -1569,6 +1569,10 @@ return [
                 'description' => 'Allow access to capital-los service routes/actions from dashboard',
                 'assignable'  => true,
             ],
+             Permission::LOS_BASIC => [
+                'description' => 'Allow access to capital-los service routes/actions from dashboard',
+                'assignable'  => true,
+             ],
 
             Permission::CAPITAL_LOS_CREATE_APPLICATION => [
                 'description' => 'Allows access to create application on los from admin dashboard',

@@ -8074,7 +8074,7 @@ class Route
         'capital_cards_admin'                      => Permission::CAPITAL_CARDS,
         'wallet_service_admin'                     => Permission::WALLETS,
         'ufh_admin_upload_file'                    => Permission::ADMIN_FILE_UPLOAD,
-        'los_service_admin'                        => Permission::LOANS_EDIT,
+        'los_service_admin'                        => Permission::LOS_BASIC,
         'payout_update_pull_payout_status'         => Permission::PAYOUT_LINK_ADMIN_AUTH_EXECUTE,
         'payout_links_bulk_resend_notification_admin'=> Permission::PAYOUT_LINK_ADMIN_AUTH_EXECUTE,
         'merchant_activation_update_website_status'=> Permission::EDIT_MERCHANT_WEBSITE_DETAIL,
