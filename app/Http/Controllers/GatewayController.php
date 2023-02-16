@@ -118,7 +118,7 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
-            return $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver);
+            return $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
         }
         else
         {
@@ -276,7 +276,7 @@ class GatewayController extends Controller
         {
             if ($mode === null)
             {
-                $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver);
+                $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
             }
             else
             {
@@ -314,7 +314,7 @@ class GatewayController extends Controller
      *
      * @return array|bool
      */
-    protected function processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver)
+    protected function processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, $isCallback = false)
     {
         // First if mode is not found from payment repo, we will check with QR repo
         $qrRepo = $this->app['repo']->qr_code;
@@ -385,7 +385,7 @@ class GatewayController extends Controller
                     'gateway' => $gatewayDriver,
                 ]);
             }
-            $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver);
+            $data = (new Payment\Service)->unexpectedCallback($input, $paymentId, $gatewayDriver, $isCallback);
         }
 
         return $data;

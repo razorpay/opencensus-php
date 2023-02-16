@@ -1446,6 +1446,62 @@ class UpiSbiGatewayTest extends TestCase
         $this->assertNotEmpty($response['payment_id']);
 
         $this->assertTrue($response['success']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+    }
+
+    /**
+     * Tests unexpected payment creation t+1 refund
+     */
+    public function testUnexpectedPaymentAutoRefundCheck()
+    {
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $upi = $this->getDbLastUpi();
+
+        $gatewayData = $upi->getGatewayData();
+
+        $this->assertNotEmpty($gatewayData);
+
+        $this->assertEquals($gatewayData['addInfo2'],$content['upi']['gateway_data']['addInfo2']);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['refund_at']);
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'refund_at'                => null,
+            ]);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNull($payment['refund_at']);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+             $request = [
+                'url' => '/payments/create/upi/unexpected',
+                'method' => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+
+        },Exception\BadRequestException::class);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertNotNull($payment['refund_at']);
     }
 
     /**

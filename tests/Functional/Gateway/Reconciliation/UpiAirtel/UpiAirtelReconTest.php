@@ -8,6 +8,7 @@ use Illuminate\Http\UploadedFile;
 
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Batch\Status;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
@@ -81,6 +82,13 @@ class UpiAirtelReconTest extends TestCase
 
         $paymentEntity = $this->getDbLastEntityToArray('payment');
 
+        $this->fixtures->payment->edit($paymentEntity['id'],
+            [
+                'refund_at'                => null,
+            ]);
+
+        $paymentEntity = $this->getDbLastEntityToArray('payment');
+
         $this->mockReconContentFunction(function (& $content, $action = null)
         {
             if ($action === 'airtel_recon')
@@ -107,6 +115,8 @@ class UpiAirtelReconTest extends TestCase
 
         // reconciling the unexpected payment which is created already
         $this->assertNotNull($upiEntity['reconciled_at']);
+
+        $this->assertNotNull($payment['refund_at']);
 
         $transactionEntity = $this->getDbLastEntityToArray('transaction');
 

@@ -3,12 +3,14 @@
 namespace RZP\Reconciliator\Base\SubReconciliator;
 
 use App;
+use Carbon\Carbon;
 
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\QrCode;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\IIN;
@@ -23,6 +25,7 @@ use RZP\Reconciliator\Base\InfoCode;
 use RZP\Models\Base\PublicCollection;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Exception\ReconciliationException;
+use RZP\Models\Payment\Processor\UpiUnexpectedPaymentRefundHandler;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Ledger\CaptureJournalEvents;
 use RZP\Models\Batch\Processor\Reconciliation;
@@ -33,6 +36,7 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 class PaymentReconciliate extends Base\Foundation\SubReconciliate
 {
+    use UpiUnexpectedPaymentRefundHandler;
 
     const GATEWAY_FEES_ABSENT_GATEWAYS = [
         RequestProcessor\Base::KOTAK,
@@ -388,6 +392,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         //
 
         $this->repo->saveOrFail($this->payment);
+
+        $this->handleUnExpectedPaymentRefundInRecon($this->payment);
     }
 
     public function resetRowProcessingAttributes()

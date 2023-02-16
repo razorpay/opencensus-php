@@ -38,6 +38,7 @@ use RZP\Models\Card\IIN;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Reminders;
 use RZP\Models\Payment\Processor\FraudDetector;
+use RZP\Models\Payment\Processor\UpiUnexpectedPaymentRefundHandler;
 use RZP\Models\Transfer;
 use RZP\Models\UpiMandate;
 use RZP\Models\Transaction;
@@ -81,6 +82,7 @@ use RZP\Models\GenericDocument\Service as DocumentService;
 class Service extends Base\Service
 {
     use FraudDetector;
+    use UpiUnexpectedPaymentRefundHandler;
 
     protected $merchant;
 
@@ -1977,7 +1979,7 @@ class Service extends Base\Service
         return $this->getNewProcessor($this->merchant)->mandateCancelViaCallback($input, $upiMandate);
     }
 
-    public function unexpectedCallback(array $input, string $referenceId, string $gateway)
+    public function unexpectedCallback(array $input, string $referenceId, string $gateway, $isCallback = false)
     {
         $isProduction = ($this->app->environment('production') === true);
 
@@ -2029,7 +2031,7 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         return $this->getNewProcessor($merchant)
-                    ->authorizePush($input, $referenceId, $data, $terminal);
+                    ->authorizePush($input, $referenceId, $data, $terminal, $isCallback);
     }
 
     public function fetchMultiple(array $input)
@@ -5466,6 +5468,10 @@ class Service extends Base\Service
                 if ($upiEntity->first()->getAmount() === (int) ($input['payment']['amount']))
                 {
                     $unexpectedPaymentId = $upiEntity->first()->getPaymentId();
+
+                    $payment = $this->repo->payment->find($unexpectedPaymentId);
+
+                    $this->handleUnExpectedPaymentRefundInRecon($payment);
 
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_ERROR,

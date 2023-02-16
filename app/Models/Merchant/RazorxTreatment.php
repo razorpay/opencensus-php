@@ -717,6 +717,9 @@ final class RazorxTreatment
     // Experiment to enable async bulk approval or not
     const PAYOUT_BULK_APPROVE_ASYNC = 'payout_bulk_approve_async';
 
+    // Unexpected payment refund delay to T+1
+    const UNEXPECTED_PAYMENT_REFUND_DELAY = 'unexpected_payment_refund_delay';
+
     // Experiment to ramp up international refunds
     const SCROOGE_INTERNATIONAL_REFUND = 'scrooge_international_refund';
 }

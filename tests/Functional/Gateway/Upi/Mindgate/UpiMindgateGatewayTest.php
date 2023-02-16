@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Metric;
 use RZP\Models\Payment\Method;
+use RZP\Services\RazorXClient;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Upi\Base\Entity;
@@ -1039,6 +1040,26 @@ class UpiMindgateGatewayTest extends TestCase
 
     public function testUnexpectedPaymentSuccess()
     {
+
+       $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+
+        // we are ramping up auth terminal selection hence to make sure all test cases passes
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                            function ($mid, $feature, $mode)
+                            {
+                                if ($feature === 'unexpected_payment_refund_delay')
+                                {
+                                    return 'on';
+                                }
+                                return 'off';
+                            }));
+
         $data = $this->testData[__FUNCTION__];
 
         $response = $this->createUnexpectedPayment($data);
@@ -1078,6 +1099,8 @@ class UpiMindgateGatewayTest extends TestCase
         $this->verifyPayment($paymentEntity['id']);
 
         $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertNull($paymentEntity['refund_at']);
 
         $this->assertEquals($paymentEntity['verified'], 1);
 

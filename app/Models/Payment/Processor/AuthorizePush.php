@@ -7,13 +7,16 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode as TraceCode;
 use RZP\Reconciliator\Base\Reconciliate;
 
 trait AuthorizePush
 {
-    public function authorizePush(array $callbackData, string $referenceId, array $data, Terminal\Entity $terminal)
+    use UpiUnexpectedPaymentRefundHandler;
+
+    public function authorizePush(array $callbackData, string $referenceId, array $data, Terminal\Entity $terminal, $isCallback = false)
     {
         $paymentInput = $data['payment'];
 
@@ -52,6 +55,8 @@ trait AuthorizePush
         if ($success === true)
         {
             $response['payment_id'] = $this->payment->getId();
+
+            $this->handleUnExpectedPaymentRefundInCallback($this->payment, $isCallback);
         }
 
         return $response;
