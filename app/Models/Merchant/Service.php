@@ -12,6 +12,7 @@ use Mail;
 use Cache;
 use Config;
 use Request;
+
 use Illuminate\Support\Str;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Controllers\MerchantController;
@@ -22,6 +23,7 @@ use RZP\Models\Card\Type;
 use RZP\Models\Emi\DebitProvider;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Locale\Core as LocaleCore;
+use RZP\Constants\Metric as ConstantMetric;
 use RZP\Models\Merchant\Balance\Type as ProductType;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\RazorxTreatment as Experiment;
@@ -2086,7 +2088,9 @@ class Service extends Base\Service
                                     ]);
 
                 $dimension = [
-                    'merchant_id' => $merchantId,
+                    ConstantMetric::LABEL_RZP_INTERNAL_APP_NAME => app('request.ctx')->getInternalAppName() ?? ConstantMetric::LABEL_NONE_VALUE,
+                    Balance\Entity::CHANNEL             => $b[Balance\Entity::CHANNEL],
+                    Merchant\Entity::MERCHANT_ID        => $merchantId,
                 ];
 
                 // if cached is false and variant is on and balance last fetched is beyond recency threshold (10 sec)
