@@ -63,14 +63,20 @@ class GenericController extends Controller
         'x-mobile-refresh-token',
     ];
 
-    const USERS_RESET_PASSWORD_PATH           = 'users/reset-password-token';
-    const MERCHANT_EMAIL_UPDATE               = 'merchants/email/update';
-    const MERCHANT_EMAIL_UPDATE_NEW_USER      = 'merchants/email/update/create_user';
+    const USERS_RESET_PASSWORD_PATH           = '^users\/reset-password-token$';
+    const MERCHANT_EMAIL_UPDATE               = '^merchants\/email\/update$';
+    const MERCHANT_EMAIL_UPDATE_NEW_USER      = '^merchants\/email\/update\/create_user$';
+    const USER_DETACH_FROM_MERCHANT_TEAM      = '^users\/[[:alnum:]]{14}\/detach$';
 
     const ROUTES_FOR_SESSION_DELETE = [
         self::USERS_RESET_PASSWORD_PATH,
         self::MERCHANT_EMAIL_UPDATE,
         self::MERCHANT_EMAIL_UPDATE_NEW_USER,
+        self::USER_DETACH_FROM_MERCHANT_TEAM,
+    ];
+
+    const ROUTES_FOR_ID_IN_DATA = [
+        self::USER_DETACH_FROM_MERCHANT_TEAM,
     ];
 
     const LOGOUT_SESSIONS_FOR_USERS = 'logout_sessions_for_users';
@@ -178,9 +184,11 @@ class GenericController extends Controller
 
     protected function checkAndDeleteUserSessions($path, $data, $httpCode)
     {
-        $userIDs = $this->getUserIDsForLogout($data);
+        $userIDs = $this->getUserIDsForLogout($data, $path);
 
-        if ((in_array($path, self::ROUTES_FOR_SESSION_DELETE) === true) and
+        $routesForSessionDeleteRegex = implode('|', self::ROUTES_FOR_SESSION_DELETE);
+
+        if ((preg_match('/' . $routesForSessionDeleteRegex . '/', $path, $pathMatches) == true) and
             ($httpCode === 200) and
             (is_null($userIDs) === false))
         {
@@ -195,15 +203,38 @@ class GenericController extends Controller
         }
     }
 
-    protected function getUserIDsForLogout($data)
+    protected function getUserIDsForLogout($data, $path)
     {
+        $routesForIdInDataRegex = implode('|', self::ROUTES_FOR_ID_IN_DATA);
+
+        if (preg_match('/' . $routesForIdInDataRegex . '/', $path, $pathMatches) == true)
+        {
+            if (isset($data['id']) === true)
+            {
+                return [
+                    $data['id']
+                ];
+            }
+
+            $app = App::getFacadeRoot();
+
+            $app['trace']->info(TraceCode::USER_SESSION_LOGOUT_FAIL, [
+                'route' => $path,
+            ]);
+
+            return null;
+        }
+
         if (isset($data[self::LOGOUT_SESSIONS_FOR_USERS]) === true)
         {
             return $data[self::LOGOUT_SESSIONS_FOR_USERS];
         }
-        else if (isset($data['user_id']) === true)
+
+        elseif (isset($data['user_id']) === true)
         {
-            return [$data['user_id']];
+            return [
+                $data['user_id']
+            ];
         }
 
         return null;
