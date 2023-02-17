@@ -18729,6 +18729,13 @@ The same has been enabled for the account.
 
         $this->startTest();
 
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['2.2.2.2', '3.3.3.3']);
+
         $this->resetRedisKeysForIpWhitelist();
     }
 

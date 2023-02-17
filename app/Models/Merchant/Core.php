@@ -8875,6 +8875,7 @@ class Core extends Base\Core
 
     public function createOrEditMerchantIpConfig(array $input)
     {
+        
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
             $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
@@ -8885,14 +8886,6 @@ class Core extends Base\Core
                 'merchant_id'     => $this->merchant->getId(),
                 'whitelisted_ips' => $input['whitelisted_ips'],
             ]);
-
-        $accessor = Settings\Accessor::for($this->merchant, Settings\Module::IP_WHITELIST_CONFIG);
-
-        if ($accessor->exists(self::OPT_OUT) === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_IP_WHITELISTING_NOT_ALLOWED_WHEN_OPTED_OUT);
-        }
 
         $whitelistedIps = $input['whitelisted_ips'];
 
@@ -8914,6 +8907,20 @@ class Core extends Base\Core
                  null,
                  $errorIps
             );
+        }
+
+        $accessor = Settings\Accessor::for($this->merchant, Settings\Module::IP_WHITELIST_CONFIG);
+
+        //if merchant has opted out already should be able to opt in from dashboard
+        if ($accessor->exists(self::OPT_OUT) === true)
+        {
+            $this->trace->info(TraceCode::MERCHANT_IP_CONFIG_CREATE_REQUEST_AFTER_OPTED_OUT,
+                [
+                    'merchant_id'     => $this->merchant->getId(),
+                    'whitelisted_ips' => $input['whitelisted_ips'],
+                ]);
+
+            $accessor->delete(self::OPT_OUT)->save();
         }
 
         $this->updateIpConfigForService($input, $accessor);
