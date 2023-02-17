@@ -8659,6 +8659,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TDS_FOR_PAYOUT_METRO_MESSAGE_PUBLISHED            = 'TDS_FOR_PAYOUT_METRO_MESSAGE_PUBLISHED';
     const TDS_FOR_PAYOUT_METRO_MESSAGE_PUBLISH_ERROR        = 'TDS_FOR_PAYOUT_METRO_MESSAGE_PUBLISH_ERROR';
 
+    const SDK_USAGE                                         = 'SDK_USAGE';
+    const SDK_METRIC_ERROR                                  = 'SDK_METRIC_ERROR';
     const SDK_CALL_TO_PREFERENCES_ENDPOINT                  = 'SDK_CALL_TO_PREFERENCES_ENDPOINT';
     const SESSION_CREATE_ERROR_FROM_CACHE                   = 'SESSION_CREATE_ERROR_FROM_CACHE';
 
