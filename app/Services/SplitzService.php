@@ -129,7 +129,9 @@ class SplitzService extends Base\Service
         $parameters = json_encode($parameters);
 
         $headers['Content-Type'] = self::CONTENT_TYPE_JSON;
-        if (empty($this->ba) === false)
+
+        // send passport if not evaluate route
+        if (($path != self::EVALUATE_URL && $path != self::EVALUATE_BULK_URL) && empty($this->ba) === false)
         {
             $headers[self::X_PASSPORT_JWT_V1] = $this->ba->getPassportJwt($this->baseUrl);
         }
