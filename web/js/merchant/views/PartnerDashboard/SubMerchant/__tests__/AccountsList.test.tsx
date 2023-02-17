@@ -7,6 +7,7 @@ import {
   referralData,
   accountsListResponse,
   items,
+  orgDetails,
 } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
@@ -60,6 +61,7 @@ describe('AccountsList', () => {
         location={location}
         referralData={referralData}
         product={PRODUCT_TYPE.CAPITAL}
+        org={orgDetails}
       />,
       {
         initialState: {

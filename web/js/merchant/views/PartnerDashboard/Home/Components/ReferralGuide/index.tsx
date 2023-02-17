@@ -7,6 +7,7 @@ import {
   ProductListItemT,
 } from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import ProductListItem from './ProductListItem';
+import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 
 interface ReferralGuideT {
   partnerName: string;
@@ -16,6 +17,7 @@ interface ReferralGuideT {
   handleAggregatorApplyNow: () => void;
   isUserOwner: boolean;
   user: any;
+  org: TODO_PD;
 }
 
 const assetBase = `${window.cdnBaseUrl}/static/assets/partner-dashboard/fux-cards`;
@@ -23,6 +25,10 @@ const referralGuideIcon = `${assetBase}/referral-guide-icon.svg`;
 const pgIcon = `${assetBase}/pg-icon.svg`;
 const bankingIcon = `${assetBase}/banking-icon.svg`;
 const subIcon = `${assetBase}/referral-guide-sub-icon.svg`;
+const PAYMENT_PRODUCT_DISABLED_STATUS = {
+  rzp: true,
+  curlec: false,
+};
 
 export const ReferralGuide: React.FC<ReferralGuideT> = ({
   partnerName,
@@ -32,19 +38,22 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
   handleAggregatorApplyNow,
   isUserOwner,
   user,
+  org,
 }) => {
   const title = isFirstReferralDone
     ? `Good Job ${partnerName}!! Keep Referring`
     : 'Start Referring';
+  const orgName = org?.business_name || 'Razorpay';
+  const orgCode = org?.custom_code || 'rzp';
 
-  const productList: ProductListItemT[] = [
+  const PRODUCT_LIST: ProductListItemT[] = [
     {
       icon: pgIcon,
       title: 'For Payment Product',
-      subTitle: "Refer your clients to leading Razorpay's payment products",
+      subTitle: `Refer your clients to leading ${orgName}'s payment products`,
       ctaText: '+ Add New Client',
       onClickCTA: () => handleReferClient('referral-guide-pg', PRODUCT_TYPE.PG),
-      disabled: true,
+      disabled: PAYMENT_PRODUCT_DISABLED_STATUS[orgCode],
     },
     {
       icon: bankingIcon,
@@ -60,11 +69,17 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
       disabled: false,
     },
   ];
+  const orgPrdList = {
+    rzp: [...PRODUCT_LIST],
+    curlec: [PRODUCT_LIST[0]],
+  };
 
   const isShowAggregatorCard =
     !localStorage.getItem('aggregatorApplicationSubmit') &&
     isUserOwner &&
     user?.isOnboardAsResellers;
+
+  const productList = orgPrdList[orgCode];
 
   return (
     <div>
@@ -75,7 +90,7 @@ export const ReferralGuide: React.FC<ReferralGuideT> = ({
           <div className={`referral-guide ${!isShowAggregatorCard && 'referal-guide-new'}`}>
             <div className="referral-guide__title">{title}</div>
             <div className="referral-guide__sub-title">
-              You can use multiple ways to refer merchants for any of the Razorpay products
+              You can use multiple ways to refer merchants for any of the {orgName} products
             </div>
             <div className="referral-action">
               <div className="referral-action__icon">

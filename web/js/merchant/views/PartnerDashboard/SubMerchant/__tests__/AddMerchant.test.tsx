@@ -5,7 +5,7 @@ import { rest } from 'msw';
 import store from 'merchant/store';
 import cloneDeep from 'lodash/cloneDeep';
 import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant';
-import { referralData, fileUploadResponse } from './mocks/fixtures';
+import { referralData, fileUploadResponse, orgDetails } from './mocks/fixtures';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 
 // TODO : covered only Capital use case, have to cover others later
@@ -13,6 +13,7 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 const storeData = store.getState();
 const isPartner = jest.fn();
 const isOrgAllowedFunctionality = jest.fn();
+const findTag = jest.fn();
 
 const getStateSpy = jest.spyOn(store, 'getState');
 getStateSpy.mockImplementation(() => {
@@ -24,6 +25,7 @@ getStateSpy.mockImplementation(() => {
     isOrgAllowedFunctionality,
     isPartnershipForCapitalEnabled: true,
     isPartnershipFUX: true,
+    findTag,
   };
   return clonedStore;
 });
@@ -36,6 +38,9 @@ const state = {
       isOrgAllowedFunctionality,
       isPartnershipForCapitalEnabled: true,
       isPartnershipFUX: true,
+      merchant: {
+        country_code: 'IN',
+      },
     },
   },
 };
@@ -81,16 +86,19 @@ describe('AddMerchant', () => {
     window.rzpQ.component = jest.fn();
   });
   const renderApp = ({ isPartnershipForCapitalEnabled = true } = {}) => {
-    return render(<AddMerchant closeModal={mockCloseModal} referralData={referralData} />, {
-      initialState: {
-        session: {
-          user: {
-            ...state.session.user,
-            isPartnershipForCapitalEnabled,
+    return render(
+      <AddMerchant closeModal={mockCloseModal} referralData={referralData} org={orgDetails} />,
+      {
+        initialState: {
+          session: {
+            user: {
+              ...state.session.user,
+              isPartnershipForCapitalEnabled,
+            },
           },
         },
       },
-    });
+    );
   };
   const renderAppWithCapitalSecondStep = () => {
     return render(
@@ -98,6 +106,7 @@ describe('AddMerchant', () => {
         closeModal={mockCloseModal}
         referralData={referralData}
         addType={PRODUCT_TYPE.CAPITAL}
+        org={orgDetails}
       />,
       {
         initialState: {

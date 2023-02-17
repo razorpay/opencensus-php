@@ -14,12 +14,14 @@ interface StartStepT {
   partnerName: string;
   handleReferClient: (source: AddMerchantSource, arg?: string) => void;
   partnerType: PartnerTypeT;
+  orgName: string;
 }
 export const StartReferringStep = ({
   fuxStatus,
   partnerName,
   handleReferClient,
   partnerType,
+  orgName,
 }: StartStepT): JSX.Element | null => {
   if (partnerType === 'pure_platform') return null;
 
@@ -29,16 +31,14 @@ export const StartReferringStep = ({
   const isCompletedStep = isFirstReferralDone === true;
   const stepContent: StepContentT = {
     title: 'Add or Refer Merchants',
-    subTitle:
-      "Start referring merchants to Razorpay's products and enjoy a lifetime of benefits with partner program",
+    subTitle: `Start referring merchants to ${orgName}'s products and enjoy a lifetime of benefits with partner program`,
     ctaText: 'Add New Account',
     onClickCTA: () => handleReferClient('activation-guide'),
     stepName: 'start-referring',
   };
   if (isCompletedStep) {
     stepContent.title = `Good Job ${partnerName}, Keep Referring`;
-    stepContent.subTitle =
-      'Help your referrals get started on Razorpay and start earning commissions';
+    stepContent.subTitle = `Help your referrals get started on ${orgName} and start earning commissions`;
   }
   const stepProps = {
     isCurrentStep,
@@ -142,11 +142,13 @@ interface IntegratingAPIStep {
   activation_status: ActivationStatesT;
   fuxStatus: FUXStatusStateT;
   partnerType: PartnerTypeT;
+  orgName: string;
 }
 export const IntegratingAPIStep = ({
   activation_status,
   fuxStatus,
   partnerType,
+  orgName,
 }: IntegratingAPIStep): JSX.Element | null => {
   if (partnerType === 'reseller') return null;
 
@@ -165,7 +167,7 @@ export const IntegratingAPIStep = ({
       <>
         Integrate with{' '}
         <a href={RZP_API_DOC} rel="noopener noreferrer" target="_blank">
-          Razorpay API
+          {orgName} API
         </a>{' '}
         to accept payments on behalf of your clients and earn commissions
       </>

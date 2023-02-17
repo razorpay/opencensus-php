@@ -28,7 +28,7 @@ import SelectBox from 'merchant/views/PartnerDashboard/SubMerchant/components/Se
 import Button from 'common/new-ui/Button';
 import SocialShareGroup from 'merchant/views/PartnerDashboard/SubMerchant/components/SocialShareGroup';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { PRODUCT_TYPE, ADD_MODE } from 'merchant/views/PartnerDashboard/constants';
+import { PRODUCT_TYPE, ADD_MODE, ORG_CUSTOM_CODE } from 'merchant/views/PartnerDashboard/constants';
 import { minLength, getInitialState } from 'merchant/views/PartnerDashboard/SubMerchant/utils';
 import type {
   AddMerchantPropsT,
@@ -38,8 +38,33 @@ import type {
 } from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant.types';
 import { classList } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import lazy from 'merchant/routes/LazyLoader';
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 
 const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
+const ORG_CONTACT_PLACEHOLDER_TEXT = {
+  rzp: "Affiliate's 10 digit mobile number",
+  curlec: "Affiliate's 9 or 10 digit mobile number",
+};
+const PAYMENTS_MAINTENANCE_STATUS = {
+  rzp: true,
+  curlec: false,
+};
+const PAYMENTS_DISABLED_STATUS = {
+  rzp: true,
+  curlec: false,
+};
+
+// eslint-disable-next-line prettier/prettier
+const RzpSuccessContainer = lazy(
+  () => import('merchant/views/PartnerDashboard/SubMerchant/components/RzpSuccessContainer'),
+);
+
+// eslint-disable-next-line prettier/prettier
+const CurlecSuccessContainer = lazy(
+  () => import('merchant/views/PartnerDashboard/SubMerchant/components/CurlecSuccessContainer'),
+);
 
 // TODO replace window.rzpQ with analyticsTrack for entire file. currently handled only for capital
 class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
@@ -47,9 +72,12 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   isPartnershipForXEnabled: boolean;
   isPartnershipForCapitalEnabled: boolean;
   isPartnershipFUX: boolean;
+  orgCode: string;
+  orgName: string;
+  countryCode: string;
   constructor(props: AddMerchantPropsT) {
     super(props);
-    const { user, addType, referralData, onAddSuccess = () => {} } = props;
+    const { user, addType, referralData, onAddSuccess = () => {}, org } = props;
     const state = getInitialState({ user, addType, referralData });
     const { isPartnershipForXEnabled, isPartnershipFUX, isPartnershipForCapitalEnabled } = user;
     this.state = state;
@@ -57,6 +85,9 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     this.isPartnershipForXEnabled = isPartnershipForXEnabled;
     this.isPartnershipFUX = isPartnershipFUX;
     this.isPartnershipForCapitalEnabled = isPartnershipForCapitalEnabled;
+    this.orgCode = org?.custom_code || 'rzp';
+    this.orgName = org?.business_name || 'Razorpay';
+    this.countryCode = user?.merchant?.country_code || 'IN';
   }
 
   isCapitalProduct = (): boolean => this.state.merchantType === PRODUCT_TYPE.CAPITAL;
@@ -97,7 +128,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
           ? 'Add New Merchants - RazorpayX'
           : this.isCapitalProduct()
           ? 'Add New Merchants - Line Of Credit'
-          : 'Add New Merchants - Razorpay Payments';
+          : `Add New Merchants - ${this.orgName} Payments`;
       case 3:
         return 'Merchant Added Successfully';
       default:
@@ -223,6 +254,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
   };
 
   handleBatchCreate = (): void => {
+    // eslint-disable-next-line prettier/prettier
     const {
       user,
       tracking,
@@ -230,6 +262,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
       closeModal,
       createBatch,
       createCapitalBatch,
+      // eslint-disable-next-line prettier/prettier
     } = this.props;
     const { bulkContactsCount, file_id, merchantType } = this.state;
     gaEvents.trackUploadBatch('Partner submerchant');
@@ -470,7 +503,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
 
   optionalMobileValidator = (value: string | number) => {
     if (value) {
-      if (isMobile(value)) return undefined;
+      if (isMobile(value, this.countryCode)) return undefined;
       else return 'Invalid Contact';
     } else return undefined;
   };
@@ -511,7 +544,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
     }
     let isPhoneNumberValid = true;
     if (merchantContact) {
-      isPhoneNumberValid = merchantContact && isMobile(merchantContact);
+      isPhoneNumberValid = merchantContact && isMobile(merchantContact, this.countryCode);
     }
     const isFormValid = merchantName && isEmailValid && isPhoneNumberValid;
     this.setState({
@@ -570,6 +603,14 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
         action: 'Click to upload',
       });
     }
+  };
+
+  contactNumberValidation = () => {
+    const ORG_VALIDATION_LIST = {
+      rzp: [this.optionalMobileValidator, maxLength(10, 'Mobile number should have 10 digits')],
+      curlec: [this.optionalMobileValidator],
+    };
+    return ORG_VALIDATION_LIST[this.orgCode];
   };
 
   modalCloseClick = () => {
@@ -642,8 +683,8 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                   )}
                 >
                   <SelectBox
-                    label="Razorpay Payments"
-                    description="Invite affiliates to use Razorpay Payment products to collect payments"
+                    label={`${this.orgName} Payments`}
+                    description={`Invite affiliates to use ${this.orgName} Payment products to collect payments`}
                     onClick={() => {
                       this.setState({ merchantType: PRODUCT_TYPE.PG });
                       this.trackUserEvent('partnerships.submerchant.add.product_group', {
@@ -651,20 +692,27 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                       });
                     }}
                     checked={merchantType === PRODUCT_TYPE.PG}
-                    disabled
-                    isMaintenance
+                    disabled={PAYMENTS_DISABLED_STATUS[this.orgCode]}
+                    isMaintenance={PAYMENTS_MAINTENANCE_STATUS[this.orgCode]}
+                    orgName={this.orgName}
                   />
-                  <SelectBox
-                    label="RazorpayX"
-                    description="Invite affiliates to open RazorpayX powered Current Account to process payouts"
-                    onClick={() => {
-                      this.setState({ merchantType: PRODUCT_TYPE.X });
-                      this.trackUserEvent('partnerships.submerchant.add.product_group', {
-                        productGroup: 'X',
-                      });
-                    }}
-                    checked={merchantType === PRODUCT_TYPE.X}
-                  />
+                  <ShowWhen
+                    additionalCondition={(user) =>
+                      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AddNewRazorpayXMerchant)
+                    }
+                  >
+                    <SelectBox
+                      label="RazorpayX"
+                      description="Invite affiliates to open RazorpayX powered Current Account to process payouts"
+                      onClick={() => {
+                        this.setState({ merchantType: PRODUCT_TYPE.X });
+                        this.trackUserEvent('partnerships.submerchant.add.product_group', {
+                          productGroup: 'X',
+                        });
+                      }}
+                      checked={merchantType === PRODUCT_TYPE.X}
+                    />
+                  </ShowWhen>
                   <ShowWhen additionalCondition={() => this.isPartnershipForCapitalEnabled}>
                     <SelectBox
                       label="Line Of Credit"
@@ -705,14 +753,20 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                 >
                   {this.getTabHeaderText(ADD_MODE.bulk)}
                 </li>
-                {this.isPartnershipFUX && (
-                  <li
-                    className={addMode === ADD_MODE.social ? 'active' : ''}
-                    onClick={() => this.handleModeChange(ADD_MODE.social)}
-                  >
-                    {this.getTabHeaderText(ADD_MODE.social)}
-                  </li>
-                )}
+                <ShowWhen
+                  additionalCondition={(user) =>
+                    !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks)
+                  }
+                >
+                  {this.isPartnershipFUX && (
+                    <li
+                      className={addMode === ADD_MODE.social ? 'active' : ''}
+                      onClick={() => this.handleModeChange(ADD_MODE.social)}
+                    >
+                      {this.getTabHeaderText(ADD_MODE.social)}
+                    </li>
+                  )}
+                </ShowWhen>
               </ul>
               {/* Bulk start */}
               <ShowWhen additionalCondition={() => addMode === ADD_MODE.bulk}>
@@ -828,11 +882,8 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                           component={InputField}
                           value={merchantContact}
                           className="form-control"
-                          placeholder="Affiliate's 10 digit mobile number"
-                          validate={[
-                            this.optionalMobileValidator,
-                            maxLength(10, 'Mobile number should have 10 digits'),
-                          ]}
+                          placeholder={ORG_CONTACT_PLACEHOLDER_TEXT[this.orgCode]}
+                          validate={this.contactNumberValidation()}
                           onChange={this.handleFormChange}
                           onFocus={this.handleFormFocus}
                         />
@@ -840,7 +891,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                     ) : null}
 
                     <span className="help-block">
-                      Razorpay account access link will be sent to your affiliate's email{' '}
+                      {this.orgName} account access link will be sent to your affiliate's email{' '}
                       {/* MobileNumber SMS Text will be added later */}
                       {/* {merchantContact ? 'and phone number' : ''} */}
                     </span>
@@ -890,39 +941,22 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
             </div>
           </ShowWhen>
           <ShowWhen additionalCondition={() => step === 3}>
-            <div className="step merchant-added-container">
-              <div className="success-container">
-                <div className="left-icon-container">
-                  <i className="i i-done ModeIndicator--live-icon" />
-                </div>
-                <div className="text-container">
-                  <div>
-                    <span className="success-text">
-                      Razorpay account access link will be sent to your affiliate's email at
-                    </span>
-                  </div>
-                  <div className="merchant-email-wrapper">
-                    <span className="merchant-email">
-                      {merchantEmail}
-                      {/* MobileNumber SMS Text will be added later */}
-                      {/* {merchantContact ? `and +91-${merchantContact}` : ''} */}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="social-share-container">
-                <div className="social-share-text">
-                  <span>You can also copy and share the link via other mediums</span>
-                </div>
-                <SocialShareGroup
+            {this.orgCode === ORG_CUSTOM_CODE.CURLEC ? (
+              <SuspenseWithLoader>
+                <CurlecSuccessContainer />
+              </SuspenseWithLoader>
+            ) : (
+              <SuspenseWithLoader>
+                <RzpSuccessContainer
+                  merchantEmail={merchantEmail}
                   referralUrl={referralUrl}
                   tracking={tracking}
                   source={source}
-                  product={merchantType}
+                  merchantType={merchantType}
                   partnerID={partnerID}
                 />
-              </div>
-            </div>
+              </SuspenseWithLoader>
+            )}
           </ShowWhen>
         </div>
       </div>

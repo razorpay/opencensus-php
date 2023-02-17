@@ -38,3 +38,8 @@ export const CAPITAL_STATUS = {
   go_live: 'go-live',
   application_rejected: 'application rejected',
 };
+
+export const ORG_CUSTOM_CODE = {
+  CURLEC: 'curlec',
+  RZP: 'rzp',
+};

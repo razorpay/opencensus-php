@@ -8,6 +8,7 @@ export interface AddMerchantPropsT {
   referralData?: string | Record<string, unknown>;
   // TS_TODO: TS has a problem with redux connected props.
   user?: any;
+  org: any;
   onAddSuccess?: () => void;
   addType?: string;
   isMobileResolution?: boolean;

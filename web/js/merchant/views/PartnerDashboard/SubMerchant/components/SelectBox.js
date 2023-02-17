@@ -63,7 +63,8 @@ export default class SelectBox extends React.Component {
             <Description text={props.description} />
             {props.isMaintenance && (
               <div className="maintenance-text">
-                Razorpay Payments is under scheduled maintenance. Apologies for the inconvenience.
+                {this.props.orgName} Payments is under scheduled maintenance. Apologies for the
+                inconvenience.
               </div>
             )}
           </div>

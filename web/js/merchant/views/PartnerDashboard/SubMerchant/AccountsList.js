@@ -56,6 +56,7 @@ import {
   getFormattedCapitalResponse,
 } from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
 import { fetchProducts } from 'merchant/reducers/capital';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const email = {
   title: 'Registered Email',
@@ -167,21 +168,6 @@ const capitalStatus = {
   ),
 };
 
-const switchMerchantActionBtn = (handleSwitchMerchant) => ({
-  title: 'Switch Account',
-  value: (item) =>
-    item.dashboard_access ? (
-      <button
-        class="btn btn-default btn-xs"
-        onClick={handleSwitchMerchant(item.id.replace('acc_', ''))}
-      >
-        Switch
-      </button>
-    ) : (
-      'No Access'
-    ),
-});
-
 const appId = {
   title: 'App Id',
   value: (item) => (
@@ -195,6 +181,7 @@ class ProductSubMerchantsList extends ListContainer {
     capitalLoading: false,
     capitalItems: [],
     isDataLoaded: false,
+    orgName: this.props?.org?.business_name || 'Razorpay',
   };
 
   constructor(props) {
@@ -407,7 +394,7 @@ class ProductSubMerchantsList extends ListContainer {
     });
     this.props.openModal({
       size: 'med-large',
-      component: <AddMerchant closeModal={this.props.closeModal} />,
+      component: <AddMerchant closeModal={this.props.closeModal} org={this.props?.org} />,
     });
   };
 
@@ -572,8 +559,38 @@ class ProductSubMerchantsList extends ListContainer {
     this.capitalSearchHandler();
   };
 
+  switchAccountLabel = (itemDetails) => {
+    if (itemDetails.dashboard_access) {
+      const isDeactivatedCurlecMerchantAccount =
+        this.props?.user?.isOrgCurlec && !itemDetails.activated;
+      if (isDeactivatedCurlecMerchantAccount) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  };
+
+  switchMerchantActionBtn = (handleSwitchMerchant) => ({
+    title: 'Switch Account',
+    value: (item) => {
+      if (this.switchAccountLabel(item)) {
+        return (
+          <button
+            class="btn btn-default btn-xs"
+            onClick={handleSwitchMerchant(item.id.replace('acc_', ''))}
+          >
+            Switch
+          </button>
+        );
+      }
+      return 'No Access';
+    },
+  });
+
   render() {
-    const { user, product, referralData, location, isSubMerchantKycResellerEnabled } = this.props;
+    // prettier-ignore
+    const { user, product, referralData, location, isSubMerchantKycResellerEnabled, org } = this.props;
     const { capitalLoading, capitalItems } = this.state;
     let appIdColumn = [];
     let switchMerchantColumn = [];
@@ -587,7 +604,7 @@ class ProductSubMerchantsList extends ListContainer {
     if (user.isPartner('pure_platform')) {
       appIdColumn = [appId];
     } else if (user.isPartner('aggregator', 'fully_managed')) {
-      switchMerchantColumn = [switchMerchantActionBtn(this.handleSwitchMerchant)];
+      switchMerchantColumn = [this.switchMerchantActionBtn(this.handleSwitchMerchant)];
     }
 
     if (user.isPartnerIntent()) {
@@ -622,17 +639,30 @@ class ProductSubMerchantsList extends ListContainer {
         ...switchMerchantColumn,
       ];
       if (this.props.isSubMerchantKycResellerEnabled && user.isPartner('reseller')) {
-        columns = [
-          this.name(user.isPartner('pure_platform')),
-          id,
-          email,
-          ...appIdColumn,
-          this.getActivationStatus_NEW(),
-          this.actions,
-          // settlementStatus,
-          addedOn,
-          ...switchMerchantColumn,
-        ];
+        const orgCode = org?.custom_code || 'rzp';
+        const ORG_COLUMNS = {
+          rzp: [
+            this.name(user.isPartner('pure_platform')),
+            id,
+            email,
+            ...appIdColumn,
+            this.getActivationStatus_NEW(),
+            this.actions,
+            // settlementStatus,
+            addedOn,
+            ...switchMerchantColumn,
+          ],
+          curlec: [
+            this.name(user.isPartner('pure_platform')),
+            id,
+            email,
+            ...appIdColumn,
+            this.getActivationStatus_NEW(),
+            addedOn,
+            ...switchMerchantColumn,
+          ],
+        };
+        columns = ORG_COLUMNS[orgCode];
       }
       return columns;
     };
@@ -733,7 +763,9 @@ class ProductSubMerchantsList extends ListContainer {
                   <div style={{ flex: 2, textAlign: 'center' }}>
                     <div>
                       <h1 class="main-title"> Welcome to Partner Dashboard</h1>
-                      <h3 class="sub-title">Get started by adding merchants to Razorpay</h3>
+                      <h3 class="sub-title">
+                        Get started by adding merchants to {this.state.orgName}
+                      </h3>
                     </div>
                   </div>
                   <div style={{ flex: 3 }} class="action-area">
@@ -756,8 +788,9 @@ class ProductSubMerchantsList extends ListContainer {
                       </div>
                       <ShowWhen
                         additionalCondition={(currentUser) =>
-                          (currentUser.isPartner() && currentUser.isPartner('reseller')) ||
-                          this.isCapitalProduct
+                          ((currentUser.isPartner() && currentUser.isPartner('reseller')) ||
+                            this.isCapitalProduct) &&
+                          !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks)
                         }
                       >
                         <div>
@@ -824,6 +857,7 @@ export const PrimarySubMerchantList = connect(
   (state) => ({
     user: state.session.user,
     mode: state.session.mode,
+    org: state.session.org,
     isSubMerchantKycResellerEnabled: state.session.user.isSubMerchantKycResellerEnabled,
     ...state.submerchants,
   }),

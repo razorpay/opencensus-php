@@ -30,11 +30,18 @@ const transactions = {
   value: (item) => item.transactions,
 };
 
-@connect((state) => ({ ...state.commissionsAggregate, user: state?.session?.user }), {
-  fetchAggregate,
-  openModal,
-  closeModal,
-})
+@connect(
+  (state) => ({
+    ...state.commissionsAggregate,
+    user: state?.session?.user,
+    org: state?.session?.org,
+  }),
+  {
+    fetchAggregate,
+    openModal,
+    closeModal,
+  },
+)
 export default class CommissionsDailyList extends ListContainer {
   constructor(props) {
     super(props);
@@ -66,7 +73,13 @@ export default class CommissionsDailyList extends ListContainer {
   handleAddMerchant = () => {
     this.props.openModal({
       size: 'med-large',
-      component: <AddMerchant closeModal={this.props.closeModal} source="daily-earning" />,
+      component: (
+        <AddMerchant
+          closeModal={this.props.closeModal}
+          source="daily-earning"
+          org={this.props.org}
+        />
+      ),
     });
   };
 

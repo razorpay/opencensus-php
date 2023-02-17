@@ -16,6 +16,7 @@ import { withRouter } from 'react-router-dom';
 import { History } from 'history';
 import rTracking from 'react-tracking';
 import { compose } from 'redux';
+import { TODO_PD } from 'merchant/views/PartnerDashboard/TypesDeclare';
 
 interface ActivationGuideT {
   fuxStatus: FUXStatusStateT;
@@ -24,6 +25,7 @@ interface ActivationGuideT {
   history: History;
   handleReferClient: (source: AddMerchantSource, arg?: string) => void;
   tracking: RTrackingT;
+  org: TODO_PD;
 }
 const ActivationGuide = ({
   history,
@@ -32,12 +34,14 @@ const ActivationGuide = ({
   user,
   partnerName,
   tracking,
+  org,
 }: ActivationGuideT): JSX.Element | null => {
   const cdnBase = `${window.cdnBaseUrl}/static/assets/partner-dashboard/fux-cards/activation-guide`;
   const activationTitleIcon = `${cdnBase}/activation-title-icon.svg`;
 
   const activation_status = user.activation_status as ActivationStatesT;
   const isFirstInvoiceGen = fuxStatus.value?.first_commission_payout === true;
+  const orgName = org?.business_name || 'Razorpay';
 
   if (isFirstInvoiceGen) return null;
 
@@ -60,7 +64,7 @@ const ActivationGuide = ({
             </div>
             <div className="title-bar__container">
               <div className="title">
-                <span>Start your journey as Razorpay Partner</span>
+                <span>Start your journey as {orgName} Partner</span>
               </div>
 
               <div className="sub-title">
@@ -83,6 +87,7 @@ const ActivationGuide = ({
               fuxStatus={fuxStatus}
               partnerName={partnerName}
               partnerType={user.partner_type}
+              orgName={orgName}
             />
 
             <ActivateAccountStep
@@ -97,6 +102,7 @@ const ActivationGuide = ({
               activation_status={activation_status}
               fuxStatus={fuxStatus}
               partnerType={user.partner_type}
+              orgName={orgName}
             />
 
             <CommissionStep

@@ -1,10 +1,11 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/extend-expect';
-import { ReferralGuide } from '../index';
+import ReferralGuide from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/index';
 import { ThemeProvider } from 'styled-components';
 import { lightTheme as theme } from '@razorpay/blade-old/src/tokens/theme.web';
 import { BrowserRouter as Router } from 'react-router-dom';
+import { orgDetails } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
 
 const setUpComponent = (TestElement: JSX.Element) => {
   return (
@@ -25,6 +26,7 @@ describe('<ReferralGuide /> ', () => {
       handleAggregatorApplyNow: () => {},
       isUserOwner: true,
       user: { isOnboardAsResellers: true },
+      org: orgDetails,
     };
     render(setUpComponent(<ReferralGuide {...props} />));
     expect(screen.getByText(`Good Job ${props.partnerName}!! Keep Referring`)).toBeInTheDocument();

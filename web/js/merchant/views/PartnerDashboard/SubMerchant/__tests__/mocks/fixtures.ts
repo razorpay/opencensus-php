@@ -349,3 +349,14 @@ export const bulkResponse = {
     },
   },
 };
+
+export const orgDetails = {
+  id: 'org_100000razorpay',
+  display_name: 'Razorpay Software Private Ltd',
+  business_name: 'Razorpay',
+  email: 'admin@razorpay.com',
+  created_at: 1481813109,
+  custom_code: 'rzp',
+  from_email: 'support@razorpay.com',
+  hostname: 'dashboard.razorpay.com',
+};

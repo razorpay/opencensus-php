@@ -18,11 +18,13 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { trackAddNewMerchantEvents } from 'merchant/views/PartnerDashboard/ga';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 @withRouter
 @connect(
   (state) => ({
     user: state.session.user,
     mode: state.session.mode,
+    org: state.session.org,
     isMobileResolution: state.app.isMobileResolution,
     ...state.submerchants,
   }),
@@ -84,7 +86,7 @@ export default class SubMerchantsList extends Component {
     });
 
     trackAddNewMerchantEvents('Click - Navbar');
-    const { closeModal, openModal } = this.props;
+    const { closeModal, openModal, org } = this.props;
     const { referralData } = this.state;
     const addMerchantType = this.getProductType();
     openModal({
@@ -94,6 +96,7 @@ export default class SubMerchantsList extends Component {
           closeModal={closeModal}
           referralData={referralData}
           addType={addMerchantType}
+          org={org}
         />
       ),
     });
@@ -217,7 +220,9 @@ export default class SubMerchantsList extends Component {
               </NavLink>
               <ShowWhen
                 additionalCondition={(currentUser) =>
-                  not_pure_platform && currentUser.isPartnershipForXEnabled
+                  not_pure_platform &&
+                  currentUser.isPartnershipForXEnabled &&
+                  !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.RazorpayXAffiliateAccount)
                 }
               >
                 <NavLink
@@ -239,7 +244,9 @@ export default class SubMerchantsList extends Component {
             <div className="partner-dashboard-header-action">
               <ShowWhen
                 additionalCondition={(currentUser) =>
-                  currentUser.isPartner() && currentUser.isPartner('reseller', 'aggregator')
+                  currentUser.isPartner() &&
+                  currentUser.isPartner('reseller', 'aggregator') &&
+                  !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.ReferalLinks)
                 }
               >
                 <button

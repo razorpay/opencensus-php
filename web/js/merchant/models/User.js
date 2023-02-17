@@ -89,6 +89,10 @@ export default class User {
       props.merchant.currency = 'INR';
     }
 
+    if (!props?.merchant?.country_code) {
+      props.merchant.country_code = 'IN';
+    }
+
     Object.assign(this, props);
     if (!this.tags) {
       this.tags = [];
@@ -1622,7 +1626,7 @@ export default class User {
     if (this.isPartner('bank', 'fully_managed') || !this.isAllowedView('partner_home')) {
       return false;
     }
-    return this.isOrgRZP;
+    return this.isOrgRZP || this.isOrgCurlec;
   }
 
   get isPartnershipNPS() {

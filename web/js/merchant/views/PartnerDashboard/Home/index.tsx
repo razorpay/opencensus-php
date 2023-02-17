@@ -25,11 +25,13 @@ import DashboardBanner from 'common/ui/DashboardBanner';
 import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { CapitalReferralCard } from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/CapitalReferralCard';
 
-const AggregatorFormLazy = React.lazy(() =>
-  import('merchant/views/PartnerDashboard/Home/Components/ReferralGuide/AggregatorForm'),
+// eslint-disable-next-line prettier/prettier
+const AggregatorFormLazy = React.lazy(
+  () => import('merchant/views/PartnerDashboard/Home/Components/ReferralGuide/AggregatorForm'),
 );
-const AggregatorSuccessLazy = React.lazy(() =>
-  import('merchant/views/PartnerDashboard/Home/Components/ReferralGuide/AggregatorSuccess'),
+// eslint-disable-next-line prettier/prettier
+const AggregatorSuccessLazy = React.lazy(
+  () => import('merchant/views/PartnerDashboard/Home/Components/ReferralGuide/AggregatorSuccess'),
 );
 
 const Home = ({
@@ -39,6 +41,7 @@ const Home = ({
   closeModal,
   tracking,
   history,
+  org,
 }: PartnerHomeT): JSX.Element => {
   const [FUXStatus, setFUXStatus] = useState<FUXStatusStateT>({
     value: null,
@@ -97,6 +100,7 @@ const Home = ({
           addType={type}
           onAddSuccess={onAddMerchantSuccess}
           source={source}
+          org={org}
         />
       ),
     });
@@ -211,6 +215,7 @@ const Home = ({
           fuxStatus={FUXStatus}
           partnerName={partnerName}
           user={user}
+          org={org}
         />
       </ShowWhen>
       <ShowWhen
@@ -227,6 +232,7 @@ const Home = ({
           handleAggregatorApplyNow={handleAggregatorApplyNow}
           isUserOwner={isUserOwner}
           user={user}
+          org={org}
         />
       </ShowWhen>
       <ShowWhen additionalCondition={() => isPartnershipForCapitalEnabled}>
@@ -238,6 +244,7 @@ const Home = ({
 
 const mapStateToProps = (state) => ({
   user: state.session.user,
+  org: state.session.org,
 });
 
 const getDispatchToProps = () => ({

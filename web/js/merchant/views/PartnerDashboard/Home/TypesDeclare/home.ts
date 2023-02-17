@@ -1,5 +1,4 @@
 import { RouteComponentProps } from 'react-router-dom';
-
 export interface FUXStatusT {
   api_integration: boolean;
   first_commission_payout: boolean;
@@ -11,6 +10,11 @@ export interface FUXStatusT {
 export interface FUXStatusStateT {
   value: FUXStatusT | null;
   isFetching: boolean;
+}
+
+export interface Org {
+  custom_code: string;
+  business_name: string;
 }
 
 export interface StepContentT {
@@ -71,6 +75,7 @@ export interface PartnerHomeT {
   closeModal: () => void;
   tracking: RTrackingT;
   history: RouteComponentProps['history'];
+  org: Org;
 }
 
 export interface RTrackingT<P = Record<string, unknown>> {
