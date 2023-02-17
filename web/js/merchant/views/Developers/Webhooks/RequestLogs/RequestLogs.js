@@ -27,6 +27,8 @@ export default class RequestLogs extends ListContainer {
     this.state = {
       ...super.state,
       shouldCtasBeDisabled: false,
+      httpStatus: '',
+      searchField: '',
     };
   }
 
@@ -79,7 +81,7 @@ export default class RequestLogs extends ListContainer {
     const { duration, dateRange } = selectedFilters;
     const fromDate = moment(duration.from).format('DD MMM');
     const toDate = moment(duration.to).format('DD MMM');
-    const { status, shouldCtasBeDisabled } = this.state;
+    const { status, shouldCtasBeDisabled, httpStatus } = this.state;
 
     return (
       <div className="webhook-logs-container content-wrapper" style={{ marginTop: 20 }}>
@@ -105,14 +107,15 @@ export default class RequestLogs extends ListContainer {
             <label>Response Code</label>
             <select
               class="form-control input-sm"
-              value={this.state.httpStatus}
+              value={httpStatus === '' ? 'all' : httpStatus}
               onChange={(e) =>
                 this.setState({ httpStatus: e.target.value === 'all' ? '' : e.target.value })
               }
               onBlur={() => trackWebhookLogsSearchHttpStatusChanged()}
+              data-testid="select"
             >
               {HTTP_STATUS_CODE_LIST.map((code) => (
-                <option key={code.value} value={code.value}>
+                <option key={code.value} value={code.value} data-testid="select-option">
                   {code.label}
                 </option>
               ))}

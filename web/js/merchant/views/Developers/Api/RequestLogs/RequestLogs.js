@@ -27,6 +27,8 @@ export default class RequestLogs extends ListContainer {
     this.state = {
       ...super.state,
       status: {},
+      httpStatus: '',
+      searchField: '',
     };
   }
 
@@ -75,7 +77,7 @@ export default class RequestLogs extends ListContainer {
     const { duration, dateRange } = selectedFilters;
     const fromDate = moment(duration.from).format('DD MMM');
     const toDate = moment(duration.to).format('DD MMM');
-    const { status } = this.state;
+    const { status, httpStatus } = this.state;
 
     return (
       <div className="api-logs-container content-wrapper" style={{ marginTop: 20 }}>
@@ -101,14 +103,15 @@ export default class RequestLogs extends ListContainer {
             <label>Response Code</label>
             <select
               className="form-control input-sm"
-              value={this.state.httpStatus}
+              value={httpStatus === '' ? 'all' : httpStatus}
               onChange={(e) =>
                 this.setState({ httpStatus: e.target.value === 'all' ? '' : e.target.value })
               }
               onBlur={() => trackApiLogsSearchHttpStatusChanged()}
+              data-testid="select"
             >
               {HTTP_STATUS_CODE_LIST.map((code) => (
-                <option key={code.value} value={code.value}>
+                <option key={code.value} value={code.value} data-testid="select-option">
                   {code.label}
                 </option>
               ))}
@@ -139,7 +142,7 @@ export default class RequestLogs extends ListContainer {
             <thead>
               <tr>
                 <th>Log ID</th>
-                <th>Method & Endpoint</th>
+                <th>Method &amp; Endpoint</th>
                 <th>Date and Time</th>
                 <th>Response Code</th>
               </tr>
