@@ -472,7 +472,7 @@ class Service
                 //because every website and business_detail.plugin_details is considered as a new field in ES (because of JSON structure).
                 unset($originalDataArray['merchant_website']);
 
-                unset($originalDataArray['merchant_business_detail']);
+                unset($originalDataArray['business_detail']['plugin_details']);
 
 
                 // Set entity
@@ -494,7 +494,7 @@ class Service
                 //because every website and business_detail.plugin_details is considered as a new field in ES (because of JSON structure).
                 unset($dirtyDataArray['merchant_website']);
 
-                unset($dirtyDataArray['merchant_business_detail']);
+                unset($dirtyDataArray['business_detail']['plugin_details']);
 
                 // Set entity (redundant if it already got set above from $originalData)
                 $this->setEntity($dirtyData->getEntityName());
