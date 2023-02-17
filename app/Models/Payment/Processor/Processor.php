@@ -1473,8 +1473,6 @@ class Processor
         {
             $startTime = microtime(true);
 
-            $this->logRequestHeaders();
-
             $this->validatePaymentForOptimizerOnlyMerchants();
 
             $this->preProcessPosPaymentRequest($input);
@@ -1585,36 +1583,6 @@ class Processor
             $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_CREATE_REQUEST_PROCESSED, $payment, $e, $meta, $properties);
 
             throw $e;
-        }
-    }
-
-    protected function logRequestHeaders()
-    {
-        try {
-            $merchantId = $this->merchant->getId();
-            if (isset($merchantId) && ($merchantId === 'KlSqqK7jxeyjP9' ||  $merchantId === 'Do8mFu7kUR8sog'))
-            {
-                $inputHeaders = $this->app['request']->headers->all();
-                unset($inputHeaders['authorization']);
-                unset($inputHeaders['cookie']);
-                unset($inputHeaders['php-auth-user']);
-                unset($inputHeaders['php-auth-pw']);
-                unset($inputHeaders['x-passport-jwt-v1']);
-
-                $this->app['trace']->info(TraceCode::REQUEST_HEADERS,
-                    [
-                        'headers' => $inputHeaders,
-                        'merchant' => $merchantId
-                    ]);
-            }
-        }
-        catch(\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::LOGGING_REQUEST_HEADERS_FAILED,
-                []);
         }
     }
 
