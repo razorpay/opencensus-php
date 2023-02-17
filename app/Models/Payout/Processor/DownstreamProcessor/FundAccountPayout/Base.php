@@ -17,6 +17,7 @@ use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Transaction\CreditType;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Merchant\Balance\FreePayout;
+use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Feature\Constants as Features;
 use \RZP\Models\FundAccount\Entity as FundAccountEntity;
 use RZP\Models\Payout\Processor\DownstreamProcessor\Base as DSBase;
@@ -150,8 +151,10 @@ class Base extends DSBase
     {
         try
         {
-            if ($payout->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD) === true)
+            if (($payout->merchant->isFeatureEnabled(Features::PAYOUTS_ON_HOLD) === true) or
+                ($payout->balance->getAccountType() === AccountType::DIRECT))
             {
+
                 $isBeneBankDown = (new PayoutCore)->checkIfBeneBankIsDown($payout);
 
                 if ($isBeneBankDown === true)

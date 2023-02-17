@@ -10651,6 +10651,42 @@ return [
         ],
     ],
 
+    'testOnHoldPayoutCreateForFeatureNotEnabledAndDirectAccount' => [
+    'request'  => [
+        'method'  => 'POST',
+        'url'     => '/payouts',
+        'content' => [
+            'account_number'  => '2224440041626905',
+            'amount'          => 2000000,
+            'currency'        => 'INR',
+            'narration'       => 'Batman',
+            'mode'            => 'IMPS',
+            'fund_account_id' => 'fa_100000000000fa',
+            'purpose'         => 'refund',
+            'notes'           => [
+                'abc'         => 'xyz',
+            ],
+        ],
+    ],
+    'response' => [
+        'content' => [
+            'entity'          => 'payout',
+            'amount'          => 2000000,
+            'currency'        => 'INR',
+            'fund_account_id' => 'fa_100000000000fa',
+            'narration'       => 'Batman',
+            'status'          => 'queued',
+            'mode'            => 'IMPS',
+            'tax'             => 0,
+            'fees'            => 0,
+            'notes'           => [
+                'abc'         => 'xyz',
+            ],
+        ],
+    ],
+],
+
+
     'testCreatePayoutWithCustomPurpose' => [
         'request'  => [
             'method'  => 'POST',
@@ -17612,6 +17648,7 @@ return [
             ],
         ],
     ],
+
     'testOnHoldPayoutForFeatureEnabledMerchantAndBeneDown' => [
         'request'  => [
             'method'  => 'POST',

@@ -25,6 +25,7 @@ use RZP\Mail\Payout\FailedPayout;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\AutoRejectedPayout;
+use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Services\Mozart as MozartService;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\FreePayout;
@@ -45,6 +46,7 @@ class RblPayoutTest extends TestCase
     use PaymentTrait;
     use WorkflowTrait;
     use DbEntityFetchTrait;
+    use TestsWebhookEvents;
     use TestsBusinessBanking;
 
     private $checkerRoleUser;
@@ -611,6 +613,35 @@ class RblPayoutTest extends TestCase
         $this->ba->cronAuth();
 
         $this->startTest();
+    }
+
+    public function testOnHoldPayoutCreateForFeatureNotEnabledAndDirectAccount()
+    {
+        $this->ba->privateAuth();
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" => [
+                    "SBIN"    => [
+                        "status" => "started",
+                    ],
+                    "RZPB"    => [
+                        "status" => "started",
+                    ],
+                    "default" => "started",
+                ]
+            ];
+
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+        $this->expectWebhookEvent('payout.queued');
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('on_hold', $payout['status']);
+        $this->assertEquals('beneficiary_bank_down', $payout['queued_reason']);
     }
 
     public function testRblPayoutWithInvalidMode()
