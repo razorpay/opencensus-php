@@ -3782,6 +3782,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GEOLOCATION_UPDATE_RESPONSE                           = 'GEOLOCATION_UPDATE_RESPONSE';
     const GEOLOCATION_FAILURE                                   = 'GEOLOCATION_FAILURE';
 
+    const QR_V2_PAYMENT_SYNC_FAILED                             = 'QR_V2_PAYMENT_SYNC_FAILED';
     const QR_CODE_CREATE_REQUEST_FAILED                         = 'QR_CODE_CREATE_REQUEST_FAILED';
     const QR_CODE_CLOSE_REQUEST_FAILED                          = 'QR_CODE_CLOSE_REQUEST_FAILED';
     const QR_CODE_FETCH_MULTIPLE_KEYS_SUPPLIED_WITH_PAYMENT_ID  = 'QR_CODE_FETCH_MULTIPLE_KEYS_SUPPLIED_WITH_PAYMENT_ID';

@@ -10,14 +10,16 @@ use RZP\Models\QrCode\NonVirtualAccountQrCode\RequestSource;
 class Metric extends Base\Core
 {
     const QR_CODE_V2_PAYMENT_PROCESS = 'qr_code_v2_payment_process';
+    const QR_CODE_V2_PAYMENT_ES_SYNC = 'qr_code_v2_payment_es_sync';
 
-    const LABEL_MERCHANT_ID   = 'merchant_id';
-    const LABEL_METHOD        = 'method';
-    const LABEL_EXPECTED      = 'expected';
-    const LABEL_GATEWAY       = 'gateway';
-    const LABEL_ERROR_MESSAGE = 'error_message';
-    const LABEL_SUCCESSFUL    = 'successful';
-    const LABEL_REQUEST_SOURCE = 'request_source';
+    const LABEL_MERCHANT_ID          = 'merchant_id';
+    const LABEL_METHOD               = 'method';
+    const LABEL_EXPECTED             = 'expected';
+    const LABEL_GATEWAY              = 'gateway';
+    const LABEL_ERROR_MESSAGE        = 'error_message';
+    const LABEL_SUCCESSFUL           = 'successful';
+    const LABEL_REQUEST_SOURCE       = 'request_source';
+    const LABEL_ES_SYNC_ERROR_MESSAGE= 'es_sync_error_message';
 
     protected function getDefaultDimensions($requestSource): array
     {
@@ -54,4 +56,19 @@ class Metric extends Base\Core
             array_merge($customDimensions, $dimensions)
         );
     }
+
+    public function pushQrV2PaymentsESSyncMetrics($errorMessage)
+    {
+        $dimensions = [];
+
+        $customDimensions = [
+            Metric::LABEL_ES_SYNC_ERROR_MESSAGE => $errorMessage
+        ];
+
+        $this->trace->count(
+            Metric::QR_CODE_V2_PAYMENT_ES_SYNC,
+            array_merge($customDimensions, $dimensions)
+        );
+    }
+
 }

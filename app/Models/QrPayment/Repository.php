@@ -2,10 +2,13 @@
 
 namespace RZP\Models\QrPayment;
 
+use Exception;
+use RZP\Base\Common;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 
@@ -38,38 +41,61 @@ class Repository extends Base\Repository
 
     protected function serializeForIndexing(PublicEntity $entity): array
     {
-        $fields = $this->esRepo->getIndexedFields();
-
-        $serialized = $entity->setVisible($fields)->toArray();
-
-        if ($entity->payment !== null)
+        try
         {
-            $serialized[PaymentEntity::STATUS] = $entity->payment->getStatus();
+            $errorMessage = null;
 
-            $serialized[EsRepository::NOTES_NEW] = $entity->payment->getNotes()->toArray();
+            $payment = $entity->payment;
 
-            if (empty($serialized[EsRepository::NOTES_NEW]) === false)
+            $qrCodeEntity = $entity->qrCode;
+
+            $fields = $this->esRepo->getIndexedFields();
+
+            $serialized = $entity->setVisible($fields)->toArray();
+
+            if (empty($payment) === false)
             {
-                $serialized[EsRepository::NOTES_NEW] = array_map(
-                    function($key, $value) {
-                        return compact('key', 'value');
-                    },
-                    array_keys($serialized[EsRepository::NOTES_NEW]),
-                    $serialized[EsRepository::NOTES_NEW]
-                );
+                $serialized[PaymentEntity::STATUS] = $payment->getStatus();
+
+                $serialized[EsRepository::NOTES_NEW] = $payment->getNotes()->toArray();
+
+                if (empty($serialized[EsRepository::NOTES_NEW]) === false)
+                {
+                    $serialized[EsRepository::NOTES_NEW] = array_map(
+                        function ($key, $value) {
+                            return compact('key', 'value');
+                        },
+                        array_keys($serialized[EsRepository::NOTES_NEW]),
+                        $serialized[EsRepository::NOTES_NEW]
+                    );
+                }
+
+                unset($serialized[PaymentEntity::NOTES]);
             }
 
-            unset($serialized[PaymentEntity::NOTES]);
+            if ($qrCodeEntity !== null)
+            {
+                $serialized[Entity::MERCHANT_ID] = $qrCodeEntity->getMerchantId();
+
+                if ($qrCodeEntity->customer !== null)
+                {
+                    $serialized[EsRepository::CUSTOMER_EMAIL] = $qrCodeEntity->customer->getEmail();
+                }
+            }
         }
-
-        if ($entity->qrCode !== null)
+        catch (\Exception $ex)
         {
-            $serialized[Entity::MERCHANT_ID] = $entity->qrCode->getMerchantId();
+            $errorMessage = $ex->getMessage();
 
-            if ($entity->qrCode->customer !== null)
-            {
-                $serialized[EsRepository::CUSTOMER_EMAIL] = $entity->qrCode->customer->getEmail();
-            }
+            $this->trace->traceException(
+                                        $ex,
+                                        Trace::CRITICAL,
+                                        TraceCode::QR_V2_PAYMENT_SYNC_FAILED,
+                                        $entity->toArray());
+        }
+        finally
+        {
+            (new Metric())->pushQrV2PaymentsESSyncMetrics($errorMessage);
         }
 
         $this->trace->info(TraceCode::QR_PAYMENT_ES_DEBUG, $serialized);
