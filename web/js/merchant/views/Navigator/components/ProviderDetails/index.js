@@ -12,11 +12,10 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 
 import { trackOptimizerEvents } from 'merchant/views/Navigator/track';
 import { gatewayLogos, WalletLabels } from 'merchant/views/Navigator/components/util';
+import { TPV_OPTIONS, SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
 
 import APIDetails from './components/APIDetails';
 import NoProviderFound from './components/NoProviderFound';
-import { getUPIOptionLabel } from './util';
-import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
 
 @withRouter
 @connect(
@@ -127,7 +126,7 @@ export default class ProviderDetails extends Component {
                     <div className="list-group details-row-container">
                       <EntityDetailRow
                         label="TPV"
-                        value={() => getUPIOptionLabel(upiFeatures.tpv)}
+                        value={() => TPV_OPTIONS[upiFeatures?.tpv] || ''}
                       />
                     </div>
                   )}

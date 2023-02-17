@@ -32,29 +32,32 @@ export const INIT_FORM_STATE = {
 
 export const SKIP_VALIDATION_KEYS = ['Gateway Name', 'TPV', 'optimizer_seamless_disabled'];
 
-export const TPV_OPTIONS = [
-  { label: 'Non TPV', value: 0 },
-  { label: 'TPV Only', value: 1 },
-  { label: 'Both (TPV and Non TPV)', value: 2 },
-];
+export const TPV_OPTIONS = {
+  0: 'Non TPV',
+  1: 'TPV Only',
+  2: 'Both (TPV and Non TPV)',
+};
 
 export const HAVE_UPI_FEATURES = ['upi_mindgate', 'upi_icici', 'upi_axis'];
 export const HAVE_NETBANKING_FEATURES = ['atom'];
 
 /** Seamless option constants - Start **/
-
 export const SEAMLESS_PROVIDERS = ['paytm'];
+
 export const SEAMLESS_OPTIONS = [
   { label: 'Instant (beta)', value: true },
   { label: 'Server-to-Server', value: false },
 ];
+
 export const SEAMLESS_CONTENT = {
   paytm: {
     disable: {
       headerText: 'Enable Instant (beta)',
       infoBlock: (
         <div>
-          <p>Go live with your Paytm PG account instantly via 'Instant' integration mode.</p>
+          <p>
+            Go live with your Paytm PG account instantly via &rsquo;Instant&rsquo; integration mode.
+          </p>
           <p>
             This is a beta release and supports the following payment methods - Debit Cards, Credit
             Cards, Netbanking, Paytm Wallet.

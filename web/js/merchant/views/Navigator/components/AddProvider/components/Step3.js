@@ -3,7 +3,7 @@ import React, { Fragment } from 'react';
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
-import { TPV_OPTIONS } from 'merchant/views/Navigator/constants';
+import { getTPVOptions } from 'merchant/views/Navigator/components/AddProvider/util';
 
 import { WalletsMultiSelect } from './WalletsMultiSelect';
 
@@ -34,92 +34,93 @@ export function Step3({
   return (
     <div className="row">
       {fields.map(({ label = '', data_type, data_value }) => {
-        if (data_type === 'array' && label === 'Payment Methods') {
-          return (
-            <Fragment key={label}>
-              <div className="col-xs-12">
-                <div className="row">
+        if (data_type === 'array') {
+          if (label === 'Payment Methods') {
+            return (
+              <Fragment key={label}>
+                <div className="col-xs-12">
+                  <div className="row">
+                    <div className="col-xs-3">
+                      <label for="name" className="gateway-detail-title">
+                        {label}
+                      </label>
+                    </div>
+                    <div className="col-xs-9">
+                      <div>
+                        {data_value.map((method) => (
+                          <span className="payment-method-checkbox-span" key={method}>
+                            <Input.Check
+                              id={method}
+                              fieldLabel={method}
+                              checked={provider?.Gateway_details?.['Payment Methods']?.includes(
+                                method,
+                              )}
+                              onChange={(e) => changeGatewayDetails(e, method)}
+                              disabled={
+                                !isEdit || (selectedProvider === 'paytm' && method === 'wallet')
+                              } // Paytm onboarding enabled wallet method by default
+                              autoRender
+                            />
+                          </span>
+                        ))}
+                      </div>
+                      <p className="select-payment-method-desc">
+                        Select the payment methods to be enabled for the {selectedProvider}
+                        {selectedProvider === 'paytm' &&
+                          '. Paytm wallet will be enabled by default.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {walletOptions?.length > 0 &&
+                  provider?.Gateway_details?.['Payment Methods']?.includes('wallet') && (
+                    <WalletsMultiSelect
+                      walletOptions={walletOptions}
+                      walletSelected={provider?.Gateway_details?.wallet_metadata?.wallets}
+                      changeGatewayWallets={changeGatewayWallets}
+                      disabled={selectedProvider === 'paytm'} // For paytm wallets get enabled by default
+                    />
+                  )}
+              </Fragment>
+            );
+          } else if (label === 'TPV') {
+            return (
+              <div className="col-xs-12" key={label}>
+                <div className="row tpv-field-wrapper">
                   <div className="col-xs-3">
                     <label for="name" className="gateway-detail-title">
-                      {label}
+                      <span>{label}</span>
+                      <small className="help-content ml-4">
+                        <i className="i i-info-circle" />
+                        <Popover align="top" theme="dark">
+                          <PopoverBody>
+                            <div>
+                              Third-Party Validation (TPV) of your customer’s bank accounts in
+                              real-time. It is a mandatory requirement for merchants in the BFSI
+                              (Banking, Financial Services and Insurance) sector.
+                            </div>
+                          </PopoverBody>
+                        </Popover>
+                      </small>
                     </label>
                   </div>
+
                   <div className="col-xs-9">
-                    <div>
-                      {data_value.map((method) => (
-                        <span className="payment-method-checkbox-span" key={method}>
-                          <Input.Check
-                            id={method}
-                            fieldLabel={method}
-                            checked={provider?.Gateway_details?.['Payment Methods']?.includes(
-                              method,
-                            )}
-                            onChange={(e) => changeGatewayDetails(e, method)}
-                            disabled={
-                              !isEdit || (selectedProvider === 'paytm' && method === 'wallet')
-                            } // Paytm onboarding enabled wallet method by default
-                            autoRender
-                          />
-                        </span>
-                      ))}
-                    </div>
-                    <p className="select-payment-method-desc">
-                      Select the payment methods to be enabled for the {selectedProvider}
-                      {selectedProvider === 'paytm' && '. Paytm wallet will be enabled by default.'}
-                    </p>
+                    <Input.Radio
+                      id={label}
+                      defaultValue={provider.Gateway_details?.TPV ?? -1}
+                      options={getTPVOptions(data_value)}
+                      name={label.toLowerCase()}
+                      onChange={changeGatewayDetails}
+                      disabled={!isEdit}
+                      autoRender
+                    />
                   </div>
                 </div>
               </div>
-
-              {walletOptions?.length > 0 &&
-                provider?.Gateway_details?.['Payment Methods']?.includes('wallet') && (
-                  <WalletsMultiSelect
-                    walletOptions={walletOptions}
-                    walletSelected={provider?.Gateway_details?.wallet_metadata?.wallets}
-                    changeGatewayWallets={changeGatewayWallets}
-                    disabled={selectedProvider === 'paytm'} // For paytm wallets get enabled by default
-                  />
-                )}
-            </Fragment>
-          );
-        }
-
-        if (data_type === 'bool' && label === 'TPV') {
-          return (
-            <div className="col-xs-12" key={label}>
-              <div className="row tpv-field-wrapper">
-                <div className="col-xs-3">
-                  <label for="name" className="gateway-detail-title">
-                    <span>{label}</span>
-                    <small className="help-content ml-4">
-                      <i className="i i-info-circle" />
-                      <Popover align="top" theme="dark">
-                        <PopoverBody>
-                          <div>
-                            Third-Party Validation (TPV) of your customer’s bank accounts in
-                            real-time. It is a mandatory requirement for merchants in the BFSI
-                            (Banking, Financial Services and Insurance) sector.
-                          </div>
-                        </PopoverBody>
-                      </Popover>
-                    </small>
-                  </label>
-                </div>
-
-                <div className="col-xs-9">
-                  <Input.Radio
-                    id={label}
-                    defaultValue={provider.Gateway_details?.TPV ?? 0}
-                    options={TPV_OPTIONS}
-                    name={label.toLowerCase()}
-                    onChange={changeGatewayDetails}
-                    disabled={!isEdit}
-                    autoRender
-                  />
-                </div>
-              </div>
-            </div>
-          );
+            );
+          }
         }
 
         return (
