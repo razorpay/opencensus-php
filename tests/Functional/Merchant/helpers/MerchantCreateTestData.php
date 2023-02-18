@@ -461,6 +461,33 @@ return [
         ],
     ],
 
+    'testCreateMalaysianSubMerchantByFullyManagedWithEmail' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
+                'email' => 'testsub@razorpay.com'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'email'     => 'testsub@razorpay.com',
+                ],
+                'dashboard_access' => true,
+                'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
     'testCreateSubMerchantForXByFullyManagedWithEmail' => [
         'request'  => [
             'url'     => '/submerchants',
@@ -545,6 +572,33 @@ return [
     ],
 
     'testCreateSubMerchantByAggregatorWithEmail' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
+                'email' => 'testsub@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'email'     => 'testsub@razorpay.com',
+                ],
+                'dashboard_access' => true,
+                'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
+    'testCreateMalaysianSubMerchantByAggregatorWithEmail' => [
         'request'  => [
             'url'     => '/submerchants',
             'method'  => 'POST',
@@ -787,6 +841,30 @@ return [
     ],
 
     'testCreateSubMerchantByAggregatorWithoutEmail' => [
+        'request'   => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'   => 'NewSubmerchant',
+                'name' => 'Submerchant',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SUBMERCHANT_WITHOUT_EMAIL_NOT_ALLOWED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUBMERCHANT_WITHOUT_EMAIL_NOT_ALLOWED,
+        ],
+    ],
+
+    'testCreateMalaysianSubMerchantByAggregatorWithoutEmail' => [
         'request'   => [
             'url'     => '/submerchants',
             'method'  => 'POST',

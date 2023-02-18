@@ -904,6 +904,49 @@ class MerchantCreateTest extends TestCase
         $this->verifyAccessMapEntries($app, $submerchant);
     }
 
+    public function testCreateMalaysianSubMerchantByFullyManagedWithEmail()
+    {
+        Mail::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('fully_managed', 10000000000000, 'MY');
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $config = $this->createConfigForPartnerApp($app->getId());
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantPartnerMail::class, function ($mail)
+        {
+            return $mail->hasTo('test@razorpay.com');
+        });
+
+        Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('org_100000razorpay', $data['org']['id']);
+
+            return $mail->hasTo('testsub@razorpay.com', 'Submerchant');
+        });
+
+        Mail::assertNotSent(PasswordResetMail::class);
+
+        $submerchant = $this->getLastEntity('merchant', true);
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
+
+        $this->assertEquals(1, count($mapping));
+
+        $this->verifyAccessMapEntries($app, $submerchant);
+    }
+
     public function testCreateSubMerchantForXByFullyManagedWithEmail()
     {
         Mail::fake();
@@ -1080,6 +1123,55 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals(1, count($mapping));
 
         $this->verifyAccessMapEntries($app, $submerchant);
+    }
+
+    public function testCreateMalaysianSubMerchantByAggregatorWithEmail()
+    {
+        Mail::fake();
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator', '10000000000000', 'MY');
+
+        $this->fixtures->on('test')->create('merchant_detail:sane', [
+            'merchant_id' => $app->merchant_id
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_detail:sane', [
+            'merchant_id' => $app->merchant_id
+        ]);
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantPartnerMail::class, function($mail) {
+            return $mail->hasTo('test@razorpay.com');
+        });
+
+        Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function($mail) {
+            $data = $mail->viewData;
+
+            $this->assertEquals('org_100000razorpay', $data['org']['id']);
+
+            return $mail->hasTo('success@curlec.com', 'Submerchant');
+        });
+
+        $submerchant = $this->getLastEntity('merchant', true);
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
+
+        // This should be empty once aggregator type's dashboard access is removed
+        // in withEmail cases.
+        $this->assertEquals(1, count($mapping));
+
+        $this->verifyAccessMapEntries($app, $submerchant);
+
+        $this->assertEquals('MY', $submerchant['country_code']);
     }
 
     public function testCreateSubMerchantForXByAggregatorWithEmail()
@@ -1689,6 +1781,27 @@ class MerchantCreateTest extends TestCase
     public function testCreateSubMerchantByAggregatorWithoutEmail()
     {
         $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator');
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->startTest();
+
+        $submerchant = $this->getLastEntity('merchant', true);
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
+
+        $this->assertEquals(1, count($mapping));
+
+        list($testMapping, $liveMapping) = $this->getLastMappingForBothModes();
+
+        $this->assertNull($testMapping);
+
+        $this->assertNull($liveMapping);
+    }
+
+    public function testCreateMalaysianSubMerchantByAggregatorWithoutEmail()
+    {
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator', '10000000000000', 'MY');
 
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
@@ -2548,9 +2661,10 @@ class MerchantCreateTest extends TestCase
 
     protected function markPartnerAndCreateAppAndUserMapping(
         string $type = 'fully_managed',
-        string $merchantId = '10000000000000')
+        string $merchantId = '10000000000000',
+        string $countryCode = 'IN')
     {
-        $this->fixtures->merchant->edit($merchantId, ['partner_type' => $type]);
+        $this->fixtures->merchant->edit($merchantId, ['partner_type' => $type, 'country_code' => $countryCode]);
 
         return $this->createOAuthApplication(['merchant_id' => $merchantId, 'type' => 'partner', 'partner_type' => $type]);
     }

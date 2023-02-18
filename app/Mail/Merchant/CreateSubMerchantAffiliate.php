@@ -10,6 +10,7 @@ use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Detail\Entity as Detail;
+use RZP\Models\Merchant\Constants as MerchantConstants;
 
 class CreateSubMerchantAffiliate extends Mailable
 {
@@ -54,7 +55,22 @@ class CreateSubMerchantAffiliate extends Mailable
 
     protected function addRecipients()
     {
-        $email = $this->subMerchant['email'];
+        /*
+         * The changes required for malaysian partner flow
+         * Currently in malaysia merchant onboarding is done manually
+         * So we are sending the email to success@curlec.com, they will add the merchats
+         */
+        $countryCode = $this->aggregator['country_code'];
+        $partnerType = $this->aggregator['partner_type'];
+
+        if (($countryCode === 'MY') and (in_array($partnerType, array(MerchantConstants::RESELLER, MerchantConstants::AGGREGATOR))))
+        {
+            $email = "success@curlec.com";
+        }
+        else
+        {
+            $email = $this->subMerchant['email'];
+        }
 
         $name = $this->subMerchant['name'];
 

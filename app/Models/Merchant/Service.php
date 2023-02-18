@@ -542,6 +542,8 @@ class Service extends Base\Service
 
             $hasAggregatorFeature = $merchant->hasAggregatorFeature();
 
+            $input['country_code'] = $merchant->getCountry();
+
             $this->trace->info(
                 TraceCode::SUBMERCHANT_CREATE_REQUEST,
                 [

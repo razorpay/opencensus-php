@@ -897,6 +897,34 @@ return [
         ],
     ],
 
+    'testCreateMalaysianSubMerchantByAggregatorWithEmail' => [
+        'request'  => [
+            'url'     => '/submerchants',
+            'method'  => 'POST',
+            'content' => [
+                'id'    => 'NewSubmerchant',
+                'name'  => 'Submerchant',
+                'email' => 'testsub@razorpay.com',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'               => 'acc_NewSubmerchant',
+                'name'             => 'Submerchant',
+                'email'            => 'testsub@razorpay.com',
+                'details'          => [
+                    'activation_status' => null,
+                ],
+                'user'             => [
+                    'email'     => 'testsub@razorpay.com',
+                    'confirmed' => false,
+                ],
+                'dashboard_access' => true,
+                'pricing_plan_id'  => \RZP\Tests\Functional\Fixtures\Entity\Pricing::DEFAULT_PRICING_PLAN_ID,
+            ],
+        ],
+    ],
+
     'testRefundCreatedWebhookForAggregatorModel' => [
         'mode' => 'test',
         'event' => [
