@@ -15,6 +15,10 @@ use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstants;
 
 class Constants
 {
+    const LIVE_PRIMARY_BALANCE          = 'Live Primary Balance';
+    const REJECTION_CATEGORY_REASONS    ='Rejection Category - Rejection Reasons';
+    const REJECTION_OPTION             ='Rejection Option';
+
     const BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT = 'BANK_ACCOUNT_VERIFICATION_MAX_ATTEMPT_COUNT';
 
     const MRS_PROFANITY_CHECKER_DEPTH = 1;

@@ -3222,7 +3222,8 @@ class Core extends Base\Core
                 $this->triggerWorkflowForRejectionActivationStatusChange(
                     $oldMerchantDetails,
                     $newMerchantDetails,
-                    $rejectionReasons);
+                    $rejectionReasons,
+                    $rejectionOption);
 
                 if (empty($rejectionOption) === true)
                 {
@@ -3867,7 +3868,8 @@ class Core extends Base\Core
     protected function triggerWorkflowForRejectionActivationStatusChange(
         Entity $oldMerchantDetails,
         Entity $newMerchantDetails,
-        array $rejectionReasons)
+        array $rejectionReasons,
+        $rejectionOption)
     {
         $oldMerchantDetailsArray = $oldMerchantDetails->toArray();
 
@@ -3879,16 +3881,34 @@ class Core extends Base\Core
         {
             $rejectionReasonCode = $rejectionReason[Reason\Entity::REASON_CODE] ?? '';
 
-            $rejectionReasonDescriptions[] = RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
+            $rejectionReasonDescriptions[] = ($rejectionReason[Reason\Entity::REASON_CATEGORY]??'None')
+                                             .' - '.
+                                             RejectionReasons::getReasonDescriptionByReasonCode($rejectionReasonCode);
+
+            $rejectionReasonCategory[] = $rejectionReason[Reason\Entity::REASON_CATEGORY];
         }
 
-        $newMerchantDetailsArray[Entity::REJECTION_REASONS] = $rejectionReasonDescriptions;
+        $newMerchantDetailsArray[DetailConstants::REJECTION_CATEGORY_REASONS] = $rejectionReasonDescriptions;
+
+        $newMerchantDetailsArray[DetailConstants::REJECTION_OPTION] = $rejectionOption;
+    
+        $merchant = $newMerchantDetails->merchant;
+
+        $balances = $this->repo->balance->getMerchantBalancesByType($merchant->getId(),
+                                                                   \RZP\Models\Merchant\Balance\Type::PRIMARY);
+
+        if (count($balances) >0)
+        {
+            $newMerchantDetailsArray[DetailConstants::LIVE_PRIMARY_BALANCE] = $balances[0]->getBalance();
+        }
+        else
+        {
+            $newMerchantDetailsArray[DetailConstants::LIVE_PRIMARY_BALANCE] = 0;
+        }
 
         $this->app['workflow']
             ->setEntity($newMerchantDetails->getEntity())
             ->handle($oldMerchantDetailsArray, $newMerchantDetailsArray);
-
-        $merchant = $newMerchantDetails->merchant;
 
         // If the merchant is instantly activated and the kyc gets rejected, disable live transactions
         (new Merchant\Core)->disableLiveIfAlreadyActivated($merchant);
