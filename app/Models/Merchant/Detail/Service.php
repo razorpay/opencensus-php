@@ -333,6 +333,7 @@ class Service extends Base\Service
         $user = $this->user;
 
         $merchant = $this->app['basicauth']->getMerchant();
+        $merchantId = $merchant->getId();
 
         try
         {
@@ -348,6 +349,38 @@ class Service extends Base\Service
             (new User\Core())->checkIfEmailAlreadyExists($input[User\Entity::EMAIL]))
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_EMAIL_ALREADY_EXISTS);
+        }
+
+        // route requests when email validation is done.
+        try {
+            $body = [
+                'merchant_id' => $merchantId,
+                User\Entity::EMAIL => $email
+            ];
+
+            $pgosProxyController = new MerchantOnboardingProxyController();
+
+            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $body, $merchant);
+
+            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response' => $response,
+            ]);
+        }
+        catch (RequestsException $e) {
+
+            if (checkRequestTimeout($e) === true) {
+                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
+                    'merchant_id' => $merchantId,
+                ]);
+            }
+
+        }
+        catch (\Throwable $exception) {
+            // this should not introduce error counts as it is running in shadow mode
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'error_message' => $exception->getMessage()
+            ]);
         }
 
         if(empty($emailUser) === true)

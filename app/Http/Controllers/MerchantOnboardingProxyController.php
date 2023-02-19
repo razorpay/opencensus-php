@@ -100,6 +100,11 @@ class MerchantOnboardingProxyController extends BaseProxyController
 
     protected function isExperimentEnabled($merchantId, $experimentId): bool
     {
+        $this->trace->info(TraceCode::PGOS_PROXY_REQUEST, [
+            'splitz_input_experiment_id' => $experimentId,
+            'splitz_input_merchant_id' => $merchantId
+        ]);
+
         $properties = [
             'id'            => $merchantId,
             'experiment_id' => $this->app['config']->get($experimentId),
