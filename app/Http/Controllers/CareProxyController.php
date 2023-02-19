@@ -25,7 +25,7 @@ class CareProxyController extends Controller
     const MERCHANT_NAVIGATION_LIST  = 'twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/GetMerchantNavigationList';
 
     //cron
-    const NOTIFY_MERCHANT_CSM_CHANGED = '/twirp/rzp.care.csm.v1.CsmService/NotifyMerchantsWithCsmChange';
+    const NOTIFY_MERCHANT_CSM_CHANGED = 'twirp/rzp.care.csm.v1.CsmService/NotifyMerchantsWithCsmChange';
     const INIT_SLOTS             = 'twirp/rzp.care.callback.v1.CallbackService/InitSlots';
     const PUSH_CALLBACK_TO_QUEUE = 'twirp/rzp.care.callback.v1.CallbackService/PushCallbacksToQueue';
     const HANDLE_CHANGE_VISIBLE_SLOT_SIZE  = 'twirp/rzp.care.callback.v1.CallbackService/HandleChangeInVisibleSlotSize';
