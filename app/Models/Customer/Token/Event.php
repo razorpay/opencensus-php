@@ -196,6 +196,7 @@ class Event extends Base\Core
             $eventData += [
                 'status'        => 'SUCCESS',
                 'spt_token'     => isset($sptToken['id']) ? $sptToken['id'] : null,
+                'provider_type' => isset($sptToken['provider_type']) ? $sptToken['provider_type'] : null,
                 'payment_account_reference' => ((isset($sptToken['provider_data'])) && isset($sptToken['provider_data']['payment_account_reference']))
                     ? $sptToken['provider_data']['payment_account_reference'] : null,
                 'token_iin' => ((isset($sptToken['provider_data'])) && isset($sptToken['provider_data']['token_iin']))
