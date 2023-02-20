@@ -160,7 +160,8 @@ class Service extends Base\Service
     }
 
     public function sendOtpForSalesForceUser(array $input): array {
-        return $this->requestAPI($input,'users/salesforce/otp', 'POST');
+        $options['headers'][self::CAPTCHA_MODE_HEADER] = Request::header(self::CAPTCHA_MODE_HEADER);
+        return $this->requestAPI($input,'users/salesforce/otp', 'POST', $options);
     }
 
     public function verifyOtpForSalesForceUser(array $input): array {
