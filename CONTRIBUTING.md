@@ -189,6 +189,10 @@ Every item listed in this guideline and the justification for each standard prac
 
 #### 2.4. CSS
 
+**Note** Please use Blade and styled components for styling all new pages/features being developed. 
+If your designs do not include Blade components and Blade tokens please discuss with your design team and adopt your designs to make use of Blade.
+If your design has components which are not yet developed in Blade, please reach out to Blade devs for support.
+
 - Formatting is done properly on CSS **_(check needs to be automated)_**
 - Consistency in CSS/Stylus rules (not a mix of CSS & Stylus) - follow the stylus syntax if you are using .styl files - <https://stylus-lang.com/docs/css-style.html>
 - `!important` is not used until necessary **_(check needs to be automated)_**
