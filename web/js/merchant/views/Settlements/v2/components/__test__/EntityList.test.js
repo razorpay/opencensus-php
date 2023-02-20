@@ -209,7 +209,10 @@ describe('EntityList', () => {
       const paymentId = settlementsListData[0].id;
       const idLink = screen.getByRole('link', { name: paymentId });
       expect(idLink).toBeInTheDocument();
-      expect(idLink).toHaveAttribute('href', `/payments/${paymentId}`);
+      expect(idLink).toHaveAttribute(
+        'href',
+        `/payments/${paymentId}?init_point=payments-table&init_page=Settlements.Payments`,
+      );
       await userEvent.click(idLink);
       expect(handleAnalyticsMock).toHaveBeenCalled();
       expect(handleAnalyticsMock).toHaveBeenCalledWith(
@@ -247,7 +250,10 @@ describe('EntityList', () => {
       const paymentDomesticId = settlementsListData[0].id;
       const idLink = screen.getByRole('link', { name: paymentDomesticId });
       expect(idLink).toBeInTheDocument();
-      expect(idLink).toHaveAttribute('href', `/payments/${paymentDomesticId}`);
+      expect(idLink).toHaveAttribute(
+        'href',
+        `/payments/${paymentDomesticId}?init_point=payments-table&init_page=Settlements.Payments`,
+      );
       expect(getEntityRows()).toHaveLength(10);
     });
 

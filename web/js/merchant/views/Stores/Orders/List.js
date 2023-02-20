@@ -1,22 +1,40 @@
 import { connect } from 'react-redux';
 import { withRouter, Link } from 'react-router-dom';
-
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from './Filter';
-
 import { amount, customer, createdAtShort, status } from 'common/ui/item/pair';
-
 import EntityTable from 'merchant/components/EntityTable';
-
 import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { SelfServeActionPages } from 'common/constant/enums';
 
-const paymentId = {
-  title: 'Payment Id',
-  value: (item) => <Link to={`/payments/${item.id}#stores`}>{item.id}</Link>,
+const _paymentId = () => {
+  return {
+    title: 'Payment Id',
+    value: (item) => (
+      <Link
+        to={`/payments/${item.id}#stores?init_point=stores-orders&init_page=${SelfServeActionPages.StoresOrders}`}
+        onClick={() => {
+          const selfServeInitiateData = {
+            selfServeAction: 'Payment Details Fetched',
+            page: 'Payments',
+            screen: 'Stores',
+            props: {
+              initiatePoint: 'stores-orders',
+              sessionId: window?.session_id,
+            },
+          };
+          selfServeTrackInitiate(selfServeInitiateData);
+        }}
+      >
+        {item.id}
+      </Link>
+    ),
+  };
 };
 
 const PaymentsTable = (props) => {
-  const paymentColumns = [paymentId, amount, customer, createdAtShort, status];
+  const paymentColumns = [_paymentId(), amount, customer, createdAtShort, status];
 
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };

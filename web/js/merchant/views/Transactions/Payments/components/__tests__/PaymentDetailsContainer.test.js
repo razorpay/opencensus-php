@@ -13,8 +13,7 @@ describe('PaymentDetailsContainer', () => {
     await waitFor(() =>
       expect(selfServeTrackSuccess).toHaveBeenCalledWith({
         selfServeAction: 'Payment Details Fetched',
-        page: 'Payment Listing',
-        screen: 'Transaction',
+        props: {},
       }),
     );
     await waitFor(() => expect(screen.getByText('Payment Details')).toBeInTheDocument());

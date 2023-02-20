@@ -117,11 +117,27 @@ class PaymentDetailsContainer extends Component {
         this.checkFeatureFlags();
       }
 
-      selfServeTrackSuccess({
-        selfServeAction: 'Payment Details Fetched',
-        page: 'Payment Listing',
-        screen: 'Transaction',
+      const params = new Proxy(new URLSearchParams(window.location.search), {
+        get: (searchParams, prop) => searchParams.get(prop),
       });
+
+      const initiatePoint = params?.init_point;
+      const initiatePage = params?.init_page;
+      const screen = initiatePage?.split('.')[0];
+      const page = initiatePage?.split('.')[1];
+      const selfServeSuccessData = {
+        selfServeAction: 'Payment Details Fetched',
+        props: {},
+      };
+
+      if ((initiatePoint, initiatePage)) {
+        selfServeSuccessData.props.initiatePoint = initiatePoint;
+        if (screen) selfServeSuccessData.screen = screen;
+        if (page) selfServeSuccessData.page = page;
+        if (window && window.session_id) selfServeSuccessData.props.sessionId = window.session_id;
+      }
+
+      selfServeTrackSuccess(selfServeSuccessData);
     });
   };
 

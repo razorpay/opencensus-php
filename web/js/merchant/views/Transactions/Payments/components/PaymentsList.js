@@ -24,6 +24,7 @@ import { isOrgFeatureExist } from 'merchant/models/User';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentFailureAnalysis from './PaymentFailureAnalysis';
 import { selfServerTrack, selfServeTrackResult } from 'merchant/views/Transactions/AnalyticsTrack';
+import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
 
 const EmptyRoutesComponent = () => (
   <EmptyList
@@ -40,6 +41,16 @@ const EmptyComponent = () => {
   return (
     <EmptyList description={<div>No payments found for the selected duration and criteria!</div>} />
   );
+};
+
+const _paymentId = (initiatePage = 'Transactions.Payments') => {
+  return {
+    title: paymentId.title,
+    value: (item) => {
+      const intermediateElement = makeIdLink('payment')(item, initiatePage);
+      return <div>{intermediateElement}</div>;
+    },
+  };
 };
 
 export default class PaymentsListContainer extends ListContainer {
@@ -162,7 +173,9 @@ export default class PaymentsListContainer extends ListContainer {
   };
 
   getColumns = () => {
-    const cols = [paymentId, amount, email, contact, createdAt, status];
+    const { selfServeActionsPage } = this.props;
+    const initiatePage = selfServeActionsPage ? selfServeActionsPage : 'Transactions.Payments';
+    const cols = [_paymentId(initiatePage), amount, email, contact, createdAt, status];
     const showReceiverType = isOrgFeatureExist('show_pmt_receiver_type');
     /* istanbul ignore else */
     if (showReceiverType) cols.splice(4, 0, paymentReceiverType);

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Amount from 'common/ui/Amount';
 import Time from 'common/ui/Time';
 import { PaymentStatusLabel, SettlementStatusLabel } from 'merchant/components/StatusLabel';
+import { SelfServeActionPages } from 'common/constant/enums';
 
 const commonMeta = {
   columns: [
@@ -21,11 +22,29 @@ const commonMeta = {
     {
       recordKey: 'id',
       transfomer: (value, record, tabName) => {
-        return (
-          <Link to={{ pathname: `/${tabName}/${value}`, state: { fromHomePage: true } }}>
-            <code>{value}</code>
-          </Link>
-        );
+        if (tabName === 'payments') {
+          return (
+            <Link
+              to={{
+                pathname: `/${tabName}/${value}?init_point=payments-table&init_page=${SelfServeActionPages.HomeRecentactivity}`,
+                state: { fromHomePage: true },
+              }}
+            >
+              <code>{value}</code>
+            </Link>
+          );
+        } else {
+          return (
+            <Link
+              to={{
+                pathname: `/${tabName}/${value}`,
+                state: { fromHomePage: true, openedFrom: SelfServeActionPages.HomeRecentactivity },
+              }}
+            >
+              <code>{value}</code>
+            </Link>
+          );
+        }
       },
     },
     {

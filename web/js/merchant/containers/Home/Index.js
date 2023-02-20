@@ -598,12 +598,13 @@ export default class HomeContainer extends Component {
 
     if (selectedPreset.name === customRangeText) {
       trackDatesChange(startDate, endDate);
-      selfServeTrackInitiate({
-        selfServeAction: 'Payment Details Fetched',
-        page: 'Home',
-        screen: 'Home',
-      });
     }
+
+    selfServeTrackInitiate({
+      selfServeAction: 'Payment Details Fetched',
+      page: 'Home',
+      screen: 'Home',
+    });
   }
 
   UNSAFE_componentWillMount() {

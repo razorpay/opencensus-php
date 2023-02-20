@@ -1,35 +1,33 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
-
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from './PaymentsListFilter';
-
-import {
-  paymentId,
-  amount,
-  customer,
-  createdAtShort,
-  status,
-} from 'common/ui/item/pair';
-
+import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
 import EntityTable from 'merchant/components/EntityTable';
+import { _paymentId } from 'merchant/views/Transactions/Payments/Utils';
+import { SelfServeActionPages } from 'common/constant/enums';
 
-const PaymentsTable = props => {
-  let paymentColumns = [paymentId, amount, customer, createdAtShort, status];
+const PaymentsTable = (props) => {
+  const paymentColumns = [
+    {
+      title: paymentId.title,
+      value: (item) => _paymentId(item, SelfServeActionPages.PaymentbuttonsPayments),
+    },
+    amount,
+    customer,
+    createdAtShort,
+    status,
+  ];
 
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };
 
 @withRouter
-@connect(state => state.payments, { fetchAll })
+@connect((state) => state.payments, { fetchAll })
 export default class PaymentsList extends ListContainer {
-  constructor(props) {
-    super(props);
-  }
-
   // Hook to modify fetchAll of ListContainer
-  fetchEntityList = params => {
+  fetchEntityList = (params) => {
     return this.props.fetchAll({
       ...params,
       payment_link_id: this.props.paymentPageId,

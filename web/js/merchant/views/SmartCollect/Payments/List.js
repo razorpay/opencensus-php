@@ -1,20 +1,18 @@
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { RZPFeatures } from 'merchant/helpers/data';
-
 import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
-
 import { paymentId, amount, email, contact, createdAt, status } from 'common/ui/item/pair';
-
 import HeaderAction from 'common/ui/HeaderAction';
 import DocsLink from 'merchant/components/DocsLink';
 import ListContainer from 'merchant/containers/ListContainer';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import PaymentsTable from 'merchant/views/Transactions/Payments/components/PaymentsTable';
 import PaymentsListFilter from './Filter';
-
 import { fetchSmartCollectPayments as fetchAll } from 'merchant/reducers/collection';
+import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { SelfServeActionPages } from 'common/constant/enums';
 
 @connect((state) => ({ ...state.scPayments, user: state.session.user }), { fetchAll })
 @RTracking(() => window.rzpQ.component('VAPaymentsListContainer'))
@@ -99,10 +97,14 @@ export default class VAPaymentsListContainer extends ListContainer {
 
   get paymentIdCol() {
     return {
-      ...paymentId,
-      value: (...args) => (
-        <div onClick={this.trackPaymentIdCol(...args)}>{paymentId.value(...args)}</div>
-      ),
+      title: paymentId.title,
+      value: (item) => {
+        const intermediateElement = makeIdLink('payment')(
+          item,
+          SelfServeActionPages.SmartcollectPayments,
+        );
+        return <div>{intermediateElement}</div>;
+      },
     };
   }
 

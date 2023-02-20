@@ -12,6 +12,17 @@ import React, { useEffect } from 'react';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
+import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+
+const _paymentId = (initiatePage = 'Transactions.Payments') => {
+  return {
+    title: paymentId.title,
+    value: (item) => {
+      const intermediateElement = makeIdLink('payment')(item, initiatePage);
+      return <div>{intermediateElement}</div>;
+    },
+  };
+};
 
 export default (props) => {
   const { order, payments, isLoading, statusMsg } = props;
@@ -73,7 +84,7 @@ export default (props) => {
                   onToggleClick={() => props.onTogglePayments(order)}
                 >
                   <DataTable
-                    columns={[paymentId, amount, status, createdAt]}
+                    columns={[_paymentId('Transactions.Orders'), amount, status, createdAt]}
                     title="Payments"
                     items={payments.items}
                     loading={payments.loading}

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
 import Definition from 'common/ui/Definition';
 import Amount from 'common/ui/Amount';
@@ -5,11 +6,28 @@ import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import DataTable from 'common/ui/Table/DataTable';
 import { paymentId as paymentIdCol, amount, paidOn } from 'common/ui/item/pair';
 import Time from 'common/ui/Time';
+import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { SelfServeActionPages } from 'common/constant/enums';
+
+const _paymentId = () => {
+  return {
+    title: paymentIdCol.title,
+    value: (item) => {
+      const intermediateElement = makeIdLink(
+        'payment',
+        SelfServeActionPages.PaymentlinksPayments,
+      )(item);
+      return <div>{intermediateElement}</div>;
+    },
+  };
+};
+const INIT_POINT = 'Amount paid';
+const INIT_PAGE = SelfServeActionPages.PaymentlinksPayments;
 
 const PaymentDetails = ({ paymentlink, isPaymentlinksV2Enabled }) => {
-  let hasPartialPaymentDetails = false,
-    paymentId,
-    paidAt;
+  let hasPartialPaymentDetails = false;
+  let paymentId, paidAt;
 
   if (isPaymentlinksV2Enabled) {
     hasPartialPaymentDetails =
@@ -32,6 +50,19 @@ const PaymentDetails = ({ paymentlink, isPaymentlinksV2Enabled }) => {
     }
   }
 
+  const onPaymentIdClick = () => {
+    const selfServeInitiateData = {
+      selfServeAction: 'Payment Details Fetched',
+      screen: 'Paymentlinks',
+      page: 'Payments',
+      props: {
+        initiatePoint: INIT_POINT,
+        sessionId: window?.session_id,
+      },
+    };
+    selfServeTrackInitiate(selfServeInitiateData);
+  };
+
   return (
     <Definition placeholder="--">
       <Amount value={paymentlink.amount_paid} currency={paymentlink.currency} />
@@ -42,7 +73,7 @@ const PaymentDetails = ({ paymentlink, isPaymentlinksV2Enabled }) => {
             <DataTable
               title="Payments"
               progressLoader={true}
-              columns={[paymentIdCol, paidOn, amount]}
+              columns={[_paymentId(), paidOn, amount]}
               items={isPaymentlinksV2Enabled ? paymentlink.payments : paymentlink.payments.items}
               noStripe={true}
             />
@@ -51,7 +82,10 @@ const PaymentDetails = ({ paymentlink, isPaymentlinksV2Enabled }) => {
       ) : (
         <React.Fragment>
           {paymentId && (
-            <Link to={`/payments/${paymentId}`}>
+            <Link
+              to={`/payments/${paymentId}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`}
+              onClick={onPaymentIdClick}
+            >
               <code>{paymentId}</code>
             </Link>
           )}

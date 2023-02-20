@@ -10,14 +10,12 @@ import RTracking from 'react-tracking';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, titleCase } from 'common/utils/rzp-utils';
 import { fetchPayments, fetchRefunds, fetchSettlements } from 'merchant/reducers/collection';
-
 import GenericPanel, {
   PanelBody,
   PanelTopbar,
   PanelFooter,
 } from 'merchant/components/Home/GenericPanel';
 import { tabs, tabsMeta } from './data';
-
 import { trackTabClick, trackEntityClick, trackGoToLinks, selfServeTracking } from './ga';
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
@@ -49,7 +47,20 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
           value = React.cloneElement(value, {
             onClick: () => {
               trackEntityClick(tabTitle, sectionTitle);
-              selfServeTracking(tabName);
+              if (tabName === 'payments') {
+                const selfServeInitiateData = {
+                  selfServeAction: 'Payment Details Fetched',
+                  screen: 'Home',
+                  page: 'Recentactivity',
+                  props: {
+                    initiatePoint: 'Recent Activity',
+                    sessionId: window?.session_id,
+                  },
+                };
+                selfServeTrackInitiate(selfServeInitiateData);
+              } else {
+                selfServeTracking(tabName);
+              }
             },
           });
         }

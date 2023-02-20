@@ -21,6 +21,21 @@ import { bindActionCreators } from 'redux';
 import EmptyList from 'merchant/components/EmptyList';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { selfServerTrack, selfServeTrackResult } from 'merchant/views/Transactions/AnalyticsTrack';
+import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { SelfServeActionPages } from 'common/constant/enums';
+
+const _paymentId = () => {
+  return {
+    title: paymentId.title,
+    value: (item) => {
+      const intermediateElement = makeIdLink('payment')(
+        item,
+        SelfServeActionPages.TransactionsDisputes,
+      );
+      return <div>{intermediateElement}</div>;
+    },
+  };
+};
 
 const daysLeftInExpiry = (expiresOn) => {
   const daysLeft = daysFromToday(expiresOn);
@@ -106,7 +121,7 @@ class Dispute extends ListContainer {
 
         <DataTable
           title="Disputes"
-          columns={[disputeId, paymentId, amount, type, respondBy, createdAt, status]}
+          columns={[disputeId, _paymentId(), amount, type, respondBy, createdAt, status]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

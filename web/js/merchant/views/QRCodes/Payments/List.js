@@ -2,7 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { RZPFeatures } from 'merchant/helpers/data';
-
 import Amount from 'common/ui/Amount';
 import Alert from 'common/ui/Forms/Alert';
 import { NavLink } from 'react-router-dom';
@@ -19,11 +18,28 @@ import PaymentsListFilter from './Filter';
 import { fetchQRCodesPayments as fetchAll } from 'merchant/reducers/collection';
 import { PaymentStatusLabel } from 'merchant/components/StatusLabel';
 import track from './track';
+import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { SelfServeActionPages } from 'common/constant/enums';
 
 const paymentListRowItem = (item) => (
   <EntityItemRow id={item.id}>
     <td>
-      <NavLink to={`/payments/${item.id}`}>
+      <NavLink
+        to={`/payments/${item.id}?init_point=payments-table&init_page=${SelfServeActionPages.QRcodesPayments}`}
+        onClick={() => {
+          const selfServeInitiateData = {
+            selfServeAction: 'Payment Details Fetched',
+            page: 'Payments',
+            screen: 'QRcodes',
+            props: {
+              initiatePoint: 'payments-table',
+              sessionId: window?.session_id,
+            },
+          };
+          selfServeTrackInitiate(selfServeInitiateData);
+        }}
+      >
         <code>{item.id}</code>
       </NavLink>
       <tr class="mobile-text">{truncatedString(item.email)}</tr>
@@ -50,8 +66,11 @@ const paymentListRowItem = (item) => (
 export default class QRPaymentsListContainer extends ListContainer {
   get paymentIdCol() {
     return {
-      ...paymentId,
-      value: (...args) => <div>{paymentId.value(...args)}</div>,
+      title: paymentId.title,
+      value: (item) => {
+        const intermediateElement = makeIdLink('payment')(item, 'QRcodes.Payments');
+        return <div>{intermediateElement}</div>;
+      },
     };
   }
 

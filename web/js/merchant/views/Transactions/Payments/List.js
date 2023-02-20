@@ -12,6 +12,7 @@ export default connect(
       user: state.session.user,
       user_segment_data: state.session.user_segment_data,
       terminalProviders: state.navigator.terminalProviders,
+      selfServeActionsPage: 'Transactions.Payments',
     };
   },
   { fetchAll, fetchFA, resetFA },

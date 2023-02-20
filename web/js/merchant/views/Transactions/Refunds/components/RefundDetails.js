@@ -20,6 +20,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { OptimizerDetails } from 'merchant/views/Transactions/Payments/components/OptimizerDetails';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { SelfServeActionPages } from 'common/constant/enums';
 
 class PaymentDetailsContainer extends Component {
   componentDidUpdate() {
@@ -44,9 +45,30 @@ class PaymentDetailsContainer extends Component {
     return org?.features?.indexOf('show_refnd_lateauth_param') > -1;
   };
 
-  render() {
-    const { isLoading, statusMsg, viewRefundHistory, refund, user, terminalProviders } = this.props;
+  onPaymentIdClick = () => {
+    const selfServeInitiateData = {
+      selfServeAction: 'Payment Details Fetched',
+      page: 'Refunds',
+      screen: 'Transactions',
+      props: {
+        initiatePoint: 'refund-details',
+        sessionId: window?.session_id,
+      },
+    };
+    selfServeTrackInitiate(selfServeInitiateData);
+  };
 
+  render() {
+    const {
+      isLoading,
+      statusMsg,
+      viewRefundHistory,
+      refund,
+      user,
+      terminalProviders,
+      location,
+    } = this.props;
+    const navigationState = location?.state;
     return (
       <div className="content-wrapper content-sm txn-details">
         {isLoading ? (
@@ -83,14 +105,12 @@ class PaymentDetailsContainer extends Component {
                     label="Payment"
                     value={() => (
                       <Link
-                        to={`/payments/${refund.payment_id}`}
-                        onClick={() =>
-                          selfServeTrackInitiate({
-                            selfServeAction: 'Payment Details Fetched',
-                            page: 'Payment Listing',
-                            screen: 'Transaction',
-                          })
-                        }
+                        to={`/payments/${refund.payment_id}?init_point=refund-details&init_page=${
+                          navigationState?.openedFrom
+                            ? navigationState.openedFrom
+                            : SelfServeActionPages.TransactionsRefunds
+                        }`}
+                        onClick={this.onPaymentIdClick}
                       >
                         <code>{refund.payment_id}</code>
                       </Link>

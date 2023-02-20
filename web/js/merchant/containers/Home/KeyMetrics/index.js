@@ -546,7 +546,7 @@ class KeyMetricsContainer extends Component {
       });
   }
 
-  fetchData(fetchAllCounts) {
+  fetchData(fetchAllCounts, initiatePoint) {
     /*
      * Fetches data , if `fetchAllCounts` is true, fetches all tabs stats
      * and the selected tab's graph data, when ever the tab is
@@ -584,11 +584,23 @@ class KeyMetricsContainer extends Component {
           return API_INVALID_RESP;
         }
 
+        if (!isInitialLoad) {
+          const selfServeSuccessData = {
+            selfServeAction: 'Payment Details Fetched',
+            page: 'Home',
+            screen: 'Home',
+            props: {},
+          };
+          if (initiatePoint) {
+            selfServeSuccessData.props.initiatePoint = initiatePoint;
+          }
+          selfServeTrackSuccess(selfServeSuccessData);
+        }
         tabsOrder.forEach((tabName) => {
           const tabMeta = tabsMeta[tabName];
           const { isPercent, valueKey = 'value' } = tabMeta;
 
-          // Main stat showin in the taib
+          // Main stat showin in the tab
           const mainStat = resp.data[tabName];
 
           if (mainStat) {
@@ -645,12 +657,6 @@ class KeyMetricsContainer extends Component {
         if (isInitialLoad) {
           // eslint-disable-next-line react/no-direct-mutation-state
           this.state.loading = false;
-        } else {
-          selfServeTrackSuccess({
-            selfServeAction: 'Payment Details Fetched',
-            page: 'Home',
-            screen: 'Home',
-          });
         }
 
         if (!this.props.isMobile) {
@@ -873,13 +879,16 @@ class KeyMetricsContainer extends Component {
         // fetchData depends on state, so calling it after state update,
         // this func gets new data only when the tab data is not loading and
         // fetchData is true
-        return !data.loading && data.fetchData && this.fetchData();
+        return !data.loading && data.fetchData && this.fetchData(null, 'Tab Change');
       },
     );
     selfServeTrackInitiate({
       selfServeAction: 'Payment Details Fetched',
       page: 'Home',
       screen: 'Home',
+      props: {
+        initiatePoint: 'Tab Change',
+      },
     });
     trackTabClick(tabsMeta[tabName].title);
   }
@@ -916,6 +925,9 @@ class KeyMetricsContainer extends Component {
       selfServeAction: 'Payment Details Fetched',
       page: 'Home',
       screen: 'Home',
+      props: {
+        initiatePoint: 'Grouping change',
+      },
     });
     const { tabsState } = this.state;
     const tabState = tabsState[tabName];
@@ -923,7 +935,7 @@ class KeyMetricsContainer extends Component {
     tabState.selectedGrouping = selectedGrouping;
 
     this.setState({ tabsState }, () => {
-      this.fetchData();
+      this.fetchData(false, 'Grouping change');
     });
   }
 
@@ -940,12 +952,15 @@ class KeyMetricsContainer extends Component {
     tabsState[tabName].selectedBreakdown = selectedBreakdown;
 
     this.setState({ tabsState }, () => {
-      this.fetchData();
+      this.fetchData(false, 'Breakdown Change');
     });
     selfServeTrackInitiate({
       selfServeAction: 'Payment Details Fetched',
       page: 'Home',
       screen: 'Home',
+      props: {
+        initiatePoint: 'Breakdown Change',
+      },
     });
     trackBreakdownChange(selectedBreakdown);
   }

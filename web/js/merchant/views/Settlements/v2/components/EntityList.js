@@ -22,6 +22,8 @@ import {
   propertiesPayload,
 } from 'merchant/views/Settlements/Settlements/analytics';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { SelfServeActionPages } from 'common/constant/enums';
 
 const DEFAULT_SKIP = 0;
 const DEFAULT_COUNT = 10;
@@ -58,6 +60,9 @@ const BooleanMap = {
   1: `true`,
 };
 
+const INIT_POINT = 'payments-table';
+const INIT_PAGE = SelfServeActionPages.SettlementsPayments;
+
 /**
  * Sort keys - adding optimizer_provider at 1st index for single recon, other keys remains same
  * @param {object} item object to sort the keys
@@ -75,6 +80,14 @@ const sortKeys = (item, user) => {
 };
 
 const ListItem = ({ item, source, user, terminalProviders }) => {
+  const selfServeInitiateData = {
+    selfServeAction: 'Payment Details Fetched',
+    screen: 'Settlements',
+    page: 'Payments',
+    props: {
+      initiatePoint: INIT_POINT,
+    },
+  };
   // Render links
   const analyticsHandler = () => {
     const objectName = 'settlement details payment id';
@@ -90,10 +103,19 @@ const ListItem = ({ item, source, user, terminalProviders }) => {
         <td key={idx}>
           <Link
             onClick={() => {
-              if (source === 'payment') return analyticsHandler();
+              if (source === 'payment') {
+                if (window && window.session_id)
+                  selfServeInitiateData.props.sessionId = window.session_id;
+                selfServeTrackInitiate(selfServeInitiateData);
+                return analyticsHandler();
+              }
               return true;
             }}
-            to={`/${source}s/${rowItem[key]}`}
+            to={
+              source === 'payment'
+                ? `/${source}s/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`
+                : `/${source}s/${rowItem[key]}`
+            }
           >
             {rowItem.id}
           </Link>
@@ -108,7 +130,14 @@ const ListItem = ({ item, source, user, terminalProviders }) => {
     } else if (source === 'payment_domestic' || source === 'payment_international') {
       return (
         <td key={idx}>
-          <Link to={`/payments/${rowItem[key]}`}>{rowItem.id}</Link>
+          <Link
+            to={`/payments/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`}
+            onClick={() => {
+              selfServeTrackInitiate(selfServeInitiateData);
+            }}
+          >
+            {rowItem.id}
+          </Link>
         </td>
       );
     } else {

@@ -1,19 +1,27 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
-
 import Amount from 'common/ui/Amount';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from './PaymentsListFilter';
-
 import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
-
 import EntityTable from 'merchant/components/EntityTable';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { reportFormatOptions } from 'merchant_common/containers/ReportsAsync/GenerateReportPanel/SelectFormat';
+import { _paymentId } from 'merchant/views/Transactions/Payments/Utils';
+import { SelfServeActionPages } from 'common/constant/enums';
 
 const PaymentsTable = (props) => {
-  const paymentColumns = [paymentId, amount, customer, createdAtShort, status];
+  const paymentColumns = [
+    {
+      title: paymentId.title,
+      value: (item) => _paymentId(item, SelfServeActionPages.SubscriptionbuttonPayments),
+    },
+    amount,
+    customer,
+    createdAtShort,
+    status,
+  ];
 
   return <EntityTable title="Payments" columns={paymentColumns} {...props} />;
 };

@@ -12,6 +12,7 @@ import {
 import EntityTable from 'merchant/components/EntityTable';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
+import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
 
 const getOrderId = ({ notes }) => {
   // Merchant's custom defined order IDs
@@ -61,8 +62,26 @@ const mapRzpOrders = (payments) =>
     return orders;
   }, {});
 
+const _paymentId = (initiatePage) => {
+  return {
+    title: paymentId.title,
+    value: (item) => {
+      const intermediateElement = makeIdLink('payment')(item, initiatePage);
+      return <div>{intermediateElement}</div>;
+    },
+  };
+};
+
 export default (props) => {
-  let paymentColumns = [paymentId, amount, email, contact, createdAt, status];
+  const { selfServeActionsPage } = props;
+  let paymentColumns = [
+    _paymentId(selfServeActionsPage),
+    amount,
+    email,
+    contact,
+    createdAt,
+    status,
+  ];
 
   if (props.paymentColumns) {
     paymentColumns = props.paymentColumns;
