@@ -60,6 +60,7 @@ class CheckoutExperiment
             'email_less_checkout'                                => false,
             'enable_rudderstack_plugin'                          => false,
             'checkout_downtime'                                  => 'control',
+            'upi_number'                                         => false, 
         ];
 
         $this->input = $input;
@@ -276,6 +277,14 @@ class CheckoutExperiment
             'checkout_downtime',
             ['merchant_id' => $this->merchantId]
         );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_upi_number_splitz_experiment_id',
+            'UpiNumber',
+            'upi_number',
+            ['merchant_id' => $this->merchantId]
+        );
     }
 
     private function fillExperimentData(
@@ -480,5 +489,12 @@ class CheckoutExperiment
     private function handleCheckoutDowntimeResponse($response): string
     {
         return $response['variant']['name'] ?? 'control';
+    }
+
+    private function handleUpiNumberResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
     }
 }
