@@ -91,6 +91,7 @@ class Validator extends Base\Validator
     protected static $salesforceOtpRules = [
         Entity::CONTACT_MOBILE                  => 'required|max:15|contact_syntax',
         Entity::TOKEN                           => 'sometimes|string',
+        Entity::CAPTCHA                         => 'required|string',
     ];
 
     protected static $verifySignupOtpRules = [
@@ -475,6 +476,10 @@ class Validator extends Base\Validator
 
     protected static $loginValidators = [
         'captcha'
+    ];
+
+    protected static $salesforceOtpValidators = [
+        'captcha_only'
     ];
 
     protected static $loginMobileValidators = [
