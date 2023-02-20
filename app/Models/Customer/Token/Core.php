@@ -1455,14 +1455,14 @@ class Core extends Base\Core
             return null;
         }
 
-        $expiryMonth = $newCard->getExpiryMonth();
+        $expiryMonth = (string) $newCard->getTokenExpiryMonth();
 
-        $expiryYear = $newCard->getExpiryYear();
+        $expiryYear = (string) $newCard->getTokenExpiryYear();
 
         foreach ($cards as $card)
         {
-            if (($card->getExpiryMonth() === $expiryMonth) and
-                ($card->getExpiryYear()  === $expiryYear))
+            if (((string) $card->getTokenExpiryMonth() === $expiryMonth) and
+                ((string) $card->getTokenExpiryYear()  === $expiryYear))
             {
                 // fetch existing token
                 return $this->repo->token->fetchByMethodAndCardIdAndMerchant(

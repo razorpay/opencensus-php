@@ -844,6 +844,10 @@ class TokenTest extends TestCase
 
         $response = $this->startTest();
 
+        $response2 = $this->startTest();
+
+        $this->assertEquals($response['id'], $response2['id']);
+
         $this->assertEquals('card', $response['method']);
 
         $this->assertNotNull($response['service_provider_tokens']);
