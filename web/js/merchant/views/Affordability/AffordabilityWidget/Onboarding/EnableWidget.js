@@ -20,15 +20,7 @@ const EnableWidgetButton = ({ enabled, openModal, closeModal, ...props }) => {
   } = props;
   const { pricing, trial_period_in_days } = affordability;
 
-  const handleWidgetEnablement = async () => {
-    const data = {
-      features: {
-        affordability_widget_set: true,
-        affordability_widget: true,
-      },
-      should_sync: 0,
-    };
-
+  const handleWidgetEnablement = async (data) => {
     try {
       const response = await updateFeatures(data, user.current);
 

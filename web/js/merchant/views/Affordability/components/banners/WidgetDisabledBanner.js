@@ -27,15 +27,7 @@ const WidgetDisabledBanner = (props) => {
     track.widgetDisableBanner();
   }, []);
 
-  const onEnableWidget = async () => {
-    const data = {
-      features: {
-        affordability_widget_set: true,
-        affordability_widget: true,
-      },
-      should_sync: 0,
-    };
-
+  const onEnableWidget = async (data) => {
     try {
       const response = await updateFeatures(data, user.current);
 

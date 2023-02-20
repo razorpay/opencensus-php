@@ -16,6 +16,8 @@ import {
   antiOrgsModules,
   antiOrgsFeatures,
 } from 'merchant/helpers/permissions';
+import { AffordabilityFeaturesFlag } from 'merchant/views/Affordability/AffordabilityWidget/Onboarding/data';
+import { filterByArray as filterByAffordabilityFlags } from 'merchant/views/Affordability/AffordabilityWidget/Onboarding/helper';
 
 export const ORG_CUSTOM_CODE_MAP = {
   RAZORPAY: 'rzp',
@@ -60,11 +62,19 @@ const FEATURE_FLAG_MAPS = {
 // TODO: Rename fn. name
 export function setFeatures(features) {
   const enabledFeatures = filterBy(features, 'value', true);
+  // Since we are only adding enabled enabled features to rzp_user
+  // we need to perform some function on affordability features therefore adding those seperatly
+  const affordabilityFeatures = filterByAffordabilityFlags(
+    features,
+    'feature',
+    AffordabilityFeaturesFlag,
+  );
 
   // in other places rzp_user is getting used to update the session so updating with features
   window.rzp_user = {
     ...window.rzp_user,
     features: enabledFeatures,
+    aff_features: affordabilityFeatures,
   };
 
   return enabledFeatures;

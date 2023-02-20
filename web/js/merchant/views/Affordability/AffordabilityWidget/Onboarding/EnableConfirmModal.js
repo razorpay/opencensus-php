@@ -8,6 +8,7 @@ import RTracking from 'react-tracking';
 import track from './track';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import { TEST_MODE } from 'merchant/containers/Home/OnboardingCard/data';
+import { generatePayload } from './helper';
 
 const EnableConfirmModal = ({ closeModal, pricing, onConfirm, source, ...props }) => {
   const setupSource =
@@ -23,7 +24,7 @@ const EnableConfirmModal = ({ closeModal, pricing, onConfirm, source, ...props }
 
   const handleConfirmClick = () => {
     track.enableConfirm(setupSource);
-    onConfirm();
+    onConfirm(generatePayload());
   };
 
   const [tncAccepted, setTncAccepted] = useState(false);

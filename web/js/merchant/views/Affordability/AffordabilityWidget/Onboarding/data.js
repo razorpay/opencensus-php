@@ -54,3 +54,13 @@ export const platformIdMapping = {
   woocommerce: 'woocommerce',
   shopify: 'shopify',
 };
+
+export const affordabilityFeaturesMapping = {
+  AFFORDABILITY_WIDGET: 'affordability_widget',
+  AFFORDABILITY_WIDGET_SET: 'affordability_widget_set',
+};
+
+export const AffordabilityFeaturesFlag = [
+  affordabilityFeaturesMapping.AFFORDABILITY_WIDGET,
+  affordabilityFeaturesMapping.AFFORDABILITY_WIDGET_SET,
+];
