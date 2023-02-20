@@ -619,9 +619,11 @@ Field.File = (_) => {
           maxSize={_.maxSize}
           onBiggerFileSize={_.onBiggerFileSize}
           onFileChange={_.onChange}
+          handleMultiUpload={_.handleMultiUpload}
           defaultValue={_.defaultValue}
           disabled={_.disabled}
           accept={_._accept}
+          multi={_.multi}
           showAcceptInfo={_._showAcceptInfo}
           showStagedFileStatus={_._showStagedFileStatus}
           onCloseClick={_.onCloseClick}

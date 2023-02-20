@@ -68,20 +68,20 @@ const ListTable = ({
   const actionColumn = useMemo(
     () => ({
       title: 'Actions',
-      value: ({ invoice_doc, id, status }: PaymentItem = {}) => {
+      value: ({ opgsp_invoice_doc, id, status }: PaymentItem = {}) => {
         if (id && uploadState?.[id]) {
           return <Button.Transparent>Uploading...</Button.Transparent>;
         }
-        if (invoice_doc && invoiceFetching?.[invoice_doc]) {
+        if (opgsp_invoice_doc && invoiceFetching?.[opgsp_invoice_doc]) {
           return 'Loading...';
         }
 
-        if (invoice_doc) {
+        if (opgsp_invoice_doc) {
           return (
             <Button.Transparent
               className="invoice-payment-doc-view-btn"
               iconBefore="eye"
-              onClick={() => onView(invoice_doc)}
+              onClick={() => onView(opgsp_invoice_doc)}
             >
               View
             </Button.Transparent>

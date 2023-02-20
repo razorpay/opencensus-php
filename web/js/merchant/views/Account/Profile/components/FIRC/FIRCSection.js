@@ -190,7 +190,7 @@ const FIRCSection = (props) => {
                 label={() => (
                   <Label
                     title="Harmonized System Code"
-                    description="The Harmonized System (HS) code is a standardized numerical method to classify export trade products by customs authorities around the world."
+                    description="The Harmonized System (HS) code is a standard classification for classifying the globally traded products by the custom authorities."
                   />
                 )}
                 value={() => <SelectHSCode clickHandler={openHSCodeModal} />}

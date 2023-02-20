@@ -9,6 +9,7 @@ import PaymentListContainer from 'merchant/views/Transactions/UploadInvoice/comp
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchFA, resetFA } from 'merchant/reducers/payments/details';
 import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
+import { openModal } from 'merchant_common/reducers/modals';
 import {
   uploadInvoicePending,
   uploadInvoiceError,
@@ -32,6 +33,7 @@ const mapDispatchToProps = (dispatch) => {
       fetchAll,
       fetchFA,
       resetFA,
+      openModal,
       uploadInvoicePending,
       uploadInvoiceError,
       uploadInvoiceSuccess,

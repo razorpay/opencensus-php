@@ -1,0 +1,279 @@
+$modal-break = 610px
+
+.Modal-container--bulk-upload-modal-wrapper
+  .bulk-upload-body
+    display: flex
+    flex-direction: column
+    padding: 0
+    overflow: hidden
+
+    .form-container
+      display: flex
+      flex: 1
+      flex-direction: column
+      padding: 31px 36px 45px 30px
+      overflow: scroll
+      background: $background-color
+
+      @media screen and (max-width $modal-break) {
+        padding: 25px
+      }
+
+      &.Form--tabular
+        margin-bottom: 0
+
+      .head-wrapper
+        position: relative
+
+        .title
+          font-weight: bold
+          font-size: 18px
+          text-transform: uppercase
+          line-height: 22px
+          color: $text-dark-grey
+          margin-bottom: 10px
+
+    footer
+      position: relative
+      display: flex
+      justify-content: space-between
+      align-items: center
+      box-shadow: 0 -1px 0 #0000000D
+
+  .Modal-body .Wizard .bulk-upload-body
+    flex: 1
+
+  .Modal-content
+    display: flex
+    width: 960px
+    max-width: 90vw
+    height: 80vh
+    max-height: 640px
+    min-height: 560px
+
+    .Modal-body
+      display: flex
+      flex: 1
+      overflow: hidden
+
+      .Wizard
+        display: flex
+        flex: 1
+        width: 100%
+
+        aside
+          position: relative
+          min-width: 240px
+
+  .drop-screen-container
+    display: flex
+    flex-direction: column
+
+    .drop-screen--title
+      font-size: 18px
+      font-weight: 700
+      color: #58666E
+      line-height: 22px
+
+    ol
+      padding-left: 20px
+      margin: 0
+
+      li
+        font-size: 14px
+        color: #606060
+        line-height: 20px
+
+      ol li
+        font-size: 12px
+
+    .drop-screen--notice
+      font-size: 14px
+      font-weight: 700
+      color: #606060
+      line-height: 19px
+      margin: 0
+      margin-top: 30px
+
+    .Input
+      .Input-File
+        width: unset
+        margin: 0 55px
+
+        @media screen and (max-width $modal-break) {
+          margin: 0
+        }
+
+      .Dropzone-cavity
+        background: unset
+
+      .Dropzone-cavity--staged
+        display: none
+
+  .upload-result-container
+    display: flex
+    flex-direction: column
+
+    .upload-result--title
+      font-size: 14px
+      font-weight: 700
+      color: #58666E
+      margin-bottom: 16px
+
+    .result-wrapper
+      display: flex
+      flex-direction: column
+      margin-bottom: 10px
+
+      div[class*="ProgressBar__ProgressContainer-"]
+        background-color: #0B70E70D
+        margin: 0
+        border-radius: 0
+
+      div[class*="ProgressBar__StyledProgressBar-"]
+        background-color: #4283F78A
+        border-radius: 0
+
+      .upload-result--tab
+        display: flex
+        flex-direction: row
+        align-items: center
+        justify-content: space-between
+        height: 42px
+        padding: 0 18px
+        border: 1px solid #EBEFF0
+
+        .invoice-count
+          font-size: 12px
+          color: #5B666D
+
+        .invoice-count b
+          font-weight: 700
+
+        .status
+          display: flex
+          align-items: center
+          padding: 3px 12px
+          background: #0B70E71A
+          border-radius: 15px
+          font-size: 10px
+          font-weight: 700
+          color: #2A8CFF
+          cursor: pointer
+
+        .file-progress
+          display: flex
+          flex-direction: row
+
+        .i-chevron-right
+          transform: rotate(-90deg)
+          transition: 0.5s
+          margin-left: 3px
+
+        .i-chevron-right.open
+          transform: rotate(90deg)
+
+        .progress-message
+          font-size: 12px
+          font-weight: 500
+          color: #8A8A8A
+          margin-right: 25px
+
+        .gZPbHp
+          height: 18px
+          width: 18px
+          border: 1.5px solid #4283F78A
+          border-top: 1.5px solid #0B70E70D
+
+      .upload-result--tab.success .status
+        background: #1F890E1A
+        color: #1F890E
+
+      .upload-result--tab.error .status
+        background: #D12D2D1A
+        color: #D12D2D
+
+      .error-message
+        padding: 8px
+        border-radius: 4px
+        border: 1px solid #F54A2A52
+        background: #F54A2A17
+        margin-top: 8px
+        display: flex
+        flex-direction: row
+        align-items: center
+
+        @media screen and (max-width $modal-break) {
+          padding: 5px
+        }
+
+        .i-info-outline
+          color: #D13821
+          margin-right: 5px
+          margin-top: 3px
+
+        .message
+          color: #435775
+          font-size: 13px
+          font-weight: 400
+          line-height: 20px
+
+    .error-table
+      display: flex
+      flex-direction: column
+      border-left: 1px solid #EBEFF0
+      border-right: 1px solid #EBEFF0
+
+      .error-list
+        max-height: 150px
+        overflow: scroll
+
+      .table-row
+        display: flex
+        flex-direction: row
+        align-items: center
+        min-height: 38px
+        padding: 0 20px
+        background: #FFF
+        border-bottom: 1px solid #EBEFF0
+
+        @media screen and (max-width $modal-break) {
+          padding: 5px
+        }
+
+        &.head
+          font-weight: 700
+          background: #EBEFF0
+          white-space: nowrap
+
+      .table-col
+        width: 140px
+        min-width: 140px
+        font-size: 12px
+        color: #5B666D
+        padding-right: 5px
+
+      .table-col:nth-child(2)
+        min-width: 100px
+
+        @media screen and (max-width $modal-break) {
+          min-width: 60px
+        }
+
+      .table-col:nth-child(3)
+        width: auto
+
+      .error
+        color: #D12D2DBD
+
+  .Modal-container--exit-confirmation-modal
+    width 350px
+    max-width: 100%
+
+    .modal-header
+      padding-top: 20px
+
+    .modal-buttons
+      display: flex
+      justify-content: flex-end
+      margin-top: 24px

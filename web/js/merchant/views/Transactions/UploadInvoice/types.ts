@@ -39,7 +39,7 @@ export type PaymentItem = {
   notes?: {
     invoice_number?: string;
   };
-  invoice_doc?: string;
+  opgsp_invoice_doc?: string;
 };
 
 export type TrackAnalyticsType = {

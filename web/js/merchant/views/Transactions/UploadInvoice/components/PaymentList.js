@@ -1,4 +1,5 @@
 import React from 'react';
+import lazy from 'merchant/routes/LazyLoader';
 
 // analytics
 import {
@@ -13,6 +14,8 @@ import {
 } from 'merchant/views/Transactions/UploadInvoice/analytics';
 
 // components
+import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
+import Button from 'common/new-ui/Button';
 import HeaderAction from 'common/ui/HeaderAction';
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentTable from 'merchant/views/Transactions/UploadInvoice/components/PaymentTable';
@@ -23,6 +26,12 @@ import ErrorBoundary, { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
 
 // actions
 import { uploadInvoice, viewInvoice } from 'merchant/reducers/paymentUploadInvoice';
+
+const BulkUploadModal = lazy(() =>
+  import(
+    /* webpackChunkName: 'BulkUploadModal' */ 'merchant/views/Transactions/UploadInvoice/BulkUpload'
+  ),
+);
 
 class PaymentsListContainer extends ListContainer {
   onFilterSubmit = (params) => {
@@ -62,6 +71,10 @@ class PaymentsListContainer extends ListContainer {
     trackSearchClear();
   };
 
+  refreshList = () => {
+    this.paginate({});
+  };
+
   onUploadInvoice = async (id, file) => {
     const {
       uploadInvoicePending,
@@ -76,7 +89,7 @@ class PaymentsListContainer extends ListContainer {
     try {
       await uploadInvoice(id, file);
       uploadInvoiceSuccess({ id });
-      this.paginate({});
+      this.refreshList();
       showNotification({
         type: 'success',
         message: 'File uploaded successfully',
@@ -137,6 +150,19 @@ class PaymentsListContainer extends ListContainer {
     }
   };
 
+  onBulkUpload = () => {
+    const { openModal } = this.props;
+
+    openModal({
+      component: (
+        <SuspenseWithLoader>
+          <BulkUploadModal refreshList={this.refreshList} />
+        </SuspenseWithLoader>
+      ),
+      overlayStyles: { display: 'flex', justifyContent: 'center', alignItems: 'center' },
+    });
+  };
+
   componentDidMount() {
     trackShown();
   }
@@ -159,6 +185,7 @@ class PaymentsListContainer extends ListContainer {
                 Guide to Upload Invoice <i className="i i-external-link" />
               </a>
             </div>
+            <Button.Primary onClick={this.onBulkUpload}>Bulk Upload</Button.Primary>
           </HeaderAction>
           <ListFilter
             form="uploadInvoicePaymentListFilter"

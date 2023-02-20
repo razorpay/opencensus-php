@@ -264,8 +264,13 @@ export default class FileUpload extends React.Component {
   handleDrop = (event) => {
     event.preventDefault();
     const { dataTransfer } = event;
+    const { multi, handleMultiUpload } = this.props;
     const files = dataTransfer.items || dataTransfer.files;
     this.setState({ isFileDraggedInside: false }); // Reset the state
+
+    if (multi && handleMultiUpload) {
+      handleMultiUpload(files, true);
+    }
 
     try {
       if (this.props.onFileDrop) this.props.onFileDrop();
@@ -307,6 +312,10 @@ export default class FileUpload extends React.Component {
 
   handleFileInputChange = (event) => {
     event.preventDefault();
+    const { multi, handleMultiUpload } = this.props;
+    if (multi && handleMultiUpload) {
+      handleMultiUpload(event.currentTarget.files);
+    }
     this.updateFile(event.currentTarget.files[0]);
   };
 
@@ -421,6 +430,7 @@ export default class FileUpload extends React.Component {
                     accept={accept && accept.map((fileType) => fileTypesMap[fileType])}
                     disabled={disabled}
                     ref={this.fileInputElement}
+                    multiple={this.props.multi}
                     hidden
                   />
                 </React.Fragment>
@@ -434,6 +444,7 @@ export default class FileUpload extends React.Component {
                     accept={accept && accept.map((fileType) => fileTypesMap[fileType])}
                     disabled={disabled}
                     ref={this.fileInputElement}
+                    multiple={this.props.multi}
                     hidden
                   />
                 </React.Fragment>

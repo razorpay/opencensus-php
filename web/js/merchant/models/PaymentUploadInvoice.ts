@@ -13,7 +13,7 @@ class PaymentUploadInvoice extends GenericEntity {
     if (response.success && response.data?.id) {
       const payload = {
         document_id: response.data.id,
-        document_type: 'invoice',
+        document_type: 'opgsp_invoice',
       };
 
       // remove prefix

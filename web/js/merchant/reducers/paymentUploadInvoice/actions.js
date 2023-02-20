@@ -25,7 +25,7 @@ export const uploadInvoice = (id, file) => {
 
   const formData = new FormData();
   formData.append('file', file);
-  formData.append('purpose', 'merchant_invoice');
+  formData.append('purpose', 'opgsp_invoice');
 
   return resource.uploadInvoice(id, formData);
 };
