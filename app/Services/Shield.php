@@ -417,6 +417,11 @@ class Shield
             {
                 $payloadDetails[ShieldConstants::ORDER_CANCEL_URL] = $notes[ShieldConstants::CANCEL_URL];
             }
+
+            if (isset($notes[ShieldConstants::REFERER_URL]) === true)
+            {
+                $payloadDetails[ShieldConstants::ORDER_REFERER_URL]  = $notes[ShieldConstants::REFERER_URL];
+            }
         }
     }
 

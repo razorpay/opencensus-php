@@ -252,6 +252,7 @@ class FraudDetectionTest extends TestCase
             'merchant_order_id' => 'random order id',
             'cancelUrl'    => 'https://xyz.in/123/checkouts/abc',
             'domain'        => 'xyz77.myshopify.com',
+            'referer_url'    => "https://xyz.in/123/checkouts/abcd"
         );
 
         $this->fixtures->merchant->addFeatures([\RZP\Models\Feature\Constants::DISABLE_NATIVE_CURRENCY]);
@@ -266,6 +267,7 @@ class FraudDetectionTest extends TestCase
             'rzp_checkout_library' => "direct",
             'order_domain'         => "xyz77.myshopify.com",
             'order_cancel_url'     => "https://xyz.in/123/checkouts/abc",
+            'order_referer_url'    => "https://xyz.in/123/checkouts/abcd"
         ];
         $expectedShieldResponse = [
             "action"                => "block",
@@ -335,6 +337,7 @@ class FraudDetectionTest extends TestCase
             'merchant_order_id' => 'random order id',
             'cancelUrl'    => 'https://xyz.in/123/checkouts/abc',
             'domain'        => 'xyz77.myshopify.com',
+            'referer_url'    => "https://xyz.in/123/checkouts/abcd"
         );
 
         $payment['card']['number'] = '5105105105105100';
@@ -344,7 +347,8 @@ class FraudDetectionTest extends TestCase
             'integration_version'  => "shopify-payment-app",
             'rzp_checkout_library' => "direct",
             'order_domain'         => "xyz77.myshopify.com",
-            'order_cancel_url'     => "https://xyz.in/123/checkouts/abc"
+            'order_cancel_url'     => "https://xyz.in/123/checkouts/abc",
+            'order_referer_url'    => "https://xyz.in/123/checkouts/abcd"
         ];
         $expectedShieldResponse = [
             "action"                => "allow",

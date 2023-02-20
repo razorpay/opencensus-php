@@ -92,8 +92,10 @@ final class Shield
     const SHOPIFY                       = 'shopify';
     const SHOPIFY_PAYMENT_APP           = 'shopify-payment-app';
     const CANCEL_URL                    = 'cancelUrl';
+    const REFERER_URL                   = 'referer_url';
     const DOMAIN                        = 'domain';
     const ORDER_CANCEL_URL              = 'order_cancel_url';
+    const ORDER_REFERER_URL             = 'order_referer_url';
     const ORDER_DOMAIN                  = 'order_domain';
 
     const IS_PARTNER_INITIATED_PAYMENT = 'is_partner_initiated_payment';
