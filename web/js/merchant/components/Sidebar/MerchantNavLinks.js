@@ -91,6 +91,13 @@ function MerchantNavLinks(props) {
           currentUser.hideForNIASupportRole
         }
       />
+      <MainNavLink
+        label="International Payments"
+        icon="i i-external-link text-primary"
+        type="general"
+        to="/payment-methods/international-payments"
+        additionalCondition={(currentUser) => currentUser.isShowInternationalPaymentBtnExpEnabled}
+      />
 
       <div class="divider" />
 

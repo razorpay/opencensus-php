@@ -1,6 +1,6 @@
 import React from 'react';
 import ShowWhen from 'merchant/components/ShowWhen';
-import { LinkItem, Icon, Typo, NewTag } from './styled';
+import { LinkItem, Icon, Typo, NewTag, LinkButtonItem } from './styled';
 import { analyticsTrack } from 'common/utils/analytics';
 import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { withRouter } from 'react-router';
@@ -24,6 +24,7 @@ const getTags = (type) => {
 const NavLinkItem = ({
   title,
   icon,
+  type,
   activeTab,
   tags = [],
   additionalCondition,
@@ -54,15 +55,27 @@ const NavLinkItem = ({
 
   return (
     <ShowWhen additionalCondition={additionalCondition}>
-      <LinkItem
-        to={getHref ? getHref({ routes, user }) : routes[product_id] || DASHBOARD_LANDING_URL}
-        isActive={activeTab === product_id}
-        onClick={onNavLinkItemClick}
-      >
-        <Icon class={`i ${icon}`} />
-        <Typo>{title}</Typo>
-        {Tags}
-      </LinkItem>
+      {type === 'linkButton' ? (
+        <LinkButtonItem
+          to={getHref ? getHref({ routes, user }) : routes[product_id] || DASHBOARD_LANDING_URL}
+          isActive={activeTab === product_id}
+          onClick={onNavLinkItemClick}
+        >
+          <Typo bold>{title}</Typo>
+          <Icon class="i i-chevron-right" />
+          {Tags}
+        </LinkButtonItem>
+      ) : (
+        <LinkItem
+          to={getHref ? getHref({ routes, user }) : routes[product_id] || DASHBOARD_LANDING_URL}
+          isActive={activeTab === product_id}
+          onClick={onNavLinkItemClick}
+        >
+          <Icon class={`i ${icon}`} />
+          <Typo>{title}</Typo>
+          {Tags}
+        </LinkItem>
+      )}
     </ShowWhen>
   );
 };

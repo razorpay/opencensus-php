@@ -28,6 +28,7 @@ const ROUTE_REG = {
   affordability: /^\/affordability(\/(widget))?/,
   developers: /^\/developers(\/(api|webhooks))?/,
   wallet: /^\/(wallet)/,
+  internationalPaymentsBtn: /^\/(international)/,
 };
 
 const BASE_ROUTES = {
@@ -68,6 +69,7 @@ const BASE_ROUTES = {
   accountsettings: '/account-settings',
   affordability: 'affordability/widget',
   wallet: '/wallet/accounts',
+  internationalPaymentsBtn: '/payment-methods/international-payments',
 };
 
 export const initializeRoutes = (location, user) => {
@@ -108,6 +110,8 @@ export const initializeRoutes = (location, user) => {
     routes.magic_checkout = pathname.match(ROUTE_REG.magic_checkout)[0];
   } else if (ROUTE_REG.wallet.test(pathname)) {
     routes.wallet = pathname.match(ROUTE_REG.wallet)[0];
+  } else if (ROUTE_REG.internationalPaymentsBtn.test(pathname)) {
+    routes.internationalPaymentsBtn = pathname.match(ROUTE_REG.internationalPaymentsBtn)[0];
   } else if (user.isRegistrationLinkBasedRole) {
     routes.chargeAtWill = 'registration_links';
   }

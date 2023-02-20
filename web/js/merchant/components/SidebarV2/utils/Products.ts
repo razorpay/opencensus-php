@@ -177,6 +177,9 @@ export const PRODUCTS_DATA = {
     additionalCondition: (user: any) =>
       user.isIssuingDashboardEnabled && user.isAccountAndSettingsRevampEnabled,
   },
+  internationalPaymentsBtn: {
+    additionalCondition: (user: any) => user.isShowInternationalPaymentBtnExpEnabled,
+  },
 };
 
 export const COMMON_PRODUCTS = [
@@ -213,6 +216,12 @@ export const COMMON_PRODUCTS = [
   {
     title: 'Account & Settings',
     product_id: 'accountsettings',
+    tags: [],
+  },
+  {
+    title: 'International Payments',
+    product_id: 'internationalPaymentsBtn',
+    type: 'linkButton',
     tags: [],
   },
 ];

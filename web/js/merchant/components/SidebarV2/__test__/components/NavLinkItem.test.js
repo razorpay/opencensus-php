@@ -121,4 +121,23 @@ describe('NavLinkItem', () => {
     });
     expect(screen.queryByText('New')).not.toBeInTheDocument();
   });
+
+  test('shoud render international payment link with type linkButton', () => {
+    renderApp({
+      props: {
+        title: 'International Payments',
+        product_id: 'internationalPaymentsBtn',
+        type: 'linkButton',
+        routes: {
+          internationalPaymentsBtn: '/payment-methods?instrument=international',
+        },
+      },
+    });
+
+    expect(screen.getByText('International Payments')).toBeInTheDocument();
+    expect(screen.getByRole('link')).toHaveAttribute(
+      'href',
+      '/payment-methods?instrument=international',
+    );
+  });
 });

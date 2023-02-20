@@ -37,8 +37,24 @@ export const LinkItem = styled(Link)`
   }
 `;
 
-export const Typo = styled.span`
-  font-weight: 400;
+export const LinkButtonItem = styled(Link)`
+  display: flex;
+  height: 29px;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  line-height: 21px;
+  color: #80a5ff;
+  padding-left: 1rem;
+  justify-content: space-between;
+
+  &:hover {
+    color: #ffffff;
+  }
+`;
+
+export const Typo = styled.span<{ bold?: boolean }>`
+  font-weight: ${({ bold }) => (bold ? '700' : '400')};
   font-size: 14px;
 `;
 

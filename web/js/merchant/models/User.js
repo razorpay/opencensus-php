@@ -5,7 +5,7 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import abExperimentsMap from 'merchant/utils/abExperimentsMap';
 import isEmpty from '@universe/utils/isEmpty';
 import { fetchFeaturesAjax } from 'merchant/reducers/config';
-import { getOrg } from 'merchant/store';
+import { getOrg, getMode } from 'merchant/store';
 import { getOnBoardingDataFromLocalState } from 'merchant/components/OnBoarding';
 import { getItem } from 'common/utils/localStorage';
 import { getXCAStatus } from 'common/ui/NotificationsDropdown/Neostone/common/utils';
@@ -1882,6 +1882,19 @@ export default class User {
   get isPartnershipForPhantomEnabled() {
     const variant = getSplitzExperimentVariant('partnership_for_phantom');
     return variant?.name === 'enable';
+  }
+
+  get isShowInternationalPaymentBtnExpEnabled() {
+    const variant = getSplitzExperimentVariant('show_international_payments_button_ab');
+
+    return (
+      getMode() === 'live' &&
+      variant?.variant_on?.enable === 'true' &&
+      (this.internationalActivationFlow.isWhitelistFlow ||
+        this.internationalActivationFlow.isGraylistFlow ||
+        !this.internationalActivationFlow.international_activation_flow) &&
+      !this.international
+    );
   }
 
   get isFtuxEnabled() {

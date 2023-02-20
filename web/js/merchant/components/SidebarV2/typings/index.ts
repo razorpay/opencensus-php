@@ -56,6 +56,7 @@ export interface NavLinkItemInterface extends RouteComponentProps {
   getHref?: (payload: any) => boolean;
   user: User;
   section?: string;
+  type?: string;
 }
 
 export interface NavLinkProductPropsInterface extends RouteComponentProps {
