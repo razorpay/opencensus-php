@@ -1,6 +1,6 @@
 import React, { Fragment, useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-
+import { connect } from 'react-redux';
 import Spinner from 'common/ui/Spinner';
 import Time from 'common/ui/Time';
 import Alert from 'common/ui/Forms/Alert';
@@ -24,8 +24,9 @@ import {
   getActivationStatusBulk,
   filterApplications,
 } from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
+import { showNotification } from 'merchant_common/reducers/notifications';
 
-export default (props) => {
+const Details = (props) => {
   const {
     submerchant,
     isLoading,
@@ -38,6 +39,7 @@ export default (props) => {
     trackUserEvent,
     isSubMerchantKYCAccess,
     capitalProducts,
+    showNotification,
   } = props;
 
   const isPGProduct = product === PRODUCT_TYPE.PG;
@@ -60,7 +62,6 @@ export default (props) => {
 
   const getCapitalData = useCallback(
     (id) => {
-      setIsCapitalLoading(true);
       if (capitalProducts?.data?.length > 0) {
         const { data } = capitalProducts;
         const product = data.filter((item) => {
@@ -84,17 +85,24 @@ export default (props) => {
           })
           .catch(() => {
             setIsCapitalLoading(false);
+            showNotification?.({
+              type: 'error',
+              message: 'There was an error while fetching Application Details',
+            });
           });
       } else {
         setIsCapitalLoading(false);
       }
     },
-    [capitalProducts],
+    [capitalProducts, showNotification],
   );
 
   useEffect(() => {
-    if (isCapitalProduct && submerchant?.id && !capitalProducts?.loading) {
-      getCapitalData(submerchant.id);
+    if (isCapitalProduct) {
+      setIsCapitalLoading(true);
+      if (submerchant?.id && !capitalProducts?.loading) {
+        getCapitalData(submerchant.id);
+      }
     }
   }, [isCapitalProduct, submerchant, capitalProducts, getCapitalData]);
 
@@ -325,3 +333,5 @@ export default (props) => {
     </div>
   );
 };
+
+export default connect(null, { showNotification })(Details);

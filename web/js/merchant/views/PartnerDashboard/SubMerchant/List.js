@@ -43,6 +43,8 @@ export default class SubMerchantsList extends Component {
     if (location?.state?.addType) {
       if (location.state.addType === PRODUCT_TYPE.CAPITAL) {
         this.handleAddMerchant();
+        const { addType: _deleted, ...state } = location.state;
+        this.props.history.replace({ state });
       }
     }
     this.trackUserEvent('partnerships.dashboard.open', {
