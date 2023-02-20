@@ -5,7 +5,7 @@
   script.async = true;
   document.body.append(script);
   script.onload = () => {
-    initBladeCoverageAnalytics({ businessUnit: 'merchant-dashboard' });
+    initBladeCoverageAnalytics({ businessUnit: 'payments' });
   };
 </script>
 @endif
