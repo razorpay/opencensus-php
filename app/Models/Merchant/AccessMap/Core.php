@@ -62,30 +62,21 @@ class Core extends Base\Core
             $merchantMapping->entity()->associate($entity);
         }
 
-        $applicationType = $this->getMerchantApplicationType($merchantMapping);
+        $applicationType = $this->getMerchantApplicationType($merchantMapping->entity->getId());
 
         $this->repo->transaction(function () use ($merchantMapping, $applicationType) {
             $this->repo->saveOrFail($merchantMapping);
-
-            if ($this->enable_cassandra_outbox === true )
-            {
-                $this->createOutboxJob("create_impersonation_grant", $merchantMapping, $applicationType);
-            }
-            if ($this->enable_postgres_outbox === true )
-            {
-                $this->createOutboxJob("create_impersonation_grant_postgres", $merchantMapping, $applicationType);
-            }
+            $this->createOutboxJobForOperation('create', $merchantMapping, $applicationType);
         });
 
         return $merchantMapping;
     }
 
-    private function getMerchantApplicationType($merchantMapping)
+    private function getMerchantApplicationType($applicationId)
     {
-        $oauthApplicationId = $merchantMapping->entity->getId();
         $merchantApplications = $this->repo
             ->merchant_application
-            ->fetchMerchantApplication($oauthApplicationId, MerchantApplications\Entity::APPLICATION_ID);
+            ->fetchMerchantApplication($applicationId, MerchantApplications\Entity::APPLICATION_ID);
 
         if ($merchantApplications->count() === 0)
         {
@@ -114,6 +105,29 @@ class Core extends Base\Core
                 "subordinate_type"  => Constants\Entity::MERCHANT,
                 "subordinate_id"    => $merchantMapping->getMerchantId(),
             ]);
+        }
+    }
+
+    /**
+     *  Here we creat outbox entry to create/delete merchant access map in edge for authentication.
+     *  @param string $operation (create or delete)
+     *  @param Entity $merchantMapping
+     *  @param string $applicationType
+     */
+    private function createOutboxJobForOperation(string $operation, Entity $merchantMapping, string $applicationType)
+    {
+        if ($applicationType === MerchantApplications\Entity::MANAGED)
+        {
+            if($operation === 'create' || $operation === 'delete') {
+                if ($this->enable_cassandra_outbox === true )
+                {
+                    $this->createOutboxJob($operation."_impersonation_grant", $merchantMapping, $applicationType);
+                }
+                if ($this->enable_postgres_outbox === true )
+                {
+                    $this->createOutboxJob($operation."_impersonation_grant_postgres", $merchantMapping, $applicationType);
+                }
+            }
         }
     }
 
@@ -180,18 +194,11 @@ class Core extends Base\Core
 
         if (empty($mapping) === false)
         {
-            $applicationType = $this->getMerchantApplicationType($mapping);
+            $applicationType = $this->getMerchantApplicationType($appId);
 
             return $this->repo->transaction(function () use ($mapping, $applicationType)
                 {
-                    if ($this->enable_cassandra_outbox === true )
-                    {
-                        $this->createOutboxJob("delete_impersonation_grant", $mapping, $applicationType);
-                    }
-                    if ($this->enable_postgres_outbox === true )
-                    {
-                        $this->createOutboxJob("delete_impersonation_grant_postgres", $mapping, $applicationType);
-                    }
+                    $this->createOutboxJobForOperation('delete', $mapping, $applicationType);
                     return $this->repo->merchant_access_map->deleteOrFail($mapping);
                 });
         }
@@ -215,9 +222,17 @@ class Core extends Base\Core
             ]
         );
 
-        foreach ($accessMaps as $accessMap)
-        {
-            $this->repo->deleteOrFail($accessMap);
+        if (empty($accessMaps) === false) {
+            $applicationType = $this->getMerchantApplicationType($appId);
+            $this->repo->transaction(function () use ($accessMaps, $applicationType)
+                {
+                    foreach ($accessMaps as $accessMap)
+                    {   
+                        $this->createOutboxJobForOperation('delete', $accessMap, $applicationType);
+                        $this->repo->deleteOrFail($accessMap);
+                    }
+                });
+            
         }
     }
 
@@ -512,12 +527,18 @@ class Core extends Base\Core
      * This function updates the application for all accessMaps with provided new application id.
      *
      * @param Base\PublicCollection $accessMaps the merchant access maps to be updated
-     * @param string                $newAppId   new application ID to update
+     * @param string                $newAppId     new application ID to update
+     * @param string                $newAppType   appType for the new application ID
      * @return void
      */
-    public function updateApplications(Base\PublicCollection $accessMaps, string $newAppId)
+    public function updateApplications(Base\PublicCollection $accessMaps, string $newAppId, string $newAppType)
     {
         foreach ($accessMaps as $accessMap) {
+            if ($newAppType === MerchantApplications\Entity::MANAGED) {
+                $this->createOutboxJobForOperation('create', $accessMap, MerchantApplications\Entity::MANAGED);
+            } else {
+                $this->createOutboxJobForOperation('delete', $accessMap, MerchantApplications\Entity::MANAGED);
+            }
             $accessMap->setEntityId($newAppId);
         }
 

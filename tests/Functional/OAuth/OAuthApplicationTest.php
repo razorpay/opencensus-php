@@ -199,11 +199,16 @@ class OAuthApplicationTest extends TestCase
     {
         $requestParams = $this->getDefaultParamsForAuthServiceRequest();
 
+        $merchantId='10000000000000';
+
         $accessMap = $this->fixtures->create('merchant_access_map',
             [
                 'id'        => 'CMe2wjY0hiWBrL',
                 'entity_id' => '8ckeirnw84ifke',
+                'entity_type' => 'application',
             ]);
+
+        $this->createMerchantApplication($merchantId, 'aggregator', '8ckeirnw84ifke');
 
         $this->setAuthServiceMockDetail(
                                     'applications/8ckeirnw84ifke',

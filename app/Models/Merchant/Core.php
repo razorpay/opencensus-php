@@ -8240,7 +8240,7 @@ class Core extends Base\Core
             (new PartnerConfigCore())->updateApplicationsForPartnerConfigs($existingAppId, $updatedAppId);
         }
 
-        (new AccessMap\Core())->updateApplications($accessMaps, $updatedAppId);
+        (new AccessMap\Core())->updateApplications($accessMaps, $updatedAppId, MerchantApplicationsEntity::REFERRED);
 
         $this->deleteWebhooksForApplication($existingAppId);
     }

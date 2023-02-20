@@ -1378,7 +1378,7 @@ class Core extends Detail\Core
         );
 
         (new PartnerConfig\Core())->updateApplicationsForPartnerConfigs($existingAppId, $managedAppId);
-        (new Merchant\AccessMap\Core())->updateApplications($accessMaps, $managedAppId);
+        (new Merchant\AccessMap\Core())->updateApplications($accessMaps, $managedAppId, MerchantApplicationsEntity::MANAGED);
         if (empty($subMerchants) === false)
         {
             $this->assignDashboardAccessForSubmerchants($partner, $subMerchants);
