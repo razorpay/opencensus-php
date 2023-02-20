@@ -69,3 +69,9 @@ Make sure to check the checkboxes which are necessary for your PR.
       (If sizeable refactors are there, purpose of PR must be same)
 - [ ] Any manual dev testing done by you on beta/func environment?
 - [ ] Have you adhered to [Dashboard PR review guidelines](https://docs.google.com/document/d/1dY5r9zKfUokAHyRHH-6MNs9d1lFoTSSv1FEuts19eX8/edit#heading=h.ds6jxd1qlcl)?
+- [ ] Test Case Document URL. (Please paste test case document link here....)
+-  Note :- Please follow the below points while attaching test cases document link:
+    - If label `Tested` is added then test cases document URL is mandatory.
+    - Link added should be a valid URL and accessible throughout the org.
+    - If the branch name contains hotfix / revert by default the BVT workflow check will pass.
+
