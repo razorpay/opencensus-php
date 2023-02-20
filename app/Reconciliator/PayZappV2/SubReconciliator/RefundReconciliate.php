@@ -13,9 +13,9 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
      * Row Header Names
      *******************/
     const COLUMN_SERVICE_TAX       = ['cgst_amt', 'sgst_amt', 'igst_amt', 'utgst_amt', 'serv_tax'];
-    const COLUMN_REFUND_ID         = 'merchant_trackid';
+    const COLUMN_REFUND_ID         = 'udf2';
     const COLUMN_REFUND_AMOUNT     = 'domestic_amt';
-    const COLUMN_GATEWAY_REFUND_ID = 'tran_id';
+    const COLUMN_GATEWAY_REFUND_ID = 'udf1';
     const COLUMN_UPI_REFUND_ID     = 'order_id';
     const COLUMN_UPI_REFUND_AMOUNT = 'transaction_amount';
     const COLUMN_UPI_RRN           = 'txn_ref_no_rrn';

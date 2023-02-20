@@ -255,15 +255,17 @@ class PayzappV2ReconTest extends TestCase
 
             if ($entity->getEntity() === Entity::PAYMENT)
             {
-                $type = 'BAT';
-                $arn  = '';
-                $id   = Payment\Entity::stripDefaultSign($entity['id']);
+                $type        = 'BAT';
+                $id          = Payment\Entity::stripDefaultSign($entity[Payment\Entity::ID]);
+                $refundID    = '';
+                $refundTxnID = '';
             }
             else if ($entity->getEntity() === Entity::REFUND)
             {
-                $type = 'CVD';
-                $arn  = $txnid;
-                $id   = Payment\Refund\Entity::stripDefaultSign($entity['id']);
+                $type        = 'CVD';
+                $id          = Payment\Refund\Entity::stripDefaultSign($entity[Payment\Refund\Entity::PAYMENT_ID]);
+                $refundID    = Payment\Refund\Entity::stripDefaultSign($entity[Payment\Refund\Entity::ID]);
+                $refundTxnID = 'txn_24603f89-5f24-4962-a2a5-8ea34fe' . random_alpha_string(5);
             }
 
             $reconRow[] = [
@@ -291,13 +293,13 @@ class PayzappV2ReconTest extends TestCase
                 'UTGST AMT' => 0,
                 'Net Amount' => $amount - 0.5,
                 'DEBITCREDIT_TYPE' => 'DD',
-                'UDF1' => '',
-                'UDF2' => '',
+                'UDF1' => $refundTxnID,
+                'UDF2' => $refundID,
                 'UDF3' => $txnid,
                 'UDF4' => $id,
                 'UDF5' => '',
                 'SEQUENCE NUMBER' => '',
-                'ARN NO' => $arn,
+                'ARN NO' => $refundTxnID,
                 'INVOICE_NUMBER' => '',
                 'GSTN_TRANSACTION_ID' => '',
             ];
