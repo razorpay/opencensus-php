@@ -57,6 +57,8 @@ class Service extends Base\Service
                 $this->addSalesPOCToBankingAccountIfApplicable($bankingAccount, $input);
             }
 
+            $input = $this->computePoeAndPoaStatus($bankingAccount, null, $input);
+
             $input = $this->updateInputForSkipMidOfficeCallAndAppointmentSource($bankingAccount, null, $input);
 
             if(array_key_exists(Entity::ADDITIONAL_DETAILS, $input) === true)
@@ -267,6 +269,8 @@ class Service extends Base\Service
         {
             (new Validator())->validateCommentOnAssigneeTeamChange($activationDetail, $input, $commentInput);
         }
+
+        $input = $this->computePoeAndPoaStatus($bankingAccount, $activationDetail, $input);
 
         $input = $this->updateInputForSkipMidOfficeCallAndAppointmentSource($bankingAccount, $activationDetail, $input);
 
@@ -786,17 +790,30 @@ class Service extends Base\Service
             $additionalDetails = array_merge($additionalDetails, $input[Entity::ADDITIONAL_DETAILS]);
         }
 
+        $poe = Entity::extractFieldFromJSONField($additionalDetails, Entity::PROOF_OF_ENTITY);
+
+        $poeVerified = $poe ? $poe['status'] === 'verified' : false;
+
+        $poa = Entity::extractFieldFromJSONField($additionalDetails, Entity::PROOF_OF_ADDRESS);
+
+        $poaVerified = $poa ? $poa['status'] === 'verified' : false;
+
         $this->trace->info(
             TraceCode::BANKING_ACCOUNT_FASTER_DOC_COLLECTION_CHECK,
             [
                 'banking_account_id'    => $bankingAccount->getId(),
-                'activation_details'    => $activationDetail ? $activationDetail->getAdditionalDetails() : null,
+                'additional_details'    => $activationDetail ? $activationDetail->getAdditionalDetails() : null,
                 'input'                 => $input,
                 'check'                 => $additionalDetails,
             ]);
 
+        // If PoE or PoA is not verified
+        if (!($poeVerified && $poaVerified))
+        {
+            return false;
+        }
+
         $expected = [
-            Entity::GSTIN_PREFILLED_ADDRESS => 1,
             Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS => [
                 Entity::SIGNATORIES_AVAILABLE_AT_PREFERRED_ADDRESS => 1,
                 Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS => 1
@@ -816,9 +833,74 @@ class Service extends Base\Service
             'PoE_verified'                      => $activationDetails->isPoEVerified() ? 'true' : 'false',
             'PoA_verified'                      => $activationDetails->isPoAVerified() ? 'true' : 'false',
             'Appointment_during_Sales_pitch'    => $activationDetails->getSkipMidOfficeCall() === 1 ? 'true' : 'false',
-            'PoA_document'                      => $activationDetails->isPoEVerified() ? Entity::GSTIN : 'N/A',
+            'PoA_document'                      => $activationDetails->getPoASource() ?? 'N/A',
         ];
 
         $this->app->salesforce->sendCaLeadDetails($salesforceUpsertInput);
     }
+
+    private function computePoeAndPoaStatus(BankingAccount\Entity $bankingAccount, Entity|null $activationDetail, array $input): array
+    {
+        $inputAdditionalDetails = $input[Entity::ADDITIONAL_DETAILS] ?? [];
+        if (is_string($inputAdditionalDetails))
+        {
+            $inputAdditionalDetails = json_decode($inputAdditionalDetails, true);
+        }
+
+        $existingAdditionalDetails = optional($activationDetail)->getAdditionalDetails() ?? '{}';
+        $existingAdditionalDetails = json_decode($existingAdditionalDetails, true);
+
+        $updatedAdditionalDetails = array_merge($existingAdditionalDetails,$inputAdditionalDetails);
+
+        $businessCategory = $input['business_category'] ?? '';
+        $verifiedConstitutions = $updatedAdditionalDetails['verified_constitutions'] ?? [];
+        if (!empty($businessCategory))
+        {
+            foreach ($verifiedConstitutions as $constitution)
+            {
+                if ($businessCategory === $this->fromBasConstitutionToApiConstitution($constitution['constitution']))
+                {
+                    $inputAdditionalDetails['proof_of_entity'] = [
+                      'status' => 'verified',
+                      'source' =>  $constitution['source']
+                    ];
+                }
+            }
+        }
+
+        $merchantDocumentsAddress = $input['merchant_documents_address'] ?? '';
+        $verifiedAddresses = $updatedAdditionalDetails['verified_addresses'] ?? [];
+        if (!empty($merchantDocumentsAddress))
+        {
+            foreach ($verifiedAddresses as $address)
+            {
+                if ($merchantDocumentsAddress === $address['address'])
+                {
+                    $inputAdditionalDetails['proof_of_address'] = [
+                        'status' => 'verified',
+                        'source' =>  $address['source']
+                    ];
+                }
+            }
+        }
+
+        $input[Entity::ADDITIONAL_DETAILS] = $inputAdditionalDetails;
+
+        return $input;
+    }
+
+    private function fromBasConstitutionToApiConstitution(string $constitution): string
+    {
+        return match ($constitution) {
+            'PUBLIC_LIMITED', 'PRIVATE_LIMITED' => Validator::PRIVATE_PUBLIC_LIMITED_COMPANY,
+            'LLP' => Validator::LIMITED_LIABILITY_PARTNERSHIP,
+            'ONE_PERSON_COMPANY' => Validator::ONE_PERSON_COMPANY,
+            'PROPRIETORSHIP' => Validator::SOLE_PROPRIETORSHIP,
+            'PARTNERSHIP' => Validator::PARTNERSHIP,
+            'SOCIETY' => Validator::SOCIETY,
+            'TRUST' => Validator::TRUST,
+            default => '',
+        };
+    }
+
 }

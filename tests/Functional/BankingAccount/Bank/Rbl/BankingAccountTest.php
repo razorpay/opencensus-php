@@ -1360,6 +1360,87 @@ class BankingAccountTest extends TestCase
         return $bankingAccount;
     }
 
+    public function testCreateBankingAccountWithActivationDetailWithPoAndPoEVerified()
+    {
+        $requestPayload = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Umakant',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'sales_team' => 'sme',
+                ActivationDetail\Entity::MERCHANT_DOCUMENTS_ADDRESS => 'ABC',
+                ActivationDetail\Entity::BUSINESS_CATEGORY => 'private_public_limited_company',
+                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                    'verified_constitutions' => [
+                        [
+                            'constitution' => 'PUBLIC_LIMITED',
+                            'source'       => 'gstin'
+                        ],
+                    ],
+                    'verified_addresses' => [
+                        [
+                          'address' => 'ABC',
+                          'source'  => 'gstin',
+                        ],
+                    ],
+                ],
+            ]
+        ];
+        $response = $this->createBankingAccountFromDashboard($requestPayload);
+
+        $expectedAdditionalDetails = [
+            'proof_of_entity' => [
+                'status' => 'verified',
+                'source' => 'gstin'
+            ],
+            'proof_of_address' => [
+                'status' => 'verified',
+                'source' => 'gstin'
+            ],
+        ];
+
+        $actualAdditionalDetails = json_decode($response['banking_account_activation_details']['additional_details'],true);
+
+        $this->assertArraySelectiveEquals($expectedAdditionalDetails,$actualAdditionalDetails);
+    }
+
+    public function testCreateBankingAccountWithActivationDetailWithPoAndPoENotVerified()
+    {
+        $requestPayload = [
+            'activation_detail' => [
+                'merchant_poc_name' => 'Umakant',
+                'merchant_poc_designation' => 'Financial Consultant',
+                'merchant_poc_email' => 'sample@sample.com',
+                'merchant_poc_phone_number' => '9876556789',
+                'sales_team' => 'sme',
+                ActivationDetail\Entity::MERCHANT_DOCUMENTS_ADDRESS => 'ABCD',
+                ActivationDetail\Entity::BUSINESS_CATEGORY => 'trust',
+                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                    'verified_constitutions' => [
+                        [
+                            'constitution' => 'PUBLIC_LIMITED',
+                            'source'       => 'gstin'
+                        ],
+                    ],
+                    'verified_addresses' => [
+                        [
+                            'address' => 'ABC',
+                            'source'  => 'gstin',
+                        ],
+                    ],
+                ],
+            ]
+        ];
+        $response = $this->createBankingAccountFromDashboard($requestPayload);
+
+        $actualAdditionalDetails = json_decode($response['banking_account_activation_details']['additional_details'],true);
+
+        $this->assertArrayNotHasKey('proof_of_entity',$actualAdditionalDetails);
+
+        $this->assertArrayNotHasKey('proof_of_address',$actualAdditionalDetails);
+    }
+
     public function testCheckServiceableByRBL()
     {
         $this->app['config']->set('applications.banking_account.mock', true);
@@ -4797,7 +4878,14 @@ class BankingAccountTest extends TestCase
                 ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
                 ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
                 ActivationDetail\Entity::ADDITIONAL_DETAILS => [
-                    ActivationDetail\Entity::GSTIN_PREFILLED_ADDRESS => 1,
+                    ActivationDetail\Entity::PROOF_OF_ENTITY => [
+                        'status' => 'verified',
+                        'source' => 'gstin'
+                    ],
+                    ActivationDetail\Entity::PROOF_OF_ADDRESS => [
+                        'status' => 'verified',
+                        'source' => 'llpin'
+                    ],
                     ActivationDetail\Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS => [
                         ActivationDetail\Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS => 1,
                         ActivationDetail\Entity::SEAL_AVAILABLE => 0,
@@ -4846,7 +4934,14 @@ class BankingAccountTest extends TestCase
                 ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
                 ActivationDetail\Entity::SALES_TEAM        => 'self_serve',
                 ActivationDetail\Entity::ADDITIONAL_DETAILS => [
-                    ActivationDetail\Entity::GSTIN_PREFILLED_ADDRESS => 1,
+                    ActivationDetail\Entity::PROOF_OF_ENTITY => [
+                        'status' => 'verified',
+                        'source' => 'gstin'
+                    ],
+                    ActivationDetail\Entity::PROOF_OF_ADDRESS => [
+                        'status' => 'verified',
+                        'source' => 'llpin'
+                    ],
                 ],
             ]
         ];
@@ -9193,7 +9288,7 @@ class BankingAccountTest extends TestCase
         ];
 
         $result = $this->makeRequestAndGetContent($dataToReplace);
-    
+
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::INITIATED, Status::ARCHIVED,
             null, null,
@@ -10507,6 +10602,10 @@ class BankingAccountTest extends TestCase
             ],
         ];
 
+        $now = Carbon::create(2023, 01, 19);
+
+        Carbon::setTestNow($now);
+
         $this->startTest($dataToReplace);
     }
 
@@ -11230,7 +11329,14 @@ class BankingAccountTest extends TestCase
                 ActivationDetail\Entity::EXPECTED_MONTHLY_GMV => 10000,
                 ActivationDetail\Entity::AVERAGE_MONTHLY_BALANCE => 0,
                 ActivationDetail\Entity::ADDITIONAL_DETAILS => [
-                    ActivationDetail\Entity::GSTIN_PREFILLED_ADDRESS => 1,
+                    ActivationDetail\Entity::PROOF_OF_ENTITY => [
+                        'status' => 'verified',
+                        'source' => 'gstin'
+                    ],
+                    ActivationDetail\Entity::PROOF_OF_ADDRESS => [
+                        'status' => 'verified',
+                        'source' => 'llpin'
+                    ],
                     ActivationDetail\Entity::RBL_NEW_ONBOARDING_FLOW_DECLARATIONS => [
                         ActivationDetail\Entity::AVAILABLE_AT_PREFERRED_ADDRESS_TO_COLLECT_DOCS => 1,
                         ActivationDetail\Entity::SEAL_AVAILABLE => 0,
@@ -11301,7 +11407,14 @@ class BankingAccountTest extends TestCase
                 ActivationDetail\Entity::EXPECTED_MONTHLY_GMV => 10000,
                 ActivationDetail\Entity::AVERAGE_MONTHLY_BALANCE => 0,
                 ActivationDetail\Entity::ADDITIONAL_DETAILS => [
-                    ActivationDetail\Entity::GSTIN_PREFILLED_ADDRESS => 1,
+                    ActivationDetail\Entity::PROOF_OF_ENTITY => [
+                        'status' => 'verified',
+                        'source' => 'gstin'
+                    ],
+                    ActivationDetail\Entity::PROOF_OF_ADDRESS => [
+                        'status' => 'verified',
+                        'source' => 'llpin'
+                    ],
                 ],
             ]
         ];
@@ -11406,7 +11519,14 @@ class BankingAccountTest extends TestCase
                 ActivationDetail\Entity::EXPECTED_MONTHLY_GMV => 10000,
                 ActivationDetail\Entity::AVERAGE_MONTHLY_BALANCE => 0,
                 ActivationDetail\Entity::ADDITIONAL_DETAILS => [
-                    ActivationDetail\Entity::GSTIN_PREFILLED_ADDRESS => 1,
+                    ActivationDetail\Entity::PROOF_OF_ENTITY => [
+                        'status' => 'verified',
+                        'source' => 'gstin'
+                    ],
+                    ActivationDetail\Entity::PROOF_OF_ADDRESS => [
+                        'status' => 'verified',
+                        'source' => 'llpin'
+                    ],
                 ],
             ]
         ];

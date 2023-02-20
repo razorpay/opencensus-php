@@ -279,7 +279,7 @@ return [
                 'channel'     => 'rbl',
                 'status'      => 'created',
                 'banking_account_activation_details' => [
-                    'additional_details' => json_encode([
+                    'additional_details' => [
                         'green_channel' => true,
                         'entity_proof_documents'    => [
                             [
@@ -291,7 +291,7 @@ return [
                                 'file_id'       => 'test',
                             ]
                         ],
-                    ]),
+                    ],
                 ]
             ],
         ],
