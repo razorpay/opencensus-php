@@ -35,6 +35,8 @@ class Service extends Transaction\Service
 
         $balance = $merchantValidator->validateAndTranslateAccountNumberForBanking($input);
 
+        $dimension = $this->getDimensions();
+
         $isLatestBalanceRequest = false;
         if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_REVERSE_SHADOW_LATEST_TXN_BALANCE))
         {
@@ -44,11 +46,18 @@ class Service extends Transaction\Service
             }
         }
 
-        // Route request to ledger statement if ledger feature is enabled
+        // Route request to ledger statement if ledger feature is enabled for shared account
         if (($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true) and
             ($balance->isAccountTypeShared() === true) and $isLatestBalanceRequest === false)
         {
+            $startTime = millitime();
+
             $ledger = $this->repo->ledger_statement->fetch($input, $this->merchant->getId(), ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
+
+            $this->trace->histogram(
+                TxnMetric::TRANSACTION_VA_REQUEST_LATENCY_MILLISECONDS,
+                millitime() - $startTime,
+                $dimension);
 
             return $ledger->toArrayPublic();
         }
