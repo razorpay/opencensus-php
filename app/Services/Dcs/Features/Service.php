@@ -157,7 +157,7 @@ class Service extends Base
             {
                 return $res;
             }
-            $response = $this->fetchByEntityIdAndFeatureNames($entityId, $dcsFeatures, ($mode === null) ? $this->getAppMode() : $mode);
+            $response = $this->fetchByEntityIdAndFeatureNames($entityId, $dcsFeatures, ($mode === null) ? $this->getAppMode() : $mode, true);
             $res = collect($response);
         } catch (\Throwable $e) {
             $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
@@ -243,12 +243,13 @@ class Service extends Base
      * @param string $entityId
      * @param array $featureNames
      * @param string $mode
+     * @param bool $aggregate
      * @return array
      * @throws ApiException
      * @throws Exception\BadRequestException
      * @throws Exception\ServerErrorException
      */
-    public function fetchByEntityIdAndFeatureNames(string $entityId, array $featureNames, $mode = Mode::TEST)
+    public function fetchByEntityIdAndFeatureNames(string $entityId, array $featureNames, $mode = Mode::TEST, $aggregate = false)
     {
         $data = [] ;
         $res = [];
@@ -265,7 +266,7 @@ class Service extends Base
             'mode' => $mode,
         ]);
 
-        $response = $this->client($mode)->fetchMultipleKeysWithID($data, $entityId);
+        $response = $this->client($mode)->fetchMultipleKeysWithID($data, $entityId, $aggregate);
         if ($response === null) {
             return $res;
         }
