@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use App;
+use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Partner;
 use RZP\Trace\TraceCode;
@@ -73,7 +74,7 @@ class CommissionInvoiceReminderAction extends Job
                     $invoiceCount = $invoices->count();
 
                     $partner          = $this->repoManager->merchant->findOrFail($partnerId);
-                    $activationStatus = $partner->merchantDetail->getActivationStatus();
+                    $activationStatus = $core->getApplicablePartnerActivationStatus($partner);
 
                     // Don't send reminders to the partner in rejected state. [PLAT-483]
                     if( $activationStatus === DetailStatus::REJECTED)

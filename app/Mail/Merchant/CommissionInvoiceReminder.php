@@ -69,16 +69,7 @@ class CommissionInvoiceReminder extends Mailable
 
     protected function addHtmlView()
     {
-        $activationStatus = $this->data['activation_status'];
-
-        $templatePrefix = $activationStatus;
-
-        if(in_array($activationStatus, Commission\Constants::VALID_PARTNER_STATUS_EMAIL_TEMPLATES) === false)
-        {
-            $templatePrefix = Merchant\Constants::DEFAULT;
-        }
-
-        $this->view('emails.mjml.merchant.partner.commission_invoice.reminder'.'.'.$templatePrefix);
+        $this->view($this->data['view']);
 
         return $this;
     }

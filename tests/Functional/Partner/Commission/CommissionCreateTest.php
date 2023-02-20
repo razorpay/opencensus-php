@@ -29,9 +29,11 @@ use RZP\Models\Partner\Commission\Invoice;
 use RZP\Mail\Merchant\CommissionOpsInvoice;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Mail\Merchant\CommissionInvoiceReminder;
+use RZP\Models\Merchant\Constants as MeConstants;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
 use RZP\Tests\Functional\Merchant\CommissionTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Partner\Commission\Type as CommissionType;
 use RZP\Models\Partner\Commission\Constants as CommissionConstants;
 
@@ -384,12 +386,110 @@ class CommissionCreateTest extends TestCase
 
             $merchant = $this->getDbEntity('merchant', ['id' => $partner->getId()]);
             $activationStatus = $merchant->merchantDetail->getActivationStatus();
+            $template = Invoice\Constants::DEFAULT_PARTNER_INVOICE_REMINDER_EMAIL_TEMPLATE_PREFIX.'.'.MeConstants::DEFAULT;
 
             $expectedData = [
                 'merchant'              => $merchant->toArray(),
                 'activation_status'     => $activationStatus,
                 'invoices'              => $expectedInvoiceData,
                 'invoice_count'         => 1,
+                'view'                  => $template,
+            ];
+
+            $this->assertSame($expectedData, $mail->viewData);
+
+            return true;
+        });
+    }
+
+    public function testSendCommissionInvoiceRemindersSuccessForReseller()
+    {
+        Mail::fake();
+
+        list($partner, $subMerchant, $payment, $config, $commission) = $this->createSampleCommission(['partner_type' => 'reseller'],[],[],[
+            'credit' => 1770,
+            'debit'  => 0,
+            'fee'    => 1770,
+            'tax'    => 270,
+        ]);
+
+        $this->fixtures->create('partner_activation',[
+            'merchant_id'       => $partner->getId(),
+            'activation_status' => 'activated'
+        ]);
+
+
+        $this->ba->adminAuth();
+
+        $testData = $this->testData['testCaptureCommission'];
+
+        $testData['request']['url'] = '/commissions/'.$commission->getPublicId().'/capture';
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceGenerate'];
+
+        $now = Carbon::now(Timezone::IST);
+
+        $testData['request']['content']['month']        = $now->month;
+        $testData['request']['content']['year']         = $now->year;
+        $testData['request']['content']['merchant_ids'] = [$partner->getId()];
+
+        $this->createTaxes();
+
+        $this->mockPartnerSubMtuDatalakeQuery($partner->getId());
+
+        $this->runRequestResponseFlow($testData);
+
+        $invoice = $this->getDbLastEntity('commission_invoice');
+
+        $testData = $this->testData['testInvoiceOnHoldClear'];
+        $testData['request']['content']['invoice_ids'] = [$invoice->getId()];
+        $this->runRequestResponseFlow($testData);
+
+        // check that invoice status isn't updated
+        $invoice = $this->getDbLastEntity('commission_invoice');
+        $this->assertEquals('issued', $invoice->getStatus());
+
+        $input = [
+            "experiment_id" => "JbUKeDS8uXGQBI",
+            "id"            => $partner->getId(),
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
+        (new Invoice\Service)->sendInvoiceReminders();
+
+        Mail::assertSent(CommissionInvoiceReminder::class, function($mail) use($invoice, $partner, $now)
+        {
+            $timestamps    = (new Invoice\Core())->convertMonthAndYearToTimeStamp($now->month, $now->year);
+            $startDate     = Carbon::createFromTimestamp($timestamps['from'], Timezone::IST)->format('d-M-y');
+            $endDate       = Carbon::createFromTimestamp($timestamps['to'], Timezone::IST)->format('d-M-y');
+
+            $expectedInvoiceData [] = [
+                'id'                     => $invoice->getId(),
+                'gross_amount_spread'    => "17.70",
+                'period'                 => $startDate.' to '.$endDate,
+            ];
+
+            $merchant = $this->getDbEntity('merchant', ['id' => $partner->getId()]);
+            $activationStatus = (new Invoice\Core())->getApplicablePartnerActivationStatus($merchant);
+            $template = Invoice\Constants::RESELLER_PARTNER_INVOICE_REMINDER_EMAIL_TEMPLATE_PREFIX.'.'.DetailStatus::ACTIVATED;
+
+            $expectedData = [
+                'merchant'              => $merchant->toArray(),
+                'activation_status'     => $activationStatus,
+                'invoices'              => $expectedInvoiceData,
+                'invoice_count'         => 1,
+                'view'                  => $template,
             ];
 
             $this->assertSame($expectedData, $mail->viewData);

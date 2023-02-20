@@ -26,6 +26,7 @@ use RZP\Models\Merchant\Metric;
 use RZP\Services\KafkaProducer;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Partner\Commission;
+use RZP\Models\Partner\Core as PartnerCore;
 use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Pricing\Calculator;
 use RZP\Models\Tax\Gst\GstTaxIdMap;
@@ -319,6 +320,8 @@ class Core extends Base\Core
 
         $data = $this->getTemplateData($invoice, $pdfPath);
 
+        $data ['view'] = $this->getEmailTemplateView($merchant, Status::ISSUED, $data['activation_status']);
+
         $commissionInvoice = new CommissionInvoiceIssued($data);
 
         Mail::send($commissionInvoice);
@@ -465,10 +468,11 @@ class Core extends Base\Core
         }
 
         $data = [
-            'merchant'          => $partner->toArray(),
-            'activation_status' => $activationStatus,
-            'invoices'          => $invoiceData,
-            'invoice_count'     => $invoices->count(),
+            'merchant'                  => $partner->toArray(),
+            'activation_status'         => $activationStatus,
+            'invoices'                  => $invoiceData,
+            'invoice_count'             => $invoices->count(),
+            'view'                      => $this->getEmailTemplateView($partner, Constants::REMINDER, $activationStatus)
         ];
 
         $this->trace->info(
@@ -551,7 +555,7 @@ class Core extends Base\Core
 
         $promotorPan   = $merchant->merchantDetail->getPromoterPan();
         $companyPan    = $merchant->merchantDetail->getPan();
-        $activationStatus     = $merchant->merchantDetail->getActivationStatus();
+        $activationStatus     = $this->getApplicablePartnerActivationStatus($merchant);
 
         $pan = null;
 
@@ -620,6 +624,33 @@ class Core extends Base\Core
         }
 
         return $data;
+    }
+
+    /**
+     * The function will return the applicable activation status of the partner based on partner type and merchant activation status.
+     * For Reseller partner without merchant activated will return partner_activation status and in all other cases merchant activation status will be returned.
+     *
+     * @param   Merchant\Entity     $merchant   The partner merchant entity
+     *
+     * @return  string|null             response will be activation status of the partner
+     *
+     */
+    public function getApplicablePartnerActivationStatus(Merchant\Entity $merchant)
+    {
+        $activationStatus     = $merchant->merchantDetail->getActivationStatus();
+        $partnerType          = $merchant->getPartnerType();
+
+        if ( empty($partnerType) === true)
+        {
+            return null;
+        }
+
+        //pick activation status from partner_activation entity for reseller if partner is not merchant activation status is not submitted.
+        if (($partnerType === Merchant\Constants::RESELLER) and (empty($activationStatus) === true))
+        {
+            $activationStatus = ($merchant->partnerActivation !== null) ? $merchant->partnerActivation->getActivationStatus() : null;
+        }
+        return $activationStatus;
     }
 
     protected function formatAmountForTemplate($amount)
@@ -1312,4 +1343,60 @@ class Core extends Base\Core
         (new KafkaProducer(Commission\Constants::COMMISSIONS_EVENTS_TOPIC . $this->mode, stringify($event)))->Produce();
     }
 
+    /**
+     * Returns the email template view  based on the event and activation status.
+     */
+    public function getEmailTemplateView(Merchant\Entity $merchant, string $event, string $activationStatus = null)
+    {
+        $partnerType = $merchant->getPartnerType();
+
+        switch ($partnerType)
+        {
+            case  Merchant\Constants::RESELLER:
+                return $this->getResellerEmailTemplate($merchant, $event, $activationStatus);
+
+            default:
+                return $this->getDefaultEmailTemplate($event, $activationStatus);
+        }
+    }
+
+    private function getResellerEmailTemplate(Merchant\Entity $merchant, string $event, string $activationStatus = null)
+    {
+        $isResellerPartnerWithMerchantKyc = (new PartnerCore())->isResellerPartnerWithMerchantKyc($merchant);
+
+        if($isResellerPartnerWithMerchantKyc === true)
+        {
+            return $this->getDefaultEmailTemplate($event, $activationStatus);
+        }
+
+        if($event === Status::ISSUED)
+        {
+            return Constants::RESELLER_PARTNER_INVOICE_ISSUED_EMAIL_TEMPLATE;
+        }
+
+        $templateSuffix =  $activationStatus;
+
+        if(in_array($activationStatus, Commission\Constants::VALID_PARTNER_STATUS_EMAIL_TEMPLATES) === false)
+        {
+            $templateSuffix = Merchant\Constants::DEFAULT;
+        }
+        return Constants::RESELLER_PARTNER_INVOICE_REMINDER_EMAIL_TEMPLATE_PREFIX.'.'.$templateSuffix;
+    }
+
+    private function getDefaultEmailTemplate(string $event, string $activationStatus = null)
+    {
+
+        if($event === Status::ISSUED)
+        {
+            return Constants::DEFAULT_PARTNER_INVOICE_ISSUED_EMAIL_TEMPLATE;
+        }
+
+        $templateSuffix =  $activationStatus;
+
+        if(in_array($activationStatus, Commission\Constants::VALID_PARTNER_STATUS_EMAIL_TEMPLATES) === false)
+        {
+            $templateSuffix = Merchant\Constants::DEFAULT;
+        }
+        return (Constants::DEFAULT_PARTNER_INVOICE_REMINDER_EMAIL_TEMPLATE_PREFIX.'.'.$templateSuffix);
+    }
 }

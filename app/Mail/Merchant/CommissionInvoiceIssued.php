@@ -7,6 +7,7 @@ use Symfony\Component\Mime\Email;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
 use RZP\Constants\MailTags;
+use RZP\Models\Partner\Commission;
 
 class CommissionInvoiceIssued extends Mailable
 {
@@ -79,7 +80,7 @@ class CommissionInvoiceIssued extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.mjml.merchant.partner.commission_invoice.issued');
+        $this->view($this->data['view']);
 
         return $this;
     }

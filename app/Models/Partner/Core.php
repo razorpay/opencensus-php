@@ -1471,4 +1471,24 @@ class Core extends Detail\Core
         $application = (new OAuthApp\Repository())->findOrFail($appId);
         $this->merchantCore->createPartnerConfig($application, $merchant, $config);
     }
+
+    /**
+     * The function will return true when a reseller partner fills merchant KYC form.
+     *
+     * @param   Merchant\Entity     $merchant   The partner merchant entity
+     *
+     * @return  bool
+     *
+     */
+    public function isResellerPartnerWithMerchantKyc(Merchant\Entity $merchant) : bool
+    {
+        $activationStatus     = $merchant->merchantDetail->getActivationStatus();
+        $partnerType          = $merchant->getPartnerType();
+
+        if (($partnerType === Merchant\Constants::RESELLER) and (empty($activationStatus) === false))
+        {
+            return true;
+        }
+        return false;
+    }
 }
