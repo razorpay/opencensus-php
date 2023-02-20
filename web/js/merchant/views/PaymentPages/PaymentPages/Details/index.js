@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unsafe */
 import React from 'react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
@@ -10,11 +11,16 @@ import { keysToSentence } from 'common/utils/rzp-utils';
 
 import {
   fetchPaymentPageEntity,
+  fetchStorefrontEntity,
   fetchPaymentsListForPaymentPage,
   editPaymentPage,
+  editStorefrontPage,
   editPaymentPageItem,
+  editStorefrontItem,
   activatePaymentPage,
   deactivatePaymentPage,
+  deactivateStorefront,
+  activateStorefront,
 } from 'merchant/views/PaymentPages/PaymentPages/model';
 import Spinner from 'common/ui/Spinner';
 import { updateItem } from 'common/utils/immutable';
@@ -52,7 +58,7 @@ export default class extends React.Component {
 
   UNSAFE_componentWillMount() {
     this.fetchEntity(this.entityId);
-    this.fetchEntityPayments(this.entityId);
+    !this.props.isStorefrontPage && this.fetchEntityPayments(this.entityId);
 
     track.init(this.props.tracking.trackEvent);
   }
@@ -65,6 +71,11 @@ export default class extends React.Component {
     }
   }
 
+  _fetchStorefrontEntity(id) {
+    // use the transformed API
+    return fetchStorefrontEntity(id, true);
+  }
+
   fetchEntity(id) {
     this.setState({
       loading: true,
@@ -75,7 +86,9 @@ export default class extends React.Component {
       paymentsListLoading: true,
     });
 
-    return fetchPaymentPageEntity(id)
+    const { isStorefrontPage } = this.props;
+    const fetcher = isStorefrontPage ? this._fetchStorefrontEntity : fetchPaymentPageEntity;
+    return fetcher(id)
       .then((resp) => {
         if (resp) {
           this.setState({
@@ -123,8 +136,15 @@ export default class extends React.Component {
     const { showNotification, user } = this.props;
     const isEntityPaymentPageItem = !!paymentPageItemId;
 
-    const _updateFn = isEntityPaymentPageItem ? editPaymentPageItem : editPaymentPage;
+    const { isStorefrontPage } = this.props;
 
+    let _updateFn;
+
+    if (isEntityPaymentPageItem) {
+      _updateFn = isStorefrontPage ? editStorefrontItem : editPaymentPageItem;
+    } else {
+      _updateFn = isStorefrontPage ? editStorefrontPage : editPaymentPage;
+    }
     const id = isEntityPaymentPageItem ? paymentPageItemId : this.state.paymentPageEntity.id;
     if (!user?.isNoExpiryMandatoryPP && !data?.expire_by) {
       return showNotification({
@@ -139,29 +159,61 @@ export default class extends React.Component {
 
           this.props.showNotification({
             type: 'success',
-            message: `${keysToSentence(keys)} updated successfully`,
+            message: `${
+              isStorefrontPage && isEntityPaymentPageItem ? 'Stock' : `${keysToSentence(keys)}`
+            } updated successfully`,
           });
 
           let newPaymentPageEntity;
           if (isEntityPaymentPageItem) {
-            const paymentPageItems = this.state.paymentPageEntity.payment_page_items;
-            let itemIndexInArray;
+            if (!isStorefrontPage) {
+              // payment page scenario
+              const paymentPageItems = this.state.paymentPageEntity.payment_page_items;
+              let itemIndexInArray;
 
-            paymentPageItems.find((pi, ix) => {
-              itemIndexInArray = ix;
-              return pi.id === resp.data.id;
-            });
+              paymentPageItems.find((paymentPagesItem, index) => {
+                itemIndexInArray = index;
+                return paymentPagesItem.id === resp.data.id;
+              });
 
-            newPaymentPageEntity = { ...this.state.paymentPageEntity };
+              newPaymentPageEntity = { ...this.state.paymentPageEntity };
 
-            if (itemIndexInArray != null) {
-              newPaymentPageEntity.payment_page_items = updateItem(
-                paymentPageItems,
-                itemIndexInArray,
-                resp.data,
-              );
+              if (itemIndexInArray !== null) {
+                newPaymentPageEntity.payment_page_items = updateItem(
+                  paymentPageItems,
+                  itemIndexInArray,
+                  resp.data,
+                );
+              } else {
+                throw new Error('Please Reload the page'); // index must index, so this Shouldn't happen though
+              }
             } else {
-              throw new Error('Please Reload the page'); // index must index, so this Shouldn't happen though
+              // storefront scenario
+              const paymentPageItems = this.state.paymentPageEntity.payment_page_items;
+              let itemIndexInArray;
+
+              paymentPageItems.find((paymentPagesItem, index) => {
+                itemIndexInArray = index;
+                // store is in old format, response is in new format
+                return paymentPagesItem.catalog_id === resp.data.id;
+              });
+
+              newPaymentPageEntity = { ...this.state.paymentPageEntity };
+
+              if (itemIndexInArray !== null) {
+                newPaymentPageEntity.payment_page_items = updateItem(
+                  paymentPageItems,
+                  itemIndexInArray,
+                  {
+                    ...paymentPageItems[itemIndexInArray],
+                    // update selected fields only from response (new format)
+                    stock: resp.data.units,
+                    catalog_status: resp.data.status,
+                  },
+                );
+              } else {
+                throw new Error('Please Reload the page'); // index must index, so this Shouldn't happen though
+              }
             }
           } else {
             // maintaining settings as the api doesn't return settings
@@ -222,21 +274,23 @@ export default class extends React.Component {
 
     let apiAction, header, message, affirmativeLabel, affirmativePendingLabel, successMsg;
 
+    const { isStorefrontPage } = this.props;
+    const entityName = isStorefrontPage ? 'Storefront' : 'Page';
+
+    // Set confirmation modal's configuration based on active status
     if (isActive) {
       /* Wants manual deactivation */
-      apiAction = deactivatePaymentPage;
-      header = 'Deactivate Page?';
-      message =
-        'Once you deactivate the page, you will not be able to accept payments till you activate it again.';
+      apiAction = isStorefrontPage ? deactivateStorefront : deactivatePaymentPage;
+      header = `Deactivate ${entityName}?`;
+      message = `Once you deactivate the ${entityName.toLowerCase()}, you will not be able to accept payments till you activate it again.`;
       affirmativeLabel = 'Yes, deactivate';
       affirmativePendingLabel = 'Deactivating..';
       successMsg = `${this.state.paymentPageEntity.id} is now Inactive`;
     } else if (isDeactivated) {
       /* Wants activation for manual deactivation for cancelled status */
-
-      apiAction = activatePaymentPage;
-      header = 'Activate Page?';
-      message = 'Once you activate the page, you will be able to accept payments.';
+      apiAction = isStorefrontPage ? activateStorefront : activatePaymentPage;
+      header = `Activate ${entityName}?`;
+      message = `Once you activate the ${entityName.toLowerCase()}, you will be able to accept payments.`;
       affirmativeLabel = 'Yes, activate';
       affirmativePendingLabel = 'Activating..';
       successMsg = `${this.state.paymentPageEntity.id} is now Active`;

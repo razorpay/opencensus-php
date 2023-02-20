@@ -41,9 +41,11 @@ export const SnackbarProvider: React.FC<ProviderPropsT> = ({ children }) => {
   let animationTimer = 0;
 
   const clearSnackbar = (duration = 0) => {
-    animationTimer = setTimeout(() => {
+    // use window.setTimeout to fix typescript error https://stackoverflow.com/a/55550147/6127580
+
+    animationTimer = window.setTimeout(() => {
       setShouldAnimateIn(false);
-      timer = setTimeout(() => {
+      timer = window.setTimeout(() => {
         setSnackbar({});
       }, 400); // snackbar transition duration
     }, duration);

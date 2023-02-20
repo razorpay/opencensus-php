@@ -53,7 +53,13 @@ export class ModalMask extends React.PureComponent {
   };
 
   render() {
-    const { children, maskClosable = false, allowScroll, ...rest } = this.props;
+    const {
+      children,
+      maskClosable = false,
+      allowScroll,
+      unmodifiedClassName = '',
+      ...rest
+    } = this.props;
 
     const classArray = rest.className
       ? rest.className.split(' ').map((cls) => `Modal-mask--${cls}`)
@@ -61,7 +67,12 @@ export class ModalMask extends React.PureComponent {
 
     return (
       <div
-        className={classList('Modal-mask', classArray, this.state.isHidden && 'Modal-mask--hide')}
+        className={classList(
+          'Modal-mask',
+          classArray,
+          this.state.isHidden && 'Modal-mask--hide',
+          unmodifiedClassName,
+        )}
         onClick={maskClosable ? this.onMaskClose : undefined}
       >
         {children}
@@ -104,6 +115,7 @@ export class Modal extends React.PureComponent {
       fadedCloseButton = false,
       canDisableCloseBtn = false,
       fullWidth = false,
+      unmodifiedClassName = '',
       ...rest
     } = this.props;
 
@@ -114,7 +126,12 @@ export class Modal extends React.PureComponent {
 
     return (
       <div
-        className={classList('Modal-container', classArray, mobileFullWidthModalClass)}
+        className={classList(
+          'Modal-container',
+          classArray,
+          unmodifiedClassName,
+          mobileFullWidthModalClass,
+        )}
         {...rest}
       >
         {showCloseBtn && (

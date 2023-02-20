@@ -480,6 +480,16 @@ fixtures.js / // or /fixtures (can be a file or folder) - For common fixtures
     expect(onHoldText).toBeInTheDocument();
     ```
 
+23. How to debug your tests?
+
+  - Click on the Run and Debug section in your VS Code's right panel.
+  - Ensure the Debug Jest Tests is selected in the configuration dropdown menu.
+  - We're going to run the file in .vscode/launch.json. Please specify the folder/file of your interest in this file.
+  - Click on the play button
+  - Now you use the inbuilt VS code debugger to view the contents of your file
+  - To learn more, refer this [video](https://www.youtube.com/watch?v=96MXwMiNhrk)
+  - It's recommended to use this debugger only when required, as using this will make your tests slower to run.
+
 ### 11. Action Items
 
 - [x] UT template with `customRender` usage

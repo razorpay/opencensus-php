@@ -6,12 +6,14 @@ import Button from 'common/new-ui/Button';
 import Tooltip from 'common/ui/Tooltip';
 
 import track from './track';
+import { getProductBaseLink } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 const onShow = () => {
   track.settingsDropdown();
 };
 
-const DropdownSettings = ({ history, paymentPageEntity }) => {
+const DropdownSettings = ({ history, paymentPageEntity, isStorefrontPage }) => {
+  const productBaseUrl = getProductBaseLink(isStorefrontPage, paymentPageEntity.id);
   return (
     <span className="d-inline-block">
       <Dropdown closeOnClick={false} onShow={onShow}>
@@ -33,7 +35,7 @@ const DropdownSettings = ({ history, paymentPageEntity }) => {
               onClick={() => {
                 track.receiptSettings();
 
-                history.push(`/paymentpages/${paymentPageEntity.id}/edit?modal=receipt`);
+                history.push(`${productBaseUrl}/edit?modal=receipt`);
               }}
             >
               <Button.Transparent className="button--highlight">
@@ -47,7 +49,7 @@ const DropdownSettings = ({ history, paymentPageEntity }) => {
               onClick={() => {
                 track.pageSettings();
 
-                history.push(`/paymentpages/${paymentPageEntity.id}/edit?modal=page`);
+                history.push(`${productBaseUrl}/edit?modal=page`);
               }}
             >
               <Button.Transparent className="button--highlight">

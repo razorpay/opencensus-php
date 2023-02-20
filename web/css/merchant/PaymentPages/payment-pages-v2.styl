@@ -325,108 +325,16 @@
     text-align: center
     padding: 100px 0
 
-  .page-nav-container
-    position: fixed
-    z-index: 3
-    width: 100%
-
   /*
     on mobile, if base form is open
     reducing z-index so that the the nav container
     doesn't come above the creator modal
   */
+  // TODO: Remove dependency
   @media (max-width $screen-xs-max)
     &.creator-modal-open
       .page-nav-container
         z-index: 2
-
-  .page-nav
-    color: #FFF
-    background-color: #2F3445
-    box-shadow: 0 2px 24px 0 rgba(0, 0, 0, 0.24)
-    padding: 9px 12px
-    min-width: 854px
-
-    @media (max-width $screen-xs-max)
-      min-width: 100vw
-
-    .page-size
-      width: 100%
-      max-width: 1440px
-      margin: 0 auto
-      display: flex
-      justify-content: space-between
-      align-items: center
-      position: relative
-
-      .page-title
-        font-size: 18px
-        font-weight: bold
-        padding-left: 8px
-
-        span
-          opacity: 0.35
-          font-weight: 400
-
-      .page-action
-        display: flex
-        justify-content: flex-end
-        margin-right: 34px
-
-        > button
-          line-height: 10px
-          padding: 10px 8px
-          // height: 32px
-          vertical-align: middle
-          margin-left: 20px
-          font-weight: 700
-          display: flex
-          justify-content: center
-          align-items: center
-
-          @media (max-width $screen-xs-max)
-            > span
-              display: none
-
-          i
-            margin-right: 4px
-
-            @media (max-width $screen-xs-max)
-              margin-right: 0
-              font-size: 20px
-
-        .Button--transparent
-          padding: 10px 0
-
-        .mobile-cta-container
-          display: none
-          position: fixed
-          bottom: 0
-          left: 0
-          min-width: 100vw
-          justify-content: center
-          padding: 12px
-          background: #FFF
-          box-shadow: 0 2px 24px 0 rgba(0, 0, 0, 0.24)
-
-          @media (max-width $screen-xs-max)
-            display: flex
-
-          .Button
-            width: 48%
-
-    .close-btn
-      font-size: 24px
-      line-height: 14px
-      position: absolute
-      right: 4px
-      color: #FFF
-      cursor: pointer
-      padding: 4px
-
-      &:hover
-        color: #FFF
-        opacity: 0.7
 
   .btn-link
     padding-left: 0
@@ -681,13 +589,6 @@
         bottom: -15px
         top: auto
         left: 46%
-
-  .Button--header
-    background: rgba(11, 112, 231, 0.05)
-    border: 1px solid #A2C9F6
-    box-sizing: border-box
-    border-radius: 2px
-    padding: 8px 16px !important
 
   .shiprocket-blank-preview
     height: 360px

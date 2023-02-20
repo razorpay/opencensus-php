@@ -10,6 +10,7 @@ import OnBoarding from './OnBoarding';
 import QuickGuide from './QuickGuide';
 
 import PaymentPagesList from 'merchant/views/PaymentPages/PaymentPages/List';
+import ProductsCatalogList from 'merchant/views/PaymentPages/Products';
 
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
@@ -40,6 +41,9 @@ export default class PaymentPagesContainer extends Component {
         <ErrorBoundary resetOnProps>
           <Switch>
             <Route path="/paymentpages" exact component={PaymentPagesList} />
+            {user.isPaymentPageStorefrontEnabled && (
+              <Route path="/paymentpages/products" exact component={ProductsCatalogList} />
+            )}
           </Switch>
         </ErrorBoundary>
       </>

@@ -1,0 +1,744 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { connect } from 'react-redux';
+import Button, { AsyncBtn } from 'common/new-ui/Button';
+import { withRouter, Link as ReactRouterLink } from 'react-router-dom';
+import {
+  AddProductBox,
+  DescriptionLeftWrapper,
+  DescriptionWrapper,
+  LeftContentWrapper,
+  Iframe,
+  PreviewButtons,
+  StorefrontLeftWrapper,
+  StorefrontRightWrapper,
+  StoreFrontWrapper,
+  StorefrontHeader,
+  StickyFooter,
+} from './styled';
+import ProductDrawer from 'merchant/views/PaymentPages/common/Products/ProductDrawer';
+
+import {
+  // PaymentPagesStorefrontType,
+  // fetchPaymentPage,
+  fetchCategories,
+  editStorefront,
+  editStorefrontDeepMerge,
+  IPaymentPagesProduct,
+  removeProduct,
+  previewDevice,
+  resetStorefront,
+  fetchStorefront,
+  addProduct,
+  editProduct,
+  addCategory,
+} from 'merchant/reducers/paymentPages/storefront';
+import { fetchSupportDetail } from 'merchant/reducers/support_detail';
+import { closeModal, openModal } from 'merchant_common/reducers/modals';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import debounce from 'common/utils/debounce';
+
+import { bindActionCreators } from 'redux';
+import SampleProducts from './SampleProducts';
+import ProductSection from './ProductSection';
+import StorefrontPageTitle from './PageTitle';
+import PageSettings from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings/StorefrontSettings';
+import ReceiptSettings from 'merchant/views/PaymentPages/PaymentPages/components/Modals/StorefrontPaymentReceipt';
+import {
+  Heading,
+  InfoIcon,
+  Link,
+  Text,
+  Button as BladeButton,
+  PlusCircleIcon,
+} from '@razorpay/blade/components';
+import {
+  emitIframeEvent,
+  onStorefrontChange,
+  onStorefrontDetailsChange,
+  onStorefrontProductChange,
+  getAllowedStorefrontDomain,
+} from './iframe';
+import { IHostedPagesMerchant, IStorefrontProps, TripleState } from './types';
+import {
+  convertToHostedPagesProduct,
+  getStorefrontHostedPagesFormat,
+  sampleProduct,
+} from './utils';
+import ConfirmModal from 'merchant/views/PaymentPages/common/ConfirmModal';
+import ContactDetails from './ContactDetails';
+import {
+  generateStorefrontRequest,
+  validateStorefront,
+} from 'merchant/views/PaymentPages/common/Products/utils';
+import {
+  createStorefront,
+  editStorefront as editStorefrontAPI,
+  fetchProductCatalogs,
+} from 'merchant/views/PaymentPages/PaymentPages/model';
+import { ProductsSkeleton } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit/styled';
+import SelectProductDrawer from './SelectProductDrawer';
+import MobileActionButtons from './MobileActionButtons';
+import { getURLQueryParams } from 'common/utils/rzp-utils';
+import { PRODUCT_MESSAGES } from 'merchant/views/PaymentPages/common/Products/constants';
+
+const allowedIframeDomain: string = getAllowedStorefrontDomain();
+
+const StoreFront = ({
+  id,
+  history,
+  location,
+  // products,
+  storefront,
+  editStorefront,
+  editStorefrontDeepMerge,
+  user,
+  config,
+  org,
+  globalSupportDetails,
+  fetchSupportDetail,
+  removeProduct,
+  openModal,
+  closeModal,
+  fetchCategories,
+  showNotification,
+  previewDevice,
+  mode,
+  resetStorefront,
+  fetchStorefront,
+  addProduct,
+  editProduct,
+  addCategory,
+  isMobile,
+}: IStorefrontProps): JSX.Element => {
+  // Used to manage products skeleton & determining if 0 products exist in central catalog or more (used to determine which drawer opens on button click)
+  // we use -1 is loading state, 0 is no products added in central catalog, 1 is products previously exist in catalog
+  const [isInitialLoaded, setIsInitialLoaded] = useState<TripleState>(-1);
+  // Used to manage the open state of Add product drawer & select product drawer
+  // we use -1 for both drawers are closed, 0 for add product drawer is open, 1 for select products drawer is open
+  // using one variable as we aren't allowing stacking multiple drawers behavior, so reduced the dependency to 1 variable
+  const [isProductModal, setIsProductModal] = useState<TripleState>(-1);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [productData, setProductData] = useState<IPaymentPagesProduct | null>(null);
+  const isCreate = !id;
+  const [deviceHeight, setDeviceHeight] = useState<any>('100%');
+  const [isSampleProduct, setIsSampleProduct] = useState(isCreate);
+  const isIframeLoadedRef = useRef(false);
+  const [isMobilePreview, setIsMobilePreview] = useState(false);
+  const [isPageSettingsOpen, setIsPageSettingsOpen] = useState(false);
+  const [isReceiptSettingsOpen, setIsReceiptSettingsOpen] = useState(false);
+
+  const setIsIframeLoadedRef = (data: boolean) => {
+    isIframeLoadedRef.current = data;
+  };
+
+  const {
+    entity: { products },
+  } = storefront;
+
+  const getMerchantDetails = useCallback(
+    function getMerchantDetail() {
+      const merchantData: Partial<IHostedPagesMerchant> = {
+        name: user.billing_label || user.name,
+        brand_color: config.brand_color || org.merchant_styles?.checkout_theme_color,
+        image: user.logo_url,
+      };
+      merchantData.support_details = {
+        support_email: globalSupportDetails.email,
+        support_mobile: globalSupportDetails.phone,
+      };
+      return merchantData;
+    },
+    [user, org.merchant_styles, globalSupportDetails, config.brand_color],
+  );
+
+  const handleIframeEvents = useCallback(
+    function iframeEvents(e: MessageEvent): void {
+      // TODO: use env variables
+      if (e.origin !== allowedIframeDomain) {
+        return;
+      }
+      if (e?.data?.event_type) {
+        const merchantData = getMerchantDetails();
+        const livePreviewResponse = getStorefrontHostedPagesFormat(
+          merchantData,
+          storefront.entity.title,
+          isCreate
+            ? convertToHostedPagesProduct(
+                isIframeLoadedRef
+                  ? storefront.entity.products.length > 0
+                    ? storefront.entity.products
+                    : [sampleProduct]
+                  : isSampleProduct
+                  ? [sampleProduct]
+                  : [],
+                storefront.allCategories.data,
+              )
+            : convertToHostedPagesProduct(
+                storefront.entity.products,
+                storefront.allCategories.data,
+              ),
+        );
+        // we send sampleProduct data to iframe without updating redux (to avoid the need to check for sample product everywhere)
+        // handling the remove sample products flow using isSampleProduct flag
+
+        // TODO: Uncomment after implementing allowedDomain
+        if (e.origin !== allowedIframeDomain) {
+          return;
+        }
+        const iframeData = e.data;
+        // using event_type instead of type, as many libraries use type (e.g. webpack)
+        switch (iframeData.event_type) {
+          case 'live_preview_loaded':
+            setIsIframeLoadedRef(true);
+            emitIframeEvent(iframeRef, onStorefrontChange(livePreviewResponse));
+            break;
+          default:
+            break;
+        }
+      }
+    },
+    [getMerchantDetails, isCreate, isIframeLoadedRef, storefront, isSampleProduct],
+  );
+
+  useEffect(() => {
+    const debouncedResizeFunction = debounce(() => calculateLivePreviewDimensions(), 100);
+    window.addEventListener('resize', debouncedResizeFunction);
+    calculateLivePreviewDimensions();
+    fetchInitialData();
+
+    return () => {
+      window.removeEventListener('resize', debouncedResizeFunction);
+      resetStorefront();
+    };
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('message', handleIframeEvents);
+
+    return () => {
+      window.removeEventListener('message', handleIframeEvents);
+    };
+  }, [handleIframeEvents]);
+  // TODO: try adding dependencies event listner here, to resolve state/redux inconsistency issue
+
+  useEffect(() => {
+    const formattedProducts = convertToHostedPagesProduct(
+      storefront.entity.products.length > 0
+        ? storefront.entity.products
+        : isSampleProduct
+        ? [sampleProduct]
+        : [],
+      storefront.allCategories.data,
+    );
+    if (isIframeLoadedRef) {
+      emitIframeEvent(iframeRef, onStorefrontProductChange(formattedProducts));
+    }
+  }, [storefront.entity.products, isSampleProduct, storefront.allCategories.data]);
+
+  useEffect(() => {
+    if (isIframeLoadedRef) {
+      emitIframeEvent(
+        iframeRef,
+        onStorefrontDetailsChange({
+          merchant: {
+            support_details: {
+              support_email: storefront.entity.contactEmail,
+              support_mobile: storefront.entity.contactPhone,
+            },
+          },
+          store: {
+            title: storefront.entity.title,
+          },
+        }),
+      );
+    }
+  }, [storefront.entity.title, storefront.entity.contactEmail, storefront.entity.contactPhone]);
+
+  function getSupportDetails(): Promise<{
+    contactPhone: string;
+    contactEmail: string;
+  }> {
+    if (Object.keys(globalSupportDetails).length) {
+      // if details already exist, then resolve promise directly
+      return new Promise((res) =>
+        res({
+          contactPhone: globalSupportDetails.phone,
+          contactEmail: globalSupportDetails.email,
+        }),
+      );
+    }
+    return fetchSupportDetail().then((res) => {
+      return {
+        contactPhone: res.data.phone,
+        contactEmail: res.data.email,
+      };
+    });
+  }
+
+  function fetchInitialData() {
+    setIsInitialLoaded(-1);
+    // avoid updating the allProducts in redux, as we want to use that primarily in select drawers
+    // To identify if data is fetched previously or not
+    const { search } = location;
+    const queryParams = getURLQueryParams(search);
+    // edit & duplicate flow
+    if (!isCreate || queryParams.duplicate_id) {
+      const idToFetch = queryParams.duplicate_id ? queryParams.duplicate_id : id;
+      const promises = [fetchStorefront(idToFetch), fetchCategories()];
+      Promise.all(promises).then(() => {
+        setIsInitialLoaded(1);
+
+        if (queryParams.modal === 'page') {
+          setIsPageSettingsOpen(true);
+        } else if (queryParams.modal === 'receipt') {
+          setIsReceiptSettingsOpen(true);
+        }
+      });
+    } else {
+      // create flow
+      const promises = [getSupportDetails(), fetchProductCatalogs(10, false), fetchCategories()];
+      Promise.allSettled(promises).then(([res1, res2]) => {
+        if (res1.status === 'fulfilled') {
+          editStorefront('contactPhone', res1.value.contactPhone);
+          editStorefront('contactEmail', res1.value.contactEmail);
+        }
+        // we use -1 is loading state, 0 is no products added in central catalog, 1 is products added in catalog
+        if (res2.status === 'fulfilled') {
+          setIsInitialLoaded(res2.value.data.items.length >= 1 ? 1 : 0);
+        } else {
+          showNotification({
+            type: 'error',
+            message: 'Something went wrong',
+          });
+          setIsInitialLoaded(0);
+        }
+      });
+    }
+  }
+
+  function calculateLivePreviewDimensions() {
+    const bodyHeight = document.body.clientHeight;
+    const bodyWidth = document.body.clientWidth;
+
+    if (bodyWidth <= 1200) {
+      // automatically set device type to mobile as we cannot show desktop preview without issues
+      previewDevice(false);
+    }
+    setDeviceHeight(bodyHeight - 200);
+  }
+
+  const setProductModal = (val: TripleState) => {
+    if (val === -1) {
+      // reset productData while closing modal
+      setProductData(null);
+    }
+    setIsProductModal(val);
+  };
+
+  const removeSampleProduct = () => {
+    setIsSampleProduct(false);
+
+    showNotification({
+      type: 'success',
+      message: PRODUCT_MESSAGES.REMOVE,
+    });
+  };
+
+  const onAddProductClick = () => {
+    // if products exist in catalog, open select drawer, else open add product drawer
+    setProductModal(isInitialLoaded === 1 ? 1 : 0);
+  };
+
+  const openEditProductDrawer = (id: string) => {
+    const editingProduct = storefront.entity.products.find((item) => item.id === id);
+    if (editingProduct) {
+      setProductData(editingProduct);
+      setProductModal(0);
+    }
+  };
+
+  const onRemoveProduct = (id) => {
+    removeProduct(id);
+
+    showNotification({
+      type: 'success',
+      message: PRODUCT_MESSAGES.REMOVE,
+    });
+  };
+
+  const handleClose = () => {
+    openModal({
+      isNew: true,
+      component: (
+        <ConfirmModal
+          onAbort={closeModal}
+          onAffirm={() => {
+            history.push('/paymentpages');
+            closeModal();
+          }}
+          header="Go back to Dashboard"
+        />
+      ),
+    });
+  };
+
+  const handlePageSettingsSave = (formData) => {
+    const payload: {
+      expire_by?: number | null;
+      settings: {
+        payment_success_message?: string;
+        payment_success_redirect_url?: string;
+      };
+    } = {
+      expire_by: null,
+      settings: {
+        payment_success_message: '',
+        payment_success_redirect_url: '',
+      },
+    };
+
+    if (formData.payment_success_message) {
+      payload.settings.payment_success_message = formData.payment_success_message;
+    }
+
+    if (formData.payment_success_redirect_url) {
+      payload.settings.payment_success_redirect_url = formData.payment_success_redirect_url;
+    }
+
+    if (formData.expire_by) {
+      payload.expire_by = +formData.expire_by;
+    }
+
+    editStorefrontDeepMerge(payload);
+  };
+
+  const handlePluginsAndAddOnsSave = (formData) => {
+    const payload = {
+      settings: formData,
+    };
+
+    editStorefrontDeepMerge(payload);
+  };
+
+  const handleReceiptSettingsSave = (formData) => {
+    const payload = {
+      settings: {
+        enable_custom_serial_number: formData.enable_custom_serial_number,
+      },
+    };
+
+    editStorefrontDeepMerge(payload);
+  };
+
+  const openBrandColorSettingsPage = () => {
+    history.push('/checkout-settings/branding');
+  };
+
+  const onProductAddSuccess = (savedProductData) => {
+    const editingProduct = storefront.entity.products.find(
+      (item) => item.id === savedProductData.id,
+    );
+
+    if (editingProduct) {
+      editProduct({ catalog: savedProductData });
+    } else {
+      addProduct({ catalog: savedProductData });
+    }
+
+    // ensure that subsequent button clicks on add product button open the Select Product drawer
+    setIsInitialLoaded(1);
+    // close modal
+    setProductModal(-1);
+  };
+
+  const handleCategoryAddSuccess = (category) => {
+    addCategory(category);
+  };
+
+  const onSubmit = (): any => {
+    // validate
+    const { isValid, error } = validateStorefront(storefront);
+
+    if (!isValid) {
+      showNotification({
+        type: 'error',
+        message: error,
+      });
+      return;
+    }
+    // generate request & fire api calls
+    if (isCreate) {
+      // eslint-disable-next-line consistent-return
+      return createStorefront(generateStorefrontRequest(storefront, mode))
+        .then((res) => {
+          if (res.success) {
+            showNotification({
+              type: 'success',
+              message: 'Storefront created successfully',
+              closeTimeout: 2500,
+            });
+            history.push(`/paymentpages/storefront/${res.data.id}/success`);
+          }
+        })
+        .catch((res) => {
+          showNotification({
+            type: 'error',
+            message: res.errors[0] ? res.errors[0] : 'Something went wrong',
+          });
+        });
+    }
+    // eslint-disable-next-line consistent-return
+    return editStorefrontAPI(id, generateStorefrontRequest(storefront, mode))
+      .then((res) => {
+        if (res.success) {
+          showNotification({
+            type: 'success',
+            message: 'Storefront updated successfully',
+            closeTimeout: 2500,
+          });
+          history.push(`/paymentpages/storefront/${res.data.id}/success`);
+        }
+      })
+      .catch((res) => {
+        showNotification({
+          type: 'error',
+          message: res.errors[0] ? res.errors[0] : 'Something went wrong',
+        });
+      });
+  };
+
+  let pageTitle: string | React.ReactElement = 'Create a new storefront page';
+
+  if (id) {
+    pageTitle = (
+      <>
+        Edit storefront <span> - {id}</span>
+      </>
+    );
+  }
+  const actionBtns = (
+    <React.Fragment>
+      <Button.Transparent
+        type="button"
+        style={{ color: '#fff' }}
+        onClick={() => setIsReceiptSettingsOpen(true)}
+        className="Button--header"
+        // disabled={!isEntityLoaded}
+      >
+        <i className="i i-receipt" />
+        {!isMobile && <span>Payment Receipts</span>}
+      </Button.Transparent>
+
+      <Button.Transparent
+        type="button"
+        style={{ color: '#fff' }}
+        onClick={() => setIsPageSettingsOpen(true)}
+        className="Button--header"
+        // disabled={!isEntityLoaded}
+      >
+        <i className="i i-settings-outline" />
+        {!isMobile && <span>Page Settings</span>}
+      </Button.Transparent>
+      {!isMobile ? (
+        <AsyncBtn.Primary
+          onClick={onSubmit}
+          // disabled={!isAllowedToSubmit || !isEntityLoaded}
+          pendingState="Publishing"
+          style={{ minWidth: 120 }}
+          class="hidden-xs"
+        >
+          Publish page
+        </AsyncBtn.Primary>
+      ) : (
+        <MobileActionButtons
+          onPublish={onSubmit}
+          isPreview={isMobilePreview}
+          setPreview={setIsMobilePreview}
+        />
+      )}
+    </React.Fragment>
+  );
+  return (
+    <div>
+      {isProductModal === 0 ? (
+        <ProductDrawer
+          handleClose={setProductModal.bind(null, -1)}
+          productData={productData}
+          categories={storefront.allCategories.data}
+          onCategoryAddSuccess={handleCategoryAddSuccess}
+          onSuccess={onProductAddSuccess}
+        />
+      ) : (
+        isProductModal === 1 && (
+          <SelectProductDrawer
+            handleClose={setProductModal.bind(null, -1)}
+            openAddModal={setProductModal.bind(null, 0)}
+          />
+        )
+      )}
+      {isPageSettingsOpen && (
+        <PageSettings
+          storefrontEntity={storefront.entity}
+          onSave={handlePageSettingsSave}
+          onPluginsAndAddOnsSave={handlePluginsAndAddOnsSave}
+          onClose={() => setIsPageSettingsOpen(false)}
+        />
+      )}
+      {isReceiptSettingsOpen && (
+        <ReceiptSettings
+          storefrontEntity={storefront.entity}
+          onSave={handleReceiptSettingsSave}
+          onClose={() => setIsReceiptSettingsOpen(false)}
+        />
+      )}
+      <StorefrontHeader
+        title={pageTitle}
+        actionBtns={actionBtns}
+        handleClose={handleClose}
+        isSticky
+      >
+        <StoreFrontWrapper>
+          {storefront.error ? (
+            <div className="page-center">
+              Storefront with id <b>{storefront.id}</b> doesn&apos;t exist.
+              <br />
+              Go to <ReactRouterLink to="/paymentpages/">Payment Pages list</ReactRouterLink>{' '}
+            </div>
+          ) : (
+            <>
+              {(!isMobile || (isMobile && !isMobilePreview)) && (
+                <StorefrontLeftWrapper>
+                  <StorefrontPageTitle />
+                  <LeftContentWrapper>
+                    {isInitialLoaded === -1 ? (
+                      <ProductsSkeleton />
+                    ) : products.length === 0 ? (
+                      <>
+                        <AddProductBox onClick={onAddProductClick}>
+                          <i className="i-plus-circle" />
+                          <h4>
+                            {isInitialLoaded === 0
+                              ? 'Add your first product'
+                              : 'Add products to this page'}
+                          </h4>
+                          <p> Showcase the product that you want to sell on this storefront</p>
+                        </AddProductBox>
+                        {isSampleProduct && (
+                          <SampleProducts removeProduct={removeSampleProduct} isMobile={isMobile}>
+                            <StickyFooter>
+                              <BladeButton
+                                iconPosition="left"
+                                icon={PlusCircleIcon}
+                                onClick={onAddProductClick}
+                                size="medium"
+                                type="button"
+                                variant="secondary"
+                              >
+                                Add product
+                              </BladeButton>
+                            </StickyFooter>
+                          </SampleProducts>
+                        )}
+                      </>
+                    ) : (
+                      <ProductSection
+                        data={products}
+                        className="product-section"
+                        editProduct={openEditProductDrawer}
+                        removeProduct={onRemoveProduct}
+                        isMobile={isMobile}
+                      >
+                        <StickyFooter>
+                          <BladeButton
+                            iconPosition="left"
+                            icon={PlusCircleIcon}
+                            onClick={onAddProductClick}
+                            size="medium"
+                            type="button"
+                            variant="secondary"
+                          >
+                            Add product
+                          </BladeButton>
+                        </StickyFooter>
+                      </ProductSection>
+                    )}
+                    <ContactDetails isLoaded={isInitialLoaded !== -1} />
+                  </LeftContentWrapper>
+                </StorefrontLeftWrapper>
+              )}
+              {(!isMobile || (isMobile && isMobilePreview)) && (
+                <StorefrontRightWrapper>
+                  <Heading type="subtle" size="medium" weight="bold" contrast="low">
+                    Preview of your store
+                  </Heading>
+                  <DescriptionWrapper>
+                    <DescriptionLeftWrapper>
+                      <InfoIcon
+                        size="medium"
+                        color="feedback.neutral.action.icon.link.default.lowContrast"
+                      />
+                      <Text type="subtle" variant="body" size="small" weight="regular">
+                        Customize your store with your{' '}
+                        <Link onClick={openBrandColorSettingsPage} variant="button">
+                          brand color
+                        </Link>{' '}
+                        and{' '}
+                        <Link onClick={openBrandColorSettingsPage} variant="button">
+                          logo
+                        </Link>
+                      </Text>
+                    </DescriptionLeftWrapper>
+                    <PreviewButtons
+                      isDesktop={storefront.isDesktopPreview}
+                      onClick={previewDevice}
+                    />
+                  </DescriptionWrapper>
+                  <Iframe
+                    // src="http://localhost:8888/preview_store"
+                    src={`${window.PP_ECOMMERCE_URL}/preview_store`}
+                    width={storefront.isDesktopPreview ? '100%' : '400'}
+                    className={`${storefront.isDesktopPreview ? '' : 'is-mobile'}`}
+                    height={deviceHeight}
+                    frameBorder="0"
+                    ref={iframeRef}
+                    loading="lazy"
+                    // scrolling="no"
+                  />
+                </StorefrontRightWrapper>
+              )}
+            </>
+          )}
+        </StoreFrontWrapper>
+      </StorefrontHeader>
+    </div>
+  );
+};
+
+const mapStateToProps = (state) => ({
+  storefront: state.paymentPageStorefront,
+  isMobile: state.app.isMobileResolution,
+  user: state.session.user,
+  mode: state.session.mode,
+  org: state.session.org,
+  config: state.config.config,
+  globalSupportDetails: state.supportdetails.merchantSupportDetail.data,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  editStorefront: bindActionCreators(editStorefront, dispatch),
+  editStorefrontDeepMerge: bindActionCreators(editStorefrontDeepMerge, dispatch),
+  fetchCategories: bindActionCreators(fetchCategories, dispatch),
+  fetchSupportDetail: bindActionCreators(fetchSupportDetail, dispatch),
+  openModal: bindActionCreators(openModal, dispatch),
+  closeModal: bindActionCreators(closeModal, dispatch),
+  showNotification: bindActionCreators(showNotification, dispatch),
+  removeProduct: bindActionCreators(removeProduct, dispatch),
+  previewDevice: bindActionCreators(previewDevice, dispatch),
+  resetStorefront: bindActionCreators(resetStorefront, dispatch),
+  fetchStorefront: bindActionCreators(fetchStorefront, dispatch),
+  addProduct: bindActionCreators(addProduct, dispatch),
+  editProduct: bindActionCreators(editProduct, dispatch),
+  addCategory: bindActionCreators(addCategory, dispatch),
+});
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(StoreFront));

@@ -43,6 +43,8 @@ import DropdownSettings from 'merchant/views/PaymentPages/PaymentPages/Details/D
 import DonationGoalTrackerPreview from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection/DonationGoalTrackerPreview';
 import { parseGoalTrackerAmountValues } from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/DetailsSection/helpers';
 import MagicCheckoutLabel from 'merchant/components/MagicCheckout/MagicCheckoutLabel';
+import { PAYMENT_PAGES_TYPES } from 'merchant/views/PaymentPages/PaymentPages/CreateEdit';
+import { getProductBaseLink } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
 // import mockPaymentPage from '../../Wysiwyg/data-mock';
 
@@ -283,6 +285,7 @@ export default class PaymentPagesV3Entity extends React.Component {
       editPaymentPage,
       toggleManualActivation,
       reActivateLink,
+      isStorefrontPage,
       isNoExpiryMandatory,
     } = this.props;
 
@@ -294,8 +297,9 @@ export default class PaymentPagesV3Entity extends React.Component {
     const statusReason = paymentPageEntity.status_reason;
 
     const isActive = status === 'active';
-    const isExpired = !isActive && statusReason.toLowerCase() === 'expired';
+    const isExpired = !isActive && statusReason?.toLowerCase() === 'expired';
     const isMagicCheckoutOrder = paymentPageEntity?.settings?.one_click_checkout === '1';
+    const productBaseUrl = getProductBaseLink(isStorefrontPage, paymentPageEntity.id);
 
     return (
       <React.Fragment>
@@ -324,10 +328,13 @@ export default class PaymentPagesV3Entity extends React.Component {
                     </Tooltip>
                   </Button>
                 )}
-
                 {isRoleAllowedEdit && (
                   <Link
-                    to={`/paymentpages/new?duplicate_id=${paymentPageEntity.id}`}
+                    to={`/paymentpages/new?duplicate_id=${paymentPageEntity.id}&type=${
+                      isStorefrontPage
+                        ? PAYMENT_PAGES_TYPES.storefront
+                        : PAYMENT_PAGES_TYPES.payment_page
+                    }`}
                     onClick={this.onClickDuplicatePage}
                   >
                     <Button className="Button--primary--invert">
@@ -339,13 +346,15 @@ export default class PaymentPagesV3Entity extends React.Component {
                   </Link>
                 )}
 
-                {isRoleAllowedEdit && <DropdownSettings paymentPageEntity={paymentPageEntity} />}
+                {isRoleAllowedEdit && (
+                  <DropdownSettings
+                    paymentPageEntity={paymentPageEntity}
+                    isStorefrontPage={isStorefrontPage}
+                  />
+                )}
 
                 {isRoleAllowedEdit && (
-                  <Link
-                    to={`/paymentpages/${paymentPageEntity.id}/edit`}
-                    onClick={this.onClickEditPage}
-                  >
+                  <Link to={`${productBaseUrl}/edit`} onClick={this.onClickEditPage}>
                     <Button.Primary>
                       <i className="i i-edit icon-border-bottom" /> Edit Page
                     </Button.Primary>
@@ -450,7 +459,7 @@ export default class PaymentPagesV3Entity extends React.Component {
                         <div className="status-label label label-success">Enabled</div>
                         <Link
                           style={{ marginLeft: 12 }}
-                          to={`/paymentpages/${paymentPageEntity.id}/edit?modal=shiprocket`}
+                          to={`${productBaseUrl}/edit?modal=shiprocket`}
                         >
                           Disable
                         </Link>
@@ -498,9 +507,11 @@ export default class PaymentPagesV3Entity extends React.Component {
                           totalStock={pi.stock}
                           quantitySold={pi.quantity_sold}
                           editFn={editPaymentPage}
-                          paymentPageItemId={pi.id}
+                          paymentPageItemId={!isStorefrontPage ? pi.id : pi.catalog_id}
                           trackerFn={trackStock}
                           isRoleAllowedEdit={isRoleAllowedEdit}
+                          isStorefrontPage={isStorefrontPage}
+                          storefrontCatalogStatus={pi.catalog_status}
                         />
                       </div>
                     </div>
@@ -570,7 +581,7 @@ export default class PaymentPagesV3Entity extends React.Component {
             </div>
           </div>
 
-          <PaymentsList paymentPageId={paymentPageEntity.id} />
+          <PaymentsList paymentPageId={paymentPageEntity.id} isStorefrontPage={isStorefrontPage} />
         </div>
       </React.Fragment>
     );

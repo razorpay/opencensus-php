@@ -1,6 +1,8 @@
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
-import { fetchPayments as fetchAll } from 'merchant/reducers/collection';
+import { fetchPayments as fetchPaymentPagesPayments } from 'merchant/reducers/collection';
+import { fetchStorefrontPayments } from 'merchant/reducers/invoices/list';
+
 import ListContainer from 'merchant/containers/ListContainer';
 import PaymentsListFilter from './PaymentsListFilter';
 import { paymentId, amount, customer, createdAtShort, status } from 'common/ui/item/pair';
@@ -31,34 +33,46 @@ const PaymentsTable = (props) => {
 };
 
 @withRouter
-@connect((state) => state.payments, { fetchAll })
+@connect(
+  (state) => ({ payments: state.payments, storefrontPayments: state.invoices.storefrontPayments }),
+  { fetchPaymentPagesPayments, fetchStorefrontPayments },
+)
 export default class PaymentsList extends ListContainer {
   // Hook to modify fetchAll of ListContainer
   fetchEntityList = (params) => {
-    return this.props.fetchAll({
+    if (this.props.isStorefrontPage) {
+      return this.props.fetchStorefrontPayments(this.props.paymentPageId, params);
+    }
+
+    return this.props.fetchPaymentPagesPayments({
       ...params,
       payment_link_id: this.props.paymentPageId,
     });
   };
 
   render() {
-    const { children, ...restProps } = this.props;
+    const { children, isStorefrontPage, payments, storefrontPayments, ...restProps } = this.props;
+    const tableData = isStorefrontPage ? storefrontPayments : payments;
 
     return (
       <div class="content-wrapper">
         {children}
 
-        <PaymentsListFilter
-          form="paymentListFilter"
-          count={this.state.count}
-          onSubmit={this.search}
-          fetchAll={this.fetchAll}
-        />
+        {/* hiding filters for storefront until backend dev is completed */}
+        {!isStorefrontPage && (
+          <PaymentsListFilter
+            form="paymentListFilter"
+            count={this.state.count}
+            onSubmit={this.search}
+            fetchAll={this.fetchAll}
+          />
+        )}
         <PaymentsTable
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
           {...restProps}
+          {...tableData}
         />
       </div>
     );

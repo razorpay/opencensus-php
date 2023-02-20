@@ -42,6 +42,18 @@ export function editPaymentPageItem(id, data) {
     },
   });
 }
+export function editStorefrontItem(id, data) {
+  const reqPayload = { ...data };
+
+  return merchantFetch({
+    url: `stores/catalogs/${id}`,
+    method: 'patch',
+    data: reqPayload,
+    headers: {
+      'content-type': 'application/json',
+    },
+  });
+}
 
 export function editPaymentPage(id, data) {
   const reqPayload = { ...data };
@@ -60,8 +72,27 @@ export function editPaymentPage(id, data) {
     },
   });
 }
+export function editStorefrontPage(id, data, isTransform = true) {
+  const reqPayload = { ...data };
 
-export function uploadImageInDescription(file) {
+  // In paymentpages v2, following 4 fields can also be edited via this API.
+  pruneReqPayload(reqPayload);
+
+  delete reqPayload.currency;
+
+  return merchantFetch({
+    //@todo: [storefront] update API URL
+    url: `stores/${id}`,
+    method: 'patch',
+    data: reqPayload,
+    headers: {
+      'content-type': 'application/json',
+      'X-Razorpay-NCA-Transform': isTransform ? '1' : '0',
+    },
+  });
+}
+
+export function uploadImageInDescription(file, progressTracker) {
   const fd = new FormData();
   fd.append('images[0]', file);
 
@@ -69,6 +100,7 @@ export function uploadImageInDescription(file) {
     url: `payment_pages/images`,
     method: 'post',
     data: fd,
+    onUploadProgress: progressTracker,
   });
 }
 
@@ -80,6 +112,14 @@ export function fetchPaymentPageEntity(id) {
     },
   });
 }
+export function fetchStorefrontEntity(id, isTransform) {
+  return merchantFetch({
+    url: `stores/${id}`,
+    headers: {
+      'X-Razorpay-NCA-Transform': isTransform ? '1' : '0',
+    },
+  });
+}
 
 export function fetchPaymentPagesList(data) {
   return merchantFetch({
@@ -87,6 +127,27 @@ export function fetchPaymentPagesList(data) {
     data,
   });
 }
+
+export const fetchStorefrontList = (data) => {
+  return merchantFetch({
+    url: 'stores',
+    data,
+    headers: {
+      'X-Razorpay-NCA-Transform': '1',
+    },
+  });
+};
+
+export const fetchStorefrontPaymentsList = (id, data) => {
+  return merchantFetch({
+    url: `stores/${id}/payments`,
+    method: 'get',
+    data,
+    headers: {
+      'X-Razorpay-NCA-Transform': '1',
+    },
+  });
+};
 
 export function fetchPaymentsListForPaymentPage(id) {
   return merchantFetch({
@@ -105,6 +166,15 @@ export function deactivatePaymentPage(id) {
     method: 'patch',
   });
 }
+export function deactivateStorefront(id) {
+  return merchantFetch({
+    url: `stores/${id}/deactivate`,
+    method: 'patch',
+    headers: {
+      'X-Razorpay-NCA-Transform': '1',
+    },
+  });
+}
 
 export function activatePaymentPage(id, data) {
   return merchantFetch({
@@ -113,6 +183,17 @@ export function activatePaymentPage(id, data) {
     data,
     headers: {
       'content-type': 'application/json',
+    },
+  });
+}
+
+export function activateStorefront(id, data) {
+  return merchantFetch({
+    url: `stores/${id}/activate`,
+    method: 'patch',
+    data,
+    headers: {
+      'X-Razorpay-NCA-Transform': '1',
     },
   });
 }
@@ -306,5 +387,107 @@ export function removeCustomDomainEntry(domain_name) {
     url: 'payment_pages/cds/domains',
     method: 'delete',
     data: { domain_name },
+  });
+}
+
+export function fetchStorefrontCategories() {
+  return merchantFetch({
+    url: 'stores/categories?count=15&page=1',
+    method: 'get',
+  });
+}
+
+export function addStorefrontCategory(categoryName) {
+  return merchantFetch({
+    url: 'stores/categories',
+    method: 'post',
+    data: { name: categoryName },
+  });
+}
+
+export function updateStorefrontCategory(categoryId, data) {
+  return merchantFetch({
+    url: `stores/categories/${categoryId}`,
+    method: 'put',
+    data,
+  });
+}
+
+export function deleteStorefrontCategory(id) {
+  return merchantFetch({
+    url: `stores/categories/${id}`,
+    method: 'delete',
+  });
+}
+
+export function createProductCatalog(data) {
+  return merchantFetch({
+    url: 'stores/catalogs',
+    method: 'post',
+    data,
+  });
+}
+export function fetchProductCatalogs(count = 10, isIncludeImagesCategories = true) {
+  const params = {
+    count,
+  };
+  if (isIncludeImagesCategories) {
+    params.includes = 'Images,Categories';
+  }
+  // count is always present
+  return merchantFetch({
+    url: `stores/catalogs`,
+    method: 'get',
+    data: {
+      ...params,
+    },
+  });
+}
+
+export function editProductCatalog(id, data) {
+  return merchantFetch({
+    url: `stores/catalogs/${id}`,
+    method: 'patch',
+    data,
+  });
+}
+
+export function deleteProductCatalog(id) {
+  return merchantFetch({
+    url: `stores/catalogs/${id}`,
+    method: 'delete',
+  });
+}
+
+export function fetchAllCatalogDetails2(domain_name) {
+  return merchantFetch({
+    url: 'payment_pages/cds/domains',
+    method: 'delete',
+    data: { domain_name },
+  });
+}
+
+export function createStorefront(data) {
+  return merchantFetch({
+    url: 'stores',
+    method: 'post',
+    data,
+  });
+}
+
+export function editStorefront(id, data) {
+  return merchantFetch({
+    url: `stores/${id}`,
+    method: 'patch',
+    data,
+  });
+}
+
+export function getStorefrontLineItems(orderId) {
+  return merchantFetch({
+    url: `stores/orders/${orderId}/line_items`,
+    headers: {
+      'content-type': 'application/json',
+    },
   });
 }

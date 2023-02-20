@@ -14,6 +14,7 @@ import logHandlers from 'merchant_common/containers/ReportsAsync/Logs/__test__/m
 import { payoutDetailsHandlers } from 'merchant/views/Settlements/InstantSettlements/PayoutDetails/__test__/mocks/handlers';
 import { instantDetailsHandlers } from 'merchant/views/Settlements/InstantSettlements/InstantSettlementDetails/__test__/mocks/handlers';
 import reportsHandlers from 'merchant_common/containers/ReportsAsync/__test__/mocks/handlers';
+import { paymentPagesHandlers } from '../js/merchant/views/PaymentPages/PaymentPages/__test__/mocks/handlers';
 import ONDEMAND_SETTLEMENTS_HANDLERS from 'merchant/views/Settlements/Settlements/components/__test__/mocks/handlers';
 import {
   keyHandlers,
@@ -834,6 +835,7 @@ export const handlers = [
   ...payoutDetailsHandlers,
   ...instantDetailsHandlers,
   ...reportsHandlers,
+  ...paymentPagesHandlers,
   ...keyHandlers,
   ...pluginHandlers,
   ...paymentHandleHandlers,

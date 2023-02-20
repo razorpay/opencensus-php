@@ -17,6 +17,7 @@ import PPSettingsView from 'merchant/views/PaymentPages/PaymentPages/components/
 import PaymentReceipt from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PaymentReceipt';
 import ShiprocketConfirmation from 'merchant/views/PaymentPages/PaymentPages/components/Modals/ShiprocketConfirmation';
 import MerchantLogoTooltip from 'merchant/views/PaymentPages/PaymentPages/components/MerchantLogoTooltip';
+import Header from 'merchant/views/PaymentPages/PaymentPages/components/Header';
 import MobileActionButtons from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/components/MobileActionButtons';
 
 import {
@@ -52,7 +53,6 @@ import {
 } from 'merchant/reducers/wysiwyg';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/style.styl';
 
 // TODO: Change validation logic as per V2 / V3. (Ensure that "settings" is not considered in comparison of keys)
 import {
@@ -139,6 +139,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   isIntentDuplicate = false;
   supportPhoneRef = React.createRef();
   supportEmailRef = React.createRef();
+  _isMounted = true;
 
   state = {
     isPageReady: false,
@@ -300,6 +301,11 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   };
 
   componentDidMount() {
+    const isEditExistingId = !!this.props.id;
+    // if create flow & storefront enabled, then preselect the empty template
+    if (!isEditExistingId && this.props.user.isPaymentPageStorefrontEnabled) {
+      this.props.updateTemplateType(null, 'custom');
+    }
     this.fetchMerchantDetails();
 
     this.props.initDefaultFormItems();
@@ -338,6 +344,8 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
   }
 
   componentWillUnmount() {
+    this._isMounted = false;
+
     // unmount nodes added during initSubApps
     const detailsSection = document.getElementById('details-section');
     const formSection = document.getElementById('form-section');
@@ -466,6 +474,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     this.props.updateData(data);
 
     this.props.setSettingsModal(false);
+  };
+
+  handlePluginsAndAddOnsSave = (data) => {
+    this.props.updateData({ settings: data });
   };
 
   handleSavePaymentReceipt = (data) => {
@@ -1165,6 +1177,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
       isPaymentPageMagicEnabled,
       isNoExpiryMandatoryPP,
       showCustomTemplatePP,
+      isPaymentPageStorefrontEnabled,
     } = user;
     const isShiprocket =
       paymentPageEntity?.settings?.partner_webhook_settings?.partner_shiprocket === '1';
@@ -1182,65 +1195,67 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     if (paymentPageEntity) {
       isAllowedToSubmit = paymentPageEntity.title;
 
-      actionBtns = (
-        <React.Fragment>
-          {isMagicCheckoutLive && isPaymentPageMagicEnabled && (
+      if (!isPageLoadError && isPageReady) {
+        actionBtns = (
+          <React.Fragment>
+            {isMagicCheckoutLive && isPaymentPageMagicEnabled && (
+              <Button.Transparent
+                type="button"
+                style={{ color: '#fff' }}
+                onClick={this.toggleMagicSettingsModal}
+                className="Button--header magic-link"
+                disabled={!isEntityLoaded}
+              >
+                <i className="i i-magic-checkout" />
+                <span>Magic Checkout Settings</span>
+                <span className="new-label">New</span>
+              </Button.Transparent>
+            )}
+            {user.isPaymentPageReceiptsEnabled && (
+              <Button.Transparent
+                type="button"
+                style={{ color: '#fff' }}
+                onClick={this.togglePageReceiptModal}
+                className="Button--header"
+                disabled={!isEntityLoaded}
+              >
+                <i className="i i-receipt" />
+                <span>Payment Receipts</span>
+              </Button.Transparent>
+            )}
+
             <Button.Transparent
               type="button"
               style={{ color: '#fff' }}
-              onClick={this.toggleMagicSettingsModal}
-              className="Button--header magic-link"
-              disabled={!isEntityLoaded}
-            >
-              <i className="i i-magic-checkout" />
-              <span>Magic Checkout Settings</span>
-              <span className="new-label">New</span>
-            </Button.Transparent>
-          )}
-          {user.isPaymentPageReceiptsEnabled && (
-            <Button.Transparent
-              type="button"
-              style={{ color: '#fff' }}
-              onClick={this.togglePageReceiptModal}
+              onClick={this.togglePageSettings}
               className="Button--header"
               disabled={!isEntityLoaded}
             >
-              <i className="i i-receipt" />
-              <span>Payment Receipts</span>
+              <i className="i i-settings-outline" />
+              <span>Page Settings</span>
             </Button.Transparent>
-          )}
-
-          <Button.Transparent
-            type="button"
-            style={{ color: '#fff' }}
-            onClick={this.togglePageSettings}
-            className="Button--header"
-            disabled={!isEntityLoaded}
-          >
-            <i className="i i-settings-outline" />
-            <span>Page Settings</span>
-          </Button.Transparent>
-          <AsyncBtn.Primary
-            onClick={() => {
-              return this.handleSavePublish(
-                payment_page_id ? 'Save and Update Page' : 'Create and Publish Page',
-              );
-            }}
-            disabled={!isAllowedToSubmit || !isEntityLoaded}
-            pendingState="Publishing"
-            class="hidden-xs"
-          >
-            {payment_page_id ? 'Save and Update Page' : 'Create and Publish Page'}
-          </AsyncBtn.Primary>
-          {/* floating container for actions in mobile view */}
-          <MobileActionButtons
-            handlePublishPage={() => this.handleSavePublish('Publish Page')}
-            title={paymentPageEntity.title}
-            supportEmail={paymentPageEntity.support_email}
-            supportContact={paymentPageEntity.support_contact}
-          />
-        </React.Fragment>
-      );
+            <AsyncBtn.Primary
+              onClick={() => {
+                return this.handleSavePublish(
+                  payment_page_id ? 'Save and Update Page' : 'Create and Publish Page',
+                );
+              }}
+              disabled={!isAllowedToSubmit || !isEntityLoaded}
+              pendingState="Publishing"
+              class="hidden-xs"
+            >
+              {payment_page_id ? 'Save and Update Page' : 'Create and Publish Page'}
+            </AsyncBtn.Primary>
+            {/* floating container for actions in mobile view */}
+            <MobileActionButtons
+              handlePublishPage={() => this.handleSavePublish('Publish Page')}
+              title={paymentPageEntity.title}
+              supportEmail={paymentPageEntity.support_email}
+              supportContact={paymentPageEntity.support_contact}
+            />
+          </React.Fragment>
+        );
+      }
 
       if (paymentPageEntity.settings) {
         themeColor = paymentPageEntity.settings.theme === 'dark' ? '#383838' : '#efefef';
@@ -1294,7 +1309,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
         )}
         style={{ backgroundColor: themeColor }}
       >
-        {this.state.isTemplatesViewOpened && (
+        {!isPaymentPageStorefrontEnabled && this.state.isTemplatesViewOpened && (
           <TemplatesMask
             onClose={this.handleIntroClose}
             selectTemplate={this.props.updateTemplateType}
@@ -1329,6 +1344,7 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             closeModal={this.props.closeModal}
             paymentPageEntity={paymentPageEntity}
             handleAction={this.handleSaveSettings}
+            onPluginsAndAddOnsSave={this.handlePluginsAndAddOnsSave}
             isNew={this.props.id}
             isTestMode={this.props.mode.toLowerCase() === 'test'}
             handleShiprocket={this.handleShiprocket}
@@ -1356,40 +1372,17 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
             handleConfirm={this.handleShiprocketEnable}
           />
         )}
-
         <Header
           title={pageNavTitle}
           actionBtns={actionBtns}
-          isPageReady={isPageReady}
           handleClose={this.handleClose}
-          isPageLoadError={isPageLoadError}
+          isSticky
         />
         {content}
       </div>
     );
   }
 }
-
-const Header = ({ title, actionBtns, handleClose, isPageReady, children, isPageLoadError }) => {
-  return (
-    <div class="page-nav-container">
-      {children}
-      <div class="page-nav">
-        <div class="page-size">
-          <div class="page-title">{title}</div>
-
-          {!isPageLoadError && isPageReady && !!actionBtns && (
-            <div class="page-action">{actionBtns}</div>
-          )}
-
-          <span class="close-btn" onClick={handleClose}>
-            ×
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 function pruneGoalTracker(goal_tracker) {
   const newGoalTracker = { ...goal_tracker };

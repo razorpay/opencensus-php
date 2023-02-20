@@ -72,6 +72,16 @@ class ModalDialog extends Component {
     // to apply the styles passed as props
     Object.assign(Modal.defaultStyles.overlay, props.overlayStyles);
 
+    /* 
+      use your own modal component & the modal reducer for opening closing modal
+      added as we're moving to styled components and the below modal adds multiple styles of its own
+      openModal -> Opens the modal
+      closeModal -> Closes the modal
+    */
+    if (props.isNew) {
+      return !!props.component && props.component;
+    }
+
     return (
       <div>
         <Modal

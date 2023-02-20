@@ -1,11 +1,13 @@
 import { set, merge, unshift, remove } from 'common/utils/immutable';
 import Invoice from 'merchant/models/Invoice';
+import { fetchStorefrontPaymentsList } from 'merchant/views/PaymentPages/PaymentPages/model';
 import { decodeSensitiveFields } from 'common/utils/rzp-utils';
 
 export const INVOICES_FETCH = 'INVOICES_FETCH';
 export const INVOICE_CREATE = 'INVOICE_CREATE';
 export const INVOICE_EDIT = 'INVOICE_EDIT';
 export const INVOICE_DELETED = 'INVOICE_DELETED';
+export const PP_STOREFRONT_PAYMENTS_FETCH = 'PP_STOREFRONT_PAYMENTS_FETCH';
 
 export const fetchInvoices = (params) => {
   const invoice = new Invoice();
@@ -46,6 +48,20 @@ export const populateRPLReduxList = (newLinksList) => {
   };
 };
 
+export const populateStorefrontReduxList = (newLinksList) => {
+  return {
+    type: 'PP_STOREFRONT_FETCH',
+    payload: newLinksList,
+  };
+};
+
+export const fetchStorefrontPayments = (id, data) => {
+  return {
+    type: PP_STOREFRONT_PAYMENTS_FETCH,
+    payload: fetchStorefrontPaymentsList(id, data),
+  };
+};
+
 export const deleteInvoice = (params) => {
   const invoice = new Invoice(params);
   return {
@@ -60,6 +76,14 @@ const initialState = {
   paymentPages: [],
   count: 0,
   blacklistQueryParams: ['source'],
+  storefrontPages: [],
+  totalStorefrontLength: 0,
+  totalPaymentPagesLength: 0,
+  storefrontPayments: {
+    items: [],
+    loading: false,
+    error: null,
+  },
 };
 
 export default (state = initialState, action) => {
@@ -99,7 +123,36 @@ export default (state = initialState, action) => {
     case 'PP_FETCH':
       return merge(state, {
         paymentPages: action.payload.data.items,
+        totalPaymentPagesLength: action.payload.data?.total || action.payload.data.items.length,
         loading: false,
+      });
+    case 'PP_STOREFRONT_FETCH':
+      return merge(state, {
+        storefrontPages: action.payload.data.items,
+        totalStorefrontLength: action.payload.data?.total || action.payload.data.items.length,
+        loading: false,
+      });
+
+    case `${PP_STOREFRONT_PAYMENTS_FETCH}::PENDING`:
+      return set(state, 'storefrontPayments', {
+        loading: true,
+        items: [],
+        error: '',
+      });
+
+    case `${PP_STOREFRONT_PAYMENTS_FETCH}::SUCCESS`: {
+      return set(state, 'storefrontPayments', {
+        loading: false,
+        items: action.payload.data?.items || [],
+        error: '',
+      });
+    }
+
+    case `${PP_STOREFRONT_PAYMENTS_FETCH}::ERROR`:
+      return set(state, 'storefrontPayments', {
+        loading: false,
+        items: [],
+        error: action.payload.errors,
       });
 
     case `${INVOICE_EDIT}::SUCCESS`:

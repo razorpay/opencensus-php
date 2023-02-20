@@ -6,11 +6,14 @@ const ProductWrapper = ({ children, extra, isMobile, tabsData }) => {
     <tabbed-container class="updated">
       <header id="link-header">
         <div className="header-left">
-          {tabsData.map((tab) => (
-            <NavLink exact to={tab.url} key={tab.title}>
-              {tab.title}
-            </NavLink>
-          ))}
+          {tabsData.map(
+            (tab) =>
+              !tab.hidden && (
+                <NavLink exact to={tab.url} key={tab.title}>
+                  {tab.title}
+                </NavLink>
+              ),
+          )}
         </div>
         <div className={`header-right ${isMobile ? 'mobile' : ''}`}>{extra}</div>
       </header>

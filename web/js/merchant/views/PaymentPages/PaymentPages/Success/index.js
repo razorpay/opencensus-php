@@ -187,9 +187,14 @@ class Success extends React.Component {
       });
   };
 
+  handlePluginsAndAddOnsSave = (formData) => {
+    this.props.updateData({ settings: formData });
+  };
+
   // Update settings in store
   handleSaveSettings = (formData) => {
     const { paymentPageEntity, customDomain } = this.props;
+    const { settings } = paymentPageEntity;
 
     const reqPayload = {};
 
@@ -222,6 +227,16 @@ class Success extends React.Component {
       : '';
 
     reqPayload.settings.custom_domain = formData.domainType === 'custom' ? customDomain.value : '';
+
+    // won't be available in the form data but in the redux state
+    reqPayload.settings.pp_fb_pixel_tracking_id = settings.pp_fb_pixel_tracking_id || '';
+    reqPayload.settings.pp_ga_pixel_tracking_id = settings.pp_ga_pixel_tracking_id || '';
+    reqPayload.settings.pp_fb_event_add_to_cart_enabled =
+      settings.pp_fb_event_add_to_cart_enabled || '0';
+    reqPayload.settings.pp_fb_event_initiate_payment_enabled =
+      settings.pp_fb_event_initiate_payment_enabled || '0';
+    reqPayload.settings.pp_fb_event_payment_complete_enabled =
+      settings.pp_fb_event_payment_complete_enabled || '0';
 
     editPaymentPage(paymentPageEntity.id, reqPayload)
       .then(() => {
@@ -274,6 +289,7 @@ class Success extends React.Component {
               customDomain={this.props.customDomain}
               handleShiprocket={this.handleShiprocket}
               isShiprocket={isShiprocket}
+              onPluginsAndAddOnsSave={this.handlePluginsAndAddOnsSave}
             />
           )}
 

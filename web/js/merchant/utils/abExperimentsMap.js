@@ -542,6 +542,12 @@ export default {
     // prod experiment ids
     'L580akR73oKnIr',
   ],
+  pp_ecommerce: [
+    // beta experiment ids
+    'LHNwKf5m7I71uI',
+    // prod experiment ids
+    'LHOp2ELA9vyTW0',
+  ],
   show_international_payments_button_ab: [
     // stage experiment ids
     'LGGuDDOTgodMkG',

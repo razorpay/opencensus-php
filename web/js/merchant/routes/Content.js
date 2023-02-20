@@ -502,7 +502,20 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/paymentpages/:id(pl_.+)/:entity_name(payments)"
             component={PaymentPagesDetails}
-            additionalCondition={(user) => user.isAllowedView('payment_pages')}
+            additionalCondition={(user) =>
+              user.isAllowedView('payment_pages') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages)
+            }
+          />
+          <ShowWhenRoute
+            path="/paymentpages/storefront/:id(st_.+)/:entity_name(payments)"
+            component={PaymentPagesDetails}
+            additionalCondition={(user) =>
+              user.isAllowedView('payment_pages') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages) &&
+              user.isPaymentPageStorefrontEnabled
+            }
+            isStorefrontPage
           />
 
           <ShowWhenRoute

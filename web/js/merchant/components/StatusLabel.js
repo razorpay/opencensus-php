@@ -51,6 +51,11 @@ export const paymentPagesStatusMap = {
   inactive: 'label-muted',
 };
 
+export const paymentPagesProductsStatusMap = {
+  available: 'label-success',
+  out_of_stock: 'label-danger',
+};
+
 export const routeTransfersStatusMap = {
   created: 'label-muted',
   pending: 'label-muted',
@@ -286,6 +291,7 @@ export const capitalStatusMap = {
 
 export const InvoiceStatusLabel = statusLabel(invoiceStatusMap);
 export const PaymentPagesStatusLabel = statusLabel(paymentPagesStatusMap);
+export const PaymentPagesProductsStatusLabel = statusLabel(paymentPagesProductsStatusMap);
 export const RouteTransfersStatusLabel = statusLabel(routeTransfersStatusMap);
 export const OrderStatusLabel = statusLabel(orderStatusMap, orderStatusDescMap);
 export const PaymentStatusLabel = statusLabel(paymentStatusMap, paymentStatusDescMap);

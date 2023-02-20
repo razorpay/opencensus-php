@@ -1,10 +1,16 @@
+import styled from 'styled-components';
 import { FullPageLoader } from 'common/components/Loader';
-import 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/style.styl';
+
+const MagicLoader = styled.div`
+  & > div {
+    z-index: 3;
+  }
+`;
 
 const Loader = () => (
-  <div className="magic-loader">
+  <MagicLoader>
     <FullPageLoader />
-  </div>
+  </MagicLoader>
 );
 
 export default Loader;

@@ -6,14 +6,24 @@ import TableBody from 'common/ui/TableBody';
 import Time from 'common/ui/Time';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+import { getUnitsDescription } from 'merchant/views/PaymentPages/PaymentPages/utils';
 
-import { trackListActions } from '../ga';
+import { trackListActions } from 'merchant/views/PaymentPages/PaymentPages/ga';
 import track from './track';
 
 // import mockPaymentPagesList from './data-mock';
 
-export default ({ paymentPages, loading }) => {
+export default ({ paymentPages, loading, isStorefrontPage }) => {
   // paymentPages = mockPaymentPagesList;
+
+  const trackCopyClick = () => {
+    trackListActions('Click Copy URL');
+    track.copyUrl();
+  };
+
+  const trackTitleClick = () => {
+    trackListActions('Title Click');
+  };
 
   return (
     <div class="table-responsive Table--PaymentpagesV3">
@@ -35,123 +45,140 @@ export default ({ paymentPages, loading }) => {
           rows={paymentPages}
           emptyTableMsg="No data found!"
         >
-          {paymentPages.map((item) => (
-            <EntityItemRow id={item.id} key={item.id}>
-              <td>
-                <NavLink
-                  to={`/paymentpages/${item.id}/payments#paymentpages`}
-                  onClick={() => {
-                    trackListActions('Title Click');
-                  }}
-                >
-                  {item.title}
-                </NavLink>
-              </td>
+          {paymentPages.map((item) => {
+            item.payment_page_items = item?.payment_page_items || [];
+            return (
+              <EntityItemRow id={item.id} key={item.id}>
+                <td>
+                  <NavLink
+                    to={`/paymentpages/${isStorefrontPage ? 'storefront/' : ''}${item.id}/payments${
+                      isStorefrontPage ? '#storefront' : '#paymentpages'
+                    }`}
+                    onClick={trackTitleClick}
+                  >
+                    {item.title}
+                  </NavLink>
+                </td>
 
-              {/* TODO: Check if needed to be manually calculated from items or we've direct value */}
-              <td>
-                <Amount value={item.total_amount_paid} currency={item.currency} />
-              </td>
+                {/* TODO: Check if needed to be manually calculated from items or we've direct value */}
+                <td>
+                  <Amount value={item.total_amount_paid} currency={item.currency} />
+                </td>
 
-              <td>
-                <table>
-                  <tbody>
-                    {item.payment_page_items.slice(0, 2).map((pi, ix) => (
-                      <tr key={ix}>
-                        <td>
-                          <span class="item-ellipsis">{pi.item.name}</span>
-                        </td>
-                      </tr>
-                    ))}
-                    {item.payment_page_items.length > 2 && (
-                      <tr>
-                        <td>
-                          <span class="help-content">
-                            <span class="more-btn">
-                              <b>+ {item.payment_page_items.length - 2} more</b>
+                <td>
+                  <table>
+                    <tbody>
+                      {item.payment_page_items.slice(0, 2).map((pi, ix) => (
+                        <tr key={ix}>
+                          <td>
+                            <span class="item-ellipsis">{pi?.item?.name}</span>
+                          </td>
+                        </tr>
+                      ))}
+                      {item.payment_page_items.length > 2 && (
+                        <tr>
+                          <td>
+                            <span class="help-content">
+                              <span class="more-btn">
+                                <b>+ {item.payment_page_items.length - 2} more</b>
+                              </span>
+
+                              <Popover>
+                                <PopoverBody>
+                                  <div class="more-items">
+                                    <div>
+                                      <span class="title">Item Name</span>
+
+                                      {item.payment_page_items.slice(2).map((pi, ix) => (
+                                        <span class="item-ellipsis" key={ix}>
+                                          {pi?.item?.name}
+                                        </span>
+                                      ))}
+                                    </div>
+                                    <div>
+                                      <span class="title">Quantities Sold</span>
+
+                                      {item.payment_page_items.slice(2).map((pi, ix) => (
+                                        <span class="item-ellipsis" key={ix}>
+                                          {!isStorefrontPage ? (
+                                            <>
+                                              {Number(pi.quantity_sold)}
+                                              {!!pi.stock && (
+                                                <span style={{ opacity: 0.7 }}>
+                                                  {' '}
+                                                  of {Number(pi.stock)}
+                                                </span>
+                                              )}
+                                            </>
+                                          ) : (
+                                            getUnitsDescription({
+                                              units: pi.stock,
+                                              quantitySold: pi.quantity_sold,
+                                              status: pi.catalog_status,
+                                            })
+                                          )}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </PopoverBody>
+                              </Popover>
                             </span>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </td>
 
-                            <Popover>
-                              <PopoverBody>
-                                <div class="more-items">
-                                  <div>
-                                    <span class="title">Item Name</span>
+                <td>
+                  <table>
+                    <tbody>
+                      {item.payment_page_items.slice(0, 2).map((pi, ix) => (
+                        <tr key={ix}>
+                          <td>
+                            <span class="item-ellipsis">
+                              {!isStorefrontPage ? (
+                                <>
+                                  {Number(pi.quantity_sold)}
+                                  {!!pi.stock && (
+                                    <span style={{ opacity: 0.7 }}> of {Number(pi.stock)}</span>
+                                  )}
+                                </>
+                              ) : (
+                                getUnitsDescription({
+                                  units: pi.stock,
+                                  quantitySold: pi.quantity_sold,
+                                  status: pi.catalog_status,
+                                })
+                              )}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </td>
 
-                                    {item.payment_page_items.slice(2).map((pi, ix) => (
-                                      <span class="item-ellipsis" key={ix}>
-                                        {pi.item.name}
-                                      </span>
-                                    ))}
-                                  </div>
-                                  <div>
-                                    <span class="title">Quantities Sold</span>
-
-                                    {item.payment_page_items.slice(2).map((pi, ix) => (
-                                      <span class="item-ellipsis" key={ix}>
-                                        {Number(pi.quantity_sold)}
-                                        {!!pi.stock && (
-                                          <span style={{ opacity: 0.7 }}>
-                                            {' '}
-                                            of {Number(pi.stock)}
-                                          </span>
-                                        )}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              </PopoverBody>
-                            </Popover>
-                          </span>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </td>
-
-              <td>
-                <table>
-                  <tbody>
-                    {item.payment_page_items.slice(0, 2).map((pi, ix) => (
-                      <tr key={ix}>
-                        <td>
-                          <span class="item-ellipsis">
-                            {Number(pi.quantity_sold)}
-                            {!!pi.stock && (
-                              <span style={{ opacity: 0.7 }}> of {Number(pi.stock)}</span>
-                            )}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </td>
-
-              <td>
-                {item.short_url && (
-                  <span class="CopyLink">
-                    <span>{item.short_url}</span>
-                    <CustomClipboard
-                      value={item.short_url}
-                      onCopy={() => {
-                        trackListActions('Click Copy URL');
-                        track.copyUrl();
-                      }}
-                    >
-                      <button class="btn btn-default btn-xs">copy</button>
-                    </CustomClipboard>
-                  </span>
-                )}
-              </td>
-              <td>
-                <Time value={item.created_at} />
-              </td>
-              <td>
-                <PaymentPagesStatusLabel status={item.status} />
-              </td>
-            </EntityItemRow>
-          ))}
+                <td>
+                  {item.short_url && (
+                    <span class="CopyLink">
+                      <span>{item.short_url}</span>
+                      <CustomClipboard value={item.short_url} onCopy={trackCopyClick}>
+                        <button class="btn btn-default btn-xs">copy</button>
+                      </CustomClipboard>
+                    </span>
+                  )}
+                </td>
+                <td>
+                  <Time value={item.created_at} />
+                </td>
+                <td>
+                  <PaymentPagesStatusLabel status={item.status} />
+                </td>
+              </EntityItemRow>
+            );
+          })}
         </TableBody>
       </table>
     </div>

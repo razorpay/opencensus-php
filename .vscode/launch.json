@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Jest Tests",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": [
+        "--inspect-brk",
+        "${workspaceRoot}/web/node_modules/.bin/jest",
+        "--runInBand",
+        "--watch",
+        "--coverage=false",
+        "js/merchant/views/PaymentPages"
+      ],
+      "cwd": "${workspaceRoot}/web",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    }
+  ]
+}

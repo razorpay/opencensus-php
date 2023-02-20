@@ -28,6 +28,11 @@ const PaymentLinkCreate = lazy(() =>
   ),
 );
 
+const PaymentPagesCreateEdit = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentPagesCreateEdit" */ 'merchant/views/PaymentPages/PaymentPages/CreateEdit/New'
+  ),
+);
 const PaymentPagesWysiwyg = lazy(() =>
   import(
     /* webpackChunkName: "PaymentPagesWysiwyg" */ 'merchant/views/PaymentPages/PaymentPages/Wysiwyg'
@@ -36,6 +41,16 @@ const PaymentPagesWysiwyg = lazy(() =>
 const PaymentPagesSuccess = lazy(() =>
   import(
     /* webpackChunkName: "PaymentPagesSuccess" */ 'merchant/views/PaymentPages/PaymentPages/Success'
+  ),
+);
+const PaymentPagesStorefront = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentPagesStorefront" */ 'merchant/views/PaymentPages/PaymentPages/CreateEdit/Storefront'
+  ),
+);
+const PaymentPagesStorefrontSuccess = lazy(() =>
+  import(
+    /* webpackChunkName: "PaymentPagesStorefrontSuccess" */ 'merchant/views/PaymentPages/PaymentPages/Success/Storefront'
   ),
 );
 const PaymentButtonCreate = lazy(() =>
@@ -578,18 +593,36 @@ export const supportHashMapping = {
  * */
 const fullPageViewsMap = {
   '/paymentpages/new': {
-    component: PaymentPagesWysiwyg,
+    component: PaymentPagesCreateEdit,
     additionalCondition: (user) =>
       user.isAllowedEdit('payment_pages') &&
       !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages),
   },
   '/paymentpages/:id(pl_.+)/edit': {
     component: PaymentPagesWysiwyg,
-    additionalCondition: (user) => user.isAllowedEdit('payment_pages'),
+    additionalCondition: (user) =>
+      user.isAllowedEdit('payment_pages') &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages),
   },
   '/paymentpages/:id(pl_.+)/success': {
     component: PaymentPagesSuccess,
-    additionalCondition: (user) => user.isAllowedEdit('payment_pages'),
+    additionalCondition: (user) =>
+      user.isAllowedEdit('payment_pages') &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages),
+  },
+  '/paymentpages/storefront/:id(st_.+)/edit': {
+    component: PaymentPagesStorefront,
+    additionalCondition: (user) =>
+      user.isAllowedEdit('payment_pages') &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages) &&
+      user.isPaymentPageStorefrontEnabled,
+  },
+  '/paymentpages/storefront/:id(st_.+)/success': {
+    component: PaymentPagesStorefrontSuccess,
+    additionalCondition: (user) =>
+      user.isAllowedEdit('payment_pages') &&
+      !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages) &&
+      user.isPaymentPageStorefrontEnabled,
   },
   '/paymentbuttons/new': {
     component: PaymentButtonCreate,

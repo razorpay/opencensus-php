@@ -109,6 +109,8 @@ import { reportsReducer } from 'merchant/reducers/reports';
 import LoanApplicationReducer from 'merchant/reducers/capital';
 
 import wysiwygReducer from 'merchant/reducers/wysiwyg';
+import paymentPagesProductsReducer from 'merchant/reducers/paymentPages/products';
+import paymentPageStorefrontReducer from 'merchant/reducers/paymentPages/storefront';
 import WithdrawalsReducer from 'merchant/reducers/capital/withdrawals';
 import RepaymentsReducer from 'merchant/reducers/capital/repayments';
 import AccountReducer from 'merchant/reducers/capital/accounts';
@@ -221,6 +223,8 @@ export default combineReducers({
   commissionsAggregate: commissionsAggregateReducer,
   commAggSingleDay: commAggSingleDayReducer,
   wysiwyg: wysiwygReducer,
+  paymentPagesProducts: paymentPagesProductsReducer,
+  paymentPageStorefront: paymentPageStorefrontReducer,
   registrationLinks: registrationLinksReducer,
   registrationLink: registrationLinkReducer,
   tokens: tokensReducer,

@@ -7,7 +7,7 @@
     "npm": ">=8.1.2"
   },
   "dependencies": {
-    "@razorpay/blade": "6.0.2",
+    "@razorpay/blade": "6.0.3",
     "@razorpay/blade-old": "npm:@razorpay/blade-old@0.0.6-hotfix-styled-components",
     "@razorpay/blade-old-for-new-auth": "npm:@razorpay/blade-old@0.0.1",
     "@razorpay/commander-services": "1.0.38",
@@ -56,6 +56,7 @@
     "react-power-select": "1.0.0-beta.17",
     "react-query": "2.23.0",
     "react-redux": "5.1.2",
+    "react-responsive-carousel": "3.2.23",
     "react-router-dom": "4.3.1",
     "react-simple-dropdown": "3.2.3",
     "react-sortable-hoc": "1.11.0",

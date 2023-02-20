@@ -1,15 +1,11 @@
 import React from 'react';
-import { connect } from 'react-redux';
 
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import Button from 'common/new-ui/Button';
 import { ModalContent } from 'common/new-ui/Modal';
 
-import { closeModal } from 'merchant_common/reducers/modals';
-import { updateData } from 'merchant/reducers/wysiwyg';
-
-import track from '../../Wysiwyg/track';
+import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 
 import FbPixelImage from 'assets/payment_pages/fb-pixel-logo.svg';
 import GaImage from 'assets/payment_pages/ga-logo.svg';
@@ -38,15 +34,7 @@ const validateFbId = (value) => {
   }
   return '';
 };
-@connect(
-  (state) => ({
-    settings: state.wysiwyg.paymentPageEntity.settings,
-  }),
-  {
-    closeModal,
-    updateData,
-  },
-)
+
 export default class PluginsAndAddOns extends React.Component {
   state = {
     pp_fb_pixel_tracking_id: this.props.settings.pp_fb_pixel_tracking_id || '',
@@ -61,8 +49,7 @@ export default class PluginsAndAddOns extends React.Component {
   handleSubmit = (formData) => {
     track.plugins.save(formData.pp_fb_pixel_tracking_id, formData.pp_ga_pixel_tracking_id);
 
-    const data = {};
-    data.settings = {
+    const data = {
       pp_fb_pixel_tracking_id: formData.pp_fb_pixel_tracking_id,
       pp_ga_pixel_tracking_id: (formData.pp_ga_pixel_tracking_id || '').toUpperCase(),
       pp_fb_event_add_to_cart_enabled: formData.pp_fb_event_add_to_cart_enabled ? '1' : '0',
@@ -74,7 +61,7 @@ export default class PluginsAndAddOns extends React.Component {
         : '0',
     };
 
-    this.props.updateData(data);
+    this.props.onSave(data);
     this.props.closeModal();
   };
 

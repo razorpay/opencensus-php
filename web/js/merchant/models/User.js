@@ -599,6 +599,14 @@ export default class User {
     return this.getExpStatus('pp_onboarding_redirection_exp');
   }
 
+  get isPaymentPageCustomDomainShowRemoveEnabled() {
+    return this.getExpStatus('pp_custom_domain_show_remove');
+  }
+
+  get isPaymentPageStorefrontEnabled() {
+    return getSplitzExperimentVariant('pp_ecommerce')?.variables?.result === 'on';
+  }
+
   get isInvoiceCreateFlowUXOptimizationEnabled() {
     return this.getExpStatus('inv_create_flow_ux');
   }

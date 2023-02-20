@@ -4,8 +4,11 @@ import { withRouter } from 'react-router';
 import useLocalStorage from 'merchant/utils/useLocalStorage';
 import SwitchField from 'common/ui/Forms/SwitchField';
 
+// Match for /paymentpages/new or /paymentpages/*/edit
+const isPaymentPagesRegex = /^\/paymentpages\/(new|.+\/edit)$/;
+
 function HighlightTestMode(props) {
-  const { user, highlightMode, location, onSwitchMode, paymentPageId } = props;
+  const { user, highlightMode, location, onSwitchMode } = props;
 
   const [isTestModeFirstTime, setisTestModeFirstTime] = useLocalStorage(
     `isTestModeFirstTime_${user.current}`,
@@ -33,7 +36,7 @@ function HighlightTestMode(props) {
 
   if (highlightMode === false || ['/activation', '/kyc'].includes(location.pathname)) return null;
 
-  const isPaymentPages = location.pathname === '/paymentpages/new' || paymentPageId;
+  const isPaymentPages = isPaymentPagesRegex.test(location.pathname);
 
   return (
     <div className={`highlight-test-mode-container${!testModeToggle ? ' hide-test-mode' : ''}`}>
@@ -76,7 +79,6 @@ export default withRouter(
     (state) => ({
       user: state.session.user,
       highlightMode: state.session.highlightMode,
-      paymentPageId: state.wysiwyg.payment_page_id,
     }),
     null,
   )(HighlightTestMode),

@@ -176,6 +176,7 @@ function PaymentDetails(props) {
     return orgName;
   };
 
+  const isStorefront = location.hash === '#storefront';
   return (
     <div
       className="content-wrapper content-sm txn-details"
@@ -514,12 +515,18 @@ function PaymentDetails(props) {
 
                 <EntityDetailRow label="Notes">
                   {Object.keys(payment.notes).length
-                    ? Object.keys(payment.notes).map((key, index) => (
-                        <Definition key={index} customClass="notes">
-                          {key}
-                          {String(payment.notes[key] || '--')}
-                        </Definition>
-                      ))
+                    ? Object.keys(payment.notes).map((key, index) =>
+                        isStorefront &&
+                        key === 'line_items' &&
+                        typeof payment.notes[key] !== 'string' ? (
+                          ''
+                        ) : (
+                          <Definition key={index} customClass="notes">
+                            {key}
+                            {String(payment.notes[key] || '--')}
+                          </Definition>
+                        ),
+                      )
                     : '--'}
                 </EntityDetailRow>
 

@@ -26,12 +26,12 @@ import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
 import { CapitalReferralCard } from 'merchant/views/PartnerDashboard/Home/Components/ReferralGuide/CapitalReferralCard';
 
 // eslint-disable-next-line prettier/prettier
-const AggregatorFormLazy = React.lazy(
-  () => import('merchant/views/PartnerDashboard/Home/Components/ReferralGuide/AggregatorForm'),
+const AggregatorFormLazy = React.lazy(() =>
+  import('merchant/views/PartnerDashboard/Home/Components/ReferralGuide/AggregatorForm'),
 );
 // eslint-disable-next-line prettier/prettier
-const AggregatorSuccessLazy = React.lazy(
-  () => import('merchant/views/PartnerDashboard/Home/Components/ReferralGuide/AggregatorSuccess'),
+const AggregatorSuccessLazy = React.lazy(() =>
+  import('merchant/views/PartnerDashboard/Home/Components/ReferralGuide/AggregatorSuccess'),
 );
 
 const Home = ({

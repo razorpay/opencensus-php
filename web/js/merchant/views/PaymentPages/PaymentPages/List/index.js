@@ -14,7 +14,7 @@ import EmptyList from 'merchant/components/EmptyList';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
 import { DocLink } from 'merchant/components/DocsLink';
 import List from './List';
-import { populateRPLReduxList } from 'merchant/reducers/invoices/list';
+import { populateRPLReduxList, populateStorefrontReduxList } from 'merchant/reducers/invoices/list';
 import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
@@ -22,36 +22,58 @@ import {
 import {
   getIsPaymentPagesEnabled,
   getIsAllowedPaymentPagesResetOnBoarding,
-} from '../../OnBoarding';
-import { getPaymentPageQuickGuideIsClosed } from '../../QuickGuide';
-import { fetchPaymentPagesList } from '../model';
+} from 'merchant/views/PaymentPages/OnBoarding';
+import { getPaymentPageQuickGuideIsClosed } from 'merchant/views/PaymentPages/QuickGuide';
+import {
+  fetchPaymentPagesList,
+  fetchStorefrontList,
+} from 'merchant/views/PaymentPages/PaymentPages/model';
 import { getKeysSeparatedByPipe } from 'common/utils/rzp-utils';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { trackListActions } from '../ga';
+import { trackListActions } from 'merchant/views/PaymentPages/PaymentPages/ga';
 import { RZPFeatures } from 'merchant/helpers/data';
 import TestModeBanner from 'merchant/components/TestModeBanner';
-
-const tabsData = [{ title: 'Payment Pages', url: '/paymentpages' }];
+import PaymentsAndStorefrontTab from './PaymentsAndStorefrontTab';
+import { setIsStorefrontPage } from 'merchant/reducers/paymentPages/storefront';
 
 @withRouter
 @connect(
   (state) => ({
     ...state.invoices,
     ...state.session,
+    isStorefrontPage: state.paymentPageStorefront.isStorefrontPage,
     paymentPageProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PP),
   }),
   {
     showNotification,
     populateRPLReduxList,
+    populateStorefrontReduxList,
     handleProductQuickGuide,
+    setIsStorefrontPage,
   },
 )
 @RTracking(() => window.rzpQ.component('PaymentPagesContainer'))
 export default class PaymentPagesContainer extends ListContainer {
-  state = {
-    loading: true,
-    loadingAllList: true,
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      loading: true,
+      loadingAllList: true,
+      tabsData: [
+        {
+          title: 'Payment Pages',
+          url: '/paymentpages',
+        },
+        {
+          title: 'Products',
+          url: '/paymentpages/products',
+          // razorx doesn't change during the component lifecycle
+          hidden: !props.user.isPaymentPageStorefrontEnabled,
+        },
+      ],
+    };
+  }
 
   componentDidMount() {
     this.fetchAllEntityList();
@@ -62,14 +84,19 @@ export default class PaymentPagesContainer extends ListContainer {
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
-    if (this.props.paymentPages.length !== nextProps.paymentPages.length) {
-      const newLength = nextProps.paymentPages.length;
-
-      if (newLength) {
-        this.setState({
-          totalPaymentPagesLength: newLength,
-        });
-      }
+    if (nextProps.isStorefrontPage !== this.props.isStorefrontPage) {
+      this.setState(
+        {
+          skip: '0',
+          count: '25',
+        },
+        () => {
+          this.fetchEntityList({
+            count: this.state.count,
+            skip: this.state.skip,
+          });
+        },
+      );
     }
 
     if (nextProps.loading !== this.props.loading) {
@@ -90,12 +117,6 @@ export default class PaymentPagesContainer extends ListContainer {
           loadingAllList: false,
         });
 
-        if (resp.data) {
-          this.setState({
-            totalPaymentPagesLength: resp.data.items.length,
-          });
-        }
-
         this.initPaymentPagesOnboarding();
 
         return resp;
@@ -104,6 +125,23 @@ export default class PaymentPagesContainer extends ListContainer {
   }
 
   fetchEntityList(params) {
+    const { isPaymentPageStorefrontEnabled } = this.props.user;
+    if (isPaymentPageStorefrontEnabled) {
+      fetchStorefrontList(params)
+        .then((resp) => {
+          if (resp.data) {
+            this.props.populateStorefrontReduxList(resp);
+          }
+          return resp;
+        })
+        .catch((err) => {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors,
+          });
+        });
+    }
+
     return fetchPaymentPagesList(params)
       .then((resp) => {
         if (resp.data) {
@@ -212,79 +250,35 @@ export default class PaymentPagesContainer extends ListContainer {
   };
 
   render() {
-    const { loading, loadingAllList, totalPaymentPagesLength } = this.state;
-    const { paymentPages, user } = this.props;
-
+    const { loading, loadingAllList } = this.state;
+    const {
+      paymentPages,
+      user,
+      totalPaymentPagesLength,
+      totalStorefrontLength,
+      storefrontPages,
+      isStorefrontPage,
+    } = this.props;
+    const entityList = isStorefrontPage ? storefrontPages : paymentPages;
     const isRoleAllowedEdit = user.isAllowedEdit('payment_pages');
-
     let content;
-
     if (loadingAllList) {
       content = (
         <div class="page-spinner-container">
           <Spinner />
         </div>
       );
-    } else if (
-      isRoleAllowedEdit &&
-      !loadingAllList &&
-      !totalPaymentPagesLength &&
-      !paymentPages.length
-    ) {
-      // !paymentPages check is required so that while creation first time, the list would be updated while totalPaymentPagesLength still = 0
-      content = <EmptyComponent />;
+    } else if (isRoleAllowedEdit && !entityList.length) {
+      content = <EmptyComponent isStorefrontPage={isStorefrontPage} />;
     } else {
       content = (
         <React.Fragment>
-          <ListFilter
-            form="PaymentPagesPaymentListFilter"
-            count={this.state.count}
-            onSearchAnalytics={this.onSearchAnalytics}
-            onClearAnalytics={this.onClearAnalytics}
-          >
-            <div class="form-group list-filter-item">
-              <label>Title</label>
-              <Field
-                name="title"
-                component="input"
-                class="form-control input-sm"
-                onBlur={track.searchTitle}
-              />
-            </div>
-
-            <div class="form-group list-filter-item">
-              <label>Status</label>
-              <Field
-                name="status"
-                component="select"
-                class="form-control input-sm"
-                onChange={track.searchStatus}
-              >
-                <option value="">All</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </Field>
-            </div>
-
-            <div class="form-group list-filter-item count">
-              <label>Count</label>
-              <Field
-                name="count"
-                component="input"
-                min={1}
-                max={100}
-                type="number"
-                class="form-control input-sm"
-                onBlur={track.searchCount}
-              />
-            </div>
-          </ListFilter>
-          <List loading={loading} paymentPages={paymentPages} />
-          {!loading && !!paymentPages.length && (
+          <List loading={loading} paymentPages={entityList} isStorefrontPage={isStorefrontPage} />
+          {!loading && !!entityList.length && (
             <Pager
               count={this.state.count}
               skip={this.state.skip}
-              length={paymentPages.length}
+              length={entityList.length}
               onClick={this.onClickPaginate}
             />
           )}
@@ -294,7 +288,7 @@ export default class PaymentPagesContainer extends ListContainer {
 
     return (
       <ProductWrapper
-        tabsData={tabsData}
+        tabsData={this.state.tabsData}
         extra={
           <>
             <ShowWhen additionalCondition={() => !user.isOrgAxis}>
@@ -325,8 +319,59 @@ export default class PaymentPagesContainer extends ListContainer {
         }
       >
         <content>
+          {user.isPaymentPageStorefrontEnabled && (
+            <PaymentsAndStorefrontTab
+              totalPaymentPagesLength={totalPaymentPagesLength}
+              totalStorefrontLength={totalStorefrontLength}
+              isStorefrontPage={isStorefrontPage}
+              setIsStorefrontPage={this.props.setIsStorefrontPage}
+            />
+          )}
           <div class="content-wrapper">
             <TestModeBanner />
+            <ListFilter
+              form="PaymentPagesPaymentListFilter"
+              count={this.state.count}
+              onSearchAnalytics={this.onSearchAnalytics}
+              onClearAnalytics={this.onClearAnalytics}
+            >
+              <div class="form-group list-filter-item">
+                <label>Title</label>
+                <Field
+                  name="title"
+                  component="input"
+                  class="form-control input-sm"
+                  onBlur={track.searchTitle}
+                />
+              </div>
+
+              <div class="form-group list-filter-item">
+                <label>Status</label>
+                <Field
+                  name="status"
+                  component="select"
+                  class="form-control input-sm"
+                  onChange={track.searchStatus}
+                >
+                  <option value="">All</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </Field>
+              </div>
+
+              <div class="form-group list-filter-item count">
+                <label>Count</label>
+                <Field
+                  name="count"
+                  component="input"
+                  min={1}
+                  max={100}
+                  type="number"
+                  class="form-control input-sm"
+                  onBlur={track.searchCount}
+                />
+              </div>
+            </ListFilter>
             {content}
           </div>
         </content>
@@ -335,12 +380,12 @@ export default class PaymentPagesContainer extends ListContainer {
   }
 }
 
-const EmptyComponent = () => (
+const EmptyComponent = ({ isStorefrontPage }) => (
   <EmptyList
     description={
       <React.Fragment>
-        <div>There are no payment pages yet!!</div>
-        <div>Start creating new links now.</div>
+        <div>There are no {isStorefrontPage ? 'storefront' : 'payment'} pages yet!!</div>
+        <div>Start creating new pages now.</div>
       </React.Fragment>
     }
   />

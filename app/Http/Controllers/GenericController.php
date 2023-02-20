@@ -23,6 +23,7 @@ class GenericController extends Controller
         'x-cross-org-id',
         'x-org-id',
         'accept-version',
+        'x-razorpay-nca-transform'
     ];
 
     const WHITELISTED_ROUTES_REGEX = [

@@ -115,8 +115,8 @@ const Carousel = ({
       );
       trackerBannerFirstImpression[bannerOrder] = true;
     }
-
-    timer = setTimeout(automaticSlide, 5000); // Change image every 5 seconds
+    // use window.setTimeout to fix typescript error https://stackoverflow.com/a/55550147/6127580
+    timer = window.setTimeout(automaticSlide, 5000); // Change image every 5 seconds
   };
   const manualSlide = (n) => {
     let i;

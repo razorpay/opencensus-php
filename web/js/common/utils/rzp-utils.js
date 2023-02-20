@@ -258,7 +258,7 @@ export const normalizeBoolean = (bool) => {
   return bool ? 1 : 0;
 };
 
-const numberFormatRegex = /(.{1,2})(?=.(..)+(\...)$)/g;
+export const numberFormatRegex = /(.{1,2})(?=.(..)+(\...)$)/g;
 
 export const getFixedINRAmount = (amount) => (Number(amount) / 100).toFixed(2);
 

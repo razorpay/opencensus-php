@@ -13,7 +13,7 @@ import { trackPageSettingsData } from 'merchant/views/PaymentPages/PaymentPages/
 import track from 'merchant/views/PaymentPages/PaymentPages/Wysiwyg/track';
 import CreateEmbedButton from 'merchant/views/PaymentPages/PaymentPages/components/Modals/CreateEmbedButton';
 import PluginsAndAddOns from 'merchant/views/PaymentPages/PaymentPages/components/Modals/PluginsAndAddOns';
-import ShiprocketImage from '../../../../../../../../css/assets/payment_pages/shiprocket.svg';
+import ShiprocketImage from 'assets/payment_pages/shiprocket.svg';
 import CustomURL from 'merchant/views/PaymentPages/PaymentPages/components/Modals/Settings/CustomUrl';
 import { SHIPROCKET_DASHBOARD_LINK } from 'merchant/views/PaymentPages/PaymentPages/constants';
 
@@ -76,7 +76,13 @@ export default class PaymentPageSettings extends React.Component {
     this.props.openModal({
       size: 'medium',
       className: 'PluginsAndAddOns',
-      component: <PluginsAndAddOns />,
+      component: (
+        <PluginsAndAddOns
+          settings={this.props.paymentPageEntity.settings}
+          closeModal={this.props.closeModal}
+          onSave={this.props.onPluginsAndAddOnsSave}
+        />
+      ),
     });
 
     track.settings.clickConfigurePlugins();

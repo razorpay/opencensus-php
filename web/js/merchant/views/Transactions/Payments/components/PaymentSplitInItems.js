@@ -4,7 +4,10 @@ import RTracking from 'react-tracking';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import DataTable from 'common/ui/Table/DataTable';
 import Amount from 'common/ui/Amount';
-import { getPaymentSplitAmongstItems } from 'merchant/views/PaymentPages/PaymentPages/model';
+import {
+  getPaymentSplitAmongstItems,
+  getStorefrontLineItems,
+} from 'merchant/views/PaymentPages/PaymentPages/model';
 import { compose } from 'redux';
 
 const name = { title: 'Item Name', value: (item) => item.name };
@@ -30,8 +33,10 @@ class PaymentSplitInItems extends Component {
       this.setState({
         isLoading: true,
       });
-
-      getPaymentSplitAmongstItems(this.props.payment.order_id).then((res) => {
+      let hash = this.props.location.hash;
+      hash = hash.substring(1);
+      const fetcher = hash === 'storefront' ? getStorefrontLineItems : getPaymentSplitAmongstItems;
+      fetcher(this.props.payment.order_id).then((res) => {
         this.setState({
           isLoading: false,
           items: res.data ? res.data.items : [],
@@ -46,7 +51,13 @@ class PaymentSplitInItems extends Component {
 
     if (hash) {
       hash = hash.substring(1);
-      const allowedModules = ['paymentpages', 'paymentbuttons', 'subscription_buttons', 'stores'];
+      const allowedModules = [
+        'paymentpages',
+        'paymentbuttons',
+        'subscription_buttons',
+        'stores',
+        'storefront',
+      ];
 
       return allowedModules.indexOf(hash) > -1;
     }

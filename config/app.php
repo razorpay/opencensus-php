@@ -275,6 +275,7 @@ return array(
     'next_rzp_url'        => env('NEXT_WEBSITE_URL'),
     'static_web_url'      => env('STATIC_WEBSITE_URL'),
     'easy_onboarding_url' => env('EASY_ONBOARDING_URL'),
+    'pp_ecommerce_url' => env('PP_ECOMMERCE_URL'),
     'easy_dashboard_url'  => env('EASY_DASHBOARD_URL'),
     'is_api_circuit_breaker_enabled' =>  env('IS_API_CIRCUIT_BREAKER_ENABLED'),
 );

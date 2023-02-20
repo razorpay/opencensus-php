@@ -260,5 +260,8 @@ return [
 
         // FTUX for Onboarding
         'ONBOARDING_FTUX' => env('ONBOARDING_FTUX', ''),
+
+        // Payment Pages - Ecommerce
+        'PP_ECOMMERCE_SPLITZ' => env('PP_ECOMMERCE_SPLITZ', ''),
     ]
 ];

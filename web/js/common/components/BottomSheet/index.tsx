@@ -16,8 +16,8 @@ document.body.appendChild(cssLinkElement);
 interface ButtomSheetPropsT {
   isOpen?: boolean;
   isControlled?: boolean;
-  trigger: ReactNode;
-  onTriggerClick: () => void;
+  trigger?: ReactNode;
+  onTriggerClick?: () => void;
   onDismiss: () => void;
   isBlocking?: boolean;
   snapPoints?: () => number | number[];
@@ -61,7 +61,7 @@ const _BottomSheet: React.FC<ButtomSheetPropsT> = (props) => {
   return (
     <>
       {/* This will be the element on the click of which the bottom sheet will open */}
-      <div onClick={handleTriggerClick}>{trigger}</div>
+      {trigger && <div onClick={handleTriggerClick}>{trigger}</div>}
 
       <BottomSheet
         open={isControlled ? props.isOpen! : isOpen!}
