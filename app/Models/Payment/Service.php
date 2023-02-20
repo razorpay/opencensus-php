@@ -6483,7 +6483,15 @@ class Service extends Base\Service
     public function addAuthenticationObject( &$entity, $authenticationData)
     {
         if (isset($authenticationData['protocol_version'])) {
-            $entity['authentication']['version'] = $authenticationData['protocol_version'];
+            if($authenticationData['protocol_version'] == '2.1.0' || $authenticationData['protocol_version'] == '2.2.0'){
+                $entity['authentication']['version'] = "3DS2";
+            }
+            else if($authenticationData['protocol_version'] == '1.0.2'){
+                $entity['authentication']['version'] = "3DS1";
+            }
+            else {
+                $entity['authentication']['version'] = $authenticationData['protocol_version'];
+            }
         }
         if(isset($authenticationData['notes'])){
             $data = json_decode($authenticationData['notes'], true);
