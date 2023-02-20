@@ -789,8 +789,13 @@ class Processor
                 return false;
             }
 
-            if (empty($input[Payment\Entity::SAVE]) === false && $iin->getNetworkCode() !== Card\Network::RUPAY)
+            if (empty($input[Payment\Entity::SAVE]) === false)
             {
+                if ($iin->getNetworkCode() === Card\Network::RUPAY)
+                {
+                    return false;
+                }
+
                 $library = null;
                 if((isset($input['_']) === true) and
                     (isset($input['_']['library']) === true))
