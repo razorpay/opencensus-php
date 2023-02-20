@@ -574,7 +574,7 @@ trait RecurringTrait
             (empty($response['status_desc']) === false))
         {
             $payerResponseCodeDes = $this->upiRecurringUpdateGatewayStatus($response['status_desc'], $response['status_code']);
-            $attributes[Entity::GATEWAY_DATA] += $payerResponseCodeDes;
+            $attributes[Entity::GATEWAY_DATA] = array_replace($attributes[Entity::GATEWAY_DATA],$payerResponseCodeDes);
 
             $this->trace->info(TraceCode::UPI_RECURRING_PAYER_RESPONSE_CODE, [
                 'attributes'                => $attributes,
