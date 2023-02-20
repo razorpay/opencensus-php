@@ -51,7 +51,7 @@ class Utils
         foreach ($items as $item)
         {
             $lineItems[] = [
-              'variantId' => $this->convertToBase64($item['variant_id'], 'variant'),
+              'variantId' => $this->convertToFormat($item['variant_id'], 'variant'),
               'quantity'   => $item['quantity'],
               'customAttributes' => $item['customAttributes']
             ];
@@ -59,7 +59,7 @@ class Utils
         return ['lineItems' => $lineItems];
     }
 
-    public function convertToBase64(string $id, string $type): string
+    public function convertToFormat(string $id, string $type): string
     {
         switch ($type)
         {
@@ -75,7 +75,7 @@ class Utils
                 $id = Constants::GID_CHECKOUT . $id;
                 break;
         }
-        return base64_encode($id);
+        return $id;
     }
 
     public function formatNumber($num, $decimals = 2)

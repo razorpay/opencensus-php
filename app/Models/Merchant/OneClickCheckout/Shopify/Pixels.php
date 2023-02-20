@@ -67,8 +67,8 @@ class Pixels
             $variant = $item['variant'];
 
             $items[] = [
-                'id'         => $variant['product']['id'],
-                'variant_id' => $variant['id'],
+                'id'         => $this->getContentId($variant['product']['id'], self::PRODUCT),
+                'variant_id' => $this->getContentId($variant['id'], self::VARIANT),
                 'name'       => $item['title'],
                 'value'      => $variant['price']['amount'],
                 'quantity'   => $item['quantity'],
@@ -87,6 +87,12 @@ class Pixels
     {
         $base = $type === self::PRODUCT ? self::GID_PRODUCT : self::GID_PRODUCT_VARIANT;
 
-        return (int)str_replace($base, '', base64_decode($id));
+        // To support backward compatibility of Shopify API version update from 2022-01 to 2022-10
+        if(substr($id, 0, 3) != "gid")
+        {
+            $id = base64_decode($checkoutId);
+        }
+
+        return (int)str_replace($base, '', $id);
     }
 }

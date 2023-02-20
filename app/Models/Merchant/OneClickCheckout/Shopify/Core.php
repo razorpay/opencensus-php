@@ -681,7 +681,7 @@ class Core extends Base\Core
 
             if (is_array($retryOrderResponse) === true)
             {
-                return [];
+                return $retryOrderResponse;
             }
             $message = $retryOrderResponse;
         }

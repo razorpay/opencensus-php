@@ -472,7 +472,7 @@ class Checkout extends Base\Core
 
     protected function getStorefrontIdFromWebUrl(string $webUrl): string
     {
-        return base64_encode(self::GID_CHECKOUT . explode('checkouts/', $webUrl)[1]);
+        return (self::GID_CHECKOUT . explode('checkouts/', $webUrl)[1]);
     }
 
     protected function getCartTokenFromCheckoutId(string $checkoutId): string
