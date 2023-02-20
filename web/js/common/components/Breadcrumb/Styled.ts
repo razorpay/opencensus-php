@@ -8,7 +8,7 @@ export const StyledBreadcrumb = styled.header`
 `;
 
 export const StyledBreadcrumbItem = styled(NavLink)`
-  && {
+  &&& {
     margin-right: 0;
     border: none;
     min-width: auto;
