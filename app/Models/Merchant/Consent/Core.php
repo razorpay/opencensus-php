@@ -236,6 +236,11 @@ class Core extends Base\Core
             {
                 try
                 {
+                    $this->trace->info(TraceCode::FETCH_MERCHANT_CONSENTS, [
+                        "merchant_id" => $merchantId,
+                        "entity_id"   => $consent['id'],
+                    ]);
+
                     $fileStoreId = $consent['metadata']['ufh_file_id'] ??  $this->fetchAndSaveFileId($consent);
 
                     $ufhService        = $this->app['ufh.service'];
@@ -378,6 +383,10 @@ class Core extends Base\Core
         $bvsResponse = app('bvs_legal_document_manager')->getLegalDocumentsByRequestId($requestBody);
 
         $bvsResponseData = $bvsResponse->getResponseData();
+
+        $this->trace->info(TraceCode::FETCH_CONSENT_SUCCESS, [
+            "response"       => $bvsResponseData,
+        ]);
 
         $documentCount = $bvsResponseData['count'];
 

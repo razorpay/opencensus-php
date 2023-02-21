@@ -494,7 +494,8 @@ class Service extends Base\Service
                     if($this->checkIfConsentsPresent($merchantId, ConsentConstant::VALID_LEGAL_DOC_L2) === false)
                     {
                         $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
-                            'message' => 'Consents are not present.'
+                            'merchant_id' => $merchantId,
+                            'message'     => 'Consents are not present.'
                         ]);
 
                         $this->storeConsents($merchantId, $input);
@@ -510,6 +511,11 @@ class Service extends Base\Service
                         $response = $processor->processLegalDocuments($legalDocumentsInput);
 
                         $responseData = $response->getResponseData();
+
+                        $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENT_DETAILS, [
+                            'merchant_id' => $merchantId,
+                            'response'    => $responseData
+                        ]);
 
                         $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
 
@@ -532,6 +538,7 @@ class Service extends Base\Service
                     else
                     {
                         $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
+                            'merchant_id' => $merchantId,
                             'message' => 'Consents are already present.'
                         ]);
                     }
@@ -539,6 +546,7 @@ class Service extends Base\Service
                 catch (\Throwable $exception)
                 {
                     $this->trace->info(TraceCode::CONSENT_CREATION_ERROR, [
+                        'merchant_id' => $merchantId,
                         'message' => $exception->getMessage()
                     ]);
                 }

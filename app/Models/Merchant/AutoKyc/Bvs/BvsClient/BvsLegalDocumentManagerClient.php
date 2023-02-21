@@ -37,7 +37,7 @@ class BvsLegalDocumentManagerClient extends BaseClient
      * @param array $document
      *
      * @return legalDocumentManagerV1\LegalDocumentsManagerResponse
-     * @throws IntegrationException
+     * @throws IntegrationException|TwirpException
      */
     public function createLegalDocument(array $document)
     {
@@ -213,6 +213,13 @@ class BvsLegalDocumentManagerClient extends BaseClient
         return $fetchLegalDocument;
     }
 
+    /**
+     * @param array $requestBody
+     *
+     * @return FetchLegalDocumentBaseResponse
+     * @throws IntegrationException
+     * @throws TwirpException
+     */
     public function getLegalDocumentsByRequestId(array $requestBody)
     {
         $legalDocument = new legalDocumentManagerV1\GetLegalDocumentsRequest($requestBody);

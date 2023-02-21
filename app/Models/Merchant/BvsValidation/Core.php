@@ -595,6 +595,11 @@ class Core extends Base\Core
 
     private function processDocuments($id, array $payload)
     {
+        $this->trace->info(TraceCode::PROCESS_MERCHANT_CONSENTS, [
+            'request_id' => $id,
+            'response'   => $payload
+        ]);
+
         $documentsDetail = $payload[Constants::DOCUMENTS_DETAIL];
 
         foreach ($documentsDetail as $documentDetail)
@@ -629,7 +634,8 @@ class Core extends Base\Core
             $retryCount = $merchantConsentDetail->retry_count;
 
             $this->trace->info(TraceCode::CRON_ATTEMPT_COMPLETE, [
-                'count' => $retryCount
+                'merchant_id' => $merchantConsentDetail->merchant_id,
+                'count'       => $retryCount
             ]);
 
             if ($retryCount == self::MAX_RETRY_COUNT)
