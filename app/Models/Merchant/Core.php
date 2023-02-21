@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Mail;
 use Config;
 use RZP\Constants\Entity as E;
+use RZP\Constants\Environment;
 use RZP\Models\Base\UniqueIdEntity;
 use Throwable;
 use ApiResponse;
@@ -3888,13 +3889,7 @@ class Core extends Base\Core
 
     public function createPartnerConfig(OAuthApp\Entity $application, Entity $partner, array $config = [])
     {
-        $defaultConfig = [
-            PartnerConfig\Entity::DEFAULT_PLAN_ID       => Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS,
-            PartnerConfig\Entity::IMPLICIT_PLAN_ID      => Pricing\DefaultPlan::PARTNER_COMMISSION_PLAN_ID,
-            PartnerConfig\Entity::COMMISSIONS_ENABLED   => true,
-            PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
-        ];
-
+        $defaultConfig = $this->getPartnerDefaultConfig($partner);
         //If partner type is fully managed then commissions are disabled.
         if($partner->getPartnerType() === Constants::FULLY_MANAGED)
         {
@@ -3973,6 +3968,21 @@ class Core extends Base\Core
     protected function sendPartnerInfoToSalesForce(Entity $partner)
     {
         $this->app->salesforce->sendPartnerInfo($partner);
+    }
+
+    protected function getPartnerDefaultConfig(Entity $partner): array
+    {
+        $env = ($this->app->isProduction()) ? Environment::PRODUCTION : Environment::DEV;
+        $defaultPlanId = Pricing\DefaultPlan::DEFAULT_PARTNERS_PRICING_PLANS[
+            $partner->getCountry()][$env][Pricing\DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS_KEY];
+        $implicitPlanId  = Pricing\DefaultPlan::DEFAULT_PARTNERS_PRICING_PLANS[
+            $partner->getCountry()][$env][Pricing\DefaultPlan::PARTNER_COMMISSION_PLAN_ID_KEY];
+        return [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID       => $defaultPlanId,
+            PartnerConfig\Entity::IMPLICIT_PLAN_ID      => $implicitPlanId,
+            PartnerConfig\Entity::COMMISSIONS_ENABLED   => true,
+            PartnerConfig\Constants::PARTNER_ID         => $partner->getId(),
+        ];
     }
 
     /**
@@ -8875,7 +8885,7 @@ class Core extends Base\Core
 
     public function createOrEditMerchantIpConfig(array $input)
     {
-        
+
         if ($this->app['basicauth']->isAdminAuth() === true)
         {
             $this->merchant = $this->repo->merchant->findOrFail($input['merchant_id']);

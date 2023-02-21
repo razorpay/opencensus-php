@@ -7,6 +7,7 @@ use DB;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Country;
 use RZP\Constants\Mode;
 use App\User\Constants;
 use RZP\Constants\Timezone;
@@ -17,6 +18,7 @@ use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Error\PublicErrorCode;
 use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo;
+use RZP\Models\Pricing\DefaultPlan;
 use RZP\Models\User\BankingRole;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Models\Merchant\Constants as MerchantConstants;
@@ -54,16 +56,17 @@ class PartnerTest extends OAuthTestCase
     use CreateLegalDocumentsTrait;
     use TestsWebhookEvents;
 
-    const PARTNER                  = 'partner';
-    const ACTIVATION               = 'activation';
-    const DEACTIVATION             = 'deactivation';
-    const DUMMY_APP_ID_1           = '8ckeirnw84ifke';
-    const DUMMY_APP_ID_2           = '10000RandomApp';
-    const DUMMY_APP_ID_3           = '11111RandomApp';
-    const DEFAULT_MERCHANT_ID      = '10000000000000';
-    const DEFAULT_SUBMERCHANT_ID   = '10000000000009';
-    const DEFAULT_SUBMERCHANT_ID_2 = '10000000000010';
-    const RZP_ORG                  = '100000razorpay';
+    const PARTNER                       = 'partner';
+    const ACTIVATION                    = 'activation';
+    const DEACTIVATION                  = 'deactivation';
+    const DUMMY_APP_ID_1                = '8ckeirnw84ifke';
+    const DUMMY_APP_ID_2                = '10000RandomApp';
+    const DUMMY_APP_ID_3                = '11111RandomApp';
+    const DEFAULT_MERCHANT_ID           = '10000000000000';
+    const DEFAULT_SUBMERCHANT_ID        = '10000000000009';
+    const DEFAULT_SUBMERCHANT_ID_2      = '10000000000010';
+    const RZP_ORG                       = '100000razorpay';
+    const CURLEC_DEFAULT_MERCHANT_ID    = '10000121212121';
 
     protected function setUp(): void
     {
@@ -2755,24 +2758,79 @@ class PartnerTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+        $org = $this->fixtures->create('org:curlec_org');
+
+        $merchantAttributes = [
+            'id' => self::CURLEC_DEFAULT_MERCHANT_ID,
+            'live' => 1,
+            'activated_at' => Carbon::now()->subDays(2)->getTimestamp(),
+            'org_id' => $org->getId()
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
 
         $app = ['id'=>'8ckeirnw84ifke'];
 
-        $org = $this->fixtures->create('org:curlec_org');
+        $commissionPricingPlan = [
+            'plan_id' => 'LFbIN2OyJaNzUO',
+            'plan_name' => 'testPPMYCommissionPlan',
+            'feature' => 'payment',
+            'type' => 'pricing',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 170,
+            'fixed_rate' => 0,
+            'org_id'    => $org->getId(),
+        ];
 
-        $this->fixtures->merchant->edit( self::DEFAULT_MERCHANT_ID, [
+        $subMerchantPricingPlan = [
+            'plan_id' => 'LFbrOUOTRSyAqq',
+            'plan_name' => 'testSubMPricingPlan',
+            'feature' => 'payment',
+            'type' => 'pricing',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 250,
+            'fixed_rate' => 0,
+            'org_id'    => $org->getId(),
+        ];
+
+        $this->fixtures->create('pricing', $commissionPricingPlan);
+
+        $this->fixtures->create('pricing', $subMerchantPricingPlan);
+
+        $this->fixtures->merchant->edit( self::CURLEC_DEFAULT_MERCHANT_ID, [
             'org_id'    => $org->getId(),
             'country_code'=> 'MY'
         ]);
 
-        $this->mockAuthServiceCreateApplication($merchant, $app);
+
+        $requestParams1 = [
+            'merchant_id' => $merchant->getId(),
+            'name'     => $merchant->getName(),
+            'website'  => $merchant->getWebsite() ?: 'https://www.curlec.com',
+            'type'     => self::PARTNER,
+        ];
+
+        $this->authServiceMock
+            ->expects($this->exactly(1))
+            ->method('sendRequest')
+            ->with('applications', 'POST', $requestParams1)
+            ->will($this->returnCallback(
+                function($route, $method, $params) {
+                    return ['id'=>'8ckeirnw84ifke'];
+                }
+            ));
 
         $this->fixtures->merchant->createDummyCurlecPartnerApp(['partner_type' => 'reseller']);
 
         $now = Carbon::now()->getTimestamp();
 
-        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID,
+        $this->fixtures->merchant->edit(self::CURLEC_DEFAULT_MERCHANT_ID,
             [
                 'activated'    => true,
                 'activated_at' => $now
@@ -2780,11 +2838,14 @@ class PartnerTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail:sane',
             [
-                'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+                'merchant_id'       => self::CURLEC_DEFAULT_MERCHANT_ID,
                 'activation_status' => 'activated'
             ]);
 
-        $this->ba->proxyAuth();
+        $merchantUser = $this->fixtures->user->createUserForMerchant(
+            self::CURLEC_DEFAULT_MERCHANT_ID, [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_' .   self::CURLEC_DEFAULT_MERCHANT_ID, $merchantUser['id']);
 
         $this->startTest();
 
@@ -2794,9 +2855,20 @@ class PartnerTest extends OAuthTestCase
         $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::LIVE));
         $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::LIVE));
 
-        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+        $expectedPartner = $this->getDbEntityById('merchant', self::CURLEC_DEFAULT_MERCHANT_ID, 'live');
 
-        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+        $expectedPartnerConfig = $this->getDbEntity('partner_config');
+
+        $this->assertEquals(
+            DefaultPlan::DEFAULT_PARTNERS_PRICING_PLANS['MY']['dev'][DefaultPlan::PARTNER_COMMISSION_PLAN_ID_KEY],
+            $expectedPartnerConfig['implicit_plan_id'], "commission plan_id matched"
+        );
+        $this->assertEquals(
+            DefaultPlan::DEFAULT_PARTNERS_PRICING_PLANS['MY']['dev'][DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS_KEY],
+            $expectedPartnerConfig['default_plan_id'], "submerchants plan_id matched"
+        );
+
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::CURLEC_DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
 
         $applicationTypes = $merchantApplications->pluck(Entity::TYPE)->toArray();
 
@@ -2815,18 +2887,57 @@ class PartnerTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $merchant = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
-
         $org = $this->fixtures->create('org:curlec_org');
 
-        $this->fixtures->merchant->edit( self::DEFAULT_MERCHANT_ID, [
+        $merchantAttributes = [
+            'id' => self::CURLEC_DEFAULT_MERCHANT_ID,
+            'live' => 1,
+            'activated_at' => Carbon::now()->subDays(2)->getTimestamp(),
+            'org_id' => $org->getId()
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
+
+        $commissionPricingPlan = [
+            'plan_id' => 'LFbIN2OyJaNzUO',
+            'plan_name' => 'testPPMYCommissionPlan',
+            'feature' => 'payment',
+            'type' => 'pricing',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 170,
+            'fixed_rate' => 0,
+            'org_id'    => $org->getId(),
+        ];
+
+        $subMerchantPricingPlan = [
+            'plan_id' => 'LFbrOUOTRSyAqq',
+            'plan_name' => 'testSubMPricingPlan',
+            'feature' => 'payment',
+            'type' => 'pricing',
+            'payment_method' => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network' => null,
+            'payment_issuer' => null,
+            'percent_rate' => 250,
+            'fixed_rate' => 0,
+            'org_id'    => $org->getId(),
+        ];
+
+        $this->fixtures->create('pricing', $commissionPricingPlan);
+
+        $this->fixtures->create('pricing', $subMerchantPricingPlan);
+
+        $this->fixtures->merchant->edit( self::CURLEC_DEFAULT_MERCHANT_ID, [
             'org_id'    => $org->getId(),
             'country_code'=> 'MY'
         ]);
 
         $now = Carbon::now()->getTimestamp();
 
-        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID,
+        $this->fixtures->merchant->edit(self::CURLEC_DEFAULT_MERCHANT_ID,
             [
                 'activated'    => true,
                 'activated_at' => $now
@@ -2834,7 +2945,7 @@ class PartnerTest extends OAuthTestCase
 
         $this->fixtures->create('merchant_detail:sane',
             [
-                'merchant_id'       => self::DEFAULT_MERCHANT_ID,
+                'merchant_id'       => self::CURLEC_DEFAULT_MERCHANT_ID,
                 'activation_status' => 'activated'
             ]);
 
@@ -2865,11 +2976,14 @@ class PartnerTest extends OAuthTestCase
                 }
             ));
 
-        $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], false);
+        $this->fixtures->merchant->createDummyCurlecPartnerApp(['partner_type' => 'aggregator'], false);
 
         $this->fixtures->merchant->createDummyReferredAppForManaged(['partner_type' => 'aggregator'], false);
 
-        $this->ba->proxyAuth();
+        $merchantUser = $this->fixtures->user->createUserForMerchant(
+            self::CURLEC_DEFAULT_MERCHANT_ID, [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_' .   self::CURLEC_DEFAULT_MERCHANT_ID, $merchantUser['id']);
 
         $this->startTest();
 
@@ -2879,9 +2993,19 @@ class PartnerTest extends OAuthTestCase
         $this->assertNotNull($this->checkReferrals($merchant->getId(), 'banking', Mode::LIVE));
         $this->assertNotNull($this->checkReferrals($merchant->getId(), 'primary', Mode::LIVE));
 
-        $expectedPartner = $this->getDbEntityById('merchant', self::DEFAULT_MERCHANT_ID, 'live');
+        $expectedPartner = $this->getDbEntityById('merchant', self::CURLEC_DEFAULT_MERCHANT_ID, 'live');
 
-        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
+        $expectedPartnerConfig = $this->getDbEntity('partner_config');
+
+        $this->assertEquals(
+            DefaultPlan::DEFAULT_PARTNERS_PRICING_PLANS['MY']['dev'][DefaultPlan::PARTNER_COMMISSION_PLAN_ID_KEY],
+            $expectedPartnerConfig['implicit_plan_id'], "commission plan_id matched"
+        );
+        $this->assertEquals(
+            DefaultPlan::DEFAULT_PARTNERS_PRICING_PLANS['MY']['dev'][DefaultPlan::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS_KEY],
+            $expectedPartnerConfig['default_plan_id'], "submerchants plan_id matched"
+        );
+        $merchantApplications = (new MerchantApplications\Repository())->fetchMerchantApplication(self::CURLEC_DEFAULT_MERCHANT_ID, Merchant\Constants::MERCHANT_ID);
 
         $applicationTypes = $merchantApplications->pluck(Entity::TYPE)->toArray();
 

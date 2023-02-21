@@ -394,9 +394,9 @@ class Repository extends Base\Repository
      * @throws Exception\BadRequestException
      * @throws Exception\LogicException
      */
-    public function getPlanByIdOrFailPublic($id, $orgId = null)
+    public function getPlanByIdOrFailPublic($id, $orgId = null, $skipOrgCheck = false)
     {
-        return $this->getPlan($id, null, true, true, $orgId);
+        return $this->getPlan($id, null, true, true, $orgId, $skipOrgCheck);
     }
 
     public function getZeroPricingPlanRuleForMethod($feature, $method, $merchant, $product = Product::PRIMARY)

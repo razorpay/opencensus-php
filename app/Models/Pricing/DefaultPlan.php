@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Pricing;
 
+use RZP\Constants\Environment;
 use RZP\Http\BasicAuth;
 
 use RZP\Models\Merchant\Detail\BusinessCategory;
@@ -24,6 +25,32 @@ class DefaultPlan
 
     const SUBMERCHANT_PROMOTIONAL_PRICING_PLAN          = 'EGBQtZbvBrGPHf';
 
+    const PARTNER_COMMISSION_PLAN_ID_KEY                = 'PARTNER_COMMISSION_PLAN_ID';
+    const SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS_KEY = 'SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS';
+
+    const DEFAULT_PARTNERS_PRICING_PLANS = [
+        //TODO migrate to country code as common constants once country code constants are defined.
+        'IN' => [
+            Environment::PRODUCTION => [
+                self::PARTNER_COMMISSION_PLAN_ID_KEY                => 'CKORH39BEuEzIS',
+                self::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS_KEY => 'C4uidYkQYsDdgX'
+            ],
+            Environment::DEV => [
+                self::PARTNER_COMMISSION_PLAN_ID_KEY                => 'CKORH39BEuEzIS',
+                self::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS_KEY => 'C4uidYkQYsDdgX'
+            ]
+        ],
+        'MY' => [
+            Environment::PRODUCTION => [
+                self::PARTNER_COMMISSION_PLAN_ID_KEY                => 'LGFJMnzI2qyZw4',
+                self::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS_KEY => 'LGFMEiQqKwK3tu'
+            ],
+            Environment::DEV => [
+                self::PARTNER_COMMISSION_PLAN_ID_KEY                => 'LFbIN2OyJaNzUO',
+                self::SUBMERCHANT_PRICING_OF_ONBOARDED_PARTNERS_KEY => 'LFbrOUOTRSyAqq'
+            ]
+        ]
+    ];
     //Refer - https://docs.google.com/spreadsheets/d/1br56fmjkA87nuhdRZijYEltG7AAh1nmpV-x-7F7DIVk/edit?usp=sharing
     const SUB_MERCHANT_DEFAULT_PRICING_PLAN_MAP_BUS_CAT = [
         FeeBearer::PLATFORM => [

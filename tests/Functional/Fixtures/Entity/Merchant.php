@@ -1123,7 +1123,7 @@ class Merchant extends Base
     {
         $defaults = [
             'id'          => '8ckeirnw84ifke',
-            'merchant_id' => '10000000000000',
+            'merchant_id' => '10000121212121',
             'name'        => 'Internal',
             'website'     => 'https://www.curlec.com',
             'logo_url'    => '/logo/app_logo.png',
