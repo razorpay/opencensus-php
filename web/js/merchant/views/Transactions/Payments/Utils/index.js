@@ -10,10 +10,6 @@ export const makeIdLink = (type) => (item, initiatePage) => {
   const { hash } = window.location;
   const initiatePoint = 'payments-table';
 
-  if (hash) {
-    url += hash;
-  }
-
   const screen = initiatePage?.split('.')[0];
   const page = initiatePage?.split('.')[1];
   const selfServeInitiateData = {
@@ -26,6 +22,10 @@ export const makeIdLink = (type) => (item, initiatePage) => {
   if (window && window.session_id) selfServeInitiateData.props.sessionId = window.session_id;
 
   url = `${url}?init_point=${initiatePoint}&init_page=${initiatePage}`;
+  // #hash must come after the query params: https://stackoverflow.com/a/12683131/6127580
+  if (hash) {
+    url += hash;
+  }
 
   const onLinkClick = () => selfServeTrackInitiate(selfServeInitiateData);
 

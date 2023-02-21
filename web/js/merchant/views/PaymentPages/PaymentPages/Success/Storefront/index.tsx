@@ -119,7 +119,7 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
       expire_by: formData?.expire_by ? +formData.expire_by : null,
       settings: {
         ...storeData.settings, // destructuring the whole settings because backend api expects the whole settings object for patch
-        payment_success_message: formData?.payment_success_redirect_url || '',
+        payment_success_message: formData?.payment_success_message || '',
         payment_success_redirect_url: formData?.payment_success_redirect_url || '',
       },
     };
