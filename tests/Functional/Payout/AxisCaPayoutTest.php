@@ -522,6 +522,26 @@ class AxisCaPayoutTest extends TestCase
         $this->assertEquals(0, $payout['tax']);
     }
 
+    public function testCreatePayoutWithMissingPricingRule()
+    {
+        $this->ba->privateAuth();
+
+        $attributes = [
+            'bas_business_id'   => '10000000000000',
+            'merchant_id'       => '10000000000000',
+        ];
+
+        $this->fixtures->create('merchant_detail', $attributes);
+
+        $this->fixtures->edit('pricing', 'Bbg7e4oKCgaxxx', ['plan_id' => 'plan1234567890']);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNull($payout);
+    }
+
     public function testCreatePayoutImps()
     {
         $this->ba->privateAuth();

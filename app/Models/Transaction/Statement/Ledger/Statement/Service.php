@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Transaction\Statement\Ledger\Statement;
 
+use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HyperTrace;
 use RZP\Models\BankingAccount;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
@@ -157,6 +160,8 @@ class Service extends Base\Service
                 $e,
                 Trace::ERROR,
                 TraceCode::LEDGER_JOURNAL_FETCH_TRANSACTION_ERROR, [$id]);
+
+            Tracer::startSpanWithAttributes(HyperTrace::LEDGER_JOURNAL_FETCH_TRANSACTION_ERROR_TOTAL);
         }
         finally
         {

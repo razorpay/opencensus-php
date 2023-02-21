@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Trace\Tracer;
 use RZP\Models\Admin;
 use RZP\Models\State;
 use DeepCopy\DeepCopy;
@@ -38,6 +39,7 @@ use RZP\Jobs\QueuedPayouts;
 use RZP\Models\Transaction;
 use RZP\Models\FeeRecovery;
 use RZP\Constants\Timezone;
+use RZP\Constants\HyperTrace;
 use RZP\Models\CreditTransfer;
 use RZP\Models\IdempotencyKey;
 use RZP\Models\BankingAccount;
@@ -907,6 +909,8 @@ class Core extends Base\Core
                                 'card_vault_response' => $response,
                             ] + $traceData
                         );
+
+                        Tracer::startSpanWithAttributes(HyperTrace::PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_RETRIES_EXHAUSTED);
 
                         break;
                     }

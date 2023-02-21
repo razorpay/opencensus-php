@@ -259,6 +259,21 @@ class HyperTrace
     const SUBMERCHANT_STORK_INVALIDATE_CACHE_REQUEST                          = 'submerchant.stork.invalidate_cache_request';
     const PAYMENT_VALIDATE_VPA                                                = 'payment.validate_vpa';
 
+    //payouts alerts traces
+    const BAS_PROCESSOR_JOB_FAILURES_TOTAL                         = 'bas.bas_processor_job_failures_total';
+    const MISSING_STATEMENTS_FOUND                                 = 'bas.missing_statements_found';
+    const MISSING_STATEMENT_REDIS_INSERT_FAILURES                  = 'bas.missing_statement_redis_insert_failures';
+    const BAS_PROCESSOR_QUEUE_PUSH_FAILURES_TOTAL                  = 'bas.bas_processor_queue_push_failures_total';
+    const FAV_QUEUE_FOR_FTS_JOB_FAILED_OR_RETRY_ATTEMPT_EXHAUSTED  = 'fav.fav_queue_for_fts_job_failed_or_attempt_exhausted';
+    const LEDGER_JOURNAL_FETCH_TRANSACTION_ERROR_TOTAL             = 'ledger.ledger_journal_fetch_transaction_error_total';
+    const HASH_MISMATCH_FOR_INPUT_AND_DUPLICATE_FUND_ACCOUNT_TOTAL = 'fa.hash_mismatch_for_input_dup_fa';
+    const PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_ERROR_TOTAL          = 'payout.payout_create_submitted_process_job_error_total';
+    const PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_RETRIES_EXHAUSTED   = 'payout.payout_to_cards_vault_token_deletion_retries_exhausted';
+    const SERVER_ERROR_PRICING_RULE_ABSENT_TOTAL                   = 'payout.server_error_pricing_rule_absent_total';
+    const BANK_TRANSFER_SAVE_REQUESTS_TOTAL                        = 'bt.bank_transfer_save_requests_total';
+    const INVALID_VAULT_TOKEN_ASSOCIATED                           = 'card.invalid_vault_token_associated';
+    const VIRTUAL_ACCOUNT_PAYMENT_SUCCESS_TOTAL                    = 'virtual_account_payment_success_total';
+
     const AUTHENTICATE_PRE_AUTHENTICATE                                                         = 'authenticate.pre_authenticate';
     const AUTHENTICATE_USING_PASSPORT                                                           = 'authenticate.using_passport';
     const AUTHENTICATE_BASIC_AUTH                                                               = 'authenticate.basic_auth';

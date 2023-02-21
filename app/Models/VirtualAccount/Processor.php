@@ -5,6 +5,7 @@ namespace RZP\Models\VirtualAccount;
 use App;
 use Exception;
 use RZP\Constants;
+use RZP\Trace\Tracer;
 use RZP\Error\ErrorCode;
 use Razorpay\IFSC;
 use RZP\Models\Feature;
@@ -16,6 +17,7 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\BankTransfer;
+use RZP\Constants\HyperTrace;
 use RZP\Models\VirtualAccount;
 use RZP\Exception\LogicException;
 use RZP\Models\FundAccount\Entity;
@@ -25,7 +27,7 @@ use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
 use RZP\Models\BankTransfer\Entity as BankTransferEntity;
 use RZP\Models\OfflinePayment\StatusCode as OfflineStatusCode;
-use RZP\Models\Payment\Processor\Processor as PaymentProcessor;use function Aws\or_chain;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 abstract class Processor extends Base\Core
 {
@@ -177,6 +179,8 @@ abstract class Processor extends Base\Core
             TraceCode::VIRTUAL_ACCOUNT_PAYMENT_SUCCESSFUL,
             $logData
         );
+
+        $this->pushMetricsToHT($entity);
 
         return $entity;
     }
@@ -942,5 +946,18 @@ abstract class Processor extends Base\Core
         }
 
         return false;
+    }
+
+    protected function pushMetricsToHT($entity)
+    {
+/*        $route = optional($this->app['router'])->currentRouteName();
+
+        $mode = method_exists($entity, 'getMode') === true ? $entity->getMode() : null;
+
+        Tracer::startSpanWithAttributes(HyperTrace::VIRTUAL_ACCOUNT_PAYMENT_SUCCESS_TOTAL,
+            [
+                Metric::LABEL_MODE       => $mode,
+                Metric::LABEL_ROUTE_NAME => $route
+            ]);*/
     }
 }

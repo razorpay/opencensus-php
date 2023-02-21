@@ -454,4 +454,35 @@ return [
             ],
         ],
     ],
+
+    'testCreatePayoutWithMissingPricingRule' => [
+        'request'   => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'purpose'         => 'refund',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'notes'           => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\LogicException',
+            'internal_error_code' => 'SERVER_ERROR_PRICING_RULE_ABSENT',
+        ],
+    ],
 ];

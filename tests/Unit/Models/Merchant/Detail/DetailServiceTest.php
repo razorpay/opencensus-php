@@ -5,6 +5,7 @@ namespace Unit\Models\Merchant\Detail;
 use Mockery;
 
 use Carbon\Carbon;
+use RZP\Models\Feature;
 use Tests\Unit\TestCase;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Merchant\Detail\Service as MerchantService;
@@ -210,6 +211,11 @@ class DetailServiceTest extends TestCase
         $this->merchantEntityMock->shouldReceive('isRouteNoDocKycEnabledForParentMerchant')->andReturn(false);
         $this->merchantDetailRepositoryMock->shouldReceive('findOrFailPublic')->withAnyArgs()->andReturn($this->merchantDetailEntityMock);
         $this->merchantEntityMock->shouldReceive('getOrgId')->withAnyArgs()->andReturn();
+
+        $org = Mockery::mock('\RZP\Models\Admin\Org\Entity');
+
+        $this->merchantEntityMock->shouldReceive('getAttribute')->withArgs(['org'])->andReturn($org);
+        $org->shouldReceive('isFeatureEnabled')->withArgs([Feature\Constants::ORG_PROGRAM_DS_CHECK])->andReturn(false);
         $this->repoMock->shouldReceive('driver')->with('merchant_detail')->andReturn($this->merchantDetailRepositoryMock);
 
         $actualResponse = $this->merchantService->saveMerchantDetailsForActivation($merchantData);

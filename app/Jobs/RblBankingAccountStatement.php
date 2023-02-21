@@ -7,8 +7,10 @@ use Carbon\Carbon;
 use Razorpay\Trace\Logger as Trace;
 
 use RZP\Models\Admin;
+use RZP\Trace\Tracer;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
@@ -224,6 +226,8 @@ class RblBankingAccountStatement extends Job
                 $e,
                 Logger::ERROR,
                 TraceCode::FAILED_TO_ENQUEUE_BANKING_ACCOUNT_STATEMENT_PROCESSING_JOB);
+
+            Tracer::startSpanWithAttributes(HyperTrace::BAS_PROCESSOR_QUEUE_PUSH_FAILURES_TOTAL);
         }
     }
 

@@ -30,6 +30,7 @@ class Metric extends Base\Core
     const NETWORK_TOKEN                            = 'network_token';
     const ATTRIBUTE_NAME                           = 'attribute_name';
     const ROUTE                                    = 'route';
+    const LABEL_IS_TOKENISED                       = 'is_tokenised';
 
     public function pushCardVaultDimensions($input, $status, $statusCode = null, $action = null, $exe = null)
     {

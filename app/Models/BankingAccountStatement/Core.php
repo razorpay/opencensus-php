@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Admin;
+use RZP\Trace\Tracer;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
@@ -21,6 +22,7 @@ use RZP\Models\Reversal;
 use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Models\Payout\Status;
+use RZP\Constants\HyperTrace;
 use RZP\Models\BankingAccount;
 use RZP\Models\Payout\Purpose;
 use RZP\Models\Admin\ConfigKey;
@@ -418,6 +420,11 @@ class Core extends Base\Core
                         ];
 
                         $this->trace->info(TraceCode::MISSING_TRANSACTIONS_FOUND, $traceData);
+
+                        Tracer::startSpanWithAttributes(HyperTrace::MISSING_STATEMENTS_FOUND,
+                            [
+                                Metric::LABEL_CHANNEL => $channel
+                            ]);
 
                         // Persisting in redis
                         $processor->storeMissingStatementsInRedis($missingTransactions, $accountNumber);

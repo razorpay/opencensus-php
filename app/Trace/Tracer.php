@@ -101,4 +101,26 @@ class Tracer
             }
         }
     }
+
+    public static function startSpanWithAttributes(string $spanName, array $attributes = [])
+    {
+        $span = self::startSpan(['name' => $spanName]);
+
+        $scope = self::withSpan($span);
+
+        try
+        {
+            $span->addAttribute('kind', 'server');
+
+            foreach ($attributes as $key => $value)
+            {
+                $span->addAttribute($key, $value);
+            }
+        }
+        finally
+        {
+            // Closes the scope (ends the span)
+            $scope->close();
+        }
+    }
 }

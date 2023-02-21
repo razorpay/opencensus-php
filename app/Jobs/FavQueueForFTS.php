@@ -2,9 +2,11 @@
 
 namespace RZP\Jobs;
 
+use RZP\Trace\Tracer;
 use RZP\Services\FTS;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger;
+use RZP\Constants\HyperTrace;
 use RZP\Models\FundAccount\Validation\Core as FAVCore;
 
 class FavQueueForFTS extends Job
@@ -88,6 +90,8 @@ class FavQueueForFTS extends Job
                     'message' => $exception->getMessage(),
                 ]);
 
+            Tracer::startSpanWithAttributes( HyperTrace::FAV_QUEUE_FOR_FTS_JOB_FAILED_OR_RETRY_ATTEMPT_EXHAUSTED);
+
             $this->checkRetry();
         }
     }
@@ -120,6 +124,8 @@ class FavQueueForFTS extends Job
                     'no_of_attempts' => $noOfAttempts,
                 ]
             );
+
+            Tracer::startSpanWithAttributes( HyperTrace::FAV_QUEUE_FOR_FTS_JOB_FAILED_OR_RETRY_ATTEMPT_EXHAUSTED);
 
             $this->delete();
         }

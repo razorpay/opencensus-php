@@ -30,6 +30,9 @@ class Metric extends Base\Core
     const LABEL_GATEWAY                         = 'gateway';
     const LABEL_ERROR_MESSAGE                   = 'error_message';
 
+    const LABEL_MODE                            = 'mode';
+    const LABEL_ROUTE_NAME                      = 'route_name';
+
     protected function getDefaultDimensions(array $input): array
     {
         $receivers = isset($input[Entity::RECEIVERS]) === true ? $input[Entity::RECEIVERS] : null;

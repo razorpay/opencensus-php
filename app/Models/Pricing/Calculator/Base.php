@@ -4,25 +4,26 @@ namespace RZP\Models\Pricing\Calculator;
 
 use Cache;
 
-use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Constants;
+use RZP\Trace\Tracer;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Entity;
 use RZP\Models\Pricing\Fee;
 use RZP\Models\Transaction;
+use RZP\Constants\HyperTrace;
+use RZP\Models\Payout\Metric;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base as BaseModel;
+use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\UpiMandate\Metrics as UpiMandateMetrics;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
-use RZP\Models\Payment\Processor\Processor;
-
-use Razorpay\Trace\Logger as Trace;
 
 abstract class Base extends BaseModel\Core
 {
@@ -39,6 +40,8 @@ abstract class Base extends BaseModel\Core
     const RZP_STATE = 'KA';
 
     const CARD_TAX_CUT_OFF = 200000;
+
+    const TEST_MERCHANT_ID = 'Hod4BwliaNS6bo';
 
     /**
      * For which fees needs to be calculated.
@@ -341,6 +344,15 @@ abstract class Base extends BaseModel\Core
                         'step'    => 'No rule after amount range active check'
                     ]
                 );
+            }
+
+            if (($this->app['basicauth']->getProduct() === Constants\Product::BANKING) and
+                ($payment->getMerchantId() !== self::TEST_MERCHANT_ID))
+            {
+                Tracer::startSpanWithAttributes(HyperTrace::SERVER_ERROR_PRICING_RULE_ABSENT_TOTAL,
+                    [
+                        'route_name' => $this->app['api.route']->getCurrentRouteName(),
+                    ]);
             }
 
             throw new Exception\LogicException(

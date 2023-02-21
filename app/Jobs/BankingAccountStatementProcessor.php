@@ -5,9 +5,10 @@ namespace RZP\Jobs;
 use App;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-
+use RZP\Trace\Tracer;
 use RZP\Models\Admin;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HyperTrace;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\BankingAccountStatement as BAS;
@@ -103,6 +104,13 @@ class BankingAccountStatementProcessor extends Job
                 $e,
                 Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_FAILED, $this->params);
+
+            Tracer::startSpanWithAttributes(HyperTrace::BAS_PROCESSOR_JOB_FAILURES_TOTAL,
+                [
+                    BAS\Metric::LABEL_CODE          => $e->getCode(),
+                    BAS\Metric::LABEL_CHANNEL       => $this->params[BAS\Entity::CHANNEL],
+                    BAS\Metric::LABEL_ERROR_MESSAGE => $e->getMessage(),
+                ]);
 
             $app = App::getFacadeRoot();
 

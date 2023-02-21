@@ -6,6 +6,7 @@ use Illuminate\Support\Str;
 use Route;
 
 use RZP\Exception;
+use RZP\Trace\Tracer;
 use RZP\Jobs\ParAsyncTokenisationJob;
 use RZP\Jobs\SavedCardTokenisationJob;
 use RZP\Models\Base;
@@ -20,6 +21,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Customer\Token;
 use RZP\Models\FundTransfer;
 use RZP\Models\FundAccount;
+use RZP\Constants\HyperTrace;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankAccount\Beneficiary;
 use RZP\Models\FundAccount\Type as FundAccountType;
@@ -399,6 +401,11 @@ class Core extends Base\Core
                         'vault_token'        => $vaultToken,
                         'is_temporary_token' => $isTempVaultToken,
                         'is_tokenised'       => $tokenised
+                    ]);
+
+                Tracer::startSpanWithAttributes(HyperTrace::INVALID_VAULT_TOKEN_ASSOCIATED,
+                    [
+                        Metric::LABEL_IS_TOKENISED => $tokenised
                     ]);
 
                 throw new Exception\BadRequestException(

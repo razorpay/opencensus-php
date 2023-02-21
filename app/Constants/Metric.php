@@ -50,7 +50,6 @@ class Metric
     const MERCHANT_RELATED_ENTITIES_READ_TRAFFIC_TOTAL    = 'merchant_related_entities_read_traffic_total';
     const RAVEN_REQUEST_FAILED                  = 'raven_request_failed';
 
-
     // Summary type metric names
     // Using '.histogram' as suffix for pattern match to work(refer statsd_mapping.yml) for statsd_exporter
     const HTTP_REQUEST_DURATION_MILLISECONDS    = 'http_request_duration_milliseconds.histogram';
@@ -66,7 +65,6 @@ class Metric
     const ASV_SYNC_ACCOUNT_DEVIATION_DURATION_MS = 'asv_sync_account_deviation_duration_ms.histogram';
     const ASYNC_TRANSACTION_DURATION_SECONDS     = 'async_transaction_duration_secs.histogram';
     const ASV_HTTP_CLIENT_RESPONSE_DURATION_MS   = 'asv_http_client_response_duration_ms';
-
 
     // Labels
     const LABEL_RZP_MODE                        = 'rzp_mode';

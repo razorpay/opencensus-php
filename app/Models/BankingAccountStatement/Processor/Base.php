@@ -6,13 +6,16 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Admin;
+use RZP\Trace\Tracer;
 use Rzp\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\BankingAccountStatement\Pool;
 use RZP\Models\BankingAccountStatement\Entity;
+use RZP\Models\BankingAccountStatement\Metric;
 use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\BankingAccountStatement\Core as BasCore;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
@@ -345,6 +348,8 @@ abstract class Base extends BaseCore
                             'channel'        => $channel
                         ]
                     );
+
+                    Tracer::startSpanWithAttributes(HyperTrace::MISSING_STATEMENT_REDIS_INSERT_FAILURES);
                 }
 
             },

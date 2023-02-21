@@ -3,7 +3,11 @@
 namespace RZP\Models\BankTransferRequest;
 
 use RZP\Models\Base;
+use RZP\Trace\Tracer;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HyperTrace;
+use RZP\Constants\Environment;
 use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
@@ -31,6 +35,13 @@ class Core extends Base\Core
                 Entity::REQUEST_SOURCE => $requestSource,
             ]
         );
+
+        Tracer::startSpanWithAttributes(HyperTrace::BANK_TRANSFER_SAVE_REQUESTS_TOTAL,
+            [
+                Metric::LABEL_MODE => $this->app['rzp.mode'],
+                Metric::LABEL_ENVIRONMENT => $this->app['env'],
+                Metric::LABEL_GATEWAY => $gateway
+            ]);
 
         $requestPayload = json_encode($requestPayload);
 

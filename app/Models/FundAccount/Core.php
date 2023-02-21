@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Models\Vpa;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Trace\Tracer;
 use RZP\Models\Contact;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
@@ -19,6 +20,7 @@ use RZP\Traits\TrimSpace;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
 use RZP\Models\WalletAccount;
+use RZP\Constants\HyperTrace;
 use RZP\Constants\Entity as E;
 use RZP\Services\FTS\Constants;
 use RZP\Exception\LogicException;
@@ -1291,6 +1293,8 @@ class Core extends Base\Core
                     Entity::UNIQUE_HASH . '_of_input'     => $uniqueHash,
                     Entity::UNIQUE_HASH . '_of_duplicate' => $uniqueHashForExistingFundAccount,
                 ]);
+
+            Tracer::startSpanWithAttributes(HyperTrace::HASH_MISMATCH_FOR_INPUT_AND_DUPLICATE_FUND_ACCOUNT_TOTAL);
         }
 
         return $fundAccount;

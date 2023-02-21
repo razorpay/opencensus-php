@@ -2,9 +2,11 @@
 
 namespace RZP\Jobs;
 
+use RZP\Trace\Tracer;
 use RZP\Models\Payout;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\HyperTrace;
 use RZP\Models\Payout\Entity;
 use RZP\Exception\LogicException;
 use RZP\Jobs\Extended\PendingDispatch;
@@ -162,6 +164,8 @@ class PayoutPostCreateProcessLowPriority extends Job
             $this->release($retryDelay);
 
             $this->trace->info(TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_RELEASED_LOW_PRIORITY, $data);
+
+            $this->pushErrorMetrics(false);
         }
         else
         {
@@ -174,9 +178,19 @@ class PayoutPostCreateProcessLowPriority extends Job
 
             $this->trace->error(TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_DELETED_LOW_PRIORITY, $data);
 
+            $this->pushErrorMetrics(true);
+
             $operation = 'Post payout create process fetch job failed';
 
             (new SlackNotification)->send($operation, $data, null, 1, 'x-payouts-core-alerts');
         }
+    }
+
+    protected function pushErrorMetrics($isDeleted)
+    {
+        Tracer::startSpanWithAttributes( HyperTrace::PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_ERROR_TOTAL,
+            [
+                'is_job_deleted' => $isDeleted
+            ]);
     }
 }
