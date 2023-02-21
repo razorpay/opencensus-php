@@ -447,7 +447,7 @@ function PaymentDetails(props) {
                     <Definition>
                       <Amount value={getPaymentFees()} currency={currency} />
                       <span>
-                        {chargedFeeLabelText()}Fee -&nbsp;
+                        {chargedFeeLabelText()} Fee -&nbsp;
                         <Amount value={getPaymentFees() - payment.tax} currency={currency} />
                       </span>
                       <span>
