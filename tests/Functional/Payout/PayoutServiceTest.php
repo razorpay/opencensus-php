@@ -1453,12 +1453,54 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals(1, $creditsTransactionAfterTestRun1->count());
     }
 
-    public function testFetchPricingInfoForPayoutService($mode = 'IMPS')
+    public function testFetchPricingInfoForPayoutServiceWithoutUserID($mode = 'IMPS')
     {
         $balance = $this->getDbEntities('balance',
                                         [
                                             'account_number' => '2224440041626905',
                                         ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testFetchPricingInfoForPayoutServiceWithUserID($mode = 'IMPS')
+    {
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number' => '2224440041626905',
+                                        ], 'live')->first();
+
+        $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+    }
+
+    public function testFetchPricingInfoForPayoutServiceForXPayrollApp($mode = 'IMPS')
+    {
+        $balance = $this->getDbEntities('balance',
+                                        [
+                                            'account_number' => '2224440041626905',
+                                        ], 'live')->first();
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => "Gg7sgBZgvYTTTT",
+                'source_id'   => 'randomid111123',
+                'source_type' => 'xpayroll',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
 
         $this->testData[__FUNCTION__]['request']['content']['balance_id'] = $balance->getId();
 

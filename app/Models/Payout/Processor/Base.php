@@ -3808,6 +3808,8 @@ class Base extends BaseCore
 
             $payout->setId($payoutId);
 
+            $payout->setIsPayoutService(1);
+
             $payout->setMethod($params[Entity::METHOD]);
 
             $payout->setAmount($params[Entity::AMOUNT]);
@@ -3824,6 +3826,11 @@ class Base extends BaseCore
             if (isset($params[Entity::FEE_TYPE]) === true)
             {
                 $payout->setFeeType($params[Entity::FEE_TYPE]);
+            }
+
+            if (isset($params[Entity::USER_ID]) === true)
+            {
+                $payout->setUserId($params[Entity::USER_ID]);
             }
 
             $merchantId = $params[Payout\Entity::MERCHANT_ID];

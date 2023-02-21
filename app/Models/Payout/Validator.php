@@ -527,6 +527,7 @@ class Validator extends Base\Validator
         Entity::MODE                 => 'required|string',
         Entity::CHANNEL              => 'required|string',
         Entity::PURPOSE              => 'sometimes|nullable|string',
+        Entity::USER_ID              => 'sometimes|nullable|string',
         Entity::FEE_TYPE             => 'sometimes|nullable|string'
     ];
 

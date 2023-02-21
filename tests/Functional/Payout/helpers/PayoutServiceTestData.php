@@ -361,7 +361,7 @@ return [
         ],
     ],
 
-    'testFetchPricingInfoForPayoutService' => [
+    'testFetchPricingInfoForPayoutServiceWithoutUserID' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts_service/fetch_pricing_info',
@@ -380,6 +380,55 @@ return [
                 Entity::FEES            => 590,
                 Entity::TAX             => 90,
                 Entity::PRICING_RULE_ID => "Bbg7cl6t6I3XA5",
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchPricingInfoForPayoutServiceWithUserID' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/fetch_pricing_info',
+            'content' => [
+                Entity::PAYOUT_ID   => "Gg7sgBZgvYTTTT",
+                Entity::BALANCE_ID  => "GhidjxhfiCL7WT",
+                Entity::MERCHANT_ID => "10000000000000",
+                Entity::METHOD      => Method::FUND_TRANSFER,
+                Entity::AMOUNT      => 100,
+                Entity::MODE        => Mode::NEFT,
+                Entity::CHANNEL     => Channel::ICICI,
+                Entity::USER_ID     => "user123",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                Entity::FEES            => 590,
+                Entity::TAX             => 90,
+                Entity::PRICING_RULE_ID => "Bbg7cl6t6I3XA7",
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testFetchPricingInfoForPayoutServiceForXPayrollApp' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts_service/fetch_pricing_info',
+            'content' => [
+                Entity::PAYOUT_ID   => "Gg7sgBZgvYTTTT",
+                Entity::BALANCE_ID  => "GhidjxhfiCL7WT",
+                Entity::MERCHANT_ID => "10000000000000",
+                Entity::METHOD      => Method::FUND_TRANSFER,
+                Entity::AMOUNT      => 100,
+                Entity::MODE        => Mode::NEFT,
+                Entity::CHANNEL     => Channel::ICICI,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                Entity::FEES            => 0,
+                Entity::TAX             => 0,
+                Entity::PRICING_RULE_ID => "Bbg7cl6t6I3XB8",
             ],
             'status_code' => 200,
         ],
