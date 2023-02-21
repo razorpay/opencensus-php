@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Storyshots CountryCodeInput Country Select 1`] = `
+<div>
+  <div>
+    <div>
+      <div />
+      <div
+        data-testid="component-wrapper"
+      >
+        <div>
+          <div
+            class="styled__DropDownMenu-sc-178p1ko-0 cbfevc country-code-input"
+          >
+            <div
+              class="styled__ValueContainer-sc-178p1ko-8 exbLxJ"
+            >
+              <span
+                class="styled__DropdownValue-sc-178p1ko-6 gywTBM"
+                data-testid="dialCodeSelector"
+              >
+                <span
+                  class="flag in"
+                />
+                <span
+                  class="dial-code"
+                  data-testid="dialCodeValue"
+                >
+                  +91
+                </span>
+                <i
+                  class="i i-chevron-down"
+                />
+              </span>
+              <input
+                data-testid="contactInput"
+                type="tel"
+                value="9999999999"
+              />
+            </div>
+          </div>
+        </div>
+        <div
+          data-testid="layerTestId"
+          id="layerHost"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    data-testid="layerTestId"
+    id="layerHost"
+  />
+</div>
+`;

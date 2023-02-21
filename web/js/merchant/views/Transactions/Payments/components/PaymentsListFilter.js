@@ -1,4 +1,5 @@
 import ListFilter from 'merchant/components/ListFilter';
+import { CountryCodeInput } from 'common/components/CountryCodeInput';
 import DateRangePicker from 'common/ui/DateRangePicker';
 import { Field } from 'redux-form';
 import { useState } from 'react';
@@ -15,6 +16,7 @@ const dateRangePresets = [
 const track = handleChangeTrack('payment');
 
 export default ({ showBatchIdFilter, ...props }) => {
+  const [initalFormData, setInitialFormData] = useState({});
   const [date, setDate] = useState({ from: '', to: '' });
   const onDatesChange = (from, to) => {
     track({ type: 'filter', args: [] });
@@ -26,8 +28,19 @@ export default ({ showBatchIdFilter, ...props }) => {
 
   const [provider, setProvider] = useState({ name: 'All', value: '', gateway: '' });
 
+  const [changeFormValue, setChangeFunction] = useState(() => {});
+
   return (
-    <ListFilter date={date} provider={provider} setProvider={setProvider} {...props}>
+    <ListFilter
+      date={date}
+      provider={provider}
+      setChangeFunction={(changeFunction) => {
+        setChangeFunction(() => changeFunction);
+      }}
+      setInitialFormData={setInitialFormData}
+      setProvider={setProvider}
+      {...props}
+    >
       <div className="form-group list-filter-item">
         <label>Payment Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
@@ -71,8 +84,22 @@ export default ({ showBatchIdFilter, ...props }) => {
       </div>
 
       <div className="form-group list-filter-item">
-        <label>Phone</label>
-        <Field name="contact" component="input" type="tel" className="form-control input-sm" />
+        <label>Phone number</label>
+        <Field
+          name="contact"
+          component={(props) => (
+            <CountryCodeInput
+              onChange={({ dialCode, value }) => {
+                changeFormValue('country_code', dialCode);
+                changeFormValue('contact', value);
+              }}
+              dialCode={initalFormData.country_code || '+91'}
+              value={props.input.value}
+            />
+          )}
+          type="tel"
+          className="form-control input-sm"
+        />
       </div>
 
       {props.user?.isSingleReconEnabled &&

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unsafe */
 import React, { Component } from 'react';
 import { reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
@@ -33,6 +34,13 @@ class ListFilter extends Component {
       showAllFilters: !hasMoreFilters,
       maxFilterLength: MAX_FILTERS,
     };
+
+    /**
+     * Expose redux-form change function to parent
+     */
+    if (props.setChangeFunction && props.change) {
+      props.setChangeFunction(props.change);
+    }
   }
 
   // populate the search filters based on query params
@@ -66,6 +74,9 @@ class ListFilter extends Component {
     }
 
     this.props.initialize(decodeSensitiveFields(params));
+    if (this.props.setInitialFormData) {
+      this.props.setInitialFormData(decodeSensitiveFields(params));
+    }
   }
 
   // update query params in url before search

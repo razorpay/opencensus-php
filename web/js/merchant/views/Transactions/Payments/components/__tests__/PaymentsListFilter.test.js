@@ -33,7 +33,7 @@ describe('PaymentsListFilter', () => {
       'Batch Id',
       'Status',
       'Email',
-      'Phone',
+      'Phone number',
       'Processed by',
       'Notes',
       'Bank Reference Number',
