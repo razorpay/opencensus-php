@@ -33,6 +33,11 @@ class Constants
 	const AutoRefundsDisabled = 'auto_refunds_disabled';
     const EnableRoutePartnerships = 'route_for_partnerships_enabled';
 	const ImportSettlement = 'import_settlement';
+    const SubMerchantOnboardDocUploadingDisabled = 'submerchant_onboarding_doc_uploading_disabled';
+    const KycHandledByPartner = 'kyc_handled_by_partner_enabled';
+    const SubMerchantOnboardingCommunicationDisabled = 'submerchant_onboarding_communication_disabled';
+    const RazorpayCommunicationToSubMerchantDisabled = 'razorpay_communication_to_submerchant_disabled';
+    const AggregatorOAuthClientDisabled = 'aggregator_oauth_client_enabled';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -60,6 +65,11 @@ class Constants
         self::AutoRefundsDisabled => "rzp/pg/merchant/payments/refunds/Features",
         self::EnableRoutePartnerships => "rzp/platform/partner/route/Features",
         self::ImportSettlement => "rzp/pg/merchant/settlements/OPGSPFeatures",
+        self::SubMerchantOnboardDocUploadingDisabled => "rzp/platform/partner/onboarding/Features",
+        self::KycHandledByPartner => "rzp/platform/partner/onboarding/Features",
+        self::SubMerchantOnboardingCommunicationDisabled => "rzp/platform/partner/communication/Features",
+        self::RazorpayCommunicationToSubMerchantDisabled => "rzp/platform/partner/communication/Features",
+        self::AggregatorOAuthClientDisabled => "rzp/platform/partner/auth/Features",
     ];
 
     /**
@@ -89,6 +99,11 @@ class Constants
         APIFeaturesConstants::DISABLE_AUTO_REFUNDS => self::AutoRefundsDisabled,
         APIFeaturesConstants::ROUTE_PARTNERSHIPS => self::EnableRoutePartnerships,
         self::ImportSettlement => self::ImportSettlement,
+        APIFeaturesConstants::SUBM_NO_DOC_ONBOARDING => self::SubMerchantOnboardDocUploadingDisabled,
+        APIFeaturesConstants::KYC_HANDLED_BY_PARTNER => self::KycHandledByPartner,
+        APIFeaturesConstants::SKIP_SUBM_ONBOARDING_COMM => self::SubMerchantOnboardingCommunicationDisabled,
+        APIFeaturesConstants::NO_COMM_WITH_SUBMERCHANTS => self::RazorpayCommunicationToSubMerchantDisabled,
+        APIFeaturesConstants::AGGREGATOR_OAUTH_CLIENT => self::AggregatorOAuthClientDisabled,
     ];
 
     /**
@@ -118,6 +133,11 @@ class Constants
         self::EnableCustomerAmount => APIFeaturesConstants::ENABLE_CUSTOMER_AMOUNT,
         self::EnableRoutePartnerships => APIFeaturesConstants::ROUTE_PARTNERSHIPS,
         self::ImportSettlement => self::ImportSettlement,
+        self::SubMerchantOnboardDocUploadingDisabled => APIFeaturesConstants::SUBM_NO_DOC_ONBOARDING,
+        self::KycHandledByPartner => APIFeaturesConstants::KYC_HANDLED_BY_PARTNER,
+        self::SubMerchantOnboardingCommunicationDisabled => APIFeaturesConstants::SKIP_SUBM_ONBOARDING_COMM,
+        self::RazorpayCommunicationToSubMerchantDisabled => APIFeaturesConstants::NO_COMM_WITH_SUBMERCHANTS,
+        self::AggregatorOAuthClientDisabled => APIFeaturesConstants::AGGREGATOR_OAUTH_CLIENT,
     ];
 
     /**
