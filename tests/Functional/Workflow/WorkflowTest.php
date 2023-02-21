@@ -324,6 +324,92 @@ class WorkflowTest extends TestCase
         $this->assertEquals(true, $isPayoutWorkflowFeatureEnabled);
     }
 
+    public function testCreateWorkflowConfigViaInternalRoute()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id' => $user->getId(),
+            'product' => 'banking',
+            'role' => 'owner',
+        ]);
+
+        $this->ba->capitalCardsAuth();
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(false, $isPayoutWorkflowFeatureEnabled);
+
+        $this->startTest();
+
+        $workflowConfig = $this->getDbLastEntity('workflow_config', 'test');
+
+        $this->assertEquals(true, $workflowConfig['enabled']);
+
+        $this->assertEquals('FQE6Xw4ZpoM21X', $workflowConfig['config_id']);
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(true, $isPayoutWorkflowFeatureEnabled);
+    }
+
+    public function testCreateWorkflowConfigViaPrivateRoute()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id' => $user->getId(),
+            'product' => 'banking',
+            'role' => 'owner',
+        ]);
+
+        $this->ba->privateAuth();
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(false, $isPayoutWorkflowFeatureEnabled);
+
+        $this->startTest();
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(false, $isPayoutWorkflowFeatureEnabled);
+    }
+
+    public function testCreateWorkflowConfigViaInternalRouteWithFeatureAlreadyEnabled()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id' => $user->getId(),
+            'product' => 'banking',
+            'role' => 'owner',
+        ]);
+
+        $this->ba->capitalCardsAuth();
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(true, $isPayoutWorkflowFeatureEnabled);
+
+        $this->startTest();
+
+        $workflowConfig = $this->getDbLastEntity('workflow_config', 'test');
+
+        $this->assertEquals(true, $workflowConfig['enabled']);
+
+        $this->assertEquals('FQE6Xw4ZpoM21X', $workflowConfig['config_id']);
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(true, $isPayoutWorkflowFeatureEnabled);
+    }
+
     public function testCreateICICIWorkflowConfigInAdminAuth()
     {
         $admin = $this->prepareAdminForPayoutWorkflow('test');

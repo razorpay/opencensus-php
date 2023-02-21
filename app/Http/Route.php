@@ -1700,6 +1700,7 @@ class Route
         'workflow_config_update_admin'              => ['put',    'admin/workflow/config',                                'WorkflowServiceController@updateWorkflowConfig'                           ],
         'workflow_config_delete_admin'              => ['delete',    'admin/workflow/config',                             'WorkflowServiceController@deleteWorkflowConfig'                           ],
         'workflow_config_create_bulk_admin'         => ['post',    'admin/workflow/config/bulk',                          'WorkflowServiceController@bulkCreateWorkflowConfig'                           ],
+        'workflow_config_create_internal'           => ['post',    'internal/workflow/config',                            'WorkflowServiceController@createWorkflowConfig'                  ],
 
         // Workflows API
         'workflow_create'                          => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
@@ -5670,6 +5671,8 @@ class Route
 
         'partner_config_fetch_guest',
         'terminal_toggle_internal',
+
+        'workflow_config_create_internal',
         'merchant_validate_public_auth_over_internal_auth',
 
         // CAC-RBAC
@@ -14353,6 +14356,7 @@ class Route
             'capital_cards_mail',
             'feature_add_internal',
             'internal_fd_create_ticket',
+            'workflow_config_create_internal',
             'fetch_authz_roles_by_role_id',
         ],
 

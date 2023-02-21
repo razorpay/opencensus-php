@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Workflow\Service\Config;
 
+use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
@@ -15,6 +16,8 @@ use RZP\Models\Workflow\Service\Adapter\Constants as WorkflowConstants;
 
 class Service extends Base\Service
 {
+
+    const X_MERCHANT_ID = 'X-Merchant-Id';
 
     public function __construct()
     {
@@ -185,8 +188,17 @@ class Service extends Base\Service
     public function enablePayoutWorkflowFeatureIfNotEnabled()
     {
         $merchant = $this->app['basicauth']->getMerchant();
-
         $merchantId = $this->app['basicauth']->getMerchantId();
+
+        if ($this->app['basicauth']->isInternalApp() && $this->app['basicauth']->isCapitalCardsApp()) {
+            if (empty($merchantId)) {
+                $merchantId = $this->app['request']->headers->get(self::X_MERCHANT_ID);
+            }
+
+            if (is_null($merchant) and !is_null($merchantId)) {
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+            }
+        }
 
         if ($merchant->isFeatureEnabled(FeatureConstants::PAYOUT_WORKFLOWS) == false)
         {
@@ -326,9 +338,10 @@ class Service extends Base\Service
         $workflowInput = array_except($input, ['otp', 'token', 'action']);
 
         // Get MID
-        $merchantId = $this->app['basicauth']->getMerchantId();
-
-        $workflowInput['owner_id'] = $merchantId;
+        if (array_key_exists('owner', $workflowInput) == false) {
+            $merchantId = $this->app['basicauth']->getMerchantId();
+            $workflowInput['owner_id'] = $merchantId;
+        }
 
         return $workflowInput;
     }

@@ -153,15 +153,16 @@ class WorkflowService
             $isSSWFEnabled = false;
 
             $isAdminAuth = $this->app['basicauth']->isAdminAuth();
+            $isInternalApp = $this->app['basicauth']->isInternalApp();
 
-            if ($isAdminAuth === false)
+            if ($isAdminAuth === false && $isInternalApp === false)
             {
                 $isSSWFEnabled = $this->app['razorx']->getTreatment($this->ba->getMerchantId(),
                         Merchant\RazorxTreatment::RX_SELF_SERVE_WORKFLOW,
                         Mode::LIVE) === 'on';
             }
 
-            if ($isAdminAuth == true || $isSSWFEnabled === true)
+            if ($isAdminAuth == true || $isSSWFEnabled === true || $isInternalApp === true)
             {
                 return $res;
             }
