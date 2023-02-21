@@ -10,6 +10,8 @@ import { getCustomURL } from 'merchant/components/DocsLink';
 import HolidayModal from 'merchant/views/Settlements/Settlements/components/Modals/HolidayModal';
 import PaymentSchedule from './PaymentSchedule';
 import EntitySchedule from './EntitySchedule';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 const paymentTypes = ['domestic', 'international'];
 const specialScheduleNames = ['instant']; // these schedules names doesn't have T in their name so we don't want to communicate the info on T
@@ -128,11 +130,17 @@ const SettlementScheduleV2 = (props) => {
           </div>
         </div>
         <div className="settlement-cycle-btn-container">
-          <div className="button-wrapper mr-8">
-            <button onClick={viewHolidayList} className="btn btn-default full-width no-margin">
-              List of Bank Holidays
-            </button>
-          </div>
+          <ShowWhen
+            additionalCondition={(user) =>
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.HolidayList)
+            }
+          >
+            <div className="button-wrapper mr-8">
+              <button onClick={viewHolidayList} className="btn btn-default full-width no-margin">
+                List of Bank Holidays
+              </button>
+            </div>
+          </ShowWhen>
           <div className="button-wrapper ml-8">
             <a
               href={getCustomURL('https://razorpay.com/settlement')}
