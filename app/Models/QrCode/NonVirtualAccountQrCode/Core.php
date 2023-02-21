@@ -8,6 +8,7 @@ use RZP\Models\QrCode;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Constants\HyperTrace;
+use RZP\Models\EntityOrigin;
 use RZP\Models\Merchant\Account;
 use RZP\Models\QrPaymentRequest\Type;
 use RZP\Models\Order\Entity as Order;
@@ -47,9 +48,15 @@ class Core extends QrCode\Core
 
         $qrCode->source()->associate($order);
 
-        return Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_BUILD_QR_CODE], function () use ($qrCode) {
+        $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE_BUILD_QR_CODE], function () use ($qrCode) {
             return $this->build($qrCode);
         });
+        // Creates entity origin when QR code is created
+        // QR code creation won't be failed even if origin is not set.
+        (new EntityOrigin\Core)->createEntityOrigin($qrCode);
+
+        return $qrCode;
+
     }
 
     private function build(Entity $qrCode)

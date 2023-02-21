@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Merchant\Account;
@@ -23,6 +24,7 @@ class CheckoutOrdersTest extends TestCase
     use MocksRedisTrait;
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use PartnerTrait;
 
     protected $testDataFilePath = __DIR__ . '/helpers/CheckoutOrdersTestData.php';
 
@@ -83,6 +85,27 @@ class CheckoutOrdersTest extends TestCase
         $this->assertEquals($checkoutOrder['id'], $qrCode['entity_id']);
         $this->assertEquals(Entity::class, $qrCode['entity_type']);
         $this->assertEquals('checkout', $qrCode['request_source']);
+    }
+
+    public function testCreateCheckoutOrderWithPartnerAuth(): void
+    {
+        [$response,$client] = $this->createCheckoutOrderForPartner();
+
+        $expectedResponse = $this->testData['testCreateCheckoutOrder'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->assertAmountAndQrId($response['qr_code']['image_content']);
+
+        $checkoutOrderExpiry = $response['expire_at'];
+        $qrCodeExpiry = $response['qr_code']['close_by'];
+        $this->assertEquals($checkoutOrderExpiry, $qrCodeExpiry);
+
+        $entityOriginEntity = $this->getLastEntity('entity_origin', true);
+
+        //Entity origin creation
+        $this->assertEquals('application', $entityOriginEntity['origin_type']);
+        $this->assertEquals($client->getApplicationId(), $entityOriginEntity['origin_id']);
     }
 
     public function testCreateCheckoutOrderWithOrderIdAndCustomerId(): void
@@ -1378,6 +1401,29 @@ class CheckoutOrdersTest extends TestCase
         ];
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function createCheckoutOrderForPartner(array $input = [], string $partnerId = Account::TEST_ACCOUNT, string $subMerchantId = '100submerchant')
+    {
+        $client = $this->setUpNonPurePlatformPartnerAndSubmerchant($partnerId, $subMerchantId);
+
+        $this->fixtures->merchant->enableMethod($subMerchantId, 'upi');
+
+        $defaultValues = $this->getDefaultCreateCheckoutOrderArray();
+
+        $attributes = array_merge($defaultValues, $input);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/checkout/order?key_id=rzp_test_partner_' . $client->getId().'&account_id='.$subMerchantId,
+            'content' => $attributes,
+            'headers' => [
+                'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+            ],
+        ];
+        $response = $this->makeRequestAndGetContent($request);
+
+        return [$response,$client];
     }
 
     protected function getDefaultCreateCheckoutOrderArray(): array
