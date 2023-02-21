@@ -1020,7 +1020,6 @@ class Core extends Base\Core
 
                 ActivationDetail\Entity::ACCOUNT_LOGIN_DATE => null,
                 ActivationDetail\Entity::ACCOUNT_OPEN_DATE => null,
-                ActivationDetail\Entity::CUSTOMER_APPOINTMENT_DATE => null,
                 ActivationDetail\Entity::DOC_COLLECTION_DATE => null,
                 ActivationDetail\Entity::ACCOUNT_OPENING_IR_CLOSE_DATE => null,
                 ActivationDetail\Entity::ACCOUNT_OPENING_FTNR => null,
