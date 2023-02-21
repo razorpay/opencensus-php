@@ -1026,7 +1026,7 @@ class Core extends Base\Core
         }
 
         if ($card->getVault() === Card\Vault::AXIS || ($card->getVault() === Card\Vault::PROVIDERS && $cryptogram === null && $card->getIssuer() === Card\Issuer::UTIB)) {
-            $cardInput[Card\Entity::NUMBER] = Card\Entity::DUMMY_AXIS_TOKENHQ_CARD;
+            $input[Card\Entity::NUMBER] = Card\Entity::DUMMY_AXIS_TOKENHQ_CARD;
         }
 
         if($recurringTokenNumber !== null)
