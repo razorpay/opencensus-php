@@ -11,6 +11,7 @@ use RZP\Models\Payment;
 use RZP\Base\ConnectionType;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\Traits\PartitionRepo;
+use Rzp\Wda_php\SortOrder;
 
 class Repository extends Base\Repository
 {
@@ -43,6 +44,11 @@ class Repository extends Base\Repository
     protected function addQueryOrder($query)
     {
         $query->orderBy(Entity::PAYMENT_ID, 'desc');
+    }
+
+    protected function addWDAQueryOrder($wdaQueryBuilder)
+    {
+        $wdaQueryBuilder->sort($this->getTableName(), Entity::PAYMENT_ID, SortOrder::DESC);
     }
 
     protected function getPartitionStrategy() : string
