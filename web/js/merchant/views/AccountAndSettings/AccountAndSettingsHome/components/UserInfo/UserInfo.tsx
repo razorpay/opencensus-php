@@ -35,9 +35,9 @@ const UserInfo = ({ infoData, onClick, isMobile }: UserInfoPropsInterface): JSX.
             </IconText>
             <SubInfo>
               <Text type="subtle">{truncatedString(each.value, 26)}</Text>
-              {each.isEditEnable && (
+              {each.isEditEnable ? (
                 <Pointer class="i i-icon-container" onClick={() => onClick(each)} />
-              )}
+              ) : null}
             </SubInfo>
           </UserInfoItem>
         );
