@@ -227,23 +227,25 @@ class Helper
             }
 
             $traceData = [
-                $medium                        => $mediumValue,
-                $mediumLabel                   => $medium,
-                $methodLabel                   => $traceDetails[Constants::METHOD],
-                MetricConstants::PRODUCT       => $product,
-                MetricConstants::PLATFORM      => self::getPlatform(),
-                MetricConstants::SIGNUP_SOURCE => $input[Constants::SIGNUP_SOURCE] ?? "NA",
+                $medium                         => $mediumValue,
+                $mediumLabel                    => $medium,
+                $methodLabel                    => $traceDetails[Constants::METHOD],
+                MetricConstants::PRODUCT        => $product,
+                MetricConstants::PLATFORM       => self::getPlatform(),
+                MetricConstants::SIGNUP_SOURCE  => $input[Constants::SIGNUP_SOURCE] ?? "NA",
+                MetricConstants::REQUEST_SOURCE => $input[Constants::REQUEST_SOURCE] ?? "NA",
             ];
 
             $traceCode  = $traceDetails[Constants::TRACE_CODE];
             $metricName = $traceDetails[Constants::METRIC_CONSTANT];
 
             $metricDimensions = [
-                $mediumLabel                   => $medium,
-                $methodLabel                   => $traceDetails[Constants::METHOD],
-                MetricConstants::PRODUCT       => $product,
-                MetricConstants::PLATFORM      => self::getPlatform(),
-                MetricConstants::SIGNUP_SOURCE => $input[Constants::SIGNUP_SOURCE] ?? "NA",
+                $mediumLabel                    => $medium,
+                $methodLabel                    => $traceDetails[Constants::METHOD],
+                MetricConstants::PRODUCT        => $product,
+                MetricConstants::PLATFORM       => self::getPlatform(),
+                MetricConstants::SIGNUP_SOURCE  => $input[Constants::SIGNUP_SOURCE] ?? "NA",
+                MetricConstants::REQUEST_SOURCE => $input[Constants::REQUEST_SOURCE] ?? "NA",
             ];
 
             if($traceDetails[Constants::SUCCESS] === false)

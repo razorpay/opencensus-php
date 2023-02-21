@@ -156,6 +156,8 @@ class Service extends Base\Service
             false
         );
 
+        unset($input[Constants::REQUEST_SOURCE]);
+
         return $this->requestAPI($input,'users/register/otp', 'POST');
     }
 
@@ -178,6 +180,7 @@ class Service extends Base\Service
             $medium         = "MEDIUM_NA";
             $mediumValue    = "UNKNOWN";
             $signupSource   = $input[Constants::SIGNUP_SOURCE] ?? "NA";
+            $requestSource  = $input[Constants::REQUEST_SOURCE] ?? "NA";
 
             if(isset($input[Constants::EMAIL]) === true)
             {
@@ -195,6 +198,7 @@ class Service extends Base\Service
                 'medium'        => $medium,
                 'product'       => $product,
                 'signup_source' => $signupSource,
+                'request_source' => $requestSource,
             ]);
 
             $this->metrics->count(
@@ -205,6 +209,7 @@ class Service extends Base\Service
                     $mediumLabel                   => $medium,
                     MetricConstants::PRODUCT       => $product,
                     MetricConstants::SIGNUP_SOURCE => $signupSource,
+                    MetricConstants::REQUEST_SOURCE => $requestSource,
                 ]
             );
         }
@@ -236,6 +241,8 @@ class Service extends Base\Service
             MetricConstants::OTP,
             false
         );
+
+        unset($input[Constants::REQUEST_SOURCE]);
 
         list($error, $data, $httpCode) = $this->requestAPI($input,'users/register/otp/verify', 'POST', $options);
 
@@ -1681,6 +1688,8 @@ class Service extends Base\Service
             true
         );
 
+        unset($input[Constants::REQUEST_SOURCE]);
+
         return $this->loginOtpRoute($input,'users/login/otp', 'POST');
     }
 
@@ -1710,6 +1719,8 @@ class Service extends Base\Service
             MetricConstants::OTP,
             true
         );
+
+        unset($input[Constants::REQUEST_SOURCE]);
 
         return $this->loginOnApiOnRoute(
             $input,'users/login/otp/verify',
