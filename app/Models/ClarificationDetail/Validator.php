@@ -77,7 +77,7 @@ class Validator extends Base\Validator
                 if (empty($document) === true or $document->getDocumentType() != $fieldName)
                 {
                     throw new BadRequestValidationFailureException(
-                        PublicErrorDescription::BAD_REQUEST_INVALID_DOCUMENT_FOR_NC
+                        PublicErrorDescription::BAD_REQUEST_INVALID_DOCUMENT_FOR_NC . ": " . $fieldName
                     );
                 }
 
