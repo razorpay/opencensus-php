@@ -22,7 +22,10 @@ env:
 jobs:
   build-and-run-e2e:
     name: Run E2E Tests on PR Comment or PR approval or on master merge
-    if: ${{ github.event_name == 'issue_comment' && contains(github.event.comment.body, '/run-e2e')}} || ${{ github.ref == 'refs/heads/master' && !github.event.comment.body }} || ${{ github.event.review.state == 'approved' }}
+    if: |
+      ${{ github.event_name == 'pull_request' && contains(github.event.comment.body, '/run-e2e')}} ||
+      ${{ github.ref == 'refs/heads/master' && !github.event.comment.body }} ||
+      ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}
     timeout-minutes: 60
     runs-on: [self-hosted]
     steps:
@@ -32,13 +35,16 @@ jobs:
           echo "Github Event: ${{ github.event }}"
           echo "Github Ref: ${{ github.ref }}"
           echo "Body not present: ${{ !github.event.comment.body }}"
-          echo "Review state: ${{ github.event.review.state == 'approved' }}"
+          echo "Review state is approved: ${{ github.event.review.state == 'approved' }}"
+          echo "Review state: ${{ github.event.review.state }}"
+          echo "Head ref(github.head_ref) ${{ github.head_ref }}"
+          echo "Latest expected commit id: ${{ github.event.pull_request.head.sha }}"
       - name: Fetch data of comment's associated PR
         uses: xt0rted/pull-request-comment-branch@v1
         id: comment-branch
         if: ${{ github.event_name == 'issue_comment' && contains(github.event.comment.body, '/run-e2e')}}
         with:
-          repo_token: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+          repo_token: ${{ env.GITHUB_ACCESS_TOKEN }}
 
       - name: Set Commit ID if its a PR comment
         if: ${{ github.event_name == 'issue_comment' && contains(github.event.comment.body, '/run-e2e')}}
@@ -53,7 +59,11 @@ jobs:
       - name: Set Commit ID if it's a PR approval
         if: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}
         run: |
-          echo "COMMIT_ID=${{ github.sha }}" >> $GITHUB_ENV
+          echo "COMMIT_ID=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
+
+      - name: Echo COMMIT_ID
+        run: |
+          echo "COMMIT_ID: ${{ env.COMMIT_ID }}"
 
       - name: Checkout Codebase
         uses: actions/checkout@v2
