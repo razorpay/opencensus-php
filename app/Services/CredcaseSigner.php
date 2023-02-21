@@ -119,16 +119,17 @@ class CredcaseSigner
     {
         $merchantId = $this->ba->getMerchantId();
 
-        if ((app()->runningUnitTests() === true) and !in_array($publicKey, [CredcaseSignerTest::PUBLIC_KEY_1, CredcaseSignerTest::PARTNER_KEY_1])) {
+        if ((app()->runningUnitTests() === true) and !in_array($publicKey, CredcaseSignerTest::KEYS)) {
             return false;
         }
 
-        // Currently, Credcase signer only supports merchant and partner auth keys
-        // It will also support oauth public key and {rzp_mode_mid} in the future
+        // Currently, Credcase signer supports merchant keys, partner auth keys and oauth public keys
+        // It will also support {rzp_mode_mid} in the future
         if (($publicKey !== null)
             and ((preg_match(BasicAuth::KEY_REGEX, $publicKey) === 1
             and str_ends_with($publicKey, $merchantId) === false)
-            or preg_match(BasicAuth::PARTNER_KEY_REGEX, $publicKey) === 1)) {
+            or preg_match(BasicAuth::PARTNER_KEY_REGEX, $publicKey) === 1)
+            or preg_match(BasicAuth::OAUTH_KEY_REGEX, $publicKey) === 1) {
             return true;
         }
 
@@ -157,10 +158,14 @@ class CredcaseSigner
         try
         {
             // Credcase Cache stores (key: secret) mapping.
-            // If key is a partner auth key, strip account id suffix from key before forming the cache key
             $publicKeyNameInCache = $publicKey;
+
+            // If key is a partner auth key, strip account id suffix from key before forming the cache key
             if (preg_match(BasicAuth::PARTNER_KEY_REGEX, $publicKey) === 1)
                 $publicKeyNameInCache = substr($publicKey, 0, strpos($publicKey, "-acc_"));
+            // If key is a public oauth key, extract only the key from the public key string
+            else if (preg_match(BasicAuth::OAUTH_KEY_REGEX, $publicKey, $matches) === 1)
+                $publicKeyNameInCache = $matches[1];
 
             $cacheKey = self::CREDCASE_CACHE_KEY_PREFIX . ':' . self::CREDCASE_CACHE_KEY_VERSION . ':' . $publicKeyNameInCache;
 

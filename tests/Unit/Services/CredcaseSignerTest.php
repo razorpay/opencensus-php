@@ -15,9 +15,13 @@ class CredcaseSignerTest extends TestCase
     use MocksRazorx;
 
     const PAYLOAD_1            = '{"order_id":"order_00000000000001","payment_id":"pay_00000000000001"}';
-    const PUBLIC_KEY_1         = 'rzp_test_1DP5mmOlF5G5ag';
     const EXPECTED_SIGNATURE_1 = 'c58c146fce3b7d5a517c7e0b0319f5deabc2f5787ac9fabddc62bd9ee8313e5f';
-    const PARTNER_KEY_1        = 'rzp_test_partner_1DP5mmOlF5G5ag-acc_7XP5mmOlF8U5Bp';
+    const KEYS = [
+        'PUBLIC_KEY_1' => 'rzp_test_1DP5mmOlF5G5ag',
+        'PARTNER_KEY_1' => 'rzp_test_partner_1DP5mmOlF5G5ag-acc_7XP5mmOlF8U5Bp',
+        'OAUTH_KEY_1' => 'rzp_test_oauth_6ZJzxyLFWrGs74',
+        'OAUTH_KEY_2' => 'rzp_test_oauth_6ZJzxyLFWrGs74someextrachars'
+    ];
 
     const ENCRYPTED_SECRET_1 = 'd141cd18f3caff56f69795d78c9c30a871ca0cc20fd883ad10e1bb2fa35f26c5e72229cf8a3042fd764e63f5cd'; // Raw: thisissupersecret.
 
@@ -46,7 +50,7 @@ class CredcaseSignerTest extends TestCase
             ->with('credcase:ks:v1:rzp_test_1DP5mmOlF5G5ag')
             ->willReturn(self::ENCRYPTED_SECRET_1);
 
-        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::PUBLIC_KEY_1);
+        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::KEYS['PUBLIC_KEY_1']);
 
         $this->assertEquals(self::EXPECTED_SIGNATURE_1, $signature);
     }
@@ -62,10 +66,10 @@ class CredcaseSignerTest extends TestCase
 
         $this->ba->expects($this->once())
             ->method('sign')
-            ->with(self::PAYLOAD_1, self::PUBLIC_KEY_1)
+            ->with(self::PAYLOAD_1, self::KEYS['PUBLIC_KEY_1'])
             ->willReturn(self::EXPECTED_SIGNATURE_1);
 
-        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::PUBLIC_KEY_1);
+        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::KEYS['PUBLIC_KEY_1']);
 
         $this->assertEquals(self::EXPECTED_SIGNATURE_1, $signature);
     }
@@ -100,7 +104,7 @@ class CredcaseSignerTest extends TestCase
             ->with('credcase:ks:v1:rzp_test_partner_1DP5mmOlF5G5ag')
             ->willReturn(self::ENCRYPTED_SECRET_1);
 
-        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::PARTNER_KEY_1);
+        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::KEYS['PARTNER_KEY_1']);
 
         $this->assertEquals(self::EXPECTED_SIGNATURE_1, $signature);
     }
@@ -116,10 +120,57 @@ class CredcaseSignerTest extends TestCase
 
         $this->ba->expects($this->once())
             ->method('sign')
-            ->with(self::PAYLOAD_1, self::PARTNER_KEY_1)
+            ->with(self::PAYLOAD_1, self::KEYS['PARTNER_KEY_1'])
             ->willReturn(self::EXPECTED_SIGNATURE_1);
 
-        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::PARTNER_KEY_1);
+        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::KEYS['PARTNER_KEY_1']);
+
+        $this->assertEquals(self::EXPECTED_SIGNATURE_1, $signature);
+    }
+
+    public function testSignWhenOauthKeyIsUsed()
+    {
+        $this->mockRedis();
+
+        $this->redis->expects($this->once())
+            ->method('get')
+            ->with('credcase:ks:v1:' . self::KEYS['OAUTH_KEY_1'])
+            ->willReturn(self::ENCRYPTED_SECRET_1);
+
+        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::KEYS['OAUTH_KEY_1']);
+
+        $this->assertEquals(self::EXPECTED_SIGNATURE_1, $signature);
+    }
+
+    public function testSignWhenOauthKeyWithExtraCharsIsUsed()
+    {
+        $this->mockRedis();
+
+        $this->redis->expects($this->once())
+            ->method('get')
+            ->with('credcase:ks:v1:' . self::KEYS['OAUTH_KEY_1'])
+            ->willReturn(self::ENCRYPTED_SECRET_1);
+
+        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::KEYS['OAUTH_KEY_2']);
+
+        $this->assertEquals(self::EXPECTED_SIGNATURE_1, $signature);
+    }
+
+    public function testSignWhenOauthKeyIsUsedAndRedisFails()
+    {
+        $this->mockRedis();
+
+        $this->redis->expects($this->exactly(2))
+            ->method('get')
+            ->with('credcase:ks:v1:' . self::KEYS['OAUTH_KEY_1'])
+            ->will($this->throwException(new Exception('failed to getv value from redis')));
+
+        $this->ba->expects($this->once())
+            ->method('sign')
+            ->with(self::PAYLOAD_1, self::KEYS['OAUTH_KEY_1'])
+            ->willReturn(self::EXPECTED_SIGNATURE_1);
+
+        $signature = (new CredcaseSigner($this->redis))->sign(self::PAYLOAD_1, self::KEYS['OAUTH_KEY_1']);
 
         $this->assertEquals(self::EXPECTED_SIGNATURE_1, $signature);
     }
