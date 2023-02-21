@@ -13,27 +13,6 @@ describe('Bank Account Update - LoadingStep', () => {
     modalsSpy.mockClear();
   });
 
-  test.each(Object.keys(LOADING_STATE))(
-    'should render %s loading with correct details',
-    (loadingTypeKey) => {
-      const loadingTypeData = LOADING_STATE[loadingTypeKey];
-      const { title, subTitle, description, closeCTALabel } = LOADING_STEP_DATA[loadingTypeData];
-      render(<LoadingStep type={loadingTypeData} />);
-
-      expect(screen.getByText(title)).toBeInTheDocument();
-      expect(screen.getByText(subTitle)).toBeInTheDocument();
-      if (description) {
-        expect(screen.getByText(description)).toBeInTheDocument();
-      }
-      if (closeCTALabel) {
-        const closeCTA = screen.getByRole('button', {
-          name: closeCTALabel,
-        });
-        expect(closeCTA).toBeInTheDocument();
-      }
-    },
-  );
-
   test('should render close modal on close CTA click', async () => {
     const { closeCTALabel } = LOADING_STEP_DATA[LOADING_STATE.PENNY_TESTING_SUCCESS];
     render(<LoadingStep type={LOADING_STATE.PENNY_TESTING_SUCCESS} />);
@@ -61,6 +40,27 @@ describe('Bank Account Update - LoadingStep', () => {
       expect(screen.getByText(mobileSubTitle)).toBeInTheDocument();
     }
   });
+
+  test.each(Object.keys(LOADING_STATE))(
+    'should render %s loading with correct details',
+    (loadingTypeKey) => {
+      const loadingTypeData = LOADING_STATE[loadingTypeKey];
+      const { title, subTitle, description, closeCTALabel } = LOADING_STEP_DATA[loadingTypeData];
+      render(<LoadingStep type={loadingTypeData} />);
+
+      expect(screen.getByText(title)).toBeInTheDocument();
+      expect(screen.getByText(subTitle)).toBeInTheDocument();
+      if (description) {
+        expect(screen.getByText(description)).toBeInTheDocument();
+      }
+      if (closeCTALabel) {
+        const closeCTA = screen.getByRole('button', {
+          name: closeCTALabel,
+        });
+        expect(closeCTA).toBeInTheDocument();
+      }
+    },
+  );
 
   test('should not render anything if step is not a LOADING_STATE', () => {
     render(<LoadingStep type="RANDOM_LOADING_STATE" />);
