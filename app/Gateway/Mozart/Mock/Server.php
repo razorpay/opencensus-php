@@ -192,7 +192,8 @@ class Server extends Base\Mock\Server
 
         if ((isset($input['entities']) === false) and
             (($action === Action::PRE_PROCESS) or
-             ($action === Action::CREATE_VIRTUAL_ACCOUNT)))
+             ($action === Action::CREATE_VIRTUAL_ACCOUNT) or
+                ($action === Action::VERIFY)))
         {
             $input['entities'] = $input;
         }

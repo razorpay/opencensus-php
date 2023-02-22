@@ -805,4 +805,67 @@ class VerifyData extends Base\Mock\Server
             return $this->upiMozartV2($entities);
         }
     }
+
+    public function upi_kotak($entities)
+    {
+        $paymentId = $entities['payment']['id'];
+        $vpa = $entities['payment']['vpa'];
+
+        $response = [
+            "data" => [
+                "_raw"      => '{"code":"00","result":"SUCCESS","data":{"status":"C","amount":"10.00","aggregatorVPA":"merchant@kotak","payerVPA":"rzp@apbl","txnid":"KMBMABCD426934594264516669306675337","orderId":"Bi4YBdQfi0fu3p","payerName":null,"referenceId":"910501000855","txntime":"2018-02-09 14:29:57.917"}}',
+                "upi"       => [
+                    "vpa"                 => "rzp@apbl",
+                    "merchant_reference"  => $paymentId,
+                    "npci_reference_id"   => "910501000855",
+                    "npci_txn_id"         => "KMBMABCD426934594264516669306675337",
+                    "gateway_reference"   => "910501000855",
+                    "gateway_status_code" => "00"
+                ],
+                "terminal"  => [
+                    "vpa"       => "merchant@kotak",
+                    "gateway"   => "upi_kotak"
+                ],
+                "payment"   => [
+                    "currency"          => "INR",
+                    "amount_authorized" => 50000
+                ],
+                "status"            => "verify_successful",
+                "error"             => null,
+                "next"              => [],
+                "success"           => true,
+                "external_trace_id" => "DUMMY_REQUEST_ID",
+                "mozart_id"         => "DUMMY_MOZART_ID"
+            ]
+        ];
+
+        if ($vpa === 'unexpectedPayment@kotak')
+        {
+            // Mocking amount for validating duplicating unexpected payment for amount mismatch
+            $response['data']['payment']['amount_authorized'] = 1000;
+        }
+
+        $case = $vpa;
+
+        switch ($case) {
+            case 'failedunexpectedpayment@test':
+                $response['data']['success'] = false;
+                $response['data']['error']   = [
+                    'internal_error_code'       => ErrorCode::BAD_REQUEST_PAYMENT_UPI_COLLECT_REQUEST_PENDING,
+                    'gateway_error_code'        => 'T01',
+                    'gateway_error_desc'        => 'Transaction Pending'
+                ];
+                break;
+
+            case 'unexpectedPayment@kotak':
+                // Mocking amount for validating duplicating unexpected payment for amount mismatch
+                $response['data']['payment']['amount_authorized'] = 1000;
+                break;
+
+            default:
+                break;
+        }
+
+        return $response;
+    }
 }

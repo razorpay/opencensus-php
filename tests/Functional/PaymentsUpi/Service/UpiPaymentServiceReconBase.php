@@ -66,6 +66,22 @@ class UpiPaymentServiceReconBase extends TestCase
     }
 
     /**
+     * Tests failed unexpected payment creation
+     */
+    public function testFailedUnexpectedPaymentCreation()
+    {
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $content['upi']['vpa'] = 'failedunexpectedpayment@test';
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertEmpty($response['payment_id']);
+
+        $this->assertFalse($response['success']);
+    }
+
+    /**
      * Test unexpected payment request mandatory validation
      */
     public function testUnexpectedPaymentValidationFailure()
@@ -122,6 +138,8 @@ class UpiPaymentServiceReconBase extends TestCase
         $this->assertTrue($response['success']);
 
         $content['payment']['amount'] = 1000;
+
+        $content['upi']['vpa'] = 'unexpectedPayment@kotak';
 
         $response = $this->makeUnexpectedPaymentAndGetContent($content);
 

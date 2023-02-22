@@ -7,6 +7,7 @@ use RZP\Gateway\Upi;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Constants\Environment;
@@ -805,17 +806,46 @@ trait CommonGatewayTrait
         // Verifies if the payload specified in the server callback is valid.
         //
         $input = [
-            'payment' => [
-                'id'      => $callbackData['upi']['merchant_reference'],
-                'gateway' => $this->gateway,
-                'vpa'     => $callbackData['upi']['vpa'],
-                'amount'  => (int) ($callbackData['payment']['amount']),
-                'status'  => 'authorized', // Setting status as authorized in verify request for verify request to validate with gateway.
+            'payment'       => [
+                'id'             => $callbackData['upi']['merchant_reference'],
+                'gateway'        => $callbackData['terminal']['gateway'],
+                'vpa'            => $callbackData['upi']['vpa'],
+                'amount'         => (int) ($callbackData['payment']['amount']),
             ],
-            'terminal' => $this->terminal,
+            'terminal'      => $this->terminal,
+            'upi'           => $callbackData['upi'],
+            'gateway'       => [
+                'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
+            ]
         ];
 
-        $this->app['upi.payments']->action(Action::VERIFY, $input, $input['payment']['gateway']);
+        $this->action = Action::VERIFY;
+
+        $verify = new Verify($input['payment']['gateway'], $input);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $paymentAmount = $verify->input['payment']['amount'];
+
+        $content = $verify->verifyResponseContent;
+
+        $actualAmount = $content['data']['payment']['amount_authorized'];
+
+        $this->assertAmount($paymentAmount, $actualAmount);
+
+        $status = $content['data']['success'];
+
+        $this->checkUnexpectedPaymentResponseStatus($status);
+    }
+
+    protected function checkUnexpectedPaymentResponseStatus($status)
+    {
+        if ($status !== true)
+        {
+           throw new Exception\GatewayErrorException(
+               ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+           );
+        }
     }
 
     /**
