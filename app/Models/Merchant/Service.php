@@ -6900,12 +6900,14 @@ class Service extends Base\Service
          *  Sometime stork calls api for cache even before db parent transaction finished. So sending cache invalidation
          *  request again to stork.
          */
-
-        \Event::dispatch(new TransactionalClosureEvent(function () use ($subMerchant) {
-            Tracer::inspan(['name' => HyperTrace::SUBMERCHANT_STORK_INVALIDATE_CACHE_REQUEST], function() use ($subMerchant) {
-                $this->invalidateAffectedOwnersCache($subMerchant->getId());
-            });
-        }));
+        if ($isLinkedAccount === false)
+        {
+            \Event::dispatch(new TransactionalClosureEvent(function() use ($subMerchant) {
+                Tracer::inspan(['name' => HyperTrace::SUBMERCHANT_STORK_INVALIDATE_CACHE_REQUEST], function() use ($subMerchant) {
+                    $this->invalidateAffectedOwnersCache($subMerchant->getId());
+                });
+            }));
+        }
 
         return $this->getSubMerchantResponseArray($merchant, $subMerchant, $product);
     }

@@ -20,6 +20,7 @@ use RZP\Models\Merchant\Detail\POIStatus;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Models\Merchant\Metric as MerchantMetric;
 use RZP\Tests\Functional\Fixtures\Entity\Merchant;
@@ -32,6 +33,7 @@ class AccountV2Test extends TestCase
     use TestsMetrics;
     use MocksSplitz;
     use PartnerTrait;
+    use WebhookTrait;
     use DbEntityFetchTrait;
     use RequestResponseFlowTrait;
 
@@ -94,6 +96,10 @@ class AccountV2Test extends TestCase
         $expectedMetricData = $this->getDimensionsForAccountV2Metrics();
 
         $metricCaptured = false;
+
+        $this->mockStorkService();
+
+        $this->app['stork_service']->shouldReceive('publishOnSns')->twice()->andReturn(null);
 
         $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_CREATE_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
 
@@ -1044,6 +1050,10 @@ class AccountV2Test extends TestCase
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->mockStorkService();
+
+        $this->app['stork_service']->shouldNotReceive('publishOnSns');
 
         $testData = $this->testData['testCreateLinkedAccountWithMarketplaceFeature'];
 

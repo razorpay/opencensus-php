@@ -44,7 +44,7 @@ class AccountTest extends TestCase
         $pinotService->method('getDataFromPinot')
                      ->willReturn(null);
     }
-    
+
     public function testCreateLinkedAccountForInactiveMerchantInTestMode()
     {
         $this->createLinkedAccount(Mode::TEST, false);
