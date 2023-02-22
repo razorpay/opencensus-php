@@ -267,6 +267,18 @@ class Validator extends Base\Validator
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
+    protected static $upiAxisoliveTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:upi_axisolive',
+        Entity::CATEGORY                   => 'sometimes|string|numeric|digits:4',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::GATEWAY_TERMINAL_PASSWORD  => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::UPI                        => 'required|boolean|in:1',
+        Entity::VPA                        => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
     protected static $upiJuspayTerminalRules = [
         Entity::GATEWAY                    => 'required|in:upi_juspay',
         Entity::GATEWAY_ACQUIRER           => 'sometimes|in:axis',
@@ -1128,6 +1140,17 @@ class Validator extends Base\Validator
         Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
         Entity::EXPECTED                   => 'sometimes|boolean|in:0,1',
+    ];
+
+    protected static $upiAxisoliveEditTerminalRules = [
+        Entity::GATEWAY                    => 'sometimes|in:upi_axisolive',
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::UPI                        => 'sometimes|boolean|in:1',
+        Entity::TYPE                       => 'sometimes|array',
+        Entity::VPA                        => 'sometimes|string',
+        Entity::GATEWAY_MERCHANT_ID2       => 'sometimes|string',
+        Entity::PROCURER                   => 'sometimes|string|in:razorpay,merchant',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $netbankingIciciEditTerminalRules = [

@@ -348,6 +348,7 @@ class Entity
     const CARDLESS_EMI           = 'cardless_emi';
     const BAJAJFINSERV           = 'bajajfinserv';
     const UPI_MINDGATE           = 'upi_mindgate';
+    const UPI_AXISOLIVE          = 'upi_axisolive';
     const WALLET_MPESA           = 'wallet_mpesa';
     const WALLET_PAYPAL          = 'wallet_paypal';
     const ESIGNER_DIGIO          = 'esigner_digio';
@@ -1280,6 +1281,7 @@ class Entity
         self::WALLET_PAYPAL          => \RZP\Gateway\Mozart::class,
         self::UPI_AIRTEL             => \RZP\Gateway\Mozart::class,
         self::UPI_CITI               => \RZP\Gateway\Mozart::class,
+        self::UPI_AXISOLIVE          => \RZP\Gateway\Mozart::class,
         self::UPI_KOTAK              => \RZP\Gateway\Mozart::class,
         self::PAYLATER               => \RZP\Gateway\CardlessEmi::class,
         self::WORLDLINE              => \RZP\Gateway\Worldline::class,
@@ -1510,6 +1512,7 @@ class Entity
         self::UPI_HULK               => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Base::class,
         self::UPI_RBL                => \RZP\Gateway\Upi\Base::class,
+        self::UPI_AXISOLIVE          => \RZP\Gateway\Upi\Base::class,
         self::UPI_YESBANK            => \RZP\Gateway\Upi\Base::class,
         self::UPI_MOZART             => \RZP\Gateway\Mozart::class,
         self::UPI_JUSPAY             => \RZP\Gateway\Upi\Base::class,

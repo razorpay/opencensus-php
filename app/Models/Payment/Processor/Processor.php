@@ -7025,11 +7025,6 @@ class Processor
             return false;
         }
 
-        if ($payment->isInAppUPI() === true)
-        {
-            return false;
-        }
-
         if ($payment->isFileBasedEmandateDebitPayment() === true)
         {
             if ($payment->shouldCreateGatewayEntityForDebit() === true)

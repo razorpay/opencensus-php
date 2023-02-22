@@ -1121,6 +1121,7 @@ class Gateway extends Base\Gateway
 
         switch ($gateway)
         {
+            case Payment\Gateway::UPI_AXISOLIVE:
             case Payment\Gateway::UPI_KOTAK:
                 $data = [
                     'payload'       => $input,
@@ -1223,6 +1224,8 @@ class Gateway extends Base\Gateway
                 return $this->getPaymentIdForUpiJuspay($response);
             case Payment\Gateway::CRED:
                 return $response['response']['tracking_id'];
+            case Payment\Gateway::UPI_AXISOLIVE:
+                return $response['data']['upi']['merchant_reference'];
             default :
                 throw new Exception\LogicException(
                     'Invalid gateway passed for getting payment id from S2S callback');

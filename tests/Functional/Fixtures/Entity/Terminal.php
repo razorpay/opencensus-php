@@ -5037,7 +5037,7 @@ class Terminal extends Base
         $default = [
             'id'                        => '1000UpiInAppTl',
             'merchant_id'               => '10000000000000',
-            'gateway'                   => 'upi_axis',
+            'gateway'                   => 'upi_axisolive',
             'gateway_merchant_id'       => 'razorpay axis upi',
             'gateway_terminal_id'       => 'nodal account upi axis',
             'gateway_merchant_id2'      => 'razorpayaxis@axis',

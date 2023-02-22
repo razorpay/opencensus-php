@@ -4466,15 +4466,7 @@ class PaymentCreateTest extends TestCase
 
         $lastPayment = $this->getLastEntity('payment');
 
-        $this->assertSame('created', $lastPayment['status']);
-
-        $upiMetadata = $this->getDbLastEntity('upi_metadata');
-
-        $this->assertNotNull($upiMetadata);
-
-        $this->assertArraySubset([
-            UpiMetadata\Entity::MODE => 'in_app',
-        ], $upiMetadata->toArray());
+        $this->assertSame('authorized', $lastPayment['status']);
     }
 
     public function testUpiAmountLimit()

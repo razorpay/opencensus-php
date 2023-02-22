@@ -119,6 +119,7 @@ class Gateway
     const UPI_ICICI              = 'upi_icici';
     const UPI_HULK               = 'upi_hulk';
     const UPI_RBL                = 'upi_rbl';
+    const UPI_AXISOLIVE          = 'upi_axisolive';
     const UPI_YESBANK            = 'upi_yesbank';
     const UPI_KOTAK              = 'upi_kotak';
     const AEPS_ICICI             = 'aeps_icici';
@@ -596,6 +597,7 @@ class Gateway
         self::UPI_ICICI,
         self::UPI_MINDGATE,
         self::UPI_AXIS,
+        self::UPI_AXISOLIVE,
         self::NETBANKING_SVC,
         self::ATOM,
         self::UPI_AIRTEL,
@@ -667,6 +669,7 @@ class Gateway
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::UPI_AXIS,
+        Payment\Gateway::UPI_AXISOLIVE,
         Payment\Gateway::WALLET_PAYZAPP,
         Payment\Gateway::WALLET_MPESA,
         Payment\Gateway::CARD_FSS,
@@ -1671,6 +1674,7 @@ class Gateway
             self::UPI_AIRTEL,
             self::UPI_CITI,
             self::UPI_JUSPAY,
+            self::UPI_AXISOLIVE,
             self::CASHFREE,
             self::PAYU,
             self::PAYTM,
@@ -1839,6 +1843,7 @@ class Gateway
         self::UPI_SBI,
         self::SHARP,
         self::UPI_AXIS,
+        self::UPI_AXISOLIVE,
         self::UPI_RBL,
         self::UPI_YESBANK,
         self::UPI_AIRTEL,
@@ -2930,6 +2935,7 @@ class Gateway
         Gateway::NETBANKING_CORPORATION,
         Gateway::SHARP,
         Gateway::UPI_AXIS,
+        Gateway::UPI_AXISOLIVE,
         Gateway::UPI_RBL,
         Gateway::UPI_YESBANK,
         Gateway::CASHFREE,
@@ -3457,6 +3463,7 @@ class Gateway
         Gateway::UPI_SBI,
         Gateway::UPI_AIRTEL,
         Gateway::UPI_YESBANK,
+        Gateway::UPI_AXISOLIVE,
         Gateway::UPI_KOTAK,
         Gateway::CASHFREE,
         Gateway::PAYTM,
@@ -4739,6 +4746,7 @@ class Gateway
             self::UPI_AXIS,
             self::UPI_MINDGATE,
             self::UPI_KOTAK,
+            self::UPI_AXISOLIVE,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -4750,6 +4758,7 @@ class Gateway
             self::UPI_AIRTEL,
             self::UPI_YESBANK,
             self::UPI_KOTAK,
+            self::UPI_AXISOLIVE,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -4759,6 +4768,7 @@ class Gateway
     {
         $gateways = [
             self::UPI_KOTAK,
+            self::UPI_AXISOLIVE,
         ];
 
         return (in_array($gateway, $gateways, true));

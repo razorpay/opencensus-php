@@ -529,7 +529,7 @@ class TerminalTest extends TestCase
         $terminal = $this->fixtures->create('terminal:upi_in_app_terminal');
 
         $data = [
-            'gateway'                   => 'upi_axis',
+            'gateway'                   => 'upi_axisolive',
             'type'                      => [
                 'in_app' => '0',
             ],

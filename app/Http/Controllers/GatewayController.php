@@ -504,6 +504,7 @@ class GatewayController extends Controller
             // Special case because we need the raw request body
             case Gateway::UPI_RBL:
             case Gateway::UPI_AIRTEL:
+            case Gateway::UPI_AXISOLIVE:
             case Gateway::UPI_KOTAK:
                 $input = Request::getContent();
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);

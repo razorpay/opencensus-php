@@ -22,7 +22,7 @@ class Gateway extends Upi\Gateway
 
     protected $gateway                      = Entity::P2M_UPI_AXIS_OLIVE;
 
-    protected $mozart_gateway_resource      = Entity::UPI_AXIS;
+    protected $mozart_gateway_resource      = Entity::UPI_AXISOLIVE;
 
     protected function getTimeStamp()
     {

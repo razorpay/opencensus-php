@@ -200,9 +200,9 @@ trait CommonGatewayTrait
             Payment\Gateway::UPI_KOTAK,
             Payment\Gateway::UPI_AXIS,
             Payment\Gateway::UPI_AIRTEL,
-            Payment\Gateway::UPI_MINDGATE
-
-        ];
+            Payment\Gateway::UPI_MINDGATE,
+            Payment\Gateway::UPI_AXISOLIVE,
+            ];
 
         return (in_array($gateway, $gateways, true));
     }
