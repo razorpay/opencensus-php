@@ -16,7 +16,8 @@ class CustomerAppointmentDate
      */
     const DOCKET_DELIVERY_TAT = [
 
-        'bangalore'         => 1,
+        'bangalore'         => 1, // present in DB for some leads - from govt data source
+        'bengaluru'         => 1, // added from LMS using /cities URL
         'mumbai'            => 2,
         'pune'              => 2,
         'delhi'             => 2,
