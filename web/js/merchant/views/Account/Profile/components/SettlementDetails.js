@@ -75,7 +75,7 @@ class SettlementDetails extends Component {
   };
 
   render() {
-    const { current_balance, settlement_amount, settlementConfig } = this.props;
+    const { current_balance, settlement_amount, settlementConfig, user } = this.props;
     const { no_settlement } = settlement_amount?.data;
 
     const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
@@ -85,6 +85,8 @@ class SettlementDetails extends Component {
     const isSettlementOnHold = isOnTemporaryHold || isOnHold;
 
     const nextSettlement = settlement_amount?.data?.next_settlement_time;
+
+    const currency = user.merchant.currency;
 
     return (
       <div className="panel panel-default">
@@ -109,7 +111,7 @@ class SettlementDetails extends Component {
           <div className="list-group-item">
             <span>Current Balance</span>
             <span>
-              <Amount value={Math.abs(current_balance?.data?.balance)} currency="INR" />
+              <Amount value={Math.abs(current_balance?.data?.balance)} currency={currency} />
             </span>
           </div>
           {isSettlementOnHold && (
@@ -141,7 +143,7 @@ class SettlementDetails extends Component {
             <div className="list-group-item">
               <span>Next Settlement</span>
               <span>
-                <Amount value={settlement_amount?.data?.settlement_amount} currency="INR" />
+                <Amount value={settlement_amount?.data?.settlement_amount} currency={currency} />
                 <span className="divider" />
                 <Time className="pr-5" value={nextSettlement} format="DD MMM, hh:mm A" />
                 <span className="nav-link" onClick={this.onViewDetailsClick}>

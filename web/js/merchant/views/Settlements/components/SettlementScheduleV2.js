@@ -141,17 +141,23 @@ const SettlementScheduleV2 = (props) => {
               </button>
             </div>
           </ShowWhen>
-          <div className="button-wrapper ml-8">
-            <a
-              href={getCustomURL('https://razorpay.com/settlement')}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <button type="button" className="btn btn-primary full-width no-margin">
-                Settlement Guide
-              </button>
-            </a>
-          </div>
+          <ShowWhen
+            additionalCondition={(user) =>
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+            }
+          >
+            <div className="button-wrapper ml-8">
+              <a
+                href={getCustomURL('https://razorpay.com/settlement')}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <button type="button" className="btn btn-primary full-width no-margin">
+                  Settlement Guide
+                </button>
+              </a>
+            </div>
+          </ShowWhen>
         </div>
       </div>
     </div>

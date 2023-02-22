@@ -25,7 +25,6 @@ import { connect } from 'react-redux';
 import { NavLink, Redirect, Switch } from 'react-router-dom';
 
 const { BANK_ACCOUNT_DETAILS, SETTLEMENT_DETAILS, FIRS } = ROUTES_INFO;
-
 const BankAccountDetails = lazy(() =>
   import(
     /* webpackChunkName: "BankAccountDetails" */ 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetails'

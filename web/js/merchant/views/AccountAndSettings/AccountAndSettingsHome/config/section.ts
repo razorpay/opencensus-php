@@ -19,7 +19,6 @@ import {
   isReminderEnabled,
   isCreditsEnabled,
   isBalancesEnabled,
-  isSettlementsAllowed,
   isBankAccountDetailsAllowed,
   isProfileViewAllowed,
   shouldShowFIRCSection,
@@ -242,7 +241,6 @@ export const Sections: SectionCardInterface[] = [
         id: BankAccountSettlementFields.SETTLEMENT_DETAILS,
         title: 'Settlement details',
         href: ROUTES_INFO.SETTLEMENT_DETAILS,
-        additionalCondition: (): ((user: User) => boolean) => isSettlementsAllowed,
       },
       {
         id: BankAccountSettlementFields.FIRS,
