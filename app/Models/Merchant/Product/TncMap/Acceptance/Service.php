@@ -40,9 +40,11 @@ class Service extends Product\Service
 
         $merchantTncAcceptance = $this->core()->fetchMerchantAcceptance($merchant, $tncMap->getProductName());
 
+        $ip = (isset($input[Constants::IP]) === true) ? $input[Constants::IP] : null;
+
         if(empty($merchantTncAcceptance) === true)
         {
-            $merchantTncAcceptance = $this->core()->acceptTnc($merchant, $tncMap);
+            $merchantTncAcceptance = $this->core()->acceptTnc($merchant, $tncMap, $ip);
         }
 
         return $this->formatFetchResponse($tncMap, $merchantTncAcceptance);

@@ -4,6 +4,7 @@ namespace Functional\Merchant\Products;
 
 use Mail;
 use Event;
+use Mockery;
 use RZP\Base\Repository;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -1804,8 +1805,49 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         //return $data;
     }
 
+    private function mockSplitzExperiment($experimentId, $id, $variant)
+    {
+        $input = [
+            "experiment_id" => $experimentId,
+            "id"            => $id
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => $variant,
+                ]
+            ]
+        ];
+
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->with($input)
+            ->byDefault()
+            ->andReturn($output);
+    }
+
     private function mockSplitzEvaluation()
     {
+        $input = [
+            "experiment_id" => "L3crKVAmTMJ50f",
+            "id"            => "10000000000000"
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+
         $input = [
             "experiment_id" => "JRWRysOmXFWZ9C",
             "id"            => "10000000000000",
@@ -2014,13 +2056,26 @@ class PaymentGatewayConfigTest extends OAuthTestCase
         $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
     }
 
-    public function testCreateLegalDocsForMerchantConsentOnSubmitActivation()
+    public function testConfigRequirementsAndCreateLegalDocsForMerchantConsentOnSubmitActivationWithIpExpDisabled()
+    {
+        $bvsMock = $this->mockCreateLegalDocument();
+
+        $bvsMock->expects($this->once())->method('createLegalDocument')->withAnyParameters();
+
+        $merchantId = $this->createLegalDocsForMerchantConsentOnSubmitActivation(false, false, false);
+
+        $merchantConsents = $this->getDbEntities('merchant_consents',  ['merchant_id' => $merchantId], Mode::LIVE)->toArray();
+
+        $this->assertCount(1, $merchantConsents);
+    }
+
+    public function testConfigRequirementsAndCreateLegalDocsForMerchantConsentOnSubmitActivationWithIpExpEnabled()
     {
         $bvsMock = $this->mockCreateLegalDocument();
 
         $bvsMock->expects($this->never())->method('createLegalDocument')->withAnyParameters();
 
-        $merchantId = $this->createLegalDocsForMerchantConsentOnSubmitActivation(false, false);
+        $merchantId = $this->createLegalDocsForMerchantConsentOnSubmitActivation(false, false, true);
 
         $merchantConsents = $this->getDbEntities('merchant_consents',  ['merchant_id' => $merchantId], Mode::LIVE)->toArray();
 
@@ -2033,7 +2088,7 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $bvsMock->expects($this->once())->method('createLegalDocument')->withAnyParameters();
 
-        $merchantId = $this->createLegalDocsForMerchantConsentOnSubmitActivation(true, false);
+        $merchantId = $this->createLegalDocsForMerchantConsentOnSubmitActivation(true, false, false);
 
         $merchantConsents = $this->getDbEntities('merchant_consents',  ['merchant_id' => $merchantId], Mode::LIVE)->toArray();
 
@@ -2046,16 +2101,25 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $bvsMock->expects($this->never())->method('createLegalDocument')->withAnyParameters();
 
-        $this->createLegalDocsForMerchantConsentOnSubmitActivation(true, true);
+        $this->createLegalDocsForMerchantConsentOnSubmitActivation(true, true, false);
     }
 
-    protected function createLegalDocsForMerchantConsentOnSubmitActivation(bool $isSubmerchantNoDocEnabled, bool $isConsentAlreadyPresent)
+    protected function createLegalDocsForMerchantConsentOnSubmitActivation(bool $isSubmerchantNoDocEnabled, bool $isConsentAlreadyPresent, bool $isPassingIpExpEnabled)
     {
         Mail::fake();
 
         $this->setupPrivateAuthForPartner();
 
         $this->mockTerminalServiceResponse();
+
+        if($isPassingIpExpEnabled === true)
+        {
+            $this->mockSplitzExperiment('L3crKVAmTMJ50f', 'DefaultPartner', 'enable');
+        }
+        else
+        {
+            $this->mockSplitzExperiment('L3crKVAmTMJ50f', 'DefaultPartner','disable');
+        }
 
         $testData = $this->testData['createRegisteredBusinessTypeAccount'];
 
@@ -2119,6 +2183,11 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
         $testData = $this->testData['testUpdateSettlementDetailsForRegisteredBusiness'];
 
+        if($isPassingIpExpEnabled === true)
+        {
+            $testData = $this->testData['testUpdateSettlementDetailsForRegisteredBusinessWithoutIp'];
+        }
+
         if($isSubmerchantNoDocEnabled === true)
         {
             $testData = $this->testData['testUpdatePaymentGatewayConfigForNoDoc'];
@@ -2170,12 +2239,100 @@ class PaymentGatewayConfigTest extends OAuthTestCase
 
             $testData = $this->testData['acceptAccountTnc'];
 
+            if($isPassingIpExpEnabled === true)
+            {
+                $testData = $this->testData['testAcceptAccountTncWithoutIpWhenExperimentEnabled'];
+            }
+
             $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
+
+            $this->runRequestResponseFlow($testData);
+
+            $testData = $this->testData['testEmptyRequirements'];
+
+            $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
 
             $this->runRequestResponseFlow($testData);
         }
 
         return $merchantId;
+    }
+
+    public function testAcceptAccountTncWithoutIpWhenExperimentDisabled()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockSplitzExperiment('L3crKVAmTMJ50f', 'DefaultPartner', 'disable');
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/tnc';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testAcceptTncWithoutIpUsingPostProductConfigWhenExperimentDisabled()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockSplitzExperiment('L3crKVAmTMJ50f', 'DefaultPartner', 'disable');
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testAcceptTncWithoutIpUsingPatchProductConfigWhenExperimentDisabled()
+    {
+        Mail::fake();
+
+        $this->mockTerminalServiceResponse();
+
+        $this->setupPrivateAuthForPartner();
+
+        $this->mockSplitzExperiment('L3crKVAmTMJ50f', 'DefaultPartner', 'disable');
+
+        $testData = $this->testData['createUnregisteredBusinessTypeAccount'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        $testData = $this->testData['testCreateDefaultPaymentGatewayConfig'];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products';
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $merchantProductId = $response['id'];
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $accountId . '/products/' . $merchantProductId;
+
+        $this->runRequestResponseFlow($testData);
     }
 }
 

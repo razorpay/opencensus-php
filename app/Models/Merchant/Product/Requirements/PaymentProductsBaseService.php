@@ -320,7 +320,8 @@ class PaymentProductsBaseService extends Base\Service
 
             $requirement[Constants::REASON_CODE] = Constants::FIELD_MISSING;
 
-            if($merchant->isNoDocOnboardingEnabled())
+            if($merchant->isNoDocOnboardingEnabled() or ($merchant->isLinkedAccount() === false
+                                 and $this->isSubmerchantsPartnerExcludedFromProvidingIp($merchant->getId()) === false))
             {
                 $ipRequirement[Constants::FIELD_REFERENCE] = Constants::IP;
 
@@ -1093,5 +1094,18 @@ class PaymentProductsBaseService extends Base\Service
         }
 
         return true;
+    }
+
+    private function isSubmerchantsPartnerExcludedFromProvidingIp($submerchantId): bool
+    {
+        $partnerId = $this->auth->getPartnerMerchantId() ??
+                     $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($submerchantId)->first();
+
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.excluded_partners_from_providing_subm_ip_experiment_id')
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 }

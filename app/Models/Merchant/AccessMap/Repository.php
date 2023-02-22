@@ -122,6 +122,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchEntityOwnerIdsForSubmerchant(string $submerchantId)
+    {
+        return $this->newQuery()
+                    ->select(Entity::ENTITY_OWNER_ID)
+                    ->where(Entity::MERCHANT_ID, $submerchantId)
+                    ->get()
+                    ->pluck(Entity::ENTITY_OWNER_ID);
+    }
+
     /**
      * @param string $merchantId
      * @param string $entityType

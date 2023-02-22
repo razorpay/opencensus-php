@@ -402,6 +402,8 @@ return array(
 
     'remove_partner_user_from_merchant_manage_team_experiment_id' => env('REMOVE_PARTNER_USER_FROM_MERCHANT_MANAGE_TEAM_EXPERIMENT_ID'),
 
+    'excluded_partners_from_providing_subm_ip_experiment_id' => env('EXCLUDED_PARTNERS_FROM_PROVIDING_SUBM_IP_EXPERIMENT_ID'),
+
     '1cc_splitz_experiment_id' => env('MAGIC_CHECKOUT_SPLITZ_EXPERIMENT_ID'),
 
     '1cc_city_autopopulate_splitz_experiment_id' => env('MAGIC_CHECKOUT_DISABLE_AUTOPOPULATE_EXP_ID'),

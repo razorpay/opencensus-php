@@ -6,6 +6,7 @@ use App;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Product\TncMap;
 use RZP\Models\Merchant\Product\Util\Constants;
 
 class Validator extends Base\Validator
@@ -47,12 +48,25 @@ class Validator extends Base\Validator
 
     public function validateTncInputCheck($input)
     {
-        if($this->merchant->isNoDocOnboardingEnabled() === true)
+        $app = App::getFacadeRoot();
+
+        $partnerId = $app['basicauth']->getPartnerMerchantId();
+
+        $isExpEnabled = (new TncMap\Acceptance\Core())->isPartnerExcludedFromProvidingSubmerchantIp($partnerId);
+
+        // for no doc merchants and for (non-LinkedAccount (route) and non whitelisted partner's submerchants) ip and tnc are required to be passed together
+        if($this->merchant->isNoDocOnboardingEnabled() === true or ($this->merchant->isLinkedAccount() === false and $isExpEnabled === false))
         {
-            //both ip and tnc_accepted fields are required in payload during other one's presence in case of no-doc merchant
             if((isset($input[Constants::IP]) === true and isset($input[Constants::TNC_ACCEPTED]) === false) or (isset($input[Constants::IP]) === false and isset($input[Constants::TNC_ACCEPTED]) === true))
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_FOR_NO_DOC);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_AND_IP_NOT_TOGETHER);
+            }
+        }
+        else if($this->merchant->isLinkedAccount() === false and $isExpEnabled === true)
+        {
+            if(isset($input[Constants::IP]) === true and isset($input[Constants::TNC_ACCEPTED]) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_AND_IP_NOT_TOGETHER);
             }
         }
         else

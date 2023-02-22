@@ -58,11 +58,16 @@ class ConsentDocumentsBaseService extends Base\Service
         {
             $startTime = microtime(true);
 
-            if($merchant->isNoDocOnboardingEnabled() === false)
+            $partnerId = $this->repo->merchant_access_map->fetchEntityOwnerIdsForSubmerchant($merchant->getId())->first();
+
+            $isExpEnabled = $this->tncCore->isPartnerExcludedFromProvidingSubmerchantIp($partnerId);
+
+            if($merchant->isNoDocOnboardingEnabled() === false and $isExpEnabled === true)
             {
                 $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
-                    'message' => 'Consents not created as no doc onboarding is not enabled for the merchant'
+                    'message' => 'Consents not created as no doc onboarding is not enabled for submerchant and the partner is excluded from providing IP'
                 ]);
+
                 return;
             }
 
@@ -95,8 +100,6 @@ class ConsentDocumentsBaseService extends Base\Service
                 ];
                 array_push($documentsDetail, $tncAgreementDetail);
             }
-
-            $partnerId = $this->repo->merchant_access_map->fetchAffiliatedPartnersForSubmerchant($merchant->getId())->first()->getEntityOwnerId();
 
             $consentDetails = [
                 DEConstants::DOCUMENTS_DETAIL                => $documentsDetail,

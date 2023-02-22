@@ -617,6 +617,12 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'ip',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'individual_proof_of_address',
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'required',
@@ -701,6 +707,12 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'ip',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'individual_proof_of_address',
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'required',
@@ -762,6 +774,12 @@ return [
                 'requirements'         => [
                     [
                         'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'ip',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
@@ -857,6 +875,12 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'ip',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'business_proof_of_identification.business_pan_url',
                         'resolution_url'  => '/accounts/{accountId}/documents',
                         'status'          => 'required',
@@ -891,13 +915,116 @@ return [
         ],
     ],
 
-    'acceptTncUsingPostProductConfig' => [
+    'testUpdateSettlementDetailsForRegisteredBusinessWithoutIp' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'settlements' => [
+                    'account_number'   => '123576432234',
+                    'ifsc_code'        => 'HDFC0000317',
+                    'beneficiary_name' => 'bank account name'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'active_configuration' => [
+                    'payment_capture' => [
+                        'mode'                    => 'automatic',
+                        'refund_speed'            => 'normal',
+                        'automatic_expiry_period' => 7200
+                    ],
+                    'notifications'   => [
+                        'sms'      => false,
+                        'whatsapp' => false
+                    ],
+                    'checkout'        => [
+                        'theme_color' => '#000000'
+                    ],
+                    'refund'        => [
+                        'default_refund_speed' => 'normal'
+                    ],
+                    'settlements'     => [
+                        'account_number'   => '123576432234',
+                        'ifsc_code'        => 'HDFC0000317',
+                        'beneficiary_name' => 'bank account name'
+                    ],
+                ],
+                'requirements'         => [
+                    [
+                        'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_pan_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'business_proof_of_identification.business_proof_url',
+                        'resolution_url'  => '/accounts/{accountId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'individual_proof_of_address',
+                        'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
+                        'status'          => 'required',
+                        'reason_code'     => 'document_missing'
+                    ],
+                    [
+                        'field_reference' => 'legal_info.pan',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'legal_info.cin',
+                        'resolution_url'  => '/accounts/{accountId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                ]
+            ],
+        ],
+    ],
+
+    'testAcceptTncWithoutIpUsingPostProductConfigWhenExperimentDisabled' => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}/products',
             'method'  => 'POST',
             'content' => [
                 'product_name' => 'payment_gateway',
                 'tnc_accepted' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both tnc_accepted and ip fields are required while accepting tnc'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_AND_IP_NOT_TOGETHER,
+        ],
+    ],
+
+    'acceptTncUsingPostProductConfig' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products',
+            'method'  => 'POST',
+            'content' => [
+                'product_name' => 'payment_gateway',
+                'tnc_accepted' => true,
+                'ip'           => '223.233.71.18'
             ],
         ],
         'response' => [
@@ -947,12 +1074,36 @@ return [
         ],
     ],
 
-    'acceptTncUsingPatchProductConfig' => [
+    'testAcceptTncWithoutIpUsingPatchProductConfigWhenExperimentDisabled' => [
         'request'  => [
             'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
             'method'  => 'PATCH',
             'content' => [
                 'tnc_accepted' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both tnc_accepted and ip fields are required while accepting tnc'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_AND_IP_NOT_TOGETHER,
+        ],
+    ],
+
+    'acceptTncUsingPatchProductConfig' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
+            'method'  => 'PATCH',
+            'content' => [
+                'tnc_accepted' => true,
+                'ip'           => '223.233.71.18'
             ],
         ],
         'response' => [
@@ -1007,7 +1158,8 @@ return [
             'url'     => '/v2/accounts/{accountId}/products/{merchantProductId}',
             'method'  => 'PATCH',
             'content' => [
-                'tnc_accepted' => true
+                'tnc_accepted' => true,
+                'ip'           => '223.233.71.18'
             ],
         ],
         'response' => [
@@ -1335,14 +1487,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Both tnc_accepted and ip fields are required while accepting tnc for no-doc onboarding merchant'
+                    'description' => 'Both tnc_accepted and ip fields are required while accepting tnc'
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_FOR_NO_DOC,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_AND_IP_NOT_TOGETHER,
         ],
     ],
 
@@ -1403,6 +1555,12 @@ return [
                 'requirements' => [
                     [
                         'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'ip',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
@@ -1650,6 +1808,12 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'ip',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'business_proof_of_identification.business_pan_url',
                         'resolution_url'  => '/accounts/{accountId}/documents',
                         'status'          => 'required',
@@ -1725,6 +1889,12 @@ return [
                 'requirements' => [
                     [
                         'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'ip',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
@@ -1888,6 +2058,12 @@ return [
                 'requirements' => [
                     [
                         'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
+                        'field_reference' => 'ip',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing'
@@ -2089,6 +2265,25 @@ return [
             'url'     => '/v2/accounts/{id}/tnc',
             'method'  => 'POST',
             'content' => [
+                'accepted' => true,
+                'ip'       => '223.233.71.18'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'status'   => 'active',
+                'content'  => [
+                    'terms' => 'https://www.razorpay.com/terms/'
+                ],
+                'accepted' => true
+            ]
+        ]
+    ],
+    'testAcceptAccountTncWithoutIpWhenExperimentEnabled' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{id}/tnc',
+            'method'  => 'POST',
+            'content' => [
                 'accepted' => true
             ],
         ],
@@ -2101,6 +2296,28 @@ return [
                 'accepted' => true
             ]
         ]
+    ],
+    'testAcceptAccountTncWithoutIpWhenExperimentDisabled' => [
+        'request'  => [
+            'url'     => '/v2/accounts/{id}/tnc',
+            'method'  => 'POST',
+            'content' => [
+                'accepted' => true
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Both tnc_accepted and ip fields are required while accepting tnc'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_AND_IP_NOT_TOGETHER,
+        ],
     ],
     'createAccountWithoutBrandColor' => [
         'request'  => [
@@ -2338,6 +2555,12 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'ip',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'business_proof_of_identification.business_pan_url',
                         'resolution_url'  => '/accounts/{accountId}/documents',
                         'status'          => 'required',
@@ -2393,6 +2616,12 @@ return [
                         'reason_code'     => 'field_missing'
                     ],
                     [
+                        'field_reference' => 'ip',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing'
+                    ],
+                    [
                         'field_reference' => 'individual_proof_of_address',
                         'resolution_url'  => '/accounts/{accountId}/stakeholders/{stakeholderId}/documents',
                         'status'          => 'required',
@@ -2432,6 +2661,13 @@ return [
                 'requirements' => [
                     [
                         'field_reference' => 'tnc_accepted',
+                        'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
+                        'status'          => 'required',
+                        'reason_code'     => 'field_missing',
+                        'description'     => 'You can no longer accept payments as you have breached the INR 15,000 limit. Kindly fill in the remaining details to re-activate your account.'
+                    ],
+                    [
+                        'field_reference' => 'ip',
                         'resolution_url'  => '/accounts/{accountId}/products/{merchantProductConfigId}',
                         'status'          => 'required',
                         'reason_code'     => 'field_missing',

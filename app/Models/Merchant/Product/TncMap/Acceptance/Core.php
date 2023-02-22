@@ -96,4 +96,14 @@ class Core extends Base\Core
 
         return [$ip, $device];
     }
+
+    public function isPartnerExcludedFromProvidingSubmerchantIp($partnerId): bool
+    {
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $this->app['config']->get('app.excluded_partners_from_providing_subm_ip_experiment_id')
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
 }

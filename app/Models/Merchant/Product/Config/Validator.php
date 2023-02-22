@@ -10,6 +10,7 @@ use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Product\Util;
+use RZP\Models\Merchant\Product\TncMap;
 
 
 class Validator extends Base\Validator
@@ -216,20 +217,25 @@ class Validator extends Base\Validator
 
     public function validateTncInputCheck($input)
     {
-        if($this->merchant->isNoDocOnboardingEnabled() === true)
+        $app = App::getFacadeRoot();
+
+        $partnerId = $app['basicauth']->getPartnerMerchantId();
+
+        $isExpEnabled = (new TncMap\Acceptance\Core())->isPartnerExcludedFromProvidingSubmerchantIp($partnerId);
+
+        //for no doc merchants and non whitelisted partner's submerchants ip and tnc are required to be passed together
+        if($this->merchant->isNoDocOnboardingEnabled() === true or $isExpEnabled === false)
         {
-            //both ip and tnc_accepted fields are required in payload during other one's presence in case of no-doc merchant
             if((isset($input[Util\Constants::IP]) === true and isset($input[Util\Constants::TNC_ACCEPTED]) === false) or (isset($input[Util\Constants::IP]) === false and isset($input[Util\Constants::TNC_ACCEPTED]) === true))
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_FOR_NO_DOC);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_AND_IP_NOT_TOGETHER);
             }
         }
         else
         {
-            if(isset($input[Util\Constants::IP]) === true)
+            if(isset($input[Util\Constants::IP]) === true and isset($input[Util\Constants::TNC_ACCEPTED]) === false)
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    'ip is/are not required and should not be sent');
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_TNC_ACCEPTANCE_AND_IP_NOT_TOGETHER);
             }
         }
     }

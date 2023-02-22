@@ -829,7 +829,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_MERCHANT_FEATURE_UNAVAILABLE                              = 'The requested feature is unavailable.';
     const BAD_REQUEST_SUBM_NO_DOC_ONBOARDING_NOT_ENABLED_FOR_PARTNER            = 'Sub-merchant no-doc onboarding is not enabled for partner';
-    const BAD_REQUEST_TNC_ACCEPTANCE_FOR_NO_DOC                                 = 'Both tnc_accepted and ip fields are required while accepting tnc for no-doc onboarding merchant';
+    const BAD_REQUEST_TNC_ACCEPTANCE_AND_IP_NOT_TOGETHER                        = 'Both tnc_accepted and ip fields are required while accepting tnc';
 
     const BAD_REQUEST_INVALID_ADMIN_EMAIL                                       = 'Email provided is not a registered email';
     const BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME                              = 'Email provided does not have the correct hostname';
