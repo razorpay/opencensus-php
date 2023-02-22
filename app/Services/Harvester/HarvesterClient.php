@@ -142,28 +142,9 @@ class HarvesterClient extends AbstractEventClient
 
     public function query($data = '', $timeout = self::REQUEST_TIMEOUT)
     {
-        $config    = $this->config;
-        $queryPath = self::QUERY_API_PATH;
+        $queryPath = self::QUERY_API_PATH_V2;
 
-        $merchantId = $this->merchant->getId();
-
-        if (empty($merchantId) === false)
-        {
-
-            $v2ExperimentEnabled = (new MerchantCore)->isRazorxExperimentEnable($merchantId,
-                                                                        RazorxTreatment::HARVESTER_V2_MIGRATION);
-            $this->trace->info(
-                TraceCode::RAZORX_EXPERIMENT_RESULT,
-                [
-                    'v2ExperimentEnabled' => $v2ExperimentEnabled,
-                ]);
-
-            if ($v2ExperimentEnabled === true)
-            {
-                $queryPath = self::QUERY_API_PATH_V2;
-                $config    = $this->app['config']->get('applications.harvester_v2');
-            }
-        }
+        $config    = $this->app['config']->get('applications.harvester_v2');
 
         return $this->sendRequest($queryPath, $data, $config, self::RETRY, self::RETRY_TIMES, $timeout);
     }
