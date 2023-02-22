@@ -444,6 +444,8 @@ class Core extends Base\Core
         $settingCustomDomain = $paymentLink->getSettings(Entity::CUSTOM_DOMAIN);
         $settingCustomDomain = is_string($settingCustomDomain) ? $settingCustomDomain : "";
 
+        $this->validateBulkUploadFlow($input,$this->merchant,$paymentLink);
+
         Tracer::inSpan(['name' => 'payment_page.update'], function() use($paymentLink, $input, $settingCustomDomain)
         {
             $this->repo->transaction(function () use ($paymentLink, $input) {

@@ -106,6 +106,7 @@ class Validator extends Base\Validator
         Entity::SUPPORT_CONTACT => 'nullable|string|min:8|max:255',
         Entity::SUPPORT_EMAIL   => 'nullable|email',
         Entity::TERMS           => 'nullable|string|min:5|max:2048|utf8',
+        Entity::VIEW_TYPE       => 'sometimes|string|custom',
         Entity::SETTINGS        => 'nullable|array',
 
         Entity::SETTINGS . '.' . Entity::THEME                        => 'nullable|string|in:light,dark',

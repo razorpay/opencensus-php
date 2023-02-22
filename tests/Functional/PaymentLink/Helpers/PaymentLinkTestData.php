@@ -1045,6 +1045,71 @@ return [
         ],
     ],
 
+    'testUpdatePaymentLinkFileUpload' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                "support_email"=> "nikhilesh.tripathi@razorpay.com",
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}]",
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200
+        ],
+    ],
+
+    'testUpdatePaymentLinkFileUploadException' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                "support_email"=> "nikhilesh.tripathi@razorpay.com",
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}]",
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Mandatory field Primary reference ID missing.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testUpdatePaymentLinkFileUploadWithoutFeature' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                "support_email"=> "nikhilesh.tripathi@razorpay.com",
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}]",
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT,
+        ],
+    ],
+
     'testUpdatePaymentLinkRemoveAllItem' => [
         'request' => [
             'url'     => '/payment_pages/pl_100000000000pl',

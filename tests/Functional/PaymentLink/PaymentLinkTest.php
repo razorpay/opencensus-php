@@ -350,6 +350,54 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+
+    public function testUpdatePaymentLinkFileUpload()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $request = $this->testData['testPaymentPageCreateForFileUpload'];
+
+        $response = $this->runRequestResponseFlow($request);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payment_pages/'.$response['id'].'/';
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdatePaymentLinkFileUploadException()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $request = $this->testData['testPaymentPageCreateForFileUpload'];
+
+        $response = $this->runRequestResponseFlow($request);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payment_pages/'.$response['id'].'/';
+
+        $this->startTest($testData);
+    }
+
+    public function testUpdatePaymentLinkFileUploadWithoutFeature()
+    {
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $request = $this->testData['testPaymentPageCreateForFileUpload'];
+
+        $response = $this->runRequestResponseFlow($request);
+
+        $this->fixtures->merchant->removeFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payment_pages/'.$response['id'].'/';
+
+        $this->startTest($testData);
+    }
+
     public function testUpdatePaymentLinkDeletingItem()
     {
         $this->createPaymentLinkWithMultipleItem(self::TEST_PL_ID, [
