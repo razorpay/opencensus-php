@@ -6530,16 +6530,17 @@ class Service extends Base\Service
             $library = $this->getLibraryFromPayment($payment);
 
             return [
-                'payment_id' => $paymentId,
-                'library'    => $library,
-                'amount'     => $payment->getFormattedAmount(),
-                'success'    => $this->isPaymentSuccessful($payment),
-                'method'     => $payment->getMethod(),
-                'created_at' => Carbon::createFromTimestamp(
+                'payment_id'            => $paymentId,
+                'library'               => $library,
+                'amount'                => $payment->getFormattedAmount(),
+                'success'               => $this->isPaymentSuccessful($payment),
+                'method'                => $payment->getMethod(),
+                'created_at'            => Carbon::createFromTimestamp(
                     $payment->getCreatedAt(),
                     Timezone::IST
                 )->format('M d, Y | h:i A'),
-                'merchant'   => [
+                'is_email_less_payment' => empty($payment->getEmail()) || $payment->getEmail() === Entity::DUMMY_EMAIL,
+                'merchant'              => [
                     'name' => $merchant->getName(),
                     'rtb'  => (new TrustedBadge\Core())->isTrustedBadgeLiveForMerchant($merchant->getId()),
                 ],

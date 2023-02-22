@@ -9,8 +9,10 @@
 
     @include('partials.loader')
     @if (isset($data['payment_details']) === true &&
+    isset($data['payment_details']['is_email_less_payment']) === true &&
     isset($data['payment_details']['payment_id']) === true &&
     isset($data['payment_details']['library']) === true &&
+    $data['payment_details']['is_email_less_payment'] === true &&
     ($data['payment_details']['library'] === "checkoutjs" || $data['payment_details']['library'] === "hosted"))
       <style>
         html {
@@ -253,8 +255,10 @@
   </head>
   <body>
     @if (isset($data['payment_details']) === true &&
+    isset($data['payment_details']['is_email_less_payment']) === true &&
     isset($data['payment_details']['payment_id']) === true &&
     isset($data['payment_details']['library']) === true &&
+    $data['payment_details']['is_email_less_payment'] === true &&
     ($data['payment_details']['library'] === "checkoutjs" || $data['payment_details']['library'] === "hosted"))
       <div id="checkoutTransitionScreen">
         <div
