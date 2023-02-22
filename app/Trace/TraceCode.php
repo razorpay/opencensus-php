@@ -1850,6 +1850,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_UNAVAILABLE                           = 'VIRTUAL_ACCOUNT_UNAVAILABLE';
     const SMART_COLLECT_TERMINAL_CACHING_UNAVAILABLE            = 'SMART_COLLECT_TERMINAL_CACHING_UNAVAILABLE';
     const SMART_COLLECT_TERMINAL_CACHING                        = 'SMART_COLLECT_TERMINAL_CACHING';
+    const SMART_COLLECT_SET_TERMINAL_CACHE                      = 'SMART_COLLECT_SET_TERMINAL_CACHE';
     const QR_CODE_UNAVAILABLE                                   = 'QR_CODE_UNAVAILABLE';
     const QR_CODE_VPA_GENERATION_FAILED                         = 'QR_CODE_VPA_GENERATION_FAILED';
     const QR_CODE_VPA_GENERATION_REQUEST                        = 'QR_CODE_VPA_GENERATION_REQUEST';

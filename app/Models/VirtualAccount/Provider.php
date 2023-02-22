@@ -257,6 +257,12 @@ class Provider
                 $terminals[] = $terminal->exportAttributes();
                 $this->cache->set($cacheKey, $terminals, VirtualAccount\Constant::TERMINAL_CACHE_TTL);
 
+                $this->trace->info(TraceCode::SMART_COLLECT_SET_TERMINAL_CACHE, [
+                    'merchant id'           => $merchantId,
+                    'cacheKey'              => $cacheKey,
+                    'cached terminal ids'   => $terminals != null ? array_column($terminals, 'id') : ''
+                ]);
+
                 return $terminal;
             }
             else
