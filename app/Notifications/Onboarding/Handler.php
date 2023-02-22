@@ -31,6 +31,12 @@ class Handler extends BaseHandler
         Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => [Channel::EMAIL, Channel::WHATSAPP],
         Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => [Channel::EMAIL, Channel::WHATSAPP],
         Events::NC_COUNT_2_PAYMENTS_NOT_LIVE                  => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER       => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER   => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                    => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER       => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER   => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                    => [Channel::EMAIL, Channel::WHATSAPP],
 
         Events::UNREGISTERED_SETTLEMENTS_ENABLED                     => [Channel::SMS, Channel::WHATSAPP],
         Events::REGISTERED_SETTLEMENTS_ENABLED                       => [Channel::SMS, Channel::WHATSAPP],

@@ -634,4 +634,13 @@ class Repository extends Base\Repository
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
     }
+    // Merchants in needs clarification state in the merchant details table
+    public function  filterMerchantsInNeedsClarification() : array
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACTIVATION_STATUS, Status::NEEDS_CLARIFICATION)
+                    ->get()
+                    ->pluck(Entity::MERCHANT_ID)
+                    ->toArray();
+    }
 }

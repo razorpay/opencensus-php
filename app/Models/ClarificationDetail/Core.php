@@ -3,16 +3,18 @@
 namespace RZP\Models\ClarificationDetail;
 
 use Mail;
-
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
-use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Constants as MConstants;
+use RZP\Notifications\Onboarding\Events as NCEvents;
+use RZP\Models\ClarificationDetail\Core as ClarDetailCore;
 use RZP\Models\ClarificationDetail\Service as ClarDetailService;
-use RZP\Exception;
-use RZP\Models\Merchant\Document\Type;
-use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\Escalations\Constants as EscalationsConstant;
+use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
 
 class Core extends Base\Core
 {
@@ -220,6 +222,69 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::CLARIFICATION_DETAILS_COMMUNICATION_PARAMS, $params);
 
         return $params;
+    }
+
+    public function sendReminderNotification($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $clarificationDetails = (new ClarDetailCore)->getCommunicationParams($merchantId);
+
+        if ($this->hasClarificationDetails($merchantId) === true)
+        {
+            $args = [
+                EscalationsConstant::MERCHANT => $merchant,
+                MConstants::PARAMS            => [
+                    'clarification_details' => $clarificationDetails,
+                    'ncSubmissionDate'      => Carbon::createFromTimestamp(
+                        Carbon::now()
+                              ->addDays(7)
+                              ->getTimestamp(), Timezone::IST)->isoFormat('MMM Do YYYY')
+                ]
+            ];
+
+            $event = $this->getEventForNcRevampReminderNotification($merchant);
+
+            (new OnboardingNotificationHandler($args))
+                ->sendEventNotificationForMerchant($merchantId, $event);
+        }
+    }
+
+
+    protected function getEventForNcRevampReminderNotification(Merchant\Entity $merchant)
+    {
+        $event = '';
+
+        $ncCount = $this->getNcCount($merchant);
+
+        if ($merchant->isActivated() === true and $merchant->isFundsOnHold() === false)
+        {
+            $event = ($ncCount <= 1) ?
+                NCEvents::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER :
+                NCEvents::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER;
+        }
+
+        else
+        {
+            if ($merchant->isActivated() === true and $merchant->isFundsOnHold() === true)
+            {
+                $event = ($ncCount <= 1) ?
+                    NCEvents::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER :
+                    NCEvents::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER;
+            }
+            else
+            {
+                if ($merchant->isActivated() === false)
+                {
+                    $event = ($ncCount <= 1) ?
+                        NCEvents::NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER :
+                        NCEvents::NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER;
+                }
+            }
+        }
+
+        return $event;
+
     }
 
     public function getSegmentEventParams($merchant)

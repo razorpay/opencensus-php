@@ -2,8 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-    <meta name="viewport" content="width=device-width"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width" />
     <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet" type="text/css">
     <style>
         .device-padding {
@@ -45,7 +45,7 @@
                             <tr>
                                 <td style="font-size: 16px; color: #23496d; line-height: 24px;">
                                     <div>
-                                        <img style="width: 95px;" src="https://cdn.razorpay.com/logo.png"/>
+                                        <img style="width: 95px;" src="https://cdn.razorpay.com/logo.png" />
                                     </div>
                                     <div style="margin-top: 20px; margin-bottom: 20px;">
                       <span style="display: block; height: 4px; width: 24px; background-color:  #5CA2F7;">
@@ -54,27 +54,20 @@
                                     <div>
                                         Hey {{{$merchant['name']}}},
                                     </div>
+                                    <br />
                                     <div>
-                                        Hope you're doing well.
+                                        This is a quick reminder to update your given details in order for us to complete KYC verification
+                                        for your account.
                                     </div>
-                                    <br/>
-                                    <div>
-                                        In order to complete KYC verification for your account, we need a few more
-                                        details from you.
-                                    </div>
-                                    <br/>
-                                    <div>
-                                        As a next step, we request you to go to your Razorpay dashboard and take the
-                                        action required as
-                                        per the below given
-                                        instructions immediately.
-                                    </div>
-                                    <br/>
+                                    <br />
                                     <div style="background-color: #f54a2a14; border-radius: 12px; padding: 16px;">
-                                        Please note, you will not be able to receive payments in your bank account if
-                                        the required details
-                                        are not updated
-                                        before {{{$ncSubmissionDate}}}
+                                        Please note, we have currently paused settlements for your account. You'll be able to receive
+                                        collected payments in your
+                                        account only after the required details are updated.
+                                    </div>
+                                    <br />
+                                    <div>
+                                        We request you to take the action required immediately on your Razorpay dashboard now:
                                     </div>
                                     <table
                                         style="margin-top:24px; margin-bottom: 24px; font-size: 14px; line-height: 20px; border-collapse: collapse;"
@@ -113,10 +106,9 @@
                                                 </td>
                                             </tr>
                                         @endforeach
-
                                     </table>
-                                    <br/>
-                                    <a href="https://easy.razorpay.com/onboarding/needs-clarification" target="_blank"
+                                    <br />
+                                    <a href="https://easy.razorpay.com/needs-clarification" target="_blank"
                                        style="display: block;text-decoration: none;color: #ffffff;border: none;text-align: center;border-radius: 12px;background: #1566F1;width: 160px;height: 56px;line-height: 56px;margin-bottom: 24px;box-shadow: 0px 8px 16px 4px #1566f133;">
                                         Resolve Now
                                     </a>
@@ -128,8 +120,7 @@
                                     </div>
                                     <div style="font-size: 14px; line-height: 20px; color:#213554ab; margin-top:24px">
                                         For help on how to resolve the above clarifications, <a href="https://razorpay.com/docs/payments/account-activation-support" target="_blank"
-                                                                                                style="color: #1566f1; text-decoration: none;">please
-                                            go here.</a>
+                                                                                                style="color: #1566f1; text-decoration: none;">please go here.</a>
                                     </div>
                                 </td>
                             </tr>
@@ -139,9 +130,8 @@
             </table>
             <div
                 style="font-size: 12px; line-height: 18px; color: #21355461; border-top: 1px solid #3246641f; padding: 8px; width: 90%; margin: 0 auto; margin-top: 24px;">
-                If you’ve any questions, we’ll be happy to help. <a href="https://razorpay.com/support/" target="_blank"
-                                                                    style="color: #1566f1; text-decoration: none;">Reach
-                    out to us for support</a>
+                If you've any questions, we'll be happy to help. <a href="https://razorpay.com/support/" target="_blank"
+                                                                    style="color: #1566f1; text-decoration: none;">Reach out to us for support</a>
             </div>
         </td>
     </tr>

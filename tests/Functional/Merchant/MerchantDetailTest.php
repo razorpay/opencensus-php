@@ -18,6 +18,7 @@ use RZP\Models\Base\EsDao;
 use RZP\Constants\Timezone;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Core;
+use RZP\Models\Merchant\Cron\Jobs\NcRevampReminderCronJob;
 use RZP\Models\User\Role;
 use RZP\Services\DiagClient;
 use RZP\Models\Merchant\Document\Type;
@@ -550,6 +551,347 @@ class MerchantDetailTest extends OAuthTestCase
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->startTest();
+    }
+
+    // PLSNL - Payments live Settlements Not Live nc count 1
+    public function testEmailReminderForNcRevampPLSNL()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => true
+        ]) ;
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        //verify email has been sent
+
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_live_settlements_not_live_reminder', $mail->getTemplate());
+
+            return true;
+        });
+
+    }
+
+    // PLSNL - Payments live Settlements Not Live nc count 2
+    public function testEmailReminderForNcRevampPLSNLCount2()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => true
+        ]) ;
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        //verify email has been sent
+
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_payments_live_settlements_not_live_reminder', $mail->getTemplate());
+
+            return true;
+        });
+
+    }
+
+    // PLSL - Payments Live Settlements Live nc count 1
+    public function testSendEmailReminderForNcRevampPLSL()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => false
+        ]) ;
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        //verify email has been sent
+
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_live_settlements_live_reminder', $mail->getTemplate());
+
+            return true;
+        });
+
+    }
+
+    // PLSL - Payments Live Settlements Live nc count 2
+    public function testSendEmailReminderForNcRevampPLSLCount2()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => false
+        ]) ;
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        //verify email has been sent
+
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_payments_live_settlements_live_reminder', $mail->getTemplate());
+
+            return true;
+        });
+
+    }
+
+    // PNL - Payments Not Live nc count 1
+    public function testSendEmailReminderForNcRevampPNL()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => false,
+            'activated'  => 0,
+            'hold_funds' => true
+        ]) ;
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        //verify email has been sent
+
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_not_live_reminder', $mail->getTemplate());
+
+            return true;
+        });
+
+    }
+
+    // PNL - Payments Not Live nc count 2
+    public function testSendEmailReminderForNcRevampPNLCount2()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => false,
+            'activated'  => 0,
+            'hold_funds' => true
+        ]) ;
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        //verify email has been sent
+
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_payments_not_live_reminder', $mail->getTemplate());
+
+            return true;
+        });
+
+    }
+
+    public function testSendEmailFailReminderForNcRevamp()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => true
+        ]) ;
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(9)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        //verify email has been queued
+        Mail::assertNotQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.nc_count_1_payments_live_settlements_not_live_reminder', $mail->getTemplate());
+
+            return true;
+        });
+
     }
 
     public function testGroupMerchantClarificationReasonsFlow()

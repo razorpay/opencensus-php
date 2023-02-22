@@ -124,7 +124,7 @@
                                         Team Razorpay
                                     </div>
                                     <div style="font-size: 14px; line-height: 20px; color:#213554ab; margin-top:24px">
-                                        For help on how to resolve the above clarifications, <a href="" target="_blank"
+                                        For help on how to resolve the above clarifications, <a href="https://razorpay.com/docs/payments/account-activation-support" target="_blank"
                                                                                                 style="color: #1566f1; text-decoration: none;">please
                                             go here.</a>
                                     </div>

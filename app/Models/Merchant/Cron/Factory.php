@@ -37,6 +37,7 @@ use RZP\Models\Merchant\Cron\Jobs\MerchantPostFirstTransactionEventCronJob;
 use RZP\Models\Merchant\Cron\Jobs\InstantlyActivatedButNotTransactedCronJob;
 use RZP\Models\Merchant\Cron\Jobs\SaveMerchantTransactionCountForSegmentType;
 use RZP\Models\Merchant\Cron\Jobs\WebsiteComplianceGracePeriodReminderCronJob;
+use RZP\Models\Merchant\Cron\Jobs\NcRevampReminderCronJob;
 
 class Factory
 {
@@ -81,6 +82,8 @@ class Factory
                 return (new SignupStartedCronJob($input));
             case "bvs_cron":
                 return (new BvsCronJob($input));
+            case "nc_revamp_reminder":
+                return (new NcRevampReminderCronJob($input));
             case "signup_attributed_cron":
                 RuntimeManager::setMaxExecTime(900);
 

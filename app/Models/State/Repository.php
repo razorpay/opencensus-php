@@ -124,4 +124,20 @@ class Repository extends Base\Repository
             ->pluck(Entity::ENTITY_ID)
             ->toArray();
     }
+
+    // Merchant ID's with state transition between the given timestamp
+
+    public function getEntityIdsWithNameInRange($name, int $from, int $to): array
+    {
+        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+                    ->select(Entity::ENTITY_ID)
+                    ->where(Entity::ENTITY_TYPE, '=', 'merchant_detail')
+                    ->WhereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->where(Entity::NAME, '=', $name)
+                    ->distinct()
+                    ->get()
+                    ->pluck(Entity::ENTITY_ID)
+                    ->toArray();
+
+    }
 }
