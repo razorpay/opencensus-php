@@ -77,6 +77,13 @@ class OfferController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function bulkDeactivateOffers()
+    {
+        $data = $this->service()->bulkDeactivateOffers();
+
+        return ApiResponse::json($data);
+    }
+
     public function deactivateOffers()
     {
         $data = $this->service()->deactivate();

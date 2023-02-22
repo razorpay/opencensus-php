@@ -3150,6 +3150,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const OFFER_USAGE_CHECK                                     = 'OFFER_USAGE_CHECK';
     const OFFER_MAX_ORDER_AMOUNT_CHECK                          = 'OFFER_MAX_ORDER_AMOUNT_CHECK';
     const OFFER_MIN_ORDER_AMOUNT_CHECK                          = 'OFFER_MIN_ORDER_AMOUNT_CHECK';
+    const OFFER_DEACTIVATE_BULK_RESPONSE                        = 'OFFER_DEACTIVATE_BULK_RESPONSE';
+    const OFFER_DEACTIVATE_BULK_EXCEPTION                       = 'OFFER_DEACTIVATE_BULK_EXCEPTION';
+    const BAD_REQUEST_ONLY_1500_OFFERS_DEACTIVATE_IN_BULK       = 'BAD_REQUEST_ONLY_1500_OFFERS_DEACTIVATE_IN_BULK';
     const FETCH_OFFER_FOR_1CC_ORDER_FAILED                      = 'FETCH_OFFER_FOR_1CC_ORDER_FAILED';
 
     // Offers On Subcription

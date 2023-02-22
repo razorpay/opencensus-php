@@ -987,6 +987,7 @@ class Name
     const MERCHANT_EMAIL_ADDITIONAL_DELETE      = 'merchant_email_additional_delete';
     const PAYMENT_PROMOTION_EVENT_UPDATE        = 'payment_promotion_event_update';
     const PAYMENTS_OFFER_BULK_CREATE            = 'payments_offer_bulk_create';
+    const PAYMENTS_OFFER_BULK_DEACTIVATE        = 'payments_offer_bulk_deactivate';
     const CAPITAL_SETTLEMENT_ONDEMAND_PRICING   = 'capital_settlement_ondemand_pricing';
 
     const MERCHANT_PRICING_BULK_CREATE                          = 'merchant_pricing_bulk_create';

@@ -7,6 +7,7 @@ use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\DbMigrationMetricsObserver;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Offer\Core;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\RazorxTrait;
@@ -125,6 +126,26 @@ class OffersTest extends TestCase
 
         $this->assertEquals('100000Razorpay', $offers['items'][0]['merchant_id']);
         $this->assertEquals('10000000000000', $offers['items'][1]['merchant_id']);
+    }
+
+    public function testBulkDeactivateOffer()
+    {
+
+        $offer1 = $this->fixtures->create('offer:card');
+        $offer2 = $this->fixtures->create('offer:wallet');
+        $invalidOffer = 'invalid_offer_id';
+        $offersArray = [$offer1->getPublicId(),$offer2->getPublicId(),$invalidOffer];
+
+        $response = new Core();
+        $response = $response->bulkDeactivateOffers($offersArray);
+
+        $this->assertEquals(2, count($response['successful']));
+        $this->assertEquals(1, count($response['failed']));
+        $this->assertEquals($offer1->getPublicId(), $response['successful'][0]);
+        $this->assertEquals($offer2->getPublicId(), $response['successful'][1]);
+        $this->assertEquals($invalidOffer, $response['failed'][0]);
+
+
     }
 
     public function testCreateCardOfferWithLinkedOfferIds()

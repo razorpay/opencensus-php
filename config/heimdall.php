@@ -2235,6 +2235,9 @@ return [
             Permission::PAYMENTS_OFFER_BULK_CREATE => [
                 'assignable'  => true,
             ],
+            Permission::PAYMENTS_OFFER_BULK_DEACTIVATE => [
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::REFUND => [

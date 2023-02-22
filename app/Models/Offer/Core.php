@@ -101,6 +101,66 @@ class Core extends Base\Core
         return $offer;
     }
 
+    public function bulkDeactivateOffers(array $offerIds): array
+    {
+        $success = [];
+        $failed = [];
+        $response = [];
+
+        if(count($offerIds) > 1500) {
+            throw new Exception\BadRequestException(
+                TraceCode::BAD_REQUEST_ONLY_1500_OFFERS_DEACTIVATE_IN_BULK);
+        }
+
+        foreach($offerIds as $offerId){
+
+            try {
+
+                $this->trace->info(
+
+                    TraceCode::OFFER_DEACTIVATE,
+                    [
+                        'offer_id'   => $offerId,
+                    ]
+                );
+
+                $offer = $this->repo->offer->findByPublicId($offerId);
+
+                $offer->deactivate();
+
+                $this->repo->saveOrFail($offer);
+
+                $success[] = $offer->getPublicId();
+
+            }
+            catch (\Exception $e){
+
+                $failed[] = $offerId;
+
+                $this->trace->traceException($e);
+
+                $this->trace->warning(
+                    TraceCode::OFFER_DEACTIVATE_BULK_EXCEPTION,
+                    [
+                        'msg' => $e->getMessage()
+                    ]);
+            }
+        }
+
+        $response['successful'] = $success;
+
+        $response['failed'] = $failed;
+
+        $this->trace->info(
+            TraceCode::OFFER_DEACTIVATE_BULK_RESPONSE,
+            [
+                'response'   => $response,
+            ]);
+
+        return $response;
+
+    }
+
     public function deactivate()
     {
         $activeExpiredOffers = $this->repo->offer->fetchActiveExpiredOffers();

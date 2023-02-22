@@ -122,6 +122,18 @@ class Service extends Base\Service
         return $offers->toArrayProxy();
     }
 
+    public function bulkDeactivateOffers()
+    {
+        if (empty($_FILES) === true)
+        {
+            return [];
+        }
+        $file = file_get_contents($_FILES['file']['tmp_name']);
+        $rows = explode("\n", str_replace("\r", "", $file));
+
+        return $this->core->bulkDeactivateOffers($rows);
+    }
+
     public function deactivate()
     {
         $disabledOffers = $this->core->deactivate();
