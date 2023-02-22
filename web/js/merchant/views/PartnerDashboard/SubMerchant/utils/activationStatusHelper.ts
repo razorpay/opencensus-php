@@ -5,47 +5,55 @@ import { CAPITAL_STATUS } from 'merchant/views/PartnerDashboard/constants';
 export const activationStatusMap = (status: string): string => {
   switch (status.toLocaleLowerCase()) {
     case CAPITAL_STATUS.bureau_submission:
-      return 'Bureau submission';
+      return 'Bureau Submission';
     case CAPITAL_STATUS.income_proof_submission:
-      return 'Income proof submission';
+      return 'Income Proof Submission';
     case CAPITAL_STATUS.pv_pending:
-      return 'Pre-offer Verification';
+      return 'In Process';
     case CAPITAL_STATUS.pv_processing:
-      return 'Pre-offer Verification';
+      return 'In Process';
     case CAPITAL_STATUS.stp_processing:
-      return 'Pre-offer Verification';
+      return 'In Process';
     case CAPITAL_STATUS.offer_acceptance:
-      return 'Offer acceptance';
+      return 'Offer Acceptance';
     case CAPITAL_STATUS.post_offer_docs_collection:
-      return 'Post offer docs collection';
+      return 'Post Offer Docs Collection';
     case CAPITAL_STATUS.post_offer_docs_verification:
-      return 'Post offer docs verification';
+      return 'In Process';
     case CAPITAL_STATUS.esign_initiaiton:
-      return 'Esign initiaiton';
+      return 'In Process';
     case CAPITAL_STATUS.merchant_esign_pending:
-      return 'Merchant esign pending';
-    case CAPITAL_STATUS.nach_pending:
-      return 'NACH pending';
-    case CAPITAL_STATUS.rzp_esign_pending:
-      return 'RZP esign pending';
+      return 'Merchant ESign Pending';
+    case CAPITAL_STATUS.merchant_nach_pending:
+      return 'Merchant Nach Pending';
+    case CAPITAL_STATUS.razorpay_esign_pending:
+      return 'In Process';
     case CAPITAL_STATUS.lender_decision:
-      return 'Lender decision';
+      return 'In Process';
     case CAPITAL_STATUS.lender_response:
-      return 'Lender response';
-    case CAPITAL_STATUS.post_offer_docs_resubmission:
-      return 'Post offer docs resubmission';
+      return 'In Process';
+    case CAPITAL_STATUS.pre_offer_docs_resubmission:
+      return 'Pre Offer Docs Resubmission';
     case CAPITAL_STATUS.rejection_bucket:
-      return 'Rejection bucket';
+      return 'Rejection';
     case CAPITAL_STATUS.uw_processing:
-      return 'UW processing';
+      return 'In Process';
     case CAPITAL_STATUS.uw_hold:
-      return 'UW hold';
+      return 'In Process';
     case CAPITAL_STATUS.application_closed:
-      return 'Application closed';
+      return 'Application Closed';
     case CAPITAL_STATUS.go_live:
-      return 'Go-live';
-    case CAPITAL_STATUS.application_rejected:
-      return 'Application rejected';
+      return 'Go Live';
+    case CAPITAL_STATUS.pre_offer_verification:
+      return 'In Process';
+    case CAPITAL_STATUS.send_to_lender:
+      return 'In Process';
+    case CAPITAL_STATUS.lender_docs_resubmission:
+      return 'In Process';
+    case CAPITAL_STATUS.cpv_pending:
+      return 'CPV Pending';
+    case CAPITAL_STATUS.in_process:
+      return 'In Process';
 
     default:
       return '';

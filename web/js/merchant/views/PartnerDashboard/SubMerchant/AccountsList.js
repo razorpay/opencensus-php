@@ -160,7 +160,7 @@ const capitalStatus = {
   value: (submerchant) => (
     <span>
       {submerchant.capitalActivationStatus ? (
-        <CapitalSubMerchantStatusLabel status={submerchant.capitalActivationStatus.toLowerCase()} />
+        <CapitalSubMerchantStatusLabel status={submerchant.capitalActivationStatus} />
       ) : (
         <span>Not Available</span>
       )}

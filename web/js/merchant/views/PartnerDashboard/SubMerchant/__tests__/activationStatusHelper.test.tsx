@@ -1,51 +1,81 @@
-import { activationStatusMap } from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
+import {
+  activationStatusMap,
+  filterApplications,
+  getFormattedCapitalResponse,
+} from 'merchant/views/PartnerDashboard/SubMerchant/utils/activationStatusHelper';
 import { CAPITAL_STATUS } from 'merchant/views/PartnerDashboard/constants';
+import {
+  items,
+  bulkResponse,
+} from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
 
 describe('activationStatusHelper', () => {
   test('should return status based on received value', () => {
     expect(activationStatusMap(CAPITAL_STATUS.bureau_submission)).toStrictEqual(
-      'Bureau submission',
+      'Bureau Submission',
     );
     expect(activationStatusMap(CAPITAL_STATUS.income_proof_submission)).toStrictEqual(
-      'Income proof submission',
+      'Income Proof Submission',
     );
-    expect(activationStatusMap(CAPITAL_STATUS.pv_pending)).toStrictEqual('Pre-offer Verification');
-    expect(activationStatusMap(CAPITAL_STATUS.pv_processing)).toStrictEqual(
-      'Pre-offer Verification',
-    );
-    expect(activationStatusMap(CAPITAL_STATUS.stp_processing)).toStrictEqual(
-      'Pre-offer Verification',
-    );
-    expect(activationStatusMap(CAPITAL_STATUS.offer_acceptance)).toStrictEqual('Offer acceptance');
+    expect(activationStatusMap(CAPITAL_STATUS.pv_pending)).toStrictEqual('In Process');
+    expect(activationStatusMap(CAPITAL_STATUS.pv_processing)).toStrictEqual('In Process');
+    expect(activationStatusMap(CAPITAL_STATUS.stp_processing)).toStrictEqual('In Process');
+    expect(activationStatusMap(CAPITAL_STATUS.offer_acceptance)).toStrictEqual('Offer Acceptance');
     expect(activationStatusMap(CAPITAL_STATUS.post_offer_docs_collection)).toStrictEqual(
-      'Post offer docs collection',
+      'Post Offer Docs Collection',
     );
     expect(activationStatusMap(CAPITAL_STATUS.post_offer_docs_verification)).toStrictEqual(
-      'Post offer docs verification',
+      'In Process',
     );
-    expect(activationStatusMap(CAPITAL_STATUS.esign_initiaiton)).toStrictEqual('Esign initiaiton');
+    expect(activationStatusMap(CAPITAL_STATUS.esign_initiaiton)).toStrictEqual('In Process');
     expect(activationStatusMap(CAPITAL_STATUS.merchant_esign_pending)).toStrictEqual(
-      'Merchant esign pending',
+      'Merchant ESign Pending',
     );
-    expect(activationStatusMap(CAPITAL_STATUS.nach_pending)).toStrictEqual('NACH pending');
-    expect(activationStatusMap(CAPITAL_STATUS.rzp_esign_pending)).toStrictEqual(
-      'RZP esign pending',
+    expect(activationStatusMap(CAPITAL_STATUS.merchant_nach_pending)).toStrictEqual(
+      'Merchant Nach Pending',
     );
-    expect(activationStatusMap(CAPITAL_STATUS.lender_decision)).toStrictEqual('Lender decision');
-    expect(activationStatusMap(CAPITAL_STATUS.lender_response)).toStrictEqual('Lender response');
-    expect(activationStatusMap(CAPITAL_STATUS.post_offer_docs_resubmission)).toStrictEqual(
-      'Post offer docs resubmission',
+    expect(activationStatusMap(CAPITAL_STATUS.razorpay_esign_pending)).toStrictEqual('In Process');
+    expect(activationStatusMap(CAPITAL_STATUS.lender_decision)).toStrictEqual('In Process');
+    expect(activationStatusMap(CAPITAL_STATUS.lender_response)).toStrictEqual('In Process');
+    expect(activationStatusMap(CAPITAL_STATUS.pre_offer_docs_resubmission)).toStrictEqual(
+      'Pre Offer Docs Resubmission',
     );
-    expect(activationStatusMap(CAPITAL_STATUS.rejection_bucket)).toStrictEqual('Rejection bucket');
-    expect(activationStatusMap(CAPITAL_STATUS.uw_processing)).toStrictEqual('UW processing');
-    expect(activationStatusMap(CAPITAL_STATUS.uw_hold)).toStrictEqual('UW hold');
+    expect(activationStatusMap(CAPITAL_STATUS.rejection_bucket)).toStrictEqual('Rejection');
+    expect(activationStatusMap(CAPITAL_STATUS.uw_processing)).toStrictEqual('In Process');
+    expect(activationStatusMap(CAPITAL_STATUS.uw_hold)).toStrictEqual('In Process');
     expect(activationStatusMap(CAPITAL_STATUS.application_closed)).toStrictEqual(
-      'Application closed',
+      'Application Closed',
     );
-    expect(activationStatusMap(CAPITAL_STATUS.go_live)).toStrictEqual('Go-live');
-    expect(activationStatusMap(CAPITAL_STATUS.application_rejected)).toStrictEqual(
-      'Application rejected',
+    expect(activationStatusMap(CAPITAL_STATUS.go_live)).toStrictEqual('Go Live');
+    expect(activationStatusMap(CAPITAL_STATUS.pre_offer_verification)).toStrictEqual('In Process');
+    expect(activationStatusMap(CAPITAL_STATUS.send_to_lender)).toStrictEqual('In Process');
+    expect(activationStatusMap(CAPITAL_STATUS.lender_docs_resubmission)).toStrictEqual(
+      'In Process',
     );
+    expect(activationStatusMap(CAPITAL_STATUS.cpv_pending)).toStrictEqual('CPV Pending');
+    expect(activationStatusMap(CAPITAL_STATUS.in_process)).toStrictEqual('In Process');
     expect(activationStatusMap('something default')).toStrictEqual('');
+  });
+});
+
+describe('filterApplication', () => {
+  test('should return null if data is empty', () => {
+    expect(filterApplications([])).toStrictEqual(null);
+  });
+});
+
+describe('getFormattedCapitalResponse', () => {
+  test('should return subMerchant data if applicationData is not passed or it is empty', () => {
+    const data = {};
+    expect(getFormattedCapitalResponse(data, items)).toStrictEqual(items);
+  });
+
+  test('should return capitalActivationStatus as empty string if applicationData is not there for passed id', () => {
+    expect(getFormattedCapitalResponse(bulkResponse, [items[2]])).toStrictEqual([
+      {
+        ...items[2],
+        capitalActivationStatus: '',
+      },
+    ]);
   });
 });

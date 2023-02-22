@@ -142,6 +142,6 @@ describe('AccountsList', () => {
     expect(screen.getByText(items[1].name)).toBeInTheDocument();
     expect(screen.getByText(items[1].email)).toBeInTheDocument();
     expect(screen.getByText('Bureau Submission')).toBeInTheDocument();
-    expect(screen.getByText('Not Available')).toBeInTheDocument();
+    expect(screen.getAllByText('Not Available')).toHaveLength(2);
   });
 });

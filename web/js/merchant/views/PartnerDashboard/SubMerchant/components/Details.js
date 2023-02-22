@@ -264,7 +264,7 @@ const Details = (props) => {
                         <EntityDetailRow label="Activation Status">
                           {capitalDetails?.stage !== '' ? (
                             <CapitalSubMerchantStatusLabel
-                              status={activationStatusMap(capitalDetails.stage).toLowerCase()}
+                              status={activationStatusMap(capitalDetails.stage)}
                             />
                           ) : (
                             <span>Not Available</span>
