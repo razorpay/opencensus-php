@@ -10537,7 +10537,7 @@ class PaymentCreateTest extends TestCase
                 'method'  => 'POST',
                 'url'     => '/payments/dual_write/sync',
                 'content' => [
-                    'payment_ids' => ['pay_' . $payment['id']]
+                    'payment_ids' => [$payment['id']]
                 ],
             ],
             'response' => [

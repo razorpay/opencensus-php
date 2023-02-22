@@ -3722,6 +3722,30 @@ EOT;
             ->limit(5);
     }
 
+    public function getDualWriteMismatchPayments(int $from, int $to): array
+    {
+        $query = sprintf(
+            "SELECT id FROM
+                        (SELECT id, count(*) as cnt FROM
+                            (SELECT * FROM payments WHERE updated_at >= %s AND updated_at < %s
+                            UNION
+                            SELECT * FROM payments_new WHERE updated_at >= %s AND updated_at < %s)
+                        AS payments_union GROUP BY id)
+                    AS agg_payments WHERE cnt > 1;",
+                    $from, $to, $from, $to);
+
+        $payments = DB::connection($this->getSlaveConnection())->select(DB::RAW($query));
+
+        $paymentIds = [];
+
+        foreach ($payments as $payment)
+        {
+            $paymentIds[] = $payment->id;
+        }
+
+        return $paymentIds;
+    }
+
     public function fetchPaymentsByContacts(array $contacts, int $skip, int $count) : Base\PublicCollection
     {
         $nowMinus6Months = Carbon::now()->subMonths(6)->getTimestamp();

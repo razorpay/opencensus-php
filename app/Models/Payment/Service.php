@@ -5915,7 +5915,7 @@ class Service extends Base\Service
 
     }
 
-    public function paymentsDualWriteSync($input)
+    public function paymentsDualWriteSync($input): array
     {
         $response = [];
 
@@ -5925,22 +5925,38 @@ class Service extends Base\Service
 
             (new Payment\Validator)->validateInput(__FUNCTION__, $input);
 
+            $paymentIds = [];
+
             if (empty($input['payment_ids']) === false)
             {
                 $paymentIds = $input['payment_ids'];
-
-                foreach ($paymentIds as $paymentId)
-                {
-                    $payment = $this->repo->payment->findByPublicId($paymentId);
-
-                    $this->repo->saveOrFail($payment);
-
-                    $response['synced_payment_ids'][] = $payment->getId();
-                }
             }
-            else
+            else if (empty($input['time_range']) === false)
             {
-                // ToDo : Implement fetch from cache and update if needed later
+                $customTimeRange = $input['time_range'];
+
+                $timeLowerLimit = $customTimeRange['from'];
+                $timeUpperLimit = $customTimeRange['to'];
+
+                $paymentIds = $this->repo->payment->getDualWriteMismatchPayments($timeLowerLimit, $timeUpperLimit);
+            }
+            else if (empty($input['bucket_interval']) === false)
+            {
+                $currentTime = Carbon::now()->getTimestamp();
+
+                $timeLowerLimit = $currentTime - 60 * $input['bucket_interval'];
+                $timeUpperLimit = $currentTime;
+
+                $paymentIds = $this->repo->payment->getDualWriteMismatchPayments($timeLowerLimit, $timeUpperLimit);
+            }
+
+            foreach ($paymentIds as $paymentId)
+            {
+                $payment = $this->repo->payment->findOrFail($paymentId);
+
+                $this->repo->saveOrFail($payment);
+
+                $response['synced_payment_ids'][] = $payment->getId();
             }
         }
         catch (\Throwable $e)
