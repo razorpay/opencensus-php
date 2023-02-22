@@ -45,6 +45,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Mail\PayoutLink\SendProcessingExpiredInternal;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
 
 class PayoutLinkTest extends TestCase
 {
@@ -4725,6 +4726,31 @@ class PayoutLinkTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    function testPayoutStatusPushForPayoutLinkAsSource()
+    {
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('pushPayoutStatus');
+
+        $this->app->instance('payout-links', $plMock);
+
+        $payout = $this->fixtures->create('payout', [
+            'status' => 'processed'
+        ]);
+
+        $this->fixtures->create('payout_source', [
+            'payout_id' => $payout->getId(),
+            'source_id' => 'poutlk_1',
+            'source_type' => 'payout_links',
+            'priority' => 1
+        ]);
+
+        SourceUpdater::update($payout);
+
+        $plMock->shouldHaveReceived('pushPayoutStatus');
+
     }
 }
 
