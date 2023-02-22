@@ -2465,6 +2465,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return ($this->getAttribute(self::METHOD) === Payment\Method::NACH);
     }
 
+    public function isEzetap()
+    {
+        return ($this->getAttribute(self::GATEWAY) === Payment\Gateway::HDFC_EZETAP);
+    }
+
     public function isWallet()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::WALLET);

@@ -9358,7 +9358,48 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('authorized', $response['status']);
 
     }
+    
+    public function testCreatePosPaymentsBlockAutoRefund()
+    {
+        $attributes = [
+            'merchant_id'              => '10000000000000',
+            'gateway'                  => 'hdfc_ezetap',
+            'gateway_merchant_id'      => '12344',
+            'gateway_acquirer'         => 'hdfc',
+            'card'                       => 1,
+            'type'                      => [
+                'pos' => '1',
+                'direct_settlement_with_refund' => '1',
+                'non_recurring'             => '1'
+            ],
+            'enabled'                   => 1,
+        ];
 
+        $this->fixtures->merchant->addFeatures([Feature\Constants::RULE_FILTER]);
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $this->fixtures->pricing->createTestPlanForPosPayments();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1zD0BpqeO1qqpB']);
+
+        $this->ba->expressAuth('test','rzp_test_10000000000000');
+
+        $testData = $this->testData['testCreatePosPayments'];
+
+        $response = $this->startTest($testData);
+
+        $paymentEntity = (new Payment\Repository())->findByPublicId($response['id']);
+
+        $terminalEntity = (new \RZP\Models\Terminal\Repository())->fetchForPayment($paymentEntity)->toArray();
+
+        $this->assertEquals($terminalEntity['gateway'],'hdfc_ezetap');
+
+        $this->assertEquals('authorized', $response['status']);
+
+        $this->assertNull($paymentEntity->getRefundAt());
+    }
+    
     public function testCreatePosPaymentsForUpi()
     {
         $attributes = [

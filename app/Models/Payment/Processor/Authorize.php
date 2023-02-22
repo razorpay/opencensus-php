@@ -5527,6 +5527,12 @@ trait Authorize
 
             $reason = sprintf(PaymentConstants::REFUND_AT_FOR_NACH_PAYMENT,Merchant\Entity::AUTO_REFUND_DELAY_FOR_NACH);
         }
+        else if ($payment->isEzetap() === true)
+        {
+            $merchantAutoRefundTime = null;
+
+            $reason = "Auto refunds has been disabled for ezetap payments";
+        }
         else if ($payment->isUpiOtm() === true)
         {
             $upiMetadata = $payment->getUpiMetadata();
