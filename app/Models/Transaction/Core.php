@@ -355,17 +355,7 @@ class Core extends Base\Core
 
         $this->updateCredits($txn, $payment);
 
-        $oldBalanceCheck = false;
-
-        $parentMerchant = $payment->merchant->parent ?? null;
-
-        if ((isset($parentMerchant) === true) and
-            (($parentMerchant->isCapitalFloatRouteMerchant() === true) or ($parentMerchant->isSliceRouteMerchant() === true)))
-        {
-            $oldBalanceCheck = true;
-        }
-
-        $this->updateBalances($txn, false, $oldBalanceCheck);
+        $this->updateBalances($txn, false, true);
 
         $this->dispatchForSettlementBucketing($txn);
 
@@ -904,17 +894,7 @@ class Core extends Base\Core
 
         $this->updateCredits($txn, $transfer);
 
-        $oldBalanceCheck = false;
-
-        $parentMerchant = $transfer->merchant ?? null;
-
-        if ((isset($parentMerchant) === true) and
-            (($parentMerchant->isCapitalFloatRouteMerchant() === true) or ($parentMerchant->isSliceRouteMerchant() === true)))
-        {
-            $oldBalanceCheck = true;
-        }
-
-        $this->updateBalances($txn, false, $oldBalanceCheck);
+        $this->updateBalances($txn, false, true);
 
         $this->dispatchForSettlementBucketing($txn);
 

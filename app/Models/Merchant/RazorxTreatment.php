@@ -724,4 +724,7 @@ final class RazorxTreatment
 
     // Experiment to ramp up international refunds
     const SCROOGE_INTERNATIONAL_REFUND = 'scrooge_international_refund';
+
+    // To skip acquiring the mutex lock on linked account ID during processing payment & order transfers.
+    const LA_MUTEX_LOCK_FOR_TRANSFER_PROCESSING = 'la_mutex_lock_for_transfer_processing';
 }
