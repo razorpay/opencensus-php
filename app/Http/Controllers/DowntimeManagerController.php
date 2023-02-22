@@ -19,6 +19,8 @@ class DowntimeManagerController extends Controller
     const PUT    = 'PUT';
     const DELETE = 'DELETE';
 
+    const OPTIMIZER_TERMINAL_DOWNTIME_AUTO_RESOLVE_CRON          = '/v1/downtimes/resolve';
+
     const WHITELIST_ADMIN_ROUTES_REGEX = [
         self::GET => [
             '^instruments',
@@ -121,6 +123,33 @@ class DowntimeManagerController extends Controller
         $response = (new DowntimeManagerService($this->app))->sendRequest($path, $method, $data, 'SR');
 
         $statusCode = $response['status_code'];
+
+        unset($response['status_code']);
+
+        return ApiResponse::json($response, $statusCode);
+    }
+
+    public function runTerminalDowntimeAutoresolve($path = '')
+    {
+
+        $method = Request::method();
+
+        $data = Request::all();
+
+        $path = self::OPTIMIZER_TERMINAL_DOWNTIME_AUTO_RESOLVE_CRON;
+
+        $this->trace->info(TraceCode::DOWNTIME_MANAGER_REQUEST, [
+            'path' => $path,
+            'data' => $data
+        ]);
+
+        $response = (new DowntimeManagerService($this->app))->sendAnyRequest($path, $method, $data);
+
+        $statusCode = $response['status_code'];
+
+        $this->trace->info(TraceCode::DOWNTIME_MANAGER_RESPONSE, [
+            'response' => $response,
+        ]);
 
         unset($response['status_code']);
 

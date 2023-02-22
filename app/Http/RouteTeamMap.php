@@ -16,6 +16,7 @@ class RouteTeamMap
     const TEAM_PAYMENTS_RISK            = 'payments_risk';
     const TEAM_UNKNOWN                  = 'unknown_unknown';
     const TEAM_PAYMENTS_SETTLEMENTS     = 'payments_settlements';
+    const TEAM_PAYMENTS_DOWNTIME        = 'payments_downtime';
 
     /**
      * @return string comma separated list of team names for the particular route
@@ -506,5 +507,8 @@ class RouteTeamMap
         'setl_amount_check'                               => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_bulk_reminder_es_registration'              => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_trigger_es_multiple'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
+
+        //downtime manager route
+        'downtime_auto_resolve_cron'                      =>[self::TEAM_PAYMENTS_DOWNTIME]
     ];
 }

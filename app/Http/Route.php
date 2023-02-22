@@ -1519,7 +1519,8 @@ class Route
         'add_downtime_slack_merchant_names'        => ['post',     'gateway/downtimes/notifications/merchantNames',  'GatewayController@postDowntimeSlackNotificationMerchants'          ],
         'gateway_downtime_detection_purge_keys'    => ['post',     'gateway/downtimes/detection/keys/purge',         'GatewayController@purgeGatewayDowntimeDetectionKeys'               ],
         'downtime_manager_admin'                   => ['any',      'downtime_manager/admin/{path?}',                 'DowntimeManagerController@downtimeManagerAdmin'                    ],
-        'fetch_merchant_sr'                        => ['post',      'success-rate/merchant/{path?}',                  'DowntimeManagerController@FetchSRForMerchant'                    ],
+        'downtime_auto_resolve_cron'               => ['post',     'downtime_manager/Optimizer/autoresolve',          'DowntimeManagerController@runTerminalDowntimeAutoresolve'         ],
+        'fetch_merchant_sr'                        => ['post',     'success-rate/merchant/{path?}',                  'DowntimeManagerController@FetchSRForMerchant'                      ],
         'downtime_detection_cron'                  => ['post',     'gateway/downtimes/detection/cron',               'GatewayController@gatewayDowntimeCron'                             ],
         'phonepe_downtime_detection_cron'          => ['post',     'gateway/downtimes/phonepe/cron',                 'GatewayController@phonepeDowntimeCron'                             ],
         'gateway_create_rule'                      => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
@@ -5674,6 +5675,7 @@ class Route
         'terminal_toggle_internal',
 
         'workflow_config_create_internal',
+        'downtime_auto_resolve_cron',
         'merchant_validate_public_auth_over_internal_auth',
 
         // CAC-RBAC
@@ -14214,6 +14216,7 @@ class Route
 
             'payouts_service_redis_key_set',
             'payout_service_idempotency_key_feature_remove',
+            'downtime_auto_resolve_cron',
         ],
 
         'subscriptions' => [
