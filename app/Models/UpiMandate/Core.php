@@ -101,13 +101,13 @@ class Core extends Base\Core
     // transformer, which will use these params and convert them to the standard start_time and end_time fields.
     protected function transformTokenParamsForUpi(array &$input)
     {
-        if (isset($input[Entity::START_TIME]) === false) {
-            $startTime = $input['start_at'] ?? Carbon::now()->getTimestamp();
 
-            $input[Entity::START_TIME] = $startTime;
+        $startTime = $input['start_at'] ?? Carbon::now()->getTimestamp();
 
-            unset($input['start_at']);
-        }
+        $input[Entity::START_TIME] = $startTime;
+
+        unset($input['start_at']);
+
 
         if (isset($input[Entity::END_TIME]) === false) {
             //Default end time to 10 years from current timestamp.
