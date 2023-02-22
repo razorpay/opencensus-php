@@ -92,6 +92,66 @@ class UpiPaymentServiceTest extends TestCase
         );
     }
 
+    public function testValidateVpaNumericSuccess()
+    {
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $input = [
+            'entity' => 'vpa',
+            'value' => '9815225341',
+        ];
+
+        $request = [
+            'content' => $input,
+            'url'     => '/v1/payments/validate/account',
+            'method'  => 'post'
+        ];
+
+        $this->ba->publicAuth();
+
+        $toAssertResponse = [
+            'vpa' => 'test.cust@icici',
+            'customer_name' => 'T************',
+            'success' => true,
+        ];
+
+        $response =  $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($toAssertResponse, $response);
+
+    }
+
+    public function testValidateVpaNumericFailure()
+    {
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $input = [
+            'entity' => 'vpa',
+            'value' => '77777777',
+        ];
+
+        $request = [
+            'content' => $input,
+            'url'     => '/v1/payments/validate/account',
+            'method'  => 'post'
+        ];
+
+        $this->ba->publicAuth();
+
+
+        $this->makeRequestAndCatchException(
+            function() use ($request)
+            {
+                $this->makeRequestAndGetContent($request);
+            },
+            \RZP\Exception\GatewayErrorException::class,
+            'Invalid UPI Number. Please enter a valid UPI Number'. PHP_EOL .
+            'Gateway Error Code: 1038'. PHP_EOL .
+            'Gateway Error Desc: Invalid UPI number'
+        );
+
+    }
+
     /**
      * test UPS service failure
      *

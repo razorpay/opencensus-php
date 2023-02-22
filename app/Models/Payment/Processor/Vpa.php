@@ -35,6 +35,37 @@ trait Vpa
             $input[Payment\Entity::VPA] = trim($input[Payment\Entity::VPA]);
         }
 
+         // Redirect Standard Checkout UPI Number request to UPS
+        if ($this->shouldValidateVpaThroughUpiPaymentService($input) === true)
+        {
+            try
+            {
+                $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_VALIDATE_VPA,
+                    [
+                        'route' => $this->app['api.route']->getCurrentRouteName()
+                    ]);
+
+                return $this->app['upi.payments']->action(Payment\Action::VALIDATE_VPA,
+                    $input,
+                    Payment\Gateway::UPI_ICICI);
+
+            }
+            catch (Exception\GatewayErrorException $exception)
+            {
+                $exception->getError()->appendToField(Payment\Entity::VPA);
+
+                $exception->getError()->setPaymentMethod(Payment\Method::UPI);
+
+                $this->trace->traceException($exception, Trace::INFO,
+                    TraceCode::RECOVERABLE_EXCEPTION,
+                    [
+                        'input' => $input
+                    ]);
+
+                throw $exception;
+            }
+        }
+
         // This will throw bad request validation error
         (new Payment\Validator)->validateInput($action, $input);
 
@@ -270,5 +301,18 @@ trait Vpa
                 return true;
             });
         }
+    }
+
+    /**
+     *  Checks whether the validate vpa should be redirected to UPS based on input and route
+     * @param array $input
+     * @return bool
+     */
+
+    protected function shouldValidateVpaThroughUpiPaymentService(array $input): bool
+    {
+        $route =  $this->app['api.route']->getCurrentRouteName();
+
+        return ((is_numeric($input[Payment\Entity::VPA])) and ($route === 'payment_validate_account'));
     }
 }

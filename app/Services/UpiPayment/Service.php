@@ -94,6 +94,8 @@ class Service
 
     const TRANSACTION_UPSERT = 'transaction_upsert';
 
+    const VALIDATE_VPA = 'validate_vpa';
+
     /**
      * Initiates the app container, trace and UPS config
      */
@@ -364,6 +366,11 @@ class Service
             case self::TRANSACTION_UPSERT:
                 $data = $input;
                 break;
+            case self::VALIDATE_VPA:
+                $data = [
+                    "vpa" => $input[Payment\Entity::VPA],
+                ];
+                break;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -529,6 +536,8 @@ class Service
                 return $response[Response::DATA];
             case self::TRANSACTION_UPSERT:
                 return $response[Response::DATA];
+            case self::VALIDATE_VPA:
+                return $this->processValidateVpaResponse($response);
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -594,6 +603,26 @@ class Service
     }
 
     /**
+     * processes the validate vpa response
+     *
+     * @param array $response
+     * @return array
+     */
+    protected function processValidateVpaResponse(array $response): array
+    {
+        if($response['success'] === true)
+        {
+            return [
+                'vpa'               => $response['vpa'],
+                'success'           => $response['success'],
+                // mask customer name
+                'customer_name'     => mask_by_percentage($response['customer_name'], 0.9),
+            ];
+        }
+        return [];
+    }
+
+    /**
      * Check for response errors
      *
      * @param  array   $response
@@ -616,11 +645,18 @@ class Service
         {
             $error = $response['details'][0];
 
+            $description = $error['internal']['description'];
+
+            if ($this->action === Payment\Action::VALIDATE_VPA)
+            {
+                $description = null;
+            }
+
             throw new Exception\BadRequestException(
                 $error['internal']['code'],
                 null,
                 $error,
-                $error['internal']['description']);
+                $description);
         }
         else if ($code >= 500)
         {
@@ -945,6 +981,9 @@ class Service
             case self::TRANSACTION_UPSERT:
                 $traceData += $request[Request::CONTENT];
                 break;
+            case self::VALIDATE_VPA:
+                $traceData += $this->getValdiateVpaTraceData($request[Request::CONTENT]);
+                break;
             default:
                 throw new Exception\LogicException(
                     'No supported actions found for UPS',
@@ -1023,6 +1062,10 @@ class Service
         if ($action === self::RECON_ENTITY_UPDATE)
         {
             return sprintf('%s/recon/entity/update', $version);
+        }
+        if ($action === self::VALIDATE_VPA)
+        {
+            return sprintf('%s/vpa/validate', $version);
         }
 
         return sprintf('%s/%s', $version, $action);
@@ -1162,6 +1205,19 @@ class Service
         ];
 
         return $data;
+    }
+
+    /**
+     * get trace data for validate vpa action send to UPS
+     *
+     * @param  array $content
+     * @return array
+     */
+    protected function getValdiateVpaTraceData(array $content): array
+    {
+        return [
+            Entity::VPA => mask_by_percentage($content['vpa'], 0.6)
+        ];
     }
 
     /**

@@ -4932,6 +4932,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPI_PAYMENT_SERVICE_PRE_PROCESS_FAILURE               = 'UPI_PAYMENT_SERVICE_PRE_PROCESS_FAILURE';
     const UPI_PAYMENT_SERVICE_RECORD_NOT_FOUND                  = 'UPI_PAYMENT_SERVICE_RECORD_NOT_FOUND';
     const UPI_PAYMENT_SERVICE_PUBLISH_TO_METRO                  = 'UPI_PAYMENT_SERVICE_PUBLISH_TO_METRO';
+    const UPI_PAYMENT_SERVICE_VALIDATE_VPA                      = 'UPI_PAYMENT_SERVICE_VALIDATE_VPA';
     // Batch Micro Service
     const VALIDATE_FILENAME_RESPONSE                            = 'VALIDATE_FILENAME_RESPONSE';
     const INPUT_QUERY_PARAMS                                    = 'INPUT_QUERY_PARAMS';

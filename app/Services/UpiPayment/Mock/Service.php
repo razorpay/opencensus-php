@@ -334,6 +334,44 @@ class Service extends UpiPaymentService
         return [$response, 200];
     }
 
+    public function validateVpa($input): array
+    {
+        $response = [];
+
+        if($input['vpa'] == '9815225341')
+        {
+            $response = [
+                'vpa' => 'test.cust@icici',
+                'customer_name' => 'Test Customer',
+                'success' => true,
+            ];
+            return [$response, 200];
+        }
+
+        if($input['vpa'] == '77777777')
+        {
+            $response = [
+                'error' => [
+                    'internal' => [
+                        'code' => 'GATEWAY_ERROR_REQUEST_ERROR',
+                        'identifier_code' => 'PGUP000045',
+                        'description' => 'GATEWAY_ERROR: received false response with status 200 from mozart',
+                        'metadata' => [
+                            'description' => 'Invalid UPI number',
+                            'gateway_error_code' => '1038',
+                            'gateway_error_description' => 'Invalid UPI number',
+                            'http_code' => '200',
+                            'internal_error_code' => 'BAD_REQUEST_PAYMENT_UPI_INVALID_UPI_NUMBER'
+                        ]
+                    ]
+                ]
+            ];
+
+        }
+
+        return [$response, 200];
+    }
+
     protected function entityFetch(array $content)
     {
         $response['entity'] = [];
