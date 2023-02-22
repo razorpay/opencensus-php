@@ -3894,47 +3894,6 @@ class Base extends BaseCore
 
             if ($this->isPayoutServiceEnabled === true)
             {
-                // workflow payout skip
-                if ($this->isWorkflowEnabled === true)
-                {
-                    $isEnabled = $this->merchant->isFeatureEnabled(Feature::WORKFLOW_VIA_PAYOUTS_MS);
-
-                    if ($isEnabled === false)
-                    {
-                        $this->trace->info(TraceCode::PAYOUT_SERVICE_NOT_APPLICABLE_FOR_PS_ENABLED_MERCHANT,
-                                           [
-                                               'workflow_via_payouts_ms' => false,
-                                           ]);
-
-                        return false;
-                    }
-
-                    if ((new Payout\Service())->isPayoutLinkApp() === true) {
-                        $this->trace->info(TraceCode::PAYOUT_SERVICE_NOT_APPLICABLE_FOR_PS_ENABLED_MERCHANT,
-                                           [
-                                               'is_payout_link_app' => true,
-                                           ]);
-
-                        return false;
-                    }
-                }
-                else
-                {
-                    // If WF is disabled, we should not call payout service for
-                    // those features that are currently not supported at payout service
-                    // otherwise in such cases WF will get created at payout service's end
-                    if((empty($this->workflowFeature) == false) &&
-                        (!in_array($this->workflowFeature, Payout\WorkflowFeature::SUPPORTED_FEATURES_ON_PAYOUT_SERVICE, true) === true))
-                    {
-                        $this->trace->info(TraceCode::PAYOUT_SERVICE_NOT_APPLICABLE_FOR_PS_ENABLED_MERCHANT,
-                                           [
-                                               'workflow_feature' => $this->workflowFeature,
-                                           ]);
-
-                        return false;
-                    }
-                }
-
                 $partnerMerchantId = $this->app['basicauth']->getPartnerMerchantId();
 
                 $applicationId = $this->app['basicauth']->getOAuthApplicationId();
