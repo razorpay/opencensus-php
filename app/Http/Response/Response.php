@@ -10,6 +10,7 @@ use Request;
 use RZP\Http\Route;
 use RZP\Error\Error;
 use RZP\Models\Feature;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Constants\Environment;
@@ -269,6 +270,8 @@ class Response
         {
             if ($this->isMerchantCallbackRoute($route))
             {
+                $paymentId = $data['error']['metadata']['payment_id'] ?? null;
+
                 if (isset($data['error'], $data['error']['metadata']) === true)
                 {
                     $data['error']['metadata'] = json_encode($data['error']['metadata'], JSON_FORCE_OBJECT);
@@ -284,6 +287,21 @@ class Response
                         'content' => $data,
                     ],
                 ];
+
+                $paymentService = new Payment\Service();
+
+                if (
+                    $paymentId !== null &&
+                    $paymentService->isEmailLessCheckoutExperimentEnabled($merchant->getId())
+                )
+                {
+                    $paymentDetails = $paymentService->getPaymentDetailsForMerchantRedirectView($paymentId);
+
+                    if (empty($paymentDetails) === false)
+                    {
+                        $callbackArray['payment_details'] = $paymentDetails;
+                    }
+                }
 
                 $callbackArray += (new CheckoutView())->addOrgInformationInResponse($merchant);
 

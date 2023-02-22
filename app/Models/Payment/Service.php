@@ -6,6 +6,7 @@ use FuzzyWuzzy\Process;
 use Mail;
 use Crypt;
 use Config;
+use Throwable;
 use Carbon\Carbon;
 use RZP\Base\Luhn;
 use RZP\Constants\Entity as EntityConstants;
@@ -21,6 +22,7 @@ use RZP\Exception;
 use RZP\Error;
 use RZP\Mail\Merchant\AuthorizedPaymentsReminder as AuthorizedPaymentsReminderMail;
 use RZP\Models\Base;
+use RZP\Models\TrustedBadge;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Card\IIN\Country;
 use RZP\Models\Currency;
@@ -6501,4 +6503,84 @@ class Service extends Base\Service
         }
     }
 
+    public function getPaymentDetailsForMerchantRedirectView(string $paymentId): array
+    {
+        try
+        {
+            $payment = $this->repo->payment->findByPublicId($paymentId);
+
+            $merchant = $payment->merchant;
+
+            $library = $this->getLibraryFromPayment($payment);
+
+            return [
+                'payment_id' => $paymentId,
+                'library'    => $library,
+                'amount'     => $payment->getFormattedAmount(),
+                'success'    => $this->isPaymentSuccessful($payment),
+                'method'     => $payment->getMethod(),
+                'created_at' => Carbon::createFromTimestamp(
+                    $payment->getCreatedAt(),
+                    Timezone::IST
+                )->format('M d, Y | h:i A'),
+                'merchant'   => [
+                    'name' => $merchant->getName(),
+                    'rtb'  => (new TrustedBadge\Core())->isTrustedBadgeLiveForMerchant($merchant->getId()),
+                ],
+            ];
+        }
+        catch (Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::CRITICAL,
+                TraceCode::FETCH_PAYMENT_DETIALS_FOR_MERCHANT_REDIRECT_VIEW_FAILED
+            );
+        }
+
+        return [];
+    }
+
+    /**
+     * Checks if email-less checkout experiment is enabled.
+     *
+     * @param string $merchantId
+     *
+     * @return bool
+     */
+    public function isEmailLessCheckoutExperimentEnabled(string $merchantId): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.email_less_checkout_experiment_id'),
+                'request_data'  => json_encode(['merchant_id' => $merchantId]),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            return $variant === 'variant_on';
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::EMAIL_LESS_CHECKOUT_SPLITZ_EXPERIMENT_ERROR
+            );
+        }
+
+        return false;
+    }
+
+    public function isPaymentSuccessful(Payment\Entity $payment): bool
+    {
+        return in_array(
+            $payment->getStatus(),
+            [Payment\Status::CAPTURED, Payment\Status::AUTHORIZED],
+            true
+        );
+    }
 }

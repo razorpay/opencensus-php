@@ -1856,6 +1856,21 @@ class PaymentCreateController extends Controller
             return $this->returnNachNbRedirectView($data);
         }
 
+        $paymentId = $data['request']['content']['razorpay_payment_id'] ?? null;
+
+        if (
+            $paymentId !== null &&
+            $this->service(E::PAYMENT)->isEmailLessCheckoutExperimentEnabled($merchant->getId())
+        )
+        {
+            $paymentDetails = $this->service(E::PAYMENT)->getPaymentDetailsForMerchantRedirectView($paymentId);
+
+            if (empty($paymentDetails) === false)
+            {
+                $data['payment_details'] = $paymentDetails;
+            }
+        }
+
         $this->trace->info(TraceCode::CHECKOUT_VIEW_CREATION,
             [
                 'view create via'   =>  'gateway.callbackReturnUrl',

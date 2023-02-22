@@ -6892,6 +6892,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CHECKOUT_REDIRECTION_S2S                                       = 'CHECKOUT_REDIRECTION_S2S';
     const CHECKOUT_REDIRECTION_APPLICATION                               = 'CHECKOUT_REDIRECTION_APPLICATION';
 
+    const EMAIL_LESS_CHECKOUT_SPLITZ_EXPERIMENT_ERROR                    = 'EMAIL_LESS_CHECKOUT_SPLITZ_EXPERIMENT_ERROR';
+
+    const FETCH_PAYMENT_DETIALS_FOR_MERCHANT_REDIRECT_VIEW_FAILED        = 'FETCH_PAYMENT_DETIALS_FOR_MERCHANT_REDIRECT_VIEW_FAILED';
+
     const REWARD_CREATE_REQUEST                                          =  'REWARD_CREATE_REQUEST';
     const REWARD_UPDATE_REQUEST                                          =  'REWARD_UPDATE_REQUEST';
     const REWARD_DELETE_REQUEST                                          =  'REWARD_DELETE_REQUEST';
