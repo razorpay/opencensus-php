@@ -823,6 +823,12 @@ class Name
     const SYNC_ACCOUNTING_INTEGRATION     = 'sync_accounting_integration';
     const WAITLIST_ACCOUNTING_INTEGRATION = 'waitlist_accounting_integration';
 
+    // Generic Accounting Integration Permissions
+    // These permissions are intentionally not mapped to any route, this is purely for FE to consume,
+    // actual route authorization is done at the microservice layer.
+    const CREATE_GENERIC_ACCOUNTING_INTEGRATION = 'create_generic_accounting_integration';
+    const VIEW_GENERIC_ACCOUNTING_INTEGRATION = 'view_generic_accounting_integration';
+
     const UPDATE_USER_ROLE = 'update_user_role';
 
     // Allow coupon validation for X

@@ -11679,6 +11679,7 @@ class Route
             'accounting_integration_put_chart_of_accounts',
             'accounting_integration_sync_chart_of_accounts',
             'accounting_integration_get_bank_statement_report',
+            'accounting_integration_bank_transactions_sync_status',
             'action_checker_create',
             'action_comment_create',
             'action_diff_get',

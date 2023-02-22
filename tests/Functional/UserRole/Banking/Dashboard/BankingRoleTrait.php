@@ -313,6 +313,8 @@ trait BankingRoleTrait
     {
         return [
             BankingRole::OWNER => [
+                Name::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
+                Name::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                 Name::VIEW_FINANCEX_REPORT,
                 Name::CREATE_FINANCEX_REPORT,
                 Name::ACCOUNTS_RECEIVABLE_ADMIN,
@@ -322,6 +324,8 @@ trait BankingRoleTrait
             ],
 
             BankingRole::ADMIN => [
+                Name::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
+                Name::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                 Name::VIEW_FINANCEX_REPORT,
                 Name::CREATE_FINANCEX_REPORT,
                 Name::ACCOUNTS_RECEIVABLE_ADMIN,
@@ -331,6 +335,8 @@ trait BankingRoleTrait
             ],
 
             BankingRole::FINANCE_L1 => [
+                Name::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
+                Name::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                 Name::ACCOUNTS_RECEIVABLE_ADMIN,
                 Name::BILL_PAYMENTS_VIEW,
                 Name::BILL_PAYMENTS_CREATE_ACCOUNT,
@@ -338,6 +344,8 @@ trait BankingRoleTrait
             ],
 
             BankingRole::FINANCE_L2 => [
+                Name::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
+                Name::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                 Name::ACCOUNTS_RECEIVABLE_ADMIN,
                 Name::BILL_PAYMENTS_VIEW,
                 Name::BILL_PAYMENTS_CREATE_ACCOUNT,
@@ -345,6 +353,8 @@ trait BankingRoleTrait
             ],
 
             BankingRole::FINANCE_L3 => [
+                Name::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
+                Name::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                 Name::ACCOUNTS_RECEIVABLE_ADMIN,
                 Name::BILL_PAYMENTS_VIEW,
                 Name::BILL_PAYMENTS_CREATE_ACCOUNT,
@@ -352,6 +362,7 @@ trait BankingRoleTrait
             ],
 
             BankingRole::OPERATIONS => [
+                Name::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                 Name::ACCOUNTS_RECEIVABLE_ADMIN,
                 Name::BILL_PAYMENTS_VIEW,
                 Name::BILL_PAYMENTS_CREATE_ACCOUNT,
@@ -359,10 +370,13 @@ trait BankingRoleTrait
             ],
 
             BankingRole::VIEW_ONLY => [
+                Name::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                 Name::BILL_PAYMENTS_VIEW,
             ],
 
             BankingRole::CHARTERED_ACCOUNTANT => [
+                Name::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
+                Name::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
             ]
         ];
     }

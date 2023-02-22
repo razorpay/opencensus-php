@@ -13,6 +13,8 @@ class UserRolePermissionsMap
     {
          $rolePermissions = [
              BankingRole::OWNER => [
+                 Permission::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
+                 Permission::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::CREATE_FINANCEX_REPORT,
                  Permission::VIEW_FINANCEX_REPORT,
                  Permission::CREATE_PAYOUT,
@@ -194,6 +196,8 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::ADMIN => [
+                 Permission::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
+                 Permission::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::CREATE_FINANCEX_REPORT,
                  Permission::VIEW_FINANCEX_REPORT,
                  Permission::CREATE_PAYOUT,
@@ -337,6 +341,8 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::FINANCE_L1 => [
+                 Permission::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
+                 Permission::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::CREATE_PAYOUT,
                  Permission::CREATE_PAYOUT_BULK,
                  Permission::APPROVE_PAYOUT_BULK,
@@ -456,6 +462,7 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::OPERATIONS => [
+                 Permission::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::CREATE_USER_OTP,
                  Permission::UPDATE_USER_PROFILE,
                  Permission::VIEW_USER,
@@ -528,6 +535,8 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::CHARTERED_ACCOUNTANT => [
+                 Permission::CREATE_GENERIC_ACCOUNTING_INTEGRATION,
+                 Permission::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
 
                  //Miscellaneous API's needed for any user
                  Permission::VIEW_MERCHANT_ANALYTICS,
@@ -568,6 +577,7 @@ class UserRolePermissionsMap
              ],
 
              BankingRole::VIEW_ONLY => [
+                 Permission::VIEW_GENERIC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_PAYOUT,
                  Permission::VIEW_PAYOUT_PURPOSE,
                  Permission::VIEW_PAYOUT_REVERSAL,
