@@ -17,13 +17,18 @@ class Fetch extends BaseFetch
             EsRepository::CUSTOMER_EMAIL   => 'sometimes|string',
             EsRepository::CUSTOMER_NAME    => 'sometimes|string',
             EsRepository::CUSTOMER_CONTACT => 'sometimes|string',
-            Entity::ENTITY_TYPE            => 'sometimes|string'
+            Entity::ENTITY_TYPE            => 'sometimes|string',
+            Entity::USAGE_TYPE             => 'sometimes|string',
+            Entity::PROVIDER               => 'sometimes|string'
         ],
     ];
 
     const ACCESSES = [
         AuthType::PRIVILEGE_AUTH => [
             Entity::MERCHANT_ID,
+            Entity::CUSTOMER_ID,
+            Entity::USAGE_TYPE,
+            Entity::PROVIDER,
         ],
         AuthType::PRIVATE_AUTH   => [
             Entity::STATUS,

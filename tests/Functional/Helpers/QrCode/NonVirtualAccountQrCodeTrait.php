@@ -7,7 +7,7 @@ use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity;
 
 trait NonVirtualAccountQrCodeTrait
 {
-    private function createQrCode(array $input = [], $mode = 'test', $merchantId = '10000000000000')
+    private function createQrCode(array $input = [], $mode = 'test', $merchantId = '10000000000000', array $headers = [])
     {
         $this->ba->privateAuth();
 
@@ -24,6 +24,7 @@ trait NonVirtualAccountQrCodeTrait
             'method'  => 'POST',
             'url'     => '/payments/qr_codes',
             'content' => $attributes,
+            'headers' => $headers,
         ];
 
         return $this->makeRequestAndGetContent($request);

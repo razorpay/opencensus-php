@@ -6,10 +6,11 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class RequestSource
 {
-    const DASHBOARD = 'dashboard';
-    const CHECKOUT  = 'checkout';
-    const API       = 'api';
-    const FALLBACK  = 'fallback';
+    const DASHBOARD           = 'dashboard';
+    const CHECKOUT            = 'checkout';
+    const API                 = 'api';
+    const PAYMOBAPP           = 'payMobApp';
+    const FALLBACK            = 'fallback';
 
     public static function isRequestSourceValid(string $requestSource): bool
     {

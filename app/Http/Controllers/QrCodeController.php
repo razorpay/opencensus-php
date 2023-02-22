@@ -12,6 +12,8 @@ use RZP\Constants\Mode;
 use RZP\Models\QrCode\Constants;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\QrCode\Service as QrCodeService;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\RequestSource;
+use RZP\Models\QrCode\NonVirtualAccountQrCode\Entity as NonVAQrCodeEntity;
 use RZP\Models\QrCode\NonVirtualAccountQrCode\Service as NonVAQrCodeService;
 use RZP\Trace\Tracer;
 
@@ -22,6 +24,10 @@ class QrCodeController extends Controller
     public function create()
     {
         $input = Request::all();
+
+        $requestSource = Request::header(Constants::REQUEST_SOURCE);
+
+        $this->setRequestSourceIfApplicable($input, $requestSource);
 
         $entity = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($input) {
             return (new NonVAQrCodeService())->create($input);
@@ -180,4 +186,15 @@ class QrCodeController extends Controller
 
         return $response;
     }
+
+    public function setRequestSourceIfApplicable(&$input, $requestSource)
+    {
+        if ($requestSource !== null)
+        {
+            RequestSource::checkRequestSource($requestSource);
+
+            $input[NonVAQrCodeEntity::REQUEST_SOURCE] = $requestSource;
+        }
+    }
+
 }

@@ -2082,4 +2082,45 @@ class NonVirtualAccountQrCodeTest extends TestCase
         $this->assertEquals(0, $qrPayment['expected']);
         $this->assertEquals('refunded', $payment['status']);
     }
+
+    public function testCreateQrCodeWithRequestSourceHeader()
+    {
+        $input = [
+            'type'  => 'upi_qr',
+            'usage' => 'multiple_use'
+        ];
+
+        $headers = [
+            'X-Razorpay-Request-Source'  => 'payMobApp'
+        ];
+
+        $response = $this->createQrCode($input, 'test', '10000000000000', $headers);
+
+        $expectedResponse = $this->testData['testCreateUpiQrCode'];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $qrCode = $this->getDbLastEntity('qr_code');
+
+        $this->assertEquals($headers['X-Razorpay-Request-Source'], $qrCode['request_source']);
+    }
+
+    public function testCreateQrCodeWithIncorrectRequestSourceHeader()
+    {
+        $this->expectException(BadRequestValidationFailureException::class);
+
+        $this->expectExceptionMessage('Not a valid source: abc');
+
+        $input = [
+            'type'  => 'upi_qr',
+            'usage' => 'multiple_use'
+        ];
+
+        $headers = [
+            'X-Razorpay-Request-Source'  => 'abc'
+        ];
+
+        $this->createQrCode($input, 'test', '10000000000000', $headers);
+    }
+
 }

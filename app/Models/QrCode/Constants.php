@@ -77,4 +77,6 @@ class Constants
 
     // in seconds
     const NO_ORDER_CHECKOUT_QR_DEFAULT_EXPIRY_WINDOW = 15 * 60;
+
+    const REQUEST_SOURCE              = 'X-Razorpay-Request-Source';
 }

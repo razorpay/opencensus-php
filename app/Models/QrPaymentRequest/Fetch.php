@@ -12,7 +12,7 @@ class Fetch extends BaseFetch
             Entity::QR_CODE_ID            => 'sometimes|string',
             Entity::TRANSACTION_REFERENCE => 'sometimes',
             Entity::MERCHANT_ID           => 'sometimes|alpha_num|size:14',
-            Entity::IS_CREATED      => 'sometimes|boolean',
+            Entity::IS_CREATED            => 'sometimes|boolean',
         ],
     ];
 
@@ -21,15 +21,12 @@ class Fetch extends BaseFetch
             Entity::MERCHANT_ID,
             Entity::QR_CODE_ID,
             Entity::TRANSACTION_REFERENCE,
-            Entity::IS_CREATED ,
+            Entity::IS_CREATED,
         ],
     ];
 
     const ES_FIELDS = [
         Entity::MERCHANT_ID,
-        Entity::QR_CODE_ID,
-        Entity::TRANSACTION_REFERENCE,
-        Entity::IS_CREATED ,
     ];
 
     const SIGNED_IDS = [

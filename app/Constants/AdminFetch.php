@@ -4788,6 +4788,31 @@ class AdminFetch
 
             Entity::MERCHANT_ATTRIBUTE => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID
+            ],
+
+            Entity::QR_CODE => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'customer_id'       => [
+                    Fetch::LABEL    => 'Customer ID',
+                    Fetch::TYPE     => Fetch::TYPE_STRING,
+                ],
+                'usage_type'  => [
+                    Fetch::LABEL  => 'Usage Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'single_use',
+                        'multiple_use',
+                    ]
+                ],
+                'provider'  => [
+                    Fetch::LABEL  => 'Provider',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'upi_qr',
+                        'bharat_qr',
+                    ]
+                ],
+
             ]
         ];
 

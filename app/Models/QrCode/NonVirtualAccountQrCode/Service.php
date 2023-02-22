@@ -40,7 +40,7 @@ class Service extends QrCode\Service
 
         try
         {
-            $input[Entity::REQUEST_SOURCE] = $this->getRequestSourceViaAuth();
+            $input[Entity::REQUEST_SOURCE] = $input[Entity::REQUEST_SOURCE] ?? $this->getRequestSourceViaAuth();
 
             $qrCode = Tracer::inspan(['name' => HyperTrace::QR_CODE_CREATE], function () use ($input) {
                 return (new Core)->buildQrCode($input);
