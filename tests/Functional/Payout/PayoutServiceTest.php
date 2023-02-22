@@ -294,7 +294,7 @@ class PayoutServiceTest extends TestCase
         $payoutServiceQueuedInitiateMock = Mockery::mock('RZP\Services\PayoutService\QueuedInitiate',
                                                          [$this->app])->makePartial();
 
-        $defaultRequest['content']['balance_ids'] = "";
+        $defaultRequest['content']['balance_ids'] = [];
 
         $request = array_merge($defaultRequest, $request);
 
@@ -3240,7 +3240,7 @@ class PayoutServiceTest extends TestCase
     {
         $balanceId = $this->bankingBalance->getId();
 
-        $request['content']['balance_ids'] = $balanceId;
+        $request['content']['balance_ids'] = [$balanceId];
 
         $success = true;
 
@@ -3285,7 +3285,7 @@ class PayoutServiceTest extends TestCase
 
         // Since we are sending incorrect balance id to the mock, it'll fail there and it'll create failure response
         // from service and hence it'll behave as if the request to service failed.
-        $request['content']['balance_ids'] = "random_balance_id";
+        $request['content']['balance_ids'] = ["random_balance_id"];
 
         $success = true;
 
@@ -3316,7 +3316,7 @@ class PayoutServiceTest extends TestCase
 
         $payout1->reload();
 
-        $this->assertTrue($success);
+        $this->assertFalse($success);
 
         $this->assertEquals('queued', $payout1->getStatus());
     }
