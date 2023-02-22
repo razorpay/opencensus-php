@@ -210,6 +210,7 @@ class Validator extends Base\Validator
         Entity::REFERENCE2              => 'sometimes|nullable|string',
         Entity::TWO_FACTOR_AUTH         => 'sometimes|nullable|string',
         Entity::REFERENCE17             => 'sometimes|nullable|string',
+        Entity::REFERENCE16             => 'sometimes|nullable|string',
     ];
 
     protected static $editRules = [
