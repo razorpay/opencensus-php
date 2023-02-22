@@ -1092,6 +1092,7 @@ class Entity extends Base\PublicEntity
 
     public function isTypeOfSubscriptionRegistration(): bool
     {
+
         if ($this->getEntityType() === null)
         {
             return false;
@@ -1100,6 +1101,20 @@ class Entity extends Base\PublicEntity
         try
         {
             $relation = $this->getRelation('entity');
+
+            if($relation === null) {
+
+                $trace = App::getFacadeRoot()['trace'];
+
+                if ($this->getEntityType() === 'subscription_registration')
+                {
+                    $trace->info(TraceCode::INVOICE_ENTITY_TYPE,
+                                ["Entity_type" => $this->getEntityType()]
+                    );
+
+                    return true;
+                }
+            }
         }
         catch (\Exception $e)
         {
