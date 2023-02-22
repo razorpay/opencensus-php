@@ -58,6 +58,7 @@ class Constants
     const SubMerchantOnBoardingV2Enabled  = 'submerchant_onboarding_v2_enabled';
     const SubMerchantOnBoardingEnabled = 'submerchant_onboarding_enabled';
     const WebsiteInternationalDisabled = 'website_international_disabled';
+    const AdminLeadPartnerInviteEnabled = 'admin_lead_partner_invite_enabled';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -110,6 +111,7 @@ class Constants
         self::SubMerchantOnBoardingV2Enabled  => "rzp/platform/partner/onboarding/Features",
         self::SubMerchantOnBoardingEnabled => "rzp/platform/partner/onboarding/Features",
         self::WebsiteInternationalDisabled => "rzp/platform/partner/onboarding/Features",
+        self::AdminLeadPartnerInviteEnabled => "rzp/platform/partner/onboarding/Features",
     ];
 
     /**
@@ -164,6 +166,7 @@ class Constants
         APIFeaturesConstants::SUBMERCHANT_ONBOARDING_V2 => self::SubMerchantOnBoardingV2Enabled,
         APIFeaturesConstants::SUBMERCHANT_ONBOARDING => self::SubMerchantOnBoardingEnabled,
         APIFeaturesConstants::SKIP_WEBSITE_INTERNAT => self::WebsiteInternationalDisabled,
+        APIFeaturesConstants::ADMIN_LEAD_PARTNER => self::AdminLeadPartnerInviteEnabled,
     ];
 
     /**
@@ -218,6 +221,7 @@ class Constants
         self::SubMerchantOnBoardingV2Enabled  => APIFeaturesConstants::SUBMERCHANT_ONBOARDING_V2,
         self::SubMerchantOnBoardingEnabled => APIFeaturesConstants::SUBMERCHANT_ONBOARDING,
         self::WebsiteInternationalDisabled => APIFeaturesConstants::SKIP_WEBSITE_INTERNAT,
+        self::AdminLeadPartnerInviteEnabled => APIFeaturesConstants::ADMIN_LEAD_PARTNER,
     ];
 
     /**
@@ -235,6 +239,7 @@ class Constants
         self::EnableCustomerAmount => 'direct',
         self::EnableRoutePartnerships => 'direct',
         self::ImportSettlement => 'direct',
+        self::AdminLeadPartnerInviteEnabled => 'direct',
     ];
 
     /**

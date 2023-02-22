@@ -21,7 +21,7 @@ class Constants
         self::DS_ONLY_MERCHANT        => [FeatureConstants::ONLY_DS],
         self::OPTIMIZER_ONLY_MERCHANT => [FeatureConstants::OPTIMIZER_ONLY_MERCHANT],
         self::REGULAR_TEST_MERCHANT   => [FeatureConstants::REGULAR_TEST_MERCHANT],
-        self::REGULAR_TEST_PARTNER    => [],
+        self::REGULAR_TEST_PARTNER    => [FeatureConstants::ADMIN_LEAD_PARTNER],
     ];
 
     const MERCHANT_TYPE_INVITATION_MAPPING = [

@@ -288,6 +288,11 @@ class Constants
      */
     const AUTO_COMM_INV_DISABLED          = 'auto_comm_inv_disabled';
 
+    /*
+     *  when a partner is onboarded via Admin lead invite flow, then the flag for the partner is enabled
+     */
+    const ADMIN_LEAD_PARTNER              = 'admin_lead_partner';
+
     /**
      * When partner auth is used, this feature flag enables the partner to
      * 1. Create payments for sub-merchants and put them on hold for settlement
@@ -2423,6 +2428,7 @@ class Constants
         DcsConstants::EmailOptionalOnCheckout => true,
         DcsConstants::ShowEmailOnCheckout => true,
         self::AUTO_COMM_INV_DISABLED          => true,
+        self::ADMIN_LEAD_PARTNER      => true,
         self::ROUTE_PARTNERSHIPS => true,
         DcsConstants::EnableMerchantExpiryForPP => true,
         DcsConstants::EnableMerchantExpiryForPL => true,
@@ -3385,6 +3391,11 @@ class Constants
         self::AUTO_COMM_INV_DISABLED => [
             'feature'       => self::AUTO_COMM_INV_DISABLED,
             'display_name'  => 'Commission invoice Partner auto approval disable',
+            'documentation' => '',
+        ],
+        self::ADMIN_LEAD_PARTNER => [
+            'feature'       => self::ADMIN_LEAD_PARTNER,
+            'display_name'  => 'onboarded via Admin lead invite flow',
             'documentation' => '',
         ],
         self::ROUTE_PARTNERSHIPS => [
