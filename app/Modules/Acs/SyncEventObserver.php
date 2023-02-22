@@ -2,10 +2,7 @@
 
 namespace RZP\Modules\Acs;
 
-use RZP\Constants\Entity;
-use RZP\Constants\Mode;
 use RZP\Models\Base\PublicEntity;
-use RZP\Trace\TraceCode;
 
 class SyncEventObserver
 {
@@ -26,11 +23,7 @@ class SyncEventObserver
      */
     public function created(PublicEntity $entity)
     {
-        $outboxJobs = [self::ACS_OUTBOX_JOB_NAME];
-        if ($entity->getEntityName() == Entity::MERCHANT && $entity->getConnectionName() == Mode::LIVE) {
-            array_push($outboxJobs, self::CREDCASE_OUTBOX_JOB_NAME);
-        }
-        event(new RecordSyncEvent($entity, $outboxJobs));
+        event(new RecordSyncEvent($entity, [self::ACS_OUTBOX_JOB_NAME, self::CREDCASE_OUTBOX_JOB_NAME]));
     }
 
     /**

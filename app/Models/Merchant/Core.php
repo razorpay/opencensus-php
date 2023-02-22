@@ -468,6 +468,16 @@ class Core extends Base\Core
             );
         }
 
+        $this->trace->info(
+            TraceCode::CREATE_SUB_MERCHANT_SAVE_OR_FAIL_METHOD_CALL,
+            [
+                'entity_name'       => $entity->getEntityName(),
+                'connection_name'   => $entity->getConnectionName(),
+                'merchant_id'       => $entity->getMerchantId(),
+                'parent_id'         => $entity->getParentId(),
+            ]
+        );
+
         $this->repo->saveOrFail($subMerchant);
 
         $subMerchantDetailInput = !empty($contactMobile) ? [Detail\Entity::CONTACT_MOBILE => $contactMobile] : [];
