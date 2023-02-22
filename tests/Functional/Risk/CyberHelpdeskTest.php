@@ -2,10 +2,12 @@
 
 namespace Functional\Risk;
 
+use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Services\FreshdeskTicketClient;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Models\Workflow\Action\Repository as ActionRepository;
@@ -15,6 +17,7 @@ class CyberHelpdeskTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use WorkflowTrait;
+    use DbEntityFetchTrait;
 
     protected $client;
 
@@ -70,18 +73,16 @@ class CyberHelpdeskTest extends TestCase
         $this->app->instance('freshdesk_client', $freshdeskClientMock);
     }
 
-    public function createCyberHelpDeskWorkflowAction()
+    public function createCyberHelpDeskWorkflowAction($makerDetails, $makerEmailAsRequesterEmail = false)
     {
-        $workflowMakerEmail = \Config::get('applications.cyber_crime_helpdesk')['maker_email'];
-
-        $this->fixtures->create('admin', [
-            'id' => '6dLbNSpv5Ybbbd',
-            'email' => $workflowMakerEmail,
-            'name' => 'test_agent',
-            'org_id' => Org::RZP_ORG,
-        ]);
+        $this->fixtures->create('admin', $makerDetails);
 
         $this->setupWorkflow("create_cyber_helpdesk_workflow", PermissionName::CREATE_CYBER_HELPDESK_WORKFLOW);
+
+        if  ($makerEmailAsRequesterEmail === true)
+        {
+            $this->testData[__FUNCTION__]['request']['content']['requester_mail'] = $makerDetails['email'];
+        }
 
         $this->ba->cyberCrimeHelpDeskAppAuth();
 
@@ -100,11 +101,22 @@ class CyberHelpdeskTest extends TestCase
         return $response;
     }
 
-    public function testCreateAndApproveCyberHelpdeskWorkflow()
+    public function testCreateAndApproveCyberHelpdeskWorkflowDefaultMaker()
     {
+        $currentTime = Carbon::now();
+
+        Carbon::setTestNow($currentTime);
+
         $this->createEntitiesInDb();
 
-        $workflowAction = $this->createCyberHelpDeskWorkflowAction();
+        $workflowMakerEmail = \Config::get('applications.cyber_crime_helpdesk')['maker_email'];
+
+        $workflowAction = $this->createCyberHelpDeskWorkflowAction( [
+            'id' => '6dLbNSpv5Ybbbd',
+            'email' => $workflowMakerEmail,
+            'name' => 'test_agent',
+            'org_id' => Org::RZP_ORG,
+        ]);
 
         $this->ba->adminAuth();
         $admin = $this->ba->getAdmin();
@@ -113,12 +125,101 @@ class CyberHelpdeskTest extends TestCase
 
         $perm = $this->fixtures->create('permission', ['name' => PermissionName::CREATE_CYBER_HELPDESK_WORKFLOW]);
 
+        $role->permissions()->attach($perm->getId());
+
+        $this->addComments($workflowAction['id'], "agent_approved_payment_details_[{\"request_id\":\"abcd1234567890\",\"share_beneficary_account_details\":0,\"put_settlement_on_hold\":1,\"payment_id\":\"JCTRhsU4aiY0t1\",\"fraud_type\":\"3\"},{\"request_id\":\"abcd1234567891\",\"share_beneficary_account_details\":0,\"put_settlement_on_hold\":0,\"payment_id\":\"JCTRhsU4aiY0t2\"}]");
+
+        $this->assertArraySelectiveEquals(['maker_id' => 'admin_6dLbNSpv5Ybbbd'], $workflowAction);
+
+        $this->performWorkflowAction($workflowAction['id'], true);
+
+        $fraudEntity1 = $this->getDbEntity('payment_fraud',[
+            'payment_id' => 'JCTRhsU4aiY0t1',
+            'type' => '3',
+            'amount' => 1000,
+            'currency' => 'INR',
+            'base_amount' => 1000,
+            'reported_to_razorpay_at' =>  $currentTime->getTimestamp(), // current time
+            'reported_to_issuer_at' => 1618191015,   // payment creation time
+            'chargeback_code' => null,
+            'is_account_closed' => 0,
+            'reported_by' => 'Cybercell',
+        ]);
+
+        $fraudEntity2 = $this->getDbEntity('payment_fraud',[
+            'payment_id' => 'JCTRhsU4aiY0t2',
+            'type' => '6',
+            'amount' => 1000,
+            'currency' => 'INR',
+            'base_amount' => 1000,
+            'reported_to_razorpay_at' =>  $currentTime->getTimestamp(), // current time
+            'reported_to_issuer_at' => 1618191011,   // payment creation time
+            'chargeback_code' => null,
+            'is_account_closed' => 0,
+            'reported_by' => 'Cybercell',
+        ]);
+
+        $this->assertNotEmpty($fraudEntity1);
+
+        $this->assertNotEmpty($fraudEntity2);
+    }
+
+    public function testCreateAndApproveCyberHelpdeskWorkflowRequesterAdminAsMaker()
+    {
+        $this->createEntitiesInDb();
+
+        $workflowAction = $this->createCyberHelpDeskWorkflowAction( [
+            'id' => '6dLbNSpv5Ycccc',
+            'email' => 'requesteradmin@razorpay.com',
+            'name' => 'test_agent',
+            'org_id' => Org::RZP_ORG,
+        ], true);
+
+
+        $this->ba->adminAuth();
+        $admin = $this->ba->getAdmin();
+        $admin->getId();
+        $role = $admin->roles()->get()[0];
+
+        $perm = $this->fixtures->create('permission', ['name' => PermissionName::CREATE_CYBER_HELPDESK_WORKFLOW]);
 
         $role->permissions()->attach($perm->getId());
 
-        $this->addComments($workflowAction['id'], "agent_approved_payment_details_[{\"request_id\":\"abcd1234567890\",\"share_beneficary_account_details\":0,\"put_settlement_on_hold\":1,\"payment_id\":\"JCTRhsU4aiY0t1\"},{\"request_id\":\"abcd1234567891\",\"share_beneficary_account_details\":0,\"put_settlement_on_hold\":0,\"payment_id\":\"JCTRhsU4aiY0t2\"}]");
+        $this->addComments($workflowAction['id'], "agent_approved_payment_details_[{\"request_id\":\"abcd1234567890\",\"share_beneficary_account_details\":0,\"put_settlement_on_hold\":1,\"payment_id\":\"JCTRhsU4aiY0t1\",\"fraud_type\":\"3\"},{\"request_id\":\"abcd1234567891\",\"share_beneficary_account_details\":0,\"put_settlement_on_hold\":0,\"payment_id\":\"JCTRhsU4aiY0t2\"}]");
+
+        $this->assertArraySelectiveEquals(['maker_id' => 'admin_6dLbNSpv5Ycccc'], $workflowAction);
 
         $this->performWorkflowAction($workflowAction['id'], true);
+
+        $fraudEntity1 = $this->getDbEntity('payment_fraud',[
+            'payment_id' => 'JCTRhsU4aiY0t1',
+            'type' => '3',
+            'amount' => 1000,
+            'currency' => 'INR',
+            'base_amount' => 1000,
+            'reported_to_razorpay_at' => 1603882970, // fd ticket creation time
+            'reported_to_issuer_at' => 1618191015,   // payment creation time
+            'chargeback_code' => null,
+            'is_account_closed' => 0,
+            'reported_by' => 'Cybercell',
+        ]);
+
+        $fraudEntity2 = $this->getDbEntity('payment_fraud',[
+            'payment_id' => 'JCTRhsU4aiY0t2',
+            'type' => '6',
+            'amount' => 1000,
+            'currency' => 'INR',
+            'base_amount' => 1000,
+            'reported_to_razorpay_at' => 1603882970, // fd ticket creation time
+            'reported_to_issuer_at' => 1618191011,   // payment creation time
+            'chargeback_code' => null,
+            'is_account_closed' => 0,
+            'reported_by' => 'Cybercell',
+        ]);
+
+        $this->assertNotEmpty($fraudEntity1);
+
+        $this->assertNotEmpty($fraudEntity2);
     }
 
     protected function createEntitiesInDb()

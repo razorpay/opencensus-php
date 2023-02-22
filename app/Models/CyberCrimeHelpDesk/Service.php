@@ -2,20 +2,31 @@
 
 namespace RZP\Models\CyberCrimeHelpDesk;
 
+use RZP\Models\Payment\Fraud\BankCodes;
 use View;
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Base\ConnectionType;
-use RZP\Models\Admin\Permission;
+use RZP\Base\Common;
+use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\lib\TemplateEngine;
-use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Admin\Org;
+use RZP\lib\TemplateEngine;
+use RZP\Base\ConnectionType;
+use RZP\Models\Payment\Fraud;
+use RZP\Models\Admin\Permission;
 use RZP\Models\BankAccount\Type;
+use RZP\Models\Currency\Currency;
+use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Transaction\Service as TransactionService;
 use RZP\Models\Workflow\Action\Core as WorkFlowActionCore;
-use RZP\Models\Payment;
+use RZP\Models\Payment\Fraud\Entity as PaymentFraudEntity;
+use RZP\Models\Payment\Fraud\Service as PaymentFraudService;
+use RZP\Models\Payment\Fraud\Constants as PaymentFraudConstants;
+use RZP\Models\Merchant\FreshdeskTicket\Service as FreshDeskService;
+
 
 class Service extends Base\Service
 {
@@ -80,13 +91,16 @@ class Service extends Base\Service
         return [Constants::FD_TICKET_ID => (string) $response['id'] ?? null];
     }
 
+    /**
+     * @throws Exception\LogicException
+     */
     public function postCyberCrimeWorflowCreateAction($inputs)
     {
         (new Validator)->validateInput('cyber_crime_helpdesk_workflow_action_create', $inputs);
 
         $freshdeskTicketId = $inputs[Constants::TICKET_DATA][Constants::FD_TICKET_ID];
 
-        $maker = $this->getCyberCrimeWorkflowMaker();
+        $maker = $this->getCyberCrimeWorkflowMaker($inputs[Constants::REQUESTER_EMAIL]);
 
         $this->app['workflow']
             ->setPermission(Permission\Name::CREATE_CYBER_HELPDESK_WORKFLOW)
@@ -98,11 +112,19 @@ class Service extends Base\Service
             ->handle([], $inputs);
     }
 
-    protected function getCyberCrimeWorkflowMaker()
+    /**
+     * @throws Exception\LogicException
+     */
+    protected function getCyberCrimeWorkflowMaker($requesterEmail)
     {
         // This is to be handled correctly, for now hardcoding the org_id for the maker_email used in config
         $makerOrg   = Org\Entity::RAZORPAY_ORG_ID;
         $makerEmail = $this->app['config']->get('applications.cyber_crime_helpdesk.maker_email');
+
+        if ($this->isRazorPayEmailId($requesterEmail) === true)
+        {
+            $makerEmail = $requesterEmail;
+        }
 
         if (empty($makerEmail) === true)
         {
@@ -127,6 +149,115 @@ class Service extends Base\Service
         $this->notifyMerchantViaFreshdeskOutboundMail($ticketDetails);
 
         $this->putSettlementOnHoldIfRequired($ticketDetails);
+
+        $this->createFraudPaymentEntries($ticketDetails);
+    }
+
+    /**
+     * @throws Exception\LogicException
+     * @throws Exception\ServerErrorException
+     * @throws Exception\BadRequestException
+     * @throws \Throwable
+     */
+    protected function createFraudPaymentEntries($ticketDetails)
+    {
+        $requesterEmail = $ticketDetails[Constants::REQUESTER_EMAIL];
+
+        $fdTicketId = $ticketDetails[Constants::TICKET_DATA][Constants::FD_TICKET_ID];
+
+        $reportedToRazorpayAt = $this->reportedToRazorpayAt($requesterEmail, $fdTicketId);
+
+        $approvedDetails = $this->getApprovedDetailsFromWorkflowActionComments($fdTicketId);
+
+        foreach ($ticketDetails[Constants::TICKET_DATA][Constants::TICKET] as $ticketDetailData)
+        {
+            foreach ($approvedDetails as $approvedDetail)
+            {
+                if ($ticketDetailData[Constants::REQUEST][Constants::ID] === $approvedDetail[Constants::REQUEST_ID])
+                {
+                    $paymentId = $ticketDetailData[Constants::DETAILS][Constants::PAYMENT][Constants::ID];
+
+                    $fraudType =  BankCodes::FRAUD_CODE_3;
+
+                    (new Fraud\Validator())->validTypeForCyberCrimeFraudPaymentEntityCreation($fraudType);
+
+                    $payment = $this->repo->payment->findOrFail($paymentId);
+
+                    $this->createPaymentFraudEntity($payment, $reportedToRazorpayAt, $fraudType);
+                }
+            }
+        }
+    }
+
+    protected function createPaymentFraudEntity(Payment\Entity $payment, int $reportedToRazorpayAt, string $type)
+    {
+        $this->trace->info(TraceCode::CREATING_PAYMENT_FRAUD_ENTRY_FOR_CYBER_CRIME_HELPDESK, [
+            PaymentFraudEntity::PAYMENT_ID => $payment->getId(),
+            PaymentFraudEntity::TYPE => $type,
+            PaymentFraudEntity::AMOUNT => $payment->getAmount()/100.0,
+            PaymentFraudEntity::REPORTED_TO_RAZORPAY_AT => $reportedToRazorpayAt,
+        ]);
+
+        $input = [
+            PaymentFraudEntity::PAYMENT_ID => $payment->getId(),
+            PaymentFraudEntity::TYPE => $type,
+            PaymentFraudEntity::REPORTED_TO_ISSUER_AT => $payment->getCreatedAt(),
+            PaymentFraudEntity::REPORTED_TO_RAZORPAY_AT => $reportedToRazorpayAt,
+            PaymentFraudConstants::HAS_CHARGEBACK => "0",
+            PaymentFraudEntity::IS_ACCOUNT_CLOSED => "0",
+            PaymentFraudEntity::AMOUNT => $payment->getAmount()/100.0,
+            PaymentFraudEntity::CURRENCY => Currency::INR,
+            PaymentFraudEntity::REPORTED_BY => PaymentFraudConstants::REPORTED_BY_CYBERCELL,
+            PaymentFraudConstants::SKIP_MERCHANT_EMAIL => "1",
+        ];
+
+        (new PaymentFraudService())->savePaymentFraud($input);
+    }
+
+    /**
+     * @throws Exception\LogicException
+     * @throws Exception\ServerErrorException
+     * @throws Exception\BadRequestException
+     */
+    protected function reportedToRazorpayAt($requesterEmail, $fdTicketId) : int
+    {
+        // if workflow raised by admin dashboard : fd ticket creation time
+        if ($this->isRazorPayEmailId($requesterEmail) === true)
+        {
+            $response = $this->app['freshdesk_client']->fetchTicketById($fdTicketId);
+
+            (new FreshDeskService())->validateTicketResponse($response, ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_FOUND);
+
+            $ticketCreatedAt = $response[Common::CREATED_AT];
+
+            return strtotime($ticketCreatedAt);
+        }
+
+        // if workflow raised by LEA dashboard : current time
+        return Carbon::now()->getTimestamp();
+    }
+
+    /**
+     * @throws Exception\LogicException
+     */
+    protected function isRazorPayEmailId(string $email) : bool
+    {
+        $email = strtolower($email);
+
+        // make sure we've got a valid email
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) )
+        {
+            $domainName = substr(strrchr($email, "@"), 1);
+
+            if ($domainName === Constants::RZP_EMAIL_DOMAIN)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        throw new Exception\LogicException('Invalid Requester Email: ' . $email);
     }
 
     protected function putSettlementOnHoldIfRequired($ticketDetails)

@@ -1199,7 +1199,7 @@ class Service extends Base\Service
         return FreshdeskWebhookProcessor\Base::getProcessor($event)->process($input);
     }
 
-    protected function validateTicketResponse($response, string $errorCode= ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_CREATION_FAILED)
+    public function validateTicketResponse($response, string $errorCode= ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_CREATION_FAILED)
     {
         if (isset($response['id']) === true)
         {

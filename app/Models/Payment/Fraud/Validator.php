@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Fraud;
 
 use RZP\Base;
+use RZP\Exception;
 
 class Validator extends Base\Validator
 {
@@ -44,4 +45,19 @@ class Validator extends Base\Validator
         Entity::REPORTED_BY                 => 'required|string|in:' . Constants::REPORTED_BY_CSV,
         Constants::SKIP_MERCHANT_EMAIL      => 'required|string|in:0,1',
     ];
+
+    const ALLOWED_FRAUD_TYPES_FOR_CYBERCRIME_FRAUD_PAYMENT_ENTITY_CREATION = [
+        BankCodes::FRAUD_CODE_3,
+        BankCodes::FRAUD_CODE_6,
+    ];
+
+    public function validTypeForCyberCrimeFraudPaymentEntityCreation($type)
+    {
+        if(in_array($type, self::ALLOWED_FRAUD_TYPES_FOR_CYBERCRIME_FRAUD_PAYMENT_ENTITY_CREATION))
+        {
+            return;
+        }
+
+        throw new Exception\BadRequestValidationFailureException('invalid fraud type');
+    }
 }

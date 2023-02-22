@@ -72,4 +72,10 @@ class Constants
 
     const IST_DIFF_IN_SEC = (5 * 60 + 30) * 60;
 
+    const REQUESTER_EMAIL = 'requester_mail';
+
+    const RZP_EMAIL_DOMAIN = 'razorpay.com';
+
+    const FRAUD_TYPE       = 'fraud_type';
+
 }
