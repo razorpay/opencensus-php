@@ -316,11 +316,15 @@ class Core extends Base\Core
             'overall_duration'            => (microtime(true) - $startTime) * 1000,
         ]);
 
-        Tracer::inspan(['name' => HyperTrace::PERFORM_KYC_VERIFICATION], function() use ($merchantDetails, $merchant, $input) {
+        $saveBusinessWebsite = true;
+
+        Tracer::inspan(['name' => HyperTrace::PERFORM_KYC_VERIFICATION], function() use ($merchantDetails, $oldMerchantDetails, $merchant, $input, &$saveBusinessWebsite) {
 
             $verificationStartTime = microtime(true);
             // do pan validation
             $this->verifyPOIDetailsIfApplicable($merchantDetails, $merchant, $input);
+
+            $saveBusinessWebsite = $this->handleWebsiteInput($oldMerchantDetails, $merchantDetails, $input);
 
             $this->verifyCompanyPanDetailsIfApplicable($merchantDetails, $merchant, $input);
 
@@ -340,6 +344,13 @@ class Core extends Base\Core
                 'start_time'  => $verificationStartTime
             ]);
         });
+
+        if ($saveBusinessWebsite === false)
+        {
+            $merchantDetails->edit([Entity::BUSINESS_WEBSITE => $oldMerchantDetails->getWebsite()]);
+
+            unset ($input[Entity::BUSINESS_WEBSITE]);
+        }
 
         return $this->mutex->acquireAndRelease(
             $merchant->getId(),
@@ -456,6 +467,116 @@ class Core extends Base\Core
 
         $this->syncNoDocOnboardedMerchantDetailsToEs($merchant->merchantDetail);
     }
+
+    public function handleWebsiteInput(Entity $oldMerchantDetail, $merchantDetails, $input): bool
+    {
+        $razorx = strtolower($this->app->razorx->getTreatment($merchantDetails->getMerchantId(), RazorxTreatment::AUTOMATION_ACTIVATION, Mode::LIVE));
+
+        if (isset($input[Detail\Entity::BUSINESS_WEBSITE]) and $input[Entity::BUSINESS_WEBSITE] != "" and
+            $oldMerchantDetail->getWebsite() !== $input[Entity::BUSINESS_WEBSITE] and
+            ($razorx === Constants::RAZORX_EXPERIMENT_PILOT or $razorx === Constants::RAZORX_EXPERIMENT_ON))
+        {
+            $response = $this->getUrlDetails($input[Entity::BUSINESS_WEBSITE]);
+
+            if(isset($response['isLive']) === true && $response['isLive'] === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "Enter a live/operational URL. You can enter it later if you don't have a live URL now"
+                );
+            }
+
+            if(isset($response['isRedirected']) === true && $response['isRedirected'] === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The shared URL is redirecting to a different URL. Share a valid URL of your website/app');
+            }
+
+            if ($this->isPopularSocialMedia($input[Entity::BUSINESS_WEBSITE]) === true)
+            {
+                $websiteDetailsInput = [
+                    Website\Entity::ADDITIONAL_DATA          => [
+                        Entity::BUSINESS_WEBSITE => $input[Entity::BUSINESS_WEBSITE]
+                    ]
+                ];
+
+                (new Website\Core)->createOrEditWebsiteDetails($merchantDetails, $websiteDetailsInput);
+
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function getUrlDetails($url)
+    {
+        $response = [];
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 5000);
+        $out = curl_exec($ch);
+
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        // handle line endings
+        $out = str_replace("\r", "", $out);
+
+
+        if(empty($out)===true or $status >= 400)
+        {
+            $response["isLive"] = false;
+        }
+
+        // only look at the headers
+        $headers_end = strpos($out, "\n\n");
+        if( $headers_end !== false ) {
+            $out = substr($out, 0, $headers_end);
+        }
+
+        $headers = explode("\n", $out);
+        foreach($headers as $header) {
+
+            if( substr($header, 0, 10) == "Location: " or substr($header, 0, 10) == "location: ") {
+                $target = substr($header, 10);
+
+                $urlHost = str_ireplace('www.', '', parse_url($url,PHP_URL_HOST));
+
+                $targetUrlHost = str_ireplace('www.', '', parse_url($target,PHP_URL_HOST));
+
+                if($urlHost === $targetUrlHost)
+                {
+                    continue ;
+                }
+
+                $response["isRedirected"] = true;
+
+                return $response;
+            }
+        }
+
+        $response["isRedirected"] = false;
+        return $response;
+
+    }
+
+    public function isPopularSocialMedia($url )
+    {
+        $popularSocialMediaRegex = implode('|', DetailConstants::POPULAR_SOCIAL_MEDIA);
+
+        if (preg_match('/' . $popularSocialMediaRegex . '/', $url ))
+        {
+            if (preg_match('/(\bplay.google.com\b)/', $url)){
+                return false;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * @throws Exception\BadRequestValidationFailureException

@@ -3486,6 +3486,81 @@ return [
         ],
     ],
 
+    'testWebsiteNotLive' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_website' => 'http://razorpays.com/',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Enter a live/operational URL. You can enter it later if you don't have a live URL now",                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPopularWebsite' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_website' => 'http://google.com/',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testWebsiteNotLiveRazorxOff' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_website' => 'http://razorpays.com/',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'business_website' => 'http://razorpays.com/',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testWebsiteNotLiveRazorxPilot' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/merchant/activation',
+            'content' => [
+                'business_website' => 'http://razorpays.com/',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Enter a live/operational URL. You can enter it later if you don't have a live URL now",                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testAdditionalWebsiteMaxLimitFailure' => [
         'request'   => [
             'content' => [

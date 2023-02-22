@@ -4555,6 +4555,70 @@ Team Razorpay', '+911234567890');
         $this->startTest();
     }
 
+    public function testWebsiteNotLive()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setMockRazorxTreatment(['automation_activation' => 'on']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testPopularWebsite()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setMockRazorxTreatment(['automation_activation' => 'on']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantDetails = $this->getLastEntity('merchant_detail',true);
+
+        $this->assertNull($merchantDetails['business_website']);
+    }
+
+    public function testWebsiteNotLiveRazorxOff()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setMockRazorxTreatment(['automation_activation' => 'on']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+    }
+
+    public function testWebsiteNotLiveRazorxPilot()
+    {
+        $merchantId = '1cXSLlUU8V9sXl';
+
+        $this->setMockRazorxTreatment(['automation_activation' => 'on']);
+
+        $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId, $merchantUser['id']);
+
+        $this->startTest();
+    }
+
     public function testDeleteAdditionalWebsites()
     {
         $merchantId = $this->fixtures->create('merchant')->getId();

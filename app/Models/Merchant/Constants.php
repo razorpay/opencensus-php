@@ -147,6 +147,7 @@ final class Constants
     const ALL_SETTLEMENT_DEFAULT                  = 'all_settlement_default';
 
     const RAZORX_EXPERIMENT_ON                    = 'on';
+    const RAZORX_EXPERIMENT_PILOT                 = 'pilot';
 
     const MERCHANT_MUTEX_LOCK_TIMEOUT                 = '60';
     const MERCHANT_MUTEX_RETRY_COUNT                  = '2';

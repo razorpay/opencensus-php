@@ -717,6 +717,8 @@ final class RazorxTreatment
     // Experiment to enable async bulk approval or not
     const PAYOUT_BULK_APPROVE_ASYNC = 'payout_bulk_approve_async';
 
+    const AUTOMATION_ACTIVATION = 'automation_activation';
+
     // Unexpected payment refund delay to T+1
     const UNEXPECTED_PAYMENT_REFUND_DELAY = 'unexpected_payment_refund_delay';
 

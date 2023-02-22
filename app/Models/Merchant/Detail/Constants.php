@@ -635,5 +635,19 @@ class Constants
         'razorpay.com/x/for-yc-startups/',
         'razorpay.com/demo/'
     ];
+
+    const POPULAR_SOCIAL_MEDIA = [
+        '\bgoogle.com\b',
+        '\bfacebook.com\b',
+        '\bfb.com\b',
+        '\binstagram.com\b',
+        '\byoutube.com\b',
+        '\btwitter.com\b',
+        '\bpaytm.com\b',
+        '\bphonepe.com\b',
+        '\bpay.google.com\b',
+        '\bbharatpe.com\b',
+        '\brazorpay.com\b',
+    ];
 }
 
