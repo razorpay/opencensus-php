@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Org;
 use Carbon\Carbon;
 
 use RZP\Constants\Table;
+use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Permission;
@@ -60,19 +61,7 @@ class Repository extends Base\Repository
 
     public function findOrFailByHostname(string $hostname)
     {
-        // Collect different table names, and their columns to query on
         $hostname = mb_strtolower($hostname);
-        // if org host has the pattern dashboard-.*.dev.razorpay.in -> dashboard.dev.razorpay.in
-        //This is for the feature in devstack where the host name will be appended with label as a preview URL
-        $isMatched = preg_match('/dashboard-(.*).dev.razorpay.in/', $hostname, $matches);
-
-        // we want to allow multiple hosts for devstack for supporting multiple orgs, orgs are identified by hostname
-        $isBankingMatched = preg_match('/dashboard-banking(.*).dev.razorpay.in/', $hostname, $bankingMatches);
-
-        if ($isMatched === 1 and $isBankingMatched !== 1)
-        {
-            $hostname = \RZP\Models\Admin\Org\Constants::DEVSERVE_HOST_URL ;
-        }
 
         $orgId = $this->dbColumn(Entity::ID);
         $orgColumnNames = $this->dbColumn('*');
@@ -83,13 +72,28 @@ class Repository extends Base\Repository
 
         $hostnameOrgId = $orgHostName->dbColumn(Hostname\Entity::ORG_ID);
         $hostnameAttr = $orgHostName->dbColumn(Hostname\Entity::HOSTNAME);
+        try
+        {
+            // Join the orgs, and org_hostname table to get the org with the given hostname
+            return $this->newQuery()
+                ->select($orgColumnNames)
+                ->join($orgHostnamesTable, $orgId, '=', $hostnameOrgId)
+                ->where($hostnameAttr, '=', $hostname)
+                ->firstOrFailPublic();
+        }
+        catch (\RZP\Exception\BadRequestException $e)
+        {
+            //if not found with given hostname, normalize th hostname if it is for devserve, if not raise exeception
+            $hostname = $this->checkIfDeserveHostName($hostname);
 
-        // Join the orgs, and org_hostname table to get the org with the given hostname
-        return $this->newQuery()
-                    ->select($orgColumnNames)
-                    ->join($orgHostnamesTable, $orgId, '=', $hostnameOrgId)
-                    ->where($hostnameAttr, '=', $hostname)
-                    ->firstOrFailPublic();
+            // Join the orgs, and org_hostname table to get the org with the given devserve hostname
+            return $this->newQuery()
+                ->select($orgColumnNames)
+                ->join($orgHostnamesTable, $orgId, '=', $hostnameOrgId)
+                ->where($hostnameAttr, '=', $hostname)
+                ->firstOrFailPublic();
+        }
+
     }
 
     /**
@@ -141,5 +145,26 @@ class Repository extends Base\Repository
                 ->where(Entity::ADMIN_SECOND_FACTOR_AUTH, '=', true)
                 ->limit(1)
                 ->count() > 0;
+    }
+
+
+    protected function checkIfDeserveHostName($hostname): string
+    {
+        //This is for the feature in devstack where the host name will be appended with label as a preview URL
+        $hostname = mb_strtolower($hostname);
+
+        switch ($hostname)
+        {
+            // if org host has the pattern dashboard-.*.dev.razorpay.in -> dashboard.dev.razorpay.in
+            case preg_match('/dashboard-(\b(?!curlec\b)\w+).dev.razorpay.in/', $hostname) === 1:
+                return \RZP\Models\Admin\Org\Constants::DEVSERVE_HOST_URL;
+            // if org host has the pattern dashboard-.*-curlec.dev.razorpay.in -> dashboard-curlec.dev.razorpay.in
+            case preg_match('/dashboard-(.*)-curlec.dev.razorpay.in/', $hostname) === 1:
+                return \RZP\Models\Admin\Org\Constants::DEVSERVE_CURLEC_HOST_URL;
+            default:
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, $hostname);
+        }
+
     }
 }

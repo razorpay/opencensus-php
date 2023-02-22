@@ -10,6 +10,8 @@ class Constants
 
     const DEVSERVE_HOST_URL = 'dashboard.dev.razorpay.in';
 
+    const DEVSERVE_CURLEC_HOST_URL = 'dashboard-curlec.dev.razorpay.in';
+
     const ALLOW_TO_BUSINESS_BANKING = [
         self::RZP
     ];

@@ -674,6 +674,21 @@ return [
         ],
     ],
 
+    'testGetOrgByHostnameCurlecDevstack' => [
+        'request' => [
+            'url' => '/orgs/hostname/dashboard-testing-curlec.dev.razorpay.in',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'email'                => 'testing@curlec.com',
+                'hostname'             => 'dashboard-testing-curlec.dev.razorpay.in',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+
     'testFeatureForOrg' => [
         'request' => [
             'url' => '/orgs/hostname/dashboard.razorpay.com',

@@ -485,6 +485,20 @@ class OrgTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetOrgByHostnameCurlecDevstack()
+    {
+        $org = $this->fixtures->create('org', ['email' => 'testing@curlec.com']);
+
+        $this->orgHostName =  $this->fixtures->create('org_hostname', [
+            'org_id' => $org->getId(),
+            'host_name'=>'dashboard-curlec.dev.razorpay.in',
+            ]);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->startTest();
+    }
+
     public function testFeatureForOrg()
     {
         $this->ba->dashboardGuestAppAuth();
