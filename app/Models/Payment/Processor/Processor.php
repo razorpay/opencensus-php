@@ -534,6 +534,11 @@ class Processor
         return true;
     }
 
+    private function isOpgspImportMerchant(): bool
+    {
+        return $this->merchant->isOpgspImportEnabled();
+    }
+
     private function canRouteThroughRearchFlow(array & $input)
     {
         $this->verifyMerchantIsLiveForLiveRequest();
@@ -1500,10 +1505,11 @@ class Processor
 
             $this->validateAndDecryptEncryptedCardInput($input);
 
-            if (($this->canRouteThroughRearchFlow($input) === true) or
+            if (($this->isOpgspImportMerchant() === false) and
+                (($this->canRouteThroughRearchFlow($input) === true) or
                 ($this->canRouteThroughNbPlusRearchFlow($input) === true) or
                 ($this->canRouteThroughUpsRearchFlow($input) === true) or
-                ($this->canRouteFpxThroughRearchFlow($input) === true))
+                ($this->canRouteFpxThroughRearchFlow($input) === true)))
             {
                 $this->app['diag']->trackPaymentEventV2(EventCode::REARCH_PAYMENT_CREATION_INITIATED,  null, null, $meta);
 

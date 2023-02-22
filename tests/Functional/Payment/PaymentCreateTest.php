@@ -10173,7 +10173,13 @@ class PaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
+        // this function makes sure that checks for card rearch pass
+        $this->mockPGRouterForRearch();
+
         $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        // opgps payment should not go through rearch
+        $this->assertArrayNotHasKey('pg_router', $responseContent);
 
         $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
 
@@ -10255,7 +10261,15 @@ class PaymentCreateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
+        // this function makes sure that checks for NB rearch pass
+        $this->mockPGRouterForRearch();
+        $order = $this->fixtures->order->createPaymentCaptureOrder(['amount' => $payment['amount']]);
+        $payment['order_id'] = $order->getPublicId();
+
         $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        // opgps payment should not go through rearch
+        $this->assertArrayNotHasKey('pg_router', $responseContent);
 
         $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
 
@@ -10436,6 +10450,44 @@ class PaymentCreateTest extends TestCase
         }
 
         $this->assertEquals($billingAddress['postal_code'], $addressEntity['zipcode']);
+    }
+
+    private function mockPGRouterForRearch()
+    {
+        $this->enablePgRouterConfig();
+
+        // mock the experiments for s2s payment
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+        $this->app->instance('razorx', $razorxMock);
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === 's2s_card_payments_via_pg_router_v2' or
+                        $feature === 'netbanking_payments_via_pg_router_disable_mid' or
+                        $feature === 'netbanking_payments_via_pg_router_create_json' or
+                        $feature === 'netbanking_payments_via_pg_router')
+                    {
+                        return 'on';
+                    }
+                    return 'off';
+                }));
+
+        $pgService = \Mockery::mock('RZP\Services\PGRouter')->shouldAllowMockingProtectedMethods()->makePartial();
+        $this->app->instance('pg_router', $pgService);
+        $pgService->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), Mockery::type('string'), Mockery::type('array'), Mockery::type('bool'), Mockery::type('int'))
+            ->andReturnUsing(function (string $endpoint, string $method, array $data, bool $throwExceptionOnFailure, int $timeout)
+            {
+                return [
+                    'body' => [
+                        'pg_router' => 'true'
+                    ]
+                ];
+            });
     }
 
     public function testPaymentCreateDualWrite()
