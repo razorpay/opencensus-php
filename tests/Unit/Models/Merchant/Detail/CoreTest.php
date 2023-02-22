@@ -2522,6 +2522,162 @@ class CoreTest extends TestCase
         $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
     }
 
+    // Below test case is to check that the merchant(unregistered) should not go from nc to amp
+    // if he has been in Nc already
+
+    public function testGetApplicableActivationStatusForUnRegisteredMerchantInNeedsClarification()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'needs_clarification',
+        ]);
+
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+
+        $this->fixtures->create('state', [
+            'entity_id'   => $merchantDetails->getId(),
+            'name'        => 'needs_clarification',
+            'entity_type' => 'merchant_detail'
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+        (new MerchantCore())->appendTag($merchant, 'random_tag');
+
+        $this->mockRazorxTreatment();
+
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    // Below test case is to check that the merchant(registered) should not go from nc to amp
+    // if he has been in Nc already
+
+    public function testGetApplicableActivationStatusForRegisteredMerchantInNeedsClarification()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+        ]);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+
+        $this->fixtures->create('state', [
+            'entity_id'   => $merchantDetails->getId(),
+            'name'        => 'needs_clarification',
+            'entity_type' => 'merchant_detail'
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+        (new MerchantCore())->appendTag($merchant, 'random_tag');
+
+        $this->mockRazorxTreatment();
+
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    // Below test case is to check that the merchant(registered) should not go from ur to amp
+    // if he has been in Nc already once
+
+    public function testGetApplicableActivationStatusForRegisteredMerchantInUnderReview()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+        ]);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+
+        $this->fixtures->create('state', [
+            'entity_id'   => $merchantDetails->getId(),
+            'name'        => 'needs_clarification',
+            'entity_type' => 'merchant_detail'
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+        (new MerchantCore())->appendTag($merchant, 'random_tag');
+
+        $this->mockRazorxTreatment();
+
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
+    // Below test case is to check that the merchant(unregistered) should not go from ur to amp
+    // if he has been in Nc already
+
+    public function testGetApplicableActivationStatusForUnRegisteredMerchantInUnderReview()
+    {
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 2,
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+        ]);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+
+        $this->fixtures->create('state', [
+            'entity_id'   => $merchantDetails->getId(),
+            'name'        => 'needs_clarification',
+            'entity_type' => 'merchant_detail'
+        ]);
+
+        $merchant = $merchantDetails->merchant;
+        (new MerchantCore())->appendTag($merchant, 'random_tag');
+
+        $this->mockRazorxTreatment();
+
+        $this->assertEquals(Status::UNDER_REVIEW, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+    }
+
     public function testApplicableActivationStatusForNonRiskyMerchant()
     {
         $detailCoreMock = $this->getMockBuilder(DetailCore::class)

@@ -5140,7 +5140,11 @@ class Core extends Base\Core
 
         $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
 
-        if (($isWhitelisted === true) and
+        // including the condition of nc count because we don't want the merchant to go in amp from nc or ur once he
+        // has already been in nc
+
+        if (((new ClarificationDetailCore)->getNcCount($merchantDetails->merchant) === 0) and
+            ($isWhitelisted === true) and
             ($isImpersonated === false) and
             (in_array($currentActivationStatus, $excludeActivationStatusList) === false) and
             ($this->hasRiskTags($merchantDetails->merchant) === false))
@@ -5186,7 +5190,11 @@ class Core extends Base\Core
 
         $isImpersonated = $this->dedupeCore->isMerchantImpersonated($merchantDetails->merchant);
 
-        if (($isWhitelisted === true) and
+        // including the condition of nc count because we don't want the merchant to go in amp from nc or ur once he
+        // has already been in nc
+
+        if (((new ClarificationDetailCore)->getNcCount($merchantDetails->merchant) === 0) and
+            ($isWhitelisted === true) and
             ($isImpersonated === false) and
             (in_array($currentActivationStatus, $excludeActivationStatusList) === false) and
             ($this->hasRiskTags($merchantDetails->merchant) === false))
