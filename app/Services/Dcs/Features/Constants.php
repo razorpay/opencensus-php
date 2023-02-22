@@ -53,6 +53,11 @@ class Constants
     const SubMerchantOnboardingCommunicationDisabled = 'submerchant_onboarding_communication_disabled';
     const RazorpayCommunicationToSubMerchantDisabled = 'razorpay_communication_to_submerchant_disabled';
     const AggregatorOAuthClientDisabled = 'aggregator_oauth_client_enabled';
+    const OAuthCommunicationDisabled = 'oauth_communication_disabled';
+    const SubMerchantQRImageContentEnabled = 'submerchant_qr_image_content_enabled';
+    const SubMerchantOnBoardingV2Enabled  = 'submerchant_onboarding_v2_enabled';
+    const SubMerchantOnBoardingEnabled = 'submerchant_onboarding_enabled';
+    const WebsiteInternationalDisabled = 'website_international_disabled';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -100,6 +105,11 @@ class Constants
         self::SubMerchantOnboardingCommunicationDisabled => "rzp/platform/partner/communication/Features",
         self::RazorpayCommunicationToSubMerchantDisabled => "rzp/platform/partner/communication/Features",
         self::AggregatorOAuthClientDisabled => "rzp/platform/partner/auth/Features",
+        self::OAuthCommunicationDisabled => "rzp/platform/partner/communication/Features",
+        self::SubMerchantQRImageContentEnabled => "rzp/platform/partner/onboarding/Features",
+        self::SubMerchantOnBoardingV2Enabled  => "rzp/platform/partner/onboarding/Features",
+        self::SubMerchantOnBoardingEnabled => "rzp/platform/partner/onboarding/Features",
+        self::WebsiteInternationalDisabled => "rzp/platform/partner/onboarding/Features",
     ];
 
     /**
@@ -149,6 +159,11 @@ class Constants
         APIFeaturesConstants::SKIP_SUBM_ONBOARDING_COMM => self::SubMerchantOnboardingCommunicationDisabled,
         APIFeaturesConstants::NO_COMM_WITH_SUBMERCHANTS => self::RazorpayCommunicationToSubMerchantDisabled,
         APIFeaturesConstants::AGGREGATOR_OAUTH_CLIENT => self::AggregatorOAuthClientDisabled,
+        APIFeaturesConstants::SKIP_OAUTH_NOTIFICATION => self::OAuthCommunicationDisabled,
+        APIFeaturesConstants::SUBM_QR_IMAGE_CONTENT => self::SubMerchantQRImageContentEnabled,
+        APIFeaturesConstants::SUBMERCHANT_ONBOARDING_V2 => self::SubMerchantOnBoardingV2Enabled,
+        APIFeaturesConstants::SUBMERCHANT_ONBOARDING => self::SubMerchantOnBoardingEnabled,
+        APIFeaturesConstants::SKIP_WEBSITE_INTERNAT => self::WebsiteInternationalDisabled,
     ];
 
     /**
@@ -198,6 +213,11 @@ class Constants
         self::SubMerchantOnboardingCommunicationDisabled => APIFeaturesConstants::SKIP_SUBM_ONBOARDING_COMM,
         self::RazorpayCommunicationToSubMerchantDisabled => APIFeaturesConstants::NO_COMM_WITH_SUBMERCHANTS,
         self::AggregatorOAuthClientDisabled => APIFeaturesConstants::AGGREGATOR_OAUTH_CLIENT,
+        self::OAuthCommunicationDisabled => APIFeaturesConstants::SKIP_OAUTH_NOTIFICATION,
+        self::SubMerchantQRImageContentEnabled => APIFeaturesConstants::SUBM_QR_IMAGE_CONTENT,
+        self::SubMerchantOnBoardingV2Enabled  => APIFeaturesConstants::SUBMERCHANT_ONBOARDING_V2,
+        self::SubMerchantOnBoardingEnabled => APIFeaturesConstants::SUBMERCHANT_ONBOARDING,
+        self::WebsiteInternationalDisabled => APIFeaturesConstants::SKIP_WEBSITE_INTERNAT,
     ];
 
     /**
