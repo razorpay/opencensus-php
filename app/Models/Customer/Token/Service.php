@@ -800,6 +800,7 @@ class Service extends Base\Service
 
     public function manualTriggerMerchantWebhook($token, $serviceProviderTokens) {
 
+        unset($token['source']);
         $eventPayload = [
             ApiEventSubscriber::MAIN => $token,
             ApiEventSubscriber::WITH => $serviceProviderTokens,
