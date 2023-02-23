@@ -20,7 +20,7 @@ export default function PartnerDashboard() {
   const user = store.getState().session.user;
   const isPartnershipFUX = user?.isPartnershipFUX || false;
 
-  usePartnerPageNPS('wWCxr2Cu');
+  usePartnerPageNPS('mdYeQMQH');
   useTrackPartnerExperiments(user);
   useEffect(() => {
     if (isPartnershipFUX) {

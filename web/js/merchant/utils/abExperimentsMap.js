@@ -67,7 +67,7 @@ export default {
     'JLVDXyLyzWlTyI',
 
     // prod experiment ids
-    'JLVLvIALXDyaPK',
+    'LEhcQ6vsmvThCM',
   ],
   partnership_for_razorpayx: [
     // beta experiment ids
