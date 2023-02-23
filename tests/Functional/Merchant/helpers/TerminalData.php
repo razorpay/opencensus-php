@@ -2036,6 +2036,52 @@ return [
         ]
     ],
 
+    'testCreateMpgsAcquirerOcbcTerminal'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'mpgs',
+                'gateway_merchant_id'       => 'MPGSOCBC000001202',
+                'card'                      => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_acquirer'          => 'ocbc',
+                'capability'                => 0,
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+                'currency'                  => ['MYR']
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway_merchant_id'  => 'MPGSOCBC000001202',
+                'enabled'              => true,
+            ]
+        ]
+    ],
+
+    'testCreateTerminalInvalidAcquirerForCountry'  => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'mpgs',
+                'gateway_merchant_id'       => 'MPGSOCBC000001202',
+                'card'                      => 1,
+                'gateway_terminal_password' => 'abcd',
+                'gateway_acquirer'          => 'ocbc',
+                'capability'                => 0,
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
+                'currency'                  => ['MYR']
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'   => [
+            ]
+        ],
+    ],
+
     'testCreateMpgsPurchaseTerminal'  => [
         'request' => [
             'content' => [

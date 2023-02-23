@@ -41,6 +41,9 @@ class Core extends Base\Core
         $this->validateAndTokenizeMpansIfPresentInInput($input);
 
         $this->validateGatewayAllowed($input); // we do not want to allow the assigning of specific terminals, eg paysecure from admin dashboard
+
+        $this->validateAcquirerByCountry($merchant, $input);
+
         $input['merchant_id'] = $merchant->getKey();
 
         $input['org_id'] = $merchant->getOrgId();
@@ -1193,6 +1196,28 @@ class Core extends Base\Core
         ];
 
         (new Validator())->validateInput('gateway_input', $gatewayInput);
+    }
+
+    protected function validateAcquirerByCountry($merchant, array $input)
+    {
+        if(!isset($input['gateway_acquirer']))
+        {
+            return;
+        }
+
+        if (in_array($input['gateway_acquirer'], Gateway::GATEWAY_ACQUIRER_COUNTRY_MAP[strtolower($merchant->getCountry())]) === false)
+        {
+            if ($merchant->getCountry() === "IN")
+            {
+                $this->trace->info(TraceCode::ACQUIRER_NOT_PRESENT_IN_COUNTRY_MAP, ["acquirer" => $input['gateway_acquirer']]);
+
+                return ;
+            }
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ACQUIRER_FOR_COUNTRY
+            );
+        }
     }
 
     protected function redactSecretsOnWorkflow(array $redactedInput) {

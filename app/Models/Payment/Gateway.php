@@ -7,6 +7,7 @@ use RZP\Exception;
 
 use RZP\Models\Currency\Currency;
 use RZP\Models\Emi;
+use RZP\Constants\Country;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -179,6 +180,7 @@ class Gateway
     const ACQUIRER_SBIN         = 'sbin';
     const ACQUIRER_CITI         = 'citi';
     const ACQUIRER_KOTAK        = 'kotak';
+    const ACQUIRER_OCBC         = 'ocbc';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -267,12 +269,38 @@ class Gateway
         self::CARDLESS_EMI => [CardlessEmi::ZESTMONEY, CardlessEmi::EARLYSALARY, CardlessEmi::FLEXMONEY, CardlessEmi::WALNUT369, CardlessEmi::SEZZLE],
         self::PAYLATER     => [PayLater::EPAYLATER, PayLater::GETSIMPL, PayLater::ICICI, PayLater::FLEXMONEY, Paylater::LAZYPAY],
         self::WORLDLINE    => [self::ACQUIRER_AXIS],
-        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC],
+        self::MPGS         => [self::ACQUIRER_HDFC, self::ACQUIRER_AXIS, self::ACQUIRER_AMEX, self::ACQUIRER_ICIC, self::ACQUIRER_OCBC],
         self::UPI_JUSPAY   => [self::ACQUIRER_AXIS],
         self::PAYU         => [self::PAYU],
         self::HDFC_EZETAP  => [self::ACQUIRER_HDFC],
         self::PAYSECURE    => [self::ACQUIRER_AXIS],
         self::AXIS_TOKENHQ => [self::ACQUIRER_AXIS],
+    ];
+
+    const GATEWAY_ACQUIRER_COUNTRY_MAP = [
+        Country::IN    => [
+            self::ACQUIRER_AXIS,
+            self::ACQUIRER_HDFC,
+            self::ACQUIRER_YESB,
+            self::ACQUIRER_ICIC,
+            self::ACQUIRER_FSS,
+            self::ACQUIRER_BARB,
+            self::ACQUIRER_SBIN,
+            self::ACQUIRER_RATN,
+            CardlessEmi::ZESTMONEY,
+            CardlessEmi::EARLYSALARY,
+            CardlessEmi::FLEXMONEY,
+            CardlessEmi::WALNUT369,
+            CardlessEmi::SEZZLE,
+            PayLater::EPAYLATER,
+            PayLater::GETSIMPL,
+            PayLater::ICICI,
+            PayLater::FLEXMONEY,
+            Paylater::LAZYPAY,
+            self::ACQUIRER_AMEX,
+            self::PAYU
+        ],
+        Country::MY    => [self::ACQUIRER_OCBC],
     ];
 
     const POWER_WALLETS = [

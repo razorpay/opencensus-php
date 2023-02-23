@@ -1197,6 +1197,37 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateMpgsAcquirerOcbcTerminal()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->fixtures->merchant->edit('10000000000000',[
+            MerchantEntity::COUNTRY_CODE => 'MY'
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateTerminalInvalidAcquirerForCountry()
+    {
+        $url = '/merchants/10000000000000/terminals';
+
+        $this->fixtures->merchant->edit('10000000000000',[
+            MerchantEntity::COUNTRY_CODE => 'IN'
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->expectException(Exception\BadRequestException::class);
+
+        $this->expectExceptionCode(ErrorCode::BAD_REQUEST_INVALID_ACQUIRER_FOR_COUNTRY);
+
+        $this->startTest();
+
+    }
+
     public function testCreateIsgCardTerminal()
     {
         $url = '/merchants/10000000000000/terminals';

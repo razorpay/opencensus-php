@@ -501,6 +501,7 @@ class Validator extends Base\Validator
         Entity::TYPE                       => 'sometimes|array',
         Entity::INTERNATIONAL              => 'sometimes|boolean',
         Entity::CURRENCY                   => 'sometimes',
+        Entity::CAPABILITY                 => 'sometimes',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
