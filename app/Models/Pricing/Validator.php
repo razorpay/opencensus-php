@@ -6,6 +6,7 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Constants\Procurer;
 use RZP\Constants\Product;
+use RZP\Constants\TokenPricing;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\BasicAuth;
@@ -560,9 +561,15 @@ class Validator extends Base\Validator
 
                 if (isset($input[Entity::PAYMENT_METHOD_SUBTYPE]) === true)
                 {
-                    $subType = $input[Entity::PAYMENT_METHOD_SUBTYPE];
+                    if ($input[Entity::FEATURE] === Feature::TOKEN_HQ)
+                    {
+                        $this->validateTokenHqMethodSubType($input);
+                    }
+                    else {
+                        $subType = $input[Entity::PAYMENT_METHOD_SUBTYPE];
 
-                    SubType::checkSubType($subType);
+                        SubType::checkSubType($subType);
+                    }
                 }
             }
         }
@@ -1227,6 +1234,28 @@ class Validator extends Base\Validator
     {
         // Only direct channels can have this set for now
         AccountType::exists($value);
+    }
+
+    protected function validateTokenHqMethodSubType($input)
+    {
+        if (isset($input[Entity::PAYMENT_METHOD_SUBTYPE]) === true)
+        {
+            $TokenType = $input[Entity::PAYMENT_METHOD_SUBTYPE];
+
+            $validTokenTypes = [
+                TokenPricing::REQUEST_TOKEN_CREATE,
+                TokenPricing::REQUEST_CRYPTOGRAM,
+                TokenPricing::REQUEST_PAR,
+                TokenPricing::SUCCESS_TOKENISED_PAYMENT,
+                TokenPricing::SUCCESS_TOKEN_CREATE,
+                TokenPricing::SAAS_FEE,
+            ];
+
+            if (in_array($TokenType, $validTokenTypes, true) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException('Not a valid sub_type: ' . $subtype);
+            }
+        }
     }
 
     protected function validateRefundMode($input)

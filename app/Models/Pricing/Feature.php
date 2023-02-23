@@ -19,6 +19,7 @@ class Feature
     const OPTIMIZER               = 'optimizer';
     const MAGIC_CHECKOUT          = 'magic_checkout';
     const AFFORDABILITY_WIDGET    = 'affordability_widget';
+    const TOKEN_HQ                = 'token_hq';
 
     const FEATURE_LIST = [
         self::MAGIC_CHECKOUT,
@@ -31,7 +32,8 @@ class Feature
         self::FUND_ACCOUNT_VALIDATION,
         self::SETTLEMENT_ONDEMAND,
         self::OPTIMIZER,
-        self::ESAUTOMATIC_RESTRICTED
+        self::ESAUTOMATIC_RESTRICTED,
+        self::TOKEN_HQ
     ];
 
     /**
