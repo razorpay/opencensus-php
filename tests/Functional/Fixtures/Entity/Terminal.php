@@ -5054,4 +5054,21 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createSharedBajajTerminal(array $attributes = [])
+    {
+        $termId = Shared::BAJAJ_RAZORPAY_TERMINAL;
+
+        $attributes = [
+            'id'                     => $termId,
+            'merchant_id'            => '100000Razorpay',
+            'gateway'                => 'wallet_bajaj',
+            'gateway_merchant_id'    => 'dummy_merchant_id',
+            'gateway_secure_secret'  => 'dummy_secure_secret',
+            'gateway_secure_secret2' => 'dummy_secure_secret2',
+            'gateway_access_code'    => 'dummy_access_code',
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }

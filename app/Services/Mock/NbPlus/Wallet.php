@@ -2,7 +2,7 @@
 
 namespace RZP\Services\Mock\NbPlus;
 
-use \WpOrg\Requests\Response;
+use RZP\Models\Payment\Gateway;
 
 use RZP\Services\NbPlus\Wallet as WalletBase;
 
@@ -62,13 +62,15 @@ class Wallet extends WalletBase
             );
 
             $otpFlowWallets = [
-                'wallet_freecharge'
+                'wallet_freecharge',
+                Gateway::WALLET_BAJAJ,
             ];
 
-            if(in_array($input['input']['payment']['gateway'], $otpFlowWallets, true) === true){
+            if (in_array($input['input']['payment']['gateway'], $otpFlowWallets, true) === true)
+            {
                 $url = $this->app['api.route']->getPublicCallbackUrlWithHash(
                     $input['input']['payment']['public_id'],
-                    'rzp_test_TheTestAuthKey',
+                    $input['input']['payment']['public_key'],
                     'payment_otp_submit'
                 );
             }
@@ -120,8 +122,8 @@ class Wallet extends WalletBase
 
     public function callback($input)
     {
-
-        if(isset($input['input']['payment']['gateway']) && $input['input']['payment']['gateway'] === 'wallet_phonepe'){
+        if (isset($input['input']['payment']['gateway']) && $input['input']['payment']['gateway'] === 'wallet_phonepe')
+        {
             return [
                 'response' => [
                     'data' => [
@@ -145,7 +147,11 @@ class Wallet extends WalletBase
                 ]
             ];
         }
-        elseif (isset($input['input']['gateway']) && isset($input['input']['gateway']['type']) && $input['input']['gateway']['type'] === "otp") {
+        elseif ((isset($input['input']['gateway']) and
+                isset($input['input']['gateway']['type']) and
+                $input['input']['gateway']['type'] === "otp") and
+                $input['input']['payment']['gateway'] === Gateway::WALLET_FREECHARGE)
+        {
             return [
                 'response' => [
                     'data' => [

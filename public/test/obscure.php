@@ -169,6 +169,7 @@ function disableEmptyInputs(form) {
                 <option value="olamoney">Olamoney</option>
                 <option value="airtelmoney">Airtelmoney</option>
                 <option value="freecharge">Freecharge</option>
+                <option value="bajaj">Bajaj Pay</option>
                 <option value="jiomoney">JioMoney</option>
                 <option value="sbibuddy">SBI Buddy</option>
                 <option value="openwallet">Openwallet (B2B)</option>

@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\Methods;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Trace\TraceCode;
 
@@ -71,6 +72,7 @@ class Validator extends Base\Validator
         Entity::FPX                => 'sometimes|boolean',
         Entity::ADDON_METHODS      => 'sometimes|array',
         Entity::IN_APP             => 'sometimes|boolean',
+        Entity::BAJAJPAY           => 'sometimes|boolean',
     ];
 
     protected static $setMethodsValidators = [

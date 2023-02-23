@@ -141,6 +141,7 @@ class Gateway
     const WALLET_AIRTELMONEY        = 'wallet_airtelmoney';
     const WALLET_AMAZONPAY          = 'wallet_amazonpay';
     const WALLET_FREECHARGE         = 'wallet_freecharge';
+    const WALLET_BAJAJ              = 'wallet_bajaj';
     const WALLET_JIOMONEY           = 'wallet_jiomoney';
     const WALLET_SBIBUDDY           = 'wallet_sbibuddy';
     const WALLET_MPESA              = 'wallet_mpesa';
@@ -1671,6 +1672,7 @@ class Gateway
             self::WALLET_PAYUMONEY,
             self::WALLET_AIRTELMONEY,
             self::WALLET_FREECHARGE,
+            self::WALLET_BAJAJ,
             self::WALLET_JIOMONEY,
             self::WALLET_SBIBUDDY,
             self::WALLET_OPENWALLET,
@@ -2165,6 +2167,7 @@ class Gateway
         Wallet::PAYUMONEY          => Gateway::WALLET_PAYUMONEY,
         Wallet::AIRTELMONEY        => Gateway::WALLET_AIRTELMONEY,
         Wallet::FREECHARGE         => Gateway::WALLET_FREECHARGE,
+        Wallet::BAJAJPAY           => Gateway::WALLET_BAJAJ,
         Wallet::JIOMONEY           => Gateway::WALLET_JIOMONEY,
         Wallet::SBIBUDDY           => Gateway::WALLET_SBIBUDDY,
         Wallet::OPENWALLET         => Gateway::WALLET_OPENWALLET,
@@ -4577,6 +4580,7 @@ class Gateway
             ],
             Method::WALLET => [
                 self::WALLET_AMAZONPAY,
+                self::WALLET_BAJAJ,
             ]
         ];
 
@@ -4669,6 +4673,7 @@ class Gateway
             self::NETBANKING_AIRTEL,
             self::BILLDESK_OPTIMIZER,
             self::NETBANKING_EQUITAS,
+            self::WALLET_BAJAJ,
         ];
 
         $acquirerGateways = [
@@ -4700,7 +4705,8 @@ class Gateway
     public static function canRunOtpFlowViaNbPlus($payment)
     {
         $gateways = [
-            self::WALLET_FREECHARGE
+            self::WALLET_FREECHARGE,
+            self::WALLET_BAJAJ,
         ];
 
         $gateway = $payment[Payment\Entity::GATEWAY];

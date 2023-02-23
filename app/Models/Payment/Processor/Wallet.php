@@ -17,6 +17,7 @@ class Wallet
     const AIRTELMONEY       = 'airtelmoney';
     const AMAZONPAY         = 'amazonpay';
     const FREECHARGE        = 'freecharge';
+    const BAJAJPAY          = 'bajajpay';
     const JIOMONEY          = 'jiomoney';
     const SBIBUDDY          = 'sbibuddy';
     const OPENWALLET        = 'openwallet';
@@ -41,6 +42,7 @@ class Wallet
         self::PAYZAPP           => 'Payzapp',
         self::AIRTELMONEY       => 'Airtelmoney',
         self::FREECHARGE        => 'Freecharge',
+        self::BAJAJPAY          => 'Bajaj Pay',
         self::JIOMONEY          => 'JioMoney',
         self::SBIBUDDY          => 'SBI Buddy',
         self::OPENWALLET        => 'RZP Open Wallet',

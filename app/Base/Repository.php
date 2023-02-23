@@ -1211,7 +1211,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function getDataWarehouseConnection(string $cluster = null): string
     {
-        if (in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER], true) === true)
+        if (in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER, Environment::BETA], true) === true)
         {
             return Config::get('database.default');
         }
@@ -1243,7 +1243,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function getSlaveConnection(string $mode = null)
     {
-        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker'], true) === true)
+        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker', 'beta'], true) === true)
         {
             return Config::get('database.default');
         }
@@ -1305,7 +1305,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function getReportingReplicaConnection(string $mode = null): string
     {
-        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker'], true) === true)
+        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker', 'beta'], true) === true)
         {
             return Config::get('database.default');
         }
@@ -1314,7 +1314,7 @@ class Repository extends \Razorpay\Spine\Repository
         {
             $this->app['rzp.mode'] = Mode::LIVE;
         }
-        
+
         $mode = $mode ?? $this->app['rzp.mode'];
 
         $connection = ($mode === Mode::TEST) ? Connection::REPORTING_REPLICA_TEST : Connection::REPORTING_REPLICA_LIVE;
@@ -1324,7 +1324,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function getPaymentFetchReplicaConnection(string $mode = null)
     {
-        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker'], true) === true)
+        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker', 'beta'], true) === true)
         {
             return Config::get('database.default');
         }

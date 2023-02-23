@@ -85,6 +85,7 @@ class Shared
     const PAYZAPP_RAZORPAY_TERMINAL          = '100PayzappTmnl';
     const PAYUMONEY_RAZORPAY_TERMINAL        = '100PayumnyTmnl';
     const FREECHARGE_RAZORPAY_TERMINAL       = '100FrchrgeTmnl';
+    const BAJAJ_RAZORPAY_TERMINAL            = '100BajajTrminl';
     const SHARP_RAZORPAY_TERMINAL            = '1000SharpTrmnl';
     const CYBERSOURCE_HDFC_TERMINAL          = '1000CybrsTrmnl';
     const CYBERSOURCE_HDFC_TERMINAL_WITHOUT_SECRET2  = '1000CybesTrmnl';
@@ -211,6 +212,7 @@ class Shared
         self::PAYZAPP_RAZORPAY_TERMINAL,
         self::PAYUMONEY_RAZORPAY_TERMINAL,
         self::FREECHARGE_RAZORPAY_TERMINAL,
+        self::BAJAJ_RAZORPAY_TERMINAL,
         self::SHARP_RAZORPAY_TERMINAL,
         self::CYBERSOURCE_HDFC_TERMINAL,
         self::CYBERSOURCE_AXIS_TERMINAL,
@@ -302,6 +304,7 @@ class Shared
         self::AIRTELMONEY_RAZORPAY_TERMINAL      => Gateway::WALLET_AIRTELMONEY,
         self::AMAZONPAY_RAZORPAY_TERMINAL        => Gateway::WALLET_AMAZONPAY,
         self::FREECHARGE_RAZORPAY_TERMINAL       => Gateway::WALLET_FREECHARGE,
+        self::BAJAJ_RAZORPAY_TERMINAL            => Gateway::WALLET_BAJAJ,
         self::JIOMONEY_RAZORPAY_TERMINAL         => Gateway::WALLET_JIOMONEY,
         self::SBIBUDDY_RAZORPAY_TERMINAL         => Gateway::WALLET_SBIBUDDY,
         self::SHARP_RAZORPAY_TERMINAL            => Gateway::SHARP,

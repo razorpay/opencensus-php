@@ -25,6 +25,7 @@ use RZP\Models\BankAccount\Repository;
 use RZP\Models\FundAccount\Validation;
 use RZP\Mail\Merchant as MerchantMail;
 use Illuminate\Cache\Events\KeyWritten;
+use RZP\Models\Payment\Processor\Wallet;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
@@ -3520,6 +3521,15 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->assertArrayHasKey(Dcs\Features\Constants::ShowEmailOnCheckout, $response['features']);
         $this->assertArrayNotHasKey(Dcs\Features\Constants::EmailOptionalOnCheckout, $response['features']);
+    }
+
+    public function testPreferencesForBajajPay()
+    {
+        $this->fixtures->merchant->enableAdditionalWallets([Wallet::BAJAJPAY]);
+        $this->ba->publicAuth();
+        $response = $this->getPreferences();
+        $this->assertArrayHasKey(Wallet::BAJAJPAY, $response['methods']['wallet']);
+        $this->assertTrue($response['methods']['wallet']['bajajpay']);
     }
 
     protected function enableEmailLessCheckoutExperiment($result = "variant_on")

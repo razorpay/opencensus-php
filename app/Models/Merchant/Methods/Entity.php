@@ -10,6 +10,7 @@ use RZP\Models\Base\QueryCache\Cacheable;
 use RZP\Models\Card\SubType;
 use RZP\Models\Card\Type;
 use RZP\Models\Emi\DebitProvider;
+use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Fpx as FpxProcessor;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 use RZP\Models\Payment\Processor\App as AppMethod;
@@ -63,6 +64,7 @@ class Entity extends Base\PublicEntity
     const COD               = 'cod';
     const FPX               = 'fpx';
     const IN_APP            = 'in_app';
+    const BAJAJPAY          = 'bajajpay';
 
     const DEBIT_EMI_PROVIDERS = 'debit_emi_providers';
     const EMI_TYPES           = 'emi_types';
@@ -129,6 +131,7 @@ class Entity extends Base\PublicEntity
         self::OFFLINE,
         self::FPX,
         self::ADDON_METHODS,
+        self::BAJAJPAY,
     ];
 
     protected $visible = [
@@ -178,6 +181,7 @@ class Entity extends Base\PublicEntity
         self::OFFLINE,
         self::FPX,
         self::IN_APP,
+        self::BAJAJPAY,
     ];
 
     protected $public = [
@@ -228,6 +232,7 @@ class Entity extends Base\PublicEntity
         self::OFFLINE,
         self::FPX,
         self::IN_APP,
+        self::BAJAJPAY,
     ];
 
     protected $appends = [
@@ -237,6 +242,7 @@ class Entity extends Base\PublicEntity
         self::PAYCASH,
         self::CITIBANKREWARDS,
         self::IN_APP,
+        self::BAJAJPAY,
     ];
 
 
@@ -348,6 +354,7 @@ class Entity extends Base\PublicEntity
         self::AMEXEASYCLICK,
         self::PAYCASH,
         self::CITIBANKREWARDS,
+        self::BAJAJPAY,
     );
 
     protected static $additional_wallet_names = [
@@ -356,6 +363,7 @@ class Entity extends Base\PublicEntity
         self::AMEXEASYCLICK,
         self::PAYCASH,
         self::CITIBANKREWARDS,
+        self::BAJAJPAY,
     ];
 
     protected static $addon_methods_names = [
@@ -429,6 +437,7 @@ class Entity extends Base\PublicEntity
         self::COD           => 'bool',
         self::OFFLINE       => 'bool',
         self::FPX           => 'bool',
+        self::BAJAJPAY      => 'bool',
     ];
 
     public function merchant()
@@ -618,6 +627,11 @@ class Entity extends Base\PublicEntity
     public function isFreechargeEnabled()
     {
         return $this->getAttribute(self::FREECHARGE);
+    }
+
+    public function isBajajPayEnabled(): bool
+    {
+        return $this->getBajajPay();
     }
 
     public function isMobikwikEnabled()
@@ -921,6 +935,11 @@ class Entity extends Base\PublicEntity
         return in_array(self::CITIBANKREWARDS,$additional_wallets);
     }
 
+    public function getBajajPay(): bool
+    {
+        return in_array(self::BAJAJPAY, $this->getAttribute(self::ADDITIONAL_WALLETS));
+    }
+
     public function getOpenwallet()
     {
         return $this->getAttribute(self::OPENWALLET);
@@ -1020,6 +1039,7 @@ class Entity extends Base\PublicEntity
                     $index = array_search($wallet_name, $additional_wallets);
                     array_splice($additional_wallets,$index,1);
                 }
+                unset($input[$wallet_name]);
                 // here we are not deleting "itzcash" field in input, and allowing it to pass through validation
             }
         }
@@ -1435,6 +1455,11 @@ class Entity extends Base\PublicEntity
     protected function getCitibankrewardsAttribute()
     {
         return $this->getCitibankrewards();
+    }
+
+    protected function getBajajPayAttribute()
+    {
+        return $this->getBajajPay();
     }
 
     protected function getAddonMethodsAttribute()

@@ -683,4 +683,3 @@ trait Migrate
     }
 
 }
-

@@ -3161,6 +3161,7 @@ class Processor
             Payment\Gateway::WALLET_PAYZAPP,
             Payment\Gateway::WALLET_PHONEPE,
             Payment\Gateway::WALLET_AMAZONPAY,
+            Payment\Gateway::WALLET_BAJAJ,
         ];
 
         $shouldRoutePayPalViaNbPlus = false;

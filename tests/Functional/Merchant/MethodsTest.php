@@ -14,6 +14,7 @@ use RZP\Constants\Entity as E;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
+use RZP\Models\Payment\Processor\Wallet;
 use Illuminate\Cache\Events\CacheMissed;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -1344,5 +1345,34 @@ class MethodsTest extends TestCase
 
         $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
         $this->assertEquals($offer2->getPublicId(), $response['offers'][1]['id']);
+    }
+
+    public function testEnableBajajPay()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isBajajPayEnabled());
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'bajajpay' => 1,
+            ],
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response[Wallet::BAJAJPAY]);
     }
 }

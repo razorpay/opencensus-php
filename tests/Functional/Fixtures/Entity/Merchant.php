@@ -514,6 +514,11 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, [$wallet => true]);
     }
 
+    public function enableAdditionalWallets(array $wallet, $id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['additional_wallets' => $wallet]);
+    }
+
     public function enablePaytm($id = '10000000000000')
     {
         return $this->fixtures->edit('methods', $id, ['paytm' => true]);
