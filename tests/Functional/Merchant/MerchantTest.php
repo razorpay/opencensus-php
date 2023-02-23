@@ -10743,6 +10743,68 @@ Team Razorpay',
         $this->startTest();
     }
 
+    /**
+     * Below Three Terms and conditions tests covers three different scenarios
+     * 1) When only org level feature flag is enabled, showTncPopup =true
+     * 2) When org level feature flag and merchant level flag both are enabled, showTncPopup = false
+     * 3) When org level feature flag is enabled, merchant has already accepted T&C, showTncPopup = false
+    */
+    public function testGetTermsAndConditionsHappy()
+    {
+        $this->fixtures->org->addFeatures(['enable_tc_dashboard'],'100000razorpay');
+
+        $this->merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000' , $this->merchantUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetTermsAndConditionsUnHappyMerchantFeature()
+    {
+        $this->fixtures->org->addFeatures(['enable_tc_dashboard'],'100000razorpay');
+
+        $this->merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $this->fixtures->merchant->addFeatures(['disable_tc_dashboard'],'10000000000000');
+
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000' , $this->merchantUser->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetTermsAndConditionsUnHappyAlreadyAcceptedTnc()
+    {
+        $this->fixtures->org->addFeatures(['enable_tc_dashboard'],'100000razorpay');
+
+        $this->fixtures->create('merchant_consents',
+                [
+                    'id' => 'KdSCny9TA9OrmA',
+                    'merchant_id' => '10000000000000',
+                    'consent_for' => ['L2_Terms & Conditions'],
+                ]);
+
+        $this->fixtures->create('merchant_consents',
+                [
+                    'id' => 'KdSCny9TA9OrmB',
+                    'merchant_id' => '10000000000000',
+                    'consent_for' => 'L2_Privacy Policy',
+                ]);
+
+        $this->fixtures->create('merchant_consents',
+                [
+                    'id' => 'KdSCny9TA9OrmC',
+                    'merchant_id' => '10000000000000',
+                    'consent_for' => 'L2_Service Agreement',
+                ]);
+
+        $this->merchantUser = $this->fixtures->user->createUserForMerchant();
+
+        $this->ba->proxyAuth('rzp_test_' . '10000000000000' , $this->merchantUser->getId());
+
+        $this->startTest();
+    }
+
     public function testSendBankingAccountsViaWebhook()
     {
         $attributes = [

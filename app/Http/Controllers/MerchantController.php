@@ -664,6 +664,14 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getTermsAndConditionPopupStatus()
+    {
+        $response = $this->service()->getTermsAndConditionPopupStatus();
+
+        return ApiResponse::json($response);
+
+    }
+
     public function setBanks($id)
     {
         $input = Request::all();

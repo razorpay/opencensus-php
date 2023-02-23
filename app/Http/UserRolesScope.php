@@ -449,6 +449,7 @@ class UserRolesScope
             'merchant_aov_config'                           => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::SELLERAPP,Role::FINANCE],
             'merchant_edit_config_la'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER,],
             'merchant_features_fetch'                       => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::OPERATIONS, Role::SELLERAPP, Role::SUPPORT, Role::FINANCE, Role::SELLERAPP_PLUS, Role::AGENT, Role::RBL_SUPERVISOR, Role::LINKED_ACCOUNT_OWNER, Role::LINKED_ACCOUNT_ADMIN],
+            'merchant_tnc_popup_status'                     => [Role::OWNER],
             'merchant_features_update'                      => [Role::ADMIN, Role::OWNER, Role::MANAGER, Role::FINANCE, Role::SELLERAPP,],
             'affordability_widget_details'                  => [Role::OWNER, Role::ADMIN],
             'merchant_fetch_methods'                        => [Role::ADMIN, Role::OWNER, Role::FINANCE, Role::OPERATIONS, Role::MANAGER, Role::SELLERAPP,],

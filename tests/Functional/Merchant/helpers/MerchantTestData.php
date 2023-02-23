@@ -7631,6 +7631,42 @@ return [
         ],
     ],
 
+    'testGetTermsAndConditionsHappy' => [
+        'request' => [
+            'url' => '/merchant/tnc_popup_status',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'show_tnc_popup' => true
+            ]
+        ]
+    ],
+
+    'testGetTermsAndConditionsUnHappyMerchantFeature' => [
+      'request' => [
+          'url' => '/merchant/tnc_popup_status',
+          'method' => 'GET',
+      ],
+      'response' => [
+          'content' => [
+              'show_tnc_popup' => false
+          ]
+       ]
+     ],
+
+    'testGetTermsAndConditionsUnHappyAlreadyAcceptedTnc' => [
+        'request' => [
+            'url' => '/merchant/tnc_popup_status',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'show_tnc_popup' => false
+            ]
+        ]
+    ],
+
     'testMerchantApplyRestrictionSettingsSuccess' => [
         'request'  => [
             'url'     => '/merchant/restrict',

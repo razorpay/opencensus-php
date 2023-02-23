@@ -51,6 +51,12 @@ class Constants
         'L2_agreement'
     ];
 
+    const VALID_LEGAL_DOC_BANKING_ORG = [
+        'L2_Terms & Conditions',
+        'L2_Privacy Policy',
+        'L2_Service Agreement',
+    ];
+
     const DEFAULT_LAST_CRON_SUB_DAYS = 30;
 
     const WEBSITE      = 'website';

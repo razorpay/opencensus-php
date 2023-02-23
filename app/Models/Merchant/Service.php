@@ -31,6 +31,7 @@ use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Merchant\Consent\Constants as ConsentConstant;
 use RZP\Models\Merchant\BusinessDetail\Constants as BusinessDetailConstants;
 use RZP\Models\Merchant\Document\Entity as DocumentEntity;
 use RZP\Models\User\Core as UserCore;
@@ -3169,6 +3170,30 @@ class Service extends Base\Service
         $org[Org\Entity::PRIMARY_HOST_NAME] = $merchant->org->getPrimaryHostName();
 
         return $org;
+    }
+
+    /**
+     * Checks conditions for showing T&C popup to the merchant
+     * @return array
+     */
+    public function getTermsAndConditionPopupStatus(): array
+    {
+        if($this->merchant->org->isFeatureEnabled(Feature\Constants::ENABLE_TC_DASHBOARD) === false)
+        {
+            return ['show_tnc_popup' => false ];
+        }
+
+        if($this->merchant->isFeatureEnabled(Feature\Constants::DISABLE_TC_DASHBOARD) === true)
+        {
+            return ['show_tnc_popup' => false ];
+        }
+
+        if((new Detail\Service())->checkIfConsentsPresent($this->merchant->getId(), ConsentConstant::VALID_LEGAL_DOC_BANKING_ORG) === true)
+        {
+            return ['show_tnc_popup' => false ];
+        }
+
+        return ['show_tnc_popup' => true];
     }
 
     public function setPaymentBanks($id, $input)
