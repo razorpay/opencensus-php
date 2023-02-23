@@ -5927,6 +5927,11 @@ class Service extends Base\Service
 
             $paymentIds = [];
 
+            $updateCacheTimestamp = false;
+            $newUpdatedAtCacheTimestamp = Carbon::now()->getTimestamp();
+
+            $cacheKey = 'API_PAYMENTS_DUAL_WRITE_SYNC_LAST_UPDATED_AT';
+
             if (empty($input['payment_ids']) === false)
             {
                 $paymentIds = $input['payment_ids'];
@@ -5949,6 +5954,31 @@ class Service extends Base\Service
 
                 $paymentIds = $this->repo->payment->getDualWriteMismatchPayments($timeLowerLimit, $timeUpperLimit);
             }
+            else if (empty($input['cache_based']) === false)
+            {
+                $cacheBasedUpdateRange = $input['cache_based'];
+
+                $timeLowerLimit  = $cacheBasedUpdateRange['from'];
+                $timeUpperLimit  = $cacheBasedUpdateRange['to'];
+                $timeRangeBucket = $cacheBasedUpdateRange['bucket_interval'];
+
+                $cacheResponse = $this->app['cache']->get($cacheKey);
+
+                if ((empty($cacheResponse) === false) and
+                    ((isset($cacheBasedUpdateRange['reset_cache_timestamp']) === false) or
+                     ($cacheBasedUpdateRange['reset_cache_timestamp'] !== true)))
+                {
+                    $timeLowerLimit = max(intval($cacheResponse), $timeLowerLimit);
+                }
+
+                $timeUpperLimit = min($timeUpperLimit, $timeLowerLimit + 60 * $timeRangeBucket);
+
+                $paymentIds = $this->repo->payment->getDualWriteMismatchPayments($timeLowerLimit, $timeUpperLimit);
+
+                $updateCacheTimestamp = true;
+
+                $newUpdatedAtCacheTimestamp = $timeUpperLimit;
+            }
 
             foreach ($paymentIds as $paymentId)
             {
@@ -5957,6 +5987,11 @@ class Service extends Base\Service
                 $this->repo->saveOrFail($payment);
 
                 $response['synced_payment_ids'][] = $payment->getId();
+            }
+
+            if ($updateCacheTimestamp === true)
+            {
+                $this->app['cache']->put($cacheKey, $newUpdatedAtCacheTimestamp, 86400);
             }
         }
         catch (\Throwable $e)

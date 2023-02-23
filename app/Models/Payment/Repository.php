@@ -3734,7 +3734,7 @@ EOT;
                     AS agg_payments WHERE cnt > 1;",
                     $from, $to, $from, $to);
 
-        $payments = DB::connection($this->getSlaveConnection())->select(DB::RAW($query));
+        $payments = DB::connection($this->getPaymentFetchReplicaConnection())->select(DB::RAW($query));
 
         $paymentIds = [];
 

@@ -320,13 +320,18 @@ class Validator extends Base\Validator
         'provider'           => 'sometimes|string'
     ];
 
-    protected static $paymentsDualWriteSyncRules = [
-        'payment_ids'                => 'sometimes|sequential_array|max:1000',
-        'payment_ids.*'              => 'sometimes|string|size:14',
-        'time_range'                 => 'sometimes|array',
-        'time_range.from'            => 'sometimes|integer',
-        'time_range.to'              => 'sometimes|integer',
-        'bucket_interval'            => 'sometimes|integer',
+    protected static array $paymentsDualWriteSyncRules = [
+        'payment_ids'                       => 'sometimes|sequential_array|max:1000',
+        'payment_ids.*'                     => 'sometimes|string|size:14',
+        'time_range'                        => 'sometimes|array',
+        'time_range.from'                   => 'sometimes|integer',
+        'time_range.to'                     => 'sometimes|integer',
+        'bucket_interval'                   => 'sometimes|integer',
+        'cache_based'                       => 'sometimes|array',
+        'cache_based.from'                  => 'sometimes|integer',
+        'cache_based.to'                    => 'sometimes|integer',
+        'cache_based.bucket_interval'       => 'sometimes|integer',
+        'cache_based.reset_cache_timestamp' => 'sometimes|boolean',
     ];
 
     protected static $pspAmountLimit = [
