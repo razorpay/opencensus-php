@@ -4,6 +4,8 @@
 namespace RZP\Http\Controllers;
 
 use Request;
+use RZP\Constants\Mode;
+use RZP\Exception\BadRequestException;
 use RZP\Http\Request\Requests;
 use ApiResponse;
 use RZP\Exception;
@@ -53,7 +55,7 @@ class GrowthController extends Controller
         return $response;
     }
 
-        public function getTemplateByIdDetails($id = null)
+    public function getTemplateByIdDetails($id = null)
         {
             $response = [];
 
@@ -70,6 +72,82 @@ class GrowthController extends Controller
                 }
             } catch (\Throwable $e) {
                 throw new Exception\ServerErrorException('Error completing the getTemplateByIdDetails request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+            }
+
+            return $response;
+        }
+
+    public function createSubscription()
+    {
+        $parameters = Request::all();
+        $response = [];
+        $merchant = $this->app['basicauth']->getMerchant();
+        $env = $this->app['env'];
+        $mode = $this->app['rzp.mode'];
+
+        if ($env == 'production' && $mode != Mode::LIVE) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_BUNDLE_PRICING_SUBSCRIPTION_SUPPORTED_IN_ONLY_LIVE_MODE);
+        }
+
+        try {
+            if (empty($parameters) === false) {
+                if (empty($merchant) === false) {
+                    $parameters["merchant_id"] = $merchant->getId();
+                }
+                $response = $this->app->growthService->createSubscription($parameters);
+
+                $response = ApiResponse::json($response);
+
+            }
+        } catch (\Throwable $e) {
+            throw new Exception\ServerErrorException('Error completing the createSubscription request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+        }
+
+        return $response;
+    }
+
+    public function getSubscriptionByMid()
+        {
+            $response = [];
+
+            try {
+                $merchant = $this->app['basicauth']->getMerchant();
+                if (empty($merchant) === false) {
+                    $parameters = [
+                        "merchant_id" => $merchant->getId(),
+                        "expands" => ["payment_subscription","pricing_plan"]
+                    ];
+
+                    $response = $this->app->growthService->getSubscriptionByMid($parameters);
+
+                    $response = ApiResponse::json($response);
+
+                }
+            } catch (\Throwable $e) {
+                throw new Exception\ServerErrorException('Error completing the checkSubscriptionByMid request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+            }
+
+            return $response;
+        }
+
+    public function checkSubscriptionByMid()
+        {
+            $response = [];
+
+            try {
+                $merchant = $this->app['basicauth']->getMerchant();
+                if (empty($merchant) === false) {
+                    $parameters = [
+                        "merchant_id" => $merchant->getId(),
+                    ];
+
+                    $response = $this->app->growthService->checkSubscriptionByMid($parameters);
+
+                    $response = ApiResponse::json($response);
+
+                }
+            } catch (\Throwable $e) {
+                throw new Exception\ServerErrorException('Error completing the checkSubscriptionByMid request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
             }
 
             return $response;
@@ -120,6 +198,20 @@ class GrowthController extends Controller
 
         } catch (\Throwable $e) {
             throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
+
+        }
+        return $response;
+    }
+
+    public function sendCsvFile()
+    {
+        try {
+            $parameters = Request::all();
+            $response = $this->app->growthService->sendCsvFile($parameters);
+            $response = ApiResponse::json($response);
+
+        } catch (\Throwable $e) {
+            throw new Exception\ServerErrorException('Error completing the request sendCsvFile', ErrorCode::SERVER_ERROR_GROWTH_FAILURE, null, $e);
 
         }
         return $response;

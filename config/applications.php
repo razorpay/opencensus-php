@@ -768,6 +768,10 @@ return [
         'skip_jwt_passport'=> env('SKIP_PASSPORT_AUTH', false),
     ],
 
+    'growth_internal' => [
+        'secret'   => env('GROWTH_INTERNAL_SECRET'),
+    ],
+
     'partnerships'   => [
         'mock'              => env('PARTNERSHIPS_MOCK', false),
         'url'               => [

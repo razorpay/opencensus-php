@@ -2795,12 +2795,20 @@ class Route
 
         // Growth service
         'growth_get_asset_details'                 => ['post',     'growth/assets',                            'GrowthController@getAssetDetails'                                  ],
+        'growth_create_pricing_subscription'       => ['post',     'pricing/merchant/subscriptions',             'GrowthController@createSubscription'                                  ],
+        'growth_get_pricing_subscription_by_mid'   => ['get',      'pricing/merchant/subscriptions',             'GrowthController@getSubscriptionByMid'                                  ],
+        'growth_check_pricing_subscription'        => ['get',      'pricing/merchant/subscriptions/exists',      'GrowthController@checkSubscriptionByMid'                                  ],
         'growth_get_template_by_id'                => ['get',      'growth/template/{id}',                     'GrowthController@getTemplateByIdDetails'                           ],
         'growth_get_public_asset_details'          => ['post',     'growth/public/assets',                     'GrowthController@getPublicAssetDetails'                            ],
         'growth_downtime_for_x'                    => ['post',     'growth/assets/enable_downtime_for_x',      'GrowthController@enableDowntimeNotificationForXDashboard'          ],
         'growth_filter_and_sync_cron'              => ['post',     'growth/assets/sync',                       'GrowthController@filterAndSyncEventsFromPinot'                     ],
+        'growth_slack_csv_cron'                   => ['post',     'pricing/subscription/sync',                       'GrowthController@sendCsvFile'                     ],
         'growth_admin'                             => ['post',     'growth/admin/{path?}',                     'GrowthController@handleAdminRequests'                              ],
         'growth_upload_asset'                      => ['post',     'growth/assets/upload',                     'GrowthController@uploadAssets'                                     ],
+
+        // growth service internal routes
+        'growth_pricing_bundle_email'              => ['post',     'growth/pricing_bundle/send_email',         'GrowthInternalController@sendPricingBundleEmail'                         ],
+
         // Account API routes
         'beta_account_create'                      => ['post',     'beta/accounts',                                  'AccountController@createLinkedAccount'                             ],
         'beta_account_fetch'                       => ['get',      'beta/accounts/{id}',                             'AccountController@get'                                             ],
@@ -4874,6 +4882,9 @@ class Route
         'account_service_handle_update_event',
         'merchant_card_networks_onboarding',
 
+        // growth routes
+        'growth_pricing_bundle_email',
+
 
         // cron for generating merchant report
         'merchant_report',
@@ -5599,6 +5610,7 @@ class Route
 
         // growth service cron
         'growth_filter_and_sync_cron',
+        'growth_slack_csv_cron',
 
         'payment_create_upi_unexpected',
 
@@ -6681,6 +6693,9 @@ class Route
         //Growth
         'growth_get_asset_details',
         'growth_get_template_by_id',
+        'growth_create_pricing_subscription',
+        'growth_get_pricing_subscription_by_mid',
+        'growth_check_pricing_subscription',
 
         //payout status reason mapping
         'payout_status_to_reason_mapping',
@@ -9677,6 +9692,9 @@ class Route
         'bvs_service_dashboard'                        => '*',
         'merchant_razorx_bulk_evaluate'                => '*',
         'growth_get_asset_details'                     => '*',
+        'growth_create_pricing_subscription'           => '*',
+        'growth_get_pricing_subscription_by_mid'       => '*',
+        'growth_check_pricing_subscription'            => '*',
         'growth_get_template_by_id'                    => '*',
         'merchant_razorx_evaluate'                     => '*',
         'splitz_evaluate_bulk_proxy'                   => '*',
@@ -10267,6 +10285,9 @@ class Route
             'corporate_card_list',
             'growth_get_asset_details',
             'growth_get_template_by_id',
+            'growth_create_pricing_subscription',
+            'growth_get_pricing_subscription_by_mid',
+            'growth_check_pricing_subscription',
             'merchant_activation_otp_send',
             'merchant_coupons_apply',
             'store_create',
@@ -13772,6 +13793,10 @@ class Route
             // Growth Assets
             'growth_get_asset_details',
             'growth_get_template_by_id',
+            // Growth pricing routes
+            'growth_create_pricing_subscription',
+            'growth_get_pricing_subscription_by_mid',
+            'growth_check_pricing_subscription',
 
             // BVS admin dashboard proxy routes
             'bvs_admin_proxy',
@@ -14210,6 +14235,7 @@ class Route
             'bank_transfer_process_test_x_demo_cron',
             'payouts_batch_create_x_demo_cron',
             'growth_filter_and_sync_cron',
+            'growth_slack_csv_cron',
             'payments_card_es_sync_cron',
             'initiate_payouts_consistency_check',
             'developer_console_maintenance',
@@ -14972,6 +14998,10 @@ class Route
 
         'card_vault' => [
             'token_status'
+        ],
+
+        'growth_internal' => [
+            'growth_pricing_bundle_email',
         ],
 
         'affordability' => [

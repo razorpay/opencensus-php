@@ -1105,6 +1105,7 @@ class PublicErrorDescription
     const SERVER_ERROR_WORKFLOW_STATE_INVALID_ID                                = 'Invalid workflow state Id';
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                       = 'Payout mode is invalid';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                 = 'Mode is unsupported';
+    const BAD_REQUEST_BUNDLE_PRICING_SUBSCRIPTION_SUPPORTED_IN_ONLY_LIVE_MODE   = 'Bundle pricing subscription valid only in Live mode';
     const BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_INVITE_EXCEEDED                   = 'Daily limit for submerchant add exceeded';
     const BAD_REQUEST_DAILY_LIMIT_SUBMERCHANT_ONBOARDING_EXCEEDED               = 'Daily limit for submerchant addition exceeded';
     const BAD_REQUEST_M2P_MERCHANT_BLACKLISTED_FOR_PRODUCT                      = 'Payout mode CARD is disabled for your account';

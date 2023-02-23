@@ -490,6 +490,7 @@ class ErrorCode
     const BAD_REQUEST_PAYOUT_INVALID_MODE                                           = 'BAD_REQUEST_PAYOUT_INVALID_MODE';
     const BAD_REQUEST_PAYOUT_INVALID_SOURCE_TYPE                                    = 'BAD_REQUEST_PAYOUT_INVALID_SOURCE_TYPE';
     const BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED                                     = 'BAD_REQUEST_PAYOUT_MODE_NOT_SUPPORTED';
+    const BAD_REQUEST_BUNDLE_PRICING_SUBSCRIPTION_SUPPORTED_IN_ONLY_LIVE_MODE       = 'BAD_REQUEST_BUNDLE_PRICING_SUBSCRIPTION_SUPPORTED_IN_ONLY_LIVE_MODE';
     const BAD_REQUEST_DECRYPTION_FAILED                                             = 'BAD_REQUEST_DECRYPTION_FAILED';
     const BAD_REQUEST_SIGNING_KEY_EXPIRED                                           = 'BAD_REQUEST_SIGNING_KEY_EXPIRED';
     const BAD_REQUEST_MESSAGE_EXPIRED                                               = 'BAD_REQUEST_MESSAGE_EXPIRED';

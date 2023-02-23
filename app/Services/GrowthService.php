@@ -20,6 +20,9 @@ class GrowthService extends Base\Service
     const CONTENT_TYPE_JSON = 'application/json';
 
     const GET_ASSET_URL = 'twirp/rzp.growth.asset.v1.AssetAPI/Get';
+    const CREATE_SUBSCRIPTION_URL = '/twirp/rzp.pricing_bundle.subscription.v1.SubscriptionAPI/Create';
+    const GET_SUBSCRIPTION_URL = '/twirp/rzp.pricing_bundle.subscription.v1.SubscriptionAPI/GetByMerchantID';
+    const CHECK_SUBSCRIPTION_URL = '/twirp/rzp.pricing_bundle.subscription.v1.SubscriptionAPI/Exists';
     const GET_TEMPLATE_BY_ID_URL = 'twirp/rzp.growth.template.v1.TemplateAPI/Get';
     const GET_PUBLIC_ASSET_URL = 'twirp/rzp.growth.asset.v1.AssetAPI/GetPublic';
 
@@ -30,6 +33,8 @@ class GrowthService extends Base\Service
     const SUBCAMPAIGN_ACTION_URL = 'twirp/rzp.growth.subcampaign.v1.SubCampaignAPI/Action';
 
     const FILTER_AND_SYNC_URL = '/twirp/rzp.growth.counting.v1.CountingAPI/FilterAndSync';
+
+    const SLACK_CSV_SYNC_URL = '/twirp/rzp.pricing_bundle.subscription.v1.SubscriptionAPI/MerchantListToCSV';
 
     const ACTIVATED = 'ACTIVATED';
 
@@ -101,6 +106,21 @@ class GrowthService extends Base\Service
         return $this->sendRequest($parameters, self::GET_ASSET_URL, Requests::POST);
     }
 
+    public function createSubscription($parameters)
+    {
+        return $this->sendRequest($parameters, self::CREATE_SUBSCRIPTION_URL, Requests::POST);
+    }
+
+    public function getSubscriptionByMid($parameters)
+    {
+        return $this->sendRequest($parameters, self::GET_SUBSCRIPTION_URL, Requests::POST);
+    }
+
+    public function checkSubscriptionByMid($parameters)
+    {
+        return $this->sendRequest($parameters, self::CHECK_SUBSCRIPTION_URL, Requests::POST);
+    }
+
     public function getTemplateByIdDetails($parameters)
     {
 
@@ -146,6 +166,11 @@ class GrowthService extends Base\Service
     public function filterAndSyncEventsFromPinot($parameters)
     {
         return $this->sendRequest($parameters, self::FILTER_AND_SYNC_URL, Requests::POST);
+    }
+
+    public function sendCsvFile($parameters)
+    {
+        return $this->sendRequest($parameters, self::SLACK_CSV_SYNC_URL, Requests::POST);
     }
 
     public function uploadAssets($parameters)
