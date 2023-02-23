@@ -146,7 +146,13 @@ class Service extends Base\Service
 
     public function getInvoiceDetailsForCheckout(string $invoiceId): array
     {
-        return $this->core->getFormattedInvoiceData($invoiceId, $this->merchant);
+        $data = $this->core->getFormattedInvoiceData($invoiceId, $this->merchant);
+
+        if (isset($data['customer']['notes'])) {
+            $data['customer']['notes'] = (object) ($data['customer']['notes'] ?? []);
+        }
+
+        return $data;
     }
 
     public function checkForInvoiceTypeForPlServiceForwarding(string $id, array $input): bool

@@ -2183,6 +2183,22 @@ class Service extends Base\Service
         ];
     }
 
+    public function getMerchantPolicyDetails(): object
+    {
+        $policyData = $this->checkAndFillMerchantPolicyPage($this->merchant);
+
+        $data = [];
+
+        if (!empty($policyData)) {
+            $data['url'] = $policyData['url'];
+            $data['display_name'] = $policyData['display_name'];
+        }
+
+        // Type-casting to object to ensure empty JSON object `{}` is sent
+        // instead-of `[]` when $data is empty.
+        return (object) $data;
+    }
+
     // if merchant has any published pages send that information to checkout preferences
     // if merchant is activated save to redis and fetch from redis
     public function checkAndFillMerchantPolicyPage(MerchantEntity $merchant)

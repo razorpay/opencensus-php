@@ -28,6 +28,15 @@ class ContactController extends Controller
         return ApiResponse::json($contact);
     }
 
+    public function getContactDetailsForCheckout(string $id)
+    {
+        $input = Request::all();
+
+        $contact = $this->service()->getContactDetailsForCheckout($id, $input);
+
+        return ApiResponse::json($contact);
+    }
+
     public function getTypes()
     {
         $data = $this->service()->getTypes();

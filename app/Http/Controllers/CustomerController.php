@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Request;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
+use RZP\Models\Customer\Truecaller\AuthRequest\Service as TruecallerService;
 use RZP\Models\Customer\Service;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BaseException;
@@ -549,6 +550,13 @@ class CustomerController extends Controller
         $input = Request::all();
 
         $data = $this->service()->verifyOneCCTrueCallerAuthRequest($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function createTruecallerAuthRequestInternal()
+    {
+        $data = (new TruecallerService())->createTruecallerAuthRequestInternal();
 
         return ApiResponse::json($data);
     }

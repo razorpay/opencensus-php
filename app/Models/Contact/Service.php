@@ -99,6 +99,29 @@ class Service extends Base\Service
         return $contact->toArrayPublic();
     }
 
+    public function getContactDetailsForCheckout(string $id, $input): array
+    {
+        $contact = $this->fetch($id, $input);
+
+        // send empty object in response instead of empty array
+        $contact['notes'] = (object) ($contact['notes'] ?? []);
+
+        if (isset($contact['vendor'])) {
+            $contact['vendor'] = (object) ($contact['vendor'] ?? []);
+        }
+
+        if (isset($contact['fund_accounts'])) {
+            foreach ($contact['fund_accounts'] as $i => $fundAccount) {
+                if (isset($fundAccount['bank_account'])) {
+                    $contact['fund_accounts'][$i]['bank_account']['notes'] =
+                        (object)($fundAccount['bank_account']['notes'] ?? []);
+                }
+            }
+        }
+
+        return $contact;
+    }
+
     public function fetchMultiple(array $input): array
     {
 

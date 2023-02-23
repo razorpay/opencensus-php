@@ -815,6 +815,7 @@ class Route
         'merchant_website_section_page_load'       => ['get',      'merchant/policy/{section_name}',                'MerchantController@getMerchantWebsiteSectionPage'                                ],
         'public_merchant_website_section_page_load'=> ['get',      'merchant/policy/{section_name}/{id}',           'MerchantController@getPublicWebsiteSectionPage'                                ],
         'public_merchant_website_section_pages'    => ['get',      'merchant/policies/{id}',                          'MerchantController@getPublicWebsiteSectionPageLinks'                                ],
+        'merchant_policy_details'                  => ['get',      'merchant/policy_details',                       'MerchantController@getMerchantPolicyDetails'                       ],
 
         'admin_website_section_action'             => ['post',     'merchant/{id}/website/section/action',          'MerchantController@postAdminSectionAction'                                ],
         'admin_website_section_save'               => ['post',     'merchant/{id}/website/section',                 'MerchantController@saveAdminWebsiteSection'                                ],
@@ -1173,6 +1174,7 @@ class Route
         'customer_truecaller_verify'               => ['post',     'customers/truecaller/verify',                    'CustomerController@verifyTruecallerAuthRequest'                    ],
         '1cc_customer_truecaller_verify'           => ['post',     '1cc/customers/truecaller/verify',                'CustomerController@verifyOneCCTruecallerAuthRequest'                    ],
         'customer_truecaller_callback'             => ['post',     'customers/truecaller/callback',                  'CustomerController@handleTruecallerCallback'                                      ],
+        'customer_truecaller_auth_internal'        => ['post',     'internal/customers/truecaller/auth',             'CustomerController@createTruecallerAuthRequestInternal'            ],
         'get_or_create_customer_internal'          => ['post',     'customers/create',                               'CustomerController@getOrCreateLocalCustomerInternal'               ],
         'customer_update'                          => ['put',      'customers/{id}',                                 'CustomerController@updateCustomer'                                 ],
         'customer_fetch_by_id'                     => ['get',      'customers/{id}',                                 'CustomerController@getCustomer'                                    ],
@@ -3054,6 +3056,7 @@ class Route
         // Banking Contact Routes
         'contact_get'                              => ['get',      'contacts/{id}',                                  'ContactController@get'                                             ],
         'contact_get_internal'                     => ['get',      'contacts_internal/{id}',                         'ContactController@get'                                             ],
+        'contact_get_checkout'                     => ['get',      'checkout/contacts/{id}',                         'ContactController@getContactDetailsForCheckout'                    ],
         'contact_list_internal'                    => ['get',      'contacts_internal',                              'ContactController@list'                                            ],
         'contact_update_internal'                  => ['post',     'contacts_internal/{id}',                         'ContactController@update'                                          ],
         'contact_list'                             => ['get',      'contacts',                                       'ContactController@list'                                            ],
@@ -6729,6 +6732,9 @@ class Route
         // Checkout Service Routes
         'customer_fetch_tokens_internal',
         'invoice_fetch_for_checkout_internal',
+        'contact_get_checkout',
+        'merchant_policy_details',
+        'customer_truecaller_auth_internal',
         'checkout_personalisation_internal',
         'customer_fetch_internal_for_checkout',
         'fetch_payment_config_checkout_internal',
@@ -15013,10 +15019,13 @@ class Route
         ],
 
         'checkout_service' => [
+            'contact_get_checkout',
+            'merchant_policy_details',
             'fetch_payment_config_checkout_internal',
             'payments_downtime',
             'feature_get_all_internal',
             'internal_1cc_configs_get',
+            'customer_truecaller_auth_internal',
             'fetch_trusted_badge_status',
             'invoice_fetch_for_checkout_internal',
             'merchant_fetch_config_for_checkout_internal',

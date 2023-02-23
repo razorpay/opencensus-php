@@ -2874,6 +2874,13 @@ class MerchantController extends Controller
         return $response;
     }
 
+    public function getMerchantPolicyDetails()
+    {
+        $response = $this->service(E::MERCHANT_WEBSITE)->getMerchantPolicyDetails();
+
+        return ApiResponse::json($response);
+    }
+
     protected function addCorsHeaders($response, string $methods): void
     {
         $response->headers->set('Access-Control-Allow-Origin', '*');

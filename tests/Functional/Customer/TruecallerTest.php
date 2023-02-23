@@ -188,6 +188,16 @@ class TruecallerTest extends TestCase
         $this->verifyTruecallerAuthRequest($content);
     }
 
+    public function testCreateTruecallerAuthRequestInternal(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotNull($response['id']);
+        $this->assertNotNull($response['created_at']);
+    }
+
 
     // helper fucntions
     protected function sendCallback(array $content)

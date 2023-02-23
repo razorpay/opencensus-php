@@ -88,4 +88,20 @@ return [
             ],
         ]
     ],
+
+    'testCreateTruecallerAuthRequestInternal' => [
+        'request' => [
+            'url'       => '/internal/customers/truecaller/auth',
+            'method'    => 'post',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'active',
+                'truecaller_status' => null,
+                'context' => '10000000000000',
+                'service' => 'checkout_service',
+            ],
+        ]
+    ]
 ];
