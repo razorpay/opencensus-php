@@ -16,6 +16,9 @@ class Constants
     const EligibilityEnabled = 'eligibility_enabled';
     const ShowEmailOnCheckout = 'show_email_on_checkout';
     const EmailOptionalOnCheckout = 'email_optional_oncheckout';
+    const CheckoutUpiNumberDisabled = 'checkout_upi_number_disabled';
+    const CheckoutUpiNumberInUpiSectionDisabled = 'checkout_upi_number_in_upi_section_disabled';
+    const CheckoutUpiNumberInPreferredSectionDisabled = 'checkout_upi_number_in_preferred_section_disabled';
     const AutoCommissionInvoiceDisabled = 'auto_invoice_generation_disabled';
     const AffordabilityWidgetSet = 'affordability_widget_set';
     const EnableMerchantExpiryForPP = 'payment_page_no_expiry_enabled';
@@ -69,6 +72,9 @@ class Constants
         self::EligibilityEnabled => "rzp/pg/merchant/affordability/EligibilityFeatures",
         self::ShowEmailOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
         self::EmailOptionalOnCheckout => "rzp/pg/merchant/checkout/EmailFieldCustomizationFeatures",
+        self::CheckoutUpiNumberDisabled => "rzp/pg/merchant/checkout/Features",
+        self::CheckoutUpiNumberInUpiSectionDisabled => "rzp/pg/merchant/checkout/Features",
+        self::CheckoutUpiNumberInPreferredSectionDisabled => "rzp/pg/merchant/checkout/Features",
         self::AutoCommissionInvoiceDisabled => "rzp/platform/partner/commission/Features",
         self::AffordabilityWidgetSet => "rzp/pg/merchant/affordability/Widget",
         self::EnableMerchantExpiryForPP => "rzp/nocode/merchant/paymentpage/Features",
@@ -124,6 +130,9 @@ class Constants
         self::EligibilityEnabled => self::EligibilityEnabled,
         self::ShowEmailOnCheckout => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout => self::EmailOptionalOnCheckout,
+        APIFeaturesConstants::DISABLE_UPI_NUM_CHECKOUT => self::CheckoutUpiNumberDisabled,
+        APIFeaturesConstants::DISABLE_UPI_NUM_ON_L0 => self::CheckoutUpiNumberInPreferredSectionDisabled,
+        APIFeaturesConstants::DISABLE_UPI_NUM_ON_L1 => self::CheckoutUpiNumberInUpiSectionDisabled,
         APIFeaturesConstants::AUTO_COMM_INV_DISABLED => self::AutoCommissionInvoiceDisabled,
         self::AffordabilityWidgetSet => self::AffordabilityWidgetSet,
         APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PL => self::EnableMerchantExpiryForPL,
@@ -179,6 +188,9 @@ class Constants
         self::EligibilityEnabled => self::EligibilityEnabled,
         self::ShowEmailOnCheckout => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout => self::EmailOptionalOnCheckout,
+        self::CheckoutUpiNumberDisabled => APIFeaturesConstants::DISABLE_UPI_NUM_CHECKOUT,
+        self::CheckoutUpiNumberInUpiSectionDisabled => APIFeaturesConstants::DISABLE_UPI_NUM_ON_L1,
+        self::CheckoutUpiNumberInPreferredSectionDisabled => APIFeaturesConstants::DISABLE_UPI_NUM_ON_L0,
         self::AffordabilityWidgetSet => self::AffordabilityWidgetSet,
         self::ReceiptUniqueEnabled => APIFeaturesConstants::ORDER_RECEIPT_UNIQUE,
         self::CartAmountCheckEnabled => APIFeaturesConstants::CART_API_AMOUNT_CHECK,

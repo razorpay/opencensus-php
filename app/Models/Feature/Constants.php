@@ -1784,6 +1784,10 @@ class Constants
      */
     const PUSH_PROVISIONING_LIVE = 'push_provisioning_live';
 
+    const DISABLE_UPI_NUM_CHECKOUT = 'disable_upi_num_checkout'; 
+    const DISABLE_UPI_NUM_ON_L0 = 'disable_upi_num_on_l0';
+    const DISABLE_UPI_NUM_ON_L1 = 'disable_upi_num_on_l1';
+
     public static $recurringFeatures = [
         self::CHARGE_AT_WILL,
         self::SUBSCRIPTIONS,
@@ -1830,6 +1834,9 @@ class Constants
         self::ONE_CC_DISABLE_EMAIL_COOKIE,
         DcsConstants::EmailOptionalOnCheckout,
         DcsConstants::ShowEmailOnCheckout,
+        self::DISABLE_UPI_NUM_CHECKOUT,
+        self::DISABLE_UPI_NUM_ON_L0,
+        self::DISABLE_UPI_NUM_ON_L1,
     ];
 
     const ONE_CC_FEATURES = [
@@ -2427,6 +2434,9 @@ class Constants
         DcsConstants::EligibilityEnabled => true,
         DcsConstants::EmailOptionalOnCheckout => true,
         DcsConstants::ShowEmailOnCheckout => true,
+        self::DISABLE_UPI_NUM_CHECKOUT => true,
+        self::DISABLE_UPI_NUM_ON_L0 => true,
+        self::DISABLE_UPI_NUM_ON_L1 => true,
         self::AUTO_COMM_INV_DISABLED          => true,
         self::ADMIN_LEAD_PARTNER      => true,
         self::ROUTE_PARTNERSHIPS => true,
@@ -3386,6 +3396,21 @@ class Constants
         DcsConstants::EmailOptionalOnCheckout => [
             'feature'       => DcsConstants::EmailOptionalOnCheckout,
             'display_name'  => 'Email optional on std/hosted checkout',
+            'documentation' => '',
+        ],
+        self::DISABLE_UPI_NUM_CHECKOUT => [
+            'feature'       => self::DISABLE_UPI_NUM_CHECKOUT,
+            'display_name'  => 'Disable UPI Number feature on std checkout',
+            'documentation' => '',
+        ],
+        self::DISABLE_UPI_NUM_ON_L0 => [
+            'feature'       => self::DISABLE_UPI_NUM_ON_L0,
+            'display_name'  => 'Disable UPI Number feature in Preferred section (L0 screen) on std checkout',
+            'documentation' => '',
+        ],
+        self::DISABLE_UPI_NUM_ON_L1 => [
+            'feature'       => self::DISABLE_UPI_NUM_ON_L1,
+            'display_name'  => 'Disable UPI Number feature in UPI section (L1 screen) on std checkout',
             'documentation' => '',
         ],
         self::AUTO_COMM_INV_DISABLED => [
