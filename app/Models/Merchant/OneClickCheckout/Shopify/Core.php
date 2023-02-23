@@ -797,9 +797,21 @@ class Core extends Base\Core
                 {
                     $this->updateShopifyGCTransaction($order['order']['id'], $promotion);
                 }
+                else
+                {
+                    $couponCode = $promotion['code'];
+                }
             }
 
             $this->updateShopifyCustomer($client, $order);
+
+            $isSEwithCouponApplied = $body['script_with_coupon_applied'];
+
+            // This action is need to handle the orders which is placed with both SE discount and customer specific coupons
+            if($isSEwithCouponApplied === true)
+            {
+                $this->disableUsedCoupon($client, $couponCode, $rzpOrder['id']);
+            }
 
             $this->trace->info(
                 TraceCode::SHOPIFY_1CC_PLACE_ORDER_RETRY_RES,
@@ -858,6 +870,8 @@ class Core extends Base\Core
         $client = $this->getShopifyClientByMerchant();
 
         $body = $this->getCreateOrderPayload($rzpOrder, $rzpPayment);
+
+        $isSEwithCouponApplied = $body['script_with_coupon_applied'];
 
         try
         {
@@ -928,15 +942,27 @@ class Core extends Base\Core
 
         $promotions = $rzpOrder['promotions'];
 
+        $couponCode = null;
+
         foreach($promotions as $promotion)
         {
             if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
             {
                 $this->updateShopifyGCTransaction($order['order']['id'], $promotion);
             }
+            else
+            {
+                $couponCode = $promotion['code'];
+            }
         }
         
         $this->updateShopifyCustomer($client, $order);
+
+        // This action is need to handle the orders which is placed with both SE discount and customer specific coupons
+        if($isSEwithCouponApplied === true)
+        {
+            $this->disableUsedCoupon($client, $couponCode, $orderId);
+        }
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_PLACE_ORDER_RES,
@@ -949,6 +975,119 @@ class Core extends Base\Core
         );
 
         return $order;
+    }
+
+    protected function disableUsedCoupon($client, $couponCode, $orderId)
+    {
+        $couponDetail = $this->fetchCouponCodeDetail($client, $couponCode, $orderId);
+
+        if (isset($couponDetail['discount_code']) === true)
+        {
+            $couponPriceRuleId = $couponDetail['discount_code']['price_rule_id'];
+
+            $couponCodeId = Constants::GID_DISCOUNT.$couponPriceRuleId;
+
+            $this->disableCoupon($client, $couponCodeId, $orderId);
+        }
+
+        return;
+    }
+
+    protected function fetchCouponCodeDetail($client, $couponCode, $orderId)
+    {
+        $start = millitime();
+
+        try
+        {
+          $this->trace->info(
+            TraceCode::SHOPIFY_1CC_COUPON_CODE_FETCH,
+            [
+              'type' => 'coupon_fetch_details',
+              'body' => $couponCode,
+              'order_id' => $orderId,
+            ]
+          );
+
+          $coupon = $client->sendRestApiRequest(
+              null,
+              Client::GET,
+              '/discount_codes/lookup.json?code=' . strval($couponCode)
+          );
+
+          return json_decode($coupon, true);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_FETCH_COUPON_ERROR,
+                [
+                    'type'     => 'coupon_fetch_details_failed',
+                    'error'    => $e->getMessage(),
+                    'order_id' => $orderId,
+                    'time'     => millitime() - $start,
+                ]
+            );
+
+            return;
+        }
+    }
+
+    protected function disableCoupon($client, $couponCodeId, $orderId)
+    {
+        $mutation = (new Mutations)->disableCouponMutation();
+
+        $graphqlQuery = [
+            'query'     => $mutation,
+            'variables' => [
+                'id' => $couponCodeId
+            ],
+        ];
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_DISABLE_COUPON,
+            [
+                'id'       => $couponCodeId,
+                'order_id' => $orderId,
+            ]
+        );
+
+        $start = millitime();
+
+        try
+        {
+            $response = $client->sendGraphqlRequest(json_encode($graphqlQuery));
+        }
+        catch (\Exception $e)
+        {
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_DISABLE_COUPON_ERROR_COUNT,['error_code' => TraceCode::SHOPIFY_1CC_DISABLE_COUPON_API_ERROR]);
+
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_DISABLE_COUPON_API_ERROR,
+                [
+                    'query'       => $graphqlQuery,
+                    'order_id'    => $orderId,
+                    'error'       => $e->getMessage()
+                ]
+            );
+
+            return;
+        }
+
+        $this->monitoring->traceResponseTime(Metric::SHOPIFY_DISABLE_COUPON_CALL_TIME, $start, []);
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_DISABLE_COUPON_RES,
+            [
+                'type'     => 'disable_coupon',
+                'response' => $response,
+                'order_id' => $orderId,
+                'time'     => millitime() - $start
+            ]
+        );
+
+        $this->monitoring->addTraceCount(Metric::SHOPIFY_DISABLE_COUPON_SUCCESS_COUNT, []);
+
+        return;
     }
 
     protected function updateShopifyCustomer($client, $order)
@@ -1153,6 +1292,7 @@ class Core extends Base\Core
         $discountAmountPaise = 0;
         $couponAmount = 0;
         $giftCardAmount = 0;
+        $promotionCouponAmount = 0;
         $couponCode = null;
 
         if (empty($rzpOrder['promotions']) === false)
@@ -1175,11 +1315,14 @@ class Core extends Base\Core
                     $couponCode = $value['code'];
 
                     $couponAmount = $value['value'];
+
+                    $promotionCouponAmount = $value['value'];
                 }
             }
         }
 
         $scriptDiscountTitle = null;
+        $isSEwithCouponApplied = false;
         
         // Add script discount as coupon
         if (isset($rzpOrder['notes']['Script_Discount_Amount']) && $rzpOrder['notes']['Script_Discount_Amount'] > 0)
@@ -1193,10 +1336,20 @@ class Core extends Base\Core
                 $scriptDiscountTitle = "Discount";
             }
 
-            $couponCode = $scriptDiscountTitle;
-
-            $couponAmount = floatval($rzpOrder['notes']['Script_Discount_Amount'])*100;
+            if($couponCode != null && $couponAmount>0)
+            {
+                $couponCode   = $couponCode. '+' .$scriptDiscountTitle;
+                $couponAmount = (floatval($rzpOrder['notes']['Script_Discount_Amount'])*100) + $couponAmount;
+                $isSEwithCouponApplied = true;
+            }
+            else
+            {
+                $couponCode   = $scriptDiscountTitle;
+                $couponAmount = floatval($rzpOrder['notes']['Script_Discount_Amount'])*100;
+            }
         }
+
+        $body['script_with_coupon_applied'] = $isSEwithCouponApplied;
 
         $codFeeApplied = 0;
 
@@ -1209,8 +1362,16 @@ class Core extends Base\Core
 
         if(isset($scriptDiscountTitle))
         {
-            $rzpOffers = $discountAmountPaise;
-            $discountAmountPaise = $couponAmount + $rzpOffers;
+            if($isSEwithCouponApplied == true)
+            {
+                $rzpOffers = $discountAmountPaise - $promotionCouponAmount;
+                $discountAmountPaise = $couponAmount + $rzpOffers;
+            }
+            else
+            {
+                $rzpOffers = $discountAmountPaise;
+                $discountAmountPaise = $couponAmount + $rzpOffers;
+            }
         }
         else
         {
@@ -1592,7 +1753,7 @@ class Core extends Base\Core
                 }
 
                 $lineItems[] = [
-                    'variant_id' => str_replace('gid://shopify/ProductVariant/', '', $item['node']['variant']['id']),
+                    'variant_id' => str_replace(Constants::GID_PRODUCT_VARIANT, '', $item['node']['variant']['id']),
                     'quantity'   => $item['node']['quantity'],
                     'properties' => $properties
                   ];

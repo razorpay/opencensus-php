@@ -217,6 +217,10 @@ final class Metric
     const SHOPIFY_REMOVE_COUPONS_REQUEST_COUNT          = 'shopify_remove_coupons_request_count';
     const SHOPIFY_REMOVE_COUPONS_CALL_TIME              = 'shopify_remove_coupons_call_time';
 
+    const SHOPIFY_DISABLE_COUPON_ERROR_COUNT            = 'shopify_disable_coupon_error_count';
+    const SHOPIFY_DISABLE_COUPON_CALL_TIME              = 'shopify_disable_coupon_call_time';
+    const SHOPIFY_DISABLE_COUPON_SUCCESS_COUNT          = 'shopify_disable_coupon_success_count';
+
     const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_TIME_MILLIS = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_duration_millis';
     const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_FAILURE_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_failure_count';
     const MERCHANT_EXTERNAL_SHIPPING_INFO_CALL_COUNT = self::MERCHANT_EXTERNAL_PREFIX . 'shipping_info_call_count';

@@ -17,6 +17,7 @@ class Constants
     const GID_PRODUCT_VARIANT = 'gid://shopify/ProductVariant/';
     const GID_CHECKOUT = 'gid://shopify/Checkout/';
     const GID_ORDER = 'gid://shopify/Order/';
+    const GID_DISCOUNT = 'gid://shopify/DiscountCodeNode/';
     const MY_SHOPIFY = '.myshopify.com';
     const SHOPIFY_ORDER_ID = 'shopify_order_id';
     const TAG_HOLD = 'hold';

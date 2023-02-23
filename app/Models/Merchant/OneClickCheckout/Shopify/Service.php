@@ -259,7 +259,7 @@ class Service extends Base\Service
             $checkout,
             $cart,
             $preferenceParams,
-            $customerInfo,
+            $customerInfo
         );
 
         return [
@@ -295,7 +295,7 @@ class Service extends Base\Service
         array $checkout,
         array $cart,
         array  $preferenceParams,
-        array $customerInfo,
+        array $customerInfo
     ): array
     {
         $cartId = $cart['token'];

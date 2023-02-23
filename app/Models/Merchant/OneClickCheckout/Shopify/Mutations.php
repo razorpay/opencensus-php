@@ -852,6 +852,33 @@ class Mutations
       ');
     }
 
+    /**
+     * Storefront graphql disable coupon mutations
+     */
+
+    public function disableCouponMutation()
+    {
+      return $this->sanitizeMutation('mutation discountCodeDeactivate($id: ID!) {
+        discountCodeDeactivate(id: $id) {
+          codeDiscountNode {
+            codeDiscount {
+              ... on DiscountCodeBasic {
+                title
+                status
+                startsAt
+                endsAt
+              }
+            }
+          }
+          userErrors {
+            field
+            code
+            message
+          }
+        }
+      }');
+    }
+
     protected function sanitizeMutation(string $mutation)
     {
         return str_replace(array("\r", "\n"), '', $mutation);

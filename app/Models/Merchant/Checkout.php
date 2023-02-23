@@ -218,6 +218,8 @@ class Checkout
 
         $this->fill1ccEnableV165Experiment($merchant, $data);
 
+        $this->fill1ccEnableScriptEditorExperiment($merchant, $data);
+
         $this->fill1ccOffersWithCouponsExperiment($merchant,$data);
 
         return $data;
@@ -2469,4 +2471,30 @@ class Checkout
         $this->filterMethodBasedOnRecurring($data, $input);
     }
 
+    protected function fill1ccEnableScriptEditorExperiment(Entity $merchant, array &$data): void
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return;
+        }
+        try
+        {
+            $properties = [
+                'id'            => UniqueIdEntity::generateUniqueId(),
+                'experiment_id' => $this->app['config']->get('app.1cc_coupons_with_se_splitz_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' =>  $merchant->getId(),
+                    ]),
+            ];
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $data['experiments']['1cc_coupons_with_se_exp'] = $response['response']['variant']['name'] ?? null;
+        }
+        catch (\Throwable $e)
+        {
+            $data['experiments']['1cc_coupons_with_se_exp'] = null;
+        }
+    }
 }
