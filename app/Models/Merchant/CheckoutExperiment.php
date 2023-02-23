@@ -60,7 +60,7 @@ class CheckoutExperiment
             'email_less_checkout'                                => false,
             'enable_rudderstack_plugin'                          => false,
             'checkout_downtime'                                  => 'control',
-            'upi_number'                                         => false, 
+            'upi_number'                                         => 'control', 
         ];
 
         $this->input = $input;
@@ -491,10 +491,8 @@ class CheckoutExperiment
         return $response['variant']['name'] ?? 'control';
     }
 
-    private function handleUpiNumberResponse($response): bool
+    private function handleUpiNumberResponse($response): string
     {
-        $variant = $response['variant']['name'] ?? '';
-
-        return $variant === 'variant_on';
+        return $response['variant']['name'] ?? 'control';
     }
 }
