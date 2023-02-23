@@ -2,13 +2,16 @@
 
 namespace RZP\Models\Customer\Token;
 
+use Carbon\Carbon;
 use RZP\Constants\Environment;
+use RZP\Constants\Timezone;
 use RZP\Diag\EventCode;
 use Aws\Ec2\Exception\Ec2Exception;
 use phpseclib\Crypt\AES;
 use RZP\Encryption\AESEncryption;
 use RZP\Http\RequestHeader;
 use RZP\Jobs\MerchantAsyncTokenisationJob;
+use RZP\Jobs\SavedCardTokenisationJob;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
 use RZP\Models\Batch\Header;
@@ -1830,8 +1833,6 @@ class Service extends Base\Service
 
         $card = $payment->card;
 
-        $cardInput = $this->core->buildCardInputForTokenisation($card);
-
         $customer = $payment->customer;
 
         if ($customer->isGlobal() === true)
@@ -1839,20 +1840,37 @@ class Service extends Base\Service
             $customer->merchant()->associate($payment->merchant);
         }
 
-        try
-        {
-            list($token, $serviceProviderTokens) = $this->core->createTokenForRearch($card, $cardInput, $payment->merchant, $payment, $customer);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->warning(TraceCode::VAULT_TOKEN_MIGRATION_ERROR, [
-                'error' => $e,
-                'level' => Trace::WARNING,
-                'payment_id' => $payment->getId()
-            ]);
+        $tokenCard = $card->replicate();
 
-            throw $e;
+        $tokenCard->generateID();
+
+        $this->repo->saveOrFail($tokenCard);
+
+        $saveMethodInput = [
+            Token\Entity::METHOD => $payment->getMethod(),
+            Token\Entity::CARD_ID => $tokenCard->getId(),
+        ];
+
+        $token = null;
+
+        if ($customer != null)
+        {
+            try
+            {
+                $token = (new Token\Core)->create($customer, $saveMethodInput, null, true);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::API_CUSTOMER_TOKEN_CREATION_ERROR);
+            }
         }
+
+        $core = (new Token\Core());
+
+        $core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
 
         $customer->merchant()->associate($this->repo->merchant->getSharedAccount());
 
@@ -1860,7 +1878,22 @@ class Service extends Base\Service
 
         $token->setUsedAt($payment->getAuthorizeTimestamp());
 
+        $token->setAcknowledgedAt(Carbon::now(Timezone::IST)->getTimestamp());
+
         $this->repo->saveOrFail($token);
+
+        $asyncTokenisationJobId = "paymentmigrate";
+
+        $this->trace->info(TraceCode::TRACE_TOKEN_DISPATCH_LOG, [
+            'tokenid'     =>  $token->getId(),
+            'async'       =>  $asyncTokenisationJobId,
+            'paymentId'   => $payment->getId(),
+            'newCard'     => $tokenCard,
+            'card'        => $card,
+            'token'       => $token
+        ]);
+
+        SavedCardTokenisationJob::dispatch($this->mode, $token->getId(), $asyncTokenisationJobId,  $payment->getId());
 
         return $token->toArrayPublic();
     }
