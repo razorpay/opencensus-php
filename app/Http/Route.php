@@ -2901,6 +2901,7 @@ class Route
         'feature_bulk_remove'                      => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'internal_feature_bulk_assign'             => ['post',     'internal/features/assign',                       'FeatureController@multiAssignFeature'                              ],
         'internal_feature_bulk_remove'             => ['post',     'internal/features/remove',                       'FeatureController@multiRemoveFeature'                              ],
+        'internal_feature_bulk_fetch'              => ['post',     'internal/features/bulk_fetch',                   'FeatureController@bulkFetchFeatures'                               ],
         'feature_delete_entity'                    => ['delete',   '{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                             ],
         'feature_delete_entity_internal'           => ['delete',   'internal/{entityType}/{entityId}/features/{featureName}', 'FeatureController@deleteEntityFeature'                    ],
         'feature_get_merchants_internal'           => ['post',     'internal/feature/merchants',                     'FeatureController@getMerchantIdsHavingFeatures'                    ],
@@ -4851,6 +4852,7 @@ class Route
         'salesforce_details_internal',
         'internal_feature_bulk_assign',
         'internal_feature_bulk_remove',
+        'internal_feature_bulk_fetch',
         'internal_feature_get_all',
         'banking_account_beneficiary_fetch',
         'user_fetch_by_verified_contact_internal',
@@ -15037,6 +15039,7 @@ class Route
             'merchant_validate_public_auth_over_internal_auth',
             'customer_fetch_tokens_internal',
             'checkout_personalisation_internal',
+            'internal_feature_bulk_fetch',
             'customer_fetch_internal_for_checkout',
         ],
 

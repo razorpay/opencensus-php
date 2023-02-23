@@ -61,6 +61,12 @@ class Validator extends Base\Validator
         Constants::PRODUCT  => 'sometimes|string|custom',
     ];
 
+    protected static array $bulkFetchFeaturesRules = [
+        Constants::FEATURES => 'required|array|filled',
+        Entity::ENTITY_TYPE => 'required|string|in:merchant',
+        Entity::ENTITY_ID   => 'required|string',
+    ];
+
     protected function validateName($attribute, $value)
     {
         $allFeatures = array_keys(Constants::$featureValueMap);

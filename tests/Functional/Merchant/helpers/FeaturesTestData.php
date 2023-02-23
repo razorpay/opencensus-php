@@ -2117,6 +2117,30 @@ return [
         ]
     ],
 
+    'testBulkFetchFeatures' => [
+        'request' => [
+            'url' => '/internal/features/bulk_fetch',
+            'method' => 'post',
+            'content' => [
+                'entity_id'     => '10000000000000',
+                'entity_type'   => 'merchant',
+                'features' => [
+                    'subscriptions',
+                    'noflashcheckout',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    'subscriptions' => true,
+                    'noflashcheckout' => false,
+                ],
+            ],
+            'status_code' => 200
+        ]
+    ],
+
     'testAddFeatureSkipWorkflowPayoutSpecificAsMerchantTreatmentNotEnabled' => [
         'request' => [
             'content' => [

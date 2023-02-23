@@ -699,6 +699,30 @@ class Service extends Base\Service
         return $featureCore->getStatus($entityType, $entityId, $featureName);
     }
 
+    public function bulkFetchFeatures(array $input): array
+    {
+        (new Validator())->validateInput('bulk_fetch_features', $input);
+
+        $featuresEnabled = $this->repo->feature
+            ->findMerchantWithFeatures($input[Entity::ENTITY_ID], $input['features'])
+            ->pluck(Entity::NAME)
+            ->toArray();
+
+        $featuresEnabled = array_flip($featuresEnabled);
+
+        $featuresStatus = [];
+
+        foreach ($input['features'] as $feature) {
+            if (array_key_exists($feature, $featuresEnabled)) {
+                $featuresStatus[$feature] = true;
+            } else {
+                $featuresStatus[$feature] = false;
+            }
+        }
+
+        return ['features' => $featuresStatus];
+    }
+
     /**
      * Delete the feature association with an entity
      *

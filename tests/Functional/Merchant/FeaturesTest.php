@@ -791,6 +791,20 @@ class FeaturesTest extends OAuthTestCase
         $this->startTest();
     }
 
+    public function testBulkFetchFeatures()
+    {
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000000',
+                'name' => 'subscriptions'
+            ]);
+
+        $this->ba->checkoutServiceInternalAuth();
+
+        $this->startTest();
+    }
+
     /**
      * This function tests updating of a visible merchant feature: noflashcheckout
      */

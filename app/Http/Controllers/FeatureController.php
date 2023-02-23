@@ -137,6 +137,15 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function bulkFetchFeatures()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->bulkFetchFeatures($input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Deletes the feature association with the merchant
      *
