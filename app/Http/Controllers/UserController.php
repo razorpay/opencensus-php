@@ -1358,7 +1358,7 @@ class UserController extends Controller
                 return false;
             }
 
-            if($details['activation_status'] !== 'activated' or $details['activation_status'] !== 'activated_mcc_pending')
+            if($details['activation_status'] !== 'activated' and $details['activation_status'] !== 'activated_mcc_pending')
             {
                 return true;
             }
