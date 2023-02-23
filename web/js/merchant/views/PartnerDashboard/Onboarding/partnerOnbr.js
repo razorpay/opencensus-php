@@ -174,6 +174,17 @@ export default class BaseScreen extends React.Component {
       });
   };
 
+  handleOtherCTAClicks = (action) => {
+    this.props.tracking.trackEvent(
+      window.rzpQ.onbr().interaction('partnerships.partner_type_otherCTAs.selected', {
+        merchantId: this.props.user.merchant.id,
+        lpVariant: this.state.lpVariant,
+        lpFold: this.state.lpFold,
+        otherCTA: action,
+      }),
+    );
+  };
+
   onCompleteClick = () => {
     fireAnalyticsEvents({
       fbData: `partner_activation_complete_${this.state.fbBusinessTypeSuffix}`,
@@ -251,26 +262,31 @@ export default class BaseScreen extends React.Component {
               )
             : null}
           {(sliderProps) => (
-            <S1 key={1} sliderProps={sliderProps} onNext={this.handleNewUserGetStarted} />
+            <S1
+              key={1}
+              handleOtherCTAClicks={this.handleOtherCTAClicks}
+              isLastStep={isHidePartnerType}
+              onCompleteClick={this.onCompleteClick}
+              onNext={this.handleNewUserGetStarted}
+              orgDetails={orgDetails}
+              screenName={this.screenName}
+              sliderProps={sliderProps}
+            />
           )}
           {!isHidePartnerType
             ? (sliderProps) => (
                 <S2
                   key={2}
+                  abort={this.handleCloseClick}
+                  handleOtherCTAClicks={this.handleOtherCTAClicks}
+                  isMobile={this.props.isMobileResolution}
+                  isOrgCurlec={user.isOrgCurlec}
+                  onCompleteClick={this.onCompleteClick}
+                  onRoleSelect={this.onRoleSelect}
+                  orgDetails={orgDetails}
+                  role={this.state.role}
                   screenName={this.screenName}
                   sliderProps={sliderProps}
-                  onRoleSelect={this.onRoleSelect}
-                  role={this.state.role}
-                  abort={this.handleCloseClick}
-                  tracking={this.props.tracking}
-                  merchantId={this.props.user.merchant.id}
-                  isMobile={this.props.isMobileResolution}
-                  lpVariant={this.state.lpVariant}
-                  lpFold={this.state.lpFold}
-                  businessTypeName={this.state.businessTypeName}
-                  onCompleteClick={this.onCompleteClick}
-                  orgDetails={orgDetails}
-                  isOrgCurlec={user.isOrgCurlec}
                 />
               )
             : null}

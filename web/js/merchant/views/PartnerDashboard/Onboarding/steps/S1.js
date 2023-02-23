@@ -2,8 +2,18 @@ import React from 'react';
 import SlideContoller from './SlideController';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { ONBOARDING_LABELS } from 'merchant/views/PartnerDashboard/constants';
+import TnCFooter from 'merchant/views/PartnerDashboard/Onboarding/steps/TnCFooter';
 
-const S1 = (props) => {
+const S1 = ({
+  screenName,
+  orgDetails,
+  sliderProps,
+  isLastStep,
+  onNext,
+  handleOtherCTAClicks,
+  onCompleteClick,
+}) => {
   return (
     <>
       <div className="partner-onbr-info">
@@ -22,7 +32,7 @@ const S1 = (props) => {
         <div style={{ marginTop: '21px', padding: '2px' }}>
           <p className="">
             Get started with referring merchants and track your commissions directly from your
-            dashoard.
+            dashboard.
           </p>
           <p className="" style={{ marginTop: '20px' }}>
             First, let’s fill a few more details.
@@ -30,9 +40,26 @@ const S1 = (props) => {
           <p className="" style={{ marginTop: '20px' }}>
             <span style={{ color: '#f05050' }}>*</span>Commission details will be shared over mail.
           </p>
+
+          {isLastStep ? (
+            <TnCFooter
+              orgDetails={orgDetails}
+              handleOtherCTAClicks={handleOtherCTAClicks}
+              screenName={screenName}
+            />
+          ) : null}
         </div>
       </div>
-      <SlideContoller sliderProps={props.sliderProps} onNext={props.onNext} />
+      {isLastStep ? (
+        <SlideContoller
+          sliderProps={sliderProps}
+          onNext={onCompleteClick}
+          nextBtnLabel={ONBOARDING_LABELS.GET_STARTED}
+          nextBtnPendingLabel={ONBOARDING_LABELS.GET_STARTED_PENDING}
+        />
+      ) : (
+        <SlideContoller sliderProps={sliderProps} onNext={onNext} />
+      )}
     </>
   );
 };

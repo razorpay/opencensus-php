@@ -4,30 +4,30 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { getCustomURL } from 'merchant/components/DocsLink';
 import { isOrgFeatureExist, ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 import PoweredByRzp from 'assets/branding/powered_by_rzp.png';
-
+import { POLICY_LINKS } from 'merchant/constants/urls';
 export const FOOTER_LINKS = [
   {
     label: 'Merchant Agreement',
-    link: 'https://razorpay.com/agreement/',
+    link: POLICY_LINKS.MERCHANT_AGGREMENT,
   },
   {
     label: 'Terms of Use',
-    link: 'https://razorpay.com/terms/',
+    link: POLICY_LINKS.TERMS_OF_USE,
   },
   {
     label: 'Privacy Policy',
-    link: 'https://razorpay.com/privacy/',
+    link: POLICY_LINKS.PRIVACY_POLICY,
   },
 ];
 
 export const MALAYSIAN_FOOTER_LINKS = [
   {
     label: 'Terms of Use',
-    link: 'https://curlec.com/terms-of-service/',
+    link: POLICY_LINKS.TERMS_OF_USE_CURLEC,
   },
   {
     label: 'Privacy Policy',
-    link: 'https://curlec.com/privacy-policy/',
+    link: POLICY_LINKS.PRIVACY_POLICY_CURLEC,
   },
 ];
 

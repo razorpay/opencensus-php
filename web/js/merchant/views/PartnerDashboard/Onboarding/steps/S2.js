@@ -1,75 +1,25 @@
 import React, { useEffect } from 'react';
 import SlideController from './SlideController';
 import PartnerSelectBox from './PartnerTypeSelector';
-import { analyticsTrack } from 'common/utils/analytics';
-import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
-import { track } from 'merchant/views/PartnerDashboard/Onboarding/ga';
-import {
-  getOnContactSupportClicked,
-  getOnPrivacyPolicyClicked,
-  getOnTnCClicked,
-} from 'merchant/views/PartnerDashboard/Onboarding/steps/helpers/analytics';
+import { getOnContactSupportClicked } from 'merchant/views/PartnerDashboard/Onboarding/steps/helpers/analytics';
+import TnCFooter from 'merchant/views/PartnerDashboard/Onboarding/steps/TnCFooter';
 import { ONBOARDING_LABELS } from 'merchant/views/PartnerDashboard/constants';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
-import { MALAYSIAN_FOOTER_LINKS, FOOTER_LINKS } from 'merchant/components/Footer/index';
-
-const TERM_CONDITION_LINK = {
-  rzp: 'https://razorpay.com/s/terms-partners/',
-  curlec: 'https://curlec.com/partnerships-terms-and-conditions/',
-};
-
-const PRIVACY_LINK = {
-  rzp: FOOTER_LINKS[2].link,
-  curlec: MALAYSIAN_FOOTER_LINKS[1].link,
-};
 
 const S2 = ({
-  role,
-  onRoleSelect,
-  sliderProps,
   abort,
-  tracking,
-  merchantId,
+  handleOtherCTAClicks,
   isMobile,
-  lpVariant,
-  lpFold,
-  businessTypeName,
-  screenName,
-  onCompleteClick,
-  orgDetails,
   isOrgCurlec,
+  onCompleteClick,
+  onRoleSelect,
+  orgDetails,
+  role,
+  screenName,
+  sliderProps,
 }) => {
-  const orgCode = orgDetails.custom_code;
   const orgName = orgDetails.business_name;
-
-  const handleNextClick = () => {
-    tracking.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.partner.type.next', {
-        merchantId,
-        partnerType: role,
-        lpVariant,
-        lpFold,
-      }),
-    );
-
-    track({
-      eventAction: 'Select - Type',
-      eventLabel: `Partner Onboarding | Next | ${businessTypeName}`,
-    });
-
-    analyticsTrack({
-      objectName: 'Partner Select Type',
-      actionName: 'next clicked',
-      screen: screenName,
-      properties: {
-        location: 'partner onboarding base screen',
-        ...getCommonAnalyticsProperties(window.rzp_user),
-      },
-      toCleverTap: true,
-    });
-    return onCompleteClick();
-  };
 
   useEffect(() => {
     const container = document.querySelector('.partner-onboarding-base-screen');
@@ -79,19 +29,7 @@ const S2 = ({
     };
   }, []);
 
-  const handleOtherCTAClicks = (action) => {
-    tracking.trackEvent(
-      window.rzpQ.onbr().interaction('partnerships.partner_type_otherCTAs.selected', {
-        merchantId,
-        otherCTA: action,
-        lpVariant,
-        lpFold,
-      }),
-    );
-  };
   const onContactSupportClicked = getOnContactSupportClicked(screenName, handleOtherCTAClicks);
-  const onPrivacyPolicyClicked = getOnPrivacyPolicyClicked(screenName, handleOtherCTAClicks);
-  const onTnCClicked = getOnTnCClicked(screenName, handleOtherCTAClicks);
 
   useEffect(() => {
     const closeButton = document.querySelector('.partner-onboarding-base-screen button.close');
@@ -221,27 +159,11 @@ const S2 = ({
               I just want to use {orgName} products
             </a>
           </p>
-          <p>
-            By signing up you agree to our{' '}
-            <a
-              href={PRIVACY_LINK[orgCode]}
-              target="_blank"
-              onClick={onPrivacyPolicyClicked}
-              rel="noopener noreferrer"
-            >
-              privacy policy
-            </a>{' '}
-            and{' '}
-            <a
-              href={TERM_CONDITION_LINK[orgCode]}
-              target="_blank"
-              className="highlight"
-              onClick={onTnCClicked}
-              rel="noreferrer noopener"
-            >
-              terms of use.
-            </a>
-          </p>
+          <TnCFooter
+            orgDetails={orgDetails}
+            handleOtherCTAClicks={handleOtherCTAClicks}
+            screenName={screenName}
+          />
         </div>
       </div>
       <SlideController
@@ -253,7 +175,7 @@ const S2 = ({
           },
         }}
         disNext={!role}
-        onNext={handleNextClick}
+        onNext={onCompleteClick}
         nextBtnLabel={ONBOARDING_LABELS.GET_STARTED}
         nextBtnPendingLabel={ONBOARDING_LABELS.GET_STARTED_PENDING}
       />
