@@ -102,6 +102,8 @@ class Route
 
         'merchant_store_add'                       => ['post',     'merchants/config/store',                                'MerchantController@updateMerchantStore'   ],
         'merchant_store_fetch'                     => ['get',      'merchants/config/store',                                'MerchantController@fetchMerchantStore'    ],
+        'merchant_activation_eligibilty'           => ['get',      'merchant/{id}/activation/eligibility',                  'MerchantController@getMerchantActivationEligibility'    ],
+
 
         'm2m_referral_link_get'         => ['get',  'merchants/onboarding/m2m_referral', 'ReferralController@fetchReferralDetails' ],
         'm2m_referral_link_get_public'  => ['get',  'm2m_referral',  'ReferralController@fetchPublicReferralDetails' ],
@@ -6754,6 +6756,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'merchant_activation_eligibilty',
         'merchant_activation_clarifications_save_admin',
         'merchant_activation_clarifications_fetch_admin',
         'merchant_nc_revamp_eligibility_admin',
@@ -7995,6 +7998,7 @@ class Route
         'merchant_activation_clarifications_fetch'            => Permission::VIEW_MERCHANT,
         'merchant_activation_clarifications_save'       => Permission::EDIT_MERCHANT,
         'merchant_nc_revamp_eligibility'                => Permission::VIEW_MERCHANT,
+        'merchant_activation_eligibilty'                => Permission::VIEW_MERCHANT,
         'merchant_ip_config_opt_status_admin'             => Permission::ADMIN_MERCHANT_IP_WHITELIST,
         'merchant_ip_config_fetch_admin'                  => Permission::ADMIN_MERCHANT_IP_WHITELIST,
         'merchant_ip_config_create_admin'                 => Permission::ADMIN_MERCHANT_IP_WHITELIST,
@@ -11603,6 +11607,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'merchant_activation_eligibilty',
             'merchant_activation_clarifications_fetch',
             'merchant_nc_revamp_eligibility',
             'merchant_activation_clarifications_save',

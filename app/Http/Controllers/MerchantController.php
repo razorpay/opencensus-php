@@ -2671,6 +2671,15 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getMerchantActivationEligibility($mid)
+    {
+
+        $response = $this->service()->getMerchantActivationEligibility($mid);
+
+        return ApiResponse::json($response);
+    }
+
     public function handleReport()
     {
         $input = Request::all();

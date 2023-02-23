@@ -3071,6 +3071,12 @@ class Core extends Base\Core
             return false;
         }
 
+        // allow OPTIMIZER_ONLY_MERCHANT merchants
+        if ($merchant->isFeatureEnabled(FeatureConstants::OPTIMIZER_ONLY_MERCHANT) === true)
+        {
+            return false;
+        }
+
         //activations allowed for lower environments
         if ($this->isProductionEnvironment() === false)
         {
@@ -3089,6 +3095,42 @@ class Core extends Base\Core
             $this->trace->info(TraceCode::ALLOWING_ACTIVATION_FOR_NON_DS, ['merchant_id' => $merchant->getId()]);
 
             return false;
+        }
+
+
+        try
+        {
+            $experimentId = $this->config->get('app.merchant_activation_ineligible');
+
+            $response = $this->app['splitzService']->evaluateRequest([
+                'id'            => $merchant->getId(),
+                'experiment_id' => $experimentId,
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SPLITZ_ERROR, [
+                'merchant_id'   => $merchant->getId(),
+                'experiment_id' => $this->config->get('app.merchant_activation_ineligible') ?? null
+            ]);
+
+        }
+
+        $this->trace->info(TraceCode::SPLITZ_RESPONSE, [
+            'merchant_id'   => $merchant->getId(),
+            'experiment_id' => $experimentId,
+            'Result'        => $response
+        ]);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        if ($variant === 'true')
+        {
+            return true;
         }
 
         $merchantDetails = $merchant->merchantDetail;
@@ -4012,7 +4054,7 @@ class Core extends Base\Core
         $newMerchantDetailsArray[DetailConstants::REJECTION_CATEGORY_REASONS] = $rejectionReasonDescriptions;
 
         $newMerchantDetailsArray[DetailConstants::REJECTION_OPTION] = $rejectionOption;
-    
+
         $merchant = $newMerchantDetails->merchant;
 
         $balances = $this->repo->balance->getMerchantBalancesByType($merchant->getId(),

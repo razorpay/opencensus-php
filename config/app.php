@@ -464,6 +464,7 @@ return array(
     'merchant_policies_exp_id'          => env('MERCHANT_POLICIES_EXP_ID'),
     'product_led_mail_communication' => env('PRODUCT_LED_MAIL_COMMUNICATION'),
     'merchant_activation_manual_override' => env('MERCHANT_ACTIVATION_MANUAL_OVERRIDE'),
+    'merchant_activation_ineligible'      => env('MERCHANT_ACTIVATION_INELIGIBLE'),
     'partner_invoice_auto_approval_exp_id'=> env('PARTNER_INVOICE_AUTO_APPROVAL_EXP_ID'),
     'cmma_post_onboarding_foh_removal_splitz_experiment_id' => env('CMMA_POST_ONBOARDING_FOH_REMOVAL_SPLITZ_EXPERIMENT_ID'),
 
@@ -560,7 +561,7 @@ return array(
     'magic_apply_coupon_experiment_id' => env('MAGIC_APPLY_COUPON_EXPERIMENT_ID'),
 
     'capital_partnership_experiment_id' => env('CAPITAL_PARTNERSHIP_EXPERIMENT_ID'),
-    
+
     '1cc_enable_v165_splitz_experiment_id' => env('MAGIC_CHECKOUT_ENABLE_V165_EXP_ID'),
 
     '1cc_coupons_with_se_splitz_experiment_id' => env('MAGIC_CHECKOUT_COUPONS_WITH_SCRIPT_EDITOR_EXP_ID'),

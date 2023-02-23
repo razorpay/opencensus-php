@@ -17,6 +17,7 @@ use RZP\Services\Mock\ApachePinotClient;
 use RZP\Models\ClarificationDetail\Service;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Feature as Feature;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Models\Merchant\Detail\Entity;
@@ -1243,6 +1244,102 @@ class CoreTest extends TestCase
         $this->assertFalse($response);
 
     }
+
+    public function testBlockMerchantActivationForBlacklisted()
+    {
+        $core = new DetailCore();
+
+        $merchant_id = '1X4hRFHFx4UiXt';
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => $merchant_id
+        ]);
+
+        $splitzInput = [
+            "experiment_id" => "KxkO63MKPtxKy9",
+            "id"            => $merchant->getId(),
+        ];
+
+        $splitzOutput = [
+            "response" => []
+        ];
+
+        $splitzBlackListInput = [
+            'id'            => $merchant_id,
+            'experiment_id' => "LJRBw7srZz3Psh",
+            'request_data'  => json_encode(
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]),
+        ];
+
+        $splitzBlackListOutput = [
+            "response" => [
+                "variant" => [
+                    "name" => 'true',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
+        $this->mockSplitzTreatment($splitzBlackListInput, $splitzBlackListOutput);
+
+        Config::set('applications.test_case.execution', false);
+
+        // this is to bypass production env check, so that flow reaches the code we want to test
+        $this->app['env'] = "production";
+
+        $response = $core->blockMerchantActivations($merchant);
+
+        $this->assertTrue($response);
+
+    }
+
+    public function testBlockMerchantActivationForOptimiserOnlyMerchants()
+    {
+        $core = new DetailCore();
+
+        $merchant_id = '1X4hRFHFx4UiXt';
+
+        $merchant = $this->fixtures->create('merchant', [
+            'id' => $merchant_id
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail', [
+            'merchant_id' => $merchant->getId(),
+        ]);
+
+        $splitzInput = [
+            "experiment_id" => "KxkO63MKPtxKy9",
+            "id"            => $merchant->getId(),
+        ];
+
+        $splitzOutput = [
+            "response" => []
+        ];
+
+        $this->mockSplitzTreatment($splitzInput, $splitzOutput);
+
+        Config::set('applications.test_case.execution', false);
+
+        // this is to bypass production env check, so that flow reaches the code we want to test
+        $this->app['env'] = "production";
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => $merchant['id'],
+            Feature\Entity::ENTITY_TYPE => 'merchant',
+            Feature\Entity::NAMES       => [Feature\Constants::OPTIMIZER_ONLY_MERCHANT],
+            Feature\Entity::SHOULD_SYNC => false
+        ];
+
+        (new Feature\Service)->addFeatures($featureParams);
+
+        $response = $core->blockMerchantActivations($merchant);
+
+        $this->assertFalse($response);
+    }
+
     public function testGetSegmentEventPropertiesForActivationStatusChangeTrue()
     {
         $core = new DetailCore();

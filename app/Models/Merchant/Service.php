@@ -8304,6 +8304,19 @@ class Service extends Base\Service
         return $result;
     }
 
+    public function getMerchantActivationEligibility($merchantId)
+    {
+        $response = [];
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $detailCore = new MerchantDetailCore();
+
+        $response['is_eligible_for_activation'] = !($detailCore->blockMerchantActivations($merchant));
+
+        return $response;
+    }
+
     protected function captureEventOfInterestOfPrimaryMerchantInBanking($merchant)
     {
         // Merchant has switched from primary product to banking product for the first time,
