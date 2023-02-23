@@ -31,6 +31,8 @@ import AcceptPaymentsModal from 'merchant/containers/Home/OnboardingCard/Instant
 import { hideAcceptPaymentsModal } from 'merchant/reducers/home';
 import { Typo, Icon } from './components/NavLinkItem/styled';
 import { Routes, SidebarPropsInterface } from './typings';
+import { trackViewedBankingNavBar } from 'merchant/components/Sidebar/ga';
+import { getIsBankingEnabled } from 'merchant/components/Sidebar/helpers';
 
 const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const {
@@ -75,6 +77,12 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
     setRoutesInfo(routes);
     setActiveTab(getActiveTab(location));
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (getIsBankingEnabled(user)) {
+      trackViewedBankingNavBar();
+    }
+  }, []);
 
   const commonNavLinkProps = {
     routes: routesInfo,
