@@ -86,6 +86,8 @@ final class Constants
 
     const MCC                            = 'mcc';
 
+    const ONBOARDED_TIME                 = 'onboarded_time';
+
     const NETWORK_CODE                   = 'network_code';
 
     const BANK_ACCOUNT                   = 'bank_account';

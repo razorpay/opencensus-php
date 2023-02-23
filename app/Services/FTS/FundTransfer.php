@@ -330,10 +330,40 @@ class FundTransfer extends Base
         return $request;
     }
 
-    protected function addMerchantCategory(array $request) :array
+    protected function addMerchantCategory(array $request) : array
     {
         $category = $this->fta->source->merchant->getCategory2();
         $mcc = $this->fta->source->merchant->getCategory();
+        $balance = $this->fta->source->balance;
+
+        if ($balance !== null)
+        {
+            $bankingAcc = $this->repo->banking_account->getFromBalanceId($balance->getId());
+            $onboardingTime = optional($bankingAcc)->getCreatedAt();
+            $bankingAccID = optional($bankingAcc)->getId();
+
+            // In case of Merchants Onboarded on BAS flow, bankingAcc needs to be retrived from BAS
+            if ($bankingAcc === null)
+            {
+                $bankingAcc = $this->app['banking_account_service']->fetchBankingAccountByAccountNumberAndChannel($balance->getMerchantId(), $balance->getAccountNumber(), $balance->getChannel());
+                
+                if ($bankingAcc !== null)
+                {
+                    $onboardingTime = intdiv($bankingAcc['created_at'], 1000); // CreatedAt is in Milliseconds in BAS
+                    $bankingAccID = $bankingAcc['id'];
+                }
+            }
+
+            if ($onboardingTime !== null)
+            {
+                $this->trace->info(TraceCode::FTS_BANKING_DETAILS, [
+                    'balance_id'       => $balance->getId(),
+                    'banking_id'       => $bankingAccID,
+                ]);
+
+                $request[Constants::MERCHANT_CATEGORY][Constants::ONBOARDED_TIME] = $onboardingTime;
+            }
+        }
 
         $request[Constants::MERCHANT_CATEGORY][Constants::CATEGORY] = $category;
         $request[Constants::MERCHANT_CATEGORY][Constants::MCC] = $mcc;

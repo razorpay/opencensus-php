@@ -4684,6 +4684,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FTS_REGISTER_ACCOUNT_INIT                             = 'FTS_REGISTER_ACCOUNT_INIT';
     const FTS_CREATE_ACCOUNT_FAILED                             = 'FTS_CREATE_ACCOUNT_FAILED';
     const FTS_FUND_TRANSFER_COMPLETE                            = 'FTS_FUND_TRANSFER_COMPLETE';
+    const FTS_BANKING_DETAILS                                   = 'FTS_BANKING_DETAILS';
     const FTS_REGISTER_ACCOUNT_FAILED                           = 'FTS_REGISTER_ACCOUNT_FAILED';
     const FTS_CREATE_ACCOUNT_COMPLETE                           = 'FTS_CREATE_ACCOUNT_COMPLETE';
     const FTS_TRANSFER_ACTION_COMPLETE                          = 'FTS_TRANSFER_ACTION_COMPLETE';
