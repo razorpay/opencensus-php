@@ -426,7 +426,9 @@ class Service extends Base\Service
             $this->trace->info(
                 TraceCode::TOKEN_PUSH_INFO,
                 ['mode' => $this->app['rzp.mode'],
-                    'features' => $this->merchant->getEnabledFeatures()]);
+                    'features' => $this->merchant->getEnabledFeatures(),
+                    'merchantCount' => count($input['merchant_offers']),
+                    'merchant_offers' => $input['merchant_offers']]);
 
             // validate merchant flag to check if this is issuer.
             // throw error otherwise

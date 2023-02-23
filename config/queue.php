@@ -311,6 +311,10 @@ return [
         'test'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
         'live'       => env('AWS_CARDVAULT_MIGRATION_QUEUE'),
      ],
+    'pushprovisioning' => [
+        'test'       => env('AWS_PUSH_PROVISIONING_QUEUE'),
+        'live'       => env('AWS_PUSH_PROVISIONING_QUEUE'),
+    ],
     'merchant_balance_update' => [
         'test'       => env('AWS_MERCHANT_BALANCE_UPDATE_TEST_QUEUE'),
         'live'       => env('AWS_MERCHANT_BALANCE_UPDATE_LIVE_QUEUE'),

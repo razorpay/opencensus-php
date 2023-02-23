@@ -12,7 +12,7 @@ use Razorpay\Trace\Logger as Trace;
 class PushProvisioningTokenCreateJob extends Job
 {
 
-    protected $queueConfigKey = 'cardvault_migration'; //need to check if new key is required.
+    protected $queueConfigKey = 'pushprovisioning';
 
     protected $createTokenInput;
 
