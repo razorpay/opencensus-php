@@ -125,6 +125,8 @@ class Core extends Base\Core
 
             (new Merchant\Activate())->addPayoutFeatureIfApplicable($merchant, Mode::LIVE, true);
 
+            (new Merchant\Activate())->addEnableIpWhitelistFeatureOnX($merchant, Mode::LIVE);
+
             $this->trace->info(TraceCode::PAYOUT_FEATURE_ADDED, [
                 Merchant\Constants::MERCHANT_ID => $merchantId
             ]);

@@ -1117,9 +1117,7 @@ class NeedsClarificationTest extends TestCase
         ]);
 
         $reason = (new Core())->composeNeedsClarificationReason($merchantDetail);
-
-        s($reason);
-
+        
         $expectedReasons = [
             "additional_details" => [
                 "bank_account_name" => [

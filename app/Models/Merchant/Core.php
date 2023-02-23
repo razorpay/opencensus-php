@@ -96,6 +96,7 @@ use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Jobs\BulkMigrateAggregatorToResellerJob;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Jobs\MerchantSupportingEntitiesCreateJob;
+use RZP\Models\Feature\Service as FeatureService;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature\Constants as FeatureConstants;
@@ -8944,6 +8945,18 @@ class Core extends Base\Core
         }
 
         $this->updateIpConfigForService($input, $accessor);
+
+        if ($this->merchant->isFeatureEnabled(FeatureConstants::ENABLE_IP_WHITELIST) === false)
+        {
+            $featureParams = [
+                Feature\Entity::ENTITY_TYPE => E::MERCHANT,
+                Feature\Entity::ENTITY_ID   =>  $this->merchant->getId(),
+                Feature\Entity::NAMES       => [FeatureConstants::ENABLE_IP_WHITELIST],
+                Feature\Entity::SHOULD_SYNC => true,
+            ];
+
+            (new FeatureService())->addFeatures($featureParams);
+        }
 
         return $this->fetchMerchantIpConfig();
     }

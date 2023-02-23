@@ -124,6 +124,11 @@ class BankingAccountServiceTest extends TestCase
         $this->assertEquals('balance', $scheduleTask['entity_type']);
         $this->assertEquals($schedule['id'], $scheduleTask['schedule_id']);
 
+        $feature = $this->getLastEntity('feature', true);
+
+        $this->assertEquals($feature['name'], 'enable_ip_whitelist');
+        $this->assertEquals($feature['entity_id'], '10000000000000');
+
         return $response;
     }
 

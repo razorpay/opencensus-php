@@ -18596,6 +18596,37 @@ The same has been enabled for the account.
 
     }
 
+    public function testCreateIpConfigForMerchantWhenFeatureNotEnabled($isReset = true)
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $redisKey = 'ip_config_10000000000000_api_payouts';
+        $redisKey2 = 'ip_config_10000000000000_api_fund_account_validation';
+
+        $whitelistedIps1 = $this->app['redis']->smembers($redisKey);
+        $whitelistedIps2 = $this->app['redis']->smembers($redisKey2);
+
+        $this->assertEqualsCanonicalizing($whitelistedIps1, ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing($whitelistedIps2, ['2.2.2.2', '3.3.3.3']);
+
+        $merchant = $this->getDbEntityById('merchant', 10000000000000, true);
+
+        $whitelistedIps1 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_payouts');
+        $whitelistedIps2 = Settings\Accessor::for($merchant, Settings\Module::IP_WHITELIST_CONFIG)->get('api_fund_account_validation');
+
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps1), ['2.2.2.2', '3.3.3.3']);
+        $this->assertEqualsCanonicalizing(json_decode($whitelistedIps2), ['2.2.2.2', '3.3.3.3']);
+
+        $feature = $this->getLastEntity('feature', true);
+
+        $this->assertEquals($feature['name'], 'enable_ip_whitelist');
+        $this->assertEquals($feature['entity_id'], '10000000000000');
+
+        $this->resetRedisKeysForIpWhitelist($isReset);
+    }
+
     public function testCreateIpConfigWithDuplicateIpsForMerchant()
     {
         $this->fixtures->on('live')->merchant->addFeatures(['enable_ip_whitelist']);

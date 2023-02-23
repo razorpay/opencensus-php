@@ -14334,6 +14334,30 @@ return [
         'status_code' => 200
     ],
 
+    'testCreateIpConfigForMerchantWhenFeatureNotEnabled' => [
+        'request' => [
+            'url'    => '/merchant/ip_whitelist',
+            'method' => 'POST',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+
+            'content' =>[
+                'otp'             => '0007',
+                'token'           => 'BUIj3m2Nx2VvVj',
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3']
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'opted_out' => false,
+                'whitelisted_ips' => ['2.2.2.2','3.3.3.3'],
+                'allowed_ips_count' => 20,
+            ],
+        ],
+        'status_code' => 200
+    ],
+
     'testCreateIpConfigWithDuplicateIpsForMerchant' => [
         'request' => [
             'url'    => '/merchant/ip_whitelist',

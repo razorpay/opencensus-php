@@ -981,6 +981,8 @@ class Activate extends Base\Core
 
             $this->addSkipHoldFundsOnPayout($merchant);
 
+            $this->addEnableIpWhitelistFeatureOnX($merchant, $mode);
+
             //create activated TPV
             (new BankingAccountTpv\Core())->createAutoApprovedTpvForActivatedMerchants($merchant, $mode);
 
@@ -1158,6 +1160,23 @@ class Activate extends Base\Core
             Feature\Entity::ENTITY_ID   => $merchant->getId(),
             Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
             Feature\Entity::NAMES       => [Feature\Constants::SKIP_HOLD_FUNDS_ON_PAYOUT],
+        ];
+
+        $this->addFeatureWhileHandlingStaleRead($featureParams);
+    }
+
+    public function addEnableIpWhitelistFeatureOnX(Entity $merchant, string $mode)
+    {
+        if (($mode === Mode::TEST) or
+            ($merchant->isFeatureEnabled(Feature\Constants::ENABLE_IP_WHITELIST) === true))
+        {
+            return;
+        }
+
+        $featureParams = [
+            Feature\Entity::ENTITY_ID   => $merchant->getId(),
+            Feature\Entity::ENTITY_TYPE => EntityConstants::MERCHANT,
+            Feature\Entity::NAMES       => [Feature\Constants::ENABLE_IP_WHITELIST],
         ];
 
         $this->addFeatureWhileHandlingStaleRead($featureParams);
