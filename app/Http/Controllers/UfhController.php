@@ -97,6 +97,8 @@ class UfhController extends Controller
             ];
         }
 
+        $headers['X-Task-Id'] = $this->app['request']->getTaskId();
+
         $ufhConfig = [
             'base_uri'      => $this->config['applications.ufh.url'],
             'username'      => $this->config['applications.ufh.auth.username'],

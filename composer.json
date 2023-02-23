@@ -40,7 +40,7 @@
         "laravel/tinker": "^2.5",
         "rtconner/laravel-tagging": "~2.2",
         "drewm/mailchimp-api": "^2.1",
-        "razorpay/ufh-sdk-php": "v1.0.0-beta",
+        "razorpay/ufh-sdk-php": "v1.0.1",
         "bacon/bacon-qr-code": "2.0.3",
         "watson/rememberable": "^6.0",
         "razorpay/hodor": "dev-master",

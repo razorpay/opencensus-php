@@ -200,6 +200,7 @@ class UfhService
             'password'      => $this->config['auth']['password'],
             'headers'       => [
                 'X-Merchant-Id' => $this->merchantId,
+                "X-Task-Id" => $this->app['request']->getTaskId(),
             ],
             'X-Merchant-Id' => $this->merchantId,
         ];

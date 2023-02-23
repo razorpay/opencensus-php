@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "99f30ee0bcc8ce24d9715d16d3c5a79d",
+    "content-hash": "07b01213d398dcab8eb5649b10831db0",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -11516,16 +11516,16 @@
         },
         {
             "name": "razorpay/ufh-sdk-php",
-            "version": "v1.0.0-beta",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/ufh-sdk-php.git",
-                "reference": "8ef984328b87524105415dff4d3a155ed19284d7"
+                "reference": "dc41a8294e1708eafdec0fca6586001e9738dad7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/8ef984328b87524105415dff4d3a155ed19284d7",
-                "reference": "8ef984328b87524105415dff4d3a155ed19284d7",
+                "url": "https://api.github.com/repos/razorpay/ufh-sdk-php/zipball/dc41a8294e1708eafdec0fca6586001e9738dad7",
+                "reference": "dc41a8294e1708eafdec0fca6586001e9738dad7",
                 "shasum": ""
             },
             "require": {
@@ -11553,7 +11553,7 @@
                 "sdk",
                 "ufh"
             ],
-            "time": "2022-09-07T09:26:11+00:00"
+            "time": "2023-02-22T06:52:18+00:00"
         },
         {
             "name": "razorpay/upi-clients",
