@@ -147,6 +147,9 @@ class CreateMerchantBanks extends Migration
             $table->tinyInteger(Methods::FPX)
                   ->default(0);
 
+            $table->json(Methods::ADDON_METHODS)
+                ->nullable();
+
             $table->integer(Methods::CREATED_AT);
 
             $table->integer(Methods::UPDATED_AT);

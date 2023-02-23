@@ -392,6 +392,10 @@ class Core extends Base\Core
             $this->addCustomTextForCredIfApplicable($merchant, $methods, $data);
         }
 
+        if ($methods->isInAppEnabled() !== null) {
+            $data[Entity::IN_APP] = $methods->isInAppEnabled();
+        }
+
         if ($merchant->isRecurringEnabled() === true)
         {
             $data['recurring'] = [];

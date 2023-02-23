@@ -62,6 +62,7 @@ class Entity extends Base\PublicEntity
     const HDFC_DEBIT_EMI    = 'hdfc_debit_emi';
     const COD               = 'cod';
     const FPX               = 'fpx';
+    const IN_APP            = 'in_app';
 
     const DEBIT_EMI_PROVIDERS = 'debit_emi_providers';
     const EMI_TYPES           = 'emi_types';
@@ -69,6 +70,7 @@ class Entity extends Base\PublicEntity
     const METHODS           = 'methods';
 
     const ADDITIONAL_WALLETS = 'additional_wallets';
+    const ADDON_METHODS      = 'addon_methods';
 
     //new wallets
     const ITZCASH = 'itzcash';
@@ -126,6 +128,7 @@ class Entity extends Base\PublicEntity
         self::COD,
         self::OFFLINE,
         self::FPX,
+        self::ADDON_METHODS,
     ];
 
     protected $visible = [
@@ -174,6 +177,7 @@ class Entity extends Base\PublicEntity
         self::COD,
         self::OFFLINE,
         self::FPX,
+        self::IN_APP,
     ];
 
     protected $public = [
@@ -223,6 +227,7 @@ class Entity extends Base\PublicEntity
         self::COD,
         self::OFFLINE,
         self::FPX,
+        self::IN_APP,
     ];
 
     protected $appends = [
@@ -231,6 +236,7 @@ class Entity extends Base\PublicEntity
         self::AMEXEASYCLICK,
         self::PAYCASH,
         self::CITIBANKREWARDS,
+        self::IN_APP,
     ];
 
 
@@ -279,6 +285,7 @@ class Entity extends Base\PublicEntity
         self::COD            => false,
         self::OFFLINE        => false,
         self::FPX            => false,
+        self::ADDON_METHODS  => [],
     );
 
     public static $defaultPaymentMethodsForSubmerchantByPartner = array(
@@ -317,6 +324,7 @@ class Entity extends Base\PublicEntity
         self::COD            => false,
         self::OFFLINE        => false,
         self::FPX            => false,
+        self::ADDON_METHODS  => [],
     );
 
     protected $wallets = array(
@@ -349,6 +357,13 @@ class Entity extends Base\PublicEntity
         self::PAYCASH,
         self::CITIBANKREWARDS,
     ];
+
+    protected static $addon_methods_names = [
+        self::UPI => [
+            self::IN_APP
+        ]
+    ];
+
 
     protected static $methods = [
         self::CARD,
@@ -729,6 +744,16 @@ class Entity extends Base\PublicEntity
         return $this->merchant->isLinkedAccount();
     }
 
+    public function isInAppEnabled() {
+        $addonMethods = $this->getAddonMethods();
+
+        if($addonMethods !== null && isset($addonMethods[self::UPI]) && isset($addonMethods[self::UPI][self::IN_APP]))
+        {
+            return $addonMethods[self::UPI][self::IN_APP] === 1;
+        }
+        return null;
+    }
+
     public function isMethodEnabled($method)
     {
         $func = 'is' . studly_case($method) . 'Enabled';
@@ -942,6 +967,26 @@ class Entity extends Base\PublicEntity
         return self::$additional_wallet_names;
     }
 
+    public static function getAllAddonMethodsNames()
+    {
+        return self::$addon_methods_names;
+    }
+
+    public function getInApp()
+    {
+        $addon_methods = $this->getAttribute(self::ADDON_METHODS);
+        if(isset($addon_methods[self::UPI]) === true && isset($addon_methods[self::UPI][self::IN_APP]) === true)
+        {
+            return $addon_methods[self::UPI][self::IN_APP] === 1;
+        }
+        return null;
+    }
+
+    public function getInAppAttribute()
+    {
+        return $this->getInApp();
+    }
+
     // ----------------------- Getters End -----------------------------------------
 
     // ----------------------- Setters --------------------------------------------
@@ -949,6 +994,7 @@ class Entity extends Base\PublicEntity
     public function setMethods(array $input = array())
     {
         $this->transformAdditionalWallets($input);
+        $this->transformAddonMethods($input);
         $this->edit($input, 'setMethods');
     }
 
@@ -983,6 +1029,42 @@ class Entity extends Base\PublicEntity
         }
         $input['additional_wallets'] = $additional_wallets;
     }
+
+    /**
+     * @param array $input
+     *
+     * Transforms other payment methods in input to addon_methods array
+     *
+     * So if the input is [ "in_app" : true ] , then "in_app" will be added to "addon_methods"     *
+     *
+     */
+    protected function transformAddonMethods(array &$input)
+    {
+        $all_addon_methods = Entity::getAllAddonMethodsNames();
+        $addon_methods = $this->getAttribute(self::ADDON_METHODS);
+        foreach ($all_addon_methods as $method => $sub_methods)
+        {
+            foreach ($sub_methods as $sub_method)
+            {
+                if (isset($input[$sub_method]) === true)
+                {
+                    if(isset($addon_methods[$method]) === false)
+                    {
+                        $addMethod = [];
+                        $addMethod[$sub_method] = $input[$sub_method];
+                        $addon_methods[$method] = $addMethod;
+                    }
+                    else
+                    {
+                        $addon_methods[$method][$sub_method] = $input[$sub_method];
+                    }
+                    unset($input[$sub_method]);
+                }
+            }
+        }
+        $input['addon_methods'] = $addon_methods;
+    }
+
 
     public function setDisabledBanks(array $banks)
     {
@@ -1306,6 +1388,12 @@ class Entity extends Base\PublicEntity
         return UpiType::getEnabledUpiTypes($upi, $upi_type);
     }
 
+    public function getAddonMethods()
+    {
+        return $this->getAttribute(self::ADDON_METHODS);
+    }
+
+
     protected function getDisabledBanksAttribute()
     {
         if (empty($this->attributes[self::DISABLED_BANKS]) === true)
@@ -1347,6 +1435,15 @@ class Entity extends Base\PublicEntity
     protected function getCitibankrewardsAttribute()
     {
         return $this->getCitibankrewards();
+    }
+
+    protected function getAddonMethodsAttribute()
+    {
+        if (empty($this->attributes[self::ADDON_METHODS]) === true)
+        {
+            return [];
+        }
+        return json_decode($this->attributes[self::ADDON_METHODS], true);
     }
 
     // ----------------------- Accessors End ----------------------------------------
@@ -1455,6 +1552,11 @@ class Entity extends Base\PublicEntity
     protected function setDisabledBanksAttribute(array $banks)
     {
         $this->attributes[self::DISABLED_BANKS] = json_encode(array_values($banks));
+    }
+
+    protected function setAddonMethodsAttribute(array $addon_methods)
+    {
+        $this->attributes[self::ADDON_METHODS] = json_encode($addon_methods);
     }
 
     protected function setAdditionalWalletsAttribute(array $additional_wallets)

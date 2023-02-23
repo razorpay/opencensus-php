@@ -7138,3 +7138,6 @@ ALTER TABLE partner_configs
 
 ALTER TABLE tokens
     ADD COLUMN source enum(`merchant`, `issuer`) NOT NULL DEFAULT `merchant`;
+
+ALTER TABLE merchant_banks
+    ADD COLUMN addon_methods JSON DEFAULT NULL;

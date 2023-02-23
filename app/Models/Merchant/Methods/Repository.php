@@ -113,4 +113,16 @@ class Repository extends Base\Repository
             $query->where($additional_wallets,'not like','%'.$wallet.'%');
         }
     }
+
+    protected function addQueryParamInApp($query, $params)
+    {
+        $this->queryParamForAddonMethods($query, Entity::UPI.'->'.Entity::IN_APP, $params[Entity::IN_APP]);
+    }
+
+    protected function queryParamForAddonMethods(&$query, $method, $value)
+    {
+        $addonMethods = $this->dbColumn(Entity::ADDON_METHODS);
+        $query->where($addonMethods . '->' . $method,'=', $value);
+    }
+
 }

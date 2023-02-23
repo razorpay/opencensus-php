@@ -69,6 +69,8 @@ class Validator extends Base\Validator
         Entity::COD                => 'sometimes|boolean',
         Entity::OFFLINE            => 'sometimes|boolean',
         Entity::FPX                => 'sometimes|boolean',
+        Entity::ADDON_METHODS      => 'sometimes|array',
+        Entity::IN_APP             => 'sometimes|boolean',
     ];
 
     protected static $setMethodsValidators = [

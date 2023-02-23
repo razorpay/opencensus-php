@@ -412,6 +412,7 @@ class Validator extends Base\Validator
         Methods\Entity::PAYPAL   => 'sometimes|bool',
         Methods\Entity::PAYTM    => 'sometimes|bool',
         Methods\Entity::PHONEPE  => 'sometimes|bool',
+        Methods\Entity::IN_APP  => 'sometimes|bool',
     ];
 
     protected static $resetSettlementScheduleRules = [

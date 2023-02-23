@@ -405,6 +405,9 @@ class Repository extends Base\Repository
                         {
                             $join->where(Methods\Entity::ADDITIONAL_WALLETS, 'not like', '%'.$method.'%');
                         }
+                    } else if ($method === Methods\Entity::IN_APP)
+                    {
+                        $join->where(Methods\Entity::ADDON_METHODS . '->' . Methods\Entity::UPI . '->' . Methods\Entity::IN_APP,'=', $value);
                     } else
                     {
                         $join->where($method, '=', $queryValue);
