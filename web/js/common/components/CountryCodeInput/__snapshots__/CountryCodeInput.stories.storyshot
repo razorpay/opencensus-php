@@ -10,33 +10,37 @@ exports[`Storyshots CountryCodeInput Country Select 1`] = `
       >
         <div>
           <div
-            class="styled__DropDownMenu-sc-178p1ko-0 cbfevc country-code-input"
+            class="styled__CountryCodeContainer-sc-178p1ko-0 gwswUK"
           >
             <div
-              class="styled__ValueContainer-sc-178p1ko-8 exbLxJ"
+              class="styled__DropDownMenu-sc-178p1ko-1 blNoJl country-code-input"
             >
-              <span
-                class="styled__DropdownValue-sc-178p1ko-6 gywTBM"
-                data-testid="dialCodeSelector"
+              <div
+                class="styled__ValueContainer-sc-178p1ko-9 iMrvCE"
               >
                 <span
-                  class="flag in"
-                />
-                <span
-                  class="dial-code"
-                  data-testid="dialCodeValue"
+                  class="styled__DropdownValue-sc-178p1ko-7 jHoLuZ"
+                  data-testid="dialCodeSelector"
                 >
-                  +91
+                  <span
+                    class="flag in"
+                  />
+                  <span
+                    class="dial-code"
+                    data-testid="dialCodeValue"
+                  >
+                    +91
+                  </span>
+                  <i
+                    class="i i-chevron-down"
+                  />
                 </span>
-                <i
-                  class="i i-chevron-down"
+                <input
+                  data-testid="contactInput"
+                  type="tel"
+                  value="9999999999"
                 />
-              </span>
-              <input
-                data-testid="contactInput"
-                type="tel"
-                value="9999999999"
-              />
+              </div>
             </div>
           </div>
         </div>
