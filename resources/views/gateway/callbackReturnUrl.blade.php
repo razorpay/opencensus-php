@@ -222,7 +222,8 @@
             var timeout = document.getElementById('timeout');
             if(timer === 0) {
               document.forms[0].submit();
-              clearInterval(timer);
+              clearInterval(interval);
+              return;
             }
             if(timeout && timer > 0) {
               timeout.innerText = --timer;
