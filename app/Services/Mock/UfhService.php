@@ -183,4 +183,11 @@ class UfhService extends BaseUfhClient
     {
         return null;
     }
+
+    public function getFileDetails(string $fileId, string $merchantId)
+    {
+        return [
+            'status' => 'uploaded',
+        ];
+    }
 }

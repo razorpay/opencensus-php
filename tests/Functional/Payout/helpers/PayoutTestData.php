@@ -21330,6 +21330,52 @@ return [
         ],
     ],
 
+    'testEmailAttachmentsInPayoutReportViaMetro' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'url'     => '/payouts/attachments/download',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'send_email' => true,
+                'receiver_email_ids' => ['abc@gmail.com'],
+                'from' => 1621201921,
+                'to'   => 1621202497,
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
+    'testEmailAttachmentsInPayoutReportViaSQS' => [
+        'request'  => [
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Razorpay-Account' => '10000000000000',
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'url'     => '/payouts/attachments/download',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'send_email' => true,
+                'receiver_email_ids' => ['abc@gmail.com'],
+                'from' => 1621201921,
+                'to'   => 1621202497,
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
+
     'testEmailAttachmentsInPayoutReportWithoutEmailIds' => [
         'request'  => [
             'method'  => 'POST',

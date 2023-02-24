@@ -8593,6 +8593,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYOUT_DETAILS_UFH_SERVICE_NULL                   = 'PAYOUT_DETAILS_UFH_SERVICE_NULL';
     const PAYOUT_ATTACHMENT_RENAME_FAILURE                  = 'PAYOUT_ATTACHMENT_RENAME_FAILURE';
     const UPDATE_PAYOUT_ATTACHMENTS_INPUT                   = 'UPDATE_PAYOUT_ATTACHMENTS_INPUT';
+    const PAYOUT_ATTACHMENT_EMAIL_FAILED                    = 'PAYOUT_ATTACHMENT_EMAIL_FAILED';
 
     // Nocode custom url migration traces
     const NOCODE_CUSTOM_URL_MIGRATION_START                     = 'NOCODE_CUSTOM_URL_MIGRATION_START';

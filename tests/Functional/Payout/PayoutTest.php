@@ -37,6 +37,7 @@ use RZP\Models\Feature;
 use RZP\Http\BasicAuth;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Models\Settings;
 use RZP\Models\Internal;
 use RZP\Models\Card\Type;
@@ -58,6 +59,7 @@ use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Jobs\OnHoldPayoutsProcess;
 use RZP\Tests\Traits\TestsMetrics;
+use RZP\Jobs\PayoutAttachmentEmail;
 use RZP\Mail\Payout as PayoutMails;
 use RZP\Jobs\PayoutServiceDualWrite;
 use RZP\Mail\Payout\PendingApprovals;
@@ -32240,6 +32242,105 @@ class PayoutTest extends OAuthTestCase
         $this->assertArrayHasKey(Payout\Constants::ZIP_FILE_ID, $response);
 
         $this->assertEquals(UfhMockService::MOCK_FILE_ID, $response[Payout\Constants::ZIP_FILE_ID]);
+    }
+
+    public function testEmailAttachmentsInPayoutReportViaMetro()
+    {
+        $this->createPayoutWithAttachments();
+
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+
+        $start_time = Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->timestamp;
+
+        $end_time = Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->addMinutes(2)->timestamp;
+
+        $this->testData[__FUNCTION__]['request']['content']['from'] = $start_time;
+
+        $this->testData[__FUNCTION__]['request']['content']['to'] = $end_time;
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Payout\Constants::ZIP_FILE_ID, $response);
+
+        $this->assertEquals("", $response[Payout\Constants::ZIP_FILE_ID]);
+    }
+
+    public function testEmailAttachmentsInPayoutReportViaSQS()
+    {
+        $this->createPayoutWithAttachments();
+
+        $payout = $this->getDbLastEntity(Constants\Entity::PAYOUT);
+
+        $start_time = Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->timestamp;
+
+        $end_time = Carbon::createFromTimestamp($payout->getCreatedAt(), Timezone::IST)->addMinutes(2)->timestamp;
+
+        $this->testData[__FUNCTION__]['request']['content']['from'] = $start_time;
+
+        $this->testData[__FUNCTION__]['request']['content']['to'] = $end_time;
+
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+            ->setConstructorArgs([$this->app])
+            ->setMethods(['getTreatment'])
+            ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+            ->will($this->returnCallback(
+                function ($mid, $feature, $mode)
+                {
+                    if ($feature === Merchant\RazorxTreatment::PAYOUT_ATTACHMENT_EMAIL_VIA_SQS)
+                    {
+                        return 'on';
+                    }
+
+                    return 'off';
+                }));
+
+        Queue::fake();
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Payout\Constants::ZIP_FILE_ID, $response);
+
+        $this->assertEquals("", $response[Payout\Constants::ZIP_FILE_ID]);
+
+        Queue::assertPushed(PayoutAttachmentEmail::class);
+    }
+
+    public function testEmailAttachmentJob()
+    {
+        $this->testEmailAttachmentsInPayoutReportViaSQS();
+
+        $data = [
+            'emails'         => ['abc@gmail.com'],
+            'zip_file_id'    => UfhMockService::MOCK_FILE_ID,
+            'merchant_id'    => '10000000000000',
+        ];
+
+        Mail::fake();
+
+        PayoutAttachmentEmail::dispatchNow(Mode::LIVE, $data);
+
+        Mail::assertQueued(PayoutMails\Attachments::class, function($mail) {
+
+            $this->assertArrayHasKey('attachment_file_url', $mail->viewData);
+
+            $this->assertArrayHasKey('display_name', $mail->viewData);
+
+            $this->assertArrayHasKey('extension', $mail->viewData);
+
+            $this->assertArrayHasKey('mime', $mail->viewData);
+
+            $mail->hasTo('abc@gmail.com');
+
+            return true;
+        });
     }
 
     /**

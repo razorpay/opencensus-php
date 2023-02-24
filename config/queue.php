@@ -422,6 +422,11 @@ return [
         'live'       =>  env('AWS_FAV_QUEUE_FOR_FTS_LIVE_QUEUE'),
     ],
 
+    'payout_attachment_email' => [
+        'test'       =>  env('AWS_PAYOUT_ATTACHMENT_EMAIL_TEST_QUEUE'),
+        'live'       =>  env('AWS_PAYOUT_ATTACHMENT_EMAIL_LIVE_QUEUE'),
+    ],
+
     /*
      | Lists various queues to be used per mailable
      */

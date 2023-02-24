@@ -40,6 +40,7 @@ use RZP\Services\PayoutService;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\DbQueryException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Jobs\PayoutAttachmentEmail;
 use RZP\Models\BankingAccountService;
 use RZP\Models\Base\PublicCollection;
 use RZP\Error\PublicErrorDescription;
@@ -4188,8 +4189,21 @@ class Service extends Base\Service
 
         if ($shouldSendEmail)
         {
-            //push to metro
-            $this->pushMessageToMetro($receiverEmailIds, $zipFileId, $merchantId);
+            $variant = $this->app->razorx->getTreatment(
+                $merchantId,
+                Merchant\RazorxTreatment::PAYOUT_ATTACHMENT_EMAIL_VIA_SQS,
+                $this->mode
+            );
+
+            if (strtolower($variant) === 'on')
+            {
+                $this->pushMessageToSQS($receiverEmailIds, $zipFileId, $merchantId);
+            }
+            else
+            {
+                //push to metro
+                $this->pushMessageToMetro($receiverEmailIds, $zipFileId, $merchantId);
+            }
 
             return [PayoutConstants::ZIP_FILE_ID => ''];
         }
@@ -4208,64 +4222,10 @@ class Service extends Base\Service
 
             $data = json_decode(base64_decode($message['data'], true), true);
 
-            $this->trace->info(
-                TraceCode::PAYOUT_ATTACHMENT_SEND_MAIL,
-                [
-                    'data' => $data,
-                ]
-            );
+            $this->processPayoutAttachmentEmail($data);
 
-            $zipFileId = $data[PayoutConstants::ZIP_FILE_ID];
-
-            $recipientEmails = $data[PayoutConstants::EMAILS];
-
-            $merchantId = $data[PayoutConstants::MERCHANT_ID];
-
-            $ufhService = $this->getUfhService($merchantId);
-
-            // get file details before getting signed URL
-            // if the file entity has not been picked by the worker, then get signed URL API
-            // will throw exception
-            $fileDetails = $ufhService->getFileDetails($zipFileId, $merchantId);
-
-            $this->trace->info(
-                TraceCode::PAYOUT_ATTACHMENT_GET_DETAILS,
-                [
-                    'file_details' => $fileDetails,
-                ]
-            );
-
-            // ZIP uploaded to S3
-            if (array_key_exists(PayoutConstants::STATUS, $fileDetails) && $fileDetails[PayoutConstants::STATUS] === PayoutConstants::FILE_UPLOADED)
-            {
-                $response = $ufhService->getSignedUrl($zipFileId, [], $merchantId);
-
-                $this->trace->info(
-                    TraceCode::PAYOUT_ATTACHMENT_GET_SIGNED_URL,
-                    [
-                        'response' => $response,
-                    ]
-                );
-
-                $this->triggerAttachmentsEmail($response, $recipientEmails);
-
-                // return 200 so that Metro considers a success push
-                return [PayoutConstants::STATUS_CODE => 200];
-            }
-
-            // If for some reason, zip file upload to S3 failed
-            if (array_key_exists(PayoutConstants::STATUS, $fileDetails) && $fileDetails[PayoutConstants::STATUS] === PayoutConstants::FILE_UPLOAD_FAILED)
-            {
-                $this->trace->info(
-                    TraceCode::PAYOUT_ATTACHMENT_UPLOAD_FAILED,
-                    [
-                        'zipFileId' => $zipFileId,
-                    ]
-                );
-
-                // return 200 so that Metro considers a success push
-                return [PayoutConstants::STATUS_CODE => 200];
-            }
+            // return 200 so that Metro considers a success push
+            return [PayoutConstants::STATUS_CODE => 200];
         }
         catch (\Exception $e)
         {
@@ -4279,6 +4239,69 @@ class Service extends Base\Service
         // ZIP file has not been not uploaded nor has failed
         // return 500 so that Metro retries again till the maxDeliveryAttempts are exhausted
         return [PayoutConstants::STATUS_CODE => 500];
+    }
+
+    public function processPayoutAttachmentEmail(array $data)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_ATTACHMENT_SEND_MAIL,
+            [
+                'data' => $data,
+            ]
+        );
+
+        $zipFileId = $data[PayoutConstants::ZIP_FILE_ID];
+
+        $recipientEmails = $data[PayoutConstants::EMAILS];
+
+        $merchantId = $data[PayoutConstants::MERCHANT_ID];
+
+        $ufhService = $this->getUfhService($merchantId);
+
+        // get file details before getting signed URL
+        // if the file entity has not been picked by the worker, then get signed URL API
+        // will throw exception
+        $fileDetails = $ufhService->getFileDetails($zipFileId, $merchantId);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_ATTACHMENT_GET_DETAILS,
+            [
+                'file_details' => $fileDetails,
+            ]
+        );
+
+        // ZIP uploaded to S3
+        if (array_key_exists(PayoutConstants::STATUS, $fileDetails) && $fileDetails[PayoutConstants::STATUS] === PayoutConstants::FILE_UPLOADED)
+        {
+            $response = $ufhService->getSignedUrl($zipFileId, [], $merchantId);
+
+            $this->trace->info(
+                TraceCode::PAYOUT_ATTACHMENT_GET_SIGNED_URL,
+                [
+                    'response' => $response,
+                ]
+            );
+
+            $this->triggerAttachmentsEmail($response, $recipientEmails);
+
+            return;
+        }
+
+        // If for some reason, zip file upload to S3 failed
+        if (array_key_exists(PayoutConstants::STATUS, $fileDetails) && $fileDetails[PayoutConstants::STATUS] === PayoutConstants::FILE_UPLOAD_FAILED)
+        {
+            $this->trace->info(
+                TraceCode::PAYOUT_ATTACHMENT_UPLOAD_FAILED,
+                [
+                    'zipFileId' => $zipFileId,
+                ]
+            );
+
+            // return 200 so that Metro considers a success push
+            return;
+        }
+
+        throw new \Exception('File not ready');
     }
 
     /**
@@ -4379,6 +4402,21 @@ class Service extends Base\Service
 
             throw $e;
         }
+    }
+
+    protected function pushMessageToSQS(array $receiverEmailIds, string $zipFileId, string $merchantId)
+    {
+        $data = [
+            'emails'         => $receiverEmailIds,
+            'zip_file_id'    => $zipFileId,
+            'merchant_id'    => $merchantId,
+        ];
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        $this->trace->info(TraceCode::PROCESSING_ATTACHMENT_FOR_PAYOUT_REPORTS, $data);
+
+        PayoutAttachmentEmail::dispatch($mode, $data);
     }
 
     protected function getUfhService($merchantId)

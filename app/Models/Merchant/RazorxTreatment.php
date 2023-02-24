@@ -725,6 +725,9 @@ final class RazorxTreatment
     // Experiment to ramp up international refunds
     const SCROOGE_INTERNATIONAL_REFUND = 'scrooge_international_refund';
 
+    // Experiment to push payout attachment email job to SQS instead of metro
+    const PAYOUT_ATTACHMENT_EMAIL_VIA_SQS = 'payout_attachment_email_via_sqs';
+
     // To skip acquiring the mutex lock on linked account ID during processing payment & order transfers.
     const LA_MUTEX_LOCK_FOR_TRANSFER_PROCESSING = 'la_mutex_lock_for_transfer_processing';
 }
