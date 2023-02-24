@@ -2,6 +2,8 @@ import React from 'react';
 import '@testing-library/jest-dom/extend-expect';
 import { App, onboarding } from 'merchant/views/PaymentLinks/__test__/mocks/fixtures/Onboarding';
 import { render, screen, userEvent } from 'test-utils';
+import { LANDING_PAGE_DESC } from 'merchant/views/PaymentLinks/OnBoarding';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
 
 describe('Payment link Onboarding Screen', () => {
   /*
@@ -23,10 +25,16 @@ describe('Payment link Onboarding Screen', () => {
     };
   });
 
-  const renderApp = (props = {}) => {
+  const renderApp = (props = {}, initialState) => {
     render(<App {...props} />, {
-      initialState: {
-        session: { user: { isPaymentLinksEnabled: true } },
+      initialState: initialState || {
+        session: {
+          user: { isPaymentLinksEnabled: true },
+          org: {
+            custom_code: 'rzp',
+            business_name: 'Razorpay',
+          },
+        },
         onboarding,
       },
     });
@@ -37,11 +45,7 @@ describe('Payment link Onboarding Screen', () => {
 
   test('should load onboarding initial screen', () => {
     renderApp();
-    expect(
-      screen.getByText(
-        'Create and share a Razorpay Payment Link in under a minute with your customers via email, SMS, messenger, chatbot etc. Get domestic and international payments online directly into your bank account.',
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByText(LANDING_PAGE_DESC[ORG_CUSTOM_CODE_MAP.RAZORPAY])).toBeInTheDocument();
   });
 
   test('should load initial components "Skip & Read More" ', () => {
@@ -87,5 +91,35 @@ describe('Payment link Onboarding Screen', () => {
     expect(skipAndGetStartedCTA).toBeInTheDocument();
     await userEvent.click(skipAndGetStartedCTA);
     expect(closeOnboardingMock).toHaveBeenCalled();
+  });
+
+  test('should load org business name ', () => {
+    renderApp(null, {
+      session: {
+        user: { isPaymentLinksEnabled: true },
+        org: {
+          custom_code: 'curlec',
+          business_name: 'Curlec',
+        },
+      },
+      onboarding,
+    });
+
+    expect(screen.getByText(/Curlec/i)).toBeInTheDocument();
+  });
+
+  test('should load curlec onboarding initial screen', () => {
+    renderApp(null, {
+      session: {
+        user: { isPaymentLinksEnabled: true },
+        org: {
+          custom_code: 'curlec',
+          business_name: 'Curlec',
+        },
+      },
+      onboarding,
+    });
+
+    expect(screen.getByText(LANDING_PAGE_DESC[ORG_CUSTOM_CODE_MAP.CURLEC])).toBeInTheDocument();
   });
 });

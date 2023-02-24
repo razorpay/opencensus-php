@@ -42,7 +42,7 @@ export default class StandardForm extends React.Component {
   }
   render() {
     const { props } = this;
-    const { formData, showPayerName } = props;
+    const { formData, showPayerName, disableCurrencySelect, contactPlaceholder } = props;
 
     const content = (
       <FormWizard
@@ -57,6 +57,7 @@ export default class StandardForm extends React.Component {
         history={props.history}
       >
         <Amount
+          disableCurrencySelect={disableCurrencySelect}
           isIntentDuplicate={props.isIntentDuplicate}
           disabled={props.disabled}
           defaultCurrency={formData.currency}
@@ -77,12 +78,14 @@ export default class StandardForm extends React.Component {
             defaultEmailAddress={formData.email}
             defaultContactValue={formData.sms_notify}
             defaultEmailValue={formData.email_notify}
+            contactPlaceholder={contactPlaceholder}
           />
         ) : (
           <ContactDetails
             disabled={props.disabled}
             defaultContactNumber={formData.contact}
             defaultEmailAddress={formData.email}
+            contactPlaceholder={contactPlaceholder}
           />
         )}
 

@@ -16,7 +16,10 @@ describe('ContactDetails Component Unit Test', () => {
   test('renders the contact input with the correct placeholder and default value', () => {
     const defaultContactNumber = '+91 9876543210';
     const { getByPlaceholderText } = render(
-      <ContactDetails defaultContactNumber={defaultContactNumber} />,
+      <ContactDetails
+        defaultContactNumber={defaultContactNumber}
+        contactPlaceholder="+91 9876543210"
+      />,
     );
     const contactInput = getByPlaceholderText(/\+91 9876543210/i);
     expect(contactInput).toBeInTheDocument();

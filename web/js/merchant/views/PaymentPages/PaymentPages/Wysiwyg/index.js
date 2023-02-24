@@ -441,10 +441,10 @@ export default class PaymentPagesWysiwyg extends React.PureComponent {
     }
     data.expire_by = formData.expire_by;
 
-    /* 
-      - While creation, if a slug has not been entered, the slug key is not sent in the payload in the normal flow 
-        (pages.razorpay.com). Backend automatically generates a slug in that case. 
-      - In the custom domain flow, the user can have an empty string as slug to use the root domain, hence 
+    /*
+      - While creation, if a slug has not been entered, the slug key is not sent in the payload in the normal flow
+        (pages.razorpay.com). Backend automatically generates a slug in that case.
+      - In the custom domain flow, the user can have an empty string as slug to use the root domain, hence
         explicitly sending an empty string in the slug in that case.
     */
     if (formData.slug || formData.domainType === 'custom') {

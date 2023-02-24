@@ -1537,6 +1537,7 @@ export const i18CurrencyConversionFromMinorUnitToCommonUnit = (amount, currency)
 };
 
 // converts common unit of amount to minor unit of amount, ex: rupees to paise
+// INFO: Since all most allof currencies support decimals only to 0.00 values, we don't need to add the support to more minor units like ex: 0.000, 0.0, 0.0000.
 export const i18CurrencyConversionFromCommonUnitToMinorUnit = (amount) => {
   amount = (Number(amount) * 100).toFixed(0);
   return Number(amount);

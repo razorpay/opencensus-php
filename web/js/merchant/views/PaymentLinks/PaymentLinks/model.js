@@ -143,12 +143,6 @@ export function editPaymentLink(id, payload) {
 export function createPaymentLinkV2(payload) {
   const reqPayload = { ...payload };
 
-  // Amount
-  reqPayload.amount = Math.round(reqPayload.amount * 100);
-  if (!reqPayload.currency) {
-    reqPayload.currency = 'INR';
-  }
-
   // Payment For
   if (reqPayload.description) {
     reqPayload.description = reqPayload.description.trim();

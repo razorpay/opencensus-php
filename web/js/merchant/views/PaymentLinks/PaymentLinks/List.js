@@ -28,6 +28,7 @@ import track from './track';
 import { trackSearchFilterForInternational } from './ga';
 import EasterEgg from 'merchant/components/EasterEgg';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 // TODO: Update colSpan if no of columns are changes
 const EmptyComponent = () => (
@@ -269,13 +270,21 @@ export default class PaymentLinksContainer extends ListContainer {
             <ShowWhen additionalCondition={(user) => !user.isOrgAxis}>
               <TakeATourButton feature={RZPFeatures.PL} />
             </ShowWhen>
-            <span className="hidden-xs">
-              <DocsLink {...docsLinkProps} onClick={this.trackDocumentClick} />
-            </span>
-            <div className="mob-header hidden-lg">
-              <DocsLink {...docsLinkProps} onClick={this.trackDocumentClick} />
-              <span class="badge bg-success m-r hidden-lg">new</span>
-            </div>
+
+            <ShowWhen
+              additionalCondition={(user) =>
+                !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+              }
+            >
+              <span className="hidden-xs">
+                <DocsLink {...docsLinkProps} onClick={this.trackDocumentClick} />
+              </span>
+              <div className="mob-header hidden-lg">
+                <DocsLink {...docsLinkProps} onClick={this.trackDocumentClick} />
+                <span className="badge bg-success m-r hidden-lg">new</span>
+              </div>
+            </ShowWhen>
+
             <ShowWhen
               additionalCondition={(user) =>
                 (mode !== 'live' || !user.isRejected) && user.isAllowedEdit('payment_links')

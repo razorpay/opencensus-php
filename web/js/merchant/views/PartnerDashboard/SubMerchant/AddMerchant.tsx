@@ -57,13 +57,13 @@ const PAYMENTS_DISABLED_STATUS = {
 };
 
 // eslint-disable-next-line prettier/prettier
-const RzpSuccessContainer = lazy(() =>
-  import('merchant/views/PartnerDashboard/SubMerchant/components/RzpSuccessContainer'),
+const RzpSuccessContainer = lazy(
+  () => import('merchant/views/PartnerDashboard/SubMerchant/components/RzpSuccessContainer'),
 );
 
 // eslint-disable-next-line prettier/prettier
-const CurlecSuccessContainer = lazy(() =>
-  import('merchant/views/PartnerDashboard/SubMerchant/components/CurlecSuccessContainer'),
+const CurlecSuccessContainer = lazy(
+  () => import('merchant/views/PartnerDashboard/SubMerchant/components/CurlecSuccessContainer'),
 );
 
 // TODO replace window.rzpQ with analyticsTrack for entire file. currently handled only for capital

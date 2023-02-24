@@ -1,5 +1,5 @@
 import Input from 'common/new-ui/Input';
-import track from '../../track';
+import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
 
 const ContactDetails = (props) => {
   return (
@@ -23,7 +23,7 @@ const ContactDetails = (props) => {
           autoRender
           name="contact"
           type="tel"
-          placeholder="+91 9876543210"
+          placeholder={props.contactPlaceholder}
           addonBefore={<i class="i i-phone-outline" />}
           defaultValue={props.defaultContactNumber}
           onBlur={track.lj.fields.contact}

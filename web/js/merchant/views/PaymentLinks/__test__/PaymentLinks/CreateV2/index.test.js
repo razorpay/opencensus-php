@@ -3,6 +3,9 @@ import { render, screen, fireEvent, server, userEvent } from 'test-utils';
 import * as handlers from 'merchant/views/PaymentLinks/__test__/mocks/handlers';
 import CreateV2 from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/index';
 import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
+import { createPaymentLinkV2 } from 'merchant/views/PaymentLinks/PaymentLinks/model';
+import User from 'merchant/models/User';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
 const onCloseMock = jest.fn();
 jest.spyOn(track.lj.form, 'create').mockImplementation(() => {});
@@ -26,17 +29,30 @@ describe('Payment Link Create V2 Unit Test', () => {
     track.lj.form.create.mockClear();
   });
 
-  const renderApp = (props = {}) => {
-    return render(<CreateV2 {...props} onClose={onCloseMock} />, {
-      initialState: {
-        session: {
-          user: {
-            merchant: {
-              product_international: '0000000000',
+  const renderApp = (
+    props = {},
+    initialState = {
+      session: {
+        user: new User({
+          current: 1,
+          merchant: {
+            country_code: 'IN',
+            currency: 'INR',
+            product_international: '0000000000',
+          },
+          merchants: {
+            1: {
+              country_code: 'IN',
+              currency: 'INR',
+              product_international: '111',
             },
           },
-        },
+        }),
       },
+    },
+  ) => {
+    return render(<CreateV2 {...props} onClose={onCloseMock} />, {
+      initialState,
     });
   };
 
@@ -100,5 +116,85 @@ describe('Payment Link Create V2 Unit Test', () => {
     });
     await userEvent.click(createPLCTA);
     expect(onCloseMock).toHaveBeenCalled();
+  });
+
+  test(`show open the Standard PL if ${HIDDEN_INTERNATIONAL_FEATURES_TAGS.PAYMENT_LINKS.UPIPaymentLink} enabled`, () => {
+    server.use(
+      handlers.fetchRemindersHandler(),
+      handlers.fetchRemindersMerchantConfigHandler(),
+      handlers.createPaymentLinkV2(),
+    );
+
+    const initialStoreState = {
+      session: {
+        user: new User({
+          current: 1,
+          merchant: {
+            country_code: 'MY',
+            currency: 'MYR',
+            product_international: '111',
+          },
+          merchants: {
+            1: {
+              country_code: 'MY',
+              currency: 'MYR',
+              product_international: '111',
+            },
+          },
+          tags: [HIDDEN_INTERNATIONAL_FEATURES_TAGS.PAYMENT_LINKS.UPIPaymentLink],
+        }),
+      },
+    };
+
+    renderApp(null, initialStoreState);
+
+    expect(screen.getByText('Create Payment Link')).toBeInTheDocument();
+  });
+
+  test('should have malaysian currency on successfull submit', () => {
+    server.use(
+      handlers.fetchRemindersHandler(),
+      handlers.fetchRemindersMerchantConfigHandler(),
+      handlers.createPaymentLinkV2(),
+    );
+
+    const initialStoreState = {
+      session: {
+        user: new User({
+          current: 1,
+          merchant: {
+            country_code: 'MY',
+            currency: 'MYR',
+            product_international: '111',
+          },
+          merchants: {
+            1: {
+              country_code: 'MY',
+              currency: 'MYR',
+              product_international: '111',
+            },
+          },
+          tags: [HIDDEN_INTERNATIONAL_FEATURES_TAGS.PAYMENT_LINKS.UPIPaymentLink],
+        }),
+      },
+    };
+
+    renderApp(null, initialStoreState);
+
+    setTimeout(async () => {
+      // create payment link
+      const amount = screen.getByPlaceholderText('0.00');
+      expect(amount).toBeInTheDocument();
+      await userEvent.type(amount, '200');
+      const createPLCTA = screen.getByRole('button', {
+        name: /Create Payment Link/i,
+      });
+      await userEvent.click(createPLCTA);
+
+      expect(createPaymentLinkV2).toHaveBeenCalledWith({
+        currency: 'MYR',
+        amount: 200,
+      });
+    }, 100);
   });
 });

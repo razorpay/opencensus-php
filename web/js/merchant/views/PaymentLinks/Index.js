@@ -30,13 +30,14 @@ import OnBoarding, {
 import QuickGuide, { getPaymentLinksQuickGuideIsClosed } from './QuickGuide';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
-import DashboardBanner from '../../../common/ui/DashboardBanner';
+import DashboardBanner from 'common/ui/DashboardBanner';
 
 let url = 'https://play.google.com/store/apps/details?id=com.razorpay.payments.app';
 if (getMobileOperatingSystem() == 'iOS') {
   url = 'https://apps.apple.com/in/app/razorpay-payments-dashboard/id1497250144';
 }
 
+// eslint-disable-next-line react/no-unsafe
 @connect(
   (state) => {
     return {

@@ -58,6 +58,7 @@ export default class UPIForm extends React.Component {
           disabled={props.disabled}
           defaultContactNumber={formData.contact}
           defaultEmailAddress={formData.email}
+          contactPlaceholder="'+91 9876543210'"
         />
         <Notify
           disabled={props.disabled}

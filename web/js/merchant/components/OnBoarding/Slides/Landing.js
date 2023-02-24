@@ -34,8 +34,10 @@ export default class OnBoardingLanding extends React.PureComponent {
       callout,
       ctaText,
       className = '',
+      businessName = 'Razorpay',
     } = this.props;
     const hideRzpTextLink = isOrgFeatureExist('hide_razorpay_text_link');
+
     return (
       <div
         className={`OnBoarding--Slide OnBoarding--ImageSlide OnBoarding--Landing ${className}`}
@@ -66,7 +68,7 @@ export default class OnBoardingLanding extends React.PureComponent {
         <div className="Product--Details">
           <ShowWhen additionalCondition={() => !hideRzpTextLink}>
             <div className="Details-heading">
-              <span className="dash" /> Razorpay
+              <span className="dash" /> {businessName}
             </div>
           </ShowWhen>
 

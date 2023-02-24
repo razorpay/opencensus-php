@@ -1,6 +1,9 @@
 import Input from 'common/new-ui/Input';
 import DocsLink from 'merchant/components/DocsLink';
-import track from '../../track';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+
+import track from 'merchant/views/PaymentLinks/PaymentLinks/CreateV2/track';
 
 const MWebContactDetails = (props) => {
   const handleEmailNotify = (event) => {
@@ -52,7 +55,7 @@ const MWebContactDetails = (props) => {
           autoRender
           name="contact"
           type="tel"
-          placeholder="+91 9876543210"
+          placeholder={props.contactPlaceholder}
           addonBefore={<i class="i i-phone-outline" />}
           defaultValue={props.defaultContactNumber}
           onBlur={track.lj.fields.contact}
@@ -66,11 +69,18 @@ const MWebContactDetails = (props) => {
           defaultValue={props.defaultContactValue}
         />
       </div>
-      <DocsLink
-        title="More ways to notify"
-        url="https://razorpay.com/app-store/"
-        style={{ paddingLeft: '0' }}
-      />
+      <ShowWhen
+        additionalCondition={(user) =>
+          !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.AppStore) &&
+          !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+        }
+      >
+        <DocsLink
+          title="More ways to notify"
+          url="https://razorpay.com/app-store/"
+          style={{ paddingLeft: '0' }}
+        />
+      </ShowWhen>
     </Input.Group>
   );
 };

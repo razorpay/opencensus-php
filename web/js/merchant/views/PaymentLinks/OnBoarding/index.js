@@ -24,9 +24,20 @@ import { setQuickGuideIsClosedInLocalStorage } from 'merchant/components/QuickGu
 import track from 'merchant/views/PaymentLinks/track';
 import { FEATURES_DATA, FEATURES_LINKS } from './data';
 import PaymentLinkIcon from 'assets/product_onboarding/payment_link.svg';
+import { ORG_CUSTOM_CODE_MAP } from 'merchant/models/User';
+
+// i18
+export const LANDING_PAGE_DESC = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]:
+    'Create and share a Razorpay Payment Link in under a minute with your customers via email, SMS, messenger, chatbot etc. Get domestic and international payments online directly into your bank account.',
+  [ORG_CUSTOM_CODE_MAP.CURLEC]:
+    'Create and share a Razorpay Payment Link in under a minute with your customers via email, SMS, messenger, chatbot etc. Get payments directly into your bank account.',
+};
+
 @connect(
   (state) => ({
     user: state.session.user,
+    org: state.session.org,
     paymentLinksProductOnBoarding: getCurrentProductOnBoardingDetails(state, RZPFeatures.PL),
   }),
   { handleProductQuickGuide },
@@ -59,7 +70,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
   };
 
   render() {
-    const { active, paymentLinksProductOnBoarding } = this.props;
+    const { active, paymentLinksProductOnBoarding, org } = this.props;
 
     return (
       <OnBoardingWrapper class="PaymentLinks">
@@ -76,7 +87,8 @@ export default class PaymentPagesOnBoarding extends React.Component {
               title="Payment Links"
               feature={RZPFeatures.PL}
               imageUrl={PaymentLinkIcon}
-              desc="Create and share a Razorpay Payment Link in under a minute with your customers via email, SMS, messenger, chatbot etc. Get domestic and international payments online directly into your bank account."
+              businessName={org.business_name}
+              desc={LANDING_PAGE_DESC[org.custom_code?.toLowerCase()]}
             />
           )}
 

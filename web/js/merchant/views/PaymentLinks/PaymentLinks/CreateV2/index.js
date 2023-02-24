@@ -21,17 +21,34 @@ import { updateUserFeatures } from 'merchant/reducers/session';
 import { fetchPaymentLinkV2Details } from 'merchant/reducers/paymentlinks/details';
 import { luminateRow } from 'merchant/reducers/app';
 import { createPaymentLinkV2 } from 'merchant/views/PaymentLinks/PaymentLinks/model';
-import { getURLQueryParams, paiseToRupees } from 'common/utils/rzp-utils';
+import {
+  getURLQueryParams,
+  i18CurrencyConversionFromMinorUnitToCommonUnit,
+  i18CurrencyConversionFromCommonUnitToMinorUnit,
+} from 'common/utils/rzp-utils';
 import { triggerHotjarRecording } from 'common/utils/hotjar';
 import track from './track';
 import { showPayerNamePL, showNoExpiryPL } from 'merchant/views/PaymentLinks/utils';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 
-const PAYMENT_LINK_FORMS = {
-  base: BaseForm,
-  standard: StandardForm,
-  upi: UPIForm,
+const PAYMENT_LINKS_TYPES = {
+  BASE: 'base',
+  STANDARD: 'standard',
+  UPI: 'upi',
 };
 
+const PAYMENT_LINK_FORMS = {
+  [PAYMENT_LINKS_TYPES.BASE]: BaseForm,
+  [PAYMENT_LINKS_TYPES.STANDARD]: StandardForm,
+  [PAYMENT_LINKS_TYPES.UPI]: UPIForm,
+};
+
+export const CONTACT_PLACEHOLDER = {
+  IN: '+91 9876543210',
+  MY: '+60 5555555555',
+};
+
+// eslint-disable-next-line react/no-unsafe
 @withRouter
 @connect(
   (state) => ({
@@ -58,6 +75,25 @@ export default class PaymentLinkCreateV2 extends React.Component {
     confirm: PropTypes.func,
   };
 
+  static getDerivedStateFromProps(nextProps, prevState) {
+    const { formData } = prevState;
+    const { merchant } = nextProps.user;
+
+    // Currency value always present to support i18.
+    // user.merchant.currency always available
+    if (formData.currency === null) {
+      return {
+        ...prevState,
+        formData: {
+          ...prevState.formData,
+          currency: merchant.currency,
+        },
+      };
+    }
+
+    return null;
+  }
+
   constructor(props) {
     super();
     let linkType;
@@ -66,8 +102,14 @@ export default class PaymentLinkCreateV2 extends React.Component {
     // For PL duplication loading state
     const searchQuery = getURLQueryParams(props.location.search);
     if (searchQuery.duplicate_id) {
-      linkType = 'base';
-    } else if (params.link_type && PAYMENT_LINK_FORMS.hasOwnProperty(params.link_type)) {
+      linkType = PAYMENT_LINKS_TYPES.BASE;
+    }
+
+    if (props.user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PAYMENT_LINKS.UPIPaymentLink)) {
+      linkType = PAYMENT_LINKS_TYPES.STANDARD;
+    }
+
+    if (params.link_type && PAYMENT_LINK_FORMS.hasOwnProperty(params.link_type)) {
       linkType = params.link_type;
     }
 
@@ -77,7 +119,9 @@ export default class PaymentLinkCreateV2 extends React.Component {
       isLoading: true,
       isFormLocked: false,
       linkType,
-      formData: {},
+      formData: {
+        currency: props.user.merchant.currency,
+      },
     };
   }
 
@@ -155,7 +199,10 @@ export default class PaymentLinkCreateV2 extends React.Component {
           formData: {
             currency: data.currency,
             description: data.description,
-            amount: paiseToRupees(data.amount),
+            amount: i18CurrencyConversionFromMinorUnitToCommonUnit(
+              data.amount,
+              this.props.user.merchant.currency,
+            ),
             accept_partial: data.accept_partial ? '1' : '0',
             sms_notify: data.notify && data.notify.sms ? '1' : '0',
             email_notify: data.notify && data.notify.email ? '1' : '0',
@@ -218,6 +265,8 @@ export default class PaymentLinkCreateV2 extends React.Component {
     if (notifyMedium.length > 0) {
       notificationMSG += ` Sending via ${notifyMedium.join(' and ')}`;
     }
+
+    reqPayload.amount = i18CurrencyConversionFromCommonUnitToMinorUnit(reqPayload.amount);
 
     track.lj.form.create();
 
@@ -373,7 +422,15 @@ export default class PaymentLinkCreateV2 extends React.Component {
   render() {
     const { props, state } = this;
     const { linkType } = state;
-    const showLinkTypeSelectionView = !linkType;
+    const { user } = props;
+    const { merchant } = user;
+
+    // i18: Hide the payment link type selection for  based on the tag, currently we are only allowing the standard form.
+    let showLinkTypeSelectionView = !linkType;
+    if (user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PAYMENT_LINKS.UPIPaymentLink)) {
+      showLinkTypeSelectionView = false;
+    }
+
     const CurrentForm = PAYMENT_LINK_FORMS[linkType];
 
     const isModalView = props.onClose;
@@ -390,6 +447,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
 
         {!showLinkTypeSelectionView && (
           <CurrentForm
+            disableCurrencySelect={!user.isInttCurrenciesEnabled}
             isIntentDuplicate={this.isIntentDuplicate}
             showAnimationOnLoading={!this.isIntentDuplicate}
             isModalView={isModalView}
@@ -397,7 +455,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
             isLoading={state.isLoading}
             disabled={state.isFormLocked}
             remindersConfig={props.paymentLinkRemindersConfig}
-            isDescriptionRequired={props.user.isPaymentLinkDescriptionRequired}
+            isDescriptionRequired={user.isPaymentLinkDescriptionRequired}
             onClose={this.onFormAbruptClose}
             onChange={this.onFieldChange}
             onSubmit={this.onFormSubmit}
@@ -406,6 +464,7 @@ export default class PaymentLinkCreateV2 extends React.Component {
             isMobileResolution={props.isMobileResolution}
             history={props.history}
             showPayerName={showPayerNamePL()}
+            contactPlaceholder={CONTACT_PLACEHOLDER[merchant.country_code]}
           />
         )}
       </div>
