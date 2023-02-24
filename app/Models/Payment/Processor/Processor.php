@@ -3791,6 +3791,61 @@ class Processor
             });
         }, $deadLockRetryAttempts);
     }
+
+    /**
+     * Logs if a submerchant attempts to create a transfer for a payment created with partner auth
+     *
+     * @param Payment\Entity   $payment
+     * @param PublicCollection $transfers
+     * @param array            $input
+     *
+     * @return void
+     */
+    private function logRoutePartnershipV1Guard(Payment\Entity $payment, PublicCollection $transfers, array $input): void
+    {
+
+        if ($this->ba->isPartnerAuth() === true)
+        {
+            return;
+        }
+
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $this->ba->getMerchantId(),
+                'experiment_id' => $this->app['config']->get('app.route_partnership_v1_guards_exp_id'),
+            ],
+            'enable'
+        );
+
+        // if the transfer request is not from partner auth
+        // then we need to check if the payment was created by a partner.
+        // if partner created the payment, then log this event
+        if (($isExpEnabled === true))
+        {
+            // check if the payment has an associated entity origin of type application
+            // & fetch the partner from the entity origin partner application
+            $entityOriginCore = new EntityOrigin\Core();
+            if ($entityOriginCore->isOriginApplication($payment) === true)
+            {
+                $application = $entityOriginCore->getOrigin($payment);
+                $partnerId = $application->getMerchantId();
+                if (empty($partner) === false)
+                {
+                    $this->trace->info(
+                        TraceCode::SUBMERCHANT_CREATED_TRANSFER_FOR_PARTNER_INITIATED_PAYMENT,
+                        [
+                            'payment_id'        => $payment->getId(),
+                            'transfer_ids'      => $transfers->getIds(),
+                            'merchant_id'       => $this->ba->getMerchantId(),
+                            'input'             => $input,
+                            'partner_id'        => $partnerId
+                        ]
+                    );
+                }
+            }
+        }
+    }
+
     /**
      * Transfer a captured payment to customer/marketplace account
      *
@@ -3819,7 +3874,7 @@ class Processor
 
         $asyncTransfer = true;
 
-        return $this->mutex->acquireAndRelease(
+        $transfers = $this->mutex->acquireAndRelease(
             $payment->getId(),
             function() use ($payment, $input, $deadLockRetryAttempts, $asyncTransfer)
             {
@@ -3862,6 +3917,10 @@ class Processor
 
                 return $transfers;
             });
+
+        $this->logRoutePartnershipV1Guard($payment, $transfers, $input);
+
+        return $transfers;
     }
 
     /**

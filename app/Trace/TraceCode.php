@@ -4088,6 +4088,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_SUPPORTING_ENTITIES_ASYNC_JOB_FAILED         = 'MERCHANT_SUPPORTING_ENTITIES_ASYNC_JOB_FAILED';
     const MERCHANT_SUPPORTING_ENTITIES_ASYNC_JOB_MESSAGE_DELETE = 'MERCHANT_SUPPORTING_ENTITIES_ASYNC_JOB_MESSAGE_DELETE';
 
+    const SUBMERCHANT_CREATED_TRANSFER_FOR_PARTNER_INITIATED_PAYMENT    = 'SUBMERCHANT_CREATED_TRANSFER_FOR_PARTNER_INITIATED_PAYMENT';
+    const SUBMERCHANT_CREATED_DIRECT_TRANSFER                           = 'SUBMERCHANT_CREATED_DIRECT_TRANSFER';
+    const SUBMERCHANT_INITIATED_SETTLE_NOW_ON_TRANSFER                  = 'SUBMERCHANT_INITIATED_SETTLE_NOW_ON_TRANSFER';
+
     //Partner KYC codes
     const PARTNER_ACTIVATION_CREATION_DETAILS                   = 'PARTNER_ACTIVATION_CREATION_DETAILS';
     const PARTNER_ACTIVATION_CREATION_SUCCESS                   = 'PARTNER_ACTIVATION_CREATION_SUCCESS';
@@ -9318,6 +9322,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_PAYOUT   => 'Skipped creation of ledger journal for reversal via cron as payout does not have a transaction ID',
         self::LEDGER_STATUS_CRON_SKIP_REVERSAL_CREDIT_FOR_UNDEBITED_FAV      => 'Skipped creation of ledger journal for reversal via cron as FAV does not have a transaction ID',
         self::BAS_INVALID_CREDENTIALS_ERROR                                  => 'BAAS credentials not received from BAS',
+        self::SUBMERCHANT_CREATED_TRANSFER_FOR_PARTNER_INITIATED_PAYMENT     => 'Submerchant created a transfer against a payment initiated by a partner.',
+        self::SUBMERCHANT_CREATED_DIRECT_TRANSFER                            => 'Submerchant created a direct transfer to a linked account.',
+        self::SUBMERCHANT_INITIATED_SETTLE_NOW_ON_TRANSFER                   => 'Submerchant unblocked settlement on a transfer.',
     ];
 
     public static $fileBasedReconTraceCodes = [

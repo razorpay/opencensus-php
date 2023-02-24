@@ -19,6 +19,7 @@ use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Jobs\Transfers\TransferSettlementStatus;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Jobs\Transfers\LinkedAccountBankVerificationStatusBackfill;
 
@@ -100,11 +101,55 @@ class Service extends Base\Service
         return $reversals->toArrayPublic();
     }
 
+    /**
+     * Checks if we need to log the route + partnership guard logs
+     * @param string $merchantId
+     *
+     * @return bool
+     */
+    protected function shouldLogRoutePartnershipV1Guard(string $merchantId): bool
+    {
+        if ($this->auth->isPartnerAuth() === true)
+        {
+            return false;
+        }
+
+        $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.route_partnership_v1_guards_exp_id'),
+            ],
+            'enable'
+        );
+
+        return (
+            ($isExpEnabled === true) and
+            ((new AccessMapCore)->isSubMerchant($merchantId) === true)
+        );
+    }
+
     public function create(array $input): array
     {
         try
         {
             $transfer = $this->core->createForMerchant($input, $this->merchant);
+
+            $merchantId = $this->merchant->getId();
+
+            if ($this->shouldLogRoutePartnershipV1Guard($merchantId) === true)
+            {
+                $partners = (new Merchant\Core)->fetchAffiliatedPartners($merchantId);
+
+                $this->trace->info(
+                    TraceCode::SUBMERCHANT_CREATED_DIRECT_TRANSFER,
+                    [
+                        'transfer_id'   => $transfer->getId(),
+                        'merchant_id'   => $merchantId,
+                        'input'         => $input,
+                        'partner_ids'   => $partners->getIds()
+                    ]
+                );
+            }
 
             (new Metric)->pushCreateSuccessMetrics($input);
 
@@ -133,6 +178,26 @@ class Service extends Base\Service
                            ->findByPublicIdAndMerchant($id, $this->merchant);
 
         $transfer = $this->core->edit($transfer, $input);
+
+        $merchantId = $this->merchant->getId();
+
+        if ($this->shouldLogRoutePartnershipV1Guard($merchantId) === true)
+        {
+            if ((bool)$input[Entity::ON_HOLD] === false)
+            {
+                $partners = (new Merchant\Core)->fetchAffiliatedPartners($merchantId);
+
+                $this->trace->info(
+                    TraceCode::SUBMERCHANT_INITIATED_SETTLE_NOW_ON_TRANSFER,
+                    [
+                        'transfer_id'   => $transfer->getId(),
+                        'merchant_id'   => $merchantId,
+                        'input'         => $input,
+                        'partner_ids'   => $partners->getIds()
+                    ]
+                );
+            }
+        }
 
         return $transfer->toArrayPublic();
     }
