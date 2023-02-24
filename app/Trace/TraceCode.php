@@ -8987,6 +8987,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_METADATA_DELETE_SUCCESSFUL                             = 'CARD_METADATA_DELETE_SUCCESSFUL';
     const CARD_METADATA_DELETE_EVENT                                  = 'CARD_METADATA_DELETE_EVENT';
 
+    const TOKEN_HQ_PRICING_EVENT_DATA                                 = 'TOKEN_HQ_PRICING_EVENT_DATA';
+    const TOKEN_HQ_PRICING_EVENT                                      = 'TOKEN_HQ_PRICING_EVENT_DATA';
+    const TOKEN_HQ_PRICING_PUSH_EVENT_EXCEPTION                       = 'TOKEN_HQ_PRICING_PUSH_EVENT_EXCEPTION';
+    const TOKEN_HQ_PRICING_PUSH_EVENT_STATE                           = 'TOKEN_HQ_PRICING_PUSH_EVENT_STATE';
+
     const PAYMENT_STATUS_EVENT_FAILURE                                = 'PAYMENT_STATUS_EVENT_FAILURE';
 
     //Table partitioning
