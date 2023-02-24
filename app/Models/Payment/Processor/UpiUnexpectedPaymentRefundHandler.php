@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use Carbon\Carbon;
 
+use RZP\Diag\EventCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\RazorxTreatment;
 
@@ -24,7 +25,7 @@ trait UpiUnexpectedPaymentRefundHandler
             ($isCallback === false) or 
             (empty($payment->getRefundAt()) === true))
         {
-            return;
+            return false;
         }
 
      
@@ -39,12 +40,16 @@ trait UpiUnexpectedPaymentRefundHandler
 
         if ($razorxResult !== 'on') 
         {
-            return;
+            return false;
         }
 
         $payment->setRefundAt(null);
 
         $this->repo->saveOrFail($payment);
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_UNEXPECTED_PAYMENT_REFUND_BLOCK, $payment);
+
+        return true;
     }
 
     public function handleUnExpectedPaymentRefundInRecon($payment)
@@ -60,5 +65,7 @@ trait UpiUnexpectedPaymentRefundHandler
         $payment->setRefundAt(Carbon::now()->getTimestamp());
 
         $this->repo->saveOrFail($payment);
+
+        $this->app['diag']->trackPaymentEventV2(EventCode::PAYMENT_UNEXPECTED_PAYMENT_REFUND_UNBLOCK, $payment);
     }
 }

@@ -22,11 +22,14 @@ use RZP\Models\BharatQr\GatewayResponseParams;
 use RZP\Models\QrCode\NonVirtualAccountQrCode;
 use RZP\Models\QrCodeConfig\Keys as QrCodeConfigKeys;
 use RZP\Models\QrCodeConfig\Repository as QrConfigRepo;
+use RZP\Models\Payment\Processor\UpiUnexpectedPaymentRefundHandler;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Models\Checkout\Order as CheckoutOrder;
 
 class Processor extends Base\Core
 {
+    use UpiUnexpectedPaymentRefundHandler;
+
     const RANDOM_CARD_PADDING = '00000';
 
     protected $gatewayInput;
@@ -201,16 +204,21 @@ class Processor extends Base\Core
         }
         else
         {
-            $attributeArray = $entity->attributesToArray();
+            $blockUnexpectedRefund = $this->handleUnExpectedPaymentRefundInCallback($payment, true);
 
-            $refundNotes = [
-                'notes' => [
-                    'refund_reason' =>  $attributeArray['unexpected_reason']
-                ]
-            ];
+            if ($blockUnexpectedRefund === false)
+            {
+                $attributeArray = $entity->attributesToArray();
 
-            // based on experiment, refund request will be routed to Scrooge
-            $paymentProcessor->refundAuthorizedPayment($payment, $refundNotes);
+                $refundNotes = [
+                    'notes' => [
+                        'refund_reason' =>  $attributeArray['unexpected_reason']
+                    ]
+                ];
+
+                // based on experiment, refund request will be routed to Scrooge
+                $paymentProcessor->refundAuthorizedPayment($payment, $refundNotes);
+            }
         }
 
         $this->repo->qr_payment->syncToEs($entity, EsRepository::UPDATE);
