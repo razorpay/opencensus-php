@@ -288,11 +288,11 @@ class FtsTest extends TestCase
             }
         }
 
-        $this->assertEquals('testusername', $vpa[0]['username']);
-        $this->assertEquals('rzp', $vpa[0]['handle']);
+        $this->assertEquals('payouts.puv27-2', $vpa[0]['username']);
+        $this->assertEquals('rbl', $vpa[0]['handle']);
         $this->assertEquals('banking_account', $vpa[0]['entity_type']);
         $this->assertEquals('1000000lcustba', $vpa[0]['entity_id']);
-        $this->assertEquals('testusername@rzp', $vpa[0]['address']);
+        $this->assertEquals('payouts.puv27-2@rbl', $vpa[0]['address']);
     }
 
     /**
@@ -315,6 +315,26 @@ class FtsTest extends TestCase
         $this->assertEquals($response['exception'], CreateAccount::VPAS_DO_NOT_MATCH_ERROR);
     }
 
+    /**
+     * To test the case where the VPA doesn't start with Capital P
+     */
+    public function testGracefulUpdateOfExistingSourceAccountNegativeCaseFirstLetter()
+    {
+        $this->setUpForRblUpiCredsUpdateTest();
+
+        $this->mockBankingAccountService();
+
+        $this->ba->adminAuth();
+
+        $request = $this->generateMockRequestForGracefulSourceAccountUpdate();
+
+        $request['content']['source_account']['credentials'][RblGatewayFields::PAYER_VPA] = 'payouts.puv27-2@rbl';
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['exception'], CreateAccount::VPAS_FIRST_LETTER_ERROR);
+    }
+
     protected function generateMockRequestForGracefulSourceAccountUpdate()
     {
         return [
@@ -328,7 +348,7 @@ class FtsTest extends TestCase
                         RblGatewayFields::BCAGENT_USERNAME => 'username123',
                         RblGatewayFields::BCAGENT_PASSWORD => 'passwordIsRedacted',
                         RblGatewayFields::HMAC_KEY         => 'hMacKeyIsTested',
-                        RblGatewayFields::PAYER_VPA        => 'testUsername@rzp',
+                        RblGatewayFields::PAYER_VPA        => 'Payouts.puv27-2@rbl',
                         RblGatewayFields::MRCH_ORG_ID      => 'TheMrchOrgId',
                         RblGatewayFields::AGGR_ORG_ID      => 'TheAggrOrgId',
                     ],

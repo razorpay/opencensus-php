@@ -49,6 +49,7 @@ class CreateAccount extends Base
 
     const VPAS_DO_NOT_EXIST_ERROR = 'Banking Account Credentials are not generated';
     const VPAS_DO_NOT_MATCH_ERROR = 'Payer VPA does not match any of the generated VPAs';
+    const VPAS_FIRST_LETTER_ERROR = 'Payer VPA must begin with Capital P';
 
     protected $status;
 
@@ -920,10 +921,10 @@ class CreateAccount extends Base
                 ]);
         }
 
-        if (in_array($vpa, [
-            $credentials[self::UPI_HANDLE1],
-            $credentials[self::UPI_HANDLE2],
-            $credentials[self::UPI_HANDLE3],
+        if (in_array(strtolower($vpa), [
+            strtolower($credentials[self::UPI_HANDLE1]),
+            strtolower($credentials[self::UPI_HANDLE2]),
+            strtolower($credentials[self::UPI_HANDLE3]),
         ]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::VPAS_DO_NOT_MATCH_ERROR,
@@ -935,6 +936,15 @@ class CreateAccount extends Base
                         $credentials[self::UPI_HANDLE2],
                         $credentials[self::UPI_HANDLE3],
                     ]
+                ]);
+        }
+
+        if ($vpa[0] !== 'P')
+        {
+            throw new Exception\BadRequestValidationFailureException(self::VPAS_FIRST_LETTER_ERROR,
+                null,
+                [
+                    'entered_vpa'             => $vpa,
                 ]);
         }
     }
