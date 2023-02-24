@@ -9,6 +9,8 @@ use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+
+use RZP\Models\Batch\Processor\UpiOnboardedTerminalEdit;
 use RZP\Constants\Entity;
 use RZP\Http\RequestHeader;
 use RZP\Constants\Environment;
@@ -27,6 +29,7 @@ use RZP\Models\Terminal\Entity as TerminalEntity;
 use RZP\Models\Batch\Processor\UpiTerminalOnboarding;
 use RZP\Models\Gateway\Terminal\Service as GatewayTerminalService;
 use function Clue\StreamFilter\append;
+use RZP\Models\Batch;
 
 class Service extends Base\Service
 {
@@ -245,6 +248,105 @@ class Service extends Base\Service
         $response = $this->app['terminals_service']->initiateOnboarding($merchant->getId(), $input['gateway'], $identifiers, null, [], $input);
 
         return $response;
+    }
+
+    public function postUpiOnboardedTerminalEditBulk($input)
+    {
+        $response = new Base\PublicCollection;
+
+        foreach ($input as $row)
+        {
+            $rowOutput = $this->processUpiTerminalEditBulkRow($row);
+
+            $response->add($rowOutput);
+        }
+
+        return $response;
+    }
+
+    public function processUpiTerminalEditBulkRow(array $row)
+    {
+        $this->trace->info(
+            TraceCode::UPI_TERMINAL_ONBOARDED_EDIT_REQUEST,
+            [
+                'Terminal Id'   =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID],
+                'Gateway'       =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY],
+                'Recurring'     =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING],
+                'Online'        =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE]
+
+            ]);
+
+        $result = [
+            Constants::IDEMPOTENCY_KEY        => $row[Constants::IDEMPOTENCY_KEY],
+            Constants::BATCH_SUCCESS          => false,
+            Constants::BATCH_HTTP_STATUS_CODE => 500,
+            Constants::BATCH_ERROR => [
+                Constants::BATCH_ERROR_CODE        => '',
+                Constants::BATCH_ERROR_DESCRIPTION => '',
+            ],
+            Constants::VPA_WHITELISTED => '',
+        ];
+
+        $result = array_merge($result, $row);
+
+        try
+        {
+            (new UpiOnboardedTerminalEdit())->processEntry($row);
+
+            $result[Constants::BATCH_SUCCESS] = true;
+            $result[Constants::TERMINAL_ID]  =  $row[Constants::TERMINAL_ID];
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = 201;
+            $result[Constants::VPA_WHITELISTED] = $row[Constants::VPA_WHITELISTED];
+
+            $this->trace->info(
+                TraceCode::UPI_TERMINAL_ONBOARDED_EDIT_RESPONSE,
+                [
+                    'Terminal Id'     =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID],
+                    'Gateway'         =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY],
+                    'Recurring'       =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING],
+                    'Online'          =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE],
+                    'VPA_WHITELISTED' =>  $row[Constants::VPA_WHITELISTED]
+                ]);
+        }
+        catch(BaseException $exception)
+        {
+            $result[Constants::BATCH_ERROR] = [
+                Constants::BATCH_ERROR_DESCRIPTION => $exception->getMessage(),
+                Constants::BATCH_ERROR_CODE => $exception->getData()['response']['error']['internal_error_code'],
+            ];
+
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = $exception->getCode();
+
+            $this->trace->traceException($exception, Trace::ERROR,TraceCode::UPI_TERMINAL_ONBOARDED_EDIT_ERROR,
+                [
+                    'Terminal Id'       =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID],
+                    'Gateway'           =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY],
+                    'Recurring'         =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING],
+                    'Online'            =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE],
+                    'http_status_code'  =>  $result[Constants::BATCH_HTTP_STATUS_CODE]
+                ]);
+
+        }
+        catch (\Throwable $throwable)
+        {
+            $result[Constants::BATCH_ERROR] = [
+                Constants::BATCH_ERROR_DESCRIPTION => $throwable->getMessage(),
+                Constants::BATCH_ERROR_CODE => PublicErrorCode::SERVER_ERROR,
+            ];
+
+            $result[Constants::BATCH_HTTP_STATUS_CODE] = $throwable->getCode();
+
+            $this->trace->traceException($throwable, Trace::ERROR,TraceCode::UPI_TERMINAL_ONBOARDED_EDIT_ERROR,
+                [
+                    'Terminal Id'       =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID],
+                    'Gateway'           =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY],
+                    'Recurring'         =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING],
+                    'Online'            =>  $row[Batch\Header::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE],
+                    'http_status_code'  =>  $result[Constants::BATCH_HTTP_STATUS_CODE]
+                ]);
+        }
+
+        return $result;
     }
 
     public function postUpiTerminalOnboardingBulk($input)

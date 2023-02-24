@@ -999,6 +999,12 @@ class Header
     const TERMINAL_CREATION_STATUS               = 'Status';
     const TERMINAL_CREATION_CAPABILITY           = 'Capability';
 
+    // Upi Onboarded Terminal edit Headers
+    const UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID   =   'Terminal Id';
+    const UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY       =   'Gateway';
+    const UPI_ONBOARDED_TERMINAL_EDIT_RECURRING     =   'Recurring';
+    const UPI_ONBOARDED_TERMINAL_EDIT_ONLINE        =   'Online';
+
     // Upi Terminal Onboarding Headers
     const UPI_TERMINAL_ONBOARDING_MERCHANT_ID   =   'Merchant Id';
     const UPI_TERMINAL_ONBOARDING_GATEWAY       =   'Gateway';
@@ -1747,6 +1753,20 @@ class Header
                 self::UPI_TERMINAL_ONBOARDING_GATEWAY_ACCESS_CODE,
                 self::UPI_TERMINAL_ONBOARDING_EXPECTED,
                 self::UPI_TERMINAL_ONBOARDING_VPA_HANDLE,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+        Type::UPI_ONBOARDED_TERMINAL_EDIT   =>  [
+            self::INPUT => [
+                self::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID,
+                self::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY,
+                self::UPI_ONBOARDED_TERMINAL_EDIT_RECURRING,
+                self::UPI_ONBOARDED_TERMINAL_EDIT_ONLINE,
+            ],
+            self::OUTPUT => [
+                self::UPI_ONBOARDED_TERMINAL_EDIT_TERMINAL_ID,
+                self::UPI_ONBOARDED_TERMINAL_EDIT_GATEWAY,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],

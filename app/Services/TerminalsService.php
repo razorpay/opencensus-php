@@ -44,6 +44,7 @@ class TerminalsService
 
 
     const GATEWAY           = 'gateway';
+    const TERMINAL_ID       = 'terminal_id';
     const GATEWAY_ACQUIRER  = 'gateway_acquirer';
     const MERCHANT_ID       = 'merchant_id';
     const IDENTIFIERS       = 'identifiers';
@@ -57,6 +58,7 @@ class TerminalsService
     const STATUS_CODE       = 'status_code';
     const PATH              = 'path';
     const METHOD            = 'method';
+    const HEADERS           = 'headers';
     const RESPONSE          = 'response';
     const DATA              = 'data';
     const TIMEOUT           = 'timeout';
@@ -71,6 +73,7 @@ class TerminalsService
     const DEFAULT_TIMEOUT   = 0.1;
 
     const INITIATE_ONBOARDING                  = 'initiate_onboarding';
+    const EDIT_ONBOARDED_TERMINAL              = 'Edit_Onboarded_Terminal';
     const CREATE_TERMINAL                      = 'create_terminal';
     const FETCH_TERMINAL_BY_ID                 = 'fetch_terminal_by_id';
     const DELETE_TERMINAL_BY_ID                = 'delete_terminal_by_id';
@@ -116,6 +119,14 @@ class TerminalsService
         self::INITIATE_ONBOARDING      =>  [
             self::PATH      =>  'v2/terminals',
             self::METHOD    =>  Requests::POST,
+            self::OPTIONS => [
+                self::TIMEOUT         => 70, // 70 seconds ref: https://razorpay.slack.com/archives/CNP473LRF/p1666880191950449
+                self::CONNECT_TIMEOUT => 70, // 70 seconds
+            ],
+        ],
+        self::EDIT_ONBOARDED_TERMINAL      =>  [
+            self::PATH      =>  'v1/terminals/%s',
+            self::METHOD    =>  Requests::PATCH,
             self::OPTIONS => [
                 self::TIMEOUT         => 70, // 70 seconds ref: https://razorpay.slack.com/archives/CNP473LRF/p1666880191950449
                 self::CONNECT_TIMEOUT => 70, // 70 seconds
@@ -407,6 +418,54 @@ class TerminalsService
         return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
     }
 
+    public function EditOnboardedTerminal(string $terminalId, string $gateway, $identifiers = null, $features = null, array $currency = [], array $otherInputs = []):array
+    {
+        $params = self::PARAMS[self::EDIT_ONBOARDED_TERMINAL];
+
+        $path = sprintf($params[self::PATH], $terminalId);
+
+        $content = [
+            self::TERMINAL_ID   =>  $terminalId,
+            self::GATEWAY       =>  $gateway,
+            self::CURRENCY      =>  $currency,
+            self::IDENTIFIERS   =>  $identifiers,
+            self::FEATURES      =>  $features,
+        ];
+        try
+        {
+            $headers = $this->getTerminalServiceOrgHeaders();
+        }
+        catch (\Exception $e)
+        {
+            $this->app['trace']->traceException($e, Trace::ERROR, TraceCode::TERMINAL_ORG_HEADERS_EXCEPTION, [
+                'message' => $e->getMessage(),
+                'function' => 'EditOnboardedTerminal',
+            ]);
+        }
+
+
+        if(isset($otherInputs[self::GATEWAY_MERCHANT_ID]) === true)
+        {
+            $content[self::IDENTIFIERS][self::GATEWAY_MERCHANT_ID] = $otherInputs[self::GATEWAY_MERCHANT_ID];
+        }
+
+
+        if (isset($otherInputs[self::GATEWAY_ACQUIRER]) === true)
+        {
+            $content[self::GATEWAY_ACQUIRER] = $otherInputs[self::GATEWAY_ACQUIRER];
+        }
+        if (isset($otherInputs[self::SECRETS]) === true)
+        {
+            $content[self::SECRETS] = $otherInputs[self::SECRETS];
+        }
+
+        $content = json_encode($content);
+
+        $response = $this->sendRequest($path, $content, $params[self::METHOD], $params[self::OPTIONS],$headers);
+
+        return $this->parseAndReturnResponse($response)[self::DATA] ?? [];
+    }
+
     public function getTerminalsByMerchantIdAndGateway(string $merchantId, string $gateway)
     {
         $params = self::PARAMS[self::FETCH_TERMINALS_FOR_MERCHANT_GATEWAY];
@@ -661,6 +720,7 @@ class TerminalsService
     protected function handleRequestAndResponse(string $path, $content = '', string $method = Requests::POST, array $additionalOptions = [],
                                                 array $additionalHeaders = [])
     {
+
         $url = $this->getBaseUrl() . $path;
 
         $headers = $this->getHeaders($additionalHeaders);
@@ -687,6 +747,7 @@ class TerminalsService
 
         try
         {
+
             $this->trace->info(TraceCode::TERMINALS_SERVICE_REQUEST, $data);
 
             $response = $this->makeRequest($url, $headers, $content, $method, $options);

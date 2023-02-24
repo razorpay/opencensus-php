@@ -204,6 +204,8 @@ class Type
 
     const UPI_TERMINAL_ONBOARDING     = 'upi_terminal_onboarding';
 
+    const UPI_ONBOARDED_TERMINAL_EDIT = 'upi_onboarded_terminal_edit';
+    
     const HITACHI_FULCRUM_ONBOARD     = 'hitachi_fulcrum_onboard';
 
     const EMANDATE_DEBIT_HDFC         = 'emandate_debit_hdfc';
@@ -314,6 +316,7 @@ class Type
         self::SUBMERCHANT_TYPE_UPDATE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
+        self::UPI_ONBOARDED_TERMINAL_EDIT,
         self::HITACHI_FULCRUM_ONBOARD,
         self::WEBSITE_CHECKER,
         self::HITACHI_CBK_MASTERCARD,
@@ -423,6 +426,7 @@ class Type
         self::MERCHANT_CAPITAL_TAGS,
         self::CREDIT,
         self::UPI_TERMINAL_ONBOARDING,
+        self::UPI_ONBOARDED_TERMINAL_EDIT,
         self::HITACHI_FULCRUM_ONBOARD,
         self::VAULT_MIGRATE_TOKEN_NS,
         self::MERCHANT_UPLOAD_MIQ,
@@ -536,6 +540,7 @@ class Type
         self::LINKED_ACCOUNT_CREATE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
+        self::UPI_ONBOARDED_TERMINAL_EDIT,
         self::PAYMENT_TRANSFER,
         self::TRANSFER_REVERSAL,
         self::PAYMENT_TRANSFER_RETRY,
@@ -608,6 +613,7 @@ class Type
         self::LINKED_ACCOUNT_CREATE,
         self::RETRY_REFUNDS_TO_BA,
         self::UPI_TERMINAL_ONBOARDING,
+        self::UPI_ONBOARDED_TERMINAL_EDIT,
         self::PAYMENT_TRANSFER,
         self::TRANSFER_REVERSAL,
         self::PAYMENT_TRANSFER_RETRY,
@@ -654,6 +660,7 @@ class Type
         self::TERMINAL_CREATION                  => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::TERMINAL                           => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::UPI_TERMINAL_ONBOARDING            => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
+        self::UPI_ONBOARDED_TERMINAL_EDIT        => Name::EDIT_TERMINAL,
         self::HITACHI_FULCRUM_ONBOARD            => Name::PAYMENTS_BATCH_CREATE_TERMINALS_BULK,
         self::INTERNAL_INSTRUMENT_REQUEST        => Name::INTERNAL_INSTRUMENT_CREATE_BULK,
         self::PAYOUT_LINK_BULK                   => Name::PAYOUT_LINKS_ADMIN_BULK_CREATE,
