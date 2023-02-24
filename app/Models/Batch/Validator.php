@@ -6,6 +6,7 @@ use App;
 use DateTime;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator as LaravelValidator;
+use Lib\Gstin;
 
 use RZP\Base;
 use RZP\Exception;
@@ -51,6 +52,8 @@ use RZP\Models\Merchant\Detail\Upload\Processors\BulkUploadMIQParser as UploadMI
  */
 class Validator extends Base\Validator
 {
+    const PAN_REGEX = '/^[a-zA-Z]{3}[aAbBcCfFgGhHjJlLpPtT][a-zA-Z][0-9]{4}[a-zA-Z]{1}$/';
+
     // Default rule for file validation. Per type a different file rule can be written.
     const DEFAULT_MIME_RULE = ''
         // Allowed mime types.
@@ -557,6 +560,14 @@ class Validator extends Base\Validator
         Entity::SCHEDULE    => 'sometimes|numeric',
     ];
 
+    protected static $fundAccountV2CreateRules = [
+        Entity::TYPE        => 'required|in:fund_account_v2',
+        Entity::NAME        => 'filled|string|max:255',
+        Entity::FILE        => 'required_without:file_id|file|max:10240' . self::CSV_MIME_RULE,
+        Entity::FILE_ID     => 'required_without:file|public_id',
+        Entity::SCHEDULE    => 'sometimes|numeric',
+    ];
+
     protected static $payoutValidateRules = [
         Entity::TYPE        => 'required|in:payout',
         Entity::NAME        => 'filled|string|max:255',
@@ -635,6 +646,27 @@ class Validator extends Base\Validator
         Header::CONTACT_MOBILE_2          => 'sometimes|nullable|string',
         Header::CONTACT_REFERENCE_ID      => 'sometimes|nullable|string',
         Header::NOTES                     => 'sometimes|nullable|notes',
+    ];
+
+    protected static $fundAccountV2TypeRowRules = [
+        Header::FUND_ACCOUNT_TYPE         => 'required|string|in:bank_account,vpa,wallet',
+        Header::FUND_ACCOUNT_NAME         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_IFSC         => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_NUMBER       => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string',
+        Header::FUND_ACCOUNT_VPA          => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',vpa|nullable|string',
+        Header::FUND_ACCOUNT_PHONE_NUMBER => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',wallet|nullable|string',
+        Header::FUND_ACCOUNT_EMAIL        => 'sometimes|nullable|string|email',
+        Header::FUND_ACCOUNT_PROVIDER     => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',wallet|nullable|string|in:amazonpay',
+        Header::CONTACT_ID                => 'sometimes|nullable|public_id|size:19',
+        Header::CONTACT_TYPE              => 'required_without:'.Header::CONTACT_ID.'|nullable|string',
+        Header::CONTACT_NAME_2            => 'required_without:'.Header::CONTACT_ID.'|nullable|string|custom',
+        Header::CONTACT_EMAIL_2           => 'sometimes|nullable|string|custom',
+        Header::CONTACT_MOBILE_2          => 'sometimes|nullable|string',
+        Header::CONTACT_REFERENCE_ID      => 'sometimes|nullable|string',
+        Header::NOTES                     => 'sometimes|nullable|notes',
+        Header::FUND_BANK_ACCOUNT_TYPE    => 'required_if:'.Header::FUND_ACCOUNT_TYPE.',bank_account|nullable|string|in:savings,current',
+        Header::CONTACT_GSTIN             => 'sometimes|string|max:15|custom',
+        Header::CONTACT_PAN               => 'sometimes|string|max:10|custom',
     ];
 
     // This is not a copy paste of above ^ rules!
@@ -2162,6 +2194,23 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateFundAccountV2Entries(array & $entries, array $params, ME $merchant)
+    {
+        $operation = 'fundAccountV2TypeRow';
+
+        if ($merchant->isFeatureEnabled(Feature::ALLOW_COMPLETE_ERROR_DESC))
+        {
+            $this->validateEntriesWithPublicExceptionHandledAndCompleteErrorDescription($entries, $operation);
+        }
+        else
+        {
+            $this->validateEntriesWithPublicExceptionHandled($entries, function(array $entry) use ($operation) {
+                $this->validateInput($operation, $entry);
+            });
+        }
+    }
+
+
     /**
      * Validates batch entry.
      * @throws BadRequestValidationFailureException
@@ -2729,7 +2778,8 @@ class Validator extends Base\Validator
         $operations = [
             'payoutRupeesTypeRow',
             'payoutTypeRow',
-            'fundAccountTypeRow'
+            'fundAccountTypeRow',
+            'fundAccountV2TypeRow'
         ];
 
         return (in_array($operation, $operations) === true);
@@ -2787,6 +2837,36 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_CREATION_NOT_ALLOWED
             );
+        }
+    }
+
+    protected function validateContactGstin($attribute, $value)
+    {
+        $isValidGstin = Gstin::isValid($value);
+
+        if ($isValidGstin === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The gstin field is invalid.',
+                Header::CONTACT_GSTIN);
+        }
+    }
+
+    protected function validateContactPan($attribute, $value)
+    {
+        $valid = preg_match(self::PAN_REGEX, $value, $matches);
+
+        $this->getTrace()->info(TraceCode::CONTACT_PAN_REGEX_MATCH,
+            [
+                'isPanFormatValid' => $valid,
+            ]
+        );
+
+        if ($valid != 1)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The pan field is invalid.',
+                Header::CONTACT_PAN);
         }
     }
 }

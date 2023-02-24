@@ -924,6 +924,8 @@ class Header
     const CONTACT_CITY                = 'Contact City';
     const CONTACT_ZIPCODE             = 'Contact Zipcode';
     const CONTACT_STATE               = 'Contact State';
+    const CONTACT_GSTIN               = 'Contact GSTIN';
+    const CONTACT_PAN                 = 'Contact PAN';
 
     // Fund Account Headers, refer HEADER_MAP for full list of input & output headers.
     const FUND_ACCOUNT_ID             = 'Fund Account Id';
@@ -935,6 +937,7 @@ class Header
     const FUND_ACCOUNT_PHONE_NUMBER   = 'Fund Account Phone Number';
     const FUND_ACCOUNT_EMAIL          = 'Fund Account Email';
     const FUND_ACCOUNT_PROVIDER       = 'Fund Account Provider';
+    const FUND_BANK_ACCOUNT_TYPE      = 'Bank Account Type';
 
     // Payout Headers, refer HEADER_MAP for full list of input & output headers.
     const RAZORPAYX_ACCOUNT_NUMBER = 'RazorpayX Account Number';
@@ -1527,6 +1530,24 @@ class Header
         Header::CONTACT_MOBILE_2,
         Header::CONTACT_REFERENCE_ID,
         Header::NOTES,
+    ];
+
+    const MANDATORY_AND_CONDITIONALLY_MANDATORY_HEADERS_FOR_FUND_ACCOUNTS_V2 = [
+        Header::FUND_ACCOUNT_TYPE,
+        Header::FUND_ACCOUNT_NAME,
+        Header::FUND_ACCOUNT_IFSC,
+        Header::FUND_ACCOUNT_NUMBER,
+        Header::FUND_BANK_ACCOUNT_TYPE,
+        Header::FUND_ACCOUNT_VPA,
+        Header::CONTACT_ID,
+        Header::CONTACT_TYPE,
+        Header::CONTACT_NAME_2,
+        Header::CONTACT_EMAIL_2,
+        Header::CONTACT_MOBILE_2,
+        Header::CONTACT_REFERENCE_ID,
+        Header::NOTES,
+        Header::CONTACT_GSTIN,
+        Header::CONTACT_PAN,
     ];
 
     // Following is a list of columns that are mandatory headers in the payout batch file
@@ -3746,6 +3767,53 @@ class Header
             ],
         ],
 
+        Type::FUND_ACCOUNT_V2 => [
+            self::INPUT => [
+                self::FUND_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_NAME,
+                self::FUND_ACCOUNT_IFSC,
+                self::FUND_ACCOUNT_NUMBER,
+                self::FUND_BANK_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_VPA,
+                self::FUND_ACCOUNT_PROVIDER,
+                self::FUND_ACCOUNT_PHONE_NUMBER,
+                self::FUND_ACCOUNT_EMAIL,
+                self::CONTACT_ID,
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                self::CONTACT_GSTIN,
+                self::CONTACT_PAN,
+                // Contact's notes.
+                self::NOTES,
+            ],
+            self::OUTPUT => [
+                self::FUND_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_NAME,
+                self::FUND_ACCOUNT_IFSC,
+                self::FUND_ACCOUNT_NUMBER,
+                self::FUND_BANK_ACCOUNT_TYPE,
+                self::FUND_ACCOUNT_VPA,
+                self::FUND_ACCOUNT_PHONE_NUMBER,
+                self::FUND_ACCOUNT_EMAIL,
+                self::CONTACT_ID,
+                self::CONTACT_TYPE,
+                self::CONTACT_NAME_2,
+                self::CONTACT_EMAIL_2,
+                self::CONTACT_MOBILE_2,
+                self::CONTACT_REFERENCE_ID,
+                self::CONTACT_GSTIN,
+                self::CONTACT_PAN,
+                // Contact's notes.
+                self::NOTES,
+                self::FUND_ACCOUNT_ID,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
         Type::PAYOUT => [
             self::INPUT => [
                 self::RAZORPAYX_ACCOUNT_NUMBER,
@@ -5209,6 +5277,12 @@ class Header
 
             return;
         }
+        elseif ($type === Type::FUND_ACCOUNT_V2)
+        {
+            self::validateFundAccountV2BulkHeaders($expectedHeaders, $actualHeaders);
+
+            return;
+        }
         else
         {
             $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
@@ -5333,6 +5407,41 @@ class Header
         // We cannot do a strict check here as it will break existing validations.
         // The sample files now have two versions, one before the bulk improvements project and the other after it.
         // We need to support validations for both.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
+
+        // Now we shall make sure that all headers provided are part of our headers list.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $expectedHeaders, true) === false)
+            {
+                throw new BadRequestValidationFailureException('The uploaded file has invalid header: ' . $actualHeader);
+            }
+
+            // This is required so that we throw an exception if the same header is repeated twice.
+            $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
+        }
+    }
+
+    public static function validateFundAccountV2BulkHeaders(array $expectedHeaders, array $actualHeaders)
+    {
+        $mandatoryHeaders = self::MANDATORY_AND_CONDITIONALLY_MANDATORY_HEADERS_FOR_FUND_ACCOUNTS_V2;
+
         foreach ($actualHeaders as $actualHeader)
         {
             if (in_array($actualHeader, $mandatoryHeaders, true) === true)

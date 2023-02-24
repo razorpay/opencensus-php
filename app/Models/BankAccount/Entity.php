@@ -147,6 +147,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACCOUNT_NUMBER,
         self::UPDATED_AT,
+        self::ACCOUNT_TYPE,
     ];
 
     protected $hosted = [

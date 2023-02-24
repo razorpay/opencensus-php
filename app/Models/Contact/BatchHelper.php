@@ -13,6 +13,8 @@ class BatchHelper
     const REFERENCE_ID        = 'reference_id';
     const NOTES               = 'notes';
     const CONTACT             = 'contact';
+    const CONTACT_GSTIN       = 'contact_gstin';
+    const CONTACT_PAN         = 'contact_pan';
 
     public static function getContactInput(array $entry): array
     {
@@ -25,6 +27,8 @@ class BatchHelper
             // Notes is optional.
             Entity::NOTES           => $entry[self::NOTES] ?? [],
             Entity::IDEMPOTENCY_KEY => $entry[Entity::IDEMPOTENCY_KEY],
+            Entity::GST_IN          => $entry[self::CONTACT][self::CONTACT_GSTIN],
+            Entity::PAN             => $entry[self::CONTACT][self::CONTACT_PAN],
         ];
 
         $input[Entity::NOTES] = self::formatNotesInput($input[Entity::NOTES]);

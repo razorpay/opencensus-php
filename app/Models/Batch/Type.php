@@ -118,6 +118,8 @@ class Type
 
     const FUND_ACCOUNT          = 'fund_account';
 
+    const FUND_ACCOUNT_V2       = 'fund_account_v2';
+
     // iin batches
     const IIN_NPCI_RUPAY        = 'iin_npci_rupay';
 
@@ -405,6 +407,7 @@ class Type
         self::TERMINAL_CREATION,
         self::CONTACT,
         self::FUND_ACCOUNT,
+        self::FUND_ACCOUNT_V2,
         self::MERCHANT_ONBOARDING,
         self::LINKED_ACCOUNT_REVERSAL,
         self::SUBMERCHANT_ASSIGN,
@@ -498,6 +501,7 @@ class Type
         self::PAYOUT,
         self::TALLY_PAYOUT,
         self::FUND_ACCOUNT,
+        self::FUND_ACCOUNT_V2,
         self::SUBMERCHANT_ASSIGN,
         self::PRICING_RULE,
         self::BUY_PRICING_RULE,
@@ -566,6 +570,7 @@ class Type
         self::PAYMENT_LINK,
         self::PAYOUT,
         self::FUND_ACCOUNT,
+        self::FUND_ACCOUNT_V2,
         self::PRICING_RULE,
         self::BUY_PRICING_RULE,
         self::BUY_PRICING_ASSIGN,

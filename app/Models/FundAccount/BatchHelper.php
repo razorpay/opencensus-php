@@ -13,15 +13,17 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 class BatchHelper
 {
-    const ID             = 'id';
-    const TYPE           = 'account_type';
-    const IFSC           = 'account_IFSC';
-    const NUMBER         = 'account_number';
-    const NAME           = 'account_name';
-    const VPA            = 'account_vpa';
-    const PHONE_NUMBER   = 'account_phone_number';
-    const EMAIL          = 'account_email';
-    const FUND_ACCOUNT   = 'fund';
+    const ID                    = 'id';
+    const TYPE                  = 'account_type';
+    const IFSC                  = 'account_IFSC';
+    const NUMBER                = 'account_number';
+    const NAME                  = 'account_name';
+    const VPA                   = 'account_vpa';
+    const PHONE_NUMBER          = 'account_phone_number';
+    const EMAIL                 = 'account_email';
+    const FUND_ACCOUNT          = 'fund';
+    const BANK_ACCOUNT_TYPE     = 'bank_account_type';
+
 
     // Todo: Include this field in the sample bulk contact file
     const PROVIDER       = 'account_provider';
@@ -48,6 +50,7 @@ class BatchHelper
                     BankAccount\Entity::IFSC           => $entry[self::FUND_ACCOUNT][self::IFSC],
                     BankAccount\Entity::ACCOUNT_NUMBER => trim($entry[self::FUND_ACCOUNT][self::NUMBER]),
                     BankAccount\Entity::NAME           => $entry[self::FUND_ACCOUNT][self::NAME],
+                    BankAccount\Entity::ACCOUNT_TYPE   => $entry[self::FUND_ACCOUNT][self::BANK_ACCOUNT_TYPE],
                 ];
                 break;
 

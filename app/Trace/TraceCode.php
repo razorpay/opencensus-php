@@ -9123,6 +9123,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const BAD_REQUEST_COULD_NOT_FETCH_SUBMERCHANT_CAPITAL_APPLICATIONS = 'BAD_REQUEST_COULD_NOT_FETCH_SUBMERCHANT_CAPITAL_APPLICATIONS';
 
+    const CONTACT_PAN_REGEX_MATCH = 'CONTACT_PAN_REGEX_MATCH';
+
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
         self::PAYMENT_CREATED                                       => 'New payment created',
