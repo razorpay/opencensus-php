@@ -5095,4 +5095,32 @@ class Terminal extends Base
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
+
+    public function createPayuSodexoTerminal()
+    {
+        $attributes = [
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'payu',
+            'card'                  => 1,
+            'netbanking'            => 1,
+            'upi'                   => 1,
+            'emi'                   => 1,
+            'emi_subvention'        => 'customer',
+            'gateway_merchant_id'   => 'abcd',
+            'network_category'      => 'ecommerce',
+            'gateway_secure_secret' => 'secret',
+            'enabled_wallets'       => ['jiomoney','mobikwik','paytm'],
+            'mode'                  =>  '2',
+            'type'                  => [
+                'recurring_3ds'                 => '1',
+                'recurring_non_3ds'             => '1',
+                'direct_settlement_with_refund' => '1',
+                'optimizer'                     => '1',
+                'sodexo'                        => '1'
+            ],
+        ];
+        $attributes = array_merge($attributes, $override);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
 }

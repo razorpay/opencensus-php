@@ -81,6 +81,8 @@ class Type
 
     const IN_APP                           = 'in_app';
 
+    const SODEXO                           = "sodexo";
+
     protected static $types = [
         self::NON_RECURRING,
         self::RECURRING_3DS,
@@ -109,6 +111,7 @@ class Type
         self::ONLINE,
         self::OFFLINE,
         self::IN_APP,
+        self::SODEXO,
     ];
 
     protected static $bitPosition = [
@@ -139,6 +142,7 @@ class Type
         self::OFFLINE                          => 25,
         self::IN_APP                           => 26,
         self::DISABLE_OPTIMISER_REFUNDS        => 27,
+        self::SODEXO                           => 28,
     ];
 
     /**

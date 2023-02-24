@@ -5010,4 +5010,35 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_FEATURE_NOT_ALLOWED_FOR_MERCHANT,
         ],
     ],
+
+    'testCreatePayuSodexoTerminal'        => [
+        'request' => [
+            'url'     => '/merchants/10000000000000/terminals',
+            'content' => [
+                'gateway'                       => 'payu',
+                'gateway_acquirer'              => 'payu',
+                'gateway_merchant_id'           => '12344',
+                'gateway_secure_secret'         => '12344',
+                'card'                           => 1,
+                'type'                      => [
+                    'non_recurring' => '1',
+                    'direct_settlement_with_refund' => '1',
+                    'sodexo' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => '12344',
+                'enabled'                   => true,
+                'type'    => [
+                    'non_recurring',
+                    'direct_settlement_with_refund',
+                    'sodexo',
+                ],
+            ]
+        ]
+    ],
+
 ];

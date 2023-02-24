@@ -4381,4 +4381,41 @@ class TerminalTest extends TestCase
 
     }
 
+    public function testCreatePayuSodexoTerminal()
+    {
+        $this->startTest();
+    }
+
+    public function testEditPayuSodexoTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal',
+            [
+                'id' => 'AqdfGh5460opVt',
+                'merchant_id' => '10000000000000',
+                'gateway' => 'payu',
+                'gateway_merchant_id' => '250000002',
+                'gateway_secure_secret' => "1231424",
+                'card' => 1,
+                'mode' => 3,
+                'type'    => [
+                    'non_recurring' => '1'
+                ],
+            ]);
+        $tid = $terminal['id'];
+
+        $data = [
+            'card' => "1",
+            'type'    => [
+                'sodexo' => '1',
+                'non_recurring'=>'1'
+            ],
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $this->assertEquals( "1", $content['card']);
+        
+        $this->assertEquals(['non_recurring','sodexo'],$content['type']);
+    }
 }

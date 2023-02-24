@@ -1999,4 +1999,8 @@ class Entity extends Base\PublicEntity
         }
         return in_array($this->getGateway(), self::gatewaysOnlyOnTs) || in_array($this->getGateway(), Gateway::TOKENISATION_GATEWAYS);
     }
+
+    public function isSodexo() {
+        return ($this->isTypeApplicable(Type::SODEXO) === true);
+    }
 }
