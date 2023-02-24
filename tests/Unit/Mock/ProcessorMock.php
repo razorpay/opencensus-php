@@ -22,4 +22,9 @@ class ProcessorMock extends Processor\Processor
     {
         return $this->buildPaymentEntity($input);
     }
+
+    public function runUpdatePaymentWithOptimizerGatewayData($payment, $response)
+    {
+        return $this->updatePaymentWithOptimizerGatewayData($payment,$response);
+    }
 }

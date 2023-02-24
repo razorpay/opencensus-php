@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Admin;
 use RZP\Models\Feature;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -268,8 +269,41 @@ trait CardPaymentService
         return $response;
     }
 
+    // This function updates payment entity with optimizer specific data.
+    protected function updatePaymentWithOptimizerGatewayData($payment, $response)
+    {
+        // check optimizer_gateway_data is passsed in CPS response
+        if ((empty($response) === true) or (empty($response[Constants::DATA]) === true) or
+            (empty($response[Constants::DATA][Constants::OPTIMIZER_GATEWAY_DATA]) === true)) {
+            return;
+        }
+
+        // check if merchant is Optimizer
+        if ($payment->merchant->isFeatureEnabled(Features::RAAS) === false or
+            $payment->terminal->isOptimizer() === false) {
+            return;
+        }
+
+        $optimizerData = $response[Constants::DATA][Constants::OPTIMIZER_GATEWAY_DATA];
+
+        // Append notes. Razorx is done at CPS level, and data is sent based on that. So no repetitive razorx call.
+        if ((empty($optimizerData) === false) and
+            (empty($optimizerData[Payment\Entity::NOTES]) === false)) {
+
+            $newNotes = json_decode($optimizerData[Payment\Entity::NOTES], TRUE);
+            $payment->appendNotes($newNotes);
+
+            $this->trace->info(TraceCode::OPTIMIZER_GATEWAY_DATA, [
+                'payment_id' => $payment->getId(),
+                'action' => 'append_notes',
+            ]);
+        }
+    }
+
     protected function updatePaymentFromCpsResponse($payment, $response)
     {
+        $this->updatePaymentWithOptimizerGatewayData($payment, $response);
+
         if ((empty($response) === true) or
             (empty($response['payment']) === true))
         {

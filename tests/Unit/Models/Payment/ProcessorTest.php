@@ -19,6 +19,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Unit\Mock\ProcessorMock;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Trace\ApiTraceProcessor;
 use function GuzzleHttp\Promise\queue;
 
 class ProcessorTest extends TestCase
@@ -294,6 +295,7 @@ class ProcessorTest extends TestCase
         $payment->shouldReceive('isCard')->andReturn(true);
         $payment->shouldReceive('isInternational')->andReturn(true);
         $payment->shouldReceive('getMetadata')->withAnyArgs()->andReturn(Metadata::CHECKOUTJS);
+        $payment-
 
         $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
         $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn($paypal);
@@ -324,5 +326,93 @@ class ProcessorTest extends TestCase
         }
         self::assertEquals(\RZP\Models\Merchant\Methods\Entity::PAYPAL, $instruments['instrument']);
         self::assertEquals('wallet', $instruments['method']);
+    }
+
+    public function testUpdatePaymentWithOptimizerGatewayDataSuccess()
+    {
+        $payment = \Mockery::mock(Entity::class)->makePartial();
+        $merchant = \Mockery::mock(Merchant\Entity::class)->makePartial();
+        $terminal = \Mockery::mock(Terminal\Entity::class);
+
+        $merchant->shouldReceive('isFeatureEnabled')->with(Constants::RAAS)->andReturn(true);
+        $terminal->shouldReceive('isOptimizer')->andReturn(true);
+        $response['data']['optimizer_gateway_data']['notes'] = '{"bankcode":"Visa","mode":"CC","PG-TYPE":"CC"}';
+
+        $payment->shouldReceive('getAttribute')->with('merchant')->andReturn($merchant);
+        $payment->shouldReceive('getAttribute')->with('terminal')->andReturn($terminal);
+        $payment->setNotes(['a' => 'b']);
+
+        $this->processorMock->runUpdatePaymentWithOptimizerGatewayData($payment, $response);
+
+        self::assertEquals('Visa', $payment->getNotes()->toArray()['bankcode']);
+        self::assertEquals('CC', $payment->getNotes()->toArray()['PG-TYPE']);
+        self::assertEquals('CC', $payment->getNotes()->toArray()['mode']);
+        self::assertEquals('b', $payment->getNotes()->toArray()['a']);
+    }
+
+    public function testUpdatePaymentWithOptimizerGatewayData_NonOptimizer1()
+    {
+        $payment = \Mockery::mock(Entity::class)->makePartial();
+        $merchant = \Mockery::mock(Merchant\Entity::class)->makePartial();
+        $terminal = \Mockery::mock(Terminal\Entity::class);
+
+        $merchant->shouldReceive('isFeatureEnabled')->with(Constants::RAAS)->andReturn(false);
+        $terminal->shouldReceive('isOptimizer')->andReturn(true);
+        $response['data']['optimizer_gateway_data']['notes']= '{"bankcode":"Visa","mode":"CC","PG-TYPE":"CC"}';
+
+        $payment->shouldReceive('getAttribute')->with('merchant')->andReturn($merchant);
+        $payment->shouldReceive('getAttribute')->with('terminal')->andReturn($terminal);
+        $payment->setNotes(['a' => 'b']);
+
+        $this->processorMock->runUpdatePaymentWithOptimizerGatewayData($payment, $response);
+
+        self::assertEquals('b', $payment->getNotes()->toArray()['a']);
+        self::assertEmpty($payment->getNotes()->toArray()['bankcode']);
+        self::assertEmpty($payment->getNotes()->toArray()['PG-TYPE']);
+        self::assertEmpty($payment->getNotes()->toArray()['mode']);
+    }
+
+    public function testUpdatePaymentWithOptimizerGatewayData_NonOptimizer2()
+    {
+        $payment = \Mockery::mock(Entity::class)->makePartial();
+        $merchant = \Mockery::mock(Merchant\Entity::class)->makePartial();
+        $terminal = \Mockery::mock(Terminal\Entity::class);
+
+        $merchant->shouldReceive('isFeatureEnabled')->with(Constants::RAAS)->andReturn(true);
+        $terminal->shouldReceive('isOptimizer')->andReturn(false);
+        $response['data']['optimizer_gateway_data']['notes']= '{"bankcode":"Visa","mode":"CC","PG-TYPE":"CC"}';
+
+        $payment->shouldReceive('getAttribute')->with('merchant')->andReturn($merchant);
+        $payment->shouldReceive('getAttribute')->with('terminal')->andReturn($terminal);
+        $payment->setNotes(['a' => 'b']);
+
+        $this->processorMock->runUpdatePaymentWithOptimizerGatewayData($payment, $response);
+
+        self::assertEquals('b', $payment->getNotes()->toArray()['a']);
+        self::assertEmpty($payment->getNotes()->toArray()['bankcode']);
+        self::assertEmpty($payment->getNotes()->toArray()['PG-TYPE']);
+        self::assertEmpty($payment->getNotes()->toArray()['mode']);
+    }
+
+    public function testUpdatePaymentWithOptimizerGatewayData_EmptyNotesData()
+    {
+        $payment = \Mockery::mock(Entity::class)->makePartial();
+        $merchant = \Mockery::mock(Merchant\Entity::class)->makePartial();
+        $terminal = \Mockery::mock(Terminal\Entity::class);
+
+        $merchant->shouldReceive('isFeatureEnabled')->with(Constants::RAAS)->andReturn(true);
+        $terminal->shouldReceive('isOptimizer')->andReturn(true);
+        $response['data']['optimizer_gateway_data']['notes']= '';
+
+        $payment->shouldReceive('getAttribute')->with('merchant')->andReturn($merchant);
+        $payment->shouldReceive('getAttribute')->with('terminal')->andReturn($terminal);
+        $payment->setNotes(['a' => 'b']);
+
+        $this->processorMock->runUpdatePaymentWithOptimizerGatewayData($payment, $response);
+
+        self::assertEquals('b', $payment->getNotes()->toArray()['a']);
+        self::assertEmpty($payment->getNotes()->toArray()['bankcode']);
+        self::assertEmpty($payment->getNotes()->toArray()['PG-TYPE']);
+        self::assertEmpty($payment->getNotes()->toArray()['mode']);
     }
 }

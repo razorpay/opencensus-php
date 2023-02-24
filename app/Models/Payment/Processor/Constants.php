@@ -115,4 +115,8 @@ class Constants
 
     const OPGSP_TRANSACTION_LIMIT_USD = 200000;
 
+    // optimizer
+    const OPTIMIZER_GATEWAY_DATA = 'optimizer_gateway_data';
+    const DATA                   = 'data';
+
 }
