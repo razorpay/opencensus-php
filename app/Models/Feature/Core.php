@@ -503,50 +503,6 @@ class Core extends Base\Core
                     Merchant\Entity::EMAIL    => $merchantEmail
                 ]);
         }
-        else if (($feature->getName() === Constants::LOC) and
-                 ($isLiveMode === true))
-        {
-            $merchantEmail = $merchant->getEmail();
-
-            $data['contact_name']  = $merchant->getName();
-            $data['contact_email'] = $merchantEmail;
-
-            $esEligibleEmail = new CashAdvanceEligible($data);
-
-            Mail::queue($esEligibleEmail);
-
-            $this->trace->info(
-                TraceCode::LOC_ELIGIBLE_MERCHANT_NOTIFIED,
-                [
-                    PublicEntity::MERCHANT_ID => $entityId,
-                    Entity::SHOULD_SYNC       => $shouldSync,
-                    Mode::LIVE                => $isLiveMode,
-                    Entity::NEW_FEATURE       => $feature,
-                    Merchant\Entity::EMAIL    => $merchantEmail
-                ]);
-        }
-        else if (($feature->getName() === Constants::LOAN) and
-                 ($isLiveMode === true))
-        {
-            $merchantEmail = $merchant->getEmail();
-
-            $data['contact_name']  = $merchant->getName();
-            $data['contact_email'] = $merchantEmail;
-
-            $loanEligibleEmail = new LoanEligible($data);
-
-            Mail::queue($loanEligibleEmail);
-
-            $this->trace->info(
-                TraceCode::LOAN_ELIGIBLE_MERCHANT_NOTIFIED,
-                [
-                    PublicEntity::MERCHANT_ID => $entityId,
-                    Entity::SHOULD_SYNC       => $shouldSync,
-                    Mode::LIVE                => $isLiveMode,
-                    Entity::NEW_FEATURE       => $feature,
-                    Merchant\Entity::EMAIL    => $merchantEmail
-                ]);
-        }
         else
         {
             $this->trace->info(

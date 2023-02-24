@@ -1060,98 +1060,6 @@ class FeaturesTest extends OAuthTestCase
     }
 
     /**
-     * This function tests updating of merchant feature loc_stage_2.
-     * It will fail because loc_stage_1 is not present
-     */
-    public function testAddMerchantLocStage2FeatureFailure()
-    {
-        $this->fixtures->create('merchant_detail',[
-            'merchant_id' => '10000000000000',
-            'contact_name'=> 'Aditya',
-            'business_type' => 2
-        ]);
-
-        $this->ba->proxyAuth('rzp_live_10000000000000');
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of merchant feature loc_stage_2.
-     * It will pass because loc_stage_1 is present
-     */
-    public function testAddMerchantLocStage2FeatureSuccess()
-    {
-        $this->addFeatures(Mode::LIVE, false, [Constants::LOC_STAGE_1]);
-
-        $this->fixtures->create('merchant_detail',[
-            'merchant_id' => '10000000000000',
-            'contact_name'=> 'Aditya',
-            'business_type' => 2
-        ]);
-
-        $this->ba->proxyAuth('rzp_live_10000000000000');
-
-        $response = $this->startTest();
-        $features = $response['features'];
-
-        $check = false;
-
-        foreach ($features as $feature)
-        {
-            switch ($feature['feature'])
-            {
-                case Constants::LOC_STAGE_2:
-                    $this->assertTrue($feature['value']);
-
-                    $this->assertEquals(
-                        Constants::$visibleFeaturesMap[Constants::LOC_STAGE_2]['display_name'],
-                        $feature['display_name']
-                    );
-
-                    $check = true;
-                    break;
-
-                case Constants::LOC_STAGE_1:
-                    $this->assertTrue($feature['value']);
-
-                    $this->assertEquals(
-                        Constants::$visibleFeaturesMap[Constants::LOC_STAGE_1]['display_name'],
-                        $feature['display_name']
-                    );
-
-                    break;
-
-                default:
-                    $this->assertFalse($feature['value']);
-            }
-        }
-        $this->assertTrue($check);
-
-    }
-
-    /**
-     * This function tests updating of merchant feature loc_stage_2.
-     * It will pass even without loc_stage_1 because admin sent the request
-     */
-    public function testAddMerchantLocStage2FeatureAdminAuth()
-    {
-        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of merchant feature loc_stage_1.
-     */
-    public function testAddMerchantLocStage1FeatureAdminAuth()
-    {
-        Mail::fake();
-        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
-
-        $this->startTest();
-    }
-    /**
      * This function tests updating of merchant feature card_transaction_limit_1.
      */
     public function testAddMerchantCardTransactionLimit1FeatureAdminAuth()
@@ -1772,18 +1680,6 @@ Regards,
             $this->assertEquals('Smart Collect', $mail->viewData['feature']);
             return true;
         });
-    }
-
-    /**
-     * This function tests updating of merchant feature loc_stage_1.
-     */
-    public function testAddMerchantLocFeatureAdminAuth()
-    {
-        Mail::fake();
-        $this->ba->adminAuth(Mode::LIVE, null, 'org_100000razorpay');
-
-        $this->startTest();
-        Mail::assertQueued(CashAdvanceEligible::class);
     }
 
     /**

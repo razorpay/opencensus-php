@@ -876,72 +876,6 @@ return [
         ]
     ],
 
-    'testAddMerchantLocStage2FeatureFailure' => [
-        'request' => [
-            'content' => [
-                'features' => [
-                    'loc_stage_2' => '1',
-                ]
-            ],
-            'url' => '/merchants/me/features',
-            'method' => 'post',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
-        ],
-    ],
-
-    'testAddMerchantLocStage2FeatureSuccess' => [
-        'request' => [
-            'content' => [
-                'features' => [
-                    'loc_stage_2' => '1',
-                ]
-            ],
-            'url' => '/merchants/me/features',
-            'method' => 'post',
-        ],
-        'response' => [
-            'content' => [
-                'features' => [
-
-                ]
-            ],
-            'status_code' => 200
-        ],
-    ],
-
-    'testAddMerchantLocStage2FeatureAdminAuth' => [
-        'request'  => [
-            'url'     => '/features',
-            'method'  => 'post',
-            'content' => [
-                'names'       => ['loc_stage_2'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'name' => 'loc_stage_2',
-                    'entity_id' => '10000000000000',
-                    'entity_type' => 'merchant',
-                ]
-            ]
-        ]
-    ],
-
     'testAddMerchantRxBlockReportDownloadFeatureAdminAuth' => [
         'request'  => [
             'url'     => '/features',
@@ -963,27 +897,6 @@ return [
         ]
     ],
 
-    'testAddMerchantLocStage1FeatureAdminAuth' => [
-        'request'  => [
-            'url'     => '/features',
-            'method'  => 'post',
-            'content' => [
-                'names'       => ['loc_stage_1'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000',
-                'should_sync' => true
-            ]
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'name' => 'loc_stage_1',
-                    'entity_id' => '10000000000000',
-                    'entity_type' => 'merchant',
-                ]
-            ]
-        ]
-    ],
     'testAddMerchantCardTransactionLimit1FeatureAdminAuth'=>[
         'request'  => [
             'url'     => '/features',
@@ -1342,27 +1255,6 @@ return [
             'content' => [
                 [
                     'name' => 'disable_amazonis_post_dpd',
-                    'entity_id' => '10000000000000',
-                    'entity_type' => 'merchant',
-                ]
-            ]
-        ]
-    ],
-    'testAddMerchantLocFeatureAdminAuth' => [
-        'request'  => [
-            'url'     => '/features',
-            'method'  => 'post',
-            'content' => [
-                'names'       => ['loc'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000',
-                'should_sync' => true
-            ]
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'name' => 'loc',
                     'entity_id' => '10000000000000',
                     'entity_type' => 'merchant',
                 ]
