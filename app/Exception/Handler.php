@@ -322,10 +322,10 @@ class Handler extends ExceptionHandler
             return $this->recoverableNachNbErrorResponse($this->isDebug(), $exception);
         }
 
-        if(((isset($data['merchant_id']) === true) and ($this->isNpciFeedbackPopupAllowed($data['merchant_id']) ===true)) and
-            ((isset($data['method']) === true) and ($data['method'] === 'emandate')) and
+        if(((isset($data['method']) === true) and ($data['method'] === 'emandate')) and
             ((isset($data['recurring_type']) === true) and ($data['recurring_type'] === 'initial')) and
-            ((isset($data['gateway']) === true) and ($data['gateway'] === 'enach_npci_netbanking')))
+            ((isset($data['gateway']) === true) and ($data['gateway'] === 'enach_npci_netbanking')) and
+            ((isset($data['merchant_id']) === true) and ($this->isNpciFeedbackPopupAllowed($data['merchant_id']) ===true)))
         {
             $this->trace->info(
                 TraceCode::EMANDATE_NPCI_PAYMENT_FAILURE_CALLBACK,

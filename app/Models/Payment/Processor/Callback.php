@@ -911,10 +911,10 @@ trait Callback
 
         $previousExceptionData = $e->getData() ?? [];
 
-        if(($this->isNpciFeedbackPopupAllowed() === true) and
-            ($this->payment->isEmandateRecurring() === true) and
+        if(($this->payment->isEmandateRecurring() === true) and
             ($this->payment->isRecurringTypeInitial() === true) and
-            ($this->payment->isGateway(Payment\Gateway::ENACH_NPCI_NETBANKING) === true))
+            ($this->payment->isGateway(Payment\Gateway::ENACH_NPCI_NETBANKING) === true) and
+            ($this->isNpciFeedbackPopupAllowed() === true))
         {
             $this->trace->info(
                 TraceCode::EMANDATE_NPCI_PAYMENT_FAILURE_CALLBACK,

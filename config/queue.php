@@ -608,6 +608,12 @@ return [
 
     'fulfillment_event_update' => env('AWS_ORDER_STATUS_UPDATE_QUEUE'),
 
+    'merchant_based_balance_update_v1' => env('AWS_MERCHANT_BASED_BAL_UPDATE_V1'),
+
+    'merchant_based_balance_update_v2' => env('AWS_MERCHANT_BASED_BAL_UPDATE_V2'),
+
+    'merchant_based_balance_update_v3' => env('AWS_MERCHANT_BASED_BAL_UPDATE_V3'),
+
     /*
     |--------------------------------------------------------------------------
     | Raw SQS Mappings

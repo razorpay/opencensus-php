@@ -39,6 +39,9 @@ use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as NonVAQr;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
+use RZP\Jobs\MerchantBasedBalanceUpdateV1;
+use RZP\Jobs\MerchantBasedBalanceUpdateV2;
+use RZP\Jobs\MerchantBasedBalanceUpdateV3;
 
 trait Capture
 {
@@ -981,6 +984,17 @@ trait Capture
 
             $asyncBalancePushedAt = time();
 
+            if($this->pushedToMerchantsBasedBalanceUpdateQueue($input, $payment->getMerchantId(), $asyncBalancePushedAt) === true)
+            {
+                $this->trace->info(
+                    TraceCode::MERCHANT_BASED_BALANCE_UPDATE_QUEUE,
+                    [
+                        'input' => $input,
+                        'merchant_id' => $payment->getMerchantId(),
+                    ]);
+                return;
+            }
+
             Jobs\MerchantBalanceUpdate::dispatch($input, $this->mode, $asyncBalancePushedAt);
         }
          catch (\Throwable $e)
@@ -1858,4 +1872,38 @@ trait Capture
         return null;
     }
 
+    protected function pushedToMerchantsBasedBalanceUpdateQueue($input, $merchantId, $asyncBalancePushedAt): bool
+    {
+        try{
+            /* One or multiple merchants can be mapped to any of merchant based queues for balance update.
+            * sample redis data:-  merchant_based_balance_update_queue -> {mid1 -> 'Queue1', mid2 -> 'Queue2'}
+            * */
+            $redisData = $this->app['redis']->hGetAll('merchant_based_balance_update_queue');
+
+            if((isset($redisData[$merchantId]) === true) and ($redisData[$merchantId] === 'Queue1'))
+            {
+                MerchantBasedBalanceUpdateV1::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                return true;
+            }
+            else if((isset($redisData[$merchantId]) === true) and ($redisData[$merchantId] === 'Queue2'))
+            {
+                MerchantBasedBalanceUpdateV2::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                return true;
+            }
+            else if((isset($redisData[$merchantId]) === true) and ($redisData[$merchantId] === 'Queue3'))
+            {
+                MerchantBasedBalanceUpdateV3::dispatch($input, $this->mode, $asyncBalancePushedAt);
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::MERCHANT_BASED_BALANCE_UPDATE_QUEUE_FAILURE
+            );
+        }
+        return false;
+    }
 }
