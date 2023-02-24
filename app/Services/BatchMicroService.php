@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use App;
+use Request;
 use RZP\Http\Request\Requests;
 use RZP\Exception;
 use RZP\Http\RequestHeader;
@@ -202,6 +203,9 @@ class BatchMicroService
                 'X-Creator-Id'   => $userId,
                 'X-Creator-Type' => $creatorType,
             ];
+            if(!empty(Request::header(RequestHeader::DEV_SERVE_USER))){
+                $headers[RequestHeader::DEV_SERVE_USER] = Request::header(RequestHeader::DEV_SERVE_USER);
+            }
 
             $admin = $this->app['basicauth']->getAdmin();
 

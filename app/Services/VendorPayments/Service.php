@@ -78,6 +78,9 @@ class Service
     const GET_BUSINESS_INFO_STATUS      = 'GetBusinessInfoStatus';
     const CHECK_IF_INVOICE_EXIST        = 'CheckIfInvoiceExist';
 
+    const GET_VENDOR_FUND_ACCOUNT      = 'GetVendorFundAccount';
+
+
     const BASE_PATH = 'twirp/vendorpayments.Vendorpayments';
 
     const DATA                     = 'data';
@@ -916,4 +919,12 @@ class Service
 
         return $this->makeRequest($merchant, $url, $input);
     }
+
+    public function getVendorFundAccounts(MerchantEntity $merchant, array $data)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_VENDOR_FUND_ACCOUNT);
+
+        return $this->makeRequest($merchant, $url, $data);
+    }
+
 }

@@ -574,5 +574,7 @@ return array(
     
     'magic_offers_fix_splitz_experiment_id'  => env('MAGIC_CHECKOUT_OFFERS_FIX_EXP_ID'),
 
+    'vendor_payment_via_corp_card_experiment_id' => env('VENDOR_PAYMENT_VIA_CORP_CARD_EXPERIMENT_ID'),
+
     '1cc_shipping_info_migration_splitz_experiment_id' => env('MAGIC_CHECKOUT_SHIPPING_INFO_MIGRATION_EXP_ID'),
 );

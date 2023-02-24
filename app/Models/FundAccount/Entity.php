@@ -61,6 +61,11 @@ class Entity extends Base\PublicEntity
 
     const NAME          = 'name';
 
+    const PAN_VERIFICATION_STATUS = 'pan_verification_status';
+    const GSTIN_VERIFICATION_STATUS = 'gstin_verification_status';
+    const FUND_ACCOUNT_VERIFICATION_STATUS = 'fund_account_verification_status';
+    const NOTES = 'notes';
+
     // merchant_disabled flag is publicly exposed only for merchant dashboard
     // requests to indicate the merchant status on FE by providing info if
     // merchant has been blocked for the product associated with the fund account
@@ -127,6 +132,10 @@ class Entity extends Base\PublicEntity
         self::ACTIVE,
         self::CREATED_AT,
         self::WALLET,
+        self::PAN_VERIFICATION_STATUS,
+        self::GSTIN_VERIFICATION_STATUS,
+        self::FUND_ACCOUNT_VERIFICATION_STATUS,
+        self::NOTES,
     ];
 
     protected $publicSetters = [
@@ -586,5 +595,25 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function setGstinVerificationStatus(string $status)
+    {
+        $this->setAttribute(self::GSTIN_VERIFICATION_STATUS,$status);
+    }
+
+    public function setPanVerificationStatus(string $status)
+    {
+        $this->setAttribute(self::PAN_VERIFICATION_STATUS, $status);
+    }
+
+    public function setFundAccountVerificationStatus(string $status)
+    {
+        $this->setAttribute(self::FUND_ACCOUNT_VERIFICATION_STATUS, $status);
+    }
+
+    public function setNotes(array $notes)
+    {
+        $this->setAttribute(self::NOTES, $notes);
     }
 }

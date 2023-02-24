@@ -12,6 +12,7 @@ use RZP\Models\Card;
 use RZP\Trace\Tracer;
 use RZP\Models\Contact;
 use RZP\Models\Feature;
+use RZP\Models\FundAccount;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
@@ -54,6 +55,15 @@ class Core extends Base\Core
         "/[^a-zA-Z0-9-&\'._()\/]+/";
 
     const DEFAULT_COUNTRY_CODE = '+91';
+
+    protected $vendorPaymentService;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->vendorPaymentService = $this->app['vendor-payment'];
+    }
 
     /**
      * @param array $input
@@ -1417,5 +1427,113 @@ class Core extends Base\Core
         $accountInput['is_scrooge_request'] = $isScroogeRequest;
 
         return $accountInput;
+    }
+
+    public function fetchMultiple($merchant, $input = [])
+    {
+        $fundAccounts = $this->repo->fund_account->fetch($input, $merchant->getId());
+        if ($this->isVendorPaymentViaCorporateCardEnabled() == false) {
+            return $fundAccounts;
+        }
+        return $this->getBulkAppSpecificInformation($fundAccounts);
+    }
+
+    public function getBulkAppSpecificInformation(Base\PublicCollection $fundAccounts) : Base\PublicCollection
+    {
+        $fundAccountIds = [];
+        /**
+         * @var Entity[] $fundAccounts
+         */
+
+        foreach ($fundAccounts as $fundAccount)
+        {
+            if ($fundAccount->getSourceType() == Entity::CONTACT &&
+                $fundAccount->getAccountType() == Entity::BANK_ACCOUNT &&
+                $fundAccount->contact->getType() == Contact\Type::VENDOR
+            )
+            {
+                $fundAccountIds[] = $fundAccount->getId();
+            }
+        }
+
+        if (empty($fundAccountIds)) {
+            return $fundAccounts;
+        }
+        $maxRetries = 3;
+        for ($index = 0; $index < $maxRetries; $index++) {
+            try {
+                $startTimeMs = round(microtime(true) * 1000);
+
+                $vendorFundAccounts = $this->vendorPaymentService->getVendorFundAccounts(
+                    $this->merchant,
+                    ['fund_account_ids' => $fundAccountIds]
+                )["vendor_fund_accounts"];
+
+                $endTimeMs = round(microtime(true) * 1000);
+
+                $totalFetchTime = $endTimeMs - $startTimeMs;
+
+                $this->trace->info(TraceCode::VENDOR_SERVICE_FETCH_DURATION, [
+                    'duration_ms' => $totalFetchTime,
+                    'merchant_id' => $this->merchant->getId()
+                ]);
+            } catch (\Exception $exception) {
+                $this->trace->traceException($exception);
+                if ($index == $maxRetries) {
+                    return $fundAccounts;
+                }
+                continue;
+            }
+            break;
+        }
+
+        $fundAccountIdVendorFundAccountMap = [];
+        foreach ($vendorFundAccounts as $vendorFundAccount) {
+            $fundAccountIdVendorFundAccountMap[$vendorFundAccount['fund_account_id']] = $vendorFundAccount;
+        }
+
+        foreach ($fundAccounts as $fundAccount) {
+            if (array_key_exists($fundAccount->getId(), $fundAccountIdVendorFundAccountMap))
+            {
+                $vendorFundAccount = $fundAccountIdVendorFundAccountMap[$fundAccount->getId()];
+                // set status here
+                if (isset($vendorFundAccount[Entity::GSTIN_VERIFICATION_STATUS]) == true) {
+                    $fundAccount->setGstinVerificationStatus($vendorFundAccount[Entity::GSTIN_VERIFICATION_STATUS]);
+                }
+                if (isset($vendorFundAccount[Entity::FUND_ACCOUNT_VERIFICATION_STATUS]) == true) {
+                    $fundAccount->setFundAccountVerificationStatus($vendorFundAccount[Entity::FUND_ACCOUNT_VERIFICATION_STATUS]);
+                }
+                if (isset($vendorFundAccount[Entity::PAN_VERIFICATION_STATUS]) == true) {
+                    $fundAccount->setPanVerificationStatus($vendorFundAccount[Entity::PAN_VERIFICATION_STATUS]);
+                }
+                if (isset($vendorFundAccount[Entity::NOTES]) == true) {
+                    $fundAccount->setNotes($vendorFundAccount[Entity::NOTES]);
+                }
+            }
+        }
+        return $fundAccounts;
+    }
+
+    public function isVendorPaymentViaCorporateCardEnabled() :bool {
+        try {
+            $properties = [
+                "id" => $this->merchant->getId(),
+                "experiment_id" => $this->app['config']->get('app.vendor_payment_via_corp_card_experiment_id'),
+            ];
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+            $variables = $response['response']['variant']['variables'];
+            foreach ($variables as $variable) {
+                if ($variable['key'] == "result" && $variable['value'] == "on") {
+                    return true;
+                }
+            }
+        } catch (\Exception $e) {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::VENDOR_PAYMENT_VIA_CORP_SPLITZ_ERROR
+            );
+        }
+        return false;
     }
 }

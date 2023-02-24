@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use RZP\Constants;
 use RZP\Error\Error;
 use RZP\Models\Base;
+use RZP\Models\BankAccount;
 use RZP\Models\Payout;
 use RZP\Models\Contact;
 use RZP\Models\Merchant;
@@ -324,6 +325,7 @@ class Service extends Base\Service
                 'Fund accounts cannot be created on an inactive ' . $source->getEntity());
         }
 
+
         $createDuplicate = true;
 
         if (($this->auth->isPrivateAuth() === true) or
@@ -400,4 +402,13 @@ class Service extends Base\Service
 
         return $input;
     }
+
+    public function fetchMultiple(array $input): array
+    {
+        $entities = $this->core->fetchMultiple($this->merchant, $input);
+
+        return $entities->toArrayPublic();
+    }
+
+
 }
