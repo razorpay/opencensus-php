@@ -30,6 +30,7 @@
     "lint:css": "stylelint --config .stylelintrc-stylus.js",
     "fix:css": "stylelint --config .stylelintrc-stylus.js --fix",
     "sizelimit:local": "npx danger local --dangerfile dangerfile-bundlelimit.js",
+    "test:setup": "cd web && npm run test:setup",
     "test:e2e": "cd web && npm run test:e2e",
     "test:e2e-infra": "cd web && npm run test:e2e-infra"
   },
