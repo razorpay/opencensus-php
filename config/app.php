@@ -446,6 +446,8 @@ return array(
 
     'rbl_serviceability_on_bas_exp_id' => env('RBL_SERVICEABILITY_ON_BAS_EXP_ID'),
 
+    'cmma_metro_migrate_out_experiment_id' => env('CMMA_METRO_MIGRATE_OUT_EXPERIMENT_ID'),
+
     'nocode' => [
         'cache' => [
             'slug_ttl'      => env('NOCODE_SLUG_CACHE_TTL', 86400),

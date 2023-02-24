@@ -7,6 +7,7 @@ use App;
 use Monolog\Logger;
 use RZP\Trace\TraceCode;
 use function Complex\theta;
+use RZP\Services\KafkaProducer;
 use RZP\Models\Merchant\Entity;
 use RZP\Models\Merchant\Metric;
 use Razorpay\Trace\Logger as Trace;
@@ -107,23 +108,51 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
         if( $this->permissionName === PermissionName::EDIT_ACTIVATE_MERCHANT)
         {
-            $data[DifferEntity::ENTITY_ID] = $this->entityId;
+            if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($this->entityId) === true)
+            {
+                $cmmaCaseEventData = [
+                    Constants::WORKFLOW_ACTION_ID =>  'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                    Constants::PERMISSION_NAME    => $this->permissionName,
+                    Constants::STATUS             => Status::REJECTED,
+                    Constants::AGENT_Id           =>  optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_NAME         =>  optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
+                    DifferEntity::ENTITY_ID       => $this->entityId,
+                    DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
+                    Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+                    Constants::CMMA_CASE_TYPE     => Constants::CMMA_ACTIVATION_CASE_TYPE,
+                ];
 
-            $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
+                $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
 
-            $data[Constants::PERMISSION_NAME] = $this->permissionName;
+                $this->app['trace']->info(TraceCode::CMMA_CASE_EVENT_KAFKA_PUBLISH, [
+                        'data'        => $cmmaCaseEventData,
+                        'topic'       => $cmmaCaseEventTopic,
+                        'merchant_id' => $this->entityId,
+                    ]
+                );
 
-            $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus)===true) ? Status::UNDER_REVIEW : $this->oldActivationStatus ;
+                (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
+            }
+            else
+            {
+                $data[DifferEntity::ENTITY_ID] = $this->entityId;
 
-            $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::REJECTED : $this->newActivationStatus ;
+                $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
 
-            $data[Constants::STATUS] = Status::REJECTED;
+                $data[Constants::PERMISSION_NAME] = $this->permissionName;
 
-            $data[Constants::AGENT_Id] = optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT;
+                $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus)===true) ? Status::UNDER_REVIEW : $this->oldActivationStatus ;
 
-            $data[Constants::AGENT_NAME] = optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT;
+                $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::REJECTED : $this->newActivationStatus ;
 
-            $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+                $data[Constants::STATUS] = Status::REJECTED;
+
+                $data[Constants::AGENT_Id] = optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT;
+
+                $data[Constants::AGENT_NAME] = optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT;
+
+                $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+            }
         }
 
     }
@@ -139,19 +168,46 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
         if ( $this->permissionName === PermissionName::NEEDS_CLARIFICATION_RESPONDED)
         {
-            $data[DifferEntity::ENTITY_ID] = $this->entityId;
+            if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($this->entityId) === true)
+            {
+                $cmmaCaseEventData = [
+                    Constants::WORKFLOW_ACTION_ID =>  'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                    Constants::PERMISSION_NAME    => PermissionName::NEEDS_CLARIFICATION_RESPONDED,
+                    Constants::STATUS             =>  Constants::OPEN,
+                    DifferEntity::ENTITY_ID       => $this->entityId,
+                    DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
+                    Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+                    Constants::CMMA_CASE_TYPE     => Constants::CMMA_ACTIVATION_CASE_TYPE,
+                ];
 
-            $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
+                $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
 
-            $data[Constants::PERMISSION_NAME] = PermissionName::NEEDS_CLARIFICATION_RESPONDED;
+                $this->app['trace']->info(TraceCode::CMMA_CASE_EVENT_KAFKA_PUBLISH, [
+                        'data'        => $cmmaCaseEventData,
+                        'topic'       => $cmmaCaseEventTopic,
+                        'merchant_id' => $this->entityId,
+                    ]
+                );
 
-            $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus)===true) ? Status::NEEDS_CLARIFICATION : $this->oldActivationStatus;
+                (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
+            }
+            else
+            {
+                $data[DifferEntity::ENTITY_ID] = $this->entityId;
 
-            $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::UNDER_REVIEW : $this->newActivationStatus;
+                $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
 
-            $data[Constants::STATUS] = Constants::OPEN;
+                $data[Constants::PERMISSION_NAME] = PermissionName::NEEDS_CLARIFICATION_RESPONDED;
 
-            $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+                $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus)===true) ? Status::NEEDS_CLARIFICATION : $this->oldActivationStatus;
+
+                $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::UNDER_REVIEW : $this->newActivationStatus;
+
+                $data[Constants::STATUS] = Constants::OPEN;
+
+                $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+            }
+
         }
     }
 
@@ -165,24 +221,66 @@ class MerchantActivationStatusObserver implements WorkflowObserverInterface
 
         if ($this->permissionName === PermissionName::EDIT_ACTIVATE_MERCHANT)
         {
-            $data[DifferEntity::ENTITY_ID] = $this->entityId;
+            if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($this->entityId) === true)
+            {
+                $cmmaCaseEventData = [
+                    Constants::WORKFLOW_ACTION_ID =>  'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                    Constants::PERMISSION_NAME    => $this->permissionName,
+                    Constants::STATUS             => Constants::EXECUTED,
+                    Constants::AGENT_Id           =>  optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_NAME         =>  optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
+                    DifferEntity::ENTITY_ID       => $this->entityId,
+                    DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
+                    Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+                    Constants::CMMA_CASE_TYPE     => Constants::CMMA_ACTIVATION_CASE_TYPE,
+                ];
 
-            $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
+                $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
 
-            $data[Constants::PERMISSION_NAME] = $this->permissionName;
+                $this->app['trace']->info(TraceCode::CMMA_CASE_EVENT_KAFKA_PUBLISH, [
+                        'data'  => $cmmaCaseEventData,
+                        'topic' => $cmmaCaseEventTopic,
+                        'merchant_id' => $this->entityId,
+                    ]
+                );
 
-            $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus)===true) ? Status::UNDER_REVIEW : $this->oldActivationStatus;
+                (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
+            }
+            else
+            {
+                $data[DifferEntity::ENTITY_ID] = $this->entityId;
 
-            $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::ACTIVATED : $this->newActivationStatus;
+                $data[Constants::WORKFLOW_ACTION_ID] = 'w_action_' . $observerData[DifferEntity::ACTION_ID];
 
-            $data[Constants::STATUS] = Constants::EXECUTED;
+                $data[Constants::PERMISSION_NAME] = $this->permissionName;
 
-            $data[Constants::AGENT_Id] = optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT;
+                $data[Constants::OLD_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->oldActivationStatus)===true) ? Status::UNDER_REVIEW : $this->oldActivationStatus;
 
-            $data[Constants::AGENT_NAME] = optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT;
+                $data[Constants::NEW_DATA][Constants::ACTIVATION_STATUS] = (is_null($this->newActivationStatus)===true) ? Status::ACTIVATED : $this->newActivationStatus;
 
-            $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+                $data[Constants::STATUS] = Constants::EXECUTED;
+
+                $data[Constants::AGENT_Id] = optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT;
+
+                $data[Constants::AGENT_NAME] = optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT;
+
+                $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+            }
         }
+    }
+
+    protected function isMetroMigrateOutExperimentEnabledForCmmaEvents($entityId): bool
+    {
+        $properties = [
+            'id'            => $entityId,
+            'experiment_id' => $this->app['config']->get(Constants::CMMA_METRO_MIGRATE_OUT_EXPERIMENT_ID_KEY),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        return $variant === Constants::ENABLE;
     }
 
     public function getMerchantId()

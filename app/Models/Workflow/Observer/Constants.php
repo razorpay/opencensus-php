@@ -115,6 +115,11 @@ class Constants
 
     const CMMA_WORKFLOW_METRO_TOPIC = 'WORKFLOW-STATUS-CHANGE';
 
+    const CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY = 'CMMA_CASE_EVENTS_TOPIC_NAME';
+    const CMMA_METRO_MIGRATE_OUT_EXPERIMENT_ID_KEY     = 'app.cmma_metro_migrate_out_experiment_id';
+
+    const ENABLE                                       = 'enable';
+
     const WORKFLOW_ACTION_ID = 'workflow_action_id';
 
     const STATUS = 'status';
@@ -136,6 +141,12 @@ class Constants
     const AGENT_Id = 'agent_id';
     const UNDEFINED_AGENT = 'undefined_agent';
     const AGENT_NAME     = 'agent_name';
+
+    const EVENT_TYPE                = 'event_type';
+    const CMMA_CASE_TYPE            = 'case_type';
+    const CMMA_ACTIVATION_CASE_TYPE = 'activation';
+
+    const CMMA_EVENT_WORKFLOW_STATUS_CHANGE = 'workflow_status_change';
 
     const MERCHANT_ACTION_METRO_BODY = [
         self::WORKFLOW_ACTION_ID => "",

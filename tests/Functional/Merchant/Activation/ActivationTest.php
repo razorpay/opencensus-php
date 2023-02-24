@@ -3633,6 +3633,16 @@ class ActivationTest extends OAuthTestCase
             'org_id'    => '100000razorpay',
         ]);
 
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $data);
 
         $merchantId = $merchantDetail->getMerchantId();
@@ -3691,6 +3701,17 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals('rejected', $merchant->merchantDetail->getActivationStatus());
 
         $this->assertFalse($merchant->isActivated());
+    }
+
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 
     protected function runFixturesForInternationalActivation(string $merchantId, string $orgId = Org::RZP_ORG)

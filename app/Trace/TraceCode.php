@@ -3096,6 +3096,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const METRO_PUBLISH_NEEDS_CLARIFICATION_EVENT               = 'METRO_PUBLISH_NEEDS_CLARIFICATION_EVENT';
     const NC_ADDITIONAL_DOCUMENTS                               = 'NC_ADDITIONAL_DOCUMENTS';
 
+
+    const CMMA_CASE_EVENT_PUBLISH_ERROR                        = 'CMMA_CASE_EVENT_PUBLISH_ERROR';
+    const CMMA_CASE_EVENT_KAFKA_PUBLISH                        = 'CMMA_CASE_EVENT_KAFKA_PUBLISH';
+    const CMMA_CASE_EVENT_METRO_PUBLISH                        = 'CMMA_CASE_EVENT_METRO_PUBLISH';
+
     // Trace code for stakeholders
     const MERCHANT_CREATE_STAKEHOLDER_REQUEST                   = 'MERCHANT_CREATE_STAKEHOLDER_REQUEST';
     const MERCHANT_UPDATE_STAKEHOLDER_REQUEST                   = 'MERCHANT_UPDATE_STAKEHOLDER_REQUEST';

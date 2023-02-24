@@ -6,6 +6,7 @@ namespace Unit\Models\Merchant\Escalations;
 use DB;
 use Mail;
 use Queue;
+use Mockery;
 use RZP\Models\State;
 use RZP\Constants\Mode;
 use RZP\Services\Mock\HarvesterClient;
@@ -368,6 +369,16 @@ class CoreTest extends TestCase
 
     public function testHardLimitNoDocEscalationWithIncompleteKYC()
     {
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
         $merchant = $this->createPrerequisiteForNoDocEscalation();
 
         $this->fixtures->on('live')->create('merchant_detail:filled_entity', [
@@ -386,6 +397,17 @@ class CoreTest extends TestCase
         $this->assertFundHoldsForNoDoc($merchant, true, true,Actions\Handlers\Constants::HOLD_FUNDS_REASON_FOR_NO_DOC_LIMIT_BREACH);
 
         $this->assertFeatureAbsence('no_doc_onboarding', $merchant->id);
+    }
+
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
     }
 
     public function testEscalation10kMilestoneTimeBoundFalseFilterNoDocMerchant()

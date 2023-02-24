@@ -3455,8 +3455,16 @@ class Core extends Base\Core
 
                     $this->sendSubMerchantNCStatusChangedEmail($merchant);
 
-                    // event to be consumed by cmma for activation case instance
-                    $this->publishMetroEventForMerchantActivationNeedsClarification($merchant);
+                    // pushing event to kafka to migration out of metro
+                    if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($merchant->getId()) === true)
+                    {
+                        $this->publishCmmaCaseEventOnMerchantActivationNeedsClarification($merchant);
+                    }
+                    else
+                    {
+                        // event to be consumed by cmma for activation case instance
+                        $this->publishMetroEventForMerchantActivationNeedsClarification($merchant);
+                    }
 
                     $this->trace->info(TraceCode::NC_EMAIL_SENT, [
                         'merchant_id'          => $merchantId,
@@ -3882,6 +3890,60 @@ class Core extends Base\Core
         Mail::queue($email);
     }
 
+    protected function isMetroMigrateOutExperimentEnabledForCmmaEvents($entityId): bool
+    {
+        $properties = [
+            'id'            => $entityId,
+            'experiment_id' => $this->app['config']->get(DetailConstants::CMMA_METRO_MIGRATE_OUT_EXPERIMENT_ID_KEY),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        return $variant === DetailConstants::ENABLE;
+    }
+
+    protected function publishCmmaCaseEventOnMerchantActivationNeedsClarification(Merchant\Entity $merchant)
+    {
+        $merchantDetail = $merchant->merchantDetail;
+
+        $clarificationCore = new Detail\NeedsClarification\Core();
+
+        $clarificationReasons = $clarificationCore->getFormattedKycClarificationReasons(
+            $merchantDetail->getKycClarificationReasons());
+
+        try
+        {
+            $publishData = [
+                DetailConstants::CLARIFICATION_DATA => empty ($clarificationReasons) ? (object)[] : $clarificationReasons,
+                DetailConstants::AGENT_ID           => optional($this->app['basicauth']->getAdmin())->getPublicId() ?? ObserverConstants::UNDEFINED_AGENT,
+                DetailConstants::AGENT_NAME         => optional($this->app['basicauth']->getAdmin())->getName() ?? ObserverConstants::UNDEFINED_AGENT,
+                DetailConstants::CASE_TYPE          => DetailConstants::CASE_TYPE_ACTIVATION,
+                DetailConstants::ENTITY_ID          => $merchant->getId(),
+                DetailConstants::ENTITY_NAME        => $merchant->getEntityName(),
+                DetailConstants::EVENT_TYPE         => DetailConstants::CMMA_EVENT_NEEDS_CLARIFICATION,
+            ];
+
+            $cmmaCaseEventTopic = env(DetailConstants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIABLE_KEY);
+
+            $this->app['trace']->info(TraceCode::CMMA_CASE_EVENT_KAFKA_PUBLISH, [
+                    'data'        => $publishData,
+                    'topic'       => $cmmaCaseEventTopic,
+                    'merchant_id' => $merchant->getId(),
+                ]
+            );
+
+            (new KafkaProducer($cmmaCaseEventTopic, stringify($publishData)))->Produce();
+        }
+        catch (\Throwable $err) {
+            $this->trace->error(TraceCode::CMMA_CASE_EVENT_PUBLISH_ERROR, [
+                'data' => $publishData,
+                'error' => $err,
+            ]);
+        }
+    }
+
     protected function publishMetroEventForMerchantActivationNeedsClarification(Merchant\Entity $merchant)
     {
         $merchantDetail = $merchant->merchantDetail;
@@ -3903,6 +3965,12 @@ class Core extends Base\Core
                     DetailConstants::AGENT_NAME => optional($this->app['basicauth']->getAdmin())->getName() ?? ObserverConstants::UNDEFINED_AGENT,
                 ])
             ];
+
+            $this->app['trace']->info(TraceCode::CMMA_CASE_EVENT_METRO_PUBLISH, [
+                    'data' => $publishData,
+                    'merchant_id' => $merchant->getId(),
+                ]
+            );
 
             (new MetroHandler())->publish(MetroConstants::NEEDS_CLARIFICATION_EVENT, $publishData);
         }

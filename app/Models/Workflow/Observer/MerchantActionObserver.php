@@ -7,11 +7,12 @@ use App;
 use Monolog\Logger;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Action;
+use RZP\Services\KafkaProducer;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Models\Admin\Permission\Name as PermissionName;
-use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Merchant\FreshdeskTicket\Service as FDService;
+use RZP\Models\Workflow\Action\Differ\Entity as DifferEntity;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FDConstants;
 
 class MerchantActionObserver implements WorkflowObserverInterface
@@ -80,17 +81,45 @@ class MerchantActionObserver implements WorkflowObserverInterface
     {
         if( $this->permissionName === PermissionName::EDIT_MERCHANT_SUSPEND)
         {
-            $data = [
-                DifferEntity::ENTITY_ID       => $this->entityId,
-                DifferEntity::ENTITY_NAME     => $this->entityName,
-                Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
-                Constants::PERMISSION_NAME    => $this->permissionName,
-                Constants::STATUS             => Status::REJECTED,
-                Constants::AGENT_Id           => optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
-                Constants::AGENT_NAME          => optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
-            ];
+            if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($this->entityId) === true)
+            {
+                $cmmaCaseEventData = [
+                    Constants::WORKFLOW_ACTION_ID =>  'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                    Constants::PERMISSION_NAME    => $this->permissionName,
+                    Constants::STATUS             => Status::REJECTED,
+                    Constants::AGENT_Id           =>  optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_NAME         =>  optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
+                    DifferEntity::ENTITY_ID       => $this->entityId,
+                    DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
+                    Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+                    Constants::CMMA_CASE_TYPE     => Constants::CMMA_ACTIVATION_CASE_TYPE,
+                ];
 
-            $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+                $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
+
+                $this->app['trace']->info(TraceCode::CMMA_CASE_EVENT_KAFKA_PUBLISH, [
+                        'data'        => $cmmaCaseEventData,
+                        'topic'       => $cmmaCaseEventTopic,
+                        'merchant_id' => $this->entityId,
+                    ]
+                );
+
+                (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
+            }
+            else
+            {
+                $data = [
+                    DifferEntity::ENTITY_ID       => $this->entityId,
+                    DifferEntity::ENTITY_NAME     => $this->entityName,
+                    Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                    Constants::PERMISSION_NAME    => $this->permissionName,
+                    Constants::STATUS             => Status::REJECTED,
+                    Constants::AGENT_Id           => optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_NAME         => optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
+                ];
+
+                $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+            }
         }
     }
 
@@ -103,17 +132,45 @@ class MerchantActionObserver implements WorkflowObserverInterface
     {
         if($this->permissionName === PermissionName::EDIT_MERCHANT_SUSPEND)
         {
-            $data = [
-                DifferEntity::ENTITY_ID       => $this->entityId,
-                DifferEntity::ENTITY_NAME     => $this->entityName,
-                Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
-                Constants::PERMISSION_NAME    => $this->permissionName,
-                Constants::STATUS             => Constants::EXECUTED,
-                Constants::AGENT_Id           => optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
-                Constants::AGENT_NAME          => optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
-            ];
+            if ($this->isMetroMigrateOutExperimentEnabledForCmmaEvents($this->entityId) === true)
+            {
+                $cmmaCaseEventData = [
+                    Constants::WORKFLOW_ACTION_ID =>  'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                    Constants::PERMISSION_NAME    => $this->permissionName,
+                    Constants::STATUS             => Constants::EXECUTED,
+                    Constants::AGENT_Id           =>  optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_NAME         =>  optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
+                    DifferEntity::ENTITY_ID       => $this->entityId,
+                    DifferEntity::ENTITY_NAME     => Constants::MERCHANT,
+                    Constants::EVENT_TYPE         => Constants::CMMA_EVENT_WORKFLOW_STATUS_CHANGE,
+                    Constants::CMMA_CASE_TYPE     => Constants::CMMA_ACTIVATION_CASE_TYPE,
+                ];
 
-            $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+                $cmmaCaseEventTopic = env(Constants::CMMA_CASE_EVENTS_KAFKA_TOPIC_ENV_VARIBLE_KEY);
+
+                $this->app['trace']->info(TraceCode::CMMA_CASE_EVENT_KAFKA_PUBLISH, [
+                        'data'        => $cmmaCaseEventData,
+                        'topic'       => $cmmaCaseEventTopic,
+                        'merchant_id' => $this->entityId,
+                    ]
+                );
+
+                (new KafkaProducer($cmmaCaseEventTopic, stringify($cmmaCaseEventData)))->Produce();
+            }
+            else
+            {
+                $data = [
+                    DifferEntity::ENTITY_ID       => $this->entityId,
+                    DifferEntity::ENTITY_NAME     => $this->entityName,
+                    Constants::WORKFLOW_ACTION_ID => 'w_action_' . $observerData[DifferEntity::ACTION_ID],
+                    Constants::PERMISSION_NAME    => $this->permissionName,
+                    Constants::STATUS             => Constants::EXECUTED,
+                    Constants::AGENT_Id           => optional($this->app['basicauth']->getAdmin())->getPublicId() ?? Constants::UNDEFINED_AGENT,
+                    Constants::AGENT_NAME         => optional($this->app['basicauth']->getAdmin())->getName() ?? Constants::UNDEFINED_AGENT,
+                ];
+
+                $this->publishToMetroTopic($data, Constants::CMMA_WORKFLOW_METRO_TOPIC);
+            }
         }
     }
 
@@ -195,4 +252,19 @@ class MerchantActionObserver implements WorkflowObserverInterface
             // usual flow will not fail if the message publish to metro fails
         }
     }
+
+    protected function isMetroMigrateOutExperimentEnabledForCmmaEvents($entityId): bool
+    {
+        $properties = [
+            'id'            => $entityId,
+            'experiment_id' => $this->app['config']->get(Constants::CMMA_METRO_MIGRATE_OUT_EXPERIMENT_ID_KEY),
+        ];
+
+        $response = $this->app['splitzService']->evaluateRequest($properties);
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        return $variant === Constants::ENABLE;
+    }
+
 }
