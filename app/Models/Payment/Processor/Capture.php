@@ -35,6 +35,7 @@ use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Ledger\CaptureJournalEvents;
 use RZP\Base\Database\DetectsLostConnections;
 use RZP\Models\Merchant\Balance\BalanceConfig;
+use RZP\Models\Partner\Metric as PartnerMetric;
 use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as NonVAQr;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
@@ -1077,6 +1078,7 @@ trait Capture
         }
         catch (\Throwable $e)
         {
+            $this->trace->count(PartnerMetric::PAYMENT_COMMISSION_FAILED_TOTAL);
             $this->trace->critical(
                 TraceCode::COMMISSION_CREATE_FAILED,
                 [

@@ -8,6 +8,9 @@ final class Metric
     const COMMISSION_CREATE_ATTEMPT_TOTAL        = 'commission_create_attempt_total';
     const COMMISSION_CREATED_TOTAL               = 'commission_created_total';
     const COMMISSION_CAPTURE_TOTAL               = 'commission_capture_total';
+    const PAYMENT_COMMISSION_CREATED_TOTAL       = 'payment_commission_created_total';
+    const PAYMENT_COMMISSION_FAILED_TOTAL        = 'payment_commission_failed_total';
+
     const COMMISSION_FLUSH_TO_KAFKA_TOPIC_FAILED = 'commission_flush_to_kafka_topic_failed';
     const COMMISSION_FAILED_TOTAL = 'commission_failed_total';
     const COMMISSION_TRANSACTION_JOB_FAILED_TOTAL = 'commission_transaction_job_failed_total';
@@ -68,7 +71,7 @@ final class Metric
 
 
     const PARTNER_INVOICE_APPROVAL_AFTER_EXPIRY = 'partner_invoice_approval_after_expiry';
-    
+
     const PARTNERS_KYC_STARTED_TOTAL = 'partners_kyc_started_total';
     const PARTNERS_KYC_SUBMITTED_TOTAL = 'partners_kyc_submitted_total';
     const PARTNERS_KYC_ACTIVATION_STATUS_TOTAL = 'partners_kyc_activation_status_total';

@@ -684,6 +684,9 @@ class Calculator extends Base\Core
     {
         if (empty($this->commissions) === true)
         {
+            // the following metrics specifies the count of payments which have 0 commissions
+            // Reason could be negative / zero commission
+            $this->trace->count(Metric::PAYMENT_COMMISSION_FAILED_TOTAL);
             return;
         }
 
@@ -715,6 +718,8 @@ class Calculator extends Base\Core
             CommissionCapture::dispatch($this->mode, $commission->getPublicId())->afterCommit();
         }
 
+        // the following metrics specifies the count of payments which have got atleast one commission created
+        $this->trace->count(Metric::PAYMENT_COMMISSION_CREATED_TOTAL);
     }
 
     /**
