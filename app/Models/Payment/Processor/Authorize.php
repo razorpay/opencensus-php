@@ -371,7 +371,6 @@ trait Authorize
         }
 
         $this->set3ds2AuthenticationParams($input, $gatewayInput, $payment);
-
         $this->setSelectedTerminals($payment, $gatewayInput);
         $this->performFraudCheckRaasInternational($payment, $input);
         $this->setSelectedTerminalsForApplicationMethodsIfApplicable($payment);

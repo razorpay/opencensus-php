@@ -174,7 +174,10 @@ class TransactionTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
 
-        $this->fixtures->iin->edit('401200', ['country' => "MY"]);
+        $this->fixtures->iin->edit('401200', [
+            'country' => "MY",
+            'network' => "Union Pay"
+            ]);
 
         $payment['currency'] = "MYR";
 

@@ -2691,6 +2691,29 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedMpgsTerminal(array $attributes = [])
+    {
+        $defaultValues = [
+            'merchant_id'                => '10000000000000',
+            'gateway'                    => 'mpgs',
+            'gateway_acquirer'           => 'ocbc',
+            'card'                       => 1,
+            'shared'                     => 1,
+            'netbanking'                 => 0,
+            'mode'                       => 3,
+            'capability'                 => 0,
+            'gateway_merchant_id'        => 'razorpay ocbc',
+            'gateway_terminal_id'        => 'account ocbc',
+            'gateway_terminal_password'  => 'razorpay_password',
+            'gateway_terminal_password2' => 'razorpay_password',
+            'gateway_secure_secret2'     => 'razorpay_password',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createDynamicSharedHdfcTerminal(array $attributes = [])
     {
         $defaultValues = [
@@ -4828,7 +4851,8 @@ class Terminal extends Base
             'gateway' => Gateway::FPX,
             'gateway_merchant_id' => 'netbanking_dlb_merchant_id',
             'netbanking' => 1,
-            'shared' => 1,
+            'shared' => 0,
+            'card' => 0,
             'gateway_secure_secret'      => Crypt::encrypt('test_secure_secret'),
         ];
 

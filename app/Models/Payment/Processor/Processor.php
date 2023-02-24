@@ -22,6 +22,7 @@ use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Card\Network;
 use RZP\Models\Feature\Constants as Features;
+use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Merchant\Entity;
 use RZP\Jobs\Order\OrderUpdate;
 use RZP\Models\Merchant\Merchant1ccConfig\Type;
@@ -523,12 +524,39 @@ class Processor
      * @return bool
      * Controls rearch flow proxy for Malaysia
      */
-    private function canRouteThroughRearchFlowForMY()
+    private function canRouteThroughRearchFlowForMY(array $input)
     {
         // Always true for current product state except for test mode in production
-        if ((app()->isEnvironmentProduction() === true) and ($this->mode === Mode::TEST))
+        if ((app()->isEnvironmentProduction() === true) and
+                ($this->mode === Mode::TEST))
         {
             return false;
+        }
+
+        /*
+         * Using this experiment we are controlling the flow whether we need to pass the Visa/MC payments via
+         * API or PG-Router.
+         */
+        $properties = [
+            'id'            => $this->merchant->getId(),
+            'experiment_id' => $this->app['config']->get('app.redirect_malaysia_card_payments_via_api'),
+        ];
+
+        $isExpEnabled = (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
+
+
+        /*
+         * For Union Pay as a network: we are expected to send payments traffic to Umobile gateway which has been integrated
+         * in Pg router.
+         * For MC,Visa etc. as a network: This is supposed to go through 3DS 2.0 Integration which is not integrated in rearch flow yet, hence
+         * it need to go through via Api Monolith
+         * For request where card number is not present: In those cases, currently it is failing at validation step in pg router, we
+         * will direct that to pg router and not changing the default behaviour of the MY Payments flow.
+         */
+        if (($isExpEnabled === true) &&
+            ($this->isNetworkUnionPay($input) === false))
+        {
+           return false;
         }
 
         return true;
@@ -551,7 +579,7 @@ class Processor
 
             if ($merchant->getCountry() === 'MY')
             {
-                return $this->canRouteThroughRearchFlowForMY();
+                return $this->canRouteThroughRearchFlowForMY($input);
             }
 
             if($this->merchant->isFeatureEnabled(Feature::UPIQR_V1_HDFC) === true)
@@ -8096,4 +8124,24 @@ class Processor
     {
         return 'callback_' . $payment->getId();
     }
+
+    private function isNetworkUnionPay(array $input)
+    {
+        if (empty($input['card']['number']) === true)
+        {
+            return true;
+        }
+
+        $iin = substr($input['card']['number'], 0, 6);
+
+        $iinDetails = $this->repo->card->retrieveIinDetails($iin);
+
+        if ($iinDetails->getNetwork() === Card\NetworkName::UNP)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 }

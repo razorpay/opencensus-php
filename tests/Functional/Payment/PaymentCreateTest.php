@@ -251,7 +251,10 @@ class PaymentCreateTest extends TestCase
 
         $payment['currency'] = 'MYR';
 
-        $this->fixtures->edit('iin', 401200, ['country' => 'MY']);
+        $this->fixtures->edit('iin', 401200, [
+            'country' => 'MY',
+            'network' => "Union Pay"
+        ]);
 
         $order = $this->fixtures->create('order', ['id' => '100000000order', 'currency' => 'MYR']);
 
@@ -2726,7 +2729,7 @@ class PaymentCreateTest extends TestCase
         $this->fixtures->iin->edit('401200',[
             'country' => 'MY',
             'issuer'  => 'SBIN',
-            'network' => 'Visa',
+            'network' => 'Union Pay',
         ]);
 
         $this->fixtures->merchant->edit('10000000000000',[

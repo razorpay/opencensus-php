@@ -27,6 +27,7 @@ use RZP\Models\Payment\Refund\Entity as RefundEntity;
 
 trait PaymentTrait
 {
+    use PaymentMpgsTrait;
     use PaymentEbsTrait;
     use PaymentFssTrait;
     use PaymentAmexTrait;

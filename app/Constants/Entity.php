@@ -1865,6 +1865,7 @@ class Entity
         // For dealing with sub.entity types
 
         $entity = str_replace('.', '_', $entity);
+
         return (defined(__CLASS__ . '::' . strtoupper($entity)));
     }
 
