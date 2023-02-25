@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use RZP\Diag\EventCode;
+use RZP\Jobs\BankingAccount\BankingAccountNotifyMob;
 use RZP\Models\Admin;
 use RZP\Constants\Mode;
 use RZP\Models\Contact;
@@ -3117,7 +3118,10 @@ class BankingAccountTest extends TestCase
 
     public function testupdateBankingAccountWithCommentViaMobWithAdminContext()
     {
+
         $bankingAccount = $this->createBankingAccount();
+
+        Queue::fake();
 
         $admin = $this->fixtures->create('admin', ['org_id' => Org::RZP_ORG, 'email' => 'abc@razorpay.com']);
 
@@ -3143,6 +3147,8 @@ class BankingAccountTest extends TestCase
         $this->ba->appAuthTest($this->config['applications.master_onboarding.secret']);;
 
         $this->startTest($dataToReplace);
+
+        Queue::assertNotPushed(BankingAccountNotifyMob::class);
     }
 
     public function getStatusChangeLog(Entity $bankingAccount)
@@ -4972,6 +4978,8 @@ class BankingAccountTest extends TestCase
 
     protected function createBankingAccountFromDashboard(array $attributes = [])
     {
+        Queue::fake();
+
         $data = [
             Entity::PINCODE => '560030', // Pincode Search Mock will be used
             Entity::CHANNEL => 'rbl',
@@ -5000,6 +5008,15 @@ class BankingAccountTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         Mail::assertNotQueued(XProActivation::class);
+
+        if (empty($response['errorMessage']))
+        {
+            Queue::assertPushed(BankingAccountNotifyMob::class);
+        } else
+        {
+            Queue::assertNotPushed(BankingAccountNotifyMob::class);
+        }
+
 
         return $response;
     }
@@ -10955,6 +10972,8 @@ class BankingAccountTest extends TestCase
 
     public function testMetroPublishForBankingAccountUpdate()
     {
+        Queue::fake();
+
         $attribute = ['activation_status' => 'activated'];
 
         $this->fixtures->edit('merchant_detail', self::DefaultMerchantId, $attribute);
@@ -10998,17 +11017,15 @@ class BankingAccountTest extends TestCase
             ])
         ];
 
-        $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
-
-        $metroMock->shouldReceive("publish")->withArgs(['rbl_ca_updates', $expectedMetroMessage]);
-
-        $this->app->instance('metro', $metroMock);
-
         $this->startTest($dataToReplace);
+
+        Queue::assertPushed(BankingAccountNotifyMob::class);
     }
 
     public function testPreventMetroPublishForBankingAccountUpdate()
     {
+        Queue::fake();
+
         $attribute = ['activation_status' => 'activated'];
 
         $this->fixtures->edit('merchant_detail', self::DefaultMerchantId, $attribute);
@@ -11052,6 +11069,8 @@ class BankingAccountTest extends TestCase
 
         $this->startTest($dataToReplace);
 
+        Queue::assertNotPushed(BankingAccountNotifyMob::class);
+
         $this->fixtures->edit('banking_account',$ba->getId(), [
             'account_type' => 'nodal'
         ]);
@@ -11061,6 +11080,8 @@ class BankingAccountTest extends TestCase
         $metroMock->shouldNotReceive("publish");
 
         $this->startTest($dataToReplace);
+
+        Queue::assertNotPushed(BankingAccountNotifyMob::class);
     }
 
     /**
@@ -11634,6 +11655,8 @@ class BankingAccountTest extends TestCase
 
     public function testCreateBankingAccountWithActivationDetailFromMOB()
     {
+        Queue::fake();
+
         $this->ba->mobAppAuthForInternalRoutes();
 
         $admin = $this->fixtures->create('admin', ['org_id' => Org::RZP_ORG, 'email' => 'abc@razorpay.com']);
@@ -11647,10 +11670,14 @@ class BankingAccountTest extends TestCase
         ];
 
         $this->startTest($dataToReplace);
+
+        Queue::assertNotPushed(BankingAccountNotifyMob::class);
     }
 
     public function testUpdateBankingAccountWithActivationDetailFromMOB()
     {
+        Queue::fake();
+
         $bankingAccount = $this->fixtures->create('banking_account', [
             'account_number'        => '2224440041626905',
             'account_type'          => 'current',
@@ -11677,10 +11704,14 @@ class BankingAccountTest extends TestCase
         $this->ba->mobAppAuthForInternalRoutes();
 
         $this->startTest($dataToReplace);
+
+        Queue::assertNotPushed(BankingAccountNotifyMob::class);
     }
 
     public function testUpdateBankingAccountActivationDetailsViaMOB()
     {
+        Queue::fake();
+
         $bankingAccount = $this->fixtures->create('banking_account', [
             'account_number'        => '2224440041626905',
             'account_type'          => 'current',
@@ -11707,6 +11738,8 @@ class BankingAccountTest extends TestCase
         $this->ba->mobAppAuthForInternalRoutes();
 
         $this->startTest($dataToReplace);
+
+        Queue::assertNotPushed(BankingAccountNotifyMob::class);
     }
 
     public function verifySkipDwtComputeAndSave(array $additonalDetailsInput, string $skipDwtEligble, int $skipDwtValue)
