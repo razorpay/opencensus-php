@@ -426,6 +426,17 @@ class AdminFetch
                     Fetch::TYPE         => Fetch::TYPE_STRING
                 ],
             ],
+            Entity::RAS_RULES => [
+//                todo: add filters
+//                'post_actions'         => [
+//                    Fetch::LABEL        => 'active',
+//                    Fetch::TYPE         => Fetch::TYPE_STRING,
+//                ],
+//                'rule_group'       => [
+//                    Fetch::LABEL        => 'rule_group',
+//                    Fetch::TYPE         => Fetch::TYPE_STRING
+//                ],
+            ],
             Entity::SHIELD_RULE_ANALYTICS => [
                 'entity_id'         => [
                     Fetch::LABEL        => 'entity_id',

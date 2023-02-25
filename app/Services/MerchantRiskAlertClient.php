@@ -28,6 +28,8 @@ class MerchantRiskAlertClient
 
     const IDENTIFY_BLACKLIST_COUNTRY_ALERTS = '/twirp/rzp.merchant_risk_alerts.blacklist_ip.v1.BlacklistIpService/IdentifyAndPublishAlerts';
 
+    const GET_RULES_URL = '/twirp/rzp.merchant_risk_alerts.rule.v1.RuleService/FetchMultiple';
+
     const IDENTIFY_BLACKLIST_COUNTRY_ALERTS_REQUEST_TIMEOUT = 180000;
 
     const RAS_ROUTE_FEATURE_FLAG = 'ras_route_caller_api_category_%s';
@@ -37,6 +39,8 @@ class MerchantRiskAlertClient
     const SVC_NEW_CONFIG_KEY = 'services.merchant_risk_alerts.new';
 
     const FALLBACK_ENABLED = false;
+
+    const RULES = 'rules';
 
     /**
      * @var Requests_Session
@@ -371,6 +375,28 @@ class MerchantRiskAlertClient
         }
 
         return $res;
+    }
+
+    public function fetchMultiple(string $entity, array $input)
+    {
+        switch ($entity)
+        {
+            case self::
+            RULES:
+                return $this->getRules($input);
+        }
+
+        return [];
+    }
+
+    public function getRules(array $input)
+    {
+        $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
+            'input'   => $input,
+            'service'   => 'merchant_risk_alerts'
+        ]);
+
+        return $this->sendRequest(self::GET_RULES_URL, $input);
     }
 
     protected function getRasConfigKey(string $category, string $treatmentId, bool $tryWithFallback, array $logData)

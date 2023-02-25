@@ -474,6 +474,9 @@ class Entity
     const SHIELD_RISK_THRESHOLD_CONFIGS   = 'shield.risk_threshold_configs';
     const SHIELD_MERCHANT_RISK_THRESHOLDS = 'shield.merchant_risk_thresholds';
 
+    // Service: RAS
+    const RAS_RULES = 'ras.rules';
+
     // Service: Governor
     const GOVERNOR_RULES                = 'governor.rules';
     const GOVERNOR_RULE_GROUPS          = 'governor.rule_groups';
@@ -1591,6 +1594,7 @@ class Entity
         self::AUTH_SERVICE_REFRESH_TOKENS   => \RZP\Services\AuthService::class,
 
         self::SHIELD_RULES                    => \RZP\Services\ShieldClient::class,
+        self::RAS_RULES                       => \RZP\Services\MerchantRiskAlertClient::class,
         self::SHIELD_RULE_ANALYTICS           => \RZP\Services\ShieldClient::class,
         self::SHIELD_RISKS                    => \RZP\Services\ShieldClient::class,
         self::SHIELD_RISK_LOGS                => \RZP\Services\ShieldClient::class,
