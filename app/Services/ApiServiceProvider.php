@@ -798,6 +798,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerCapitalEarlySettlementsClient();
 
+        $this->registerCapitalCardsClient();
+
         $this->registerCacheManager();
 
         $this->registerLedger();
@@ -2066,6 +2068,14 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('capital_early_settlements', function($app)
         {
             return new CapitalEarlySettlementClient($app);
+        });
+    }
+
+    protected function registerCapitalCardsClient()
+    {
+        $this->app->singleton('capital_cards_client', function($app)
+        {
+            return new CapitalCardsClient($app);
         });
     }
 

@@ -8471,6 +8471,85 @@ return [
         ],
     ],
 
+    'testGetBalancesByAccountType' => [
+        'request'  => [
+            'url'    => '/balances?account_type[]=shared&account_type[]=direct',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    '0' => [
+                        'id'           => '100def000def00',
+                        'type'         => 'primary',
+                        'currency'     => null,
+                        'name'         => null,
+                        'balance'      => 100000,
+                        'account_type' => 'direct'
+                    ],
+                    '1' => [
+                        'id'           => '100abc000abc00',
+                        'type'         => 'banking',
+                        'currency'     => 'INR',
+                        'name'         => null,
+                        'balance'      => 0,
+                        'account_type' => 'shared'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCorpCardBalance' => [
+        'request'  => [
+            'url'    => '/balances?account_type[]=corp_card',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    '0' => [
+                        'id'                => '100abc000abc00',
+                        'type'              => 'banking',
+                        'currency'          => 'INR',
+                        'name'              => null,
+                        'balance'           => 0,
+                        'account_type'      => 'corp_card',
+                        'corp_card_details' => [
+                            [
+                                'entity_id'      => 'qaghsquiqasdwd',
+                                'account_number' => '10234561782934',
+                                'user_id'        => 'wgahkasyqsdghws',
+                                'balance_id'     => '100abc000abc00',
+                            ]
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCorpCardBalanceFailure' => [
+        'request'  => [
+            'url'    => '/balances?account_type[]=corp_card',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content'     => [
+                'entity' => 'collection',
+                'count'  => 0,
+                'items'  => [],
+            ],
+        ],
+    ],
+
     'testSaveMerchantDetailsForActivationWithViewOnlyRole' => [
         'request'  => [
             'content' => [

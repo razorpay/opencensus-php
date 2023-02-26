@@ -45,6 +45,7 @@ use Illuminate\Cache\Events\KeyWritten;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Cache\Events\KeyForgotten;
 use Illuminate\Database\Eloquent\Factory;
+use RZP\Services\Mock\CapitalCardsClient;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Workflow\Action;
 use RZP\Models\RiskWorkflowAction\Constants;
@@ -224,6 +225,37 @@ class MerchantTest extends TestCase
                                         ->shouldAllowMockingProtectedMethods();
 
         $this->app['care_service'] = $this->careServiceMock;
+    }
+
+    protected function mockCapitalCards()
+    {
+        $capitalCardsMock = $this->getMockBuilder(CapitalCardsClient::class)
+                                 ->setConstructorArgs([$this->app])
+                                 ->setMethods(['getCorpCardAccountDetails'])
+                                 ->getMock();
+
+        $capitalCardsMock->method('getCorpCardAccountDetails')
+                         ->will($this->returnCallback(
+                             function($data) {
+                                 $this->assertNotEmpty($data['balance_id']);
+
+                                 if ($data['balance_id'] === 'hnaswdyeujdwsj')
+                                 {
+                                     return [];
+                                 }
+
+                                 return [
+                                     [
+                                         'entity_id'      => 'qaghsquiqasdwd',
+                                         'account_number' => '10234561782934',
+                                         'user_id'        => 'wgahkasyqsdghws',
+                                         'balance_id'     => $data['balance_id'],
+                                     ]
+                                 ];
+                             }
+                         ));
+
+        $this->app->instance('capital_cards_client', $capitalCardsMock);
     }
 
     protected function expectCareServiceRequestAndRespondWith($expectedPath, $expectedContent, $respondWithBody, $respondWithStatus)
@@ -11819,6 +11851,146 @@ Team Razorpay',
         $this->fixtures->create('balance',$balanceData1);
 
         $this->fixtures->create('balance',$balanceData2);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetBalancesByAccountType()
+    {
+        $this->mockCapitalCards();
+
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $balanceData1 = [
+            'id'             => '100abc000abc00',
+            'merchant_id'    => '100ghi000ghi00',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 0,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626905',
+            'account_type'   => 'shared',
+            'channel'        => null,
+            'updated_at'     => 1
+        ];
+
+        $balanceData2 = [
+            'id'             => '100def000def00',
+            'merchant_id'    => '100ghi000ghi00',
+            'type'           => 'primary',
+            'currency'       => null,
+            'name'           => null,
+            'balance'        => 100000,
+            'credits'        => 50000,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => null,
+            'account_type'   => 'direct',
+            'channel'        => 'shared',
+            'updated_at'     => 1
+        ];
+
+        $balanceData3 = [
+            'id'             => '100abc000abc01',
+            'merchant_id'    => '100ghi000ghi00',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 0,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626905',
+            'account_type'   => 'corp_card',
+            'channel'        => null,
+            'updated_at'     => 1
+        ];
+
+        $bankingAccountStatementData = [
+            'id'             => '100def000def01',
+            'merchant_id'    => '100ghi000ghi00',
+            'account_number' => '10000000000000',
+            'balance_id'     => '100def000def00',
+            'channel'        => 'rbl',
+            'account_type'   => 'direct'
+        ];
+
+        $this->fixtures->create('balance', $balanceData1);
+
+        $this->fixtures->create('balance', $balanceData2);
+
+        $this->fixtures->create('balance', $balanceData3);
+
+        $this->fixtures->create('banking_account_statement_details', $bankingAccountStatementData);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetCorpCardBalance()
+    {
+        $this->mockCapitalCards();
+
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $balanceData = [
+            'id'             => '100abc000abc00',
+            'merchant_id'    => '100ghi000ghi00',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 0,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626905',
+            'account_type'   => 'corp_card',
+            'channel'        => null,
+            'updated_at'     => 1
+        ];
+
+        $this->fixtures->create('balance', $balanceData);
+
+        $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
+
+        $this->ba->proxyAuth('rzp_test_100ghi000ghi00', $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testGetCorpCardBalanceFailure()
+    {
+        $this->mockCapitalCards();
+
+        $this->fixtures->create('merchant', ['id' => '100ghi000ghi00']);
+
+        $balanceData = [
+            'id'             => 'hnaswdyeujdwsj',
+            'merchant_id'    => '100ghi000ghi00',
+            'type'           => 'banking',
+            'currency'       => 'INR',
+            'name'           => null,
+            'balance'        => 0,
+            'credits'        => 0,
+            'fee_credits'    => 0,
+            'refund_credits' => 0,
+            'account_number' => '2224440041626905',
+            'account_type'   => 'corp_card',
+            'channel'        => null,
+            'updated_at'     => 1
+        ];
+
+        $this->fixtures->create('balance', $balanceData);
 
         $user = $this->fixtures->user->createUserForMerchant('100ghi000ghi00', [], 'owner', 'test');
 
