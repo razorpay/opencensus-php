@@ -919,7 +919,7 @@ EOT;
                     ->min(Payment\Entity::CREATED_AT);
     }
 
-    public function getMerchantTransactionCountBetweenTimestamps($merchantId, $from)
+    public function getMerchantTransactionCountBetweenTimestamps($merchantId, $from, $to)
     {
         $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
 
@@ -928,7 +928,7 @@ EOT;
         return $query
             ->whereNotNull(Payment\Entity::AUTHORIZED_AT)
             ->where(Payment\Entity::MERCHANT_ID, '=', $merchantId)
-            ->whereBetween(Payment\Entity::CREATED_AT, [$from, time()])
+            ->whereBetween(Payment\Entity::CREATED_AT, [$from, $to])
             ->count();
     }
 

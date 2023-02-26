@@ -55,7 +55,13 @@ class FOHRemovalDataCollector extends DbDataCollector
                                                  FeatureConstants::WITHDRAWAL_ES_AMAZON,
                                                  FeatureConstants::CAPITAL_CARDS,
                                                  FeatureConstants::ES_ON_DEMAND_RESTRICTED,
-                                                 FeatureConstants::ES_ON_DEMAND);
+                                                 FeatureConstants::ES_ON_DEMAND,
+                                                 FeatureConstants::ONDEMAND_LINKED,
+                                                 FeatureConstants::ONDEMAND_ROUTE,
+                                                 FeatureConstants::CASH_ON_CARD,
+                                                 FeatureConstants::AUTOMATED_LOC_ELIGIBLE,
+                                                 FeatureConstants::ES_AUTOMATIC,
+                                                 FeatureConstants::ES_AUTOMATIC_RESTRICTED);
 
     const WORKFLOW_CREATED_PAST_DAYS = 365;
 
@@ -182,10 +188,10 @@ class FOHRemovalDataCollector extends DbDataCollector
     private function getPermissionIds() : array
     {
         return [
-            $this->app['config']->get('permission_id_app.edit_merchant_hold_funds'),
-            $this->app['config']->get('permission_id_app.edit_merchant_suspend'),
-            $this->app['config']->get('permission_id_app.merchant_risk_alert_foh'),
-            $this->app['config']->get('permission_id_app.edit_merchant_disable_live')
+            $this->app['config']->get('app.permission_id_edit_merchant_hold_funds'),
+            $this->app['config']->get('app.permission_id_edit_merchant_suspend'),
+            $this->app['config']->get('app.permission_id_merchant_risk_alert_foh'),
+            $this->app['config']->get('app.permission_id_edit_merchant_disable_live')
         ];
     }
 
@@ -228,7 +234,7 @@ class FOHRemovalDataCollector extends DbDataCollector
 
         foreach ($merchants as $merchant)
         {
-            if ($merchant->getholdFunds() === true)
+            if ($merchant->getholdFunds() === true && empty($merchant->getParentId()) === true && $merchant->isBusinessBankingEnabled() === false)
             {
                 $includeIds[] = $merchant->getId();
             }
@@ -243,11 +249,16 @@ class FOHRemovalDataCollector extends DbDataCollector
 
         foreach ($merchantIds as $merchantId)
         {
-            $count= $this->repo->payment->getMerchantTransactionCountBetweenTimestamps($merchantId, strtotime('-121 days'));
+            $hasTransacted = $this->repo->payment->hasMerchantTransacted($merchantId);
 
-            if ($count === 0)
+            if ($hasTransacted === true)
             {
-                $includeIds[] = $merchantId;
+                $count= $this->repo->payment->getMerchantTransactionCountBetweenTimestamps($merchantId, strtotime('-121 days'), time());
+
+                if ($count === 0)
+                {
+                    $includeIds[] = $merchantId;
+                }
             }
         }
         return $includeIds;
@@ -261,9 +272,9 @@ class FOHRemovalDataCollector extends DbDataCollector
         {
             $nonDaoDispute = $this->repo->dispute->getNonDaoLostAndWonDisputes($merchantId);
 
-            if (is_null($nonDaoDispute) === false)
+            if (empty($nonDaoDispute) === false)
             {
-                $excludeIds[] = $nonDaoDispute->getId();
+                $excludeIds[] = $merchantId;
             }
         }
 
