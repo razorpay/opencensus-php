@@ -122,6 +122,8 @@ use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Partner\Config\Core as PartnerConfigCore;
 use RZP\Trace\Tracer;
 use RZP\Models\Merchant\Detail\BusinessCategory;
+use RZP\Models\Typeform\Core as TypeformCore;
+use RZP\Models\Typeform\Constants as TypeformConstant;
 
 class Core extends Base\Core
 {
@@ -6743,6 +6745,66 @@ class Core extends Base\Core
 
         return (strtolower($status) === 'on');
     }
+    
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function fetchProductWiseWorkflowStatusV2($permissionName, $productRequested, Entity $merchant): array
+    {
+        $productWiseWorkflowStatus = [];
+        
+        $productInternationalField = new Merchant\ProductInternational\ProductInternationalField($merchant);
+    
+        $productInternational = $merchant->getProductInternational();
+    
+        $productNames = Merchant\ProductInternational\ProductInternationalMapper::LIVE_PRODUCTS;
+    
+        // Iterating over each product and checking if product is approved or not ,
+        // if not approved then we are checking whether the product is requested product
+        // if it is then we are fetching the last workflow status raised for this product
+        // else we are showing no action received.
+        
+        foreach ($productNames as $productName)
+        {
+            $isApproved = ($productInternationalField->getProductStatus($productName, $productInternational)
+                           === Merchant\ProductInternational\ProductInternationalMapper::ENABLED);
+        
+            if ($isApproved === true)
+            {
+                $productWiseWorkflowStatus[$productName] = Constants::APPROVED;
+            }
+            else if (in_array($productName, $productRequested, true) === true)
+            {
+                $productWiseWorkflowStatus[$productName] = $this->getMerchantWorkflowStatus($permissionName, $merchant);
+            }
+            else
+            {
+                $productWiseWorkflowStatus[$productName] = Constants::NO_ACTION_RECEIVED;
+            }
+        }
+        return $productWiseWorkflowStatus;
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
+     */
+    public function getProductInternationalStatusV2(Entity $merchant): array
+    {
+        $workflowActions = ((new WorkflowAction\Core()))->fetchLastUpdatedWorkflowActionInPermissionList(
+            $merchant->getId(), TypeformConstant::MERCHANT_KEY, [Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED]);
+
+        $productRequested = [];
+
+        if (is_null($workflowActions) === false)
+        {
+            $productRequested = (new TypeformCore)->getProductNamesFromActionEntityData($workflowActions);
+        }
+
+        $productWiseWorkflowStatus = $this->fetchProductWiseWorkflowStatusV2(Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED, $productRequested, $merchant);
+
+        return $productWiseWorkflowStatus;
+    }
 
     /**
      * @param Entity $merchant
@@ -6750,41 +6812,51 @@ class Core extends Base\Core
      * @return array
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function getProductInternationalStatus(Entity $merchant): array
+    public function getProductInternationalStatus(Entity $merchant, array $input): array
     {
         $response = [];
 
-        $workflowsNotExistCount = 0;
-
-        $internationalWorkflowList = Constants::INTERNATIONAL_WORKFLOW_LIST;
-
-        $permissionProductCategories =
-            array_flip(Merchant\ProductInternational\ProductInternationalMapper::PRODUCT_PERMISSION);
-
-        foreach ($internationalWorkflowList as $workflowType)
+        if (((isset($input['version'])) === true) and
+            ($input['version'] === 'v2'))
         {
-            $permission = Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION];
+            $response = $this->getProductInternationalStatusV2($merchant);
 
-            $productCategory = $permissionProductCategories[$permission];
-
-            $productNames =
-                Merchant\ProductInternational\ProductInternationalMapper::PRODUCT_CATEGORIES[$productCategory];
-
-            $productWiseWorkflowStatus = $this->fetchProductWiseWorkflowStatus($productNames, $workflowType, $merchant);
-
-            if (empty($productWiseWorkflowStatus) === false)
-            {
-                if (array_values($productWiseWorkflowStatus)[0] === Constants::NO_ACTION_RECEIVED)
-                {
-                    $workflowsNotExistCount += 1;
-                }
-                $response = array_merge($response, $productWiseWorkflowStatus);
-            }
+            return $response;
         }
-
-        if ($workflowsNotExistCount === count($permissionProductCategories))
+        else
         {
-            $response = $this->handleOldWorkflows($response, $merchant);
+            $workflowsNotExistCount = 0;
+    
+            $internationalWorkflowList = Constants::INTERNATIONAL_WORKFLOW_LIST;
+    
+            $permissionProductCategories =
+                array_flip(Merchant\ProductInternational\ProductInternationalMapper::PRODUCT_PERMISSION);
+    
+            foreach ($internationalWorkflowList as $workflowType)
+            {
+                $permission = Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION];
+        
+                $productCategory = $permissionProductCategories[$permission];
+        
+                $productNames =
+                    Merchant\ProductInternational\ProductInternationalMapper::PRODUCT_CATEGORIES[$productCategory];
+        
+                $productWiseWorkflowStatus = $this->fetchProductWiseWorkflowStatus($productNames, $workflowType, $merchant);
+        
+                if (empty($productWiseWorkflowStatus) === false)
+                {
+                    if (array_values($productWiseWorkflowStatus)[0] === Constants::NO_ACTION_RECEIVED)
+                    {
+                        $workflowsNotExistCount += 1;
+                    }
+                    $response = array_merge($response, $productWiseWorkflowStatus);
+                }
+            }
+    
+            if ($workflowsNotExistCount === count($permissionProductCategories))
+            {
+                $response = $this->handleOldWorkflows($response, $merchant);
+            }
         }
 
         return $response;

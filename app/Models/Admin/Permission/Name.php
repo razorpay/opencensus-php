@@ -655,6 +655,7 @@ class Name
     const EDIT_MERCHANT_INTERNATIONAL         = 'edit_merchant_international';
     const EDIT_MERCHANT_PG_INTERNATIONAL      = 'edit_merchant_pg_international';
     const EDIT_MERCHANT_PROD_V2_INTERNATIONAL = 'edit_merchant_prod_v2_international';
+    const TOGGLE_INTERNATIONAL_REVAMPED       = 'toggle_international_revamped';
     const VIEW_CONFIG_KEYS                    = 'view_config_keys';
     const MERCHANT_ACTIONS                    = 'merchant_actions';
     const MERCHANT_ACTIVATION_REVIEWERS       = 'merchant_activation_reviewers';

@@ -3097,13 +3097,13 @@ class Service extends Base\Service
         return ($this->getBankAccountChangeViaWorkflowStatus($id) === true);
     }
 
-    public function getProductInternationalStatus() :array
+    public function getProductInternationalStatus(array $input = []) :array
     {
         $merchantCore = new Merchant\Core;
 
         $merchant = $this->merchant;
 
-        $response['data'] = $merchantCore->getProductInternationalStatus($merchant);
+        $response[Constants::DATA] = $merchantCore->getProductInternationalStatus($merchant, $input);
 
         return $response;
     }

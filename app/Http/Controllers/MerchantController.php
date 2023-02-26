@@ -605,7 +605,9 @@ class MerchantController extends Controller
 
     public function getProductInternationalStatus()
     {
-        $response = $this->service(E::MERCHANT)->getProductInternationalStatus();
+        $input = Request::all();
+        
+        $response = $this->service(E::MERCHANT)->getProductInternationalStatus($input);
 
         return ApiResponse::json($response);
     }

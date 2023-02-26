@@ -4,6 +4,7 @@
 namespace RZP\Models\Workflow\Observer;
 
 use App;
+use Carbon\Carbon;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
@@ -12,6 +13,7 @@ use RZP\Models\Workflow\Action\Differ\Entity;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Settlement\Service as SettlementService;
+use RZP\Models\Typeform\Constants as TypeformConstants;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Notifications\Dashboard\Events as DashboardEvents;
 use RZP\Notifications\Dashboard\Constants as DashboardConstants;
@@ -56,7 +58,7 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 
         PermissionName::INCREASE_TRANSACTION_LIMIT     => DashboardEvents::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON,
 
-        PermissionName::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT     => DashboardEvents::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON,
+        PermissionName::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT => DashboardEvents::INCREASE_TRANSACTION_LIMIT_REJECTION_REASON,
 
         PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL   => DashboardEvents::GSTIN_UPDATE_REJECTION_REASON,
 
@@ -82,6 +84,32 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
         PermissionName::EDIT_MERCHANT_GSTIN_DETAIL     => Constants::GSTIN . ' '.  Constants::NEEDS_CLARIFICATION_TRIGERRED,
 
         PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL   => Constants::GSTIN . ' '.  Constants::NEEDS_CLARIFICATION_TRIGERRED,
+    ];
+
+    const PERMISSION_FOR_NEW_SELF_SERVE_COMMUNICATIONS = [
+
+        PermissionName::EDIT_MERCHANT_BANK_DETAIL,
+
+        PermissionName::TOGGLE_INTERNATIONAL_REVAMPED,
+    ];
+
+    const IE_REJECTION_REASON_VS_EVENT = [
+
+        TypeformConstants::REJECT_REASON_MERCHANT_CLARIFICATION_NOT_PROVIDED    => DashboardEvents::IE_REJECTED_CLARIFICATION_NOT_PROVIDED,
+
+        TypeformConstants::REJECT_REASON_MERCHANT_WEBSITE_DETAIL_INCOMPLETE     => DashboardEvents::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE,
+
+        TypeformConstants::REJECT_REASON_MERCHANT_BUSINESS_MODEL_MISMATCH       => DashboardEvents::IE_REJECTED_BUSINESS_MODEL_MISMATCH,
+
+        TypeformConstants::REJECT_REASON_MERCHANT_INVALID_DOCUMENTS             => DashboardEvents::IE_REJECTED_INVALID_DOCUMENTS,
+
+        TypeformConstants::REJECT_REASON_MERCHANT_RISK_REJECTION                => DashboardEvents::IE_REJECTED_RISK_REJECTION,
+
+        TypeformConstants::REJECT_REASON_MERCHANT_HIGH_CHARGEBACK_FRAUD_PRESENT => DashboardEvents::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD,
+
+        TypeformConstants::REJECT_REASON_MERCHANT_DORMANT_MERCHANT              => DashboardEvents::IE_REJECTED_DORMANT_MERCHANT,
+
+        TypeformConstants::REJECT_REASON_MERCHANT_RESTRICTED_BUSINESS           => DashboardEvents::IE_REJECTED_RESTRICTED_BUSINESS,
     ];
 
     public function __construct($input)
@@ -123,10 +151,9 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
 
             $event = self::PERMISSION_VS_EVENTS[$this->permissionName];
 
-            if (($this->permissionName === PermissionName::EDIT_MERCHANT_BANK_DETAIL) and
-                ($merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID))
+            if (in_array($this->permissionName, self::PERMISSION_FOR_NEW_SELF_SERVE_COMMUNICATIONS, true) === true)
             {
-                $this->sendNotificationForBankAccountUpdate($merchant);
+                $this->sendNewSelfServeNotification($this->permissionName, $rejectionReason, $merchant);
 
                 return;
             }
@@ -219,6 +246,24 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
         }
     }
 
+    protected function sendNewSelfServeNotification($permissionName, $rejectionReason, $merchant)
+    {
+        if (($permissionName === PermissionName::EDIT_MERCHANT_BANK_DETAIL) and
+            ($merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID))
+        {
+            $this->sendNotificationForBankAccountUpdate($merchant);
+
+            return;
+        }
+
+        if ($permissionName === PermissionName::TOGGLE_INTERNATIONAL_REVAMPED)
+        {
+            $this->sendNotificationForToggleInternationalRevamped($merchant, $rejectionReason);
+
+            return;
+        }
+    }
+
     protected function sendNotificationForBankAccountUpdate($merchant, $event = DashboardEvents::BANK_ACCOUNT_UPDATE_REJECTED)
     {
         $merchantBankAccount = $this->repo->bank_account->getBankAccount($merchant);
@@ -249,6 +294,26 @@ class MerchantSelfServeObserver implements WorkflowObserverInterface
             Merchant\Constants::PARAMS       => [
                 DashboardConstants::MERCHANT_NAME => $merchant[Merchant\Entity::NAME],
                 DashboardConstants::LAST_3        => '**' . $last_3,
+            ]
+        ];
+
+        (new DashboardNotificationHandler($args))->send();
+    }
+
+    protected function sendNotificationForToggleInternationalRevamped($merchant, $rejectionReason)
+    {
+        $rejectionReason = $rejectionReason[Constants::MESSAGE_BODY];
+
+        $rejectionRetryAfterDate = Carbon::now()->addDays(DashboardConstants::IE_REJECTION_RETRY_AFTER_DAYS)->format('M d,Y');
+
+        $event = self::IE_REJECTION_REASON_VS_EVENT[$rejectionReason];
+
+        $args = [
+            Merchant\Constants::MERCHANT     => $merchant,
+            DashboardEvents::EVENT           => $event,
+            Merchant\Constants::PARAMS       => [
+                DashboardConstants::MERCHANT_NAME => $merchant[Merchant\Entity::NAME],
+                DashboardConstants::UPDATE_DATE   => $rejectionRetryAfterDate,
             ]
         ];
 

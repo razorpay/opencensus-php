@@ -29,6 +29,7 @@ class Constants
         Permission\Name::MERCHANT_RISK_ALERT_FOH             => \RZP\Models\MerchantRiskAlert\Service::class,
         Permission\Name::EDIT_MERCHANT_PG_INTERNATIONAL      => \RZP\Models\Typeform\Service::class,
         Permission\Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL => \RZP\Models\Typeform\Service::class,
+        Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED       => \RZP\Models\Typeform\Service::class,
         Permission\Name::EXECUTE_MERCHANT_SUSPEND_BULK       => \RZP\Models\BulkWorkflowAction\Service::class,
         Permission\Name::EXECUTE_MERCHANT_HOLD_FUNDS_BULK    => \RZP\Models\BulkWorkflowAction\Service::class,
         Permission\Name::EXECUTE_MERCHANT_TOGGLE_LIVE_BULK   => \RZP\Models\BulkWorkflowAction\Service::class,
@@ -37,6 +38,7 @@ class Constants
     const CLOSE_OPERATION_UNSUPPORTED_PERMISSIONS = [
         Permission\Name::EDIT_MERCHANT_PG_INTERNATIONAL,
         Permission\Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL,
+        Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED,
     ];
 
     const WORKFLOWS_FOR_NEED_MERCHANT_CLARIFICATION = [
@@ -48,6 +50,11 @@ class Constants
         Permission\Name::ADD_ADDITIONAL_WEBSITE,
         Permission\Name::INCREASE_TRANSACTION_LIMIT,
         Permission\Name::INCREASE_INTERNATIONAL_TRANSACTION_LIMIT,
+        Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED,
+    ];
+
+    const PERMISSION_FOR_NEW_SELF_SERVE_COMMUNICATIONS = [
+        Permission\Name::EDIT_MERCHANT_BANK_DETAIL,
     ];
 
     const WORKFLOWS_EXCLUDED_FOR_MAKER_IS_SAME_AS_CHECKER_OR_OWNER_VALIDATION = [

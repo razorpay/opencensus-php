@@ -34,15 +34,16 @@ class Validator extends Base\Validator
     ];
 
     protected $routeValidatorMapping = [
-        Constants::MERCHANT_SAVE_BUSINESS_WEBSITE        => 'rejection_reason_data',
-        Constants::MERCHANT_ACTIVATION_UPDATE_WEBSITE    => 'rejection_reason_data',
-        Constants::MERCHANT_GSTIN_SELF_SERVE_UPDATE      => 'rejection_reason_data',
-        Constants::MERCHANT_BANK_ACCOUNT_CREATE          => 'rejection_reason_data',
-        Constants::MERCHANT_BANK_ACCOUNT_UPDATE          => 'rejection_reason_data',
-        Constants::ADD_ADDITIONAL_WEBSITE_SELF_SERVE     => 'rejection_reason_data',
-        Constants::MERCHANT_ACTIVATION_SAVE              => 'rejection_reason_data',
-        Constants::PARTNER_ACTIVATION_STATUS             => 'rejection_reason_data',
-        Constants::INCREASE_TRANSACTION_LIMIT_SELF_SERVE => 'approved_transaction_limit',
+        Constants::MERCHANT_SAVE_BUSINESS_WEBSITE           => 'rejection_reason_data',
+        Constants::MERCHANT_ACTIVATION_UPDATE_WEBSITE       => 'rejection_reason_data',
+        Constants::MERCHANT_GSTIN_SELF_SERVE_UPDATE         => 'rejection_reason_data',
+        Constants::MERCHANT_BANK_ACCOUNT_CREATE             => 'rejection_reason_data',
+        Constants::MERCHANT_BANK_ACCOUNT_UPDATE             => 'rejection_reason_data',
+        Constants::ADD_ADDITIONAL_WEBSITE_SELF_SERVE        => 'rejection_reason_data',
+        Constants::MERCHANT_ACTIVATION_SAVE                 => 'rejection_reason_data',
+        Constants::PARTNER_ACTIVATION_STATUS                => 'rejection_reason_data',
+        Constants::INCREASE_TRANSACTION_LIMIT_SELF_SERVE    => 'approved_transaction_limit',
+        Constants::MERCHANT_INTERNATIONAL_ENABLEMENT_SUBMIT => 'rejection_reason_data',
     ];
 
     public function validateWorkflowObserverData($differEntity, array $input)

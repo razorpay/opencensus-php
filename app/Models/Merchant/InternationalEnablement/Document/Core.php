@@ -20,9 +20,11 @@ class Core extends Base\Core
         return $entity;
     }
 
-    public function upsertBulk($oldDetailEntity, Detail\Entity $newDetailEntity, $documents, string $action)
+    public function upsertBulk($oldDetailEntity, Detail\Entity $newDetailEntity, $documents, string $action, $version = 'v1')
     {
-        (new Validator)->validateExternalPayload($documents, Detail\Constants::ACTION_DRAFT);
+        $merchantDetail = $this->merchant->merchantDetail;
+        
+        (new Validator)->validateExternalPayload($documents, Detail\Constants::ACTION_DRAFT, $merchantDetail, $version);
 
         $existingDocumentsInExternalFormat = [];
 
@@ -43,13 +45,13 @@ class Core extends Base\Core
         {
             $documentsInExternalFormat['accepts_intl_txns'] = $newDetailEntity->getAcceptsIntlTxns();
 
-            (new Validator)->validateExternalPayload($documentsInExternalFormat, $action);
+            (new Validator)->validateExternalPayload($documentsInExternalFormat, $action, $merchantDetail, $version);
 
             unset($documentsInExternalFormat['accepts_intl_txns']);
         }
         else
         {
-            (new Validator)->validateExternalPayload($documentsInExternalFormat, $action);
+            (new Validator)->validateExternalPayload($documentsInExternalFormat, $action, $merchantDetail, $version);
         }
 
         $documentsInInternalFormat = $this->convertExternalToInternalFormat($documentsInExternalFormat);

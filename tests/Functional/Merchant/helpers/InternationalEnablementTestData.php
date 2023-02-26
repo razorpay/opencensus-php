@@ -698,9 +698,52 @@ return [
                     'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNATIONAL_ENABLEMENT_VALIDATION_FAILURE,
                 ],
             ],
+            'without_business_category_subcategory_documents' => [
+                'response'  => [
+                    'status_code' => 400,
+                    'content'     => [
+                        'error' => [
+                            'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                            'description' => PublicErrorDescription::BAD_REQUEST_INTERNATIONAL_ENABLEMENT_VALIDATION_FAILURE,
+                            '_internal' => [
+                                'documents' => [
+                                    'sebi_certificate' => [
+                                        'The sebi certificate field is required when accepts intl txns is true.'
+                                    ],
+                                ],
+                                'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNATIONAL_ENABLEMENT_VALIDATION_FAILURE,
+                            ]
+                        ]
+                    ],
+                ],
+                'exception' => [
+                    'class'               => 'Rzp\Exception\BadRequestException',
+                    'internal_error_code' => ErrorCode::BAD_REQUEST_INTERNATIONAL_ENABLEMENT_VALIDATION_FAILURE,
+                ],
+            ],
         ]
     ],
 
+    'testGetProductInternationalStatusV2Workflow' =>[
+        'request'  => [
+            'url'    => '/merchants/product_international/workflow/status/all',
+            'method' => 'get',
+            'content' => [
+                'version' => 'v2',
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'data' => [
+                    'payment_gateway' => 'no_action_received',
+                    'payment_links'   => 'in_review',
+                    'payment_pages'   => 'in_review',
+                    'invoices'        => 'in_review',
+                ],
+            ],
+        ],
+    ],
+    
     'testPreviewForDraftWithoutIntlDocuments' => [
         'request'   => [
             'url'     => '/international_enablement/preview',

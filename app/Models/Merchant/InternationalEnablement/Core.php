@@ -48,7 +48,7 @@ class Core extends Base\Core
         return (new Detail\Core)->getLatest();
     }
 
-    public function upsert(array $input, string $action): Detail\Entity
+    public function upsert(array $input, string $action, $version = 'v1'): Detail\Entity
     {
         $documents = [];
 
@@ -59,7 +59,7 @@ class Core extends Base\Core
 
         unset($input[Detail\Entity::DOCUMENTS]);
 
-        $newDetailEntity = $this->repo->transaction(function() use ($input, $documents, $action)
+        $newDetailEntity = $this->repo->transaction(function() use ($input, $documents, $action, $version)
         {
             list($oldDetailEntity, $newDetailEntity) =
                 (new Detail\Core)->upsert($input, $action);
@@ -69,7 +69,7 @@ class Core extends Base\Core
                 $documents = [];
             }
 
-            (new Document\Core)->upsertBulk($oldDetailEntity, $newDetailEntity, $documents, $action);
+            (new Document\Core)->upsertBulk($oldDetailEntity, $newDetailEntity, $documents, $action, $version);
 
             return $newDetailEntity;
         });

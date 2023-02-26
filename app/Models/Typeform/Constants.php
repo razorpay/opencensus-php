@@ -3,9 +3,15 @@
 namespace RZP\Models\Typeform;
 
 use RZP\Models\Admin\Permission;
+use RZP\Notifications\Dashboard\Events as DashboardEvents;
 
 class Constants
 {
+    const NEW         = 'new';
+    const DETAIL_URL  = 'detail_url';
+    const APPROVED    = 'approved';
+    const PRODUCTS    = 'products';
+    
     const REJECTION_TAG_PREFIX                          = 'ie_rejection_tag_';
     const REJECTION_REASON_PREFIX                       = 'ie_rejection_reason_';
     const INTERNATIONAL_ENABLEMENT_REQUEST_ID_PREFIX    = 'ie_request_id_';
@@ -20,6 +26,15 @@ class Constants
     const REJECT_REASON_MERCHANT_LOOKS_SAFE     = 'merchant_looks_safe';
     const REJECT_REASON_MERCHANT_NOT_REGISTERED = 'merchant_not_registered';
 
+    const REJECT_REASON_MERCHANT_CLARIFICATION_NOT_PROVIDED     = 'clarification_not_provided';
+    const REJECT_REASON_MERCHANT_WEBSITE_DETAIL_INCOMPLETE      = 'website_detail_incomplete';
+    const REJECT_REASON_MERCHANT_RISK_REJECTION                 = 'risk_rejection';
+    const REJECT_REASON_MERCHANT_HIGH_CHARGEBACK_FRAUD_PRESENT  = 'merchant_high_chargebacks_fraud_present';
+    const REJECT_REASON_MERCHANT_BUSINESS_MODEL_MISMATCH        = 'business_model_mismatch';
+    const REJECT_REASON_MERCHANT_INVALID_DOCUMENTS              = 'invalid_documents';
+    const REJECT_REASON_MERCHANT_DORMANT_MERCHANT               = 'dormant_merchant';
+    const REJECT_REASON_MERCHANT_RESTRICTED_BUSINESS            = 'restricted_business';
+    
     const REJECTION_TAG_CHARGEBACK_FRAUD_PRESENT          = 'merchant_high_chargebacks_fraud_present';
     const REJECTION_TAG_WEBSITE_INCOMPLETE                = 'website_incomplete';
     const REJECTION_TAG_INADEQUATE_DOCUMENTS              = 'inadequate_documents';
@@ -35,6 +50,17 @@ class Constants
         self::REJECT_REASON_MERCHANT_NOT_REGISTERED,
     ];
 
+    const REJECTION_REASONS_V2 = [
+        self::REJECT_REASON_MERCHANT_CLARIFICATION_NOT_PROVIDED,
+        self::REJECT_REASON_MERCHANT_WEBSITE_DETAIL_INCOMPLETE,
+        self::REJECT_REASON_MERCHANT_RISK_REJECTION,
+        self::REJECT_REASON_MERCHANT_HIGH_CHARGEBACK_FRAUD_PRESENT,
+        self::REJECT_REASON_MERCHANT_BUSINESS_MODEL_MISMATCH,
+        self::REJECT_REASON_MERCHANT_INVALID_DOCUMENTS,
+        self::REJECT_REASON_MERCHANT_DORMANT_MERCHANT,
+        self::REJECT_REASON_MERCHANT_RESTRICTED_BUSINESS,
+    ];
+    
     const REJECTION_TAGS = [
         self::REJECTION_TAG_CHARGEBACK_FRAUD_PRESENT,
         self::REJECTION_TAG_WEBSITE_INCOMPLETE,
@@ -44,6 +70,12 @@ class Constants
         self::REJECTION_TAG_WEBSITE_QUICKLINKS_UNSATISFACTORY,
         self::REJECTION_TAG_CATEGORY_INTERNATIONAL_INELIGIBLE,
         self::REJECTION_TAG_BUSINESS_MODEL_MISMATCH,
+    ];
+
+    const APPROVED_PRODUCT_COUNT_VS_IE_SUCCESS_EVENT = [
+        1 => DashboardEvents::IE_SUCCESSFUL_PG,
+        3 => DashboardEvents::IE_SUCCESSFUL_PPLI,
+        4 => DashboardEvents::IE_SUCCESSFUL,
     ];
 
     const AUTO_MERCHANT_NOTIFICATION_ENABLED  = 'auto_merchant_notification_enabled';
@@ -144,6 +176,11 @@ class Constants
         Permission\Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL => 'Payment Pages, Links and Invoices',
     ];
 
+    public static function isValidRejectionReasonV2(string $rejectionReason)
+    {
+        return in_array($rejectionReason, self::REJECTION_REASONS_V2) === true;
+    }
+    
     public static function isValidRejectionReason(string $rejectionReason)
     {
         return in_array($rejectionReason, self::REJECTION_REASONS) === true;

@@ -60,6 +60,16 @@ class Service extends Base\Service
 
     public function draft(array $input): array
     {
+        $version = 'v1';
+        
+        if (((isset($input[Constants::VERSION])) === true) and
+            ($input[Constants::VERSION] === 'v2'))
+        {
+            $version = $input[Constants::VERSION];
+        
+            unset($input[Constants::VERSION]);
+        }
+
         $sanitizedInput = $this->sanitizeExternalPayload($input);
 
         $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_DATA, [
@@ -76,11 +86,11 @@ class Service extends Base\Service
 
         $entity = $this->mutex->acquireAndRelease(
             $mutexKey,
-            function() use ($input)
+            function() use ($input, $version)
             {
                 $this->handleRequestEnablement($input, true);
 
-                return $this->core()->upsert($input, Detail\Constants::ACTION_DRAFT);
+                return $this->core()->upsert($input, Detail\Constants::ACTION_DRAFT, $version);
             });
 
         return $this->core()->convertToExternalFormat($entity);
@@ -88,6 +98,16 @@ class Service extends Base\Service
 
     public function submit(array $input): array
     {
+        $version = 'v1';
+    
+        if (((isset($input[Constants::VERSION])) === true) and
+            ($input[Constants::VERSION] === 'v2'))
+        {
+            $version = $input[Constants::VERSION];
+    
+            unset($input[Constants::VERSION]);
+        }
+
         $sanitizedInput = $this->sanitizeExternalPayload($input);
 
         $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_DATA, [
@@ -100,7 +120,7 @@ class Service extends Base\Service
 
         if ($this->app['api.route']->isWorkflowExecuteOrApproveCall() === true)
         {
-            $this->createWorkflowsIfApplicable($input);
+            $this->createWorkflowsIfApplicable($input, null, $version);
 
             return [];
         }
@@ -109,14 +129,14 @@ class Service extends Base\Service
 
         $entity = $this->mutex->acquireAndRelease(
             $mutexKey,
-            function() use ($input)
+            function() use ($input, $version)
             {
                 $this->handleRequestEnablement($input);
 
-                return $this->core()->upsert($input, Detail\Constants::ACTION_SUBMIT);
+                return $this->core()->upsert($input, Detail\Constants::ACTION_SUBMIT, $version);
             });
 
-        $this->createWorkflowsIfApplicable($input, $entity);
+        $this->createWorkflowsIfApplicable($input, $entity, $version);
 
         return $this->core()->convertToExternalFormat($entity);
     }
@@ -138,7 +158,7 @@ class Service extends Base\Service
         }
     }
 
-    public function createWorkflowsIfApplicable(array $input, $ieDetail = null)
+    public function createWorkflowsIfApplicable(array $input, $ieDetail = null, $version = 'v1')
     {
         $workflowData = [];
 
@@ -194,7 +214,7 @@ class Service extends Base\Service
             }
         }
 
-        (new Typeform\Core)->processInHouseQuestionnaire($this->merchant, $workflowData, $input);
+        (new Typeform\Core)->processInHouseQuestionnaire($this->merchant, $workflowData, $input, $version);
     }
 
     private function sanitizeExternalPayload(array $input): ? array

@@ -57,7 +57,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_TXN_SIZE_MAX               => 'required_with:business_txn_size_min|integer',
         Entity::LOGISTIC_PARTNERS                   => 'nullable|string|min:1|max:500',
 
-        Entity::ABOUT_US_LINK                       => 'required|active_url',
+        Entity::ABOUT_US_LINK                       => 'nullable|active_url',
         Entity::CONTACT_US_LINK                     => 'nullable|active_url',
         Entity::TERMS_AND_CONDITIONS_LINK           => 'nullable|active_url',
         Entity::PRIVACY_POLICY_LINK                 => 'nullable|active_url',

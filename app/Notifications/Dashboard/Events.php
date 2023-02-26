@@ -87,6 +87,32 @@ class Events
 
     const BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION                   = 'BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION';
 
+    const IE_SUCCESSFUL                                                 = 'IE_SUCCESSFUL';
+
+    const IE_UNDER_REVIEW                                               = 'IE_UNDER_REVIEW';
+
+    const IE_SUCCESSFUL_PPLI                                            = 'IE_SUCCESSFUL_PPLI';
+
+    const IE_SUCCESSFUL_PG                                              = 'IE_SUCCESSFUL_PG';
+
+    const IE_REJECTED_CLARIFICATION_NOT_PROVIDED                        = 'IE_REJECTED_CLARIFICATION_NOT_PROVIDED';
+
+    const IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                        = 'IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE';
+
+    const IE_REJECTED_BUSINESS_MODEL_MISMATCH                           = 'IE_REJECTED_BUSINESS_MODEL_MISMATCH';
+
+    const IE_REJECTED_INVALID_DOCUMENTS                                 = 'IE_REJECTED_INVALID_DOCUMENTS';
+
+    const IE_REJECTED_RISK_REJECTION                                    = 'IE_REJECTED_RISK_REJECTION';
+
+    const IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD                   = 'IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD';
+
+    const IE_REJECTED_DORMANT_MERCHANT                                  = 'IE_REJECTED_DORMANT_MERCHANT';
+
+    const IE_REJECTED_RESTRICTED_BUSINESS                               = 'IE_REJECTED_RESTRICTED_BUSINESS';
+
+    const IE_NEEDS_CLARIFICATION                                        = 'IE_NEEDS_CLARIFICATION';
+
     // Event vs sms templates mapping
     const SMS_TEMPLATES = [
         self::MERCHANT_BUSINESS_WEBSITE_ADD                             => 'sms.dashboard.merchant_business_website_add',
@@ -123,6 +149,19 @@ class Events
         self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => 'sms.dashboard.bank_account_update_rejected',
         self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => 'sms.dashboard.bank_account_update_needs_clarification',
         self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => 'sms.dashboard.bank_account_update_needs_clarification',
+        self::IE_SUCCESSFUL                                             => 'sms.dashboard.ie_successful',
+        self::IE_UNDER_REVIEW                                           => 'sms.dashboard.ie_under_review',
+        self::IE_SUCCESSFUL_PPLI                                        => 'sms.dashboard.ie_successful',
+        self::IE_SUCCESSFUL_PG                                          => 'sms.dashboard.ie_successful',
+        self::IE_REJECTED_CLARIFICATION_NOT_PROVIDED                    => 'sms.dashboard.ie_rejected_clarification_not_provided',
+        self::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                    => 'sms.dashboard.ie_rejected_website_details_incomplete',
+        self::IE_REJECTED_BUSINESS_MODEL_MISMATCH                       => 'sms.dashboard.ie_rejected_business_model_mismatch',
+        self::IE_REJECTED_INVALID_DOCUMENTS                             => 'sms.dashboard.ie_rejected_invalid_documents',
+        self::IE_REJECTED_RISK_REJECTION                                => 'sms.dashboard.ie_rejected_risk_rejection_1',
+        self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => 'sms.dashboard.ie_rejected_merchant_high_chargebacks_fraud',
+        self::IE_REJECTED_DORMANT_MERCHANT                              => 'sms.dashboard.ie_rejected_dormant_merchant',
+        self::IE_REJECTED_RESTRICTED_BUSINESS                           => 'sms.dashboard.ie_rejected_restricted_business',
+        self::IE_NEEDS_CLARIFICATION                                    => 'sms.dashboard.ie_needs_clarification',
     ];
 
     /**
@@ -164,6 +203,19 @@ class Events
         self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => [],
         self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => [],
         self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => [],
+        self::IE_SUCCESSFUL                                             => [],
+        self::IE_UNDER_REVIEW                                           => [Constants::UPDATE_DATE],
+        self::IE_SUCCESSFUL_PPLI                                        => [],
+        self::IE_SUCCESSFUL_PG                                          => [],
+        self::IE_REJECTED_CLARIFICATION_NOT_PROVIDED                    => [],
+        self::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                    => [],
+        self::IE_REJECTED_BUSINESS_MODEL_MISMATCH                       => [],
+        self::IE_REJECTED_INVALID_DOCUMENTS                             => [],
+        self::IE_REJECTED_RISK_REJECTION                                => [Constants::UPDATE_DATE],
+        self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => [Constants::UPDATE_DATE],
+        self::IE_REJECTED_DORMANT_MERCHANT                              => [Constants::UPDATE_DATE],
+        self::IE_REJECTED_RESTRICTED_BUSINESS                           => [Constants::UPDATE_DATE],
+        self::IE_NEEDS_CLARIFICATION                                    => [],
     ];
 
     // Event vs whatsapp templates mapping
@@ -202,6 +254,19 @@ class Events
         self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => 'whatsapp.merchant.dashboard.bank_account_update_soh_rejected',
         self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => 'whatsapp.merchant.dashboard.bank_account_update_needs_clarification',
         self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => 'whatsapp.merchant.dashboard.bank_account_update_soh_needs_clarification',
+        self::IE_SUCCESSFUL                                             => 'whatsapp.merchant.dashboard.ie_successful',
+        self::IE_UNDER_REVIEW                                           => 'whatsapp.merchant.dashboard.ie_under_review',
+        self::IE_SUCCESSFUL_PPLI                                        => 'whatsapp.merchant.dashboard.ie_successful_ppli',
+        self::IE_SUCCESSFUL_PG                                          => 'whatsapp.merchant.dashboard.ie_successful_pg',
+        self::IE_REJECTED_CLARIFICATION_NOT_PROVIDED                    => 'whatsapp.merchant.dashboard.ie_rejected_clarification_not_provided',
+        self::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                    => 'whatsapp.merchant.dashboard.ie_rejected_website_details_incomplete',
+        self::IE_REJECTED_BUSINESS_MODEL_MISMATCH                       => 'whatsapp.merchant.dashboard.ie_rejected_business_model_mismatch',
+        self::IE_REJECTED_INVALID_DOCUMENTS                             => 'whatsapp.merchant.dashboard.ie_rejected_invalid_documents',
+        self::IE_REJECTED_RISK_REJECTION                                => 'whatsapp.merchant.dashboard.ie_rejected_risk_rejection',
+        self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => 'whatsapp.merchant.dashboard.ie_rejected_merchant_high_chargebacks_fraud',
+        self::IE_REJECTED_DORMANT_MERCHANT                              => 'whatsapp.merchant.dashboard.ie_rejected_dormant_merchant',
+        self::IE_REJECTED_RESTRICTED_BUSINESS                           => 'whatsapp.merchant.dashboard.ie_rejected_restricted_business',
+        self::IE_NEEDS_CLARIFICATION                                    => 'whatsapp.merchant.dashboard.ie_needs_clarification',
     ];
 
     /**
@@ -242,6 +307,19 @@ class Events
         self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => [Constants::MERCHANT_NAME, Constants::LAST_3],
         self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => [Constants::MERCHANT_NAME, Constants::LAST_3],
         self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => [Constants::MERCHANT_NAME, Constants::LAST_3],
+        self::IE_SUCCESSFUL                                             => [Constants::MERCHANT_NAME],
+        self::IE_UNDER_REVIEW                                           => [Constants::MERCHANT_NAME, Constants::UPDATE_DATE],
+        self::IE_SUCCESSFUL_PPLI                                        => [Constants::MERCHANT_NAME],
+        self::IE_SUCCESSFUL_PG                                          => [Constants::MERCHANT_NAME],
+        self::IE_REJECTED_CLARIFICATION_NOT_PROVIDED                    => [Constants::MERCHANT_NAME],
+        self::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                    => [Constants::MERCHANT_NAME],
+        self::IE_REJECTED_BUSINESS_MODEL_MISMATCH                       => [Constants::MERCHANT_NAME],
+        self::IE_REJECTED_INVALID_DOCUMENTS                             => [Constants::MERCHANT_NAME],
+        self::IE_REJECTED_RISK_REJECTION                                => [Constants::MERCHANT_NAME, Constants::UPDATE_DATE],
+        self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => [Constants::MERCHANT_NAME, Constants::UPDATE_DATE],
+        self::IE_REJECTED_DORMANT_MERCHANT                              => [Constants::MERCHANT_NAME, Constants::UPDATE_DATE],
+        self::IE_REJECTED_RESTRICTED_BUSINESS                           => [Constants::MERCHANT_NAME, Constants::UPDATE_DATE],
+        self::IE_NEEDS_CLARIFICATION                                    => [Constants::MERCHANT_NAME],
     ];
 
     // Event vs email templates mapping
@@ -284,6 +362,19 @@ class Events
         self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => 'emails.merchant.bank_account_update_soh_rejected',
         self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => 'emails.merchant.bank_account_update_needs_clarification',
         self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => 'emails.merchant.bank_account_update_soh_needs_clarification',
+        self::IE_SUCCESSFUL                                             => 'emails.merchant.ie_successful',
+        self::IE_UNDER_REVIEW                                           => 'emails.merchant.ie_under_review',
+        self::IE_SUCCESSFUL_PPLI                                        => 'emails.merchant.ie_successful_ppli',
+        self::IE_SUCCESSFUL_PG                                          => 'emails.merchant.ie_successful_pg',
+        self::IE_REJECTED_CLARIFICATION_NOT_PROVIDED                    => 'emails.merchant.ie_rejected_clarification_not_provided',
+        self::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                    => 'emails.merchant.ie_rejected_website_details_incomplete',
+        self::IE_REJECTED_BUSINESS_MODEL_MISMATCH                       => 'emails.merchant.ie_rejected_business_model_mismatch',
+        self::IE_REJECTED_INVALID_DOCUMENTS                             => 'emails.merchant.ie_rejected_invalid_documents',
+        self::IE_REJECTED_RISK_REJECTION                                => 'emails.merchant.ie_rejected_risk_rejection',
+        self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => 'emails.merchant.ie_rejected_merchant_high_chargebacks_fraud',
+        self::IE_REJECTED_DORMANT_MERCHANT                              => 'emails.merchant.ie_rejected_dormant_merchant',
+        self::IE_REJECTED_RESTRICTED_BUSINESS                           => 'emails.merchant.ie_rejected_restricted_business',
+        self::IE_NEEDS_CLARIFICATION                                    => 'emails.merchant.ie_needs_clarification',
     ];
 
     // Event vs email Tags mapping
@@ -325,6 +416,19 @@ class Events
         self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => MailTags::BANK_ACCOUNT_UPDATE_SOH_REJECTED,
         self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => MailTags::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION,
         self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => MailTags::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION,
+        self::IE_SUCCESSFUL                                             => MailTags::IE_SUCCESSFUL,
+        self::IE_UNDER_REVIEW                                           => MailTags::IE_UNDER_REVIEW,
+        self::IE_SUCCESSFUL_PPLI                                        => MailTags::IE_SUCCESSFUL_PPLI,
+        self::IE_SUCCESSFUL_PG                                          => MailTags::IE_SUCCESSFUL_PG,
+        self::IE_REJECTED_CLARIFICATION_NOT_PROVIDED                    => MailTags::IE_REJECTED_CLARIFICATION_NOT_PROVIDED,
+        self::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                    => MailTags::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE,
+        self::IE_REJECTED_BUSINESS_MODEL_MISMATCH                       => MailTags::IE_REJECTED_BUSINESS_MODEL_MISMATCH,
+        self::IE_REJECTED_INVALID_DOCUMENTS                             => MailTags::IE_REJECTED_INVALID_DOCUMENTS,
+        self::IE_REJECTED_RISK_REJECTION                                => MailTags::IE_REJECTED_RISK_REJECTION,
+        self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => MailTags::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD,
+        self::IE_REJECTED_DORMANT_MERCHANT                              => MailTags::IE_REJECTED_DORMANT_MERCHANT,
+        self::IE_REJECTED_RESTRICTED_BUSINESS                           => MailTags::IE_REJECTED_RESTRICTED_BUSINESS,
+        self::IE_NEEDS_CLARIFICATION                                    => MailTags::IE_NEEDS_CLARIFICATION,
     ];
 
     // Event vs email subject mapping
@@ -366,6 +470,19 @@ class Events
         self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => 'Bank account change request rejected',
         self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => 'Action required: Bank account change request',
         self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => 'Action required: Bank account change request',
+        self::IE_SUCCESSFUL                                             => 'International card payments request successful',
+        self::IE_UNDER_REVIEW                                           => 'International card payments request under review',
+        self::IE_SUCCESSFUL_PPLI                                        => 'International card payments request successful',
+        self::IE_SUCCESSFUL_PG                                          => 'International card payments request successful',
+        self::IE_REJECTED_CLARIFICATION_NOT_PROVIDED                    => 'International card payments request rejected',
+        self::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                    => 'International card payments request rejected',
+        self::IE_REJECTED_BUSINESS_MODEL_MISMATCH                       => 'International card payments request rejected',
+        self::IE_REJECTED_INVALID_DOCUMENTS                             => 'International card payments request rejected',
+        self::IE_REJECTED_RISK_REJECTION                                => 'International card payments request rejected',
+        self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => 'International card payments request rejected',
+        self::IE_REJECTED_DORMANT_MERCHANT                              => 'International card payments request rejected',
+        self::IE_REJECTED_RESTRICTED_BUSINESS                           => 'International card payments request rejected',
+        self::IE_NEEDS_CLARIFICATION                                    => 'Action required: International card payments request',
     ];
 
     // Event vs recipients role mapping
@@ -407,6 +524,19 @@ class Events
         self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => [UserRole::OWNER],
         self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => [UserRole::OWNER],
         self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => [UserRole::OWNER],
+        self::IE_SUCCESSFUL                                             => [UserRole::OWNER],
+        self::IE_UNDER_REVIEW                                           => [UserRole::OWNER],
+        self::IE_SUCCESSFUL_PPLI                                        => [UserRole::OWNER],
+        self::IE_SUCCESSFUL_PG                                          => [UserRole::OWNER],
+        self::IE_REJECTED_CLARIFICATION_NOT_PROVIDED                    => [UserRole::OWNER],
+        self::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                    => [UserRole::OWNER],
+        self::IE_REJECTED_BUSINESS_MODEL_MISMATCH                       => [UserRole::OWNER],
+        self::IE_REJECTED_INVALID_DOCUMENTS                             => [UserRole::OWNER],
+        self::IE_REJECTED_RISK_REJECTION                                => [UserRole::OWNER],
+        self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => [UserRole::OWNER],
+        self::IE_REJECTED_DORMANT_MERCHANT                              => [UserRole::OWNER],
+        self::IE_REJECTED_RESTRICTED_BUSINESS                           => [UserRole::OWNER],
+        self::IE_NEEDS_CLARIFICATION                                    => [UserRole::OWNER],
     ];
 
     // Event vs supported channel mapping
@@ -448,5 +578,18 @@ class Events
         self::BANK_ACCOUNT_UPDATE_SOH_REJECTED                          => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION                   => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
         self::BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION               => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_SUCCESSFUL                                             => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_UNDER_REVIEW                                           => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_SUCCESSFUL_PPLI                                        => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_SUCCESSFUL_PG                                          => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_REJECTED_CLARIFICATION_NOT_PROVIDED                    => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE                    => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_REJECTED_BUSINESS_MODEL_MISMATCH                       => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_REJECTED_INVALID_DOCUMENTS                             => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_REJECTED_RISK_REJECTION                                => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD               => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_REJECTED_DORMANT_MERCHANT                              => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_REJECTED_RESTRICTED_BUSINESS                           => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
+        self::IE_NEEDS_CLARIFICATION                                    => [Channel::EMAIL, Channel::SMS, Channel::WHATSAPP],
     ];
 }

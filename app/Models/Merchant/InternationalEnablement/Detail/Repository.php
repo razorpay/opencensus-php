@@ -15,4 +15,14 @@ class Repository extends Base\Repository
             ->orderBy(Entity::CREATED_AT, 'desc')
             ->first();
     }
+    
+    public function getProductsFromEntityId(string $internationalEnablementId)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select(Entity::PRODUCTS)
+            ->where(Entity::ID, $internationalEnablementId)
+            ->get()
+            ->pluck(Entity::PRODUCTS)
+            ->first();
+    }
 }

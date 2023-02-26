@@ -1121,10 +1121,9 @@ class Core extends Base\Core
 
         $event = MerchantNotificationsConstants::WORKFLOW_PERMISSION_VS_NEEDS_CLARIFICATION_EVENT[$workflowPermission];
 
-        if (($workflowPermission === Permission\Name::EDIT_MERCHANT_BANK_DETAIL) and
-            ($merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID))
+        if (in_array($workflowPermission, Constants::PERMISSION_FOR_NEW_SELF_SERVE_COMMUNICATIONS, true) === true)
         {
-            $this->sendNotificationForBankAccountUpdate($merchant);
+            $this->sendNewSelfServeNotification($workflowPermission, $merchant);
 
             return;
         }
@@ -1133,8 +1132,12 @@ class Core extends Base\Core
             MerchantNotificationsConstants::MERCHANT_NAME                      => $merchant->getName(),
             MerchantNotificationsConstants::MESSAGE_SUBJECT                    => $input[Constants::MESSAGE_SUBJECT],
             MerchantNotificationsConstants::MESSAGE_BODY                       => $input[Constants::MESSAGE_BODY],
-            MerchantNotificationsConstants::WORKFLOW_CLARIFICATION_SUBMIT_LINK => MerchantNotificationsConstants::EVENT_VS_WORKFLOW_CLARIFICATION_SUBMIT_LINK[$event],
         ]);
+
+        if (array_key_exists($event, MerchantNotificationsConstants::EVENT_VS_WORKFLOW_CLARIFICATION_SUBMIT_LINK) === true)
+        {
+            $params[MerchantNotificationsConstants::WORKFLOW_CLARIFICATION_SUBMIT_LINK] = MerchantNotificationsConstants::EVENT_VS_WORKFLOW_CLARIFICATION_SUBMIT_LINK[$event];
+        }
 
         if(($workflowPermission === Permission\Name::INCREASE_TRANSACTION_LIMIT) and
            (isset($payload[MerchantEntity::MAX_PAYMENT_AMOUNT]) === true))
@@ -1184,6 +1187,17 @@ class Core extends Base\Core
         [$segmentEventName, $segmentProperties] = $this->pushSelfServeSuccessEventsToSegment();
 
         $this->getSelfServeActionForNeedClarificationAnalytics($action, $segmentEventName, $segmentProperties);
+    }
+
+    protected function sendNewSelfServeNotification($permissionName, $merchant)
+    {
+        if (($permissionName === Permission\Name::EDIT_MERCHANT_BANK_DETAIL) and
+            ($merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID))
+        {
+            $this->sendNotificationForBankAccountUpdate($merchant);
+
+            return;
+        }
     }
 
     private function pushSelfServeSuccessEventsToSegment()

@@ -16,6 +16,8 @@ class Constants
     const ACTION_DRAFT  = 'draft';
     const ACTION_SUBMIT = 'submit';
 
+    const ACCEPTS_INTL_TXNS = 'accepts_intl_txns';
+    
     const MAX_VALUE_IDENTIFIER = -1;
 
     const GOODS_TYPE_OPTIONS = [

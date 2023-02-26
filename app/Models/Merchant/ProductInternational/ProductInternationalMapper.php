@@ -59,7 +59,8 @@ class ProductInternationalMapper
         [
             Name::EDIT_MERCHANT_PG_INTERNATIONAL,
             Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL,
-            Name::EDIT_MERCHANT_INTERNATIONAL_NEW
+            Name::EDIT_MERCHANT_INTERNATIONAL_NEW,
+            Name::TOGGLE_INTERNATIONAL_REVAMPED,
         ];
 
     //Product ErrorCode mapping

@@ -62,6 +62,7 @@ class Workflow
         Permission::EDIT_MERCHANT_INTERNATIONAL,
         Permission::EDIT_MERCHANT_PG_INTERNATIONAL,
         Permission::EDIT_MERCHANT_PROD_V2_INTERNATIONAL,
+        Permission::TOGGLE_INTERNATIONAL_REVAMPED,
         Permission::COMMISSION_PAYOUT,
         Permission::CREATE_GOVERNOR_RULE,
         Permission::EDIT_GOVERNOR_RULE,

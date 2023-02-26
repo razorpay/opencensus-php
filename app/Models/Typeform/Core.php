@@ -5,7 +5,9 @@ namespace RZP\Models\Typeform;
 use App;
 use Mail;
 use View;
+use Request;
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\lib\DataParser;
 use RZP\Error\ErrorCode;
@@ -20,10 +22,16 @@ use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Models\Merchant\RiskMobileSignupHelper;
+use RZP\Notifications\Dashboard\Events as DashboardEvents;
+use RZP\Notifications\Dashboard\Constants as DashboardConstants;
+use RZP\Notifications\Dashboard\Handler as DashboardNotificationHandler;
 use RZP\Models\Merchant\FreshdeskTicket\Constants as FreshdeskConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
 use RZP\Models\Dispute;
+use RZP\Models\Merchant\InternationalEnablement\Detail as IEDetail;
+use RZP\Models\Workflow\Action\Differ\Entity as WorkflowDifferEntity;
+use RZP\Models\Workflow\Action\Differ\Service as WorkflowDifferService;
 
 class Core extends Base\Core
 {
@@ -67,14 +75,14 @@ class Core extends Base\Core
         return ['success' => true];
     }
 
-    public function processInHouseQuestionnaire(Merchant $merchant, array $workflowData, array $input)
+    public function processInHouseQuestionnaire(Merchant $merchant, array $workflowData, array $input, $version = 'v1')
     {
         $this->trace->info(TraceCode::INTERNATIONAL_ENABLEMENT_WORKFLOW_TRIGGERED, [
             'mid'           => $merchant->getId(),
             'workflow_data' => $workflowData,
         ]);
 
-        $this->createInternationalWorkflow($merchant, $workflowData, $input);
+        $this->createInternationalWorkflow($merchant, $workflowData, $input, $version);
     }
 
     /**
@@ -113,7 +121,7 @@ class Core extends Base\Core
      * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
-    private function createInternationalWorkflow(Merchant $merchant, array $typeformWorkflowData, array $input)
+    private function createInternationalWorkflow(Merchant $merchant, array $typeformWorkflowData, array $input, $version = 'v1')
     {
         $productCategoriesRequested = [];
         //add a check if workflow should be created - for blacklist??
@@ -123,9 +131,9 @@ class Core extends Base\Core
 
         if (key_exists('permission', $input))
         {
-            $this->executeApproval($input['permission'], $merchant);
+            $this->executeApproval($input['permission'], $merchant, $version);
 
-            $this->processWorkflowRequestApproval($input['permission'], $merchant);
+            $this->processWorkflowRequestApproval($input['permission'], $merchant, $version);
         }
         else
         {
@@ -145,7 +153,7 @@ class Core extends Base\Core
 
             $this->repo->merchant->saveOrFail($merchant);
 
-            $this->createMerchantWorkflow($productCategoriesRequested, $merchant, $typeformWorkflowData);
+            $this->createMerchantWorkflow($productCategoriesRequested, $merchant, $typeformWorkflowData, $version);
         }
     }
 
@@ -155,7 +163,7 @@ class Core extends Base\Core
      * @param array    $typeformWorkflowData
      */
     public function createMerchantWorkflow(array $productCategoriesRequested,
-                                           Merchant $merchant, array $typeformWorkflowData)
+                                           Merchant $merchant, array $typeformWorkflowData, $version = 'v1')
     {
         //To be removed (post final testing)
         $this->trace->info(TraceCode::TYPEFORM_WORKFLOW_TRIGGERED, ['method' => 'createInternationalWorkflow']);
@@ -169,22 +177,100 @@ class Core extends Base\Core
             $workflowRequestTags[] = Constants::INTERNATIONAL_ENABLEMENT_REQUEST_HAS_SIBLINGS;
         }
 
-        foreach ($productCategoriesRequested as $index => $productCategoryRequested)
+        if ($version === 'v2')
         {
-            $nextWorkflowPresent = false ? ($index === count($productCategoryRequested) - 1) : true;
+            $input = Request::all();
 
-            $permission = ProductInternationalMapper::PRODUCT_PERMISSION[$productCategoryRequested];
-
-            $this->trace->info(TraceCode::TYPEFORM_WORKFLOW_TRIGGERED, ['permission1' => $permission]);
+            unset($input[IEDetail\Entity::DOCUMENTS]);
 
             $this->app['workflow']
                 ->setEntityAndId($merchant->getEntity(), $merchant->getId())
-                ->setPermission($permission)
+                ->setPermission(Name::TOGGLE_INTERNATIONAL_REVAMPED)
+                ->setInput($input)
                 ->setTags($workflowRequestTags)
-                ->handle(null, $typeformWorkflowData, $nextWorkflowPresent);
+                ->handle(null, $typeformWorkflowData, true);
+            // added true in handle to continue the flow.
+
+            $this->trace->info(TraceCode::TOGGLE_INTERNATIONAL_REVAMPED_WORKFLOW_TRIGGERED, []);
+
+            $this->sendNotificationForInReviewState($merchant);
+        }
+        else
+        {
+            foreach ($productCategoriesRequested as $index => $productCategoryRequested)
+            {
+                $nextWorkflowPresent = false ? ($index === count($productCategoryRequested) - 1) : true;
+
+                $permission = ProductInternationalMapper::PRODUCT_PERMISSION[$productCategoryRequested];
+
+                $this->trace->info(TraceCode::TYPEFORM_WORKFLOW_TRIGGERED, ['permission1' => $permission]);
+
+                $this->app['workflow']
+                    ->setEntityAndId($merchant->getEntity(), $merchant->getId())
+                    ->setPermission($permission)
+                    ->setTags($workflowRequestTags)
+                    ->handle(null, $typeformWorkflowData, $nextWorkflowPresent);
+            }
         }
         //To be removed (post final testing)
         $this->trace->info(TraceCode::TYPEFORM_WORKFLOW_TRIGGERED, ['approval action' => 'reached to createMerchantWorkflow']);
+    }
+    
+    /**
+     * @throws Exception\BadRequestException
+     */
+    private function getInternationalEnablementDetailId(array $data) : string
+    {
+        if ((isset($data[Constants::NEW]) === false) or
+            (isset($data[Constants::NEW][Constants::DETAIL_URL]) === false))
+        {
+            throw new Exception\BadRequestException(
+              'International Enablement Detail Not Present'
+            );
+        }
+        
+        $detailUrl = $data[Constants::NEW][Constants::DETAIL_URL];
+        
+        $pieces = explode('/', $detailUrl);
+
+        return $pieces[count($pieces)-1];
+    }
+    
+    
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function getProductNamesFromActionEntityData(Action\Entity $action): array
+    {
+        $actionId = $action->getId();
+
+        $data = (new WorkflowDifferService())->fetchRequest($actionId);
+
+        $internationalEnablementDetailId = $this->getInternationalEnablementDetailId($data[WorkflowDifferEntity::DIFF]);
+
+        $products = (new IEDetail\Repository())->getProductsFromEntityId($internationalEnablementDetailId);
+
+        $this->trace->info(TraceCode::TOGGLE_INTERNATIONAL_REVAMPED_PRODUCT_REQUESTED, [
+            'products' => $products,
+        ]);
+
+        return $products;
+    }
+
+    private function sendNotificationForInReviewState($merchant)
+    {
+        $tatDaysLater = Carbon::now()->addDays(DashboardConstants::IE_TAT_DAYS)->format('M d,Y');
+
+        $args = [
+            DashboardConstants::MERCHANT => $merchant,
+            DashboardEvents::EVENT       => DashboardEvents::IE_UNDER_REVIEW,
+            DashboardConstants::PARAMS   => [
+                DashboardConstants::MERCHANT_NAME => $merchant->getName(),
+                DashboardConstants::UPDATE_DATE   => $tatDaysLater,
+            ]
+        ];
+
+        (new DashboardNotificationHandler($args))->send();
     }
 
     /**
@@ -195,33 +281,49 @@ class Core extends Base\Core
      * @throws Exception\BadRequestValidationFailureException
      * @throws Exception\LogicException
      */
-    private function executeApproval(string $permission, Merchant $merchant)
+    private function executeApproval(string $permission, Merchant $merchant, $version = 'v1')
     {
-        // sync between old international enabling flows with product based international flows.
-        // For old international enabling flows(which are not closed before product based international goes live),
-        // all the products are enabled if workflow is approved
-
-        if (($permission === Name::EDIT_MERCHANT_INTERNATIONAL_NEW or
-            $permission === Name::EDIT_MERCHANT_INTERNATIONAL) === true)
+        if ($version === 'v2')
         {
-            $productNames = ProductInternationalMapper::LIVE_PRODUCTS;
+            $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(
+                $merchant->getId(), Constants::MERCHANT_KEY, Name::TOGGLE_INTERNATIONAL_REVAMPED);
+    
+            if (is_null($workflowActions) === false)
+            {
+                // Ideally should have only one workflow action
+                $action = $workflowActions->first();
+    
+                $productNames = $this->getProductNamesFromActionEntityData($action);
+            }
         }
         else
         {
-            $permissionProductCategories = array_flip(ProductInternationalMapper::PRODUCT_PERMISSION);
-
-            $permissionProductCategory = $permissionProductCategories[$permission];
-
-            if (array_key_exists($permission, $permissionProductCategories) === false)
+            // sync between old international enabling flows with product based international flows.
+            // For old international enabling flows(which are not closed before product based international goes live),
+            // all the products are enabled if workflow is approved
+            
+            if (($permission === Name::EDIT_MERCHANT_INTERNATIONAL_NEW or
+                $permission === Name::EDIT_MERCHANT_INTERNATIONAL) === true)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_PERMISSION,
-                    null,
-                    ['data' => $permission]
-                );
+                $productNames = ProductInternationalMapper::LIVE_PRODUCTS;
             }
-
-            $productNames = ProductInternationalMapper::PRODUCT_CATEGORIES[$permissionProductCategory];
+            else
+            {
+                $permissionProductCategories = array_flip(ProductInternationalMapper::PRODUCT_PERMISSION);
+        
+                $permissionProductCategory = $permissionProductCategories[$permission];
+        
+                if (array_key_exists($permission, $permissionProductCategories) === false)
+                {
+                    throw new Exception\BadRequestException(
+                      ErrorCode::BAD_REQUEST_INVALID_PERMISSION,
+                      null,
+                      ['data' => $permission]
+                    );
+                }
+        
+                $productNames = ProductInternationalMapper::PRODUCT_CATEGORIES[$permissionProductCategory];
+            }
         }
 
         $this->checkWebsiteValidity($merchant);
@@ -258,12 +360,12 @@ class Core extends Base\Core
         if ($websiteValid === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Workflow can\'t be approved as Merchant Website is not Valid'
+                "Workflow can't be approved as Merchant Website is not Valid"
             );
         }
     }
 
-    public function processWorkflowRequestApproval(string $permissionName, Merchant $merchant)
+    public function processWorkflowRequestApproval(string $permissionName, Merchant $merchant, $version = 'v1')
     {
         $workflowActions = (new Action\Core)->fetchOpenActionOnEntityOperation(
             $merchant->getId(), Constants::MERCHANT_KEY, $permissionName);
@@ -272,14 +374,27 @@ class Core extends Base\Core
         // here exactly one open state workflow should be present
         $action = $workflowActions->first();
 
-        $this->notifyMerchantIfApplicable($action, true);
+        $this->notifyMerchantIfApplicable($action, true, $version);
     }
 
     public function processWorkflowRequestRejection(Action\Entity $action, array $extraData)
     {
-        $rejectionReason = $this->extractRejectionReasonFromPayload($extraData);
+        $version  = 'v1';
+        
+        $actionPermission = $action->permission->getName();
+        
+        if ($actionPermission === Name::TOGGLE_INTERNATIONAL_REVAMPED)
+        {
+            $version = 'v2';
+        }
 
-        $rejectionTags = $this->extractRejectionTagsFromPayload($extraData);
+        $rejectionReason = ($version === 'v2') ? $this->extractRejectionReasonV2FromPayload($extraData) :
+                                $this->extractRejectionReasonFromPayload($extraData);
+        
+        if ($version !== 'v2')
+        {
+            $rejectionTags = $this->extractRejectionTagsFromPayload($extraData);
+        }
 
         // form the final tag list
         $rejectionTags[] = $rejectionReason;
@@ -288,9 +403,21 @@ class Core extends Base\Core
 
         $this->repo->workflow_action->saveOrFail($action);
 
-        $this->notifyMerchantIfApplicable($action, false);
+        $this->notifyMerchantIfApplicable($action, false, $version);
     }
 
+    private function extractRejectionReasonV2FromPayload(array $extraData): string
+    {
+        $rejectionReason = $extraData[Constants::REJECTION_REASON_KEY] ?? Constants::REJECT_REASON_MERCHANT_RISK_REJECTION;
+
+        if ((is_string($rejectionReason) === false) || (Constants::isValidRejectionReasonV2($rejectionReason) === false))
+        {
+            $rejectionReason = Constants::REJECT_REASON_MERCHANT_RISK_REJECTION;
+        }
+
+        return Constants::REJECTION_REASON_PREFIX . $rejectionReason;
+    }
+    
     private function extractRejectionReasonFromPayload(array $extraData)
     {
         $rejectionReason = $extraData[Constants::REJECTION_REASON_KEY] ?? Constants::REJECT_REASON_MERCHANT_LOOKS_RISKY;
@@ -327,7 +454,44 @@ class Core extends Base\Core
         return array_unique($validRejectionTags);
     }
 
-    private function notifyMerchantIfApplicable(Action\Entity $action, bool $calledOnRequestApproval)
+    /**
+     * @throws Exception\BadRequestException
+     */
+    private function notifyMerchantInternationalEnablementApprovalV2(Action\Entity $action)
+    {
+        $approvedProductCount = 0;
+
+        $merchantId = $action->getEntityId();
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $productInternational = $merchant->getProductInternational();
+
+        foreach (ProductInternationalMapper::LIVE_PRODUCTS as $productName)
+        {
+            $status = (new ProductInternationalField($merchant))->getProductStatus($productName, $productInternational);
+
+            $approvedProductCount = $approvedProductCount + 1;
+        }
+
+        $event = Constants::APPROVED_PRODUCT_COUNT_VS_IE_SUCCESS_EVENT[$approvedProductCount];
+
+        $args = [
+            DashboardConstants::MERCHANT => $merchant,
+            DashboardEvents::EVENT       => $event,
+            DashboardConstants::PARAMS   => [
+                DashboardConstants::MERCHANT_NAME => $merchant['name'],
+            ]
+        ];
+
+        (new DashboardNotificationHandler($args))->send();
+    }
+
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    private function notifyMerchantIfApplicable(Action\Entity $action, bool $calledOnRequestApproval, $version = 'v1')
     {
         $requestEnablementTag = $this->getInternationalEnablementRequestTag($action);
 
@@ -353,6 +517,17 @@ class Core extends Base\Core
 
             $this->repo->workflow_action->saveOrFail($action);
 
+            return;
+        }
+
+        if (($version === 'v2') and
+            ($calledOnRequestApproval === true))
+        {
+            // In case of workflow rejection, communication is being handled from
+            // Models/Workflow/Observer/MerchantSelfServeObserver.php file
+
+            $this->notifyMerchantInternationalEnablementApprovalV2($action);
+            
             return;
         }
 

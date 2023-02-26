@@ -7,6 +7,7 @@ class Constants
     const PERCENTAGE_COMPLETION = 'percentage_completion';
     const ENABLEMENT_PROGRESS   = 'enablement_progress';
     const NEW_FLOW              = 'new_flow';
+    const VERSION               = 'version';
     const LAST_UPDATED_AT       = 'last_updated_at';
 
     const NOT_STARTED = 'not_started';

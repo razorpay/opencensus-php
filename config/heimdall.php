@@ -691,7 +691,11 @@ return [
             ],
             Permission::EDIT_MERCHANT_INTERNATIONAL         => '',
             Permission::EDIT_MERCHANT_PG_INTERNATIONAL      => '',
-            Permission::EDIT_MERCHANT_PROD_V2_INTERNATIONAL  => '',
+            Permission::EDIT_MERCHANT_PROD_V2_INTERNATIONAL => '',
+            Permission::TOGGLE_INTERNATIONAL_REVAMPED       => [
+                'workflow'      => true,
+                'assignable'    => true
+            ],
 
             Permission::EDIT_MERCHANT_INTERNATIONAL_NEW  => '',
             Permission::TOGGLE_TRANSACTION_HOLD_STATUS => '',

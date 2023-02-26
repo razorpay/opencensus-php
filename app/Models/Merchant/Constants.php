@@ -68,7 +68,7 @@ final class Constants
     const SKIP                                    = 'skip';
     const COUNT                                   = 'count';
     const IS_USED                                 = 'is_used';
-
+    const DATA                                    = 'data';
     const PARENT_NAME                             = 'parent_name';
 
     // Partner constants
@@ -346,7 +346,8 @@ final class Constants
 
     const ENABLE_INTERNATIONAL_PG      = 'enable_international_pg';
     const ENABLE_INTERNATIONAL_PROD_V2 = 'enable_international_prod_v2';
-
+    const TOGGLE_INTERNATIONAL_REVAMPED = 'toggle_international_revamped';
+    
     const INTERNATIONAL_WORKFLOW_LIST = [
         self::ENABLE_INTERNATIONAL_PG,
         self::ENABLE_INTERNATIONAL_PROD_V2,
@@ -606,6 +607,10 @@ final class Constants
         ],
         self::ENABLE_INTERNATIONAL_PROD_V2 => [
             self::PERMISSION => Permission::EDIT_MERCHANT_PROD_V2_INTERNATIONAL,
+            self::ENTITY     => \RZP\Constants\Entity::MERCHANT,
+        ],
+        self::TOGGLE_INTERNATIONAL_REVAMPED => [
+            self::PERMISSION => Permission::TOGGLE_INTERNATIONAL_REVAMPED,
             self::ENTITY     => \RZP\Constants\Entity::MERCHANT,
         ],
         self::BANK_DETAIL_UPDATE   => [

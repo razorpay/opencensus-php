@@ -36,6 +36,8 @@ class Constants
     const ADD_ADDITIONAL_WEBSITE_SELF_SERVE     = 'add_additional_website_self_serve';
 
     const APPROVED_TRANSACTION_LIMIT            = 'approved_transaction_limit';
+    
+    const MERCHANT_INTERNATIONAL_ENABLEMENT_SUBMIT = 'merchant_international_enablement_submit';
 
     const APPROVE                               = 'approve';
 
@@ -53,33 +55,33 @@ class Constants
 
     const WORKFLOW_VS_OBSERVER= [
 
-        self::SCHEDULED_SETTLEMENT                  => ScheduleSettlementObserver::class,
+        self::SCHEDULED_SETTLEMENT                      => ScheduleSettlementObserver::class,
 
-        self::MERCHANT_ACTION                       => MerchantActionObserver::class,
+        self::MERCHANT_ACTION                           => MerchantActionObserver::class,
 
-        self::INTERNAL_CREATE_RISK_ACTION           => MerchantActionObserver::class,
+        self::INTERNAL_CREATE_RISK_ACTION               => MerchantActionObserver::class,
 
-        self::EDIT_PAYMENT_METHOD                   => PaymentMethodChangeObserver::class,
+        self::EDIT_PAYMENT_METHOD                       => PaymentMethodChangeObserver::class,
 
-        self::EMAIL_CHANGE                          => EmailChangeObserver::class,
+        self::EMAIL_CHANGE                              => EmailChangeObserver::class,
 
-        self::MERCHANT_ACTIVATION_STATUS            => MerchantActivationStatusObserver::class,
+        self::MERCHANT_ACTIVATION_STATUS                => MerchantActivationStatusObserver::class,
 
-        self::INTERNAL_MERCHANT_ACTIVATION_STATUS   => MerchantActivationStatusObserver::class,
+        self::INTERNAL_MERCHANT_ACTIVATION_STATUS       => MerchantActivationStatusObserver::class,
 
-        self::MERCHANT_SAVE_BUSINESS_WEBSITE        => MerchantSelfServeObserver::class,
+        self::MERCHANT_SAVE_BUSINESS_WEBSITE            => MerchantSelfServeObserver::class,
 
-        self::INCREASE_TRANSACTION_LIMIT_SELF_SERVE => MerchantSelfServeObserver::class,
+        self::INCREASE_TRANSACTION_LIMIT_SELF_SERVE     => MerchantSelfServeObserver::class,
 
-        self::MERCHANT_ACTIVATION_UPDATE_WEBSITE    => MerchantSelfServeObserver::class,
+        self::MERCHANT_ACTIVATION_UPDATE_WEBSITE        => MerchantSelfServeObserver::class,
 
-        self::MERCHANT_GSTIN_SELF_SERVE_UPDATE      => MerchantSelfServeObserver::class,
+        self::MERCHANT_GSTIN_SELF_SERVE_UPDATE          => MerchantSelfServeObserver::class,
 
-        self::MERCHANT_BANK_ACCOUNT_UPDATE          => MerchantSelfServeObserver::class,
+        self::MERCHANT_BANK_ACCOUNT_UPDATE              => MerchantSelfServeObserver::class,
 
-        self::ADD_ADDITIONAL_WEBSITE_SELF_SERVE     => MerchantSelfServeObserver::class,
-
-
+        self::ADD_ADDITIONAL_WEBSITE_SELF_SERVE         => MerchantSelfServeObserver::class,
+  
+        self::MERCHANT_INTERNATIONAL_ENABLEMENT_SUBMIT  => MerchantSelfServeObserver::class,
     ];
 
     const ROUTE_VS_RAZORX_EXPERIMENT = [

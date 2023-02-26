@@ -94,6 +94,12 @@ class Constants
 
     const LAST_3                                   = 'last_3';
 
+    const BANK_ACCOUNT_TAT_DAYS                    = 2;
+
+    const IE_TAT_DAYS                              = 2;
+
+    const IE_REJECTION_RETRY_AFTER_DAYS            = 90;
+
     const WORKFLOW_PERMISSION_VS_NEEDS_CLARIFICATION_EVENT = [
         PermissionName::EDIT_MERCHANT_WEBSITE_DETAIL   => Events::NEED_CLARIFICATION_FOR_WEBSITE_ADD_WORKFLOW,
         PermissionName::UPDATE_MERCHANT_WEBSITE        => Events::NEED_CLARIFICATION_FOR_WEBSITE_UPDATE_WORKFLOW,
@@ -102,6 +108,7 @@ class Constants
         PermissionName::EDIT_MERCHANT_GSTIN_DETAIL     => Events::NEED_CLARIFICATION_FOR_GSTIN_ADD_WORKFLOW,
         PermissionName::UPDATE_MERCHANT_GSTIN_DETAIL   => Events::NEED_CLARIFICATION_FOR_GSTIN_UPDATE_WORKFLOW,
         PermissionName::ADD_ADDITIONAL_WEBSITE         => Events::NEED_CLARIFICATION_FOR_ADD_ADDITIONAL_WEBSITE_WORKFLOW,
+        PermissionName::TOGGLE_INTERNATIONAL_REVAMPED  => Events::IE_NEEDS_CLARIFICATION,
     ];
 
     const EVENT_VS_WORKFLOW_CLARIFICATION_SUBMIT_LINK = [

@@ -281,6 +281,20 @@ class MailTags
     const BANK_ACCOUNT_UPDATE_NEEDS_CLARIFICATION       = 'merchant_bank_account_update_needs_clarification';
     const BANK_ACCOUNT_UPDATE_SOH_NEEDS_CLARIFICATION   = 'merchant_bank_account_update_soh_needs_clarification';
 
+    const IE_SUCCESSFUL                                 = 'ie_successful_all_products';
+    const IE_UNDER_REVIEW                               = 'ie_under_review';
+    const IE_SUCCESSFUL_PPLI                            = 'ie_successful_pp_pl_invoice';
+    const IE_SUCCESSFUL_PG                              = 'ie_payment_gateway';
+    const IE_REJECTED_CLARIFICATION_NOT_PROVIDED        = 'ie_rejected_clarification_not_provided';
+    const IE_REJECTED_WEBSITE_DETAILS_INCOMPLETE        = 'ie_rejected_website_details_incomplete';
+    const IE_REJECTED_BUSINESS_MODEL_MISMATCH           = 'ie_rejected_business_model_mismatch';
+    const IE_REJECTED_INVALID_DOCUMENTS                 = 'ie_rejected_invalid_documents';
+    const IE_REJECTED_RISK_REJECTION                    = 'ie_rejected_risk_rejection';
+    const IE_REJECTED_MERCHANT_HIGH_CHARGEBACKS_FRAUD   = 'ie_rejected_merchant_high_chargebacks_fraud';
+    const IE_REJECTED_DORMANT_MERCHANT                  = 'ie_rejected_dormant_merchant';
+    const IE_REJECTED_RESTRICTED_BUSINESS               = 'ie_rejected_restricted_business';
+    const IE_NEEDS_CLARIFICATION                        = 'ie_needs_clarification';
+
     // Mail tags for needs clarification on workflow
     const MERCHANT_CLARIFICATION_ON_BANK_ACCOUNT_WORKFLOW        =  'merchant_clarification_on_bank_account_workflow';
     const MERCHANT_CLARIFICATION_ON_TRANSACTION_LIMIT_WORKFLOW   =  'merchant_clarification_on_transaction_limit_workflow';
