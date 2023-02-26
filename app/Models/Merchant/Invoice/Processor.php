@@ -558,6 +558,8 @@ class Processor extends Base\Core
 
         $refundReversalFeeAmount = [];
 
+        $pricingBundleFeeAmount = [];
+
         if ($this->isInvoiceTypeOfPayment($type) === true)
         {
             // creating the cacheKey
@@ -757,8 +759,39 @@ class Processor extends Base\Core
 
         $refundReversalFeeAmounts = $this->formatFeesForInvoice($refundReversalFeeAmount);
 
+        if ($type === Type::PRICING_BUNDLE)
+        {
+            // creating the cacheKey
+            // cacheKey will look like merchant_invoice_{mode}_{mid}_{month}_{year}_{type}_{table_name}
+            $cacheKey = sprintf(
+                self::CACHE_KEY_RESOURCE, $this->mode, $this->merchantId, $this->month, $this->year, $type, 'growth_service.invoice');
+
+            // fetching data from cache
+            $cacheResult = $this->fetchResultsFromCache($cacheKey);
+
+            if ($cacheResult != null)
+            {
+                $pricingBundleFeeAmount =  $cacheResult;
+            }
+            else {
+                // else running the query and storing in cache
+                $pricingBundleFeeAmount = $this->app->growthService->getReceiptForInvoice(['month' => $this->month, 'year' => $this->year, 'merchant_id' => $this->merchantId]);
+
+                $this->storeResultsInCache($cacheKey, $pricingBundleFeeAmount);
+            }
+
+            $this->cacheKeyArr[$this->cacheTag][] = $cacheKey;
+
+            $this->logMerchantInvoiceResult(
+                $type,
+                'pg_invoice_' . $type,
+                'pricing_bundle_fee_amount',
+                $pricingBundleFeeAmount,
+                $balanceId);
+        }
+
         $amount  = $paymentAmounts[Entity::AMOUNT] + $transactionAmounts[Entity::AMOUNT]
-                    + $validationAmounts[Entity::AMOUNT] + $refundFeeAmounts[Entity::AMOUNT]
+                    + $validationAmounts[Entity::AMOUNT] + $refundFeeAmounts[Entity::AMOUNT] + $pricingBundleFeeAmount[Entity::AMOUNT]
                     - $refundReversalFeeAmounts[Entity::AMOUNT];
 
         // The Finance come up with the requirement that we should have the merchant Invoice to be GST compliant
@@ -789,7 +822,7 @@ class Processor extends Base\Core
                 'type'        => $type,
                 'step'        => $step,
                 'balance_id'  => $balanceId,
-                'result'      => empty($result) === false ? $result->getAttributes() : $result,
+                'result'      => $result,
             ]);
 
         //throw exception if query returns null
@@ -969,6 +1002,7 @@ class Processor extends Base\Core
                 //    'instant_refunds'         => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
                 //    'others'                  => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
                 //    'validation'              => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
+                //    'pricing_bundle'          => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
                 // ]
 
                 $primaryCommissionTypes = Type::getAllPrimaryBalanceTypes();

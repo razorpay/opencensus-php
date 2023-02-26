@@ -31,7 +31,7 @@ return [
             'document_details' => [
                 'document_type' => 'INV',
                 'document_number' => '10000000000-0721',
-                'document_date' => '20/07/2021',
+                'document_date' => '31/07/2021',
             ],
             'seller_details' => [
                 'gstin' => '29AAGCR4375J1ZU',
@@ -93,7 +93,7 @@ return [
             'document_details' => [
                 'document_type' => 'INV',
                 'document_number' => '10000000000-0422',
-                'document_date' => '20/04/2022',
+                'document_date' => '30/04/2022',
             ],
             'seller_details' => [
                 'gstin' => '29AAKCR4702K1Z1',

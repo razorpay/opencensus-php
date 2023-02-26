@@ -3718,6 +3718,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SPLITZ_REQUEST_FAILED                                 = 'SPLITZ_REQUEST_FAILED';
     const SPLITZ_SEGMENT_LAMBDA_REQUEST                         = 'SPLITZ_SEGMENT_LAMBDA_REQUEST';
     const GROWTH_REQUEST                                        = 'GROWTH_REQUEST';
+    const GROWTH_REQUEST_FAILED                                 = 'GROWTH_REQUEST_FAILED';
     const GROWTH_ADMIN_REQUEST                                  = 'GROWTH_ADMIN_REQUEST';
     const PARTNERSHIPS_REQUEST                                  = 'PARTNERSHIPS_REQUEST';
     const SEGMENTATION_CONFIG                                   = 'SEGMENTATION_CONFIG';

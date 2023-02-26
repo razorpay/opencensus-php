@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Http\RequestHeader;
 use RZP\Http\Request\Requests;
+use RZP\Mail\System\Trace;
 use RZP\Models\Base;
 use RZP\Services\UfhService;
 use RZP\Trace\TraceCode;
@@ -18,6 +19,7 @@ use Throwable;
 class GrowthService extends Base\Service
 {
     const CONTENT_TYPE_JSON = 'application/json';
+    const GET_INVOICE_RECEIPT_URL = 'twirp/rzp.pricing_bundle.subscription.v1.SubscriptionAPI/GetReceiptForInvoice';
 
     const GET_ASSET_URL = 'twirp/rzp.growth.asset.v1.AssetAPI/Get';
     const CREATE_SUBSCRIPTION_URL = '/twirp/rzp.pricing_bundle.subscription.v1.SubscriptionAPI/Create';
@@ -130,6 +132,23 @@ class GrowthService extends Base\Service
     public function getPublicAssetDetails($parameters)
     {
         return $this->sendRequest($parameters, self::GET_PUBLIC_ASSET_URL, Requests::POST);
+    }
+
+    public function getReceiptForInvoice($parameters)
+    {
+        $this->skipPassport = true;
+        $body = $this->sendRequest($parameters, self::GET_INVOICE_RECEIPT_URL, Requests::POST);
+        if ($body['status_code'] != 200)
+        {
+            throw new Exception\ServerErrorException('Error completing the request', ErrorCode::SERVER_ERROR_GROWTH_FAILURE);
+        }
+        if (empty($body['response']) == true) {
+            return [
+                'amount' => 0,
+                'tax' => 0,
+            ];
+        }
+        return $body['response'];
     }
 
     /**
@@ -272,6 +291,11 @@ class GrowthService extends Base\Service
 
         if (json_last_error() !== JSON_ERROR_NONE) {
             throw new Exception\RuntimeException('Malformed json response');
+        }
+
+        if ($code != 200)
+        {
+            $this->trace->info(TraceCode::GROWTH_REQUEST_FAILED, ['code' => $code, "res" => $res]);
         }
 
         $growthResponse = ['status_code' => $code, 'response' => $res];

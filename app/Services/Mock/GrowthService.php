@@ -8,6 +8,14 @@ use RZP\Services\GrowthService as BaseGrowth;
 
 class GrowthService extends BaseGrowth
 {
+    public function getReceiptForInvoice($parameters)
+    {
+        return [
+            'amount' => 0,
+            'tax' => 0,
+        ];
+    }
+
 public function getAssetDetails($parameters)
 {
     $resp = new \WpOrg\Requests\Response;

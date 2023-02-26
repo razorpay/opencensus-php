@@ -22,6 +22,9 @@ class Type
     // Commission on All Validations
     const VALIDATION            = 'validation';
 
+    // Commission on Pricing Bundle fee charged
+    const PRICING_BUNDLE        = 'pricing_bundle';
+
     // Fee on Instant Refunds
     const INSTANT_REFUNDS       = 'instant_refunds';
 
@@ -48,6 +51,7 @@ class Type
         self::OTHERS        => 997158,
         self::ADJUSTMENT    => 997158,
         self::VALIDATION    => 997158,
+        self::PRICING_BUNDLE       => 997158,
         self::RX_TRANSACTIONS      => 997158,
         self::RX_ADJUSTMENTS       => 997158,
         self::INSTANT_REFUNDS      => 997158,
@@ -69,6 +73,7 @@ class Type
     const RX_TRANSACTIONS_DESCRIPTION       = 'RazorpayX Transactions Fees';
     const RX_ADJUSTMENTS_DESCRIPTION        = 'RazorpayX Adjustments';
     const VALIDATION_DESCRIPTION            = 'Commission on All Validations';
+    const PRICING_BUNDLE_DESCRIPTION        = 'Fee for pricing bundle subscription';
     const INSTANT_REFUNDS_DESCRIPTION       = 'Fee on Instant Refunds';
     const REFUND_LTE_1K_DESCRIPTION         = 'Fee on Instant Refund <= INR 1,000';
     const REFUND_GT_1K_LTE_10K_DESCRIPTION  = 'Fee on Instant Refund > INR 1,000 & <= INR 10,000';
@@ -79,6 +84,7 @@ class Type
         self::CARD_GT_2K             => self::CARD_GT_2K_DESCRIPTION,
         self::OTHERS                 => self::OTHERS_DESCRIPTION,
         self::VALIDATION             => self::VALIDATION_DESCRIPTION,
+        self::PRICING_BUNDLE         => self::PRICING_BUNDLE_DESCRIPTION,
         self::RX_TRANSACTIONS        => self::RX_TRANSACTIONS_DESCRIPTION,
         self::RX_ADJUSTMENTS         => self::RX_ADJUSTMENTS_DESCRIPTION,
         self::INSTANT_REFUNDS        => self::INSTANT_REFUNDS_DESCRIPTION,
@@ -99,6 +105,7 @@ class Type
         self::INSTANT_REFUNDS,
         self::OTHERS,
         self::VALIDATION,
+        self::PRICING_BUNDLE,
     ];
 
     public static function getAllPrimaryBalanceTypes(): array
@@ -109,6 +116,7 @@ class Type
             self::INSTANT_REFUNDS,
             self::OTHERS,
             self::VALIDATION,
+            self::PRICING_BUNDLE,
         ];
     }
 

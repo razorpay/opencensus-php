@@ -34,6 +34,11 @@ return [
             'amount'    => 0,
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
+        ],
+        'pricing_bundle' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
         ]
     ],
 
@@ -59,6 +64,11 @@ return [
             'gstin'     => '29kjsngjk213922',
         ],
         'instant_refunds' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'pricing_bundle' => [
             'amount'    => 0,
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
@@ -90,7 +100,12 @@ return [
             'amount'    => 0,
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
-        ]
+        ],
+        'pricing_bundle' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
     ],
 
     'testFeeAdjustment' => [
@@ -138,6 +153,11 @@ return [
             'gstin'     => '29kjsngjk213922',
         ],
         'instant_refunds' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
+        ],
+        'pricing_bundle' => [
             'amount'    => 0,
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
@@ -230,6 +250,11 @@ return [
             'amount'    => 100,
             'tax'       => 18,
             'gstin'     => '29kjsngjk213922',
+        ],
+       'pricing_bundle' => [
+            'amount'    => 0,
+            'tax'       => 0,
+            'gstin'     => '29kjsngjk213922',
         ]
     ],
 
@@ -271,7 +296,7 @@ return [
             'document_details' => [
                 'document_type' => 'INV',
                 'document_number' => 'hello12345670721',
-                'document_date' => '20/07/2021',
+                'document_date' => '31/07/2021',
             ],
             'seller_details' => [
                 'gstin' => '29AAGCR4375J1ZU',
@@ -373,7 +398,7 @@ return [
             'document_details' => [
                 'document_type' => 'CRN',
                 'document_number' => 'hello12345670721',
-                'document_date' => '20/07/2021',
+                'document_date' => '31/07/2021',
             ],
             'seller_details' => [
                 'gstin' => '29AAGCR4375J1ZU',
@@ -427,7 +452,7 @@ return [
             'document_details' => [
                 'document_type' => 'DBN',
                 'document_number' => 'hello12345670721',
-                'document_date' => '20/07/2021',
+                'document_date' => '31/07/2021',
             ],
             'seller_details' => [
                 'gstin' => '29AAGCR4375J1ZU',
