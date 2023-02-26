@@ -337,6 +337,8 @@ class Service extends Base\Service
                 {
                     //if the details weren't fetched by cyber_helpdesk and payment_id was provided by workflow approver then fetch the details
                     $ticketDetails[Constants::TICKET_DATA][Constants::TICKET][$i][Constants::DETAILS] = $this->getDetailsUsingPaymentId($approvedDetail[Constants::PAYMENT_ID], $query[Constants::REQUEST]);
+
+                    $this->pushSegmentEventForCyberHelpDeskPayment($approvedDetail[Constants::PAYMENT_ID] ,$ticketDetails[Constants::TICKET_DATA][Constants::FD_TICKET_ID]);
                 }
 
                 $ticketDetails[Constants::TICKET_DATA][Constants::TICKET][$i][Constants::HOLD_SETTLEMENT]                   = $approvedDetail[Constants::PUT_SETTLEMENT_ON_HOLD];
@@ -345,6 +347,25 @@ class Service extends Base\Service
                 break;
             }
         }
+    }
+
+    protected function pushSegmentEventForCyberHelpDeskPayment($paymentId, $fdTicketId)
+    {
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $merchant = $payment->merchant;
+
+        $workflowActionId = $this->getOpenWorkflowActionIdForFreshdeskTicket($fdTicketId);
+
+        $eventData = [
+            'payment_id' => $paymentId,
+            'workflow_action_id' => $workflowActionId,
+        ];
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant,
+            $eventData,
+            Constants::SEGMENT_EVENT_CYBER_CRIME_NON_FETCHED_PAYMENTS,
+        );
     }
 
     /**

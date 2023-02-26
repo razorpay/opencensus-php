@@ -118,6 +118,8 @@ class CyberHelpdeskTest extends TestCase
             'org_id' => Org::RZP_ORG,
         ]);
 
+        \Config::set('applications.freshdesk.mock', true);
+
         $this->ba->adminAuth();
         $admin = $this->ba->getAdmin();
         $admin->getId();
@@ -148,7 +150,7 @@ class CyberHelpdeskTest extends TestCase
 
         $fraudEntity2 = $this->getDbEntity('payment_fraud',[
             'payment_id' => 'JCTRhsU4aiY0t2',
-            'type' => '6',
+            'type' => '3',
             'amount' => 1000,
             'currency' => 'INR',
             'base_amount' => 1000,
@@ -175,6 +177,7 @@ class CyberHelpdeskTest extends TestCase
             'org_id' => Org::RZP_ORG,
         ], true);
 
+        \Config::set('applications.freshdesk.mock', true);
 
         $this->ba->adminAuth();
         $admin = $this->ba->getAdmin();
@@ -206,7 +209,7 @@ class CyberHelpdeskTest extends TestCase
 
         $fraudEntity2 = $this->getDbEntity('payment_fraud',[
             'payment_id' => 'JCTRhsU4aiY0t2',
-            'type' => '6',
+            'type' => '3',
             'amount' => 1000,
             'currency' => 'INR',
             'base_amount' => 1000,

@@ -78,4 +78,6 @@ class Constants
 
     const FRAUD_TYPE       = 'fraud_type';
 
+    const  SEGMENT_EVENT_CYBER_CRIME_NON_FETCHED_PAYMENTS = 'cyber_crime_non_fetched_payments';
+
 }
