@@ -23,6 +23,11 @@ class AccountType
      */
     const SHARED = 'shared';
 
+    /**
+     * Corp card accounts
+     */
+    const CORP_CARD = 'corp_card';
+
     public static function exists(string $accType): bool
     {
         $key = __CLASS__ . '::' . strtoupper($accType);

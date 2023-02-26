@@ -20,6 +20,7 @@ class Validator extends Base\Validator
     const PROCESSED_STATUS      = 'processed_status';
     const SERVICEABLE_PINCODE   = 'serviceable_pincode';
     const SHARED_CREATE         = 'shared_create';
+    const CORP_CARD_CREATE      = 'corp_card_create';
     const INTERNAL_EDIT_STATUS  = 'internal_edit_status';
     const ACTIVATED_STATUS      = 'activated_status';
 
@@ -67,6 +68,13 @@ class Validator extends Base\Validator
         Entity::BENEFICIARY_MOBILE              => 'sometimes|nullable|numeric|digits_between:10,12',
         Entity::BENEFICIARY_EMAIL               => 'sometimes|nullable|email',
         Entity::BENEFICIARY_NAME                => 'sometimes|nullable|between:1,120|custom',
+    ];
+
+    protected static $corpCardCreateRules = [
+        Entity::CHANNEL        => 'required|string|in:m2p',
+        Entity::ACCOUNT_NUMBER => 'required|string|size:14',
+        Entity::ACCOUNT_TYPE   => 'sometimes|string|in:corp_card',
+        Entity::STATUS         => 'sometimes|in:created',
     ];
 
     protected static $createRules = [

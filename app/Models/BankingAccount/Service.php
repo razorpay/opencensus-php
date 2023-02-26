@@ -57,6 +57,23 @@ class Service extends Base\Service
         $this->notifier = new Activation\Notification\Notifier();
     }
 
+    public function createBankingAccountForCapitalCorpCard($input, Balance\Entity $balance): Entity
+    {
+        $this->trace->info(
+            TraceCode::CREATE_CORP_CARD_BANKING_ACCOUNT,
+            [
+                'input' => $this->core->scrubBankingAccountSensitiveDetails($input),
+            ]);
+
+        /* Commented for now, since corp card is given non rzp merchants also.
+         * $this->validateOrgForBankingAccount($input[Entity::CHANNEL]);
+         */
+        (new Validator)->setStrictFalse()->validateInput(Validator::PRE_PROCESS, $input);
+
+        return $this->core->createCapitalCorpCardBankingAccount($input, $balance->merchant, $balance);
+
+    }
+
     public function fetch(string $id): array
     {
         $bankingAccount = $this->repo->banking_account->findByPublicIdAndMerchant($id, $this->merchant);

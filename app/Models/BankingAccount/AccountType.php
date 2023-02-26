@@ -4,10 +4,11 @@ namespace RZP\Models\BankingAccount;
 
 class AccountType
 {
-    const NODAL   = 'nodal';
-    const SAVINGS = 'savings';
-    const CURRENT = 'current';
-    const DIRECT  = 'direct';
+    const NODAL     = 'nodal';
+    const SAVINGS   = 'savings';
+    const CURRENT   = 'current';
+    const DIRECT    = 'direct';
+    const CORP_CARD = "corp_card";
 
     public static function isValid(string $type): bool
     {

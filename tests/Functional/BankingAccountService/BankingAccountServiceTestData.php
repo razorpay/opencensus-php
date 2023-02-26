@@ -919,4 +919,97 @@ return [
             ],
         ],
     ],
+
+    'testOnboardCapitalCorpCardForPayouts'          => [
+        'request'  => [
+            'url'     => '/merchant/onboardCCCForBanking',
+            'method'  => 'POST',
+            'content' => [
+                Constants::MERCHANT_ID    => '10000000000000',
+                Constants::ACCOUNT_NUMBER => '30091673424181'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testDuplicateOnboardCapitalCorpCardForPayouts' => [
+        'request'  => [
+            'url'     => '/merchant/onboardCCCForBanking',
+            'method'  => 'POST',
+            'content' => [
+                Constants::MERCHANT_ID    => '10000000000000',
+                Constants::ACCOUNT_NUMBER => '30091673424181'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testInvalidMerchantIdOnboardCapitalCorpCardForPayouts'      => [
+        'request'  => [
+            'url'     => '/merchant/onboardCCCForBanking',
+            'method'  => 'POST',
+            'content' => [
+                Constants::MERCHANT_ID    => '10034000000000',
+                Constants::ACCOUNT_NUMBER => '30091673424181'
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testNot14CharMerchantIdOnboardCapitalCorpCardForPayouts'    => [
+        'request'  => [
+            'url'     => '/merchant/onboardCCCForBanking',
+            'method'  => 'POST',
+            'content' => [
+                Constants::MERCHANT_ID    => '10000000',
+                Constants::ACCOUNT_NUMBER => '30091673424181'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "The merchant id must be 14 characters.",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testNot14CharAccountNumberOnboardCapitalCorpCardForPayouts' => [
+        'request'  => [
+            'url'     => '/merchant/onboardCCCForBanking',
+            'method'  => 'POST',
+            'content' => [
+                Constants::MERCHANT_ID    => '10000000000000',
+                Constants::ACCOUNT_NUMBER => '1244'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "The account number must be 14 characters.",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

@@ -240,6 +240,31 @@ class Core extends Base\Core
             ErrorCode::RESERVE_BALANCE_CREATE_ALREADY_IN_PROGRESS);
     }
 
+    /**
+     * Corpcard  balance is for capital corp card created on business banking
+     * This is of account_type=corp_card, and only one of these can exist (currently)
+     *
+     * @param Merchant\Entity $merchant
+     * @param array           $input
+     * @param string          $mode
+     *
+     * @return Entity
+     */
+
+    public function createBalanceForCorpCard(Merchant\Entity $merchant, array $input, string $mode)
+    {
+        $content = [
+            Entity::TYPE     => Product::BANKING,
+            Entity::CURRENCY => $merchant->getCurrency(),
+        ];
+
+        $input = array_merge($input, $content);
+
+        $balance = $this->create($merchant, $input, $mode);
+
+        return $balance;
+    }
+
     public function createBalanceForCurrentAccount(Merchant\Entity $merchant, array $input, string $mode)
     {
         $content = [

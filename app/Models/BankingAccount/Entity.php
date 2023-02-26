@@ -382,6 +382,13 @@ class Entity extends Base\PublicEntity
             return;
         }
 
+        if ($this->isCorpCardChannel() === true)
+        {
+            $this->setAttribute(self::STATUS, $status);
+
+            return;
+        }
+
         if ($this->getStatus() === null)
         {
             Status::validateInInitialStatuses($status);
@@ -923,6 +930,20 @@ class Entity extends Base\PublicEntity
         $allowedChannels = Channel::getAllowedSharedChannels();
 
         if (in_array($channel, $allowedChannels) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function isCorpCardChannel()
+    {
+        $channel = $this->getChannel();
+
+        $allowedChannels = Channel::getAllowedCorpCardChannels();
+
+        if (in_array($channel, $allowedChannels, true) === true)
         {
             return true;
         }

@@ -16,6 +16,7 @@ class Channel
     const ICICI   = FTAChannel::ICICI;
     const KOTAK   = FTAChannel::KOTAK;
     const AXIS    = FTAChannel::AXIS;
+    const M2P     = FTAChannel::M2P;
 
     public static $directTypeChannels = [
         self::RBL,
@@ -29,12 +30,17 @@ class Channel
         self::RBL,
         self::ICICI,
         self::AXIS,
+        self::M2P
     ];
 
     protected static $defaultSharedTypeChannels = [
         self::ICICI,
         self::KOTAK,
         self::YESBANK,
+    ];
+
+    protected static $corpCardChannels = [
+        self::M2P
     ];
 
     public static function isValid(string $channel = null): bool
@@ -50,6 +56,14 @@ class Channel
 
         return (in_array($channel, self::$directTypeChannels, true) === true);
     }
+
+    public static function isValidCorpCardChannel(string $channel = null): bool
+    {
+        self::validateChannel($channel);
+
+        return (in_array($channel, self::$corpCardChannels, true) === true);
+    }
+
 
     public static function validateChannel(string $channel = null)
     {
@@ -93,5 +107,10 @@ class Channel
         }
 
         return $allowedChannels;
+    }
+
+    public static function getAllowedCorpCardChannels(): array
+    {
+        return self::$corpCardChannels;
     }
 }

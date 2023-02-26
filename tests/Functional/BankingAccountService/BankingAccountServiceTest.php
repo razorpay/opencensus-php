@@ -7,11 +7,14 @@ use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Mail;
 use RZP\Error\ErrorCode;
+
+
 use RZP\Models\Admin;
 use RZP\Models\Merchant;
 use RZP\Mail\BankingAccount\CurrentAccount;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Services\SalesForceClient;
+use RZP\Exception\DbQueryException;
 use RZP\Models\BankingAccount\Status;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Schedule;
@@ -26,6 +29,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Models\BankingAccount\Activation\Detail\Validator;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class BankingAccountServiceTest extends TestCase
 {
@@ -1586,4 +1590,65 @@ class BankingAccountServiceTest extends TestCase
                     return 'off';
                 }));
     }
+
+    public function testOnboardCapitalCorpCardForPayouts()
+    {
+        $this->ba->capitalCardsClientAppAuth();
+        $response = $this->startTest();
+
+        $balance  = $this->getDbEntity('balance',
+                                       [
+                                           'merchant_id'    => '10000000000000',
+                                           'channel'        => 'm2p',
+                                           'account_type'   => 'corp_card',
+                                           'account_number' => '30091673424181',
+                                       ], 'live');
+
+        $this->assertNotNull($balance);
+        $this->assertEquals($balance->getId(), $response['balance_id']);
+
+        $bankingAccounts = $this->getDbEntity('banking_account',
+                                              [
+                                                  'merchant_id'    => '10000000000000',
+                                                  'channel'        => 'm2p',
+                                                  'account_type'   => 'corp_card',
+                                                  'account_number' => '30091673424181',
+                                                  'balance_id'     => $response['balance_id']
+                                              ], 'live');
+
+        $this->assertNotNull($bankingAccounts);
+
+        return $balance;
+    }
+
+    public function testDuplicateOnboardCapitalCorpCardForPayouts()
+    {
+        $balance  = $this->testOnboardCapitalCorpCardForPayouts();
+        $response = $this->startTest();
+
+        $this->assertNotNull($response);
+        $this->assertEquals($balance->getId(), $response['balance_id']);
+    }
+
+    public function testInvalidMerchantIdOnboardCapitalCorpCardForPayouts()
+    {
+        $this->ba->capitalCardsClientAppAuth();
+        $this->expectException(DbQueryException::class);
+        $this->startTest();
+    }
+
+    public function testNot14CharMerchantIdOnboardCapitalCorpCardForPayouts()
+    {
+        $this->ba->capitalCardsClientAppAuth();
+
+        $this->startTest();
+    }
+
+    public function testNot14CharAccountNumberOnboardCapitalCorpCardForPayouts()
+    {
+        $this->ba->capitalCardsClientAppAuth();
+
+        $this->startTest();
+    }
+
 }

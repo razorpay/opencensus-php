@@ -214,6 +214,15 @@ class Authorization
         $this->appAuth($user, \Config::get('applications.banking_account_service')['secret']);
     }
 
+    public function capitalCardsClientAppAuth($mode = 'live')
+    {
+        $capitalCardsConfig = \Config::get('applications.capital_cards_client');
+
+        $pwd                = $capitalCardsConfig['secret'];
+
+        $this->appAuth('rzp_' . $mode, $pwd);
+    }
+
     public function bvsAppAuth($user = 'rzp_test')
     {
         $this->appAuth($user, \Config::get('applications.bvs')['secret']);

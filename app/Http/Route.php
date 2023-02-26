@@ -4167,6 +4167,9 @@ class Route
         'relay_get_props_history'               => ['get',                    'relay/apps/{app_id}/props/{prop_id}/history',                'RelayController@getPropsHistory'],
         'fetch_customer_eligibility'            => ['post',          'customers/eligibility',                               'EligibilityController@fetchCustomerEligibility'],
         'fetch_customer_eligibility_by_id'      => ['get',           'customers/eligibility/{id}',                          'EligibilityController@fetchCustomerEligibilityById'],
+
+        //Capital corp card for payouts
+        'corp_card_banking_account_create'      => ['post', 'merchant/onboardCCCForBanking', 'CorpCardController@onboardCapitalCorpCardForRzpX'],
     ];
 
     public static $public = [
@@ -5699,6 +5702,9 @@ class Route
         'workflow_config_create_internal',
         'downtime_auto_resolve_cron',
         'merchant_validate_public_auth_over_internal_auth',
+
+        //Capital cord card for payouts
+        'corp_card_banking_account_create',
 
         // CAC-RBAC
         'fetch_authz_roles_by_role_id',
@@ -14410,6 +14416,7 @@ class Route
             'capital_cards_mail',
             'feature_add_internal',
             'internal_fd_create_ticket',
+            'corp_card_banking_account_create',
             'workflow_config_create_internal',
             'fetch_authz_roles_by_role_id',
         ],

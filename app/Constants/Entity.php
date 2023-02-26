@@ -768,6 +768,8 @@ class Entity
 
     const CYBER_CRIME_HELP_DESK         = 'cyber_crime_help_desk';
 
+    const CORP_CARD = 'corp_card';
+
     /**
      * Defines a map of entites which are currently
      * being cached and associated cache version prefixes

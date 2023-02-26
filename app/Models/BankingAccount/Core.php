@@ -1006,9 +1006,9 @@ class Core extends Base\Core
 
     protected function resetFieldsForSentToBank(&$input)
     {
-        if (!(isset($input[Entity::STATUS]) && 
-            $input[Entity::STATUS] === Status::INITIATED && 
-            isset($input[Entity::SUB_STATUS]) && 
+        if (!(isset($input[Entity::STATUS]) &&
+            $input[Entity::STATUS] === Status::INITIATED &&
+            isset($input[Entity::SUB_STATUS]) &&
             $input[Entity::SUB_STATUS] === Status::NONE))
         {
             return;
@@ -1923,6 +1923,33 @@ class Core extends Base\Core
         }
     }
 
+    public function createCapitalCorpCardBankingAccount(array $input, Merchant\Entity $merchant,
+                                                        Merchant\Balance\Entity $balance): Entity
+    {
+        $this->trace->info(
+            TraceCode::CREATE_CORP_CARD_BANKING_ACCOUNT,
+            [
+                'channel' => $input[Entity::CHANNEL],
+                'input'   => $this->scrubBankingAccountSensitiveDetails($input),
+            ]);
+
+        (new Validator)->validateInput(Validator::CORP_CARD_CREATE, $input);
+
+        $bankingAccount = new Entity;
+
+        $bankingAccount->build($input);
+
+        $bankingAccount->merchant()->associate($merchant);
+
+        $bankingAccount->balance()->associate($balance);
+
+        $bankingAccount->setStatus(Status::ACTIVATED);
+
+        $this->repo->saveOrFail($bankingAccount);
+
+        return $bankingAccount;
+    }
+
     protected function createSharedBankingAccount(
         array $input,
         Merchant\Entity $merchant,
@@ -2612,7 +2639,7 @@ class Core extends Base\Core
      */
     protected function shouldNotifyOpsAboutProActivation(string $validatorOP, Entity $bankingAccount, bool $clarityContextEnabled = false): void
     {
-        if (($validatorOP !== 'create_dashboard' && $validatorOP != 'create_co_created'))
+        if (($validatorOP !== 'create_dashboard' && $validatorOP != 'create_co_created' && $validatorOP != 'create_ccc_capital_created'))
         {
             if ($clarityContextEnabled === false)
             {
