@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
+use RZP\Models\Merchant\Detail\Constants as DetailConstants;
 
 class Logo extends Base\Core
 {
@@ -266,6 +267,18 @@ class Logo extends Base\Core
                 TraceCode::AWS_S3_LOGO_UPLOADED,
                 $imageDetails);
 
+            if ($size == self::ORIGINAL_SIZE) {
+                $command = $s3->getCommand('GetObject', $s3Obj);
+
+                $request = $s3->createPresignedRequest(
+                    $command,
+                    '+' . '15' . ' minutes'
+                );
+
+                $preSignedUrl = (string)$request->getUri();
+
+                $this->app['merchantRiskClient']->enqueueProfanityCheckerRequest($this->merchant->getId(), 'image', 'merchant', $this->merchant->getId(), $preSignedUrl, DetailConstants:: MRS_PROFANITY_CHECKER_DEPTH, Constants::SOURCE_DASHBOARD);
+            }
             //$s3Url = $result['ObjectURL'];
         }
 

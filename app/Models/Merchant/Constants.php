@@ -113,6 +113,7 @@ final class Constants
     const MARK_AS_PARTNER_IN_PROGRESS             = 'mark_as_partner_in_progress';
     const MARK_AS_PARTNER_LOCK_TIME_OUT           = 30; //seconds
     const MERCHANT_ONBOARDING                     = 'merchant_onboarding';
+    const SOURCE_DASHBOARD                        = 'dashboard';
     const AGGREGATOR_TO_RESELLER_UPDATE           = "aggregator_to_reseller_update";
     const AGGREGATOR_TO_RESELLER_UPDATE_LOCK_TIME_OUT = 30; //seconds
 
