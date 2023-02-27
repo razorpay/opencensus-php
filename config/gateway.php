@@ -150,6 +150,7 @@ return [
         'offline_hdfc',
         'currency_cloud',
         'upi_kotak',
+        "upi_rzprbl",
     ],
 
     'mock_amex'                   => env('AMEX_MOCK'),
@@ -271,6 +272,7 @@ return [
     'mock_billdesk_sihub'         => env('BILLDESK_SIHUB_MOCK'),
     'mock_emerchantpay'           => env('EMERCHANTPAY_MOCK'),
     'mock_upi_kotak'              => env('UPI_KOTAK_MOCK'),
+    'mock_upi_rzprbl'             => env('UPI_RZPRBL_MOCK'),
 
     'certificate_path'            => env('CERTIFICATE_DIR_PATH'),
 

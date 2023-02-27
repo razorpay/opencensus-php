@@ -123,6 +123,7 @@ class Gateway
     const UPI_AXISOLIVE          = 'upi_axisolive';
     const UPI_YESBANK            = 'upi_yesbank';
     const UPI_KOTAK              = 'upi_kotak';
+    const UPI_RZPRBL             = 'upi_rzprbl';
     const AEPS_ICICI             = 'aeps_icici';
     const ISG                    = 'isg';
     const PAYSECURE              = 'paysecure';
@@ -1880,6 +1881,7 @@ class Gateway
         self::UPI_CITI,
         self::UPI_JUSPAY,
         self::UPI_KOTAK,
+        self::UPI_RZPRBL,
         self::WALLET_PHONEPE,
         self::CRED,
         self::CASHFREE,
@@ -2975,6 +2977,7 @@ class Gateway
         Gateway::UPI_CITI,
         Gateway::UPI_JUSPAY,
         Gateway::UPI_KOTAK,
+        Gateway::UPI_RZPRBL,
         Gateway::PAYU,
         Gateway::PAYTM,
         // Cybersource does not make s2s callback, Google Pay makes s2s callback for payments
@@ -3496,6 +3499,7 @@ class Gateway
         Gateway::UPI_YESBANK,
         Gateway::UPI_AXISOLIVE,
         Gateway::UPI_KOTAK,
+        Gateway::UPI_RZPRBL,
         Gateway::CASHFREE,
         Gateway::PAYTM,
         Gateway::PAYU,
@@ -4781,6 +4785,7 @@ class Gateway
             self::UPI_MINDGATE,
             self::UPI_KOTAK,
             self::UPI_AXISOLIVE,
+            self::UPI_RZPRBL,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -4793,6 +4798,7 @@ class Gateway
             self::UPI_YESBANK,
             self::UPI_KOTAK,
             self::UPI_AXISOLIVE,
+            self::UPI_RZPRBL,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -4803,6 +4809,7 @@ class Gateway
         $gateways = [
             self::UPI_KOTAK,
             self::UPI_AXISOLIVE,
+            self::UPI_RZPRBL,
         ];
 
         return (in_array($gateway, $gateways, true));
@@ -4812,6 +4819,7 @@ class Gateway
     {
         $gateways = [
             self::UPI_KOTAK,
+            self::UPI_RZPRBL,
         ];
 
         return (in_array($gateway, $gateways, true));

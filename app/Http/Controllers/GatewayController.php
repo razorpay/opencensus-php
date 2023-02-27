@@ -506,6 +506,7 @@ class GatewayController extends Controller
             case Gateway::UPI_AIRTEL:
             case Gateway::UPI_AXISOLIVE:
             case Gateway::UPI_KOTAK:
+            case Gateway::UPI_RZPRBL:
                 $input = Request::getContent();
                 $data = $this->processServerCallbackWithGatewayResponse($input, $gateway);
                 break;

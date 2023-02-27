@@ -620,6 +620,34 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    // Test upi_rzprbl terminal create validation
+    public function testCreateUpiRzprblTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    // Test upi_rzprbl terminal edit validation
+    public function testEditUpiRzprblTerminal()
+    {
+        $terminal = $this->fixtures->create('terminal:upi_rzprbl_terminal');
+
+        $this->assertTrue($terminal->refresh()->isPay());
+
+        $data = [
+            'type' => [
+                'pay' => '0'
+            ]
+        ];
+
+        $this->editTerminal($terminal->GetId(), $data);
+
+        $this->assertFalse($terminal->refresh()->isPay());
+    }
+
     public function testCreateTerminalBilldeskSiHub()
     {
         $url = '/merchants/100000Razorpay/terminals';

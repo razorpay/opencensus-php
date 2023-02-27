@@ -4169,6 +4169,30 @@ return [
             ]
         ]
     ],
+    'testCreateUpiRzprblTerminal' => [
+        'request'   => [
+            'content'   => [
+                'gateway'                       => 'upi_rzprbl',
+                'gateway_acquirer'              => 'rbl',
+                'category'                      => '1234',
+                'gateway_merchant_id'           => 'VtaMPNpoFglc',
+                'gateway_merchant_id2'          => 'KwwvvxPNpoTeli',
+                'upi'                           => 1,
+                'vpa'                           => 'kk@rzp',
+                'type'                          => [
+                    'non_recurring'             => '1',
+                    'pay'                       => '1'
+                ],
+            ]
+        ],
+        'response'  => [
+            'content'  => [
+                'gateway_merchant_id'       => 'VtaMPNpoFglc',
+                'gateway_acquirer'          => 'rbl',
+                'enabled'                   => true,
+            ]
+        ]
+    ],
     'testCreateCybersourceYesBTerminal'      => [
         'request'   => [
             'content'   => [

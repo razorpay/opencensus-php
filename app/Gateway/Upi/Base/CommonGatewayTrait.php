@@ -202,6 +202,7 @@ trait CommonGatewayTrait
             Payment\Gateway::UPI_AXIS,
             Payment\Gateway::UPI_AIRTEL,
             Payment\Gateway::UPI_MINDGATE,
+            Payment\Gateway::UPI_RZPRBL,
             Payment\Gateway::UPI_AXISOLIVE,
             ];
 

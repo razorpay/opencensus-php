@@ -3921,6 +3921,27 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createUpiRzprblTerminal(array $attributes)
+    {
+        $defaultValues = [
+            'id'                        => Shared::UPI_RZPRBL_TERMINAL,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'upi_rzprbl',
+            'gateway_merchant_id'       => 'RazorpayVpaId1',
+            'gateway_merchant_id2'      => 'RzpDeviceId123',
+            'upi'                       => 1,
+            'shared'                    => 0,
+            'type'                      => [
+                'non_recurring' => '1',
+                'pay'           => '1',
+            ]
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedUpiCitiTerminal(array $attributes)
     {
         $defaultValues = [

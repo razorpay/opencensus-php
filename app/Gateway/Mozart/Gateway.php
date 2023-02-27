@@ -1123,6 +1123,7 @@ class Gateway extends Base\Gateway
         {
             case Payment\Gateway::UPI_AXISOLIVE:
             case Payment\Gateway::UPI_KOTAK:
+            case Payment\Gateway::UPI_RZPRBL:
                 $data = [
                     'payload'       => $input,
                     'gateway'       => $gateway,
@@ -1205,6 +1206,7 @@ class Gateway extends Base\Gateway
         {
             case Payment\Gateway::UPI_AIRTEL:
             case Payment\Gateway::UPI_KOTAK:
+            case Payment\Gateway::UPI_RZPRBL:
                 $version = $response['data']['version'] ?? '';
 
                 if ($version === 'v2')
