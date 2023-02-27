@@ -341,7 +341,6 @@ body{background:#fff;font-family:ubuntu,helvetica,verdana,sans-serif;margin:0;pa
     }
 
     function openNPCIFeedbackModal() {
-      // Add check to open feedback popup only if mandate summery page post mandate registration
       feedbackPopup.classList.add("show-modal");
     }
 
@@ -350,23 +349,20 @@ body{background:#fff;font-family:ubuntu,helvetica,verdana,sans-serif;margin:0;pa
       postFeedbackProcessing();
     }
 
+    function calculatePopupPosition() {
+      const width = screen.width - Math.round((screen.width / 10) * 2);
+      const height = screen.height - Math.round((screen.height / 10) * 2);
+      const left = (screen.width - width) / 4;
+      const top = (screen.height - height) / 3;
+      return `resizable=yes, width=${width}, height=${height}, top=${top}, left=${left}`;
+    }
+
     function handleFeedbackLinkClick() {
       try {
-        let width = screen.width - Math.round((screen.width / 10) * 2);
-        let height = screen.height - Math.round((screen.height / 10) * 2);
-        var left = (screen.width - width) / 4;
-        var top = (screen.height - height) / 3;
         const feedbackWindow = window.open(
           NPCI_FEEDBACK_URL,
           "_blank",
-          "resizable=yes, width=" +
-            width +
-            ", height=" +
-            height +
-            ", top=" +
-            top +
-            ", left=" +
-            left
+          calculatePopupPosition()
         );
 
         if (
