@@ -112,3 +112,16 @@ devspace.yaml                                          @razorpay/devstack-devs
 /app/Models/Feature/Constants.php                      @razorpay/techcommonplatforms
 /app/Models/Feature                                    @razorpay/techcommonplatforms
 /app/Services/Dcs                                      @razorpay/techcommonplatforms
+
+#
+# Merchant Entities
+#
+# Blocking PR merge on certain entities as they are being moved to account service.
+# Any update on this entities, will require explicit approval from platform identity team.
+app/Models/Merchant/Entity.php                                @razorpay/identity-core
+app/Models/Merchant/Detail/Entity.php                         @razorpay/identity-core
+app/Models/Merchant/Document/Entity.php                       @razorpay/identity-core
+app/Models/Merchant/Email/Entity.php                          @razorpay/identity-core
+app/Models/Merchant/Stakeholder/Entity.php                    @razorpay/identity-core
+app/Models/Merchant/BusinessDetail/Entity.php                 @razorpay/identity-core
+app/Models/Merchant/Website/Entity.php                        @razorpay/identity-core
