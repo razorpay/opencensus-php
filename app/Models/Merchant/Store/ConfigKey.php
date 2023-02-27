@@ -188,8 +188,20 @@ class ConfigKey
                 Constants::DELETE => [Constants::INTERNAL],
                 Constants::TTL    => Constants::STORE_MERCHANT_DETAILS_TTL_IN_SECONDS
             ],
+            self::SHOW_FTUX_FINAL_SCREEN                 => [
+                Constants::STORE => Constants::REDIS,
+                Constants::TTL   => Constants::FTUX_POPUP_TTL_IN_SECONDS
+            ],
+            self::SHOW_FIRST_PAYMENT_BANNER              => [
+                Constants::STORE => Constants::REDIS,
+                Constants::TTL   => Constants::FTUX_POPUP_TTL_IN_SECONDS
+            ]
         ]
     ];
 
     const IS_MERCHANT_NO_DOC_ONBOARDED = 'is_merchant_no_doc_onboarded';
+
+    //ftux
+    const SHOW_FTUX_FINAL_SCREEN    = 'show_ftux_final_screen';
+    const SHOW_FIRST_PAYMENT_BANNER = 'show_first_payment_banner';
 }

@@ -55,6 +55,7 @@ use RZP\Models\Merchant\Cron\Constants as CronConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BVSConstants;
 use RZP\Models\Merchant\Cron as CronJobHandler;
 use RZP\Models\Merchant\Document;
+use RZP\Services\Mock\DataLakePresto as DataLakePrestoMock;
 
 class CoreTest extends TestCase
 {
@@ -3310,5 +3311,55 @@ class CoreTest extends TestCase
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
+    }
+
+    public function testFtuxDashboardKeysOnFirstTransaction()
+    {
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchantDetail = $this->fixtures->on('live')->create('merchant_detail:valid_fields');
+
+        $merchantId = $merchantDetail->getMerchantId();
+
+        $prestoService = $this->getMockBuilder(DataLakePrestoMock::class)
+                              ->setConstructorArgs([$this->app])
+                              ->onlyMethods([ 'getDataFromDataLake'])
+                              ->getMock();
+
+        $this->app->instance('datalake.presto', $prestoService);
+
+        $prestoServiceData = [
+            [
+                'merchant_id' => $merchantId,
+            ]
+        ];
+
+        $prestoService->method( 'getDataFromDataLake')
+                      ->willReturn($prestoServiceData);
+
+        $this->createTransaction($merchantId, 'payment', 10000, Carbon::now()->subHour()->getTimestamp());
+
+        $this->createPayment($merchantId, 10000);
+
+        (new CronJobHandler\Core())->handleCron(CronConstants::MTU_TRANSACTED_MERCHANTS_CRON_JON_NAME, [
+            "start_time" => Carbon::now()->subDecade()->getTimestamp(),
+            "end_time"   => Carbon::now()->getTimestamp(),
+        ]);
+
+        $showFtuxFinalScreenData = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::SHOW_FTUX_FINAL_SCREEN],
+            StoreConstants::PUBLIC);
+
+        $showFirstPaymentBannerData = (new StoreCore())->fetchValuesFromStore(
+            $merchantId,
+            StoreConfigKey::ONBOARDING_NAMESPACE,
+            [StoreConfigKey::SHOW_FIRST_PAYMENT_BANNER],
+            StoreConstants::PUBLIC);
+
+        $this->assertTrue($showFtuxFinalScreenData[StoreConfigKey::SHOW_FTUX_FINAL_SCREEN]);
+
+        $this->assertTrue($showFirstPaymentBannerData[StoreConfigKey::SHOW_FIRST_PAYMENT_BANNER]);
     }
 }

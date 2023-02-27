@@ -3,6 +3,8 @@
 namespace RZP\Models\Merchant\Cron\Actions;
 
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Store;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Cron\Constants;
 use RZP\Notifications\Onboarding\Events;
@@ -100,6 +102,8 @@ class MtuTransactedAction extends BaseAction
 
         (new EscalationCore())->applyMtuCouponIfEligible($merchant);
 
+        $this->enableFtuxDashboardKeys($merchant->getId());
+
         if (in_array($merchant->merchantDetail->getActivationStatus(),
                      [
                          DetailStatus::INSTANTLY_ACTIVATED,
@@ -138,5 +142,14 @@ class MtuTransactedAction extends BaseAction
                 }
             }
         }
+    }
+
+    private function enableFtuxDashboardKeys($merchantId)
+    {
+        (new Merchant\Store\Core)->updateMerchantStore($merchantId, [
+            Store\Constants::NAMESPACE                  => Store\ConfigKey::ONBOARDING_NAMESPACE,
+            Store\ConfigKey::SHOW_FTUX_FINAL_SCREEN     => true,
+            Store\ConfigKey::SHOW_FIRST_PAYMENT_BANNER  => true
+        ]);
     }
 }

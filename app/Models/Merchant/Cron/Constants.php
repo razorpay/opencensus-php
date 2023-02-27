@@ -31,6 +31,7 @@ class Constants
     const SUBMERCHANT_FIRST_TRANSACTION                              = 'transacted-submerchants';
     const MERCHANT_AUTO_KYC_PASS_CRON_JOB_NAME                       = 'merchant_auto_kyc_pass_cron';
     const FOH_REMOVAL_CRON_JOB_NAME                                  = 'foh_removal_cron';
+    const MTU_TRANSACTED_MERCHANTS_CRON_JON_NAME                     = 'mtu-transacted';
 
     # map keys
     const AUTO_KYC_FAILURE_DATA = "auto_kyc_failure_data";

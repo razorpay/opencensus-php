@@ -34,7 +34,9 @@ class Validator extends Base\Validator
         ConfigKey::BUSINESS_NAME_SUGGESTED                         => 'sometimes|string',
         ConfigKey::IS_PAYMENT_HANDLE_ONBOARDING_INITIATED          => 'filled|bool',
         ConfigKey::WEBSITE_INCOMPLETE_SOFT_NUDGE_TIMESTAMP         => 'filled|integer',
-        ConfigKey::WEBSITE_INCOMPLETE_SOFT_NUDGE_COUNT             => 'filled|integer|min:0|max:5'
+        ConfigKey::WEBSITE_INCOMPLETE_SOFT_NUDGE_COUNT             => 'filled|integer|min:0|max:5',
+        ConfigKey::SHOW_FTUX_FINAL_SCREEN                          => 'filled|bool',
+        ConfigKey::SHOW_FIRST_PAYMENT_BANNER                       => 'filled|bool',
     ];
 
     protected static $fetchRules  = [
