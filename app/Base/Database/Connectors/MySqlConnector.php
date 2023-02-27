@@ -3,6 +3,7 @@
 namespace RZP\Base\Database\Connectors;
 
 use App;
+use Redis;
 use Route;
 use Database\Connection;
 use Exception;
@@ -15,7 +16,9 @@ use RZP\Trace\TraceCode;
 use RZP\Constants\Tracing;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Base\Database\DetectsLostConnections;
+use RZP\Services\CircuitBreaker\CircuitBreaker;
 use OpenCensus\Trace\Integrations\PDO as PDOTracer;
+use RZP\Services\CircuitBreaker\Store\RedisClusterStore;
 
 class MySqlConnector extends BaseMySqlConnector
 {
@@ -37,6 +40,11 @@ class MySqlConnector extends BaseMySqlConnector
     // wait timeout config
     protected $waitTimeout;
 
+    /*
+     * Circuit breaker instance
+     */
+    protected $cb = null;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -46,15 +54,20 @@ class MySqlConnector extends BaseMySqlConnector
     {
         $socketConnection = (empty($config['unix_socket']) === false);
 
+        $this->initiateAndCheckCircuitBreaker();
+
         $proxysqlActive = $this->app['proxysql.config']->isProxySqlActive();
 
         try
         {
             $connection = parent::connect($config);
+
+            $this->markCircuitBreakerSuccess();
         }
         catch (Exception $e)
         {
-            if ($this->causedByLostConnection($e)) {
+            if ($this->causedByLostConnection($e) === true)
+            {
                 // If it was proxysql connection that failed then,
                 // create connection using mysql host now.
                 if ((App::getFacadeRoot()->environment() !== 'func') and
@@ -75,6 +88,8 @@ class MySqlConnector extends BaseMySqlConnector
                     $connection = parent::connect($config);
                 }
             }
+
+            $this->markCircuitBreakerFailure();
 
             throw $e;
         }
@@ -103,6 +118,64 @@ class MySqlConnector extends BaseMySqlConnector
         }
 
         return $connection;
+    }
+
+    protected function initiateAndCheckCircuitBreaker()
+    {
+        try
+        {
+            if ($this->app->runningInConsole() === true)
+            {
+                $serviceName = 'worker_db';
+
+                $redis = Redis::connection('throttle')->client();
+
+                $store = new RedisClusterStore($redis);
+
+                $this->cb = new CircuitBreaker($store, $serviceName);
+
+                if ($this->cb->isAvailable() === false)
+                {
+                    $this->app['trace']->info(TraceCode::CIRCUIT_BREAKER_OPEN, [
+                        'total_failures' => $this->cb->getFailuresCounter(),
+                    ]);
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->traceException($e);
+        }
+    }
+
+    protected function markCircuitBreakerSuccess()
+    {
+        try
+        {
+            if ($this->cb !== null)
+            {
+                $this->cb->success();
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->traceException($e);
+        }
+    }
+
+    protected function markCircuitBreakerFailure()
+    {
+        try
+        {
+            if ($this->cb !== null)
+            {
+                $this->cb->failure();
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->traceException($e);
+        }
     }
 
     protected function getWaitTimeoutConfig()

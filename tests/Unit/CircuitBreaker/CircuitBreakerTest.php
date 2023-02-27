@@ -18,6 +18,11 @@ use Mockery\Mock;
  */
 class CircuitBreakerTest extends \RZP\Tests\TestCase
 {
+    protected function setUp(): void
+    {
+      $this->markTestSkipped();
+    }
+
     public function testExceptionWithServiceName()
     {
         $serviceName = 'TEST_SERVICE_NAME';

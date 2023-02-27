@@ -313,7 +313,7 @@ abstract class BaseProxyController extends Controller
         array $headers = [],
         array $options = [])
     {
-        $this->circuitBreaker->canPass($this->serviceName);
+        $this->circuitBreaker->isAvailable($this->serviceName);
 
         try
         {
@@ -331,20 +331,20 @@ abstract class BaseProxyController extends Controller
 
             if ($resp->status_code === 200 and empty($this->postProcessor) === false)
             {
-                $this->circuitBreaker->succeed($this->serviceName);
+                $this->circuitBreaker->success();
 
                 return $this->postProcessor->process($route, $body, $parsedResponse);
             }
             else
             {
-                $this->circuitBreaker->failed($this->serviceName);
+                $this->circuitBreaker->failure();
 
                 return $parsedResponse;
             }
         }
         catch (\Exception $e)
         {
-            $this->circuitBreaker->failed($this->serviceName);
+            $this->circuitBreaker->failure();
 
             throw $e;
         }

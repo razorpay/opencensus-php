@@ -61,19 +61,12 @@ class BvsProxyController extends BaseProxyController {
         $this->setPathTimeoutMap(self::PATH_TIMEOUT_MAP);
         $this->setDefaultTimeout(30);
 
-        $config=config('circuit_breaker');
+        $config = config('circuit_breaker');
 
-        $serviceName='aadhaar_ekyc';
+        $serviceName ='aadhaar_ekyc';
 
-        $settings = [
-            'exceptions_on' => $config[$serviceName]['exceptions_on'],
-            'time_window' => $config[$serviceName]['time_window'],
-            'time_out_open' => $config[$serviceName]['time_out_open'],
-            'time_out_half_open' => $config[$serviceName]['time_out_half_open'],
-            'total_failures' => $config[$serviceName]['total_failures']
-        ];
-
-        $this->circuitBreaker->changeConfiguration($settings);
+        $this->circuitBreaker->changeSettings($config[$serviceName]);
+        $this->circuitBreaker->setService($serviceName);
 
         $this->registerProcessors(
             new BvsProxyPreProcessors($this->app),
