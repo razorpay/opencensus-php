@@ -214,10 +214,17 @@ class Service extends Base\Service
         $groupClarificationDetails =
             $this->repo->clarification_detail->getLatestByMerchantIdAndGroup($merchantId, $groupName);
 
+        $defaultFieldDetails = null;
+
+        if (empty($groupClarificationDetails) === false)
+        {
+            $defaultFieldDetails = $groupClarificationDetails->generateDefaultFieldDetails();
+        }
+
         $input = [
             Entity::GROUP_NAME    => $groupName,
             Entity::MERCHANT_ID   => $merchantId,
-            Entity::FIELD_DETAILS => $details[Constants::FIELD_DETAILS] ?? $groupClarificationDetails->generateDefaultFieldDetails(),
+            Entity::FIELD_DETAILS => $details[Constants::FIELD_DETAILS] ?? $defaultFieldDetails,
             Entity::STATUS        => $groupClarificationDetails->getStatus(),
             Entity::COMMENT_DATA  => $details[Entity::COMMENT_DATA] ?? null,
             Entity::MESSAGE_FROM  => Constants::MERCHANT,
