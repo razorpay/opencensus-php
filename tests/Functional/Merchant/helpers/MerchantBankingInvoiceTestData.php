@@ -670,4 +670,38 @@ return [
             'internal_error_code' => 'BAD_REQUEST_VALIDATION_FAILURE',
         ],
     ],
+    'testMerchantInvoicePayoutFailedOrReversedScenarios' => [
+        'rx_transactions' => [
+            [
+                'merchant_id' => '10000000000000',
+                'month'  => 8,
+                'year'   => 2019,
+                'amount' => 0,
+                'tax'    => 0,
+            ],
+            [
+                'merchant_id' => '10000000000000',
+                'month'  => 7,
+                'year'   => 2019,
+                'amount' => 4000,
+                'tax'    => 720,
+            ],
+        ],
+        'rx_adjustments' => [
+            [
+                'merchant_id' => '10000000000000',
+                'month'  => 8,
+                'year'   => 2019,
+                'amount' => 1500,
+                'tax'    => 270,
+            ],
+            [
+                'merchant_id' => '10000000000000',
+                'month'  => 7,
+                'year'   => 2019,
+                'amount' => 2000,
+                'tax'    => 360,
+            ],
+        ],
+    ],
 ];

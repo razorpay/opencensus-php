@@ -145,6 +145,7 @@ class Repository extends Base\Repository
         $payoutsFeeColumn           = $this->repo->payout->dbColumn(PayoutEntity::FEES);
         $payoutsIDColumn            = $this->repo->payout->dbColumn(Entity::ID);
         $payoutsFeeTypeColumn       = $this->repo->payout->dbColumn(PayoutEntity::FEE_TYPE);
+        $payoutsFailedAtColumn      = $this->repo->payout->dbColumn(PayoutEntity::FAILED_AT);
 
         $columns = ' SUM(' . $payoutsTaxColumn . ') AS tax,
                      SUM(' . $payoutsFeeColumn . ') AS fee';
@@ -155,6 +156,7 @@ class Repository extends Base\Repository
                     ->merchantID($merchantId)
                     ->where(Entity::ENTITY_TYPE, Type::PAYOUT)
                     ->whereNull($payoutsFeeTypeColumn)
+                    ->whereNull($payoutsFailedAtColumn)
                     ->whereBetween($reversalsCreatedAtColumn, [$startTime, $endTime])
                     ->where($balanceIDColumn, $balanceId)
                     ->first();

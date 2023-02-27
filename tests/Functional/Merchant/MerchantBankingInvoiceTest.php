@@ -2520,4 +2520,247 @@ class MerchantBankingInvoiceTest extends TestCase
 
         Carbon::setTestNow();
     }
+
+    protected function createDataForPayoutFailedOrReversedScenarios()
+    {
+        $currentMonth = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($currentMonth);
+
+        $this->fixtures->edit('merchant', '10000000000000', [
+            'activated'    => 1,
+            'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+            'invoice_code' => 'hello1234567',
+        ]);
+
+        $balance = $this->fixtures->create('balance',
+            [
+                'merchant_id' => '10000000000000',
+                'type'        => 'banking',
+                'balance'     => 1000000,
+            ]);
+
+        $balanceId = $balance['id'];
+
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'gstin'       => '29kjsngjk213922',
+            ]);
+
+        $this->fixtures->edit('merchant', 10000000000000, ['business_banking' => 1]);
+
+        $payout1 = $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000,
+                'balance_id' => $balanceId,
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            ]);
+
+        $payout2 = $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000,
+                'balance_id' => $balanceId,
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            ]);
+
+        $payout3 = $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000,
+                'balance_id' => $balanceId,
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            ]);
+
+        $payout4 = $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000,
+                'balance_id' => $balanceId,
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            ]);
+
+        $payout5 = $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000,
+                'balance_id' => $balanceId,
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            ]);
+
+        $payout6 = $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000,
+                'balance_id' => $balanceId,
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            ]);
+
+        $payout7 = $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000,
+                'balance_id' => $balanceId,
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            ]);
+
+        $payout8 = $this->fixtures->create(
+            'payout',
+            [
+                'channel'    => 'icici',
+                'amount'     => 1000,
+                'balance_id' => $balanceId,
+                'pricing_rule_id'   => '1nvp2XPMmaRLxb',
+            ]);
+
+        $this->fixtures->edit('payout', $payout2['id'], ['failed_at' => Carbon::now(Timezone::IST)->timestamp, 'status' => 'failed']);
+
+        $this->fixtures->reversal->createPayoutReversal(
+            [
+                'merchant_id'   => '10000000000000',
+                'entity_id'     => $payout4['id'],
+                'entity_type'   => 'payout',
+                'balance_id'    => $balanceId,
+                'amount'        => 1000,
+                'fee'           => 0,
+                'tax'           => 0,
+            ]);
+
+        $this->fixtures->edit('payout', $payout6['id'], ['failed_at' => Carbon::now(Timezone::IST)->timestamp, 'status' => 'failed']);
+
+        $this->fixtures->reversal->createPayoutReversal(
+            [
+                'merchant_id'   => '10000000000000',
+                'entity_id'     => $payout6['id'],
+                'entity_type'   => 'payout',
+                'balance_id'    => $balanceId,
+                'amount'        => 1000,
+                'fee'           => 0,
+                'tax'           => 0,
+            ]);
+
+        $this->fixtures->edit('payout', $payout8['id'], ['failed_at' => Carbon::now(Timezone::IST)->timestamp, 'status' => 'failed']);
+
+        $nextMonth = Carbon::create(2019, 8, 21, 12, 23, 41, Timezone::IST);
+
+        Carbon::setTestNow($nextMonth);
+
+        $this->fixtures->edit('payout', $payout3['id'], ['failed_at' => Carbon::now(Timezone::IST)->timestamp, 'status' => 'failed']);
+
+        $this->fixtures->reversal->createPayoutReversal(
+            [
+                'merchant_id'   => '10000000000000',
+                'entity_id'     => $payout5['id'],
+                'entity_type'   => 'payout',
+                'balance_id'    => $balanceId,
+                'amount'        => 1000,
+                'fee'           => 0,
+                'tax'           => 0,
+            ]);
+
+        $this->fixtures->edit('payout', $payout7['id'], ['failed_at' => Carbon::now(Timezone::IST)->timestamp, 'status' => 'failed']);
+
+        $this->fixtures->reversal->createPayoutReversal(
+            [
+                'merchant_id'   => '10000000000000',
+                'entity_id'     => $payout7['id'],
+                'entity_type'   => 'payout',
+                'balance_id'    => $balanceId,
+                'amount'        => 1000,
+                'fee'           => 0,
+                'tax'           => 0,
+            ]);
+
+        $this->fixtures->reversal->createPayoutReversal(
+            [
+                'merchant_id'   => '10000000000000',
+                'entity_id'     => $payout8['id'],
+                'entity_type'   => 'payout',
+                'balance_id'    => $balanceId,
+                'amount'        => 1000,
+                'fee'           => 0,
+                'tax'           => 0,
+            ]);
+
+        return $balanceId;
+    }
+
+    /**
+     * Case1: No Failure/Reversal - M1: P1 +x
+     * Case2: Only Failure, same month - M1: P1 0
+     * Case3: Only Failure, next month - M1: P1 +x, M2: P1 -x
+     * Case4: Only Reversal, same month - M1: P1 +x, M1: R1 -x
+     * Case5: Only Reversal, next month - M1: P1 +x, M2: R1 -x
+     * Case6: Failure/Reversal same month - M1: P1 0, M1: R1 0
+     * Case7: Failure/Reversal next month - M1: P1 +x, M2: P1 -x, M2: R1 0
+     * Case8: Failure M1/Reversal M2 - M1: P1 0, M2: R1 0
+     */
+    public function testMerchantInvoicePayoutFailedOrReversedScenarios()
+    {
+        $balanceId = $this->createDataForPayoutFailedOrReversedScenarios();
+
+        Carbon::setTestNow();
+
+        $this->ba->cronAuth();
+
+        $firstMonth = Carbon::create(2019, 7, 21, 12, 23, 41, Timezone::IST);
+
+        $request1 = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $firstMonth->month, 'year' => $firstMonth->year,'merchant_ids' => ['10000000000000']],
+        ];
+
+        $request2 = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['month' => $firstMonth->month + 1, 'year' => $firstMonth->year],
+        ];
+
+        $this->makeRequestAndGetContent($request1);
+
+        $this->makeRequestAndGetContent($request2);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]][] = [
+                Invoice\Entity::MERCHANT_ID => $e[Invoice\Entity::MERCHANT_ID],
+                Invoice\Entity::BALANCE_ID  => $e[Invoice\Entity::BALANCE_ID],
+                Invoice\Entity::AMOUNT      => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX         => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data['rx_transactions'][0]['balance_id'] = $balanceId;
+
+        $data['rx_transactions'][1]['balance_id'] = $balanceId;
+
+        $data['rx_adjustments'][0]['balance_id'] = $balanceId;
+
+        $data['rx_adjustments'][1]['balance_id'] = $balanceId;
+
+        $this->assertArraySelectiveEquals($invoiceEntities['rx_transactions'], $data['rx_transactions']);
+
+        $this->assertArraySelectiveEquals($invoiceEntities['rx_adjustments'], $data['rx_adjustments']);
+
+        Carbon::setTestNow();
+    }
 }

@@ -980,7 +980,6 @@ class Repository extends Base\Repository
                     ->whereNotNull($payoutsInitiatedAtColumn)
                     ->whereNull($payoutsFeeTypeColumn)
                     ->whereBetween($payoutsFailedAtColumn, [$startTime, $endTime])
-                    ->where($payoutsStatusColumn, '=', Status::FAILED)
                     ->first();
     }
 
