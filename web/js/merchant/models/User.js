@@ -392,6 +392,10 @@ export default class User {
     return !!parseInt(this.submitted, 10);
   }
 
+  get isUnderReview() {
+    return this.activation_status === 'under_review';
+  }
+
   get isRejected() {
     return this.activation_status === 'rejected';
   }

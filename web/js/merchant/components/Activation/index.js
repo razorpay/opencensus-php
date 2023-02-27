@@ -1627,25 +1627,30 @@ export default class ActivationWizard extends React.Component {
           dirty: newStateDirty,
         });
       } else if (response.success) {
-        if (this.props.user.isInstantActivationEnabled) {
-          this.props.showKYCStatusModal({
-            modalType: 'KYC_ACTIVATION_SUBMIT_MODAL',
-          });
+        if (this.props.user.isFtuxEnabled && this.props.user.isUnderReview) {
+          const ftuxUrl = `${window.EASY_ONBOARDING_URL}/onboarding/overview`;
+          window.open(ftuxUrl, '_self', 'noopener');
         } else {
-          this.props.showKYCStatusModal({
-            modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
-            activationDuration: '3 days',
-          });
-        }
+          if (this.props.user.isInstantActivationEnabled) {
+            this.props.showKYCStatusModal({
+              modalType: 'KYC_ACTIVATION_SUBMIT_MODAL',
+            });
+          } else {
+            this.props.showKYCStatusModal({
+              modalType: 'KYC_CLARIFICATION_SUBMIT_MODAL',
+              activationDuration: '3 days',
+            });
+          }
 
-        LocalStorageService.setItem(
-          `rzp_onboarding--${this.props.user.current}--clarification_submitted`,
-          true,
-        );
-        if (this.props.submerchantId) {
-          this.props.history.replace('/partners/submerchants');
-        } else {
-          this.props.history.replace('/');
+          LocalStorageService.setItem(
+            `rzp_onboarding--${this.props.user.current}--clarification_submitted`,
+            true,
+          );
+          if (this.props.submerchantId) {
+            this.props.history.replace('/partners/submerchants');
+          } else {
+            this.props.history.replace('/');
+          }
         }
       }
       return response;
