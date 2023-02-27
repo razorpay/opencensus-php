@@ -3940,6 +3940,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SERVER_ERROR_LOG_RISK                                 = 'SERVER_ERROR_LOG_RISK';
 
     const BEAM_METHOD_CALL                                      = 'BEAM_METHOD_CALL';
+
     const BEAM_REQUEST                                          = 'BEAM_REQUEST';
     const BEAM_RESPONSE                                         = 'BEAM_RESPONSE';
     const BEAM_PUSH                                             = 'BEAM_PUSH';
@@ -6146,7 +6147,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INTERNATIONAL_ENABLEMENT_MOBILE_SIGNUP_NOTIF_FAILED   = 'INTERNATIONAL_ENABLEMENT_MOBILE_SIGNUP_NOTIF_FAILED';
     const TOGGLE_INTERNATIONAL_REVAMPED_WORKFLOW_TRIGGERED      = 'TOGGLE_INTERNATIONAL_REVAMPED_WORKFLOW_TRIGGERED';
     const TOGGLE_INTERNATIONAL_REVAMPED_PRODUCT_REQUESTED       = 'TOGGLE_INTERNATIONAL_REVAMPED_PRODUCT_REQUESTED';
-    
+
     const INTERNATIONAL_ENABLEMENT_DATA                         = 'INTERNATIONAL_ENABLEMENT_DATA';
     const INTERNATIONAL_ENABLEMENT_WORKFLOW_TRIGGERED           = 'INTERNATIONAL_ENABLEMENT_WORKFLOW_TRIGGERED';
     const INTERNATIONAL_ENABLEMENT_QUESTIONNAIRE_RAZORX_VARIANT = 'INTERNATIONAL_ENABLEMENT_QUESTIONNAIRE_RAZORX_VARIANT';
@@ -9008,6 +9009,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_METADATA_DELETE_SUCCESSFUL                             = 'CARD_METADATA_DELETE_SUCCESSFUL';
     const CARD_METADATA_DELETE_EVENT                                  = 'CARD_METADATA_DELETE_EVENT';
 
+    const BEAM_PUSH_TO_NEW_URL                                        = 'BEAM_PUSH_TO_NEW_URL';
+    const BEAM_PUSH_TO_NEW_URL_FAILED                                 = 'BEAM_PUSH_TO_NEW_URL_FAILED';
     const TOKEN_HQ_PRICING_EVENT_DATA                                 = 'TOKEN_HQ_PRICING_EVENT_DATA';
     const TOKEN_HQ_PRICING_EVENT                                      = 'TOKEN_HQ_PRICING_EVENT_DATA';
     const TOKEN_HQ_PRICING_PUSH_EVENT_EXCEPTION                       = 'TOKEN_HQ_PRICING_PUSH_EVENT_EXCEPTION';

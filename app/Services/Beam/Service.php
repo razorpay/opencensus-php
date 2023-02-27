@@ -7,10 +7,11 @@ use App;
 use RZP\Jobs\BeamJob;
 use RZP\Constants\Mode;
 use RZP\Constants\Beam;
+use Razorpay\Trace\Logger;
+use RZP\Constants\Environment;
 use RZP\Encryption\Type;
 use RZP\Trace\TraceCode;
 use RZP\Foundation\Application;
-use RZP\Constants\Environment;
 use Illuminate\Support\Facades\Config;
 
 class Service
@@ -53,6 +54,10 @@ class Service
 
     protected $mailInfo;
 
+    protected $env;
+
+    protected $app;
+
     public function __construct(Application $app)
     {
         $this->trace  = $app['trace'];
@@ -61,7 +66,14 @@ class Service
 
         $this->mode   = $app['rzp.mode'];
 
-        $this->env = $app['env'];
+        $this->env    = $app['env'] ?? "";
+
+        $this->app    = $app;
+
+        if (empty($this->app) === true)
+        {
+            $this->app = App::getFacadeRoot();
+        }
     }
 
     /**
@@ -94,9 +106,62 @@ class Service
      * @param $route
      * @return string
      */
-    protected function getUrl($route)
+    protected function getUrl($route, $currentJobName ='')
     {
+        try
+        {
+            if ($this->shouldMigrateToNewBeamPushURL($currentJobName) === true)
+            {
+                $this->trace->info(TraceCode::BEAM_PUSH_TO_NEW_URL,
+                    [
+                        'route'      => $route,
+                        'job_name'   => $currentJobName,
+                    ]);
+
+                return $this->getNewUrl($route);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Logger::ERROR,
+                TraceCode::BEAM_PUSH_TO_NEW_URL_FAILED,
+                [
+                    'route'      => $route,
+                    'job_name'   => $currentJobName,
+                ]);
+        }
         return trim($this->config['url']) . '/' . $route;
+    }
+
+    protected function getNewUrl($route)
+    {
+        return trim($this->config['new_url']) . '/' . $route;
+    }
+
+    protected function shouldMigrateToNewBeamPushURL($currentJobName): bool
+    {
+
+        if ((empty($currentJobName) === true) or
+            (in_array($this->env, [Environment::PRODUCTION, Environment::BETA]) === false))
+        {
+            return false;
+        }
+
+        return $this->isCurrentJobInMigrationList($currentJobName);
+    }
+
+    protected function isCurrentJobInMigrationList($currentJobName) : bool {
+        $migratedJobslist = array( );
+
+        foreach ($migratedJobslist as $value) {
+            if($value == $currentJobName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function getBeamRequest(array $pushData, array $intervalInfo, array $mailInfo)
@@ -147,11 +212,13 @@ class Service
             $data[self::BEAM_PUSH_JOBNAME] = self::BEAM_TEST_JOBNAME;
         }
 
+        $currentJobName = $data[self::BEAM_PUSH_JOBNAME];
+
         $data = json_encode($data);
 
         $traceData = json_encode($traceData);
 
-        $url = $this->getUrl($route);
+        $url = $this->getUrl($route, $currentJobName);
 
         if(isset($pushData[self::CHOTABEAM_FLAG]) === true and $pushData[self::CHOTABEAM_FLAG] === true)
         {
