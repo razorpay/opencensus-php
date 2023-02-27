@@ -301,7 +301,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_RECON_QUEUE_NBPLUS_REQUEST                    = 'PAYMENT_RECON_QUEUE_NBPLUS_REQUEST';
     const PAYMENT_RECON_QUEUE_NBPLUS_SUCCESS                    = 'PAYMENT_RECON_QUEUE_NBPLUS_SUCCESS';
     const PAYMENT_RECON_NBPLUS_QUEUE_DELETE                     = 'PAYMENT_RECON_NBPLUS_QUEUE_DELETE';
-    const PAYMENTS_DUAL_WRITE_SYNC                              = 'PAYMENTS_DUAL_WRITE_SYNC';
+    const PAYMENTS_DUAL_WRITE_SYNC_INPUT                        = 'PAYMENTS_DUAL_WRITE_SYNC_INPUT';
+    const PAYMENTS_DUAL_WRITE_SYNC_IDS                          = 'PAYMENTS_DUAL_WRITE_SYNC_IDS';
     const PAYMENTS_DUAL_WRITE_SYNC_FAILURE                      = 'PAYMENTS_DUAL_WRITE_SYNC_FAILURE';
 
     const REFUND_QUEUE_SCROOGE_SUCCESS                          = 'REFUND_QUEUE_SCROOGE_SUCCESS';

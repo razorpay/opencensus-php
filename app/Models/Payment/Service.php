@@ -5921,7 +5921,7 @@ class Service extends Base\Service
 
         try
         {
-            $this->trace->info(TraceCode::PAYMENTS_DUAL_WRITE_SYNC, $input);
+            $this->trace->info(TraceCode::PAYMENTS_DUAL_WRITE_SYNC_INPUT, $input);
 
             (new Payment\Validator)->validateInput(__FUNCTION__, $input);
 
@@ -5947,10 +5947,12 @@ class Service extends Base\Service
             }
             else if (empty($input['bucket_interval']) === false)
             {
+                $bucketInput = $input['bucket_interval'];
+
                 $currentTime = Carbon::now()->getTimestamp();
 
-                $timeLowerLimit = $currentTime - 60 * $input['bucket_interval'];
-                $timeUpperLimit = $currentTime;
+                $timeLowerLimit = $currentTime - 60 * $bucketInput['duration'] - 60 * $bucketInput['offset'];
+                $timeUpperLimit = $currentTime - 60 * $bucketInput['offset'];
 
                 $paymentIds = $this->repo->payment->getDualWriteMismatchPayments($timeLowerLimit, $timeUpperLimit);
             }
@@ -5980,13 +5982,20 @@ class Service extends Base\Service
                 $newUpdatedAtCacheTimestamp = $timeUpperLimit;
             }
 
+            $this->trace->info(TraceCode::PAYMENTS_DUAL_WRITE_SYNC_IDS, ['payment_ids' => $paymentIds]);
+
             foreach ($paymentIds as $paymentId)
             {
-                $payment = $this->repo->payment->findOrFail($paymentId);
+                $this->mutex->acquireAndRelease($paymentId, function() use ($paymentId)
+                {
+                    $payment = $this->repo->payment->findOrFail($paymentId);
 
-                $this->repo->saveOrFail($payment);
+                    $this->repo->saveOrFail($payment);
+                },
+                20,
+                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
-                $response['synced_payment_ids'][] = $payment->getId();
+                $response['synced_payment_ids'][] = $paymentId;
             }
 
             if ($updateCacheTimestamp === true)
