@@ -26,6 +26,7 @@ use RZP\Models\BankAccount\Beneficiary;
 use RZP\Jobs\UpdateSyncedOrderPgRouter;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\SubscriptionRegistration;
 
 class Core extends Base\Core
 {
@@ -817,9 +818,21 @@ class Core extends Base\Core
             $data['bank_account_beneficiary'] = $bankAccount->getBeneficiaryName();
         }
 
-        $this->validateAndCreateEntityOffer($order,$input, $merchant);
+        $offers = $this->validateAndCreateEntityOffer($order,$input, $merchant);
+
+        if(empty($offers) === false)
+        {
+            $offerIds = array_column($offers, Entity::ID);
+            $data['offers'] = $offerIds;
+        }
 
         $this->associateProducts($order, $input);
+
+        if (($order->products !== null) and
+            (count($order->products) > 0))
+        {
+            $data['products'] = $order->products;
+        }
 
         $orderPostCreateHook = new PostCreateHook($input, $order);
 
@@ -840,7 +853,22 @@ class Core extends Base\Core
         {
             $invoice = $order->getMethod() === Payment\Method::NACH ? $order->invoice : null;
 
-            $data['token'] = $token->toArrayTokenFields($invoice);
+            $tokenVar = $token->toArrayTokenFields($invoice);
+
+            // Doing this as per the requirement for the orders api response for CAW Card methods.
+            if (($order->getMethod() === null) or
+                ($order->getMethod() === Payment\Method::CARD))
+            {
+                unset($tokenVar[SubscriptionRegistration\Entity::NOTES]);
+                unset($tokenVar[SubscriptionRegistration\Entity::METHOD]);
+                unset($tokenVar[SubscriptionRegistration\Entity::CURRENCY]);
+                unset($tokenVar[SubscriptionRegistration\Entity::AUTH_TYPE]);
+                unset($tokenVar[SubscriptionRegistration\Entity::FAILURE_REASON]);
+                unset($tokenVar[SubscriptionRegistration\Entity::RECURRING_STATUS]);
+                unset($tokenVar[SubscriptionRegistration\Entity::FIRST_PAYMENT_AMOUNT]);
+            }
+
+            $data['token'] = $tokenVar;
         }
 
         if (isset($input['convenience_fee_config']) === true)
@@ -955,6 +983,8 @@ class Core extends Base\Core
         {
             $this->saveEntityOffer($order, $offers);
         }
+
+        return $offers;
     }
 
     private function saveEntityOffer($order, $offers)
