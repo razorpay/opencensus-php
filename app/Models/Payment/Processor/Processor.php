@@ -677,20 +677,18 @@ class Processor
                 return false;
             }
 
-            //While enabling this flow make sure to move this after tokenised payment flow for testing fee bearer
-            if ($merchant->isFeeBearerCustomerOrDynamic() === true )
-            {
-                $result = $this->app->razorx->getTreatment($merchant->getId(), self::FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+            //checking it here since we don't have to call the exp. twice
+            $feeBearerResult = $this->app->razorx->getTreatment($merchant->getId(), self::FEE_BEARER_CARD_PAYMENTS_VIA_PGROUTER, $this->mode);
+            $isMerchantCustomerOrDynamicFeeBearer = $merchant->isFeeBearerCustomerOrDynamic();
 
-                return ($result === 'on');
-            }
 
             //Check for saved card token payments
             if(empty($input[Payment\Entity::TOKEN]) === false)
             {
                 $tokenId = $input[Payment\Entity::TOKEN];
                 $result = $this->app->razorx->getTreatment($merchant->getId(), self::SAVED_CARD_TOKEN_PAYMENTS_VIA_PGROUTER, $this->mode);
-                if ($result === 'on')
+
+                if ($result === 'on' && ($feeBearerResult === "on" || $isMerchantCustomerOrDynamicFeeBearer === false))
                 {
                     try {
                         // First fetch the relevant customer (global or local)
@@ -759,6 +757,11 @@ class Processor
                     }
                 }
                 return false;
+            }
+
+            if ($merchant->isFeeBearerCustomerOrDynamic() === true )
+            {
+                return ($feeBearerResult === 'on');
             }
 
             //transaction from cryptogram value
