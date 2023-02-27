@@ -75,7 +75,7 @@ trait Omnichannel
 
             $gatewayData['upi']['tr'] = $this->getTrFromIntent($request['data']['intent_url']);
 
-            $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, ['vpa' => $vpa]);
+            $terminal = $this->repo->terminal->findByGatewayAndTerminalData($gateway, ['vpa' => $vpa, 'enabled' => true]);
 
             $gatewayData['terminal'] = $terminal;
 
