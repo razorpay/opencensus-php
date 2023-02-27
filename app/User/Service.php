@@ -2,6 +2,7 @@
 
 namespace App\User;
 
+
 use Auth;
 use Trace;
 use Cookie;
@@ -16,6 +17,8 @@ use App\Http\Headers;
 use Lcobucci\JWT\Token;
 use App\MerchantDetails;
 use App\Trace\TraceCode;
+use App\Trace\SpanTrace;
+use App\Constants\Tracing;
 use Lcobucci\JWT\Signer\Key;
 use App\Admin\ApiRequestAny;
 use App\Providers\GenericUser;
@@ -172,6 +175,12 @@ class Service extends Base\Service
 
     public function traceApiTrigger(array $input, string $traceCode, string $metricConstant, string $method, bool $isLogin)
     {
+
+        $span = SpanTrace::startSpan([
+            'name' => $metricConstant
+        ]);
+
+        $scope = SpanTrace::withSpan($span);
         try
         {
             $product        = ApiUrl::isBankingOriginRequest() ? 'banking' : 'primary';
@@ -193,25 +202,28 @@ class Service extends Base\Service
                 $mediumValue    = Util::mask_phone($input[Constants::CONTACT_MOBILE]);
             }
 
-            $this->trace->info($traceCode, [
-                $medium         => $mediumValue,
-                'medium'        => $medium,
-                'product'       => $product,
-                'signup_source' => $signupSource,
-                'request_source' => $requestSource,
-            ]);
+            $traceInfo =  [
+                $medium                        => $mediumValue,
+                'medium'                       => $medium,
+                'product'                      => $product,
+                'signup_source'                => $signupSource,
+                'request_source'               => $requestSource,
+                $methodLabel                   => $method,
+                $mediumLabel                   => $medium,
+            ];
+
+            $this->trace->info($traceCode, $traceInfo);
+
+            // don't want to push mobile number to metrics
+            unset($traceInfo[$medium]);
 
             $this->metrics->count(
                 $metricConstant ,
                 EVENT_TRIGGER_COUNT,
-                [
-                    $methodLabel                   => $method,
-                    $mediumLabel                   => $medium,
-                    MetricConstants::PRODUCT       => $product,
-                    MetricConstants::SIGNUP_SOURCE => $signupSource,
-                    MetricConstants::REQUEST_SOURCE => $requestSource,
-                ]
+                $traceInfo
             );
+            $span->addAttributes($traceInfo);
+            $span->addAttribute(Tracing::SPAN_KIND ,Tracing::INTERNAL);
         }
         catch (\Throwable $e)
         {
@@ -221,6 +233,8 @@ class Service extends Base\Service
                     "exception" => $e->getMessage()
                 ]
             );
+        } finally {
+            $scope->close();
         }
     }
 

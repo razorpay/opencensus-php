@@ -11,6 +11,7 @@ class Tracing
     const SPAN_KIND              = 'span.kind';
     const SERVER                 = 'server';
     const CLIENT                 = 'client';
+    const INTERNAL               = 'internal';
     const QUERY                  = 'query';
     const ATTRIBUTES             = 'attributes';
     const HTTP                   = "http";

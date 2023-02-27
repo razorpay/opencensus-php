@@ -6,6 +6,8 @@ use Session;
 use App\Lib\Util;
 use App\Http\ApiUrl;
 use App\Trace\TraceCode;
+use App\Trace\SpanTrace;
+use App\Constants\Tracing;
 use App\RZP\PublicCollection;
 use App\Providers\GenericUser;
 use App\Merchant\GenericMerchant;
@@ -173,6 +175,13 @@ class Helper
      */
     public static function pushSignUpLoginMetrics(string $flow, array $input, array $error = null, float $duration = 0)
     {
+
+        $span = SpanTrace::startSpan([
+            'name' => $flow,
+        ]);
+
+        $scope = SpanTrace::withSpan($span);
+
         $app        = \App::getFacadeRoot();
         $metrics    = $app['metrics'];
         $trace      = $app['trace'];
@@ -240,12 +249,13 @@ class Helper
             $metricName = $traceDetails[Constants::METRIC_CONSTANT];
 
             $metricDimensions = [
-                $mediumLabel                    => $medium,
-                $methodLabel                    => $traceDetails[Constants::METHOD],
-                MetricConstants::PRODUCT        => $product,
-                MetricConstants::PLATFORM       => self::getPlatform(),
-                MetricConstants::SIGNUP_SOURCE  => $input[Constants::SIGNUP_SOURCE] ?? "NA",
-                MetricConstants::REQUEST_SOURCE => $input[Constants::REQUEST_SOURCE] ?? "NA",
+                $mediumLabel                     => $medium,
+                $methodLabel                     => $traceDetails[Constants::METHOD],
+                MetricConstants::PRODUCT         => $product,
+                MetricConstants::PLATFORM        => self::getPlatform(),
+                MetricConstants::REQUEST_SUCCESS => $traceDetails[Constants::SUCCESS],
+                MetricConstants::SIGNUP_SOURCE   => $input[Constants::SIGNUP_SOURCE] ?? "NA",
+                MetricConstants::REQUEST_SOURCE  => $input[Constants::REQUEST_SOURCE] ?? "NA",
             ];
 
             if($traceDetails[Constants::SUCCESS] === false)
@@ -267,6 +277,9 @@ class Helper
                     MetricConstants::PRODUCT    => $product,
                 ]
             );
+
+            $span->addAttributes($metricDimensions);
+            $span->addAttribute(Tracing::SPAN_KIND ,Tracing::INTERNAL);
         }
         catch(\Throwable $e)
         {
@@ -276,6 +289,8 @@ class Helper
                     "exception" => $e->getMessage()
                 ]
             );
+        } finally {
+            $scope->close();
         }
     }
 
