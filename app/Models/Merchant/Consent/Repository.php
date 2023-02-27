@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use RZP\Base\ConnectionType;
 use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Consent\Details as ConsentDetails;
 
 class Repository extends Base\Repository
@@ -116,4 +117,29 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getConsentDetailsForMerchantIdAndConsentForPartner(string $merchantId, array $validLegalDocs, string $partnerId, string $connectionType = null)
+    {
+        if ($connectionType === null)
+        {
+            $connectionType = ConnectionType::REPLICA;
+        }
+
+        return $this->newQueryWithConnection($this->getConnectionFromType($connectionType))
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->whereIn(Entity::CONSENT_FOR, $validLegalDocs)
+                    ->where(Entity::ENTITY_ID, $partnerId)
+                    ->where(Entity::ENTITY_TYPE, DEConstants::PARTNER)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->first();
+    }
+
+    public function fetchMerchantConsentDetailsForPartner(string $merchantId, string $type, string $partnerId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::CONSENT_FOR, '=', $type)
+                    ->where(Entity::ENTITY_ID, '=', $partnerId)
+                    ->where(Entity::STATUS, '<>', Constants::SUCCESS)
+                    ->first();
+    }
 }

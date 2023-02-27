@@ -75,12 +75,19 @@ class LegalDocumentProcessor implements Processor
         // RazorpayX has no concept of PromoterPan Name during signup so, we will be using merchant name instead.
         $signatory_name = $platform === 'rx' ? $this->merchant->getName() : ($this->merchant->merchantDetail->getPromoterPanName())??($this->merchant->getName());
 
+        if (isset($input[DEConstants::SIGNATORY_NAME]) === true)
+        {
+            $signatory_name = $input[DEConstants::SIGNATORY_NAME];
+        }
+
+        $ownerName = $input[DEConstants::OWNER_NAME] ?? $this->merchant->merchantDetail->getBusinessName();
+
         $ownerDetails = [
             "owner_id"             => $this->merchant->getMerchantId(),
             "ip_address"           => $input[DEConstants::IP_ADDRESS] ?? $_SERVER['HTTP_X_IP_ADDRESS'] ?? $this->app['request']->ip(),
             "acceptance_timestamp" => $input[DEConstants::DOCUMENTS_ACCEPTANCE_TIMESTAMP] ?? Carbon::now()->getTimestamp(),
             "signatory_name"       => $signatory_name,
-            "owner_name"           => $this->merchant->merchantDetail->getBusinessName(),
+            "owner_name"           => $ownerName,
             "contact_number"       => $this->merchant->merchantDetail->getContactMobile(),
             "email"                => $this->merchant->getEmail(),
         ];

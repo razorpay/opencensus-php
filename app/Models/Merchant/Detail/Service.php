@@ -3918,8 +3918,6 @@ class Service extends Base\Service
      */
     public function getDocumentsDetails($input): array
     {
-        $isTestingEnvironment = $this->app['env'] === Environment::TESTING;
-
         $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
 
         $documents_detail = [];
@@ -3931,13 +3929,30 @@ class Service extends Base\Service
             $document_detail = [
                 "type"         => $consentType,
                 "content_type" => "html",
-                "content"      => !$isTestingEnvironment ? $this->getFileContentInHtml($documentDetailInput['url']) : "Dummy Content",
+                "content"      => $this->getDocumentDetailsContent($documentDetailInput)
             ];
 
             array_push($documents_detail, $document_detail);
         }
 
         return $documents_detail;
+    }
+
+    private function getDocumentDetailsContent($input) : string
+    {
+        $isTestingEnvironment = $this->app['env'] === Environment::TESTING;
+
+        if ($isTestingEnvironment)
+        {
+            return 'Dummy Content';
+        }
+
+        if (isset($input[DEConstants::CONTENT]) === true)
+        {
+            return $input[DEConstants::CONTENT];
+        }
+
+        return $this->getFileContentInHtml($input['url']);
     }
 
     private function sendSelfServeSuccessAnalyticsEventToSegmentForAddOrUpdateBusinessWebsite(string $event)
@@ -3968,5 +3983,69 @@ class Service extends Base\Service
         unset($input[Merchant\Constants::PARTNER_ID]);
 
         return $partnerId;
+    }
+
+    public function checkIfConsentsPresentForPartner($merchantId, $validDocTypes, $partnerId)
+    {
+        $consentDetails = $this->repo->merchant_consents->getConsentDetailsForMerchantIdAndConsentForPartner($merchantId, $validDocTypes, $partnerId);
+
+        if($consentDetails === null)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function createMerchantConsent(string $merchantId, array $input, array $legalDocumentsInput, array $validDocTypes)
+    {
+        $partnerId = $input[DetailConstants::ENTITY_ID];
+
+        if ($this->checkIfConsentsPresentForPartner($merchantId, $validDocTypes, $partnerId) === true)
+        {
+            $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
+                'message' => 'Consents are already present for partner ' . $partnerId
+            ]);
+
+            return;
+        }
+        //if legal documents are not present already, store them in database
+        $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
+            'message' => 'Consents are not present for partner ' . $partnerId,
+        ]);
+
+        $responseData = $this->storeConsentAndProcess($merchantId, $input, $legalDocumentsInput);
+
+        $documentDetailsInput = $input[DEConstants::DOCUMENTS_DETAIL];
+
+        foreach ($documentDetailsInput as $documentDetailInput)
+        {
+            $type = $input[Entity::ACTIVATION_FORM_MILESTONE] ? ($input[Entity::ACTIVATION_FORM_MILESTONE] . '_' . $documentDetailInput[DEConstants::TYPE]) : $documentDetailInput[DEConstants::TYPE];
+
+            $merchantConsentDetail = $this->repo->merchant_consents->fetchMerchantConsentDetailsForPartner($merchantId, $type, $partnerId);
+
+            $updateInput = [
+                'status'     => ConsentConstant::INITIATED,
+                'updated_at' => Carbon::now()->getTimestamp(),
+                'request_id' => $responseData['id']
+            ];
+
+            (new ConsentCore())->updateConsentDetails($merchantConsentDetail, $updateInput);
+        }
+    }
+
+    public function storeConsentAndProcess(string $merchantId, array $input, array $legalDocumentsInput) : array
+    {
+        $this->storeConsents($merchantId, $input);
+
+        $documents_detail = $this->getDocumentsDetails($input);
+
+        $legalDocumentsInput[DEConstants::DOCUMENTS_DETAIL] = $documents_detail;
+
+        $processor = (new ProcessorFactory())->getLegalDocumentProcessor();
+
+        $response = $processor->processLegalDocuments($legalDocumentsInput);
+
+        return $response->getResponseData();
     }
 }

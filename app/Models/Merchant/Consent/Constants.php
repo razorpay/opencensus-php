@@ -80,7 +80,8 @@ class Constants
                                  'PartnerActivation_Privacy Policy' . ',' .
                                  'Oauth' . '_' . MeConstants::TERMS . ',' .
                                  'X_Privacy Policy' . ',' .
-                                 'X_Terms of Use';
+                                 'X_Terms of Use' . ',' .
+                                 self::PARTNER_AUTH_TERMS;
 
     const VALID_LEGAL_DOC = [
         'L2_Terms and Conditions'                      => [
@@ -138,6 +139,12 @@ class Constants
         'X_Terms of Use'                               => [
             self::MANDATORY => true,
             self::PLATFORM  => self::RX
-        ]
+        ],
+        self::PARTNER_AUTH_TERMS                       => [
+            self::MANDATORY => true,
+            self::PLATFORM  => self::PG
+        ],
     ];
+
+    const PARTNER_AUTH_TERMS = 'PartnerAuth_Terms & Conditions';
 }

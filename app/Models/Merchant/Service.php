@@ -11875,4 +11875,16 @@ class Service extends Base\Service
 
         return $this->core()->fetchCapitalApplicationsForSubmerchants($partner, $input);
     }
+
+    public function saveMerchantAuthorizationToPartner(string $merchantId, array $input)
+    {
+        return $this->core()->saveMerchantAuthorizationToPartner($merchantId, $input);
+    }
+
+    public function getMerchantAuthorizationForPartner(string $merchantId, array $input)
+    {
+        $partnerId = $input[Merchant\Constants::PARTNER_ID];
+
+        return $this->core()->getMerchantAuthorizationForPartner($merchantId, $partnerId);
+    }
 }

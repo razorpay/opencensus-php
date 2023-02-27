@@ -230,6 +230,13 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::PARTNER_METADATA);
     }
 
+    public function getBrandName(): string
+    {
+        $partnerMetaData = $this->getPartnerMetadata();
+
+        return (empty($partnerMetaData) ? $this->getDefaultPartnerBrandName() : $partnerMetaData[Constants::BRAND_NAME]);
+    }
+
     // --------------------- SETTERS ---------------------
     public function setEntityType($entityType)
     {

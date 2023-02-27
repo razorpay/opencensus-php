@@ -120,6 +120,7 @@ use RZP\Models\Merchant\MerchantApplications\Core as MerchantApplicationsCore;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Partner\Config\Core as PartnerConfigCore;
+use RZP\Models\Merchant\Consent\Constants as MerchantConsentConstants;
 use RZP\Trace\Tracer;
 use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Typeform\Core as TypeformCore;
@@ -9308,5 +9309,77 @@ class Core extends Base\Core
                         $merchantIds,
                         $input[Constants::PRODUCT_ID]
                     );
+    }
+
+    public function getMerchantAuthorizationForPartner(string $merchantId, string $partnerId) : array
+    {
+        $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+        $partner->getValidator()->validateIsAggregatorPartner($partner);
+
+        $partnerAccess = $this->isMerchantManagedByPartner($subMerchant->getId(), $partnerId);
+
+        return [
+            Constants::PARTNER_ACCESS => $partnerAccess,
+            Constants::PARTNER_NAME   => $partner->merchantDetail->getBusinessName()
+        ];
+    }
+
+    public function saveMerchantAuthorizationToPartner(string $merchantId, array $input) : array
+    {
+        $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $partnerId = $input[Merchant\Constants::PARTNER_ID];
+
+        $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+        $partner->getValidator()->validateIsAggregatorPartner($partner);
+
+        $partnerAccess = $this->isMerchantManagedByPartner($subMerchant->getId(), $partnerId);
+
+        $accessMap = $this->transaction(function() use ($subMerchant, $partner, $partnerAccess)
+        {
+            $this->updateMerchantConsentForPartner($subMerchant, $partner);
+
+            if ($partnerAccess === false)
+            {
+                return $this->createPartnerSubmerchantAccessMap($partner, $subMerchant);
+            }
+            return [];
+        });
+
+        return [
+            Constants::PARTNER_ACCESS => ($partnerAccess || (!empty($accessMap)))
+        ];
+    }
+
+    private function updateMerchantConsentForPartner(Entity $merchant, Entity $partner)
+    {
+        $partnerConfig = (new PartnerConfig\Core())->fetchPartnersManagedApplicationConfig($partner);
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        $consentDetails = [
+            DEConstants::DOCUMENTS_DETAIL => [
+                [
+                    DEConstants::TYPE    => MerchantConsentConstants::PARTNER_AUTH_TERMS,
+                    DEConstants::URL     => Constants::RAZORPAY_PARTNER_AUTH_TERMS,
+                    DEConstants::CONTENT => str_replace('{partnerName}', $partnerConfig->getBrandName(), DEConstants::PARTNER_AUTH_CONSENT_TEMPLATE),
+                ]
+            ],
+            DEConstants::IP_ADDRESS       => $this->app['request']->ip(),
+            Consent\Entity::ENTITY_ID     => $partner->getId(),
+            Consent\Entity::ENTITY_TYPE   => DEConstants::PARTNER,
+        ];
+
+        $legalDocumentsInput = [
+            DEConstants::IP_ADDRESS      => $this->app['request']->ip(),
+            DEConstants::OWNER_NAME      => $merchantDetail->getBusinessName() ?? 'NA',
+            DEConstants::SIGNATORY_NAME  => $merchantDetail->getPromoterPanName() ?? 'NA'
+        ];
+
+        (new Merchant\Detail\Service())->createMerchantConsent($merchant->getId(), $consentDetails, $legalDocumentsInput, [MerchantConsentConstants::PARTNER_AUTH_TERMS]);
     }
 }

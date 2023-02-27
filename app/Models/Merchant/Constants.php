@@ -206,6 +206,8 @@ final class Constants
     const RAZORPAY_PARTNERSHIP_TERMS             = 'https://razorpay.com/s/terms/partners/';
     const RAZORPAY_PARTNERSHIP_OAUTH_TERMS       = 'https://razorpay.com/terms/razorpayx/partnership/';
 
+    const RAZORPAY_PARTNER_AUTH_TERMS            = 'https://razorpay.com/terms/razorpayx/partnership/';
+
     const INCREASE_TRANSACTION_LIMIT_POST_WORKFLOW_APPROVE          = 'RZP\Http\Controllers\MerchantController@postTransactionLimitWorkflowApprove';
 
     const TRANSACTION_LIMIT_INCREASE_REASON_COMMENT                 = 'Transaction Limit Increase Reason: %s';
@@ -1877,4 +1879,7 @@ final class Constants
     const PHANTOM_ONBOARDING              = 'isPhantomOnboarding';
 
     const PHANTOM_SIGNUP                  = 'phantom_signup';
+
+    const PARTNER_ACCESS  = 'partner_access';
+    const PARTNER_NAME    = 'partner_name';
 }

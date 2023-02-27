@@ -3938,4 +3938,21 @@ class MerchantController extends Controller
         return $this->service()->getCapitalApplicationsForSubmerchants($input);
     }
 
+    public function saveMerchantAuthorizationToPartner($merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->saveMerchantAuthorizationToPartner($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantAuthorizationForPartner($merchantId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getMerchantAuthorizationForPartner($merchantId, $input);
+
+        return ApiResponse::json($response);
+    }
 }

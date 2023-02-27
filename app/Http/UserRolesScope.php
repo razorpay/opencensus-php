@@ -872,6 +872,8 @@ class UserRolesScope
             'partner_activation_details'                           => [Role::OWNER, Role::ADMIN],
             'partner_activation_save'                              => [Role::OWNER, Role::ADMIN],
             'partner_referral_fetch'                               => [Role::OWNER, Role::ADMIN],
+            'merchant_authorize_partner_save'                      => [Role::OWNER, Role::ADMIN],
+            'merchant_authorize_partner_status'                    => [Role::OWNER, Role::ADMIN],
             'payment_acknowledge'                                  => [Role::OWNER, Role::ADMIN],
             'payment_create_aeps'                                  => [Role::OWNER, Role::ADMIN],
             'payment_create_nach_register'                         => [Role::OWNER, Role::ADMIN],
