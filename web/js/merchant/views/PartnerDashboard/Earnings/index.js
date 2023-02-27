@@ -38,6 +38,8 @@ class EarningsContainer extends Component {
 
   render() {
     const { commissionBalance } = this.state;
+    const { sessionUser } = this.props;
+    const currency = sessionUser.merchant.currency;
 
     return (
       <div className="earnings-page">
@@ -69,7 +71,7 @@ class EarningsContainer extends Component {
             >
               <div className="partner-dashboard-header-action">
                 <span className="settlement-balance-amount">
-                  Commission Balance: <Amount value={commissionBalance} currency="INR" />
+                  Commission Balance: <Amount value={commissionBalance} currency={currency} />
                 </span>
               </div>
             </ShowWhen>

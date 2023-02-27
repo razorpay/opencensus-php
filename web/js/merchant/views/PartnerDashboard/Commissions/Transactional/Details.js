@@ -15,6 +15,8 @@ import { isPresent } from 'common/utils/rzp-utils';
 @connect(
   (state) => ({
     ...state.commission,
+    org: state.session.org,
+    user: state.session.user,
   }),
   { fetchCommission },
 )
@@ -30,7 +32,7 @@ export default class CommissionEntityContainer extends Component {
   }
 
   render() {
-    const { loading: isLoading, entity, error, renderDetails } = this.props;
+    const { loading: isLoading, entity, error, renderDetails, org, user } = this.props;
     const source = entity.source || {};
     return (
       <div class="content-wrapper content-sm txn-details Commission--Detail">
@@ -47,7 +49,7 @@ export default class CommissionEntityContainer extends Component {
                 <div class="panel-body">
                   <div class="list-group details-row-container">
                     {/* earnings breakup */}
-                    {renderDetails(entity)}
+                    {renderDetails({ ...entity, orgDetails: org, userDetails: user })}
 
                     {entity.source_type === 'payment' && (
                       <>
@@ -85,10 +87,12 @@ export default class CommissionEntityContainer extends Component {
 }
 
 export function CommissionEarningBreakUp(props) {
+  const businessName = props.org?.business_name || 'Razorpay';
+  const isRzpOrg = props?.user?.isOrgRZP;
   return (
     <>
       <div class="sub-heading">
-        <strong>Earnings from Razorpay</strong>
+        <strong>Earnings from {businessName}</strong>
       </div>
       <div class="pair-group-item vertical">
         <div class="pair-value">
@@ -109,7 +113,7 @@ export function CommissionEarningBreakUp(props) {
               <div class="EarningsBreakup--Components">
                 <Amount value={props.gst} currency={props.currency} />
               </div>
-              <small>GST</small>
+              <small>{isRzpOrg ? 'GST' : 'Tax'}</small>
             </>
           </DualBreakup>
         </div>

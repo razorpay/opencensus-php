@@ -19,6 +19,7 @@ import { fetchCommissionInvoiceDetails } from 'merchant/reducers/commissionInvoi
 @connect(
   (state) => ({
     ...state.commissionInvoice,
+    user: state.session.user,
   }),
   {
     showNotification,
@@ -55,7 +56,9 @@ class InvoiceDetails extends Component {
   };
 
   renderPanelBody = () => {
-    const { commissionInvoice, error } = this.props;
+    const { commissionInvoice, error, user } = this.props;
+    const currency = user.merchant.currency;
+    const isOrgRZP = user.isOrgRZP;
 
     if (error) {
       return (
@@ -78,7 +81,7 @@ class InvoiceDetails extends Component {
             label="Amount"
             value={() => (
               <div>
-                <Amount value={commissionInvoice.gross_amount} currency="INR" />
+                <Amount value={commissionInvoice.gross_amount} currency={currency} />
               </div>
             )}
           />
@@ -107,7 +110,7 @@ class InvoiceDetails extends Component {
             )}
           />
           <EntityDetailRow label="Amount Breakup">
-            {renderAmountBreakup(commissionInvoice)}
+            {renderAmountBreakup(commissionInvoice, currency, isOrgRZP)}
           </EntityDetailRow>
         </div>
       </div>
@@ -164,21 +167,22 @@ class InvoiceDetails extends Component {
   }
 }
 
-function renderAmountBreakup(commissionInvoice) {
+function renderAmountBreakup(commissionInvoice, currency, isOrgRZP) {
   const lineItem = commissionInvoice.line_items[0];
   return (
     <Definition>
-      <Amount value={commissionInvoice.gross_amount} currency="INR" />
+      <Amount value={commissionInvoice.gross_amount} currency={currency} />
       <div>
-        Gross Amount - <Amount value={lineItem.taxable_amount} currency="INR" />
+        Gross Amount - <Amount value={lineItem.taxable_amount} currency={currency} />
       </div>
       {lineItem.taxes.map((tax) => (
         <div key={tax.name}>
-          {tax.name} - <Amount value={tax.tax_amount} currency="INR" />
+          {tax.name} - <Amount value={tax.tax_amount} currency={currency} />
         </div>
       ))}
       <div>
-        Total GST - <Amount value={lineItem.tax_amount} currency="INR" />
+        Total {isOrgRZP ? 'GST' : 'Tax'} -{' '}
+        <Amount value={lineItem.tax_amount} currency={currency} />
       </div>
     </Definition>
   );

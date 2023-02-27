@@ -15,57 +15,67 @@ import Alert from 'common/ui/Forms/Alert';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import Banner from 'common/ui/Banner';
 import ProcessInvoice from './ProcessInvoice';
-import store from 'merchant/store';
 
 import { fetchCommissionInvoices } from 'merchant/reducers/commissionInvoices/list';
 import { getCurrentFinancialYear } from 'common/utils/rzp-utils';
 
-const Columns = {
-  invoiceId: {
-    title: 'Invoice ID',
-    value: (item) => <Link to={`/partners/earnings/invoices/${item.id}`}>{item.id}</Link>,
-  },
+function generateColumns(userDetails) {
+  const currency = userDetails.merchant.currency;
+  return {
+    invoiceId: {
+      title: 'Invoice ID',
+      value: (item) => <Link to={`/partners/earnings/invoices/${item.id}`}>{item.id}</Link>,
+    },
 
-  createdDate: {
-    title: 'Created Date',
-    value: (item) => <Time value={item.created_at} />,
-  },
+    createdDate: {
+      title: 'Created Date',
+      value: (item) => <Time value={item.created_at} />,
+    },
 
-  status: {
-    title: 'Status',
-    value: (item) => <CommissionInvoiceStatusLabel status={item.status} />,
-  },
+    status: {
+      title: 'Status',
+      value: (item) => <CommissionInvoiceStatusLabel status={item.status} />,
+    },
 
-  amount: {
-    title: (
-      <>
-        <span>Amount &nbsp;</span>
-        <small className="help-content">
-          <i class="i i-info-circle" />
-          <Popover align="right" theme="dark">
-            <PopoverBody>
-              <div>Amount will be paid after TDS has been deducted.</div>
-            </PopoverBody>
-          </Popover>
-        </small>
-      </>
-    ),
-    value: (item) => <Amount value={item.gross_amount} currency="INR" />,
-  },
+    amount: {
+      title: (
+        <>
+          <span>Amount &nbsp;</span>
+          <small className="help-content">
+            <i class="i i-info-circle" />
+            <Popover align="right" theme="dark">
+              <PopoverBody>
+                <div>Amount will be paid after TDS has been deducted.</div>
+              </PopoverBody>
+            </Popover>
+          </small>
+        </>
+      ),
+      value: (item) => <Amount value={item.gross_amount} currency={currency} />,
+    },
 
-  ProcessInvoice: {
-    title: '',
-    value: (item) =>
-      item.status === 'issued' && <ProcessInvoice commissionInvoice={item} className="btn-xs" />,
-  },
+    ProcessInvoice: {
+      title: '',
+      value: (item) =>
+        item.status === 'issued' && <ProcessInvoice commissionInvoice={item} className="btn-xs" />,
+    },
+  };
+}
+
+const MONTHLY_COMMISSION_CURRENCY_NAME = {
+  rzp: 'Rupee',
+  curlec: 'MYR',
 };
 
-@connect((state) => ({ ...state.commissionInvoices }), {
-  fetchCommissionInvoices,
-})
+@connect(
+  (state) => ({ ...state.commissionInvoices, user: state.session.user, org: state.session.org }),
+  {
+    fetchCommissionInvoices,
+  },
+)
 class CommissionInvoicesList extends ListContainer {
   updateParams = (params) => {
-    const user = store.getState().session.user;
+    const { user } = this.props;
     const { isShowInvoiceCurrentFY } = user;
     const newParams = { ...params };
 
@@ -89,14 +99,17 @@ class CommissionInvoicesList extends ListContainer {
 
   render() {
     const status = this.state.status;
-    const { loading, commissionInvoices } = this.props;
-
+    const { loading, commissionInvoices, user, org } = this.props;
+    const Columns = generateColumns(user);
+    const customCode = org?.custom_code || 'rzp';
+    const currencyName = MONTHLY_COMMISSION_CURRENCY_NAME[customCode];
     return (
       <>
         <div className="TestModeBanner">
           <Banner>
             <i className="i i-info-outline" />
-            &nbsp; Invoices are generated only if the monthly commission is greater than 1 Rupee
+            &nbsp; Invoices are generated only if the monthly commission is greater than 1{' '}
+            {currencyName}
           </Banner>
         </div>
         <div class="content-wrapper">
