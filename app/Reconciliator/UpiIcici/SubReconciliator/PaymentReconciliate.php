@@ -135,102 +135,118 @@ class PaymentReconciliate extends UpiPaymentServiceReconciliate
             return null;
         }
 
-        // Fetch payment ID from bharat_qr
-        $amount = (int)round(($row[self::AMOUNT] * 100));
+        $merchantTranId = "";
 
-        $qrCodePayment = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount($referenceNumber, $amount);
-
-        // Fetch payment ID from qr_payment
-        if ($qrCodePayment === null)
+        if (isset($row[self::MERCHANT_TRAN_ID]) === true)
         {
-            $qrCodePayment = $this->repo
-                                  ->qr_payment
-                                  ->findByProviderReferenceIdAndGatewayAndAmount($referenceNumber,
-                                                                               Gateway::UPI_ICICI,
-                                                                               $amount);
-
-            if((array_key_exists(self::REMARK, $row) === true) and
-               ($qrCodePayment !== null) and
-               ($qrCodePayment->getNotes() === null))
-            {
-                $qrPayment = $this->repo->qr_payment->findOrFail($qrCodePayment->getId());
-
-                $qrPayment->setNotes(substr($row[self::REMARK],0,Entity::MAX_NOTES_LENGTH));
-
-                $this->repo->qr_payment->saveOrFail($qrPayment);
-            }
+            $merchantTranId = trim($row[self::MERCHANT_TRAN_ID]);
         }
 
-        if ($qrCodePayment != null)
-        {
-            return $qrCodePayment->payment->getId();
-        }
-        else
-        {
-            // Generate callback data from recon row if possible
-            $callbackData = $this->generateCallbackData($row);
+        // Mutex key is combination of merchantTranId and RRN, since RRN is alone not unique
+        $mutexResource = 'bharatQr_' . $merchantTranId . '_' . $referenceNumber;
 
-            if ($callbackData === null)
+        $bqrPaymentId = $this->app['api.mutex']->acquireAndRelease(
+            $mutexResource,
+            function() use ($row, $referenceNumber)
             {
-                return null;
-            }
+                $amount = (int)round(($row[self::AMOUNT] * 100));
 
-            $paymentId = null;
+                $qrCodePayment = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount($referenceNumber, $amount);
 
-            $this->trace->info(
-                TraceCode::RECON_INFO,
-                [
-                    'info_code' => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
-                    'rrn'       => $referenceNumber,
-                    'amount'    => $amount,
-                    'gateway'   => $this->gateway,
-                    'batch_id'  => $this->batchId,
-                ]
-            );
+                // Fetch payment ID from qr_payment
+                if ($qrCodePayment === null)
+                {
+                    $qrCodePayment = $this->repo
+                                          ->qr_payment
+                                          ->findByProviderReferenceIdAndGatewayAndAmount($referenceNumber,
+                                    Gateway::UPI_ICICI,
+                                            $amount);
 
-            // For ICICI the input is a string, usually it's encrypted string but the gateway can handle plaintext
-            $response = (new BharatQr\Service)->processPayment(json_encode($callbackData), 'upi_icici');
+                    if ((array_key_exists(self::REMARK, $row) === true) and
+                        ($qrCodePayment !== null) and
+                        ($qrCodePayment->getNotes() === null))
+                    {
+                        $qrPayment = $this->repo->qr_payment->findOrFail($qrCodePayment->getId());
 
-            // Fetch and raise alert if payment still not created
-            $qrCodePayment = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount($referenceNumber, $amount);
+                        $qrPayment->setNotes(substr($row[self::REMARK], 0, Entity::MAX_NOTES_LENGTH));
 
-            if ($qrCodePayment === null)
-            {
-                $qrCodePayment = $this->repo->qr_payment->findByProviderReferenceIdAndGatewayAndAmount($referenceNumber, Gateway::UPI_ICICI, $amount);
-            }
+                        $this->repo->qr_payment->saveOrFail($qrPayment);
+                    }
+                }
 
-            if ($qrCodePayment === null)
-            {
-                $this->trace->info(
-                    TraceCode::RECON_INFO_ALERT,
-                    [
-                        'infoCode'      => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
-                        'rrn'           => $referenceNumber,
-                        'amount'        => $amount,
-                        'response'      => $response,
-                        'gateway'       => $this->gateway,
-                        'batch_id'      => $this->batchId,
-                    ]);
+                if ($qrCodePayment != null)
+                {
+                    return $qrCodePayment->payment->getId();
+                }
+                else
+                {
+                    // Generate callback data from recon row if possible
+                    $callbackData = $this->generateCallbackData($row);
 
-                return null;
-            }
-            else
-            {
-                $paymentId = $qrCodePayment->payment->getId();
+                    if ($callbackData === null)
+                    {
+                        return null;
+                    }
 
-                $this->trace->info(
-                    TraceCode::RECON_INFO,
-                    [
-                        'infoCode'      => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED,
-                        'payment_id'    => $paymentId,
-                        'rrn'           => $referenceNumber,
-                        'gateway'       => $this->gateway,
-                        'batch_id'      => $this->batchId,
-                    ]);
-            }
+                    $paymentId = null;
 
-            return $paymentId;
-        }
+                    $this->trace->info(
+                        TraceCode::RECON_INFO,
+                        [
+                            'info_code' => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATE_INITIATED,
+                            'rrn' => $referenceNumber,
+                            'amount' => $amount,
+                            'gateway' => $this->gateway,
+                            'batch_id' => $this->batchId,
+                        ]
+                    );
+
+                    // For ICICI the input is a string, usually it's encrypted string but the gateway can handle plaintext
+                    $response = (new BharatQr\Service)->processPayment(json_encode($callbackData), 'upi_icici');
+
+                    // Fetch and raise alert if payment still not created
+                    $qrCodePayment = $this->repo->bharat_qr->findByProviderReferenceIdAndAmount($referenceNumber, $amount);
+
+                    if ($qrCodePayment === null)
+                    {
+                        $qrCodePayment = $this->repo->qr_payment->findByProviderReferenceIdAndGatewayAndAmount($referenceNumber, Gateway::UPI_ICICI, $amount);
+                    }
+
+                    if ($qrCodePayment === null)
+                    {
+                        $this->trace->info(
+                            TraceCode::RECON_INFO_ALERT,
+                            [
+                                'infoCode' => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATION_FAILED,
+                                'rrn' => $referenceNumber,
+                                'amount' => $amount,
+                                'response' => $response,
+                                'gateway' => $this->gateway,
+                                'batch_id' => $this->batchId,
+                            ]);
+
+                        return null;
+                    }
+                    else
+                    {
+                        $paymentId = $qrCodePayment->payment->getId();
+
+                        $this->trace->info(
+                            TraceCode::RECON_INFO,
+                            [
+                                'infoCode' => Base\InfoCode::RECON_UNEXPECTED_PAYMENT_CREATED,
+                                'payment_id' => $paymentId,
+                                'rrn' => $referenceNumber,
+                                'gateway' => $this->gateway,
+                                'batch_id' => $this->batchId,
+                            ]);
+                    }
+
+                    return $paymentId;
+                }
+            });
+
+        return $bqrPaymentId;
     }
 
     protected function generateCallbackData(array $row)
