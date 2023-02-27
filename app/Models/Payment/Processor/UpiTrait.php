@@ -321,11 +321,10 @@ trait UpiTrait
         }
         catch (\Exception $ex)
         {
-            $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_ERROR,
-                [
-                    'payment'       => $payment->toArray(),
-                    'stack_trace'   => $ex->getTrace(),
-                ]
+            $this->trace->traceException(
+                $ex,
+                Trace::INFO,
+                TraceCode::UPI_PAYMENT_SERVICE_ERROR
             );
 
             throw $ex;
