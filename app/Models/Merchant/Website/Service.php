@@ -803,19 +803,34 @@ class Service extends Base\Service
         }
     }
 
-    public function validateMerchantActivation($merchantDetails, $websiteDetail): bool
+    public function validateMerchantActivation($merchantDetails, $websiteDetail)
     {
         try
         {
+            // Merchants who provide website can later on opt for KLA - and hence their url will be present and
+            // has key access will be false , but on admin dashboard the Keyless Auth - will be green tick i.e true
 
             $urls = $this->getAllMerchantWebsites($merchantDetails);
 
-            $gracePeriodCheck = false;
+            $hasKeyAccess = $merchantDetails->merchant->hasKeyaccess();
 
             $this->trace->info(TraceCode::WEBSITE_ADHERENCE_INFO, [
-                'URLS' => $urls,
-                'WebsiteDetails' => $websiteDetail
+                'URLS'           => $urls,
+                'WebsiteDetails' => $websiteDetail,
+                'KeyAccess'      => $hasKeyAccess
             ]);
+
+            if (empty($urls) === true)
+            {
+                return false;
+            }
+
+            if ($hasKeyAccess === false)
+            {
+                return false;
+            }
+
+            $gracePeriodCheck = false;
 
             if(empty($websiteDetail) === true and ($this->auth->isAdminAuth() === true))
             {

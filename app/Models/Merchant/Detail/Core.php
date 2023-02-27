@@ -3176,7 +3176,9 @@ class Core extends Base\Core
 
         if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED)
         {
+            // to check website validations for the merchant while fully activating the merchant
             (new Merchant\Website\Service())->validateMerchantActivation($merchantDetails, $websiteDetail);
+
         }
 
         if ($input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION)
