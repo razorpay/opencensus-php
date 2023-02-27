@@ -3745,7 +3745,7 @@ trait Authorize
         // We need to disable fraud checks for redirection payments before redirection hence this check. This will
         // be later handled within payment service
         if (($this->shouldRedirect($payment) === true) or
-            ($this->shouldRedirectV2($payment, []) === true) or
+            ($this->shouldRedirectV2($payment, ["fraud_check" => true]) === true) or
             ($this->shouldRedirectDCC($payment) === true) or
             ($this->shouldRedirectRaasInternational($payment) === true) or
             ($this->shouldRedirectForAddressCollection($payment) === true))
@@ -10624,7 +10624,8 @@ trait Authorize
 
         // In case of 3ds/non-headless card payments we return redirect response for /payments/create/ajax
         if(($payment->isCard() === true) and ($this->isAjaxRoute === true) and (($this->canRunHeadlessOtpFlow($payment, $gatewayInput) === false))
-         and ($this->merchant->Is3dsDetailsRequiredEnabled() === true)){
+            and ($this->merchant->Is3dsDetailsRequiredEnabled() === true) and (isset($gatewayInput["fraud_check"]) === false))
+        {
             return true;
         }
 
