@@ -197,6 +197,14 @@ class Validator extends Base\Validator
         Entity::CONFIG                  => 'sometimes|array',
     ];
 
+    protected static $paymentPageCreateRules = [
+        Entity::TYPE                    => 'required|in:payment_page',
+        Entity::NAME                    => 'filled|string|max:255',
+        Entity::FILE                    => 'required_without:file_id|file|max:60720' . self::DEFAULT_MIME_RULE,
+        Entity::FILE_ID                 => 'required_without:file|public_id',
+        Entity::CONFIG                  => 'required|array',
+    ];
+
     protected static $partnerReferralFetchCreateRules = [
         Entity::TYPE                    => 'required|in:partner_referral_fetch',
         Entity::NAME                    => 'filled|string|max:255',
@@ -327,6 +335,12 @@ class Validator extends Base\Validator
         Entity::TYPE        => 'required|in:nach_migration',
         Entity::CONFIG      => 'required|array',
         Entity::SCHEDULE    => 'sometimes|numeric',
+    ];
+
+    protected static $paymentPageValidateRules = [
+        Entity::FILE        => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,    // in KB
+        Entity::TYPE        => 'required|in:payment_page',
+        Entity::CONFIG      => 'required|array',
     ];
 
     protected static $merchantOnboardingCreateRules = [
@@ -1390,6 +1404,12 @@ class Validator extends Base\Validator
 
         // Header validations
         Header::validate($rules['header_rule'], array_keys(current($entries)));
+
+        //adding validation for type payment_page
+        if ($rules['header_rule'] === TYPE::PAYMENT_PAGE)
+        {
+            Header::validatePaymentPageHeaders(array_keys(current($entries)), $params['config']);
+        }
 
         //
         // Formatted notes can be present in entries. Addition to above validation (where existence of notes header is

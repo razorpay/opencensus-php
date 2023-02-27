@@ -71,4 +71,16 @@ class Repository extends Base\Repository
 
         return $serialized;
     }
+
+
+    public function fetchByPaymentLinkIdAndMerchant(
+        string $paymentLinkId,
+        string $merchantId)
+    {
+        $query = $this->newQuery()
+            ->where(Entity::PAYMENT_LINK_ID, $paymentLinkId)
+            ->where(Entity::MERCHANT_ID, $merchantId);
+
+        return $query->get();
+    }
 }

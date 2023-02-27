@@ -1803,6 +1803,11 @@ class Base extends BaseModel\Core
 
     protected function updateBatchHeadersIfApplicable(array &$headers, array $entries)
     {
+        if ($this->batch->getType() === BatchType::PAYMENT_PAGE)
+        {
+            $headers = array_keys(current($entries));
+        }
+
         return;
     }
 

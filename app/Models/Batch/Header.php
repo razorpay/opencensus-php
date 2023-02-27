@@ -5,6 +5,10 @@ namespace RZP\Models\Batch;
 use RZP\Error\ErrorCode;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Settings\Repository as Settings;
+use RZP\Models\PaymentLink\PaymentPageItem as PPI;
+use RZP\Models\PaymentLink\Repository as PaymentLink;
+use RZP\Models\PaymentLink as PL;
 use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -1341,6 +1345,7 @@ class Header
     const TOTAL_CAPTURES                    = 'total_captures';
     const CAPTURE_SETTING_NAME              = 'Name';
     const CAPTURE_SETTING_CONFIG            = 'Config';
+
 
     /**
      * Header to be used in Upload MIQ flow to create merchant.
@@ -5296,6 +5301,12 @@ class Header
             $valid = self::areTwoHeadersSame($expectedHeaders, $actualHeaders);
         }
 
+        if (($valid === false) and ($type === Type::PAYMENT_PAGE))
+        {
+            return;
+        }
+
+
         if ($valid === false)
         {
             throw new BadRequestException(
@@ -5305,6 +5316,59 @@ class Header
                     'expected_headers' => $expectedHeaders,
                     'input_headers'    => $actualHeaders,
                 ]);
+        }
+    }
+
+    public static function validatePaymentPageHeaders(array $actualHeaders, array $config)
+    {
+        $pl_id = PL\Entity::silentlyStripSign($config['payment_page_id']);
+
+        $udf_schema = (new Settings())->getSettings($pl_id, 'payment_link', 'udf_schema');
+
+        $udf_schema = json_decode($udf_schema['value'], true);
+
+        foreach ($udf_schema as $udf)
+        {
+            if ($udf['required'] === true)
+            {
+                $title = $udf['title'];
+
+                if (!in_array($title, $actualHeaders,'true'))
+                {
+
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
+                        null,
+                        [
+                            'expected_header' => $title,
+                            'input_headers'    => $actualHeaders,
+                        ]);
+                }
+            }
+        }
+
+        $paymentLink = (new PaymentLink())->find($pl_id);
+
+        $payment_page_items = (new PPI\Repository())->fetchByPaymentLinkIdAndMerchant($paymentLink->getId(), $paymentLink->getMerchantId());
+
+        foreach ($payment_page_items as $paymentPageItem) {
+
+            if($paymentPageItem['mandatory'] === true)
+            {
+                $item = $paymentPageItem->item;
+
+                if (!in_array($item['name'], $actualHeaders,'true'))
+                {
+
+                    throw new BadRequestException(
+                        ErrorCode::BAD_REQUEST_BATCH_FILE_INVALID_HEADERS,
+                        null,
+                        [
+                            'expected_header' => $item['name'],
+                            'input_headers'    => $actualHeaders,
+                        ]);
+                }
+            }
         }
     }
 

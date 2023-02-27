@@ -258,6 +258,8 @@ class Type
 
     const COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS = 'collect_local_consents_to_create_tokens';
 
+    const PAYMENT_PAGE = 'payment_page';
+
     public static $disabledTypes = [
         //
         // Removing till auth for this is figured out. Other parts of the code aren't
@@ -337,6 +339,7 @@ class Type
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
         self::EZETAP_SETTLEMENT,
         self::MERCHANT_UPLOAD_MIQ,
+        self::PAYMENT_PAGE,
     ];
 
     /**
@@ -433,6 +436,7 @@ class Type
         self::HITACHI_FULCRUM_ONBOARD,
         self::VAULT_MIGRATE_TOKEN_NS,
         self::MERCHANT_UPLOAD_MIQ,
+        self::PAYMENT_PAGE,
     ];
 
     /**
@@ -556,6 +560,7 @@ class Type
         self::VAULT_MIGRATE_TOKEN_NS,
         self::MERCHANT_UPLOAD_MIQ,
         self::HITACHI_FULCRUM_ONBOARD,
+        self::PAYMENT_PAGE,
     ];
 
     /**
@@ -642,6 +647,7 @@ class Type
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
         self::MERCHANT_UPLOAD_MIQ,
         self::HITACHI_FULCRUM_ONBOARD,
+        self::PAYMENT_PAGE,
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
