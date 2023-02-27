@@ -10,6 +10,8 @@ use Request;
 use Carbon\Carbon;
 use App\Http\ApiUrl;
 use Razorpay\Api\Errors\ErrorCode;
+use Razorpay\Api\Errors\ServerError;
+use App\Admin\Service as AdminService;
 use Razorpay\Api\Errors\BadRequestError;
 
 use App\Base;
@@ -708,6 +710,71 @@ class Service extends Base\Service
         ]);
 
         return $featureNames;
+    }
+
+    /**
+     * It returns data
+     * @return bool
+     * @throws ServerError
+     */
+    public function getShowTncPopup() : bool
+    {
+        if((new AdminService())->isAdminLoggedIn() === true)
+        {
+           return false;
+        }
+
+        $startTime = microtime(true) * 1000;
+
+        $this->trace->info(TraceCode::GET_TNC_POPUP_INFO, [
+            'action'                => 'FetchStarted',
+            'start_time'            => $startTime
+        ]);
+
+        $domain = \Request::server('SERVER_NAME');
+        list($error, $org) = (new AdminService)->getOrg($domain);
+
+        if(empty($error) === false)
+        {
+            throw new ServerError(
+                $error[0],
+                ErrorCode::SERVER_ERROR,
+                500
+            );
+        }
+
+        //show_tnc_popup will be false for rzp org
+        $customCode = $org['custom_code']?? null;
+
+        if($customCode === 'rzp')
+        {
+            return false;
+        }
+
+        $request = new ApiRequestAny(['client_type' => 'merchant']);
+
+        list($error, $data) = $request->send("merchant/tnc_popup_status", 'GET');
+
+        if(empty($error) === false)
+        {
+            throw new ServerError(
+                $error[0],
+                ErrorCode::SERVER_ERROR,
+                500
+            );
+        }
+
+        $endTime  = microtime(true) * 1000;
+        $duration = round($endTime - $startTime);
+
+        $this->trace->info(TraceCode::GET_TNC_POPUP_INFO, [
+            'action'              => 'FetchEnded',
+            'end_time'            => $endTime,
+            'duration'            => $duration,
+            'data'                => $data,
+        ]);
+
+        return $data['show_tnc_popup'];
     }
 
     public function getMerchantActiveCampaigns(): array

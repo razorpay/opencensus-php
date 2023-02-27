@@ -86,6 +86,7 @@ class Kernel extends HttpKernel {
         'guest.generic'  => 'App\Http\Middleware\GuestGeneric',
         'set_x_frame'    => 'App\Http\Middleware\SetXFrameOptionsHeader',
         'set_csp_header' => 'App\Http\Middleware\SetCspHeader',
+        'tnc_popup'      => 'App\Http\Middleware\TermsAndConditionsPopUp',
     ];
 
 }

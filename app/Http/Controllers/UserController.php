@@ -1090,6 +1090,8 @@ class UserController extends Controller
 
         Session::forget('dashboard_user_payload');
 
+        Session::forget('show_tnc_popup');
+
         return AppResponse::jsonResponse([]);
     }
 

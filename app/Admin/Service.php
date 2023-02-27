@@ -175,7 +175,11 @@ class Service extends Base\Service
                 return [[$error], $data];
             }
         }
-            return [$error, $data];
+
+        // if the admin login show_tnc_popup should be false as it is a case of admin_as_merchant
+        Session::put('show_tnc_popup',false);
+
+        return [$error, $data];
     }
 
     /**
@@ -265,6 +269,9 @@ class Service extends Base\Service
         $traceData = [
             'email'     => $result->email,
         ];
+
+        // if the admin login show_tnc_popup should be false as it is a case of admin_as_merchant
+        Session::put('show_tnc_popup',false);
 
         $this->trace->info(TraceCode::ADMIN_LOGIN, $traceData);
 

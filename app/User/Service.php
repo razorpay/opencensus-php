@@ -32,6 +32,7 @@ use Razorpay\Api\Errors\ErrorCode;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Illuminate\Contracts\Cache\Store;
 use Lcobucci\JWT\Encoding\JoseEncoder;
+use App\Admin\Service as AdminService;
 use Illuminate\Foundation\Application;
 use Lcobucci\JWT\Validation\Constraint;
 use Razorpay\Api\Errors\BadRequestError;
@@ -803,9 +804,16 @@ class Service extends Base\Service
             $res["logged_in_via"] = $logged_in_via;
         }
 
+        $shouldShowPopUp = $this->shouldShowPopUp();
+
+        $this->app['session']->put('show_tnc_popup',$shouldShowPopUp);
+
+        $res['show_tnc_popup'] = $shouldShowPopUp;
+
         $traceData = [
             'id'          => $user->id,
             'merchant_id' => $currentMerchantId,
+            'shouldShowPopUp' => $shouldShowPopUp,
         ];
 
         $this->trace->info(TraceCode::USER_LOGIN, $traceData);
@@ -895,6 +903,12 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::USER_OAUTH_LOGIN, $traceData);
 
         $this->deleteSessionsIfApplicable($genericUser);
+
+        $shouldShowPopUp = $this->shouldShowPopUp();
+
+        $this->app['session']->put('show_tnc_popup',$shouldShowPopUp);
+
+        $res['show_tnc_popup'] = $shouldShowPopUp;
 
         return [$error, $this->addAccessTokenAndMidToResponse($res, $genericUser), $httpCode];
     }
@@ -2488,5 +2502,28 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+    /**
+     * Checks Four Conditions
+     * 1) Feature enable_tc_dashboard is enabled on org
+     * 2) Feature disable_tc_dashboard is not enabled on merchant
+     * 3) Admin_as_merchant is false
+     * 4) Merchant has not already accepted the T&C conditions
+     * if all the above conditions are satisfied then shouldShowPopUp will be true, in case of errors while calling this api we will return as false
+    */
+    public function shouldShowPopUp(): bool
+    {
+        try {
+            return (new Merchant\Service())->getShowTncPopup() ;
+        }
+        catch (\Throwable $e){
+            $this->trace->info(TraceCode::GET_TNC_POPUP_ERROR,[
+                'Error' => $e->getMessage(),
+                'status_code' => $e->getCode(),
+            ]);
+
+            return false;
+        }
     }
 }

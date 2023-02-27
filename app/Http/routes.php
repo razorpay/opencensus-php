@@ -113,7 +113,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/salesforce_event', 'UserController@postUserDetailsToSalesforce')->name('user_salesforce_event');
     });
 
-    Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
+    Route::group(['middleware' => ['auth:user', 'tnc_popup'], 'prefix' => 'user'], function()
     {
         Route::post('/pre_signup', 'MerchantController@postSignup')->name('user_pre_signup');
         Route::get('/business_types', 'MerchantController@getBusinessTypes')->name('user_business_types');
@@ -132,7 +132,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/whatsapp/opt_in', 'MerchantController@whatsappOptIn')->name('user_whatsapp/opt_in');
     });
 
-    Route::group(['middleware' => 'auth:user'] , function()
+    Route::group(['middleware' => ['auth:user', 'tnc_popup']] , function()
     {
         Route::get('/merchant/experiments', 'MerchantController@getMerchantExperiments');
         Route::get('/merchant/features', 'MerchantController@getMerchantFeatures');
@@ -142,7 +142,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/merchant/navigation', 'MerchantController@getMerchantNavigationList')->name('merchant_navigation');
     });
 
-    Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
+    Route::group(['middleware'  =>  ['auth:user', 'verified', 'tnc_popup']], function()
     {
         Route::any('/merchant/api/{mode}/{path}', 'GenericController@handleAny')
             ->where(['path' => '.*'])
