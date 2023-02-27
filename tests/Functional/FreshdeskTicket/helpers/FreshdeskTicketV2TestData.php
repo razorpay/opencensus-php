@@ -1204,14 +1204,14 @@ return [
         'response'  => [
             'content'       => [
                 'error' => [
-                    'code'        => 'SERVER_ERROR',
+                    'code'        => 'BAD_REQUEST_ERROR',
                 ],
             ],
-            'status_code'   => 500,
+            'status_code'   => 400,
         ],
         'exception' => [
-            'class'               => RZP\Exception\ServerErrorException::class,
-            'internal_error_code' => ErrorCode::SERVER_ERROR_FRESHDESK_AGENT_NOT_FOUND,
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_ASSIGNED,
         ],
     ],
 

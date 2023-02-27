@@ -713,7 +713,7 @@ class Service extends Base\Service
 
         if (empty($responderID) === true)
         {
-            throw new Exception\ServerErrorException("freshdesk ticket unassigned", ErrorCode::SERVER_ERROR_FRESHDESK_AGENT_NOT_FOUND);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FRESHDESK_TICKET_NOT_ASSIGNED);
         }
 
         $agentDetail = $this->app[Constants::FRESHDESK_CLIENT]->fetchAgentById($responderID);
@@ -1214,7 +1214,7 @@ class Service extends Base\Service
         throw new Exception\ServerErrorException(null, ErrorCode::SERVER_ERROR_FRESHDESK_INTEGRATION_ERROR, $response);
     }
 
-    protected function validateFetchAgentDetailResponse($response, string $errorCode= ErrorCode::SERVER_ERROR_FRESHDESK_AGENT_NOT_FOUND)
+    protected function validateFetchAgentDetailResponse($response, string $errorCode= ErrorCode::BAD_REQUEST_FRESHDESK_AGENT_NOT_FOUND)
     {
         if (isset($response['id']) === true)
         {
