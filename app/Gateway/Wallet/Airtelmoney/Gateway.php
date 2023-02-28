@@ -580,6 +580,9 @@ class Gateway extends Base\Gateway
             AuthFields::CUSTOMER_MOBILE          => $this->input[Entity::PAYMENT]['contact'],
         ];
 
+        // removing payment id for compliance reasons.
+        unset($data[AuthFields::TRANSACTION_REFERENCE_NO]);
+
         $data[AuthFields::HASH] = $this->getHashOfArray($data, 'request');
 
         return $data;
