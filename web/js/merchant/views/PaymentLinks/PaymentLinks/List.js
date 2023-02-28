@@ -263,7 +263,10 @@ export default class PaymentLinksContainer extends ListContainer {
             <span class="btn btn-link">
               <span class="badge bg-success m-r hidden-xs">new</span>
 
-              <Link to="/reminders" onClick={this.trackReminderSetting}>
+              <Link
+                to="/payments-and-refunds-settings/reminders"
+                onClick={this.trackReminderSetting}
+              >
                 Reminder Settings
               </Link>
             </span>
