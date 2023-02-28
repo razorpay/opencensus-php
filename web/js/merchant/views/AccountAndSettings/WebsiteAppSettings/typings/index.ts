@@ -32,6 +32,12 @@ export interface WebsiteAndAppSettingsProps extends RouteComponentProps {
   user: User;
   websiteSectionDetailsData: WebsiteSectionDetailsDataInterface;
   fetchMerchantWebsiteDetails: () => unknown;
+  fetchConnectedApplications: () => Promise<void>;
+  shouldShowApplications: boolean;
+  applications: {
+    hasConnectedApplications: boolean;
+    connectedAppsloading: boolean;
+  };
 }
 
 export interface APIKeysProps extends RouteComponentProps {

@@ -12,6 +12,7 @@ export enum ROUTES_INFO {
   WEBSITE_APP_SETTINGS = '/website-app-settings/website-app',
   BUSINESS_WEBSITE_SETTINGS = '/website-app-settings/business-website-details',
   WEBHOOKS = '/website-app-settings/webhooks',
+  APPLICATIONS = '/website-app-settings/applications',
   BALANCES = '/payments-and-refunds-settings/balances',
   CREDITS = '/payments-and-refunds-settings/credits',
   REMINDERS = '/payments-and-refunds-settings/reminders',

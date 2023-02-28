@@ -8,6 +8,7 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import DashboardBanner from 'common/ui/DashboardBanner';
 import Breadcrumb from 'common/components/Breadcrumb';
 import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance';
+import { fetchConnectedApplications } from 'merchant/reducers/applications';
 import { newRoutes, newAndOldRouteMap } from './constants/constants';
 import { WebsiteAndAppSettingsProps, NewRoutes } from './typings';
 import {
@@ -24,6 +25,7 @@ import {
   isWebsiteDetailsEnabled,
   isWebhookEnabled,
   isApiKeyEnabled,
+  isApplicationEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 
@@ -41,13 +43,26 @@ const Webhooks = lazy(() =>
   import(/* webpackChunkName: "WebhooksTab" */ 'merchant/views/Settings/Webhooks/List'),
 );
 
+const Applications = lazy(() =>
+  import(/* webpackChunkName: "ApplicationsTab" */ 'merchant/views/Settings/Applications'),
+);
+
 const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element => {
-  const { user, websiteSectionDetailsData, fetchMerchantWebsiteDetails, location } = props;
+  const {
+    user,
+    websiteSectionDetailsData,
+    fetchMerchantWebsiteDetails,
+    fetchConnectedApplications,
+    location,
+    applications,
+  } = props;
+  const { hasConnectedApplications, connectedAppsloading: isConnectedAppsloading } = applications;
 
   React.useEffect(() => {
     if (!Object.keys(websiteSectionDetailsData.data).length && !websiteSectionDetailsData.error) {
       if (user.isWebsiteComplianceFlowEnabled) fetchMerchantWebsiteDetails();
     }
+    if (isApplicationEnabled(user)) fetchConnectedApplications();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -88,6 +103,13 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
           <ShowWhen additionalCondition={(user) => isWebhookEnabled(user)}>
             <NavLink to={ROUTES_INFO.WEBHOOKS}>Webhooks</NavLink>
           </ShowWhen>
+          <ShowWhen
+            additionalCondition={(user) =>
+              isApplicationEnabled(user) && (isConnectedAppsloading || hasConnectedApplications)
+            }
+          >
+            <NavLink to={ROUTES_INFO.APPLICATIONS}>Applications</NavLink>
+          </ShowWhen>
         </StyledHeader>
         <TestModeBanner />
         <ErrorBoundary resetOnProps>
@@ -117,6 +139,14 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
                       path={ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS}
                       component={BusinessWebsiteDetails}
                     />
+                    <ShowWhenRoute
+                      path={ROUTES_INFO.APPLICATIONS}
+                      component={Applications}
+                      additionalCondition={(user) =>
+                        isApplicationEnabled(user) &&
+                        (isConnectedAppsloading || hasConnectedApplications)
+                      }
+                    />
                   </Switch>
                 </main>
               </StyledTabContentContainer>
@@ -132,6 +162,7 @@ export default connect(
   (state) => ({
     user: state.session.user,
     websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
+    applications: state.applications,
   }),
-  { fetchMerchantWebsiteDetails },
+  { fetchMerchantWebsiteDetails, fetchConnectedApplications },
 )(WebsiteAndAppSettings);

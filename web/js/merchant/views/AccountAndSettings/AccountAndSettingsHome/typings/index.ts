@@ -76,12 +76,14 @@ export interface AccountAndSettingsHomePropInterface {
   profile: any;
   mode: string;
   instruments: Instruments[];
+  shouldShowApplications: boolean;
   loading: boolean;
   websiteSectionDetailsData: WebsiteSectionDetailsInterface;
   fetchMerchantWebsiteDetailsFn: () => Promise<void>;
   fetchFeatureByNameFn: (payload: FeaturePayloadInterface) => Promise<void>;
   fetchMerchantInstrumentsFn: () => Promise<void>;
   fetchRequestedInstrumentsFn: () => Promise<void>;
+  fetchConnectedApplicationsFn: () => Promise<void>;
   showNotificationFn: (payload: NotificationPayload) => Promise<void>;
   setLoadingFn: () => Promise<void>;
   featureStatusConfig: FeatureResponse;
@@ -168,6 +170,7 @@ export interface UserInfoPropsInterface {
 export interface AdditionalContextInterface extends FeatureInterface {
   user: User;
   instruments: Instruments[];
+  shouldShowApplications: boolean;
   mode: string;
   websiteSectionDetailsData: WebsiteSectionDetailsInterface;
   profile: any;

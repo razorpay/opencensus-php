@@ -12,6 +12,7 @@ export const ROUTE_MAP = {
   [ROUTES_INFO.WEBSITE_APP_SETTINGS]: 'Website & app settings',
   [ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS]: 'Business website details',
   [ROUTES_INFO.WEBHOOKS]: 'Webhooks',
+  [ROUTES_INFO.APPLICATIONS]: 'Applications',
   [ROUTES_INFO.BALANCES]: 'Balances',
   [ROUTES_INFO.CREDITS]: 'Credits',
   [ROUTES_INFO.REMINDERS]: 'Reminders',

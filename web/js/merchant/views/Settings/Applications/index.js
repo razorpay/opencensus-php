@@ -9,6 +9,7 @@ import {
   NoConnectedApps,
   LoadingConnectedApps,
 } from 'merchant/views/Settings/Applications/components/NoConnectedApps';
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import * as NotificationActions from 'merchant_common/reducers/notifications';
 import * as ModalActions from 'merchant_common/reducers/modals';
 import * as ApplicationActions from 'merchant/reducers/applications';
@@ -102,7 +103,8 @@ class ApplicationContainer extends Component {
 
     return (
       <div class="application-index-page">
-        {pathname === '/applications' && this.renderConnectedApplications()}
+        {['/applications', ROUTES_INFO.APPLICATIONS].includes(pathname) &&
+          this.renderConnectedApplications()}
         {pathname === '/partners/applications' ? (
           <div class="content-box">
             <div class="content-header">

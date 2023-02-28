@@ -23,6 +23,7 @@ export enum WebsiteAppSettingsFields {
   API_KEYS = 'api_keys',
   WEBHOOKS = 'webhooks',
   BUSINESS_WEBSITE_DETAILS = 'business_website_details',
+  APPLICATIONS = 'applications',
 }
 
 export enum BusinessSettingsFields {

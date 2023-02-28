@@ -51,6 +51,8 @@ export const isApiKeyEnabled = (user: User): boolean => user.isAllowedView('api_
 
 export const isWebhookEnabled = (user: User): boolean => user.isAllowedView('webhooks');
 
+export const isApplicationEnabled = (user: User): boolean => user.isAllowedView('applications');
+
 export const isWebsiteDetailsEnabled = ({
   user,
   websiteSectionDetailsData,

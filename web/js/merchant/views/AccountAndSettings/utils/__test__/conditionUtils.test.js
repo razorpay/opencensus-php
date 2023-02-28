@@ -200,6 +200,10 @@ describe('Condition Utils', () => {
     extraTestMessage: 'on passing webhooks',
   });
 
+  testUtilWhichUsesSingleUserFunc('isApplicationEnabled', 'isAllowedView', {
+    extraTestMessage: 'on passing applications',
+  });
+
   describe('isWebsiteDetailsEnabled', () => {
     test.each([
       [false, false, false, false],

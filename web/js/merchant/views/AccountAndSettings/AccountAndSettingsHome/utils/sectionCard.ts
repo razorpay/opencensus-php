@@ -5,16 +5,32 @@ import {
   SectionCardInterface,
   SubSection,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
+import {
+  SectionCardDataFields,
+  WebsiteAppSettingsFields,
+} from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 
 const paymentMethodSection = {
   isSubSectionEnabled: ({ instruments, product }): SubSection | null =>
     instruments.find((each) => each.slug === product.id),
 };
 
+const applicationsSubSection = {
+  isSubSectionEnabled: ({ shouldShowApplications, product }) => {
+    if (product.id !== WebsiteAppSettingsFields.APPLICATIONS) return true;
+    return shouldShowApplications;
+  },
+};
+
 const sectionUtil = {
-  payment_methods: {
+  [SectionCardDataFields.PAYMENT_METHODS]: {
     subSection: {
       ...paymentMethodSection,
+    },
+  },
+  [SectionCardDataFields.WEBSITE_APP_SETTINGS]: {
+    subSection: {
+      ...applicationsSubSection,
     },
   },
 };
@@ -30,6 +46,7 @@ const showWhen = ({ additionalCondition, mode, ...rest }): boolean => {
 export const getSectionCards = ({
   user,
   instruments,
+  shouldShowApplications,
   mode,
   ...rest
 }: AdditionalContextInterface): SectionCardInterface[] => {
@@ -50,7 +67,11 @@ export const getSectionCards = ({
               subSection &&
               Object.keys(subSection).find(
                 (subSectionUtil) =>
-                  !subSection[subSectionUtil]({ instruments, product: eachSubSections }),
+                  !subSection[subSectionUtil]({
+                    instruments,
+                    product: eachSubSections,
+                    shouldShowApplications,
+                  }),
               );
             if (!isSubSectionUtilDisabled) {
               return true;

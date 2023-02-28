@@ -1,4 +1,4 @@
-import { set, merge, remove } from 'common/utils/immutable';
+import { merge, remove } from 'common/utils/immutable';
 import Application from 'merchant/models/Application';
 import { merchantFetch } from 'merchant/utils/ajax';
 
@@ -37,7 +37,7 @@ const _makeWebhookPayload = (data, appId) => {
     payload.alert_email = data.alert_email;
   }
 
-  for (let k in data.events) {
+  for (const k in data.events) {
     if (data.events.hasOwnProperty(k)) {
       payload.events[k] = data.events[k] ? 1 : 0;
     }
@@ -48,7 +48,7 @@ const _makeWebhookPayload = (data, appId) => {
 
 // mode is explicitly sent by partner->settings->webhook
 export const createAppWebhook = ({ appId, data, mode }) => {
-  let payload = _makeWebhookPayload(data, appId);
+  const payload = _makeWebhookPayload(data, appId);
 
   return merchantFetch({
     url: `oauth/applications/${appId}/webhooks`,
@@ -60,7 +60,7 @@ export const createAppWebhook = ({ appId, data, mode }) => {
 
 // mode is explicitly sent by partner->settings->webhook
 export const editAppWebhook = ({ appId, data, mode }) => {
-  let payload = _makeWebhookPayload(data, appId);
+  const payload = _makeWebhookPayload(data, appId);
   payload.active = data.active ? 1 : 0; // Send active field also in edit mode
 
   return merchantFetch({
@@ -72,7 +72,7 @@ export const editAppWebhook = ({ appId, data, mode }) => {
 };
 
 export const fetchApplications = (params) => {
-  let application = new Application();
+  const application = new Application();
 
   return {
     type: FETCH_APPLICATIONS,
@@ -81,7 +81,7 @@ export const fetchApplications = (params) => {
 };
 
 export const fetchPartnerApplication = () => {
-  let application = new Application();
+  const application = new Application();
   return {
     type: FETCH_PARTNER_APPLICATION,
     payload: application.fetchPartnerApplication(),
@@ -89,7 +89,7 @@ export const fetchPartnerApplication = () => {
 };
 
 export const fetchConnectedApplications = (params) => {
-  let application = new Application();
+  const application = new Application();
 
   return {
     type: FETCH_CONNECTED_APPLICATIONS,
@@ -98,7 +98,7 @@ export const fetchConnectedApplications = (params) => {
 };
 
 export const fetchApplication = (params) => {
-  let application = new Application();
+  const application = new Application();
 
   return {
     type: FETCH_APPLICATION_DETAILS,
@@ -107,7 +107,7 @@ export const fetchApplication = (params) => {
 };
 
 export const deleteApplication = (id) => {
-  let application = new Application({ id });
+  const application = new Application({ id });
 
   return {
     type: DELETE_APPLICATION,
@@ -116,7 +116,7 @@ export const deleteApplication = (id) => {
 };
 
 export const revokeAccess = (id) => {
-  let application = new Application({ id });
+  const application = new Application({ id });
 
   return {
     type: REVOKE_ACCESS_TOKEN,
@@ -125,7 +125,7 @@ export const revokeAccess = (id) => {
 };
 
 export const createApplication = (params, fileName) => {
-  let application = new Application();
+  const application = new Application();
 
   return {
     type: CREATE_APPLICATION,
@@ -133,7 +133,7 @@ export const createApplication = (params, fileName) => {
   };
 };
 export const updateApplication = (id, params, fileName) => {
-  let application = new Application({ id });
+  const application = new Application({ id });
 
   return {
     type: UPDATE_APPLICATION,
@@ -141,7 +141,7 @@ export const updateApplication = (id, params, fileName) => {
   };
 };
 
-let initialState = {
+const initialState = {
   loading: true,
   createdAppsloading: true,
   connectedAppsloading: true,
@@ -149,9 +149,10 @@ let initialState = {
   details: {},
   tokens: [],
   partnerApplication: {},
+  hasConnectedApplications: false,
 };
 
-export default function (state = initialState, action) {
+export default function applicationReducer(state = initialState, action) {
   switch (action.type) {
     case `${CREATE_APPLICATION}::PENDING`:
     case `${UPDATE_APPLICATION}::PENDING`:
@@ -182,6 +183,7 @@ export default function (state = initialState, action) {
       return merge(state, {
         connectedAppsloading: false,
         tokens: action.payload.data.items,
+        hasConnectedApplications: action.payload.data.items.length > 0,
       });
 
     case `${FETCH_PARTNER_APPLICATION}::SUCCESS`:

@@ -2,6 +2,7 @@ import '@testing-library/jest-dom/extend-expect';
 import * as showWhen from 'merchant/components/ShowWhen';
 import * as config from 'merchant/reducers/config';
 import * as websiteComp from 'merchant/reducers/websitecompliance';
+import * as applicationsReducers from 'merchant/reducers/applications';
 import { getState } from './mocks/fixtures';
 import AccountAndSettingsHome from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/Home';
 import React from 'react';
@@ -9,6 +10,10 @@ import { render, screen, server, waitFor } from 'test-utils';
 import { fetchMerchantInstrumentHandler, fetchRequestedInstrumentHandler } from './mocks/handler';
 
 describe('AccountAndSettingsHomePage', () => {
+  const fetchConnectedApplicationsSpy = jest.spyOn(
+    applicationsReducers,
+    'fetchConnectedApplications',
+  );
   const websiteCompSpy = jest.spyOn(websiteComp, 'fetchMerchantWebsiteDetails');
   const featureConfigSpy = jest.spyOn(config, 'fetchFeatureByName');
 
@@ -21,6 +26,7 @@ describe('AccountAndSettingsHomePage', () => {
   beforeEach(() => {
     websiteCompSpy.mockClear();
     featureConfigSpy.mockClear();
+    fetchConnectedApplicationsSpy.mockClear();
   });
 
   test('should fetch merchant website details if website compliance flow enabled', () => {
@@ -73,6 +79,30 @@ describe('AccountAndSettingsHomePage', () => {
     });
     await waitFor(() => {
       expect(screen.getByText('7 sections found')).toBeInTheDocument();
+    });
+  });
+
+  test('should fetch connected apps when user is allowed to view applications tab', async () => {
+    const initialState = getState({
+      userData: {
+        isAllowedView: () => true,
+      },
+    });
+    renderApp({ initialState });
+    await waitFor(() => {
+      expect(fetchConnectedApplicationsSpy).toHaveBeenCalled();
+    });
+  });
+
+  test('should not fetch connected apps when user is not allowed to view applications tab', async () => {
+    const initialState = getState({
+      userData: {
+        isAllowedView: () => false,
+      },
+    });
+    renderApp({ initialState });
+    await waitFor(() => {
+      expect(fetchConnectedApplicationsSpy).not.toHaveBeenCalled();
     });
   });
 });

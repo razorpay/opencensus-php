@@ -6,7 +6,10 @@ import {
   testConditionalLinks,
   testRedirectionWhenAccountAndSettingsIsNotEnabled,
 } from 'merchant/views/AccountAndSettings/__test__/mocks/fixtures';
-import { fetchMerchantWebsiteDetailsHandler } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/__tests__/mocks/handlers';
+import {
+  fetchMerchantWebsiteDetailsHandler,
+  fetchConnectedApplicationsHandler,
+} from 'merchant/views/AccountAndSettings/WebsiteAppSettings/__tests__/mocks/handlers';
 import { render, screen, server, delay, waitFor } from 'test-utils';
 import { newAndOldRouteMap } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/constants/constants';
 import * as conditionalUtils from 'merchant/views/AccountAndSettings/utils/conditionUtils';
@@ -43,6 +46,7 @@ jest.mock('merchant/views/AccountAndSettings/utils/conditionUtils', () => ({
   isWebsiteDetailsEnabled: jest.fn(),
   isApiKeyEnabled: jest.fn(),
   isWebhookEnabled: jest.fn(),
+  isApplicationEnabled: jest.fn(),
 }));
 
 jest.mock('merchant/views/AccountAndSettings/WebsiteAppSettings/Tabs/ApiKeys', () => ({
@@ -66,6 +70,11 @@ jest.mock(
 jest.mock('merchant/views/Settings/Webhooks/List', () => ({
   __esModule: true,
   default: () => <>Webhooks component</>,
+}));
+
+jest.mock('merchant/views/Settings/Applications', () => ({
+  __esModule: true,
+  default: () => <>Applications component</>,
 }));
 
 jest.mock('merchant/components/ShowWhen', () => ({
@@ -120,7 +129,7 @@ describe('Website And Appp Settings', () => {
     const businessDetailsLink = screen.getByRole('link', { name: 'Business website details' });
     expect(businessDetailsLink).toBeInTheDocument();
     expect(businessDetailsLink).toHaveAttribute('href', ROUTES_INFO.BUSINESS_WEBSITE_SETTINGS);
-    ['Webhooks', 'API keys', 'Website/App Detail'].forEach((linkLabel) => {
+    ['Webhooks', 'API keys', 'Website/App Detail', 'Applications'].forEach((linkLabel) => {
       expect(screen.queryByRole('link', { name: linkLabel })).not.toBeInTheDocument();
     });
   });
@@ -132,16 +141,19 @@ describe('Website And Appp Settings', () => {
       conditionalUtils.isWebsiteDetailsEnabled.mockReturnValue(true);
       conditionalUtils.isApiKeyEnabled.mockReturnValue(true);
       conditionalUtils.isWebhookEnabled.mockReturnValue(true);
+      conditionalUtils.isApplicationEnabled.mockReturnValue(true);
     });
     afterAll(() => {
       conditionalUtils.isWebsiteDetailsEnabled.mockReturnValue(false);
       conditionalUtils.isApiKeyEnabled.mockReturnValue(false);
       conditionalUtils.isWebhookEnabled.mockReturnValue(false);
+      conditionalUtils.isApplicationEnabled.mockReturnValue(false);
     });
     testConditionalLinks(renderApp, [
       ['Webhooks', 'isWebhookEnabled', ROUTES_INFO.WEBHOOKS],
       ['API keys', 'isApiKeyEnabled', ROUTES_INFO.API_KEYS],
       ['API keys', 'isApiKeyEnabled', ROUTES_INFO.API_KEYS],
+      ['Applications', 'isApplicationEnabled', ROUTES_INFO.APPLICATIONS],
     ]);
 
     test('should use appropriate component for each route', async () => {
@@ -161,6 +173,16 @@ describe('Website And Appp Settings', () => {
         expect(screen.queryByRole('loader')).not.toBeInTheDocument();
       });
       expect(screen.getByText('Webhooks')).toBeInTheDocument();
+    });
+
+    test('should render applications when connected api response is success', async () => {
+      server.use(fetchConnectedApplicationsHandler());
+      await renderApp();
+      await waitFor(() => {
+        // Since components are lazy loaded
+        expect(screen.queryByRole('loader')).not.toBeInTheDocument();
+      });
+      expect(screen.queryByText('Applications')).toBeInTheDocument();
     });
   });
 

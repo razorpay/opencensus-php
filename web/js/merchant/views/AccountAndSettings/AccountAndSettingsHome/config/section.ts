@@ -23,6 +23,7 @@ import {
   isProfileViewAllowed,
   shouldShowFIRCSection,
   shouldShowTeamInvitations,
+  isApplicationEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import {
   User,
@@ -117,6 +118,12 @@ export const Sections: SectionCardInterface[] = [
         title: 'Webhooks',
         href: ROUTES_INFO.WEBHOOKS,
         additionalCondition: () => (user: User): boolean => isWebhookEnabled(user),
+      },
+      {
+        id: WebsiteAppSettingsFields.APPLICATIONS,
+        title: 'Applications',
+        href: ROUTES_INFO.APPLICATIONS,
+        additionalCondition: () => (user: User): boolean => isApplicationEnabled(user),
       },
     ],
   },

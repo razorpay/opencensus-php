@@ -5,6 +5,7 @@ import {
   setLoading as setLoadingFn,
 } from 'merchant/reducers/instrumentRequests';
 import { fetchMerchantWebsiteDetails as fetchMerchantWebsiteDetailsFn } from 'merchant/reducers/websitecompliance';
+import { fetchConnectedApplications as fetchConnectedApplicationsFn } from 'merchant/reducers/applications';
 import { showNotification as showNotificationFn } from 'merchant_common/reducers/notifications';
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
@@ -14,6 +15,7 @@ import Profile from './sections/Profile';
 import { PageLayoutContainer } from './styled';
 import { AccountAndSettingsHomePropInterface, SectionCardInterface } from './typings';
 import { getSectionCards } from './utils/sectionCard';
+import { isApplicationEnabled } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 
 const feature = 'allow_cfb_international';
 
@@ -24,6 +26,7 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
     profile,
     mode,
     instruments,
+    shouldShowApplications,
     loading: isIntrumentLoading,
     websiteSectionDetailsData,
     featureStatusConfig,
@@ -33,6 +36,7 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
     setLoadingFn: setLoading,
     showNotificationFn: showNotification,
     fetchMerchantWebsiteDetailsFn: fetchMerchantWebsiteDetails,
+    fetchConnectedApplicationsFn: fetchConnectedApplications,
   } = props;
 
   const [sections, setSections] = useState<SectionCardInterface[]>([]);
@@ -50,6 +54,9 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
     const { data } = featureStatusConfig;
     setLoading();
     fetchAllInstruments();
+    if (isApplicationEnabled(user)) {
+      fetchConnectedApplications();
+    }
     if (!data.hasOwnProperty(feature)) {
       fetchFeatureByName({ userId: user.id, feature });
     }
@@ -70,6 +77,7 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
       const sectionCards = getSectionCards({
         user,
         instruments,
+        shouldShowApplications,
         mode,
         websiteSectionDetailsData,
         profile,
@@ -85,6 +93,7 @@ const AccountAndSettingsHome = (props: AccountAndSettingsHomePropInterface): JSX
     websiteSectionDetailsData,
     profile,
     featureStatusConfig,
+    shouldShowApplications,
   ]);
 
   return (
@@ -105,6 +114,7 @@ const mapStateToProps = (state) => {
     websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
     featureStatusConfig: state.config.featureStatusConfig,
     isMobile: state.app.isMobileResolution,
+    shouldShowApplications: state.applications?.hasConnectedApplications,
   };
 };
 
@@ -117,6 +127,7 @@ const mapDispatchToProps = (dispatch) => {
       showNotificationFn,
       fetchFeatureByNameFn,
       fetchMerchantWebsiteDetailsFn,
+      fetchConnectedApplicationsFn,
     },
     dispatch,
   );
