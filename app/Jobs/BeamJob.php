@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use Illuminate\Support\Facades\Config;
 use Mail;
+use RZP\Services\Beam\Metric;
 use \WpOrg\Requests\Response;
 
 use Carbon\Carbon;
@@ -121,6 +122,19 @@ class BeamJob extends Job
                     'mail_info'     => $this->mailInfo
                 ]);
 
+            $jobname = '';
+            if(isset($this->request["content"]) && isset(json_decode($this->request["content"])->job_name))
+            {
+                $jobname = json_decode($this->request["content"])->job_name;
+            }
+
+            $this->trace->count(Metric::BEAM_RESPONSE_COUNT_TOTAL, [
+                "url" => $this->request['url'],
+                "job_name" => $jobname,
+                "status_code" => 0,
+                "success" => false
+            ]);
+
             $this->notify();
 
             $this->delete();
@@ -169,8 +183,15 @@ class BeamJob extends Job
                 'url'        => $this->request['url'],
             ]
         );
+        $res = json_decode($this->response->body, true);
+        $this->trace->count(Metric::BEAM_RESPONSE_COUNT_TOTAL, [
+            "url" => $this->request['url'],
+            "job_name" => $res->job_name,
+            "status_code" => $this->response["status_code"],
+            "success" => $this->response["success"]
+        ]);
 
-        return json_decode($this->response->body, true);
+        return $res;
     }
 
     /**
