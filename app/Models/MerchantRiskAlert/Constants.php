@@ -192,4 +192,15 @@ class Constants
     const RAS_SIGN_UP_CHECKER_POST_ACTION_FEATURE_FLAG = 'merchants_risk_trigger_sign_up_checker_post_actions';
 
     const QUERY_EXECUTION_TIME                         = 'query_execution_time';
+
+    const RAS_RULE_ENTITY                              = 'ras_rule_entity';
+
+    const RAS_RULES_CREATE_PAYLOAD                     = 'ras_rules_create_payload';
+
+    const RAS_RULES_UPDATE_PAYLOAD                     = 'ras_rules_update_payload';
+
+    const RAS_RULES_DELETE_PAYLOAD                     = 'ras_rules_delete_payload';
+
+    const RAS_RULES_ID                                 = 'ras_rules_id';
 }
+

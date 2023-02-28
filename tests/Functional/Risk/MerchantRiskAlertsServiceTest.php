@@ -71,6 +71,8 @@ class MerchantRiskAlertsServiceTest extends TestCase
     {
         $this->rulesRouteSetUp();
 
+        $this->setupWorkflow('test create rule workflow', Permission\Name::MERCHANT_RISK_ALERT_UPSERT_RULE);
+
         $input = [
             'method'  => 'post',
             'url'     => '/merchant_risk_alerts/rules/create',
@@ -80,12 +82,20 @@ class MerchantRiskAlertsServiceTest extends TestCase
             ],
         ];
 
-        $this->assertEquals([], $this->makeRequestAndGetContent($input));
+        $response         = $this->makeRequestAndGetContent($input);
+
+        $this->assertNotEmpty($response['id']);
+
+        $workflowActionId = $response['id'];
+
+        $this->performWorkflowAction($workflowActionId, true);
     }
 
     public function testUpdateRule()
     {
         $this->rulesRouteSetUp();
+
+        $this->setupWorkflow('test update rule workflow', Permission\Name::MERCHANT_RISK_ALERT_UPSERT_RULE);
 
         $input = [
             'method'  => 'post',
@@ -96,19 +106,35 @@ class MerchantRiskAlertsServiceTest extends TestCase
             ],
         ];
 
-        $this->assertEquals([], $this->makeRequestAndGetContent($input));
+        $response         = $this->makeRequestAndGetContent($input);
+
+        $this->assertNotEmpty($response['id']);
+
+        $workflowActionId = $response['id'];
+
+        $this->performWorkflowAction($workflowActionId, true);
+
     }
 
     public function testDeleteRule()
     {
         $this->rulesRouteSetUp();
 
+        $this->setupWorkflow('test delte rule workflow', Permission\Name::MERCHANT_RISK_ALERT_DELETE_RULE);
+
         $input = [
             'method'  => 'post',
             'url'     => '/merchant_risk_alerts/rules/random_id/delete',
         ];
 
-        $this->assertEquals([], $this->makeRequestAndGetContent($input));
+        $response         = $this->makeRequestAndGetContent($input);
+
+        $this->assertNotEmpty($response['id']);
+
+        $workflowActionId = $response['id'];
+
+        $this->performWorkflowAction($workflowActionId, true);
+
     }
 
     public function testGetMerchantDetails()

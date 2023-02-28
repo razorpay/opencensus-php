@@ -707,6 +707,14 @@ return [
                 'assignable' => true,
                 'workflow'   => true
             ],
+            Permission::MERCHANT_RISK_ALERT_UPSERT_RULE          => [
+                'assignable' => true,
+                'workflow'   => true
+            ],
+            Permission::MERCHANT_RISK_ALERT_DELETE_RULE          => [
+                'assignable' => true,
+                'workflow'   => true
+            ],
             Permission::FETCH_MERCHANT_BALANCE_CONFIG => [
                 'description' => 'Fetch merchant balance config',
                 'assignable'  => true

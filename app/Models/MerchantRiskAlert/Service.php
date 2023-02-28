@@ -1024,8 +1024,31 @@ class Service extends Base\Service
         return $this->app['merchant_risk_alerts']->identifyBlacklistCountryAlerts($input);
     }
 
+    protected  function createRASRulesWorkflowIfApplicable($action, $entityId ,$inputs)
+    {
+        $permission = in_array($action, ['create', 'update']) === true ? Permission\Name::MERCHANT_RISK_ALERT_UPSERT_RULE : Permission\Name::MERCHANT_RISK_ALERT_DELETE_RULE;
+
+        $this->app['workflow']
+            ->setPermission($permission)
+            ->setInput($inputs)
+            ->setEntityAndId(Constants::RAS_RULE_ENTITY , $entityId)
+            ->handle([], $inputs);
+    }
+
     public function createRule(array $input)
     {
+        $entityId = UniqueIdEntity::generateUniqueId();
+
+        $this->createRASRulesWorkflowIfApplicable('create', $entityId, [Constants::RAS_RULES_CREATE_PAYLOAD => $input ]);
+
+        $inputs = $input[Constants::RAS_RULES_CREATE_PAYLOAD];
+
+        $this->app['trace']->info(
+            TraceCode::RAS_RULES_CREATION_WORKFLOW_APPROVE,
+            [
+               'inputs' => $inputs
+            ]);
+
         return $this->app['merchant_risk_alerts']->sendRequest(Constants::CREATE_RULE_URL, $input);
     }
 
@@ -1033,11 +1056,31 @@ class Service extends Base\Service
     {
         $input['id'] = $ruleId;
 
-        return $this->app['merchant_risk_alerts']->sendRequest(Constants::UPDATE_RULE_URL, $input);
+        $this->createRASRulesWorkflowIfApplicable('update', $ruleId, [Constants::RAS_RULES_UPDATE_PAYLOAD => $input ]);
+
+        $inputs = $input[Constants::RAS_RULES_UPDATE_PAYLOAD];
+
+        $this->app['trace']->info(
+            TraceCode::RAS_RULES_UPDATE_WORKFLOW_APPROVE,
+            [
+                'inputs' => $inputs
+            ]);
+
+        return $this->app['merchant_risk_alerts']->sendRequest(Constants::UPDATE_RULE_URL, $inputs);
     }
 
-    public function deleteRule($ruleId)
+    public function deleteRule($inputs)
     {
+        $ruleId = $inputs[Constants::RAS_RULES_ID];
+
+        $this->createRASRulesWorkflowIfApplicable('delete', $ruleId, [Constants::RAS_RULES_DELETE_PAYLOAD => $inputs]);
+
+        $this->app['trace']->info(
+            TraceCode::RAS_RULES_DELETE_WORKFLOW_APPROVE,
+            [
+                'ruleId' => $ruleId
+            ]);
+
         return $this->app['merchant_risk_alerts']->sendRequest(Constants::DELETE_RULE_URL, [
             'id'   =>  $ruleId,
         ]);

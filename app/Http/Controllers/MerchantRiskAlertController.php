@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Models\MerchantRiskAlert\Constants as MerchantRiskAlertConstants;
 
 class MerchantRiskAlertController extends Controller
 {
@@ -36,7 +37,7 @@ class MerchantRiskAlertController extends Controller
 
     public function deleteRule($ruleId)
     {
-        $response = $this->service()->deleteRule($ruleId);
+        $response = $this->service()->deleteRule([MerchantRiskAlertConstants::RAS_RULES_ID => $ruleId]);
 
         return ApiResponse::json($response);
     }
