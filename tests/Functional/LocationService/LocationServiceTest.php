@@ -3,6 +3,7 @@
 namespace Functional\LocationService;
 
 use RZP\Tests\TestCase;
+use RZP\Error\ErrorCode;
 use RZP\Services\LocationService;
 
 class LocationServiceTest extends TestCase
@@ -19,5 +20,21 @@ class LocationServiceTest extends TestCase
         $suggestions = (new LocationService($this->app))->getAddressSuggestions(['input' => 'aus']);
         $this->assertNotEmpty($suggestions);
         $this->assertEquals(["predictions" => [], "status" => "OK"], $suggestions);
+    }
+
+    public function testGetAddressSuggestionsWithInvalidInput()
+    {
+        $ex = null;
+        try
+        {
+            $suggestions = (new LocationService($this->app))->getAddressSuggestions(['input' => '']);
+
+        }
+        catch (\Throwable $e)
+        {
+            $ex = $e;
+        }
+        $this->assertEquals(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, $ex->getError()->getInternalErrorCode());
+        $this->assertEmpty($suggestions);
     }
 }

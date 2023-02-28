@@ -67,12 +67,19 @@ class LocationService
 
     /**
      * @throws ServerErrorException
+     * @throws BadRequestValidationFailureException
      */
     public function getAddressSuggestions(array $parameters)
     {
         $addressQuery = $parameters['input'];
         $zipcode = $parameters['zipcode'] ?? '';
         $country = $parameters['country'] ?? '';
+
+        if ($addressQuery === "" or $country === "")
+        {
+            throw new BadRequestValidationFailureException("Input should not be empty");
+        }
+
         $cacheKey = $this->getCacheKey(self::CACHE_PREFIX_AUTOSUGGEST, $addressQuery . ':' . $zipcode . ':' . $country);
         $suggestions = $this->cache->get($cacheKey);
 
