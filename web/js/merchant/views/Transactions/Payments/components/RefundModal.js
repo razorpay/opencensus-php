@@ -188,106 +188,111 @@ class RefundModal extends Component {
   }
 
   refund(speedValue, props, partial) {
-    if (!this.state.refundApiInProgress) {
-      this.setState({ refundApiInProgress: true });
-      const payment = this.props.payment;
-      const data = {
-        amount: rupeesToPaise(props.amount),
-        comment: props.comment,
-        reverse_all: props.reverse_all ? '1' : '0',
-        speed: speedValue,
-      };
+    // to access latest refundApiInProgress state
+    this.setState({}, () => {
+      if (!this.state.refundApiInProgress) {
+        this.setState({ refundApiInProgress: true });
+        const payment = this.props.payment;
+        const data = {
+          amount: rupeesToPaise(props.amount),
+          comment: props.comment,
+          reverse_all: props.reverse_all ? '1' : '0',
+          speed: speedValue,
+        };
 
-      if (!partial) {
-        data.amount = payment.amount - payment.amount_refunded;
-      }
-      window.rzpAnalytics?.({
-        eventCategory: 'Dashboard - Instant Refund',
-        eventAction: 'Yes Refund',
-        eventLabel: `${
-          speedValue === 'normal' ? 'Normal' : 'Instant'
-        } Refund | Default speed ${this.getLabelForRefundDefaultSpeed()} `,
-      });
-      analyticsTrack({
-        objectName: 'issue refund',
-        actionName: 'clicked',
-        screen: 'transactions',
-      });
-      this.props
-        .refundPayment(payment, data)
-        .then(() => {
-          const default_speed = this.props.default_refund_speed;
-          const is_normal = default_speed === 'normal';
-          const is_instant = default_speed !== 'normal';
-          const is_unchecked = this.analytics.check_box == false;
-          const label = `${partial ? 'Partial' : 'Full'} Refund${
-            this.analytics.hovered ? ' | Hover Tooltip' : ''
-          }${this.analytics.hover_breakup ? ' | Hover Breakup Tooltip' : ''}${
-            this.analytics.comment ? ' | Add Comment' : ''
-          }${
-            this.analytics.check_box !== null
-              ? this.analytics.check_box == true
-                ? ' | Checked Checkbox'
-                : ' | Unchecked Checkbox'
-              : ''
-          }${default_speed === 'normal' ? ' | Default Speed Normal' : ' | Default Speed Instant'}`;
-          /* istanbul ignore next */
-          if (
-            (partial && this.analytics.comment && is_normal) ||
-            (partial && this.analytics.comment && is_instant) ||
-            (partial && this.analytics.check_box && is_normal) ||
-            (partial && this.analytics.hovered && this.analytics.check_box && is_normal) ||
-            (partial && is_unchecked && is_instant) ||
-            (partial && this.analytics.hover_breakup && is_unchecked && is_instant) ||
-            // now instant case
-            (!partial && this.analytics.comment && is_normal) ||
-            (!partial && this.analytics.comment && is_instant) ||
-            (!partial && this.analytics.check_box && is_normal) ||
-            (!partial && this.analytics.hovered && this.analytics.check_box && is_normal) ||
-            (!partial && is_unchecked && is_instant) ||
-            (!partial && this.analytics.hover_breakup && is_unchecked && is_instant)
-          ) {
-            window.rzpAnalytics?.({
-              eventCategory: 'Dashboard - Instant Refund',
-              eventAction: `Issue ${partial ? 'Partial' : 'Full'} Refund`,
-              eventLabel: label,
-            });
-          }
-          this.props.showNotification({
-            type: 'success',
-            message: 'Payment refunded',
-            closeTimeout: 5000,
-          });
-
-          /* istanbul ignore else */
-          if (typeof this.props.onRefund === 'function') {
-            this.props.onRefund();
-          }
-
-          /* istanbul ignore else */
-          if (this.props.afterRefund)
-            this.props.afterRefund({
-              amount: data.amount,
-              partial,
-              payment: this.props.payment,
-            });
-
-          this.props.closeModal();
-        })
-        .catch(
-          /* istanbul ignore next */ ({ errors }) => {
-            if (errors)
-              this.props.showNotification({
-                type: 'error',
-                message: errors,
-                closeTimeout: 5000,
-              });
-          },
-        )
-        .finally(() => {
-          this.setState({ refundApiInProgress: false });
+        if (!partial) {
+          data.amount = payment.amount - payment.amount_refunded;
+        }
+        window.rzpAnalytics?.({
+          eventCategory: 'Dashboard - Instant Refund',
+          eventAction: 'Yes Refund',
+          eventLabel: `${
+            speedValue === 'normal' ? 'Normal' : 'Instant'
+          } Refund | Default speed ${this.getLabelForRefundDefaultSpeed()} `,
         });
-    }
+        analyticsTrack({
+          objectName: 'issue refund',
+          actionName: 'clicked',
+          screen: 'transactions',
+        });
+        this.props
+          .refundPayment(payment, data)
+          .then(() => {
+            const default_speed = this.props.default_refund_speed;
+            const is_normal = default_speed === 'normal';
+            const is_instant = default_speed !== 'normal';
+            const is_unchecked = this.analytics.check_box == false;
+            const label = `${partial ? 'Partial' : 'Full'} Refund${
+              this.analytics.hovered ? ' | Hover Tooltip' : ''
+            }${this.analytics.hover_breakup ? ' | Hover Breakup Tooltip' : ''}${
+              this.analytics.comment ? ' | Add Comment' : ''
+            }${
+              this.analytics.check_box !== null
+                ? this.analytics.check_box == true
+                  ? ' | Checked Checkbox'
+                  : ' | Unchecked Checkbox'
+                : ''
+            }${
+              default_speed === 'normal' ? ' | Default Speed Normal' : ' | Default Speed Instant'
+            }`;
+            /* istanbul ignore next */
+            if (
+              (partial && this.analytics.comment && is_normal) ||
+              (partial && this.analytics.comment && is_instant) ||
+              (partial && this.analytics.check_box && is_normal) ||
+              (partial && this.analytics.hovered && this.analytics.check_box && is_normal) ||
+              (partial && is_unchecked && is_instant) ||
+              (partial && this.analytics.hover_breakup && is_unchecked && is_instant) ||
+              // now instant case
+              (!partial && this.analytics.comment && is_normal) ||
+              (!partial && this.analytics.comment && is_instant) ||
+              (!partial && this.analytics.check_box && is_normal) ||
+              (!partial && this.analytics.hovered && this.analytics.check_box && is_normal) ||
+              (!partial && is_unchecked && is_instant) ||
+              (!partial && this.analytics.hover_breakup && is_unchecked && is_instant)
+            ) {
+              window.rzpAnalytics?.({
+                eventCategory: 'Dashboard - Instant Refund',
+                eventAction: `Issue ${partial ? 'Partial' : 'Full'} Refund`,
+                eventLabel: label,
+              });
+            }
+            this.props.showNotification({
+              type: 'success',
+              message: 'Payment refunded',
+              closeTimeout: 5000,
+            });
+
+            /* istanbul ignore else */
+            if (typeof this.props.onRefund === 'function') {
+              this.props.onRefund();
+            }
+
+            /* istanbul ignore else */
+            if (this.props.afterRefund)
+              this.props.afterRefund({
+                amount: data.amount,
+                partial,
+                payment: this.props.payment,
+              });
+
+            this.props.closeModal();
+          })
+          .catch(
+            /* istanbul ignore next */ ({ errors }) => {
+              if (errors)
+                this.props.showNotification({
+                  type: 'error',
+                  message: errors,
+                  closeTimeout: 5000,
+                });
+            },
+          )
+          .finally(() => {
+            this.setState({ refundApiInProgress: false });
+          });
+      }
+    });
   }
 
   save = (props) => {

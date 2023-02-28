@@ -23,7 +23,7 @@ export const payment = {
     refund: jest.fn(
       () =>
         new Promise((resolve) => {
-          setTimeout(resolve, 50);
+          setTimeout(resolve, 150);
         }),
     ),
 
