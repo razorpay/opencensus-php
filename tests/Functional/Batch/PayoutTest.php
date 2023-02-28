@@ -2844,7 +2844,7 @@ class PayoutTest extends TestCase
             'Fund Account Vpa,Fund Account Phone Number,Contact Name,Payout Narration,Payout Reference Id,Fund Account Email,Contact Type,' .
             'Contact Email,Contact Mobile,Contact Reference Id,notes[code],notes[place]';
 
-        $expectedDataRow = ',2323230041626905,10,INR,amazonpay,refund,,wallet,\'=SUM(A1,A2),,,,+918124632237,' .
+        $expectedDataRow = ',2323230041626905,10,INR,amazonpay,refund,,wallet,"\'=SUM(A1,A2)",,,,+918124632237,' .
             'Mehul Kaushik,test123,,sample@example.com,employee,mehul.kaushik@razorpay.com,,,test,Bangalore';
 
         $this->assertEquals($expectedHeaderRow, trim($fileContent[0]));

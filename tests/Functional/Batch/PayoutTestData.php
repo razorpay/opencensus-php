@@ -1176,7 +1176,7 @@ return [
                         Batch\Header::PAYOUT_REFERENCE_ID       => '',
                         Batch\Header::FUND_ACCOUNT_ID           => '',
                         Batch\Header::FUND_ACCOUNT_TYPE         => 'wallet',
-                        Batch\Header::FUND_ACCOUNT_NAME         => '\'=SUM(A1,A2)',
+                        Batch\Header::FUND_ACCOUNT_NAME         => '"\'=SUM(A1,A2)"',
                         Batch\Header::FUND_ACCOUNT_IFSC         => '',
                         Batch\Header::FUND_ACCOUNT_NUMBER       => '',
                         Batch\Header::FUND_ACCOUNT_VPA          => '',

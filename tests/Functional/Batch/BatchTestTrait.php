@@ -138,6 +138,30 @@ trait BatchTestTrait
         $this->testData[$callee]['request']['files']['file'] = $uploadedFile;
     }
 
+    public function getPartnerSubmerchantInviteCapitalBulkEntries(): array
+    {
+        return [
+            [
+                Header::BUSINESS_NAME           => "Erebor Travels",
+                Header::ACCOUNT_NAME            => "Erebor Travels",
+                Header::CONTACT_MOBILE          => "9999999999",
+                Header::EMAIL                   => "testing.capital@razorpay.com",
+                Header::ANNUAL_TURNOVER_MIN     => "100000",
+                Header::ANNUAL_TURNOVER_MAX     => "1000000",
+                Header::COMPANY_ADDRESS_LINE_1  => "Erebor Travels Pvt. Ltd.",
+                Header::COMPANY_ADDRESS_LINE_2  => "Major Industry Area",
+                Header::COMPANY_ADDRESS_CITY    => "Akola",
+                Header::COMPANY_ADDRESS_STATE   => "Maharashtra",
+                Header::COMPANY_ADDRESS_COUNTRY => "IN",
+                Header::COMPANY_ADDRESS_PINCODE => "444001",
+                Header::BUSINESS_TYPE           => "PROPRIETORSHIP",
+                Header::BUSINESS_VINTAGE        => "BETWEEN_6MONTHS_12MONTHS",
+                Header::GSTIN                   => "37ABCBS1234N1Z1",
+                Header::PROMOTER_PAN            => "ABCPS1234N",
+            ]
+        ];
+    }
+
     public function getRecurringAxisChargeBatch()
     {
         return [

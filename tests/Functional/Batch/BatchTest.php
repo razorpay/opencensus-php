@@ -269,6 +269,34 @@ class BatchTest extends TestCase
         $this->startTest();
     }
 
+    public function testPartnerSubmerchantInviteCapitalBulkCSVFileValidate()
+    {
+        $this->ba->proxyAuth();
+
+        $entries = $this->getPartnerSubmerchantInviteCapitalBulkEntries();
+
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testPartnerSubmerchantInviteCapitalBulkCSVWithCommaFileValidate()
+    {
+        $this->ba->proxyAuth();
+
+        $entries = $this->getPartnerSubmerchantInviteCapitalBulkEntries();
+
+        $testData = $this->testData["testPartnerSubmerchantInviteCapitalBulkCSVFileValidate"];
+
+        $testData["response"]["content"]["parsed_entries"][0]["company_address_line_2"] = "\"Major Industry Area, Major Industry Place\"";
+
+        $entries[0][Batch\Header::COMPANY_ADDRESS_LINE_2] = "Major Industry Area, Major Industry Place";
+
+        $this->createAndPutCsvFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest($testData);
+    }
+
     public function testPLBulkBatchCreateForValidUserRoles()
     {
         $this->ba->proxyAuth();

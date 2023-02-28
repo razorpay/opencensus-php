@@ -499,4 +499,40 @@ return [
         ],
     ],
 
+    'testPartnerSubmerchantInviteCapitalBulkCSVFileValidate' => [
+        'request'  => [
+            'url'     => '/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'partner_submerchant_invite_capital'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                "processable_count" => 1,
+                "error_count"       => 0,
+                "parsed_entries"    => [
+                    [
+                        "business_name"           => "Erebor Travels",
+                        "account_name"            => "Erebor Travels",
+                        "contact_mobile"          => "9999999999",
+                        "email"                   => "testing.capital@razorpay.com",
+                        "annual_turnover_min"     => "100000",
+                        "annual_turnover_max"     => "1000000",
+                        "company_address_line_1"  => "Erebor Travels Pvt. Ltd.",
+                        "company_address_line_2"  => "Major Industry Area",
+                        "company_address_city"    => "Akola",
+                        "company_address_state"   => "Maharashtra",
+                        "company_address_country" => "IN",
+                        "company_address_pincode" => "444001",
+                        "business_type"           => "PROPRIETORSHIP",
+                        "business_vintage"        => "BETWEEN_6MONTHS_12MONTHS",
+                        "gstin"                   => "37ABCBS1234N1Z1",
+                        "promoter_pan"            => "ABCPS1234N",
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

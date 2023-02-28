@@ -65,6 +65,8 @@ class Base extends BaseModel\Core
     const EXCEL_FORMULAE_INITIATOR = [
         "=",
         "@",
+        "\"=",
+        "\"@"
     ];
 
     // Additional output keys
@@ -1271,9 +1273,23 @@ class Base extends BaseModel\Core
                     $entry[$key] = trim($value);
                 }
                 // Add ' if found any formulae in excel value (formulae generally starts from = and @)
-                else if (($value !== null) and strlen(trim($value)) > 0 and in_array(trim($value)[0], self::EXCEL_FORMULAE_INITIATOR, true) === true)
+                else if (
+                    ($value !== null) and
+                    (strlen(trim($value)) > 0) and
+                    (
+                        (in_array(trim($value)[0], self::EXCEL_FORMULAE_INITIATOR, true) === true) or
+                        (in_array(substr(trim($value), 0, 2), self::EXCEL_FORMULAE_INITIATOR, true) === true)
+                    )
+                )
                 {
-                    $entry[$key] = "'" . $value;
+                    if (trim($value)[0] === '"')
+                    {
+                        $entry[$key] = trim($value)[0] . "'" . substr(trim($value), 1);
+                    }
+                    else
+                    {
+                        $entry[$key] = "'" . trim($value);
+                    }
                 }
             }
         }

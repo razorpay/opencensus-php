@@ -817,6 +817,17 @@ trait FileHandlerTrait
         }
         else
         {
+            $values = array_map(
+                function($value) use ($delimiter) {
+                    if ((empty($value) === false) and (str_contains($value, $delimiter) === true))
+                    {
+                        return '"' . $value . '"';
+                    }
+                    return $value;
+                },
+                $values
+            );
+
             $values = array_combine($headings, $values);
         }
 
