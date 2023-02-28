@@ -30,38 +30,42 @@ class Events
     // Even spacing differences will lead to delivery failures. So test all changes in these templates
     const WHATSAPP_TEMPLATES = [
         self::TICKET_CREATED      => [
-            'Hi, ',
-            'Thank you for reaching out. This is to inform you that your ticket number {ticket_id} has been registered. Our team is working on your request and will get back to you within 3 working days. You can track your ticket updates by logging into the dashboard : {url} ',
+            'Your support ticket {ticket_id} has been registered. Our team is working to resolve your issue and will update you within 3 working days. ',
+            'You can track the support ticket by logging into the dashboard : {url} ',
             'Team Razorpay',
         ],
         self::TICKET_DELAY_UPDATE_24HRS => [
-            'Hi, ',
-            'We are sorry about the delay regarding your ticket {ticket_id}. We will revert back to you with a resolution for the same in the next 24 hrs. Please bear with us. You can track your ticket updates by logging into the dashboard : {url} ',
-            'Team Razorpay',
+            'There is a short delay in resolving your issue {ticket_id}. We are working on it and will update you within the next 24 hrs. ',
+            'You can track the support ticket by logging into the dashboard : {url} ',
+            'Team Razorpay'
         ],
         self::TICKET_DELAY_UPDATE_72HRS => [
-            'Hi, ',
-            'We are sorry about the delay regarding your ticket {ticket_id}. We will revert back to you with a resolution for the same in the next 72 hrs. Please bear with us. You can track your ticket updates by logging into the dashboard : {url} ',
+            'There is a short delay in resolving your issue {ticket_id}. We are working on it and will update you within the next 72 hrs. ',
+            'You can track your support ticket updates by logging into the dashboard : {url} ',
             'Team Razorpay',
         ],
         self::TICKET_DETAILS_PENDING => [
-            'Hi, ',
-            'We require a few details from you on the ticket {ticket_id}. Request you to check and respond with the details for us to resolve the concern raised. You can track your ticket updates by logging into the dashboard : {url} ',
+            'Action required: ',
+            'Our team has requested for a few more details from you on the support ticket {ticket_id}.',
+            'You can track the support ticket by logging into the dashboard : {url} ',
             'Team Razorpay',
         ],
         self::TICKET_RESOLVED => [
-            'Hi, ',
-            'Your issue regarding the ticket {ticket_id} has been resolved and a response has been sent over to you. If you are not satisfied with the resolution provided, feel free to reopen the ticket by replying to the same ticket. You can track your ticket updates by logging into the dashboard : {url} ',
+            'Your support ticket {ticket_id} is closed as the issue has been resolved. ',
+            'If you are not satisfied with the resolution provided, you can reopen the support ticket by replying to the same support ticket. ',
+            'You can track the support ticket by logging into the dashboard : {url} ',
             'Team Razorpay',
         ],
         self::TICKET_REOPENED => [
-            'Hi, ',
-            'We believe that your issue regarding the ticket {ticket_id} is still not resolved. Your ticket has been reopened and our team will take it up on priority and get back to you within 24 hrs. You can track your ticket updates by logging into the dashboard : {url} ',
+            'Your support ticket {ticket_id} has been reopened as per your request and our team will take it up on priority to get back to you within 24 hrs. ',
+            'You can track the support ticket by logging into the dashboard : {url} ',
             'Team Razorpay',
         ],
         self::AGENT_TICKET_CREATED => [
-            'Hi, ',
-            'Our team has raised a new service request that requires your action. Please respond sooner for a faster resolution. You can track and reply to the service request by logging into the dashboard : {url} ',
+            'Action required: ',
+            'Our team has requested for a few more details from you. ',
+            'Respond sooner for faster resolution. ',
+            'You can track the support ticket and reply to our team by logging into the dashboard : {url} ',
             'Team Razorpay',
         ],
       ];
