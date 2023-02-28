@@ -553,16 +553,16 @@ class InternationalEnablementTest extends TestCase
 
     public function storkMockForUnderReview()
     {
-        $dateTwoDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
+        $tatDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
 
         $expectedStorkParameters = [
-            'update_date' => $dateTwoDaysLater,
+            'update_date' => $tatDaysLater,
         ];
 
         $this->expectStorkSendSmsRequest('sms.dashboard.ie_under_review', '1234567890', $expectedStorkParameters);
 
         $this->expectStorkSendWhatsappMessageRequest('Hi testname,
-Your request to activate international card payments is under review. We’ll verify your details in a few days and share an update by ' . $dateTwoDaysLater . '.
+Your request to activate international card payments is under review. We’ll verify your details in a few days and share an update by ' . $tatDaysLater . '.
 Note: You’ll be able to collect international card payments only after verification is complete.
 To check details, go to the ‘International payments’ option in ‘Account and Settings’ section on your Razorpay dashboard: https://dashboard.razorpay.com/app/payment-methods?instrument=international
 Thank you,

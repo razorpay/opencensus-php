@@ -15,6 +15,7 @@ use Request;
 
 use Illuminate\Support\Str;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\Controllers\CareProxyController;
 use RZP\Http\Controllers\MerchantController;
 use RZP\Jobs\CapturePartnershipConsents;
 use RZP\Models\Admin\Org\Entity as ORG_ENTITY;
@@ -10441,12 +10442,29 @@ class Service extends Base\Service
 
         $needsClarification =  (new WorkFlowActionCore())->getNeedsClarificationBodyFromWorkflowComment($action);
 
+        $this->addCustomKeysInWorkflowDetailsResponse($response, $workflowType, $permission);
+
         return array_merge($response, [
             'needs_clarification'      => $needsClarification,
             'permission'               => $permission,
             'request_under_validation' => $this->isRequestUnderValidationForMerchantWorkflow($workflowType, $merchantId),
             'tags'                     => $this->getWorkflowTags($action),
         ]);
+    }
+
+    protected function addCustomKeysInWorkflowDetailsResponse(array & $response, string $workflowType, $permission)
+    {
+        if (($workflowType === Constants::BANK_DETAIL_UPDATE) and
+            ($permission === Permission::EDIT_MERCHANT_BANK_DETAIL))
+        {
+            $careResponse = $this->app['care_service']->dashboardProxyRequest(CareProxyController::GET_BANK_ACCOUNT_UPDATE_RECORD, []);
+
+            if ((array_key_exists(Constants::BANK_ACCOUNT_ID, $careResponse) === true) and
+                ($careResponse[Constants::BANK_ACCOUNT_ID] !== ""))
+            {
+                $response[Constants::BANK_ACCOUNT_ID] = $careResponse[Constants::BANK_ACCOUNT_ID];
+            }
+        }
     }
 
     public function getMerchantWorfklowDetailsBulk(string $merchantId, array $input) {

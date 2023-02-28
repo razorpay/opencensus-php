@@ -35,6 +35,7 @@ final class Constants
     const UNSUSPEND                               = 'unsuspend';
     const PAYMENT_TIMEOUT_WINDOW                  = 'payment_timeout_window';
     const MERCHANT                                = 'merchant';
+    const BANK_ACCOUNT_ID                         = 'bank_account_id';
     const PARAMS                                  = 'params';
     const IS_CTA_TEMPLATE                         = 'is_cta_template';
     const BUTTON_URL_PARAM                        = 'button_url_param';

@@ -24,6 +24,10 @@ class CareProxyController extends Controller
     //merchantNavigation
     const MERCHANT_NAVIGATION_LIST  = 'twirp/rzp.care.merchantNavigation.v1.MerchantNavigationService/GetMerchantNavigationList';
 
+    //bankAccount
+    const ADD_BANK_ACCOUNT_UPDATE_RECORD = 'twirp/rzp.care.bankAccount.v1.BankAccountService/AddBankAccountUpdateRecord';
+    const GET_BANK_ACCOUNT_UPDATE_RECORD = 'twirp/rzp.care.bankAccount.v1.BankAccountService/GetBankAccountUpdateRecord';
+
     //cron
     const NOTIFY_MERCHANT_CSM_CHANGED = 'twirp/rzp.care.csm.v1.CsmService/NotifyMerchantsWithCsmChange';
     const INIT_SLOTS             = 'twirp/rzp.care.callback.v1.CallbackService/InitSlots';

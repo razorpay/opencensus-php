@@ -4,6 +4,7 @@ namespace RZP\Models\BankAccount;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Http\Controllers\CareProxyController;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
@@ -622,9 +623,9 @@ class Core extends Base\Core
 
         $newBankAccount = $newBankAccount->toArray();
 
-        $dateTwoDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
+        $tatDaysLater = Carbon::now()->addDays(MerchantDashboardConstants::BANK_ACCOUNT_TAT_DAYS)->format('M d,Y');
 
-        $newBankAccount['update_date'] = $dateTwoDaysLater;
+        $newBankAccount['update_date'] = $tatDaysLater;
 
         $merchantBankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
@@ -1226,6 +1227,12 @@ class Core extends Base\Core
 
         $this->createOrChangeBankAccount($data[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false, false);
 
+        $currentBankAccount = (new Service)->getOwnBankAccount();
+
+        $response = $this->app['care_service']->dashboardProxyRequest(CareProxyController::ADD_BANK_ACCOUNT_UPDATE_RECORD, [
+            Merchant\Constants::BANK_ACCOUNT_ID => $currentBankAccount[Merchant\Constants::ID]
+        ]);
+
         $this->sendSelfServeSuccessAnalyticsEventToSegmentForBankAccountUpdateViaBvs($merchant);
 
         $this->stopShowingRejectionReasonForBankAccountUpdateSelfServe($merchant->bankAccount->getId(), $merchant->bankAccount->getEntityName());
@@ -1259,12 +1266,12 @@ class Core extends Base\Core
         {
             $checker = $this->getSuperAdminChecker();
 
+            $this->closeWorkflowIfApplicable($action, $checker);
+
             $this->app['trace']->info(TraceCode::BANK_ACCOUNT_UPDATE_WORKFLOW_ACTION_CLOSED, [
                 DifferEntity::ACTION_ID   => $action->getId(),
                 CheckerEntity::CHECKER_ID => $checker->getId(),
             ]);
-
-            $this->closeWorkflowIfApplicable($action, $checker);
         }
     }
 
@@ -1679,6 +1686,17 @@ class Core extends Base\Core
         $this->validateMerchantFundsAreNotOnHold($merchant);
 
         $data = $this->createOrChangeBankAccount($input[Constants::BANK_ACCOUNT_UPDATE_INPUT], $merchant, false);
+
+        $merchantId = $merchant->getId();
+
+        $currentBankAccount = (new Service)->getBankAccount($merchantId);
+
+        $response = $this->app['care_service']->adminProxyRequest(CareProxyController::ADD_BANK_ACCOUNT_UPDATE_RECORD, [
+            Merchant\Constants::BANK_ACCOUNT_ID => $currentBankAccount['id'],
+            Merchant\Constants::MERCHANT        => [
+                'id' => $merchantId,
+            ]
+        ]);
 
         $this->sendSelfServeSuccessAnalyticsEventToSegmentForBankAccountUpdateViaWorkflow($merchant);
 

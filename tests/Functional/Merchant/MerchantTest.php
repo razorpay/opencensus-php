@@ -4229,10 +4229,10 @@ class MerchantTest extends TestCase
 
         $this->app->instance('stork_service', $storkMock);
 
-        $dateTwoDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
+        $tatDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
 
         $expectedStorkParametersForBankAccountChangeUnderReviewTemplate = [
-            'update_date'        => $dateTwoDaysLater,
+            'update_date'        => $tatDaysLater,
         ];
 
         $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_update_under_review', '1234567890', $expectedStorkParametersForBankAccountChangeUnderReviewTemplate);
@@ -4259,7 +4259,7 @@ class MerchantTest extends TestCase
 
         $oldBankAccount = $this->getDbLastEntity('bank_account', 'test')->toArrayAdmin();
 
-        $this->mockStorkForBankAccountUpdateOnHoldUnderReview($storkMock, $merchantId, $dateTwoDaysLater);
+        $this->mockStorkForBankAccountUpdateOnHoldUnderReview($storkMock, $merchantId, $tatDaysLater);
 
         $this->startTest();
 
@@ -4387,7 +4387,7 @@ class MerchantTest extends TestCase
         $settlementsResponse['config']['features']['hold']['status'] = false;
 
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true, [], $settlementsResponse);
-        
+
         $this->fixtures->create('feature', [
             'entity_id'   => $merchantId,
             'name'        => 'new_settlement_service',
@@ -4504,11 +4504,11 @@ Team Razorpay',
         return $merchantId;
     }
 
-    protected function mockStorkForBankAccountUpdateUnderReview($storkMock, $merchantId, $dateTwoDaysLater)
+    protected function mockStorkForBankAccountUpdateUnderReview($storkMock, $merchantId, $tatDaysLater)
     {
         $this->expectStorkWhatsappRequest($storkMock,
             'Hi testname,
-Your bank account change request is under review. We’ll verify your details in a few days and share an update by ' . $dateTwoDaysLater . '
+Your bank account change request is under review. We’ll verify your details in a few days and share an update by ' . $tatDaysLater . '
 The details given by you are:
 Account Number: 0000009999999999999
 IFSC Code: ICIC0001206
@@ -4520,11 +4520,11 @@ Team Razorpay',
         );
     }
 
-    protected function mockStorkForBankAccountUpdateOnHoldUnderReview($storkMock, $merchantId, $dateTwoDaysLater)
+    protected function mockStorkForBankAccountUpdateOnHoldUnderReview($storkMock, $merchantId, $tatDaysLater)
     {
         $this->expectStorkWhatsappRequest($storkMock,
             'Hi testname
-Your bank account change request is under review. We’ll verify your details in a few days and share an update by ' . $dateTwoDaysLater . '
+Your bank account change request is under review. We’ll verify your details in a few days and share an update by ' . $tatDaysLater . '
 The details given by you are
 Account Number: 0000009999999999999
 IFSC Code: ICIC0001206
@@ -4685,10 +4685,10 @@ Team Razorpay',
 
         $this->app->instance('stork_service', $storkMock);
 
-        $dateTwoDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
+        $tatDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
 
         $expectedStorkParametersForBankAccountChangeUnderReviewTemplate = [
-            'update_date'        => $dateTwoDaysLater,
+            'update_date'        => $tatDaysLater,
         ];
 
         $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_update_under_review', '1234567890', $expectedStorkParametersForBankAccountChangeUnderReviewTemplate);
@@ -4699,7 +4699,7 @@ Team Razorpay',
 
         $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
 
-        $this->mockStorkForBankAccountUpdate($storkMock, $merchantId, $dateTwoDaysLater);
+        $this->mockStorkForBankAccountUpdate($storkMock, $merchantId, $tatDaysLater);
 
         $beforeCount = $this->getBankAccountsCount($merchantId);
 
@@ -4723,7 +4723,7 @@ Team Razorpay',
             'name'             => 'Test R4zorpay:',
         ]);
 
-        $this->assertBankAccountUpdateAllMailQueued(null, $dateTwoDaysLater);
+        $this->assertBankAccountUpdateAllMailQueued(null, $tatDaysLater);
 
         $afterCount = $this->getBankAccountsCount($merchantId);
 
@@ -4758,11 +4758,11 @@ Team Razorpay',
         $this->getNeedsClarificationQueryAndAssert($merchantId, 'bank_detail_update');
     }
 
-    protected function mockStorkForBankAccountUpdate($storkMock, $merchantId, $dateTwoDaysLater)
+    protected function mockStorkForBankAccountUpdate($storkMock, $merchantId, $tatDaysLater)
     {
         $this->expectStorkWhatsappRequest($storkMock,
             'Hi testname,
-Your bank account change request is under review. We’ll verify your details in a few days and share an update by ' . $dateTwoDaysLater . '
+Your bank account change request is under review. We’ll verify your details in a few days and share an update by ' . $tatDaysLater . '
 The details given by you are:
 Account Number: 0000009999999999999
 IFSC Code: ICIC0001206
@@ -4990,7 +4990,7 @@ Team Razorpay',
         $this->assertEquals(1, $accountChangeRequestMailCount);
     }
 
-    protected function assertBankAccountUpdateAllMailQueued($org = null, $dateTwoDaysLater = "")
+    protected function assertBankAccountUpdateAllMailQueued($org = null, $tatDaysLater = "")
     {
         $accountChangeRequestMailCount = 0;
 
@@ -5000,7 +5000,7 @@ Team Razorpay',
 
         if (is_null($org) === true)
         {
-            Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($org, & $accountChangeRequestMailCount, & $pennyTestingFailMailCount ,& $accountChangedMailCount, $dateTwoDaysLater)
+            Mail::assertQueued(MerchantMail\MerchantDashboardEmail::class, function ($mail) use ($org, & $accountChangeRequestMailCount, & $pennyTestingFailMailCount ,& $accountChangedMailCount, $tatDaysLater)
             {
                 $viewData = $mail->viewData;
 
@@ -5015,7 +5015,7 @@ Team Razorpay',
                     $this->assertEquals('0000009999999999999', $viewData['account_number']);
                     $this->assertEquals('ICIC0001206', $viewData['ifsc_code']);
                     $this->assertEquals('**011', $viewData['last_3']);
-                    $this->assertEquals($dateTwoDaysLater, $viewData['update_date']);
+                    $this->assertEquals($tatDaysLater, $viewData['update_date']);
                 }
 
                 elseif ($view === 'emails.merchant.bank_account_update_success')
@@ -13647,6 +13647,34 @@ Team Razorpay',
         );
     }
 
+    protected function expectCareServiceRequestAndResponse($expectedPath, $respondWithBody, $respondWithStatus)
+    {
+        $this->careServiceMock
+            ->shouldReceive('sendRequest')
+            ->with(Mockery::on(function ($actualPath) use ($expectedPath)
+            {
+                return $expectedPath === $actualPath;
+            }),
+            Mockery::on(function ($actualMethod)
+            {
+                return strtolower($actualMethod) === 'post';
+            }),
+            Mockery::on(function ($actualContent)
+            {
+                return true;
+            }))
+            ->andReturnUsing(function () use ($respondWithBody, $respondWithStatus)
+            {
+                $response = new \WpOrg\Requests\Response;
+
+                $response->body = json_encode($respondWithBody);
+
+                $response->status_code = $respondWithStatus;
+
+                return $response;
+            });
+    }
+
     protected function setupMerchantForBankAccountUpdateTestViaPennyTesting($testcasename, $createBankAccount = true, $merchantDetails = [], $settlementsResponse = [])
     {
         Mail::fake();
@@ -13660,6 +13688,24 @@ Team Razorpay',
         }
 
         $this->mockSettlementsConfigData($settlementsResponse);
+
+        $this->setUpCareServiceMock();
+
+        $this->expectCareServiceRequestAndResponse(
+            'https://care-int.razorpay.com/twirp/rzp.care.bankAccount.v1.BankAccountService/AddBankAccountUpdateRecord',
+            [
+                'success' => true,
+            ],
+            200
+        );
+
+        $this->expectCareServiceRequestAndResponse(
+            'https://care-int.razorpay.com/twirp/rzp.care.bankAccount.v1.BankAccountService/GetBankAccountUpdateRecord',
+            [
+                'bank_account_id' => 'ba_12345678901234',
+            ],
+            200
+        );
 
         $this->updateUploadDocumentData($testcasename, 'address_proof_url');
 
@@ -13774,10 +13820,10 @@ Team Razorpay',
 
         $this->app->instance('stork_service', $storkMock);
 
-        $dateTwoDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
+        $tatDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
 
         $expectedStorkParametersForBankAccountChangeUnderReviewTemplate = [
-            'update_date'        => $dateTwoDaysLater,
+            'update_date'        => $tatDaysLater,
         ];
 
         $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_update_under_review', '1234567890', $expectedStorkParametersForBankAccountChangeUnderReviewTemplate);
@@ -13799,7 +13845,7 @@ Team Razorpay',
             'promoter_pan_name' => 'pan_name'
         ]);
 
-        $this->mockStorkForBankAccountUpdate($storkMock, $merchantId, $dateTwoDaysLater);
+        $this->mockStorkForBankAccountUpdate($storkMock, $merchantId, $tatDaysLater);
 
         $this->startTest();
 
@@ -13847,7 +13893,7 @@ Team Razorpay',
 
         $workflow = $this->getDbEntityById('workflow_action', $actionId);
 
-        $this->assertEquals($workflow['state'], 'closed');
+        $this->assertEquals('closed', $workflow['state']);
 
         $this->assertBankAccountForMerchant($merchantId, [
             'entity'            => 'bank_account',
@@ -13855,7 +13901,7 @@ Team Razorpay',
             'account_number'    => '0000009999999999999',
         ]);
 
-        $this->assertBankAccountUpdateAllMailQueued(null, $dateTwoDaysLater);
+        $this->assertBankAccountUpdateAllMailQueued(null, $tatDaysLater);
     }
 
     public function testBankAccountFileUploadOnSyncBvsFailAsyncFail()
@@ -13872,10 +13918,10 @@ Team Razorpay',
 
         $this->app->instance('stork_service', $storkMock);
 
-        $dateTwoDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
+        $tatDaysLater = Carbon::now()->addDays(2)->format('M d,Y');
 
         $expectedStorkParametersForBankAccountChangeUnderReviewTemplate = [
-            'update_date'        => $dateTwoDaysLater,
+            'update_date'        => $tatDaysLater,
         ];
 
         $this->expectStorkSmsRequest($storkMock,'sms.dashboard.bank_account_update_under_review', '1234567890', $expectedStorkParametersForBankAccountChangeUnderReviewTemplate);
@@ -13895,7 +13941,7 @@ Team Razorpay',
             'promoter_pan_name' => 'pan_name'
         ]);
 
-        $this->mockStorkForBankAccountUpdateUnderReview($storkMock, $merchantId, $dateTwoDaysLater);
+        $this->mockStorkForBankAccountUpdateUnderReview($storkMock, $merchantId, $tatDaysLater);
 
         $this->startTest();
 
@@ -14027,6 +14073,24 @@ Team Razorpay',
         $settlementsResponse['config']['features']['hold']['status'] = false;
 
         $this->mockSettlementsConfigData($settlementsResponse);
+
+        $this->setUpCareServiceMock();
+
+        $this->expectCareServiceRequestAndResponse(
+            'https://care-int.razorpay.com/twirp/rzp.care.bankAccount.v1.BankAccountService/AddBankAccountUpdateRecord',
+            [
+                'success' => true,
+            ],
+            200
+        );
+
+        $this->expectCareServiceRequestAndResponse(
+            'https://care-int.razorpay.com/twirp/rzp.care.bankAccount.v1.BankAccountService/GetBankAccountUpdateRecord',
+            [
+                'bank_account_id' => 'ba_12345678901234',
+            ],
+            200
+        );
 
         $merchant = $this->fixtures->create('merchant', ['name' => 'testname']);
 
