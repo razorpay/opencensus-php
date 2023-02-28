@@ -1945,8 +1945,6 @@ class Service extends Base\Service
 
             $this->applyReferralPartner($input);
 
-            $this->addPartnerSubMerchantMappingIfApplicable($merchant, $input);
-
             $this->saveMerchantDetailForPreSignUp($input);
 
             if (empty($input[Entity::BUSINESS_NAME]) === false)
@@ -2240,28 +2238,6 @@ class Service extends Base\Service
         $merchantCore->sendPartnerLeadInfoToSalesforce($subMerchant->getId(), $partner->getId(), $product);
     }
 
-    public function addPartnerSubMerchantMappingIfApplicable($subMerchant, array &$input)
-    {
-        if ((isset($input[Merchant\Constants::PARTNER_ID]) === false) or
-            (empty($input[Merchant\Constants::PARTNER_ID]) === true))
-        {
-            return false;
-        }
-
-        $isExpEnabled = Merchant\PhantomUtility::isPhantomOnBoardingWhitelistedForPartner($input[Merchant\Constants::PARTNER_ID]);
-
-        if ($isExpEnabled)
-        {
-            $mappingInput = [
-                'partner_id' => $input['partner_id'],
-                'source'     => PartnerConstants::PHANTOM
-            ];
-
-            $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, Product::PRIMARY);
-        }
-
-        unset($input[Merchant\Constants::PARTNER_ID]);
-    }
     /**
      * This function is used to get zapier data for activation
      *

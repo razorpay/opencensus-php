@@ -4973,22 +4973,6 @@ return [
         ],
     ],
 
-    'testPutPreSignUpDetailsWithPartnerIdForAggregator' => [
-        'request' => [
-            'content' => [
-                'business_type' => '2',
-                'department'    => '7',
-                'partner_id'   => '10000000000000',
-            ],
-            'url'     => '/pre_signup',
-            'method'  => 'PUT',
-        ],
-        'response' => [
-            'content' => [
-            ],
-        ],
-    ],
-
     'testFetchIdentityVerificationUrlForBVSFailure' => [
         'request'  => [
             'content' => [
@@ -5007,22 +4991,6 @@ return [
                     "public_error_code"   => "some_error_encountered"
                 ]
                 ],
-        ],
-    ],
-
-    'testPutPreSignUpDetailsWithPartnerIdAndDisabledExperiment' => [
-        'request' => [
-            'content' => [
-                'business_type' => '2',
-                'department'    => '7',
-                'partner_id'   => '10000000000000',
-            ],
-            'url'     => '/pre_signup',
-            'method'  => 'PUT',
-        ],
-        'response' => [
-            'content' => [
-            ],
         ],
     ],
 
@@ -5093,23 +5061,6 @@ return [
                     "internal_error_code" => "SERVER_ERROR",
                     "public_error_code"   => "some_error_encountered"
                 ]
-            ],
-        ],
-    ],
-
-    'testPutPreSignUpDetailsWithPartnerReferralAttributes' => [
-        'request' => [
-            'content' => [
-                'business_type' => '2',
-                'department'    => '7',
-                'partner_id'   => '10000000000000',
-                'referral_code'   => 'teslacomikejzc',
-            ],
-            'url'     => '/pre_signup',
-            'method'  => 'PUT',
-        ],
-        'response' => [
-            'content' => [
             ],
         ],
     ],

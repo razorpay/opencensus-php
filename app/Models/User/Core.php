@@ -2103,8 +2103,6 @@ class Core extends Base\Core
             $this->traceEmailOtpLoginRoute($input, TraceCode::USER_VERIFY_EMAIL_OTP_FOR_LOGIN);
         }
 
-        $this->checkAndAddPartnerMappingIfLoggedInWithPartnerReferral($user, $input);
-
         $this->trace->count(
             Metric::USER_LOGIN_COUNT,
             [
@@ -6008,29 +6006,5 @@ class Core extends Base\Core
         }
 
         return $context;
-    }
-
-    protected function checkAndAddPartnerMappingIfLoggedInWithPartnerReferral($user, $input)
-    {
-        if ((isset($input[Merchant\Constants::PARTNER_ID]) === false) and
-            (empty($input[Merchant\Constants::PARTNER_ID]) === true))
-        {
-            return;
-        }
-
-        $subMerchant = $user->merchants()->first();
-
-        try
-        {
-            \Request::instance()->request->add([Merchant\Constants::PHANTOM_SIGNUP => false]);
-            (new Merchant\Detail\Service())->addPartnerSubMerchantMappingIfApplicable($subMerchant, $input);
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->error(TraceCode::LOGIN_PARTNER_MAPPING_FAILURE, [
-                'error_message' => $e->getMessage()
-            ]);
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_PARTNER_MAP);
-        }
     }
 }

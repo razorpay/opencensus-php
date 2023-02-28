@@ -194,7 +194,6 @@ class Validator extends Base\Validator
         Entity::OTP                     => 'required|string|between:4,6',
         Entity::CAPTCHA                 => 'required_without:captcha_disable',
         Entity::CAPTCHA_DISABLE         => 'sometimes|string',
-        Merchant\Constants::PARTNER_ID  => 'sometimes|string'
     ];
 
     protected static $loginOtp2faPasswordRules = [
