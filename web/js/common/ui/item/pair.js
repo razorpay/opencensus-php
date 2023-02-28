@@ -301,5 +301,5 @@ export const storeProductId = {
 
 export const paymentReceiverType = {
   title: 'Receiver Type',
-  value: (item) => titleCase(item?.receiver_type) || '-',
+  value: (item) => (item?.receiver_type === 'pos' ? 'Offline' : 'Online'),
 };
