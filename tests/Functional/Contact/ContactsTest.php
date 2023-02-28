@@ -15,6 +15,7 @@ use RZP\Services\Pagination\Entity as PaginationEntity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Services\Segment\XSegmentClient;
+use RZP\Services\SplitzService;
 use RZP\Services\VendorPayments\Service;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -906,6 +907,18 @@ class ContactsTest extends TestCase
 
         Carbon::setTestNow(Carbon::now(Timezone::IST)->addMinutes(5));
 
+        $splitzMock = \Mockery::mock(SplitzService::class);
+        
+        $splitzMock->shouldReceive("evaluateRequest")->andReturn([
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ]);
+
+        $this->app->instance('splitzService', $splitzMock);
+
         $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
 
         $metroMock->shouldReceive("publish")->andReturn([]);
@@ -925,6 +938,18 @@ class ContactsTest extends TestCase
         $metroMock->shouldHaveReceived("publish")->withArgs(["contact-entity-update-test", $expectedMetroMessage]);
 
         // Test negative scenario where publishing to metro fails.
+
+        $splitzMock = \Mockery::mock(SplitzService::class);
+
+        $splitzMock->shouldReceive("evaluateRequest")->andReturn([
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ]);
+
+        $this->app->instance('splitzService', $splitzMock);
 
         $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
 
@@ -950,6 +975,18 @@ class ContactsTest extends TestCase
         $metroMock->shouldHaveReceived("publish")->withArgs(["contact-entity-update-test", $expectedMetroMessage]);
 
         // Test negative scenario where contact type is null.
+
+        $splitzMock = \Mockery::mock(SplitzService::class);
+
+        $splitzMock->shouldReceive("evaluateRequest")->andReturn([
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ]);
+
+        $this->app->instance('splitzService', $splitzMock);
 
         $metroMock = \Mockery::mock('RZP\Metro\MetroHandler');
 
