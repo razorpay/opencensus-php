@@ -186,6 +186,10 @@ class Constants
     const CACHE_KEY                               = 'cache_key';
     const CACHE_DATA                              = 'cache_data';
 
+    const UPI                      = 'UPI';
+    const CREATE                   = 'create';
+    const ONLINE                   = 'online';
+
     const BLOCKED_GSTIN_LIST = [
         '29AAGCR4375J1ZU'
     ];

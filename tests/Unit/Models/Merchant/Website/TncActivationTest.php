@@ -4,6 +4,7 @@ namespace Unit\Models\Merchant\Website;
 
 use DB;
 use Hash;
+use Config;
 use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -36,6 +37,8 @@ class TncActivationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        Config::set('services.kafka.producer.mock', true);
     }
 
     protected function mockRazorxTreatment()
@@ -149,7 +152,7 @@ class TncActivationTest extends TestCase
         $this->app['basicauth']->setMerchant($merchant);
 
         $this->app['repo']->transaction(function() use ($merchant) {
-        
+
             (new Merchant\Activate)->activate($merchant);
         });
 

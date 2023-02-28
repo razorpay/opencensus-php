@@ -32,6 +32,7 @@ use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Detail\ActivationFlow;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\DeviceDetail\Constants as DDConstants;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
@@ -40,6 +41,7 @@ use RZP\Mail\Merchant\RazorpayX\AccountActivationConfirmation;
 use RZP\Mail\Merchant\InstantActivation as InstantActivationMail;
 use RZP\Mail\Merchant\RazorpayX\InstantActivation as RazorpayXInstantActivationMail;
 use RZP\Services\Segment\EventCode as SegmentEvent;
+use RZP\Models\Merchant\Methods\Core as MethodsCore;
 
 class Activate extends Base\Core
 {
@@ -127,6 +129,8 @@ class Activate extends Base\Core
 
         // set methods before activating
         $merchant->setDefaultMethodsBasedOnCategory();
+
+        $this->sendTerminalCreationRequest($merchant, DEConstants::UPI, DEConstants::CREATE, DEConstants::ONLINE);
 
         $merchant->activate();
         //Will be added back when we test e2e flow for onboarding all the merchants
@@ -1157,5 +1161,22 @@ class Activate extends Base\Core
         );
 
         return (strtolower($variant) === 'on');
+    }
+
+    private function sendTerminalCreationRequest($merchant, $paymentMethod, $action, $merchantGenre)
+    {
+        if((new MethodsCore())->isUPIPaymentMethodAllowed($merchant) === true)
+        {
+            $topic = env('PAYMENT_METHOD_ENABLE_KAFKA_TOPIC_NAME');
+
+            $event = [
+                'merchant_id'    => $merchant->getMerchantId(),
+                'payment_method' => $paymentMethod,
+                'action'         => $action,
+                'merchant_genre' => $merchantGenre
+            ];
+
+            app('kafkaProducerClient')->produce($topic, stringify($event));
+        }
     }
 }

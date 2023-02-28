@@ -110,6 +110,8 @@ class ActivationTest extends OAuthTestCase
         $this->esDao = new EsDao();
 
         $this->esClient =  $this->esDao->getEsClient()->getClient();
+
+        Config::set('services.kafka.producer.mock', true);
     }
 
     protected function enableRazorXTreatmentForActivation()

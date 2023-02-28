@@ -717,6 +717,9 @@ final class RazorxTreatment
     // Experiment to enable async bulk approval or not
     const PAYOUT_BULK_APPROVE_ASYNC = 'payout_bulk_approve_async';
 
+    //Experiment to create dedicated UPI terminal
+    const UPI_DEDICATED_TERMINAL = 'upi_dedicated_terminal';
+
     const AUTOMATION_ACTIVATION = 'automation_activation';
 
     // Unexpected payment refund delay to T+1

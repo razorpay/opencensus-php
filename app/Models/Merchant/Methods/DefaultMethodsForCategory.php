@@ -3,7 +3,9 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Terminal\Category;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Admin\Org\Entity as OrgEntity;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 class DefaultMethodsForCategory
 {
@@ -1016,11 +1018,11 @@ class DefaultMethodsForCategory
     // These are all the methods provided in the sheet https://docs.google.com/spreadsheets/d/1eZMlh007Utp8JWGYGJ7Hk6zADSVlBWspHEzcGoKOydI
     // This is needed because the sheet does not provide info about some other methods like nach, amazonpay etc. Letting default get picked for them
     const CATEGORY_DEPENDENT_METHODS = [
+        Entity::UPI,
         Entity::CREDIT_CARD,
         Entity::DEBIT_CARD,
         Entity::AMEX,
         Entity::NETBANKING,
-        Entity::UPI,
         Entity::EMI,
         Entity::CARDLESS_EMI, // should be enabled if EMI is enabled, have placed in all the same places where Entity::EMI is there in the above map
         Entity::PREPAID_CARD,

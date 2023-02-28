@@ -13,14 +13,15 @@ use RZP\Services\Stork;
 use RZP\Models\Merchant\Store;
 use RZP\Models\Coupon\Constants;
 use RZP\Models\Merchant\Detail\Core;
+use RZP\Services\KafkaProducerClient;
+use RZP\Models\Merchant\Detail\Entity;
 use RZP\Services\Mock\ApachePinotClient;
 use RZP\Models\ClarificationDetail\Service;
 use RZP\Tests\Traits\TestsStorkServiceRequests;
+use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\Feature as Feature;
 use RZP\Models\Merchant\Website\Service as WebsiteService;
-use RZP\Models\Merchant\Detail\Core as DetailCore;
-use RZP\Models\Merchant\Detail\Entity;
 use RZP\Models\Merchant\Escalations;
 use RZP\Services\Mock\HarvesterClient;
 use RZP\Services\RazorXClient;
@@ -55,12 +56,14 @@ use RZP\Models\Merchant\Cron\Constants as CronConstants;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant as BVSConstants;
 use RZP\Models\Merchant\Cron as CronJobHandler;
 use RZP\Models\Merchant\Document;
+use RZP\Services\Mock\KafkaProducerClient as KafkaProducerClientMock;
 use RZP\Services\Mock\DataLakePresto as DataLakePrestoMock;
 
 class CoreTest extends TestCase
 {
     protected $repo;
     protected $app;
+    protected $config;
 
     use DbEntityFetchTrait;
     use MocksSplitz;
@@ -73,6 +76,10 @@ class CoreTest extends TestCase
         parent::setUp();
         $this->app = App::getFacadeRoot();
         $this->repo = $this->app['repo'];
+
+        $this->config = \Illuminate\Support\Facades\App::getFacadeRoot()['config'];
+
+        Config::set('services.kafka.producer.mock', true);
     }
     protected function mockRazorxTreatment(string $returnValue = 'on')
     {
@@ -3311,6 +3318,122 @@ class CoreTest extends TestCase
             "start_time" => Carbon::now()->subDecade()->getTimestamp(),
             "end_time"   => Carbon::now()->getTimestamp(),
         ]);
+    }
+
+    public function testTerminalCreationForRegularMerchant()
+    {
+        Mail::fake();
+
+        $this->mockRazorxTreatment();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'          => 'under_review',
+            'submitted'=>true,
+            'business_Website'=> null
+        ]);
+
+        $this->mockRazorxTreatment();
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant,$activationStatusData,$merchantDetails->merchant);
+
+        $kafkaProducerMock->shouldHaveReceived('produce');
+
+        $methods = $this->getDbEntityById('methods', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals(false, $methods['upi']);
+    }
+
+    public function testTerminalCreationForNonRegularMerchant()
+    {
+        Mail::fake();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $this->fixtures->create('merchant', ['business_banking' => 1]);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'under_review',
+            'submitted'                 => true,
+            'business_Website'          => null
+        ]);
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED_MCC_PENDING,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $kafkaProducerMock = $this->getMockBuilder(KafkaProducerClient::class)
+                                  ->onlyMethods(['produce'])
+                                  ->getMock();
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant, $activationStatusData, $merchantDetails->merchant);
+
+        $kafkaProducerMock->expects($this->exactly(0))->method('produce');
+
+        $methods = $this->getDbEntityById('methods', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals(true, $methods['upi']);
     }
 
     public function testFtuxDashboardKeysOnFirstTransaction()

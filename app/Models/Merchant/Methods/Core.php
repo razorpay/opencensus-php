@@ -23,14 +23,18 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Feature\Constants;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Processor\PayLater;
 use RZP\Models\Payment\Processor\Fpx;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Merchant\Core as MerchantCore;
+use RZP\Models\Admin\Org\Entity as OrgEntity;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Pricing\Feature as Feature;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Services\KafkaProducer;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Core extends Base\Core
 {
@@ -790,6 +794,12 @@ class Core extends Base\Core
             $defaultMethods[Entity::PHONEPE] = false;
         }
 
+        //disable UPI for certain merchants
+        if($this->isUPIPaymentMethodAllowed($merchant) === true)
+        {
+            $defaultMethods[Entity::UPI] = false;
+        }
+
         $this->resetDefaultMethodsBasedOnMerchantPricingPlan($merchant, $defaultMethods);
 
         if ((is_null($methods) === true) or (is_null($defaultMethods) === true))
@@ -1341,5 +1351,32 @@ class Core extends Base\Core
         }
 
         return $provider;
+    }
+
+    public function isUPIPaymentMethodAllowed($merchant)
+    {
+        if($merchant->getOrgId() !== OrgEntity::RAZORPAY_ORG_ID)
+        {
+            return false;
+        }
+
+        if ($merchant->isBusinessBankingEnabled() === true or $merchant->isLinkedAccount() === true)
+        {
+            return false;
+        }
+
+        if($merchant->isFeatureEnabled(FeatureConstants::OPTIMIZER_ONLY_MERCHANT) === true)
+        {
+            return false;
+        }
+
+        $upiDedicatedTerminalExpt = (new MerchantCore())->isRazorxExperimentEnable($merchant->getId(), RazorxTreatment::UPI_DEDICATED_TERMINAL);
+
+        if($upiDedicatedTerminalExpt === false)
+        {
+            return false;
+        }
+
+        return true;
     }
 }
