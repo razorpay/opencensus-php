@@ -1,3 +1,4 @@
+import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import Form from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/steps/components/Form';
 import InputError from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/steps/components/InputError';
 import LoadingStep from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/steps/components/LoadingStep';
@@ -66,4 +67,9 @@ export const stepConfig: StepsConfigInterface = {
       title: 'Update details as per the instructions below',
     },
   },
+};
+
+export const LoadingStateMap = {
+  [WORKFLOW_TYPES.BANK_DETAIL_UPDATE]: LOADING_STATE.UPLOAD_NC_BANK_DETAIL,
+  [WORKFLOW_TYPES.ENABLE_INTERNATIONAL_CARDS_FOR_PG_PPLI]: LOADING_STATE.UPLOAD_NC_IE_DETAILS,
 };

@@ -12,6 +12,7 @@ import {
 import {
   StyledDivider,
   StyledHeader,
+  StyledTabContainer,
   StyledTabContentContainer,
 } from 'merchant/views/AccountAndSettings/styled';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
@@ -78,7 +79,7 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
   }
 
   return (
-    <>
+    <StyledTabContainer>
       <div className="banner-container">
         <DashboardBanner />
       </div>
@@ -128,7 +129,7 @@ const BankAccountsAndSettlements = ({ user, location: { pathname } }): JSX.Eleme
           </Suspense>
         </ErrorBoundary>
       </div>
-    </>
+    </StyledTabContainer>
   );
 };
 

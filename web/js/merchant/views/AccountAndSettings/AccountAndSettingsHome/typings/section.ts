@@ -65,3 +65,13 @@ export enum BankAccountSettlementFields {
   SETTLEMENT_DETAILS = 'settlement_details',
   FIRS = 'forward_inwards_remittance_statement',
 }
+
+export const PaymentMethodsTitles: Record<PaymentMethodsFields, string> = {
+  [PaymentMethodsFields.CARDS]: 'Cards',
+  [PaymentMethodsFields.UPI]: 'UPI/QR',
+  [PaymentMethodsFields.NETBANKING]: 'Netbanking',
+  [PaymentMethodsFields.EMI]: 'EMI',
+  [PaymentMethodsFields.WALLET]: 'Wallet',
+  [PaymentMethodsFields.PAYLATER]: 'Pay Later',
+  [PaymentMethodsFields.INTERNATIONAL]: 'International payments',
+};

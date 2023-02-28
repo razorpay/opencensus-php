@@ -15,6 +15,20 @@ export const getClassName = (status) => {
   return '';
 };
 
+export const getBadgeVariant = (status) => {
+  if (status === 'activated') {
+    return 'success';
+  }
+  if (['created', 'requested'].includes(status)) {
+    return 'information';
+  }
+
+  if (['pending', 'permission_missing'].includes(status)) {
+    return 'notice';
+  }
+  return '';
+};
+
 export const getStatusMessage = (status) => {
   switch (status) {
     case 'activated':

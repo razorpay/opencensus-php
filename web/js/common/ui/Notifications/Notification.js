@@ -1,6 +1,6 @@
 import { Component } from 'react';
 
-const NOTIFICATION_TYPES = {
+export const NOTIFICATION_TYPES = {
   success: 'Notification--success',
   error: 'Notification--error',
   info: 'Notification--info',

@@ -1878,6 +1878,12 @@ export default class User {
     return this.isProductLedOnboarding && this.isOrgRZP;
   }
 
+  get isIERevampEnabled() {
+    return (
+      getSplitzExperimentVariant('international_enablement_revamp')?.variables?.result === 'on'
+    );
+  }
+
   get isLeftNavRevampEnabled() {
     return getSplitzExperimentVariant('left_nav_revamp')?.variables?.result === 'on';
   }

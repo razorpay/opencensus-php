@@ -1,5 +1,6 @@
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { titleCase } from 'common/utils/rzp-utils';
+import { Badge, InfoIcon } from '@razorpay/blade/components';
 
 const statusMap = {
   request_rejected: 'label-danger-light',
@@ -16,7 +17,22 @@ const statusMap = {
   action_required: 'label-action-required',
 };
 
-const InternationalStatusLabel = ({ status }) => {
+const badgeMapping = {
+  request_rejected: 'negative',
+  rejected: 'negative',
+  disabled: 'neutral',
+  access_requested: 'information',
+  in_review: 'information',
+  under_review: 'information',
+  enabled: 'positive',
+  approved: 'positive',
+  activated: 'positive',
+  requested: 'information',
+  no_website_added: 'notice',
+  action_required: 'notice',
+};
+
+const InternationalStatusLabel = ({ status, isIERevamp = false }) => {
   let description;
   switch (status) {
     case 'under_review':
@@ -30,8 +46,31 @@ const InternationalStatusLabel = ({ status }) => {
       break;
   }
 
-  return (
-    <span class={`status-label label ${statusMap[status.toLowerCase()]}`}>
+  return isIERevamp ? (
+    <Badge
+      contrast="high"
+      size="large"
+      variant={badgeMapping[status.toLowerCase()]}
+      icon={(props) => (
+        <>
+          <InfoIcon {...props} />
+          {description && (
+            <Popover theme="dark" align="bottom">
+              <PopoverBody>
+                <div>{description}</div>
+              </PopoverBody>
+            </Popover>
+          )}
+        </>
+      )}
+    >
+      {status.toUpperCase().trim()}
+    </Badge>
+  ) : (
+    <span
+      class={`status-label label ${statusMap[status.toLowerCase()]}`}
+      data-testid="international-status-label"
+    >
       {titleCase(status)}&nbsp;
       {description && (
         <span>

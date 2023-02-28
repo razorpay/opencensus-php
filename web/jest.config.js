@@ -82,7 +82,7 @@ module.exports = {
   // cacheDirectory: "/private/var/folders/j9/_gm_d82j2q71v20yv2mx_xrm0000gn/T/jest_dx",
 
   // An array of regexp pattern strings used to skip coverage collection
-  coveragePathIgnorePatterns: ['/node_modules/', '__test__', '__tests__'],
+  coveragePathIgnorePatterns: ['/node_modules/', '__test__', '__tests__', 'typings'],
 
   // Indicates which provider should be used to instrument code for coverage
   // coverageProvider: "babel",

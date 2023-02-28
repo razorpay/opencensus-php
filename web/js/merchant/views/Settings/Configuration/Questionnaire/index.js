@@ -7,6 +7,7 @@ import Spinner from 'common/ui/Spinner';
 import { ModalAsideNav } from 'common/new-ui/Wizard';
 import { Modal, ModalContent } from 'common/new-ui/Modal';
 import Button from 'common/new-ui/Button';
+import { IconButton, ArrowLeftIcon } from '@razorpay/blade/components';
 import Loader from 'merchant/components/Activation/components/Loader';
 import { LOADING } from 'merchant/components/Activation/Constants';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -19,7 +20,7 @@ import {
 } from 'merchant_common/reducers/modals';
 import {
   tabsData,
-  schema,
+  getFormSchema,
   fieldToTabMap,
   modelFormData,
   getProductValue,
@@ -37,7 +38,15 @@ import {
 } from './analytics';
 
 // eslint-disable-next-line no-shadow
-const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource }) => {
+const Questionnaire = ({
+  closeModal,
+  openModal,
+  showNotification,
+  triggerSource,
+  isRevampFlow = false,
+  onQuestionnaireSubmitSuccess,
+  user,
+}) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { activeTab, isLoading, isSavingForm, initialValues, tabsValidity } = state;
   let loaderTimeout;
@@ -55,7 +64,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
           (typeof res.data === 'object' && Object.keys(res.data).length) ||
           (Array.isArray(res.data) && res.data.length)
         ) {
-          const data = modelFormData(res.data);
+          const data = modelFormData(res.data, isRevampFlow ? user : undefined);
           if (triggerSource) {
             data.products = getProductValue(triggerSource);
           }
@@ -156,6 +165,10 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
 
     formData = modelFormDataBeforeSave(formData);
 
+    if (isRevampFlow) {
+      formData.version = 'v2';
+    }
+
     return merchantFetch({
       url: 'international_enablement/draft',
       method: 'post',
@@ -215,14 +228,23 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
     formData = modelFormDataBeforeSave(formData);
     bag.setStatus(null); // reset status
     trackDataSaving(true, tabsData?.[activeTab]?.name, true);
+    if (isRevampFlow) {
+      formData.version = 'v2';
+    }
     merchantFetch({ url: 'international_enablement/submit', method: 'post', data: formData })
       .then(() => {
         trackDataSaveSuccess(tabsData?.[activeTab]?.name, true);
         // close this modal and open success modal
         closeModal();
-        openModal({ component: <SuccessModal closeModal={closeModal} /> });
+        if (isRevampFlow && onQuestionnaireSubmitSuccess) {
+          onQuestionnaireSubmitSuccess();
+        } else {
+          openModal({ component: <SuccessModal closeModal={closeModal} /> });
+        }
+        bag.setSubmitting(false);
       })
       .catch((err) => {
+        bag.setSubmitting(false);
         // handle any errors sent from server
         trackDataSaveError(tabsData?.[activeTab]?.name, err?.errors, true);
         if (err.errors._internal) {
@@ -262,6 +284,7 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
 
   const handleOnSubmit = (e, formikProps) => {
     e.preventDefault();
+    trackFormButtonClicked(tabsData?.[activeTab]?.name, 'Submit & Verify');
     formikProps.validateForm().then((err) => {
       // set tabs validity. Last tab is set to false since it doesn't contain any field (submit form)
       const tabVal = [true, true, true, true, false];
@@ -339,6 +362,8 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
     );
   };
 
+  const schema = getFormSchema(isRevampFlow);
+
   return (
     <Formik
       initialValues={initialValues}
@@ -346,7 +371,6 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
       validationSchema={schema}
       onSubmit={(values, bag) => {
         submitForm(values, bag);
-        bag.setSubmitting(false);
       }}
     >
       {(formikProps) => {
@@ -370,10 +394,27 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
                     onSubmit={(e) => handleOnSubmit(e, formikProps)}
                   >
                     <main className="form-container">
+                      <div className="go-back-button">
+                        {activeTab !== 0 ? (
+                          <IconButton
+                            icon={ArrowLeftIcon}
+                            accessibilityLabel="Go back"
+                            onClick={() =>
+                              tabClickHandler(
+                                { target: { dataset: { index: activeTab - 1 } } },
+                                formikProps,
+                              )
+                            }
+                            size="large"
+                          />
+                        ) : null}
+                      </div>
                       {React.cloneElement(tabsData[activeTab].component, {
                         triggerSource,
                         disabled: isDisabled,
                         saveFormData,
+                        isRevampFlow,
+                        closeModal,
                       })}
                     </main>
                     <footer>
@@ -392,33 +433,35 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
                             </div>
                           ))}
                       </div>
-                      {activeTab > 0 && (
-                        <Button type="button" onClick={handlePrev}>
-                          Previous
-                        </Button>
-                      )}
+                      <div>
+                        {activeTab > 0 && (
+                          <Button type="button" onClick={handlePrev}>
+                            Previous
+                          </Button>
+                        )}
 
-                      {activeTab === tabsData.length - 1 ? (
-                        <Button.Primary
-                          type="submit"
-                          iconAfter="chevron-right"
-                          disabled={
-                            formikProps.isSubmitting ||
-                            isDisabled ||
-                            Object.keys(formikProps.errors).length
-                          }
-                        >
-                          Submit & Verify
-                        </Button.Primary>
-                      ) : (
-                        <Button.Primary
-                          type="button"
-                          onClick={() => handleNext(formikProps)}
-                          iconAfter="chevron-right"
-                        >
-                          Next
-                        </Button.Primary>
-                      )}
+                        {activeTab === tabsData.length - 1 ? (
+                          <Button.Primary
+                            type="submit"
+                            iconAfter="chevron-right"
+                            disabled={
+                              formikProps.isSubmitting ||
+                              isDisabled ||
+                              Object.keys(formikProps.errors).length
+                            }
+                          >
+                            Submit & Verify
+                          </Button.Primary>
+                        ) : (
+                          <Button.Primary
+                            type="button"
+                            onClick={() => handleNext(formikProps)}
+                            iconAfter="chevron-right"
+                          >
+                            Next
+                          </Button.Primary>
+                        )}
+                      </div>
                     </footer>
                   </Form>
                 </div>
@@ -431,7 +474,11 @@ const Questionnaire = ({ closeModal, openModal, showNotification, triggerSource 
   );
 };
 
-export default connect(null, {
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+export default connect(mapStateToProps, {
   showNotification,
   openModal: openModalFn,
   closeModal: closeModalFn,

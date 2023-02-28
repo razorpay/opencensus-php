@@ -31,6 +31,10 @@ const initialState = {
     loading: true,
     error: null,
   },
+  toggle_international_revamped: {
+    loading: true,
+    error: null,
+  },
 };
 
 //actions

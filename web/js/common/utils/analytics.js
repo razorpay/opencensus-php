@@ -256,11 +256,15 @@ export const captureErrorOnAnalytics = (event, hint) => {
   }
 };
 
-export const analyticsTrackWithUserInfo = ({ properties = {}, ...rest }) => {
+export const analyticsTrackWithUserInfo = ({
+  properties = {},
+  addUserProperties = false,
+  ...rest
+}) => {
   const { screen } = rest;
   const propertiesWithUserInfo = {
     ...properties,
-    ...getCommonAnalyticsProperties(window.rzp_user),
+    ...getCommonAnalyticsProperties(window.rzp_user, { addUserProperties }),
   };
   if (screen === Modules.AccountAndSettings) {
     propertiesWithUserInfo.version = 'v2';

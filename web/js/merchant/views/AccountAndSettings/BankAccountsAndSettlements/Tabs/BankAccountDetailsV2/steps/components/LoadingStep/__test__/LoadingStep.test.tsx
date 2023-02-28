@@ -13,6 +13,27 @@ describe('Bank Account Update - LoadingStep', () => {
     modalsSpy.mockClear();
   });
 
+  test.each(Object.keys(LOADING_STATE))(
+    'should render %s loading with correct details',
+    async (loadingTypeKey) => {
+      const loadingTypeData = LOADING_STATE[loadingTypeKey];
+      const { title, subTitle, description, closeCTALabel } = LOADING_STEP_DATA[loadingTypeData];
+      render(<LoadingStep type={loadingTypeData} />);
+      const loadingTitle = await screen.findByText(title);
+      await expect(loadingTitle).toBeInTheDocument();
+      expect(screen.getByText(subTitle)).toBeInTheDocument();
+      if (description) {
+        expect(screen.getByText(description)).toBeInTheDocument();
+      }
+      if (closeCTALabel) {
+        const closeCTA = screen.getByRole('button', {
+          name: closeCTALabel,
+        });
+        expect(closeCTA).toBeInTheDocument();
+      }
+    },
+  );
+
   test('should render close modal on close CTA click', async () => {
     const { closeCTALabel } = LOADING_STEP_DATA[LOADING_STATE.PENNY_TESTING_SUCCESS];
     render(<LoadingStep type={LOADING_STATE.PENNY_TESTING_SUCCESS} />);

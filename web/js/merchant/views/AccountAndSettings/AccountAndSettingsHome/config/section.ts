@@ -26,7 +26,6 @@ import {
   isApplicationEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import {
-  User,
   AdditionalContextInterface,
   SectionCardInterface,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings';
@@ -39,8 +38,10 @@ import {
   NotificationSettingsFields,
   CheckoutSettingsFields,
   BankAccountSettlementFields,
+  PaymentMethodsTitles,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+import User from 'common/typings/User';
 
 export const Sections: SectionCardInterface[] = [
   {
@@ -53,38 +54,87 @@ export const Sections: SectionCardInterface[] = [
     subSections: [
       {
         id: PaymentMethodsFields.CARDS,
+        title: PaymentMethodsTitles[PaymentMethodsFields.CARDS],
+        href: ROUTES_INFO.CARDS,
+        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+      },
+      {
+        id: PaymentMethodsFields.UPI,
+        title: PaymentMethodsTitles[PaymentMethodsFields.UPI],
+        href: ROUTES_INFO.UPI_QR,
+        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+      },
+      {
+        id: PaymentMethodsFields.NETBANKING,
+        title: PaymentMethodsTitles[PaymentMethodsFields.NETBANKING],
+        href: ROUTES_INFO.NETBANKING,
+        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+      },
+      {
+        id: PaymentMethodsFields.EMI,
+        title: PaymentMethodsTitles[PaymentMethodsFields.EMI],
+        href: ROUTES_INFO.EMI,
+        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+      },
+      {
+        id: PaymentMethodsFields.WALLET,
+        title: PaymentMethodsTitles[PaymentMethodsFields.WALLET],
+        href: ROUTES_INFO.WALLET,
+        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+      },
+      {
+        id: PaymentMethodsFields.PAYLATER,
+        title: PaymentMethodsTitles[PaymentMethodsFields.PAYLATER],
+        href: ROUTES_INFO.PAY_LATER,
+        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+      },
+      {
+        id: PaymentMethodsFields.INTERNATIONAL,
+        title: PaymentMethodsTitles[PaymentMethodsFields.INTERNATIONAL],
+        href: ROUTES_INFO.INTERNATIONAL_PAYMENTS,
+        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+      },
+      {
+        id: PaymentMethodsFields.CARDS,
         title: 'Cards',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=card`,
+        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.UPI,
         title: 'UPI/QR',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=upi`,
+        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.NETBANKING,
         title: 'Netbanking',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=netbanking`,
+        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.EMI,
         title: 'EMI',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=emi`,
+        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.WALLET,
         title: 'Wallet',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=wallet`,
+        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.PAYLATER,
         title: 'Pay Later',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=paylater`,
+        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.INTERNATIONAL,
         title: 'International payments',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=international`,
+        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
       },
     ],
   },

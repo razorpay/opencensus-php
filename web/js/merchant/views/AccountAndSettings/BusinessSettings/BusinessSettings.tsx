@@ -12,6 +12,7 @@ import {
   StyledDivider,
   StyledTabContentContainer,
   StyledHeader,
+  StyledTabContainer,
 } from 'merchant/views/AccountAndSettings/styled';
 import {
   accountAndSettingsLink,
@@ -76,7 +77,7 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
   }
 
   return (
-    <>
+    <StyledTabContainer>
       <div className="banner-container">
         <DashboardBanner />
       </div>
@@ -149,7 +150,7 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
           </Suspense>
         </ErrorBoundary>
       </div>
-    </>
+    </StyledTabContainer>
   );
 };
 

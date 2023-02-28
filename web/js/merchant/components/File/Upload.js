@@ -2,6 +2,7 @@ import { classList, isBlank, readableFileSize, titleCase } from 'common/utils/rz
 import React from 'react';
 import { videoTypesMap } from './constants';
 import Staged from './Staged';
+import debounce from 'common/utils/debounce';
 
 import FilePlaceholderImage from 'assets/files/file-placeholder.svg';
 
@@ -333,6 +334,16 @@ export default class FileUpload extends React.Component {
     }
   };
 
+  // onClickToFileUploadClick is getting called twice on single call click
+  onClickToFileUploadClick = debounce(() => {
+    window.rzpAnalytics?.({
+      eventCategory: `Batch ${titleCase(this.props.batchType)}`,
+      eventAction: 'Upload file -  upload modal',
+      eventLabel: `Click to upload file`,
+    });
+    this.props.onClickToUploadClick?.();
+  }, 100);
+
   render() {
     const {
       children,
@@ -387,13 +398,7 @@ export default class FileUpload extends React.Component {
               'Dropzone-cavity',
               this.state.isFileDraggedInside && !isDragDropDisabled && 'Dropzone-cavity--highlight',
             )}
-            onClick={() => {
-              window.rzpAnalytics?.({
-                eventCategory: `Batch ${titleCase(this.props.batchType)}`,
-                eventAction: 'Upload file -  upload modal',
-                eventLabel: `Click to upload file`,
-              });
-            }}
+            onClick={this.onClickToFileUploadClick}
             for={`fileInput-${name}`}
             onDrop={isDocPreUploaded || isDragDropDisabled ? undefined : this.handleDrop}
             onDragOver={isDocPreUploaded || isDragDropDisabled ? undefined : this.handleDragOver}

@@ -472,6 +472,12 @@ export default {
     //prod experiment ids,
     'KmBlZ2iUatsoAB',
   ],
+  international_enablement_revamp: [
+    // beta experiment ids
+    'LIZAA7NOWltkGx',
+    // prod experiment ids
+    'LIZ2hJsAfXmES6',
+  ],
   show_affordability_widget_exp: [
     //beta experiment ids
     'Kp0QoSovVgTwkh',

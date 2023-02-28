@@ -42,4 +42,5 @@ export const ShimmerBar = styled.span`
   animation-duration: 1.2s;
   animation-iteration-count: infinite;
   animation-timing-function: linear;
+  display: block;
 `;

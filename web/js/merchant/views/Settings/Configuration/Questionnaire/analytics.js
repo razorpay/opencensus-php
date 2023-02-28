@@ -12,6 +12,8 @@ const INT_SAVE_DATA = `${INT_FORM} save data`;
 
 //common function
 const track = ({ properties, ...args }) => {
+  const isIERevamp = window.location.pathname === '/app/payment-methods/international-payments';
+
   analyticsTrack({
     objectName: INT_ACTIVATION,
     screen: 'settings',
@@ -19,6 +21,11 @@ const track = ({ properties, ...args }) => {
     properties: {
       location: 'Payment Methods',
       timestamp: Date.now(),
+      ...(isIERevamp && {
+        version: 'v2',
+        section: 'International Payments',
+        subSection: 'Info Form',
+      }),
       ...getCommonAnalyticsProperties(window.rzp_user),
       ...properties,
     },

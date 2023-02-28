@@ -18,7 +18,7 @@ const clickHandler = () => {
 
 const Firc = () => {
   return (
-    <div className="firc-settings-banner">
+    <div className="firc-settings-banner" data-testid="firc-banner">
       <img
         src={`${window.cdnBaseUrl}/static/assets/firc/banner-border.png`}
         alt="Banner border"

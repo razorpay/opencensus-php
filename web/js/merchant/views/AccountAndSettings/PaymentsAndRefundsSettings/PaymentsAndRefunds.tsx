@@ -13,6 +13,7 @@ import {
   StyledTabContentContainer,
   StyledConfiguration,
   StyledHeader,
+  StyledTabContainer,
 } from 'merchant/views/AccountAndSettings/styled';
 import TransactionLimits from './Tabs/TransactionLimits';
 import { fetchFeatureByName as fetchFeatureByNameFn } from 'merchant/reducers/config';
@@ -84,7 +85,7 @@ const PaymentsAndRefundsSettings = ({
   }
 
   return (
-    <>
+    <StyledTabContainer>
       <div className="banner-container">
         <DashboardBanner />
       </div>
@@ -164,7 +165,7 @@ const PaymentsAndRefundsSettings = ({
           </Suspense>
         </ErrorBoundary>
       </div>
-    </>
+    </StyledTabContainer>
   );
 };
 

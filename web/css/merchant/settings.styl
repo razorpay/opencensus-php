@@ -1,22 +1,27 @@
+// stylelint-disable color-function-notation
+// stylelint-disable no-descending-specificity
+// stylelint-disable declaration-no-important
+// stylelint-disable max-nesting-depth
 $background-color = #FAFAFA
 $text-dark-grey = #58666E
-$color-red = #f05050
+$color-red = #F05050
 $modal-break = 610px
 
 #settings-content
   background: transparent
   max-width: 900px
   padding: 24px 0
-  @media screen and (max-width: $screen-xs-max)
+
+  @media screen and (max-width $screen-xs-max)
     padding 20px // supporting the settings content for m-web patterns
 
   .panel-default
-    background: #fff
+    background: #FFF
 
   .panel-heading
     background: transparent
     border-bottom: 0
-    padding: 20px 20px 12px 20px
+    padding: 20px 20px 12px
 
     .title
       vertical-align: middle
@@ -32,16 +37,18 @@ $modal-break = 610px
 
       b
         vertical-align: middle
-  
+
   .email-notification-cta
     float right
-    @media screen and (max-width: $screen-sm-min)
+
+    @media screen and (max-width $screen-sm-min)
       float none
       margin-top 12px
-      
+
   .panel-body
     padding: 0 20px 20px
-    @media screen and (max-width: $screen-sm-min)
+
+    @media screen and (max-width $screen-sm-min)
       &.refund-speed-pannel
         padding 0 0 20px
 
@@ -49,7 +56,7 @@ $modal-break = 610px
       margin-bottom: 0
 
     .description
-      margin: 8px 0 12px 0
+      margin: 8px 0 12px
 
   .international-payments
     ol
@@ -63,6 +70,7 @@ $modal-break = 610px
       margin-left: 10px
       font-size: 14px
       font-weight: normal
+
       .i-external-link
         margin-left: 5px
 
@@ -73,39 +81,51 @@ $modal-break = 610px
       .checkbox-knob
         &::after
           background: #5E90E9
+
         &.checked
           &::after
-            background: #fff
+            background: #FFF
 
     .paypal-auto-onboarding
       padding-top: 12px
+
       .heading
         .status
           margin-bottom: 20px;
+
           .support-link
             border-bottom: 1px solid;
             padding: 2px;
+
           i
             margin: 0
+
           .i-info-circle
             margin-right: 5px
             margin-top: 6px
+
         .change-account
           display: flex
           justify-content: space-between
+
           .change-account-action
             margin: 5px 0
+
       .disabled-text
         text-align: left
         text-transform: none
-    .international-card, .paypal-auto-onboarding
+
+    .international-card,
+    .paypal-auto-onboarding
       border-top: 2px solid rgba(22, 47, 86, 0.05)
 
       .status-label
         text-transform: uppercase
         padding: 5px 12px
+
         .rzp-popover
           text-transform: initial
+
       .merchant-id
         right: 20px;
         position: absolute;
@@ -113,6 +133,7 @@ $modal-break = 610px
         color: #4F4F4F;
         font-weight: 400;
         font-style: italic;
+
         .rzp-popover
           font-style: normal
 
@@ -121,7 +142,7 @@ $modal-break = 610px
 
     .heading
       border-bottom: 0
-      padding: 20px 0 0 0
+      padding: 20px 0 0
 
       .status
         display: flex
@@ -129,6 +150,7 @@ $modal-break = 610px
         max-width: 70%
         font-weight: 400;
         font-size: 14px;
+
         i
           margin-right: 10px
 
@@ -164,7 +186,7 @@ $modal-break = 610px
         justify-content: flex-end
 
       .description
-        margin: 8px 0 12px 0
+        margin: 8px 0 12px
 
       .toggler-btn
         vertical-align: middle
@@ -175,9 +197,11 @@ $modal-break = 610px
 
         b
           vertical-align: middle
+
     .body
       .product-section
-        margin: 8px 0 20px 0
+        margin: 8px 0 20px
+
       .questionnaire-status
         font-style: italic
         font-weight: normal
@@ -190,7 +214,7 @@ $modal-break = 610px
         padding: 5px
 
   .footer-note
-    margin: 60px -20px -20px -20px
+    margin: 60px -20px -20px
     padding: 16px 24px
     border-top: 1px solid #EBEFF0
 
@@ -202,7 +226,7 @@ $modal-break = 610px
     top: 1px
     left: 16px
     border: none
-    border-right: 1px solid #cfdadd
+    border-right: 1px solid #CFDADD
     border-radius: 2px
     display: inline-block
 
@@ -248,15 +272,15 @@ $modal-break = 610px
         font-size: 14px
         text-align: center
         border-radius: 4px
-        background: #fff
+        background: #FFF
         font-weight: 600
         color: #D8DCDD
 
       #preview-checkout
         width: 250px
         margin: 0 auto
-        box-shadow: 0 0 20px rgba(0,0,0,0.08)
-        background-color: #fff
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.08)
+        background-color: #FFF
         overflow: hidden
         position: relative
         z-index: 0
@@ -266,19 +290,19 @@ $modal-break = 610px
         padding: 24px
         overflow: hidden
         height: 104px
-        background: #fff
+        background: #FFF
         position: relative
         top: 0
         width: 100%
 
         &::before
-          content: ''
+          content: ""
           left: 0
           right: 0
           bottom: 0
           top: 0
           position: absolute
-          background-image: linear-gradient(to bottom right,rgba(255,255,255,0.2),rgba(0,0,0,0.2))
+          background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.2))
 
       #preview-checkout-form
         min-height: 290px
@@ -291,8 +315,8 @@ $modal-break = 610px
         border-radius: 3px
         line-height: 62px
         float: left
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1)
-        background: #fff
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1)
+        background: #FFF
         padding: 8px
         margin-right: 20px
 
@@ -313,7 +337,7 @@ $modal-break = 610px
         white-space: pre
         text-overflow: ellipsis
         overflow: hidden
-        opacity: .8
+        opacity: 0.8
         font-size: 10px
         margin-top: -2px
 
@@ -349,12 +373,12 @@ $modal-break = 610px
       .payment-method-label
         font-size: 10px
 
-  @media(max-width: 767px)
+  @media (max-width 767px)
     .theme-select
       .btn.btn-primary
         margin-top: 12px
 
-  @media(max-width: 1144px)
+  @media (max-width 1144px)
     .panel-theme
       display: block
 
@@ -368,20 +392,26 @@ $modal-break = 610px
   .modal-body
     .btn-link
       font-size: 12px;
+
   .whatsapp-notification
-    .optin-pending-label, .optin-pending-description
+    .optin-pending-label,
+    .optin-pending-description
       color #CD8214
+
     .optin-pending-label
       font-weight 600
       padding 3px 12px
-      background-color #cd82141a
+      background-color #CD82141A
       border-radius 20px
+
       @media screen and (min-width $screen-xs-max)
         display inline-block
         margin-left 20px
-        verticle-align middle
-      @media screen and (max-width:400px)
+        vertical-align middle
+
+      @media screen and (max-width 400px)
         margin-top 10px
+
 .webhooks-secret-container {
   position: relative;
 
@@ -405,7 +435,8 @@ $modal-break = 610px
     display: flex;
   }
 
-  .i-arrow-down, .i-arrow-up {
+  .i-arrow-down,
+  .i-arrow-up {
     margin-top: -8px;
     color: #5F90E9;
   }
@@ -446,11 +477,14 @@ $modal-break = 610px
       .Form--tabular
         .Input-label
           text-align: left
+
         .Input-content
           float: right
           margin-left: 0
+
         .Input-label
           width: initial
+
         .InputGroup--inline
           width: 100%
 
@@ -478,8 +512,8 @@ $modal-break = 610px
       font-size: 100%
 
 .international__ProductSeparator
-  border: 1px solid rgba(22,47,86,0.05)
-  margin: 10px 0px 10px -15px
+  border: 1px solid rgba(22, 47, 86, 0.05)
+  margin: 10px 0 10px -15px
   width: calc(100% + 15px)
 
 .Modal__Request-initiate-modal .Input-desc
@@ -488,57 +522,79 @@ $modal-break = 610px
 .Modal-container--success
   width: 328px
   text-align: center
+
   .header
-    color: white
+    color: rgb(255 255 255)
     padding: 20px
-    background: url('https://cdn.razorpay.com/static/assets/international-success-modal.png')
+    background: url("https://cdn.razorpay.com/static/assets/international-success-modal.png")
+
     h4
       font-weight: bold
       margin: 10px
+
   main
     padding: 30px
+
     p
       margin: 10px 0
+
     a
       margin-top: 30px
 
 .Modal-container--save-draft
   width: 328px
   padding: 30px
+
   footer
     float: right
 
 .Modal-container--intl-questionnaire
   .pb-20
     padding-bottom: 20px
+
   .spacer
     height: 10px
+
   footer
     .left
       float: left;
+
     .Loader
       opacity: 0
       transition: 1s opacity
+
       &--visible
         opacity: 1
+
       .device--mobile
         display: none
-      i, .spin-btn
+
+      i,
+      .spin-btn
         margin-right: 4px
         vertical-align: middle
+
       .spin-btn
         opacity: 1
+
   .supporting-documents
     .PowerSelect__Placeholder
       color: $text-dark-grey
 
-  .Modal-content
-    width: 960px
-    height: 690px
-  .Wizard aside ul
-    li
-      &:last-child
-        margin-top: 20px
+  .Wizard
+    width: 85vw
+    max-width: 1024px
+    height: 80vh
+    max-height: 690px
+    min-height: 560px
+    background: #FFF
+    position: relative
+
+    aside ul
+      li
+        &:last-child
+          margin-top: 20px
+
   .form-container
     left: 240px
     position: absolute
@@ -548,94 +604,196 @@ $modal-break = 610px
     padding: 30px
     overflow: auto
     background: $background-color
+
     .main-title
       font-weight: bold
       font-size: 18px
       line-height: 22px
       color: $text-dark-grey
       margin-bottom: 10px
+
     .sub-title
       padding-bottom: 12px
+
     .Accordion__title
       color: #1281F6
-      border-bottom: 1px solid #EEEEEE
+      border-bottom: 1px solid #EEE
       background: unset
       padding-left: 0
+
     .Accordion__content
       ul
         list-style: none
         padding-left: 8px
+
         li
           text-indent: -12px
+
           &::before
             content: "• "
             color: #979797
             position: relative
             left: -8px
+
     .Input
       textarea
         overflow-y: scroll
+
       .Input-label
         width: 172px
         text-align: right
         float: left
+
       .Input-content
         &.Input-File
           width: 320px
+
         width: 280px
         margin-left: 190px
+
       &.error
         .Input-error
           display: block;
+
         .PowerSelect
           border-color: $color-red;
+
+      &.product-options
+        .Input-label
+          top: -3px
+
     .Input.Input--checkbox
       .Input-content
         width: 100%
         margin: 0
         padding-right: 20px
+
   footer
     position absolute
     left: 240px
     background: #F6F6F6
     padding: 20px
-    border-top: 1px solid #e0e0e0
+    border-top: 1px solid #E0E0E0
     bottom: 0
     right: 0
     text-align: right
 
+  .go-back-button
+    display: none
+
+  @media screen and (max-width 820px)
+    aside
+      display: none;
+
+    .form-container
+      left: 0
+
+      .Input
+        margin-top: 0
+
+        .Input-label
+          position: static
+          margin-bottom: 10px
+          text-align: left
+          width: auto;
+
+        .Input-content
+          margin: 0 0 16px
+
+      .InputGroup
+        margin-top: 12px
+
+      .product-options
+        display: flex
+        flex-direction: column
+        margin: 0
+
+        .Input-content
+          margin: 0
+
+      .Input--required .Input-label::after
+        top: auto
+
+      .file
+        display: flex
+        flex-direction: column
+        row-gap: 12px
+
+        .Input
+          display: flex
+          flex-direction: column
+
+          .Input-content.Input-File
+            width: auto
+            margin-bottom: 0
+
+        .remove-wrapper .remove
+          top: 6px
+          right: 2px
+          transform: scale(1.25)
+
+        .add-another
+          margin-left: 0
+          margin-bottom: 16px
+
+    .supporting-details
+      .Input.Input--required
+        display: flex
+        flex-direction: column
+
+    .go-back-button
+      display: block
+      margin-bottom: 12px
+
+      button
+        transform: scale(1.25);
+
+    footer
+      left: 0
+
 .Modal-container--enable_pg
   margin-top: 300px
+
   .Modal-content
     width: 325px
     padding: 24px
+
     h4
       font-weight: bold
       line-height: 24px
       margin-bottom: 20px
+
     .Input
       margin: 8px 0
+
       .Input-desc
         margin-left: 24px
+
     button
       margin: 20px
       float: right
+
 .PowerSelect__Options
   .option
-      padding: 5px 10px
-      display: flex
-      align-items: center
-      justify-content: space-between
-      label
-        font-weight: normal
-    .currency, .symbol
-      font-weight: bold
-      color: #162F56
-    .symbol
-      padding-left: 5px
-    .name
-      color: rgba(22, 47, 86, 0.38)
-      padding-right: 5px
+    padding: 5px 10px
+    display: flex
+    align-items: center
+    justify-content: space-between
+
+    label
+      font-weight: normal
+
+  .currency,
+  .symbol
+    font-weight: bold
+    color: #162F56
+
+  .symbol
+    padding-left: 5px
+
+  .name
+    color: rgba(22, 47, 86, 0.38)
+    padding-right: 5px
 
 .after-options
   display: flex
@@ -645,6 +803,7 @@ $modal-break = 610px
 .file
   .remove-wrapper
     position: relative
+
     .remove
       position: absolute
       top: 0
@@ -652,10 +811,10 @@ $modal-break = 610px
       padding: 7px
       padding-top: 0
       cursor: pointer
+
   .add-another
     margin-left: 190px;
     cursor: pointer;
-
 
 .PowerSelectMultiple__SelectedOptions
   margin: 0
@@ -668,8 +827,10 @@ $modal-break = 610px
 .PowerSelectMultiple
   .trigger
     position: relative
+
     p
       padding: 10px
+
     i
       position: absolute
       top: 10px
@@ -678,46 +839,56 @@ $modal-break = 610px
 
 .PowerSelect__Tether
   width: 280px
+
 .currency-select__Tether
   .option
     height: 24px
     padding: 20px 0
     padding-right: 8px
+
   .search
     padding: 5px 14px
+
     i
       position: absolute
       top: 15px
       padding: 5px
+
     input
       border: none
       border-bottom: 1px solid rgba(22, 47, 86, 0.1)
       padding: 10px 24px
       width: 100%
+
   .PowerSelect__OptGroup__Label
     padding: 10px 5px
 
 .PowerSelect__Menu
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
-  
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   border: none;
+
   .more-item
     padding: 5px 15px
+
     input
       width: 100%
       border: none
       border-bottom: 1px solid #5D90E9
+
     .btn-link
       padding: 0
+
     .add
       position: absolute
       right: 15px
       padding: 0
+
     .i-edit
-        float: right;
-        color: #2B83EA;
-        cursor: pointer;
-        padding: 5px;
+      float: right;
+      color: #2B83EA;
+      cursor: pointer;
+      padding: 5px;
+
 .label-primary-light
   color: #2A8CFF
   background-color: #EAF4FF
@@ -732,37 +903,36 @@ $modal-break = 610px
 
 .label-action-required
   color: #CD8214
-  background-color: #cd82141a
-
+  background-color: #CD82141A
 
 .covid-donations__settings
   border 1px solid #528FF0
   background-color #F8FAFF
   display flex
   flex-direction column
-  margin 0px 16px
+  margin 0 16px
   padding 10px
   border-radius 2px
 
-  i{
+  i {
     padding-top 5px
     padding-right 6px
   }
 
   >div
     display flex
-    flex .5
+    flex 0.5
     position relative
 
     .toggler-btn
       position absolute
-      right 0px
+      right 0
 
       button
         margin-right 5px
 
 .language-option-button
-  @media screen and (max-width: $screen-sm-min)
+  @media screen and (max-width $screen-sm-min)
     margin-top 12px
 
 .fee-bearer-section
@@ -779,7 +949,7 @@ $modal-break = 610px
     color #7B8199
 
   .subtitle
-    margin 10px 0px -5px 0px
+    margin 10px 0 -5px
 
   .fee-bearer-panel-col
     border 1px solid #EBEFF0
@@ -795,14 +965,14 @@ $modal-break = 610px
       float right
       cursor pointer
 
-    input[type=checkbox]
+    input[type="checkbox"]
       position relative
       bottom 5px
 
     i.i-outline-lock
       float: right;
       font-size: 13px;
-      padding: 4px 3px 3px 3px;
+      padding: 4px 3px 3px;
       background-color: #CD8214;
       border-radius: 100%;
       color: #F8FAFF;
@@ -835,7 +1005,7 @@ $modal-break = 610px
 .firc-settings-banner
   display: none
 
-@media screen and (min-width: 768px)
+@media screen and (min-width 768px)
   .firc-settings-banner
     width: 640px
     background: #FAFCFF
@@ -850,7 +1020,7 @@ $modal-break = 610px
     .link
       margin-right: 35px
 
-//apm modal styling --->
+// apm modal styling --->
 .Modal-container--apm-form-wrapper
   .Modal-content
     display: flex
@@ -859,38 +1029,47 @@ $modal-break = 610px
     height: 80vh;
     max-height: 640px
     min-height: 560px
+
     .Modal-body
       display: flex
       flex: 1
       overflow: hidden
+
       .Wizard
         display: flex
         flex: 1
         width: 100%
+
         aside
           position: relative
           min-width: 240px
-        .modal-body  
+
+        .modal-body
           display: flex
           flex-direction: column
           padding: 0
           overflow: hidden
           height: 100%
+
           .form-container
             display: flex
             flex: 1
             flex-direction: column
-            padding 31px 36px 45px 30px  
+            padding 31px 36px 45px 30px
             overflow: scroll
             background: $background-color
-            @media screen and (max-width: $modal-break){
+
+            @media screen and (max-width $modal-break) {
               padding-top: 15px
               padding-bottom: 55px
             }
+
             &.Form--tabular
               margin-bottom: 0
-            .head-wrapper  
+
+            .head-wrapper
               position: relative
+
               .title
                 font-weight: bold
                 font-size: 18px
@@ -898,51 +1077,65 @@ $modal-break = 610px
                 line-height: 22px
                 color: $text-dark-grey
                 margin-bottom: 10px
-                @media screen and (max-width: $modal-break) {
+
+                @media screen and (max-width $modal-break) {
                   display: flex
                   align-items: center
                   justify-content: center
                   font-size: 14px
                 }
+
                 .i-check
-                  color: #27c24c
+                  color: #27C24C
                   margin-right: 5px
                   display: none
-                  @media screen and (max-width: $modal-break) {
+
+                  @media screen and (max-width $modal-break) {
                     display: block
                   }
+
               .btn--back
                 top: 12px
                 left: 0
-                padding: 0 !important   
+                padding: 0 !important
+
               &.valid .title
-                @media screen and (max-width: $modal-break) {
-                  color: #27c24c
-                }   
+                @media screen and (max-width $modal-break) {
+                  color: #27C24C
+                }
+
             .Input-elWrapper
-              width: unset  
+              width: unset
+
             .Input
               .Input-content
-                width: 224px  
-                @media screen and (max-width: $modal-break) {
+                width: 224px
+
+                @media screen and (max-width $modal-break) {
                   width: 260px
                 }
+
               .dropzone-label
-                top: 15px  
+                top: 15px
+
             .Dropzone
               min-width: 300px
               max-width: 100%
-              @media screen and (max-width: $screen-sm-min){
-               min-width: 260px
+
+              @media screen and (max-width $screen-sm-min) {
+                min-width: 260px
               }
+
               .Dropzone-content
-                font-size 14px   
+                font-size 14px
+
           footer
             position: relative
             display: flex
-            justify-content: space-between   
+            justify-content: space-between
             align-items: center
-            box-shadow: 0 -1px 0 #0000000d
+            box-shadow: 0 -1px 0 #0000000D
+
             .bottom-notice
               position: absolute
               display: flex
@@ -954,130 +1147,165 @@ $modal-break = 610px
               width: 100%
               height: fit-content
               background: #FEF7E2
-              border: 1px solid #E6E7E8    
-              padding: 10px 0 
-              @media screen and (max-width: $screen-sm-min){
+              border: 1px solid #E6E7E8
+              padding: 10px 0
+
+              @media screen and (max-width $screen-sm-min) {
                 align-items: unset
                 padding: 10px 5px
               }
+
               .i-info-outline
                 color: #D12D2D8A
                 margin-right: 5px
+
               p
                 font-weight: 400
                 font-size: 12px
                 line-height: 16px
-                text-align: center  
+                text-align: center
                 color: #0000008A
-                @media screen and (max-width: $screen-sm-min){
+
+                @media screen and (max-width $screen-sm-min) {
                   text-align: left
                 }
+
             .button-list
               display: flex
+
             .Loader
               opacity: 0
               transition: 1s opacity
+
               &--visible
                 opacity: 1
+
               .device--mobile
                 display: none
-              i, .spin-btn
+
+              i,
+              .spin-btn
                 margin-right: 4px
                 vertical-align: middle
+
               .spin-btn
-                opacity: 1  
+                opacity: 1
+
             button
               margin: 0
+
               &.Button--secondary
                 margin-right: 16px
-        //instruments page styling -->
+        // instruments page styling -->
         .instruments-container
           padding-top: 34px
+
           .instrument-row
             display: flex
             align-items: center
             position: relative
             cursor: pointer
-            background: #FFFFFF
+            background: #FFF
             box-shadow: 0 2px 4px #00000014
             border-radius: 2px
             padding: 14px 60px 14px 18px
             margin-bottom: 12px
-            @media screen and (max-width: 768px){
+
+            @media screen and (max-width 768px) {
               padding-right: 18px
             }
+
             .Input
               margin: 0 18px 0 0
-              @media screen and (max-width: $modal-break) {
+
+              @media screen and (max-width $modal-break) {
                 margin-right: 8px
               }
+
               .Input-content
                 width: fit-content !important
                 margin-left: 0
+
                 .Input-checkbox
                   width: 12px
                   height: 12px
                   float: unset
                   margin: 0
-                .Input-checkbox:after
+
+                .Input-checkbox::after
                   width: 3px
                   height: 6px
                   border-width: 0 1px 1px 0
                   margin: 1px 0 0 4px
+
             img
               width: 36px
               height: auto
               margin-right: 16px
-              @media screen and (max-width: $modal-break) {
+
+              @media screen and (max-width $modal-break) {
                 margin-right: 12px
                 width: 30px
               }
+
             .detail-block
               display: flex
               flex-direction: column
+
               h4
                 font-size: 14px
                 font-weight: 600
                 color: #606060
                 margin-bottom: 3px
                 line-height: 17px
-                @media screen and (max-width: $modal-break) {
+
+                @media screen and (max-width $modal-break) {
                   font-size: 12px
                 }
+
               p
                 font-size: 12px
                 font-weight: 400
                 color: #828282
                 line-height: 16px
-                @media screen and (max-width: $modal-break) {
+
+                @media screen and (max-width $modal-break) {
                   font-size: 10px
                 }
+
             .intrument-name
               flex: 1
+
             .tat-wrapper
-              margin-right: 60px 
-              @media screen and (max-width: $modal-break){
+              margin-right: 60px
+
+              @media screen and (max-width $modal-break) {
                 margin-right: 8px
               }
+
         .details-container
-          padding-top: 12px      
+          padding-top: 12px
+
         .ownership-container
           .owner-list
             display: flex
             flex-direction: row
-            padding: 26px 0 20px 0
+            padding: 26px 0 20px
             border-bottom: 1px solid #E2E2E2
             overflow-x: scroll
+
             .owner-action-wrapper
-              display: flex 
+              display: flex
               flex-direction: row
               align-items: center
               padding-left: 25px
-              border-left: 2px solid #162f561a
+              border-left: 2px solid #162F561A
               margin-right: 25px
+
               &:first-child
                 padding-left: 0
                 border: unset
+
               .owner-action
                 display: flex
                 flex-direction: row
@@ -1087,46 +1315,47 @@ $modal-break = 610px
                 border-radius: 26px
                 margin-right: 10px
                 cursor: pointer
+
                 &.error
-                  border-color: #cd82148a
-                  background-color: #cd82141a
-                &:hover,&.active
+                  border-color: #CD82148A
+                  background-color: #CD82141A
+
+                &:hover,
+                &.active
                   border-color: #0B70E74D
-                  background-color: #0b70e70d
+                  background-color: #0B70E70D
+
                 &.active
                   .i-info-outline
-                    display: none      
+                    display: none
+
                 .owner-text
                   font-size: 14px
                   line-height: 20px
                   color: $text-dark-grey
                   font-weight: bold
                   white-space: nowrap
+
                 .i-plus
                   color: #5D90E9
                   margin-left: 6px
                   position: relative
                   bottom: -2px
+
                 .i-info-outline
                   margin-left: 9px
-                  margin-top: 2px 
+                  margin-top: 2px
                   color: #D12D2D8A
+
               .i-bin-outline
-                cursor: pointer      
+                cursor: pointer
 
 .PowerSelect__Tether
   .option-parent
     padding: 5px 5px 10px
     border-bottom: 0.5px solid #E6E7E8
+
     .description-style
       font-size: 12px
       opacity: 0.8
-      line-height: 16px          
-
-
-
-
-
-
-
-
+      line-height: 16px

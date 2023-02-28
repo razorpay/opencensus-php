@@ -1,4 +1,5 @@
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+import { PaymentMethodsTitles } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 
 export const ROUTE_MAP = {
   [ROUTES_INFO.BRANDING]: 'Branding',
@@ -31,6 +32,13 @@ export const ROUTE_MAP = {
   [ROUTES_INFO.BANK_ACCOUNT_DETAILS]: 'Bank account details',
   [ROUTES_INFO.SETTLEMENT_DETAILS]: 'Settlement details',
   [ROUTES_INFO.FIRS]: 'Forward inwards remittance statement',
+  [ROUTES_INFO.CARDS]: PaymentMethodsTitles.cards,
+  [ROUTES_INFO.UPI_QR]: PaymentMethodsTitles.upi,
+  [ROUTES_INFO.NETBANKING]: PaymentMethodsTitles.netbanking,
+  [ROUTES_INFO.EMI]: PaymentMethodsTitles.emi,
+  [ROUTES_INFO.WALLET]: PaymentMethodsTitles.wallet,
+  [ROUTES_INFO.PAY_LATER]: PaymentMethodsTitles.paylater,
+  [ROUTES_INFO.INTERNATIONAL_PAYMENTS]: PaymentMethodsTitles.international,
   [ROUTES_INFO.TEAM_INVITATIONS]: 'Invitations',
 };
 

@@ -4,6 +4,15 @@ export enum Modules {
   BusinessSettings = 'Business Settings',
 }
 
+export enum WorkflowStates {
+  OPEN = 'open',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  EXECUTED = 'executed',
+  CLOSED = 'closed',
+  FAILED = 'failed',
+}
+
 export enum SelfServeActionPages {
   TransactionsRefunds = 'Transactions.Refunds',
   SettlementsPayments = 'Settlements.Payments',

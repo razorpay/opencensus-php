@@ -1,31 +1,13 @@
+import { BUSINESS_SUBCATEGORIES } from 'common/typings/User';
+import { humanize } from 'common/utils/rzp-utils';
 import * as Yup from 'yup';
 import BusinessDetails from './BusinessDetails';
+import SubmitForm from './SubmitForm';
 import SupportingDetails from './SupportingDetails';
 import SupportingDocuments from './SupportingDocuments';
-import SubmitForm from './SubmitForm';
-import { humanize } from 'common/utils/rzp-utils';
-
-export const schema = Yup.object().shape({
-  products: Yup.string().nullable().required('Please select an option'),
-  goods_type: Yup.string().nullable().required('Goods Type is a required field'),
-  business_use_case: Yup.string()
-    .nullable()
-    .trim()
-    .min(50, 'Min 50 characters required')
-    .required('Business use case is a required field'),
-  business_txn_size: Yup.string().nullable().required('This is a required field'),
-  about_us_link: Yup.string()
-    .nullable()
-    .url('Not a valid url')
-    .required('This is a required field'),
-  existing_risk_checks: Yup.string().nullable().required('This is a required field'),
-  accepts_intl_txns: Yup.string().nullable().required('This is a required field'),
-  import_export_code: Yup.string().nullable(),
-  submit: Yup.array().required('Please accept the terms and condition'),
-});
 
 export const formInitialValues = {
-  products: 'payment_gateway',
+  products: ['payment_gateway'],
   goods_type: '',
   business_use_case: '',
   business_txn_size: '',
@@ -69,7 +51,38 @@ export const tabsData = [
   },
 ];
 
-export const modelFormData = (data) => {
+export const getWebsiteDetailsInfo = ({ business_website, additional_websites = [] }) => {
+  return {
+    isWebsiteDetails: !!business_website,
+    websitesData: [business_website, ...additional_websites],
+  };
+};
+
+export const getProductOptions = (isRevampFlow, isWebsiteDetailsAvailable) => {
+  if (isRevampFlow) {
+    return [
+      {
+        value: ['payment_links', 'payment_pages', 'invoices'],
+        label: 'Payment Pages, Links & invoices',
+      },
+      {
+        value: ['payment_gateway'],
+        label: 'Payment Gateway',
+        disabled: !isWebsiteDetailsAvailable,
+      },
+    ];
+  }
+  return [
+    { value: ['payment_gateway'], label: 'Payment Gateway' },
+    {
+      value: ['payment_links,payment_pages,invoices'],
+      label: 'Payment Pages, Links & invoices',
+    },
+    { value: ['payment_gateway,payment_links,payment_pages,invoices'], label: 'Both' },
+  ];
+};
+
+export const modelFormData = (data, user) => {
   if (data.business_txn_size_min != undefined && data.business_txn_size_max != undefined) {
     data.business_txn_size = `${data.business_txn_size_min}=${data.business_txn_size_max}`;
   }
@@ -78,6 +91,16 @@ export const modelFormData = (data) => {
     data.documents = {};
   }
   data.accepts_intl_txns = String(data.accepts_intl_txns);
+
+  if (user) {
+    // user exists - IERevamp flow
+    const websiteDetails = getWebsiteDetailsInfo(user);
+
+    if (!websiteDetails.isWebsiteDetails) {
+      // preselect PPLI if user doesn't have website details
+      data.products = getProductOptions(true, websiteDetails)[0].value;
+    }
+  }
 
   // remove unnecessary fields
   delete data.created_at;
@@ -111,8 +134,13 @@ export const modelFormDataBeforeSave = (formData) => {
     delete formData.business_txn_size;
   }
 
-  if (formData.products && typeof formData.products === 'string')
-    formData.products = formData.products.split(',');
+  if (formData.products) {
+    if (typeof formData.products === 'string') {
+      formData.products = formData.products.split(',');
+    }
+  } else {
+    formData.products = [];
+  }
 
   formData.accepts_intl_txns =
     formData.accepts_intl_txns === 'true' || formData.accepts_intl_txns === true ? 1 : 0; // converting string value to boolean
@@ -163,3 +191,150 @@ export const getAvailableFileTypes = (formikProps) => {
 
 export const getProductValue = (triggerSource) =>
   triggerSource === 'pg' ? 'payment_gateway' : 'payment_links,payment_pages,invoices';
+
+export const getAdditionalDocumentsBasedOnSubCategory = ({ business_subcategory }) => {
+  if ([BUSINESS_SUBCATEGORIES.Aviation].includes(business_subcategory)) {
+    return {
+      name: 'iata',
+      label: 'IATA',
+      isRequired: true,
+    };
+  } else if ([BUSINESS_SUBCATEGORIES.Charity].includes(business_subcategory)) {
+    return {
+      name: 'fcra',
+      label: 'FCRA',
+      isRequired: true,
+    };
+  } else if (
+    [
+      BUSINESS_SUBCATEGORIES.Food_Court,
+      BUSINESS_SUBCATEGORIES.Online_Food_Ordering,
+      BUSINESS_SUBCATEGORIES.Restaurant,
+      BUSINESS_SUBCATEGORIES.Catering,
+      BUSINESS_SUBCATEGORIES.Alcohol,
+      BUSINESS_SUBCATEGORIES.Restaurant_Search_and_Booking,
+    ].includes(business_subcategory)
+  ) {
+    return {
+      name: 'fssai',
+      label: 'FSSAI',
+      isRequired: true,
+    };
+  } else if (
+    [BUSINESS_SUBCATEGORIES.Nbfc, BUSINESS_SUBCATEGORIES.Lending].includes(business_subcategory)
+  ) {
+    return {
+      name: 'nbfc',
+      label: 'NBFC',
+      isRequired: true,
+    };
+  } else if (
+    [
+      BUSINESS_SUBCATEGORIES.Pharmacy,
+      BUSINESS_SUBCATEGORIES.Health_Products,
+      BUSINESS_SUBCATEGORIES.Healthcare_Marketplace,
+      BUSINESS_SUBCATEGORIES.Medical_Equipment_And_Supply_Stores,
+    ].includes(business_subcategory)
+  ) {
+    return {
+      name: 'ayush_certificate',
+      label: 'Ayush Certificate',
+      isRequired: true,
+    };
+  } else if (
+    [
+      BUSINESS_SUBCATEGORIES.Trading,
+      BUSINESS_SUBCATEGORIES.Financial_Advisor,
+      BUSINESS_SUBCATEGORIES.Securities,
+      BUSINESS_SUBCATEGORIES.Commodities,
+    ].includes(business_subcategory)
+  ) {
+    return {
+      name: 'sebi_certificate',
+      label: 'SEBI Certificate',
+      isRequired: true,
+    };
+  } else if ([BUSINESS_SUBCATEGORIES.Forex].includes(business_subcategory)) {
+    return {
+      name: 'fema_ffmc_certificate',
+      label: 'FEMA/FFMC Certificate',
+      isRequired: true,
+    };
+  } else if ([BUSINESS_SUBCATEGORIES.Mutual_Fund].includes(business_subcategory)) {
+    return {
+      name: 'amfi',
+      label: 'AMFI',
+      isRequired: true,
+    };
+  } else if (
+    [BUSINESS_SUBCATEGORIES.Internet_Provider, BUSINESS_SUBCATEGORIES.Broadband].includes(
+      business_subcategory,
+    )
+  ) {
+    return {
+      name: 'trai',
+      label: 'TRAI',
+      isRequired: true,
+    };
+  } else if (
+    [
+      BUSINESS_SUBCATEGORIES.Facility_Management,
+      BUSINESS_SUBCATEGORIES.Coworking,
+      BUSINESS_SUBCATEGORIES.Space_Rental,
+    ].includes(business_subcategory)
+  ) {
+    return {
+      name: 'rera',
+      label: 'RERA',
+      isRequired: true,
+    };
+  } else if (
+    [
+      BUSINESS_SUBCATEGORIES.Game_Developer,
+      BUSINESS_SUBCATEGORIES.Esports,
+      BUSINESS_SUBCATEGORIES.Online_Casino,
+      BUSINESS_SUBCATEGORIES.Fantasy_Sports,
+      BUSINESS_SUBCATEGORIES.Gaming_Marketplace,
+    ].includes(business_subcategory)
+  ) {
+    return {
+      name: 'gaming_addendum_certificate',
+      label: 'Gaming Addendum Certificate',
+      isRequired: true,
+    };
+  } else {
+    return null;
+  }
+};
+
+export const getFormSchema = (isIERevamp) => {
+  const schema = Yup.object().shape({
+    products: Yup.string().nullable().required('Please select an option'),
+    goods_type: Yup.string().nullable().required('Goods Type is a required field'),
+    business_use_case: Yup.string()
+      .nullable()
+      .trim()
+      .min(50, 'Min 50 characters required')
+      .required('Business use case is a required field'),
+    business_txn_size: Yup.string().nullable().required('This is a required field'),
+
+    existing_risk_checks: Yup.string().nullable().required('This is a required field'),
+    accepts_intl_txns: Yup.string().nullable().required('This is a required field'),
+    import_export_code: Yup.string().nullable(),
+    submit: Yup.array().required('Please accept the terms and condition'),
+  });
+
+  if (isIERevamp) {
+    return schema.concat(
+      Yup.object().shape({
+        about_us_link: Yup.string().nullable(),
+      }),
+    );
+  } else {
+    return schema.concat(
+      Yup.object().shape({
+        about_us_link: Yup.string().nullable().required('This is a required field'),
+      }),
+    );
+  }
+};

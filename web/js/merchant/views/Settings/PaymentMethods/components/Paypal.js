@@ -5,11 +5,15 @@ import { GREYED } from 'merchant/views/Settings/PaymentMethods/constants';
 import {
   getClassName,
   getStatusMessage,
+  getBadgeVariant,
 } from 'merchant/views/Settings/Configuration/InternationalPayments';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { connect } from 'react-redux';
+import { Alert, Badge, InfoIcon } from '@razorpay/blade/components';
+import { LeafListItemHeader } from 'merchant/views/AccountAndSettings/PaymentMethods/components/LeafListItem';
+import { capitalize } from 'common/utils/rzp-utils';
 
-const Paypal = ({ instrument, terminals }) => {
+const Paypal = ({ instrument, terminals, isIERevamp }) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [status, setStatus] = useState(null);
   const disabled = status === GREYED;
@@ -20,6 +24,7 @@ const Paypal = ({ instrument, terminals }) => {
     'requested',
     'pending',
   ].includes(status);
+  const statusText = ['created', 'permission_missing'].includes(status) ? 'pending' : status;
 
   useEffect(() => {
     if (terminals.length) {
@@ -27,7 +32,63 @@ const Paypal = ({ instrument, terminals }) => {
     }
   }, [terminals]);
 
-  return (
+  return isIERevamp ? (
+    <>
+      <LeafListItemHeader
+        name={instrument.name}
+        description={instrument.description}
+        actionComponent={
+          showStatus ? (
+            <Badge
+              contrast="high"
+              size="large"
+              variant={getBadgeVariant(status)}
+              icon={(props) => (
+                <>
+                  <InfoIcon {...props} />
+                  {status === 'activated' && (
+                    <span>
+                      <Popover theme="dark" align="bottom">
+                        <PopoverBody>
+                          <div>{getStatusMessage(status)}</div>
+                        </PopoverBody>
+                      </Popover>
+                    </span>
+                  )}
+                </>
+              )}
+            >
+              {capitalize(statusText)}
+            </Badge>
+          ) : undefined
+        }
+      />
+      <PaypalOnboardingButton
+        showLogo={false}
+        disabled={disabled}
+        disabledText={instrument.fade_comment}
+        isInternationalPayment={true}
+        setStatus={(st) => setStatus(st)}
+        isIERevamp={isIERevamp}
+      />
+      {!disabled && (
+        <div className="mt20">
+          <Alert
+            description={
+              <>
+                You can accept Payments in <strong>International Currencies only</strong> using
+                Paypal. They CANNOT be collected in INR.
+              </>
+            }
+            intent="neutral"
+            isFullWidth
+            isDismissible={false}
+            contrast="low"
+          />
+        </div>
+      )}
+    </>
+  ) : (
     <li class="paypal-leaf-item">
       <div className={`status-bar ${showStatus ? 'bar-wrap' : 'bar-nowrap'}`}>
         <div className="instrument">
@@ -55,9 +116,7 @@ const Paypal = ({ instrument, terminals }) => {
           </div>
           {showStatus ? (
             <a className={`status-pill status-pill-${getClassName(status)}`}>
-              <span className="status-text">
-                {['created', 'permission_missing'].includes(status) ? 'pending' : status}
-              </span>{' '}
+              <span className="status-text">{statusText}</span>{' '}
               {status === 'activated' && (
                 <span>
                   <Popover theme="dark" align="bottom">

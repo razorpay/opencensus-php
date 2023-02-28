@@ -25,7 +25,7 @@ function TriggerOnQueryParamMatch({ children = null, location, queryParamsMappin
       }
       return false;
     });
-  }, []);
+  }, [location.search]);
 
   return children;
 }

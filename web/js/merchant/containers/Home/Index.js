@@ -69,7 +69,12 @@ import {
 import { setRecommendedProduct } from 'merchant/components/Activation/ActivationUtils';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import WorkflowStatus from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/WorkflowStatus';
-import { isBankAccountDetailsAllowed } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import {
+  isBankAccountDetailsAllowed,
+  isPaymentMethodEnabled,
+} from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import InternationalHPBanner from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/components/InternationalHPBanner';
+
 const Desktop = lazyLoader(() => import(/* webpackChunkName: 'merchantDesktop' */ './Desktop'));
 const Mobile = lazyLoader(() => import(/* webpackChunkName: 'merchantMobile' */ './Mobile'));
 
@@ -1208,7 +1213,9 @@ export default class HomeContainer extends Component {
                 </Modal>
               </ModalMask>
             )}
-
+          {user.isAccountAndSettingsRevampEnabled && isPaymentMethodEnabled(user, mode) && (
+            <InternationalHPBanner />
+          )}
           {showInstantActivationSuccess && (
             <InstantActivationSuccess
               onClose={() => {

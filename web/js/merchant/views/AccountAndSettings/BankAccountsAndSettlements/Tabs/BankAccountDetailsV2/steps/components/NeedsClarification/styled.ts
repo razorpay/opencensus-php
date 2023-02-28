@@ -1,5 +1,5 @@
 import { Flexbox } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/common/styled';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 export const StyledNeedsClarification = styled(Flexbox.Column)`
   gap: 24px;
@@ -9,14 +9,30 @@ export const StyledNeedsClarification = styled(Flexbox.Column)`
   }
 `;
 
+export const UploadContainer = styled(Flexbox.Column)`
+  gap: 9px;
+`;
+
 export const StyledUploadContainer = styled.div`
   background: rgba(82, 143, 240, 0.02);
   .Dropzone {
-    height: 122px;
+    ${({ isMulti }) =>
+      !isMulti &&
+      css`
+        height: 122px;
+      `}
     .Dropzone-cavity {
       height: 100%;
       background: rgba(82, 143, 240, 0.02);
       border: 1px dashed #2a86f3;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      ${({ isMulti }) =>
+        isMulti &&
+        css`
+          padding: 12px 0px;
+        `}
       .Dropzone-content {
         height: 100%;
         margin: 0;
@@ -24,6 +40,7 @@ export const StyledUploadContainer = styled.div`
         gap: 15px;
         align-items: center;
         justify-content: center;
+        position: relative;
         img {
           width: 42px;
           height: 56px;
@@ -47,15 +64,22 @@ export const StyledUploadContainer = styled.div`
   }
   @media screen and (max-width: 768px) {
     .Dropzone {
-      height: 88px;
+      ${({ isMulti }) =>
+        !isMulti &&
+        css`
+          height: 88px;
+        `}
       .Dropzone-cavity {
         height: 100%;
+        padding: 0;
+        gap: 0px;
         .Dropzone-content {
           flex-direction: row;
-          padding: 26px 27px;
+          padding: 20px;
           justify-content: flex-start;
           height: 100%;
           gap: 12px;
+          position: relative;
           img {
             width: 27px;
             height: 36px;

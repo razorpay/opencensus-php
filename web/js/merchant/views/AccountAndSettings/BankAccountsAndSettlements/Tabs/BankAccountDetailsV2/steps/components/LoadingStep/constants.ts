@@ -41,4 +41,11 @@ export const LOADING_STEP_DATA: Record<LOADING_STATE, LoadingStepData> = {
     animationData: LottieSuccessData,
     closeCTALabel: 'Okay, got it',
   },
+  [LOADING_STATE.UPLOAD_NC_IE_DETAILS]: {
+    title: 'Submitting your international cards payment details',
+    subTitle: "Please don't press back or close the page",
+    description:
+      "We're submitting your international cards payment details for our team to review. This may take a few seconds.",
+    animationData: LottieLoadingData,
+  },
 };

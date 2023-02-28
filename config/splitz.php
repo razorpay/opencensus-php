@@ -238,6 +238,9 @@ return [
         // payroll wdiget on dashboard
         'SHOW_PAYROLL_WIDGET_EXP' => env('SHOW_PAYROLL_WIDGET_EXP', ''),
 
+         // International enablement Revamp
+        'INTERNATIONAL_ENABLEMENT_REVAMP'  => env('INTERNATIONAL_ENABLEMENT_REVAMP', ''),
+
         // get ticket api migrated to care service
         'GET_TICKET_MIGRATION' => env('GET_TICKET_MIGRATION', ''),
 

@@ -10,6 +10,7 @@ import {
   StyledDivider,
   StyledTabContentContainer,
   StyledHeader,
+  StyledTabContainer,
 } from 'merchant/views/AccountAndSettings/styled';
 import { connect } from 'react-redux';
 import {
@@ -45,7 +46,7 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
   }
 
   return (
-    <>
+    <StyledTabContainer>
       <div className="banner-container">
         <DashboardBanner />
       </div>
@@ -106,7 +107,7 @@ const CheckoutSettings = ({ user, location: { pathname } }): JSX.Element | null 
           </Suspense>
         </ErrorBoundary>
       </div>
-    </>
+    </StyledTabContainer>
   );
 };
 

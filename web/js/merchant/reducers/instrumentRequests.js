@@ -113,7 +113,7 @@ export const getIirDiscrepancies = (mirId) => {
   };
 };
 
-const initialState = {
+export const initialState = {
   pg: [
     {
       name: 'Cards',

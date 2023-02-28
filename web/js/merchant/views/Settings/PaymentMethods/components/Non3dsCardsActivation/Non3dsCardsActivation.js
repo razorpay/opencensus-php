@@ -6,6 +6,7 @@ import { connect } from 'react-redux';
 
 // components
 import Button from 'common/new-ui/Button';
+import { Alert, Button as BladeButton } from '@razorpay/blade/components';
 import ErrorBoundary, { Ranks, Teams } from 'common/new-ui/ErrorBoundary';
 import InternationalStatusLabel from 'merchant/components/InternationalStatusLabel';
 
@@ -46,6 +47,7 @@ const Non3dsCardsActivation = ({
   removeErrorMessage,
   fetchNon3dsCardsStatus,
   showNotificationAction,
+  isIERevamp = false,
 }) => {
   const [learnMoreModalOpen, setLearnMoreModalOpen] = useState(false);
   const [enable3dsModalOpen, setEnable3dsModalOpen] = useState(false);
@@ -144,7 +146,22 @@ const Non3dsCardsActivation = ({
         <div className="product-info">
           <div className="product-title header-title">
             <strong>Support for Non 3D Secure transactions</strong>
-            {states.isEnabling ? (
+            {isIERevamp ? (
+              <span>
+                {(states.canRequestForEnable && states.isUserRoleOwner) || states.isEnabling ? (
+                  <BladeButton
+                    variant="secondary"
+                    size="small"
+                    onClick={handleEnable3dsModalOpen}
+                    isLoading={states.isEnabling}
+                  >
+                    Request to activate
+                  </BladeButton>
+                ) : (
+                  <InternationalStatusLabel status={states.activationStatus} isIERevamp />
+                )}
+              </span>
+            ) : states.isEnabling ? (
               <Button.Primary disabled>Loading...</Button.Primary>
             ) : (
               <span>
@@ -162,14 +179,37 @@ const Non3dsCardsActivation = ({
             onLearnMore={handleLearnMoreModalOpen}
             showLearnMoreLink={states.isUserRoleOwner}
           />
-          {states.activationStatus == NON_3DS_CARDS_ACTIVATION_STATUS.REQUESTED && (
-            <Non3dsStatusInfo>
-              You have requested for non 3D Secure card support on {states.updatedAt}. This can take
-              upto 5-7 business days to get processed by our fraud protection team.
-              {states.rejectionReason && <p>{states.rejectionReason}</p>}
-            </Non3dsStatusInfo>
-          )}
-          {states.rejectionReason && <Non3dsStatusInfo>{states.rejectionReason}</Non3dsStatusInfo>}
+          {states.activationStatus == NON_3DS_CARDS_ACTIVATION_STATUS.REQUESTED &&
+            (isIERevamp ? (
+              <div className="mt20">
+                <Alert
+                  description={`You have requested for non 3D Secure card support on ${states.updatedAt}. This can take
+              upto 5-7 business days to get processed by our fraud protection team.`}
+                  intent="information"
+                  isFullWidth
+                  isDismissible={false}
+                />
+              </div>
+            ) : (
+              <Non3dsStatusInfo>
+                You have requested for non 3D Secure card support on {states.updatedAt}. This can
+                take upto 5-7 business days to get processed by our fraud protection team.
+                {states.rejectionReason && <p>{states.rejectionReason}</p>}
+              </Non3dsStatusInfo>
+            ))}
+          {states.rejectionReason &&
+            (isIERevamp ? (
+              <div className="mt20">
+                <Alert
+                  description={states.rejectionReason}
+                  intent="negative"
+                  isDismissible={false}
+                  isFullWidth
+                />
+              </div>
+            ) : (
+              <Non3dsStatusInfo>{states.rejectionReason}</Non3dsStatusInfo>
+            ))}
         </div>
         <Non3dsCardsLearnMoreModal
           open={learnMoreModalOpen}

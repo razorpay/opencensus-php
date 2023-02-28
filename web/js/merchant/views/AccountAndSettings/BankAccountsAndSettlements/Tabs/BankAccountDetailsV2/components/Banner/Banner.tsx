@@ -5,15 +5,11 @@ import { connect } from 'react-redux';
 import { openModal as fnOpenModal } from 'merchant_common/reducers/modals';
 import { BankData } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/typings';
 import User from 'merchant/models/User';
+import { OpenModalType } from 'common/typings';
 
 export interface BannerProps {
   type: BannerType;
-  openModal: (data: {
-    size?: 'regular' | 'small' | 'medium' | 'med-large' | 'large' | 'xlarge';
-    component: JSX.Element;
-    className?: string;
-    overlayStyles?: Record<string, string>;
-  }) => void;
+  openModal: OpenModalType;
   bankAccount: BankData | null;
   user: User;
   workflowEta?: string;

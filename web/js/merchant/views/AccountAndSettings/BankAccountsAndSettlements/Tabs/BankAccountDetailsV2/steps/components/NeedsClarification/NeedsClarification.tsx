@@ -1,41 +1,47 @@
-import { TextArea } from '@razorpay/blade/components';
+import { Text, TextArea } from '@razorpay/blade/components';
 import { allowedVideoExtensions } from 'merchant/components/File/constants';
 import FileUpload from 'merchant/components/File/Upload';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { MAX_FILE_SIZE_LIMIT } from 'merchant/views/Account/constants';
-import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import { isWorkflowInClarification } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 import BottomActions from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/BottomActions';
 import { StyledDivider } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/common/styled';
 import LoadingStep from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/steps/components/LoadingStep/LoadingStep';
+import { LoadingStateMap } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/steps/utils/stepConfig';
 import {
   BANK_ACCOUNT_UPDATE_STEPS,
-  LOADING_STATE,
   NotificationAction,
   StepsInfoPropsInterface,
   WorkflowConfigInterface,
 } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/typings';
+import { trackBankAccountUpdateEvent } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/utils/track';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators, compose } from 'redux';
 import MessagePrompt from './MessagePrompt';
 import NcShimmer from './NcShimmer';
-import { StyledNeedsClarification, StyledUploadContainer } from './styled';
-import { trackBankAccountUpdateEvent } from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/utils/track';
+import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import { trackIEEvent } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/utils/track';
+import { StyledNeedsClarification, StyledUploadContainer, UploadContainer } from './styled';
 
 const NeedsClarification = ({
   closeModal,
   showNotification,
   setLayoutInfo,
-  workflowType = WORKFLOW_TYPES.BANK_DETAIL_UPDATE,
-  workflowName = 'Change your bank account',
+  workflowType,
+  workflowName,
   fetchWorkflowStatus,
   workflows,
+  isMultiple = false,
+  isFileUploadRequried = true,
 }: Pick<StepsInfoPropsInterface, 'closeModal' | 'setLayoutInfo'> &
   WorkflowConfigInterface &
-  NotificationAction): JSX.Element => {
+  NotificationAction & {
+    isMultiple?: boolean;
+    isFileUploadRequried?: boolean;
+  }): JSX.Element => {
   const [replyNote, setReplyNote] = useState<{ note: string; isValidate: boolean }>({
     note: '',
     isValidate: true,
@@ -48,25 +54,43 @@ const NeedsClarification = ({
     file: [],
   });
   const [isProcessing, setIsProcessing] = useState(false);
+  const isTypeClarificationNotesEventCaptured = useRef(false);
+
+  useEffect(() => {
+    if (workflowType === WORKFLOW_TYPES.ENABLE_INTERNATIONAL_CARDS_FOR_PG_PPLI) {
+      trackIEEvent({
+        objectName: 'Needs Clarification Modal',
+        actionName: 'Displayed',
+      });
+    }
+  }, [workflowType]);
 
   useEffect(() => {
     // TODO: will remove this after verification use case
-    fetchWorkflowStatus(workflowType).then((response) => {
-      const { data: workflow } = response;
-      if (!isWorkflowInClarification(workflow, ['open', 'approved'])) {
+    fetchWorkflowStatus(workflowType)
+      .then((response) => {
+        const { data: workflow } = response;
+        if (!isWorkflowInClarification(workflow, ['open', 'approved'])) {
+          showNotification({
+            type: 'error',
+            message: `No clarification required for ${workflowName} workflow`,
+          });
+          closeModal();
+        } else if (workflow?.tags?.includes('customer-responded')) {
+          showNotification({
+            type: 'error',
+            message: `You've already responded to ${workflowName} workflow`,
+          });
+          closeModal();
+        }
+      })
+      .catch(() => {
         showNotification({
           type: 'error',
-          message: `No clarification required for ${workflowName} workflow`,
+          message: `Something went wrong, Please try again later`,
         });
         closeModal();
-      } else if (workflow?.tags?.includes('customer-responded')) {
-        showNotification({
-          type: 'error',
-          message: `You've already responded to ${workflowName} workflow`,
-        });
-        closeModal();
-      }
-    });
+      });
   }, [workflowName, workflowType]);
 
   const handleNoteChange = (event) => {
@@ -76,6 +100,17 @@ const NeedsClarification = ({
       note: value,
       isValidate: value.length >= 50,
     }));
+
+    if (
+      workflowType === WORKFLOW_TYPES.ENABLE_INTERNATIONAL_CARDS_FOR_PG_PPLI &&
+      !isTypeClarificationNotesEventCaptured.current
+    ) {
+      trackIEEvent({
+        objectName: 'Clarification Notes',
+        actionName: 'Entered',
+      });
+      isTypeClarificationNotesEventCaptured.current = true;
+    }
   };
 
   const onFileLimitFailure = (): void => {
@@ -85,10 +120,10 @@ const NeedsClarification = ({
     });
   };
 
-  const onFileRemove = () => {
+  const onFileRemove = (removedFileId) => {
     setDocuments((prevState) => ({
       ...prevState,
-      file: [],
+      file: [...prevState.file.filter((_doc, index) => index !== removedFileId)],
     }));
   };
 
@@ -111,8 +146,15 @@ const NeedsClarification = ({
           const { id, display_name } = response.data;
           setDocuments((prevState) => ({
             ...prevState,
-            file: [{ id, display_name }],
+            file: [...prevState.file, { id, display_name }],
           }));
+
+          if (workflowType === WORKFLOW_TYPES.ENABLE_INTERNATIONAL_CARDS_FOR_PG_PPLI) {
+            trackIEEvent({
+              objectName: 'Documents',
+              actionName: 'Uploaded',
+            });
+          }
         }
       })
       .catch((err) => {
@@ -130,10 +172,17 @@ const NeedsClarification = ({
   };
 
   const handleSubmitReply = () => {
-    trackBankAccountUpdateEvent({
-      objectName: 'Submit Details',
-      actionName: 'Clicked',
-    });
+    if (workflowType === WORKFLOW_TYPES.ENABLE_INTERNATIONAL_CARDS_FOR_PG_PPLI) {
+      trackIEEvent({
+        objectName: 'NC Modal Submit Details',
+        actionName: 'Clicked',
+      });
+    } else {
+      trackBankAccountUpdateEvent({
+        objectName: 'Submit Details',
+        actionName: 'Clicked',
+      });
+    }
     setIsProcessing(true);
     setLayoutInfo(BANK_ACCOUNT_UPDATE_STEPS.LOADING_VIEW);
     const body = {
@@ -166,18 +215,46 @@ const NeedsClarification = ({
   };
 
   const handleClose = () => {
-    trackBankAccountUpdateEvent({
-      objectName: 'Bottom Cancel Action',
-      actionName: 'Clicked',
-      properties: {
-        ctaSource: 'needs clarification',
-      },
-    });
+    if (workflowType === WORKFLOW_TYPES.ENABLE_INTERNATIONAL_CARDS_FOR_PG_PPLI) {
+      trackIEEvent({
+        objectName: 'Submit Details',
+        actionName: 'Cancelled',
+        properties: {
+          ctaSource: 'needs clarification',
+        },
+      });
+    } else {
+      trackBankAccountUpdateEvent({
+        objectName: 'Bottom Cancel Action',
+        actionName: 'Clicked',
+        properties: {
+          ctaSource: 'needs clarification',
+        },
+      });
+    }
     closeModal();
   };
 
+  const onClickToUploadClick = () => {
+    if (workflowType === WORKFLOW_TYPES.ENABLE_INTERNATIONAL_CARDS_FOR_PG_PPLI) {
+      trackIEEvent({
+        objectName: 'Click To Upload',
+        actionName: 'Clicked',
+      });
+    }
+  };
+
+  const onFileDrop = () => {
+    if (workflowType === WORKFLOW_TYPES.ENABLE_INTERNATIONAL_CARDS_FOR_PG_PPLI) {
+      trackIEEvent({
+        objectName: 'File',
+        actionName: 'Dragged and Dropped',
+      });
+    }
+  };
+
   if (isProcessing) {
-    return <LoadingStep type={LOADING_STATE.UPLOAD_NC_BANK_DETAIL} lottieClass={['mb-20']} />;
+    return <LoadingStep type={LoadingStateMap[workflowType]} lottieClass={['mb-20']} />;
   }
 
   const { loading: isWorkflowLoading, needs_clarification: needsClarificationResponse } = workflows[
@@ -185,6 +262,12 @@ const NeedsClarification = ({
   ];
 
   if (isWorkflowLoading) return <NcShimmer />;
+
+  const isSubmitDisabled =
+    documents.isUploading ||
+    (isFileUploadRequried && !documents.file.length) ||
+    !replyNote.note ||
+    !replyNote.isValidate;
 
   return (
     <StyledNeedsClarification>
@@ -206,31 +289,36 @@ const NeedsClarification = ({
         validationState={replyNote.isValidate ? 'none' : 'error'}
         errorText="Minimum 50 characters required"
       />
-      <StyledUploadContainer>
-        <FileUpload
-          name="needs-clarification-bank-proof"
-          maxSize={MAX_FILE_SIZE_LIMIT}
-          hideLoader
-          uploadSubtitle="(Under 50 MB only)"
-          showOnlyFileSize
-          hideMaxSize
-          showFileSize={false}
-          accept={['jpg', 'png', 'pdf', ...allowedVideoExtensions]}
-          showAcceptInfo={false}
-          onBiggerFileSize={onFileLimitFailure}
-          onFileChange={handleDocumentUpload}
-          onCloseClick={onFileRemove}
-        />
-      </StyledUploadContainer>
+      <UploadContainer>
+        {isMultiple && (
+          <Text size="small" type="subdued" weight="bold">
+            You can upload multiple documents below
+          </Text>
+        )}
+        <StyledUploadContainer isMulti={isMultiple}>
+          <FileUpload
+            multi={isMultiple}
+            name="needs-clarification-bank-proof"
+            maxSize={MAX_FILE_SIZE_LIMIT}
+            hideLoader
+            uploadSubtitle="(Under 50 MB only)"
+            showOnlyFileSize
+            hideMaxSize
+            showFileSize={false}
+            accept={['jpg', 'png', 'pdf', ...allowedVideoExtensions]}
+            showAcceptInfo={false}
+            onBiggerFileSize={onFileLimitFailure}
+            onFileChange={handleDocumentUpload}
+            onCloseClick={onFileRemove}
+            onClickToUploadClick={onClickToUploadClick}
+            onFileDrop={onFileDrop}
+          />
+        </StyledUploadContainer>
+      </UploadContainer>
       <BottomActions
         onClose={handleClose}
         onSubmit={handleSubmitReply}
-        isSubmitDisabled={
-          documents.isUploading ||
-          !documents.file.length ||
-          !replyNote.note ||
-          !replyNote.isValidate
-        }
+        isSubmitDisabled={isSubmitDisabled}
         submitCTALabel="Submit details"
       />
     </StyledNeedsClarification>

@@ -1,8 +1,16 @@
 import { screen, userEvent } from 'test-utils';
+import { testBasedOnWorkflowTypes } from './NeedsClarification';
 
 jest.mock('merchant/components/File/Upload', () => ({
   __esModule: true,
-  default: ({ onBiggerFileSize, onCloseClick, onFileChange, inputRef = {} }) => (
+  default: ({
+    onBiggerFileSize,
+    onCloseClick,
+    onFileChange,
+    inputRef = {},
+    onClickToUploadClick,
+    onFileDrop,
+  }) => (
     <>
       <div>File Upload Field</div>
       <input
@@ -12,6 +20,7 @@ jest.mock('merchant/components/File/Upload', () => ({
         ref={(ref) => {
           inputRef = ref;
         }}
+        onClick={onClickToUploadClick}
         onChange={(event) => {
           const file = event.currentTarget.files[0];
           if (file.size > 5) {
@@ -36,6 +45,7 @@ jest.mock('merchant/components/File/Upload', () => ({
       >
         Remove File
       </button>
+      <button onClick={onFileDrop}>File upload drop</button>
     </>
   ),
 }));
@@ -65,19 +75,30 @@ export const testBottomLinks = (renderApp, submissionLabel) => {
 
 export const testFileUploadSection = (renderApp, validateNotification, successHandler) => {
   describe('FileUploadSectionAction', () => {
-    test('should render file upload input field and upload action', async () => {
-      successHandler && successHandler();
-      const file = new File(['hello'], 'hello.png', { type: 'image/png' });
-      renderApp();
-      const fileInput = screen.getByTestId('file-uploader');
-      expect(fileInput.files.length).toBe(0);
-      await userEvent.upload(fileInput, file);
-      expect(fileInput.files.length).toBe(1);
-    });
+    testBasedOnWorkflowTypes(
+      'should render file upload input field and upload action',
+      async (workflowType) => {
+        successHandler && successHandler();
+        const file = new File(['hello'], 'hello.png', { type: 'image/png' });
+        renderApp({
+          props: {
+            workflowType,
+          },
+        });
+        const fileInput = screen.getByTestId('file-uploader');
+        expect(fileInput.files.length).toBe(0);
+        await userEvent.upload(fileInput, file);
+        expect(fileInput.files.length).toBe(1);
+      },
+    );
 
-    test('should remove file on close action click', async () => {
+    testBasedOnWorkflowTypes('should remove file on close action click', async (workflowType) => {
       const file = new File(['hello'], 'hello.png', { type: 'image/png' });
-      renderApp();
+      renderApp({
+        props: {
+          workflowType,
+        },
+      });
       const fileInput = screen.getByTestId('file-uploader');
       await userEvent.upload(fileInput, file);
       expect(fileInput.files.length).toBe(1);
@@ -88,13 +109,20 @@ export const testFileUploadSection = (renderApp, validateNotification, successHa
       expect(fileInput.files.length).toBe(0);
     });
 
-    test('should show error when file size breached the limit', async () => {
-      const file = new File(['hello razorpay'], 'hello.png', { type: 'image/png' });
-      renderApp();
-      const fileInput = screen.getByTestId('file-uploader');
-      await userEvent.upload(fileInput, file);
-      expect(fileInput.files.length).toBe(1);
-      validateNotification();
-    });
+    testBasedOnWorkflowTypes(
+      'should show error when file size breached the limit',
+      async (workflowType) => {
+        const file = new File(['hello razorpay'], 'hello.png', { type: 'image/png' });
+        renderApp({
+          props: {
+            workflowType,
+          },
+        });
+        const fileInput = screen.getByTestId('file-uploader');
+        await userEvent.upload(fileInput, file);
+        expect(fileInput.files.length).toBe(1);
+        validateNotification();
+      },
+    );
   });
 };

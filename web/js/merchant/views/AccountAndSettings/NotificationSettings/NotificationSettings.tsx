@@ -9,6 +9,7 @@ import {
   StyledDivider,
   StyledTabContentContainer,
   StyledHeader,
+  StyledTabContainer,
 } from 'merchant/views/AccountAndSettings/styled';
 import {
   isWhatsappNotificationEnabled,
@@ -36,7 +37,7 @@ const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | n
   }
 
   return (
-    <>
+    <StyledTabContainer>
       <div className="banner-container">
         <DashboardBanner />
       </div>
@@ -81,7 +82,7 @@ const NotificationSettings = ({ user, location: { pathname } }): JSX.Element | n
           </Suspense>
         </ErrorBoundary>
       </div>
-    </>
+    </StyledTabContainer>
   );
 };
 

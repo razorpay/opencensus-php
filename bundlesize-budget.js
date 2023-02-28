@@ -4,13 +4,13 @@ module.exports = [
   {
     name: 'Merchant',
     path: 'js/merchant/merchant.*.js',
-    limit: '440 KB',
+    limit: '450 KB',
     gzip: true,
   },
   {
     name: 'Runtime',
     path: 'js/merchant/runtime.*.js',
-    limit: '8.2 KB',
+    limit: '8.3 KB',
     gzip: true,
   },
   {

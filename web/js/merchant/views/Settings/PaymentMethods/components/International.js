@@ -110,6 +110,7 @@ const International = ({
             status={productStatus.pg.status}
             showRequestAccessBtn={productStatus.pg.isRequested}
             onRequestAccessClick={() => onRequestAccessClick({ triggerSource: 'pg' })}
+            disabled={!isKycComplete}
           />
 
           <div className="spacer-20" />

@@ -1,0 +1,308 @@
+{
+  "status_code": 200,
+  "success": true,
+  "data": [
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.cards.domestic.visa",
+      "status": "activated",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    },
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.netbanking.retail.hdfc",
+      "status": "greyed",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "This payment method is not allowed for unregistered or individual businesses",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    },
+
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.netbanking.corporate.hdfc_c",
+      "status": "greyed",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "This is only available after your KYC is verified.",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    },
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.upi.upi",
+      "status": "greyed",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "This payment method is not allowed for unregistered or individual businesses",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    },
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.upi.tpv.upi",
+      "status": "greyed",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "This payment method is not allowed for unregistered or individual businesses",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    },
+
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.emi.debit",
+      "status": "activated",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    },
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.emi.debit.hdfc",
+      "status": "activated",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    },
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.wallet.airtelmoney",
+      "status": "activated",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    },
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.wallet.amazonpay",
+      "status": "greyed",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "This payment method is not allowed for unregistered or individual businesses",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    },
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.international.paypal",
+      "status": "greyed",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "This is only available after your KYC is verified.",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    },
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.paylater.getsimpl",
+      "status": "greyed",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "This payment method is not allowed for unregistered or individual businesses",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    },
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.paylater.icic",
+      "status": "activated",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    },
+
+    {
+      "merchant_instrument_request_id": "",
+      "merchant_id": "Jd8KyOsgCLWfhf",
+      "instrument": "pg.international.app.trustly",
+      "status": "greyed",
+      "comment": "",
+      "created_at": 0,
+      "updated_at": 0,
+      "special_pricing": "",
+      "tags": null,
+      "created_by": "",
+      "features": {
+        "tpv": false,
+        "direct_settlement": { "with_refund": false, "without_refund": false }
+      },
+      "document": { "File": null, "FileHeader": null },
+      "CreatedBy": "",
+      "Source": "",
+      "fade_comment": "This is only available after your KYC is verified.",
+      "should_show_smart_dashboard_flow": false,
+      "should_show_reinitiate_button": false,
+      "capture_info_before_mir": { "redirect_to_form": [], "collect_info": [] }
+    }
+  ]
+}

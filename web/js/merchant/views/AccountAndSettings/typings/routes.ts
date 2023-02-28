@@ -32,6 +32,13 @@ export enum ROUTES_INFO {
   BANK_ACCOUNT_DETAILS = '/bank-accounts-settlements/bank-account-details',
   SETTLEMENT_DETAILS = '/bank-accounts-settlements/settlement-details',
   FIRS = '/bank-accounts-settlements/firs',
+  CARDS = '/payment-methods/cards',
+  UPI_QR = '/payment-methods/upi-qr',
+  NETBANKING = '/payment-methods/netbanking',
+  EMI = '/payment-methods/emi',
+  WALLET = '/payment-methods/wallet',
+  PAY_LATER = '/payment-methods/pay-later',
+  INTERNATIONAL_PAYMENTS = '/payment-methods/international-payments',
 }
 
 export type OldAndNewRouteMapInterface = {

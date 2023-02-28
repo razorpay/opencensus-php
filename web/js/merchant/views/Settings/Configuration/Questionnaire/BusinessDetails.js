@@ -1,32 +1,59 @@
-import React from 'react';
 import Input from 'common/new-ui/Input';
 import { useFormikContext } from 'formik';
-import { getProductValue } from './utils';
+import Banner from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/components/Banner';
+import { BannerType } from 'merchant/views/AccountAndSettings/PaymentMethods/typings';
+import WebsiteDetailsSections from 'merchant/views/Settings/Configuration/components/WebsiteDetailsSections';
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { getProductOptions, getProductValue, getWebsiteDetailsInfo } from './utils';
+import { trackIEEvent } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/utils/track';
+import { getPreferredProduct } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/utils';
 
-const BusinessDetails = ({ disabled, triggerSource, saveFormData }) => {
+const BusinessDetails = ({
+  user,
+  disabled,
+  triggerSource,
+  saveFormData,
+  isRevampFlow,
+  closeModal,
+}) => {
+  const [productOptions, setProductOptions] = useState([]);
   const formikProps = useFormikContext();
+  const websiteInfo = getWebsiteDetailsInfo(user);
 
   const getError = (name) =>
     (formikProps.touched[name] ? formikProps.errors[name] : '') ||
     (!!formikProps.status ? formikProps.status[name] : '');
 
-  let productOptions = [
-    { value: ['payment_gateway'], label: 'Payment Gateway' },
-    {
-      value: ['payment_links,payment_pages,invoices'],
-      label: 'Payment Pages, Links & invoices',
-    },
-    { value: ['payment_gateway,payment_links,payment_pages,invoices'], label: 'Both' },
-  ];
+  const handleChange = () => saveFormData(formikProps);
 
-  if (triggerSource)
-    productOptions = productOptions.filter(
-      (opts) => opts.value.toString() === getProductValue(triggerSource),
-    );
-
-  const handleChange = () => {
-    saveFormData(formikProps);
+  const handleCheckboxChange = (value, productValue) => {
+    let products = [];
+    if (value === '1') {
+      products = [...formikProps.values.products, ...productValue];
+    } else {
+      products = formikProps.values.products.filter((item) => !productValue.includes(item));
+    }
+    trackIEEvent({
+      objectName: 'Preferred Product',
+      actionName: 'Clicked',
+      properties: {
+        preferred_product: getPreferredProduct(products),
+      },
+      subSection: 'Info Form',
+    });
+    formikProps.setFieldValue('products', products);
   };
+
+  useEffect(() => {
+    let products = getProductOptions(isRevampFlow, websiteInfo.isWebsiteDetails);
+    if (triggerSource) {
+      products = products.filter(
+        (opts) => opts.value.toString() === getProductValue(triggerSource),
+      );
+    }
+    setProductOptions(products);
+  }, [isRevampFlow, triggerSource, websiteInfo.isWebsiteDetails]);
 
   return (
     <div class="business-details">
@@ -35,18 +62,45 @@ const BusinessDetails = ({ disabled, triggerSource, saveFormData }) => {
         International payments are associated with a higher risk of frauds and chargeback, hence it
         is governed by strict risk evaluations policies laid down by our banking partners
       </div>
+      {isRevampFlow && !websiteInfo.isWebsiteDetails && (
+        <Banner type={BannerType.WEBSITE_DETAIL_UPDATE} />
+      )}
+      {isRevampFlow ? (
+        <Input.Group
+          required
+          label="Choose product(s) to collect international payments on"
+          className="product-options"
+        >
+          <div class="Input-content">
+            {productOptions.map((each, index) => (
+              <Input.Check
+                key={`check-${index}`}
+                autoRender
+                required
+                fieldLabel={each.label}
+                className="Input--vTop"
+                checked={formikProps.values.products.includes(each.value[0])}
+                onChange={(e) => handleCheckboxChange(e.target.value, each.value)}
+                disabled={disabled || each.disabled}
+                description={each.disabled ? 'Registered website required' : ''}
+              />
+            ))}
+          </div>
+        </Input.Group>
+      ) : (
+        <Input.Radio
+          required
+          name="products"
+          label="Enable international payments on"
+          onBlur={handleChange}
+          options={productOptions}
+          defaultValue={formikProps.values.products.toString()}
+          disabled={disabled}
+          className="Input--vTop"
+          propagatedError={getError('products')}
+        />
+      )}
 
-      <Input.Radio
-        required
-        name="products"
-        label="Enable international payments on"
-        onBlur={handleChange}
-        options={productOptions}
-        defaultValue={formikProps.values.products.toString()}
-        disabled={disabled}
-        className="Input--vTop"
-        propagatedError={getError('products')}
-      />
       <div class="spacer" />
       <Input.Select
         required
@@ -100,25 +154,35 @@ const BusinessDetails = ({ disabled, triggerSource, saveFormData }) => {
         propagatedError={getError('business_txn_size')}
       />
 
-      <Input
-        required
-        name="about_us_link"
-        label="Website / App Link"
-        disabled={disabled}
-        value={formikProps.values.about_us_link}
-        mature={formikProps.touched.about_us_link}
-        placeholder="Enter Website / App Link"
-        info={{
-          'Sample Website url': 'https://www.google.com',
-          App:
-            'Please provide Google play store URL; In case your app is not hosted on google play store, share any other app store URL',
-          'Sample App url': 'https://play.google.com/store/apps/details?id=com.whatsapp',
-        }}
-        onBlur={handleChange}
-        propagatedError={getError('about_us_link')}
-      />
+      {isRevampFlow ? (
+        websiteInfo.isWebsiteDetails ? (
+          <WebsiteDetailsSections websiteInfo={websiteInfo} closeModal={closeModal} />
+        ) : null
+      ) : (
+        <Input
+          required
+          name="about_us_link"
+          label="Website / App Link"
+          disabled={disabled}
+          value={formikProps.values.about_us_link}
+          mature={formikProps.touched.about_us_link}
+          placeholder="Enter Website / App Link"
+          info={{
+            'Sample Website url': 'https://www.google.com',
+            App:
+              'Please provide Google play store URL; In case your app is not hosted on google play store, share any other app store URL',
+            'Sample App url': 'https://play.google.com/store/apps/details?id=com.whatsapp',
+          }}
+          onBlur={handleChange}
+          propagatedError={getError('about_us_link')}
+        />
+      )}
     </div>
   );
 };
 
-export default BusinessDetails;
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+});
+
+export default connect(mapStateToProps, null)(BusinessDetails);

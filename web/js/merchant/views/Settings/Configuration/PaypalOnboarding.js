@@ -4,10 +4,11 @@ import { getOnboardingStatus, onboardTerminal } from 'merchant/reducers/config';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { getClassName, getStatusMessage } from './InternationalPayments';
+import { getClassName, getStatusMessage, getBadgeVariant } from './InternationalPayments';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { Alert, Badge, Button, InfoIcon, UsersIcon } from '@razorpay/blade/components';
 
 class PaypalOnboardingButton extends Component {
   is_redirected = false;
@@ -115,16 +116,105 @@ class PaypalOnboardingButton extends Component {
       closeModal,
       /* eslint-disable no-shadow */
       isInternationalPayment,
+      isIERevamp,
     } = this.props;
 
     const status = terminals.length && terminals[0].terminal.status;
     const showLinkButtonOnly = terminals.length === 0;
-    return (
+    const paypalMerchantId = terminals[0]?.terminal?.merchant_id;
+    const showChangeAccountWithMerchantId =
+      isInternationalPayment && !showLinkButtonOnly && status !== 'activated';
+    const showChangeAccountOnly =
+      !isInternationalPayment && !showLinkButtonOnly && status !== 'activated';
+    const showStatusMessage = ['pending', 'created', 'requested', 'permission_missing'].includes(
+      status,
+    );
+    const changeAccountModalClick = () =>
+      openModal({
+        size: 'small',
+        className: 'change-account-modal',
+        component: (
+          <ChangeAccountModal changeAccount={this.verifyAccount} onClose={closeModal} user={user} />
+        ),
+      });
+
+    return isIERevamp ? (
       <div className={showLinkButtonOnly ? 'link-account' : 'change-account'}>
-        {isInternationalPayment && !showLinkButtonOnly && status !== 'activated' && (
+        <div>
+          {showChangeAccountWithMerchantId && (
+            <div className="change-account-action">
+              {paypalMerchantId && (
+                <Badge
+                  icon={(props) => (
+                    <>
+                      <UsersIcon {...props} />
+                      <Popover align="right" theme="dark">
+                        <PopoverBody>
+                          <div className="disabled-text">Paypal generated Merchant ID</div>
+                        </PopoverBody>
+                      </Popover>
+                    </>
+                  )}
+                  variant="information"
+                  contrast="low"
+                  size="large"
+                >
+                  {paypalMerchantId}
+                </Badge>
+              )}
+              <Button variant="secondary" size="small" onClick={changeAccountModalClick}>
+                Change Account
+              </Button>
+            </div>
+          )}
+          {showChangeAccountOnly && (
+            <Button variant="secondary" size="small" onClick={changeAccountModalClick}>
+              Change Account
+            </Button>
+          )}
+          {showLinkButtonOnly && (
+            <Button
+              variant="primary"
+              size="small"
+              onClick={this.verifyAccount}
+              isLoading={this.state.loading}
+              disabled={disabled}
+              icon={(props) =>
+                disabled ? (
+                  <>
+                    <InfoIcon {...props} />
+                    <Popover align="right" theme="dark">
+                      <PopoverBody>
+                        <div className="disabled-text">{disabledText}</div>
+                      </PopoverBody>
+                    </Popover>
+                  </>
+                ) : null
+              }
+            >
+              Link Account
+            </Button>
+          )}
+        </div>
+        {showStatusMessage && (
+          <div className="mt20">
+            <Alert
+              intent={getBadgeVariant(status)}
+              contrast="high"
+              size="large"
+              isDismissible={false}
+              description={getStatusMessage(status)}
+              isFullWidth
+            />
+          </div>
+        )}
+      </div>
+    ) : (
+      <div className={showLinkButtonOnly ? 'link-account' : 'change-account'}>
+        {showChangeAccountWithMerchantId && (
           <div className="change-account-action">
             <a className="merchant-id">
-              <i className="i i-user-circle" /> {terminals[0].terminal.merchant_id}
+              <i className="i i-user-circle" /> {paypalMerchantId}
               <Popover align="right" theme="dark">
                 <PopoverBody>
                   <div className="disabled-text">Paypal generated Merchant ID</div>
@@ -132,27 +222,11 @@ class PaypalOnboardingButton extends Component {
               </Popover>
             </a>
 
-            <a
-              onClick={() =>
-                openModal({
-                  size: 'small',
-                  className: 'change-account-modal',
-                  component: (
-                    <ChangeAccountModal
-                      changeAccount={this.verifyAccount}
-                      onClose={closeModal}
-                      user={user}
-                    />
-                  ),
-                })
-              }
-            >
-              Change Account
-            </a>
+            <a onClick={changeAccountModalClick}>Change Account</a>
           </div>
         )}
 
-        {['pending', 'created', 'requested', 'permission_missing'].includes(status) && (
+        {showStatusMessage && (
           <p className={`status status-${getClassName(status)}`}>
             <i className="i i-info-circle" /> {getStatusMessage(status)}
           </p>
@@ -182,7 +256,7 @@ class PaypalOnboardingButton extends Component {
             )}
           </>
         ) : null}
-        {!isInternationalPayment && !showLinkButtonOnly && status !== 'activated' && (
+        {showChangeAccountOnly && (
           <div className="change-account-action">
             <a
               onClick={() =>

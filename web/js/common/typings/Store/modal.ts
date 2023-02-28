@@ -1,0 +1,16 @@
+export type OpenModalPayload = {
+  size?: 'regular' | 'small' | 'medium' | 'med-large' | 'large' | 'xlarge';
+  component: JSX.Element;
+  className?: string;
+  overlayStyles?: Record<string, string>;
+};
+
+export type OpenModalType = (arg0: OpenModalPayload) => void;
+export type CloseModalType = () => void;
+
+export type ModalActions = {
+  openModal: OpenModalPayload;
+  closeModal: CloseModalType;
+};
+
+export type ModalReducerState = Partial<OpenModalPayload>;

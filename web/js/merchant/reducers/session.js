@@ -141,7 +141,7 @@ export const updateUserSegmentData = (segmentData) => {
   };
 };
 
-const initialState = {
+export const initialState = {
   user: new User(),
   org: {},
   mode: 'test',

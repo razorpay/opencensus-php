@@ -1,5 +1,5 @@
-import { WORKFLOW_TYPES, WorkflowStatusDisplayDays } from './constants';
 import moment from 'moment';
+import { WorkflowStatusDisplayDays, WORKFLOW_TYPES } from './constants';
 
 export const isWorkflowInClarification = (workflow, statuses) => {
   if (!workflow) return false;
@@ -7,21 +7,30 @@ export const isWorkflowInClarification = (workflow, statuses) => {
   return statuses.includes(workflow_status) && needs_clarification && !request_under_validation;
 };
 
-export const isVisible = (isBankAccountUpdateWorkflow, merchantId) => {
+export const isVisible = (
+  isBankAccountUpdateWorkflow,
+  merchantId,
+  workflowType = WORKFLOW_TYPES.BANK_DETAIL_UPDATE,
+) => {
   if (isBankAccountUpdateWorkflow) {
     const workflowStatus = JSON.parse(localStorage.getItem('workflow_status'));
-    const workflowStatusKey = `${WORKFLOW_TYPES.BANK_DETAIL_UPDATE}--${merchantId}`;
+    const workflowStatusKey = `${workflowType}--${merchantId}`;
     if (workflowStatus?.[workflowStatusKey]) {
       const { expireAt, isVisible } = workflowStatus[workflowStatusKey];
       return isVisible && moment().isBefore(expireAt);
+    } else if (workflowType === WORKFLOW_TYPES.ENABLE_INTERNATIONAL_CARDS_FOR_PG_PPLI) {
+      return true;
     }
     return false;
   }
   return true;
 };
 
-export const showWorkflowStatus = (merchantId) => {
-  const workflowStatusKey = `${WORKFLOW_TYPES.BANK_DETAIL_UPDATE}--${merchantId}`;
+export const showWorkflowStatus = (
+  merchantId,
+  workflowType = WORKFLOW_TYPES.BANK_DETAIL_UPDATE,
+) => {
+  const workflowStatusKey = `${workflowType}--${merchantId}`;
   const workflowStatus = JSON.parse(localStorage.getItem('workflow_status') || '{}');
   const newWorkflowStatus = {
     ...workflowStatus,
@@ -33,9 +42,12 @@ export const showWorkflowStatus = (merchantId) => {
   localStorage.setItem('workflow_status', JSON.stringify(newWorkflowStatus));
 };
 
-export const hideWorkflowStatus = (merchantId) => {
+export const hideWorkflowStatus = (
+  merchantId,
+  workflowType = WORKFLOW_TYPES.BANK_DETAIL_UPDATE,
+) => {
   const workflowStatus = JSON.parse(localStorage.getItem('workflow_status') || '{}');
-  const workflowStatusKey = `${WORKFLOW_TYPES.BANK_DETAIL_UPDATE}--${merchantId}`;
+  const workflowStatusKey = `${workflowType}--${merchantId}`;
   if (workflowStatus?.[workflowStatusKey]) {
     const newWorkflowStatus = {
       ...workflowStatus,

@@ -17,13 +17,27 @@ export const bankAccountUpdateSuccess = () => {
 };
 
 export const fetchWorkflowStatusSuccess = (response) => {
-  return rest.get('*/merchant/bank_detail_update/details', (req, res, ctx) => {
+  return rest.get('*/details', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({
         success: true,
         data: {
           ...response,
+        },
+      }),
+    );
+  });
+};
+
+export const fetchWorkflowStatusError = () => {
+  return rest.get('*/details', (req, res, ctx) => {
+    return res(
+      ctx.status(500),
+      ctx.json({
+        success: false,
+        errors: {
+          message: 'Something went wrong, Please try again later',
         },
       }),
     );
@@ -46,7 +60,7 @@ export const uploadDocumentSuccess = () => {
 };
 
 export const submitClarificationSuccess = () => {
-  return rest.post('*/merchant/submit_clarification/bank_detail_update', (req, res, ctx) => {
+  return rest.post('*/merchant/submit_clarification/*', (req, res, ctx) => {
     return res(
       ctx.status(200),
       ctx.json({
@@ -60,7 +74,7 @@ export const submitClarificationSuccess = () => {
 };
 
 export const submitClarificationError = () => {
-  return rest.post('*/merchant/submit_clarification/bank_detail_update', (req, res, ctx) => {
+  return rest.post('*/merchant/submit_clarification/*', (req, res, ctx) => {
     return res(
       ctx.status(500),
       ctx.json({
