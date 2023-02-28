@@ -1,6 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { updateMagicCheckoutStatus } from 'merchant/reducers/magicCheckout';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import { CTA_TEXT } from 'merchant/views/MagicCheckout/data';
 import { loadWaitlistForm } from 'merchant/views/MagicCheckout/utils/waitlistForm';
 import { sendToLumberjack } from 'common/utils/analytics';
@@ -11,7 +13,7 @@ const screen = 'SuperCheckoutOnboarding';
 
 const { LIVE, DEACTIVATED, WAITLISTED, INTERESTED, AVAILABLE } = MAGIC_CHECKOUT_STATUS;
 
-const JoinWaitlistButton = ({ user, magicCheckout, updateStatus, children }) => {
+const JoinWaitlistButton = ({ user, magicCheckout, updateStatus, children, openModal }) => {
   const onClickJoinWaitlist = () => {
     const { current } = user;
 
@@ -37,7 +39,7 @@ const JoinWaitlistButton = ({ user, magicCheckout, updateStatus, children }) => 
           merchant_id: current,
         },
       });
-      loadWaitlistForm(user, () => {
+      loadWaitlistForm(openModal, () => {
         sendToLumberjack({
           eventName: `super_checkout_waitlist_form_filled`,
           properties: {
@@ -67,8 +69,13 @@ const mapStateToProps = (state) => ({
   magicCheckout: state.magicCheckout,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  updateStatus: (payload) => dispatch(updateMagicCheckoutStatus(payload)),
-});
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      ...ModalActions,
+      updateStatus: updateMagicCheckoutStatus,
+    },
+    dispatch,
+  );
 
 export default connect(mapStateToProps, mapDispatchToProps)(JoinWaitlistButton);

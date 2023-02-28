@@ -1,21 +1,14 @@
+import LeadFormModal from 'merchant/views/MagicCheckout/LeadForm';
 import { createPopup } from '@typeform/embed';
 
-let waitlistForm, feedbackForm;
+let feedbackForm;
 
-export const loadWaitlistForm = (user, cb = () => {}) => {
-  const formId = 'iNmC9i0u';
-  const { current: merchantId, email } = user;
-  if (!waitlistForm) {
-    waitlistForm = createPopup(formId, {
-      hideHeaders: true,
-      hideFooters: true,
-      hidden: { mid: merchantId, email },
-      onSubmit: () => {
-        cb();
-      },
-    });
-  }
-  waitlistForm.toggle();
+export const loadWaitlistForm = (openModal, cb = () => {}) => {
+  openModal({
+    size: 'large',
+    className: 'magic-lead-form',
+    component: <LeadFormModal onSubmit={cb} />,
+  });
 };
 
 export const loadFeedbackForm = (user, onSubmit = () => {}) => {

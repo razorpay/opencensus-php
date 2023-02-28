@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import Landing from 'merchant/components/OnBoarding/Slides/Landing';
 import { RZPFeatures } from 'merchant/helpers/data';
 import { LANDING_CONTENT } from 'merchant/views/MagicCheckout/data';
@@ -9,6 +10,7 @@ import {
   loadFeedbackForm,
 } from 'merchant/views/MagicCheckout/utils/waitlistForm';
 import { updateMagicCheckoutStatus } from 'merchant/reducers/magicCheckout';
+import * as ModalActions from 'merchant_common/reducers/modals';
 import { sendToLumberjack } from 'common/utils/analytics';
 import { MAGIC_CHECKOUT_STATUS } from 'merchant/views/MagicCheckout/constants';
 
@@ -77,7 +79,7 @@ const MagicCheckoutLanding = (props) => {
                     merchant_id: props.user.current,
                   },
                 });
-                loadWaitlistForm(props.user, () => {
+                loadWaitlistForm(props.openModal, () => {
                   sendToLumberjack({
                     eventName: 'super_checkout_waitlist_form_filled',
                     properties: {
@@ -167,8 +169,13 @@ const mapStateToProps = (state) => ({
   magicCheckout: state.magicCheckout,
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  updateStatus: (payload) => dispatch(updateMagicCheckoutStatus(payload)),
-});
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      ...ModalActions,
+      updateStatus: updateMagicCheckoutStatus,
+    },
+    dispatch,
+  );
 
 export default connect(mapStateToProps, mapDispatchToProps)(MagicCheckoutLanding);
