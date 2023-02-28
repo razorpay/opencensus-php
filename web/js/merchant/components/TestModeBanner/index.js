@@ -18,8 +18,13 @@ class TestModeBanner extends Component {
     window.location.reload();
   };
 
+  redirectToNewNC = () => {
+    const needsClarificationOnEasyUrl = `${window.EASY_ONBOARDING_URL}/onboarding/needs-clarification`;
+    window.open(needsClarificationOnEasyUrl, '_self', 'noopener');
+  };
+
   render() {
-    const { user, mode, tracking } = this.props;
+    const { user, mode, tracking, isNcEligibile } = this.props;
 
     if (mode === 'live') {
       return null;
@@ -28,6 +33,7 @@ class TestModeBanner extends Component {
     if (user.isOrgAxis) return null;
 
     const activationFormUrl = user.isActivationFormFullView ? '/kyc' : '/activation';
+    const isNewNC = isNcEligibile && user.activation_status === 'needs_clarification';
 
     return (
       /* For not as we have a seperarte Test Mode banner for m-web which is prominent so hiding this from m-web */
@@ -47,6 +53,9 @@ class TestModeBanner extends Component {
                 <Link
                   to={activationFormUrl}
                   onClick={() => {
+                    if (isNewNC) {
+                      this.redirectToNewNC();
+                    }
                     trackLinkClick('Go To - Activation Form');
                     tracking.trackEvent(window.rzpQ.onbr().initiated('kyc.form_fill'));
                   }}
@@ -63,8 +72,10 @@ class TestModeBanner extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
-  return state.session;
-};
+const mapStateToProps = (state) => ({
+  user: state.session.user,
+  mode: state.session.mode,
+  isNcEligibile: state.home.isNcEligibile,
+});
 
 export default connect(mapStateToProps, null)(TestModeBanner);

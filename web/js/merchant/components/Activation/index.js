@@ -308,9 +308,9 @@ export default class ActivationWizard extends React.Component {
         this.websiteComplianceNCFlowReasons = {};
         if (ndcFields && Array.isArray(ndcFields)) {
           ndcFields.forEach((field) => {
-            if (WEBSITE_COMPLIANCE_URLS.includes(field.name)) {
-              this.lastFieldNameUnderNCWebsiteCompliance.current = field.name;
-              this.websiteComplianceNCFlowReasons[field.name] = field.reasons[0];
+            if (WEBSITE_COMPLIANCE_URLS.includes(field?.name)) {
+              this.lastFieldNameUnderNCWebsiteCompliance.current = field?.name;
+              this.websiteComplianceNCFlowReasons[field?.name] = field?.reasons?.[0];
             }
           });
         }
