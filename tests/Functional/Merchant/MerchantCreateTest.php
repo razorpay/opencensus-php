@@ -1125,6 +1125,72 @@ class MerchantCreateTest extends TestCase
         $this->verifyAccessMapEntries($app, $submerchant);
     }
 
+    public function testCreateMalaysianSubMerchantByAggregatorWithEmailOnProdEnv()
+    {
+        $this->changeEnvToNonTest();
+
+        Mail::fake();
+
+
+        $org = $this->fixtures->create('org:curlec_org');
+
+        $merchantAttributes = [
+            'id' => "10000121212121",
+            'live' => 1,
+            'activated_at' => Carbon::now()->subDays(2)->getTimestamp(),
+            'org_id' => $org->getId()
+        ];
+
+        $merchant = $this->fixtures->create('merchant', $merchantAttributes);
+
+        $app = $this->markPartnerAndCreateAppAndUserMapping('aggregator', "10000121212121", 'MY');
+
+        $this->fixtures->on('test')->create('merchant_detail:sane', [
+            'merchant_id' => $app->merchant_id
+        ]);
+
+        $this->fixtures->on('live')->create('merchant_detail:sane', [
+            'merchant_id' => $app->merchant_id
+        ]);
+
+        $configAttributes = [
+            PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
+        ];
+
+        $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant(
+            "10000121212121", [], 'owner', 'live');
+
+        $this->ba->proxyAuth('rzp_live_' .   "10000121212121", $merchantUser['id']);
+
+        $this->startTest();
+
+        Mail::assertQueued(CreateSubMerchantPartnerMail::class, function($mail) {
+            return $mail->hasTo('test@razorpay.com');
+        });
+
+        Mail::assertQueued(CreateSubMerchantAffiliateMail::class, function($mail) {
+            $data = $mail->viewData;
+
+            $this->assertEquals('org_100000razorpay', $data['org']['id']);
+
+            return $mail->hasTo('success@curlec.com', 'Submerchant');
+        });
+
+        $submerchant = $this->getLastEntity('merchant', true);
+
+        $mapping = $this->fixtures->user->getMerchantUserMapping($submerchant['id'], 'MerchantUser01');
+
+        // This should be empty once aggregator type's dashboard access is removed
+        // in withEmail cases.
+        $this->assertEquals(1, count($mapping));
+
+        $this->verifyAccessMapEntries($app, $submerchant);
+
+        $this->assertEquals('MY', $submerchant['country_code']);
+    }
+
     public function testCreateMalaysianSubMerchantByAggregatorWithEmail()
     {
         Mail::fake();

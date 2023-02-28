@@ -6768,6 +6768,7 @@ class Service extends Base\Service
             User\Entity::PASSWORD              => $dummyPass,
             User\Entity::PASSWORD_CONFIRMATION => $dummyPass,
             User\Entity::CAPTCHA_DISABLE       => User\Validator::DISABLE_CAPTCHA_SECRET,
+            Merchant\Entity::COUNTRY_CODE      => $subMerchant->getCountry(),
         ];
         if ($skipCaptcha === true)
         {
