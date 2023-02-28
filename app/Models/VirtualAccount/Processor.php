@@ -25,12 +25,15 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\BankTransfer\HdfcEcms\StatusCode;
+use RZP\Models\Payment\Processor\UpiUnexpectedPaymentRefundHandler;
 use RZP\Models\BankTransfer\Entity as BankTransferEntity;
 use RZP\Models\OfflinePayment\StatusCode as OfflineStatusCode;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 abstract class Processor extends Base\Core
 {
+    use UpiUnexpectedPaymentRefundHandler;
+
     /**
      * @var Entity
      */
@@ -258,6 +261,19 @@ abstract class Processor extends Base\Core
                 if (($this->isVirtualAccountDueToBeClosed($entity) === true) or
                     ($this->virtualAccount->isClosed() === true))
                 {
+                    $result = $this->shouldDelayUnexpectedPaymentRefund();
+
+                    if ($result === true)
+                    {
+                        $payment = $paymentProcessor->getPayment();
+
+                        $payment->setRefundAt($this->getDelayedRefundAtValue($payment->getCreatedAt()));
+
+                        $this->repo->saveOrFail($payment);
+
+                        return;
+                    }
+
                     $refundNotes = [
                         'notes' => [
                             'refund_reason' => PublicErrorDescription::BAD_REQUEST_VIRTUAL_ACCOUNT_CLOSED
@@ -265,11 +281,26 @@ abstract class Processor extends Base\Core
                     ];
 
                     $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment(), $refundNotes);
+
+                    
                 }
                 else if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
                          ($entity->getUnexpectedReason() === UnexpectedPaymentReason::VIRTUAL_ACCOUNT_PAYMENT_FAILED_GATEWAY_DISABLED) and
                          (in_array(Provider::IFSC[$entity->getGateway()], Provider::getUnsuportedProviderByRazorpay()) === true))
                 {
+                    $result = $this->shouldDelayUnexpectedPaymentRefund();
+                
+                    if ($result === true)
+                    {
+                        $payment = $paymentProcessor->getPayment();
+
+                        $payment->setRefundAt($this->getDelayedRefundAtValue($payment->getCreatedAt()));
+
+                        $this->repo->saveOrFail($payment);
+
+                        return;
+                    }
+
                     $refundNotes = [
                         'notes' => [
                             'refund_reason'  =>

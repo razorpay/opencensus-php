@@ -1040,25 +1040,7 @@ class UpiMindgateGatewayTest extends TestCase
 
     public function testUnexpectedPaymentSuccess()
     {
-
-       $razorxMock = $this->getMockBuilder(RazorXClient::class)
-                           ->setConstructorArgs([$this->app])
-                           ->setMethods(['getTreatment'])
-                           ->getMock();
-
-        // we are ramping up auth terminal selection hence to make sure all test cases passes
-        $this->app->instance('razorx', $razorxMock);
-
-        $this->app->razorx->method('getTreatment')
-                          ->will($this->returnCallback(
-                            function ($mid, $feature, $mode)
-                            {
-                                if ($feature === 'unexpected_payment_refund_delay')
-                                {
-                                    return 'on';
-                                }
-                                return 'off';
-                            }));
+        $this->disableUnexpectedPaymentRefundImmediately();
 
         $data = $this->testData[__FUNCTION__];
 

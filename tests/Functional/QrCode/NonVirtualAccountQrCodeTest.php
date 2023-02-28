@@ -706,6 +706,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentInternalQrNotFound()
     {
+
         $requestInternal = $this->testData['testProcessIciciQrPaymentInternal'];
 
         $requestInternal['content']['merchantTranId'] = 'qwertyuiop1234qrv2';
@@ -880,6 +881,7 @@ class NonVirtualAccountQrCodeTest extends TestCase
 
     public function testProcessIciciQrPaymentOnClosedQrCode()
     {
+
         $qrCode = $this->createQrCode();
 
         $qrCodeId = $qrCode['id'];

@@ -5494,6 +5494,10 @@ class Service extends Base\Service
             {
                 $unexpectedPaymentId = $response['payment_id'];
 
+                $payment = $this->repo->payment->find($unexpectedPaymentId);
+
+                $this->handleUnExpectedPaymentRefundInRecon($payment);
+
                 $this->trace->info(
                     TraceCode::UPI_UNEXPECTED_PAYMENT_CREATED,
                     [

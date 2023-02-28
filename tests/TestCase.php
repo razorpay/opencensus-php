@@ -282,6 +282,16 @@ class TestCase extends IlluminateTestCase
         (new Admin\Service())->setConfigKeys([Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED => 1]);
     }
 
+    public function enableUnexpectedPaymentRefundImmediately()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::UNEXPECTED_PAYMENT_DELAY_REFUND => 0]);
+    }
+
+     public function disableUnexpectedPaymentRefundImmediately()
+    {
+        (new Admin\Service())->setConfigKeys([Admin\ConfigKey::UNEXPECTED_PAYMENT_DELAY_REFUND => 1]);
+    }
+
     public function disablePgRouterConfig()
     {
         (new Admin\Service())->setConfigKeys([Admin\ConfigKey::PG_ROUTER_SERVICE_ENABLED => 0]);

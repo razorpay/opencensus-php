@@ -365,6 +365,8 @@ class ConfigKey
     // DCS READ ENABLED
     const DCS_READ_WHITELISTED_FEATURES           = self::PREFIX . 'dcs_reads_whitelisted_features';
 
+    const UNEXPECTED_PAYMENT_DELAY_REFUND           = self::PREFIX . 'unexpected_payment_delay_refund';
+
     const PUBLIC_KEYS = [
         self::TENANT_ROLES_ENTITY,
         self::TENANT_ROLES_ROUTES,
@@ -515,6 +517,7 @@ class ConfigKey
         self::RISK_FOH_TEAM_EMAIL_IDS,
         self::UPI_TURBO_POPULAR_BANK_LIST,
         self::DCS_READ_WHITELISTED_FEATURES,
+        self::UNEXPECTED_PAYMENT_DELAY_REFUND,
     ];
 
     const REDIS_CONFIG_MAP = [

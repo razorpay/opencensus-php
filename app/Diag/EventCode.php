@@ -341,6 +341,11 @@ class EventCode
         'name'  => 'payment.unexpected.refund.unblock'
     ];
 
+     const PAYMENT_UNEXPECTED_PAYMENT_REFUND_DELAY        = [
+        'group' => 'unexpected_payment_refund',
+        'name'  => 'payment.unexpected.refund.delay'
+    ];
+
     const PAYMENT_AUTO_REFUND_FAILED                     = [
         'group' => 'auto_refund',
         'name'  => 'payment.auto.refund.failed'
