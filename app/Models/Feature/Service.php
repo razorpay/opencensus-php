@@ -1557,7 +1557,7 @@ class Service extends Base\Service
 
     public function processDcsMigrationJob(array $input): array
     {
-        AssignFeatures::dispatch($input, $this->mode);
+        AssignFeatures::dispatchNow($input, $this->mode);
 
         return [
             'response' => 'DCS Features Assign Job dispatched',
