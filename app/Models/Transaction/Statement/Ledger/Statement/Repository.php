@@ -190,11 +190,8 @@ class Repository extends Base\Repository
      * is not part of input.
      *
      *  select `prod_pg_ledger_live`.`ledger_entries`.* from `prod_pg_ledger_live`.`ledger_entries`
-     *  left join `balance`
-     *  on `balance`.`merchant_id` = `prod_pg_ledger_live`.`ledger_entries`.`merchant_id`
-     *  where `prod_pg_ledger_live`.`ledger_entries`.`merchant_id` = ?
-     *  and `prod_pg_ledger_live`.`ledger_entries`.`account_id` = ?
-     *  and `balance`.`id` = ? order by `prod_pg_ledger_live`.`ledger_entries`.`journal_id` desc limit 5 offset 0
+     *  where `prod_pg_ledger_live`.`ledger_entries`.`account_id` = ?
+     *  order by `prod_pg_ledger_live`.`ledger_entries`.`journal_id` desc limit 5 offset 0
      *
      * @param BuilderEx $query
      * @param string    $merchantId
@@ -205,13 +202,11 @@ class Repository extends Base\Repository
         {
             $ledgerMerchantBalanceAccountID = $this->getMerchantBalanceAccountIDFromLedger($merchantId);
 
-            $query = $query->merchantId($merchantId);
-
-            $acountIDColumn = $this->dbColumn(LedgerEntry\Entity::ACCOUNT_ID);
+            $accountIDColumn = $this->dbColumn(LedgerEntry\Entity::ACCOUNT_ID);
 
             $query->select($this->getTableName() . '.*');
 
-            $query->where($acountIDColumn, $ledgerMerchantBalanceAccountID);
+            $query->where($accountIDColumn, $ledgerMerchantBalanceAccountID);
         }
 
         //

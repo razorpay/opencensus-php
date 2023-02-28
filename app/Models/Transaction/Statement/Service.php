@@ -50,6 +50,16 @@ class Service extends Transaction\Service
         if (($this->merchant->isFeatureEnabled(Constants::LEDGER_REVERSE_SHADOW) === true) and
             ($balance->isAccountTypeShared() === true) and $isLatestBalanceRequest === false)
         {
+            // This is to ensure addQueryParamBalanceId is not used thus skipping balance join
+            // The above method is dynamically called if input has the param balance id
+            if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_TIDB_MERCHANT_ACCOUNT_ID_CACHE) === true)
+            {
+                if (isset($input['balance_id']) === true)
+                {
+                    unset($input['balance_id']);
+                }
+            }
+
             $startTime = millitime();
 
             $ledger = $this->repo->ledger_statement->fetch($input, $this->merchant->getId(), ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
@@ -165,6 +175,16 @@ class Service extends Transaction\Service
             $startTime = millitime();
 
             $this->trace->count(TxnMetric::TRANSACTION_VA_REQUEST_TOTAL, $dimension);
+
+            // This is to ensure addQueryParamBalanceId is not used thus skipping balance join
+            // The above method is dynamically called if input has the param balance id
+            if ($this->isExperimentEnabled(Merchant\RazorxTreatment::LEDGER_TIDB_MERCHANT_ACCOUNT_ID_CACHE) === true)
+            {
+                if (isset($input['balance_id']) === true)
+                {
+                    unset($input['balance_id']);
+                }
+            }
 
             $ledger = $this->repo->ledger_statement->fetch($input,
                                                            $this->merchant->getId(),
