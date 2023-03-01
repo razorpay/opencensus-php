@@ -81,7 +81,7 @@ export const InfoDataConfig: StoredInfoDataInterface[] = [
     }: User): boolean =>
       email
         ? isEmailSelfServeEnabled && userRole === rolesList.OWNER
-        : userRole === rolesList.OWNER && signup_via_email,
+        : userRole === rolesList.OWNER && !signup_via_email,
     isCriticalFlowEnabled: true,
     selfServeActionName: 'Login Details Updated',
     analyticsEventInfo: {
