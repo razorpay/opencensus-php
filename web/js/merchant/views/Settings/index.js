@@ -23,7 +23,7 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isPaymentMethodEnabled } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 
-const { ACCOUNT_AND_SETTINGS, API_KEYS, WEBHOOKS } = ROUTES_INFO;
+const { ACCOUNT_AND_SETTINGS, API_KEYS, WEBHOOKS, REMINDERS } = ROUTES_INFO;
 
 const analyticsGoTo = (name) => {
   window.rzpAnalytics?.({
@@ -85,6 +85,9 @@ class Settings extends Component {
       }
       if (pathname === '/keys') {
         return <Redirect to={API_KEYS} />;
+      }
+      if (pathname === '/reminders') {
+        return <Redirect to={REMINDERS} />;
       }
       return <Redirect to={ACCOUNT_AND_SETTINGS} />;
     }
