@@ -1304,7 +1304,11 @@ class Core extends Base\Core
                     Entity::UNIQUE_HASH . '_of_duplicate' => $uniqueHashForExistingFundAccount,
                 ]);
 
-            Tracer::startSpanWithAttributes(HyperTrace::HASH_MISMATCH_FOR_INPUT_AND_DUPLICATE_FUND_ACCOUNT_TOTAL);
+            Tracer::startSpanWithAttributes(HyperTrace::HASH_MISMATCH_FOR_INPUT_AND_DUPLICATE_FUND_ACCOUNT_TOTAL,
+                                            [
+                                                'mode'    => $this->app['rzp.mode'],
+                                                'product' => $this->app['basicauth']->getProduct()
+                                            ]);
         }
 
         return $fundAccount;
