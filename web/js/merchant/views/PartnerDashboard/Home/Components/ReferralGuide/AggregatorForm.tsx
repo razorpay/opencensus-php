@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { AggregatorFormT, AggregatorFormErrorT } from '../../TypesDeclare/home';
+import {
+  AggregatorFormT,
+  AggregatorFormErrorT,
+} from 'merchant/views/PartnerDashboard/Home/TypesDeclare/home';
 import { compose } from 'redux';
 import { reduxForm } from 'redux-form';
 import rTracking from 'react-tracking';
@@ -157,7 +160,7 @@ const AggregatorForm = ({
             <hr className="seperator-line" />
             <ul className="agg-content-list">
               <li>Manage Merchant Account</li>
-              <li>Get Referral Bonus</li>
+              <li>No cap on Earnings</li>
               <li>Automated Commisions</li>
               <li>
                 Requires &nbsp;

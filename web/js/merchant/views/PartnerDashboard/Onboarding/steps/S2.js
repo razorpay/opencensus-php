@@ -76,7 +76,7 @@ const S2 = ({
             isMobile={isMobile}
           >
             <ul>
-              <li> Earn referral bonus </li>
+              <li> No cap on Earnings </li>
               <li> Get automated commissions </li>
               <ShowWhen
                 additionalCondition={(user) =>
@@ -98,7 +98,7 @@ const S2 = ({
           >
             <ul>
               <li> Manage merchant account </li>
-              <li> Earn referral bonus </li>
+              <li> No cap on Earnings </li>
               <li>
                 {' '}
                 Requires{' '}

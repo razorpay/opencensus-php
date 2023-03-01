@@ -24,9 +24,7 @@ const S1 = ({
           }
         >
           <div className="line-box brd-primary">
-            <p className="info info-green">
-              Get ₹500 bonus and 0.1% commission on all your referrals.
-            </p>
+            <p className="info info-green">Get 0.1% commission on all your referrals.</p>
           </div>
         </ShowWhen>
         <div style={{ marginTop: '21px', padding: '2px' }}>
