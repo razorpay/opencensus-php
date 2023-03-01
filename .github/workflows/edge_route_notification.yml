@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - 'app/Http/Route.php'
+      - 'app/Http/P2pRoute.php'
 
 jobs:
   slack-notify:
@@ -56,20 +57,20 @@ jobs:
             
             Using an externally exposed domain like api.razorpay.com for internal traffic introduces a security risk. In case of app secret leak, any attacker can use and impersonate itself as the Razorpay service. You'll need to do the following:
             - Onboard route to Edge (if not already) for [merchant dashboard](https://github.com/razorpay/terraform-kong/blob/master/prod/api-dashboard/merchant-dashboard.tf) or [admin dashboard](https://github.com/razorpay/terraform-kong/blob/master/prod/api-dashboard/admin-dashboard.tf). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details on how to onboard routes to Edge.
-            - Block access of this route via externally exposed domain like api.razorpay.com. You can use request-termination plugin to achieve the same like [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/api.tf#L2548-L2558). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details.
+            - Block access of this route via externally exposed domain like api.razorpay.com. You can use request-termination plugin to achieve the same. You just need to onboard your route [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/api-internal.tf). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details.
             
             > Is your route consumed by any internal Razorpay service residing in cde cluster?
 
             Using an externally exposed domain like api.razorpay.com for internal traffic introduces a security risk. In case of app secret leak, any attacker can use and impersonate itself as the Razorpay service. Additionally, all intra-cluster traffic should not be proxied via Edge. You'll need to do the following:
             - Migrate your API host from api.razorpay.com to prod-api-int.razorpay.com
-            - Block access of this route via externally exposed domain like api.razorpay.com. You can use request-termination plugin to achieve the same like [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/api.tf#L2548-L2558). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details.
+            - Block access of this route via externally exposed domain like api.razorpay.com. You can use request-termination plugin to achieve the same. You just need to onboard your route [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/api-internal.tf). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details.
 
             > Is your route consumed by any internal Razorpay service residing in non-cde cluster?
 
             Using an externally exposed domain like api.razorpay.com for internal traffic introduces a security risk. In case of app secret leak, any attacker can use and impersonate itself as the Razorpay service. Additionally, all inter-cluster traffic should be proxied via Edge. You'll need to do the following:
             - Migrate your API host from api.razorpay.com to api-graphql.razorpay.com
             - Onboard route to Edge (if not already) [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/api-graphql.tf). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details on how to onboard routes to Edge.
-            - Block access of this route via externally exposed domain like api.razorpay.com. You can use request-termination plugin to achieve the same like [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/api.tf#L2548-L2558). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details.
+            - Block access of this route via externally exposed domain like api.razorpay.com. You can use request-termination plugin to achieve the same. You just need to onboard your route [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/api-internal.tf). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details.
 
             #### 🪧 Other changes?
             Ignore this notification.
