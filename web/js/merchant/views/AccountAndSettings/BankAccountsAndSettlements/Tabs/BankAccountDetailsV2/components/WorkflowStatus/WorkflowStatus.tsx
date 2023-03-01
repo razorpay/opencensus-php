@@ -1,4 +1,5 @@
 import rolesList from 'merchant/helpers/permissions/roles-list';
+import { fetchBankAccount as fetchBankAccountReducer } from 'merchant/reducers/profile';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
 import {
@@ -32,7 +33,6 @@ const reviewWorkflowStatus = ['open', 'approved'];
 const responseRequiredWorkflowStatus = ['open', 'approved'];
 const respondedWorkflowStatus = ['open', 'approved'];
 const rejectedWorkflowStatus = ['rejected'];
-const successWorkflowStatus = ['executed'];
 
 const WorkflowStatus = ({
   isHomepageWorkflow,
@@ -40,8 +40,16 @@ const WorkflowStatus = ({
   user,
   workflows,
   isSettlementOnHold,
+  profile: { bankAccount },
+  fetchBankAccount,
 }): JSX.Element | null => {
   const worflow = workflows[workflowType];
+
+  useEffect(() => {
+    if (isHomepageWorkflow) {
+      fetchBankAccount();
+    }
+  }, [isHomepageWorkflow]);
 
   useEffect(() => {
     // Only fetch request if user is owner, other users shouldn't see the workflow
@@ -59,6 +67,7 @@ const WorkflowStatus = ({
     request_under_validation,
     tags,
     workflow_created_at,
+    bank_account_id,
   } = workflow;
 
   const hasReviewStatus =
@@ -75,8 +84,8 @@ const WorkflowStatus = ({
     isWorkflowInClarification(workflow, responseRequiredWorkflowStatus) &&
     tags?.includes('awaiting-customer-response');
   const hasSuccessStatus =
-    successWorkflowStatus.includes(workflow_status) &&
-    !request_under_validation &&
+    bank_account_id &&
+    bankAccount?.id === bank_account_id &&
     isVisible(isBankAccountUpdateWorkflow, user.id);
 
   let eta;
@@ -144,9 +153,11 @@ export default compose(
     (state) => ({
       workflows: state.workflows,
       user: state.session.user,
+      profile: state.profile,
     }),
     {
       fetchWorkflowStatus: fetchWorkflowStatusReducer,
+      fetchBankAccount: fetchBankAccountReducer,
     },
   ),
 )(WorkflowStatus);

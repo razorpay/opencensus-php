@@ -1,6 +1,6 @@
+import rolesList from 'merchant/helpers/permissions/roles-list';
 import WorkflowStatus from 'merchant/views/AccountAndSettings/BankAccountsAndSettlements/Tabs/BankAccountDetailsV2/components/WorkflowStatus';
 import { render } from 'test-utils';
-import rolesList from 'merchant/helpers/permissions/roles-list';
 
 jest.mock('merchant/views/Account/Profile/components/WorkflowRequests/utils', () => ({
   ...jest.requireActual('merchant/views/Account/Profile/components/WorkflowRequests/utils'),
@@ -18,7 +18,7 @@ jest.mock(
   ),
 );
 
-export const renderApp = ({ props, user } = {}) => {
+export const renderApp = ({ props, user, bankAccount } = {}) => {
   return render(<WorkflowStatus {...props} />, {
     showModal: true,
     initialState: {
@@ -26,6 +26,11 @@ export const renderApp = ({ props, user } = {}) => {
         user: {
           role: rolesList.OWNER,
           ...user,
+        },
+      },
+      profile: {
+        bankAccount: {
+          ...bankAccount,
         },
       },
     },

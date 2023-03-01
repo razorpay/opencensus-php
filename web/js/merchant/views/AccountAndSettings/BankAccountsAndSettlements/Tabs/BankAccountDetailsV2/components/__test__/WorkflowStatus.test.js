@@ -17,11 +17,14 @@ describe('WorkflowStatus', () => {
     server.use(
       workflowSuccess({
         ...defaultWorkflowStatus,
-        workflow_status: 'executed',
-        request_under_validation: false,
+        bank_account_id: 'acc_123456789',
       }),
     );
-    renderApp();
+    renderApp({
+      bankAccount: {
+        id: 'acc_123456789',
+      },
+    });
     await waitFor(() => expect(screen.getByText(BannerType.SUCCESS)).toBeInTheDocument());
   });
 
