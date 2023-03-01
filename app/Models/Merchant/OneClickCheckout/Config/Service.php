@@ -247,10 +247,12 @@ class Service extends Base\Service
                          * Browser and Server side fb analytics will be enabled/disabled
                          * The following piece of code flips server side fb analytics events for a merchant
                          */
-                        if($key === Constants::ONE_CC_FB_ANALYTICS)
-                        {
-                            $this->app['magic_analytics_provider_service']->toggleBEFbAnalytics($this->merchant->getId(), $value);
-                        }
+                        // disabling this for now
+                        // Thread: https://razorpay.slack.com/archives/C03D4UC6UG0/p1676868399275769
+                        //if($key === Constants::ONE_CC_FB_ANALYTICS)
+                        //{
+                        //    $this->app['magic_analytics_provider_service']->toggleBEFbAnalytics($this->merchant->getId(), $value);
+                        //}
                     }
 
                     if (in_array($key, Constants::GIFT_CARD_CONFIGS) === true && $updatePlatform !== Constants::NATIVE) {
