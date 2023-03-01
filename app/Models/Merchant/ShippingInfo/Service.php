@@ -39,6 +39,7 @@ class Service extends Base\Service
     const SHIPPING_INFO_CACHE_VALIDITY   = 30 * self::MINUTE; // 30 minutes
     const SERVICEABLE = 'serviceable';
     const COD =  'cod';
+    const DISABLE_SHIPPING_CACHE_RESET = 'disable_shipping_cache_reset'; //shipping cache fix backward compatibility
 
     /**
      * Get Merchant Serviceability and COD Serviceability for a given Address
@@ -138,7 +139,7 @@ class Service extends Base\Service
 
             $address = $this->getCountryAndStateBasedOnZipcode($address);
 
-            $cachedResponse = $this->getShippingInfoFromCache($orderId, $address);
+            $cachedResponse = $this->getShippingInfoFromCache($orderId, $address, $order->getAmount());
 
             if (!empty($cachedResponse))
             {
@@ -319,7 +320,7 @@ class Service extends Base\Service
             }
 
             }
-            $this->cacheMerchantShippingInfo($orderId, $address);
+            $this->cacheMerchantShippingInfo($orderId, $address, $order->getAmount());
 
             return [self::SHIPPING_INFO_ADDRESSES => [$address]];
 
@@ -474,17 +475,29 @@ class Service extends Base\Service
         return $fee;
     }
 
-    public function getShippingInfoFromCache($orderId, $address){
+    public function getShippingInfoFromCache($orderId, $address, $orderAmount)
+    {
+        //gets the shipping info for the order_amount
+        $newKeyCachedResponse = $this->app['cache']->get(
+            $this->getShippingInfoCacheKey($orderId, $address, $orderAmount));
 
-        $olderKeyCachedResponse = $this->app['cache']->get(
-            $this->getShippingInfoOldCacheKey($orderId, $address));
-
-        if (!empty($olderKeyCachedResponse)) {
-            return $olderKeyCachedResponse;
+        if (!empty($newKeyCachedResponse))
+        {
+            return $newKeyCachedResponse;
         }
-
-        return $this->app['cache']->get(
-            $this->getShippingInfoCacheKey($orderId, $address));
+        //if shipping info not found for new key it checks the disable_shipping_cache_reset
+        // flag is enabled, then it will get the shipping info for the zipcode(old key)
+        //This is required for backward compatibility of shipping_cache_fix
+        $variant = $this->app->razorx->getTreatment(
+            $this->merchant->getId(),
+            self::DISABLE_SHIPPING_CACHE_RESET,
+            $this->mode
+        );
+        if (empty($variant) === false && strtolower($variant) === 'on')
+        {
+            return $this->app['cache']->get(
+                $this->getShippingInfoOldCacheKey($orderId, $address));
+        }
     }
 
     protected function getFeeFromSlabs(int $amount, $slabs)
@@ -784,13 +797,14 @@ class Service extends Base\Service
      * @param $orderId
      * @param $address
      */
-    protected function cacheMerchantShippingInfo($orderId, $address): void
+    protected function cacheMerchantShippingInfo($orderId, $address, $orderAmount): void
     {
         $this->app['cache']->put(
-            $this->getShippingInfoCacheKey($orderId, $address),
+            $this->getShippingInfoCacheKey($orderId, $address, $orderAmount),
             $address,
             self::SHIPPING_INFO_CACHE_VALIDITY);
 
+        //backward compatibility
         $this->app['cache']->put(
             $this->getShippingInfoOldCacheKey($orderId, $address),
             $address,
@@ -802,15 +816,18 @@ class Service extends Base\Service
      * @param $address
      * @return string
      */
-    private function getShippingInfoCacheKey($orderId, $address): string
+    private function getShippingInfoCacheKey($orderId, $address, $orderAmount = 0): string
     {
         $zipcode = $address['zipcode'] ?? "";
         $state = $address['state'] ?? "";
+        $amount = (string) $orderAmount;
 
         return self::SHIPPING_INFO_CACHE_KEY_PREFIX
             . $this->merchant->getId()
             . "_"
             . $orderId
+            . "_"
+            . $amount
             . "_"
             . $zipcode
             . "_"
@@ -827,6 +844,7 @@ class Service extends Base\Service
     private function getShippingInfoOldCacheKey($orderId, $address): string
     {
         $zipcode = $address['zipcode'] ?? "";
+        $state = $address['state'] ?? "";
 
         return self::SHIPPING_INFO_CACHE_KEY_PREFIX
             . $this->merchant->getId()
@@ -834,6 +852,8 @@ class Service extends Base\Service
             . $orderId
             . "_"
             . $zipcode
+            . "_"
+            . $state
             . "_"
             . $address['country'];
     }
