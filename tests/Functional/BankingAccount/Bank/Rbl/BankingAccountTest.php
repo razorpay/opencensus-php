@@ -28,7 +28,6 @@ use RZP\Models\BankingAccount\Entity;
 use RZP\Models\BankingAccount\Status;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Models\User\Entity as UserEntity;
-use RZP\Services\Mock\CapitalCardsClient;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\BankingAccount\AccountType;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -178,35 +177,6 @@ class BankingAccountTest extends TestCase
         $this->app->instance('hubspot', $hubSpotMock);
 
         return $hubSpotMock;
-    }
-
-    protected function mockCapitalCards()
-    {
-        $capitalCardsMock = $this->getMockBuilder(CapitalCardsClient::class)
-                                 ->setConstructorArgs([$this->app])
-                                 ->setMethods(['getCorpCardAccountDetails'])
-                                 ->getMock();
-
-        $capitalCardsMock->method('getCorpCardAccountDetails')
-                         ->will($this->returnCallback(
-                             function($data) {
-                                 $this->assertNotEmpty($data['balance_id']);
-
-                                 if ($data['balance_id'] === 'hnaswdyeujdwsj')
-                                 {
-                                     return [];
-                                 }
-
-                                 return [
-                                     'entity_id'      => 'qaghsquiqasdwd',
-                                     'account_number' => '10234561782934',
-                                     'user_id'        => 'wgahkasyqsdghws',
-                                     'balance_id'     => $data['balance_id'],
-                                 ];
-                             }
-                         ));
-
-        $this->app->instance('capital_cards_client', $capitalCardsMock);
     }
 
     public function testCreateBankingAccount()
@@ -4592,98 +4562,6 @@ class BankingAccountTest extends TestCase
         $bankingAccount = $this->getDbLastEntity('banking_account');
 
         $this->assertEquals('560030', $bankingAccount->getPincode());
-    }
-
-    public function testGetBankingAccountByAccountType()
-    {
-        $this->mockCapitalCards();
-
-        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner', 'test');
-
-        $this->ba->proxyAuth('rzp_test_' . '10000000000000', $user->getId());
-
-        $this->fixtures->create('banking_account', [
-            'account_number' => '2224440041626905',
-            'account_type'   => 'nodal',
-            'merchant_id'    => '10000000000000',
-            'channel'        => 'rbl',
-        ]);
-
-        $this->fixtures->create('banking_account', [
-            'id'             => '01234567890127',
-            'account_number' => '2224440041626908',
-            'account_type'   => 'current',
-            'merchant_id'    => '10000000000000',
-            'channel'        => 'icici',
-        ]);
-
-        $this->fixtures->create('banking_account', [
-            'id'             => '01234567890128',
-            'account_number' => '2224440041626905',
-            'account_type'   => 'corp_card',
-            'merchant_id'    => '10000000000000',
-            'channel'        => 'm2p',
-        ]);
-
-        $this->startTest();
-    }
-
-    public function testGetCorpCardBankingAccountByAccountType()
-    {
-        $this->mockCapitalCards();
-
-        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner', 'test');
-
-        $this->ba->proxyAuth('rzp_test_' . '10000000000000', $user->getId());
-
-        $balanceId = 'wahjkqsliosdfd';
-
-        $this->fixtures->create('balance', [
-            'id'           => $balanceId,
-            'balance'      => 10000000000,
-            'merchant_id'  => '10000000000000',
-            'type'         => 'banking',
-            'account_type' => 'corp_card'
-        ]);
-
-        $this->fixtures->create('banking_account', [
-            'account_number' => '2224440041626905',
-            'account_type'   => 'corp_card',
-            'merchant_id'    => '10000000000000',
-            'channel'        => 'rbl',
-            'balance_id'     => $balanceId,
-        ]);
-
-        $this->startTest();
-    }
-
-    public function testGetCorpCardBankingAccountNotFound()
-    {
-        $this->mockCapitalCards();
-
-        $user = $this->fixtures->user->createUserForMerchant('10000000000000', [], 'owner', 'test');
-
-        $this->ba->proxyAuth('rzp_test_' . '10000000000000', $user->getId());
-
-        $balanceId = 'hnaswdyeujdwsj';
-
-        $this->fixtures->create('balance', [
-            'id'           => $balanceId,
-            'balance'      => 10000000000,
-            'merchant_id'  => '10000000000000',
-            'type'         => 'banking',
-            'account_type' => 'corp_card'
-        ]);
-
-        $this->fixtures->create('banking_account', [
-            'account_number' => '2224440041626905',
-            'account_type'   => 'corp_card',
-            'merchant_id'    => '10000000000000',
-            'channel'        => 'rbl',
-            'balance_id'     => $balanceId,
-        ]);
-
-        $this->startTest();
     }
 
     public function testGetBankingAccountInternalViaMob()

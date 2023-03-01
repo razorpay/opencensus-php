@@ -68,9 +68,6 @@ class Entity extends Base\PublicEntity
     // Used by RazorpayX Current Accounts to store when was the Banking Account Statement last fetched at
     const LAST_FETCHED_AT = 'last_fetched_at';
 
-    // Corporate Card Details are fetched from capital-cards service for account_type corp_card
-    const CORP_CARD_DETAILS = 'corp_card_details';
-
     // ueed to decide on making sync call for balance fetch
     const CACHED = 'cached';
 
@@ -108,7 +105,6 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::UPDATED_AT,
         self::LAST_FETCHED_AT,
-        self::CORP_CARD_DETAILS
     ];
 
     protected $public = [
@@ -126,7 +122,6 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::UPDATED_AT,
         self::LAST_FETCHED_AT,
-        self::CORP_CARD_DETAILS,
         self::ERROR_INFO,
     ];
 
