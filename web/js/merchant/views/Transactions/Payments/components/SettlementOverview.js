@@ -9,6 +9,9 @@ import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import LoaderDots from 'common/ui/LoaderDots';
 // styles
 import './Payments.styl';
+import { getInitiatePointAndPageAndScreenName } from 'merchant/views/Transactions/utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { SelfServeActionPages } from 'common/constant/enums';
 
 function SettlementOverview({
   payment,
@@ -20,12 +23,25 @@ function SettlementOverview({
   adminAsMerchant,
   showCustomSettlDetails,
   bankSettleStatus,
+  openedFrom,
+  settlement_id,
 }) {
   const { id, utr, settled_by, provider: settlement_provider } = payment?.transaction?.settlement;
   let provider = null;
   if (settled_by !== 'razorpay') {
     provider = findProviderDetails(terminalProviders, settlement_provider, settled_by);
   }
+
+  const { initiatePage, screen, page: _page } = getInitiatePointAndPageAndScreenName();
+
+  let INIT_POINT = 'payment-details';
+
+  if (page === 'Refund Detail') {
+    INIT_POINT = 'refund-details';
+  } else if (page === 'Reversal Detail') {
+    INIT_POINT = 'reversal-details';
+  }
+
   const trackEvent = () => {
     window.rzpAnalytics?.({
       eventCategory: 'Settlement Revamp',
@@ -42,13 +58,32 @@ function SettlementOverview({
         screen: page,
         toLumberjack: true,
       });
+      const selfServeInitiateData = {
+        selfServeAction: 'Settlement Details Fetched',
+        page: _page,
+        screen,
+        props: {
+          initiatePoint: INIT_POINT,
+        },
+      };
+      if (window?.session_id) selfServeInitiateData.props.sessionId = window.session_id;
+      if (
+        id !== settlement_id &&
+        openedFrom !== 'settlement-details' &&
+        initiatePage !== SelfServeActionPages.SettlementsReversals
+      ) {
+        selfServeTrackInitiate(selfServeInitiateData);
+      }
     }
   };
   return (
     <div className="settlement-overview-container">
       <div>
         {user?.hideForNIASupportRole ? (
-          <Link to={`/settlements/${id}`} onClick={trackEvent}>
+          <Link
+            to={`/settlements/${id}?init_point=${INIT_POINT}&init_page=${initiatePage}`}
+            onClick={trackEvent}
+          >
             <code>{id}</code>
           </Link>
         ) : (

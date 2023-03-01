@@ -89,8 +89,7 @@ describe('Refunds - Details Component', () => {
       expect(screen.queryByText('loading')).not.toBeInTheDocument();
       expect(selfServeTrackSuccess).toHaveBeenCalledWith({
         selfServeAction: 'Refund Details Fetched',
-        page: 'Refund Listing',
-        screen: 'Transaction',
+        props: {},
       });
     });
   });

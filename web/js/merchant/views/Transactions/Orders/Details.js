@@ -6,16 +6,14 @@ import { getEventCategoryFromPath } from 'common/utils/rzp-utils';
 import { bindActionCreators } from 'redux';
 import MagicCheckoutOrderDetails from 'merchant/views/Transactions/Orders/components/MagicCheckoutOrderDetails';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { getSelfServeSuccessData } from 'merchant/views/Transactions/utils';
 
 class OrderDetailsContainer extends Component {
   fetchItem(id) {
     const { fetchItem } = this.props;
     fetchItem(id).then((response) => {
-      selfServeTrackSuccess({
-        selfServeAction: 'Order Details Fetched',
-        page: 'Order Listing',
-        screen: 'Transaction',
-      });
+      const selfServeSuccessData = getSelfServeSuccessData('Order Details Fetched');
+      selfServeTrackSuccess(selfServeSuccessData);
       return response;
     });
   }

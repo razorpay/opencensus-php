@@ -47,16 +47,34 @@ const Row = ({ record, tabName, tabTitle, sectionTitle, displayCompact }) => {
           value = React.cloneElement(value, {
             onClick: () => {
               trackEntityClick(tabTitle, sectionTitle);
-              if (tabName === 'payments') {
-                const selfServeInitiateData = {
-                  selfServeAction: 'Payment Details Fetched',
-                  screen: 'Home',
-                  page: 'Recentactivity',
-                  props: {
-                    initiatePoint: 'Recent Activity',
-                    sessionId: window?.session_id,
-                  },
-                };
+              const selfServeInitiateData = {
+                screen: 'Home',
+                page: 'Recentactivity',
+                props: {
+                  initiatePoint: `${tabName}-table`,
+                },
+              };
+              if (window?.session_id) selfServeInitiateData.props.sessionId = window.session_id;
+
+              switch (tabName) {
+                case 'payments': {
+                  selfServeInitiateData.selfServeAction = 'Payment Details Fetched';
+                  break;
+                }
+                case 'settlements': {
+                  selfServeInitiateData.selfServeAction = 'Settlement Details Fetched';
+                  break;
+                }
+                case 'refunds': {
+                  selfServeInitiateData.selfServeAction = 'Refund Details Fetched';
+                  break;
+                }
+                default: {
+                  selfServeInitiateData.selfServeAction = '';
+                }
+              }
+
+              if (selfServeInitiateData.selfServeAction !== '') {
                 selfServeTrackInitiate(selfServeInitiateData);
               } else {
                 selfServeTracking(tabName);

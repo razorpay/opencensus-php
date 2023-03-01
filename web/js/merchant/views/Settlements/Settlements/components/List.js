@@ -8,9 +8,29 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
-const SettlementsListItem = ({ settlement, handleBreakupClick, user, terminalProviders }) => {
+const SettlementsListItem = ({
+  settlement,
+  handleBreakupClick,
+  user,
+  terminalProviders,
+  initiatePage,
+}) => {
+  const screen = initiatePage?.split('.')[0];
+  const page = initiatePage?.split('.')[1];
+  const selfServeInitiateData = {
+    selfServeAction: 'Settlement Details Fetched',
+    props: {},
+  };
+
+  selfServeInitiateData.props.initiatePoint = 'settlements-table';
+  if (screen) selfServeInitiateData.screen = screen;
+  if (page) selfServeInitiateData.page = page;
+  if (window?.session_id) selfServeInitiateData.props.sessionId = window.session_id;
+
   const currency = user.merchant.currency;
+
   const handleTracking = () => {
     analyticsTrack({
       objectName: 'settlement id',
@@ -22,11 +42,16 @@ const SettlementsListItem = ({ settlement, handleBreakupClick, user, terminalPro
         ...getCommonAnalyticsProperties(window.rzp_user),
       },
     });
+    selfServeTrackInitiate(selfServeInitiateData);
   };
+
   return (
     <EntityItemRow id={settlement.id}>
       <td>
-        <Link onClick={handleTracking} to={`/settlements/${settlement.id}`}>
+        <Link
+          onClick={handleTracking}
+          to={`/settlements/${settlement.id}?init_point=settlements-table&init_page=${initiatePage}`}
+        >
           <code>{settlement.id}</code>
         </Link>
       </td>
@@ -65,7 +90,14 @@ const SettlementsListItem = ({ settlement, handleBreakupClick, user, terminalPro
 };
 
 export default (props) => {
-  const { settlements, isLoading, showBreakup, user, terminalProviders } = props;
+  const {
+    settlements,
+    isLoading,
+    showBreakup,
+    user,
+    terminalProviders,
+    selfServeActionsPage = 'Settlements.Settlements',
+  } = props;
 
   return (
     <div className="table-responsive settlements-table">
@@ -114,6 +146,7 @@ export default (props) => {
               handleBreakupClick={() => showBreakup(settlement)}
               user={user}
               terminalProviders={terminalProviders}
+              initiatePage={selfServeActionsPage}
             />
           ))}
         </TableBody>

@@ -421,7 +421,7 @@ export default class TransferDetails extends Component {
                   label="Source ID"
                   value={() => (
                     <div>
-                      <TransferSource source={transfer.source} />
+                      <TransferSource source={transfer.source} initiatePoint="transfer-details" />
                     </div>
                   )}
                 />

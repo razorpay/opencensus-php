@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { sanitizeTabName } from 'merchant/views/Settlements/v2/util';
+import {
+  getSelfServeDetailForSettlementDetails,
+  sanitizeTabName,
+} from 'merchant/views/Settlements/v2/util';
 import ComponentListFilter from './ComponentListFilter';
 import Pagination from './Pagination';
 import TableBody from 'common/ui/TableBody';
@@ -23,7 +26,6 @@ import {
 } from 'merchant/views/Settlements/Settlements/analytics';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-import { SelfServeActionPages } from 'common/constant/enums';
 
 const DEFAULT_SKIP = 0;
 const DEFAULT_COUNT = 10;
@@ -60,9 +62,6 @@ const BooleanMap = {
   1: `true`,
 };
 
-const INIT_POINT = 'payments-table';
-const INIT_PAGE = SelfServeActionPages.SettlementsPayments;
-
 /**
  * Sort keys - adding optimizer_provider at 1st index for single recon, other keys remains same
  * @param {object} item object to sort the keys
@@ -80,10 +79,17 @@ const sortKeys = (item, user) => {
 };
 
 const ListItem = ({ item, source, user, terminalProviders }) => {
+  const {
+    selfServeActionName,
+    page,
+    INIT_POINT,
+    INIT_PAGE,
+  } = getSelfServeDetailForSettlementDetails(source);
+
   const selfServeInitiateData = {
-    selfServeAction: 'Payment Details Fetched',
+    selfServeAction: selfServeActionName,
     screen: 'Settlements',
-    page: 'Payments',
+    page,
     props: {
       initiatePoint: INIT_POINT,
     },
@@ -103,19 +109,20 @@ const ListItem = ({ item, source, user, terminalProviders }) => {
         <td key={idx}>
           <Link
             onClick={() => {
-              if (source === 'payment') {
-                if (window && window.session_id)
-                  selfServeInitiateData.props.sessionId = window.session_id;
+              if (['payment', 'refund'].includes(source)) {
+                if (window?.session_id) selfServeInitiateData.props.sessionId = window.session_id;
                 selfServeTrackInitiate(selfServeInitiateData);
                 return analyticsHandler();
               }
               return true;
             }}
-            to={
-              source === 'payment'
-                ? `/${source}s/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`
-                : `/${source}s/${rowItem[key]}`
-            }
+            to={{
+              pathname:
+                source === 'payment' || source === 'refund'
+                  ? `/${source}s/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`
+                  : `/${source}s/${rowItem[key]}`,
+              state: { openedFrom: 'settlement-details', settlement_id: rowItem[key] },
+            }}
           >
             {rowItem.id}
           </Link>
@@ -124,7 +131,11 @@ const ListItem = ({ item, source, user, terminalProviders }) => {
     } else if (source === 'transfer' || source === 'reversal') {
       return (
         <td key={idx}>
-          <Link to={`/route/${source}s/${rowItem[key]}`}>{rowItem.id}</Link>
+          <Link
+            to={`/route/${source}s/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`}
+          >
+            {rowItem.id}
+          </Link>
         </td>
       );
     } else if (source === 'payment_domestic' || source === 'payment_international') {

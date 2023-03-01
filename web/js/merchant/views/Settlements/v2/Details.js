@@ -29,7 +29,7 @@ const SettlementDetails = (props) => {
         url: 'settlements/amount_check',
         method: 'post',
         data: {
-          settlement_id: match?.params?.id,
+          settlement_id: match?.params?.id?.split('?')[0],
         },
       };
       merchantFetch(params).then((response) => {
@@ -80,6 +80,8 @@ const SettlementDetails = (props) => {
 
   const { settlementAmount, totalTransactionAmount } = checkAmounts;
 
+  const settlementId = match?.params?.id?.split('?')[0];
+
   return (
     <React.Fragment>
       <div
@@ -92,7 +94,7 @@ const SettlementDetails = (props) => {
           <Link to="/settlements" class="link-all">
             <i class="i i-arrow-back" /> All Settlements
           </Link>
-          <i class="i i-chevron-right" /> Settlement Id: {match?.params?.id}
+          <i class="i i-chevron-right" /> Settlement Id: {settlementId}
         </div>
         {user?.isSingleReconEnabled &&
           user?.isOptimizerEnabled &&
@@ -108,7 +110,7 @@ const SettlementDetails = (props) => {
         <div class="panel panel-default">
           {props.mode === 'test' && <TestModeBanner />}
           <div class="panel-heading">
-            <div class="text">{match?.params?.id}</div>
+            <div class="text">{settlementId}</div>
             {/* added a new class as we need to add media query for the same for m-web support */}
             <div class="settlement-total-amount">
               {!loading ? (
@@ -133,10 +135,10 @@ const SettlementDetails = (props) => {
           </div>
           <div class="panel-body">
             <div class="entity-details">
-              <SettlementInfo settlementId={match?.params?.id} />
+              <SettlementInfo settlementId={settlementId} />
             </div>
             <div class="item-details">
-              <SettlementBreakup settlementId={match?.params?.id} />
+              <SettlementBreakup settlementId={settlementId} />
             </div>
           </div>
         </div>
@@ -161,7 +163,7 @@ const SettlementDetails = (props) => {
       <div />
 
       <div class="content-sm txn-details settlements-v2 entity-list-table">
-        <SettlementEntities settlementId={match?.params?.id} />
+        <SettlementEntities settlementId={settlementId} />
       </div>
     </React.Fragment>
   );

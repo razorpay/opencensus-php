@@ -22,6 +22,7 @@ import EmptyList from 'merchant/components/EmptyList';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import { selfServerTrack, selfServeTrackResult } from 'merchant/views/Transactions/AnalyticsTrack';
 import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { makeIdLink as disputeMakeIdLink } from 'merchant/views/Transactions/Disputes/Utils';
 import { SelfServeActionPages } from 'common/constant/enums';
 
 const _paymentId = () => {
@@ -37,6 +38,18 @@ const _paymentId = () => {
   };
 };
 
+const _disputeId = () => {
+  return {
+    title: disputeId.title,
+    value: (item) => {
+      const intermediateElement = disputeMakeIdLink('dispute')(
+        item,
+        SelfServeActionPages.TransactionsDisputes,
+      );
+      return <div>{intermediateElement}</div>;
+    },
+  };
+};
 const daysLeftInExpiry = (expiresOn) => {
   const daysLeft = daysFromToday(expiresOn);
   if (daysLeft < 0) {
@@ -121,7 +134,7 @@ class Dispute extends ListContainer {
 
         <DataTable
           title="Disputes"
-          columns={[disputeId, _paymentId(), amount, type, respondBy, createdAt, status]}
+          columns={[_disputeId(), _paymentId(), amount, type, respondBy, createdAt, status]}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}

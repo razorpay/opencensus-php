@@ -14,6 +14,7 @@ import DualDetailView, { PrimaryView, SecondaryView } from 'common/new-ui/DualDe
 import { compose } from 'redux';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { getSelfServeSuccessData } from 'merchant/views/Transactions/utils';
 
 const findDispute = (disputes = [], disputeId) =>
   disputes.find(({ id }) => id === disputeId) || disputeId;
@@ -38,11 +39,8 @@ class DisputeDetailsContainer extends Component {
 
   loadDispute(disputeId) {
     this.props.loadDispute(findDispute(this.props.disputes, disputeId)).then((response) => {
-      selfServeTrackSuccess({
-        selfServeAction: 'Dispute Details Fetched',
-        page: 'Disputes Listing',
-        screen: 'Transaction',
-      });
+      const selfServeSuccessData = getSelfServeSuccessData('Dispute Details Fetched');
+      selfServeTrackSuccess(selfServeSuccessData);
       return response;
     });
   }

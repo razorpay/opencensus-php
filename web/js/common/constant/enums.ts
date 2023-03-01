@@ -27,4 +27,13 @@ export enum SelfServeActionPages {
   PaymentbuttonsPayments = 'Paymentbuttons.Payments',
   HomeRecentactivity = 'Home.Recentactivity',
   SubscriptionbuttonPayments = 'Subscriptionbutton.Payments',
+  RouteTransfers = 'Route.Transfers',
+  SmartcollectCustomeridentifiers = 'Smartcollect.Customeridentifiers',
+  TransactionsOrders = 'Transactions.Orders',
+  TransactionsPayments = 'Transactions.Payments',
+  SettlementsRefunds = 'Settlements.Refunds',
+  QRcodesQRcodes = 'QRcodes.QRcodes',
+  SettlementsSettlements = 'Settlements.Settlements',
+  SettlementsReversals = 'Settlements.Reversals',
+  SettlementsTransfers = 'Settlements.Transfers',
 }

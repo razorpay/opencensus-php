@@ -49,6 +49,7 @@ describe('PaymentsTable', () => {
       },
     ],
     location: {},
+    selfServeActionsPage: 'Transactions.Payments',
   };
 
   const renderApp = ({ props } = {}) => {

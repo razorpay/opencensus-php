@@ -12,6 +12,18 @@ import {
   ORDER_PENDING,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { selfServerTrack, selfServeTrackResult } from 'merchant/views/Transactions/AnalyticsTrack';
+import { makeIdLink } from 'merchant/views/Transactions/Orders/Utils';
+import { SelfServeActionPages } from 'common/constant/enums';
+
+const _orderId = (initiatePage = SelfServeActionPages.TransactionsOrders) => {
+  return {
+    title: orderId.title,
+    value: (item) => {
+      const intermediateElement = makeIdLink('order')(item, initiatePage);
+      return <div>{intermediateElement}</div>;
+    },
+  };
+};
 
 class OrdersListContainer extends ListContainer {
   componentDidMount() {
@@ -49,6 +61,15 @@ class OrdersListContainer extends ListContainer {
       }
       return newItem;
     });
+  };
+
+  getColumns = () => {
+    const { selfServeActionsPage } = this.props;
+    const initiatePage = selfServeActionsPage
+      ? selfServeActionsPage
+      : SelfServeActionPages.TransactionsOrders;
+    const cols = [_orderId(initiatePage), amount, attempts, receipt, createdAt, status];
+    return cols;
   };
 
   render() {
@@ -115,11 +136,10 @@ class OrdersListContainer extends ListContainer {
 
         <DataTable
           title="Orders"
-          columns={[orderId, amount, attempts, receipt, createdAt, status]}
+          columns={this.getColumns()}
           count={this.state.count}
           skip={this.state.skip}
           paginate={this.paginate}
-          onCellClick={selfServerTrack}
           {...this.props}
           items={updatedItems}
         />

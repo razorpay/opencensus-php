@@ -17,6 +17,7 @@ import { fetchBankAccountChangeStatus as fnFetchBankAccountChangeStatus } from '
 import { TIMELINE_EVENTS } from './utils';
 import ShowWhen from 'merchant/components/ShowWhen';
 import Spinner from 'common/ui/Spinner';
+import { withRouter } from 'react-router-dom';
 
 class SettlementInfo extends Component {
   componentDidMount() {
@@ -87,6 +88,7 @@ class SettlementInfo extends Component {
       bankSettleStatus,
       viewSettlementOverview,
       integratedGateways,
+      location,
     } = this.props;
 
     const settlementTimelineDetails = settlementTimeline?.data;
@@ -99,6 +101,9 @@ class SettlementInfo extends Component {
     const isOnHold = no_settlement?.on_hold;
     const isSettlementOnHold = isOnHold || isOnTemporaryHold;
     const rescheduled = settlementTimelineDetails?.holidays?.length > 0;
+
+    const openedFrom = location?.state?.openedFrom;
+    const settlement_id = location?.state?.settlement_id;
 
     const timelineEvents = [
       TIMELINE_EVENTS.PAYMENT_CAPTURED,
@@ -153,6 +158,8 @@ class SettlementInfo extends Component {
                 adminAsMerchant={adminAsMerchant}
                 showCustomSettlDetails={showCustomSettlDetails}
                 bankSettleStatus={bankSettleStatus}
+                openedFrom={openedFrom}
+                settlement_id={settlement_id}
               />
             </ContentToggler>
           ) : (
@@ -177,6 +184,8 @@ class SettlementInfo extends Component {
                 adminAsMerchant={adminAsMerchant}
                 showCustomSettlDetails={showCustomSettlDetails}
                 bankSettleStatus={bankSettleStatus}
+                openedFrom={openedFrom}
+                settlement_id={settlement_id}
               />
             </ContentToggler>
           )}
@@ -235,6 +244,8 @@ class SettlementInfo extends Component {
                   adminAsMerchant={adminAsMerchant}
                   showCustomSettlDetails={showCustomSettlDetails}
                   bankSettleStatus={bankSettleStatus}
+                  openedFrom={openedFrom}
+                  settlement_id={settlement_id}
                 />
               </ContentToggler>
             </>
@@ -308,4 +319,4 @@ const mapDispatchToProps = (dispatch) => {
   );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SettlementInfo);
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(SettlementInfo));

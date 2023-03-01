@@ -198,7 +198,10 @@ describe('EntityList', () => {
       const refundId = settlementsListRefundData[0].id;
       const idLink = screen.getByRole('link', { name: refundId });
       expect(idLink).toBeInTheDocument();
-      expect(idLink).toHaveAttribute('href', `/refunds/${refundId}`);
+      expect(idLink).toHaveAttribute(
+        'href',
+        `/refunds/${refundId}?init_point=refunds-table&init_page=Settlements.Refunds`,
+      );
       await userEvent.click(idLink);
     });
 
@@ -240,7 +243,10 @@ describe('EntityList', () => {
       const transferId = settlementsListData[0].id;
       const idLink = screen.getByRole('link', { name: transferId });
       expect(idLink).toBeInTheDocument();
-      expect(idLink).toHaveAttribute('href', `/route/transfers/${transferId}`);
+      expect(idLink).toHaveAttribute(
+        'href',
+        `/route/transfers/${transferId}?init_point=transfers-table&init_page=Settlements.Transfers`,
+      );
       expect(getEntityRows()).toHaveLength(10);
     });
 

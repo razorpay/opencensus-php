@@ -15,6 +15,9 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { SettlementStatusLabel } from 'merchant/components/StatusLabel';
 import LoaderDots from 'common/ui/LoaderDots';
+import { getInitiatePointAndPageAndScreenName } from 'merchant/views/Transactions/utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { SelfServeActionPages } from 'common/constant/enums';
 
 const SettlementTimeline = ({
   events,
@@ -30,6 +33,8 @@ const SettlementTimeline = ({
   adminAsMerchant,
   showCustomSettlDetails,
   bankSettleStatus,
+  openedFrom,
+  settlement_id,
 }) => {
   const { transaction } = data;
   const { settlement } = transaction;
@@ -52,6 +57,16 @@ const SettlementTimeline = ({
       component: <HolidayModal holidayList={holidayList} />,
     });
   };
+  const { initiatePage, screen, page: _page } = getInitiatePointAndPageAndScreenName();
+
+  let INIT_POINT = 'payment-details';
+
+  if (page === 'Refund Detail') {
+    INIT_POINT = 'refund-details';
+  } else if (page === 'Reversal Detail') {
+    INIT_POINT = 'reversal-details';
+  }
+
   const trackEvent = () => {
     if (page && page !== '') {
       trackEventsAction({
@@ -63,6 +78,22 @@ const SettlementTimeline = ({
         screen: page,
         toLumberjack: true,
       });
+      const selfServeInitiateData = {
+        selfServeAction: 'Settlement Details Fetched',
+        page: _page,
+        screen,
+        props: {
+          initiatePoint: INIT_POINT,
+        },
+      };
+      if (window?.session_id) selfServeInitiateData.props.sessionId = window.session_id;
+      if (
+        settlement?.id !== settlement_id &&
+        openedFrom !== 'settlement-details' &&
+        initiatePage !== SelfServeActionPages.SettlementsReversals
+      ) {
+        selfServeTrackInitiate(selfServeInitiateData);
+      }
     }
   };
   const getEventBody = (event) => {
@@ -170,7 +201,7 @@ const SettlementTimeline = ({
               </ShowWhen>
               <div className="mt-2">
                 <Link
-                  to={`/settlements/${settlement?.id}`}
+                  to={`/settlements/${settlement?.id}?init_point=${INIT_POINT}&init_page=${initiatePage}`}
                   aria-label="settlement link"
                   onClick={trackEvent}
                 >

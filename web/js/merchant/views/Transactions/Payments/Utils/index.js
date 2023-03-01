@@ -1,14 +1,13 @@
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { Link } from 'react-router-dom';
 
-export const makeIdLink = (type) => (item, initiatePage) => {
+export const makeIdLink = (type) => (item, initiatePage, initiatePoint = 'payments-table') => {
   const id = item[`${item.entity === type ? '' : `${type}_`}id`];
   let url = /payments/;
   const element = <code>{id}</code>;
   url += id;
 
   const { hash } = window.location;
-  const initiatePoint = 'payments-table';
 
   const screen = initiatePage?.split('.')[0];
   const page = initiatePage?.split('.')[1];

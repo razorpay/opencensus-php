@@ -34,6 +34,7 @@ import SettlementScheduleV2 from 'merchant/views/Settlements/components/Settleme
 import SettlementGuideText from 'merchant_common/components/SettlementGuideText';
 import { handleAnalytics } from './analytics';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
+import { SelfServeActionPages } from 'common/constant/enums';
 
 class SettlementsListContainer extends ListContainer {
   state = {
@@ -352,7 +353,15 @@ class SettlementsListContainer extends ListContainer {
     handleAnalytics('pagination', 'clicked', properties);
   };
   render() {
-    const { loading, items, error, current_balance, user, terminalProviders } = this.props;
+    const {
+      loading,
+      items,
+      error,
+      current_balance,
+      user,
+      terminalProviders,
+      selfServeActionsPage,
+    } = this.props;
 
     let balance = current_balance.data.balance || 0;
 
@@ -383,6 +392,7 @@ class SettlementsListContainer extends ListContainer {
             showBreakup={this.showBreakup}
             user={user}
             terminalProviders={terminalProviders}
+            selfServeActionsPage={selfServeActionsPage}
           />
 
           <Pager
@@ -412,6 +422,7 @@ const mapStateToProps = (state) => {
     ...state.home,
     ...state.settlements,
     terminalProviders: state.navigator.terminalProviders,
+    selfServeActionsPage: SelfServeActionPages.SettlementsSettlements,
   };
 };
 

@@ -28,10 +28,12 @@ import { isInteger } from 'common/utils/validators';
 import track from 'merchant/views/Transactions/Payments/track';
 import PlaceholderLoader from 'common/ui/PlaceholderLoader';
 import { isOrgFeatureExist } from 'merchant/models/User';
-import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 // styles
 import './Payments.styl';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+
+const INIT_POINT = 'payment-details';
 
 function PaymentDetails(props) {
   const {
@@ -69,6 +71,14 @@ function PaymentDetails(props) {
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
   const [isUPIVisible, setUPIVisible] = useState(false);
   const currency = user.merchant.currency;
+
+  const params = new Proxy(new URLSearchParams(window.location?.search), {
+    get: (searchParams, prop) => searchParams.get(prop),
+  });
+
+  const initiatePage = params?.init_page;
+  const screen = initiatePage?.split('.')[0];
+  const page = initiatePage?.split('.')[1];
 
   const getProductType = useCallback(() => {
     const isQrCode = () => {
@@ -168,6 +178,19 @@ function PaymentDetails(props) {
     track.settlementClose(`${getProductType()} detail popup closed`, getProductType());
   };
 
+  const trackSelfServe = () => {
+    const selfServeInitiateData = {
+      selfServeAction: 'Order Details Fetched',
+      page,
+      screen,
+      props: {
+        initiatePoint: INIT_POINT,
+      },
+    };
+    if (window?.session_id) selfServeInitiateData.props.sessionId = window.session_id;
+
+    selfServeTrackInitiate(selfServeInitiateData);
+  };
   const chargedFeeLabelText = () => {
     const orgName = org?.business_name || 'Razorpay';
     if (hideRazorpayTextLink) {
@@ -493,9 +516,9 @@ function PaymentDetails(props) {
                 <EntityDetailRow label="Order ID">
                   {payment.order_id ? (
                     <Link
-                      to={`/orders/${payment.order_id}`}
+                      to={`/orders/${payment.order_id}?init_point=${INIT_POINT}&init_page=${initiatePage}`}
                       onClick={() => {
-                        selfServerTrack({ type: 'order' });
+                        trackSelfServe();
                       }}
                     >
                       <code>{payment.order_id}</code>

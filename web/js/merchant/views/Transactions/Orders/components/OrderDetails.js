@@ -18,7 +18,7 @@ const _paymentId = (initiatePage = 'Transactions.Payments') => {
   return {
     title: paymentId.title,
     value: (item) => {
-      const intermediateElement = makeIdLink('payment')(item, initiatePage);
+      const intermediateElement = makeIdLink('payment')(item, initiatePage, 'order-details');
       return <div>{intermediateElement}</div>;
     },
   };

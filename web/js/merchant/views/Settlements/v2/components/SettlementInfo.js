@@ -17,6 +17,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { fetchBankSettleStatus, customSettlementEnabled } from 'merchant/views/Settlements/v2/util';
 import LoaderDots from 'common/ui/LoaderDots';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { getSelfServeSuccessData } from 'merchant/views/Transactions/utils';
 
 const ORG_BANK_LABEL_NAME = {
   rzp: 'UTR',
@@ -105,11 +106,9 @@ const SettlementInfo = (props) => {
       const data = await fetchItem(settlementId);
       const properties = { ...propertiesPayload('settlement', data), status: 'success' };
       handleAnalytics(objectName, actionName, properties, screen);
-      selfServeTrackSuccess({
-        selfServeAction: 'Settlement Details Fetched',
-        page: 'Home',
-        screen: 'Home',
-      });
+
+      const selfServeSuccessData = getSelfServeSuccessData('Settlement Details Fetched');
+      selfServeTrackSuccess(selfServeSuccessData);
     } catch (e) {
       const properties = {
         status: 'failure',

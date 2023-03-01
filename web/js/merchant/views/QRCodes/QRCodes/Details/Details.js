@@ -14,6 +14,22 @@ import { QRCodeStatusLabel } from 'merchant/components/StatusLabel';
 import CustomerDetails from 'merchant/components/CustomerDetails';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { findBy } from 'common/utils/rzp-utils';
+import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { SelfServeActionPages } from 'common/constant/enums';
+
+const _paymentId = () => {
+  return {
+    title: paymentId.title,
+    value: (item) => {
+      const intermediateElement = makeIdLink('payment')(
+        item,
+        SelfServeActionPages.QRcodesQRcodes,
+        'qrcode-details',
+      );
+      return <div>{intermediateElement}</div>;
+    },
+  };
+};
 
 export default function Details(props) {
   const {
@@ -163,7 +179,7 @@ export default function Details(props) {
                     <PlaceHolderLoader />
                   </>
                 ) : (
-                  <Table rows={payments} columns={[paymentId, amount]} showHeaders={false} />
+                  <Table rows={payments} columns={[_paymentId(), amount]} showHeaders={false} />
                 )}
               </div>
             </div>

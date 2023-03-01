@@ -24,6 +24,22 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { updateVirtualAccountDetails } from 'merchant/reducers/virtualaccounts';
 import { EditExpiry } from 'merchant/views/PaymentLinks/PaymentLinks/components/Edit/index';
 import { fetchFeatureStatus } from 'merchant/reducers/config';
+import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { SelfServeActionPages } from 'common/constant/enums';
+
+const _paymentId = () => {
+  return {
+    title: paymentId.title,
+    value: (item) => {
+      const intermediateElement = makeIdLink('payment')(
+        item,
+        SelfServeActionPages.SmartcollectCustomeridentifiers,
+        'customeridentifier-details',
+      );
+      return <div>{intermediateElement}</div>;
+    },
+  };
+};
 
 @connect(
   (state) => ({
@@ -369,7 +385,7 @@ export default class extends React.Component {
                     </Link>
                   </p>
 
-                  <Table rows={va_payments} columns={[paymentId, amount]} showHeaders={false} />
+                  <Table rows={va_payments} columns={[_paymentId(), amount]} showHeaders={false} />
                 </div>
               </div>
             </div>

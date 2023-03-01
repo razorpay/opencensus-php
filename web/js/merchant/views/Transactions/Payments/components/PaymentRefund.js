@@ -13,7 +13,9 @@ import {
 } from 'common/ui/item/pair';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { analyticsTrack } from 'common/utils/analytics';
-import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
+import { makeIdLink } from 'merchant/views/Transactions/Refunds/Utils';
+import { getInitiatePointAndPageAndScreenName } from 'merchant/views/Transactions/utils';
+import { SelfServeActionPages } from 'common/constant/enums';
 
 /*
  * Design:
@@ -47,8 +49,19 @@ const NumRefunds = ({ refunds, titleCase = false }) => {
   );
 };
 
+const _refundId = (initiatePage = SelfServeActionPages.TransactionsPayments) => {
+  return {
+    title: refundId.title,
+    value: (item) => {
+      const intermediateElement = makeIdLink('refund')(item, initiatePage, 'payment-details');
+      return <div>{intermediateElement}</div>;
+    },
+  };
+};
+
 const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
-  const columns = [refundId, amount];
+  const { initiatePage } = getInitiatePointAndPageAndScreenName();
+  const columns = [_refundId(initiatePage), amount];
   columns.splice(1, 0, refundSpeed);
   columns.push(refundStatusPair);
 
@@ -69,7 +82,6 @@ const RefundsList = ({ refunds, onToggleClick = () => {} }) => {
           loading={refunds.loading}
           showHeaders={true}
           noStripe={true}
-          onCellClick={selfServerTrack}
         />
       </div>
     </ContentToggler>

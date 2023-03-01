@@ -12,6 +12,8 @@ import { bindActionCreators } from 'redux';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 import { selfServerTrack, selfServeTrackResult } from 'merchant/views/Transactions/AnalyticsTrack';
 import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { makeIdLink as refundMakeIdLink } from 'merchant/views/Transactions/Refunds/Utils';
+import { SelfServeActionPages } from 'common/constant/enums';
 
 class RefundsListContainer extends ListContainer {
   componentDidMount() {
@@ -49,14 +51,31 @@ class RefundsListContainer extends ListContainer {
     return {
       title: paymentId.title,
       value: (item) => {
-        const intermediateElement = makeIdLink('payment')(item, 'Transactions.Refunds');
+        const intermediateElement = makeIdLink('payment')(
+          item,
+          'Transactions.Refunds',
+          'refunds-table',
+        );
+        return <div>{intermediateElement}</div>;
+      },
+    };
+  }
+
+  get _refundId() {
+    return {
+      title: refundId.title,
+      value: (item) => {
+        const intermediateElement = refundMakeIdLink('refund')(
+          item,
+          SelfServeActionPages.TransactionsRefunds,
+        );
         return <div>{intermediateElement}</div>;
       },
     };
   }
 
   render() {
-    const columns = [refundId, this._paymentId, amount, createdAt];
+    const columns = [this._refundId, this._paymentId, amount, createdAt];
     columns.push(status);
 
     const { user, terminalProviders } = this.props;

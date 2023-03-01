@@ -22,12 +22,17 @@ const commonMeta = {
     {
       recordKey: 'id',
       transfomer: (value, record, tabName) => {
-        if (tabName === 'payments') {
+        const state = { fromHomePage: true };
+        if (tabName === 'refunds') {
+          state.openedFrom = SelfServeActionPages.HomeRecentactivity;
+        }
+
+        if (['payments', 'settlements', 'refunds'].includes(tabName)) {
           return (
             <Link
               to={{
-                pathname: `/${tabName}/${value}?init_point=payments-table&init_page=${SelfServeActionPages.HomeRecentactivity}`,
-                state: { fromHomePage: true },
+                pathname: `/${tabName}/${value}?init_point=${tabName}-table&init_page=${SelfServeActionPages.HomeRecentactivity}`,
+                state,
               }}
             >
               <code>{value}</code>

@@ -14,6 +14,7 @@ import { titleCase, daysFromToday, getCommonAnalyticsProperties } from 'common/u
 import StatusBanner from './StatusBanner';
 import roleList from 'merchant/helpers/permissions/roles-list';
 import UpdatedBy from './UpdatedBy';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 export const daysLeftInExpiry = (expiresOn, prefixForDays = '') => {
   const daysLeft = daysFromToday(expiresOn);
@@ -43,6 +44,15 @@ const DisputeDetails = (props) => {
   const contestRef = React.createRef();
   const { isDisputePresentmentEnabled, userRole } = props.user;
   const isDisputeOpen = dispute.status === 'open';
+
+  const params = new Proxy(new URLSearchParams(window.location?.search), {
+    get: (searchParams, prop) => searchParams.get(prop),
+  });
+
+  const initiatePoint = params?.init_point;
+  const initiatePage = params?.init_page;
+  const screen = initiatePage.split('.')[0];
+  const page = initiatePage.split('.')[1];
 
   const canUserTakeAction = [
     roleList.OWNER,
@@ -81,6 +91,23 @@ const DisputeDetails = (props) => {
         ),
       });
     }
+  };
+
+  const redirectAndTrackSelfServe = () => {
+    goToLink(
+      `payments/${dispute.payment_id}?init_point=${initiatePoint}&init_page=${initiatePage}`,
+    );
+    const selfServeInitiateData = {
+      selfServeAction: 'Payment Details Fetched',
+      page,
+      screen,
+      props: {
+        initiatePoint,
+      },
+    };
+    if (window?.session_id) selfServeInitiateData.props.sessionId = window.session_id;
+
+    selfServeTrackInitiate(selfServeInitiateData);
   };
 
   const contestDispute = () => {
@@ -279,7 +306,11 @@ const DisputeDetails = (props) => {
 
               {/* payment */}
               <EntityDetailRow label="Payment">
-                <a onClick={() => goToLink(`payments/${dispute.payment_id}`)}>
+                <a
+                  onClick={() => {
+                    redirectAndTrackSelfServe();
+                  }}
+                >
                   <code>{dispute.payment_id}</code>
                 </a>
               </EntityDetailRow>

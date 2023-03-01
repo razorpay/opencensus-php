@@ -14,10 +14,10 @@ const _paymentId = () => {
   return {
     title: paymentIdCol.title,
     value: (item) => {
-      const intermediateElement = makeIdLink(
-        'payment',
+      const intermediateElement = makeIdLink('payment')(
+        item,
         SelfServeActionPages.PaymentlinksPayments,
-      )(item);
+      );
       return <div>{intermediateElement}</div>;
     },
   };

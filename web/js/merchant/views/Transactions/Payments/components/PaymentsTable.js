@@ -13,6 +13,7 @@ import EntityTable from 'merchant/components/EntityTable';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 import { selfServerTrack } from 'merchant/views/Transactions/AnalyticsTrack';
 import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 const getOrderId = ({ notes }) => {
   // Merchant's custom defined order IDs
@@ -32,10 +33,28 @@ const getOrderId = ({ notes }) => {
   return null;
 };
 
-const getRazorpayOrderId = ({ order_id }) => {
+const getRazorpayOrderId = ({ order_id }, initiatePage) => {
+  const screen = initiatePage?.split('.')[0];
+  const page = initiatePage?.split('.')[1];
+
   if (order_id) {
+    const selfServeInitiateData = {
+      selfServeAction: 'Order Details Fetched',
+      page,
+      screen,
+      props: {
+        initiatePoint: 'payments-table',
+      },
+    };
+
+    if (window?.session_id) selfServeInitiateData.props.sessionId = window.session_id;
     return (
-      <Link to={`/orders/${order_id}`} onClick={() => selfServerTrack({ type: 'order' })}>
+      <Link
+        to={`/orders/${order_id}?init_point=payments-table&init_page=${initiatePage}`}
+        onClick={() => {
+          selfServeTrackInitiate(selfServeInitiateData);
+        }}
+      >
         <code>{order_id}</code>
       </Link>
     );
@@ -53,9 +72,9 @@ const mapOrders = (payments) =>
     return orders;
   }, {});
 
-const mapRzpOrders = (payments) =>
+const mapRzpOrders = (payments, initiatePage) =>
   payments.reduce((orders, payment) => {
-    const razorpayOrderId = getRazorpayOrderId(payment);
+    const razorpayOrderId = getRazorpayOrderId(payment, initiatePage);
     if (razorpayOrderId) {
       orders[payment.id] = razorpayOrderId;
     }
@@ -103,7 +122,7 @@ export default (props) => {
   }
 
   const orders = mapOrders(props.items);
-  const rzpOrders = mapRzpOrders(props.items);
+  const rzpOrders = mapRzpOrders(props.items, selfServeActionsPage);
 
   // if there is at least one visible "order-id"
   if (Object.keys(orders).length) {

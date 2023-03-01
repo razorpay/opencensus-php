@@ -151,6 +151,7 @@ export default class VAPaymentsListContainer extends ListContainer {
           }}
           onErrorCloseClick={this.onErrorCloseClick}
           paymentColumns={[this.paymentIdCol, amount, email, contact, createdAt, status]}
+          selfServeActionsPage={SelfServeActionPages.SmartcollectPayments}
         />
       </div>
     );

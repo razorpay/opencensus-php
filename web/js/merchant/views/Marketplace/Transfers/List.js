@@ -19,7 +19,7 @@ import SettlementStatus from './components/SettlementStatus';
 
 const source = {
   title: 'Source Id',
-  value: (item) => <TransferSource source={item.source} />,
+  value: (item) => <TransferSource source={item.source} initiatePoint="transfers-table" />,
 };
 
 const transferStatus = {

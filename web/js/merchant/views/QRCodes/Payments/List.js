@@ -68,7 +68,10 @@ export default class QRPaymentsListContainer extends ListContainer {
     return {
       title: paymentId.title,
       value: (item) => {
-        const intermediateElement = makeIdLink('payment')(item, 'QRcodes.Payments');
+        const intermediateElement = makeIdLink('payment')(
+          item,
+          SelfServeActionPages.QRcodesPayments,
+        );
         return <div>{intermediateElement}</div>;
       },
     };
