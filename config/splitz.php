@@ -266,5 +266,8 @@ return [
 
         // Payment Pages - Ecommerce
         'PP_ECOMMERCE_SPLITZ' => env('PP_ECOMMERCE_SPLITZ', ''),
+
+        // International Enablement - CrossBorder
+        'SHOW_INTERNATIONAL_PAYMENTS_BUTTON' => env('SHOW_INTERNATIONAL_PAYMENTS_BUTTON', ''),
     ]
 ];

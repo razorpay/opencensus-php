@@ -1907,7 +1907,7 @@ export default class User {
 
     return (
       getMode() === 'live' &&
-      variant?.variant_on?.enable === 'true' &&
+      variant?.variables?.enable === 'true' &&
       (this.internationalActivationFlow.isWhitelistFlow ||
         this.internationalActivationFlow.isGraylistFlow ||
         !this.internationalActivationFlow.international_activation_flow) &&

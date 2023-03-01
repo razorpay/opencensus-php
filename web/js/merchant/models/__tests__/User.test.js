@@ -41,7 +41,7 @@ describe('User model', () => {
       ...window.rzp_user,
       splitz_experiments: {
         LGGuDDOTgodMkG: {
-          variant_on: {
+          variables: {
             enable: 'true',
           },
         },
@@ -69,7 +69,7 @@ describe('User model', () => {
       ...window.rzp_user,
       splitz_experiments: {
         LGGuDDOTgodMkG: {
-          variant_on: {
+          variables: {
             enable: 'true',
           },
         },
@@ -88,7 +88,7 @@ describe('User model', () => {
       ...window.rzp_user,
       splitz_experiments: {
         LGGuDDOTgodMkG: {
-          variant_on: {
+          variables: {
             enable: 'true',
           },
         },
@@ -109,7 +109,7 @@ describe('User model', () => {
       ...window.rzp_user,
       splitz_experiments: {
         LGGuDDOTgodMkG: {
-          variant_on: {
+          variables: {
             enable: 'true',
           },
         },
@@ -130,7 +130,7 @@ describe('User model', () => {
       ...window.rzp_user,
       splitz_experiments: {
         LGGuDDOTgodMkG: {
-          variant_on: {
+          variables: {
             enable: 'true',
           },
         },

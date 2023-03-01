@@ -39,22 +39,25 @@ export const LinkItem = styled(Link)`
 
 export const LinkButtonItem = styled(Link)`
   display: flex;
-  height: 29px;
+  color: #80a5ff;
   width: 100%;
   align-items: center;
-  justify-content: flex-start;
-  line-height: 21px;
-  color: #80a5ff;
-  padding-left: 1rem;
   justify-content: space-between;
+  padding: 0.5rem 1rem;
+  font-weight: bold;
+  font-size: 0.75rem;
 
   &:hover {
     color: #ffffff;
   }
+
+  &:focus {
+    color: #80a5ff;
+  }
 `;
 
-export const Typo = styled.span<{ bold?: boolean }>`
-  font-weight: ${({ bold }) => (bold ? '700' : '400')};
+export const Typo = styled.span`
+  font-weight: 400;
   font-size: 14px;
 `;
 

@@ -1,12 +1,25 @@
+// core
 import React from 'react';
-import ShowWhen from 'merchant/components/ShowWhen';
-import { LinkItem, Icon, Typo, NewTag, LinkButtonItem } from './styled';
-import { analyticsTrack } from 'common/utils/analytics';
-import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { withRouter } from 'react-router';
+
+// analytics
+import { analyticsTrack } from 'common/utils/analytics';
+
+// utils
+import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { getActiveTab } from 'merchant/components/SidebarV2/utils/href';
+
+// constants
 import { DASHBOARD_LANDING_URL } from 'merchant/components/SidebarV2/constants/constants';
+
+// types
 import { NavLinkItemInterface } from 'merchant/components/SidebarV2/typings';
+
+// components
+import ShowWhen from 'merchant/components/ShowWhen';
+
+// styles
+import { LinkItem, Icon, Typo, NewTag, LinkButtonItem } from './styled';
 
 const getTags = (type) => {
   return type.reduce((acc, each) => {
@@ -61,8 +74,8 @@ const NavLinkItem = ({
           isActive={activeTab === product_id}
           onClick={onNavLinkItemClick}
         >
-          <Typo bold>{title}</Typo>
-          <Icon class="i i-chevron-right" />
+          {title}
+          <i className="i i-chevron-right" />
           {Tags}
         </LinkButtonItem>
       ) : (
