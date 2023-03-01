@@ -152,10 +152,13 @@ class DashboardProxy extends TestCase
         ];
 
         $response = $this->sendRequest([
-            'url' => '/edge/rate_limiter/rule',
-            'method' => 'POST',
+            'url'     => '/edge/rate_limiter/rule',
+            'method'  => 'POST',
             'content' => [
-                'route_id' => 'test_route',
+                'route_id'     => 'test_route',
+                'service_id'   => 'test_service_id',
+                'service_name' => 'test_service_name',
+                'context'      => 'test_support_ticket_link'
             ] + $forwardedContent
         ]);
 
@@ -191,7 +194,6 @@ class DashboardProxy extends TestCase
         $httpClient->addResponse($mockResponse);
 
         $forwardedContent = [
-            'rule'     => 'consumer_username::route_name',
             'enabled'  => true,
             'priority' => 10,
         ];
@@ -200,7 +202,10 @@ class DashboardProxy extends TestCase
             'url' => '/edge/rate_limiter/rule/123',
             'method' => 'PATCH',
             'content' => [
-                'service_id' => 'test_service',
+                'rule'         => 'consumer_username::route_name',
+                'service_id'   => 'test_service_id',
+                'service_name' => 'test_service_name',
+                'context'      => 'test_support_ticket_link'
             ] + $forwardedContent
         ]);
 
@@ -210,7 +215,7 @@ class DashboardProxy extends TestCase
 
         $this->assertSame('PATCH', $req->getMethod());
         $this->assertSame('/services/test_service/rate-limit-rules/123', $req->getUri()->getPath());
-        $this->assertSame(json_encode(['enabled' => true, 'priority' => 10]), $req->getBody()->getContents());
+        $this->assertSame(json_encode($forwardedContent), $req->getBody()->getContents());
 
         $response->assertOk();
         $response->assertExactJson($responseArray);
@@ -361,6 +366,15 @@ class DashboardProxy extends TestCase
         $content = self::RATE_LIMITS_REQUEST_CONTENT;
         $content['rule'] = ['id' => "l1234"];
 
+        // Extra properties for having better reference while approving request
+        $extraContent = [
+            'rule_id'      => 'test_rule_id',
+            'rule_name'    => 'test_rule_name',
+            'service_id'   => 'test_service_id',
+            'service_name' => 'service_name',
+            'context'      => 'test_support_ticket_link'
+        ];
+
         $mockResponse = new Response(201, [], json_encode($content + $additionalData));
 
         $httpClient = app('throttler_http_client');
@@ -369,7 +383,7 @@ class DashboardProxy extends TestCase
         $response = $this->sendRequest([
             'url' => '/edge/rate_limiter/rule/l1234/limit',
             'method' => 'POST',
-            'content' => self::RATE_LIMITS_REQUEST_CONTENT
+            'content' => self::RATE_LIMITS_REQUEST_CONTENT + $extraContent
         ]);
 
         $this->assertCount(1, $httpClient->getRequests());
@@ -396,10 +410,19 @@ class DashboardProxy extends TestCase
         $httpClient = app('throttler_http_client');
         $httpClient->addResponse($mockResponse);
 
+        // Extra properties for having better reference while approving request
+        $extraContent = [
+            'rule_id'      => 'test_rule_id',
+            'rule_name'    => 'test_rule_name',
+            'service_id'   => 'test_service_id',
+            'service_name' => 'service_name',
+            'context'      => 'test_support_ticket_link'
+        ];
+
         $response = $this->sendRequest([
             'url' => '/edge/rate_limiter/limit/123',
             'method' => 'PATCH',
-            'content' => self::RATE_LIMITS_REQUEST_CONTENT
+            'content' => self::RATE_LIMITS_REQUEST_CONTENT + $extraContent
         ]);
 
         $this->assertCount(1, $httpClient->getRequests());

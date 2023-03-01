@@ -115,6 +115,8 @@ class EdgeThrottleController extends Controller
 
         unset($input['service_id']);
         unset($input['route_id']);
+        unset($input['service_name']);
+        unset($input['context']);
 
         $input['enabled'] = (empty($input['enabled']) === true) ? false : true;
 
@@ -266,6 +268,12 @@ class EdgeThrottleController extends Controller
             $input['config']['bucket']['buffer'] = null;
         }
 
+        unset($input['rule_id']);
+        unset($input['rule_name']);
+        unset($input['service_id']);
+        unset($input['service_name']);
+        unset($input['context']);
+
         $response = $this->request($method, $path, $input);
 
         return $this->finalizeResponse($response, [
@@ -320,6 +328,11 @@ class EdgeThrottleController extends Controller
 
         // for now we will not let key to be updated from admin dashboard
         unset($input['key']);
+        unset($input['rule_id']);
+        unset($input['rule_name']);
+        unset($input['service_id']);
+        unset($input['service_name']);
+        unset($input['context']);
 
         // if key is set in the request then convert the value to bool
         if (array_key_exists('strictly_consistent', $input['config']) === true)
