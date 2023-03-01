@@ -1,5 +1,5 @@
 const credentials = {
-  username: process.env.USERNAME ?? 'akash.raina@razorpay.com',
+  username: process.env.USERNAME ?? 'playwright.test+1@gmail.com',
   password: process.env.PASSWORD ?? 'sunita12345',
 };
 
