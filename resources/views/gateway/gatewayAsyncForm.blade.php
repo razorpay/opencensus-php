@@ -413,7 +413,7 @@
           openIntentUrl(intent_url, payment_id);
           $('spinner').className = 'hide';
           $('retry-btn').className = 'hide';
-          $('message-txt').innerHTML = iosBridge ? "Please accept the request from Razorpay's VPA on your UPI app" : '<b>Select UPI App</b>Payment will be made to Razorpay\'s VPA';
+          $('message-txt').innerHTML = iosBridge ? "Please accept the request from Razorpay's VPA on your UPI app" : '<b>Redirecting to UPI App</b>Payment will be made to Razorpay\'s VPA';
           window.pollStatus = function(resp) {
             if (!Object.keys(resp).length ||
                 /txnId=(undefined|null|)(&|$)/i.test(resp.response) ||
