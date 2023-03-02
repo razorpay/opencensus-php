@@ -1560,6 +1560,9 @@ class UpiInitialRecurringTestCase extends TestCase
         $cases['idfc_fam_allow']                = ['razorpay@fam', $throwables['whitelisted']];
         $cases['tataneu_tapicici_allow']        = ['razorpay@tapicici', $throwables['whitelisted']];
         $cases['jupitermoney_jupiteraxis_allow']= ['razorpay@jupiteraxis', $throwables['whitelisted']];
+        $cases['bhimpnb_pnb_allow']             = ['razorpay@pnb', $throwables['whitelisted']];
+        $cases['fampay_fam_allow']              = ['razorpay@fam', $throwables['whitelisted']];
+
 
         $cases['gpay_okbizaxis_reject']         = ['razorpay@okbizaxis', $throwables['not_whitelisted']];
         $cases['gpay_oksbi_reject']             = ['razorpay@oksbi', $throwables['not_whitelisted']];

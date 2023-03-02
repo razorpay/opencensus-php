@@ -441,6 +441,8 @@ class ProviderCode
         ProviderPsp::IDFC,
         ProviderPsp::TATA_NEU,
         ProviderPsp::JUPITER_MONEY,
+        ProviderPsp::BHIM_PNB,
+        ProviderPsp::FAM_PAY,
     ];
 
     /**
@@ -480,6 +482,8 @@ class ProviderCode
         self::FAM           => ProviderPsp::IDFC,
         self::TAPICICI      => ProviderPsp::TATA_NEU,
         self::JUPITERAXIS   => ProviderPsp::JUPITER_MONEY,
+        self::PNB           => ProviderPsp::BHIM_PNB,
+        self::FAM           => ProviderPsp::FAM_PAY,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
