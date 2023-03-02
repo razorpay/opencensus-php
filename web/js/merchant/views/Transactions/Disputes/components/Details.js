@@ -51,8 +51,8 @@ const DisputeDetails = (props) => {
 
   const initiatePoint = params?.init_point;
   const initiatePage = params?.init_page;
-  const screen = initiatePage.split('.')[0];
-  const page = initiatePage.split('.')[1];
+  const screen = initiatePage?.split('.')[0];
+  const page = initiatePage?.split('.')[1];
 
   const canUserTakeAction = [
     roleList.OWNER,
