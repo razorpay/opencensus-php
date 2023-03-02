@@ -448,7 +448,8 @@ class TransactionFilter extends Terminal\Filter
                                                             RazorxTreatment::DEDICATED_TERMINAL_QR_CODE,
                                                             $this->mode);
 
-                if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
+                if ((strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON) and
+                    ($terminal->isOnline() === true))
                 {
                     return true;
                 }
@@ -973,15 +974,6 @@ class TransactionFilter extends Terminal\Filter
 
     public function bharatQrFilter($terminal)
     {
-        $variant = $this->app->razorx->getTreatment($this->input['merchant']->getId(),
-                                                    RazorxTreatment::DEDICATED_TERMINAL_QR_CODE,
-                                                    $this->mode);
-
-        if (strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return true;
-        }
-
         if (($this->input['payment']->isFlowIntent()) === true)
         {
             // We have already verified that terminal is intent enabled in UPI Filter
@@ -989,6 +981,16 @@ class TransactionFilter extends Terminal\Filter
         }
         if ($this->input['payment']->isBharatQr() === true)
         {
+            $variant = $this->app->razorx->getTreatment($this->input['merchant']->getId(),
+                                                        RazorxTreatment::DEDICATED_TERMINAL_QR_CODE,
+                                                        $this->mode);
+
+            if ((strtolower($variant) === RazorxTreatment::RAZORX_VARIANT_ON) and
+                ($terminal->isOnline() === true))
+            {
+                return true;
+            }
+
             return ($terminal->isBharatQr() === true);
         }
         else
