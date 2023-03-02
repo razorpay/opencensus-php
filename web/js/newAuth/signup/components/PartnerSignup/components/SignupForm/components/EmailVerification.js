@@ -33,8 +33,8 @@ const EmailVerification = ({ contactEmail, setStep, setShowHeader }) => {
   const [otpError, setOTPError] = useState(null);
   const onCTAClick = (emailOtp) => {
     trackWithSegment({
-      objectName: 'Get Started',
-      actionName: 'Clicked',
+      objectName: 'Email Verify OTP',
+      actionName: 'Entered',
       location: SCREEN_NAME[STEPS.EMAIL_VERIFICATION],
     });
     const payload = emailToken ? { otp: emailOtp, token: emailToken } : { otp: emailOtp };
@@ -45,11 +45,28 @@ const EmailVerification = ({ contactEmail, setStep, setShowHeader }) => {
           setIsLoading(false);
           window.location = '/app/partners';
         }
+        trackWithSegment({
+          objectName: 'Email Verify OTP',
+          actionName: 'Result',
+          location: SCREEN_NAME[STEPS.EMAIL_VERIFICATION],
+          properties: {
+            status: res?.data?.success,
+          },
+        });
       })
       .catch((err) => {
         setIsLoading(false);
-        const error_description = err.errors?.[0];
-        if (err.status_code === 400 || error_description === EMAIL_INCORRECT_OTP_ERROR_DESC)
+        const errorDescription = err.errors?.[0];
+        trackWithSegment({
+          objectName: 'Email Verify OTP',
+          actionName: 'Result',
+          location: SCREEN_NAME[STEPS.EMAIL_VERIFICATION],
+          properties: {
+            status: false,
+            errorMessage: errorDescription,
+          },
+        });
+        if (err.status_code === 400 || errorDescription === EMAIL_INCORRECT_OTP_ERROR_DESC)
           setOTPError('wrong_otp');
         else {
           setOTPError('server_error');
@@ -59,6 +76,12 @@ const EmailVerification = ({ contactEmail, setStep, setShowHeader }) => {
   };
 
   const resendOTP = () => {
+    trackWithSegment({
+      objectName: 'Resend OTP CTA',
+      actionName: 'Clicked',
+      location: SCREEN_NAME[STEPS.EMAIL_VERIFICATION],
+    });
+
     const payload = emailToken ? { email: contactEmail, emailToken } : { email: contactEmail };
     resetTimer();
     setOtpTriesLeft(otpTriesLeft - 1);

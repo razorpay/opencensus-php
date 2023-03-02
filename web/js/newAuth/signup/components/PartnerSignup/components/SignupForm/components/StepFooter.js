@@ -1,5 +1,6 @@
 import { Button } from '@razorpay/blade/components';
 import { StyledFooterWrap } from './styled';
+import { trackWithSegment } from 'newAuth/trackEvents';
 
 export default ({ onClick, ctaText, disabled, isLoading }) => {
   return (
@@ -16,6 +17,12 @@ export default ({ onClick, ctaText, disabled, isLoading }) => {
           target="_blank"
           rel="noopener noreferrer"
           className="blue-link"
+          onClick={() => {
+            trackWithSegment({
+              objectName: 'Terms of Use',
+              actionName: 'Clicked',
+            });
+          }}
         >
           terms of use
         </a>{' '}
@@ -25,6 +32,12 @@ export default ({ onClick, ctaText, disabled, isLoading }) => {
           target="_blank"
           rel="noopener noreferrer"
           className="blue-link"
+          onClick={() => {
+            trackWithSegment({
+              objectName: 'Privacy Policy',
+              actionName: 'Clicked',
+            });
+          }}
         >
           privacy policy
         </a>

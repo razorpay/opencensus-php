@@ -23,7 +23,15 @@ const {
   EMAIL_VERIFICATION,
 } = STEPS;
 
-const SignupForm = ({ step, setStep, contactEmail, showNotification, openModal, closeModal }) => {
+const SignupForm = ({
+  step,
+  setStep,
+  contactEmail,
+  showNotification,
+  openModal,
+  closeModal,
+  onboardAllAsResellerFlag,
+}) => {
   const [showHeader, setShowHeader] = useState(true);
   const [mobileNumber, setMobileNumber] = useState('');
   const [contactName, setContactName] = useState('');
@@ -74,7 +82,11 @@ const SignupForm = ({ step, setStep, contactEmail, showNotification, openModal, 
             />
           )}
           {step === PARTNER_TYPE_SELECTION && (
-            <PartnerTypeSelection setStep={setStep} showNotification={showNotification} />
+            <PartnerTypeSelection
+              setStep={setStep}
+              showNotification={showNotification}
+              onboardAllAsResellerFlag={onboardAllAsResellerFlag}
+            />
           )}
           {step === EMAIL_VERIFICATION && (
             <EmailVerification

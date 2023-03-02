@@ -71,8 +71,17 @@ const MobileVerification = ({
       })
       .catch((err) => {
         setIsLoading(false);
-        const error_description = err.errors?.[0];
-        if (err.status_code === 400 || error_description === MOBILE_INCORRECT_OTP_ERROR_DESC)
+        const errorDescription = err.errors?.[0];
+        trackWithSegment({
+          objectName: 'Sign up Verify OTP',
+          actionName: 'Result',
+          location: SCREEN_NAME[STEPS.MOBILE_VERIFICATION],
+          properties: {
+            status: 'Error',
+            message: errorDescription,
+          },
+        });
+        if (err.status_code === 400 || errorDescription === MOBILE_INCORRECT_OTP_ERROR_DESC)
           setOTPError('wrong_otp');
         else {
           setOTPError('server_error');

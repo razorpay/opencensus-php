@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextInput } from '@razorpay/blade/components';
 import { SCREEN_NAME, STEPS, contactInfoSchema } from 'newAuth/signup/Constants';
 import { Formik } from 'formik';
@@ -10,13 +10,21 @@ import { StyledStepWrapper, StyledTitle, StyledInputWrapper } from './styled';
 const ContactInfo = ({ setStep, setContactName }) => {
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    trackWithSegment({
+      objectName: 'Contact Details',
+      actionName: 'Displayed',
+      location: SCREEN_NAME[STEPS.CONTACT_INFO],
+    });
+  }, []);
+
   const onContactChange = (formikProps, name, value) => {
     value = value.trim();
     if (!formikProps.touched[name])
       trackWithSegment({
         objectName: 'Contact Details',
         actionName: 'Initiated',
-        location: 'Contact Details',
+        location: SCREEN_NAME[STEPS.CONTACT_INFO],
       });
     formikProps.setFieldTouched(name);
     formikProps.setFieldValue(name, value);

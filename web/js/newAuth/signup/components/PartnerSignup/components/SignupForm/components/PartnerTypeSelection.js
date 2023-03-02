@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Formik } from 'formik';
 import StepFooter from './StepFooter';
 import { updatePartnerTypeAndConsent } from 'newAuth/signup/components/PartnerSignup/components/api';
@@ -9,14 +9,29 @@ import { StyledStepWrapper, StyledTitle, StyledSubtitle, StyledPartnerTypeTiles 
 import imageSelectReseller from 'assets/partner-dashboard/select-partner-type-reseller.svg';
 import imageSelectAggregator from 'assets/partner-dashboard/select-partner-type-aggregator.svg';
 
-const PartnerTypeSelection = ({ setStep, showNotification }) => {
+const PartnerTypeSelection = ({ setStep, showNotification, onboardAllAsResellerFlag }) => {
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    trackWithSegment({
+      objectName: 'Partner Type Screen',
+      actionName: 'Displayed',
+      location: SCREEN_NAME[STEPS.PARTNER_TYPE_SELECTION],
+      properties: {
+        onboardAllAsResellerFlag,
+      },
+    });
+  }, []);
 
   const onCTAClick = (partnerType) => {
     trackWithSegment({
       objectName: 'Partner Type Next',
       actionName: 'Clicked',
       location: SCREEN_NAME[STEPS.PARTNER_TYPE_SELECTION],
+      properties: {
+        partnerTypeSelected: partnerType,
+        onboardAllAsResellerFlag,
+      },
     });
     setIsLoading(true);
     return updatePartnerTypeAndConsent(partnerType)
@@ -31,6 +46,17 @@ const PartnerTypeSelection = ({ setStep, showNotification }) => {
           message: err.errors?.[0] || 'Please try again',
         });
       });
+  };
+
+  const trackPartnerTypeSelect = () => {
+    trackWithSegment({
+      objectName: 'Partner Type',
+      actionName: 'Initiated',
+      location: SCREEN_NAME[STEPS.PARTNER_TYPE_SELECTION],
+      properties: {
+        onboardAllAsResellerFlag,
+      },
+    });
   };
   const noop = () => {};
   return (
@@ -50,6 +76,7 @@ const PartnerTypeSelection = ({ setStep, showNotification }) => {
                 onClick={(e) => {
                   e.stopPropagation();
                   formikProps.setFieldValue('partnerType', 'reseller');
+                  trackPartnerTypeSelect();
                 }}
               >
                 <div className="pts-tile-content">
@@ -86,6 +113,7 @@ const PartnerTypeSelection = ({ setStep, showNotification }) => {
                 onClick={(e) => {
                   e.stopPropagation();
                   formikProps.setFieldValue('partnerType', 'aggregator');
+                  trackPartnerTypeSelect();
                 }}
               >
                 <div className="pts-tile-content">

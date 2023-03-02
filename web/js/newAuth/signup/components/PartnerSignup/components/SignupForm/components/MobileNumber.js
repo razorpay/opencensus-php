@@ -40,6 +40,9 @@ const MobileNumber = ({
       objectName: 'Get Started',
       actionName: 'Clicked',
       location: SCREEN_NAME[STEPS.MOBILE_NUMBER],
+      properties: {
+        whatsappSelectDeselectFlag: isSendWhatsapp,
+      },
     });
     return registerMobileOTP(formikProps.values.mobileNumber)
       .then(({ data }) => {

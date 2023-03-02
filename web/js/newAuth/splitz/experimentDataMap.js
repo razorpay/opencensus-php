@@ -21,4 +21,11 @@ export default {
     experiment_variable: 'exposed',
     trackImpression: true,
   },
+  partner_onboard_all_as_resellers: {
+    stage_exp_id: 'JpWqxoqQa6aMOZ',
+    prod_exp_id: 'JpbtDw1u1tmAH2',
+    default_variant: 'not_exposed',
+    experiment_variable: 'exposed',
+    trackImpression: true,
+  },
 };

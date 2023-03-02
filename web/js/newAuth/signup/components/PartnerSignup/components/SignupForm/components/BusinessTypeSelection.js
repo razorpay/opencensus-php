@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Formik } from 'formik';
 import StepFooter from './StepFooter';
 import { userPreSignup } from 'newAuth/signup/components/PartnerSignup/components/api';
-import { businessTypeSelectionSchema } from 'newAuth/signup/Constants';
+import { SCREEN_NAME, STEPS, businessTypeSelectionSchema } from 'newAuth/signup/Constants';
 import imageInfoIcon from 'assets/partner-dashboard/info-icon.png';
 import { merchantFetch } from 'merchant/utils/ajax';
 import BusinessTypeInfo from './BusinessTypeInfo';
@@ -35,6 +35,11 @@ const BusinessTypeSelection = ({
   const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
 
   useEffect(() => {
+    trackWithSegment({
+      objectName: 'Business Type Screen',
+      actionName: 'Displayed',
+      location: SCREEN_NAME[STEPS.BUSINESS_TYPE_SELECTION],
+    });
     setIsLoading(true);
     merchantFetch('merchant/onboarding/business_types')
       .then((res) => {
@@ -49,6 +54,11 @@ const BusinessTypeSelection = ({
   }, []);
 
   const onInfoIconClick = (label) => {
+    trackWithSegment({
+      objectName: 'Business Type Help Screen',
+      actionName: 'Clicked',
+      location: SCREEN_NAME[STEPS.BUSINESS_TYPE_SELECTION],
+    });
     if (isMobileAndTablet()) setIsBottomSheetOpen(true);
     else
       openModal({
@@ -59,9 +69,9 @@ const BusinessTypeSelection = ({
 
   const onCTAClick = (businessType) => {
     trackWithSegment({
-      objectName: 'Get Started',
+      objectName: 'Business Type Next',
       actionName: 'Clicked',
-      location: 'Mobile Number',
+      location: SCREEN_NAME[STEPS.BUSINESS_TYPE_SELECTION],
     });
     setIsLoading(true);
     return userPreSignup({
@@ -82,6 +92,17 @@ const BusinessTypeSelection = ({
           message: err.errors?.[0] || 'Please try again',
         });
       });
+  };
+
+  const onBusinessTypeSelect = (formikProps, businessType) => {
+    formikProps.setFieldTouched('businessType');
+    formikProps.setFieldValue('businessType', businessType?.id);
+
+    trackWithSegment({
+      objectName: 'Business Type',
+      actionName: 'Initiated',
+      location: SCREEN_NAME[STEPS.BUSINESS_TYPE_SELECTION],
+    });
   };
 
   const noop = () => {};
@@ -109,16 +130,13 @@ const BusinessTypeSelection = ({
                   </StyledInfoIcon>
                 </StyledTileHeading>
                 <StyledTilesAll>
-                  {unregistered?.map((btype) => (
+                  {unregistered?.map((businessType) => (
                     <StyledBtypeLabel
-                      key={btype?.id}
-                      $isActive={btype?.id === formikProps.values.businessType}
-                      onClick={() => {
-                        formikProps.setFieldTouched('businessType');
-                        formikProps.setFieldValue('businessType', btype?.id);
-                      }}
+                      key={businessType?.id}
+                      $isActive={businessType?.id === formikProps.values.businessType}
+                      onClick={() => onBusinessTypeSelect(formikProps, businessType)}
                     >
-                      {btype?.label}
+                      {businessType?.label}
                     </StyledBtypeLabel>
                   ))}
                 </StyledTilesAll>
@@ -135,16 +153,13 @@ const BusinessTypeSelection = ({
                   </StyledInfoIcon>
                 </StyledTileHeading>
                 <StyledTilesAll>
-                  {registered?.map((btype) => (
+                  {registered?.map((businessType) => (
                     <StyledBtypeLabel
-                      key={`reg-${btype?.id}`}
-                      $isActive={btype?.id === formikProps.values.businessType}
-                      onClick={() => {
-                        formikProps.setFieldTouched('businessType');
-                        formikProps.setFieldValue('businessType', btype?.id);
-                      }}
+                      key={`reg-${businessType?.id}`}
+                      $isActive={businessType?.id === formikProps.values.businessType}
+                      onClick={() => onBusinessTypeSelect(formikProps, businessType)}
                     >
-                      {btype?.label}
+                      {businessType?.label}
                     </StyledBtypeLabel>
                   ))}
                 </StyledTilesAll>

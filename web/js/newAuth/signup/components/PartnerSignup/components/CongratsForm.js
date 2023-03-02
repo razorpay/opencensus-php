@@ -1,19 +1,40 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button, TextInput } from '@razorpay/blade/components';
-import { STEPS, congratsFormSchema } from 'newAuth/signup/Constants';
+import { SCREEN_NAME, STEPS, congratsFormSchema } from 'newAuth/signup/Constants';
 import { Formik } from 'formik';
 import { sendEmailOTP } from './api';
 import imageStarStroke from 'assets/partner-dashboard/star-stroke.png';
 import { StyledCongratsFormWrapper, StyledCongratsInputWrapper } from './styled';
+import { trackWithSegment } from 'newAuth/trackEvents';
 
 const CongratsForm = ({
   contactEmail: initialEmail,
   setContactEmail,
   setStep,
   showNotification,
+  onboardAllAsResellerFlag,
 }) => {
+  useEffect(() => {
+    trackWithSegment({
+      objectName: 'Partner Welcome Screen',
+      actionName: 'Displayed',
+      location: SCREEN_NAME[STEPS.CONGRATS],
+      properties: {
+        onboardAllAsResellerFlag,
+      },
+    });
+  }, []);
+
   const onCTAClick = (label, submittedEmail = null) => {
     if (label === 'submit') {
+      trackWithSegment({
+        objectName: 'Email Submit',
+        actionName: 'Clicked',
+        location: SCREEN_NAME[STEPS.CONGRATS],
+        properties: {
+          onboardAllAsResellerFlag,
+        },
+      });
       const payload = { email: submittedEmail };
 
       sendEmailOTP(payload)
@@ -35,7 +56,25 @@ const CongratsForm = ({
             });
           }
         });
-    } else if (label === 'addLater' || label == 'goToDashboard') {
+    } else if (label === 'addLater') {
+      trackWithSegment({
+        objectName: 'Add Later Option',
+        actionName: 'Clicked',
+        location: SCREEN_NAME[STEPS.CONGRATS],
+        properties: {
+          onboardAllAsResellerFlag,
+        },
+      });
+      window.location = '/app/partners';
+    } else if (label == 'goToDashboard') {
+      trackWithSegment({
+        objectName: 'Go To Dashboard',
+        actionName: 'Clicked',
+        location: SCREEN_NAME[STEPS.CONGRATS],
+        properties: {
+          onboardAllAsResellerFlag,
+        },
+      });
       window.location = '/app/partners';
     }
   };
@@ -83,6 +122,14 @@ const CongratsForm = ({
                     setContactEmail(value);
                     formikProps.setFieldTouched(name);
                     formikProps.setFieldValue(name, value);
+                    trackWithSegment({
+                      objectName: 'Email Details',
+                      actionName: 'Initiated',
+                      location: SCREEN_NAME[STEPS.CONGRATS],
+                      properties: {
+                        onboardAllAsResellerFlag,
+                      },
+                    });
                   }}
                   validationState={formikProps.errors.otp ? 'error' : false}
                   errorText={formikProps.errors.contactEmail}

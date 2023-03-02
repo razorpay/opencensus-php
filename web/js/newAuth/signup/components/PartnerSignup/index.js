@@ -16,6 +16,7 @@ import imagePartnerLogo from 'assets/partner-dashboard/partner-logo.svg';
 import LeftSideInfo from './components/LeftSideInfo';
 import SignupForm from './components/SignupForm';
 import SignupHeader from './components/SignupHeader';
+import { isOnboardAllAsResellers } from 'newAuth/splitz/index';
 
 const PartnerSignup = ({ openModal, closeModal, showNotification }) => {
   const [step, setStep] = useState(STEPS.MOBILE_NUMBER);
@@ -27,6 +28,8 @@ const PartnerSignup = ({ openModal, closeModal, showNotification }) => {
       location: SCREEN_NAME[step],
     });
   }, [step]);
+
+  const onboardAllAsResellerFlag = isOnboardAllAsResellers();
 
   return (
     <StyledSignupWrapper>
@@ -41,6 +44,7 @@ const PartnerSignup = ({ openModal, closeModal, showNotification }) => {
           setContactEmail={setContactEmail}
           setStep={setStep}
           showNotification={showNotification}
+          onboardAllAsResellerFlag={onboardAllAsResellerFlag}
         />
       ) : (
         <>
@@ -52,6 +56,7 @@ const PartnerSignup = ({ openModal, closeModal, showNotification }) => {
             closeModal={closeModal}
             openModal={openModal}
             showNotification={showNotification}
+            onboardAllAsResellerFlag={onboardAllAsResellerFlag}
           />
         </>
       )}
