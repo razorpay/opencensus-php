@@ -62,7 +62,7 @@ const MyAccount = (props) => {
       case '/team':
         return <Redirect to={MANAGE_TEAM_DETAILS} />;
       default:
-        <Redirect to={ACCOUNT_AND_SETTINGS} />;
+        return <Redirect to={ACCOUNT_AND_SETTINGS} />;
     }
   }
 

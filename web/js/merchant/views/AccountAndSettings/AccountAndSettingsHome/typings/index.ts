@@ -115,6 +115,7 @@ export interface SubSection {
   href: string;
   title: string;
   additionalCondition?: AdditionalConditionType;
+  onLinkClick?: () => void;
 }
 
 export interface SectionCardInterface {

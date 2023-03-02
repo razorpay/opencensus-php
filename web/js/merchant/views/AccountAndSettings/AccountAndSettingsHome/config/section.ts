@@ -41,7 +41,9 @@ import {
   PaymentMethodsTitles,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import User from 'common/typings/User';
+import { Modules } from 'common/constant/enums';
 
 export const Sections: SectionCardInterface[] = [
   {
@@ -168,6 +170,13 @@ export const Sections: SectionCardInterface[] = [
         title: 'Webhooks',
         href: ROUTES_INFO.WEBHOOKS,
         additionalCondition: () => (user: User): boolean => isWebhookEnabled(user),
+        onLinkClick: (): void => {
+          selfServeTrackInitiate({
+            selfServeAction: 'Webhook List Fetched',
+            page: 'Webhooks',
+            screen: Modules.AccountAndSettings,
+          });
+        },
       },
       {
         id: WebsiteAppSettingsFields.APPLICATIONS,

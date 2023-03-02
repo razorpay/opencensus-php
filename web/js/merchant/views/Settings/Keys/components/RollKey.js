@@ -39,7 +39,7 @@ class RollKey extends Component {
       },
     });
 
-    return this.props.generateKey(params).catch(({ errors }) => {
+    return this.props.generateKey(params, true).catch(({ errors }) => {
       this.setState({
         errors,
       });

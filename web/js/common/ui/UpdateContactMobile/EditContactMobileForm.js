@@ -1,15 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux';
-
+import { bindActionCreators } from 'redux';
 import Form from 'common/new-ui/Form';
 import Input from 'common/new-ui/Input';
 import { AsyncBtn } from 'common/new-ui/Button';
 import ModalHeader from 'common/ui/ModalHeader';
-
 import { pickProps } from 'common/utils/rzp-utils';
 import { isPhone } from 'common/utils/validators';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
-
 import { closeModal } from 'merchant_common/reducers/modals';
 import { updateContactMobile } from 'merchant_common/reducers/user';
 import { showNotification as fnShowNotification } from 'merchant_common/reducers/notifications';
@@ -26,7 +24,7 @@ import { Modules } from 'common/constant/enums';
     showNotification: fnShowNotification,
   },
 )
-export default class EditContactMobileForm extends React.Component {
+class EditContactMobileForm extends React.Component {
   state = {
     contactMobile: this.props.contactMobile,
   };
@@ -68,7 +66,7 @@ export default class EditContactMobileForm extends React.Component {
       .then(() => {
         selfServeTrackSuccess({
           selfServeAction: 'Mobile Updated',
-          page: 'Profile',
+          page: this.props.isNewAccountAndSettingsPage ? 'Contact details' : 'Profile',
           screen: this.props.isNewAccountAndSettingsPage
             ? Modules.AccountAndSettings
             : Modules.MyAccount,
@@ -150,3 +148,15 @@ export default class EditContactMobileForm extends React.Component {
     );
   }
 }
+
+const mapStateToProps = (state) => ({
+  ...pickProps(state.session.user.user, ['contact_mobile', 'email']),
+});
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    { closeModal, updateContactMobile, showNotification: fnShowNotification },
+    dispatch,
+  );
+
+export default connect(mapStateToProps, mapDispatchToProps)(EditContactMobileForm);

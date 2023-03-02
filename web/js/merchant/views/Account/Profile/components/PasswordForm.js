@@ -13,7 +13,11 @@ import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { Modules } from 'common/constant/enums';
 
-@connect(null, { updatePassword, closeModal, showNotification })
+@connect((state) => ({ user: state.session.user }), {
+  updatePassword,
+  closeModal,
+  showNotification,
+})
 @RTracking(() => window.rzpQ.component('PasswordForm'))
 @reduxForm({
   form: 'updatePasswordChangeForm',
@@ -45,10 +49,13 @@ export default class PasswordForm extends PureComponent {
     return this.props
       .updatePassword(props)
       .then(() => {
+        const { user } = this.props;
         selfServeTrackSuccess({
           selfServeAction: 'Password Updated',
-          page: 'Profile',
-          screen: Modules.AccountAndSettings,
+          page: user.isAccountAndSettingsRevampEnabled ? 'Your Profile' : 'Profile',
+          screen: user.isAccountAndSettingsRevampEnabled
+            ? Modules.AccountAndSettings
+            : Modules.MyAccount,
         });
         analyticsTrackWithUserInfo({
           objectName: 'change password',

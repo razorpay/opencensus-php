@@ -9,6 +9,7 @@ import OTPModal from './OTPModal';
 import NewEmailModal from './NewEmailModal';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const AddEmailModal = ({ user, screen, successButtonText, successButtonLink }) => {
   const STEPS = {
@@ -29,6 +30,12 @@ const AddEmailModal = ({ user, screen, successButtonText, successButtonLink }) =
 
   const onEmailOTPSubmit = () => {
     setStep(STEPS.SUCCESS);
+    // add selfServeSuccess here for login details
+    selfServeTrackSuccess({
+      selfServeAction: 'Login Details Updated',
+      page: user.isAccountAndSettingsRevampEnabled ? 'Personal Profile' : 'Profile',
+      screen: user.isAccountAndSettingsRevampEnabled ? 'Account & Settings' : 'My Account',
+    });
   };
 
   const onEnterEmailSubmit = ({ email }) => {

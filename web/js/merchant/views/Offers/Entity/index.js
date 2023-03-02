@@ -14,7 +14,6 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Amount from 'common/ui/Amount';
 import Button, { AsyncBtn } from 'common/new-ui/Button';
 import { OfferStatusLabel } from 'merchant/components/StatusLabel';
-
 import {
   PAYMENT_NETWORK_MAP,
   OFFER_TYPE_LABELS,
@@ -23,6 +22,9 @@ import {
 } from 'merchant/views/Offers/constants';
 import SubscriptionUsageDetails from './SubscriptionUsageDetails';
 import { emiDurationString } from 'merchant/views/Offers/New/helpers';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { isOfferIdClickable } from 'merchant/views/Offers/utils';
+import { Modules } from 'common/constant/enums';
 
 @connect((state) => ({ ...state.offer, user: state.session.user }), {
   ...OffersActions,
@@ -46,8 +48,15 @@ export default class OffersDetails extends React.Component {
   }
 
   componentDidMount() {
-    const { fetchOffer, id } = this.props;
-    fetchOffer(id);
+    const { fetchOffer, id, user } = this.props;
+    fetchOffer(id).then(() => {
+      if (isOfferIdClickable(user))
+        selfServeTrackSuccess({
+          selfServeAction: 'Offer Details Fetched',
+          page: 'Offers',
+          screen: Modules.Offers,
+        });
+    });
   }
 
   static getDerivedStateFromProps(props, state) {

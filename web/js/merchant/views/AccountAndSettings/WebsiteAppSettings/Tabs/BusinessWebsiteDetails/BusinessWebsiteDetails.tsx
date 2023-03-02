@@ -104,8 +104,12 @@ const renderAdditionalWebsites = (user, handleEditWebsite, additionalWebsiteWork
               onClick={() => {
                 selfServeTrackInitiate({
                   selfServeAction: 'Additional Website - App Url Updated',
-                  page: 'Profile',
-                  screen: 'My Account',
+                  page: user?.isAccountAndSettingsRevampEnabled
+                    ? 'Business Website Details'
+                    : 'Profile',
+                  screen: user?.isAccountAndSettingsRevampEnabled
+                    ? 'Account & Settings'
+                    : 'My Account',
                 });
                 handleEditWebsite(FLOWS.ADDITIONAL_WEBSITE);
               }}

@@ -1,12 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux';
-
+import { bindActionCreators } from 'redux';
 import DetailRow from 'merchant/components/DetailRow';
 import ShowWhen from 'merchant/components/ShowWhen';
-
 import Button from 'common/new-ui/Button';
 import UpdateContactMobile from 'common/ui/UpdateContactMobile';
-
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { updateContactMobile, updateUser } from 'merchant_common/reducers/user';
 import { verifyTwoFactorOtp } from 'merchant_common/reducers/twoFactor';
@@ -20,30 +18,22 @@ import {
 } from 'merchant/views/Account/Profile/deeplink-constants';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
-@connect(
-  (state) => ({
-    user: state.session.user.user,
-  }),
-  {
-    openModal,
-    closeModal,
+import { Modules } from 'common/constant/enums';
 
-    updateContactMobile,
-    updateUser,
-    verifyTwoFactorOtp,
-  },
-)
-export default class UserContactMobile extends React.Component {
+class UserContactMobile extends React.Component {
   onUpdateContactMobileComplete = (userData) => {
     this.props.updateUser(userData);
     this.props.closeModal();
   };
 
   onChangeContactMobile = () => {
+    const { _user } = this.props;
     selfServeTrackInitiate({
       selfServeAction: 'Mobile Updated',
-      page: 'Profile',
-      screen: 'My Account',
+      page: _user.isAccountAndSettingsRevampEnabled ? 'Contact details' : 'Profile',
+      screen: _user.isAccountAndSettingsRevampEnabled
+        ? Modules.AccountAndSettings
+        : Modules.MyAccount,
     });
     analyticsTrack({
       objectName: 'change contact number',
@@ -103,3 +93,22 @@ function ContactMobileValue({ contactMobile, onChangeContactMobile }) {
     </span>
   );
 }
+
+const mapStateToProps = (state) => ({
+  user: state.session.user.user,
+  _user: state.session.user,
+});
+
+const mapDispatchToProps = (dispatch) =>
+  bindActionCreators(
+    {
+      openModal,
+      closeModal,
+      updateContactMobile,
+      updateUser,
+      verifyTwoFactorOtp,
+    },
+    dispatch,
+  );
+
+export default connect(mapStateToProps, mapDispatchToProps)(UserContactMobile);

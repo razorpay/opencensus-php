@@ -57,8 +57,8 @@ const EmailInputForm = ({ user, closeModal, openModal, showNotification, getEmai
         if (res.data && !res.data.is_user_exist) {
           selfServeTrackSuccess({
             selfServeAction: 'Login Details Updated',
-            page: 'Profile',
-            screen: 'My Account',
+            page: user.isAccountAndSettingsRevampEnabled ? 'Personal Profile' : 'Profile',
+            screen: user.isAccountAndSettingsRevampEnabled ? 'Account & Settings' : 'My Account',
           });
           analyticsTrackWithUserInfo({
             objectName: 'email update invitation',

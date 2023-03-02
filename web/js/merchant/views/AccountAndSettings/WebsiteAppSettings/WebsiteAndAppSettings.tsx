@@ -29,6 +29,8 @@ import {
   isApplicationEnabled,
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { Modules } from 'common/constant/enums';
 
 const APIKeys = lazy(() => import(/* webpackChunkName: "APIKeysTab" */ './Tabs/ApiKeys'));
 
@@ -102,7 +104,18 @@ const WebsiteAndAppSettings = (props: WebsiteAndAppSettingsProps): JSX.Element =
             <NavLink to={ROUTES_INFO.API_KEYS}>API keys</NavLink>
           </ShowWhen>
           <ShowWhen additionalCondition={(user) => isWebhookEnabled(user)}>
-            <NavLink to={ROUTES_INFO.WEBHOOKS}>Webhooks</NavLink>
+            <NavLink
+              to={ROUTES_INFO.WEBHOOKS}
+              onClick={() => {
+                selfServeTrackInitiate({
+                  selfServeAction: 'Webhook List Fetched',
+                  page: 'Webhooks',
+                  screen: Modules.AccountAndSettings,
+                });
+              }}
+            >
+              Webhooks
+            </NavLink>
           </ShowWhen>
           <ShowWhen
             additionalCondition={(user) =>

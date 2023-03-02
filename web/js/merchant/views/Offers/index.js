@@ -22,7 +22,7 @@ import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
-import DashboardBanner from '../../../common/ui/DashboardBanner';
+import DashboardBanner from 'common/ui/DashboardBanner';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 
 // eslint-disable-next-line react/no-unsafe
@@ -44,11 +44,6 @@ export default class OfferIndex extends Component {
     if (window.rzpQ && window.rzpQ.merchantActions) {
       this.props.tracking.trackEvent(window.rzpQ.merchantActions().success('Offer_rendered'));
     }
-    selfServeTrackInitiate({
-      selfServeAction: 'Offer Details Fetched',
-      page: 'Offers',
-      screen: 'Offers',
-    });
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {

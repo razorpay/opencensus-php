@@ -8,8 +8,6 @@ import AddCreditsForm from './AddCreditsForm';
 import BankTransferDetails from './BankTransferDetails';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
-import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
-import { getAnalyticsData } from 'merchant/views/Account/Credits/ga';
 
 const creditsType = (type) => {
   switch (type) {
@@ -58,7 +56,6 @@ function AddCredits({
     if (paymentMethod === 'account_transfer') {
       try {
         const { data } = await getBankDetails({ type: creditsType(type), method: paymentMethod });
-        selfServeTrackSuccess(getAnalyticsData('add', type));
         setBankDetails(data);
         destroy();
       } catch (error) {

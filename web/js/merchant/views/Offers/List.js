@@ -1,10 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
-
 import ListContainer from 'merchant/containers/ListContainer';
 import EmptyList from 'merchant/components/EmptyList';
 import DataTable from 'common/ui/Table/DataTable';
-
 import { fetchOffers as fetchAll } from 'merchant/reducers/offers/offersList';
 import {
   offerId,
@@ -16,7 +14,8 @@ import {
   startOn,
   endsOn,
 } from 'common/ui/item/pair';
-import rolesList from 'merchant/helpers/permissions/roles-list';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { isOfferIdClickable } from './utils';
 
 const EmptyComponent = () => (
   <EmptyList
@@ -29,33 +28,49 @@ const EmptyComponent = () => (
   />
 );
 
-@connect((state) => ({ ...state.offers }), {
-  fetchAll,
-})
-export default class OffersList extends ListContainer {
+const _offerId = {
+  title: offerId.title,
+  value: (item) => {
+    const intermediateElement = offerId.value(item);
+    return (
+      <div
+        onClick={() => {
+          selfServeTrackInitiate({
+            selfServeAction: 'Offer Details Fetched',
+            page: 'Offers',
+            screen: 'Offers',
+          });
+        }}
+      >
+        {intermediateElement}
+      </div>
+    );
+  },
+};
+
+class OffersList extends ListContainer {
   render() {
     const { user } = this.props;
-    const { ADMIN, OWNER, SELLERAPP } = rolesList;
     return (
-      <>
-        <DataTable
-          title="Offers"
-          columns={[
-            [ADMIN, OWNER, SELLERAPP].includes(user.role) ? offerId : OfferIdWithoutLink,
-            offerTitle,
-            promotionType,
-            paymentMethod,
-            startOn,
-            endsOn,
-            offerStatus,
-          ]}
-          count={this.state.count}
-          skip={this.state.skip}
-          paginate={this.paginate}
-          {...this.props}
-          EmptyComponent={EmptyComponent}
-        />
-      </>
+      <DataTable
+        title="Offers"
+        columns={[
+          isOfferIdClickable(user) ? _offerId : OfferIdWithoutLink,
+          offerTitle,
+          promotionType,
+          paymentMethod,
+          startOn,
+          endsOn,
+          offerStatus,
+        ]}
+        count={this.state.count}
+        skip={this.state.skip}
+        paginate={this.paginate}
+        {...this.props}
+        EmptyComponent={EmptyComponent}
+      />
     );
   }
 }
+
+export default connect((state) => ({ ...state.offers }), { fetchAll })(OffersList);

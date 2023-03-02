@@ -21,7 +21,7 @@ const KeysListItem = (props) => {
     selfServeTrackInitiate({
       selfServeAction: 'API Key Regenerated',
       page: 'API Keys',
-      screen: 'Settings',
+      screen: props?.user?.isAccountAndSettingsRevampEnabled ? 'Account & Settings' : 'Settings',
     });
     analyticsTrack({
       objectName: `regenerate ${mode} key`,
@@ -68,6 +68,7 @@ const KeysListItem = (props) => {
 
 export default connect(null, { openModal, closeModal })((props) => {
   const {
+    user,
     mode,
     keys,
     isLoading,
@@ -116,7 +117,7 @@ export default connect(null, { openModal, closeModal })((props) => {
                       <button
                         class="btn btn-primary"
                         onClick={() => {
-                          generateKey(params);
+                          generateKey(params, false);
                         }}
                         data-test="generate-api-key"
                       >
@@ -155,6 +156,7 @@ export default connect(null, { openModal, closeModal })((props) => {
           >
             {keys.map((key) => (
               <KeysListItem
+                user={user}
                 key={key.id}
                 apiKey={key}
                 mode={mode}

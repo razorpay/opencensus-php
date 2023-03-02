@@ -13,6 +13,7 @@ import FileUpload from 'merchant/components/File/Upload';
 import { FLOWS } from './Constants';
 import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/reducers/workflows';
 import { WORKFLOW_TYPES } from 'merchant/views/Account/Profile/components/WorkflowRequests/constants';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 function WebsiteFields({
   flowType,
@@ -292,10 +293,18 @@ function UpdateWebsiteDetails(props) {
       });
 
       if (response) {
+        const { user } = props;
         props.showNotification({
           type: 'success',
           message: `${type} submitted successfully`,
         });
+        if (props.flowType === FLOWS.ADDITIONAL_WEBSITE) {
+          selfServeTrackSuccess({
+            selfServeAction: 'Additional Website - App Url Updated',
+            page: user?.isAccountAndSettingsRevampEnabled ? 'Business Website Details' : 'Profile',
+            screen: user?.isAccountAndSettingsRevampEnabled ? 'Account & Settings' : 'My Account',
+          });
+        }
 
         props.fetchWorkflowStatus(WORKFLOW_TYPES.ADD_ADDITIONAL_WEBSITE);
         props.closeModal();

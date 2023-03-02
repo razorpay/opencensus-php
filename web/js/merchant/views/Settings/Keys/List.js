@@ -46,7 +46,8 @@ class KeysListContainer extends ListContainer {
     });
   };
 
-  generateKey = (params) => {
+  generateKey = (params, isKeyRegeneration = false) => {
+    const { user } = this.props;
     window.rzpQ.onbr().initiated('dash.settings_action', {
       action: 'Initiate_API_Key_Gen',
     });
@@ -62,11 +63,14 @@ class KeysListContainer extends ListContainer {
           closeTimeout: 15000,
         });
 
-        selfServeTrackSuccess({
-          selfServeAction: 'API Key Regenerated',
-          page: 'API Keys',
-          screen: 'Settings',
-        });
+        // track success only for key regeneration
+        if (isKeyRegeneration) {
+          selfServeTrackSuccess({
+            selfServeAction: 'API Key Regenerated',
+            page: 'API Keys',
+            screen: user?.isAccountAndSettingsRevampEnabled ? 'Account & Settings' : 'Settings',
+          });
+        }
         analyticsTrack({
           objectName: `regenerate ${this.props.session.mode} key`,
           actionName: 'result',
@@ -130,7 +134,7 @@ class KeysListContainer extends ListContainer {
     const status = this.state.status;
     const hasKeyAccess = this.props.session.user.has_key_access;
     const businessWebsite = this.props.session.user.business_website;
-    const { isWebsiteInWorkflow, onWebsiteAdd } = this.props;
+    const { isWebsiteInWorkflow, onWebsiteAdd, user } = this.props;
     const isMobileResolution = isMobileDevice();
 
     return (
@@ -142,6 +146,7 @@ class KeysListContainer extends ListContainer {
         <div class="content-wrapper">
           <Alert type={status.type} message={status.message} />
           <KeysList
+            user={user}
             keys={keys}
             isLoading={loading}
             mode={mode}

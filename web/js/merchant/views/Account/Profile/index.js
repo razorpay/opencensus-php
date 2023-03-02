@@ -67,6 +67,7 @@ import {
 } from 'merchant/views/Account/Profile/components/BankAccountDetailsChangeSteps';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { shouldShowFIRCSection } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import { Modules } from 'common/constant/enums';
 
 const FIRCSection = lazy(() =>
   import(
@@ -318,10 +319,13 @@ class Profile extends Component {
     }),
   )
   openChangePasswordModal = () => {
+    const { user } = this.props;
     selfServeTrackInitiate({
       selfServeAction: 'Password Updated',
-      page: 'Profile',
-      screen: 'My Account',
+      page: user.isAccountAndSettingsRevampEnabled ? 'Your Profile' : 'Profile',
+      screen: user.isAccountAndSettingsRevampEnabled
+        ? Modules.AccountAndSettings
+        : Modules.MyAccount,
     });
     analyticsTrack({
       objectName: 'change password',

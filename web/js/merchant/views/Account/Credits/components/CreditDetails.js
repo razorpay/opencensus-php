@@ -11,7 +11,7 @@ import {
   REFUND_CREDITS_ADDED,
   REFUND_CREDITS_FAILED,
   getAnalyticsData,
-} from '../ga';
+} from 'merchant/views/Account/Credits/ga';
 import { showNotification as showNotificationReducer } from 'merchant_common/reducers/notifications';
 import { fetchCreditBalance as fetchCreditBalanceReducer } from 'merchant/reducers/credits';
 import { analyticsTrack } from 'common/utils/analytics';
@@ -20,7 +20,7 @@ import lazy from 'merchant/routes/LazyLoader';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 import rolesList from 'merchant/helpers/permissions/roles-list';
 import Loader from 'common/ui/Loader';
-import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 
 const ViewCreditHistoryTable = lazy(() =>
   import(
@@ -61,7 +61,7 @@ function CreditDetails({
           type: 'success',
           message: 'Credits added successfully',
         });
-
+        selfServeTrackSuccess(getAnalyticsData('add', type));
         setTimeout(() => {
           showNotification({
             type: 'success',
