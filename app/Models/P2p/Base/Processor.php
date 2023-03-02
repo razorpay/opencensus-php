@@ -186,11 +186,16 @@ class Processor
         // Before passing input to gateway we will run basic check
         $this->modifyGatewayInput($this->gatewayInput);
 
+        $traceInput = $this->input->toArray();
+
+        // unsetting jwt token from traces in request
+        unset($traceInput['request']['headers']['x-passport-jwt-v1']);
+
         $this->trace()->info(TraceCode::P2P_REQUEST, [
             'action'    => $this->action,
             'entity'    => $entity,
             'gateway'   => $gateway,
-            'input'     => $this->redactForAction($this->input->toArray()),
+            'input'     => $this->redactForAction($traceInput),
         ]);
 
         // We are using context directly to pass to gateway. This is experimental and may change in future.

@@ -19,6 +19,8 @@ class UpiController extends Controller
 
         $traceInput = $input;
 
+        // unsetting jwt token from traces in request
+        unset($traceInput['headers']['x-passport-jwt-v1']);
         unset($traceInput['content']['payeeVpa'], $traceInput['content']['payerVpa']);
 
         $this->app['trace']->info(TraceCode::GATEWAY_PAYMENT_S2S_CALLBACK, [
