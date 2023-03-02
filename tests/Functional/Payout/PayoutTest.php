@@ -5620,6 +5620,115 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(true, $firstActionChecker['approved']);
     }
 
+    public function testFetchPendingPayoutsAsOwnerSSWF()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->liveSetUp();
+
+        $this->fixtures->on('live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payoutIds = $this->createMultiplePayoutsWithWorkflow(5);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = [
+            'account_numbers' => ['2224440041626905'],
+        ];
+
+        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
+
+        $response = $this->startTest();
+
+        $this->assertSameSize($payoutIds, $response);
+
+        $this->assertNotNull($response);
+
+        foreach ($response as $payouts)
+        {
+            $this->assertContains("pout_".$payouts["id"], $payoutIds);
+
+            $this->assertNotNull($payouts["amount"]);
+        }
+    }
+
+    public function testFetchNoPendingPayoutsAsOwnerSSWF()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->liveSetUp();
+
+        $this->fixtures->on('live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $payoutIds = $this->createMultiplePayoutsWithWorkflow(5);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content'] = [
+            'account_numbers' => ['2224440041626909'],
+        ];
+
+        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
+
+        $response = $this->startTest();
+
+        $this->assertEmpty($response);
+    }
+
+    public function testFetchPendingPayoutsAsOwnerSSWFValidationError()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->liveSetUp();
+
+        $this->fixtures->on('live');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->ba->basicAuth('rzp_live_10000000000000', 'RANDOM_DASH_PASSWORD_MERCHANT');
+
+        $this->startTest();
+    }
+
+    private function createMultiplePayoutsWithWorkflow(int $count): array
+    {
+        $payoutIds = array();
+
+        for ($i=0; $i<$count; $i++)
+        {
+            $payout = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+            $payoutIds[] = $payout['id'];
+        }
+
+        return $payoutIds;
+    }
+
     public function testBulkRejectPayoutsAsOwnerSSWF()
     {
         $user = $this->fixtures->create('user');

@@ -294,6 +294,42 @@ class WorkflowTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateWorkflowConfigWithAccountNumber()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(false, $isPayoutWorkflowFeatureEnabled);
+
+        $this->startTest();
+
+        $workflowConfig = $this->getDbLastEntity('workflow_config', 'test');
+
+        $this->assertEquals(true, $workflowConfig['enabled']);
+
+        $this->assertEquals('FQE6Xw4ZpoM21X', $workflowConfig['config_id']);
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(true, $isPayoutWorkflowFeatureEnabled);
+    }
+
     public function testCreateWorkflowConfig()
     {
         $user = $this->fixtures->create('user');
@@ -304,6 +340,12 @@ class WorkflowTest extends TestCase
             'product'     => 'banking',
             'role'        => 'owner',
         ]);
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
 
@@ -419,6 +461,12 @@ class WorkflowTest extends TestCase
             'token'      => Hash::make('ThisIsATokenForTest'),
         ]);
 
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
         $token = 'ThisIsATokenForTest' . $adminToken->getId();
 
         $this->ba->adminAuth('test', $token);
@@ -484,6 +532,65 @@ class WorkflowTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateWorkflowConfigWithAccountNumber()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->startTest();
+    }
+
+    public function testUpdateWorkflowConfigWithPendingPayoutLinks()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([
+            'entity' => 'collection',
+            'count' => 2,
+            'items' => [
+                [
+                    'id' => 'poutlk_id1',
+                    'amount' => '1000',
+                ],
+                [
+                    'id' => 'poutlk_id2',
+                    'amount' => '2000',
+                ]
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->expectExceptionMessage(ErrorCode::BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUT_LINKS);
+
+        $this->startTest();
+    }
+
     public function testUpdateWorkflowConfig()
     {
         $user = $this->fixtures->create('user');
@@ -494,6 +601,12 @@ class WorkflowTest extends TestCase
             'product'     => 'banking',
             'role'        => 'owner',
         ]);
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
 
@@ -510,6 +623,12 @@ class WorkflowTest extends TestCase
         ]);
 
         $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
 
         $this->ba->adminAuth('test', $token);
 
@@ -528,6 +647,77 @@ class WorkflowTest extends TestCase
         $this->assertEquals('FQE6Xw4ZpoM21X', $workflowConfig['config_id']);
     }
 
+    public function testDeleteWorkflowConfigWithAccountNumber()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(true, $isPayoutWorkflowFeatureEnabled);
+
+        $this->startTest();
+
+        $isPayoutWorkflowFeatureEnabled = $this->fixtures->merchant->isFeatureEnabled([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->assertEquals(false, $isPayoutWorkflowFeatureEnabled);
+    }
+
+    public function testDeleteWorkflowConfigWithPendingPayoutLinks()
+    {
+        $user = $this->fixtures->create('user');
+
+        $this->fixtures->user->createUserMerchantMapping([
+            'merchant_id' => '10000000000000',
+            'user_id'     => $user->getId(),
+            'product'     => 'banking',
+            'role'        => 'owner',
+        ]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([
+            'entity' => 'collection',
+            'count' => 2,
+            'items' => [
+                [
+                    'id' => 'poutlk_id1',
+                    'amount' => '1000',
+                ],
+                [
+                    'id' => 'poutlk_id2',
+                    'amount' => '2000',
+                ]
+            ]
+        ]);
+
+        $this->app->instance('payout-links', $plMock);
+
+        $this->expectExceptionMessage(ErrorCode::BAD_REQUEST_WORKFLOW_MERCHANT_WITH_PENDING_PAYOUT_LINKS);
+
+        $this->startTest();
+    }
+
     public function testDeleteWorkflowConfig()
     {
         $user = $this->fixtures->create('user');
@@ -540,6 +730,12 @@ class WorkflowTest extends TestCase
         ]);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
 
@@ -564,6 +760,12 @@ class WorkflowTest extends TestCase
         ]);
 
         $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $plMock = Mockery::mock('RZP\Services\PayoutLinks');
+
+        $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([]);
+
+        $this->app->instance('payout-links', $plMock);
 
         $this->ba->adminAuth('test', $token);
 

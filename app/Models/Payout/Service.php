@@ -1020,6 +1020,27 @@ class Service extends Base\Service
         ];
     }
 
+    public function fetchPendingPayoutsSummary(array $input)
+    {
+        $this->trace->info(TraceCode::FETCH_PENDING_PAYOUTS_REQUEST, ['input' => array_except($input, ['account_numbers'])]);
+
+        (new Validator)->validateInput(Validator::FETCH_PENDING_PAYOUTS_SUMMARY, $input);
+
+        $pendingPayouts = $this->repo->payout->findPendingPayoutsSummaryForAccountNumbers($input[PayoutConstants::ACCOUNT_NUMBERS], $this->merchant->getMerchantId());
+
+        $pendingPayoutsSummary = array();
+
+        foreach ($pendingPayouts as $pendingPayout)
+        {
+            $pendingPayoutsSummary[] = [
+                'id' => $pendingPayout->getPublicId(),
+                'amount' => $pendingPayout->getAmount(),
+            ];
+        }
+
+        return $pendingPayoutsSummary;
+    }
+
     /**
      * @param array $input
      * @return array

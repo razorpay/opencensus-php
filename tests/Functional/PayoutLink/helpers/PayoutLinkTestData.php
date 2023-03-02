@@ -3409,6 +3409,70 @@ return [
         ]
     ],
 
+    'testFetchPendingPayoutLinksAsOwnerSSWF' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/pending/summary',
+            'content' => [
+                'account_numbers' => ['4564563559247990']
+            ],
+            'server' => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testFetchPendingPayoutLinksAsOwnerSSWFWithPLResponse' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/pending/summary',
+            'content' => [
+                'account_numbers' => ['4564563559247990']
+            ],
+            'server' => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testFetchPendingPayoutLinksAsOwnerSSWFValidationError' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payout-links/pending/summary',
+            'content' => [
+            ],
+            'server' => [
+                'HTTP_X-Dashboard-User-Id' => '20000000000000',
+                'HTTP_X-Request-Origin'   => config('applications.banking_service_url'),
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account numbers field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testBulkRejectPayoutLinksAsOwner' => [
         'request'  => [
             'method'  => 'POST',

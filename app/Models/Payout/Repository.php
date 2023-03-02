@@ -2290,6 +2290,41 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function findPendingPayoutsSummaryForAccountNumbers(array $accountNumbers, string $merchantId)
+    {
+        /*
+            SELECT payouts.id, payouts.amount, balance.account_number
+            from payouts
+            join balance
+            on payouts.balance_id = balance.id
+            where payouts.merchant_id = 'MID'
+            and payouts.status = 'pending'
+            and balance.account_number IN ('AC_NO');
+         * */
+        $balanceAccountNumberColumn   = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_NUMBER);
+
+        $balanceIdColumn            = $this->repo->balance->dbColumn(Balance\Entity::ID);
+
+        $payoutsBalanceIdColumn     = $this->repo->payout->dbColumn(Entity::BALANCE_ID);
+
+        $payoutsMerchantIdColumn    = $this->repo->payout->dbColumn(Entity::MERCHANT_ID);
+
+        $payoutsStatusColumn    = $this->repo->payout->dbColumn(Entity::STATUS);
+
+        $selectAttr                 = [
+            $this->dbColumn(Entity::ID),
+            $this->dbColumn(Entity::AMOUNT)
+        ];
+
+        return $this->newQuery()
+            ->select($selectAttr)
+            ->join(Table::BALANCE, $balanceIdColumn, '=', $payoutsBalanceIdColumn)
+            ->where($payoutsMerchantIdColumn, '=', $merchantId)
+            ->where($payoutsStatusColumn, '=', 'pending')
+            ->whereIn($balanceAccountNumberColumn, $accountNumbers)
+            ->get();
+    }
+
     /**
      * SELECT COUNT(*)
      * FROM 'payouts'

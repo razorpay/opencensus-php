@@ -12,6 +12,7 @@ use RZP\Constants as Constants;
 use RZP\Models\Feature as Feature;
 use RZP\Models\Workflow\Service\Config;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Workflow\Service\Adapter\Constants as WorkflowConstants;
 
 class Service extends Base\Service
@@ -103,17 +104,24 @@ class Service extends Base\Service
      *
      * createWorkflowConfig verifies the OTP and proxies the request to workflow service
      * workflow service converts the given input to workflow config, stores and returns the response
+     * @throws BadRequestValidationFailureException
      */
-    public function createWorkflowConfig(array $input)
+    public function createWorkflowConfig(array $input): array
     {
+        $this->trace->info(TraceCode::SELF_SERVE_WORKFLOW_CREATE_CONFIG_REQUEST);
+
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
+            $this->app['basicauth']->getUser()->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
             // Verify OTP
             (new User\Core)->verifyOtp($input,
                 $this->app['basicauth']->getMerchant(),
                 $this->app['basicauth']->getUser(),
                 $this->app['basicauth']->getMode() === Constants\Mode::TEST);
         }
+
+        $this->validatePendingPayoutsAndPayoutLinks($input);
 
         $workflowInput = $this->generateWorkflowInput($input);
 
@@ -129,11 +137,16 @@ class Service extends Base\Service
      * @return array
      *
      * updateWorkflowConfig verifies the OTP and proxies the request to workflow service
+     * @throws BadRequestValidationFailureException
      */
-    public function updateWorkflowConfig(array $input)
+    public function updateWorkflowConfig(array $input): array
     {
+        $this->trace->info(TraceCode::SELF_SERVE_WORKFLOW_UPDATE_CONFIG_REQUEST);
+
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
+            $this->app['basicauth']->getUser()->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
             // Verify OTP
             (new User\Core)->verifyOtp($input,
                 $this->app['basicauth']->getMerchant(),
@@ -141,6 +154,8 @@ class Service extends Base\Service
                 $this->app['basicauth']->getMode() === Constants\Mode::TEST);
 
         }
+
+        $this->validatePendingPayoutsAndPayoutLinks($input);
 
         $workflowInput = $this->generateWorkflowInput($input);
 
@@ -155,14 +170,19 @@ class Service extends Base\Service
      * @param array $input
      * @return array
      * @throws Exception\BadRequestException
+     * @throws BadRequestValidationFailureException
      *
      * deleteWorkflowConfig verifies the OTP and proxies the request to workflow service
      * Here we disable the config in workflow service and then disable the feature in API service
      */
-    public function deleteWorkflowConfig(array $input)
+    public function deleteWorkflowConfig(array $input): array
     {
+        $this->trace->info(TraceCode::SELF_SERVE_WORKFLOW_DELETE_CONFIG_REQUEST);
+
         if ($this->app['basicauth']->isProxyAuth() === true)
         {
+            $this->app['basicauth']->getUser()->validateInput('verifyOtp', array_only($input, ['otp', 'token']));
+
             // Verify OTP
             (new User\Core)->verifyOtp($input,
                 $this->app['basicauth']->getMerchant(),
@@ -170,6 +190,8 @@ class Service extends Base\Service
                 $this->app['basicauth']->getMode() === Constants\Mode::TEST);
 
         }
+
+        $this->validatePendingPayoutsAndPayoutLinks($input);
 
         $workflowInput = $this->generateWorkflowInput($input);
 
@@ -183,6 +205,26 @@ class Service extends Base\Service
         }
 
         return $this->core->deleteWorkflowConfig($workflowInput);
+    }
+
+    /**
+     * @throws BadRequestValidationFailureException
+     */
+    public function validatePendingPayoutsAndPayoutLinks(array $input)
+    {
+        $validator = new Validator;
+
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        // By default, validate for pending payouts / payout-links. Skip if is_pending_check_required is set to false
+        $isPendingCheckRequired = array_pull($input, 'is_pending_check_required', true);
+
+        if ($isPendingCheckRequired === true)
+        {
+            $validator->checkForNoPendingPayouts($input, $merchant);
+
+            $validator->checkForNoPendingPayoutLinks($input, $merchant);
+        }
     }
 
     public function enablePayoutWorkflowFeatureIfNotEnabled()
@@ -335,7 +377,7 @@ class Service extends Base\Service
     private function generateWorkflowInput(array $input)
     {
         // Remove OTP, Token and Action from the input
-        $workflowInput = array_except($input, ['otp', 'token', 'action']);
+        $workflowInput = array_except($input, ['otp', 'token', 'action', 'is_pending_check_required', 'account_numbers']);
 
         // Get MID
         if (array_key_exists('owner', $workflowInput) == false) {

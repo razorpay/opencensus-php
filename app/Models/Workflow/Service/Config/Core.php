@@ -78,6 +78,9 @@ class Core extends Base\Core
 
     public function deleteWorkflowConfig(array $input): array
     {
+        // default config type is 'payout-approval'
+        $input[Constants::CONFIG_TYPE] = array_pull($input, Constants::CONFIG_TYPE, Constants::PAYOUT_APPROVAL_CONFIG_TYPE);
+
         // Delete config in workflow service
         $response = $this->workflowServiceClient->deleteConfig($input);
 

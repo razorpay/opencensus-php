@@ -93,6 +93,7 @@ class PayoutLinks
     const CANCEL_PAYOUT_LINK_PATH                  = 'twirp/payoutlinks.Payoutlinks/CancelPayoutLink';
     const FETCH_PAYOUT_LINK_PATH                   = 'twirp/payoutlinks.Payoutlinks/FetchPayoutLink';
     const FETCH_PAYOUT_LINK_MULTIPLE_PATH          = 'twirp/payoutlinks.Payoutlinks/FetchMultiplePayoutLinks';
+    const FETCH_PAYOUT_LINKS_SUMMARY_PATH          = 'twirp/payoutlinks.Payoutlinks/FetchPayoutLinksSummary';
     const GET_SETTINGS_PAYOUT_LINK_PATH            = 'twirp/payoutlinks.Payoutlinks/GetSettings';
     const UPDATE_SETTINGS_PAYOUT_LINK_PATH         = 'twirp/payoutlinks.Payoutlinks/UpdateSettings';
     const PAYOUT_LINK_GENERATE_OTP_PATH            = 'twirp/payoutlinks.Payoutlinks/GenerateOTP';
@@ -183,6 +184,9 @@ class PayoutLinks
     const AMOUNT                                   = 'amount';
     const META                                     = 'meta';
     const TAX_PAYMENT_ID                           = 'tax_payment_id';
+
+    const ACCOUNT_NUMBERS                          = 'account_numbers';
+    const PAYOUT_LINKS_SUMMARY                     = 'payout_links_summary';
 
     public static $statusValidForSupportDetailsInHostedPage = [
         self::STATUS_EXPIRED,
@@ -2097,6 +2101,21 @@ class PayoutLinks
                 $payoutsInfo['items'][$i][self::META] = $meta;
             }
         }
+    }
+
+    public function fetchPayoutLinksSummaryForMerchant(array $input, string $merchantId)
+    {
+        $input = [
+            self::MERCHANT_ID       => $merchantId,
+            self::STATUS            => self::STATUS_PENDING,
+            self::ACCOUNT_NUMBERS   => $input[self::ACCOUNT_NUMBERS],
+        ];
+
+        $url = $this->getConstructedUrl(self::FETCH_PAYOUT_LINKS_SUMMARY_PATH);
+
+        $response = $this->makeRequest($url, $input, [], self::POST, $this->getMode());
+
+        return array_pull($response, self::PAYOUT_LINKS_SUMMARY, array());
     }
 }
 

@@ -32,6 +32,7 @@ use RZP\Models\FundTransfer\Attempt\Constants;
 use RZP\Models\Counter\Entity as CounterEntity;
 use RZP\Models\Feature\Repository as FeatureRepo;
 use RZP\Models\PayoutSource\Entity as PayoutSource;
+use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Base\Initiator\NodalAccount;
 use RZP\Models\PayoutsDetails\Entity as PayoutDetailsEntity;
@@ -132,6 +133,8 @@ class Validator extends Base\Validator
     const WFS_CONFIG_FETCH = 'wfs_config_fetch';
 
     const OWNER_BULK_REJECT_PAYOUTS = 'owner_bulk_reject_payouts';
+
+    const FETCH_PENDING_PAYOUTS_SUMMARY = 'fetch_pending_payouts_summary';
 
     //
     // This is required for build. Currently, build does not
@@ -449,6 +452,10 @@ class Validator extends Base\Validator
         Entity::PAYOUT_IDS . '.*'       => 'required|public_id|size:19',
         Entity::BULK_REJECT_AS_OWNER    => 'required|boolean',
         ActionChecker::USER_COMMENT     => 'sometimes|nullable|string|max:255',
+    ];
+
+    protected static $fetchPendingPayoutsSummaryRules = [
+        PayoutConstants::ACCOUNT_NUMBERS          => 'required|array',
     ];
 
     protected static $processQueuedPayoutsInitiateRules = [

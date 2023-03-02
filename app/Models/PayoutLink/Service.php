@@ -949,4 +949,13 @@ class Service extends Base\Service
             ];
         }
     }
+
+    public function fetchPendingPayoutLinks(array $input): array
+    {
+        $this->app['trace']->info(TraceCode::FETCH_PENDING_PAYOUT_LINKS_REQUEST);
+
+        (new Validator())->validateInput(Validator::FETCH_PENDING_PAYOUT_LINKS, $input);
+
+        return $this->app['payout-links']->fetchPayoutLinksSummaryForMerchant($input, $this->merchant->getId());
+    }
 }

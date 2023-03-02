@@ -310,6 +310,13 @@ class PayoutController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchPendingPayoutsSummary()
+    {
+        $response = $this->service()->fetchPendingPayoutsSummary($this->input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postMerchantPayoutOnDemand()
     {
         $input = Request::all();

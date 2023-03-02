@@ -355,6 +355,11 @@ class PayoutLinkController extends Controller
         return $this->service()->ownerBulkRejectPayoutLinks($this->input);
     }
 
+    public function fetchPendingPayoutLinksSummary()
+    {
+        return $this->service()->fetchPendingPayoutLinks($this->input);
+    }
+
     /**
      * Internally calls Payout Links MicroService to process the rows
      * Batch MicroService calls this endpoint with the data to process

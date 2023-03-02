@@ -49,4 +49,7 @@ class Constants
     public const FILE_UPLOADED              = 'uploaded';
 
     public const STATUS_CODE                = 'status_code';
+
+    public const ACCOUNT_NUMBERS            = 'account_numbers';
+
 }

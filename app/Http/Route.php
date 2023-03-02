@@ -1703,6 +1703,8 @@ class Route
         'workflow_config_delete'                    => ['delete',   'workflow/config',                              'WorkflowServiceController@deleteWorkflowConfig'                        ],
         'payouts_bulk_reject_owner'                 => ['post',     'payouts/reject/bulk/owner',                    'PayoutController@ownerBulkRejectPayouts'                               ],
         'payout_links_bulk_reject_owner'            => ['post',     'payout-links/reject/bulk/owner',               'PayoutLinkController@ownerBulkRejectPayoutLinks'                       ],
+        'fetch_pending_payouts_summary'             => ['post',     'payouts/pending/summary',                      'PayoutController@fetchPendingPayoutsSummary'                                  ],
+        'fetch_pending_payout_links_summary'        => ['post',     'payout-links/pending/summary',                 'PayoutLinkController@fetchPendingPayoutLinksSummary'                          ],
 
         'workflow_config_create_admin'              => ['post',    'admin/workflow/config',                               'WorkflowServiceController@createWorkflowConfig'                           ],
         'workflow_config_update_admin'              => ['put',    'admin/workflow/config',                                'WorkflowServiceController@updateWorkflowConfig'                           ],
@@ -6746,6 +6748,8 @@ class Route
         'workflow_config_delete',
         'payouts_bulk_reject_owner',
         'payout_links_bulk_reject_owner',
+        'fetch_pending_payouts_summary',
+        'fetch_pending_payout_links_summary',
         'merchant_ip_config_fetch',
         'merchant_ip_config_create',
 
@@ -9879,6 +9883,8 @@ class Route
         'workflow_config_delete'                    => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'payouts_bulk_reject_owner'                 => Permission::SELF_SERVE_WORKFLOW_CONFIG,
         'payout_links_bulk_reject_owner'            => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'fetch_pending_payouts_summary'             => Permission::SELF_SERVE_WORKFLOW_CONFIG,
+        'fetch_pending_payout_links_summary'        => Permission::SELF_SERVE_WORKFLOW_CONFIG,
     ];
 
     public static $direct = [
@@ -11618,6 +11624,8 @@ class Route
             'workflow_config_delete',
             'payouts_bulk_reject_owner',
             'payout_links_bulk_reject_owner',
+            'fetch_pending_payouts_summary',
+            'fetch_pending_payout_links_summary',
             'partner_config_fetch',
             'partner_config_edit',
             'partner_config_edit_logo'
@@ -16064,6 +16072,8 @@ class Route
         'workflow_config_delete',
         'payouts_bulk_reject_owner',
         'payout_links_bulk_reject_owner',
+        'fetch_pending_payouts_summary',
+        'fetch_pending_payout_links_summary'
     ];
 
     const PAYOUT_LINKS_SPECIFIC_PUBLIC_ROUTES = [

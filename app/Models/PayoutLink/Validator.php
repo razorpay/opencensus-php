@@ -8,6 +8,7 @@ use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payout\Mode;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\PayoutLink\Constants as PayoutLinkConstants;
 use RZP\Models\Workflow\Action\Checker\Entity as ActionChecker;
 
@@ -36,6 +37,7 @@ class Validator extends Base\Validator
     const SEND_APPROVE_OTP_EMAIL_INTERNAL_RULE   = 'send_approve_otp_email_internal';
     const OWNER_BULK_REJECT_PAYOUT_LINKS   = 'owner_bulk_reject_payout_links';
     const SEND_BULK_APPROVE_OTP_EMAIL_INTERNAL_RULE   = 'send_bulk_approve_otp_email_internal';
+    const FETCH_PENDING_PAYOUT_LINKS       = 'fetch_pending_payout_links';
     const MAX_IMPS_AMOUNT                  = 50000000;
     const MAX_UPI_AMOUNT                   = 10000000;
     const MAX_AMAZON_PAY_AMOUNT            = 1000000;
@@ -202,6 +204,10 @@ class Validator extends Base\Validator
         PayoutLinkConstants::PAYOUT_LINK_IDS . '.*'     => 'required|public_id|size:21',
         PayoutLinkConstants::BULK_REJECT_AS_OWNER       => 'required|boolean',
         ActionChecker::USER_COMMENT                     => 'sometimes|nullable|string|max:255',
+    ];
+
+    protected static $fetchPendingPayoutLinksRules = [
+        PayoutConstants::ACCOUNT_NUMBERS          => 'required|array',
     ];
 
     protected function validateResendNotificationParams(array $input)

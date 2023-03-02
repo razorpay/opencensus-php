@@ -1232,6 +1232,74 @@ return [
         ]
     ],
 
+    'testFetchPendingPayoutsAsOwnerSSWF' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/pending/summary',
+            'content' => [
+                'account_numbers' => []
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'header' => [
+                'PHP_AUTH_PW' => 'RANDOM_DASH_PASSWORD_MERCHANT'
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testFetchNoPendingPayoutsAsOwnerSSWF' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/pending/summary',
+            'content' => [
+                'account_numbers' => []
+            ],
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'header' => [
+                'PHP_AUTH_PW' => 'RANDOM_DASH_PASSWORD_MERCHANT'
+            ]
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
+    ],
+
+    'testFetchPendingPayoutsAsOwnerSSWFValidationError' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/pending/summary',
+            'server' => [
+                'HTTP_X-Request-Origin' => 'https://x.razorpay.com',
+            ],
+            'header' => [
+                'PHP_AUTH_PW' => 'RANDOM_DASH_PASSWORD_MERCHANT'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The account numbers field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testBulkRejectPayoutsAsOwnerSSWF' => [
         'request'  => [
             'method'  => 'POST',
