@@ -253,7 +253,10 @@ function PaymentDetails(props) {
                       Capture Payment
                     </button>
                     <ShowWhen
-                      additionalCondition={() => !isOrgFeatureExist('block_payment_refund')}
+                      additionalCondition={(user) =>
+                        !isOrgFeatureExist('block_payment_refund') &&
+                        !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds)
+                      }
                     >
                       <button
                         type="button"
