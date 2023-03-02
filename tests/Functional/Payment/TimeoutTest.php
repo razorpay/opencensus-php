@@ -97,7 +97,7 @@ class TimeoutTest extends TestCase
             'method'          => 'nach',
             'recurring'       => 0,
             'recurring_status'=> 'initiated',
-            'created_at'      => Carbon::now()->subMonth()->getTimestamp()
+            'created_at'      => Carbon::now()->subDays(31)->getTimestamp()
         ]);
 
         $this->fixtures->create('payment', [
@@ -106,7 +106,7 @@ class TimeoutTest extends TestCase
             'status'        => 'created',
             'recurring'     => 1,
             'recurring_type'=> 'initial',
-            'created_at'    => Carbon::now()->subMonth()->getTimestamp()
+            'created_at'    => Carbon::now()->subDays(31)->getTimestamp()
         ]);
 
         $this->ba->cronAuth();
