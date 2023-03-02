@@ -101,12 +101,14 @@ class CongfigurationContainer extends Component {
 
   is_hash_loaded_once = false;
   saveConfig = ({ brand_color, transaction_report_email }, config) => {
-    const data = {
-      brand_color: brand_color ? brand_color.substr(1).toUpperCase() : null,
-      transaction_report_email: transaction_report_email
-        ? transaction_report_email.split(',')
-        : null,
-    };
+    const data = {};
+    if (brand_color) {
+      data.brand_color = brand_color.substr(1).toUpperCase();
+    }
+
+    if (transaction_report_email) {
+      data.transaction_report_email = transaction_report_email.split(',');
+    }
 
     return this.props
       .updateConfig(data)
