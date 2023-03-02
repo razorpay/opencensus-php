@@ -763,6 +763,48 @@ return [
         ],
     ],
 
+    'testCreateSubMerchantByResellerBatchForLOCInvalidBusinessType' => [
+        'request'  => [
+            'url'     => '/submerchants/batch',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Entity-Id' => '10000000000000',
+            ],
+            'content' => [
+                "business_name"           => "Erebor Travels",
+                "name"                    => "Erebor Travels",
+                "contact_mobile"          => "9999999999",
+                "email"                   => "testing.capital@razorpay.com",
+                "annual_turnover_min"     => "100000",
+                "annual_turnover_max"     => "1000000",
+                "company_address_line_1"  => "Erebor Travels Pvt. Ltd.",
+                "company_address_line_2"  => "Major Industry Area",
+                "company_address_city"    => "Akola",
+                "company_address_state"   => "Maharashtra",
+                "company_address_country" => "IN",
+                "company_address_pincode" => "444001",
+                "business_type"           => "N/A",
+                "business_vintage"        => "BETWEEN_6MONTHS_12MONTHS",
+                "gstin"                   => "37ABCBS1234N1Z1",
+                "promoter_pan"            => "ABCPS1234N",
+                'product'                 => 'capital'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Invalid business type: n/a",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateSubMerchantByAggregatorBatchRatelimitExceeded' => [
         'request'  => [
             'url'     => '/submerchants/batch',

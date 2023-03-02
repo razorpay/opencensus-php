@@ -351,6 +351,10 @@ class Service extends Base\Service
 
         list($inputCopy, $isCapitalSubmerchant) = (new CapitalSubmerchantUtility())->extractInputFromCapitalBatchInvite($input, $merchantId);
 
+        $merchantDetailsInput = CapitalSubmerchantUtility::extractMerchantDetailsInput($input);
+
+        $createCapitalApplicationInput = CapitalSubmerchantUtility::extractCapitalApplicationInput($input, $merchant);
+
         $this->trace->info(
             TraceCode::BATCH_SUBMERCHANT_ACCOUNT_CREATE_REQUEST,
             [
@@ -394,7 +398,13 @@ class Service extends Base\Service
                 Account\Entity::verifyIdAndSilentlyStripSign($createSubMerchantResponse[Entity::ID])
             );
 
-            $response = $this->postProcessForCapitalSubmerchant($merchant, $subMerchant, $input, $response);
+            $response = $this->postProcessForCapitalSubmerchant(
+                $merchant,
+                $subMerchant,
+                $merchantDetailsInput,
+                $createCapitalApplicationInput,
+                $response
+            );
         }
 
         return $response;
@@ -11797,7 +11807,8 @@ class Service extends Base\Service
     /**
      * @param Entity $partner
      * @param Entity $subMerchant
-     * @param array  $input
+     * @param array  $merchantDetailsInput
+     * @param array  $createCapitalApplicationInput
      * @param array  $response
      *
      * @return array
@@ -11805,12 +11816,14 @@ class Service extends Base\Service
      * @throws IntegrationException
      * @throws Throwable
      */
-    public function postProcessForCapitalSubmerchant(Entity $partner, Entity $subMerchant, array $input, array $response): array
+    public function postProcessForCapitalSubmerchant(
+        Entity $partner,
+        Entity $subMerchant,
+        array $merchantDetailsInput,
+        array $createCapitalApplicationInput,
+        array $response
+    ): array
     {
-        $merchantDetailsInput = CapitalSubmerchantUtility::extractMerchantDetailsInput($input);
-
-        $createCapitalApplicationInput = CapitalSubmerchantUtility::extractCapitalApplicationInput($input, $partner);
-
         $this->trace->info(
             TraceCode::CAPITAL_SUBMERCHANT_POST_PROCESS,
             [

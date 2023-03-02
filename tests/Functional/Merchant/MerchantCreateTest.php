@@ -1784,6 +1784,19 @@ class MerchantCreateTest extends TestCase
         //});
     }
 
+    public function testCreateSubMerchantByResellerBatchForLOCInvalidBusinessType()
+    {
+        $this->markPartnerAndCreateAppAndUserMapping(MerchantConstants::RESELLER);
+
+        $this->ba->batchAppAuth();
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        // start test
+        $this->startTest();
+
+    }
+
     public function testCreateSubMerchantWithInvalidEmailByAdminForAggregatorBatch()
     {
         Mail::fake();
