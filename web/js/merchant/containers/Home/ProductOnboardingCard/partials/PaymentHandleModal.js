@@ -48,7 +48,7 @@ const PaymentHandleModal = (props) => {
     const { data } = await merchantFetch({
       url: 'payment_handle/custom_amount',
       data: {
-        amount: parseInt(amount, 10),
+        amount: parseInt(amount || 0, 10) * 100,
       },
       method: 'POST',
     });
@@ -88,7 +88,7 @@ const PaymentHandleModal = (props) => {
         paymentLink = await updateAmount();
         shareURL(paymentLink);
       } else {
-        shareURL(paymentLink);
+        shareURL(`${paymentHandleData.paymentHandleUrl}`);
       }
       closeModal();
     } catch (err) {

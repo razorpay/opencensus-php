@@ -239,6 +239,9 @@ const PayrollWidget = lazy(() =>
   import(/* webpackChunkName: "PayrollWidget" */ 'merchant/views/Payroll'),
 );
 
+const PaymentHandle = lazy(() =>
+  import(/* webpackChunkName: "PaymentHandle" */ 'merchant/views/PaymentHandle'),
+);
 const Wallet = lazy(() => import(/* webpackChunkName: "IssuingWallet" */ 'merchant/views/Wallet'));
 
 // Can be removed with old navigation removal
@@ -498,7 +501,14 @@ export default class Content extends Component {
               !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks)
             }
           />
-
+          <ShowWhenRoute
+            path="/payment-handle"
+            component={PaymentHandle}
+            additionalCondition={(user) =>
+              user.isAllowedView('payment_handle') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentHandle)
+            }
+          />
           <ShowWhenRoute
             path="/paymentpages/:id(pl_.+)/:entity_name(payments)"
             component={PaymentPagesDetails}
@@ -517,7 +527,6 @@ export default class Content extends Component {
             }
             isStorefrontPage
           />
-
           <ShowWhenRoute
             path="/paymentpages"
             component={PaymentPages}
@@ -526,7 +535,14 @@ export default class Content extends Component {
               !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages)
             }
           />
-
+          <ShowWhenRoute
+            path="/paymenthandle"
+            component={PaymentHandle}
+            additionalCondition={(user) =>
+              user.isAllowedView('payment_handle') &&
+              !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentHandle)
+            }
+          />
           <ShowWhenRoute
             path="/wallet/accounts"
             exact={false}

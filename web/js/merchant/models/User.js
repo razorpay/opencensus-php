@@ -539,6 +539,12 @@ export default class User {
     return isEnabled;
   }
 
+  get isPaymentHandleEnabled() {
+    const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.PH);
+
+    return isEnabled;
+  }
+
   get isRewardsEnabled() {
     const { isEnabled } = getOnBoardingDataFromLocalState(RZPFeatures.REWARDS);
 

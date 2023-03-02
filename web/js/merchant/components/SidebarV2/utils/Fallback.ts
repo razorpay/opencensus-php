@@ -16,6 +16,12 @@ export const FALLBACK_PRODUCTS = [
         tags: [],
       },
       {
+        title: 'Razorpay.me Link',
+        product_id: 'payment_handle',
+        category: 'most_used',
+        tags: ['NEW'],
+      },
+      {
         title: 'Invoices',
         product_id: 'invoices',
         category: 'popular',

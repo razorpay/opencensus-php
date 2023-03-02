@@ -14,7 +14,8 @@ export const PlatformsList = [
     icon: '/dist/css/assets/affordability_widget/wooc.svg',
     title: 'WooCommerce',
     // eslint-disable-next-line prettier/prettier
-    desc: 'Give your customers flat discounts or percentage discounts depending on your promotional scheme.',
+    desc:
+      'Give your customers flat discounts or percentage discounts depending on your promotional scheme.',
   },
   {
     id: 'others',

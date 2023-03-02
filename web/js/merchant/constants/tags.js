@@ -48,6 +48,7 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   MandateSummary: 'i18_hide_subscription.mandate_summary',
   Documentation: 'i18_hide_documentation',
   SmartCollect: 'i18_hide_virtual_accounts',
+  PaymentHandle: 'i18_hide_payment_handle',
   PartnershipProgram: 'i18_hide_partnership_program',
   PartnerIllustration: 'i18_hide_partner_illustration',
   ReferalLinks: 'i18_hide_referal_links',

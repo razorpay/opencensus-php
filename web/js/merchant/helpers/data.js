@@ -137,6 +137,7 @@ export const RZPFeatures = {
   STORES: 'stores',
   RAZORPAYX: 'razorpayx',
   OPTIMIZER: 'optimizer',
+  PH: 'payment_handle',
 };
 
 export const UPI_AVL_LIMIT = 20000000;

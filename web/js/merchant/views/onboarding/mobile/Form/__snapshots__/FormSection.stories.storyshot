@@ -13,7 +13,7 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
             class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
           >
             <div
-              class="Viewweb__View-sc-1o0hmxm-0 Card__StyledCard-sc-1tygnup-0 iQPCAF Spaceweb__Space-sc-1abqisc-0 likIJL"
+              class="Viewweb__View-sc-1o0hmxm-0 Card__StyledCard-sc-1tygnup-0 jPQhxI Spaceweb__Space-sc-1abqisc-0 likIJL"
             >
               <div
                 class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 epsywS"
@@ -154,7 +154,7 @@ exports[`Storyshots Onboarding/FormSection Multiple Form Sections 1`] = `
               </div>
             </div>
             <div
-              class="Viewweb__View-sc-1o0hmxm-0 Card__StyledCard-sc-1tygnup-0 iQPCAF Spaceweb__Space-sc-1abqisc-0 kGlNWI"
+              class="Viewweb__View-sc-1o0hmxm-0 Card__StyledCard-sc-1tygnup-0 jPQhxI Spaceweb__Space-sc-1abqisc-0 kGlNWI"
             >
               <div
                 class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 epsywS"
@@ -406,7 +406,7 @@ exports[`Storyshots Onboarding/FormSection Single Form Section 1`] = `
             class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
           >
             <div
-              class="Viewweb__View-sc-1o0hmxm-0 Card__StyledCard-sc-1tygnup-0 iQPCAF Spaceweb__Space-sc-1abqisc-0 kGlNWI"
+              class="Viewweb__View-sc-1o0hmxm-0 Card__StyledCard-sc-1tygnup-0 jPQhxI Spaceweb__Space-sc-1abqisc-0 kGlNWI"
             >
               <div
                 class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 epsywS"
@@ -620,7 +620,7 @@ exports[`Storyshots Onboarding/FormSection Single Form Section Error 1`] = `
             class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
           >
             <div
-              class="Viewweb__View-sc-1o0hmxm-0 Card__StyledCard-sc-1tygnup-0 iQPCAF Spaceweb__Space-sc-1abqisc-0 kGlNWI"
+              class="Viewweb__View-sc-1o0hmxm-0 Card__StyledCard-sc-1tygnup-0 jPQhxI Spaceweb__Space-sc-1abqisc-0 kGlNWI"
             >
               <div
                 class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 epsywS"

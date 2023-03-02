@@ -50,6 +50,7 @@ export default {
     RBL_SUPERVISOR,
   ],
   payment_pages: [OWNER, ADMIN, MANAGER, SELLERAPP, OPERATIONS],
+  payment_handle: [OWNER, ADMIN, MANAGER, SELLERAPP, OPERATIONS, FINANCE],
   payment_buttons: [OWNER, ADMIN, MANAGER, SELLERAPP, OPERATIONS],
   subscription_buttons: [OWNER, ADMIN, MANAGER, SELLERAPP, OPERATIONS],
   accounts: [OWNER, ADMIN, MANAGER],

@@ -148,6 +148,11 @@ export const PRODUCTS_DATA = {
     additionalCondition: (user: any): boolean =>
       user.isAllowedView('payment_links') && !user.findTag('i18_hide_payment_links'),
   },
+  payment_handle: {
+    icon: 'i-payment-handle',
+    additionalCondition: (user: any): boolean =>
+      user.isAllowedView('payment_handle') && !user.findTag('i18_hide_payment_handle'),
+  },
   cash_advance: {
     icon: 'i-rupee',
     additionalCondition: canViewCashAdvanceProduct,

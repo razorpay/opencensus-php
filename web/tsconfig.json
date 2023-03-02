@@ -56,7 +56,8 @@
     "js/merchant/views/Transactions",
     "js/merchant/containers/ListContainer.tsx",
     "js/merchant/components/SidebarV2",
-    "js/merchant/views/transactions/UploadInvoice/BulkUpload"
+    "js/merchant/views/transactions/UploadInvoice/BulkUpload",
+    "js/merchant/views/PaymentHandle"
   ],
   "exclude": ["node_modules", "js/common/utils"],
   "types": ["resize-observer-browser"]

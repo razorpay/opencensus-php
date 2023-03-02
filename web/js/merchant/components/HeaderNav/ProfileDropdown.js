@@ -19,6 +19,7 @@ import logoutGoogleAccount from 'common/utils/logoutGoogle';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties, isLoggedInViaMobile } from 'common/utils/rzp-utils';
 import RTracking from 'react-tracking';
+import PaymentHandleSlug from 'merchant/views/PaymentHandle/components/DropDownSlug';
 import { track as trackPartnerOnbr } from 'merchant/views/PartnerDashboard/Onboarding/ga';
 import { isOrgFeatureExist } from 'merchant/models/User';
 import RTBUserIconBg from 'assets/trustedbadge/rtb_user_icon_bg.svg';
@@ -204,7 +205,6 @@ export default class ProfileDropdown extends Component {
     const isRTBEnabled = badgeStatus === STATUS.YES_ELIGIBLE_LIVE;
     const merchant = user.merchants[user.current];
     const { showRazorpayxToolTip } = this.state;
-
     return (
       <Dropdown closeOnClick={false} onShow={this.handleShow} onHide={this.handleHide}>
         <DropdownTrigger
@@ -310,6 +310,7 @@ export default class ProfileDropdown extends Component {
                     </GroupItem>
                   </Group>
                 </div>
+                <PaymentHandleSlug />
               </div>
             )}
             {showMobileNav && (

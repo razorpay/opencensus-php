@@ -11,6 +11,7 @@ const ROUTE_REG = {
   payment_links: /^\/paymentlinks(\/batchuploads)?/,
   payment_button: /^\/(paymentbuttons|subscription_buttons)/,
   payment_pages: /^\/(paymentpages)/,
+  payment_handle: /^\/(payment-handle)/,
   // eslint-disable-next-line prettier/prettier
   subscriptions: /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks|registration_links)/,
   partner: /^\/(submerchants(\/(applications|settings))?|commissions)/,
@@ -68,6 +69,7 @@ const BASE_ROUTES = {
   partner: '/submerchants',
   accountsettings: '/account-settings',
   affordability: 'affordability/widget',
+  payment_handle: '/payment-handle',
   wallet: '/wallet/accounts',
   internationalPaymentsBtn: '/payment-methods/international-payments',
 };
@@ -98,6 +100,8 @@ export const initializeRoutes = (location, user) => {
     routes.route = pathname.match(ROUTE_REG.route)[0];
   } else if (ROUTE_REG.payment_links.test(pathname)) {
     routes.payment_links = pathname.match(ROUTE_REG.payment_links)[0];
+  } else if (ROUTE_REG.payment_handle.test(pathname)) {
+    routes.payment_handle = pathname.match(ROUTE_REG.payment_handle)[0];
   } else if (ROUTE_REG.payment_button.test(pathname)) {
     routes.payment_button = pathname.match(ROUTE_REG.payment_button)[0];
   } else if (ROUTE_REG.partner.test(pathname)) {

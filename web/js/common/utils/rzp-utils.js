@@ -91,6 +91,8 @@ export function getCommonAnalyticsProperties(user, config = {}) {
   };
 }
 
+export const isStringAlphabetAndNumberOnly = (input) => !/^[A-Za-z0-9]*$/.test(input);
+
 export const getCommonSegmentProperties = (user = window.rzp_user, config = {}) => {
   if (!user) {
     // skip properties if sesion is expired/user details are not availble
