@@ -915,13 +915,6 @@ class Core extends Base\Core
         // if not found, this will throw an exception -> doesnt allow bank account update if it doesnt exist now
         $currentBankAccount = (new Service)->getOwnBankAccount();
 
-        // New account details should not be the same as old account details
-        // Comparing IFSC from merchant's existing bank account as publicArray has IFSC and not IFSC_CODE
-        if (($currentBankAccount[Entity::ACCOUNT_NUMBER] === $input[Entity::ACCOUNT_NUMBER]) and
-            ($currentBankAccount[Entity::IFSC] === $input[Entity::IFSC_CODE]))
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_REQUESTED_BANK_ACCOUNT_SAME_AS_CURRENT_BANK_ACCOUNT);
-        }
         // here we are rolling back the transaction as there is no need to save the new bank account
         // if penny testing suceeds, we will create it at that time
         // we just need a bank account entity (in memory) to trigger penny testing/for sending mail

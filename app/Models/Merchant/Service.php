@@ -3135,7 +3135,11 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
 
-        return $ba->toArrayPublic();
+        $bankAccount = $ba->toArrayPublic();
+
+        $bankAccount[BankAccount\Entity::UPDATED_AT] = $ba->getUpdatedAtAttribute();
+
+        return $bankAccount;
     }
 
     public function generateTestBankAccounts()
