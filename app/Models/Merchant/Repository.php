@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Base\Common;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
+use RZP\Constants\Es;
 use RZP\Base\BuilderEx;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
@@ -26,6 +27,7 @@ use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Terminal\Category;
+use RZP\Models\Base\EsRepository;
 use RZP\Models\TrustedBadge\Constants as TrustedBadgeConstants;
 use RZP\Models\Partner\Activation;
 use RZP\Models\Base\PublicCollection;
@@ -53,6 +55,8 @@ class Repository extends Base\Repository
     const SUB_ACCOUNTS_EXCLUDED_VALUE = '0';
 
     protected $entity = 'merchant';
+
+    protected $totalMerchantOnboarded;
 
     protected $sharedMerchant = null;
 
@@ -89,7 +93,9 @@ class Repository extends Base\Repository
         Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
         Constants::INSTANT_ACTIVATION   => 'sometimes|boolean',
         Constants::BUSINESS_TYPE_BUCKET => 'sometimes|custom',
-        Constants::TAGS                 => 'sometimes|array'
+        Constants::TAGS                 => 'sometimes|array',
+        BusinessDetail\Entity::MIQ_SHARING_DATE => 'sometimes|integer',
+        BusinessDetail\Entity::TESTING_CREDENTIALS_DATE => 'sometimes|integer',
     ];
 
     public function __findOrFail($id) {
@@ -753,12 +759,20 @@ class Repository extends Base\Repository
                               $query->select($fields);
                            };
 
+        $businessDetailSelector = function($query)
+        {
+            $fields = $this->esRepo->getMerchantBusinessDetailsIndexedFields();
+
+            $query->select($fields);
+        };
+
         $with = [
             camel_case(Entity::MERCHANT_DETAIL) => $detailSelector,
             Entity::GROUPS                      => $groupSelector,
             Entity::ADMINS                      => $adminSelector,
             Entity::FEATURES                    => function () {},
             'primaryBalance'                    => $balanceSelector,
+            camel_case(Entity::MERCHANT_BUSINESS_DETAIL) => $businessDetailSelector,
         ];
 
         //
@@ -790,6 +804,9 @@ class Repository extends Base\Repository
         // - SELECT <fields> FROM balance
         //   WHERE balance.id IN (?)
         //
+        //- SELECT <fields> from merchant_business_details
+        //  WHERE merchant_business_details.merchant_id IN (?);
+        //
 
         $query->with($with);
     }
@@ -816,10 +833,11 @@ class Repository extends Base\Repository
         //   recursive parents hierarchy.
         // - Few additional attributes consumed by clients.
         // - Unsettled balance to merchant
-        //
+        // - Two fields from merchant_business_details.
 
         $serialized[Entity::TAG_LIST]        = $entity->tagNames();
         $serialized[Entity::MERCHANT_DETAIL] = $entity->merchantDetail ? $entity->merchantDetail->toArray() : [];
+        $serialized[Entity::MERCHANT_BUSINESS_DETAIL] = $entity->merchantDetail ? $entity->merchantDetail->getBusinessAttributes() : [];
         $serialized[Entity::ADMINS]          = $entity->admins->pluck(Common::ID)->all();
 
         $groups = $this->repo->group->getParentsRecursively($entity->groups, true);
@@ -1924,5 +1942,89 @@ class Repository extends Base\Repository
             }
             (new MerchantWrapper())->SaveOrFail($entity);
         });
+    }
+
+    public function fetchMerchantsUnifiedDashboard(array $params,
+                               string $merchantId = null,
+                               string $connectionType = null): array
+    {
+        // Process params (sanitization, validation, modification, etc.)
+
+        $this->processFetchParams($params);
+
+        $this->attachRoleBasedQueryParams($params);
+
+        $this->setEsRepoIfExist();
+
+        $startTimeMs = round(microtime(true) * 1000);
+
+        list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+
+        $esSearchResult = $this->runEsFetchUnifiedDashboard($esParams);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        if($queryDuration > 100) {
+            $this->trace->info(TraceCode::ES_SEARCH_RESPONSE_DURATION, [
+                'duration_ms' => $queryDuration,
+            ]);
+        }
+
+        return $esSearchResult;
+    }
+
+    protected function runEsFetchUnifiedDashboard(
+        array $params): array
+    {
+        $startTimeMs = round(microtime(true) * 1000);
+
+        $count = $params['count']?? 10;
+        $skip = $params['skip']?? 0;
+
+        $params['count'] = 0;
+        $params['skip'] = 0;
+
+        $response = $this->esRepo->buildQueryAndSearch($params);
+
+        $total_merchants_onboarded = $response[ES::HITS]['total'];
+
+        $params['count'] = $count;
+        $params['skip'] = $skip;
+
+        $response = $this->esRepo->buildQueryAndSearch($params);
+
+        $endTimeMs = round(microtime(true) * 1000);
+
+        $queryDuration = $endTimeMs - $startTimeMs;
+
+        if($queryDuration > 100) {
+            $this->trace->info(TraceCode::ES_SEARCH_DURATION, [
+                'duration_ms' => $queryDuration,
+                'function'    => 'runESSearch',
+            ]);
+        }
+
+        // Extract results from ES response. If hit has _source get that else just the document id.
+        $result = array_map(
+            function ($res)
+            {
+                return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
+            },
+            $response[ES::HITS][ES::HITS]);
+
+        if (count($result) === 0)
+        {
+            $newEntities = (new PublicCollection)->toArrayAdmin();
+            $newEntities['total_merchants_onboarded'] = 0;
+            return $newEntities;
+        }
+
+        $entities = $this->hydrate($result)->toArrayAdmin();
+
+        $entities['total_merchants_onboarded'] = $total_merchants_onboarded;
+
+        return $entities;
     }
 }

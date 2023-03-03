@@ -528,6 +528,15 @@ class OrganizationController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getUnifiedDashboardMerchants()
+    {
+        $input = Request::all();
+
+        $response = $this->service(E::ADMIN)->getMerchantsUnifiedDashboard($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getPartnerActivationFromEs(Admin\Admin\Service $service)
     {
         $input = Request::all();

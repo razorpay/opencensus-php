@@ -46,6 +46,12 @@ class CreateMerchantBusinessDetail extends Migration
 
             $table->integer(BusinessDetailEntity::UPDATED_AT);
 
+            $table->integer(BusinessDetailEntity::MIQ_SHARING_DATE)
+                ->default(0);
+
+            $table->integer(BusinessDetailEntity::TESTING_CREDENTIALS_DATE)
+                ->default(0);
+
             $table->char(BusinessDetailEntity::AUDIT_ID,BusinessDetailEntity::ID_LENGTH)->nullable();
         });
     }

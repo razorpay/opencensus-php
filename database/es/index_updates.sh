@@ -263,3 +263,37 @@ curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_virtual_account_live/_map
         }
     }
 }'
+
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_merchant_test/_mapping/api_merchant_test" -d '{
+    "properties": {
+          "merchant_business_detail": {
+              "properties": {
+                  "miq_sharing_date": {
+                      "type"   : "date",
+                      "format" : "yyyy-MM-dd HH:mm:ss||epoch_millis",
+                  },
+                  "testing_credentials_date": {
+                      "type"   : "date",
+                      "format" : "yyyy-MM-dd HH:mm:ss||epoch_millis",
+                  }
+              }
+          }
+    }
+}'
+
+curl -XPUT "http://prod.es-audit.razorpay.vpc:9200/api_merchant_live/_mapping/api_merchant_live" -d '{
+    "properties": {
+          "merchant_business_detail": {
+              "properties": {
+                  "miq_sharing_date": {
+                      "type"   : "date",
+                      "format" : "yyyy-MM-dd HH:mm:ss||epoch_millis",
+                  },
+                  "testing_credentials_date": {
+                      "type"   : "date",
+                      "format" : "yyyy-MM-dd HH:mm:ss||epoch_millis",
+                  }
+              }
+          }
+    }
+}'

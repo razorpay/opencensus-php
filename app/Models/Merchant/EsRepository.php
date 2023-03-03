@@ -16,6 +16,7 @@ use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
+use RZP\Models\Merchant\BusinessDetail\Entity as BusinessDetailEntity;
 
 class EsRepository extends Base\EsRepository
 {
@@ -67,6 +68,11 @@ class EsRepository extends Base\EsRepository
         BalanceEntity::BALANCE,
     ];
 
+    protected $merchantBusinessDetailsIndexedFields = [
+        BusinessDetailEntity::MIQ_SHARING_DATE,
+        BusinessDetailEntity::TESTING_CREDENTIALS_DATE,
+    ];
+
     protected $queryFields = [
         Entity::ID,
         Entity::NAME,
@@ -91,6 +97,8 @@ class EsRepository extends Base\EsRepository
         Constants::BUSINESS_TYPE_BUCKET,
         Entity::ACTIVATION_SOURCE,
         Constants::TAGS,
+        BusinessDetailEntity::MIQ_SHARING_DATE,
+        BusinessDetailEntity::TESTING_CREDENTIALS_DATE,
     ];
 
     /**
@@ -131,6 +139,11 @@ class EsRepository extends Base\EsRepository
     public function getBalanceIndexedFields()
     {
         return $this->balanceIndexedFields;
+    }
+
+    public function getMerchantBusinessDetailsIndexedFields()
+    {
+        return $this->merchantBusinessDetailsIndexedFields;
     }
 
     // --------------- Query builders ----------------------
@@ -387,6 +400,20 @@ class EsRepository extends Base\EsRepository
 
                 $this->addNegativeTermsFilter($query, $attribute, $unregisteredBusiness);
         }
+    }
+
+    public function buildQueryForMIQSharingDate(array & $query, string $value)
+    {
+        $attribute = E::MERCHANT_BUSINESS_DETAIL . '.' . BusinessDetailEntity::MIQ_SHARING_DATE;
+
+        $this->addTermFilter($query, $attribute, $value);
+    }
+
+    public function buildQueryForTestingCredentialsDate(array & $query, string $value)
+    {
+        $attribute = E::MERCHANT_BUSINESS_DETAIL . '.' . BusinessDetailEntity::TESTING_CREDENTIALS_DATE;
+
+        $this->addTermFilter($query, $attribute, $value);
     }
 
     /**

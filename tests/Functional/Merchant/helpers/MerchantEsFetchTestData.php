@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Error\ErrorCode;
+
 return [
     'testGetMerchantsFromEsByQ' => [
         'request' => [
@@ -25,6 +27,77 @@ return [
         ],
         'response' => [
             'content' => [],
+        ],
+    ],
+
+    'testGetMerchantsFromEsByMiqSharingDateHappy' => [
+        'request'  => [
+            'url'     => '/admins/unified_dashboard_merchants',
+            'method'  => 'GET',
+            'content' => [
+                'miq_sharing_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+                'testing_credentials_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'admin'  => true,
+                'items'  => [
+                    [
+                        'id'              => '10000000000011',
+                        'org_id'          => '100000razorpay',
+                        'name'            => 'jitendra ojha',
+                        'email'           => 'email.ojha@test.com',
+                        'parent_id'       => null,
+                        'activated'       => true,
+                        'archived_at'     => null,
+                        'suspended_at'    => null,
+                        'website'         => 'www.ojha.test',
+                        'billing_label'   => 'Ojha Label',
+                        'tag_list'        => [],
+                        'is_marketplace'  => false,
+                        'referrer'        => null,
+                        'merchant_business_detail' => [
+                            'miq_sharing_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+                            'testing_credentials_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+                        ],
+                        'merchant_detail' => [
+                            'merchant_id'         => '10000000000011',
+                            'steps_finished'      => '[]',
+                            'activation_progress' => 0,
+                            'submitted_at'        => null,
+                        ],
+                        'entity' => 'merchant',
+                        'admin'  => true,
+                    ],
+                ],
+                'total_merchants_onboarded' => 1
+            ],
+        ],
+    ],
+    'testGetMerchantsFromEsByMiqSharingDateUnHappy' => [
+        'request'  => [
+            'url'     => '/admins/unified_dashboard_merchants',
+            'method'  => 'GET',
+            'content' => [
+                'miq_sharing_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+                'testing_credentials_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
         ],
     ],
 

@@ -1775,4 +1775,10 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         return $this;
     }
 
+    public function getBusinessAttributes()
+    {
+        $businessDetail = $this->businessDetail;
+
+        return $businessDetail ? $businessDetail->getEsAttributes():[];
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Admin\Token;
 use RZP\Tests\Functional\TestCase;
 use Illuminate\Support\Facades\Artisan;
@@ -77,7 +78,33 @@ class MerchantEsFetchTest extends TestCase
             ]);
     }
 
+    /**Below Two tests are route '/admins/unified_dashboard_merchants'
+     * 1) Happy flow -> admin has the onboarding_and_activations_view permission
+     * 2) UnHappy flow -> admin doesn't have onboarding_and_activations_view permission and throws Exception
+     */
+    public function testGetMerchantsFromEsByMiqSharingDateHappy()
+    {
+        $requestToken = $this->getAdminRequestToken('10000000000014');
 
+        $this->ba->adminAuth("test", $requestToken);
+
+        $this->setAdminPermission('onboarding_and_activations_view');
+
+        $testData = $this->testData['testGetMerchantsFromEsByMiqSharingDateHappy'];
+
+        $this->startTest($testData);
+    }
+
+    public function testGetMerchantsFromEsByMiqSharingDateUnHappy()
+    {
+        $requestToken = $this->getAdminRequestToken('10000000000014');
+
+        $this->ba->adminAuth("test", $requestToken);
+
+        $testData = $this->testData['testGetMerchantsFromEsByMiqSharingDateUnHappy'];
+
+        $this->startTest($testData);
+    }
 
     public function testGetMerchantsFromEsByQForAdmin15()
     {

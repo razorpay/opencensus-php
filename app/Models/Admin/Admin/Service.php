@@ -687,6 +687,46 @@ class Service extends Base\Service
         return array_pluck($items, Merchant\Entity::REFERRER, Merchant\Entity::ID);
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function getMerchantsUnifiedDashboard(array $input) : array
+    {
+        $admin = $this->auth->getAdmin();
+
+        if($this->auth->isAdminAuth() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::SERVER_ERROR_INVALID_AUTH, null, $input);
+        }
+
+        // Filter so that the admin can fetch only the merchants of same Org
+        $input[Merchant\Entity::ORG_ID] = $this->auth->getAdminOrgId();
+
+        if ($admin->canSeeAllMerchants() === false)
+        {
+
+            $groupIds = $admin->groups()->get()->getIds();
+
+            $input[Merchant\Entity::GROUPS] = $groupIds;
+
+            // Adds following to $input so all merchant to which this admin
+            // has direct access to can be filtered.
+
+            $input[Merchant\Entity::ADMINS] = [$admin->getId()];
+        }
+
+        $input[Base\EsRepository::SEARCH_HITS] = 1;
+
+        $startTime = millitime();
+
+        $merchants = $this->repo->merchant->fetchMerchantsUnifiedDashboard($input);
+
+        $this->trace->histogram(Merchant\Metric::FETCH_ALL_PARTNERS_LATENCY,millitime()-$startTime);
+
+        return $merchants;
+    }
+
     public function getPartnerActivationFromEs(array $input) : array
     {
         if ((isset($input[Merchant\Detail\Entity::REVIEWER_ID]) === true) and

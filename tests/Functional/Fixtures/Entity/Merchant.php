@@ -335,11 +335,14 @@ class Merchant extends Base
         string $orgId,
         string $id,
         array $attributes = [],
-        array $detailsAttributes = []): MerchantEntity
+        array $detailsAttributes = [],
+        array $businessDetailsAttributes = []): MerchantEntity
     {
         $attributes = array_merge(['id' => $id, 'org_id' => $orgId], $attributes);
 
         $detailsAttributes = array_merge(['merchant_id' => $id], $detailsAttributes);
+
+        $businessDetailsAttributes = array_merge(['merchant_id' => $id], $businessDetailsAttributes);
 
         $merchant = $this->fixtures->create('merchant', $attributes);
 
@@ -350,6 +353,8 @@ class Merchant extends Base
         $merchant->saveOrFail();
 
         $this->fixtures->create('merchant_detail:sane', $detailsAttributes);
+
+        $this->fixtures->create('merchant_business_detail', $businessDetailsAttributes);
 
         return $merchant;
     }
@@ -1300,6 +1305,10 @@ class Merchant extends Base
             [
                 'activation_status' => 'activated',
                 'business_type'     => '2'
+            ],
+            [
+                'miq_sharing_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+                'testing_credentials_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
             ]);
 
         $merchants[11]->groups()->sync(['10000000000027']);

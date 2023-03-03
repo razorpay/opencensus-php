@@ -33,6 +33,8 @@ class Name
     const CREATE_PRICING_PLAN                 = 'create_pricing_plan';
     const PAYMENTS_CREATE_BUY_PRICING_PLAN    = 'payments_create_buy_pricing_plan';
     const ADMIN_FETCH_MERCHANTS               = 'admin_fetch_merchants';
+    const ONBOARDING_AND_ACTIVATIONS_VIEW     = 'onboarding_and_activations_view';
+    const ONBOARDING_AND_ACTIVATIONS_EDIT     = 'onboarding_and_activations_edit';
     const ADMIN_GET_APP_AUTH                  = 'admin_get_app_auth';
     const ADMIN_GET_FILE                      = 'admin_get_file';
     const ADMIN_LEAD_VERIFY                   = 'admin_lead_verify';

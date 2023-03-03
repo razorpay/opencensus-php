@@ -258,6 +258,7 @@ class Entity extends Base\PublicEntity
     const ACTION                    = 'action';
     const MEDIUM_SIZE               = 'medium';
     const MERCHANT_DETAIL           = 'merchant_detail';
+    const MERCHANT_BUSINESS_DETAIL  = 'merchant_business_detail';
     const GROUPS                    = 'groups';
     const ADMINS                    = 'admins';
     const FEATURES                  = 'features';
@@ -505,6 +506,7 @@ class Entity extends Base\PublicEntity
         self::WHITELISTED_IPS_TEST,
         self::WHITELISTED_DOMAINS,
         self::MERCHANT_DETAIL,
+        self::MERCHANT_BUSINESS_DETAIL,
         self::FEE_CREDITS_THRESHOLD,
         self::AMOUNT_CREDITS_THRESHOLD,
         self::REFUND_CREDITS_THRESHOLD,

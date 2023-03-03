@@ -30,6 +30,8 @@ class Entity extends Base\PublicEntity
     const LEAD_SCORE_COMPONENTS         = 'lead_score_components';
     const ONBOARDING_SOURCE             = 'onboarding_source';
     const PG_USE_CASE                   = 'pg_use_case';
+    const MIQ_SHARING_DATE              = 'miq_sharing_date';
+    const TESTING_CREDENTIALS_DATE      = 'testing_credentials_date';
 
     protected $entity = 'merchant_business_detail';
 
@@ -46,7 +48,9 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::LEAD_SCORE_COMPONENTS,
         self::ONBOARDING_SOURCE,
-        self::PG_USE_CASE
+        self::PG_USE_CASE,
+        self::MIQ_SHARING_DATE,
+        self::TESTING_CREDENTIALS_DATE,
     ];
 
     protected $fillable = [
@@ -60,7 +64,9 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_PARENT_CATEGORY,
         self::AUDIT_ID,
         self::ONBOARDING_SOURCE,
-        self::PG_USE_CASE
+        self::PG_USE_CASE,
+        self::MIQ_SHARING_DATE,
+        self::TESTING_CREDENTIALS_DATE,
     ];
 
     protected $casts = [
@@ -77,7 +83,9 @@ class Entity extends Base\PublicEntity
         self::PLUGIN_DETAILS                 => [],
         self::LEAD_SCORE_COMPONENTS          => [],
         self::ONBOARDING_SOURCE              => null,
-        self::PG_USE_CASE                    => null
+        self::PG_USE_CASE                    => null,
+        self::MIQ_SHARING_DATE               => 0,
+        self::TESTING_CREDENTIALS_DATE       => 0,
     ];
 
     public function getId()
@@ -250,5 +258,13 @@ class Entity extends Base\PublicEntity
     public function getOnboardingSource()
     {
         return $this->getAttribute(self::ONBOARDING_SOURCE);
+    }
+
+    public function getEsAttributes()
+    {
+        return [
+            self::MIQ_SHARING_DATE => $this->getAttribute(self::MIQ_SHARING_DATE),
+            self::TESTING_CREDENTIALS_DATE => $this->getAttribute(self::TESTING_CREDENTIALS_DATE),
+        ];
     }
 }

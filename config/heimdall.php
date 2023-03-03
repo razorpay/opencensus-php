@@ -117,6 +117,10 @@ return [
                 'description' => 'Fetch Merchants',
                 'assignable'  => true,
             ],
+            Permission::ONBOARDING_AND_ACTIVATIONS_VIEW => [
+                'description' => 'Fetch Merchants for unified dashboard tab on admin dashboard',
+                'assignable' => true,
+            ],
             Permission::EXECUTE_MERCHANT_MAX_PAYMENT_LIMIT_WORKFLOW => [
                 'description' => 'To create workflow for updating max payment limit',
                 'assignable'  => true,
@@ -232,6 +236,9 @@ return [
             Permission::EDIT_MERCHANT                       => [
                 'assignable' => true,
                 'workflow'   => true
+            ],
+            Permission::ONBOARDING_AND_ACTIVATIONS_EDIT     => [
+                'assignable' => true,
             ],
             Permission::SEND_REQUEST_ACTIVATION_DOCUMENTS_NOTIFICATION => [
                 'assignable' => true

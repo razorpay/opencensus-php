@@ -512,6 +512,18 @@ return [
                 'type'   => 'date',
                 'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
             ],
+            'merchant_business_detail' =>[
+                'properties' => [
+                    'miq_sharing_date'         => [
+                        'type'   => 'date',
+                        'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+                    ],
+                    'testing_credentials_date'          => [
+                        'type'   => 'date',
+                        'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+                    ],
+                ],
+            ],
             'merchant_detail' => [
                 'properties' => [
                     'merchant_id'         => [
