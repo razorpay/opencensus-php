@@ -383,13 +383,30 @@ class InvoiceController extends Controller
         // email and sms statuses to sent/viewed, after delivery confirmation.
     }
 
-    public function maskAccountNumber(array & $data) {
-
-        $accountNumber = $data['invoice']['subscription_registration']['bank_account']['account_number'] ?? null;
-
-        if($accountNumber !== null)
+    public function maskPIIData(array & $data, array $maskFields = [])
+    {
+        foreach ($maskFields as $field)
         {
-            $data['invoice']['subscription_registration']['bank_account']['account_number'] = mask_except_last4($accountNumber);
+            try
+            {
+                $fieldData = $data['invoice']['subscription_registration']['bank_account'][$field] ?? null;
+
+                if($fieldData !== null)
+                {
+                    if ($field === 'beneficiary_email')
+                    {
+                        $data['invoice']['subscription_registration']['bank_account'][$field] = mask_email($fieldData);
+                    }
+                    else
+                    {
+                        $data['invoice']['subscription_registration']['bank_account'][$field] = mask_except_last4($fieldData);
+                    }
+                }
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e, TraceCode::INVALID_FIELD_FOR_MASKING, ['field' => $field]);
+            }
         }
     }
 
@@ -449,7 +466,7 @@ class InvoiceController extends Controller
                 unset($data['invoice']['customer_details']);
             }
 
-            $this->maskAccountNumber($data);
+            $this->maskPIIData($data, ['account_number', 'beneficiary_email', 'beneficiary_mobile', 'name']);
 
             $view = 'invoice.auth_link';
         }
@@ -556,8 +573,8 @@ class InvoiceController extends Controller
 
         if (isset($data['invoice']) and $data['invoice']['entity_type'] === Constants\Entity::SUBSCRIPTION_REGISTRATION)
         {
-            $this->maskAccountNumber($data);
-            
+            $this->maskPIIData($data, ['account_number', 'beneficiary_email', 'beneficiary_mobile', 'name']);
+
             $view = 'invoice.auth_link';
         }
 
