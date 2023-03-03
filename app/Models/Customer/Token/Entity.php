@@ -59,6 +59,7 @@ class Entity extends Base\PublicEntity
     const BANK_DETAILS              = 'bank_details';
     const WALLET                    = 'wallet';
     const ACCOUNT_NUMBER            = 'account_number';
+    const ACCOUNT_IDS               = 'account_ids';
     const ACCOUNT_TYPE              = 'account_type';
     const GATEWAY_TOKEN             = 'gateway_token';
     const GATEWAY_TOKEN2            = 'gateway_token2';

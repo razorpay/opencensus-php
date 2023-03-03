@@ -280,6 +280,10 @@ class Tracing
             'token_delete',
             'token_status',
 
+            //Push Token Provisioning
+            'tokens_push',
+            'tokens_list',
+
             'customer_fetch_tokens',
 
 

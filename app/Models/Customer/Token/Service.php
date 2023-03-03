@@ -410,17 +410,13 @@ class Service extends Base\Service
         ];
     }
 
-    public function tokenPush(& $input, $internalServiceRequest = false)
+    public function tokensPush(& $input, $internalServiceRequest = false)
     {
         $startTime = microtime(true);
 
         try
         {
-            $response = [
-                'success' => true,
-                'data' => [],
-                'errors' => []
-            ];
+            $response = [];
 
             $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
 
@@ -430,8 +426,8 @@ class Service extends Base\Service
                 TraceCode::TOKEN_PUSH_INFO,
                 ['mode' => $this->app['rzp.mode'],
                     'features' => $this->merchant->getEnabledFeatures(),
-                    'merchantCount' => count($input['merchant_offers']),
-                    'merchant_offers' => $input['merchant_offers']]);
+                    'merchantCount' => count($input[Token\Entity::ACCOUNT_IDS]),
+                    'account_ids' => $input[Token\Entity::ACCOUNT_IDS]]);
 
             // validate merchant flag to check if this is issuer.
             // throw error otherwise
@@ -451,9 +447,9 @@ class Service extends Base\Service
                 $customer = $this->repo->customer->findByPublicIdAndMerchant($input['customer_id'], $this->merchant);
 
                 //Should be in an async function
-                foreach ($input['merchant_offers'] as $merchant_offer)
+                foreach ($input[Token\Entity::ACCOUNT_IDS] as $account_id)
                 {
-                    $merchantId =  trim(str_replace("acc_", "", $merchant_offer));
+                    $merchantId =  trim(str_replace("acc_", "", $account_id));
 
                     $merchantPushProvisioning = $this->repo->merchant->fetchMerchantFromId($merchantId);
 
@@ -1096,10 +1092,7 @@ class Service extends Base\Service
                 $data = $this->core->fetchCardMerchantListByFingerprint($fingerprint, $input['account_ids']);
 
                 $response = [
-                    'success' => true,
-                    'data' => [
                         'account_ids' => $data
-                    ],
                 ];
 
                 (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::FETCH_MERCHANTS);
@@ -1902,17 +1895,11 @@ class Service extends Base\Service
     {
         unset($input['card']);
 
-        $response = [
-            'success' => false,
-            'data' => []
-        ];
+        $response = [];
 
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CARD_FINGERPRINTS) === true)
         {
-            $response['success'] = true;
-
-            $response['data']['account_ids'] = $input['account_ids'];
-
+            $response['account_ids'] = $input['account_ids'];
         }
 
         return $response;

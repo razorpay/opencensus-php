@@ -64,11 +64,11 @@ class TokenController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function tokenPush()
+    public function tokensPush()
     {
         $input = Request::all();
 
-        $data = $this->service()->tokenPush($input);
+        $data = $this->service()->tokensPush($input);
 
         return ApiResponse::json($data);
     }
@@ -173,7 +173,7 @@ class TokenController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function fetchMerchants()
+    public function tokensList()
     {
         $input = Request::all();
 

@@ -4004,8 +4004,8 @@ class Route
        'token_pause_not_supported_card_tokens'    => ['post',        'tokens/pause_not_supported/card',                          'TokenController@pauseNotSupportedCardTokens'                                                         ],
 
         //Push Token Provisioning
-        'token_push'                              => ['post',          'tokens/push',                                          'TokenController@tokenPush'                                ],
-        'tokens_fetch_merchants'                  => ['post',          'tokens/fetch_merchants',                               'TokenController@fetchMerchants'                           ],
+        'tokens_push'                             => ['post',          'tokens/push',                                          'TokenController@tokensPush'                                  ],
+        'tokens_list'                             => ['post',          'tokens/list',                                          'TokenController@tokensList'                                  ],
 
         // Async tokenisation
         'tokenisation_local_cards'                => ['post',        'tokenisation/local_cards',                                 'TokenController@localSavedCardAsyncTokenisation'          ],
@@ -4784,9 +4784,9 @@ class Route
         'token_fetch_cryptogram',
         'token_delete',
 
-        // tokenization push provisioning routes
-        'tokens_fetch_merchants',
-        'token_push',
+        //Push Token Provisioning routes
+        'tokens_push',
+        'tokens_list',
 
         // 1CC Routes
         'update_shipping_slabs',

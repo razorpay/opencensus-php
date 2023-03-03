@@ -2596,10 +2596,8 @@ class TokenTest extends TestCase
 
         $response = $this->startTest($createPayload);
 
-        $this->assertTrue($response['success']);
-
-        $this->assertEquals('acc_J312gerdk2aaaa', $response['data']['account_ids'][0]);
-        $this->assertEquals('acc_10000000000000', $response['data']['account_ids'][1]);
+        $this->assertEquals('acc_J312gerdk2aaaa', $response['account_ids'][0]);
+        $this->assertEquals('acc_10000000000000', $response['account_ids'][1]);
 
     }
 }

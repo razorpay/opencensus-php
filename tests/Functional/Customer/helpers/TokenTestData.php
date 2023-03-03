@@ -752,7 +752,7 @@ return [
 
     'testFetchMerchantsWithToken' => [
         'request' => [
-            'url' => '/tokens/fetch_merchants',
+            'url' => '/tokens/list',
             'method' => 'post',
             'content' => [
                 "method" => "card",
@@ -771,13 +771,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
-                'data' => [
-                    'account_ids' => [
-                        "acc_J312gerdk2aaaa",
-                        "acc_10000000000000"
-                    ]
-                ],
+                'account_ids' => [
+                    "acc_J312gerdk2aaaa",
+                    "acc_10000000000000"
+                ]
             ],
         ],
     ],

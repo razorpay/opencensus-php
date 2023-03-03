@@ -43,7 +43,7 @@ class Validator extends Base\Validator
         Entity::CUSTOMER_ID          => 'required|public_id',
         Entity::METHOD               => 'required|in:card',
         Entity::CARD                 => 'required|array',
-        'merchant_offers'            => 'required|array|max:10'
+        Entity::ACCOUNT_IDS          => 'required|array|max:10'
     ];
 
     protected static $fetchParValueRules = [
