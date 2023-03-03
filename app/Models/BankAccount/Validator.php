@@ -142,7 +142,7 @@ class Validator extends Base\Validator
     protected static $addTpvBankAccountRules = [
         Entity::IFSC            => 'required|alpha_num|size:11',
         Entity::ACCOUNT_NUMBER  => 'required|regex:/^[a-zA-Z0-9]+$/|between:5,35',
-        Entity::NAME            => 'sometimes|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|max:60|string',
+        Entity::NAME            => 'sometimes|regex:/^[a-zA-Z0-9][a-zA-Z0-9-&\'._()\s–\/]+/|max:120|string',
     ];
 
     protected static $addTpvBankAccountForVaRules = [
