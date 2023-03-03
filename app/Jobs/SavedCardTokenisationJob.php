@@ -9,9 +9,11 @@ use RZP\Models\Card\Entity as CardEntity;
 use RZP\Models\CardMandate;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Modules\Base;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 use Throwable;
+use RZP\Models\Customer\Token\Metric;
 
 class SavedCardTokenisationJob extends Job
 {
@@ -176,6 +178,13 @@ class SavedCardTokenisationJob extends Job
             $this->triggerEvent(EventCode::ASYNC_TOKENISATION_TOKEN_CREATION_SUCCESS, $card);
 
             $this->delete();
+            $this->trace->info(TraceCode::DEBUG_LOGGING, [
+                'checking if we are going till the function or failing before that in try'
+            ]);
+            (new Token\Metric())->pushMigrateMetrics($token,Metric::SUCCESS);
+            $this->trace->info(TraceCode::DEBUG_LOGGING, [
+                'checking if after the function call it is failing or it is going beyond this call as well in try'
+            ]);
 
             return;
         }
@@ -197,6 +206,14 @@ class SavedCardTokenisationJob extends Job
             );
 
             $this->checkRetry($e);
+
+            $this->trace->info(TraceCode::DEBUG_LOGGING, [
+                'checking if we are going till the function or failing before that in catch'
+            ]);
+            (new Token\Metric())->pushMigrateMetrics($token,Metric::FAILED, $e);
+            $this->trace->info(TraceCode::DEBUG_LOGGING, [
+                'checking if after the function call it is failing or it is going beyond this call as well in catch'
+            ]);
         }
     }
 
@@ -212,6 +229,8 @@ class SavedCardTokenisationJob extends Job
                 'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
                 'asyncTokenisationJobId' => $this->asyncTokenisationJobId,
             ]);
+
+            (new Token\Metric())->pushMigrateMetrics($this->tokenId,Metric::FAILED, $e);
 
             $updateData[Token\Entity::STATUS] = Token\Constants::FAILED;
 

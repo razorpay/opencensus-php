@@ -7683,11 +7683,12 @@ trait Authorize
                     'async'       =>  $asyncTokenisationJobId,
                     'paymentId'    => $payment->getId()
                 ]);
-
                 return;
             }
 
             $core->migrateToTokenizedCard($token, $cardInput, $payment);
+
+            (new Token\Metric())->pushMigrateMetrics($token, Metric::SUCCESS);
 
             (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::MIGRATE);
         }
@@ -7698,6 +7699,8 @@ trait Authorize
                 'level' => Trace::WARNING,
                 'payment_id' => $payment->getId()
                 ]);
+
+            (new Token\Metric())->pushMigrateMetrics($token, Metric::FAILED, $e);
 
             (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::MIGRATE);
         }

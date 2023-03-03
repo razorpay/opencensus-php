@@ -9,6 +9,8 @@ use RZP\Models\Base;
 use RZP\Error\Error;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card\IIN\Entity;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Customer\Token;
 
 class Metric extends Base\Core
 {
@@ -34,6 +36,13 @@ class Metric extends Base\Core
     const LABEL_TRACE_SOURCE                    = 'source';
     const LABEL_TRACE_EXCEPTION_CLASS           = 'exception_class';
     const LABEL_PUSH_PROVISIONING               = 'via_push_provisioning';
+    const TOKEN_MIGRATE                         = 'token_migrate';
+    const LABEL_CARD_TOKENISED                  = 'label_card_tokenised';
+    const LABEL_CARD_VAULT                      = 'card_vault';
+
+    //status
+    const SUCCESS                               = 'success';
+    const FAILED                                = 'failed';
 
 
     public function pushTokenHQDimensions($input, $status, $statusCode = null, $action = null, $exe = null)
@@ -74,6 +83,51 @@ class Metric extends Base\Core
                     'status'    => $status ?? 'none',
                 ]);
         }
+    }
+    public function pushMigrateMetrics($token, $status, $exe = null)
+    {
+        try
+        {
+            $dimensions = $this->getDefaultDimensionsMigrate($token);
+
+            $dimensions[self::LABEL_STATUS] = $status;
+
+            $dimensions[self::LABEL_ACTION] = Token\Action::TOKEN_MIGRATE;
+
+            $dimensions[self::LABEL_INTERNAL_SERVICE_REQUEST] = true;
+
+            $dimensions[self::LABEL_ASYNC] = true;
+
+            $dimensions[self::LABEL_PUSH_PROVISIONING] = null;
+
+            if ($exe !== null)
+            {
+                $this->pushExceptionMetrics($exe, self::TOKEN_HQ, $dimensions);
+
+                return;
+            }
+            $this->trace->info(TraceCode::DEBUG_LOGGING, [
+                'tokenid'     =>  $token->getId(),
+                'Inside the metric function in try'
+            ]);
+
+            $this->trace->count(self::TOKEN_HQ, $dimensions);
+        }
+        catch (\Throwable $exc)
+        {
+            $this->trace->traceException(
+                $exc,
+                Trace::ERROR,
+                TraceCode::TOKEN_HQ_METRIC_DIMENSION_PUSH_FAILED,
+                [
+                    'action'    => $action ?? null,
+                    'status'    => $status ?? null,
+                ]);
+        }
+        $this->trace->info(TraceCode::DEBUG_LOGGING, [
+            'tokenid'     =>  $token->getId(),
+            'Inside the metric function after catch'
+        ]);
     }
 
     public function pushTokenHQResponseTimeMetrics(int $startTime, $status, $action = null)
@@ -118,6 +172,32 @@ class Metric extends Base\Core
                 TraceCode::PUSH_PROVISIONING_RESPONSE_TIME_DIMENSION_PUSH_FAILED
             );
         }
+    }
+
+    protected function getDefaultDimensionsMigrate($token)
+    {
+        if (!isset($token))
+        {
+            return [];
+        }
+
+        $dimensions = [];
+
+        if($token->hasCard() === true){
+            $card = $token->card;
+            $network = $card->getNetwork();
+        }
+
+           $dimensions += [
+               self::LABEL_CARD_NETWORK     => $network  ?? null,
+               self::LABEL_CARD_IIN         => $card->iin ?? null,
+               self::LABEL_CARD_CATEGORY    => $card->category ?? null,
+               self::LABEL_CARD_TYPE        => $card->type ?? null,
+               self::LABEL_CARD_ISSUER      => $card->issuer ?? null,
+               self::LABEL_CARD_COUNTRY     => $card->country ?? null,
+            ];
+
+        return $dimensions;
     }
 
     protected function getDefaultDimensions($input)
