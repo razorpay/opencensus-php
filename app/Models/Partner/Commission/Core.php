@@ -14,6 +14,7 @@ use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Constants\HyperTrace;
 use RZP\Models\Partner\Metric;
+use RZP\Constants\Environment;
 use RZP\Models\Merchant\Detail;
 use RZP\Jobs\CommissionCapture;
 use RZP\Models\Merchant\Balance;
@@ -23,7 +24,6 @@ use RZP\Models\Settlement\Channel;
 use RZP\Jobs\CommissionTdsSettlement;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Models\Partner\Config as PartnerConfig;
-use RZP\Jobs\SyncCommissionToPartnershipService;
 use RZP\Models\Pricing\Calculator as FeeCalculator;
 use RZP\Jobs\CommissionFinanceTriggeredOnHoldClear;
 use RZP\Models\Partner\Commission\Invoice as CommissionInvoice;
@@ -33,6 +33,8 @@ class Core extends Base\Core
     const COMMISSIONS_BULK_CAPTURE_LIMIT = 200;
 
     const COMMISSIONS_TRANSACTION_FETCH_LIMIT = 5000;
+
+    const LOCALSTACK_ENVIRONMENTS = [Environment::BETA];
 
     public function build(
         Base\PublicEntity $source,
@@ -447,15 +449,17 @@ class Core extends Base\Core
         }
         try
         {
-            $commissionComponent = $this->repo->commission_component->findByCommissionId($commission->getId());
+            $commissionComponent = $this->repo->commission_component->findByCommissionId($commission->getId())->first();
             $data       = [
                 'commission'          => $commission->attributesToArray(),
-                'commissionComponent' => $commissionComponent->toArray()
+                'commission_component' => $commissionComponent->toArray()
             ];
+
+            $data['commission']['notes'] = (object) ($data['commission']['notes']);
 
             \Event::dispatch(new TransactionalClosureEvent(function () use ($data) {
                 // Job will be dispatched only if the transaction commits.
-                SyncCommissionToPartnershipService::dispatch($this->mode, $data);
+                $this->pushJobToSQS($data);
                 $this->trace->count(Metric::PARTNERSHIP_COMMISSION_SYNC_JOB_PUSH_SUCCESS);
             }));
         }
@@ -469,6 +473,27 @@ class Core extends Base\Core
             );
             $this->trace->count(Metric::PARTNERSHIP_COMMISSION_SYNC_JOB_PUSH_FAILURE);
         }
+    }
+
+    /**
+     * Pushes the job to the SQS queue. If environment is devstack, localstack is used.
+     * @param $data
+     * @return void
+     */
+    private function pushJobToSQS($data): void
+    {
+        $queueName = $this->config->get('queue.partnerships_commission' . $this->app['rzp.mode']);
+
+        if (in_array(app('env'), self::LOCALSTACK_ENVIRONMENTS, true) === true)
+        {
+            $connection = 'sqs_localstack';
+        }
+        else
+        {
+            $connection = 'sqs';
+        }
+
+        $this->app['queue']->connection($connection)->pushRaw(json_encode($data), $queueName);
     }
 
     /**

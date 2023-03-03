@@ -712,6 +712,22 @@ return [
             'credentials' => $awsCredentialsCache,
         ],
 
+        'sqs_localstack' => [
+            'driver'      => 'sqs',
+            'key'         => env('AWS_KEY_ID'),
+            'secret'      => env('AWS_KEY_SECRET'),
+            'prefix'      => 'https://localstack-services.dev.razorpay.in/000000000000/',
+            'queue'       => env('AWS_DEFAULT_QUEUE'),
+            'region'      => env('AWS_REGION'),
+            //
+            // This timeout is only used for getting credentials from instance meta server.
+            // This timeout is "not" for normal http operations of sdk, e.g. push sqs job, publish sns message etc
+            // for which there is another argument/option i.e. http.timeout.
+            //
+            'timeout'     => 3.0,
+            'credentials' => $awsCredentialsCache,
+        ],
+
         // TODO: Update brahma's & k8s code & remove this block
         // Ref: https://github.com/razorpay/brahma/blob/master/ansible-playbooks/roles/app-supervisor/templates/api.supervisor.conf.j2#L19
         'sqs_multi_default' => [
