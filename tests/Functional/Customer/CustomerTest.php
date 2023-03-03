@@ -1110,6 +1110,7 @@ class customerTest extends TestCase
             'contact'     => '+919988776655',
             'merchant_id' => '10000000000000',
             'status'      => 'captured',
+            'method'      => 'card',
         ]);
 
         $payment2 = $this->fixtures->create('payment', [
@@ -1150,6 +1151,8 @@ class customerTest extends TestCase
         $this->assertNotContains($payment4->getPublicId(), $paymentIds);
 
         $this->assertNotContains($payment5->getPublicId(), $paymentIds);
+
+        $this->assertEquals('card', $paymentDetails[$payment1->getPublicId()]['method']);
 
         $this->assertEquals('captured', $paymentDetails[$payment1->getPublicId()]['status']);
 

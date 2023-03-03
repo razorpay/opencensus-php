@@ -1609,7 +1609,7 @@ class Core extends Base\Core
         {
             $paymentsDetails['payments'][] = $this->formatPaymentDetailsForSupportPage(
                 $refundsService->getPaymentAlongWithRefundDetails($payment),
-                $payment->getStatus()
+                $payment
             );
         }
 
@@ -1638,7 +1638,7 @@ class Core extends Base\Core
         return $contacts;
     }
 
-    protected function formatPaymentDetailsForSupportPage(array $paymentDetails, string $paymentStatus) : array
+    protected function formatPaymentDetailsForSupportPage(array $paymentDetails, Payment\Entity $payment) : array
     {
         if (empty($paymentDetails))
         {
@@ -1648,7 +1648,8 @@ class Core extends Base\Core
         $formattedPaymentDetails = [];
         $formattedPaymentDetails['payment'] = $paymentDetails['payments'][0]['payment'] ?? [];
         $formattedPaymentDetails['refunds'] = $paymentDetails['payments'][0]['refunds'] ?? [];
-        $formattedPaymentDetails['payment']['status'] = $paymentStatus;
+        $formattedPaymentDetails['payment']['method'] = $payment->getMethod();
+        $formattedPaymentDetails['payment']['status'] = $payment->getStatus();
         $formattedPaymentDetails['business_support_details'] = $paymentDetails['business_support_details'];
         $formattedPaymentDetails['payment']['merchant_logo'] = $paymentDetails['merchant_logo'];
 
