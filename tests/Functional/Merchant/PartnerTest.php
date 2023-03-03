@@ -2307,6 +2307,56 @@ class PartnerTest extends OAuthTestCase
         $this->assertEmpty($liveFeature);
     }
 
+    public function testAdd_SourcedByWalnut369_PartnerAddedFeatureToSubmerchantOnMode()
+    {
+        list($application, $accessMap) = $this->createPartnerMerchantAndSubMerchant(MerchantConstants::AGGREGATOR);
+        $partner = $this->getDbEntity('merchant', ['id' => $application->getMerchantId()]);
+        $merchant = $accessMap->merchant()->first();
+
+        $this->fixtures->on('test')->merchant->addFeatures(
+            ['sourced_by_walnut369'],
+            $partner->getId(),
+            Feature\Constants::MERCHANT
+        );
+
+        $core = new \RZP\Models\Merchant\Core;
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $testFeature = $this->getDbEntities(
+            'feature',
+            ['entity_id' => $merchant->getId(), 'name' => 'sourced_by_walnut369'],
+            Mode::TEST
+        )->toArray();
+        $this->assertEmpty($testFeature);
+
+        $core->addPartnerAddedFeaturesToSubmerchantOnMode($merchant, $partner, Mode::TEST);
+
+        $testFeature = $this->getDbEntities(
+            'feature',
+            ['entity_id' => $merchant->getId(), 'name' => 'sourced_by_walnut369'],
+            Mode::TEST
+        )->toArray();
+        $this->assertNotEmpty($testFeature);
+
+        $liveFeature = $this->getDbEntities(
+            'feature',
+            ['entity_id' => $merchant->getId(), 'name' => 'sourced_by_walnut369'],
+            Mode::LIVE
+        )->toArray();
+        $this->assertEmpty($liveFeature);
+
+        $core->addPartnerAddedFeaturesToSubmerchantOnMode($merchant, $partner, Mode::LIVE);
+
+        $liveFeature = $this->getDbEntities(
+            'feature',
+            ['entity_id' => $merchant->getId(), 'name' => 'sourced_by_walnut369'],
+            Mode::LIVE
+        )->toArray();
+        $this->assertNotEmpty($liveFeature);
+
+    }
+
     public function testCreatePartnerSubmerchantWithProduct()
     {
         $this->createPartnerAndUser();

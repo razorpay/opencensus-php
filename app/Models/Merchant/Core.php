@@ -1792,6 +1792,22 @@ class Core extends Base\Core
         $this->addPartnerAddedFeaturesToSubmerchantOnMode($merchant, $partner, Mode::TEST);
     }
 
+    public function getDefaultFeaturesToPropagate(Entity $partner, string $mode)
+    {
+        $merchantEnabledFeatures = $this->repo
+            ->feature
+            ->fetchByEntityTypeAndEntityId(
+                Feature\Constants::MERCHANT,
+                $partner->getId(),
+                $mode
+            )
+            ->pluck(Feature\Entity::NAME);
+
+        $data = $merchantEnabledFeatures->toArray();
+
+        return array_intersect($data, CONSTANTS::$defaultFeaturesToPropagate);
+    }
+
     public function addPartnerAddedFeaturesToSubmerchantOnMode(Entity $merchant, Entity $partner, string $mode)
     {
         $this->repo->transactionOnConnection(function() use ($merchant, $partner, $mode) {
@@ -1799,30 +1815,40 @@ class Core extends Base\Core
             $appType                 = $merchantApplicationCore->getDefaultAppTypeForPartner($partner);
             $appIds                   = $merchantApplicationCore->getMerchantAppIds($partner->getId(), [$appType]);
 
-            if (empty($appIds) === true)
+            $featureParams = new Base\Collection;
+            $featureNames = [];
+
+            if(empty($appIds) === false)
             {
-                return;
+                $appId = $appIds[0];
+
+                $featureNames   =  $this->repo
+                                        ->feature
+                                        ->fetchByEntityTypeAndEntityId(
+                                            Feature\Constants::PARTNER_APPLICATION,
+                                            $appId,
+                                            $mode
+                                        )
+                                        ->pluck(Feature\Entity::NAME);
             }
 
-            $appId = $appIds[0];
+            $featuresToPropagate = $this->getDefaultFeaturesToPropagate($partner, $mode);
 
-            $featureNames   =  $this->repo
-                                    ->feature
-                                    ->fetchByEntityTypeAndEntityId(
-                                        Feature\Constants::PARTNER_APPLICATION,
-                                        $appId,
-                                        $mode
-                                    )
-                                    ->pluck(Feature\Entity::NAME);
-
-            $featureParams = new Base\Collection;
             foreach ($featureNames as $featureName)
             {
+                if(in_array($featureName, $featuresToPropagate) === false)
+                {
+                    array_push($featuresToPropagate, $featureName);
+                }
+            }
+
+            foreach ($featuresToPropagate as $featureName)
+            {
                 $featureParams->push([
-                                         Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
-                                         Feature\Entity::ENTITY_ID   => $merchant->getId(),
-                                         Feature\Entity::NAME        => $featureName
-                                     ]);
+                    Feature\Entity::ENTITY_TYPE => Feature\Constants::MERCHANT,
+                    Feature\Entity::ENTITY_ID   => $merchant->getId(),
+                    Feature\Entity::NAME        => $featureName
+                ]);
             }
 
             $featureCore       = new Feature\Core();

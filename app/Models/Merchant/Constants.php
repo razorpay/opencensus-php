@@ -300,6 +300,10 @@ final class Constants
         self::BANK_CA_ONBOARDING_PARTNER
     ];
 
+    public static $defaultFeaturesToPropagate = [
+      'sourced_by_walnut369'
+    ];
+
     //Capital Tags assigned to merchants
     public static $capitalMerchantTags = [
         self::CAP_ES_0_DMT30,
