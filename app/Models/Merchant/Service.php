@@ -473,33 +473,12 @@ class Service extends Base\Service
         return $data;
     }
 
-    private function isRateLimiterExperimentEnabledForPartner(Entity $partner): bool
-    {
-        $properties = [
-            'id'            => $partner->getId(),
-            'experiment_id' => $this->app['config']->get('app.add_subm_ratelimiting_experiment_id')
-        ];
-
-        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
-    }
 
     public function subMOnboardingRateLimitEnabled(Entity $merchant, bool $isLinkedAccount, string $source): bool
     {
         if ($isLinkedAccount === true ||
             in_array($source, RateLimitConstants::SUPPORTED_RATELIMIT_SOURCES) === false)
         {
-            return false;
-        }
-
-        $enabled = $this->isRateLimiterExperimentEnabledForPartner($merchant);
-
-        if ($enabled === false)
-        {
-            if ($source === PartnerConstants::ADD_MULTIPLE_ACCOUNT)
-            {
-                (new RateLimitBatch())->partnerSubmerchantInvite($merchant);
-            }
-
             return false;
         }
 
@@ -668,9 +647,7 @@ class Service extends Base\Service
                 }
             }
 
-            $isExpEnable = $this->setPaymentConfigForSubM($data['partner_id']);
-
-            if($isExpEnable === true and empty($submerchantId) === false)
+            if(empty($submerchantId) === false)
             {
                 $subMerchant = $this->repo->merchant->findOrFailPublic($submerchantId);
 
@@ -696,17 +673,6 @@ class Service extends Base\Service
     {
         (new Stork('live'))->invalidateAffectedOwnersCache($merchantId);
         (new Stork('test'))->invalidateAffectedOwnersCache($merchantId);
-    }
-
-
-    public function setPaymentConfigForSubM(string $partnerId): bool
-    {
-        $properties = [
-            'id'            => $partnerId,
-            'experiment_id' => $this->app['config']->get('app.default_payment_config_for_subm_exp_id')
-        ];
-
-        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 
     public function createLinkedAccount(array $input)
@@ -889,17 +855,7 @@ class Service extends Base\Service
 
             if ($product === Product::BANKING)
             {
-                $properties = [
-                    'id'            => $aggregatorMerchant->getId(),
-                    'experiment_id' => $this->app['config']->get('app.attach_view_only_role_banking_account_exp_id'),
-                ];
-
-                $isExpEnabled = $this->core()->isSplitzExperimentEnable($properties, 'enable');
-
-                if ($isExpEnabled === true)
-                {
-                    $role = User\Role::VIEW_ONLY;
-                }
+                $role = User\Role::VIEW_ONLY;
             }
 
             $this->trace->info(TraceCode::ATTACH_SUBMERCHANT_USER, [

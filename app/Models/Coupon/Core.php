@@ -433,21 +433,7 @@ class Core extends Base\Core
 
             if ($product === Product::BANKING)
             {
-                $properties = [
-                    'id'            => $partner->getId(),
-                    'experiment_id' => $this->app['config']->get('app.attach_view_only_role_banking_account_exp_id'),
-                ];
-
-                $isExpEnabled = $merchantCore->isSplitzExperimentEnable($properties, 'enable');
-
-                if ($isExpEnabled === true)
-                {
-                    $role = User\Role::VIEW_ONLY;
-                }
-                else
-                {
-                    \Request::instance()->request->add([Merchant\Entity::ALLOW_USER_CREATION => false]);
-                }
+                $role = User\Role::VIEW_ONLY;
             }
 
             $merchantCore->createPartnerSubmerchantAccessMap($partner, $merchant, null, $role);

@@ -2162,21 +2162,7 @@ class Service extends Base\Service
             // Now going forward, we will only use one type of app for subM for a given partner type, which will be 'managed' applications for aggregator / fully managed partners.
             // To maintain current behaviour, we will not create user for X by default.
             // But also with the migration to view_only role for banking product, we will have to attach a view_only role to user going forward and to keep things sync and for phased rollout, we are reusing the same experiment with which we are changing the role to view_only, when subM is created via partner dashboard
-            $properties = [
-                'id'            => $partner->getId(),
-                'experiment_id' => $this->app['config']->get('app.attach_view_only_role_banking_account_exp_id'),
-            ];
-
-            $isExpEnabled = $merchantCore->isSplitzExperimentEnable($properties, 'enable');
-
-            if ($isExpEnabled === true)
-            {
-                $role = User\Role::VIEW_ONLY;
-            }
-            else
-            {
-                \Request::instance()->request->add([Merchant\Entity::ALLOW_USER_CREATION => false]);
-            }
+            $role = User\Role::VIEW_ONLY;
         }
 
         $merchantCore->createPartnerSubmerchantAccessMap($partner, $subMerchant, null, $role);

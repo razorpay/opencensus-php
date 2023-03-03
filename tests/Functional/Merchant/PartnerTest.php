@@ -2354,19 +2354,13 @@ class PartnerTest extends OAuthTestCase
 
         $subMerchantBankingOwners = ($subMerchant->owners('banking')->get())->toArrayPublic();
 
-        $this->assertEquals(2, $subMerchantBankingOwners['count']);
+        $this->assertEquals(1, $subMerchantBankingOwners['count']);
 
         $submerchantUserId = $subMerchantBankingOwners['items'][0]['id'];
 
         $subMerchantUser = DB::table('merchant_users')->where('user_id', '=', $submerchantUserId)->where('product', '=', 'banking')->get();
 
         $this->assertEquals('banking', $subMerchantUser[0]->product);
-
-        $partnerUserId = $subMerchantBankingOwners['items'][1]['id'];
-
-        $partnerUser = DB::table('merchant_users')->where('user_id', '=', $partnerUserId)->where('product', '=', 'primary')->get();
-
-        $this->assertEquals('primary', $partnerUser[0]->product);
 
         $this->assertTrue($subMerchant->business_banking);
     }

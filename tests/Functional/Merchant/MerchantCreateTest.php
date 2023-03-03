@@ -1504,8 +1504,6 @@ class MerchantCreateTest extends TestCase
             PartnerConfig\Entity::DEFAULT_PLAN_ID => Pricing::DEFAULT_PRICING_PLAN_ID,
         ];
 
-        $this->mockAllExperiments("enable");
-
         $this->createConfigForPartnerApp($app->getId(), null, $configAttributes);
 
         $this->ba->batchAppAuth();
@@ -3379,8 +3377,6 @@ class MerchantCreateTest extends TestCase
         ];
 
         $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('KIYvRvxbpMy7r1'))->andReturn($output);
-
-        $splitzMock->shouldReceive('evaluateRequest')->zeroOrMoreTimes()->with(Mockery::hasKey('experiment_id'))->with(Mockery::hasValue('JqPQNIjSTvE6v0'))->andReturn($output);
     }
 
     public function testCreateLinkedAccountReferenceData()

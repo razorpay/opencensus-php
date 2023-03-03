@@ -9462,20 +9462,6 @@ We look forward to transacting with you!
     }
 
     private function mockSplitzEvaluation() {
-        $input = [
-            "experiment_id" => "JqPQNIjSTvE6v0",
-            "id"            => "10000000000000",
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-
-        $this->mockSplitzTreatment($input, $output);
 
         $input = [
             "experiment_id" => "JIRYzx7YtMuB18",
