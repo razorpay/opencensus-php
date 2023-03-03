@@ -5930,11 +5930,15 @@ class Service extends Base\Service
             (new Payment\Validator)->validateInput(__FUNCTION__, $input);
 
             $paymentIds = [];
+            $extraLog   = [];
 
-            $updateCacheTimestamp = false;
-            $newUpdatedAtCacheTimestamp = Carbon::now()->getTimestamp();
+            $updateCacheTimestamp = 'NO';
 
-            $cacheKey = 'API_PAYMENTS_DUAL_WRITE_SYNC_LAST_UPDATED_AT';
+            $newUpdatedAtCacheTimestamp        = Carbon::now()->getTimestamp();
+            $newUpdatedAtCacheTimestampReverse = Carbon::now()->getTimestamp();
+
+            $cacheKey        = 'API_PAYMENTS_DUAL_WRITE_SYNC_LAST_UPDATED_AT';
+            $cacheKeyReverse = 'API_PAYMENTS_DUAL_WRITE_SYNC_REVERSE_LAST_UPDATED_AT';
 
             if (empty($input['payment_ids']) === false)
             {
@@ -5958,6 +5962,9 @@ class Service extends Base\Service
                 $timeLowerLimit = $currentTime - 60 * $bucketInput['duration'] - 60 * $bucketInput['offset'];
                 $timeUpperLimit = $currentTime - 60 * $bucketInput['offset'];
 
+                $extraLog['from'] = $timeLowerLimit;
+                $extraLog['to']   = $timeUpperLimit;
+
                 $paymentIds = $this->repo->payment->getDualWriteMismatchPayments($timeLowerLimit, $timeUpperLimit);
             }
             else if (empty($input['cache_based']) === false)
@@ -5967,26 +5974,51 @@ class Service extends Base\Service
                 $timeLowerLimit  = $cacheBasedUpdateRange['from'];
                 $timeUpperLimit  = $cacheBasedUpdateRange['to'];
                 $timeRangeBucket = $cacheBasedUpdateRange['bucket_interval'];
+                $reverseFill     = $cacheBasedUpdateRange['reverse'];
 
-                $cacheResponse = $this->app['cache']->get($cacheKey);
-
-                if ((empty($cacheResponse) === false) and
-                    ((isset($cacheBasedUpdateRange['reset_cache_timestamp']) === false) or
-                     ($cacheBasedUpdateRange['reset_cache_timestamp'] !== true)))
+                if ($reverseFill === true)
                 {
-                    $timeLowerLimit = max(intval($cacheResponse), $timeLowerLimit);
+                    $cacheResponse = $this->app['cache']->get($cacheKeyReverse);
+
+                    if ((empty($cacheResponse) === false) and
+                        ((isset($cacheBasedUpdateRange['reset_cache_timestamp']) === false) or
+                            ($cacheBasedUpdateRange['reset_cache_timestamp'] !== true)))
+                    {
+                        $timeUpperLimit = min(intval($cacheResponse), $timeUpperLimit);
+                    }
+
+                    $timeLowerLimit = max($timeLowerLimit, $timeUpperLimit - 60 * $timeRangeBucket);
+                }
+                else
+                {
+                    $cacheResponse = $this->app['cache']->get($cacheKey);
+
+                    if ((empty($cacheResponse) === false) and
+                        ((isset($cacheBasedUpdateRange['reset_cache_timestamp']) === false) or
+                            ($cacheBasedUpdateRange['reset_cache_timestamp'] !== true)))
+                    {
+                        $timeLowerLimit = max(intval($cacheResponse), $timeLowerLimit);
+                    }
+
+                    $timeUpperLimit = min($timeUpperLimit, $timeLowerLimit + 60 * $timeRangeBucket);
                 }
 
-                $timeUpperLimit = min($timeUpperLimit, $timeLowerLimit + 60 * $timeRangeBucket);
+                $extraLog['from'] = $timeLowerLimit;
+                $extraLog['to']   = $timeUpperLimit;
 
                 $paymentIds = $this->repo->payment->getDualWriteMismatchPayments($timeLowerLimit, $timeUpperLimit);
 
-                $updateCacheTimestamp = true;
+                $updateCacheTimestamp = ($reverseFill === true) ? 'reverse' : 'forward';
 
                 $newUpdatedAtCacheTimestamp = $timeUpperLimit;
+
+                $newUpdatedAtCacheTimestampReverse = $timeLowerLimit;
             }
 
-            $this->trace->info(TraceCode::PAYMENTS_DUAL_WRITE_SYNC_IDS, ['payment_ids' => $paymentIds]);
+            $this->trace->info(TraceCode::PAYMENTS_DUAL_WRITE_SYNC_IDS, [
+                'payment_ids' => $paymentIds,
+                'extra_data'  => $extraLog,
+            ]);
 
             foreach ($paymentIds as $paymentId)
             {
@@ -6002,9 +6034,13 @@ class Service extends Base\Service
                 $response['synced_payment_ids'][] = $paymentId;
             }
 
-            if ($updateCacheTimestamp === true)
+            if ($updateCacheTimestamp === 'forward')
             {
                 $this->app['cache']->put($cacheKey, $newUpdatedAtCacheTimestamp, 86400);
+            }
+            else if ($updateCacheTimestamp === 'reverse')
+            {
+                $this->app['cache']->put($cacheKeyReverse, $newUpdatedAtCacheTimestampReverse, 86400);
             }
         }
         catch (\Throwable $e)

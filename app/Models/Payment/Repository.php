@@ -3725,14 +3725,15 @@ EOT;
     public function getDualWriteMismatchPayments(int $from, int $to): array
     {
         $query = sprintf(
-            "SELECT id FROM
-                        (SELECT id, count(*) as cnt FROM
-                            (SELECT * FROM payments WHERE updated_at >= %s AND updated_at < %s
-                            UNION
-                            SELECT * FROM payments_new WHERE updated_at >= %s AND updated_at < %s)
-                        AS payments_union GROUP BY id)
-                    AS agg_payments WHERE cnt > 1;",
-                    $from, $to, $from, $to);
+                    "WITH pids AS
+                              (SELECT id AS pid FROM payments WHERE updated_at >= %s AND updated_at < %s)
+                            SELECT id FROM
+                                (SELECT id, count(*) AS cnt FROM (
+                                    SELECT * FROM pids LEFT JOIN payments ON pid = id UNION
+                                    SELECT * FROM pids LEFT JOIN payments_new ON pid = id)
+                                AS payments_union GROUP BY id)
+                            AS agg_payments WHERE cnt > 1;",
+                    $from, $to);
 
         $payments = DB::connection($this->getPaymentFetchReplicaConnection())->select(DB::RAW($query));
 

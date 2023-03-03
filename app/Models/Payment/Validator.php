@@ -334,6 +334,7 @@ class Validator extends Base\Validator
         'cache_based.to'                    => 'sometimes|integer',
         'cache_based.bucket_interval'       => 'sometimes|integer',
         'cache_based.reset_cache_timestamp' => 'sometimes|boolean',
+        'cache_based.reverse'               => 'sometimes|boolean',
     ];
 
     protected static $pspAmountLimit = [
