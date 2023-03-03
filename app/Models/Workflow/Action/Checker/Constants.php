@@ -13,5 +13,6 @@ class Constants
     const SKIP_CHECKER_STRICT_VALIDATION_FOR_PERMISSIONS = [
         Permission\Name::EDIT_MERCHANT_PG_INTERNATIONAL,
         Permission\Name::EDIT_MERCHANT_PROD_V2_INTERNATIONAL,
+        Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED,
     ];
 }
