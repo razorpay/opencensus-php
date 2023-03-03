@@ -17,7 +17,6 @@ use RZP\Models\Feature\Entity;
 use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Constants;
 use RZP\Tests\Traits\MocksRazorx;
-use RZP\Mail\Loc\CashAdvanceEligible;
 use RZP\Error\PublicErrorDescription;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\KeyWritten;
