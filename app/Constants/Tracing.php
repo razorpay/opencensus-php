@@ -440,6 +440,13 @@ class Tracing
             // validate vpa routes
             'payment_validate_vpa',
             'payment_validate_vpa_old',
+
+            'fund_account_validate',
+            'bank_transfer_process',
+            'bank_transfer_process_internal',
+            'bank_transfer_process_icici',
+            'bank_transfer_process_icici_internal',
+            'feature_delete'
         ]);
     }
 
