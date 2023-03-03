@@ -295,7 +295,7 @@ class BankingInvoiceReport extends BaseReport
 
     protected function getTaxComponents(string $gstin = null): array
     {
-        return Calculator\Base::getTaxComponentsForMerchant($gstin, $this->merchant);
+        return Calculator\Tax\IN\Utils::getTaxComponentsWithGSTIN($gstin, $this->merchant);
     }
 
     protected function groupDataForInvoice(Invoice\Entity $invoice, array $allRows)

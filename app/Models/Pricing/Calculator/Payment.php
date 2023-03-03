@@ -837,7 +837,7 @@ class Payment extends Base
             $amount = $amount - (new Core)->getBaseAmount($fee, $currency, $baseCurrency);
         }
 
-        if($this->entity->getEntity() === (Entity::PAYMENT))
+        if ($this->entity->getEntity() === (Entity::PAYMENT))
         {
             $amount = $this->entity->getBaseAmountForFeeCalculation($amount);
         }

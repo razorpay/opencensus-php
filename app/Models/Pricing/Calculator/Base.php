@@ -24,23 +24,12 @@ use RZP\Models\Base as BaseModel;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\UpiMandate\Metrics as UpiMandateMetrics;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
+use RZP\Models\Pricing\Calculator\Tax\Base as TaxBase;
+
+use Razorpay\Trace\Logger as Trace;
 
 abstract class Base extends BaseModel\Core
 {
-    const IGST_PERCENTAGE = 1800; // Integrated GST
-    const CGST_PERCENTAGE = 900; // Central GST
-    const SGST_PERCENTAGE = 900; // State GST
-
-    // 1st July 2017 00:00:00 IST - Timestamp at which GST will begin to be levied on transactions
-    const GST_START_TIMESTAMP = 1498847400;
-
-    // '29' - Karnataka's state code
-    const RZP_GST_STATE_CODE = '29';
-
-    const RZP_STATE = 'KA';
-
-    const CARD_TAX_CUT_OFF = 200000;
-
     const TEST_MERCHANT_ID = 'Hod4BwliaNS6bo';
 
     /**
@@ -61,7 +50,7 @@ abstract class Base extends BaseModel\Core
 
     protected $amount = null;
 
-    protected $taxComponents;
+    protected $processor;
 
     public function __construct(BaseModel\PublicEntity $entity, string $product)
     {
@@ -74,8 +63,6 @@ abstract class Base extends BaseModel\Core
         $this->feesSplit = new BaseModel\PublicCollection;
 
         $this->pricingRules = new BaseModel\PublicCollection;
-
-        $this->taxComponents = self::getTaxComponents($this->entity->merchant);
 
         $this->setAmount();
     }
@@ -160,7 +147,7 @@ abstract class Base extends BaseModel\Core
             $fees += $fee;
         }
 
-        $totalTaxes = $this->calculateGst($fees);
+        $totalTaxes = $this->calculateTax($fees);
 
         $totalFees = $fees + $totalTaxes;
 
@@ -238,17 +225,6 @@ abstract class Base extends BaseModel\Core
         $feeCredits = $merchantBalance->getFeeCredits();
 
         return [$amountCredits, $feeCredits];
-    }
-
-    public static function getTaxRate()
-    {
-        // returning igst percentage as igst = cgst + sgst
-        return self::IGST_PERCENTAGE;
-    }
-
-    public static function isGstApplicable($fromTimestamp)
-    {
-        return ($fromTimestamp >= self::GST_START_TIMESTAMP);
     }
 
     /**
@@ -703,124 +679,17 @@ abstract class Base extends BaseModel\Core
         return $fee;
     }
 
-    protected function calculateGst($fee)
+    protected function calculateTax($fee)
     {
-        $totalTaxes = 0;
+        $processor = TaxBase::getTaxCalculator($this->entity, $this->amount);
 
-        $totalPercentage = 0;
+        list($feeSplit, $totalPercentage, $totalTaxes) = $processor->calculateTax($fee);
 
-        $taxComponents = $this->taxComponents;
+        $feeBreakup = $this->createFeeBreakup($feeSplit, $totalPercentage, $totalTaxes);
 
-        // Check if GST needs to be levied
-        $eligibleForGst = $this->isEligibleForGst($fee);
-
-        foreach ($taxComponents as $name => $percentage)
-        {
-            if (in_array($name, [FeeBreakupName::CGST, FeeBreakupName::SGST], true) === true)
-            {
-                $taxValue = ((int) round(($percentage * $fee) / 10000));
-            }
-            else if ($name === FeeBreakupName::IGST)
-            {
-                // Calculate as per cgst percentage, and double it to get the exact tax value.
-                // We do this so that if this value needs to be split later into sgst+cgst, it is an even value
-                $calculationPercentage = self::CGST_PERCENTAGE;
-
-                $taxValue = 2 * ((int) round(($calculationPercentage * $fee) / 10000));
-            }
-
-            $taxValue = ($eligibleForGst === true) ? $taxValue : 0;
-
-            $totalTaxes += $taxValue;
-
-            $totalPercentage += $percentage;
-        }
-
-        $tax = $this->createFeeBreakup(FeeBreakupName::TAX, $totalPercentage, $totalTaxes);
-
-        $this->feesSplit->push($tax);
+        $this->feesSplit->push($feeBreakup);
 
         return $totalTaxes;
-    }
-
-    protected function isEligibleForGst($fee): bool
-    {
-        if ($this->entity->getEntity() === Constants\Entity::PAYMENT)
-        {
-            $payment = $this->entity;
-
-            $amount = $this->amount;
-
-            if ($payment->isFeeBearerCustomer() === true)
-            {
-                $amount = $amount + $fee;
-            }
-
-            //Adding fee in Amount in case merchant is on Dynamic Fee Bearer and has split the fee
-            // with customer
-            if($payment->hasOrder() === true and
-                $payment->order->getFeeConfigId() !== null )
-            {
-                $customerFee = (new Payment\Processor\Processor($payment->merchant))->calculateCustomerFee($payment, $payment->order, $fee);
-
-                if($customerFee !== null)
-                {
-                    $amount = $amount + $customerFee;
-                }
-            }
-            // No tax is levied on card payments of 2000 Rs. or less
-
-            // For the Bajaj finserv emi payments we have to skip this condition because tax
-            //must be calculated whether amount is smaller, equal or greater than the 2000 for bajaj emi payments
-            if ( !($payment->gateway === Entity::BAJAJFINSERV and $payment->isMethod(Payment\Entity::EMI)) and
-                ($payment->isMethodCardOrEmi() === true) and
-                ($amount <= self::CARD_TAX_CUT_OFF))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public static function getTaxComponents(Merchant\Entity $merchant): array
-    {
-        $gstin = $merchant->getGstin();
-
-        return self::getTaxComponentsForMerchant($gstin, $merchant);
-    }
-
-    public static function getTaxComponentsForMerchant(string $gstin = null, Merchant\Entity $merchant): array
-    {
-        $merchantGstStateCode = Merchant\Detail\Entity::getStateCodeFromGstin($gstin);
-
-        $registeredBusinessStateCode = $merchant->getBusinessRegisteredState();
-
-        // Intrastate => Within Karnataka
-        $intraStateGstApplicable = true;
-
-        if (empty($merchantGstStateCode) === false)
-        {
-            $intraStateGstApplicable = ($merchantGstStateCode === self::RZP_GST_STATE_CODE);
-        }
-        else if (empty($registeredBusinessStateCode) === false)
-        {
-            $merchantStateCode = substr($registeredBusinessStateCode, 0, 2);
-
-            $intraStateGstApplicable = (strtoupper($merchantStateCode) === self::RZP_STATE);
-        }
-
-        if ($intraStateGstApplicable === true)
-        {
-            return [
-                FeeBreakupName::CGST => self::CGST_PERCENTAGE,
-                FeeBreakupName::SGST => self::SGST_PERCENTAGE,
-            ];
-        }
-
-        return [
-            FeeBreakupName::IGST => self::IGST_PERCENTAGE,
-        ];
     }
 
     /**

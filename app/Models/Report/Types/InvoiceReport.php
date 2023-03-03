@@ -387,7 +387,7 @@ class InvoiceReport extends BaseReport
 
     protected function getTaxComponents(string $gstin = null): array
     {
-        return Calculator\Base::getTaxComponentsForMerchant($gstin, $this->merchant);
+        return Calculator\Tax\IN\Utils::getTaxComponentsWithGSTIN($gstin, $this->merchant);
     }
 
     protected function getInvoiceV2(array $input): array
@@ -410,7 +410,7 @@ class InvoiceReport extends BaseReport
             }
         }
 
-        if (Calculator\Base::isGstApplicable($from) === true)
+        if (Calculator\Tax\IN\Utils::isGstApplicable($from) === true)
         {
             $taxInfo = $this->getGstTaxes($fees);
         }
@@ -471,7 +471,7 @@ class InvoiceReport extends BaseReport
 
         $merchantBusinessStateCode = $this->merchant->getGstStateCode();
 
-        $intrastateGstApplicable = ($merchantBusinessStateCode === Calculator\Base::RZP_GST_STATE_CODE);
+        $intrastateGstApplicable = ($merchantBusinessStateCode === Calculator\Tax\IN\Constants::RZP_GST_STATE_CODE);
 
         // all 3 taxes might have been charged to merchant if merchant updated
         // their GSTN number later

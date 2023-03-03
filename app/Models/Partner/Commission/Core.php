@@ -264,7 +264,7 @@ class Core extends Base\Core
 
         $response['partner']['id']   =  $partner->getId();
         $response['partner']['type'] =  $partner->getPartnerType();
-        $response['tax_components']  =  FeeCalculator\Base::getTaxComponents($partner);
+        $response['tax_components']  =  FeeCalculator\Tax\IN\Utils::getTaxComponents($partner);
         $response['partner_config']  =  (new PartnerConfig\Core)->fetch($partnerApp, $submerchant);
 
         return $response;

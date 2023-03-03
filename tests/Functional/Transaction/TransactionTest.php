@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Transaction;
 
 use Mail;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use RZP\Mail\Merchant\BalanceThresholdAlert;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Feature\Constants as Features;
@@ -14,6 +16,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\Entity;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Models\Pricing\Calculator\Tax\Base;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -253,6 +256,85 @@ class TransactionTest extends TestCase
 
         $this->assertEquals($txn['entity_id'], $payment['id']);
         $this->assertEquals($txn['type'], 'payment');
+        return $payment;
+    }
+
+
+    /*
+     * In this test case fee calculated is as below ->
+     *
+     * Payment Amount => 500000
+     * Pricing plan => default => 2%
+     * Fee => 2 % of 500000 => 10000
+     * Tax => 18 % of Fee => 18 % of 10000 => 1800
+     * MDR => Fee + Tax => 10000 + 1800 => 11800
+     */
+
+    public function testFetchPaymentTransactionIndiaMerchant()
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+
+        $paymentArray['amount'] = 500000;
+
+        $payment = $this->doAuthAndCapturePayment($paymentArray);
+
+        $txn = $this->getLastTransaction(true);
+
+        $feeBreakUp = $this->getLastEntity('fee_breakup', true);
+
+        $this->assertEquals($feeBreakUp["amount"], "1800");
+
+        $this->assertEquals($feeBreakUp["percentage"], "1800");
+
+        $this->assertEquals($payment["id"], $txn["entity_id"]);
+
+        $testData = $this->testData['testFetchPaymentTransactionIndiaMerchant'];
+
+        $testData['entity_id'] = $payment['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $payment;
+    }
+
+    public function testFetchPaymentTransactionMalaysiaMerchant()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['country_code' => 'MY', 'convert_currency' => null]);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $this->fixtures->iin->edit('401200', ['country' => "MY"]);
+
+        $payment['currency'] = "MYR";
+
+        $payment["amount"] = 500000;
+
+        $this->app['config']->set('applications.pg_router.mock', true);
+        $paymentInit = $this->fixtures->create('payment:authorized', [
+            'currency' => 'MYR',
+            'amount'   => $payment['amount']
+        ]);
+
+        $payment['id'] = $paymentInit->getId();
+
+        $payment = $this->doAuthAndCapturePayment($payment, $payment['amount'], "MYR", 0, true);
+
+        $txn = $this->getLastTransaction(true);
+
+        $feeBreakUp = $this->getLastEntity('fee_breakup', true);
+
+        $this->assertEquals($payment["id"], $txn["entity_id"]);
+
+        $this->assertEquals($feeBreakUp["percentage"], 0);
+
+        $this->assertEquals($feeBreakUp["amount"], 0);
+
+        $testData = $this->testData['testFetchPaymentTransactionMalaysiaMerchant'];
+        $testData['entity_id'] = $payment['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
         return $payment;
     }
 
@@ -1373,5 +1455,49 @@ class TransactionTest extends TestCase
         $this->refundPayment($payment1['id']);
 
         Mail::assertNotQueued(BalanceThresholdAlert::class);
+    }
+
+    public function testGetTaxCalculatorForEntityAsNull()
+    {
+        try{
+            $response = Base::getTaxCalculator(null, 1000);
+        }
+        catch (\Throwable $e)
+        {
+            // error code 0 is used when exception is raised without any error code
+            // In our case it is raised because $entity as first parameter is passed null here : RZP\Models\Pricing\Calculator\Tax\Base::__construct()
+            $this->assertEquals($e->getCode(), 0);
+        }
+    }
+
+    public function testGetTaxCalculatorForEntityWithoutMerchant()
+    {
+        $merchant = Merchant\Entity::find('10000000000000');
+
+        $payment = $this->createPaymentEntity($merchant);
+
+        $payment->merchant = null;
+
+        $response = Base::getTaxCalculator($payment, 1000);
+
+        $this->assertEquals(get_class($response), "RZP\Models\Pricing\Calculator\Tax\IN\Calculator");
+    }
+
+    // helper methods
+    protected function createPaymentEntity(Merchant\Entity $merchant): Payment\Entity
+    {
+        $paymentArray = $this->getDefaultPaymentArray();
+        unset($paymentArray['card']);
+        $paymentArray['status'] = 'created';
+
+        $payment = (new Payment\Entity)->fill($paymentArray);
+
+        if (isset($paymentArray['international']) === true) {
+            $payment->setAttribute(Payment\Entity::INTERNATIONAL, $paymentArray['international']);
+        }
+
+        $payment->merchant()->associate($merchant);
+
+        return $payment;
     }
 }

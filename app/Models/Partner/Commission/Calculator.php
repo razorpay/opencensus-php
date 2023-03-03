@@ -1340,7 +1340,7 @@ class Calculator extends Base\Core
             return;
         }
 
-        $taxComponents = FeeCalculator\Base::getTaxComponents($this->getPartner());
+        $taxComponents = FeeCalculator\Tax\IN\Utils::getTaxComponents($this->getPartner());
 
         $this->setTaxComponents($taxComponents);
     }
@@ -1478,7 +1478,7 @@ class Calculator extends Base\Core
             {
                 // Calculate as per cgst percentage, and double it to get the exact tax value.
                 // We do this so that if this value needs to be split later into sgst+cgst, it is an even value
-                $calculationPercentage = FeeCalculator\Base::CGST_PERCENTAGE;
+                $calculationPercentage = FeeCalculator\Tax\IN\Constants::CGST_PERCENTAGE;
 
                 $taxValue = 2 * ((int) round(($calculationPercentage * $commissionFee) / 10000));
             }

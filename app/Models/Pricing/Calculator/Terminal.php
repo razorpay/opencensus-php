@@ -7,6 +7,8 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Models\Currency;
 use RZP\Models\Pricing;
+use RZP\Models\Pricing\Calculator\Tax\Base as TaxBase;
+use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Trace\TraceCode;
 
 class Terminal extends Payment
@@ -84,9 +86,15 @@ class Terminal extends Payment
         $this->amount = (new Currency\Core)->getBaseAmount($amount, $currency, $merchantCurrency);
     }
 
-    protected function isEligibleForGst($fee): bool
+    // Since we are not calculating tax for terminal entity and not using
+    //fee split generated for the calculator/terminal entity, hence populating it as 0
+    protected function calculateTax($fee)
     {
-        return false;
+        $feeBreakup = $this->createFeeBreakup(FeeBreakupName::TAX, 0, 0);
+
+        $this->feesSplit->push($feeBreakup);
+
+        return 0;
     }
 
     public function validateFees($totalFees)

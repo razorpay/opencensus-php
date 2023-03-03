@@ -726,7 +726,7 @@ class Core extends Base\Core
     {
         $date = Carbon::createFromDate($year, $month, 1, Timezone::IST);
 
-        $isGstApplicable = Calculator\Base::isGstApplicable($date->getTimestamp());
+        $isGstApplicable = Calculator\Tax\IN\Utils::isGstApplicable($date->getTimestamp());
 
         $input = [
             'month'           => $month,

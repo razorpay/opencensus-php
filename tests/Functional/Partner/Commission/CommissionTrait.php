@@ -6,6 +6,7 @@ use RZP\Services\Mock\HarvesterClient;
 use RZP\Models\Pricing\Calculator\Base;
 use RZP\Tests\Functional\Partner\Constants;
 use RZP\Tests\Functional\Partner\PartnerTrait;
+use RZP\Models\Pricing\Calculator\Tax\IN;
 use RZP\Models\Partner\Commission\Constants as CommissionConstants;
 
 trait CommissionTrait
@@ -58,7 +59,7 @@ trait CommissionTrait
 
     protected function getTax(int $amount, float $rate)
     {
-        if ($amount < Base::CARD_TAX_CUT_OFF)
+        if ($amount < IN\Constants::CARD_TAX_CUT_OFF)
         {
             return 0;
         }

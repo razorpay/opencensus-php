@@ -42,7 +42,7 @@ class XEInvoice extends Core
                 continue;
             }
 
-            $gstRate = PricingCalculator\Base::IGST_PERCENTAGE/100;
+            $gstRate = PricingCalculator\Tax\IN\Constants::IGST_PERCENTAGE/100;
 
             $amount = $invoiceItem[BankingInvoiceReport::AMOUNT];
             $totalAssessableValue += $amount;

@@ -176,6 +176,40 @@ return [
         ]
     ],
 
+    'testFetchPaymentTransactionIndiaMerchant' => [
+        'entity'          => 'transaction',
+        'type'            => 'payment',
+        'amount'          => 500000,
+        'currency'        => 'INR',
+        'debit'           => 0,
+        'credit'          => 488200,
+        'fee'             => 11800,
+        'tax'             => 1800,
+        'gateway_fee'     => 0,
+        'api_fee'         => 0,
+        'balance'         => 1488200,
+        'merchant_id'     => '10000000000000',
+        'pricing_rule_id' => null,
+        'channel'         => 'axis',
+    ],
+
+    'testFetchPaymentTransactionMalaysiaMerchant' => [
+        'entity'          => 'transaction',
+        'type'            => 'payment',
+        'amount'          => 500000,
+        'currency'        => 'MYR',
+        'debit'           => 0,
+        'credit'          => 490000,
+        'fee'             => 10000,
+        'tax'             => 0,
+        'gateway_fee'     => 0,
+        'api_fee'         => 0,
+        'balance'         => 1490000,
+        'merchant_id'     => '10000000000000',
+        'pricing_rule_id' => null,
+        'channel'         => 'axis',
+    ],
+
     'txnDataAfterCapturingPayment' => [
         'entity'          => 'transaction',
         'type'            => 'payment',

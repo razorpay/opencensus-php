@@ -1206,7 +1206,7 @@ class Core extends Base\Core
             }
             else
             {
-                $taxComponents = Calculator\Base::getTaxComponents($partner);
+                $taxComponents = Calculator\Tax\IN\Utils::getTaxComponents($partner);
 
                 $taxRate = 1800;
                 $prefix = Tax\Entity::getSign() . '_';

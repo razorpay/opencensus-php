@@ -3017,13 +3017,13 @@ EOT;
 
             case InvoiceType::CARD_LTE_2K:
                 $query = $query->whereNotNull(Entity::CARD_ID)
-                               ->where(Entity::BASE_AMOUNT, '<=', Calculator\Base::CARD_TAX_CUT_OFF);
+                               ->where(Entity::BASE_AMOUNT, '<=', Calculator\Tax\IN\Constants::CARD_TAX_CUT_OFF);
 
                 break;
 
             case InvoiceType::CARD_GT_2K:
                 $query = $query->whereNotNull(Entity::CARD_ID)
-                               ->where(Entity::BASE_AMOUNT, '>', Calculator\Base::CARD_TAX_CUT_OFF);
+                               ->where(Entity::BASE_AMOUNT, '>', Calculator\Tax\IN\Constants::CARD_TAX_CUT_OFF);
 
                 break;
 

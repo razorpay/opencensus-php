@@ -62,7 +62,7 @@ class PgEInvoice extends Core
             }
             else
             {
-                $gstRate = PricingCalculator\Base::IGST_PERCENTAGE/100;
+                $gstRate = PricingCalculator\Tax\IN\Constants::IGST_PERCENTAGE/100;
             }
 
             $amount = $invoiceItem[InvoiceReport::AMOUNT];
@@ -84,7 +84,7 @@ class PgEInvoice extends Core
             if ( (in_array($eInvoiceEntity->getDocumentType(), self::$adjustmentDocumentType) === true) and
                 (($invoiceItem[InvoiceReport::SGST] !== 0 and  $invoiceItem[InvoiceReport::CGST] !== 0) or ($invoiceItem[InvoiceReport::IGST] !== 0)))
             {
-                $gstRate = PricingCalculator\Base::IGST_PERCENTAGE/100;
+                $gstRate = PricingCalculator\Tax\IN\Constants::IGST_PERCENTAGE/100;
             }
 
             $items[] = [
