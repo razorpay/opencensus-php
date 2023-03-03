@@ -3720,8 +3720,10 @@ trait Authorize
             if (empty($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]))
             {
                 $this->trace->error(
-                    TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT,
-                    ['payment_id' => $payment->getId()]
+                    TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT, [
+                        'payment_id' => $payment->getId(),
+                        'message' => 'invoice number is missing'
+                    ]
                 );
                 throw new Exception\BadRequestValidationFailureException(
                     'Invoice number field is required with in the notes.', 'notes');
@@ -3731,11 +3733,33 @@ trait Authorize
             if (strlen($paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER]) > InvoiceConstants::INVOICE_NUMBER_LENGTH)
             {
                 $this->trace->error(
-                    TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT,
-                    ['payment_id' => $payment->getId()]
+                    TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT, [
+                        'payment_id' => $payment->getId(),
+                        'message' => 'Length of invoice number is greater than expected'
+                    ]
                 );
                 throw new Exception\BadRequestValidationFailureException(
                     'Invoice number should be less than or equal to ' . InvoiceConstants::INVOICE_NUMBER_LENGTH . ' characters.', 'notes');
+            }
+
+            $invoiceNumber = $paymentNotes[InvoiceConstants::OPGSP_INVOICE_NUMBER];
+
+            // Validate uniqueness of invoice number
+            $invoice = (new InvoiceService())
+                ->findByMerchantIdDocumentTypeDocumentNumber($payment->getMerchantId(), InvoiceType::OPGSP_INVOICE, $invoiceNumber);
+            if (isset($invoice) === false) return;
+
+            $existingPayment = $this->repo->payment->findOrFail($invoice->getEntityId());
+            if (isset($existingPayment) and $existingPayment->getStatus() !== Status::FAILED)
+            {
+                $this->trace->error(
+                    TraceCode::INVALID_INVOICE_FOR_OPGSP_IMPORT, [
+                        'payment_id' => $payment->getId(),
+                        'message' => 'Payment already exist with same invoice number'
+                    ]
+                );
+                throw new Exception\BadRequestValidationFailureException(
+                    'Payment already exist with same invoice number.', 'notes');
             }
         }
     }

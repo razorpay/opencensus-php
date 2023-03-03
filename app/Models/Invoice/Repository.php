@@ -625,6 +625,7 @@ class Repository extends Base\Repository
             ->where(Entity::MERCHANT_ID, $merchantId)
             ->where(Entity::RECEIPT, $documentNumber)
             ->where(Entity::TYPE, $documentType)
+            ->latest()
             ->first();
     }
 

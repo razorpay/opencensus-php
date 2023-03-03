@@ -9361,7 +9361,7 @@ class PaymentCreateTest extends TestCase
         $this->assertEquals('authorized', $response['status']);
 
     }
-    
+
     public function testCreatePosPaymentsBlockAutoRefund()
     {
         $attributes = [
@@ -9402,7 +9402,7 @@ class PaymentCreateTest extends TestCase
 
         $this->assertNull($paymentEntity->getRefundAt());
     }
-    
+
     public function testCreatePosPaymentsForUpi()
     {
         $attributes = [
@@ -9977,11 +9977,12 @@ class PaymentCreateTest extends TestCase
 
         $payment['amount'] = '2000100';
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $this->makeRequestAndCatchException(function() use ($payment)
         {
-            $response = $this->doS2SPrivateAuthPayment($payment);
+            $response = $this->doS2SPrivateAuthJsonPayment($payment);
+            print_r($response);
 
             $error = $response['error'];
             $this->assertEquals($error['field'], 'amount');
@@ -10019,11 +10020,11 @@ class PaymentCreateTest extends TestCase
 
         $payment['amount'] = '1000100';
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $this->makeRequestAndCatchException(function() use ($payment)
         {
-            $response = $this->doS2SPrivateAuthPayment($payment);
+            $response = $this->doS2SPrivateAuthJsonPayment($payment);
 
             $error = $response['error'];
             $this->assertEquals($error['field'], 'amount');
@@ -10057,11 +10058,11 @@ class PaymentCreateTest extends TestCase
 
         $payment['amount'] = '1000000';
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
 
         $this->makeRequestAndCatchException(function() use ($payment)
         {
-            $response = $this->doS2SPrivateAuthPayment($payment);
+            $response = $this->doS2SPrivateAuthJsonPayment($payment);
 
             $error = $response['error'];
             $this->assertEquals($error['field'], 'notes');
@@ -10072,6 +10073,154 @@ class PaymentCreateTest extends TestCase
             \RZP\Exception\BadRequestValidationFailureException::class,
             'Invoice number field is required with in the notes.');
 
+    }
+
+    public function testOpgspImportDuplicateInvoiceNumberForSuccessfulPayment()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1000000';
+        $payment['notes'] = [
+            'invoice_number' => 'INV123',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        // this function makes sure that checks for card rearch pass
+        $this->mockPGRouterForRearch();
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        // opgps payment should not go through rearch
+        $this->assertArrayNotHasKey('pg_router', $responseContent);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+
+        $this->assertArrayHasKey('next', $responseContent);
+
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToAddressCollectUrl($redirectContent['url']));
+
+        $id = getTextBetweenStrings($redirectContent['url'], '/payments/', '/address_collect');
+
+        $this->redirectToAddressCollect= true;
+
+        $url = $this->getPaymentRedirectToAddressCollectUrl($id);
+
+        $this->ba->directAuth();
+
+        $request = [
+            'url'   => $url,
+            'method' => 'get',
+            'content' => [],
+        ];
+
+        $infoResponse = $this->makeRequestParent($request);
+        $this->ba->publicAuth();
+
+        $content = $infoResponse->getContent();
+        $this->redirectToUpdateAndAuthorize = true;
+
+        list($url, $method, $content) = $this->getFormDataFromResponse($content, 'http://localhost');
+
+        $content['billing_address'] = $this->getDefaultBillingAddressArray();
+        $content['billing_address']['first_name'] = 'First';
+        $content['billing_address']['last_name'] = 'Rahul';
+
+        $firstRequest = [
+            'content'=>$content,
+            'method'=>$method,
+            'url'=>$url
+        ];
+        $firstResponse=$this->sendRequest($firstRequest);
+
+        $paymentEntity = $this->getDbLastPayment();
+        $paymentSupportingDocs = $this->getLastEntity('invoice', true);
+        $this->assertEquals($paymentSupportingDocs['entity_id'], $paymentEntity['id'] );
+        $this->assertEquals($paymentSupportingDocs['type'],'opgsp_invoice');
+        $this->assertEquals($paymentSupportingDocs['receipt'],'INV123');
+        $this->validatePaymentBillingAddress($paymentEntity, $content['billing_address']);
+
+        $this->makeRequestAndCatchException(function() use ($payment)
+        {
+            $response = $this->doS2SPrivateAuthJsonPayment($payment);
+
+            $error = $response['error'];
+            $this->assertEquals($error['field'], 'notes');
+            $this->assertEquals($error['code'], 'BAD_REQUEST_ERROR');
+            $this->assertEquals($error['description'], 'Payment already exist with same invoice number.');
+
+        },
+            \RZP\Exception\BadRequestValidationFailureException::class,
+            'Payment already exist with same invoice number.');
+    }
+
+    public function testOpgspImportDuplicateInvoiceNumberForFailedPayment()
+    {
+        $merchantId = "10000000000000";
+
+        $merchantAttribute = [
+            MERCHANT::MAX_PAYMENT_AMOUNT => 3000000,
+        ];
+
+        $this->fixtures->edit('merchant', $merchantId, $merchantAttribute);
+        $this->fixtures->merchant->addFeatures(['opgsp_import_flow']);
+
+        $merchantDetailAttribute = [
+            DetailEntity::MERCHANT_ID => $merchantId,
+        ];
+
+        $this->fixtures->create('merchant_detail', $merchantDetailAttribute);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['amount'] = '1000000';
+        $payment['notes'] = [
+            'invoice_number' => 'INV123',
+        ];
+
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
+
+        // this function makes sure that checks for card rearch pass
+        $this->mockPGRouterForRearch();
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $paymentEntity = $this->getDbLastPayment();
+        $paymentSupportingDocs = $this->getLastEntity('invoice', true);
+        $this->assertEquals($paymentSupportingDocs['entity_id'], $paymentEntity['id'] );
+        $this->assertEquals($paymentSupportingDocs['type'],'opgsp_invoice');
+        $this->assertEquals($paymentSupportingDocs['receipt'],'INV123');
+
+        $this->fixtures->edit('payment', $responseContent['razorpay_payment_id'], ['status' => 'failed']);
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($payment);
+
+        $paymentEntity = $this->getDbLastPayment();
+        $paymentSupportingDocs = $this->getLastEntity('invoice', true);
+        $this->assertEquals($paymentSupportingDocs['entity_id'], $paymentEntity['id'] );
+        $this->assertEquals($paymentSupportingDocs['type'],'opgsp_invoice');
+        $this->assertEquals($paymentSupportingDocs['receipt'],'INV123');
     }
 
     public function testOpgspImportPaymentWithUnsupportedLibrary()
@@ -10131,13 +10280,13 @@ class PaymentCreateTest extends TestCase
 
         $payment['amount'] = '1000000';
 
-        $this->fixtures->merchant->addFeatures(['s2s']);
+        $this->fixtures->merchant->addFeatures(['s2s', 's2s_json']);
         $this->fixtures->merchant->enableWallet('10000000000000', 'airtelmoney');
         $this->fixtures->merchant->addFeatures(['email_optional', 'contact_optional']);
 
         $this->makeRequestAndCatchException(function() use ($payment)
         {
-            $response = $this->doS2SPrivateAuthPayment($payment);
+            $response = $this->doS2SPrivateAuthJsonPayment($payment);
 
             $error = $response['error'];
 
