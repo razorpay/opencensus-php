@@ -24,10 +24,16 @@ class Processor extends Base\Processor
     public function getPreferences(array $input): array
     {
         $this->initialize(Action::GET_PREFERENCES, $input);
+        if(isset($input[Entity::CUSTOMER_ID]) === true)
+        {
+            $customer = (new Device\Core)->getDeviceCustomer($input[Entity::CUSTOMER_ID]);
 
-        $customer = (new Device\Core)->getDeviceCustomer($input[Entity::CUSTOMER_ID]);
-
-        return array_merge($this->getCustomerData($customer), $this->getGatewayPreferencesForSDK());
+            return array_merge($this->getCustomerData($customer), $this->getGatewayPreferencesForSDK());
+        }
+        else
+        {
+            return $this->getGatewayPreferencesForSDK();
+        }
     }
 
     private function getCustomerData(CustomerEntity $customer)
