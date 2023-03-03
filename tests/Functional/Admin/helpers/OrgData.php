@@ -260,7 +260,8 @@ return [
                     'color_code2' => '345'
                 ],
                 'external_redirect_url' => 'https://abc.razorpay.com',
-                'external_redirect_url_text' => 'Some text'
+                'external_redirect_url_text' => 'Some text',
+                'merchant_session_timeout_in_seconds' => 600,
             ],
         ],
         'response' => [
@@ -296,7 +297,8 @@ return [
                 'auth_type'     => 'password',
                 'custom_code'   => 'test custom code',
                 'external_redirect_url' => 'https://abc.razorpay.com',
-                'external_redirect_url_text' => 'Some text'
+                'external_redirect_url_text' => 'Some text',
+                'merchant_session_timeout_in_seconds' => 600,
             ],
         ],
         'response' => [
@@ -331,7 +333,8 @@ return [
                 'auth_type'     => 'password',
                 'custom_code'   => 'test custom code',
                 'merchant_second_factor_auth' => true,
-                'merchant_max_wrong_2fa_attempts' => 5
+                'merchant_max_wrong_2fa_attempts' => 5,
+                'merchant_session_timeout_in_seconds' => 600,
             ],
         ],
         'response' => [
@@ -366,7 +369,8 @@ return [
                 'auth_type'     => 'password',
                 'custom_code'   => 'test custom code',
                 'admin_second_factor_auth' => true,
-                'admin_max_wrong_2fa_attempts' => 7
+                'admin_max_wrong_2fa_attempts' => 7,
+                'merchant_session_timeout_in_seconds' => 600,
             ],
         ],
         'response' => [
@@ -400,7 +404,8 @@ return [
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type'     => 'password',
                 'custom_code'   => 'test custom code',
-                'second_factor_auth_mode' => 'sms_and_email'
+                'second_factor_auth_mode' => 'sms_and_email',
+                'merchant_session_timeout_in_seconds' => 600,
             ],
         ],
         'response' => [
@@ -433,6 +438,7 @@ return [
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
                 'custom_code' => 'test custom code',
+                'merchant_session_timeout_in_seconds' => 600,
                 'admin' => [
                     'name' => 'superadmin',
                     'branch_code' => 'a',
@@ -472,6 +478,7 @@ return [
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
                 'custom_code' => 'test custom code',
+                'merchant_session_timeout_in_seconds' => 600,
             ],
         ],
         'response' => [
@@ -502,6 +509,7 @@ return [
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
                 'custom_code' => 'hdfc',
+                'merchant_session_timeout_in_seconds' => 600,
             ],
         ],
         'response' => [
@@ -717,6 +725,7 @@ return [
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
                 'custom_code' => 'hdfc',
+                'merchant_session_timeout_in_seconds' => 600,
                 'admin' => [
                     'name' => 'superadmin',
                     'branch_code' => 'a',
@@ -758,6 +767,7 @@ return [
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
                 'custom_code' => 'hdfc',
+                'merchant_session_timeout_in_seconds' => 600,
                 'admin' => [
                     'name' => 'superadmin',
                     'branch_code' => 'a',
@@ -843,7 +853,8 @@ return [
             'url' => '/orgs',
             'method' => 'put',
             'content' => [
-                'default_pricing_plan_id' => ''
+                'default_pricing_plan_id' => '',
+                'merchant_session_timeout_in_seconds' => 600,
             ],
         ],
         'response' => [
@@ -861,6 +872,236 @@ return [
                 'features' => [
                     'set_va_default_expiry'
                 ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+    
+    'testCreateOrgWithMerchantSessionTimeoutWithoutSplitz' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'post',
+            'content' => [
+                'hostname'      => 'hdfc.com,fbapi.com',
+                'email_domains' => ['hdfc.com', 'fbapi.com'],
+                'allow_sign_up' => 0,
+                'email'         => 'test@hdfc.com',
+                'type'          => 'restricted',
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'admin'         => [
+                    'name'                  => 'superadmin',
+                    'branch_code'           => 'a',
+                    'employee_code'         => 'a',
+                    'location_code'         => 'a',
+                    'department_code'       => 'a',
+                    'supervisor_code'       => 'a',
+                    'username'              => 'xyz93',
+                    'password'              => 'xYZ123!@#',
+                    'password_confirmation' => 'xYZ123!@#',
+                ],
+                'merchant_styles' => [
+                    'color_code1' => '123',
+                    'color_code2' => '345'
+                ],
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text',
+                'merchant_session_timeout_in_seconds' => 600,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email'                => 'test@hdfc.com',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreateOrgWithoutMerchantSessionTimeoutWithoutSplitz' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'post',
+            'content' => [
+                'hostname'      => 'hdfc.com,fbapi.com',
+                'email_domains' => ['hdfc.com', 'fbapi.com'],
+                'allow_sign_up' => 0,
+                'email'         => 'test@hdfc.com',
+                'type'          => 'restricted',
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'admin'         => [
+                    'name'                  => 'superadmin',
+                    'branch_code'           => 'a',
+                    'employee_code'         => 'a',
+                    'location_code'         => 'a',
+                    'department_code'       => 'a',
+                    'supervisor_code'       => 'a',
+                    'username'              => 'xyz93',
+                    'password'              => 'xYZ123!@#',
+                    'password_confirmation' => 'xYZ123!@#',
+                ],
+                'merchant_styles' => [
+                    'color_code1' => '123',
+                    'color_code2' => '345'
+                ],
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant session timeout in seconds field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+
+    'testEditOrgWithoutMerchantSessionTimeout' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'put',
+            'content' => [
+                'email_domains' => ['fbapi.com'],
+                'hostname'      => 'test1.com, test2.com',
+                'email'         => 'test@hdfc.com',
+                'allow_sign_up' => true,
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text',
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant session timeout in seconds field is required.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testEditOrgNonIntMerchantSessionTimeout' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'put',
+            'content' => [
+                'email_domains' => ['fbapi.com'],
+                'hostname'      => 'test1.com, test2.com',
+                'email'         => 'test@hdfc.com',
+                'allow_sign_up' => true,
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text',
+                'merchant_session_timeout_in_seconds' => 'fifteen'
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant session timeout in seconds must be a number.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testEditOrgLessThanMinMerchantSessionTimeout' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'put',
+            'content' => [
+                'email_domains' => ['fbapi.com'],
+                'hostname'      => 'test1.com, test2.com',
+                'email'         => 'test@hdfc.com',
+                'allow_sign_up' => true,
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text',
+                'merchant_session_timeout_in_seconds' => 240
+            ],
+        ],
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The merchant session timeout in seconds must be at least 300.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testEditOrgWithMerchantSessionTimeout' => [
+        'request'  => [
+            'url'     => '/orgs',
+            'method'  => 'put',
+            'content' => [
+                'email_domains' => ['fbapi.com'],
+                'hostname'      => 'test1.com, test2.com',
+                'email'         => 'testrzp@gmail.com',
+                'allow_sign_up' => true,
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+                'external_redirect_url' => 'https://abc.razorpay.com',
+                'external_redirect_url_text' => 'Some text',
+                'merchant_session_timeout_in_seconds' => 600,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email'                => 'testrzp@gmail.com',
+                'permissions'          => [],
+                'workflow_permissions' => [],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetOrgWithMerchantSessionTimeout' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'email'                => 'testrzp@gmail.com',
             ],
             'status_code' => 200,
         ],

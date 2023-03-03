@@ -9,11 +9,13 @@ use RZP\Services\Settlements;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use  RZP\Models\Feature;
+use RZP\Tests\Traits\MocksSplitz;
 
 class OrgTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use HeimdallTrait;
+    use MocksSplitz;
 
     protected function setUp(): void
     {
@@ -565,5 +567,133 @@ class OrgTest extends TestCase
 
         $result = $this->startTest();
         $this->assertEquals(['set_va_default_expiry'], $result['features']);
+    }
+
+    protected function enableSplitzMerchantSessionTimeout($orgId)
+    {
+        $requestData = '{"org_id":"' . $orgId . '"}';
+
+        $input = [
+            "experiment_id" => "LIiQLbE44UOA2K",
+            "id"            => $orgId,
+            "request_data"  => $requestData,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
+    }
+
+    public function testCreateOrgWithMerchantSessionTimeoutWithoutSplitz()
+    {
+        $permIds = $this->getPermissionsByIds('assignable');
+
+        $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
+
+        $result = $this->startTest();
+
+        $this->assertNotEmpty($result['merchant_session_timeout_in_seconds']);
+
+        $this->assertEquals(43200, $result['merchant_session_timeout_in_seconds']);
+    }
+
+    public function testCreateOrgWithoutMerchantSessionTimeoutWithoutSplitz()
+    {
+        $permIds = $this->getPermissionsByIds('assignable');
+
+        $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
+
+        $this->startTest();
+    }
+
+    public function testEditOrgWithoutMerchantSessionTimeout()
+    {
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testEditOrgNonIntMerchantSessionTimeout()
+    {
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $this->enableSplitzMerchantSessionTimeout($org->getId());
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testEditOrgLessThanMinMerchantSessionTimeout()
+    {
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $this->enableSplitzMerchantSessionTimeout($org->getId());
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testEditOrgWithMerchantSessionTimeout()
+    {
+        $org = $this->fixtures->create('org');
+
+        $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $this->enableSplitzMerchantSessionTimeout($org->getId());
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+
+        $result = $this->startTest();
+
+        $this->assertNotEmpty($result['merchant_session_timeout_in_seconds']);
+
+        $this->assertEquals(600, $result['merchant_session_timeout_in_seconds']);
+    }
+
+    public function testGetOrgWithMerchantSessionTimeout()
+    {
+        $this->ba->adminAuth();
+
+        $org = $this->fixtures->create('org', ['email' => 'testrzp@gmail.com', 'merchant_session_timeout_in_seconds' => 600]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId() . '/self';
+
+        $result = $this->startTest();
+
+        $this->assertNotEmpty($result['merchant_session_timeout_in_seconds']);
+
+        $this->assertEquals(600, $result['merchant_session_timeout_in_seconds']);
     }
 }

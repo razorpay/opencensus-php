@@ -44,6 +44,7 @@ class Entity extends Base\Entity
     const PAYMENT_BTN_LOGO_URL            = 'payment_btn_logo_url';
     const EXTERNAL_REDIRECT_URL           = 'external_redirect_url';
     const EXTERNAL_REDIRECT_URL_TEXT      = 'external_redirect_url_text';
+    const MERCHANT_SESSION_TIMEOUT_IN_SECONDS = 'merchant_session_timeout_in_seconds';
 
     /**
      * Org level features
@@ -93,6 +94,8 @@ class Entity extends Base\Entity
      * One of the types
      */
     const RESTRICTED      = 'restricted';
+
+    const DEFAULT_MERCHANT_SESSION_TIMEOUT_IN_SECONDS = 43200;
 
     /**
      * Org IDs whose merchants should allow dynamic wallet flow.
@@ -153,6 +156,7 @@ class Entity extends Base\Entity
         self::FEATURES,
         self::BACKGROUND_IMAGE_URL,
         self::MERCHANT_STYLES,
+        self::MERCHANT_SESSION_TIMEOUT_IN_SECONDS,
         self::MERCHANT_SECOND_FACTOR_AUTH,
         self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS,
         self::ADMIN_SECOND_FACTOR_AUTH,
@@ -189,6 +193,7 @@ class Entity extends Base\Entity
         self::TYPE,
         self::BACKGROUND_IMAGE_URL,
         self::MERCHANT_STYLES,
+        self::MERCHANT_SESSION_TIMEOUT_IN_SECONDS,
         self::MERCHANT_SECOND_FACTOR_AUTH,
         self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS,
         self::ADMIN_SECOND_FACTOR_AUTH,
@@ -223,6 +228,7 @@ class Entity extends Base\Entity
         self::DEFAULT_PRICING_PLAN_ID,
         self::BACKGROUND_IMAGE_URL,
         self::MERCHANT_STYLES,
+        self::MERCHANT_SESSION_TIMEOUT_IN_SECONDS,
         self::MERCHANT_SECOND_FACTOR_AUTH,
         self::MERCHANT_MAX_WRONG_2FA_ATTEMPTS,
         self::ADMIN_SECOND_FACTOR_AUTH,
@@ -256,6 +262,7 @@ class Entity extends Base\Entity
         self::SECOND_FACTOR_AUTH_MODE         => Constants::SMS,
         self::EXTERNAL_REDIRECT_URL          => null,
         self::EXTERNAL_REDIRECT_URL_TEXT     => null,
+        self::MERCHANT_SESSION_TIMEOUT_IN_SECONDS => self::DEFAULT_MERCHANT_SESSION_TIMEOUT_IN_SECONDS,
     ];
 
     protected $publicSetters = [

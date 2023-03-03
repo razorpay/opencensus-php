@@ -400,6 +400,8 @@ return array(
 
     'partner_config_auditing_experiment_id' => env('PARTNER_CONFIG_AUDITING_EXPERIMENT_ID'),
 
+    'enable_merchant_dashboard_timeout_experiment_id' => env('ENABLE_MERCHANT_DASHBOARD_TIMEOUT_EXPERIMENT_ID'),
+
     'submerchant_ownership_transfer_experiment_id' => env('SUBMERCHANT_OWNERSHIP_TRANSFER_EXPERIMENT_ID'),
 
     'remove_partner_user_from_merchant_manage_team_experiment_id' => env('REMOVE_PARTNER_USER_FROM_MERCHANT_MANAGE_TEAM_EXPERIMENT_ID'),

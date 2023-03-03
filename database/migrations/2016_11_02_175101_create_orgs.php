@@ -88,6 +88,9 @@ class CreateOrgs extends Migration
             $table->integer(Org::MERCHANT_MAX_WRONG_2FA_ATTEMPTS)
                   ->default(9);
 
+            $table->unsignedSmallInteger(ORG::MERCHANT_SESSION_TIMEOUT_IN_SECONDS)
+                ->default(Org::DEFAULT_MERCHANT_SESSION_TIMEOUT_IN_SECONDS);
+
             $table->boolean(Org::ADMIN_SECOND_FACTOR_AUTH)
                   ->default(0);
 

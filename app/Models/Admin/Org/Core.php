@@ -3,9 +3,11 @@
 namespace RZP\Models\Admin\Org;
 
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Action;
 use RZP\Models\Admin\Permission;
+use RZP\Models\Merchant\Core as MerchantCore;
 
 class Core extends Base\Core
 {
@@ -14,6 +16,15 @@ class Core extends Base\Core
         $org = (new Entity)->generateId();
 
         $org->setAuditAction(Action::CREATE_ORG);
+
+        $experimentResult = $this->isMerchantDashboardTimeoutExpEnabled();
+
+        if ($experimentResult === false and
+            isset($input[Entity::MERCHANT_SESSION_TIMEOUT_IN_SECONDS]) === true and
+            $input[Entity::MERCHANT_SESSION_TIMEOUT_IN_SECONDS] !== Entity::DEFAULT_MERCHANT_SESSION_TIMEOUT_IN_SECONDS)
+        {
+            $input[Entity::MERCHANT_SESSION_TIMEOUT_IN_SECONDS] = Entity::DEFAULT_MERCHANT_SESSION_TIMEOUT_IN_SECONDS;
+        }
 
         $org->build($input);
 
@@ -44,6 +55,15 @@ class Core extends Base\Core
         $org = $this->repo->org->findOrFailPublic($orgId);
 
         $org->setAuditAction(Action::EDIT_ORG);
+
+        $experimentResult = $this->isMerchantDashboardTimeoutExpEnabled($orgId);
+
+        if ($experimentResult === false and
+            isset($input[Entity::MERCHANT_SESSION_TIMEOUT_IN_SECONDS]) === true and
+            $input[Entity::MERCHANT_SESSION_TIMEOUT_IN_SECONDS] !== Entity::DEFAULT_MERCHANT_SESSION_TIMEOUT_IN_SECONDS)
+        {
+            $input[Entity::MERCHANT_SESSION_TIMEOUT_IN_SECONDS] = Entity::DEFAULT_MERCHANT_SESSION_TIMEOUT_IN_SECONDS;
+        }
 
         if (empty($input[Entity::DEFAULT_PRICING_PLAN_ID]) === false)
         {
@@ -102,6 +122,21 @@ class Core extends Base\Core
         $org = $this->fetch($org->getPublicId());
 
         return $org;
+    }
+
+    protected function isMerchantDashboardTimeoutExpEnabled($orgId = false)
+    {
+        $orgId = $orgId ? $orgId : UniqueIdEntity::generateUniqueId();
+
+        $requestData = '{"org_id":"' . $orgId . '"}';
+
+        $properties = [
+            'id'            => $orgId,
+            'experiment_id' => app('config')->get('app.enable_merchant_dashboard_timeout_experiment_id'),
+            'request_data'  => $requestData,
+        ];
+
+        return (new MerchantCore())->isSplitzExperimentEnable($properties, 'enable');
     }
 
     protected function deleteUnassignedPermissionsFromRoles(Entity $org, array $diffPerms)

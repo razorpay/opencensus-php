@@ -7141,3 +7141,5 @@ ALTER TABLE tokens
 
 ALTER TABLE merchant_banks
     ADD COLUMN addon_methods JSON DEFAULT NULL;
+ALTER TABLE orgs
+    ADD COLUMN merchant_session_timeout_in_seconds SMALLINT UNSIGNED NOT NULL DEFAULT 43200;
