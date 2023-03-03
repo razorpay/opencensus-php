@@ -3,7 +3,12 @@
 namespace RZP\Models\Merchant\BusinessDetail;
 
 use RZP\Base;
+use Carbon\Carbon;
+use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -82,4 +87,45 @@ class Validator extends Base\Validator
         Entity::MIQ_SHARING_DATE                                              => 'sometimes|integer',
         Entity::TESTING_CREDENTIALS_DATE                                      => 'sometimes|integer',
     ];
+
+    /**
+    * @throws BadRequestValidationFailureException
+     * @throws BadRequestException
+     * */
+    public static function validateMIQSharingAndTestingDate(array &$input, $merchantDetails)
+    {
+        $minValue =  Carbon::now()->setTimezone(Timezone::IST)->subDays(7)->modify('today')->getTimestamp();
+        $maxValue =  Carbon::now()->setTimezone(Timezone::IST)->modify('today')->getTimestamp();
+
+        if(isset($input[Entity::MIQ_SHARING_DATE]) === true)
+        {
+            if($input[Entity::MIQ_SHARING_DATE] === 0 )
+            {
+                unset($input[Entity::MIQ_SHARING_DATE]);
+            }
+            else if ($input[Entity::MIQ_SHARING_DATE] < $minValue or $input[Entity::MIQ_SHARING_DATE] > $maxValue)
+            {
+               throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INVALID_MIQ_SHARING_DATE, null);
+            }
+        }
+
+        if(isset($input[Entity::TESTING_CREDENTIALS_DATE]) === true)
+        {
+            if($input[Entity::TESTING_CREDENTIALS_DATE] === 0)
+            {
+                unset($input[Entity::TESTING_CREDENTIALS_DATE]);
+            }
+            else if ($input[Entity::TESTING_CREDENTIALS_DATE] < $minValue or $input[Entity::TESTING_CREDENTIALS_DATE] > $maxValue)
+            {
+                throw new BadRequestValidationFailureException(ErrorCode::BAD_REQUEST_INVALID_TESTING_CREDENTIALS_DATE, null);
+            }
+        }
+
+        if((isset($input['miq_sharing_date']) === true or
+                isset($input['testing_credentials_date']) === true ) and
+            $merchantDetails->merchant->org->isFeatureEnabled(\RZP\Models\Feature\Constants::ADDITIONAL_ONBOARDING) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED, null);
+        }
+    }
 }

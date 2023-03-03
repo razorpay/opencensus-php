@@ -255,6 +255,8 @@ class Constants
      */
     const CHECKOUT_DISABLE_I18N     = 'checkout_disable_i18n';
 
+    const ADDITIONAL_ONBOARDING = 'additional_onboarding';
+
     /**
      * If applied on partner merchant then all sub merchant settlement will be settled to partner
      * this will be further aggregated and settled to partner merchant
@@ -1784,7 +1786,7 @@ class Constants
      */
     const PUSH_PROVISIONING_LIVE = 'push_provisioning_live';
 
-    const DISABLE_UPI_NUM_CHECKOUT = 'disable_upi_num_checkout'; 
+    const DISABLE_UPI_NUM_CHECKOUT = 'disable_upi_num_checkout';
     const DISABLE_UPI_NUM_ON_L0 = 'disable_upi_num_on_l0';
     const DISABLE_UPI_NUM_ON_L1 = 'disable_upi_num_on_l1';
 
@@ -2437,6 +2439,7 @@ class Constants
         self::DISABLE_UPI_NUM_CHECKOUT => true,
         self::DISABLE_UPI_NUM_ON_L0 => true,
         self::DISABLE_UPI_NUM_ON_L1 => true,
+        self::ADDITIONAL_ONBOARDING => true,
         self::AUTO_COMM_INV_DISABLED          => true,
         self::ADMIN_LEAD_PARTNER      => true,
         self::ROUTE_PARTNERSHIPS => true,

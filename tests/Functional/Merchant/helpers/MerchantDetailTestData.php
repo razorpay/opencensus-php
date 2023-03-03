@@ -2315,6 +2315,75 @@ return [
             ],
         ],
     ],
+    'testMerchantUpdateMiqAndTestingHappy' => [
+        'request'  => [
+            'content' => [
+                'miq_sharing_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+                'testing_credentials_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+            ],
+            'url'     => '/merchant/{id}/business/detail',
+            'method'  => 'POST',
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'miq_sharing_date'=> strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+                'testing_credentials_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+            ],
+        ],
+    ],
+    'testMerchantUpdateMiqAndTestingUnHappyOrgFeature' => [
+        'request'  => [
+            'content' => [
+                'miq_sharing_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+                'testing_credentials_date' => strtotime('yesterday midnight'. ' '. 'Asia/Kolkata'),
+            ],
+            'url'     => '/merchant/{id}/business/detail',
+            'method'  => 'POST',
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'Access Denied',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+    'testMerchantUpdateMiqAndTestingUnHappyInvalidDates' => [
+        'request'  => [
+            'content' => [
+                'miq_sharing_date' => strtotime('+3 day'. ' '. 'Asia/Kolkata'),
+                'testing_credentials_date' => strtotime('tomorrow midnight'. ' '. 'Asia/Kolkata'),
+            ],
+            'url'     => '/merchant/{id}/business/detail',
+            'method'  => 'POST',
+            'convertContentToString' => false
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => 'BAD_REQUEST_ERROR',
+                    'description' => 'BAD_REQUEST_INVALID_MIQ_SHARING_DATE',
+                    'source' => 'business',
+                    'step' =>  'payment_initiation',
+                    'reason'=> 'input_validation_failed',
+                    'metadata'=> []
+                 ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
     'testMerchantReviewer' => [
         'request' => [
             'content' => [

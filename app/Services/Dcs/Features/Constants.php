@@ -62,6 +62,7 @@ class Constants
     const SubMerchantOnBoardingEnabled = 'submerchant_onboarding_enabled';
     const WebsiteInternationalDisabled = 'website_international_disabled';
     const AdminLeadPartnerInviteEnabled = 'admin_lead_partner_invite_enabled';
+    const AdditionalFieldsHdfcOnboarding = 'additional_fields_hdfc_onboarding';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -118,6 +119,7 @@ class Constants
         self::SubMerchantOnBoardingEnabled => "rzp/platform/partner/onboarding/Features",
         self::WebsiteInternationalDisabled => "rzp/platform/partner/onboarding/Features",
         self::AdminLeadPartnerInviteEnabled => "rzp/platform/partner/onboarding/Features",
+        self::AdditionalFieldsHdfcOnboarding => "rzp/pg/org/dashboard/admin/Features",
     ];
 
     /**
@@ -149,6 +151,7 @@ class Constants
         APIFeaturesConstants::ASYNC_TXN_FILL_DETAILS => self::AsyncTransactionUpdateEnabled,
         APIFeaturesConstants::DISABLE_AUTO_REFUNDS => self::AutoRefundsDisabled,
         APIFeaturesConstants::ROUTE_PARTNERSHIPS => self::EnableRoutePartnerships,
+        APIFeaturesConstants::ADDITIONAL_ONBOARDING => self::AdditionalFieldsHdfcOnboarding,
         self::ImportSettlement => self::ImportSettlement,
         APIFeaturesConstants::NOFLASHCHECKOUT => self::SavedCardsDisabled,
         APIFeaturesConstants::CHECKOUT_DISABLE_RETRY => self::PaymentRetryDisabled,
@@ -207,6 +210,7 @@ class Constants
         self::EnableMerchantCreateOwnTemplate => APIFeaturesConstants::ENABLE_CREATE_OWN_TEMPLATE,
         self::EnableCustomerAmount => APIFeaturesConstants::ENABLE_CUSTOMER_AMOUNT,
         self::EnableRoutePartnerships => APIFeaturesConstants::ROUTE_PARTNERSHIPS,
+        self::AdditionalFieldsHdfcOnboarding => APIFeaturesConstants::ADDITIONAL_ONBOARDING,
         self::ImportSettlement => self::ImportSettlement,
         self::SavedCardsDisabled => APIFeaturesConstants::NOFLASHCHECKOUT,
         self::PaymentRetryDisabled => APIFeaturesConstants::CHECKOUT_DISABLE_RETRY,
@@ -257,7 +261,9 @@ class Constants
     /**
      * Stores the mapping of the Prg features to their corresponding handlers
      */
-    public static $dcsNewOrgFeatures = [];
+    public static $dcsNewOrgFeatures = [
+        self::AdditionalFieldsHdfcOnboarding => 'direct',
+    ];
 
     public static function dcsReadEnabledFeaturesByEntityType(string $entityType = null, bool $withDcsNames = false): array
     {

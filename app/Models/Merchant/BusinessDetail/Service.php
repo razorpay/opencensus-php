@@ -3,10 +3,12 @@
 namespace RZP\Models\Merchant\BusinessDetail;
 
 use Throwable;
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Detail;
 use RZP\Services\WhatCmsService;
 use RZP\Exception\LogicException;
@@ -95,6 +97,10 @@ class Service extends Base\Service
 
         $businessDetail = $merchantDetails->businessDetail;
 
+        (new Validator)->validateMIQSharingAndTestingDate($input, $merchantDetails);
+
+        $this->getMidnightTimestampForMIQSharingAndTestingDate($input);
+
         if ($businessDetail === null)
         {
             $businessDetail = $this->core->createBusinessDetail($merchantDetails, $input);
@@ -102,6 +108,27 @@ class Service extends Base\Service
         else
         {
             $businessDetail = $this->core->editBusinessDetail($merchantDetails, $input);
+        }
+
+        $merchant = $merchantDetails->merchant;
+
+        try{
+            if(isset($input[BusinessDetailEntity::MIQ_SHARING_DATE]) or isset($input[BusinessDetailEntity::TESTING_CREDENTIALS_DATE]))
+            {
+                $this->repo->merchant->syncToEsLiveAndTest($merchant, Merchant\EsRepository::UPDATE);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $tracePayload = [
+                'entity'    => 'merchant',
+                'entity_id' => $merchant->getId(),
+            ];
+
+            $this->trace->info(TraceCode::ES_SYNC_PUSH_FAILED,[
+                'tracePayload' => $tracePayload,
+                'message' => $e->getMessage()
+            ]);
         }
 
         $this->trace->info(TraceCode::MERCHANT_BUSINESS_DETAILS_SAVE_LATENCY, [
@@ -159,5 +186,23 @@ class Service extends Base\Service
         $this->saveBusinessDetailsForMerchant($merchantId, $businessDetailsInput);
 
         return [];
+    }
+
+    public function getMidnightTimestampForMIQSharingAndTestingDate(&$input)
+    {
+        if(isset($input[Entity::MIQ_SHARING_DATE]) === true)
+        {
+            $input[BusinessDetailEntity::MIQ_SHARING_DATE] =  Carbon::createFromTimestamp($input[BusinessDetailEntity::MIQ_SHARING_DATE])
+                                                                ->setTimezone(Timezone::IST)
+                                                                ->modify('today')
+                                                                ->getTimestamp();
+        }
+        if(isset($input[Entity::TESTING_CREDENTIALS_DATE]) === true)
+        {
+            $input[BusinessDetailEntity::TESTING_CREDENTIALS_DATE] =  Carbon::createFromTimestamp($input[BusinessDetailEntity::TESTING_CREDENTIALS_DATE])
+                                                                        ->setTimezone(Timezone::IST)
+                                                                        ->modify('today')
+                                                                        ->getTimestamp();
+        }
     }
 }

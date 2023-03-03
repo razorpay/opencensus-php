@@ -2414,6 +2414,62 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->startTest();
     }
+    public function testMerchantUpdateMiqAndTestingHappy()
+    {
+        $this->fixtures->create('feature', [
+            'name'          => 'additional_onboarding',
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/$merchantId/business/detail";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantUpdateMiqAndTestingUnHappyOrgFeature()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/$merchantId/business/detail";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testMerchantUpdateMiqAndTestingUnHappyInvalidDates()
+    {
+        $this->fixtures->create('feature', [
+            'name'          => 'additional_onboarding',
+            'entity_id'     => '100000razorpay',
+            'entity_type'   => 'org',
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = "/merchant/$merchantId/business/detail";
+
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
 
     public function testMerchantUpdateWebsiteDetails()
     {
