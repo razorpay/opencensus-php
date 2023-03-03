@@ -23,6 +23,7 @@ const DownloadFIRCForm = ({ closeModal }) => {
     () => Number(year) < START_YEAR || (Number(year) === START_YEAR && Number(month) < 7),
     [year, month],
   );
+  const isJanMonth = useMemo(() => Number(year) === 2023 && Number(month) === 1, [year, month]);
 
   const getFircFiles = useCallback(async () => {
     try {
@@ -93,7 +94,7 @@ const DownloadFIRCForm = ({ closeModal }) => {
         )}
 
         {files.data.length === 0 && !files.isLoading && (
-          <FIRCInfo closeModal={closeModal} isInvalidDate={isInvalidDate} />
+          <FIRCInfo closeModal={closeModal} isInvalidDate={isInvalidDate} isJanMonth={isJanMonth} />
         )}
 
         {files.data.length !== 0 && !files.isLoading && (

@@ -1,7 +1,7 @@
 import { useCallback, memo } from 'react';
 import { CreateTicketEmitter } from 'merchant/views/TicketSupport/utils';
 
-const FIRCInfo = ({ isInvalidDate, closeModal }) => {
+const FIRCInfo = ({ isInvalidDate, isJanMonth, closeModal }) => {
   const openSupport = useCallback(() => {
     closeModal();
     CreateTicketEmitter.emit('create-ticket', 'tickets');
@@ -16,6 +16,11 @@ const FIRCInfo = ({ isInvalidDate, closeModal }) => {
             <a onClick={openSupport}> reach out </a>
           </b>
           to our support team and we will get back to you at the earliest.
+        </div>
+      ) : isJanMonth ? (
+        <div>
+          We are facing 3 weeks delay in updating your Jan 2023 FIRS due to system upgrade at our
+          banking partner&apos;s end. Apologies for inconvenience caused.
         </div>
       ) : (
         <div>
