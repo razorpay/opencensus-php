@@ -147,7 +147,7 @@ class InvoiceDetails extends Component {
 
           <div class="SliderPanel__Body">
             {commissionInvoice.status === 'issued' && (
-              <div className="alert alert-warning rzp-banner">
+              <div className="alert alert-warning rzp-banner commission-payment-wrapper">
                 <span className="rzp-banner-text">
                   Commission payment will be initiated once the invoice is processed.
                 </span>
