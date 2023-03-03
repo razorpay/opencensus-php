@@ -2,7 +2,7 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
 import SettlementInfo from 'merchant/views/Settlements/components/SettlementInfo';
 
-const INTEGRATED_GATEWAYS = ['payu', 'paytm'];
+const INTEGRATED_GATEWAYS = ['payu', 'paytm', 'billdesk_optimizer', 'cashfree'];
 
 export const OptimizerDetails = ({ payment, terminalProviders, scrolledToBottom, page }) => {
   return (
