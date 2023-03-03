@@ -2581,6 +2581,7 @@ class Validator extends Base\Validator
         Entity::TYPE                  => 'sometimes|string',
         Entity::EMI_SUBVENTION        => 'sometimes|in:customer,merchant',
         Entity::PLAN_NAME             => 'sometimes|string',
+        Entity::STATUS                => 'sometimes|in:pending,activated,deactivated,failed',
 
     ];
     protected static $kotakDebitEmiEditTerminalRules = [
@@ -2589,6 +2590,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY              => 'sometimes|string',
         Entity::EMI                   => 'sometimes|boolean',
         Entity::EMI_SUBVENTION        => 'sometimes|in:customer,merchant',
+        Entity::STATUS                => 'sometimes|in:pending,activated,deactivated,failed',
 
     ];
 
@@ -2606,6 +2608,7 @@ class Validator extends Base\Validator
         Entity::TYPE                  => 'sometimes|string',
         Entity::EMI_SUBVENTION        => 'sometimes|in:customer,merchant',
         Entity::PLAN_NAME             => 'sometimes|string',
+        Entity::STATUS                => 'sometimes|in:pending,activated,deactivated,failed',
     ];
     protected static $indusindDebitEmiEditTerminalRules = [
         Entity::GATEWAY_MERCHANT_ID   => 'sometimes|string',
@@ -2613,6 +2616,7 @@ class Validator extends Base\Validator
         Entity::CATEGORY              => 'sometimes|string',
         Entity::EMI                   => 'sometimes|boolean',
         Entity::EMI_SUBVENTION        => 'sometimes|in:customer,merchant',
+        Entity::STATUS                => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 
     protected static $updateTerminalsBulkRules = [
