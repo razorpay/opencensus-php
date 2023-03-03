@@ -1353,7 +1353,7 @@ class Service extends Base\Service
     {
         $serviceProviderTokens = $this->core->fetchToken($dbToken, true);
 
-        if($dbToken['source'] === 'merchant')
+        if(isset($dbToken['source']))
         {
             unset($dbToken['source']);
         }
