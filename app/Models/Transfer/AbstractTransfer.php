@@ -461,20 +461,22 @@ abstract class AbstractTransfer
 
     protected function acquireMutexLockIfApplicable(Entity $transfer)
     {
-        $merchantId = $transfer->getMerchantId();
-
-        $variant = $this->app['razorx']->getTreatment(
-            $merchantId,
-            Merchant\RazorxTreatment::LA_MUTEX_LOCK_FOR_TRANSFER_PROCESSING,
-            $this->mode
-        );
-
-        if (strtolower($variant) !== Merchant\RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            return $this->acquireMutexLock($transfer);
-        }
-
         return [false, null];
+
+//        $merchantId = $transfer->getMerchantId();
+//
+//        $variant = $this->app['razorx']->getTreatment(
+//            $merchantId,
+//            Merchant\RazorxTreatment::LA_MUTEX_LOCK_FOR_TRANSFER_PROCESSING,
+//            $this->mode
+//        );
+//
+//        if (strtolower($variant) !== Merchant\RazorxTreatment::RAZORX_VARIANT_ON)
+//        {
+//            return $this->acquireMutexLock($transfer);
+//        }
+//
+//        return [false, null];
     }
 
     /**
