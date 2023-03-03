@@ -103,6 +103,8 @@ class EmiTest extends TestCase
                 'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
             ]);
 
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
+
         $this->fixtures->create('emi_plan');
 
         $this->ba->publicAuth();
@@ -191,6 +193,8 @@ class EmiTest extends TestCase
                 ],
             ]);
 
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
+
         $this->fixtures->create('emi_plan');
 
         $this->ba->publicAuth();
@@ -214,6 +218,8 @@ class EmiTest extends TestCase
             [
                 'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
             ]);
+
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1 , 'SBIN' => 1]);
 
         $this->fixtures->emiPlan->createDefaultEmiPlans();
 

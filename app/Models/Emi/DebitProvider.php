@@ -38,7 +38,12 @@ class DebitProvider
         return self::$providers;
     }
 
-    public static function getEnabledDebitEmiProviders(int $debitEmi, $providers): array
+    public static function getEnabledDebitEmiProviders($providers): array
+    {
+        return self::getConsolidatedEnabledDebitEmiProviders(1, $providers);
+    }
+
+    public static function getConsolidatedEnabledDebitEmiProviders(int $debitEmi, $providers): array
     {
         $debitEmiProviders = [];
 
@@ -65,6 +70,8 @@ class DebitProvider
 
         foreach ($providers as $provider => $value)
         {
+            self::checkProviderValidity(strtoupper($provider));
+
             $value = (int) $value;
 
             $bitPosition = self::$providerBitPositionMap[strtoupper($provider)];

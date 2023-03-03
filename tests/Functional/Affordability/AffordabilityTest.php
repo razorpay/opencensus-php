@@ -138,6 +138,7 @@ class AffordabilityTest extends TestCase
     public function testEmiOnAffordabilityWidget()
     {
         $this->fixtures->merchant->enableEmi(Account::TEST_ACCOUNT);
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
         $this->fixtures->emiPlan->create([
             'id'          => '10101010101312',
             'merchant_id' => Account::TEST_ACCOUNT,
@@ -182,6 +183,7 @@ class AffordabilityTest extends TestCase
     {
         $this->fixtures->merchant->enablePaylater(Account::TEST_ACCOUNT);
         $this->fixtures->merchant->enableEmi(Account::TEST_ACCOUNT);
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
         $this->fixtures->emiPlan->create([
             'id'          => '10101010101312',
             'merchant_id' => Account::TEST_ACCOUNT,

@@ -928,7 +928,7 @@ class ActivationTest extends OAuthTestCase
 
         $this->assertArraySelectiveEquals($expectedMethods, $methodsArray);
 
-        $this->assertArraySelectiveEquals(['HDFC' => 0], $methodsArray['debit_emi_providers']);
+        $this->assertArraySelectiveEquals(['HDFC' => 1], $methodsArray['debit_emi_providers']);
     }
 
     public function testActivationDefaultMethodsBasedOnCategory5912pharma()

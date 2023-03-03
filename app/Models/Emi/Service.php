@@ -5,6 +5,8 @@ namespace RZP\Models\Emi;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Bank\IFSC;
@@ -420,11 +422,41 @@ class Service extends Base\Service
         {
             $emiType = Type::CREDIT;
 
-            $sharedCreditEmiPlans = $sharedPlans->reject(function($plan) use ($emiType) {
+            $enabledProviders = $methods->getEnabledCreditEmiProviders();
+
+            $variantFlag = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK,  $this->mode);
+
+            $sharedCreditEmiPlans = $sharedPlans->reject(function($plan) use ($emiType, $enabledProviders,$variantFlag) {
+
+                // Adding Experiment for checking credit emi insturment status in merchant banks table
+                if($variantFlag == 'on')
+                {
+                    if ($plan->type !== $emiType)
+                    {
+                        return true;
+                    }
+
+                    $provider =  $plan->getIssuer();
+
+                    return (isset($enabledProviders[$provider]) == false or ($enabledProviders[$provider] === 0));
+                }
                 return $plan->type !== $emiType;
             });
 
-            $merchantCreditEmiPlans = $merchantEmiPlans->reject(function($plan) use ($emiType) {
+            $merchantCreditEmiPlans = $merchantEmiPlans->reject(function($plan) use ($emiType, $enabledProviders,$variantFlag) {
+
+                // Adding Experiment for checking credit emi insturment status in merchant banks table
+                if($variantFlag == 'on')
+                {
+                    if ($plan->type !== $emiType)
+                    {
+                        return true;
+                    }
+
+                    $provider =  $plan->getIssuer();
+
+                    return (isset($enabledProviders[$provider]) == false  or ($enabledProviders[$provider] === 0));
+                }
                 return $plan->type !== $emiType;
             });
         }

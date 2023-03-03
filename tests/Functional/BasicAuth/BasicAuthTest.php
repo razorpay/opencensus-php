@@ -617,6 +617,7 @@ class BasicAuthTest extends TestCase
             'emi'            => [Merchant\Methods\EmiType::CREDIT => '1'],
             'disabled_banks' => [],
             'banks'          => '[]',
+            'addon_methods' => ['credit_emi' => ['HDFC' => 1]],
         ]);
 
         $this->ba->publicAuth('rzp_test_partner_' . $client->getId());

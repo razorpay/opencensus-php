@@ -541,7 +541,10 @@ return [
                         "debit" => "0"
                     ],
                     "debit_emi_providers" => [
-                        "HDFC" => false
+                        "HDFC" => false,
+                        "KKBK" => false,
+                        "INDB" => false
+
                     ],
                     "card_networks" => [
                         "AMEX" => true,

@@ -636,6 +636,21 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['debit_emi_providers' => $providers]);
     }
 
+    public function enableCreditEmiProviders($providers ,$id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['addon_methods' => ['credit_emi' => $providers]]);
+    }
+
+    public function enablePaylaterProviders($providers, $id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['addon_methods' => ['paylater' => $providers]]);
+    }
+
+    public function enableCardlessEmiProviders($providers, $id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['addon_methods' => ['cardless_emi' => $providers]]);
+    }
+
     public function disableDebitEmiProviders($id = '10000000000000', $providers = ['HDFC' => 0])
     {
         return $this->fixtures->edit('methods', $id, ['debit_emi_providers' => $providers]);

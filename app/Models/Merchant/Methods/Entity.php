@@ -14,6 +14,10 @@ use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Processor\Fpx as FpxProcessor;
 use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 use RZP\Models\Payment\Processor\App as AppMethod;
+use RZP\Models\Emi\CreditEmiProvider;
+use RZP\Models\Emi\PaylaterProvider;
+use RZP\Models\Emi\CardlessEmiProvider;
+
 
 class Entity extends Base\PublicEntity
 {
@@ -67,6 +71,10 @@ class Entity extends Base\PublicEntity
     const BAJAJPAY          = 'bajajpay';
 
     const DEBIT_EMI_PROVIDERS = 'debit_emi_providers';
+    const CREDIT_EMI_PROVIDERS  = 'credit_emi_providers';
+    const CARDLESS_EMI_PROVIDERS = 'cardless_emi_providers';
+    const CREDIT_EMI = 'credit_emi';
+    const PAYLATER_PROVIDERS = 'paylater_providers';
     const EMI_TYPES           = 'emi_types';
 
     const METHODS           = 'methods';
@@ -172,6 +180,9 @@ class Entity extends Base\PublicEntity
         self::PAYPAL,
         self::APPS,
         self::DEBIT_EMI_PROVIDERS,
+        self::CREDIT_EMI_PROVIDERS,
+        self::CARDLESS_EMI_PROVIDERS,
+        self::PAYLATER_PROVIDERS,
         self::ITZCASH,
         self::OXIGEN,
         self::AMEXEASYCLICK,
@@ -223,6 +234,9 @@ class Entity extends Base\PublicEntity
         self::PAYPAL,
         self::APPS,
         self::DEBIT_EMI_PROVIDERS,
+        self::CREDIT_EMI_PROVIDERS,
+        self::CARDLESS_EMI_PROVIDERS,
+        self::PAYLATER_PROVIDERS,
         self::ITZCASH,
         self::OXIGEN,
         self::AMEXEASYCLICK,
@@ -366,9 +380,56 @@ class Entity extends Base\PublicEntity
         self::BAJAJPAY,
     ];
 
+    protected static $aff_method_public_name_mapping = [
+        self::CREDIT_EMI => self::CREDIT_EMI_PROVIDERS,
+        self::PAYLATER => self::PAYLATER_PROVIDERS,
+        self::CARDLESS_EMI => self::CARDLESS_EMI_PROVIDERS,
+    ];
+
+    protected static $addon_affordability_methods = [
+        self::CREDIT_EMI,
+        self::PAYLATER,
+        self::CARDLESS_EMI,
+    ];
+
     protected static $addon_methods_names = [
         self::UPI => [
             self::IN_APP
+        ],
+        self::CREDIT_EMI => [
+            CreditEmiProvider::HDFC,
+            CreditEmiProvider::SBIN,
+            CreditEmiProvider::UTIB,
+            CreditEmiProvider::ICIC,
+            CreditEmiProvider::AMEX,
+            CreditEmiProvider::BARB,
+            CreditEmiProvider::CITI,
+            CreditEmiProvider::HSBC,
+            CreditEmiProvider::INDB,
+            CreditEmiProvider::KKBK,
+            CreditEmiProvider::RATN,
+            CreditEmiProvider::SCBL,
+            CreditEmiProvider::YESB,
+            CreditEmiProvider::ONECARD,
+            CreditEmiProvider::BAJAJ
+        ],
+        self::CARDLESS_EMI => [
+            CardlessEmiProvider::WALNUT369,
+            CardlessEmiProvider::ZESTMONEY,
+            CardlessEmiProvider::EARLYSALARY,
+            CardlessEmiProvider::HDFC,
+            CardlessEmiProvider::ICIC,
+            CardlessEmiProvider::BARB,
+            CardlessEmiProvider::KKBK,
+            CardlessEmiProvider::FDRL,
+            CardlessEmiProvider::IDFB,
+            CardlessEmiProvider::HCIN
+        ],
+        self::PAYLATER => [
+            Paylaterprovider::GETSIMPL,
+            Paylaterprovider::LAZYPAY,
+            Paylaterprovider::ICIC,
+            Paylaterprovider::HDFC
         ]
     ];
 
@@ -846,6 +907,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DEBIT_EMI_PROVIDERS);
     }
 
+    public function getCreditEmiProviders(): array
+    {
+        return $this->getAttribute(self::CREDIT_EMI_PROVIDERS);
+    }
+
+    public function getCardlessEmiProviders(): array
+    {
+        return $this->getAttribute(self::CARDLESS_EMI_PROVIDERS);
+    }
+
+    public function getPaylaterProviders(): array
+    {
+        return $this->getAttribute(self::PAYLATER_PROVIDERS);
+    }
+
     public function getApps(): array
     {
         return $this->getAttribute(self::APPS);
@@ -1062,6 +1138,7 @@ class Entity extends Base\PublicEntity
     {
         $all_addon_methods = Entity::getAllAddonMethodsNames();
         $addon_methods = $this->getAttribute(self::ADDON_METHODS);
+
         foreach ($all_addon_methods as $method => $sub_methods)
         {
             foreach ($sub_methods as $sub_method)
@@ -1082,9 +1159,19 @@ class Entity extends Base\PublicEntity
                 }
             }
         }
-        $input['addon_methods'] = $addon_methods;
+
+        $this->transformAffordabilityMethods($input, $addon_methods);
+
+        $input["addon_methods"] = $addon_methods;
     }
 
+    public function transformAffordabilityMethods(array &$input,array &$addon_methods)
+    {
+        foreach (self::$addon_affordability_methods as $affordabilityMethod)
+        {
+            $this->transformAffordabilityMethod($input, $affordabilityMethod, $addon_methods);
+        }
+    }
 
     public function setDisabledBanks(array $banks)
     {
@@ -1366,6 +1453,21 @@ class Entity extends Base\PublicEntity
         return $this->getEnabledDebitEmiProviders();
     }
 
+    protected function getCreditEmiProvidersAttribute()
+    {
+        return $this->getEnabledCreditEmiProviders();
+    }
+
+    protected function getCardlessEmiProvidersAttribute()
+    {
+        return $this->getEnabledCardlessEmiProviders();
+    }
+
+    protected function getPaylaterProvidersAttribute()
+    {
+        return $this->getEnabledPaylaterProviders();
+    }
+
     protected function getAppsAttribute()
     {
         return $this->getEnabledApps();
@@ -1394,9 +1496,54 @@ class Entity extends Base\PublicEntity
     {
         $networks = $this->attributes[self::DEBIT_EMI_PROVIDERS];
 
+        return DebitProvider::getEnabledDebitEmiProviders($networks);
+    }
+
+    public function getConsolidatedEnabledDebitEmiProviders(): array
+    {
+        $networks = $this->attributes[self::DEBIT_EMI_PROVIDERS];
+
         $debitEmi = $this->isDebitEmiEnabled();
 
-        return DebitProvider::getEnabledDebitEmiProviders($debitEmi, $networks);
+        return DebitProvider::getConsolidatedEnabledDebitEmiProviders($debitEmi, $networks);
+    }
+
+    public function getEnabledCreditEmiProviders(): array
+    {
+        $addon_methods = $this->getAddonMethods();
+
+        $all_addon_methods = Entity::getAllAddonMethodsNames();
+
+        return CreditEmiProvider::getEnabledProviders($all_addon_methods, $addon_methods);
+    }
+
+    public function getConsolidatedEnabledCreditEmiProviders(): array
+    {
+        $addon_methods = $this->getAddonMethods();
+
+        $all_addon_methods = Entity::getAllAddonMethodsNames();
+
+        $creditEmi = $this->isCreditEmiEnabled();
+
+        return CreditEmiProvider::getConsolidatedEnabledCreditEmiProviders($all_addon_methods, $addon_methods, $creditEmi);
+    }
+
+    public function getEnabledCardlessEmiProviders(): array
+    {
+        $addon_methods = $this->getAddonMethods();
+
+        $all_addon_methods = Entity::getAllAddonMethodsNames();
+
+        return CardlessEmiProvider::getEnabledProviders($all_addon_methods, $addon_methods);
+    }
+
+    public function getEnabledPaylaterProviders(): array
+    {
+        $addon_methods = $this->getAddonMethods();
+
+        $all_addon_methods = Entity::getAllAddonMethodsNames();
+
+        return PaylaterProvider::getEnabledProviders($all_addon_methods, $addon_methods);
     }
 
     public function getUpiTypes()
@@ -1508,6 +1655,27 @@ class Entity extends Base\PublicEntity
         else
         {
             $this->attributes[self::DEBIT_EMI_PROVIDERS] = $providers;
+        }
+    }
+
+    protected function transformAffordabilityMethod($input, $affordabilityProvider, array &$addon_methods)
+    {
+        $method = self::$aff_method_public_name_mapping[$affordabilityProvider];
+
+        if(isset($input[$method]) === true)
+        {
+            foreach ($input[$method] as $provider => $enabled)
+            {
+                if($enabled === "1")
+                {
+                    $addon_methods[$affordabilityProvider][$provider] = 1;
+                }
+                else
+                {
+                    $addon_methods[$affordabilityProvider][$provider] = 0;
+                }
+            }
+            unset($input[$method]);
         }
     }
 

@@ -444,6 +444,8 @@ class CardlessEmiGatewayTest extends TestCase
 
         $this->fixtures->create('methods:default_methods', ['merchant_id' => $subMerchantId]);
 
+        $this->fixtures->merchant->enableCardlessEmiProviders(['earlysalary' => 1] , $subMerchantId);
+
         $this->fixtures->merchant->enableCardlessEmi($subMerchantId);
 
         $this->fixtures->create('balance',

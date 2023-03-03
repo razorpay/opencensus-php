@@ -404,6 +404,7 @@ class MethodsTest extends TestCase
     public function testOnecardMerchantMethods()
     {
         $this->fixtures->merchant->enableEmi('10000000000000');
+        $this->fixtures->merchant->enableCreditEmiProviders(['onecard' => 1]);
 
         $this->fixtures->create('emi_plan:merchant_specific_emi_plans');
 
@@ -669,9 +670,11 @@ class MethodsTest extends TestCase
 
         $debitEmiProviders = $merchantMethods->getDebitEmiProviders();
         $this->assertTrue($debitEmiProviders['HDFC'] === 0);
+        $this->assertTrue($debitEmiProviders['KKBK'] === 0);
+        $this->assertTrue($debitEmiProviders['INDB'] === 0);
     }
 
-    public function testEnableHdfcDebitEmiProvider()
+    public function testEnableDebitEmiProvider()
     {
         $request = [
             'method'  => 'PUT',
@@ -680,6 +683,8 @@ class MethodsTest extends TestCase
                 'emi' => ['debit' => '1'],
                 'debit_emi_providers' => [
                     'HDFC' => '1',
+                    'KKBK' => '0',
+                    'INDB' => '1'
                 ]
             ],
         ];
@@ -698,7 +703,182 @@ class MethodsTest extends TestCase
 
         $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
 
-        $this->assertEquals(['HDFC' => 1], array_slice($merchantMethods->getDebitEmiProviders(), 0, 1));
+        $this->assertEquals(['HDFC' => 1, 'KKBK' => 0, 'INDB' => 1], array_slice($merchantMethods->getDebitEmiProviders(), 0, 3));
+    }
+
+    public function testEnableCreditEmiProvider()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'emi' => ['credit' => '1']
+            ],
+        ];
+
+        $this->fixtures->pricing->createEmiPricingPlan();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'credit_emi_providers' => [
+                    'HDFC' => '1',
+                    'SBIN' => '1',
+                    'UTIB' => '0',
+                    'ICIC' => '1',
+                    'AMEX' => '0',
+                    'BARB' => '1',
+                    'CITI' => '1',
+                    'HSBC' => '1',
+                    'INDB' => '0',
+                    'KKBK' => '0',
+                    'RATN' => '0',
+                    'SCBL' => '0',
+                    'YESB' => '1',
+                    'onecard' => '1',
+                    'BAJAJ' => '0'
+                ]
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertEquals([
+            'HDFC' => 1,
+            'SBIN' => 1,
+            'UTIB' => 0,
+            'ICIC' => 1,
+            'AMEX' => 0,
+            'BARB' => 1,
+            'CITI' => 1,
+            'HSBC' => 1,
+            'INDB' => 0,
+            'KKBK' => 0,
+            'RATN' => 0,
+            'SCBL' => 0,
+            'YESB' => 1,
+            'onecard' => 1,
+            'BAJAJ' => 0
+        ], array_slice($merchantMethods->getCreditEmiProviders(), 0, 15));
+    }
+
+    public function testEnableCardlessEmiProvider()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'cardless_emi' => '1'
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'cardless_emi_providers' => [
+                    'walnut369' => "0",
+                    'zestmoney' => "1",
+                    'earlysalary' => "1",
+                    'hdfc'  => "0",
+                    'icic'  => "1",
+                    'barb'  => "1",
+                    'kkbk'  => "1",
+                    'fdrl'  => "0",
+                    'idfb'  => "1",
+                    'hcin'  => "1"
+                ]
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertEquals([
+            'walnut369' => 0,
+            'zestmoney' => 1,
+            'earlysalary' => 1,
+            'hdfc'  => 0,
+            'icic'  => 1,
+            'barb'  => 1,
+            'kkbk'  => 1,
+            'fdrl'  => 0,
+            'idfb'  => 1,
+            'hcin'  => 1
+        ], array_slice($merchantMethods->getCardlessEmiProviders(), 0, 10));
+    }
+
+    public function testEnablePaylaterProvider()
+    {
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'paylater' => '1'
+            ],
+        ];
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'paylater_providers' => [
+                    'getsimpl' => "0",
+                    'lazypay' => "1",
+                    'icic' => "1",
+                    'hdfc'  => "0",
+                ]
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertEquals([
+            'getsimpl' => 0,
+            'lazypay' => 1,
+            'icic' => 1,
+            'hdfc'  => 0,
+        ], array_slice($merchantMethods->getPaylaterProviders(), 0, 4));
     }
 
     public function testBulkEnableHdfcDebitEmiProvider()
@@ -848,6 +1028,8 @@ class MethodsTest extends TestCase
         $this->fixtures->merchant->addFeatures([Feature\Constants::EDIT_METHODS]);
 
         $this->fixtures->merchant->enableEmi('10000000000000');
+
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
 
         $response = $this->startTest();
 

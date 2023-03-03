@@ -30,18 +30,20 @@ class PayLaterGatewayTest extends TestCase
         $this->fixtures->merchant->enablePayLater('10000000000000');
     }
 
-    public function testSubMerchantPreferences()
-    {
-        $this->createSubMerchant();
+//    skipping this testcase as epaylater is discontinued
 
-        $preferences = $this->getPreferences();
-
-        $acquirer = $this->sharedTerminal->getGatewayAcquirer();
-
-        $this->assertArraySelectiveEquals([$acquirer => true], $preferences['methods']['paylater']);
-
-        $this->resetPublicAuthToTestAccount();
-    }
+//    public function testSubMerchantPreferences()
+//    {
+//        $this->createSubMerchant();
+//
+//        $preferences = $this->getPreferences();
+//
+//        $acquirer = $this->sharedTerminal->getGatewayAcquirer();
+//
+//        $this->assertArraySelectiveEquals([$acquirer => true], $preferences['methods']['paylater']);
+//
+//        $this->resetPublicAuthToTestAccount();
+//    }
 
     public function testPaymentAndRefund()
     {

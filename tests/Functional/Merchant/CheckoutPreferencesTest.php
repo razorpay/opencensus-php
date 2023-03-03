@@ -119,6 +119,23 @@ class CheckoutPreferencesTest extends TestCase
         $this->esClient =  $this->esDao->getEsClient()->getClient();
     }
 
+    public function enableRazorXTreatmentForInstrumentLevelCheck()
+    {
+        $razorx = \Mockery::mock(RazorXClient::class)->makePartial();
+
+        $this->app->instance('razorx', $razorx);
+
+        $razorx->shouldReceive('getTreatment')
+            ->andReturnUsing(function (string $id, string $featureFlag, string $mode)
+            {
+                if ($featureFlag === (RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK))
+                {
+                    return 'on';
+                }
+                return 'off';
+            });
+    }
+
     public function testSetBanks()
     {
         $this->ba->adminAuth();
@@ -668,6 +685,8 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
 
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
+
         $this->fixtures->edit(
             'methods',
             '10000000000000',
@@ -698,6 +717,8 @@ class CheckoutPreferencesTest extends TestCase
     public function testGetCheckoutPreferencesWithForcedEmiSubventionOfferWithMerchantSpecificEmi()
     {
         $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
 
         $this->fixtures->edit(
             'methods',
@@ -737,37 +758,13 @@ class CheckoutPreferencesTest extends TestCase
 
         $this->fixtures->create('terminal:shared_cardless_emi_terminal');
 
+        $this->fixtures->merchant->enableCardlessEmiProviders(['earlysalary' => 1]);
+
         $response = $this->getPreferences();
 
         $this->assertEquals(1, count($response['methods']['cardless_emi']));
 
         $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
-    }
-
-    public function testGetCheckoutPreferencesForCardlessEmiFlexmoney()
-    {
-        $this->fixtures->merchant->enableCardlessEmi();
-
-        $this->fixtures->create('terminal:cardless_emi_flexmoney_terminal');
-
-        $response = $this->getPreferences();
-
-        $this->assertEquals(1, count($response['methods']['cardless_emi']));
-
-        $this->assertArrayHasKey('flexmoney', $response['methods']['cardless_emi']);
-    }
-
-    public function testGetCheckoutPreferencesForEmptyEnabledBanks()
-    {
-        $this->fixtures->merchant->enableCardlessEmi();
-
-        $this->fixtures->create('terminal:cardlessEmiFlexMoneyEmptyEnabledBanks');
-
-        $response = $this->getPreferences();
-
-        $this->assertEquals(1, count($response['methods']['cardless_emi']));
-
-        $this->assertArrayHasKey('flexmoney', $response['methods']['cardless_emi']);
     }
 
     public function testGetCheckoutPreferencesForDebitEmi()
@@ -806,6 +803,73 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertFalse($response['methods']['emi_types']['credit']);
     }
 
+    public function testGetCheckoutPreferencesForCreditEmiProviders()
+    {
+
+        $this->enableRazorXTreatmentForInstrumentLevelCheck();
+
+        $this->fixtures->merchant->enableEmiCredit();
+        
+        $this->fixtures->emiPlan->create(
+            [
+                'id'          => '10101010101310',
+                'merchant_id' => '100000Razorpay',
+                'bank'        => 'HDFC',
+                'type'        => 'credit',
+                'rate'        => 1200,
+                'min_amount'  => 300000,
+                'duration'    => 3,
+            ]);
+
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayHasKey('HDFC', $response['methods']['emi_options']);
+
+        $this->assertEquals(1, count($response['methods']['emi_options']));
+
+        $this->assertTrue($response['methods']['emi_types']['credit']);
+
+        $this->assertFalse($response['methods']['emi_types']['debit']);
+    }
+
+    public function testGetCheckoutPreferencesForPaylaterProviders()
+    {
+
+        $this->enableRazorXTreatmentForInstrumentLevelCheck();
+
+        $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1]);
+
+        $this->fixtures->create('terminal:paylater_icici_terminal');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(1, count($response['methods']['paylater']));
+
+        $this->assertArrayHasKey('icic', $response['methods']['paylater']);
+    }
+
+    public function testGetCheckoutPreferencesForCardlessEmiProviders()
+    {
+
+        $this->enableRazorXTreatmentForInstrumentLevelCheck();
+
+        $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->merchant->enableCardlessEmiProviders(['earlysalary' => 1]);
+
+        $this->fixtures->create('terminal:shared_cardless_emi_terminal');
+
+        $response = $this->getPreferences();
+
+        $this->assertEquals(1, count($response['methods']['cardless_emi']));
+
+        $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
+    }
+
     public function testGetCheckoutPreferencesForDisabledDebitEmiProviders()
     {
         $this->fixtures->merchant->enableEmi();
@@ -832,6 +896,7 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableEmi();
         $this->fixtures->merchant->enableDebitEmiProviders();
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1]);
 
         $this->fixtures->emiPlan->create(
             [
@@ -865,18 +930,22 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enablePayLater();
 
-        $this->fixtures->create('terminal:paylater_epaylater_terminal');
+        $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1]);
+
+        $this->fixtures->create('terminal:paylater_icici_terminal');
 
         $response = $this->getPreferences();
 
         $this->assertEquals(1, count($response['methods']['paylater']));
 
-        $this->assertArrayHasKey('epaylater', $response['methods']['paylater']);
+        $this->assertArrayHasKey('icic', $response['methods']['paylater']);
     }
 
     public function testGetCheckoutPreferencesForPayLaterEnabledBanks()
     {
         $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1 , "hdfc" => 1]);
 
         $this->fixtures->create('terminal:paylater_icici_terminal');
         $this->fixtures->create('terminal:paylater_flexmoney_terminal');
@@ -983,6 +1052,8 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enablePayLater();
 
+        $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1 , 'hdfc' => 1]);
+
         $this->fixtures->create('terminal:paylater_icici_terminal');
         $this->fixtures->create('terminal:paylater_flexmoney_terminal');
 
@@ -996,6 +1067,8 @@ class CheckoutPreferencesTest extends TestCase
     public function testGetCheckoutPreferencesWithCustomProviders()
     {
         $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->merchant->enableCardlessEmiProviders(['hdfc' => 1 , 'icic' => 1 , 'barb' => 1 , 'kkbk' => 1 , 'fdrl' => 1 , 'idfb' => 1 , 'hcin' => 1]);
 
         $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
 
@@ -1020,6 +1093,7 @@ class CheckoutPreferencesTest extends TestCase
     public function testGetCheckoutPreferencesAfterFilterForMinimumAmountOnCardlessEmi()
     {
         $this->fixtures->merchant->enableCardlessEmi();
+        $this->fixtures->merchant->enableCardlessEmiProviders(['zestmoney' => 1, 'walnut369' => 1]);
 
         $this->fixtures->create('terminal:shared_cardless_emi_walnut369_terminal');
         $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
@@ -1037,6 +1111,8 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableCardlessEmi();
 
+        $this->fixtures->merchant->enableCardlessEmiProviders(['zestmoney' => 1 , 'hcin' => 1]);
+
         $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
         $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
 
@@ -1052,6 +1128,9 @@ class CheckoutPreferencesTest extends TestCase
     public function testGetCheckoutPreferencesWithAmountGreaterForHomeCreditCardlessEmi()
     {
         $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->merchant->enableCardlessEmiProviders(['zestmoney' => 1 , 'hcin' => 1]);
+
         $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
 
         $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
@@ -1069,6 +1148,8 @@ class CheckoutPreferencesTest extends TestCase
     {
         $this->fixtures->merchant->enableCardlessEmi();
 
+        $this->fixtures->merchant->enableCardlessEmiProviders(['zestmoney' => 1, 'walnut369' => 1]);
+
         $this->fixtures->create('terminal:shared_cardless_emi_walnut369_terminal');
         $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
 
@@ -1083,6 +1164,8 @@ class CheckoutPreferencesTest extends TestCase
     public function testGetCheckoutPreferencesForCardlessEmiEnabledBanks()
     {
         $this->fixtures->merchant->enableCardlessEmi();
+
+        $this->fixtures->merchant->enableCardlessEmiProviders(['hdfc' => 1 , 'icic' => 1 , 'barb' => 1 , 'kkbk' => 1 , 'fdrl' => 1 , 'idfb' => 1 , 'hcin' => 1,'zestmoney' => 1]);
 
         $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
         $this->fixtures->create('terminal:cardlessEmiZestMoneyTerminal');
@@ -1100,6 +1183,8 @@ class CheckoutPreferencesTest extends TestCase
     public function testGetCheckoutPreferencesWithAmountGreater()
     {
         $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1 , 'hdfc' => 1]);
 
         $this->fixtures->create('terminal:paylater_icici_terminal');
         $this->fixtures->create('terminal:paylater_flexmoney_terminal');

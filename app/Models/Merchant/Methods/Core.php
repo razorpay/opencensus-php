@@ -34,7 +34,11 @@ use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Models\Pricing\Feature as Feature;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Services\KafkaProducer;
+use RZP\Models\Emi\CreditEmiProvider;
+use RZP\Models\Emi\PaylaterProvider;
+use RZP\Models\Emi\CardlessEmiProvider;
 use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Core extends Base\Core
 {
@@ -52,6 +56,59 @@ class Core extends Base\Core
     const ENABLED = 'enabled';
 
     const SET_DEFAULT_METHODS_LOCK_TIMEOUT        = 0.07;  //seconds
+
+    const defaultCreditEmiProvidersWhitelisted = [
+
+        Entity::CREDIT_EMI_PROVIDERS  => [
+
+            CreditEmiProvider::HDFC => '1',
+            CreditEmiProvider::SBIN => '0',
+            CreditEmiProvider::UTIB => '1',
+            CreditEmiProvider::ICIC => '1',
+            CreditEmiProvider::AMEX => '1',
+            CreditEmiProvider::BARB => '1',
+            CreditEmiProvider::CITI => '1',
+            CreditEmiProvider::HSBC => '1',
+            CreditEmiProvider::INDB => '1',
+            CreditEmiProvider::KKBK => '1',
+            CreditEmiProvider::RATN => '1',
+            CreditEmiProvider::SCBL => '1',
+            CreditEmiProvider::YESB => '1',
+            CreditEmiProvider::ONECARD => '1',
+            CreditEmiProvider::BAJAJ => '0'
+
+        ]
+    ];
+    const defaultCardlessEmiProvidersWhitelisted = [
+
+        Entity::CARDLESS_EMI_PROVIDERS  => [
+
+            CardlessEmiProvider::ZESTMONEY  => '0',
+            CardlessEmiProvider::EARLYSALARY  => '1',
+            CardlessEmiProvider::WALNUT369 => '0',
+            CardlessEmiProvider::HDFC => '0',
+            CardlessEmiProvider::ICIC => '0',
+            CardlessEmiProvider::BARB => '0',
+            CardlessEmiProvider::KKBK => '0',
+            CardlessEmiProvider::FDRL => '0',
+            CardlessEmiProvider::IDFB => '0',
+            CardlessEmiProvider::HCIN => '0'
+
+        ]
+    ];
+    const defaultPaylaterProvidersWhitelisted =[
+
+        Entity::PAYLATER_PROVIDERS  => [
+
+            PaylaterProvider::GETSIMPL => '0',
+            PaylaterProvider::LAZYPAY => '0',
+            PaylaterProvider::HDFC => '0',
+            PaylaterProvider::ICIC => '1',
+
+        ]
+
+    ];
+
 
     public function setPaymentMethods(Merchant\Entity $merchant, array $input)
     {
@@ -164,17 +221,6 @@ class Core extends Base\Core
             unset($input[Methods\Entity::CARD_NETWORKS]);
         }
 
-        if (isset($input[Methods\Entity::DEBIT_EMI_PROVIDERS]) === true)
-        {
-            $inputDebitEmiProviders = $input[Methods\Entity::DEBIT_EMI_PROVIDERS];
-
-            foreach ($inputDebitEmiProviders as $debitEmitProvider => $value)
-            {
-                $methods->setDebitEmiProvider($debitEmitProvider, $value);
-            }
-
-            unset($input[Methods\Entity::DEBIT_EMI_PROVIDERS]);
-        }
 
         $methods->setMethods($input);
 
@@ -326,6 +372,7 @@ class Core extends Base\Core
             Entity::GPAY                        => false,
             Entity::EMI_TYPES                   => [],
             Entity::DEBIT_EMI_PROVIDERS         => [],
+//            Entity::CREDIT_EMI_PROVIDERS         => [],
             Payment\Method::INTL_BANK_TRANSFER  => [],
             Payment\Method::FPX                 => [],
         ];
@@ -342,7 +389,8 @@ class Core extends Base\Core
         $data[Payment\Gateway::AMEX] = $methods->isAmexEnabled();
         $netbankingEnabled           = $methods->isNetbankingEnabled();
         $data[Payment\Method::APP]   = $methods->getApps();
-        $data[Entity::DEBIT_EMI_PROVIDERS] = $methods->getDebitEmiProviders();
+        $data[Entity::DEBIT_EMI_PROVIDERS] = $methods->getConsolidatedEnabledDebitEmiProviders();
+//        $data[Entity::CREDIT_EMI_PROVIDERS] = $methods->getConsolidatedEnabledCreditEmiProviders();
         $data[Entity::EMI_TYPES] = $methods->getEmiTypes();
         $data[Entity::COD] = $methods->isCodEnabled();
         $data[Entity::OFFLINE] = $methods->isOfflineEnabled();
@@ -368,10 +416,10 @@ class Core extends Base\Core
         $data[Payment\Method::WALLET]        = $methods->getEnabledWallets();
         $data[Payment\Method::UPI]           = $methods->isUpiEnabled();
         $data[Payment\Method::CARDLESS_EMI] =
-                  $methods->isCardlessEmiEnabled() ? $this->getProviders($merchant, Payment\Method::CARDLESS_EMI) : [];
+                  $methods->isCardlessEmiEnabled() ? $this->getProviders($merchant, Payment\Method::CARDLESS_EMI,$methods) : [];
 
         $data[Payment\Method::PAYLATER] =
-            $methods->isPayLaterEnabled() ? $this->getProviders($merchant, Payment\Method::PAYLATER) : [];
+            $methods->isPayLaterEnabled() ? $this->getProviders($merchant, Payment\Method::PAYLATER, $methods) : [];
 
         if ($merchant->isFeatureEnabled(Constants::BANK_TRANSFER_ON_CHECKOUT) === true)
         {
@@ -833,7 +881,16 @@ class Core extends Base\Core
                         EmiType::CREDIT => '1',
                         EmiType::DEBIT  => '1',
                     ];
+                    $methods->setMethods(self::defaultCreditEmiProvidersWhitelisted);
                 }
+            }
+            if ($key === Entity::PAYLATER and $value === true)
+            {
+                $methods->setMethods(self::defaultPaylaterProvidersWhitelisted);
+            }
+            if ($key === Entity::CARDLESS_EMI and $value === true)
+            {
+                $methods->setMethods(self::defaultCardlessEmiProvidersWhitelisted);
             }
 
             $methods->setAttribute($key, $value);
@@ -1160,7 +1217,7 @@ class Core extends Base\Core
         return Netbanking::getNames($banks);
     }
 
-    public function getProviders($merchant, $method)
+    public function getProviders($merchant, $method, Methods\Entity $methods = null)
     {
         $provider = [];
 
@@ -1171,6 +1228,11 @@ class Core extends Base\Core
         if($this->mode === Mode::TEST && (empty($terminals)))
         {
             return $this->getProvidersforTestMode($method);
+        }
+
+        if($methods == null)
+        {
+            $methods = $this->getMethods($merchant);
         }
 
         if ($method === Payment\Method::PAYLATER)
@@ -1184,6 +1246,25 @@ class Core extends Base\Core
             $enabledProviders = array_map('strtolower', $enabledBanks);
 
             $providers = array_merge($providers, $enabledProviders);
+
+            // Adding Experiment for checking paylater instrument status in merchant banks table
+            $variantFlag = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK,  $this->mode);
+            if($variantFlag == 'on')
+            {
+
+                $paylaterProviders = $methods->getEnabledPaylaterProviders();
+
+                foreach ($providers as $index => $instrument) {
+
+                    if (isset($paylaterProviders[$instrument]) == false or  $paylaterProviders[$instrument] == 0) {
+
+                        unset($providers[$index]);
+
+                    }
+
+                }
+
+            }
 
             $this->sortPaylaterProviders($providers);
         }
@@ -1208,6 +1289,25 @@ class Core extends Base\Core
 
                 $providers = array_unique(array_merge($providers,$terminalProviders));
             }
+
+            // Adding Experiment for checking cardless emi instrument status in merchant banks table
+            $variantFlag = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK,  $this->mode);
+
+            if($variantFlag == 'on') {
+
+                $cardlessEmiProviders = $methods->getEnabledCardlessEmiProviders();
+
+                foreach ($providers as $index => $instrument) {
+
+                    if (isset($cardlessEmiProviders[$instrument]) == false or $cardlessEmiProviders[$instrument] == 0) {
+
+                        unset($providers[$index]);
+
+                    }
+
+                }
+            }
+
         }
 
         foreach ($providers as $providerName)

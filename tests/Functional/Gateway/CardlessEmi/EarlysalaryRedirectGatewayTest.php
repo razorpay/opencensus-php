@@ -11,6 +11,7 @@ class EarlysalaryRedirectGatewayTest extends CardlessEmiGatewayTest
         parent::setUp();
 
         $this->fixtures->merchant->enableCardlessEmi('10000000000000');
+        $this->fixtures->merchant->enableCardlessEmiProviders(['earlysalary' => 1]);
     }
 
     public function testPaymentRedirect()

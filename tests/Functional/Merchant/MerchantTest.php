@@ -5548,6 +5548,8 @@ Team Razorpay',
     {
         $this->fixtures->merchant->enablePayLater();
 
+        $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1 , 'hdfc'=> 1]);
+
         $this->fixtures->create('terminal:paylater_icici_terminal');
         $this->fixtures->create('terminal:paylater_flexmoney_terminal');
 
@@ -5566,6 +5568,8 @@ Team Razorpay',
     {
         $this->fixtures->merchant->enablePayLater();
 
+        $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1 , 'hdfc'=> 1]);
+
         $this->fixtures->create('terminal:paylater_icici_terminal');
         $this->fixtures->create('terminal:paylater_flexmoney_terminal');
 
@@ -5583,6 +5587,8 @@ Team Razorpay',
     public function testPreferencesAfterFilterForMinimumAmountWithoutOrderOrAmount()
     {
         $this->fixtures->merchant->enablePayLater();
+
+        $this->fixtures->merchant->enablePaylaterProviders(['icic' => 1 , 'hdfc'=> 1]);
 
         $this->fixtures->create('terminal:paylater_icici_terminal');
         $this->fixtures->create('terminal:paylater_flexmoney_terminal');
@@ -5714,6 +5720,8 @@ Team Razorpay',
                 ],
             ]);
 
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1,'AMEX' => 1]);
+
         $this->fixtures->create('emi_plan:default_emi_plans');
 
         $offer = $this->fixtures->create('offer:emi_subvention', [
@@ -5739,6 +5747,8 @@ Team Razorpay',
             [
                 'emi' => [Merchant\Methods\EmiType::CREDIT => '1'],
             ]);
+
+        $this->fixtures->merchant->enableCreditEmiProviders(['HDFC' => 1,'AMEX' => 1]);
 
         $this->fixtures->create('emi_plan:default_emi_plans');
 

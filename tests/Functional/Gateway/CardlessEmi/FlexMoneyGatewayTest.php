@@ -442,4 +442,29 @@ class FlexMoneyGatewayTest extends CardlessEmiGatewayTest
         $this->assertEquals('REFUND_FAILED', $gatewayRefund['error_code']);
         $this->assertEquals('Refund failed', $gatewayRefund['error_description']);
     }
+
+    public function testSubMerchantPreferences()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:cardlessEmiFlexMoneySubproviderTerminal');
+
+        $this->createSubMerchant();
+
+        $preferences = $this->getPreferences();
+
+        $this->assertEquals($preferences['methods']['cardless_emi']['hdfc'],true);
+
+        $this->assertEquals($preferences['methods']['cardless_emi']['kkbk'],true);
+
+        $this->assertEquals($preferences['methods']['cardless_emi']['fdrl'],true);
+
+        $this->assertEquals($preferences['methods']['cardless_emi']['idfb'],true);
+
+        $this->assertEquals($preferences['methods']['cardless_emi']['icic'],true);
+
+        $this->assertEquals($preferences['methods']['cardless_emi']['hcin'],true);
+
+        $this->assertEquals($preferences['methods']['cardless_emi']['barb'],true);
+
+        $this->resetPublicAuthToTestAccount();
+    }
 }
