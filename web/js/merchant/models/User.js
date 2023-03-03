@@ -1865,7 +1865,10 @@ export default class User {
   }
 
   get isAccountAndSettingsRevampEnabled() {
-    return getSplitzExperimentVariant('account_settings_revamp')?.variables?.result === 'on';
+    return (
+      getSplitzExperimentVariant('account_settings_revamp')?.variables?.result === 'on' &&
+      this.isOrgRZP
+    );
   }
 
   get isProductLedOnboarding() {
