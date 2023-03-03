@@ -38,6 +38,7 @@ class Metric extends Base\Core
     const LABEL_UPI_PSP                         = 'upi_psp';
     const LABEL_PAYMENT_IS_TPV                  = 'is_tpv';
     const LABEL_PAYMENT_MANDATE_HUB             = 'mandate_hub';
+    const LABEL_ORG                             = 'org';
 
     const LABEL_LIBRARY                         = 'library';
 
@@ -301,6 +302,7 @@ class Metric extends Base\Core
             self::LABEL_PAYMENT_INTERNATIONAL    => $payment->isInternational(),
             self::LABEL_PAYMENT_TRANSACTION_TYPE => $payment->getTransactionType(),
             self::LABEL_PAYMENT_IS_TPV           => $payment->merchant->isTPVRequired(),
+            self::LABEL_ORG                      => $payment->merchant->getOrgId(),
         ];
 
         if ($payment->hasCard() === true)
