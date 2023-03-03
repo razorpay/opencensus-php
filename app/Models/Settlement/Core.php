@@ -827,7 +827,10 @@ class Core extends Base\Core
             try {
                 $parentConfig = app('settlements_api')->merchantConfigGet($parentReq, $mode);
                 $this->trace->debug(TraceCode::SETTING_SCHEDULES_FROM_PARENT, [
-                    'schedules' => $parentConfig['config']['schedules']
+                    'merchant_id' => $merchant->getId(),
+                    'parent_MID'  => $parentMerchantID,
+                    'schedules'   => $parentConfig['config']['schedules'],
+                    'mode'        => $mode
                 ]);
                 $response['config']['schedules'] = $parentConfig['config']['schedules'];
             } catch (\Throwable $e) {

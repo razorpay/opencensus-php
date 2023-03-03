@@ -12,7 +12,6 @@ use RZP\Models\Settlement\Core;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Feature\Constants;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Merchant\AccessMap\Entity;
 use RZP\Models\BankAccount\Core as BankAccount;
 use RZP\Models\Settlement\SettlementServiceMigration;
 
@@ -30,6 +29,15 @@ class migration extends Job
     const BANK_ACCOUNT_MIGRATION = 'BANK_ACCOUNT_MIGRATION';
     const MERCHANT_CONFIG_MIGRATION = 'MERCHANT_CONFIG_MIGRATION';
     const TRANSACTION_MIGRATION_DISPATCH = 'TRANSACTION_MIGRATION_DISPATCH';
+
+    // in case when parent config is not found; we will dispatch
+    // parent MID to migrate immediately & redispatch child MID after 15 minutes
+    const CHILD_MID_DISPATCH_JOB_DELAY = 900; //in seconds
+    // max 5 times a merchant is supposed to be attempted
+    // including the first attempt
+    const MIGRATION_DISPATCH_JOB_MAX_ATTEMPTS = 5;
+    // job attempts count (including first attempt)
+    protected $jobAttempts;
 
 
     /**
@@ -65,7 +73,7 @@ class migration extends Job
      * @param bool $migrateMerchantConfig
      * @param $via
      */
-    public function __construct(string $mode, string $merchantId, bool $migrateBankAccount, bool $migrateMerchantConfig, $via)
+    public function __construct(string $mode, string $merchantId, bool $migrateBankAccount, bool $migrateMerchantConfig, $via, int $attempt = null)
     {
         parent::__construct($mode);
 
@@ -76,11 +84,14 @@ class migration extends Job
         $this->migrateMerchantConfig = $migrateMerchantConfig;
 
         $this->via                   = $via;
+
+        $this->jobAttempts           = $attempt ?? 1;
     }
 
     /**
      * Process queue request
      */
+    // TODO : add retries for job properly across merchant migration job.
     public function handle()
     {
         parent::handle();
@@ -127,6 +138,16 @@ class migration extends Job
         {
             $skip = true;
             $skipReason = 'merchant is already migrated';
+        }
+        // if current retry attempt has exhausted all attempts; skip the migration further
+        if($this->jobAttempts === self::MIGRATION_DISPATCH_JOB_MAX_ATTEMPTS) {
+            $this->trace->info(TraceCode::SETTLEMENT_SERVICE_MIGRATION_JOB_RETRY_EXHAUSTED, [
+                'merchant_id'        => $this->merchantId,
+                'mode'               => $this->mode,
+                'completed_attempts' => $this->jobAttempts
+            ]);
+            $skip = true;
+            $skipReason = 'merchant migration attempts reached maximum limit';
         }
 
         if($skip === true)
@@ -197,15 +218,16 @@ class migration extends Job
             $this->trace->info(
                 TraceCode::SETTLEMENT_SERVICE_MIGRATION_BEGIN,
                 [
-                    'merchant_id' => $this->merchantId,
-                     self::VIA     => $this->via,
+                    'merchant_id'     => $this->merchantId,
+                     self::VIA        => $this->via,
+                    'current_attempt' => $this->jobAttempts
                 ]);
 
             $resource = sprintf(self::MUTEX_RESOURCE, $this->merchantId);
 
             $this->mutex->acquireAndRelease(
                 $resource,
-                function () use($featureResult, &$migrationResult, &$isFailure)
+                function () use($input, $featureResult, &$migrationResult, &$isFailure)
                 {
                     if($this->migrateMerchantConfig === true)
                     {
@@ -217,9 +239,26 @@ class migration extends Job
                         }
                         catch(\Throwable $e)
                         {
+                            // failure has already happened; so to avoid further processing
+                            // for older job instance; marking a FAILURE here
                             $isFailure = true;
-                            $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION][self::STATUS] = true;
-                            $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION][self::REASON] = $e->getMessage();
+
+                            // in case of logical exception (parent config not found); redispatch the jobs
+                            if($e->getMessage() === SettlementServiceMigration::FAILED_TO_FETCH_PARENT_CONFIG) {
+
+                                $isDispatchFailed = $this->handleParentConfigRegisterDispatchJob($input);
+
+                                if ($isDispatchFailed === true) {
+                                    $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION][self::STATUS] = true;
+                                    $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION][self::REASON] = $e->getMessage();
+                                } else {
+                                    // don't go further if both jobs are redispatched
+                                    return;
+                                }
+                            } else {
+                                $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION][self::STATUS] = true;
+                                $migrationResult[self::FAILED_STEPS][Mode::LIVE][self::MERCHANT_CONFIG_MIGRATION][self::REASON] = $e->getMessage();
+                            }
                         }
 
                         try
@@ -231,9 +270,26 @@ class migration extends Job
                         }
                         catch(\Throwable $e)
                         {
+                            // failure has already happened; so to avoid further processing
+                            // for older job instance; marking a FAILURE here
                             $isFailure = true;
-                            $migrationResult[self::FAILED_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION][self::STATUS] = true;
-                            $migrationResult[self::FAILED_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION][self::REASON] = $e->getMessage();
+
+                            // in case of logical exception (parent config not found); redispatch the jobs
+                            if($e->getMessage() === SettlementServiceMigration::FAILED_TO_FETCH_PARENT_CONFIG) {
+
+                                $isDispatchFailed = $this->handleParentConfigRegisterDispatchJob($input);
+
+                                if ($isDispatchFailed === true) {
+                                    $migrationResult[self::FAILED_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION][self::STATUS] = true;
+                                    $migrationResult[self::FAILED_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION][self::REASON] = $e->getMessage();
+                                } else {
+                                    // don't go further if both jobs are redispatched
+                                    return ;
+                                }
+                            } else {
+                                $migrationResult[self::FAILED_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION][self::STATUS] = true;
+                                $migrationResult[self::FAILED_STEPS][Mode::TEST][self::MERCHANT_CONFIG_MIGRATION][self::REASON] = $e->getMessage();
+                            }
                         }
                     }
 
@@ -278,9 +334,10 @@ class migration extends Job
                 Trace::ERROR,
                 TraceCode::SETTLEMENT_SERVICE_MIGRATION_FAILED,
                 [
-                    'merchant_id' => $this->merchantId,
-                    'input'       => $input,
-                    'result'      => $migrationResult,
+                    'merchant_id'   => $this->merchantId,
+                    'input'         => $input,
+                    'result'        => $migrationResult,
+                    'error_message' => $e->getMessage()
                 ]);
         }
         finally {
@@ -338,9 +395,10 @@ class migration extends Job
                         Trace::ERROR,
                         TraceCode::SETTLEMENT_SERVICE_TRANSACTION_MIGRATION_DISPATCH_FAILED,
                         [
-                            'merchant_id' => $this->merchantId,
-                            'result'      => $migrationResult,
-                            'input'       => $input,
+                            'merchant_id'   => $this->merchantId,
+                            'result'        => $migrationResult,
+                            'input'         => $input,
+                            'error_message' => $e->getMessage()
                         ]);
                 }
             }
@@ -355,6 +413,52 @@ class migration extends Job
                     'time_taken'  => microtime(true) - $startTime,
                 ]);
         }
+    }
+
+    /**
+     * function to handle retry attempt for merchant migration in case parent
+     * migration has not happened yet but child is getting migrated first
+     * in that case we will delete the child job, insert parent job & reinsert child job
+     * @param $input
+     * @return bool - whether queue dispatch has failed OR not
+     */
+    private function handleParentConfigRegisterDispatchJob($input): bool
+    {
+        // get current merchant
+        $merchant = $this->repoManager->merchant->fetchMerchantOnConnection($this->merchantId, $this->mode);
+
+        // this merchant would have parent ID definitely; no need to check
+        $parentMID = $merchant->getParentId();
+
+        $this->trace->info(TraceCode::SETTLEMENT_SERVICE_MIGRATION_JOB_RETRY, [
+            'mode'        => $this->mode,
+            'merchant_id' => $this->merchantId,
+            'parent_MID'  => $parentMID,
+            'input'       => $input,
+            'attempted'   => $this->jobAttempts
+        ]);
+        try {
+            //delete current child job
+            $this->delete();
+
+            // dispatch parent job at the moment (as if it's coming for first time)
+            $this->dispatch($this->mode, $parentMID, $this->migrateBankAccount, $this->migrateMerchantConfig, $this->via);
+
+            // dispatch child job with some delay & incremented attempt
+            $this->dispatch($this->mode, $this->merchantId, $this->migrateBankAccount, $this->migrateMerchantConfig,
+                $this->via, $this->jobAttempts + 1)->delay(self::CHILD_MID_DISPATCH_JOB_DELAY);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::SETTLEMENT_SERVICE_MIGRATION_JOB_RETRY_FAILED, [
+                'merchant_id'    => $this->merchantId,
+                'parent_MID'     => $parentMID,
+                'error_message'  => $e->getMessage(),
+                'attempted'      => $this->jobAttempts
+            ]);
+            return true;
+        }
+        return false;
     }
 
     /**
