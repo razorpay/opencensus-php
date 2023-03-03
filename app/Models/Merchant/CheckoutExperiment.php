@@ -6,6 +6,7 @@ use App;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\TraceCode;
+use RZP\Models\Feature;
 
 class CheckoutExperiment
 {
@@ -61,6 +62,14 @@ class CheckoutExperiment
             'enable_rudderstack_plugin'                          => false,
             'checkout_downtime'                                  => 'control',
             'upi_number'                                         => 'control', 
+            '1cc_offers_fix_exp'                                 => 'control',
+            '1cc_enable_v165_exp'                                => 'control',
+            '1cc_address_flow_exp'                               => 'control',
+            '1cc_coupon_drop_off_exp'                            => 'control',
+            '1cc_experiment'                                     => 'control',
+            '1cc_multiple_shipping'                              => 'control',
+            '1cc_city_autopopulate_disable'                      => 'control',
+            '1cc_show_coupon_callout_exp'                        => 'control',
         ];
 
         $this->input = $input;
@@ -111,10 +120,13 @@ class CheckoutExperiment
      * This method fills experiment data for all experiments we want to send to splitz service.
      * if you want to add new experiment, call the $this->fillExperimentData with your own parameters. just make sure
      * that experimentTag is same as what you used in default experiment results array($this->experimentResults)
+     * Adding 1cc Experiment for magic
      * @return void
      */
     private function fillSplitzExperimentsData(): void
     {
+        $this->fill1CcExperimentData();
+
         $this->fillExperimentData(
             UniqueIdEntity::generateUniqueId(),
             'app.checkout_redesign_v1_5_splitz_experiment_id',
@@ -283,6 +295,81 @@ class CheckoutExperiment
             'app.checkout_upi_number_splitz_experiment_id',
             'UpiNumber',
             'upi_number',
+            ['merchant_id' => $this->merchantId]
+        );    
+    }
+
+    private function fill1CcExperimentData(): void
+    {
+        $merchant = $this->app['basicauth']->getMerchant();
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return;
+        }
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.1cc_multiple_shipping_splitz_experiment_id',
+            'MagicGeneralExperiment',
+            '1cc_multiple_shipping',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.1cc_coupon_drop_off_splitz_experiment_id',
+            'MagicGeneralExperiment',
+            '1cc_coupon_drop_off_exp',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.1cc_splitz_experiment_id',
+            'MagicGeneralExperiment',
+            '1cc_experiment',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.1cc_city_autopopulate_splitz_experiment_id',
+            'MagicGeneralExperiment',
+            '1cc_city_autopopulate_disable',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.1cc_address_flow_exp_splitz_experiment_id',
+            'MagicGeneralExperiment',
+            '1cc_address_flow_exp',
+            ['merchant_id' => $this->merchantId]
+        );
+
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.magic_offers_fix_splitz_experiment_id',
+            'MagicGeneralExperiment',
+            '1cc_offers_fix_exp',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.1cc_enable_v165_splitz_experiment_id',
+            'MagicGeneralExperiment',
+            '1cc_enable_v165_exp',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.magic_show_coupon_callout_experiment_id',
+            'MagicGeneralExperiment',
+            '1cc_show_coupon_callout_exp',
             ['merchant_id' => $this->merchantId]
         );
     }
@@ -492,6 +579,11 @@ class CheckoutExperiment
     }
 
     private function handleUpiNumberResponse($response): string
+    {
+        return $response['variant']['name'] ?? 'control';
+    }
+
+    private function handleMagicGeneralExperimentResponse($response): string
     {
         return $response['variant']['name'] ?? 'control';
     }

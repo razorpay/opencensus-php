@@ -192,15 +192,9 @@ class Checkout
 
         $this->fillRTBDetails($merchant, $data);
 
-        $this->fill1ccExperimentDetails($merchant, $data);
-
-        $this->fill1ccCityAutopopulateExperimentDetails($merchant, $data);
-
-        $this->fill1ccAddressOptExperiment($merchant, $data);
-
         $this->disableFeaturesBasedOnMerchantType($merchant, $input, $data);
 
-        $this->fillCheckoutExperiments($input, $data, $merchant->getId());
+        $this->fillCheckoutExperiments($input, $data, $merchant);
 
         $this->fillEmailRequiredOnCheckoutIfApplicable($data);
 
@@ -212,15 +206,7 @@ class Checkout
 
         $this->fillPrivacyAndTerms($merchant,$data);
 
-        $this->fill1ccCouponDropOffExperiment($merchant, $data);
-
-        $this->fill1ccMultipleShippingExperiment($merchant, $data);
-
-        $this->fill1ccEnableV165Experiment($merchant, $data);
-
         $this->fill1ccEnableScriptEditorExperiment($merchant, $data);
-
-        $this->fill1ccOffersWithCouponsExperiment($merchant,$data);
 
         return $data;
     }
@@ -424,84 +410,42 @@ class Checkout
         $data['show_donation'] = $featureEnabled === true && $covidRazorX === 'on';
     }
 
-    protected function fill1ccExperimentDetails(Entity $merchant, array &$data): void
-    {
-        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
-        {
-            return;
-        }
-        try
-        {
-            $properties = [
-                'id'            => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.1cc_splitz_experiment_id'),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $data['1cc_experiment'] = $response['response']['variant']['name'] ?? null;
-        }
-        catch (\Exception $e)
-        {
-            $data['1cc_experiment'] = [];
-        }
-    }
-
-    protected function fill1ccCityAutopopulateExperimentDetails(Entity $merchant, array &$data): void
-    {
-        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
-        {
-            return;
-        }
-        try
-        {
-            $properties = [
-                'id'            => $merchant->getId(),
-                'experiment_id' => $this->app['config']->get('app.1cc_city_autopopulate_splitz_experiment_id'),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $data['1cc_city_autopopulate_disable'] = $response['response']['variant']['name'] ?? null;
-        }
-        catch (\Exception $e)
-        {
-            $data['1cc_city_autopopulate_disable'] = null;
-        }
-    }
-
-    protected function fill1ccAddressOptExperiment(Entity $merchant, array &$data): void
-    {
-        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
-        {
-            return;
-        }
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.1cc_address_flow_exp_splitz_experiment_id'),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $data['1cc_address_flow_exp'] = $response['response']['variant']['name'] ?? null;
-        }
-        catch (\Exception $e)
-        {
-            $data['1cc_address_flow_exp'] = null;
-        }
-    }
-
     /**
      * @param array $input
      * @param array $data
-     * @param string $merchantId
+     * @param Entity $merchant
      * @return void
      */
-    protected function fillCheckoutExperiments(array $input, array &$data, string $merchantId): void
+    protected function fillCheckoutExperiments(array $input, array &$data, Entity $merchant): void
     {
-        $data['experiments'] = (new CheckoutExperiment($input, $merchantId))->getCheckoutExperimentsResults();
+        $data['experiments'] = (new CheckoutExperiment($input, $merchant->getId()))->getCheckoutExperimentsResults();
+        $this->fill1ccExistingExperiments($data, $merchant);
+    }
+
+    protected function fill1ccExistingExperiments(array &$data, Entity $merchant): void
+    {
+        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return;
+        }
+
+        $data['1cc_experiment'] = $this->oneCCExperimentsDefaultValueForCompatibility($data['experiments']['1cc_experiment']);
+        $data['1cc_address_flow_exp'] = $this->oneCCExperimentsDefaultValueForCompatibility($data['experiments']['1cc_address_flow_exp']);
+        $data['1cc_city_autopopulate_disable'] = $this->oneCCExperimentsDefaultValueForCompatibility($data['experiments']['1cc_city_autopopulate_disable']);
+        $data['1cc_coupon_drop_off_exp'] = $this->oneCCExperimentsDefaultValueForCompatibility($data['experiments']['1cc_coupon_drop_off_exp']);
+        $data['1cc_multiple_shipping'] = $this->oneCCExperimentsDefaultValueForCompatibility($data['experiments']['1cc_multiple_shipping']);
+    }
+
+    protected function oneCCExperimentsDefaultValueForCompatibility(string $expValue)
+    {
+        if ($expValue == 'test') {
+            return 'true';
+        }
+        else if ($expValue == 'control') {
+            return null;
+        }
+
+        return $expValue;
     }
 
     protected function shouldDisplayTruecaller(array $input): bool
@@ -2353,106 +2297,6 @@ class Checkout
             $data['features'][$featureFlags] = $response[$featureFlags];
         }
         $data['1cc']['configs'] = $response;
-    }
-
-    protected function fill1ccCouponDropOffExperiment(Entity $merchant, array &$data): void
-    {
-        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
-        {
-            return;
-        }
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.1cc_coupon_drop_off_splitz_experiment_id'),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $data['1cc_coupon_drop_off_exp'] = $response['response']['variant']['name'] ?? null;
-        }
-        catch (\Throwable $e)
-        {
-            $data['1cc_coupon_drop_off_exp'] = null;
-        }
-    }
-
-    protected function fill1ccMultipleShippingExperiment(Entity $merchant, array &$data): void
-    {
-        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
-        {
-            return;
-        }
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.1cc_multiple_shipping_splitz_experiment_id'),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $data['1cc_multiple_shipping'] = $response['response']['variant']['name'] ?? null;
-        }
-        catch (\Throwable $e)
-        {
-            $data['1cc_multiple_shipping'] = null;
-        }
-    }
-
-    protected function fill1ccEnableV165Experiment(Entity $merchant, array &$data): void
-    {
-        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
-        {
-            return;
-        }
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.1cc_enable_v165_splitz_experiment_id'),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $data['experiments']['1cc_enable_v165_exp'] = $response['response']['variant']['name'] ?? null;
-        }
-        catch (\Throwable $e)
-        {
-            $data['experiments']['1cc_enable_v165_exp'] = null;
-        }
-    }
-
-     /**
-     * Since order amount is mutable in magic checkout due to application of coupons and shipping charges.
-     * Percent based offers were returning discount wrt original amount in preferences call,
-     * hence this API will fetch offers associated with order based final order amount on payment screen.
-     * This experiment will be helpful in ramping up the deployment for this fix.
-     * @param Entity merchant
-     * @param array data
-     */
-    protected function fill1ccOffersWithCouponsExperiment(Entity $merchant, array &$data): void
-    {
-        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
-        {
-            return;
-        }
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.magic_offers_fix_splitz_experiment_id'),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $data['experiments']['1cc_offers_fix_exp'] = $response['response']['variant']['name'] ?? null;
-        }
-        catch (\Throwable $e)
-        {
-            $data['experiments']['1cc_offers_fix_exp'] = null;
-        }
     }
 
     /**
