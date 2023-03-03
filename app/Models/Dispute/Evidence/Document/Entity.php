@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const CUSTOM_TYPE = 'custom_type';
     const DOCUMENT_ID = 'document_id'; // refers to the underlying ufh file id/document id
     const SOURCE      = 'source';
+    const DOCUMENT_TYPE = 'document_type';
 
     const TYPE_LENGTH        = 100;
     const CUSTOM_TYPE_LENGTH = 100;
@@ -69,5 +70,15 @@ class Entity extends Base\PublicEntity
     public function isOthersType(): bool
     {
         return $this->getType() === Types::OTHERS;
+    }
+
+    public function toDualWriteArray() : array
+    {
+        $array = $this->toArray();
+
+        $array[self::DOCUMENT_TYPE] = $array[self::TYPE];
+        unset($array[self::TYPE]);
+
+        return $array;
     }
 }

@@ -176,6 +176,10 @@ class Core extends Base\Core
 
                     $this->repo->saveOrFail($dispute);
 
+                    $dispute->refresh();
+
+                    $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray(), Table::DISPUTE, DisputeConstants::CREATE);
+
                     return $dispute;
                 });
 
@@ -242,6 +246,10 @@ class Core extends Base\Core
                     $this->updateCustomerTicketIfApplicable($dispute);
 
                     $this->generateDisputeEvent($dispute);
+
+                    $dispute->refresh();
+
+                    $this->app['disputes']->sendDualWriteToDisputesService($dispute->toDualWriteArray(), Table::DISPUTE, DisputeConstants::UPDATE);
 
                     $this->trace->count(Metrics::DISPUTE_STATUS_CHANGE, [
                         'status'    =>  $dispute->getStatus(),

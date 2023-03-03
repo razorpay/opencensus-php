@@ -49,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::SUBMITTED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DISPUTE_ID,
     ];
 
     protected $public = [
@@ -79,6 +80,11 @@ class Entity extends Base\PublicEntity
     public function dispute()
     {
         return $this->belongsTo(Dispute\Entity::class);
+    }
+
+    public function toDualWriteArray() : array
+    {
+        return $this->toArray();
     }
 
     public function getDisputeId()

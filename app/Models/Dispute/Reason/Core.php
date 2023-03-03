@@ -4,6 +4,8 @@ namespace RZP\Models\Dispute\Reason;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Table;
+use RZP\Models\Dispute\Constants;
 
 class Core extends Base\Core
 {
@@ -17,8 +19,12 @@ class Core extends Base\Core
 
         $reason = (new Entity)->build($input);
 
-        $this->repo->saveOrFail($reason);
+        return $this->repo->transaction(function() use ($reason){
+             $this->repo->saveOrFail($reason);
 
-        return $reason;
+             $reason->refresh();
+             $this->app['disputes']->sendDualWriteToDisputesService($reason->toDualWriteArray(), Table::DISPUTE_REASON, Constants::CREATE);
+             return $reason;
+        });
     }
 }

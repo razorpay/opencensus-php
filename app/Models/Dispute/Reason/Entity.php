@@ -66,4 +66,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::DESCRIPTION);
     }
+
+    public function toDualWriteArray() : array
+    {
+        return $this->toArray();
+    }
 }

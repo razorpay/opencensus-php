@@ -36,6 +36,8 @@ class DebitNoteTest extends TestCase
         ]);
 
         $this->mockStork();
+
+        $this->app['config']->set('services.disputes.mock', true);
     }
 
     //todo: move to trait

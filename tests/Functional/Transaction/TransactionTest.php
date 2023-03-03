@@ -427,6 +427,8 @@ class TransactionTest extends TestCase
 
     public function testCreateDisputeWithoutDeduct()
     {
+        $this->app['config']->set('services.disputes.mock', true);
+
         $payment = $this->fixtures->create('payment:captured');
 
         $dispute = $this->disputePayment($payment);

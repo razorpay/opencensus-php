@@ -1322,10 +1322,10 @@ return [
     'disputes' => [
         'auth' => [
             'username' => 'api',
-            'secret' => env('DISPUTES_API_SECRET', 'disputes_api_secret'),
+            'secret' => env('DISPUTES_API_SECRET', 'dispute_secret'),
         ],
         'mock'     => env('DISPUTES_MOCK', false),
-        'base_url'      => env('DISPUTES_BASE_URL', 'https://disputes.concierge.stage.razorpay.in/api/')
+        'base_url'      => env('DISPUTES_BASE_URL', 'https://disputes.int.stage.razorpay.in/api/')
     ],
 
     'sms_sync'  =>  [

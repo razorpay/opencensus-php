@@ -20,6 +20,10 @@ class Constants
 
     const GATEWAY_DISPUTE_CODE = 'gateway_code';
 
+    const UPDATE = "update";
+    const CREATE = "create";
+    const PURGE_DISPUTE_DOCUMENT = "purge_dispute_document";
+
     const DEFAULT_DEDUCTION_REVERSAL_AT_IN_SECONDS = (24 * 60 * 60) * 45;
 
     const CHARGEBACK_SMS_TEMPLATE_NAME      = 'sms.risk.chargeback_notification_mobile_signup';

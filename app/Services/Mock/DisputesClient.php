@@ -2,9 +2,11 @@
 
 namespace RZP\Services\Mock;
 
+use RZP\Constants\Table;
 use \WpOrg\Requests\Response;
+use RZP\Tests\Functional\Dispute\DisputeTest;
 
-class DisputesClient extends \RZP\Services\MerchantRiskAlertClient
+class DisputesClient
 {
     /**
      * {@inheritDoc}
@@ -21,5 +23,11 @@ class DisputesClient extends \RZP\Services\MerchantRiskAlertClient
     public function forwardToDisputesService()
     {
         return [];
+    }
+
+
+    public function sendDualWriteToDisputesService($entityData, $table, $action)
+    {
+        (new DisputeTest())->assertDualWriteDisputeEntityById($table, $entityData, $action);
     }
 }

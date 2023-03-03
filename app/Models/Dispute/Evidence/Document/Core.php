@@ -7,6 +7,7 @@ namespace RZP\Models\Dispute\Evidence\Document;
 use RZP\Models\Base;
 use RZP\Models\Dispute;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Table;
 
 class Core extends Base\Core
 {
@@ -23,24 +24,54 @@ class Core extends Base\Core
 
         (new Validator)->validateBulkCreateInput($bulkCreateInput, $allowEmpty);
 
-        $this->repo->dispute_evidence_document->transaction(function () use ($dispute, $bulkCreateInput)
+        $documents = $this->repo->dispute_evidence_document->transaction(function () use ($dispute, $bulkCreateInput)
         {
+            $documents = [];
             foreach ($bulkCreateInput as $row)
             {
-                $this->create($dispute, $row);
+                $documents[] = ($this->create($dispute, $row, true)->toDualWriteArray());
             }
+
+            return $documents;
         });
+
+        //it will not be a transaction
+        foreach ($documents as $document)
+        {
+            try
+            {
+                $this->app['disputes']->sendDualWriteToDisputesService($document, Table::DISPUTE_EVIDENCE_DOCUMENT, Dispute\Constants::CREATE);
+            }
+            catch (\Throwable $e)
+            {
+
+            }
+        }
     }
 
-    protected function create(Dispute\Entity $dispute, $input): Entity
+    protected function create(Dispute\Entity $dispute, $input, $bulk = false): Entity
     {
         $this->trace->info(TraceCode::EVIDENCE_DOCUMENT_CREATE_INPUT, $input);
 
         $document = (new Entity)->build($input);
 
-        $this->repo->dispute_evidence_document->saveOrFail($document);
+        if($bulk === true)
+        {
+            $this->repo->dispute_evidence_document->saveOrFail($document);
+            $document->refresh();
+            return $document;
+        }
 
-        return $document;
+        return $this->repo->transaction(function() use ($document){
+            $this->repo->dispute_evidence_document->saveOrFail($document);
+
+            $document->refresh();
+
+            $this->app['disputes']->sendDualWriteToDisputesService($document->toDualWriteArray(), Table::DISPUTE_EVIDENCE_DOCUMENT, Dispute\Constants::CREATE);
+
+            return $document;
+        });
+
     }
 
     protected function makeBulkCreateInputFromCreateManyInput(Dispute\Entity $dispute, array $createManyInput)

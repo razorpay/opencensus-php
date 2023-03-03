@@ -11,6 +11,7 @@ use RZP\Models\Dispute;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Table;
 use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Models\Dispute\Phase;
@@ -21,6 +22,7 @@ use Illuminate\Http\UploadedFile;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Dispute\BulkCreation;
 use Functional\Dispute\DisputeTrait;
+use RZP\Services\Mock\DisputesClient;
 use RZP\Models\Dispute\Reason\Network;
 use RZP\Exception\BadRequestException;
 use RZP\Services\FreshdeskTicketClient;
@@ -44,6 +46,7 @@ use RZP\Tests\Functional\Helpers\Salesforce\SalesforceTrait;
 use RZP\Mail\Dispute\Admin\AcceptedAdmin as DisputeAcceptedForAdminMail;
 use RZP\Mail\Dispute\Admin\SubmittedAdmin as DisputeSubmittedForAdminMail;
 use RZP\Models\Dispute\Customer\FreshdeskTicket\Constants as FreshdeskConstants;
+use RZP\Constants\Entity as EntityConstant;
 
 class DisputeTest extends TestCase
 {
@@ -64,6 +67,13 @@ class DisputeTest extends TestCase
 
     protected $repo = null;
 
+    const TableVsEntityList = [
+        Table::DISPUTE => EntityConstant::DISPUTE,
+        Table::DISPUTE_REASON => EntityConstant::DISPUTE_REASON,
+        Table::DISPUTE_EVIDENCE => EntityConstant::DISPUTE_EVIDENCE,
+        Table::DISPUTE_EVIDENCE_DOCUMENT => EntityConstant::DISPUTE_EVIDENCE_DOCUMENT,
+    ];
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__ . '/helpers/DisputeTestData.php';
@@ -77,6 +87,15 @@ class DisputeTest extends TestCase
         $this->setUpSalesforceMock();
 
         $this->setUpFreshdeskClientMock();
+
+        $this->setUpDisputeClientMock();
+    }
+
+    protected function setUpDisputeClientMock()
+    {
+        $mockDisputeClient = new DisputesClient();
+
+        $this->app->instance('disputes', $mockDisputeClient);
     }
 
     protected function mockRazorxTreatment(string $returnValue = 'On')
@@ -313,6 +332,19 @@ class DisputeTest extends TestCase
             'deduction_source_type' => 'adjustment',
             'deduction_source_id'   => $adjustment['id'],
         ], $dispute);
+    }
+
+    public function assertDualWriteDisputeEntityById($table, $actualEntityDataSent, $action)
+    {
+        if($table === Table::DISPUTE_EVIDENCE_DOCUMENT && $action === 'purge_dispute_document'){
+            return;
+        }
+
+        $expectedDataSent = [];
+
+        $expectedDataSent = $this->getDbEntityById(self::TableVsEntityList[$table], $actualEntityDataSent['id'])->toDualWriteArray();
+
+        $this->assertEquals($expectedDataSent, $actualEntityDataSent);
     }
 
     public function testDisputeCreateWithDeductAtOnsetMerchantValidationFailure()

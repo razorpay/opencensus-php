@@ -8,6 +8,7 @@ use Exception;
 use RZP\Models\Base;
 use RZP\Models\Dispute;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Table;
 use RZP\Models\Payment\Method;
 use RZP\Models\Dispute\RecoveryMethod;
 use RZP\Mail\Dispute\Admin\DisputePresentmentRiskOpsReview;
@@ -96,11 +97,16 @@ class Core extends Base\Core
 
         $entity = (new Entity)->build($createInput);
 
-        $this->repo->dispute_evidence->saveOrFail($entity);
+        return $this->repo->transaction(function() use ($entity, $dispute){
+            $this->repo->dispute_evidence->saveOrFail($entity);
+            $entity->dispute()->associate($dispute);
 
-        $entity->dispute()->associate($dispute);
+            $entity->refresh();
 
-        return $entity;
+           $this->app['disputes']->sendDualWriteToDisputesService($entity->toDualWriteArray(), Table::DISPUTE_EVIDENCE, Dispute\Constants::CREATE);
+
+            return $entity;
+        });
     }
 
     protected function getInputForCreateForDispute(Dispute\Entity $dispute, $input): array
@@ -244,14 +250,22 @@ class Core extends Base\Core
 
     protected function purgeDisputeEvidence(Dispute\Entity $dispute): void
     {
-        $this->repo->dispute_evidence_document->deleteDocumentsForDispute($dispute->getId());
+        $this->repo->transaction(function() use ($dispute){
+            $this->repo->dispute_evidence_document->deleteDocumentsForDispute($dispute->getId());
+
+            //the logic of this function is implemented on dispute service
+            $this->app['disputes']->sendDualWriteToDisputesService(["dispute_id"=> $dispute->getId()], Table::DISPUTE_EVIDENCE_DOCUMENT, Dispute\Constants::PURGE_DISPUTE_DOCUMENT);
+        });
 
         if ($dispute->evidence()->first() === null)
         {
             return;
         }
 
-        $this->repo->dispute_evidence->deleteOrFail($dispute->evidence()->firstOrFail());
+
+        $evidence = $dispute->evidence()->firstOrFail();
+
+        $this->repo->dispute_evidence->deleteOrFail($evidence);
     }
 
     protected function acceptForDispute(Dispute\Entity $dispute, array $input)

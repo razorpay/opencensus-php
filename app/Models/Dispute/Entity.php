@@ -190,6 +190,7 @@ class Entity extends Base\PublicEntity
         self::LIFECYCLE,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::RESOLVED_AT,
     ];
 
     protected $public = [
@@ -360,6 +361,18 @@ class Entity extends Base\PublicEntity
     public function generateCurrency($input)
     {
         $this->setAttribute(self::CURRENCY, $this->payment->getCurrency());
+    }
+
+    public function toDualWriteArray() : array
+    {
+        $array = $this->toArray();
+
+        unset($array[self::PAYMENT]);
+        unset($array[self::EVIDENCE]);
+        unset($array[self::REASON_DESCRIPTION]);
+        unset($array[self::REASON_CODE]);
+
+        return $array;
     }
 
 

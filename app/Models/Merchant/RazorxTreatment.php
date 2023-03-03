@@ -698,6 +698,9 @@ final class RazorxTreatment
     // Experiment to migrate disputes routes from API to disputes service
     const DISPUTES_DECOMP = 'disputes_decomp';
 
+    // Experiment to enable dual writes on dispute service
+    const DISPUTES_DUAL_WRITE = 'disputes_dual_write';
+
     // Experiment to migrate shield international traffic to separate pods
     const SHIELD_INTL_POD = 'shield_intl_pod';
 

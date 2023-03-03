@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Dispute\Reason;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Services\Mock\DisputesClient;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class DisputeReasonTest extends TestCase
@@ -16,6 +17,15 @@ class DisputeReasonTest extends TestCase
         parent::setUp();
 
         $this->ba->adminAuth();
+
+        $this->setUpDisputeClientMock();
+    }
+
+    protected function setUpDisputeClientMock()
+    {
+        $mockDisputeClient = new DisputesClient();
+
+        $this->app->instance('disputes', $mockDisputeClient);
     }
 
     public function testReasonCreate()

@@ -4,24 +4,31 @@ namespace RZP\Services;
 
 use Request;
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Table;
 use Razorpay\Trace\Logger;
 use RZP\Constants\Environment;
+use RZP\Http\Request\Requests;
 use GuzzleHttp\Client as Guzzle;
 use Illuminate\Support\Facades\App;
 use RZP\Exception\IntegrationException;
+use RZP\Models\Merchant\RazorxTreatment;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use RZP\Http\Controllers\DisputeController;
 
 class DisputesClient
 {
-    const CONTENT_TYPE      = 'content-type';
-    const CONTENT_TYPE_JSON = 'application/json';
-    const X_REQUEST_ID      = 'X-Request-ID';
-    const X_MERCHANT_ID     = 'X-Merchant-ID';
-    const X_AUTH_TYPE       = 'X-Auth-Type';
-    const X_IS_EXPRESS      = 'X-Is-Express';
+    const CONTENT_TYPE        = 'content-type';
+    const CONTENT_TYPE_JSON   = 'application/json';
+    const X_REQUEST_ID        = 'X-Request-ID';
+    const X_MERCHANT_ID       = 'X-Merchant-ID';
+    const X_AUTH_TYPE         = 'X-Auth-Type';
+    const X_IS_EXPRESS        = 'X-Is-Express';
+    const DISPUTES_DUAL_WRITE = "v1/disputes/dual-write";
+    const MAX_RETRIES         = 2;
 
     const AUTH_TYPE_PROXY   = 'proxy';
     const AUTH_TYPE_PRIVATE = 'private';
@@ -99,28 +106,105 @@ class DisputesClient
      * @throws GuzzleException
      * @throws IntegrationException
      * @throws Exception\BadRequestException
+     * @throws \Throwable
      */
     public function forwardToDisputesService()
     {
-        $url = $this->config['base_url'] . Request::path();
+        return $this->requestAndGetParseBody(Request::method(), Request::path(), Request::all(), 1);
+    }
+
+    /**
+     * @throws GuzzleException
+     * @throws \Throwable
+     */
+    public function sendDualWriteToDisputesService($entityData, $table, $action)
+    {
+        if($this->shouldSendDualWrite($entityData, $table) === false)
+        {
+            return;
+        }
+
+        $this->trace->info(TraceCode::DISPUTE_DUAL_WRITE_REQUEST, [
+            "table" => $table,
+            "action" => $action,
+            "data" => $entityData
+        ]);
+
+        try
+        {
+            $this->requestAndGetParseBody("POST", self::DISPUTES_DUAL_WRITE, [
+                "table" => $table,
+                "action" => $action,
+                "data" => $entityData
+            ],                            1);
+        }
+        catch(\Throwable $e)
+        {
+            $this->trace->count(Metric::DISPUTES_SERVICE_DUAL_WRITE_FAILED_COUNT);
+
+            $this->trace->error(TraceCode::DISPUTES_SERVICE_DUAL_WRITE_FAILED, [
+                'error_message' => $e->getMessage(),
+                'table'  => $table,
+                'action' => $action,
+            ]);
+
+            if ($this->app['env'] === Environment::TESTING)
+            {
+                throw $e;
+            }
+        }
+
+    }
+
+    protected function shouldSendDualWrite($entityData, $table): bool
+    {
+        $variant = $this->app['razorx']->getTreatment($table, RazorxTreatment::DISPUTES_DUAL_WRITE, $this->app['basicauth']->getMode() ?? Mode::LIVE);
+
+        return $variant === RazorxTreatment::RAZORX_VARIANT_ON;
+    }
+
+    /**
+     * @throws \Throwable
+     * @throws GuzzleException
+     */
+    protected function requestAndGetParseBody($method, $path, $payload, $retry_count)
+    {
+        $url = $this->config['base_url'] . $path;
 
         $this->options = [
             'headers' => $this->getDisputesHeaders(),
-            'json' => Request::all(),
+            'json' => $payload,
         ];
 
         $this->trace->info(TraceCode::DOWNSTREAM_SERVICE_REQUEST, [
             'url'       => $url,
-            'service'   => 'disputes'
+            'service'   => 'disputes',
+            'payload'   => $payload,
+            'retry_count' => $retry_count
         ]);
 
-        if ($this->app['env'] === Environment::TESTING)
+        try
         {
-            return $this->options;
+            $response = $this->client->request($method, $url, $this->options);
+
+            return $this->formatResponse($response);
         }
+        catch (\Throwable $e)
+        {
+            $this->trace->count(Metric::DISPUTES_SERVICE_ERROR_COUNT);
 
-        $response = $this->client->request(Request::method(), $url, $this->options);
+            $this->trace->error(TraceCode::DISPUTES_INTEGRATION_ERROR, [
+                'error_message' => $e->getMessage(),
+                'url'  => $url,
+                'retries'=> $retry_count,
+            ]);
 
-        return $this->formatResponse($response);
+            if ($retry_count < self::MAX_RETRIES)
+            {
+                return $this->requestAndGetParseBody($method, $path, $payload, $retry_count + 1);
+            }
+
+            throw $e;
+        }
     }
 }
