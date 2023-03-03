@@ -254,12 +254,12 @@ class Selector extends Base\Core
                     }
                     else
                     {
-                        $sortedTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($terminalSetReceivedFromSmartRouting);;
+                        $newSelectedTerminals = Terminal\Service::getEntityArrayFromTerminalServiceResponse($terminalSetReceivedFromSmartRouting);
 
                         $this->trace->info(
                             TraceCode::TERMINALS_SERVICE_PAYMENT_TERMINALS,
                             [
-                                'data' => $sortedTerminals,
+                                'data' => $newSelectedTerminals,
                             ]);
                     }
                 }
@@ -1175,6 +1175,12 @@ class Selector extends Base\Core
         if ($payment->isOffline() === true)
         {
             return true;
+        }
+
+        if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false
+            && $payment[Entity::METHOD] === Method::NETBANKING)
+        {
+            return false;
         }
 
         $merchantId = $payment->getMerchantId();

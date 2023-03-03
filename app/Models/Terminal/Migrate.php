@@ -520,6 +520,20 @@ trait Migrate
         return $collection;
     }
 
+    public static function getEntityArrayFromTerminalServiceResponse(array $response): array
+    {
+        $terminals = [];
+
+        foreach ($response as $value)
+        {
+            $terminal = self::getEntityFromTerminalServiceResponse($value);
+
+            $terminals[] = $terminal;
+        }
+
+        return $terminals;
+    }
+
     public static function compareTerminalCollection(PublicCollection $apiTerminals, PublicCollection $terminals, $compareMethods = null): bool
     {
         $app = \App::getFacadeRoot();
