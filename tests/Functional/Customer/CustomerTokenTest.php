@@ -145,19 +145,6 @@ class CustomerTokenTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetCustomerTokensByAppToken()
-    {
-        $this->mockSession();
-
-        $this->fixturesToCreateToken('100022xtokenl1', '100000003card1', '411140', '10000000000000', '10000gcustomer', [
-            'vault' => 'visa'
-        ]);
-
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
     public function testFetchSavedTokensStatusSaved()
     {
         $this->mockSession();

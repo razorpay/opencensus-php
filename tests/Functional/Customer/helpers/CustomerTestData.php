@@ -645,29 +645,6 @@ return [
         ],
     ],
 
-    'testGetCustomerTokensByAppToken' => [
-        'request' => [
-            'url' => '/apps/tokens',
-            'method' => 'get',
-            'content' => [
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'items'  => [
-                    [
-                        'token' => '1000lcardtoken',
-                        'card'  => [
-                            'last4'   => '1111',
-                            'network' => 'Visa',
-                        ],
-                    ],
-                ],
-            ],
-        ],
-    ],
-
     'testFetchSavedTokensStatusSaved'   => [
         'request' => [
                 'url' => '/customers/status/9988776655',

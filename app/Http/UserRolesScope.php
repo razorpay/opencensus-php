@@ -600,7 +600,6 @@ class UserRolesScope
             'addon_fetch_multiple'                                 => [Role::OWNER, Role::ADMIN],
             'adj_fetch_by_id'                                      => [Role::OWNER, Role::ADMIN],
             'adj_fetch_multiple'                                   => [Role::OWNER, Role::ADMIN],
-            'app_fetch_tokens'                                     => [Role::OWNER, Role::ADMIN],
             'app_merchant_mapping_get'                             => [Role::OWNER, Role::ADMIN],
             'auth_link_paper_mandate_retry_token'                  => [Role::OWNER, Role::ADMIN],
             'banking_account_create'                               => [Role::OWNER, Role::ADMIN],
