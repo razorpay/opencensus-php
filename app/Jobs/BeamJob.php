@@ -187,8 +187,7 @@ class BeamJob extends Job
         $this->trace->count(Metric::BEAM_RESPONSE_COUNT_TOTAL, [
             "url" => $this->request['url'],
             "job_name" => $res->job_name,
-            "status_code" => $this->response["status_code"],
-            "success" => $this->response["success"]
+            "status_code" => $this->response->status_code
         ]);
 
         return $res;
