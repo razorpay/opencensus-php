@@ -141,6 +141,25 @@ class TokenController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function tokenHqChargeProcessingViaBatch()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->tokenHqChargeProcessingViaBatch($input);
+
+        return ApiResponse::json($data);
+    }
+
+
+    public function tokenHqCron()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->tokenHqCron($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function bulkCreateLocalTokensFromConsents()
     {
         $input = Request::all();

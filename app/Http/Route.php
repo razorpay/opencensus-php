@@ -4000,6 +4000,8 @@ class Route
 
         'vault_migrate_token_bulk'                => ['post',        'tokens/vault/migrate/namespace',                           'TokenController@migrateVaultTokenViaBatch'                ],
 
+        'token_hq_charge_batch'                   => ['post',         'token_hq/charge',                                         'TokenController@tokenHqChargeProcessingViaBatch'          ],
+        'token_hq_cron'                           => [ 'post',        'tokenhq/cron',                                            'TokenController@tokenHqCron'                              ],
 
        'token_pause_not_supported_card_tokens'    => ['post',        'tokens/pause_not_supported/card',                          'TokenController@pauseNotSupportedCardTokens'                                                         ],
 
@@ -5256,7 +5258,8 @@ class Route
         'settlement_ondemand_linked_account',
 
         'vault_migrate_token_bulk',
-
+        'token_hq_charge_batch',
+        'token_hq_cron',
         'internal_merchant_fetch',
         'banking_account_create_lms_mob',
         'banking_account_update_lms_mob',
@@ -14285,7 +14288,8 @@ class Route
 
             'payouts_service_redis_key_set',
             'payout_service_idempotency_key_feature_remove',
-            'downtime_auto_resolve_cron',
+            'token_hq_cron',
+            'downtime_auto_resolve_cron'
         ],
 
         'subscriptions' => [
@@ -14724,6 +14728,7 @@ class Route
             'post_batch_bulk_fraud_notify',
             'payment_transfer_retry_batch',
             'vault_migrate_token_bulk',
+            'token_hq_charge_batch',
             'create_local_tokens_from_consents_bulk',
             'create_ledger_journal_batch',
             'merchant_upload_miq_admin',

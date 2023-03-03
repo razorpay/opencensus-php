@@ -131,7 +131,10 @@ class Type
 
     const VAULT_TOKEN_MIGRATE   = 'vault_token_migrate';
 
+    const TOKEN_HQ_CHARGE       = 'token_hq_charge';
+
     const VAULT_MIGRATE_TOKEN_NS = 'vault_migrate_token_ns';
+
 
     const CAPTURE_SETTING       = 'capture_setting';
 
@@ -287,6 +290,7 @@ class Type
         self::IIN_MC_MASTERCARD,
         self::MPAN,
         self::VAULT_MIGRATE_TOKEN_NS,
+        self::TOKEN_HQ_CHARGE,
         self::CAPTURE_SETTING,
         self::PRICING_RULE,
         self::BUY_PRICING_RULE,
@@ -436,7 +440,8 @@ class Type
         self::HITACHI_FULCRUM_ONBOARD,
         self::VAULT_MIGRATE_TOKEN_NS,
         self::MERCHANT_UPLOAD_MIQ,
-        self::PAYMENT_PAGE,
+        self::TOKEN_HQ_CHARGE,
+        self::PAYMENT_PAGE
     ];
 
     /**
@@ -558,6 +563,7 @@ class Type
         self::LEDGER_BULK_JOURNAL_CREATE,
         self::PARTNER_REFERRAL_FETCH,
         self::VAULT_MIGRATE_TOKEN_NS,
+        self::TOKEN_HQ_CHARGE,
         self::MERCHANT_UPLOAD_MIQ,
         self::HITACHI_FULCRUM_ONBOARD,
         self::PAYMENT_PAGE,
@@ -646,6 +652,7 @@ class Type
         self::VAULT_MIGRATE_TOKEN_NS,
         self::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS,
         self::MERCHANT_UPLOAD_MIQ,
+        self::TOKEN_HQ_CHARGE,
         self::HITACHI_FULCRUM_ONBOARD,
         self::PAYMENT_PAGE,
     ];
@@ -717,6 +724,7 @@ class Type
         self::ENTITY_MAPPING                     => Name::ADMIN_BATCH_CREATE,
         self::ADMIN_BATCH                        => Name::ADMIN_BATCH_CREATE,
         self::VAULT_MIGRATE_TOKEN_NS             => Name::ADMIN_BATCH_CREATE,
+        self::TOKEN_HQ_CHARGE                    => Name::ADMIN_BATCH_CREATE,
         self::INSTANT_ACTIVATION                 => Name::INSTANT_ACTIVATION,
         self::MDR_ADJUSTMENTS                    => Name::MDR_ADJUSTMENTS,
         self::MERCHANT_ACTIVATION                => Name::MERCHANT_ACTIVATION,

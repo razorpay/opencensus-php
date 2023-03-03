@@ -7,6 +7,7 @@ use RZP\Constants;
 use Carbon\Carbon;
 use RZP\Diag\EventCode;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Jobs\ParAsyncTokenisationJob;
 use RZP\Models\Base;
@@ -27,10 +28,14 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Jobs\SavedCardTokenisationJob;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Throwable;
 
 class Core extends Base\Core
 {
+    use FileHandlerTrait;
+
     const GATEWAY_VISA  = 'tokenisation_visa';
     const GATEWAY_MC    = 'tokenisation_mastercard';
     const GATEWAY_RUPAY = 'tokenisation_rupay';
@@ -2047,6 +2052,33 @@ class Core extends Base\Core
 
         return [$token, $serviceProviderTokens];
     }
+
+    public function createCsvFileFromDataLake()
+    {
+
+        $currentDate = Carbon::now(Timezone::IST)->format('Y-m-d');
+        $fileName = 'token_hq' . '_' . $currentDate;
+        $dataLakeQuery = sprintf(TokenConstants::DATA_LAKE_TOKEN_HQ_AGGREGATE_DATA,$currentDate);
+
+        $lakeData = $this->app['datalake.presto']->getDataFromDataLake($dataLakeQuery);
+
+        $results = [];
+
+        foreach($lakeData as $record)
+        {
+            $results[] = $record;
+        }
+        $url = $this->createCsvFile($results , $fileName, null, 'files/batch');
+
+        $uploadedFile = new UploadedFile(
+                $url,
+                $fileName.'csv',
+                'text/csv',
+                null,
+                true);
+
+        return $uploadedFile;
+  }
 
     public function createTokenForRearch($card, $cardInput, $merchant, $payment, $customer)
     {

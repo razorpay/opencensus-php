@@ -1512,6 +1512,19 @@ class Header
     const VAULT_MIGRATE_TOKEN_NAMESPACE_BU_NAMESPACE       = 'bu_namespace';
     const VAULT_MIGRATE_TOKEN_NAMESPACE_MIGRATED_TOKEN_ID  = 'migrated_token_id';
 
+
+    // token hq charge batch
+    const TOKEN_HQ_TYPE              = 'type';
+    const TOKEN_HQ_COUNT             = 'count';
+    const TOKEN_HQ_MERCHANT_ID       = 'merchant_id';
+    const TOKEN_HQ_AGGREGATE_DATA_ID = 'aggregated_data_id';
+    const TOKEN_HQ_FEES              = 'fees';
+    const TOKEN_HQ_TAX               = 'tax';
+    const TOKEN_HQ_REQUEST_PRICING_ID = 'request_pricing_id';
+    const TOKEN_HQ_TRANSACTION_ID    = 'transaction_id';
+    const TOKEN_HQ_FEE_MODEL         = 'fee_model';
+    const TOKEN_HQ_CREATED_DATE      = 'created_date';
+
     // consent collection for creation of local tokens
     //input
     const CONSENT_COLLECTION_MERCHANT_ID = 'merchantId';
@@ -4240,6 +4253,34 @@ class Header
                 self::ERROR_DESCRIPTION,
             ]
         ],
+
+
+        Type::TOKEN_HQ_CHARGE => [
+            self::INPUT => [
+                self::TOKEN_HQ_AGGREGATE_DATA_ID,
+                self::TOKEN_HQ_MERCHANT_ID,
+                self::TOKEN_HQ_TYPE,
+                self::TOKEN_HQ_COUNT,
+                self::TOKEN_HQ_FEE_MODEL,
+                self::TOKEN_HQ_CREATED_DATE
+            ],
+            self::OUTPUT => [
+                self::TOKEN_HQ_AGGREGATE_DATA_ID,
+                self::TOKEN_HQ_MERCHANT_ID,
+                self::TOKEN_HQ_COUNT,
+                self::TOKEN_HQ_TYPE,
+                self::TOKEN_HQ_FEES,
+                self::TOKEN_HQ_TAX,
+                self::TOKEN_HQ_REQUEST_PRICING_ID,
+                self::TOKEN_HQ_TRANSACTION_ID,
+                self::TOKEN_HQ_FEE_MODEL,
+                self::TOKEN_HQ_CREATED_DATE,
+                self::STATUS,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ]
+        ],
+
 
         Type::MERCHANT_CONFIG_INHERITANCE => [
             self::INPUT => [

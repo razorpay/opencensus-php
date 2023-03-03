@@ -93,7 +93,8 @@ class Limit
         Type::COLLECT_LOCAL_CONSENTS_TO_CREATE_TOKENS => 1000000,
         Type::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST => 1000000,
         Type::ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST => 1000000,
-        Type::VAULT_MIGRATE_TOKEN_NS                => 1000000,
+        Type::VAULT_MIGRATE_TOKEN_NS                     => 1000000,
+        Type::TOKEN_HQ_CHARGE                            => 1000000,
         Type::PAYMENT_PAGE                          => 10000
     ];
 

@@ -147,6 +147,13 @@ class Validator extends Base\Validator
         Entity::FILE_ID                 => 'required_without:file|public_id',
     ];
 
+    protected static $tokenHqChargeCreateRules = [
+        Entity::TYPE                 => 'required|in:token_hq_charge',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required|file|max:102400' . self::DEFAULT_MIME_RULE,
+        Entity::SCHEDULE             => 'sometimes|numeric',
+    ];
+
     protected static $irctcSettlementCreateRules = [
         Entity::TYPE                 => 'required|in:irctc_settlement',
         Entity::NAME                 => 'filled|string|max:255',

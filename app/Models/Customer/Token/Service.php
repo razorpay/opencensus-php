@@ -14,6 +14,7 @@ use RZP\Jobs\MerchantAsyncTokenisationJob;
 use RZP\Jobs\SavedCardTokenisationJob;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Models\Batch\Header;
 use RZP\Constants\Mode;
 use RZP\Models\Card;
@@ -40,6 +41,7 @@ use RZP\Gateway\Base\Metric as BaseMetric;
 use RZP\Models\Customer\Token\Entity as TokenEntity;
 use RZP\Models\CardMandate\CardMandateNotification;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Service extends Base\Service
 {
@@ -1792,6 +1794,80 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::VAULT_MIGRATE_TOKEN_NAMESPACE_BATCH_SERVICE_RESPONSE, ['response' => $response->toArrayWithItems()]);
 
         return $response->toArrayWithItems();
+    }
+
+    public function tokenHqChargeProcessingViaBatch ($input)
+    {
+        $this->trace->info(TraceCode::TOKEN_HQ_CHARGE_BATCH_SERVICE_REQUEST, ['input' => $input]);
+
+        $response = new Base\PublicCollection;
+
+        $batchId = Request::header(RequestHeader::X_Batch_Id);
+
+        foreach($input as $row)
+        {
+            $result = [
+                self::IDEMPOTENCY_KEY         => $row[self::IDEMPOTENCY_KEY],
+                self::BATCH_SUCCESS           => true,
+                self::BATCH_HTTP_STATUS_CODE  => 200
+            ];
+
+            $result = array_merge($result, $row);
+
+            try
+            {
+                $rowInput = new Base\PublicCollection;
+
+                $rowInput->add($row);
+
+                $data = "to do"; // call core function for creating transaction and update balance
+
+                $result[Header::TOKEN_HQ_FEES] = 'fees';
+
+                $result[Header::TOKEN_HQ_TAX] = 'tax';
+
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::TOKEN_HQ_CHARGE_BATCH_ERROR
+                );
+
+                $exceptionData =  $e->getData();
+
+                $result[self::BATCH_ERROR] = [
+                    self::BATCH_ERROR_DESCRIPTION => $e->getMessage(),
+                    self::BATCH_ERROR_CODE        =>  $exceptionData['error'] ?? $e->getCode()
+                ];
+
+                $result[self::BATCH_HTTP_STATUS_CODE] = 400;
+
+                $result[self::BATCH_SUCCESS] = false;
+            }
+
+            $response->add($result);
+        }
+
+        $this->trace->info(TraceCode::TOKEN_HQ_CHARGE_BATCH_SERVICE_RESPONSE, ['response' => $response->toArrayWithItems()]);
+
+        return $response->toArrayWithItems();
+
+    }
+
+    public function tokenHqCron()
+    {
+        $file = $this->core->createCsvFileFromDataLake();
+
+        $params = [
+            'file'  => $file,
+            'type'  => Constants::TOKEN_HQ_CHARGE,
+        ];
+
+        $batchResult = (new Batch\Core)->create($params, (new Merchant\Core())->get('100000Razorpay'));
+
+        return $batchResult;
     }
 
     private function getValidTokenIds(array $tokensData): array
