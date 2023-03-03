@@ -290,6 +290,23 @@ class Service extends Base\Service
             $result[Entity::CUSTOMER_ADDITIONAL_INFO] = $input[Entity::CUSTOMER_ADDITIONAL_INFO];
         }
 
+        $pgRouterPublicResponse = $order->getAttribute("public_response");
+
+        if(isset($pgRouterPublicResponse))
+        {
+            $this->trace->info(TraceCode::ORDER_RESPONSE_PARITY, [
+                "ARRAY_DIFF_API_PGROUTER" => array_diff($result, $pgRouterPublicResponse),
+                "ARRAY_DIFF_PGROUTER_API" => array_diff($pgRouterPublicResponse, $result),
+                "SAME_VALUE" => $result == $pgRouterPublicResponse
+            ]);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::ORDER_RESPONSE_PARITY, [
+                "Error" => "Empty Public Response"
+            ]);
+        }
+
         return $result;
     }
 
