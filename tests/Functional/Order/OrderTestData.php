@@ -1671,6 +1671,7 @@ return [
                         'UTIB' => 'Axis Bank',
                     ],
                     'upi' => true,
+                    'upi_intent' => true,
                 ],
                 'order' => [
                     'bank'           => 'UTIB',
@@ -1690,6 +1691,7 @@ return [
             'content' => [
                 'methods' => [
                     'upi' => true,
+                    'upi_intent' => true,
                 ],
                 'order' => [
                     'bank'           => 'JSBP',

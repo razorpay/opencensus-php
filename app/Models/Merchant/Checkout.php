@@ -814,6 +814,11 @@ class Checkout
                 Payment\Method::UPI        => $data['methods'][Payment\Method::UPI],
             ];
 
+            if (empty($data['methods']['upi_intent']) === false)
+            {
+               $methods['upi_intent'] = $data['methods']['upi_intent'];
+            }
+
             if (($bankCode !== null) and
                 (isset($data['methods'][Payment\Method::NETBANKING][$bankCode]) === false))
             {
