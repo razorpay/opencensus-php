@@ -36,7 +36,7 @@ return [
                             'bank_name' => 'State Bank of India',
                             'name' => 'test',
                             'notes' => [],
-                            'account_number' => '111000',
+                            'account_number' => 'XX1000',
                         ],
                     ],
                 ]

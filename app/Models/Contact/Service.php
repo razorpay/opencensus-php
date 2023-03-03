@@ -113,6 +113,9 @@ class Service extends Base\Service
         if (isset($contact['fund_accounts'])) {
             foreach ($contact['fund_accounts'] as $i => $fundAccount) {
                 if (isset($fundAccount['bank_account'])) {
+                    $contact['fund_accounts'][$i]['bank_account']['account_number'] = mask_except_last4(
+                        $contact['fund_accounts'][$i]['bank_account']['account_number']
+                    );
                     $contact['fund_accounts'][$i]['bank_account']['notes'] =
                         (object)($fundAccount['bank_account']['notes'] ?? []);
                 }
