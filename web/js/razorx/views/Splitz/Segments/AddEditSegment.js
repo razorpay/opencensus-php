@@ -52,9 +52,9 @@ export default function AddEditSegment(props) {
         return 'Cron Expression and SQL Query must not be empty';
       }
 
-      const cronRegex = new RegExp(/^([0-5]?[0-9])\s+([0-9]|[0-1][0-9]|2[0-3])\s/);
+      const cronRegex = new RegExp(/^([0-5]?[0-9])\s+([0-9]|[0-1][0-9]|2[0-3])\s+\*\s+\*\s+\*/);
       if (!cronRegex.test(form.cronExpression)) {
-        return 'Cron Expression frequency must have a minimum interval of one day';
+        return 'Cron Expression frequency must have a minimum interval of one hour';
       }
 
       const sqlRegex = new RegExp(/(^SELECT [a-z0-9_]{1,20} FROM [^;]+)$/i);
