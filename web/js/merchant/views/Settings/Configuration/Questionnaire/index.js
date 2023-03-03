@@ -346,6 +346,7 @@ const Questionnaire = ({
             triggerSource={triggerSource}
             activeTab={activeTab}
             saveFormData={() => saveFormData(formikProps)}
+            isRevampFlow={isRevampFlow}
           />
         ),
         size: 'small',

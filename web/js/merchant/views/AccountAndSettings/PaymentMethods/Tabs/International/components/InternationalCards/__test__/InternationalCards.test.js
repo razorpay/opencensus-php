@@ -2,6 +2,7 @@ import { screen, userEvent } from 'test-utils';
 import {
   renderApp,
   defaultProps,
+  noActionReceivedProductStatus,
 } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/__test__/mocks/InternationalCards';
 import {
   getIsInternationalCardsDisabledReason,
@@ -24,12 +25,14 @@ describe('InternationalCards', () => {
     expect(screen.getByTestId('leaf-list-item-description')).toHaveTextContent(
       defaultProps.instrument.description,
     );
-    expect(screen.queryByTestId('header-button')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('header-button')).toBeInTheDocument();
   });
 
-  test('should render DisabledInternationalCardsSection', () => {
+  test('should render DisabledInternationalCardsSection only when no product is approved', () => {
     getIsInternationalCardsDisabledReason.mockReturnValueOnce('test disabled message');
-    renderApp();
+    renderApp({
+      productStatus: noActionReceivedProductStatus,
+    });
     expect(screen.getByTestId('disabled-international-cards-section')).toHaveTextContent(
       'test disabled message',
     );
@@ -57,13 +60,14 @@ describe('InternationalCards', () => {
         expect(screen.getByText('isAnyProductInReview: false')).toBeInTheDocument();
         expect(screen.getByText('isAnyProductRejected: true')).toBeInTheDocument();
         expect(screen.getByText('isRequestRejectedFor90Days: false')).toBeInTheDocument();
+        expect(screen.getByText('isNoProductApprovedOrInReview: false')).toBeInTheDocument();
       });
 
       test('should open questionnaire modal on clicking Request for international Cards', async () => {
-        renderApp();
-        const requestForInternationalCards = screen.getByRole('button', {
-          name: 'Request for international Cards',
+        renderApp({
+          productStatus: noActionReceivedProductStatus,
         });
+        const requestForInternationalCards = screen.getByText('Request for international cards');
         expect(requestForInternationalCards).toBeInTheDocument();
         await userEvent.click(requestForInternationalCards);
         expect(screen.getByTestId('questionnaire-modal')).toBeInTheDocument();

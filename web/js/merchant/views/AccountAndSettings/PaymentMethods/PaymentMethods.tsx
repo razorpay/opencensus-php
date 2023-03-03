@@ -142,11 +142,7 @@ const PaymentMethodsV2 = ({
     const query = qs.parse(window.location.search);
     const instrumentAsQueryParam = query?.instrument;
     if (isIERevamp) {
-      // loading - true instruments list is not retrieved
-      /* istanbul ignore else */
-      if (loading) {
-        fetchAllInstruments();
-      } // this is for handling older query param links
+      // this is for handling older query param links
       if (
         instrumentAsQueryParam &&
         PaymentMethodsTabsRoutesConfig[instrumentAsQueryParam as string]
@@ -174,7 +170,17 @@ const PaymentMethodsV2 = ({
         }
       }
     }
-  }, [leafInstrument, intermediateInstrument, location.pathname, instruments, loading, isIERevamp]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leafInstrument, intermediateInstrument, location.pathname, instruments, isIERevamp]);
+
+  useEffect(() => {
+    // loading - true instruments list is not retrieved
+    /* istanbul ignore else */
+    if (isIERevamp && loading) {
+      fetchAllInstruments();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, isIERevamp]);
 
   return (
     <StyledTabContainer>

@@ -25,6 +25,7 @@ export type CommonICProductsState = {
   hasUserDisabledInternationalCards: boolean;
   isAnyProductInReview: boolean;
   isAnyProductRejected: boolean;
+  isNoProductApprovedOrInReview: boolean;
 };
 
 export enum InternationalCardsRejectionCodes {

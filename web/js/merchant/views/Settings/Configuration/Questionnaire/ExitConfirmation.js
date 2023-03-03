@@ -9,7 +9,14 @@ import {
 import { trackFormButtonClicked, trackModalClosed } from './analytics';
 import { tabsData } from './utils';
 
-const ExitConfirmation = ({ closeModal, openModal, saveFormData, triggerSource, activeTab }) => {
+const ExitConfirmation = ({
+  closeModal,
+  openModal,
+  saveFormData,
+  triggerSource,
+  activeTab,
+  isRevampFlow,
+}) => {
   const saveDraft = () => {
     saveFormData();
     closeModal();
@@ -35,7 +42,9 @@ const ExitConfirmation = ({ closeModal, openModal, saveFormData, triggerSource, 
             onClick={() => {
               saveFormData().then(() => {
                 openModal({
-                  component: <Questionnaire triggerSource={triggerSource} />,
+                  component: (
+                    <Questionnaire triggerSource={triggerSource} isRevampFlow={isRevampFlow} />
+                  ),
                   overlayStyles: {
                     display: 'flex',
                     justifyContent: 'center',

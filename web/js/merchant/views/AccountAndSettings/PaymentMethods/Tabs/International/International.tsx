@@ -65,7 +65,7 @@ const International = ({
       } catch {}
     };
     checkB2BFeatureFlag();
-  }, [user]);
+  }, [user.id]);
 
   const [productStatus, setProductStatus] = useState<MerchantICProductStatus | null>(null);
   const [isLoading, setLoading] = useState(true);

@@ -49,7 +49,6 @@ const InternationalCards = ({
   onQuestionnaireSubmitSuccess,
 }: Props) => {
   const internationalCardsDisabledReason = getIsInternationalCardsDisabledReason({ user });
-
   const openQuestionnaire = (triggerSource = '') => {
     let modalOptions: Parameters<OpenModalType>[0] = {
       component: (
@@ -77,6 +76,7 @@ const InternationalCards = ({
     let hasUserDisabledInternationalCards = false;
     let isAnyProductInReview = false;
     let isAnyProductRejected = false;
+    let isNoProductApprovedOrInReview = false;
     if (productStatus) {
       isAnyProductApproved =
         productStatus.payment_gateway === ProductWorkflowStatesInBackend.APPROVED ||
@@ -94,6 +94,8 @@ const InternationalCards = ({
         productStatus.payment_gateway === ProductWorkflowStatesInBackend.REJECTED ||
         productStatus.invoices === ProductWorkflowStatesInBackend.REJECTED;
 
+      isNoProductApprovedOrInReview = !(isAnyProductApproved || isAnyProductInReview);
+
       if (isAnyProductApproved) {
         hasUserDisabledInternationalCards = !user?.international;
       }
@@ -104,6 +106,7 @@ const InternationalCards = ({
       hasUserDisabledInternationalCards,
       isAnyProductInReview,
       isAnyProductRejected,
+      isNoProductApprovedOrInReview,
     };
   }, [productStatus, user?.international]);
 
@@ -113,6 +116,7 @@ const InternationalCards = ({
     hasUserDisabledInternationalCards,
     isAnyProductInReview,
     isAnyProductRejected,
+    isNoProductApprovedOrInReview,
   } = commonProductsState;
 
   const { bannerType, eta, bannerMessage, isRequestRejectedFor90Days } = useMemo(() => {
@@ -168,6 +172,7 @@ const InternationalCards = ({
       }
     }
     return { bannerType, eta, bannerMessage, isRequestRejectedFor90Days };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     isAnyProductRequested,
     workflowInfo,
@@ -198,13 +203,16 @@ const InternationalCards = ({
     };
   }, [productStatus, workflowInfo, isRequestRejectedFor90Days]);
 
+  const isInternationalDisabledDueToFailedChecks =
+    !!internationalCardsDisabledReason && isNoProductApprovedOrInReview;
+
   return (
     <>
       <LeafListItemHeader
         name={instrument.name}
         description={instrument.description}
         actionComponent={
-          !internationalCardsDisabledReason ? (
+          !isInternationalDisabledDueToFailedChecks ? (
             <HeaderButton
               {...commonProductsState}
               isRequestRejectedFor90Days={isRequestRejectedFor90Days}
@@ -213,7 +221,7 @@ const InternationalCards = ({
           ) : undefined
         }
       />
-      {internationalCardsDisabledReason ? (
+      {isInternationalDisabledDueToFailedChecks ? (
         <DisabledInternationalCardsSection reason={internationalCardsDisabledReason} />
       ) : (
         <>

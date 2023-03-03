@@ -18,15 +18,19 @@ jest.mock(
   'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/components/HeaderButton',
   () => ({
     __esModule: true,
-    default: ({
-      isRequestRejectedFor90Days,
-      openQuestionnaire,
-      isAnyProductApproved,
-      isAnyProductRequested,
-      hasUserDisabledInternationalCards,
-      isAnyProductInReview,
-      isAnyProductRejected,
-    }) => {
+    default: (props) => {
+      const {
+        isRequestRejectedFor90Days,
+        isAnyProductApproved,
+        isAnyProductRequested,
+        hasUserDisabledInternationalCards,
+        isAnyProductInReview,
+        isAnyProductRejected,
+        isNoProductApprovedOrInReview,
+      } = props;
+      const HeaderButton = jest.requireActual(
+        'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/components/HeaderButton',
+      ).default;
       return (
         <div data-testid="header-button">
           <p>isAnyProductApproved: {isAnyProductApproved.toString()}</p>
@@ -35,7 +39,9 @@ jest.mock(
           <p>isAnyProductInReview: {isAnyProductInReview.toString()}</p>
           <p>isAnyProductRejected: {isAnyProductRejected.toString()}</p>
           <p>isRequestRejectedFor90Days: {isRequestRejectedFor90Days.toString()}</p>
-          <button onClick={() => openQuestionnaire()}>Request for international Cards</button>
+          <p>isNoProductApprovedOrInReview: {isNoProductApprovedOrInReview.toString()}</p>
+          <HeaderButton {...props} />
+          {/* <button onClick={() => openQuestionnaire()}>Request for international Cards</button> */}
         </div>
       );
     },
@@ -130,6 +136,13 @@ jest.mock('merchant/views/Settings/Configuration/Questionnaire', () => ({
     </div>
   ),
 }));
+
+export const noActionReceivedProductStatus = {
+  payment_gateway: ProductWorkflowStatesInBackend.NO_ACTION_RECEIVED,
+  invoices: ProductWorkflowStatesInBackend.NO_ACTION_RECEIVED,
+  payment_links: ProductWorkflowStatesInBackend.NO_ACTION_RECEIVED,
+  payment_pages: ProductWorkflowStatesInBackend.NO_ACTION_RECEIVED,
+};
 
 export const defaultProps: Pick<
   InternationalCardProps,
