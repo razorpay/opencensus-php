@@ -76,14 +76,40 @@ class SessionInActivity
 
         $sessionConfig = $this->app['config']['session'];
 
-        $inActivityTime = $sessionConfig['inactivity_time_admin_dashboard'] * 60;
+        $merchantInactivityTime = $this->getMerchantSessionTimeout();
+
+        $adminInActivityTime = $sessionConfig['inactivity_time_admin_dashboard'] * 60;
 
         $currentTime = time();
 
         $routeName = $request->route()->getName();
 
+        $isMerchantOrAdminAsMerchant = (empty(Session::get('current_merchant_id')) === false);
+
+        if (
+            $isMerchantOrAdminAsMerchant === true and
+            empty($lastUsed) === false and
+            (($currentTime - $lastUsed) > $merchantInactivityTime)
+        )
+        {
+            $userEmail = $user->user()->email ?? '';
+
+            $this->trace->info(TraceCode::MERCHANT_LOGOUT_ON_INACTIVITY, [
+                'current_time' => $currentTime,
+                'last_used'    => $lastUsed,
+                'user_email'   => $userEmail,
+            ]);
+
+            $user->logout();
+
+            $response = AppResponse::unauthorizedResponse('Unauthorized.', $routeName);
+
+            return $response;
+
+        }
+
         if ((empty($user->user()) === false) and (empty($lastUsed) === false) and
-            (($currentTime - $lastUsed) > $inActivityTime))
+            (($currentTime - $lastUsed) > $adminInActivityTime))
         {
             $userEmail = $user->user()->email ?? '';
 
@@ -115,6 +141,24 @@ class SessionInActivity
         $this->updateSessionLastUsedAt();
 
         return $response;
+    }
+
+    protected function getMerchantSessionTimeout()
+    {
+        $sessionConfig = $this->app['config']['session'];
+
+        $merchantInactivityTimeout = $sessionConfig['lifetime'] * 60;
+
+        $domain = \Request::server('SERVER_NAME');
+
+        list($error, $org) = (new Admin\Service)->getOrg($domain, true);
+
+        if (empty($org['merchant_session_timeout_in_seconds']) === false)
+        {
+            $merchantInactivityTimeout = $org['merchant_session_timeout_in_seconds'];
+        }
+
+        return $merchantInactivityTimeout;
     }
 
     protected function isAdminUserAndOrgFeatureEnabledForLogout()

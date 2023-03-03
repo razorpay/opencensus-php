@@ -1406,7 +1406,7 @@ class Service extends Base\Service
         return $features;
     }
 
-    public function getOrg($domain)
+    public function getOrg($domain, $asMerchant = false)
     {
         $orgDataFromCache = $this->getOrgDataFromCache($domain);
 
@@ -1415,7 +1415,14 @@ class Service extends Base\Service
             return [null, $orgDataFromCache];
         }
 
-        $request = new ApiRequestAny();
+        if ($asMerchant)
+        {
+            $request = new ApiRequestAny(['client_type' => 'user']);
+        }
+        else
+        {
+            $request = new ApiRequestAny();
+        }
 
         list($error, $data) = $request->send("orgs/hostname/$domain", "GET");
 
