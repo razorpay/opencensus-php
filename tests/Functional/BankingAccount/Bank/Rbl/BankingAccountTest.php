@@ -68,6 +68,7 @@ use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantNotAvailable;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\MerchantPreparingDoc;
 use RZP\Mail\BankingAccount\StatusNotifications\Factory as StatusUpdateMailerFactory;
 use RZP\Models\BankingAccount\Activation\MIS\Leads;
+use RZP\Services\PincodeSearch;
 use RZP\Tests\Traits\MocksSplitz;
 
 class BankingAccountTest extends TestCase
@@ -4926,6 +4927,20 @@ class BankingAccountTest extends TestCase
         $this->assertEquals(1, $additionalDetails[ActivationDetail\Entity::SKIP_MID_OFFICE_CALL]);
     }
 
+    public function mockPincodeSearchForCity($city, $state)
+    {
+        $pincodeSearchMock = Mockery::mock(PincodeSearch::class, [$this->app])->makePartial();
+
+        $pincodeSearchMock->shouldReceive('fetchCityAndStateFromPincode')
+            ->andReturn(
+                [
+                    'city'      => $city,
+                    'state'    => $state,
+                ]);
+
+        $this->app->instance('pincodesearch', $pincodeSearchMock);
+    }
+
     public function testSkipMidOfficeCallNegativeCase()
     {
         $attribute = ['activation_status' => 'activated'];
@@ -4938,8 +4953,10 @@ class BankingAccountTest extends TestCase
 
         $this->ba->addXOriginHeader();
 
+        $this->mockPincodeSearchForCity('Aligarh', 'Uttar Pradesh');
+
         $data = [
-            Entity::PINCODE => '560030', // Pincode Search Mock will be used
+            Entity::PINCODE => '202122', // Pincode Search Mock will be used
             Entity::CHANNEL => 'rbl',
             'activation_detail' => [
                 ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
@@ -9274,7 +9291,7 @@ class BankingAccountTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($dataToReplace);
 
-        $additionalDetails = json_decode($response[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ADDITIONAL_DETAILS],true);
+        $additionalDetails = $response[BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS][ActivationDetail\Entity::ADDITIONAL_DETAILS];
 
         $this->assertEquals(null, $additionalDetails[BankingAccount\Activation\Detail\Entity::REVIVED_LEAD]);
 
@@ -11411,8 +11428,10 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $this->mockPincodeSearchForCity('Aligarh', 'Uttar Pradesh');
+
         $data = [
-            Entity::PINCODE     => '560030',
+            Entity::PINCODE     => '202122',
             Entity::CHANNEL     => 'rbl',
             'activation_detail' => [
                 ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',
@@ -11523,8 +11542,10 @@ class BankingAccountTest extends TestCase
 
         $this->ba->adminAuth();
 
+        $this->mockPincodeSearchForCity('Aligarh', 'Uttar Pradesh');
+
         $data = [
-            Entity::PINCODE     => '560030',
+            Entity::PINCODE     => '202122',
             Entity::CHANNEL     => 'rbl',
             'activation_detail' => [
                 ActivationDetail\Entity::BUSINESS_CATEGORY => 'partnership',

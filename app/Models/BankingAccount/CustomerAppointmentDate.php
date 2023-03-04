@@ -18,10 +18,25 @@ class CustomerAppointmentDate
 
         'bangalore'         => 1, // present in DB for some leads - from govt data source
         'bengaluru'         => 1, // added from LMS using /cities URL
+
         'mumbai'            => 2,
+        'navi mumbai'       => 2,
+
         'pune'              => 2,
+
         'delhi'             => 2,
+        'central delhi'     => 2,
+        'east delhi'        => 2,
+        'new delhi'         => 2,
+        'north delhi'       => 2,
+        'north east delhi'  => 2,
+        'north west delhi'  => 2,
+        'south delhi'       => 2,
+        'south west delhi'  => 2,
+
         'gurgaon'           => 2,
+        'gurugram'          => 2,
+
         'noida'             => 2,
         'chennai'           => 2,
         'faridabad'         => 2,

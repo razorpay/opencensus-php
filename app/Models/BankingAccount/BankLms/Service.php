@@ -277,7 +277,15 @@ class Service extends BankingAccount\Service
         $comments = $this->core->fetchBankingAccountsActivationCommentById($bankingAccount, [
             Comment\Fetch::FOR_SOURCE_TEAM_TYPE => 'external',
             Comment\Fetch::EXPAND => [Comment\Entity::USER, Comment\Entity::ADMIN],
+            Comment\Fetch::COUNT => 100,
         ]);
+
+        if ($comments->getHasMore())
+        {
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_COMMENT_FETCH_LIMIT_EXCEEDED, [
+                'banking_account_id' => $bankingAccount['id'],
+            ]);
+        }
 
         $comments = $comments->toArrayPublicWithExpand();
 

@@ -21,9 +21,25 @@ class Constants
     const ERROR_DESC = 'ErrorDesc';
 
     const ERROR_MESSAGE = 'A schema validation error has occurred while validating the message tree,6008,1,1,213,cvc-minLength-valid: The length of value \"\" is \"0\" which is not valid with respect to the minLength facet with value \"1\" for type \"#Anonymous\".,/Root/XMLNSC/NeoBankingLeadReq/Body/%s';
-    
+
     // List of cities where Feet on Street is applicable
-    const FOS_CITIES = ['Mumbai', 'Bengaluru', 'Delhi'];
+    const FOS_CITIES = [
+        'Central Delhi',
+        'Delhi',
+        'East Delhi',
+        'New Delhi',
+        'North Delhi',
+        'North East Delhi',
+        'North West Delhi',
+        'South Delhi',
+        'South West Delhi',
+
+        'Mumbai',
+        'Navi Mumbai',
+
+        'Bengaluru',
+        'Bangalore',
+    ];
 
     const NON_FOS = 'Non_FOS';
 
