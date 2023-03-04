@@ -12,6 +12,7 @@ use RZP\Http\RequestHeader;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -650,10 +651,22 @@ class TransferTest extends TestCase
         $payment = $this->getEntityById('payment', $payment->getId(), true);
         $this->assertEquals(1000, $payment['amount_transferred']);
 
+        // dual write assertions : This can be removed when stopping payments dual write
+        $paymentsNew = \DB::table('payments_new')->select(\DB::raw("*"))->where('id', '=', Payment::stripDefaultSign($payment['id']))->get()->first();
+        $this->assertNotNull($paymentsNew);
+        $paymentsNewArray = (array) $paymentsNew;
+        $this->assertEquals(1000, $paymentsNewArray['amount_transferred']);
+
         $this->createReversal($transfers['items'][0]['id'], 200);
 
         $payment = $this->getEntityById('payment', $payment['id'], true);
         $this->assertEquals(800, $payment['amount_transferred']);
+
+        // dual write assertions : This can be removed when stopping payments dual write
+        $paymentsNew = \DB::table('payments_new')->select(\DB::raw("*"))->where('id', '=', Payment::stripDefaultSign($payment['id']))->get()->first();
+        $this->assertNotNull($paymentsNew);
+        $paymentsNewArray = (array) $paymentsNew;
+        $this->assertEquals(800, $paymentsNewArray['amount_transferred']);
     }
 
     public function testLaNotesTransfer()
