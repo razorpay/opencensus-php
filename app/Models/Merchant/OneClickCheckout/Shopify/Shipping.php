@@ -34,8 +34,8 @@ class Shipping extends Base\Core
         // name and address1 are compulsory fields but we don't collect it from
         // user at this time so we put default value
         $shippingAddress = [
-            'firstName' => 'name',
-            'lastName'  => 'not entered',
+            'firstName' => 'User',
+            'lastName'  => '.',
             'address1'  => 'address not entered',
             'country'   => $address['country'],
             'province'  => $stateCode ?? $stateCodeFromName,

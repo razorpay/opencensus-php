@@ -246,8 +246,8 @@ class Core extends Base\Core
         // user at this time so we put default value
         // province field can take state code or full state name depending on what is passed
         $shippingAddress = [
-            'firstName' => $address['first_name'] ?? 'name',
-            'lastName'  => $address['last_name']  ?? 'not entered',
+            'firstName' => $address['first_name'] ?? 'User',
+            'lastName'  => $address['last_name']  ?? '.',
             'address1'  => $address['line1']      ?? 'address not entered',
             'address2'  => $address['line2']      ?? '',
             'country'   => $address['country'],
