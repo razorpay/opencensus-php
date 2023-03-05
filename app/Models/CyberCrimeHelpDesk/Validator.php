@@ -17,11 +17,12 @@ class Validator extends BaseValidator
     ];
 
     protected static $cyberCrimeHelpdeskWorkflowActionCreateRules = [
-        'requester_mail'                =>  'required|email|max:255',
-        'ticket_data'                   =>  'required|array|size:3',
-        'ticket_data.ticket'            =>  'required|array|min:1',
-        'ticket_data.file_names'        =>  'sometimes|array',
-        'ticket_data.fd_ticket_id'      =>  'required|string|max:255',
+        'requester_mail'                            =>  'required|email|max:255',
+        'ticket_data'                               =>  'required|array|size:3',
+        'ticket_data.ticket'                        =>  'required|array|min:1',
+        'ticket_data.file_names'                    =>  'sometimes|array',
+        'ticket_data.fd_ticket_id'                  =>  'required|string|max:255',
+        'enable_share_beneficiary_details_checkbox' =>  'required|boolean',
     ];
 
     /**

@@ -121,7 +121,7 @@ return [
                                     'bank_account'      => [
                                         'id'               => 'bankAccount000',
                                         'beneficiary_name' => 'Test Merchant',
-                                        'account_number'   => '12345678990',
+                                        'account_number'   => '22235678990',
                                         'ifsc_code'        => 'SBIN00001',
                                     ],
                                     'payment_analytics' => [
@@ -149,6 +149,7 @@ return [
                     ],
                     'fd_ticket_id' => 'ticket1',
                 ],
+                'enable_share_beneficiary_details_checkbox' => '0'
             ],
         ],
         'response' => [

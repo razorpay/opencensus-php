@@ -20,15 +20,17 @@ class Constants
 
     const FRESHDESK_EMAIL_CYBER_CELL_SUB_CATEGORY                       = 'Cybercell report';
 
-    const TICKET_DATA                       = 'ticket_data';
-    const TICKET                            = 'ticket';
-    const DETAILS                           = 'details';
-    const REQUEST_ID                        = 'request_id';
-    const REQUEST                           = 'request';
-    const HOLD_SETTLEMENT                   = 'hold_settlement';
-    const SHARE_BENEFICIARY_ACCOUNT_DETAILS = 'share_beneficiary_account_details';
-    const FD_TICKET_ID                      = 'fd_ticket_id';
-    const ID                                = 'id';
+    const TICKET_DATA                        = 'ticket_data';
+    const TICKET                             = 'ticket';
+    const DETAILS                            = 'details';
+    const REQUEST_ID                         = 'request_id';
+    const REQUEST                            = 'request';
+    const HOLD_SETTLEMENT                    = 'hold_settlement';
+    const SHARE_BENEFICIARY_ACCOUNT_DETAILS  = 'share_beneficiary_account_details';
+    const FD_TICKET_ID                       = 'fd_ticket_id';
+    const ID                                 = 'id';
+
+    const ENABLE_SHARE_BENEFICIARY_DETAILS_CHECKBOX = 'enable_share_beneficiary_details_checkbox';
 
     const CURRENT_DATE_TIME = 'current_date_time';
     const IST_DIFF          = 'ist_diff';
@@ -72,6 +74,8 @@ class Constants
 
     const IST_DIFF_IN_SEC = (5 * 60 + 30) * 60;
 
+    const VIRTUAL_ACCOUNT_PREFIXES = array("2223", "2224", "2226", "3434", "5656", "787878", "VAJSWCA");
+
     const REQUESTER_EMAIL = 'requester_mail';
 
     const RZP_EMAIL_DOMAIN = 'razorpay.com';
@@ -79,5 +83,4 @@ class Constants
     const FRAUD_TYPE       = 'fraud_type';
 
     const  SEGMENT_EVENT_CYBER_CRIME_NON_FETCHED_PAYMENTS = 'cyber_crime_non_fetched_payments';
-
 }

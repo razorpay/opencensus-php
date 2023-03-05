@@ -2,7 +2,6 @@
 
 namespace RZP\Models\CyberCrimeHelpDesk;
 
-use RZP\Models\Payment\Fraud\BankCodes;
 use View;
 use RZP\Exception;
 use Carbon\Carbon;
@@ -12,12 +11,14 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use Illuminate\Support\Str;
 use RZP\lib\TemplateEngine;
 use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Fraud;
 use RZP\Models\Admin\Permission;
 use RZP\Models\BankAccount\Type;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Payment\Fraud\BankCodes;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Transaction\Service as TransactionService;
@@ -477,7 +478,7 @@ class Service extends Base\Service
         $data                              = $ticketDetails[Constants::TICKET_DATA][Constants::TICKET];
         $merchantDetails                   = $data[0][Constants::DETAILS][Constants::MERCHANT_DETAILS];
         $bankAccount                       = $data[0][Constants::DETAILS][Constants::BANK_ACCOUNT];
-        $share_beneficiary_account_details = $data[0][Constants::SHARE_BENEFICIARY_ACCOUNT_DETAILS];
+        $share_beneficiary_account_details = $this->shouldShareBeneficiaryAccountDetails($ticketDetails);
         $mailBody                          = \View::make(Constants::SEND_DETAILS_WITH_LEA_MAIL_TEMPLATE, [
             Constants::FD_TICKET_ID                     => $ticketDetails[Constants::TICKET_DATA][Constants::FD_TICKET_ID],
             Constants::CURRENT_DATE_TIME                => $currentDateTime,
@@ -500,6 +501,20 @@ class Service extends Base\Service
             [
                 'freshdesk_response' => $response
             ]);
+    }
+
+    protected function shouldShareBeneficiaryAccountDetails($ticketDetails)
+    {
+        $data = $ticketDetails[Constants::TICKET_DATA][Constants::TICKET];
+        $bankAccountDetails = $data[0][Constants::DETAILS][Constants::BANK_ACCOUNT];
+
+        if ($ticketDetails[Constants::ENABLE_SHARE_BENEFICIARY_DETAILS_CHECKBOX] === false
+            || (empty($bankAccountDetails)===false && Str::startsWith($bankAccountDetails[Constants::ACCOUNT_NUMBER], Constants::VIRTUAL_ACCOUNT_PREFIXES) === true))
+        {
+            return 0;
+        }
+
+        return $data[0][Constants::SHARE_BENEFICIARY_ACCOUNT_DETAILS];
     }
 
     /**
