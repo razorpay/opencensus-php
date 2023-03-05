@@ -33,17 +33,19 @@ class Constants
     const CUSTOMER_WALLET_LOADING                           = "customer_wallet_loading";
 
     //Refund events
-    const REFUND_REVERSAL                                   = "refund_reversed";
-    const REFUND_PROCESSED                                  = "refund_processed";
-    const DISPUTE_REFUND_PROCESSED                          = "dispute_refund_processed";
-    const REFUND_INSTANT_PROCESSED                          = "instant_refund_processed";
-    const REFUND_PROCESSED_WITH_CREDITS                     = "refund_credits_normal";
-    const REFUND_PROCESSED_WITH_CREDITS_INSTANT             = "instant_refund_processed_with_credits";
-    const REFUND_REVERSED_CREDITS                           = "refund_reversed_credits";
-    const INSTANT_REFUND_REVERSED_CREDITS                   = "instant_refund_reversed_credits";
-    const INSTANT_REFUND_REVERSED                           = "instant_refund_reversed";
-    const REFUND_ACCOUNTING                                 = "refund_accounting";
-    const REFUND_CREDITS                                    = "refund_credits";
+    const REFUND_REVERSAL                                       = "refund_reversed";
+    const REFUND_PROCESSED                                      = "refund_processed";
+    const DISPUTE_REFUND_PROCESSED                              = "dispute_refund_processed";
+    const REFUND_INSTANT_PROCESSED                              = "instant_refund_processed";
+    const REFUND_INSTANT_PROCESSED_POSTPAID_MODEL               = "instant_refund_processed_postpaid_model";
+    const REFUND_PROCESSED_WITH_CREDITS                         = "refund_credits_normal";
+    const REFUND_PROCESSED_WITH_CREDITS_INSTANT                 = "instant_refund_processed_with_credits";
+    const REFUND_PROCESSED_WITH_CREDITS_INSTANT_POSTPAID_MODEL  = "instant_refund_processed_with_credits_postpaid_model";
+    const REFUND_REVERSED_CREDITS                               = "refund_reversed_credits";
+    const INSTANT_REFUND_REVERSED_CREDITS                       = "instant_refund_reversed_credits";
+    const INSTANT_REFUND_REVERSED                               = "instant_refund_reversed";
+    const REFUND_ACCOUNTING                                     = "refund_accounting";
+    const REFUND_CREDITS                                        = "refund_credits";
 
     //Chargeback Events
     const RAZORPAY_DISPUTE_DEDUCT                           = "razorpay_dispute_deduct";

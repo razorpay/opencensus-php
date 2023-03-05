@@ -192,9 +192,10 @@ class RefundJournalEvents
         $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITH_REFUND;
 
         $moneyParams[Constants::BASE_AMOUNT]        = strval($amount);
-        $moneyParams[Constants::REFUND_CREDITS]     = strval( $fee + $tax);
+        $moneyParams[Constants::REFUND_CREDITS]     = strval( $fee + $tax + $amount);
         $moneyParams[Constants::COMMISSION]         = strval($fee);
         $moneyParams[Constants::TAX]                = strval($tax);
+        $moneyParams[Constants::REFUND_AMOUNT]      = strval($amount);
 
         return [$rule, $moneyParams];
 
@@ -210,9 +211,10 @@ class RefundJournalEvents
         $rule[Constants::DIRECT_SETTLEMENT_TERMINAL] = Constants::WITH_REFUND;
 
         $moneyParams[Constants::BASE_AMOUNT]                = strval($amount);
-        $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval( $fee + $tax);
+        $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval( $fee + $tax + $amount);
         $moneyParams[Constants::COMMISSION]                 = strval($fee);
         $moneyParams[Constants::TAX]                        = strval($tax);
+        $moneyParams[Constants::REFUND_AMOUNT]              = strval($amount);
 
         return [$rule, $moneyParams];
 
@@ -426,6 +428,9 @@ class RefundJournalEvents
     //Creates a rule object for ledger entry based on refund usecases.
     public static function fetchLedgerRulesAndMoneyParamsForRefunds(RefundEntity $refund, Transaction\Entity $transaction)
     {
+        $app = App::getFacadeRoot();
+        $trace = $app['trace'];
+
         $rule = null;
         $moneyParams = [];
 
@@ -447,23 +452,40 @@ class RefundJournalEvents
         // case when a instant speed refund occurs
         else if($refund->isRefundSpeedInstant() === true)
         {
-            if($transaction->isRefundCredits() === true)
+            $moneyParams[Constants::REFUND_AMOUNT]      = strval($amount);
+            $moneyParams[Constants::COMMISSION]         = strval($fee);
+            $moneyParams[Constants::TAX]                = strval($tax);
+
+            if($transaction->isRefundCredits() === true and $transaction->isPostpaid() === false)
             {
                 $rule[Constants::REFUND_ACCOUNTING] = Constants::REFUND_PROCESSED_WITH_CREDITS_INSTANT;
 
                 $moneyParams[Constants::REFUND_CREDITS]     = strval($amount + $fee + $tax);
-                $moneyParams[Constants::REFUND_AMOUNT]      = strval($amount);
-                $moneyParams[Constants::COMMISSION]         = strval($fee);
-                $moneyParams[Constants::TAX]                = strval($tax);
             }
-            else
+            else if ($transaction->isRefundCredits() === true and $transaction->isPostpaid() === true)
+            {
+                $rule[Constants::REFUND_ACCOUNTING] = Constants::REFUND_PROCESSED_WITH_CREDITS_INSTANT_POSTPAID_MODEL;
+                $moneyParams[Constants::REFUND_CREDITS]     = strval($amount);
+                $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
+            }
+            else if ($transaction->isRefundCredits() === false and $transaction->isPostpaid() === false)
             {
                 $rule[Constants::REFUND_ACCOUNTING] = Constants::REFUND_INSTANT_PROCESSED;
 
                 $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]    = strval($amount + $fee + $tax);
-                $moneyParams[Constants::REFUND_AMOUNT]              = strval($amount);
-                $moneyParams[Constants::COMMISSION]                 = strval($fee);
-                $moneyParams[Constants::TAX]                        = strval($tax);
+            }
+            else if ($transaction->isRefundCredits() === false and $transaction->isPostpaid() === true)
+            {
+                $rule[Constants::REFUND_ACCOUNTING] = Constants::REFUND_INSTANT_PROCESSED_POSTPAID_MODEL;
+                $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]     = strval($amount);
+                $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
+            }
+            else
+            {
+                $trace->debug(TraceCode::INVALID_REFUND_JOURNAL_USECASE, [
+                    "refund"        => $refund,
+                    "transaction"   => $transaction
+                ]);
             }
         }
         else
