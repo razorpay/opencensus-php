@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 import Amount from 'common/ui/Amount';
 import ContentToggler from 'common/ui/Toggler/ContentToggler';
 import Definition from 'common/ui/Definition';
@@ -16,6 +17,7 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { makeIdLink } from 'merchant/views/Transactions/Refunds/Utils';
 import { getInitiatePointAndPageAndScreenName } from 'merchant/views/Transactions/utils';
 import { SelfServeActionPages } from 'common/constant/enums';
+import { SEAMLESS_PROVIDERS } from 'merchant/views/Navigator/constants';
 
 /*
  * Design:
@@ -146,8 +148,6 @@ const RefundDefinition = ({ refundStatus, payment, refunds, gatewayRefundNotSupp
 };
 
 const IssueRefund = ({ refundStatus, payment, onRefundStatusClick, gatewayRefundNotSupported }) => {
-  const { gateway_refund_support: gatewayRefundSupport } = payment;
-
   if (gatewayRefundNotSupported) return null;
 
   const hasOpenNonFraudDisputes =
@@ -161,7 +161,7 @@ const IssueRefund = ({ refundStatus, payment, onRefundStatusClick, gatewayRefund
         type="button"
         className="btn btn-default"
         onClick={onRefundStatusClick}
-        disabled={hasOpenNonFraudDisputes || !gatewayRefundSupport}
+        disabled={hasOpenNonFraudDisputes}
       >
         {refundStatus === 'partial' ? 'Issue another Refund' : 'Issue Refund'}
       </button>
@@ -184,8 +184,23 @@ const PaymentRefund = ({
 }) => {
   const { status: paymentStatus, refund_status: refundStatus, error_reason: errorReason } = payment;
 
+  /****************************************************************************************************************
+   * TODO: Temporary changes. To be removed after permanent fix from backend.
+   * Slack thread: https://razorpay.slack.com/archives/C01F7R2ULAH/p1677734285481029
+   */
+
+  // Get the number of months since the timestamp
+  const monthsAgo = moment().diff(moment.unix(payment?.created_at), 'months'); // number of months as an integer
+
+  // Check if the timestamp is more than 180 days / 6 months old
+  const lteSixMonths = monthsAgo <= 6; // true or false
+
+  /****************************************************************************************************************/
+
   const gatewayRefundNotSupported =
-    Boolean(payment?.optimizer_provider) && !payment?.gateway_refund_support;
+    lteSixMonths &&
+    SEAMLESS_PROVIDERS.includes(payment?.optimizer_provider) &&
+    !payment?.gateway_refund_support;
 
   const onRefundStatusClick = () => {
     analyticsTrack({

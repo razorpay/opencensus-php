@@ -138,8 +138,9 @@ describe('PaymentRefund', () => {
           payment={{
             ...payment,
             refund_status: null,
-            optimizer_provider: 'ABC123',
+            optimizer_provider: 'paytm',
             gateway_refund_support: false,
+            created_at: 1670070538,
           }}
         />,
       );
