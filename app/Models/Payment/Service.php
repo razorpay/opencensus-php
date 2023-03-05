@@ -6558,14 +6558,16 @@ class Service extends Base\Service
 
             $entity['token'] = $network_token_data;
         }
-        else if (($payment->isCard() === true) && ($payment->card->isInternational() === false) && ( ($entity['token']['status'] === 'failed') || ($entity['token']['status'] === null ) )) {
+        else if (($payment->isCard() === true) && ($payment->isRecurring() === false) && ( empty($payment->localToken) === false ) && ($payment->localToken->card->isTokenisationCompliant() === false) && ( ($entity['token']['status'] === 'failed') || ($entity['token']['status'] === null ) )) {
 
-            $errorCode = $entity['token']['internal_error_code'] ?? ErrorCode::BAD_REQUEST_TOKEN_NOT_APPLICABLE;
+            $errorCode = $payment->localToken->getInternalErrorCode() ?? ErrorCode::BAD_REQUEST_TOKEN_CREATION_FAILED;
 
-            try {
+            try
+            {
                 throw new Exception\BadRequestException($errorCode);
             }
-            catch (\Throwable $exception) {
+            catch (\Throwable $exception)
+            {
 
                 $error = $exception->getError();
 
@@ -6578,6 +6580,12 @@ class Service extends Base\Service
 
             $this->unSetTokenAttributes($entity);
 
+        }
+        else if (($payment->isCard() === true) &&
+            ( empty($payment->localToken) === false ) &&
+            ($payment->localToken->getErrorDescription() === null))
+        {
+            $entity['token']['error_code'] = null;
         }
 
     }

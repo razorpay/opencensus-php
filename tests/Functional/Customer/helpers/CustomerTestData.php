@@ -659,6 +659,60 @@ return [
             ],
     ],
 
+    'testFetchTokenByCustomerIdWhenStatusIsActive'   => [
+        'request' => [
+            'url' => '/customers/cust_1000ggcustomer/tokens/token_100022xytoken1',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'token_100022xytoken1',
+                'method'        => 'card',
+                'status'        => 'active',
+                'error_code'    => null,
+                'error_description' => null
+            ],
+        ]
+    ],
+
+    'testFetchTokenByCustomerIdWhenStatusIsFailed'   => [
+        'request' => [
+            'url' => '/customers/cust_1000ggcustomer/tokens/token_100022xytoken1',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'token_100022xytoken1',
+                'method'        => 'card',
+                'status'        => 'failed',
+                'error_code'    =>  'BAD_REQUEST_ERROR',
+                'error_description' => 'The card is not eligible for tokenisation.'
+            ],
+        ]
+    ],
+
+    'testFetchTokenByCustomerIdWhenStatusIsEmpty'   => [
+        'request' => [
+            'url' => '/customers/cust_1000ggcustomer/tokens/token_100022xytoken1',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'token_100022xytoken1',
+                'method'        => 'card',
+                'status'        => 'failed',
+                'error_code'    =>  'BAD_REQUEST_ERROR',
+                'error_description' => 'Token creation failed'
+            ],
+        ]
+    ],
+
     'testFetchSavedTokensStatusWhenNoCustomerTokensArePresentOnMerchantExpectsOtpGettingSkipped' => [
         'request' => [
                 'url' => '/customers/status/9988776655',

@@ -7564,6 +7564,20 @@ trait Authorize
                 return;
             }
 
+            // adding these check before checking feature flag constraint since we are updating error code there and we don;t want to update any error for international and bajaj since these cases are not supported for network tokenisation
+
+            if ($token->card->isInternational() === true)
+            {
+                return ;
+            }
+
+            $networkCode = $token->card->getNetworkCode();
+
+            if (in_array($networkCode, Card\Network::NETWORKS_SUPPORTING_TOKEN_PROVISIONING, true) === false)
+            {
+                    return ;
+            }
+
             if (($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION_LIVE) === false) && ($token->merchant->isFeatureEnabled(Feature\Constants::NETWORK_TOKENIZATION) === false))
             {
                 $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
@@ -7604,8 +7618,8 @@ trait Authorize
             if ($core->checkIfTokenisationApplicable($token) === false)
             {
                 $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
-                    'tokenApplicable'     => $core->checkIfTokenisationApplicable($token),
-                    'token'      => $token->getId()
+                    'tokenApplicable'     => 'false',
+                     'token'              => $token->getId()
                 ]);
                 return;
             }

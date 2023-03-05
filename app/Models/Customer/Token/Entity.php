@@ -95,6 +95,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER                  = 'customer';
     const INTERNAL_ERROR_CODE       = 'internal_error_code';
     const ERROR_DESCRIPTION         = 'error_description';
+    const ERROR_CODE                = 'error_code';
     //
     // merchant id index for live and test db
     //
@@ -308,7 +309,6 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::NOTES,
         self::ERROR_DESCRIPTION,
-        self::INTERNAL_ERROR_CODE,
         self::SOURCE
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
@@ -703,6 +703,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNAL_ERROR_CODE);
     }
 
+    public function getErrorCode()
+    {
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
     public function getErrorDescription()
     {
         return $this->getAttribute(self::ERROR_DESCRIPTION);
@@ -785,6 +790,17 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::STATUS, $status);
     }
+
+    public function setErrorCode($errorCode)
+    {
+        $this->setAttribute(self::ERROR_CODE, $errorCode);
+    }
+
+    public function setErrorDescription($errorDescription)
+    {
+        $this->setAttribute(self::ERROR_DESCRIPTION, $errorDescription);
+    }
+
 
     /**
      * Sets the VPA ID
@@ -1148,6 +1164,9 @@ class Entity extends Base\PublicEntity
             } else {
                 $publicArray[self::MAX_AMOUNT] = $this->getMaxAmount();
             }
+
+            // exposing error code as null in case of it is not set
+            $publicArray['error_code'] = $this->getErrorCode() ?? null;
 
             try {
                 $card = $app['repo']->card->fetchForToken($this);

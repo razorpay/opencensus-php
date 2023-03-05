@@ -1730,4 +1730,24 @@ class PublicErrorDescription
     const BAD_REQUEST_OPTIMIZER_ONLY_MERCHANT_HAS_RAAS_DISABLED                     = 'Error : Payments have not been configured for this merchant.';
 
     const BAD_REQUEST_AUTHZ_ROLES_NOT_FOUND                                         = 'AuthZ Roles not found for the role id.';
+
+    const BAD_REQUEST_TOKEN_NOT_APPLICABLE                                          = 'This saved card is no longer compliant with the RBI guidelines. Please use another card/payment method.';
+
+    const BAD_REQUEST_TOKEN_CREATION_FAILED                                         = 'Token creation failed';
+
+    const BAD_REQUEST_CARD_NOT_ELIGIBLE_FOR_TOKENISATION                            = 'The card is not eligible for tokenisation.';
+
+    const BAD_REQUEST_CARD_DECLINED                                                 = 'The card is currently not eligible for tokenisation. The request was declined by card network.';
+
+    const BAD_REQUEST_CARD_NOT_ALLOWED_BY_BANK                                      = 'The card is not allowed for tokenization due to some reasons at issuer bank.';
+
+    const TOKEN_SERVICE_PROVIDER_ERROR                                              = 'The tokenisation request failed due to unexpected error with token service provider.';
+
+    const BAD_REQUEST_CARD_NOT_ELIGIBLE                                             = 'The card is not eligible for tokenisation.';
+
+    const BAD_REQUEST_CARD_NOT_ALLOWED                                              = 'The card is not allowed for tokenization due to some reasons at network end.';
+
+    const BAD_REQUEST_CARD_INVALID                                                  = 'The card data provided are invalid. Please check & try again.';
+
+
 }

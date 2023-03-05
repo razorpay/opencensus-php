@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\CustomerToken;
 
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
@@ -157,6 +158,89 @@ class CustomerTokenTest extends TestCase
 
         $this->assertEquals(isset($response['email']), false);
     }
+
+
+    public function testFetchTokenByCustomerIdWhenStatusIsActive()
+    {
+        $this->mode = Mode::LIVE;
+
+        $this->mockSession();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919671967980',
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+
+        $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '1000ggcustomer', ['vault' => 'visa']);
+
+        $response = $this->startTest();
+        $this->assertEquals($response['status'], 'active');
+        $this->assertEquals($response['error_code'], null);
+        $this->assertEquals($response['error_description'], null);
+    }
+
+
+
+    public function testFetchTokenByCustomerIdWhenStatusIsFailed()
+    {
+        $this->app['basicauth']->setMode(Mode::LIVE);
+
+        $this->mockSession();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919671967980',
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+
+        $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '1000ggcustomer', ['vault' => 'rzpvault' , 'status' => 'failed' , 'error_description' => 'The card is not eligible for tokenisation.', 'internal_error_code' => 'BAD_REQUEST_CARD_NOT_ELIGIBLE_FOR_TOKENISATION']);
+
+        $response = $this->startTest();
+        $this->assertEquals($response['status'], 'failed');
+        $this->assertEquals($response['error_code'], 'BAD_REQUEST_ERROR');
+        $this->assertEquals($response['error_description'], 'The card is not eligible for tokenisation.');
+    }
+
+    public function testFetchTokenByCustomerIdWhenStatusIsEmpty()
+    {
+        $this->app['basicauth']->setMode(Mode::LIVE);
+
+        $this->mockSession();
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->customer->create(
+            [
+                'id'            => '1000ggcustomer',
+                'name'          => 'test123',
+                'email'         => 'test@razorpay.com',
+                'contact'       => '+919671967980',
+                'merchant_id'   => '10000000000000'
+            ]
+        );
+
+        $this->fixturesToCreateToken('100022xytoken1', '100000003card1', '411140', '10000000000000', '1000ggcustomer', ['vault' => 'rzpvault', 'status'=> null]);
+
+        $response = $this->startTest();
+        $this->assertEquals($response['status'], 'failed');
+        $this->assertEquals($response['error_code'], 'BAD_REQUEST_ERROR');
+        $this->assertEquals($response['error_description'], 'Token creation failed');
+    }
+
+
 
     public function testFetchSavedTokensStatusWhenNoCustomerTokensArePresentOnMerchantExpectsOtpGettingSkipped()
     {
@@ -1537,7 +1621,9 @@ class CustomerTokenTest extends TestCase
                 'merchant_id'     => $merchantId,
                 'acknowledged_at' => Carbon::now()->getTimestamp(),
                 'expired_at'      => $inputFields['expired_at'] ?? '9999999999',
-                'status'          => $inputFields['status'] ?? 'active',
+                'status'          => (array_key_exists('status',$inputFields) === true ) ? $inputFields['status'] :'active',
+                'internal_error_code'  => $inputFields['internal_error_code'] ?? null,
+                'error_description'    => $inputFields['error_description'] ?? null,
             ]
         );
     }
