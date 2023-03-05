@@ -11,17 +11,11 @@ class Farzi
 {
 
     const BeMinimalisticShopName = 'minimalistfphapi';
+    const WowSkinShopName = 'wow-api';
 
     public function addFarziCoupon(string $code, string $cartId,string $shopName)
     {
-        $body = [
-            'code' => $code,
-            'cartId' => $cartId
-        ];
-        if($shopName == self::BeMinimalisticShopName)
-        {
-            $body['app'] = 'custom_app';
-        }
+        $body = $this->getBodyForFarziUrl($code, $cartId, $shopName);
 
         $this->sendCouponRequest(
             json_encode($body),
@@ -50,7 +44,28 @@ class Farzi
         }
     }
 
+    private function getBodyForFarziUrl($code, $cartId, $shopName){
+        $body = [
+            'code' => $code,
+            'cartId' => $cartId
+        ];
+        switch($shopName)
+        {
+            case self::BeMinimalisticShopName : $body['app'] = 'custom_app';
+            break;
+
+            case self::WowSkinShopName : $body['storeId'] = '2';
+            break;
+        }
+        return $body;
+    }
+
     private function getFarziUrl($shopName){
-        return 'https://'.$shopName.'.farziengineer.co/discount';
+        switch($shopName)
+        {
+            case self::WowSkinShopName : return 'https://'.$shopName.'.farziengineer.co/multistore/discount';
+
+            default: return 'https://'.$shopName.'.farziengineer.co/discount';
+        }
     }
 }

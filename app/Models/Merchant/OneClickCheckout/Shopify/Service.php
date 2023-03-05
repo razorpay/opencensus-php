@@ -51,7 +51,8 @@ class Service extends Base\Service
 
     const farziEnabledMerchants = [
         'ChdCdGm7TvuVk6' => 'boat-api',//boAt
-        'FBZftClq7omC5j' => 'minimalistfphapi' //beminimalist
+        'FBZftClq7omC5j' => 'minimalistfphapi', //beminimalist
+        'Iip55js9TPnDd8' => 'wow-api' //wow science
     ];
 
     const MagicAnalyticsBESyncFlowEventsFlag = false;
