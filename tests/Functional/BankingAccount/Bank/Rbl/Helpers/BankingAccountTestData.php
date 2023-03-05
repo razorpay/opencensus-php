@@ -1740,6 +1740,94 @@ return [
         ],
     ],
 
+    'testGetBankingAccountByAccountTypeFromMOB' => [
+        'request'  => [
+            'url'    => '/banking_accounts?account_type=current',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "collection",
+                "count"  => 1,
+                "items"  => [
+                    [
+                        'channel'      => 'rbl',
+                        'merchant_id'  => '10000000000000',
+                        'account_type' => 'current',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCorpCardBankingAccountByAccountType' => [
+        'request'  => [
+            'url'    => '/banking_accounts?account_type[]=corp_card',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "collection",
+                "count"  => 1,
+                "items"  => [
+                    [
+                        'channel'      => 'rbl',
+                        'merchant_id'  => '10000000000000',
+                        'account_type' => 'corp_card',
+                        'balance'      =>
+                            [
+                                'corp_card_details' =>
+                                    [
+                                        'entity_id'      => 'qaghsquiqasdwd',
+                                        'account_number' => '10234561782934',
+                                        'user_id'        => 'wgahkasyqsdghws',
+                                    ]
+                            ]
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testGetCorpCardBankingAccountNotFound' => [
+        'request'  => [
+            'url'    => '/banking_accounts?account_type[]=corp_card',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "collection",
+                "count"  => 0,
+                "items"  => [],
+            ],
+        ],
+    ],
+
+    'testGetBankingAccountByAccountTypes' => [
+        'request'  => [
+            'url'    => '/banking_accounts?account_type[]=nodal&account_type[]=current',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "collection",
+                "count"  => 2,
+                "items"  => [
+                    [
+                        'channel'      => 'rbl',
+                        'merchant_id'  => '10000000000000',
+                        'account_type' => 'nodal',
+                    ],
+                    [
+                        'channel'      => 'icici',
+                        'merchant_id'  => '10000000000000',
+                        'account_type' => 'current',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testGetBankingAccountInternalViaMob' => [
         'request'  => [
             'url'     => '/banking_accounts',

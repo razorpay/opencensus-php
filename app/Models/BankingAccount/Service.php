@@ -19,6 +19,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Merchant\Balance;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Constants\Mode;
+use RZP\Services\CapitalCardsClient;
 use RZP\Models\BankingAccountService;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
@@ -589,7 +590,51 @@ class Service extends Base\Service
             }
         }
 
-        return $bankingAccounts->toArrayPublic();
+        $shouldFetchCardDetails = ((is_array($input[Entity::ACCOUNT_TYPE]) === true) and
+                                   (in_array(Balance\AccountType::CORP_CARD, $input[Entity::ACCOUNT_TYPE], true) === true));
+
+        foreach ($bankingAccounts as $index => &$bankingAccount)
+        {
+            $balance = $bankingAccount->getBalance();
+
+            if (((is_array($input[Entity::ACCOUNT_TYPE]) === true) and
+                 (in_array($bankingAccount[Entity::ACCOUNT_TYPE], $input[Entity::ACCOUNT_TYPE], true)) === false))
+            {
+                unset($bankingAccounts[$index]);
+                continue;
+            }
+
+            // If account_type is corp_card, fetch card details from capital-cards service
+            if ($bankingAccount->getAccountType() === Balance\AccountType::CORP_CARD)
+            {
+                if ($shouldFetchCardDetails === true)
+                {
+                    $response = $this->app[CapitalCardsClient::CAPITAL_CARDS_CLIENT]->getCorpCardAccountDetails(
+                        ['balance_id' => $balance->getId()]);
+
+                    // If no records are found in the capital-cards service , remove from response
+                    if (empty($response) === true)
+                    {
+                        unset($bankingAccounts[$index]);
+                    }
+                    else
+                    {
+                        $balance[Balance\Entity::CORP_CARD_DETAILS] = $response;
+                    }
+
+                }
+                else
+                {
+                    unset($bankingAccounts[$index]);
+                }
+            }
+        }
+
+        $response = $bankingAccounts->toArrayPublic();
+
+        $response[Base\PublicCollection::ITEMS] = array_values($response[Base\PublicCollection::ITEMS]);
+
+        return $response;
     }
 
     public function setFeeRecoveryFlagForBankingAccounts($bankingAccounts, $input)

@@ -93,6 +93,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Jobs\SubMerchantTaggingJob;
 use RZP\Models\Settlement\Ondemand;
 use RZP\Error\PublicErrorDescription;
+use RZP\Services\CapitalCardsClient;
 use RZP\Jobs\CallBackFillReferredApp;
 use Razorpay\OAuth\Token as OAuthToken;
 use RZP\Mail\Merchant\EsEnabledNotify;
@@ -2144,6 +2145,43 @@ class Service extends Base\Service
                 }
             }
         }
+
+        $shouldFetchCardDetails = ((isset($input[Balance\Entity::ACCOUNT_TYPE]) === true) and
+                                   (is_array($input[Balance\Entity::ACCOUNT_TYPE]) === true) and
+                                   (in_array(Balance\AccountType::CORP_CARD, $input[Balance\Entity::ACCOUNT_TYPE], true) === true));
+
+        foreach ($balance['items'] as $index => &$balanceEntity)
+        {
+            if (($balanceEntity[Balance\Entity::TYPE] === Balance\Type::BANKING) and
+                ($balanceEntity[Balance\Entity::ACCOUNT_TYPE] === Balance\AccountType::CORP_CARD))
+            {
+                // If account_type is corp_card and it is part of input, fetch card details from capital-cards service
+                if ($shouldFetchCardDetails === true)
+                {
+                    $response = $this->app[CapitalCardsClient::CAPITAL_CARDS_CLIENT]->getCorpCardAccountDetails(
+                        ['balance_id' => $balanceEntity[Balance\Entity::ID]]);
+
+                    // If no records are found in the capital-cards service , remove corp_card balance from response
+                    if (empty($response) === true)
+                    {
+                        unset($balance[Base\PublicCollection::ITEMS][$index]);
+                        $balance[Base\PublicCollection::COUNT]--;
+                    }
+                    else
+                    {
+                        $balanceEntity[Balance\Entity::CORP_CARD_DETAILS] = $response;
+                    }
+                }
+                else
+                {
+                    // return corp_card balance in response only if explicitly asked for
+                    unset($balance[Base\PublicCollection::ITEMS][$index]);
+                    $balance[Base\PublicCollection::COUNT]--;
+                }
+            }
+        }
+
+        $balance[Base\PublicCollection::ITEMS] = array_values($balance[Base\PublicCollection::ITEMS]);
 
         if ($this->auth->isStrictPrivateAuth() === true)
         {
