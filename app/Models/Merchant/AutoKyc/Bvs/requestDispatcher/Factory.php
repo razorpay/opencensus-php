@@ -142,7 +142,9 @@ class Factory
 
     public function getSyncBvsRequestDispatchers(Merchant\Entity $merchant, Detail\Entity $merchantDetails): array
     {
-        if ($merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID and $merchant->isNoDocOnboardingEnabled() === false)
+        if (($merchant->getOrgId() === OrgEntity::RAZORPAY_ORG_ID) and
+            ($merchant->isNoDocOnboardingEnabled() === false) and
+            ($merchant->isRouteNoDocKycEnabledForParentMerchant() === false))
         {
             return [
                 new LlpinAuth($merchant, $merchantDetails),
