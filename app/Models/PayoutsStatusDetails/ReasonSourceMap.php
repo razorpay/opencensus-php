@@ -34,6 +34,8 @@ class ReasonSourceMap
 
      Reason::LOW_BALANCE                           => self::BUSINESS,
 
+     Reason::PARTNER_BANK_HEALTH                   => self::BUSINESS,
+
      Reason::PAYOUT_PROCESSED                      => self::BENEFICIARY_BANK,
 
      Reason::GATEWAY_TECHNICAL_ERROR               => self::GATEWAY,

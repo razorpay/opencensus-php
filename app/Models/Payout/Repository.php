@@ -565,11 +565,14 @@ class Repository extends Base\Repository
 
         $bankAccountIfscColumn = $this->repo->bank_account->dbColumn(BankAccountEntity::IFSC_CODE);
 
+        $queuedReason  = $this->dbColumn(Entity::QUEUED_REASON);
+
         $query= $this->newQueryWithConnection($this->getSlaveConnection())
                      ->leftJoin(Table::FUND_ACCOUNT, $fundAccountIdInPayout, '=', $fundAccountId)
                      ->leftJoin(Table::BANK_ACCOUNT, $bankAccountIdInFundAccount, '=', $bankAccountId)
                      ->select($payoutIdColumn)
                      ->where($payoutStatus, '=', Status::ON_HOLD)
+                     ->where($queuedReason, '=', QueuedReasons::BENE_BANK_DOWN)
                      ->where($isPayoutService, '=', 0);
 
             if (empty($beneBanksDownList) === false)
@@ -583,6 +586,32 @@ class Repository extends Base\Repository
                      ->get()
                      ->pluck(Entity::ID)
                      ->toArray();
+    }
+
+    public function getPartnerBankHoldPayoutsToProcess(string $rawQuery)
+    {
+        $payoutStatus = $this->dbColumn(Entity::STATUS);
+
+        $isPayoutService = $this->dbColumn(Entity::IS_PAYOUT_SERVICE);
+
+        $payoutIdColumn = $this->dbColumn(Entity::ID);
+
+        $queuedReason =  $this->dbColumn(Entity::QUEUED_REASON);
+
+        $query= $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select($payoutIdColumn)
+            ->where($payoutStatus, '=', Status::ON_HOLD)
+            ->where($queuedReason, '=', QueuedReasons::PARTNER_BANK_DEGRADED)
+            ->where($isPayoutService, '=', 0);
+
+        if (strlen($rawQuery) > 0) {
+            $query->whereraw($rawQuery);
+        }
+
+        return $query->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
     }
 
     //fetch payouts in provided status
@@ -616,10 +645,12 @@ class Repository extends Base\Repository
         $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $statusColumn = $this->dbColumn(Entity::STATUS);
         $isPayoutService = $this->dbColumn(Entity::IS_PAYOUT_SERVICE);
+        $queuedReason = $this->dbColumn(Entity::QUEUED_REASON);
 
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($merchantIdColumn)
                     ->where($statusColumn, '=', Status::ON_HOLD)
+                    ->where($queuedReason, '=', QueuedReasons::BENE_BANK_DOWN)
                     ->where($isPayoutService, '=', 0)
                     ->whereNotNull($onholdAtColumn)
                     ->distinct()
@@ -627,6 +658,32 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)
                     ->toArray();
+    }
+
+    public function getMerchantIdsWithLeastOnePartnerBankOnHoldPayout(string $rawQuery)
+    {
+        $onholdAtColumn = $this->dbColumn(Entity::ON_HOLD_AT);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+        $isPayoutService = $this->dbColumn(Entity::IS_PAYOUT_SERVICE);
+        $queuedReason = $this->dbColumn(Entity::QUEUED_REASON);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select($merchantIdColumn)
+            ->where($statusColumn, '=', Status::ON_HOLD)
+            ->where($queuedReason, '=', QueuedReasons::PARTNER_BANK_DEGRADED)
+            ->where($isPayoutService, '=', 0)
+            ->whereNotNull($onholdAtColumn)
+            ->distinct();
+
+        if (strlen($rawQuery) > 0) {
+            $query->whereraw($rawQuery);
+        }
+
+        return $query->limit(self::QUEUED_PAYOUTS_FETCH_LIMIT)
+            ->get()
+            ->pluck(Entity::MERCHANT_ID)
+            ->toArray();
     }
 
     public function getOnHoldPayoutsForMerchantIdForOnHoldAtGreaterThanSla(string $merchantId, int $sla, int $fetchLimit)
@@ -638,10 +695,12 @@ class Repository extends Base\Repository
         $statusColumn = $this->dbColumn(Entity::STATUS);
         $payoutIdColumn = $this->dbColumn(Entity::ID);
         $isPayoutService = $this->dbColumn(Entity::IS_PAYOUT_SERVICE);
+        $queuedReason = $this->dbColumn(Entity::QUEUED_REASON);
 
         return $this->newQueryWithConnection($this->getSlaveConnection())
                     ->select($payoutIdColumn)
                     ->where($statusColumn, '=', Status::ON_HOLD)
+                    ->where($queuedReason, '=', QueuedReasons::BENE_BANK_DOWN)
                     ->where($isPayoutService, '=', 0)
                     ->whereNotNull($onHoldAtColumn)
                     ->where($merchantIdColumn, '=', $merchantId)
@@ -650,6 +709,37 @@ class Repository extends Base\Repository
                     ->get()
                     ->pluck(Entity::ID)
                     ->toArray();
+    }
+
+    public function getPartnerBankOnHoldPayoutsForMerchantIdSlaBreached(string $merchantId, int $sla, int $fetchLimit,
+                                                                        $queuedReason, $rawQuery)
+    {
+        $currentTimeStamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $onHoldAtColumn = $this->dbColumn(Entity::ON_HOLD_AT);
+        $merchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+        $statusColumn = $this->dbColumn(Entity::STATUS);
+        $payoutIdColumn = $this->dbColumn(Entity::ID);
+        $isPayoutService = $this->dbColumn(Entity::IS_PAYOUT_SERVICE);
+        $queuedReasonColumn = $this->dbColumn(Entity::QUEUED_REASON);
+
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+            ->select($payoutIdColumn)
+            ->where($statusColumn, '=', Status::ON_HOLD)
+            ->where($queuedReasonColumn, '=', $queuedReason)
+            ->where($isPayoutService, '=', 0)
+            ->whereNotNull($onHoldAtColumn)
+            ->where($merchantIdColumn, '=', $merchantId)
+            ->where($onHoldAtColumn, "<=", strtotime(('-' . ($sla * 60) . ' seconds'), $currentTimeStamp));
+
+        if (strlen($rawQuery) > 0) {
+            $query->whereraw($rawQuery);
+        }
+
+        return $query->limit($fetchLimit)
+            ->get()
+            ->pluck(Entity::ID)
+            ->toArray();
     }
 
     public function fetchQueuedPayoutsForBalanceId(string $balanceId,

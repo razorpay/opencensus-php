@@ -50,6 +50,7 @@ use RZP\Models\PayoutOutbox\RequestType;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Workflow\Service\Adapter;
 use RZP\Jobs\ApprovedPayoutDistribution;
+use RZP\Models\PartnerBankHealth\Events;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Merchant\Account as Account;
 use RZP\Models\Payout\Batch as PayoutsBatch;
@@ -113,6 +114,8 @@ class Service extends Base\Service
     protected const PAYOUTS_ON_HOLD_SLA_SETTINGS_KEY = "payouts_on_hold_sla";
 
     protected const ON_HOLD_FETCH_LIMIT = 5000;
+
+    protected const PARTNER_BANK_ON_HOLD_FETCH_LIMIT = 5000;
 
     protected const PAYOUT_NOTIFICATION_COUNT = 5;
 
@@ -3314,6 +3317,115 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function processDispatchPartnerBankOnHoldPayouts(): array
+    {
+        try {
+
+            $redis = $this->app['redis'];
+            $downtimeRawQuery = "";
+            $uptimeRawQuery = "";
+            $payoutIdsToProcess = [];
+            $payoutIdsToFail = [];
+            $merchantIdsForAutoCancel = [];
+
+            $downtimeKeys = $redis->hgetall(Core::PARTNER_BANK_HEALTH_REDIS_KEY);
+
+            $this->trace->info
+            (
+                TraceCode::PARTNER_BANK_DOWN_LIST_FOR_ON_HOLD_PAYOUT,
+                [
+                    'partner_bank_downtime_info' => $downtimeKeys,
+                ]
+            );
+
+            // generate raw query string
+            foreach ($downtimeKeys as $key) {
+
+                $key = json_decode($key);
+
+                if ($key->status === Events::STATUS_UPTIME) {
+                    $uptimeRawQuery = $this->generateRawQuery($uptimeRawQuery, $key);
+                }
+
+                if ($key->status === Events::STATUS_DOWNTIME) {
+                    $downtimeRawQuery = $this->generateRawQuery($downtimeRawQuery, $key);
+                }
+            }
+
+            // find hold payouts to process
+            if (strlen($uptimeRawQuery) > 0) {
+
+                $uptimeRawQuery = "( " . $uptimeRawQuery . " )";
+
+                $payoutIdsToProcess = $this->repo->payout->getPartnerBankHoldPayoutsToProcess($uptimeRawQuery);
+
+            }
+
+            // find merchant id's having on hold payouts
+            if (strlen($downtimeRawQuery) > 0) {
+
+                $downtimeRawQuery = "( " . $downtimeRawQuery . " )";
+
+                $merchantIdsForAutoCancel = $this->repo->payout->getMerchantIdsWithLeastOnePartnerBankOnHoldPayout($downtimeRawQuery);
+
+            }
+
+            // distibute processing of on hold payouts amongst merchants
+            if ($merchantIdsForAutoCancel != null and count($merchantIdsForAutoCancel) > 0) {
+
+                $fetchLimitCount = floor(self::PARTNER_BANK_ON_HOLD_FETCH_LIMIT / count($merchantIdsForAutoCancel));
+
+                foreach ($merchantIdsForAutoCancel as $merchantId) {
+
+                    $slaValue = $this->core->getMerchantSlaForOnHoldPayouts($merchantId, QueuedReasons::PARTNER_BANK_DEGRADED);
+
+                    $payoutIdsToFailForMerchant = $this->repo->payout->getPartnerBankOnHoldPayoutsForMerchantIdSlaBreached($merchantId,
+                        $slaValue, $fetchLimitCount, QueuedReasons::PARTNER_BANK_DEGRADED, $downtimeRawQuery);
+
+                    $payoutIdsToFail = array_merge($payoutIdsToFail, $payoutIdsToFailForMerchant);
+                }
+            }
+
+            $this->trace->info
+            (
+                TraceCode::PAYOUT_ON_HOLD_TO_BE_DISPATCHED,
+                [
+                    'payout_ids_to_process'        => $payoutIdsToProcess,
+                    'payout_ids_to_auto_cancel'    => $payoutIdsToFail,
+                    'merchant_ids_for_auto_cancel' => $merchantIdsForAutoCancel,
+                    'downtime_query'               => $downtimeRawQuery,
+                    'uptime_query'                 => $uptimeRawQuery,
+                ]
+            );
+
+            $payoutIdsToProcess = array_unique(array_merge($payoutIdsToProcess, $payoutIdsToFail));
+
+            $this->core->dispatchPartnerBankOnHoldPayouts($payoutIdsToProcess);
+
+            $response =
+                [
+                    'onhold_payout_ids_to_process' => $payoutIdsToProcess,
+                ];
+
+            $this->trace->info
+            (
+                TraceCode::PARTNER_BANK_ON_HOLD_DISPATCH_LIST,
+                $response
+            );
+
+            return $response;
+        }
+        catch (\Exception $exception) {
+            $this->trace->info(
+                TraceCode::PARTNER_BANK_ON_HOLD_DISPATCH_FAILED_WITH_EXCEPTION,
+                [
+                    'exception' => $exception->getMessage(),
+                ]
+            );
+            return ['Process failed with exception'];
+        }
+    }
+
     public function payoutsServiceCreateFailureProcessingCron($input)
     {
         $this->trace->info
@@ -4693,5 +4805,15 @@ class Service extends Base\Service
             Constants\Mode::LIVE);
 
         return (strtolower($bulkApprovalAsyncExperimentVariant) === 'on');
+    }
+
+    private function generateRawQuery(string $rawQuery, $key): string
+    {
+        if (strlen($rawQuery) > 0) {
+            $rawQuery = $rawQuery." OR ";
+        }
+
+        return $rawQuery . " (`payouts`.`channel` = '" . strtolower($key->channel) . "' AND `payouts`.`mode` = '" . $key->mode . "') ";
+
     }
 }

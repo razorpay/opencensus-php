@@ -4,8 +4,11 @@ namespace RZP\Models\PartnerBankHealth;
 
 class Events
 {
-    const FAIL_FAST_HEALTH = 'fail_fast_health';
-    const DOWNTIME         = 'downtime';
+    const FAIL_FAST_HEALTH      = 'fail_fast_health';
+    const DOWNTIME              = 'downtime';
+    const PARTNER_BANK_HEALTH   = "partner_bank_health";
+    const STATUS_DOWNTIME       = "downtime";
+    const STATUS_UPTIME         = "uptime";
 
     public static function getPartnerBankHealthEvents()
     {

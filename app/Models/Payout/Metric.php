@@ -29,6 +29,7 @@ final class Metric
     const PAYOUT_WORKFLOW_CREATION_FAILED_TOTAL                     = 'payout_workflow_creation_failed_total';
     const PAYOUT_WORKFLOW_ACTION_FAILED_TOTAL                       = 'payout_workflow_action_failed_total';
     const PAYOUT_WORKFLOW_ACTION_DUPLICATE_REQUEST_TOTAL            = 'payout_workflow_action_duplicate_request_total';
+    const PARTNER_BANK_ON_HOLD_FAILED                               = 'partner_bank_on_hold_failed';
 
     // Histograms
     const PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS                      = 'payout_queued_to_created_duration_seconds.histogram';

@@ -12,6 +12,7 @@ use RZP\Services\FTS\CreateAccount;
 use RZP\Services\FTS\Transfer\Client;
 use RZP\Models\Merchant\Balance\Entity;
 use RZP\Models\Merchant\Balance\Channel;
+use RZP\Models\PartnerBankHealth\Events;
 use RZP\Models\PartnerBankHealth\Notifier;
 use RZP\Models\FundTransfer\Attempt\Status;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -246,7 +247,7 @@ class FtsTest extends TestCase
 
     public function mockBankingAccountService()
     {
-        $this->app['config']->set('applications.banking_account_service.mock', true);    
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     public function testGracefulUpdateOfExistingSourceAccount()
@@ -1324,5 +1325,47 @@ class FtsTest extends TestCase
 
         $this->createMerchantNotificationConfig('10000000000013', ['300@gmail.com', '301@gmail.com'], ['9898989898', '8989898989']);
         $this->createRelevantEntities('xbalance300000', '10000000000013', $accountType, '00003000000000', $channel);
+    }
+
+    public function testPartnerBankDowntime()
+    {
+        $this->ba->ftsAuth(Mode::LIVE);
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->startTest();
+        $redis = $this->app['redis'];
+        $payload = $testData['request']['content']['payload'];
+        $channel = $payload['channel'];
+        $accountType = $payload['account_type'];
+        $mode = $payload['mode'];
+        $configKey = strtolower($accountType."_"."$channel"."_".$mode);
+        $config = json_decode($redis->hget(Events::PARTNER_BANK_HEALTH, $configKey));
+        $this->assertEquals("RBL", $config->channel);
+        $this->assertEquals("IMPS", $config->mode);
+        $this->assertEquals("downtime", $config->status);
+        $this->assertEquals("ALL", $config->include_merchants[0]);
+        // tear down
+        $redis->del(Events::PARTNER_BANK_HEALTH);
+
+    }
+
+    public function testPartnerBankUptime()
+    {
+        $this->ba->ftsAuth(Mode::LIVE);
+        $redis = $this->app['redis'];
+
+        $testData = $this->testData[__FUNCTION__];
+        //create key
+        $payload = $testData['request']['content']['payload'];
+        $channel = $payload['channel'];
+        $accountType = $payload['account_type'];
+        $mode = $payload['mode'];
+        $configKey = strtolower($accountType."_"."$channel"."_".$mode);
+
+        $this->startTest($testData);
+        $config = json_decode($redis->hget(Events::PARTNER_BANK_HEALTH, $configKey));
+        $this->assertEquals(Events::STATUS_UPTIME, $config->status);
+        $redis->del(Events::PARTNER_BANK_HEALTH);
+
     }
 }

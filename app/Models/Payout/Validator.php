@@ -24,6 +24,7 @@ use RZP\Models\FundTransfer\Mode;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Workflow\Service\Adapter;
+use RZP\Models\PartnerBankHealth\Events;
 use RZP\Models\Payout\Mode as PayoutMode;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Constants\Entity as EntityConstants;
@@ -135,6 +136,8 @@ class Validator extends Base\Validator
     const OWNER_BULK_REJECT_PAYOUTS = 'owner_bulk_reject_payouts';
 
     const FETCH_PENDING_PAYOUTS_SUMMARY = 'fetch_pending_payouts_summary';
+
+    const PARTNER_BANK_HEALTH_NOTIFICATION = 'partner_bank_health_notification';
 
     //
     // This is required for build. Currently, build does not
@@ -581,6 +584,13 @@ class Validator extends Base\Validator
         Payout\Entity::PAYOUT_ID  => 'required|filled|string'
     ];
 
+    protected static $partnerBankHealthNotificationRules = [
+        'account_type'  => 'required|filled|string',
+        'status'        => 'required|filled|string',
+        'channel'       => 'required|filled|string',
+        'mode'          => 'required|filled|string'
+    ];
+
     protected function validateFtsAccountType($attribute, $ftsAccountType)
     {
         if (in_array(strtolower($ftsAccountType), ['current', 'nodal'], true) === false)
@@ -965,6 +975,24 @@ class Validator extends Base\Validator
 
         // Already processed by another queue job due to overlap of cron runs.
         if ($payout->isStatusOnHold() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_NOT_ON_HOLD,
+                null,
+                [
+                    'payout_id' => $payout->getId(),
+                    'status'    => $payout->getStatus(),
+                ]);
+        }
+    }
+
+    public function validatePartnerBankDowntimeHoldPayoutProcessing()
+    {
+        /** @var Entity $payout */
+        $payout = $this->entity;
+
+        // Already processed by another queue job due to overlap of cron runs.
+        if ($payout->isStatusOnHold() === false && $payout->getQueuedReason() === QueuedReasons::PARTNER_BANK_DEGRADED)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYOUT_NOT_ON_HOLD,
@@ -1643,6 +1671,34 @@ class Validator extends Base\Validator
             );
         }
     }
+
+    public function validatePartnerBankHealthNotificationFromFTS($payload)
+    {
+        $this->setStrictFalse()->validateInput(Validator::PARTNER_BANK_HEALTH_NOTIFICATION, $payload);
+
+        if (!(($payload['status'] === Events::STATUS_DOWNTIME) ||
+              ($payload['status'] == Events::STATUS_UPTIME))) {
+            throw new Exception\BadRequestValidationFailureException(
+                "The status received from fts is " . $payload['status'] . ".",
+                null,
+                [
+                    'status' => $payload['status'],
+                ]
+            );
+        }
+
+        if (($payload['status'] === Events::STATUS_DOWNTIME) &&
+            (empty($payload['include_merchants']))) {
+            throw new Exception\BadRequestValidationFailureException(
+                "Empty include merchants list received from fts is " . $payload . ".",
+                null,
+                [
+                    'payload' => $payload,
+                ]
+            );
+        }
+    }
+
 
     public function isUpiModeEnabledOnRblDirectAccountForMerchantId(string $merchantId)
     {

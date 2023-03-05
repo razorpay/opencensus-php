@@ -21731,4 +21731,156 @@ return [
             ],
         ],
     ],
+    'testPartnerBankOnHoldPayoutForDirectAccount' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'payout',
+                'notes'           => [
+                    'abc'         => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'status'          => 'queued',
+                'mode'            => 'IMPS',
+                'tax'             => 0,
+                'fees'            => 0,
+                'notes'           => [
+                    'abc'         => 'xyz',
+                ],
+            ],
+        ],
+    ],
+    'testPartnerBankOnHoldPayoutForDirectAccountWithExcludeMerchant' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'payout',
+                'notes'           => [
+                    'abc'         => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc'         => 'xyz',
+                ],
+            ],
+        ],
+    ],
+    'testPartnerBankOnHoldPayoutForDirectAccountWithRazorxOff' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => [
+                'account_number'  => '2224440041626905',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'narration'       => 'Batman',
+                'mode'            => 'IMPS',
+                'fund_account_id' => 'fa_100000000000fa',
+                'purpose'         => 'payout',
+                'notes'           => [
+                    'abc'         => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'          => 'payout',
+                'amount'          => 2000000,
+                'currency'        => 'INR',
+                'fund_account_id' => 'fa_100000000000fa',
+                'narration'       => 'Batman',
+                'status'          => 'processing',
+                'mode'            => 'IMPS',
+                'tax'             => 162,
+                'fees'            => 1062,
+                'notes'           => [
+                    'abc'         => 'xyz',
+                ],
+            ],
+        ],
+    ],
+    'testProcessPartnerBankOnHoldPayoutForDirectAccount' => [
+        'request'  => [
+            'method'    => 'POST',
+            'url'       => '/payouts/onhold/process/downtime',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+    'testFailOnHoldPayoutsWhenSlaBreachedForDirectAccount' => [
+        'request'  => [
+            'method'    => 'POST',
+            'url'       => '/payouts/onhold/process/downtime',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+    'testProcessPartnerBankOnHoldPayoutAndMoveToBeneBankDowntime' => [
+        'request'  => [
+            'method'    => 'POST',
+            'url'       => '/payouts/onhold/process/downtime',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+    'testDashboardSummaryWithPartnerBankOnHoldPayout' => [
+        'request'  => [
+            'method'  => 'GET',
+            'url'     => '/payouts/_meta/summary',
+        ],
+        'response' => [
+            'content' => [
+                'bacc_xba00000000000' => [
+                    'queued' =>  [
+                        'partner_bank_degraded' => [
+                            'balance'       => 10000000,
+                            'count'         => 1,
+                            'total_amount'  => 2000000,
+                            'total_fees'    => 0,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

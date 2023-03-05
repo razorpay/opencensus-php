@@ -275,4 +275,48 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testPartnerBankDowntime' => [
+        'request'  => [
+            'url'     => '/fts/channel/notify',
+            'method'  => 'post',
+            'content' => [
+                'type'    => 'partner_bank_health',
+                'payload' => [
+                    'account_type'      => 'direct',
+                    'include_merchants' => ["ALL"],
+                    'exclude_merchants' => [],
+                    'source'            => 'partner_bank_health',
+                    'mode'              => 'IMPS',
+                    'status'            => 'downtime',
+                    'channel'           => 'RBL'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'FTS partner bank downtime webhook processed successfully',
+            ],
+        ],
+    ],
+    'testPartnerBankUptime' => [
+        'request'  => [
+            'url'     => '/fts/channel/notify',
+            'method'  => 'post',
+            'content' => [
+                'type'    => 'partner_bank_health',
+                'payload' => [
+                    'account_type'      => 'direct',
+                    'source'            => 'partner_bank_health',
+                    'mode'              => 'IMPS',
+                    'status'            => 'uptime',
+                    'channel'           => 'RBL'
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'FTS partner bank downtime webhook processed successfully',
+            ],
+        ],
+    ],
 ];

@@ -26,6 +26,8 @@ class StatusReasonMap
 
     const BENEFICIARY_BANK_DOWN                 = 'beneficiary_bank_down';
 
+    const PARTNER_BANK_HEALTH                   = 'partner_bank_health';
+
     const PENDING_APPROVAl                      = 'pending_approval';
 
     const GATEWAY_TECHNICAL_ERROR               = 'gateway_technical_error';

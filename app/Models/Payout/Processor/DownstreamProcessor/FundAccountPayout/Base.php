@@ -15,6 +15,7 @@ use RZP\Models\Settlement\Channel;
 use RZP\Models\Payout\QueuedReasons;
 use RZP\Models\Merchant\Balance\Type;
 use RZP\Models\Transaction\CreditType;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Models\Merchant\Balance\AccountType;
@@ -144,6 +145,54 @@ class Base extends DSBase
         }
 
         return false;
+    }
+
+    protected function holdPayoutIfPartnerBankDown(Entity $payout): bool
+    {
+        $variant = $this->app['razorx']->getTreatment($payout->getMerchantId(),
+            RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT, Constants\Mode::LIVE);
+
+        if ($variant != 'on') {
+            return false;
+        }
+
+        if ($payout->fundAccount->getAccountType() !== FundAccountEntity::BANK_ACCOUNT) {
+            return false;
+        }
+
+        // for va to va transfers using creditTransfers
+        if ($payout->isVaToVaPayout() === true) {
+            return false;
+        }
+
+        try {
+            if (($payout->isStatusOnHold() === false) and
+                ($payout->isStatusQueued() === false)) {
+
+                $isPartnerBankDown = (new PayoutCore)->checkIfPartnerBankIsDown($payout);
+
+                if ($isPartnerBankDown === true) {
+
+                    $payout->setStatus(Status::ON_HOLD);
+
+                    $payout->setQueuedReason(QueuedReasons::PARTNER_BANK_DEGRADED);
+
+                    return true;
+                }
+            }
+            return false;
+        }
+        catch (\Throwable $ex) {
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::PARTNER_BANK_ON_HOLD_CHECK_FAILED,
+                [
+                    'message' => $ex->getMessage(),
+                    'payout_id' => $payout->getId(),
+                ]);
+            return false;
+        }
     }
 
     //checks payout to be kept on_hold if the feature is enabled and bene bank is down

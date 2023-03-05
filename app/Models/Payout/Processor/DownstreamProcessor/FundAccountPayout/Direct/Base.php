@@ -31,7 +31,7 @@ class Base extends FundAccountPayout\Base
 
         $this->validateModeForChannelAndFundAccount($payout, $ftaAccount);
 
-        $holdPayout = $this->holdPayoutIfApplicableAndBeneBankDown($payout);
+        $holdPayout = $this->holdPayoutIfPartnerBankDown($payout) || $this->holdPayoutIfApplicableAndBeneBankDown($payout);
 
         if ($holdPayout === true)
         {

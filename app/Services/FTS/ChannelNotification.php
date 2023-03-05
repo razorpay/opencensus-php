@@ -92,7 +92,8 @@ class ChannelNotification
             case Events::FAIL_FAST_HEALTH:
             case Events::DOWNTIME:
                 return ["message" => "FTS partner bank health webhook processed successfully"];
-
+            case Events::PARTNER_BANK_HEALTH:
+                return ["message" => "FTS partner bank downtime webhook processed successfully"];
             default:
                 throw new BadRequestException(ErrorCode::BAD_REQUEST_ERROR,
                                               null,

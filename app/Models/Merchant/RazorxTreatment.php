@@ -738,4 +738,7 @@ final class RazorxTreatment
 
     // To skip acquiring the mutex lock on linked account ID during processing payment & order transfers.
     const LA_MUTEX_LOCK_FOR_TRANSFER_PROCESSING = 'la_mutex_lock_for_transfer_processing';
+
+    // Partner bank hold payouts experiment
+    const PARTNER_BANK_ON_HOLD_PAYOUT = 'partner_bank_on_hold_payout';
 }

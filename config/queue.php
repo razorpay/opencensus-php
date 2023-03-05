@@ -117,6 +117,10 @@ return [
         'test'       =>  env('AWS_ON_HOLD_PAYOUTS_PROCESS_TEST_QUEUE'),
         'live'       =>  env('AWS_ON_HOLD_PAYOUTS_PROCESS_LIVE_QUEUE')
     ],
+    'partner_bank_on_hold_payouts_process' => [
+        'test'       =>  env('AWS_PARTNER_BANK_ON_HOLD_PAYOUTS_PROCESS_TEST_QUEUE'),
+        'live'       =>  env('AWS_PARTNER_BANK_ON_HOLD_PAYOUTS_PROCESS_LIVE_QUEUE')
+    ],
     'payouts_auto_expire' => [
         'test'       =>  env('AWS_PAYOUTS_AUTO_EXPIRE_TEST_QUEUE'),
         'live'       =>  env('AWS_PAYOUTS_AUTO_EXPIRE_LIVE_QUEUE')

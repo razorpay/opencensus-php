@@ -7,6 +7,7 @@ use Config;
 
 use RZP\Models\Admin;
 use RZP\Models\Merchant;
+use RZP\Models\Payout\Core;
 use RZP\Models\Pricing\Fee;
 use RZP\Services\Mock\Mozart;
 use RZP\Services\RazorXClient;
@@ -715,6 +716,45 @@ trait PayoutTrait
         }
 
         $this->makeRequestAndGetContent($request);
+    }
+
+    protected function createOnHoldPayoutPartnerBankDown($partnerBankDowntimeData)
+    {
+        $this->ba->privateAuth();
+        $this->setDowntimeInformationForOnHold($partnerBankDowntimeData);
+        $defaultContents = [
+            'account_number'  => '2224440041626905',
+            'amount'          => 2000000,
+            'currency'        => 'INR',
+            'narration'       => 'Batman',
+            'mode'            => 'IMPS',
+            'fund_account_id' => 'fa_100000000000fa',
+            'purpose'         => 'payout',
+            'notes'           => [
+                'abc'         => 'xyz',
+            ],
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payouts',
+            'content' => $defaultContents,
+        ];
+
+        $this->makeRequestAndGetContent($request);
+    }
+
+    protected function setDowntimeInformationForOnHold($partnerBankDowntimeData)
+    {
+        $this->ba->privateAuth();
+        $redis = $this->app['redis'];
+
+        $channel = $partnerBankDowntimeData['payload']['channel'];
+        $accountType = $partnerBankDowntimeData['payload']['account_type'];
+        $mode = $partnerBankDowntimeData['payload']['mode'];
+
+        $configKey = strtolower($accountType."_"."$channel"."_".$mode);
+        $redis->hset(Core::PARTNER_BANK_HEALTH_REDIS_KEY, $configKey, json_encode($partnerBankDowntimeData['payload']));
     }
 
     protected function createOnHoldPayoutWhenBeneBankIsDownWithQueueIfLowBalanceFlagTrue()

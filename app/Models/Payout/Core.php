@@ -77,6 +77,7 @@ use RZP\Models\Workflow\Service\EntityMap;
 use RZP\Models\Merchant\Balance\FreePayout;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Merchant\Balance\AccountType;
+use RZP\Jobs\PartnerBankDowntimeHoldPayouts;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Jobs\FreePayoutMigrationForPayoutsService;
@@ -130,6 +131,8 @@ class Core extends Base\Core
 
     const DEFAULT_SLA_FOR_ON_HOLD_PAYOUTS_IN_MINS = 15;
 
+    const DEFAULT_SLA_FOR_PARTNER_BANK_ON_HOLD_PAYOUTS_IN_MINS = 60;
+
     const DEFAULT_BENE_BANK_STATUS = 'resolved';
 
     const BENE_BANK_DOWNTIME_STARTED = 'started';
@@ -174,7 +177,11 @@ class Core extends Base\Core
     const PS_DATA_MIGRATION_LIMIT              = 10;
     const MUTEX_LOCK_TIMEOUT_PS_DATA_MIGRATION = 180;
 
+    const PARTNER_BANK_HEALTH_REDIS_KEY = "partner_bank_health";
+
     const PAYOUT_SERVICE_TEMPORARY_METADATA_TABLE = 'payout_meta_temporary';
+
+    const ACCOUNT_TYPE_DIRECT = 'direct';
 
     /**
      * @var Mutex
@@ -2689,7 +2696,7 @@ class Core extends Base\Core
     }
 
     //returns the sla for on hold payouts if present specific for a merchant else default sla
-    public function getMerchantSlaForOnHoldPayouts(string $merchantId)
+    public function getMerchantSlaForOnHoldPayouts(string $merchantId, string $queuedReason = null)
     {
         $merchantSlaConfigList = (new Admin\Service)->getConfigKey([
             'key' => Admin\ConfigKey::RX_ON_HOLD_PAYOUTS_MERCHANT_SLA
@@ -2707,7 +2714,16 @@ class Core extends Base\Core
 
             if (empty($slaValue) === true)
             {
-                $slaValue = self::DEFAULT_SLA_FOR_ON_HOLD_PAYOUTS_IN_MINS;
+                switch ($queuedReason) {
+                    case QueuedReasons::PARTNER_BANK_DEGRADED:
+                        // partner bank downtime sla
+                        $slaValue = self::DEFAULT_SLA_FOR_PARTNER_BANK_ON_HOLD_PAYOUTS_IN_MINS;
+                        break;
+                    default:
+                        // keeping this as default
+                        // bene bank downtime taken as default configuration
+                        $slaValue = self::DEFAULT_SLA_FOR_ON_HOLD_PAYOUTS_IN_MINS;
+                }
             }
         }
         return $slaValue;
@@ -2794,9 +2810,9 @@ class Core extends Base\Core
         }
     }
 
-    protected function checkIfMerchantSlaBreachedForOnHoldPayout(Entity $payout)
+    protected function checkIfMerchantSlaBreachedForOnHoldPayout(Entity $payout, string $queuedReason = null)
     {
-        $slaValue = $this->getMerchantSlaForOnHoldPayouts($payout->getMerchantId());
+        $slaValue = $this->getMerchantSlaForOnHoldPayouts($payout->getMerchantId(), $queuedReason);
 
         $this->trace->info(
             TraceCode::ON_HOLD_PAYOUT_MERCHANT_SLA_CHECKED,
@@ -2813,6 +2829,87 @@ class Core extends Base\Core
              return true;
         }
         return false;
+    }
+
+    public function processPartnerBankDowntimeHoldPayouts(string $payoutId)
+    {
+        try
+        {
+            return $this->mutex->acquireAndRelease(
+                $payoutId,
+                function () use ($payoutId)
+                {
+                    $payout = $this->repo->payout->findOrFail($payoutId);
+
+                    $payout->getValidator()->validatePartnerBankDowntimeHoldPayoutProcessing();
+
+                    $isPartnerBankDown = $this->checkIfPartnerBankIsDown($payout);
+
+                    if ($isPartnerBankDown === false)
+                    {
+                        if ($this->holdIfBeneBankDown($payout) === true) {
+                            return null;
+                        }
+
+                        $payout = $this->getProcessor('fund_account_payout')
+                                        ->setMerchant($payout->merchant)
+                                        ->processOnHoldPayout($payout);
+
+                        if ($payout->getStatus() === Status::CREATED)
+                        {
+                            $this->processLedgerPayout($payout);
+                        }
+
+                        return $payout;
+                    } else {
+
+                        $isSlaBreached = $this->checkIfMerchantSlaBreachedForOnHoldPayout($payout,
+                            QueuedReasons::PARTNER_BANK_DEGRADED);
+
+                        if (!$isSlaBreached) {
+                            return null;
+                        }
+
+                        $payout->setStatus(Status::FAILED);
+
+                        //Failure reason is marked as PARTNER_BANK_DEGRADED since the sla is breached and the bank is still down.
+                        $payout->setFailureReason(QueuedReasons::PARTNER_BANK_DEGRADED);
+
+                        $payout->setStatusCode("PARTNER_BANK_OFFLINE");
+
+                        $this->repo->payout->saveOrFail($payout);
+
+                        $this->trace->count(Metric::PARTNER_BANK_ON_HOLD_FAILED,
+                               ['mode'         => $payout->getMode(),
+                                'channel'      => $payout->getChannel(),
+                                'account_type' => $payout->balance->getAccountType()]);
+
+                        $this->trace->info(
+                            TraceCode::PARTNER_BANK_ON_HOLD_FAILED,
+                            [
+                                'payout_id'      => $payout->getId(),
+                                'payout_status'  => $payout->getStatus(),
+                                'failure_reason' => $payout->getFailureReason(),
+                            ]);
+
+                        (new PayoutsStatusDetailsCore())->create($payout);
+
+                        $this->app->events->dispatch('api.payout.failed', [$payout]);
+                    }
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::PARTNER_BANK_ON_HOLD_PROCESSING_FAILED,
+                [
+                    'payout_id' => $payoutId,
+                ]);
+        }
     }
 
     public function dispatchOnHoldPayouts(array $payoutIdList)
@@ -2842,6 +2939,37 @@ class Core extends Base\Core
                 $e,
                 Trace::ERROR,
                 TraceCode::ON_HOLD_PAYOUT_PROCESSING_DISPATCH_FAILED,
+                $data);
+        }
+    }
+
+    public function dispatchPartnerBankOnHoldPayouts(array $payoutIdList)
+    {
+        try
+        {
+            foreach ($payoutIdList as $payoutId)
+            {
+                $traceInfo = [
+                    'payout_id' => $payoutId,
+                ];
+
+                $this->trace->info(TraceCode::PARTNER_BANK_ON_HOLD_PROCESSING_JOB, $traceInfo);
+
+                PartnerBankDowntimeHoldPayouts::dispatch($this->mode, $payoutId);
+
+                $this->trace->info(TraceCode::PARTNER_BANK_ON_HOLD_DISPATCH_COMPLETE, $traceInfo);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            // If the dispatch fails due to any reason, cron will
+            // pick up these again and attempt to dispatch.
+            $data = $traceInfo + ['message' => $e->getMessage()];
+
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PARTNER_BANK_ON_HOLD_DISPATCH_FAILED,
                 $data);
         }
     }
@@ -6247,6 +6375,38 @@ class Core extends Base\Core
         return false;
     }
 
+    public function checkIfPartnerBankIsDown(Entity $payout)
+    {
+        $redis = $this->app['redis'];
+        $merchantId = $payout->merchant->getId();
+
+        $accountType = $payout->balance->getAccountType();
+
+        $mode = $payout->getMode();
+
+        $channel =  $payout->getChannel();
+
+        $configKey = $this->getPartnerBankHealthConfigKey($accountType, $mode, $channel);
+
+        $keyValue = json_decode($redis->hget(self::PARTNER_BANK_HEALTH_REDIS_KEY, $configKey));
+
+        // this logic is currently only for direct account merchants
+        if (($keyValue != null) &&
+            ($keyValue->status === Events::STATUS_DOWNTIME)) {
+
+            // if in exclude merchants list. We don't hold payouts
+            if (($keyValue->exclude_merchants != null) &&
+                (in_array($merchantId, $keyValue->exclude_merchants))) {
+                return false;
+            }
+
+            if ($keyValue->include_merchants[0] === "ALL") {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function processEventNotificationFromFts(array $input)
     {
         try
@@ -6305,6 +6465,10 @@ class Core extends Base\Core
                     $this->payoutServiceBeneEventUpdateClient->processBeneEventUpdateViaMicroservice($input);
                     break;
 
+                case Events::PARTNER_BANK_HEALTH:
+                    $this->setEventConfigForPartBankDowntime($input['payload']);
+                    break;
+
                 case Events::FAIL_FAST_HEALTH:
                 case Events::DOWNTIME:
 
@@ -6313,26 +6477,25 @@ class Core extends Base\Core
                     $serviceInstance->processStatusUpdateFromFTS($input['payload']);
 
                     break;
-
                 default:
                     throw new Exception\LogicException("Not a valid source : " . $input['payload']['source']);
             }
         }
         catch (\Throwable $exception)
         {
-            if ($input['payload']['source'] === self::BENEFICIARY)
+            if (($input['payload']['source'] === self::BENEFICIARY) ||
+                ($input['payload']['source'] === Events::PARTNER_BANK_HEALTH))
             {
                 $this->trace->traceException(
                     $exception,
                     Trace::ERROR,
-                    TraceCode::BENE_BANK_EVENT_NOTIFICATION_CONFIG_UPDATE_FAILED,
+                    TraceCode::EVENT_NOTIFICATION_CONFIG_UPDATE_FAILED,
                     [
                         'input' => $input,
                     ]);
-                $operation = 'Bene Bank uptime downtime config update failed';
+                $operation = 'Event for uptime downtime config update failed';
 
                 (new SlackNotification)->send($operation, $input, null, 1, 'x-payouts-core-alerts');
-
             }
 
             if ($input['payload']['source'] === Events::FAIL_FAST_HEALTH or
@@ -6347,7 +6510,33 @@ class Core extends Base\Core
 
                 throw $exception;
             }
+
         }
+    }
+
+    private function setEventConfigForPartBankDowntime($payload) {
+
+        (new Validator())->validatePartnerBankHealthNotificationFromFTS($payload);
+
+        $redis = $this->app['redis'];
+
+        $channel = $payload['channel'];
+
+        $mode = $payload['mode'];
+
+        $accountType = $payload['account_type'];
+
+        $configKey = $this->getPartnerBankHealthConfigKey($accountType, $mode, $channel);
+
+        $redis->hset(self::PARTNER_BANK_HEALTH_REDIS_KEY, $configKey, json_encode($payload));
+
+        $this->trace->info(
+            TraceCode::PARTNER_BANK_HEALTH_NOTIFICATION_SUCCESSFUL,
+            [
+                'payload'   => $payload,
+                'key'       =>  $redis->hgetall(self::PARTNER_BANK_HEALTH_REDIS_KEY),
+                'configKey' => $configKey,
+            ]);
     }
 
     public function initiateScheduledPayoutsViaPayoutService($input)
@@ -8072,5 +8261,41 @@ class Core extends Base\Core
         }
 
         return $merchantBalance;
+    }
+
+    private function getPartnerBankHealthConfigKey($accountType, $mode, $channel): string
+    {
+        return strtolower($accountType . "_" . $channel . "_" . $mode);
+    }
+
+    private function holdIfBeneBankDown(Entity $payout): bool
+    {
+        $isBeneBankDown = $this->checkIfBeneBankIsDown($payout);
+
+        if ($isBeneBankDown === true) {
+
+            $payout->setStatus(Status::ON_HOLD);
+
+            $payout->setQueuedReason(QueuedReasons::BENE_BANK_DOWN);
+
+            $timeNow = Carbon::now(Timezone::IST);
+
+            $updatedTime   = $timeNow->getTimestamp();
+
+            $payout->setOnHoldAt($updatedTime);
+
+            $payout->saveOrFail();
+
+            $this->trace->info(
+                TraceCode::PARTNER_BANK_ON_HOLD_MOVED_TO_BENE_BANK_DOWNTIME,
+                [
+                    'payout_id' => $payout->getId(),
+                    'payout_status' => $payout->getStatus(),
+                    'failure_reason' => $payout->getFailureReason(),
+                ]);
+
+            return true;
+        }
+        return false;
     }
 }

@@ -25,6 +25,7 @@ use RZP\Mail\Payout\FailedPayout;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
 use RZP\Mail\Payout\AutoRejectedPayout;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Services\Mozart as MozartService;
 use RZP\Models\BankingAccount\Gateway\Rbl;
@@ -1315,5 +1316,307 @@ class RblPayoutTest extends TestCase
 
         // Assert that the payout was processed after adding sufficient balance
         $this->assertEquals('created', $updatedPayout->getStatus());
+    }
+
+    public function testPartnerBankOnHoldPayoutForDirectAccount()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
+
+        $this->ba->privateAuth();
+
+        $testDataDowntime = [
+            "payload" => [
+                "mode" => "IMPS",
+                "account_type"=>"direct",
+                "channel" => "RBL",
+                "status" => "downtime",
+                "include_merchants"=> ["ALL"],
+                "exclude_merchants" => [],
+            ]
+        ];
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
+
+        $this->startTest();
+
+        $this->expectWebhookEvent('payout.queued');
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('on_hold', $payout['status']);
+        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout['queued_reason']);
+
+        // tear down
+        $testDataDowntime['payload']['status'] = 'uptime';
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
+    }
+
+    public function testPartnerBankOnHoldPayoutForDirectAccountWithExcludeMerchant()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
+        $this->ba->privateAuth();
+
+        $testDataDowntime = [
+            "payload" => [
+                "mode" => "IMPS",
+                "account_type"=>"direct",
+                "channel" => "RBL",
+                "status" => "downtime",
+                "include_merchants"=> ["ALL"],
+                "exclude_merchants" => ["10000000000000"],
+            ]
+        ];
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotEquals('on_hold', $payout['status']);
+        $this->assertNotEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout['queued_reason']);
+
+        // tear down
+        $testDataDowntime['payload']['status'] = 'uptime';
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
+    }
+
+    public function testPartnerBankOnHoldPayoutForDirectAccountWithRazorxOff()
+    {
+        $this->ba->privateAuth();
+        $testDataDowntime = [
+            "payload" => [
+                "mode" => "IMPS",
+                "account_type"=>"direct",
+                "channel" => "RBL",
+                "status" => "downtime",
+                "include_merchants"=> ["ALL"],
+                "exclude_merchants" => [],
+            ]
+        ];
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
+
+        $this->startTest();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNotEquals('on_hold', $payout['status']);
+        $this->assertNotEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout['queued_reason']);
+
+        // tear down
+        $testDataDowntime['payload']['status'] = 'uptime';
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
+    }
+
+    public function testProcessPartnerBankOnHoldPayoutForDirectAccount()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
+        $this->ba->privateAuth();
+
+        $testDataDowntime = [
+            "payload" => [
+                "mode" => "IMPS",
+                "account_type"=>"direct",
+                "channel" => "RBL",
+                "status" => "downtime",
+                "include_merchants"=> ["ALL"],
+                "exclude_merchants" => [],
+            ]
+        ];
+        $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
+
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('on_hold', $payout1['status']);
+        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout1['queued_reason']);
+
+        $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
+
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('on_hold', $payout2['status']);
+        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout2['queued_reason']);
+
+        $testDataDowntime['payload']['status'] = 'uptime';
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $this->assertEquals($payout1['status'], Payout\Status::CREATED);
+
+        $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+        $this->assertEquals($payout2['status'], Payout\Status::CREATED);
+
+        // tear down
+        $testDataDowntime['payload']['status'] = 'uptime';
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
+    }
+
+    public function testFailOnHoldPayoutsWhenSlaBreachedForDirectAccount()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
+        $this->ba->privateAuth();
+
+        $testDataDowntime = [
+            "payload" => [
+                "mode" => "IMPS",
+                "account_type"=>"direct",
+                "channel" => "RBL",
+                "status" => "downtime",
+                "include_merchants"=> ["ALL"],
+                "exclude_merchants" => [],
+            ]
+        ];
+        $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
+
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('on_hold', $payout1['status']);
+        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout1['queued_reason']);
+
+        $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
+
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('on_hold', $payout2['status']);
+        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout2['queued_reason']);
+
+        $this->fixtures->edit('payout', $payout1['id'], ['on_hold_at' => strtotime(('-4000 seconds'), time())]);
+
+        $this->fixtures->edit('payout', $payout2['id'], ['on_hold_at' => strtotime(('-4000 seconds'), time())]);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payout1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $this->assertEquals($payout1['status'], Payout\Status::FAILED);
+
+        $payout2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+        $this->assertEquals($payout2['status'], Payout\Status::FAILED);
+
+        // tear down
+        $testDataDowntime['payload']['status'] = 'uptime';
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
+    }
+
+    public function testProcessPartnerBankOnHoldPayoutAndMoveToBeneBankDowntime()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
+        $this->ba->privateAuth();
+
+        $testDataDowntime = [
+            "payload" => [
+                "mode" => "IMPS",
+                "account_type"=>"direct",
+                "channel" => "RBL",
+                "status" => "downtime",
+                "include_merchants"=> ["ALL"],
+                "exclude_merchants" => [],
+            ]
+        ];
+        $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
+
+        $payout1 = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('on_hold', $payout1['status']);
+        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout1['queued_reason']);
+
+        $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
+
+        $payout2 = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('on_hold', $payout2['status']);
+        $this->assertEquals(Payout\QueuedReasons::PARTNER_BANK_DEGRADED, $payout2['queued_reason']);
+
+        $testDataDowntime['payload']['status'] = 'uptime';
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
+
+        $benebankConfig =
+            [
+                "BENEFICIARY" =>
+                    [
+                        "SBIN" => [
+                            "status" => "started",
+                        ],
+                        "RZPB" => [
+                            "status" => "started",
+                        ],
+                        'HDFC' => [
+                            'status' => "started"
+                        ],
+                    ]
+            ];
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfig]);
+
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $payoutFinal1 = $this->getDbEntityById('payout', $payout1['id'])->toArray();
+        $payoutFinal2 = $this->getDbEntityById('payout', $payout2['id'])->toArray();
+
+        $this->assertEquals(Payout\Status::ON_HOLD, $payoutFinal1['status']);
+        $this->assertEquals(Payout\QueuedReasons::BENE_BANK_DOWN, $payoutFinal1['queued_reason']);
+
+        $this->assertEquals(Payout\Status::ON_HOLD, $payoutFinal2['status']);
+        $this->assertEquals(Payout\QueuedReasons::BENE_BANK_DOWN, $payoutFinal2['queued_reason']);
+
+        // tear down
+        $testDataDowntime['payload']['status'] = 'uptime';
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
+        $benebankConfigResolved =
+            [
+                "BENEFICIARY" =>
+                    [
+                        "SBIN" => [
+                            "status" => "resolved",
+                        ],
+                        "RZPB" => [
+                            "status" => "resolved",
+                        ],
+                        'HDFC' => [
+                            'status' => "resolved"
+                        ],
+                    ]
+            ];
+        (new Admin\Service)->setConfigKeys([Admin\ConfigKey::RX_EVENT_NOTIFICAITON_CONFIG_FTS_TO_PAYOUT => $benebankConfigResolved]);
+
+    }
+
+    public function testDashboardSummaryWithPartnerBankOnHoldPayout()
+    {
+        $this->setMockRazorxTreatment([RazorxTreatment::PARTNER_BANK_ON_HOLD_PAYOUT      => 'on']);
+
+        $this->ba->privateAuth();
+
+        $testDataDowntime = [
+            "payload" => [
+                "mode" => "IMPS",
+                "account_type"=>"direct",
+                "channel" => "RBL",
+                "status" => "downtime",
+                "include_merchants"=> ["ALL"],
+                "exclude_merchants" => [],
+            ]
+        ];
+        $this->createOnHoldPayoutPartnerBankDown($testDataDowntime);
+
+        $merchantUser = $this->getDbEntity('merchant_user', ['role' => 'owner', 'product' => 'banking'], 'live')->toArray();
+
+        $userId = $merchantUser['user_id'];
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $userId);
+
+        $completeSummary = $this->startTest();
+        $this->assertEquals(10000000, $completeSummary['bacc_xba00000000000']['queued']['partner_bank_degraded']['balance']);
+        $this->assertEquals(2000000, $completeSummary['bacc_xba00000000000']['queued']['partner_bank_degraded']['total_amount']);
+        $this->assertEquals(1, $completeSummary['bacc_xba00000000000']['queued']['partner_bank_degraded']['count']);
+
+        // tear down
+        $testDataDowntime['payload']['status'] = 'uptime';
+        $this->setDowntimeInformationForOnHold($testDataDowntime);
     }
 }
