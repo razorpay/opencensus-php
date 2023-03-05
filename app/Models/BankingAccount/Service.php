@@ -23,6 +23,7 @@ use RZP\Services\CapitalCardsClient;
 use RZP\Models\BankingAccountService;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
+use Razorpay\Spine\Exception\DbQueryException;
 use RZP\Mail\BankingAccount\UpdatesForAuditor;
 use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Models\BankingAccount\Gateway\Rbl\Fields;
@@ -1355,7 +1356,20 @@ class Service extends Base\Service
                 Entity::MERCHANT_ID    => $merchantId
             ]);
 
-        $bankingAccount = $this->repo->banking_account->getBankingAccountWithBalanceViaAccountNumberAndMerchantId($accountNumber, $merchantId);
+        try
+        {
+            $bankingAccount = $this->repo->banking_account->getBankingAccountWithBalanceViaAccountNumberAndMerchantId($accountNumber, $merchantId);
+        }
+        catch (\Exception $ex)
+        {
+            if ($ex instanceof DbQueryException)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, null, 'No db records found.');
+            }
+
+            throw $ex;
+        }
 
         $this->trace->info(
             TraceCode::FETCHED_BANKING_ACCOUNT_FOR_PAYOUT_SERVICE,
@@ -1399,7 +1413,20 @@ class Service extends Base\Service
                     Entity::BALANCE_ID => $balanceId
                 ]);
 
-            $bankingAccount = $this->repo->banking_account->getFromBalanceIdOrFail($balanceId);
+            try
+            {
+                $bankingAccount = $this->repo->banking_account->getFromBalanceIdOrFail($balanceId);
+            }
+            catch (\Exception $ex)
+            {
+                if ($ex instanceof DbQueryException)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, null, 'No db records found.');
+                }
+
+                throw $ex;
+            }
 
             $response = [
                 Entity::ID                  => $bankingAccount->getId(),
