@@ -398,49 +398,54 @@ class Activate extends Base\Core
         }
     }
 
-    protected function updateLedger(Entity $merchant)
+    public function updateLedger(Entity $merchant)
     {
-        $merchantDetail = $merchant->merchantDetail;
+        if ($this->shouldOnboardToLedger($merchant) === true)
+        {
+            $balance = $this->repo->balance->getBalanceLockForUpdate(
+                $merchant->getId());
 
-        $isExperimentEnabledForLedgerPGMerchant = (new Merchant\Core)->isRazorxExperimentEnable($merchantDetail->getMerchantId(),
+            //fetches fee and amount credits from credits table
+            $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchant->getId());
+
+            $isPgLedgerAccountCreated = (new LedgerCore())->createPGLedgerAccount(
+                $merchant,
+                $this->mode,
+                $balance->getBalance(),
+                $creditBalances
+            );
+
+            if ($isPgLedgerAccountCreated === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+            {
+                (new FeatureCore)->create(
+                    [
+                        FeatureEntity::ENTITY_TYPE   => EntityConstants::MERCHANT,
+                        FeatureEntity::ENTITY_ID     => $merchant->getId(),
+                        FeatureEntity::NAME          => Constants::PG_LEDGER_JOURNAL_WRITES,
+                    ]);
+            }
+
+            $this->trace->info(TraceCode::LEDGER_ONBOARDING_PG_MERCHANT, [
+                "merchantId"                => $merchant->getId(),
+                "isPgLedgerAccountCreated"  => $isPgLedgerAccountCreated
+            ]);
+        }
+    }
+
+    protected function shouldOnboardToLedger(Entity $merchant): bool
+    {
+        $isExperimentEnabledForLedgerPGMerchant = (new Merchant\Core)->isRazorxExperimentEnable($merchant->getId(),
             RazorxTreatment::LEDGER_ONBOARDING_PG_MERCHANT);
 
-        if($isExperimentEnabledForLedgerPGMerchant === true) {
-
-           if($merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)
-           {
-               $balance = $this->repo->balance->getBalanceLockForUpdate(
-                   $merchant->getId());
-
-               //fetches fee and amount credits from credits table
-               $creditBalances = $this->repo->credits->getTypeAggregatedMerchantCreditsLockForUpdate($merchant->getId());
-
-               $isPgLedgerAccountCreated = (new LedgerCore())->createPGLedgerAccount(
-                   $merchant,
-                   $this->mode,
-                   $balance->getBalance(),
-                   $creditBalances
-               );
-
-               if($isPgLedgerAccountCreated === true and $merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)
-               {
-                   (new FeatureCore)->create(
-                       [
-                           FeatureEntity::ENTITY_TYPE  => EntityConstants::MERCHANT,
-                           FeatureEntity::ENTITY_ID    => $merchant->getId(),
-                           FeatureEntity::NAME         => Constants::PG_LEDGER_JOURNAL_WRITES,
-                       ]);
-               }
-
-               $this->trace->info(TraceCode::LEDGER_ONBOARDING_PG_MERCHANT,[
-                   "merchantId"                  => $merchantDetail->getMerchantId(),
-                   "isExpEnable"                 => $isExperimentEnabledForLedgerPGMerchant,
-                   "isPgLedgerAccountCreated"    => $isPgLedgerAccountCreated
-               ]);
-
-           }
-
+        if($isExperimentEnabledForLedgerPGMerchant === true and $merchant->getCountry() === "IN")
+        {
+            if ($merchant->isFeatureEnabled(Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+            {
+                return true;
+            }
         }
+
+        return false;
     }
 
     /**

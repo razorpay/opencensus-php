@@ -1958,6 +1958,19 @@ class MerchantTest extends TestCase
         $this->assertFalse($userEntity->isSecondFactorAuthEnforced());
     }
 
+    public function testUpdateLedgerForMalaysianMerchant()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+        $merchant       = $merchantDetail->merchant;
+
+        $this->setMockRazorxTreatment(['ledger_onboarding_pg_merchant' => 'on']);
+
+        $merchant = $this->fixtures->merchant->edit($merchant['id'], ['country_code' => "MY"]);
+        $response = (new Merchant\Activate)->updateLedger($merchant);
+
+        $this->assertNull($response);
+    }
+
     public function testEditMerchantEditGroups()
     {
         $merchant = $this->createMerchant();
