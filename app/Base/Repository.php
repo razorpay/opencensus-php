@@ -67,6 +67,7 @@ class Repository extends \Razorpay\Spine\Repository
     const ADMIN_TIDB_EXPERIMENT_REFUNDS = 'admin_tidb_experiment_refunds';
 
     const WDA_MIGRATION_ADMIN = 'wda_migration_admin';
+    const WDA_PAYMENT_FETCH_MULTIPLE_MIGRATION = 'wda_payment_fetch_multiple_migration';
 
     protected $app;
 

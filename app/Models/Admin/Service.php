@@ -370,7 +370,7 @@ class Service extends Base\Service
                         ]);
                     }
                 }
-                catch(\Exception $ex)
+                catch(\Throwable $ex)
                 {
                     $this->trace->error(TraceCode::WDA_SERVICE_LOGGING_ERROR, [
                         'error_message'    => $ex->getMessage(),
@@ -916,7 +916,7 @@ class Service extends Base\Service
                 ]);
             }
         }
-        catch(\Exception $ex)
+        catch(\Throwable $ex)
         {
             $this->trace->error(TraceCode::WDA_SERVICE_LOGGING_ERROR, [
                 'error_message'    => $ex->getMessage(),

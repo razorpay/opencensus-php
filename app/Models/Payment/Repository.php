@@ -27,6 +27,7 @@ use RZP\Base\BuilderEx;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
+use RZP\Services\WDAService;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
@@ -55,6 +56,7 @@ use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 use RZP\Models\Merchant\Detail as MerchantDetail;
 use Rzp\Wda_php\Symbol;
+use Rzp\Wda_php\WDAQueryBuilder;
 
 class Repository extends Base\Repository
 {
@@ -462,7 +464,7 @@ EOT;
                 ]);
             }
         }
-        catch(\Exception $ex)
+        catch(\Throwable $ex)
         {
             $this->trace->error(TraceCode::WDA_SERVICE_LOGGING_ERROR, [
                 'error_message'    => $ex->getMessage(),
@@ -577,6 +579,27 @@ EOT;
         // result.
         $query = $this->buildFetchQuery($query, $mysqlParams);
 
+        // Check if the connection is going to Tidb cluster and form the query object
+        // for WDA.
+        $isWda = false;
+
+        if($this->checkWdaRouteForFetchPayment($expands, $this->getWdaConnectionType($connection)) === true)
+        {
+            try
+            {
+                $wdaQueryBuilder = $this->buildWdaQuery($query, $connection, $merchantId, $mysqlParams);
+
+                $isWda = true;
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                    'wda_query_builder_error' => $ex->getMessage(),
+                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
+        }
+
         //
         // For now, we want to expose this only for proxy auth.
         // We would want to expose this to private auth as well
@@ -588,6 +611,33 @@ EOT;
         if ($this->auth->isProxyAuth() === true)
         {
             $result = $this->getPaginated($query, $params);
+
+            //Adding pagination for call going to tidb via wda-service
+            if($isWda === true)
+            {
+                try
+                {
+                    $wdaStartTimeMs = round(microtime(true) * 1000);
+
+                    $wdaResult = $this->getPaginatedFromWDA($wdaQueryBuilder, $query, $params);
+
+                    $difference = $this->compareAndLogEntitiesInShadowMode($wdaResult, $result, $wdaStartTimeMs);
+
+                    if($difference === false)
+                    {
+                        $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, "WDA");
+
+                        return $wdaResult;
+                    }
+                }
+                catch(\Throwable $ex)
+                {
+                    $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                        'wda_migration_error_pagination' => $ex->getMessage(),
+                        'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                    ]);
+                }
+            }
 
             $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection);
 
@@ -601,6 +651,33 @@ EOT;
             $entities = $query->get();
 
             $endTimeMs = round(microtime(true) * 1000);
+
+            //When the auth type does not requires pagination
+            if($isWda === true)
+            {
+                try
+                {
+                    $wdaStartTimeMs = round(microtime(true) * 1000);
+
+                    $wdaEntities = $this->getEntitiesFromWda($wdaQueryBuilder, $query);
+
+                    $difference = $this->compareAndLogEntitiesInShadowMode($wdaEntities, $entities, $wdaStartTimeMs);
+
+                    if($difference === false)
+                    {
+                        $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, "WDA");
+
+                        return $wdaEntities;
+                    }
+                }
+                catch(\Throwable $ex)
+                {
+                    $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                        'wda_migration_error' => $ex->getMessage(),
+                        'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                    ]);
+                }
+            }
 
             $queryDuration = $endTimeMs - $startTimeMs;
 
@@ -629,6 +706,44 @@ EOT;
 
             throw $e;
         }
+    }
+
+    protected function buildWdaQuery($query, $connection, $merchantId, $mysqlParams) : WDAQueryBuilder
+    {
+        $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
+            'method_name' => __FUNCTION__,
+            'route_name'  =>  $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        $wdaQueryBuilder = new WDAQueryBuilder();
+
+        $wdaQueryBuilder->addQuery($this->getTableName(), '*')
+            ->resources($this->getTableName());
+        $wdaQueryBuilder->namespace($query->getConnection()->getDatabaseName());
+
+        if ($this->app['env'] === Environment::PRODUCTION)
+        {
+            $connectionType = $this->getWdaConnectionType($connection);
+
+            if($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT)
+            {
+                $wdaQueryBuilder->cluster(WDAService::MERCHANT_CLUSTER);
+            }
+            else
+            {
+                $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+            }
+        }
+        else
+        {
+            $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+        }
+
+        $this->addCommonWDAQueryParamMerchantId($wdaQueryBuilder, $merchantId);
+
+        $this->buildWDAFetchQuery($wdaQueryBuilder, $mysqlParams);
+
+        return $wdaQueryBuilder;
     }
 
     public function fetchEmiPaymentsWithRelationsBetween($from, $to, $bank, $relations)
@@ -3790,5 +3905,21 @@ EOT;
             ->with('card.globalCard', 'emiPlan', 'merchant', 'terminal')
             ->select($paymentData)
             ->get();
+    }
+
+    private function getWdaConnectionType(string $connection)
+    {
+        if($connection === Connection::DATA_WAREHOUSE_ADMIN_TEST or $connection === Connection::DATA_WAREHOUSE_ADMIN_LIVE)
+        {
+            return ConnectionType::DATA_WAREHOUSE_ADMIN;
+        }
+        else if($connection === Connection::DATA_WAREHOUSE_MERCHANT_TEST or $connection === Connection::DATA_WAREHOUSE_MERCHANT_LIVE)
+        {
+            return ConnectionType::DATA_WAREHOUSE_MERCHANT;
+        }
+        else
+        {
+           return  ConnectionType::REPLICA;
+        }
     }
 }

@@ -9082,6 +9082,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WDA_FETCH_PAYMENT_WITH_FORCE_INDEX             = 'WDA_FETCH_PAYMENT_WITH_FORCE_INDEX';
     const WDA_ADMIN_SCORECARD                            = 'WDA_ADMIN_SCORECARD';
     const WDA_GET_PAYMENT_FAILURE_ANALYSIS               = 'WDA_GET_PAYMENT_FAILURE_ANALYSIS';
+    const WDA_SHADOW_MODE_LOG                            = 'WDA_SHADOW_MODE_LOG';
+    const ES_WDA_RESULTS_MISMATCH                        = 'ES_WDA_RESULTS_MISMATCH';
     const WDA_HANDLE_EXTERNAL_ENTITY                     = 'WDA_HANDLE_EXTERNAL_ENTITY';
 
     //3DS2.0 callback view experiment

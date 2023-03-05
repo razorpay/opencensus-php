@@ -16707,15 +16707,15 @@ class Route
     ];
 
     public static $fetchFromWDAService = [
-        'admin_fetch_entity_by_id',
-        'admin_fetch_entity_multiple',
-        'payment_fetch_multiple',
-        'scorecard',
-        'merchant_fetch_payment_failure_analysis',
-        'order_fetch',
-        'order_payments',
-        'transaction_statement_fetch_multiple_for_banking',
-        'external_admin_fetch_entity_multiple',
+        'scorecard'                                        =>  'wda_scoreboard_migration',
+        'order_fetch'                                      =>  'wda_order_fetch_migration',
+        'order_payments'                                   =>  'wda_order_payments_migration',
+        'payment_fetch_multiple'                           =>  'wda_payment_fetch_multiple_migration',
+        'admin_fetch_entity_by_id'                         =>  'wda_migration_admin',
+        'admin_fetch_entity_multiple'                      =>  'wda_migration_admin',
+        'external_admin_fetch_entity_multiple'             =>  'wda_migration_admin',
+        'merchant_fetch_payment_failure_analysis'          =>  'wda_merchant_fetch_payment_failure_analysis_migration',
+        'transaction_statement_fetch_multiple_for_banking' =>  'wda_transaction_statement_fetch_multiple_for_banking_migration',
     ];
 
     /**
@@ -17048,7 +17048,14 @@ class Route
     {
         $routeName = $this->getCurrentRouteName();
 
-        return (in_array($routeName, self::$fetchFromWDAService) === true);
+        return array_key_exists($routeName, self::$fetchFromWDAService);
+    }
+
+    public function getWdaRouteExperimentName()
+    {
+        $routeName = $this->getCurrentRouteName();
+
+        return self::$fetchFromWDAService[$routeName];
     }
 
     /**
