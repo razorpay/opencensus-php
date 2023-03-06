@@ -7,10 +7,9 @@ import imageInfoIcon from 'assets/partner-dashboard/info-icon.png';
 import { merchantFetch } from 'merchant/utils/ajax';
 import BusinessTypeInfo from './BusinessTypeInfo';
 import Loader from 'common/ui/Loader';
+import { Modal, ModalBody } from 'common/components/Modal';
 import { trackWithSegment } from 'newAuth/trackEvents';
 import isEmpty from '@universe/utils/isEmpty';
-import { isMobileAndTablet } from 'common/utils/rzp-utils';
-import BottomSheet from 'common/components/BottomSheet';
 import {
   StyledStepWrapper,
   StyledTitle,
@@ -20,19 +19,15 @@ import {
   StyledTilesAll,
   StyledBtypeLabel,
   StyledInfoIcon,
+  StyledForm,
 } from './styled';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
 
-const BusinessTypeSelection = ({
-  setStep,
-  openModal,
-  closeModal,
-  showNotification,
-  contactName,
-}) => {
+const BusinessTypeSelection = ({ setStep, closeModal, showNotification, contactName }) => {
   const [registered, setRegistered] = useState(null);
   const [unregistered, setUnregistered] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isBottomSheetOpen, setIsBottomSheetOpen] = useState(false);
+  const [businessInfoData, setBusinessInfoData] = useState(false);
 
   useEffect(() => {
     trackWithSegment({
@@ -59,12 +54,11 @@ const BusinessTypeSelection = ({
       actionName: 'Clicked',
       location: SCREEN_NAME[STEPS.BUSINESS_TYPE_SELECTION],
     });
-    if (isMobileAndTablet()) setIsBottomSheetOpen(true);
-    else
-      openModal({
-        size: 'signup-info',
-        component: <BusinessTypeInfo label={label} closeModal={closeModal} />,
-      });
+    setBusinessInfoData({ isOpen: true, label });
+  };
+  const onModalClose = () => {
+    setBusinessInfoData((data) => ({ ...data, isOpen: false }));
+    closeModal();
   };
 
   const onCTAClick = (businessType) => {
@@ -110,8 +104,8 @@ const BusinessTypeSelection = ({
   return (
     <Formik initialValues={{}} validationSchema={businessTypeSelectionSchema} onSubmit={noop}>
       {(formikProps) => (
-        <form onChange={formikProps.handleChange}>
-          <StyledStepWrapper>
+        <StyledForm onChange={formikProps.handleChange}>
+          <StyledStepWrapper $marginBottom="5%">
             <StyledTitle onClick={closeModal}>Select Business Type</StyledTitle>
             <StyledSubtitle>Pick only one that applies to your business</StyledSubtitle>
             {!unregistered || !registered ? (
@@ -172,10 +166,18 @@ const BusinessTypeSelection = ({
             disabled={isLoading || !isEmpty(formikProps.errors) || isEmpty(formikProps.touched)}
             isLoading={isLoading}
           />
-          <BottomSheet isOpen={isBottomSheetOpen}>
-            <BusinessTypeInfo closeModal={closeModal} />
-          </BottomSheet>
-        </form>
+
+          <Modal
+            bottomsheet={isMobileAndTablet()}
+            bottomSheetHeight="430px"
+            isOpen={businessInfoData.isOpen}
+            onClose={onModalClose}
+          >
+            <ModalBody>
+              <BusinessTypeInfo label={businessInfoData.label} />
+            </ModalBody>
+          </Modal>
+        </StyledForm>
       )}
     </Formik>
   );

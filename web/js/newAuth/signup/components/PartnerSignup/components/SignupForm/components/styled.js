@@ -15,7 +15,7 @@ export const StyledFormWrap = styled.div`
   letter-spacing: 0.25px;
 
   @media ${media.mobileTabMax} {
-    padding: 0px;
+    padding: 0;
     position: static;
     left: 0;
     right: 0;
@@ -24,14 +24,14 @@ export const StyledFormWrap = styled.div`
     margin: 26px auto;
     width: 90%;
     border-radius: 5px;
-    height: auto;
+    height: 85%;
   }
 `;
 
 export const StyledFormContentWrap = styled.div`
   position: relative;
   height: 100%;
-  padding: 0px 74px;
+  padding: 0 74px;
   @media ${media.mobileTabMax} {
     padding: 0;
   }
@@ -40,7 +40,15 @@ export const StyledFormContentWrap = styled.div`
 export const StyledFormContent = styled.div`
   @media ${media.mobileTabMax} {
     padding: 0 24px;
+    height: 93%;
   }
+`;
+
+export const StyledForm = styled.form`
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
 `;
 
 export const StyledProgressBarContainer = styled.div`
@@ -71,14 +79,14 @@ export const StyledProgressBarSkill = styled.div(
 );
 
 export const StyledStepWrapper = styled.div(
-  ({ theme }) => `
+  ({ theme, $marginBottom = '44%', $mobileOverflow = 'auto' }) => `
     text-align: center;
-    padding: 0px 30px;
+    padding: 0 30px;
 
     .resend-otp {
       text-align: left;
-      margin: 16px 0px 4px;
-      font-size: ${theme.typography.fonts.size[200]}px;
+      margin: 16px 0 4px;
+      font-size: ${theme.typography.fonts.size[100]}px;
       font-weight: ${theme.typography.fonts.weight.bold};
       color: #435775;
 
@@ -90,7 +98,7 @@ export const StyledStepWrapper = styled.div(
         cursor: default;
         font-weight: ${theme.typography.fonts.weight.regular};
         font-size: 11px;
-        line-height: 16px;
+        line-height: 20px;
         text-align: left;
         color: #8895A8;
       }
@@ -109,8 +117,9 @@ export const StyledStepWrapper = styled.div(
     @media ${media.mobileTabMax} {
       text-align: left;
       padding: 0 16px 0 0;
-      margin-bottom: 64%;
+      margin-bottom: ${$marginBottom};
       min-height: 225px;
+      overflow: ${$mobileOverflow};
 
       .resend-otp {
         margin: 10px 0;
@@ -129,6 +138,7 @@ export const StyledTitle = styled.div(
     margin-bottom: 16px;
     text-align: center;
     @media ${media.mobileTabMax} {
+      margin-bottom: 4px;
       text-align: left;
     }
   `,
@@ -151,6 +161,10 @@ export const StyledSubtitle = styled.div(
       &:hover {
         text-decoration: underline;
       }
+
+      @media ${media.mobileTabMax} {
+        font-size: ${theme.typography.fonts.size[100]}px;
+      }
     }
 
     .mobile-num {
@@ -158,12 +172,11 @@ export const StyledSubtitle = styled.div(
       margin-right: 6px;
     }
     @media ${media.mobileTabMax} {
-      font-weight: ${theme.typography.fonts.weight.regular};
-      font-size: ${theme.typography.fonts.size[200]}px;
-      color: #435775;
+      font-size: ${theme.typography.fonts.size[100]}px;
+      text-align: left;
+      line-height: 20px;
       margin-bottom: 44px;
       width: 100%;
-      text-align: left;
       margin-left: 0;
       margin-right: 0;
     }
@@ -180,7 +193,6 @@ export const StyledTileWrap = styled.div(
 
     @media ${media.mobileTabMax} {
       margin: 0;
-      width: 80%;
     }
   `,
 );
@@ -219,8 +231,11 @@ export const StyledFooterWrap = styled.div(
   left: 100px;
 
   @media ${media.mobileTabMax} {
-    left: inherit;
-    position: inherit;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: 93%;
   }
 
   .btn-wrap {
@@ -239,7 +254,7 @@ export const StyledFooterWrap = styled.div(
     color: rgba(22, 47, 86, 0.54);
 
     @media ${media.mobileTabMax} {
-      margin: 16px 0px;
+      margin: 16px 0;
     }
   }
   .blue-link {
@@ -253,7 +268,7 @@ export const StyledCheckboxWrapper = styled.div`
   display: flex;
   margin: 16px auto;
   @media ${media.mobileTabMax} {
-    margin: 16px auto;
+    margin: 18px auto;
   }
 `;
 export const StyledOptInCheckbox = styled(Checkbox)``;
@@ -264,6 +279,13 @@ export const StyledBTypeInfoWrap = styled.div`
   position: relative;
   width: 428px;
   height: 418px;
+
+  @media ${media.mobileTabMax} {
+    padding: 42px 0 0;
+    width: 100%;
+    font-family: 'Lato';
+    height: 100%;
+  }
 `;
 
 export const StyledBTypeInfoHeading = styled.div(
@@ -322,12 +344,12 @@ export const StyledBtypeLabel = styled.div(
 export const StyledIconWrap = styled.img`
   width: 16px;
   float: right;
-  margin: 3px 4px;
+  margin: 5px 4px;
 `;
 
 export const StyledInfoIcon = styled.span`
   cursor: pointer;
-  margin: 0px 6px;
+  margin: 0 6px;
 `;
 
 export const StyledErrorContent = styled.div(
@@ -343,7 +365,7 @@ export const StyledErrorContent = styled.div(
     }
 
     .error-screen-title {
-      margin: 24px 0px;
+      margin: 24px 0;
       font-weight: ${theme.typography.fonts.weight.bold};
       font-size: 24px;
       color: #162F56;
@@ -366,6 +388,8 @@ export const StyledPartnerTypeTiles = styled.div(
   width: 138%;
 
   @media ${media.mobileTabMax} {
+    margin-left: 0;
+    width: 100%;
     .desktop-only{
       display: none;
     }
@@ -383,7 +407,7 @@ export const StyledPartnerTypeTiles = styled.div(
     cursor: pointer;
     background: linear-gradient(to right, #D4E0FC 4.6%, #FFFFFF 4.6%);
     padding-left: 4.6%;
-    margin-bottom: 4%;
+    margin-bottom: 8%;
     transition: background 1s linear;
 
     &.active,
@@ -397,6 +421,17 @@ export const StyledPartnerTypeTiles = styled.div(
       margin-left: 11px;
       margin-right: 11px;
       position: relative;
+
+      
+      @media ${media.mobileTabMax} {
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-start; 
+      }
+
+      img {
+        margin-top: 6px;
+      }
 
       .pts-image {
         width: 12%;
@@ -414,6 +449,10 @@ export const StyledPartnerTypeTiles = styled.div(
         line-height: 22px;
         width: 88%;
         display: inline-block;
+
+        @media ${media.mobileTabMax} {
+          margin-left: 5px;
+        }
 
         .pts-heading {
           display: block;
@@ -469,4 +508,8 @@ export const StyledTopRightClose = styled.div`
   cursor: pointer;
   color: #6a788c;
   border-radius: 16px;
+
+  @media ${media.mobileTabMax} {
+    display: none;
+  }
 `;

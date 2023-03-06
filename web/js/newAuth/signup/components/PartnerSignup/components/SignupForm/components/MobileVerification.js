@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import { TextInput, Text } from '@razorpay/blade/components';
 import { Formik } from 'formik';
 import StepFooter from './StepFooter';
-import { StyledStepWrapper, StyledTitle, StyledSubtitle, StyledInputWrapper } from './styled';
+import {
+  StyledStepWrapper,
+  StyledTitle,
+  StyledSubtitle,
+  StyledInputWrapper,
+  StyledForm,
+} from './styled';
 import {
   STEPS,
   SCREEN_NAME,
@@ -143,12 +149,12 @@ const MobileVerification = ({
   return (
     <Formik initialValues={{}} validationSchema={mobileVerificationSchema} onSubmit={() => {}}>
       {(formikProps) => (
-        <form onChange={formikProps.handleChange}>
+        <StyledForm onChange={formikProps.handleChange}>
           <StyledStepWrapper>
             <StyledTitle>Verify your Mobile</StyledTitle>
             <StyledSubtitle>
               A text message with an OTP has been sent to{' '}
-              <span className="mobile-num">+91 {mobileNumber}</span>&nbsp;
+              <span className="mobile-num">+91&nbsp;{mobileNumber}</span>&nbsp;
               <span
                 className="change-text"
                 onClick={() => {
@@ -175,13 +181,17 @@ const MobileVerification = ({
                     ? 'Entered OTP is incorrect. Kindly try another number or try again after sometime'
                     : formikProps.errors.otp
                 }
-                validationState={formikProps.errors.otp ? 'error' : false}
+                validationState={
+                  formikProps.errors.otp || otpError === 'wrong_otp' ? 'error' : false
+                }
               />
             </StyledInputWrapper>
 
             {isTimerRunning && !isLoading ? (
               <Text size="small" color="shade.950">
-                <div className="resend-otp text-success">OTP Successfully Sent</div>
+                {otpError !== 'wrong_otp' && (
+                  <div className="resend-otp text-success">OTP Successfully Sent</div>
+                )}
                 <div className="resend-otp help-text">Resend OTP after {timerText}</div>
               </Text>
             ) : (
@@ -205,7 +215,7 @@ const MobileVerification = ({
             onClick={() => onCTAClick(formikProps.values.otp)}
             disabled={!isEmpty(formikProps.errors) || isEmpty(formikProps.values.otp)}
           />
-        </form>
+        </StyledForm>
       )}
     </Formik>
   );

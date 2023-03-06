@@ -1,11 +1,9 @@
 import React from 'react';
-import { CloseIcon } from '@razorpay/blade/components';
 import {
   StyledBTypeInfoWrap,
   StyledBTypeInfoHeading,
   StyledBTypeHeading,
   StyledBTypeDescription,
-  StyledTopRightClose,
 } from './styled';
 
 const RegisteredContent = () => (
@@ -31,11 +29,8 @@ const UnregisteredContent = () => (
     </StyledBTypeDescription>
   </>
 );
-const BusinessTypeInfo = ({ label, closeModal }) => (
+const BusinessTypeInfo = ({ label }) => (
   <StyledBTypeInfoWrap>
-    <StyledTopRightClose onClick={closeModal}>
-      <CloseIcon color="feedback.icon.neutral.lowContrast" size="medium" />
-    </StyledTopRightClose>
     <StyledBTypeInfoHeading>Business Type</StyledBTypeInfoHeading>
     {label === 'reg' ? (
       <>

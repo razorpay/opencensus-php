@@ -31,18 +31,10 @@ export const sendEmailOTP = (payload) => {
     method: 'POST',
     data: payload,
     mode: 'live',
-  }).then(({ data }) => {
-    if (data.success) return data;
-    throw data;
   });
 };
 export const verifyEmailOTP = (payload) => {
-  return merchantFetch({ url: 'users/verify_email', method: 'POST', data: payload }).then(
-    ({ data }) => {
-      if (data.success) return data;
-      throw data;
-    },
-  );
+  return merchantFetch({ url: 'users/verify_email', method: 'POST', data: payload });
 };
 
 export const userPreSignup = (data) => {
@@ -64,9 +56,6 @@ export const updatePartnerTypeAndConsent = (partnerType) => {
       partner_type: partnerType,
       consent: 1,
     },
-  }).then(({ data }) => {
-    if (data.success) return data;
-    throw data;
   });
 };
 

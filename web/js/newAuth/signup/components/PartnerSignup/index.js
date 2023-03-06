@@ -21,6 +21,7 @@ import { isOnboardAllAsResellers } from 'newAuth/splitz/index';
 const PartnerSignup = ({ openModal, closeModal, showNotification }) => {
   const [step, setStep] = useState(STEPS.MOBILE_NUMBER);
   const [contactEmail, setContactEmail] = useState(null);
+  const [emailToken, setEmailToken] = useState(null);
   useEffect(() => {
     trackWithSegment({
       objectName: 'Signup',
@@ -42,6 +43,7 @@ const PartnerSignup = ({ openModal, closeModal, showNotification }) => {
         <CongratsForm
           contactEmail={contactEmail}
           setContactEmail={setContactEmail}
+          setEmailToken={setEmailToken}
           setStep={setStep}
           showNotification={showNotification}
           onboardAllAsResellerFlag={onboardAllAsResellerFlag}
@@ -50,7 +52,9 @@ const PartnerSignup = ({ openModal, closeModal, showNotification }) => {
         <>
           <SignupHeader step={step} setStep={setStep} />
           <SignupForm
+            emailToken={emailToken}
             step={step}
+            setEmailToken={setEmailToken}
             setStep={setStep}
             contactEmail={contactEmail}
             closeModal={closeModal}

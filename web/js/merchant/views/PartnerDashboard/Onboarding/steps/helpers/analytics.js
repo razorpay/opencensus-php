@@ -5,7 +5,7 @@ export const getOnContactSupportClicked = (screenName, handleOtherCTAClicks) => 
   handleOtherCTAClicks('Contact Support');
 
   analyticsTrack({
-    objectName: 'Partner Type Contact Support',
+    objectName: 'Partner Contact Support',
     actionName: 'clicked',
     screen: screenName,
     properties: {

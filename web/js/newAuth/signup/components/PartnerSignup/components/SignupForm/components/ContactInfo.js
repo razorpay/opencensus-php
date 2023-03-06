@@ -5,7 +5,13 @@ import { Formik } from 'formik';
 import StepFooter from './StepFooter';
 import { trackWithSegment } from 'newAuth/trackEvents';
 import isEmpty from '@universe/utils/isEmpty';
-import { StyledStepWrapper, StyledTitle, StyledInputWrapper } from './styled';
+import {
+  StyledStepWrapper,
+  StyledTitle,
+  StyledSubtitle,
+  StyledInputWrapper,
+  StyledForm,
+} from './styled';
 
 const ContactInfo = ({ setStep, setContactName }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -44,9 +50,10 @@ const ContactInfo = ({ setStep, setContactName }) => {
   return (
     <Formik initialValues={{}} validationSchema={contactInfoSchema} onSubmit={noop}>
       {(formikProps) => (
-        <form onChange={formikProps.handleChange}>
+        <StyledForm onChange={formikProps.handleChange}>
           <StyledStepWrapper>
             <StyledTitle>Enter contact details</StyledTitle>
+            <StyledSubtitle />
 
             <StyledInputWrapper>
               <TextInput
@@ -70,7 +77,7 @@ const ContactInfo = ({ setStep, setContactName }) => {
             isLoading={isLoading}
             disabled={!isEmpty(formikProps.errors) || isEmpty(formikProps.touched)}
           />
-        </form>
+        </StyledForm>
       )}
     </Formik>
   );

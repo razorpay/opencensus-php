@@ -30,6 +30,10 @@ const GlobalStyle = createGlobalStyle`
     height: 100%;
     margin: 0;
   }
+  
+  div#react-root > div:first-child {
+    height: 100%;
+  }
 `;
 
 const App = () => {

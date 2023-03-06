@@ -24,7 +24,7 @@ export default ({ onClick, ctaText, disabled, isLoading }) => {
             });
           }}
         >
-          terms of use
+          terms&nbsp;of&nbsp;use
         </a>{' '}
         and{' '}
         <a
@@ -39,7 +39,7 @@ export default ({ onClick, ctaText, disabled, isLoading }) => {
             });
           }}
         >
-          privacy policy
+          privacy&nbsp;policy
         </a>
       </div>
     </StyledFooterWrap>

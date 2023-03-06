@@ -3,6 +3,7 @@ import { media } from 'newAuth/breakpoints';
 
 export const StyledErrorModalWrap = styled.div(
   ({ theme }) => `
+  font-family: 'Lato';
   padding: 60px 40px 60px 40px;
   color: #213554;
   position: relative;
@@ -14,6 +15,12 @@ export const StyledErrorModalWrap = styled.div(
     font-size: 20px;
     line-height: 28px;
     margin-bottom: 20px;
+
+    @media ${media.mobileTabMax} {
+      font-size: 16px;
+      line-height: 24px;
+    }
+
   }
 
   .error-desc {
@@ -21,6 +28,11 @@ export const StyledErrorModalWrap = styled.div(
     font-size: ${theme.typography.fonts.size[100]}px;
     line-height: 20px;
     margin-bottom: 36px;
+
+    @media ${media.mobileTabMax} {
+      font-weight: 400;
+      font-size: 14px;
+    }
   }
 
   .error-btn-wrap {
@@ -29,6 +41,10 @@ export const StyledErrorModalWrap = styled.div(
     width: 80%;
     margin: 0 auto;
 
+    @media ${media.mobileTabMax} {
+      width: 100%;
+    }
+
     .sec-btn-wrap {
       width: 48%;
       margin: auto;
@@ -36,6 +52,10 @@ export const StyledErrorModalWrap = styled.div(
       font-weight: ${theme.typography.fonts.weight.bold};
       font-size: ${theme.typography.fonts.size[200]}px;
       cursor: pointer;
+
+      @media ${media.mobileTabMax} {
+        text-align: center;
+      }
     }
 
     .primary-btn-wrap {
@@ -44,7 +64,9 @@ export const StyledErrorModalWrap = styled.div(
   }
 
   @media ${media.mobileTabMax} {
-    display: none;
+    padding: 28px 0 0;
+    width: 100%;
+    height: 100%;
   }
 `,
 );

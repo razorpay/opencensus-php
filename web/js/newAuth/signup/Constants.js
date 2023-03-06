@@ -75,7 +75,7 @@ export const contactInfoSchema = Yup.object().shape({
       message: 'Enter valid contact name',
       excludeEmptyString: true,
     })
-    .min(4, 'Name must be of atleast 4 characters')
+    .min(3, 'Name must be of atleast 3 characters')
     .required('Required Field'),
 });
 
@@ -84,7 +84,7 @@ export const congratsFormSchema = Yup.object().shape({
 });
 
 export const emailVerificationSchema = Yup.object().shape({
-  otp: Yup.string()
+  emailOtp: Yup.string()
     .trim()
     .matches(/^[\d]{6}$/, {
       message: 'Enter 6 digit OTP',
@@ -99,3 +99,4 @@ export const partnerTypeSelectionSchema = Yup.object().shape({
 
 export const MOBILE_INCORRECT_OTP_ERROR_DESC = 'Verification failed because of incorrect OTP.';
 export const EMAIL_INCORRECT_OTP_ERROR_DESC = 'Verification failed because of incorrect OTP.';
+export const EMAIL_ALREADY_TAKEN_ERROR_DESC = 'That email is already taken.';

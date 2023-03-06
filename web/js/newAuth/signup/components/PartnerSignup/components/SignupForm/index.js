@@ -24,7 +24,9 @@ const {
 } = STEPS;
 
 const SignupForm = ({
+  emailToken,
   step,
+  setEmailToken,
   setStep,
   contactEmail,
   showNotification,
@@ -91,6 +93,8 @@ const SignupForm = ({
           {step === EMAIL_VERIFICATION && (
             <EmailVerification
               contactEmail={contactEmail}
+              emailToken={emailToken}
+              setEmailToken={setEmailToken}
               setShowHeader={setShowHeader}
               setStep={setStep}
             />

@@ -22,7 +22,7 @@ export const StyledInfoWrapper = styled.div(
     .yellow-seperator {
       border-top: 4px solid #EFAF41;
       border-radius: 4px;
-      margin: 16px 0px;
+      margin: 24px 0;
       width: 36px;
     }
 
@@ -80,12 +80,12 @@ export const StyledInfoWrapper = styled.div(
     }
 
     .info-card-wrapper {
-      margin: 72px 0px 8px;
+      margin: 72px 0 8px;
       width: 385px;
       min-height: 200px;
       background: #152379;
       padding: 30px 50px 12px 28px;
-      border-radius: 0px 32px 0px 0px;
+      border-radius: 0 32px 0 0;
       font-weight: ${theme.typography.fonts.weight.regular};
       font-size: ${theme.typography.fonts.size[200]}px;
       color: #FFFFFF;
@@ -130,7 +130,7 @@ export const StyledCongratsContent = styled.div(
     color: #F9AE3E;
     font-weight: ${theme.typography.fonts.weight.bold};
     font-size: 36px;
-    margin: 10px 0px;
+    margin: 10px 0;
   }
   @media ${media.mobileTabMax} {
     display: none;
@@ -140,7 +140,7 @@ export const StyledCongratsContent = styled.div(
 
 export const StyledTestimonials = styled.div`
   background: transparent;
-  padding: 20px 50px 0px 0px;
+  padding: 20px 50px 0 0;
   width: 636px;
 
   .carouselDiv{

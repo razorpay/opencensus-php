@@ -1,19 +1,35 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, TextInput } from '@razorpay/blade/components';
-import { SCREEN_NAME, STEPS, congratsFormSchema } from 'newAuth/signup/Constants';
 import { Formik } from 'formik';
+import { isEmpty } from 'lodash';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
+import { Modal, ModalBody } from 'common/components/Modal';
+import { redirectToLogIn } from 'newAuth/utils';
 import { sendEmailOTP } from './api';
-import imageStarStroke from 'assets/partner-dashboard/star-stroke.png';
 import { StyledCongratsFormWrapper, StyledCongratsInputWrapper } from './styled';
 import { trackWithSegment } from 'newAuth/trackEvents';
+import {
+  SCREEN_NAME,
+  STEPS,
+  congratsFormSchema,
+  EMAIL_ALREADY_TAKEN_ERROR_DESC,
+} from 'newAuth/signup/Constants';
+import ErrorModal from 'newAuth/signup/components/PartnerSignup/components/SignupForm/components/ErrorScreens/ErrorModal';
+import imageStarStroke from 'assets/partner-dashboard/star-stroke.png';
 
 const CongratsForm = ({
   contactEmail: initialEmail,
   setContactEmail,
+  setEmailToken,
   setStep,
+  closeModal,
   showNotification,
   onboardAllAsResellerFlag,
 }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [emailError, setEmailError] = useState(null);
+  const [showError, setShowError] = useState(false);
+
   useEffect(() => {
     trackWithSegment({
       objectName: 'Partner Welcome Screen',
@@ -25,7 +41,13 @@ const CongratsForm = ({
     });
   }, []);
 
+  const onModalClose = () => {
+    setShowError(false);
+    closeModal();
+  };
+
   const onCTAClick = (label, submittedEmail = null) => {
+    setIsLoading(true);
     if (label === 'submit') {
       trackWithSegment({
         objectName: 'Email Submit',
@@ -39,22 +61,23 @@ const CongratsForm = ({
 
       sendEmailOTP(payload)
         .then((res) => {
+          setIsLoading(false);
           if (res?.data && res?.data?.token) {
             setStep(STEPS.EMAIL_VERIFICATION);
+            setEmailToken(res.data.token);
           }
         })
         .catch((err) => {
-          if (err && Array.isArray(err.errors)) {
+          setIsLoading(false);
+          const error_description = err.errors?.[0];
+          if (error_description === EMAIL_ALREADY_TAKEN_ERROR_DESC) {
+            setEmailError('email_already_taken');
+            setShowError(true);
+          } else
             showNotification({
               type: 'error',
-              message: err,
+              message: err.errors?.[0] || 'Please try again',
             });
-          } else {
-            showNotification({
-              type: 'error',
-              message: 'Please try again',
-            });
-          }
         });
     } else if (label === 'addLater') {
       trackWithSegment({
@@ -131,7 +154,7 @@ const CongratsForm = ({
                       },
                     });
                   }}
-                  validationState={formikProps.errors.otp ? 'error' : false}
+                  validationState={formikProps.errors.contactEmail ? 'error' : false}
                   errorText={formikProps.errors.contactEmail}
                 />
               </StyledCongratsInputWrapper>
@@ -148,6 +171,10 @@ const CongratsForm = ({
                   <Button
                     size="medium"
                     isFullWidth
+                    isLoading={isLoading}
+                    isDisabled={
+                      !isEmpty(formikProps.errors) || isEmpty(formikProps.values.contactEmail)
+                    }
                     onClick={() => {
                       onCTAClick('submit', formikProps.values.contactEmail);
                     }}
@@ -160,6 +187,26 @@ const CongratsForm = ({
             <div className="congrats-note">
               To receive payments to your bank account & extend your payment limit, complete KYC
             </div>
+
+            <Modal
+              bottomsheet={isMobileAndTablet()}
+              bottomSheetHeight="250px"
+              isOpen={showError}
+              onClose={onModalClose}
+            >
+              <ModalBody>
+                {emailError === 'email_already_taken' && (
+                  <ErrorModal
+                    title="Email is already registered"
+                    description="This Email ID is already registered. you can either Log in to continue to your account or Try verifying another email ID"
+                    primaryLabel="Log In"
+                    primaryButtonClick={redirectToLogIn}
+                    secondaryLabel="Try another ID"
+                    secondaryButtonClick={onModalClose}
+                  />
+                )}
+              </ModalBody>
+            </Modal>
           </StyledCongratsFormWrapper>
         </form>
       )}

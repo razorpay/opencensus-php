@@ -5,7 +5,13 @@ import { updatePartnerTypeAndConsent } from 'newAuth/signup/components/PartnerSi
 import { SCREEN_NAME, STEPS, partnerTypeSelectionSchema } from 'newAuth/signup/Constants';
 import { trackWithSegment } from 'newAuth/trackEvents';
 import isEmpty from '@universe/utils/isEmpty';
-import { StyledStepWrapper, StyledTitle, StyledSubtitle, StyledPartnerTypeTiles } from './styled';
+import {
+  StyledStepWrapper,
+  StyledTitle,
+  StyledSubtitle,
+  StyledPartnerTypeTiles,
+  StyledForm,
+} from './styled';
 import imageSelectReseller from 'assets/partner-dashboard/select-partner-type-reseller.svg';
 import imageSelectAggregator from 'assets/partner-dashboard/select-partner-type-aggregator.svg';
 
@@ -62,8 +68,8 @@ const PartnerTypeSelection = ({ setStep, showNotification, onboardAllAsResellerF
   return (
     <Formik initialValues={{}} validationSchema={partnerTypeSelectionSchema} onSubmit={noop}>
       {(formikProps) => (
-        <form onChange={formikProps.handleChange}>
-          <StyledStepWrapper>
+        <StyledForm onChange={formikProps.handleChange}>
+          <StyledStepWrapper $mobileOverflow="unset">
             <StyledTitle>Choose your Partner Type</StyledTitle>
             <StyledSubtitle $textAlign="center">
               Pick only one that applies to your business
@@ -80,9 +86,7 @@ const PartnerTypeSelection = ({ setStep, showNotification, onboardAllAsResellerF
                 }}
               >
                 <div className="pts-tile-content">
-                  <div className="pts-image">
-                    <img src={imageSelectReseller} alt="Select Partner Type Reseller" />
-                  </div>
+                  <img src={imageSelectReseller} alt="Select Partner Type Reseller" />
                   <div className="pts-description">
                     <span className="pts-heading">Reseller Partner</span>
                     <div className="pts-sub-heading">
@@ -117,9 +121,7 @@ const PartnerTypeSelection = ({ setStep, showNotification, onboardAllAsResellerF
                 }}
               >
                 <div className="pts-tile-content">
-                  <div className="pts-image">
-                    <img src={imageSelectAggregator} alt="Select Partner Type Aggregator" />
-                  </div>
+                  <img src={imageSelectAggregator} alt="Select Partner Type Aggregator" />
                   <div className="pts-description">
                     <span className="pts-heading">Aggregator Partner</span>
                     <div className="pts-sub-heading">
@@ -164,7 +166,7 @@ const PartnerTypeSelection = ({ setStep, showNotification, onboardAllAsResellerF
             isLoading={isLoading}
             disabled={!isEmpty(formikProps.errors) || isEmpty(formikProps.values.partnerType)}
           />
-        </form>
+        </StyledForm>
       )}
     </Formik>
   );

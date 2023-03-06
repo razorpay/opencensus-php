@@ -71,8 +71,11 @@ export const StyledCongratsFormWrapper = styled.div(
       @media ${media.mobileTabMax} {
         width: auto;
         text-align: left;
-        padding: 45px 15px 25px;
+        padding: 25px 30px;
         height: auto;
+        border-radius: 4px;
+        font-size: ${theme.typography.fonts.size[100]}px;
+        font-weight: ${theme.typography.fonts.weight.bold};
 
         .star-logo {
           display: none;
@@ -89,11 +92,15 @@ export const StyledCongratsFormWrapper = styled.div(
         list-style: none;
         padding-left: 20px;
         padding-right: 20px;
+
+        @media ${media.mobileTabMax} {
+          padding: 0px;
+        }
       }
 
       ul li {
         text-align: left;
-        background: url('${imageTickIcon}') no-repeat left center;
+        background: url("${imageTickIcon}") no-repeat left center;
         padding: 25px 10px 5px 40px;
         list-style: none;
         margin: 0;
@@ -104,6 +111,10 @@ export const StyledCongratsFormWrapper = styled.div(
 
         &:last-child {
           padding: 5px 10px 5px 40px;
+        }
+
+        @media ${media.mobileTabMax} {
+          font-size: 14px;
         }
       }
     }
@@ -121,6 +132,10 @@ export const StyledCongratsFormWrapper = styled.div(
         margin-bottom: 32px;
         text-align: left;
         line-height: 20px;
+
+        @media ${media.mobileTabMax} {
+          font-weight: ${theme.typography.fonts.weight.bold};
+        }
       }
 
       .email-btn-wrap {
@@ -129,6 +144,10 @@ export const StyledCongratsFormWrapper = styled.div(
         width: 80%;
         margin: 0 auto;
 
+        @media ${media.mobileTabMax} {
+          width: 100%;
+        }
+
         .sec-btn-wrap {
           width: 48%;
           margin: auto;
@@ -136,6 +155,10 @@ export const StyledCongratsFormWrapper = styled.div(
           font-weight: ${theme.typography.fonts.weight.bold};
           font-size: ${theme.typography.fonts.size[100]}px;
           cursor: pointer;
+
+          @media ${media.mobileTabMax} {
+            text-align: center;
+          }
         }
 
         .primary-btn-wrap {
@@ -168,5 +191,9 @@ export const StyledCongratsInputWrapper = styled.div(
 
     width: 80%;
     margin: 12px auto;
+
+    @media ${media.mobileTabMax} {
+      width: 100%;
+    }
   `,
 );

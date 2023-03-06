@@ -9,7 +9,8 @@ import { SCREEN_NAME, STEPS, mobileNumberSchema } from 'newAuth/signup/Constants
 import whatsappLogo from 'assets/app-store/partner-logos/whatsapp.png';
 import { trackWithSegment } from 'newAuth/trackEvents';
 import isEmpty from '@universe/utils/isEmpty';
-import { BottomSheet } from 'react-spring-bottom-sheet';
+import { Modal, ModalBody } from 'common/components/Modal';
+
 import {
   StyledStepWrapper,
   StyledTitle,
@@ -18,6 +19,7 @@ import {
   StyledOptInCheckbox,
   StyledIconWrap,
   StyledCheckboxWrapper,
+  StyledForm,
 } from './styled';
 import { isMobileAndTablet } from 'common/utils/rzp-utils';
 
@@ -27,12 +29,12 @@ const MobileNumber = ({
   isSendWhatsapp,
   setIsSendWhatsapp,
   setOtpVerifyToken,
-  openModal,
   closeModal,
   showNotification,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [errorCode, setErrorCode] = useState(null);
 
   const onCTAClick = (formikProps) => {
     setIsLoading(true);
@@ -54,23 +56,8 @@ const MobileNumber = ({
         setIsLoading(false);
         const error_code = err.errors?.[0].internal_error_code;
         if (error_code === 'BAD_REQUEST_CONTACT_MOBILE_ALREADY_EXISTS') {
-          if (isMobileAndTablet()) {
-            setIsOpen(true);
-          } else
-            openModal({
-              size: 'signup-info',
-              component: (
-                <ErrorModal
-                  title="Mobile Number is already Registered"
-                  description="This mobile number is already registered. you can either Log in to continue to your account or Try signing-up with another mobile number"
-                  closeModal={closeModal}
-                  primaryLabel="Log In"
-                  primaryButtonClick={redirectToLogIn}
-                  secondaryLabel="Try another way"
-                  secondaryButtonClick={closeModal}
-                />
-              ),
-            });
+          setErrorCode('mobile_already_exists');
+          setShowError(true);
         } else
           showNotification({
             type: 'error',
@@ -105,10 +92,14 @@ const MobileNumber = ({
   };
   const noop = () => {};
 
+  const onModalClose = () => {
+    setShowError(false);
+    closeModal();
+  };
   return (
     <Formik initialValues={{}} validationSchema={mobileNumberSchema} onSubmit={noop}>
       {(formikProps) => (
-        <form onChange={formikProps.handleChange}>
+        <StyledForm onChange={formikProps.handleChange}>
           <StyledStepWrapper>
             <StyledTitle>Sign up As Partners!</StyledTitle>
             <StyledSubtitle>
@@ -118,7 +109,7 @@ const MobileNumber = ({
             <StyledInputWrapper>
               <TextInput
                 autoFocus
-                label="Mobile Number"
+                label="Phone Number"
                 name="mobileNumber"
                 placeholder="Enter mobile number"
                 helpText="Your mobile number"
@@ -151,18 +142,26 @@ const MobileNumber = ({
             onClick={() => onCTAClick(formikProps)}
             disabled={!isEmpty(formikProps.errors) || isEmpty(formikProps.values.mobileNumber)}
           />
-          <BottomSheet open={isOpen}>
-            <ErrorModal
-              title="Mobile Number is already Registered"
-              description="This mobile number is already registered. you can either Log in to continue to your account or Try signing-up with another mobile number"
-              closeModal={closeModal}
-              primaryLabel="Log In"
-              primaryButtonClick={redirectToLogIn}
-              secondaryLabel="Try another way"
-              secondaryButtonClick={closeModal}
-            />
-          </BottomSheet>
-        </form>
+          <Modal
+            bottomsheet={isMobileAndTablet()}
+            isOpen={showError}
+            bottomSheetHeight="250px"
+            onClose={onModalClose}
+          >
+            <ModalBody>
+              {errorCode === 'mobile_already_exists' && (
+                <ErrorModal
+                  title="Mobile Number is already Registered"
+                  description="This mobile number is already registered. you can either Log in to continue to your account or Try signing-up with another mobile number"
+                  primaryLabel="Log In"
+                  primaryButtonClick={redirectToLogIn}
+                  secondaryLabel="Try another way"
+                  secondaryButtonClick={onModalClose}
+                />
+              )}
+            </ModalBody>
+          </Modal>
+        </StyledForm>
       )}
     </Formik>
   );

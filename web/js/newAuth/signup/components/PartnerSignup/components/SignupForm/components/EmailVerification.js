@@ -18,13 +18,18 @@ import { trackWithSegment } from 'newAuth/trackEvents';
 
 import StepFooter from './StepFooter';
 import ErrorScreen from './ErrorScreen';
-import { StyledStepWrapper, StyledTitle, StyledSubtitle, StyledInputWrapper } from './styled';
+import {
+  StyledStepWrapper,
+  StyledTitle,
+  StyledSubtitle,
+  StyledInputWrapper,
+  StyledForm,
+} from './styled';
 import imageUnableToSendOTP from 'assets/partner-dashboard/error-unable-to-send-otp.svg';
 import imageTooManyAttempts from 'assets/partner-dashboard/error-too-many-attempts.svg';
 
-const EmailVerification = ({ contactEmail, setStep, setShowHeader }) => {
+const EmailVerification = ({ emailToken, contactEmail, setEmailToken, setStep, setShowHeader }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [emailToken, setEmailToken] = useState(null);
 
   const { timerText, isTimerRunning, resetTimer } = useOTPCountdownTimer(
     EMAIL_RESEND_OTP_COUNTDOWN,
@@ -38,6 +43,7 @@ const EmailVerification = ({ contactEmail, setStep, setShowHeader }) => {
       location: SCREEN_NAME[STEPS.EMAIL_VERIFICATION],
     });
     const payload = emailToken ? { otp: emailOtp, token: emailToken } : { otp: emailOtp };
+    setIsLoading(true);
 
     return verifyEmailOTP(payload)
       .then((res) => {
@@ -97,7 +103,6 @@ const EmailVerification = ({ contactEmail, setStep, setShowHeader }) => {
           setIsLoading(false);
           setOTPError(null);
           setEmailToken(res.data.token);
-          window.location = '/app/partners';
         }
       })
       .catch(() => {
@@ -105,6 +110,11 @@ const EmailVerification = ({ contactEmail, setStep, setShowHeader }) => {
         setOTPError('server_error');
         setShowHeader(false);
       });
+  };
+
+  const changeEmail = () => {
+    setStep(STEPS.CONGRATS);
+    setShowHeader(true);
   };
 
   const onErrorCTAClick = () => {
@@ -140,10 +150,15 @@ const EmailVerification = ({ contactEmail, setStep, setShowHeader }) => {
   return (
     <Formik initialValues={{}} validationSchema={emailVerificationSchema} onSubmit={noop}>
       {(formikProps) => (
-        <form onChange={formikProps.handleChange}>
+        <StyledForm onChange={formikProps.handleChange}>
           <StyledStepWrapper>
             <StyledTitle>Verify your Email</StyledTitle>
-            <StyledSubtitle>An email with an OTP has been sent to {contactEmail}</StyledSubtitle>
+            <StyledSubtitle>
+              An email with an OTP has been sent to {contactEmail} &nbsp;
+              <span className="change-text" onClick={changeEmail}>
+                Change
+              </span>
+            </StyledSubtitle>
             <StyledInputWrapper>
               <TextInput
                 width="auto"
@@ -157,14 +172,20 @@ const EmailVerification = ({ contactEmail, setStep, setShowHeader }) => {
                 errorText={
                   otpError === 'wrong_otp'
                     ? 'Entered OTP is incorrect. Kindly resubmit or regenerate the OTP'
-                    : formikProps.errors.otp
+                    : formikProps.errors.emailOtp
                 }
-                validationState={formikProps.errors.emailOtp ? 'error' : false}
+                validationState={
+                  formikProps.errors.emailOtp || otpError === 'wrong_otp' ? 'error' : false
+                }
               />
             </StyledInputWrapper>
             {isTimerRunning && !isLoading ? (
               <Text size="small" color="shade.950">
-                <div className="resend-otp text-success">Verification Email Successfully Sent</div>
+                {otpError !== 'wrong_otp' && (
+                  <div className="resend-otp text-success">
+                    Verification Email Successfully Sent
+                  </div>
+                )}
                 <div className="resend-otp help-text">Resend OTP after {timerText}</div>
               </Text>
             ) : (
@@ -186,9 +207,9 @@ const EmailVerification = ({ contactEmail, setStep, setShowHeader }) => {
             ctaText="Verify"
             isLoading={isLoading}
             onClick={() => onCTAClick(formikProps.values.emailOtp)}
-            disabled={!isEmpty(formikProps.errors) || isEmpty(formikProps.touched)}
+            disabled={!isEmpty(formikProps.errors) || isEmpty(formikProps.values.emailOtp)}
           />
-        </form>
+        </StyledForm>
       )}
     </Formik>
   );
