@@ -2,7 +2,7 @@
 
 namespace RZP\Services\CircuitBreaker;
 
-use App;
+use Throwable;
 use RZP\Services\CircuitBreaker\Store\StoreInterface;
 
 /**
@@ -12,10 +12,6 @@ use RZP\Services\CircuitBreaker\Store\StoreInterface;
  */
 class CircuitBreaker
 {
-    public const TIME_WINDOW = 60;
-    public const FAILURE_RATE_THRESHOLD = 50;
-    public const INTERVAL_TO_HALF_OPEN = 30;
-
     /** @var StoreInterface $circuitBreaker */
     protected StoreInterface $store;
 
@@ -93,53 +89,82 @@ class CircuitBreaker
                 $this->openCircuit();
                 return false;
             }
-
-            return true;
         }
-        catch (\Exception $e)
+        catch (Throwable $e)
         {
-
+            app('trace')->traceException($e);
         }
 
+        return true;
     }
 
     public function failure(): void
     {
-        $isHalfOpen = $this->store->isHalfOpen($this->service);
-
-        if ($isHalfOpen === true)
+        try
         {
-            $this->openCircuit();
-            return;
-        }
+            $isHalfOpen = $this->store->isHalfOpen($this->service);
 
-        $this->store->incrementFailure(
-            $this->service,
-            $this->getSetting('time_window')
-        );
+            if ($isHalfOpen === true)
+            {
+                $this->openCircuit();
+                return;
+            }
+
+            $this->store->incrementFailure(
+                $this->service,
+                $this->getSetting('time_window')
+            );
+        }
+        catch (Throwable $e)
+        {
+            app('trace')->traceException($e);
+        }
     }
 
     public function success(): void
     {
-        $this->store->setSuccess($this->service);
+        try
+        {
+            $this->store->setSuccess($this->service);
+        }
+        catch (Throwable $e)
+        {
+            app('trace')->traceException($e);
+        }
     }
 
     public function openCircuit(): void
     {
-        $this->store->setOpenCircuit(
-            $this->service,
-            $this->getSetting('time_window')
-        );
+        try
+        {
+            $this->store->setOpenCircuit(
+                $this->service,
+                $this->getSetting('time_window')
+            );
 
-        $this->store->setHalfOpenCircuit(
-            $this->service,
-            $this->getSetting('time_window'),
-            $this->getSetting('interval_to_half_open')
-        );
+            $this->store->setHalfOpenCircuit(
+                $this->service,
+                $this->getSetting('time_window'),
+                $this->getSetting('interval_to_half_open')
+            );
+        }
+        catch (Throwable $e)
+        {
+            app('trace')->traceException($e);
+        }
     }
 
     public function getFailuresCounter(): int
     {
-        return $this->store->getFailuresCounter($this->service);
+        try
+        {
+            return $this->store->getFailuresCounter($this->service);
+        }
+        catch (Throwable $e)
+        {
+            app('trace')->traceException($e);
+
+            return 0;
+        }
     }
 }

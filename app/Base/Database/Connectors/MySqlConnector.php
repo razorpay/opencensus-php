@@ -12,9 +12,11 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Database\Connectors\MySqlConnector as BaseMySqlConnector;
 
 use PDO;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Tracing;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\ServerErrorException;
 use RZP\Base\Database\DetectsLostConnections;
 use RZP\Services\CircuitBreaker\CircuitBreaker;
 use OpenCensus\Trace\Integrations\PDO as PDOTracer;
@@ -122,59 +124,42 @@ class MySqlConnector extends BaseMySqlConnector
 
     protected function initiateAndCheckCircuitBreaker()
     {
-        try
+        if ($this->app->runningInConsole() === true)
         {
-            if ($this->app->runningInConsole() === true)
+            $serviceName = 'worker_db';
+
+            $redis = Redis::connection('throttle')->client();
+
+            $store = new RedisClusterStore($redis);
+
+            $this->cb = new CircuitBreaker($store, $serviceName);
+
+            if ($this->cb->isAvailable() === false)
             {
-                $serviceName = 'worker_db';
+                $this->app['trace']->info(TraceCode::CIRCUIT_BREAKER_OPEN, [
+                    'total_failures' => $this->cb->getFailuresCounter(),
+                ]);
 
-                $redis = Redis::connection('throttle')->client();
-
-                $store = new RedisClusterStore($redis);
-
-                $this->cb = new CircuitBreaker($store, $serviceName);
-
-                if ($this->cb->isAvailable() === false)
-                {
-                    $this->app['trace']->info(TraceCode::CIRCUIT_BREAKER_OPEN, [
-                        'total_failures' => $this->cb->getFailuresCounter(),
-                    ]);
-                }
+                throw new ServerErrorException(
+                    'DB Circuit Breaker Open',
+                    ErrorCode::SERVER_ERROR);
             }
-        }
-        catch (\Throwable $e)
-        {
-            $this->app['trace']->traceException($e);
         }
     }
 
     protected function markCircuitBreakerSuccess()
     {
-        try
+        if ($this->cb !== null)
         {
-            if ($this->cb !== null)
-            {
-                $this->cb->success();
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $this->app['trace']->traceException($e);
+            $this->cb->success();
         }
     }
 
     protected function markCircuitBreakerFailure()
     {
-        try
+        if ($this->cb !== null)
         {
-            if ($this->cb !== null)
-            {
-                $this->cb->failure();
-            }
-        }
-        catch (\Throwable $e)
-        {
-            $this->app['trace']->traceException($e);
+            $this->cb->failure();
         }
     }
 
