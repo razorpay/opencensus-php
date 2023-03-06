@@ -49,7 +49,7 @@ function findTypeFromResponse(response) {
   const returnData = { original: response };
   // calculate case based on response
   const { merchant_status: mStatus, status, is_delisted_atleast_once: isDelisted } = response;
-  if (status === 'eligible') {
+  if (status === 'eligible' || status === 'whitelist') {
     if (mStatus === 'optout') {
       returnData.badgeStatus = STATUS.YES_ELIGIBLE_OPTED_OUT;
     } else {

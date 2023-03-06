@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import FlagImage from 'assets/flags32.png';
 
 export const CountryCodeContainer = styled.div`
   .country-code-input {
@@ -12,7 +13,7 @@ export const CountryCodeContainer = styled.div`
       width: 20px;
       vertical-align: text-top;
       line-height: 20px;
-      background-image: url('/dist/css/assets/flags32.png');
+      background-image: url(${FlagImage});
     }
     .ad {
       background-position: -6px calc(-704px - 6px);
