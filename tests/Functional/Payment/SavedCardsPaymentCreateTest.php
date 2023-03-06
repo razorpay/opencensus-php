@@ -18,12 +18,18 @@ use RZP\Models\Card\Vault;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Card\Network;
+use RZP\Models\Feature\Constants;
+use RZP\Tests\Functional\Helpers\TerminalTrait;
+use RZP\Models\Feature;
 
 class SavedCardsPaymentCreateTest extends TestCase
 {
     use InteractsWithSession;
     use PaymentTrait;
     use DbEntityFetchTrait;
+    use TerminalTrait;
 
     protected function setUp(): void
     {
@@ -874,6 +880,42 @@ class SavedCardsPaymentCreateTest extends TestCase
         {
             $this->doAuthPayment($this->payment);
         });
+    }
+
+    public function testLocalSavedCardDualTokenPaymentCreate()
+    {
+
+        $this->fixtures->merchant->addFeatures(
+            [
+                Feature\Constants::CUSTOM_CHECKOUT_CONSENT_SCREEN,
+                Feature\Constants::NETWORK_TOKENIZATION_LIVE,
+                Feature\Constants::ISSUER_TOKENIZATION_LIVE,
+            ]
+        );
+
+        $this->mockCardVaultWithMigrateDualToken();
+
+        $this->mockFetchMerchantTokenisationOnboardedNetworks([Network::VISA]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['_']['library'] = 'checkoutjs';
+        $payment['method'] = 'card';
+        $payment['customer_id'] = 'cust_100000customer';
+        $payment['consent_to_save_card'] = '1';
+        $payment['save'] = '1';
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentDetails = $this->getDbEntityById('payment', $response['razorpay_payment_id'], true);
+
+        $this->assertNotNull($paymentDetails->localToken);
+
+        $this->assertNull($paymentDetails->globalToken);
+
+        $this->assertNotNull($paymentDetails->localToken['acknowledged_at']);
+
+        $this->assertEquals('providers', $paymentDetails->localToken->card->getVault());
     }
 
     /**

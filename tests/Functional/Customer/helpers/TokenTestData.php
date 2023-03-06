@@ -2,6 +2,7 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testCreateToken' => [
@@ -293,6 +294,54 @@ return [
         'response' => [
             'content' => [
             ],
+        ],
+    ],
+
+    'testCreateDualTokenAndTokenizeCardVisa' => [
+        'request' => [
+            'url' => '/tokens',
+            'method' => 'post',
+            'content' => [
+                'method' => 'card',
+                'card' => [
+                    'number' => '4143667057540458',
+                    'cvv' => '123',
+                    'expiry_month' => '12',
+                    'expiry_year' => '23',
+                ],
+                'notes' => [
+                    'test1' => 'test2'
+                ]
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testCreateDualTokenAndTokenizeCardVisaFailure' =>[
+        'request' => [
+            'url' => '/tokens',
+            'method' => 'post',
+            'content' => [
+                'method' => 'card',
+                'card' => [
+                    'number' => '4143667057540458',
+                    'cvv' => '123',
+                    'expiry_month' => '12',
+                    'expiry_year' => '23',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => \RZP\Exception\RuntimeException::class,
+            'internal_error_code'   => 'SERVER_ERROR_RUNTIME_ERROR',
         ],
     ],
 

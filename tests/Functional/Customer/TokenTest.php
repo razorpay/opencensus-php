@@ -16,12 +16,14 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 
 class TokenTest extends TestCase
 {
     use PaymentTrait;
     use TestsWebhookEvents;
     use TerminalTrait;
+    use DbEntityFetchTrait;
 
     protected function setUp(): void
     {
@@ -867,6 +869,178 @@ class TokenTest extends TestCase
         $this->assertEquals('2099', $card['expiry_year']);
         $this->assertEquals('11', $card['token_expiry_month']);
         $this->assertEquals('2026', $card['token_expiry_year']);
+    }
+
+    public function testCreateDualTokenAndTokenizeCardVisa()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial();
+        $this->app->instance('mpan.cardVault', $cardVault);
+        $callable = function ($route, $method, $input)
+        {
+            if ($route === Constants::TOKENS_UPDATE)
+            {
+                return ['success' => true];
+            }
+            $response['success'] = true;
+            $token = base64_encode($input['card']['number']);
+            $response['token']  = $token;
+            $response['length'] = '16';
+            $response['fingerprint'] = strrev($token);
+            $token_iin = substr($input['card']['number'] ?? null, 0, 9);
+            $providerReferenceId = 'KYewh236572184';
+            $expiry_year = $input['card']['expiry_year'];
+            if (strlen($expiry_year) == 2)
+            {
+                $expiry_year = '20' . $expiry_year;
+            }
+            $response['service_provider_tokens'] = [
+                [
+                    'id'             => 'spt_1234abcd',
+                    'entity'         => 'service_provider_token',
+                    'provider_type'  => 'network',
+                    'provider_name'  => 'visa',
+                    'status'                 => 'active',
+                    'interoperable'          => true,
+                    'provider_data'  => [
+                        'token_reference_number'     => $token,
+                        'payment_account_reference'  => strrev($token),
+                        'token_expiry_month'         => '11',
+                        'token_expiry_year'          => '2026',
+                        'token_iin'                  => $token_iin,
+                        'token_number'               => $input['card']['number'],
+                        'providerReferenceId'        => $providerReferenceId
+                    ],
+                ],
+                [
+                    'id'             => 'spt_1234abcd',
+                    'entity'         => 'service_provider_token',
+                    'provider_type'  => 'issuer',
+                    'provider_name'  => 'axis',
+                    'status'                 => 'active',
+                    'interoperable'          => true,
+                    'provider_data'  => [
+                        'token_reference_number'     => $token,
+                        'token_expiry_month'         => '01',
+                        'token_expiry_year'          => '2024',
+                        'token_number'               => $input['card']['number']
+                    ],
+                ]
+            ];
+            return $response;
+        };
+        $cardVault->shouldReceive('sendRequest')
+            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+            ->andReturnUsing($callable);
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'Axis',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'headless_otp'  => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+        $this->fixtures->merchant->addFeatures(['issuer_tokenization_live']);
+
+        $this->ba->privateAuth();
+
+        $response = $this->startTest();
+
+        $tokenId = $response['id'];
+
+        $token = $this->getDbEntityById('token', $tokenId);
+
+        $card = $this->getDbEntityById('card', 'card_' . $token->getCardId());
+
+        $this->assertEquals('card', $response['method']);
+
+        $this->assertEquals('active', $token->getStatus());
+
+        $this->assertEquals('providers', $card->getVault());
+
+        $this->assertNotNull($response['service_provider_tokens']);
+
+        $this->assertNotNull($response['service_provider_tokens'][0]['provider_data']['providerReferenceId']);
+
+        $this->assertEquals('11', $response['service_provider_tokens'][0]['provider_data']['token_expiry_month']);
+
+        $this->assertEquals('2026', $response['service_provider_tokens'][0]['provider_data']['token_expiry_year']);
+
+        $this->assertArrayNotHasKey('customer_id', $response);
+
+        //assert card
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertEquals('01', $card['expiry_month']);
+        $this->assertEquals('2099', $card['expiry_year']);
+        $this->assertEquals('11', $card['token_expiry_month']);
+        $this->assertEquals('2026', $card['token_expiry_year']);
+    }
+
+    public function testCreateDualTokenAndTokenizeCardVisaFailure()
+    {
+        $cardVault = Mockery::mock('RZP\Services\CardVault', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('mpan.cardVault', $cardVault);
+
+        $callable = function ($input)
+        {
+            $response = new \WpOrg\Requests\Response();
+
+            $response->body = '{
+            "success": false,
+            "error":{
+                "internal_error_code": "SERVER_ERROR_ASSERTION_ERROR",
+                  "gateway_error_code": "SERVER_ERROR",
+                  "gateway_error_description": "We are facing some trouble completing your request at the moment. Please try again shortly.",
+                  "description": "We are facing some trouble completing your request at the moment. Please try again shortly."
+                }
+              }';
+            return $response;
+        };
+
+        $cardVault->shouldReceive('sendCardVaultRequest')
+            ->with(Mockery::type('array'))
+            ->andReturnUsing($callable);
+
+        $this->app->instance('card.cardVault', $cardVault);
+
+        $this->fixtures->iin->create([
+            'iin'     => '414366',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'Visa',
+            'flows'   => [
+                '3ds'  => '1',
+                'headless_otp'  => '1',
+            ]
+        ]);
+
+        $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
+
+        $this->ba->privateAuth();
+
+        try
+        {
+            $response = $this->startTest();
+        }
+        catch (Exception\LogicException $e)
+        {
+            $this->assertEquals($e->getError()->getInternalErrorCode(), "SERVER_ERROR_ASSERTION_ERROR");
+
+            $this->assertEquals($e->getError()->getPublicErrorCode(), "SERVER_ERROR");
+
+            $this->assertEquals($e->getError()->getReason(), "server_error");
+
+            $this->assertEquals($e->getError()->getSource(), "Visa");
+
+            $this->assertEquals($e->getError()->getStep(), "payment_initiation");
+        }
     }
 
     public function testCreateTokenAndTokenizeCardNotAllowed()
