@@ -449,7 +449,7 @@ return array(
     'commission_invoice_bucket_migration_exp_id'  => env('COMMISSION_INVOICE_BUCKET_MIGRATION_EXP_ID'),
 
     'rbl_serviceability_on_bas_exp_id' => env('RBL_SERVICEABILITY_ON_BAS_EXP_ID'),
-    
+
     'vendor_payment_metro_to_kafka_exp_id' => env('VENDOR_PAYMENT_SPLITZ_EXPERIMENT_METRO_TO_KAFKA'),
 
     'cmma_metro_migrate_out_experiment_id' => env('CMMA_METRO_MIGRATE_OUT_EXPERIMENT_ID'),
@@ -475,6 +475,7 @@ return array(
     'merchant_activation_ineligible'      => env('MERCHANT_ACTIVATION_INELIGIBLE'),
     'partner_invoice_auto_approval_exp_id'=> env('PARTNER_INVOICE_AUTO_APPROVAL_EXP_ID'),
     'cmma_post_onboarding_foh_removal_splitz_experiment_id' => env('CMMA_POST_ONBOARDING_FOH_REMOVAL_SPLITZ_EXPERIMENT_ID'),
+    'enable_signups'                    => env('ENABLE_SIGNUPS'),
 
     'permission_id_edit_merchant_hold_funds'  => env('EDIT_MERCHANT_HOLD_FUNDS'),
     'permission_id_edit_merchant_suspend'     => env('EDIT_MERCHANT_SUSPEND'),
@@ -575,7 +576,7 @@ return array(
     '1cc_enable_v165_splitz_experiment_id' => env('MAGIC_CHECKOUT_ENABLE_V165_EXP_ID'),
 
     '1cc_coupons_with_se_splitz_experiment_id' => env('MAGIC_CHECKOUT_COUPONS_WITH_SCRIPT_EDITOR_EXP_ID'),
-    
+
     'magic_offers_fix_splitz_experiment_id'  => env('MAGIC_CHECKOUT_OFFERS_FIX_EXP_ID'),
 
     'vendor_payment_via_corp_card_experiment_id' => env('VENDOR_PAYMENT_VIA_CORP_CARD_EXPERIMENT_ID'),

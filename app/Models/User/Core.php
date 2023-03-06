@@ -578,7 +578,22 @@ class Core extends Base\Core
             return;
         }
 
+        if ($this->isSignupEnabled() === true)
+        {
+            return;
+        }
+
         throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ACTION);
+    }
+
+    public function isSignupEnabled()
+    {
+        $properties = [
+            'id'            => substr(uniqid(), offset: -14),
+            'experiment_id' => $this->app['config']->get('app.enable_signups'),
+        ];
+
+       return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'variables');
     }
 
     public function edit(Entity $user, array $input, $operation = 'edit')

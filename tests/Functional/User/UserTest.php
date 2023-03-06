@@ -7,6 +7,7 @@ use App;
 use Mail;
 use Hash;
 use Queue;
+use Config;
 use Mockery;
 use Carbon\Carbon;
 
@@ -10237,6 +10238,18 @@ class UserTest extends TestCase
 
     public function testUserRegisterVerifySignupOtpSms()
     {
+        Config::set('applications.test_case.execution', false);
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
+
         $this->ba->dashboardGuestAppAuth();
 
         Queue::fake();
@@ -10250,9 +10263,21 @@ class UserTest extends TestCase
         $this->assertEquals($merchant["signup_via_email"], 0);
     }
 
-    public function testUserRegisterVerifySignupOtpSmsEasyOnboarding()
+    public function testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOn()
     {
+        Config::set('applications.test_case.execution', false);
+
         $this->ba->dashboardGuestAppAuth();
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variables',
+                ]
+            ]
+        ];
+
+        $this->mockAllSplitzTreatment($output);
 
         Queue::fake();
 
@@ -10275,8 +10300,30 @@ class UserTest extends TestCase
         $this->assertEquals($merchant["signup_via_email"], 0);
     }
 
+    public function testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOff()
+    {
+        Config::set('applications.test_case.execution', false);
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $this->mockAllSplitzTreatment([
+            "response" => [
+                "variant" => [
+                    "name" => 'disable',
+                ]
+            ]
+        ]);
+
+        Queue::fake();
+
+        $this->startTest();
+
+        Queue::assertNotPushed(NotifyRas::class);
+    }
+
     public function testUserRegisterVerifySignupOtpSmsSevenSeriesNumber()
     {
+
         $testData = & $this->testData[__FUNCTION__];
         $testData['request']['content']['contact_mobile'] = '7877665544';
         $testData['response']['content']['contact_mobile'] = '7877665544';

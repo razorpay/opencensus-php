@@ -6285,7 +6285,7 @@ return [
         ]
     ],
 
-    'testUserRegisterVerifySignupOtpSmsEasyOnboarding' => [
+    'testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOn' => [
         'request' => [
             'url'     => '/users/register/otp/verify',
             'method'  => 'POST',
@@ -6312,6 +6312,37 @@ return [
                 'signup_campaign'           => 'easy_onboarding'
             ]
         ]
+    ],
+
+    'testUserRegisterVerifySignupOtpSmsEasyOnboardingSplitzOff' => [
+        'request' => [
+            'url'     => '/users/register/otp/verify',
+            'method'  => 'POST',
+            'content' => [
+                'contact_mobile'        => '8877665544',
+                'captcha'               => 'faked',
+                'token'                 => 'token',
+                'otp'                   => '0007',
+                'physical_store'        => true,
+                'social_media'          => true,
+                'live_website_or_app'   => false,
+                'others'                => "others",
+                'signup_campaign'       => 'easy_onboarding'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Something went wrong, please try again after sometime.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ACTION,
+        ],
     ],
 
     'testUserRegisterVerifySignupOtpEmail' => [
