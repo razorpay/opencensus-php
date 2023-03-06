@@ -211,7 +211,7 @@ const CustomEmail = ({
 
   return (
     <div className="custom-email">
-      {user.isEmailNonMandatoryOnL2Form && (
+      {user.isEmailNonMandatoryOnL2Form && !user.partner_type && (
         <Input.Check
           fieldLabel="Send all important communication and account updates on email"
           extraClassName="Custom-input-space"
@@ -226,7 +226,7 @@ const CustomEmail = ({
           checked={ischeck || isEmailVerified}
         />
       )}
-      {(isChecked && ischeck) || !user.isEmailNonMandatoryOnL2Form ? (
+      {(isChecked && ischeck) || !user.isEmailNonMandatoryOnL2Form || user.partner_type ? (
         <div>
           {isEmailVerified ? (
             <VerifiedEmail />

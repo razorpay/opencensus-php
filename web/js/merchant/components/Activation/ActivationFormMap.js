@@ -177,14 +177,20 @@ const contactFields = [
     name: 'contact_email',
     type: 'email',
     info: 'We will reach out to this email for any account related issues.',
-    customField: (activation) =>
-      !activation.isOnKYCTab() &&
-      !activation.props.user.user?.signup_via_email &&
-      (activation.props.user.isEmailMandatoryOnL1 || activation.props.user.isEmailNonMandatoryOnL1),
+    customField: (activation) => {
+      const { user } = activation.props;
+      if (user.partner_type) return true;
+      return (
+        !activation.isOnKYCTab() &&
+        !user.user?.signup_via_email &&
+        (user.isEmailMandatoryOnL1 || user.isEmailNonMandatoryOnL1)
+      );
+    },
     _autoRenderImpure: true,
     isFieldValid: (activation) => {
       const { user, data } = activation.props;
-      if (
+      if (user.partner_type && !user.user?.confirmed) return true;
+      else if (
         (user.isEmailNonMandatoryOnL1 &&
           !user.user?.confirmed &&
           !activation.state.tempContactEmail) ||
@@ -195,7 +201,8 @@ const contactFields = [
       return false;
     },
     _when: (activation) => {
-      const { isEmailNonMandatoryOnL2Form, user } = activation.props.user;
+      const { isEmailNonMandatoryOnL2Form, user, partner_type } = activation.props.user;
+      if (partner_type) return true;
       return (
         (activation.isNeedsClarificationMode() && activation.isOnKYCTab()) ||
         (isEmailNonMandatoryOnL2Form && !!user?.signup_via_email) ||
