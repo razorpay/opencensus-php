@@ -316,6 +316,19 @@ class PaymentLinkController extends Controller
         return ApiResponse::json($response);
     }
 
+
+    public function createPaymentPageFileUploadRecord(string $paymentPageId, string $batchId)
+    {
+        $input = Request::all();
+
+        $response = Tracer::inSpan(['name' => 'payment_page.ppr.create'], function() use($paymentPageId, $batchId, $input)
+        {
+            return $this->service()->createPaymentPageFileUploadRecord($paymentPageId, $batchId, $input);
+        });
+
+        return ApiResponse::json($response);
+    }
+
     public function setMerchantDetails()
     {
         $input = Request::all();

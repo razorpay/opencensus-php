@@ -210,7 +210,7 @@ class Type
     const UPI_TERMINAL_ONBOARDING     = 'upi_terminal_onboarding';
 
     const UPI_ONBOARDED_TERMINAL_EDIT = 'upi_onboarded_terminal_edit';
-    
+
     const HITACHI_FULCRUM_ONBOARD     = 'hitachi_fulcrum_onboard';
 
     const EMANDATE_DEBIT_HDFC         = 'emandate_debit_hdfc';

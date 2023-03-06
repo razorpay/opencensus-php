@@ -1343,6 +1343,7 @@ class Route
         'payment_page_send_receipt'                => ['post',     'payment_pages/{payment_id}/send_receipt',        'PaymentLinkController@sendReceipt'                                 ],
         'payment_page_save_receipt_for_payment'    => ['post',     'payment_pages/{payment_id}/save_receipt',        'PaymentLinkController@saveReceiptForPayment'                       ],
         'payment_page_hosted_button_details'       => ['get',      'payment_buttons/{x_entity_id}/button_details',   'PaymentLinkController@getHostedButtonDetails'                      ],
+        'payment_page_create_file_upload_record'   => ['post',     'payment_pages/{id}/create_record/{batch_id}',    'PaymentLinkController@createPaymentPageFileUploadRecord'           ],
 
         'payment_page_hosted_button_preferences'   => ['get',      'payment_buttons/{x_entity_id}/button_preferences', 'PaymentLinkController@getHostedButtonPreferences'                ],
         'payment_button_hosted_view'               => ['get,post', 'payment_buttons/{x_entity_id}/view',               'PaymentLinkController@buttonHostedView'                          ],
@@ -4927,6 +4928,7 @@ class Route
         'merchant_sub_create_batch',
         'merchant_bulk_onboarding_admin',
         'setl_pos_create',
+        'payment_page_create_file_upload_record',
         'currency_fetch_rates_internal',
         'loc_mail',
         'capital_cards_mail',
@@ -14660,6 +14662,7 @@ class Route
             'merchant_sub_create_batch',
             'merchant_bulk_onboarding_admin',
             'setl_pos_create',
+            'payment_page_create_file_upload_record',
             'bulk_invoice_create',
             'bulk_contact_create',
             'bulk_submerchant_assign',

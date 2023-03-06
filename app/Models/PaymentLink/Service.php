@@ -394,6 +394,34 @@ class Service extends Base\Service
         return $paymentPageItem->toArrayPublic();
     }
 
+    public function createPaymentPageFileUploadRecord(string $paymentPageId, string $batchId, array $input)
+    {
+        try {
+
+            Tracer::inSpan(['name' => 'payment_page.ppr.create.record'], function () use ($paymentPageId, $batchId, $input) {
+                return $this->core->createPaymentPageFileUploadRecord($paymentPageId, $batchId, $input);
+            });
+
+            $input['error_code'] = '';
+            $input['error_description'] = '';
+
+            return $input;
+        } catch (\Throwable $e) {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PAYMENT_PAGE_CREATE_RECORD_EXCEPTION,
+                [
+                    'error' => $e->getMessage(),
+                ]
+            );
+
+            $input['error_code'] = $e->getCode();
+            $input['error_description'] = $e->getMessage();
+            return $input;
+        }
+    }
+
     public function setMerchantDetails(array $input)
     {
         return $this->core->setMerchantDetails($input);

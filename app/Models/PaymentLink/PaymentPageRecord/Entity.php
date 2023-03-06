@@ -1,0 +1,116 @@
+<?php
+
+namespace RZP\Models\PaymentLink\PaymentPageRecord;
+
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+use RZP\Constants\Entity as Constants;
+use RZP\Models\Base;
+use RZP\Models\PaymentLink;
+
+/**
+ * @property PaymentLink\Entity $paymentLink
+ */
+class Entity extends Base\PublicEntity
+{
+    use SoftDeletes;
+
+    protected $entity = Constants::PAYMENT_PAGE_RECORD;
+
+    const PAYMENT_LINK_ID       = 'payment_link_id';
+    const BATCH_ID              = 'batch_id';
+    const PRIMARY_REF_ID        = 'pri__ref__id';
+    const PRIMARY_REFERENCE_ID  = 'primary_reference_id';
+    const PRIMARY_REF_ID_REPO   = 'primary_ref_id';
+    const SECONDARY_1           = 'sec__ref__id_1';
+    const SECONDARY_2           = 'sec__ref__id_2';
+    const SECONDARY_3           = 'sec__ref__id_3';
+    const SECONDARY_4           = 'sec__ref__id_4';
+    const SECONDARY_5           = 'sec__ref__id_5';
+    const STATUS                = 'status';
+    const AMOUNT                = 'amount';
+    const TOTAL_AMOUNT          = 'total_amount';
+    const EMAIL                 = 'email';
+    const EMAILS                = 'emails';
+    const PHONE                 = 'phone';
+    const CONTACT               = 'contact';
+    const CONTACTS              = 'contacts';
+    const OTHER_DETAILS         = 'other_details';
+    const PATTERN               = 'pattern';
+    const REQUIRED              = 'required';
+    const SMS_NOTIFY            = 'sms_notify';
+    const EMAIL_NOTIFY          = 'email_notify';
+    const MANDATORY             = 'mandatory';
+
+    protected $generateIdOnCreate = true;
+
+    protected $visible = [
+        self::ID,
+        self::ENTITY,
+        self::PAYMENT_LINK_ID,
+        self::BATCH_ID,
+        self::PRIMARY_REFERENCE_ID,
+        self::AMOUNT,
+        self::EMAIL,
+        self::CONTACT,
+        self::STATUS,
+        self::OTHER_DETAILS,
+        self::TOTAL_AMOUNT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::DELETED_AT,
+    ];
+
+    protected $public = [
+        self::ID,
+        self::ENTITY,
+        self::PAYMENT_LINK_ID,
+        self::BATCH_ID,
+        self::PRIMARY_REFERENCE_ID,
+        self::AMOUNT,
+        self::EMAIL,
+        self::CONTACT,
+        self::STATUS,
+        self::OTHER_DETAILS,
+        self::TOTAL_AMOUNT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::DELETED_AT,
+    ];
+
+    protected $fillable = [
+        self::ID,
+        self::PAYMENT_LINK_ID,
+        self::BATCH_ID,
+        self::PRIMARY_REFERENCE_ID,
+        self::AMOUNT,
+        self::EMAIL,
+        self::CONTACT,
+        self::STATUS,
+        self::OTHER_DETAILS,
+        self::TOTAL_AMOUNT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::DELETED_AT,
+    ];
+
+    public static $secondary_ref_ids = [
+        self::SECONDARY_1,
+        self::SECONDARY_2,
+        self::SECONDARY_3,
+        self::SECONDARY_4,
+        self::SECONDARY_5,
+    ];
+
+    public function paymentLink()
+    {
+        return $this->belongsTo(PaymentLink\Entity::class);
+    }
+
+    public function setStatus(string $status)
+    {
+        Status::validateStatus($status);
+
+        $this->setAttribute(self::STATUS, $status);
+    }
+}

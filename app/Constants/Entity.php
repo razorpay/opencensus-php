@@ -141,6 +141,7 @@ class Entity
     const MERCHANT_REMINDERS         = 'merchant_reminders';
     const NODAL_BENEFICIARY          = 'nodal_beneficiary';
     const PAYMENT_PAGE_ITEM          = 'payment_page_item';
+    const PAYMENT_PAGE_RECORD        = 'payment_page_record';
     const PAYMENT_ANALYTICS          = 'payment_analytics';
     const D2C_BUREAU_DETAIL          = 'd2c_bureau_detail';
     const D2C_BUREAU_REPORT          = 'd2c_bureau_report';
@@ -1089,6 +1090,7 @@ class Entity
         self::PAYOUT_LINK               => \RZP\Models\PayoutLink::class,
         self::SETTINGS                  => \RZP\Models\Settings::class,
         self::PAYMENT_PAGE_ITEM         => \RZP\Models\PaymentLink\PaymentPageItem::class,
+        self::PAYMENT_PAGE_RECORD       => \RZP\Models\PaymentLink\PaymentPageRecord::class,
         self::GATEWAY_TOKEN             => \RZP\Models\Customer\GatewayToken::class,
         self::ENTITY_ORIGIN             => \RZP\Models\EntityOrigin::class,
         self::SCHEDULE_TASK             => \RZP\Models\Schedule\Task::class,

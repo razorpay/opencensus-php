@@ -5838,6 +5838,117 @@ return [
         ],
     ],
 
+    'setUpPaymentPageForFileUpload' => [
+        'request'  => [
+            'url'     => '/payment_pages',
+            'method'  => 'post',
+            'content' => [
+                'title'         => 'Sample title',
+                "settings" => [
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"phone\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}]",
+                ],
+                'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
+                'view_type' => 'file_upload_page',
+                'payment_page_items' => [
+                    [
+                        'item' => [
+                            'name'        =>  'amount',
+                            'description' => NULL,
+                            'amount'      => NULL,
+                            'currency'    => 'INR',
+                        ],
+                        'mandatory'         => TRUE,
+                        'image_url'         => 'dummy',
+                        'stock'             => 10000,
+                        'min_purchase'      => 2,
+                        'max_purchase'      => 10000,
+                        'min_amount'        => NULL,
+                        'max_amount'        => NULL,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    "testPaymentPageRecordForFileUpload" => [
+        'request'  => [
+            'method'  => 'post',
+            'content' => [
+                "Email"          => 'paridhi.jain@rzp.com',
+                'Phone'          => '1234567890',
+                'contact'        => '0987654321',
+                'amount'         => '101',
+                'sms_notify'     => TRUE,
+                'email_notify'   => TRUE,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
+    "testPaymentPageRecordForFileUploadMissingUdfParams" => [
+        'request'  => [
+            'method'  => 'post',
+            'content' => [
+                "Email"          => 'paridhi.jain@rzp.com',
+                'contact'        => '0987654321',
+                'sms_notify'     => TRUE,
+                'email_notify'   => TRUE,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error_description' => 'Mandatory field entry missing for Phone'
+                ]
+            ],
+            'status_code' => 200,
+    ],
+
+    "testPaymentPageRecordForFileUploadAmountValidationFailure" => [
+        'request'  => [
+            'method'  => 'post',
+            'content' => [
+                "Email"          => 'paridhi.jain@rzp.com',
+                'Phone'          => '1234567890',
+                'contact'        => '0987654321',
+                'sms_notify'     => TRUE,
+                'email_notify'   => TRUE,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error_description' => 'Mandatory field entry missing for amount'
+                ]
+            ],
+            'status_code' => 200,
+        ],
+
+    "testPaymentPageRecordForFileUploadAmountLessTHanMinAllowed" => [
+        'request'  => [
+            'method'  => 'post',
+            'content' => [
+                "Email"          => 'paridhi.jain@rzp.com',
+                'Phone'          => '1234567890',
+                'amount'         => '10',
+                'contact'        => '0987654321',
+                'sms_notify'     => TRUE,
+                'email_notify'   => TRUE,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error_description' => 'Payment amount is lesser than the minimum amount allowed'
+                ]
+            ],
+            'status_code' => 200,
+        ],
+
     "testCreatePaymentPageWithCustomDomain" => [
         'request'  => [
             'url'     => '/payment_pages',

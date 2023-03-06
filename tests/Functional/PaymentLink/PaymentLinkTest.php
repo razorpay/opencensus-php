@@ -544,6 +544,84 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
     }
 
+    public function setUpPaymentPageForFileUpload()
+    {
+
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+        $resp = $this->startTest();
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        $entityArray = $entity->toArray();
+
+        self::assertEquals($entityArray['view_type'], 'file_upload_page');
+
+        return $resp['id'];
+    }
+
+    public function testPaymentPageRecordForFileUpload()
+    {
+        $id = $this->setUpPaymentPageForFileUpload();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id . '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $resp = $this->startTest();
+
+        $entity = $this->getDbLastEntity('payment_page_record');
+
+        $entityArray = $entity->toArray();
+
+        self::assertEquals($entityArray['primary_reference_id'], '1234567890');
+        self::assertEquals($entityArray['email'], 'paridhi.jain@rzp.com');
+        self::assertEquals($entityArray['contact'], '0987654321');
+    }
+
+    public function testPaymentPageRecordForFileUploadAmountValidationFailure()
+    {
+        $id = $this->setUpPaymentPageForFileUpload();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id . '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testPaymentPageRecordForFileUploadMissingUdfParams()
+    {
+        $id = $this->setUpPaymentPageForFileUpload();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id . '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+
+    }
+
+    public function testPaymentPageRecordForFileUploadAmountLessTHanMinAllowed()
+    {
+        $id = $this->setUpPaymentPageForFileUpload();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id . '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $this->startTest();
+
+    }
+
     public function testFetchPaymentLink()
     {
         $this->createPaymentLinkWithMultipleItem();

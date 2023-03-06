@@ -71,6 +71,7 @@ class Table
     const OFFLINE_DEVICE               = 'offline_devices';
     const IDEMPOTENCY_KEY              = 'idempotency_keys';
     const PAYMENT_PAGE_ITEM            = 'payment_page_items';
+    const PAYMENT_PAGE_RECORD          = 'payment_page_records';
     const LOW_BALANCE_CONFIG           = 'low_balance_configs';
     const MERCHANT_NOTIFICATION_CONFIG = 'merchant_notification_configs';
     const PAYOUTS_META                 = 'payouts_meta';

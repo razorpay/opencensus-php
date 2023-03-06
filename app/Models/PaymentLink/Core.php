@@ -2460,6 +2460,32 @@ class Core extends Base\Core
         return $paymentPageItem;
     }
 
+
+    public function createPaymentPageFileUploadRecord(string $paymentPageId, string $batchId, array $input)
+    {
+        //fetch existing payment page or throw error
+        $id = Entity::silentlyStripSign($paymentPageId);
+        $paymentPage = $this->repo->payment_link->findOrFail($id);
+
+        if ($paymentPage === null)
+        {
+            throw new BadRequestException(
+                'Payment Page not found for this Id.');
+        }
+
+        if ($paymentPage->getViewType() !== ViewType::FILE_UPLOAD_PAGE)
+        {
+            throw new BadRequestException(
+                'Payment Page is not created for file upload.');
+        }
+
+            return (new PaymentPageRecord\Core)->createRecord(
+                $paymentPage,
+                $batchId,
+                $input
+            );
+    }
+
     /**
      * @param \RZP\Models\PaymentLink\Entity $paymentLink
      *

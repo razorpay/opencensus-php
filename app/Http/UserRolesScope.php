@@ -332,6 +332,7 @@ class UserRolesScope
             'payment_page_get_invoice_details'         => Role::WRITER_ROLES,
             'payment_page_send_receipt'                => Role::WRITER_ROLES,
             'payment_page_save_receipt_for_payment'    => Role::WRITER_ROLES,
+            'payment_page_create_file_upload_record'   => Role::WRITER_ROLES,
 
             'payment_handle_create'                    => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER],
             'payment_handle_precreate'                 => [Role::OWNER, Role::ADMIN, Role::OPERATIONS, Role::MANAGER],
