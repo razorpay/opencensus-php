@@ -548,6 +548,12 @@ export default {
     // prod experiment ids
     'L580akR73oKnIr',
   ],
+  payment_handle_onboarding: [
+    // beta experiment ids
+    'LO8m2hKgYegroc',
+    // prod experiment ids
+    'LOB7u4XmWc6PDd',
+  ],
   pp_ecommerce: [
     // beta experiment ids
     'LHNwKf5m7I71uI',

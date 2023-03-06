@@ -151,7 +151,9 @@ export const PRODUCTS_DATA = {
   payment_handle: {
     icon: 'i-payment-handle',
     additionalCondition: (user: any): boolean =>
-      user.isAllowedView('payment_handle') && !user.findTag('i18_hide_payment_handle'),
+      user.isAllowedView('payment_handle') &&
+      user.isPaymentHandleSplitzEnabled &&
+      !user.findTag('i18_hide_payment_handle'),
   },
   cash_advance: {
     icon: 'i-rupee',

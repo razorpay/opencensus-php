@@ -1871,6 +1871,10 @@ export default class User {
     );
   }
 
+  get isPaymentHandleSplitzEnabled() {
+    return getSplitzExperimentVariant('payment_handle_onboarding')?.variables?.result === 'on';
+  }
+
   get isProductLedOnboarding() {
     return getSplitzExperimentVariant('product_led_onboarding')?.variables?.result === 'on';
   }
