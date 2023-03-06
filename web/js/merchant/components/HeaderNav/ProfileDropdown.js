@@ -310,7 +310,7 @@ export default class ProfileDropdown extends Component {
                     </GroupItem>
                   </Group>
                 </div>
-                <PaymentHandleSlug />
+                {user.isPaymentHandleSplitzEnabled && <PaymentHandleSlug />}
               </div>
             )}
             {showMobileNav && (
