@@ -62,21 +62,36 @@ class Service extends Base\Service
 
         $response = [];
 
+        $isNewCron = ((isset($input['new_cron_setup']) === true) && ($input['new_cron_setup'] === true));
+
         $maxExpectedAttempts = 0;
 
         foreach ($input[Constants::ACCOUNT_NUMBERS] as $accountNumber)
         {
             try
             {
-                $fetchInput = [
-                    Entity::CHANNEL        => $channel,
-                    Entity::ACCOUNT_NUMBER => $accountNumber,
-                    Entity::FROM_DATE      => Carbon::now(Timezone::IST)->startOfDay()->getTimestamp(),
-                    Entity::TO_DATE        => Carbon::now(Timezone::IST)->endOfDay()->getTimestamp(),
-                    Entity::SAVE_IN_REDIS  => $input[Entity::SAVE_IN_REDIS] ?? true
-                ];
+                if ($isNewCron === true)
+                {
+                    $fetchInput = [
+                        Entity::CHANNEL => $channel,
+                        Entity::ACCOUNT_NUMBER => $accountNumber,
+                        Entity::FROM_DATE => Carbon::now(Timezone::IST)->subDay()->startOfDay()->getTimestamp(),
+                        Entity::TO_DATE => Carbon::now(Timezone::IST)->subDay()->endOfDay()->getTimestamp(),
+                        Entity::SAVE_IN_REDIS => $input[Entity::SAVE_IN_REDIS] ?? true
+                    ];
+                }
+                else
+                {
+                    $fetchInput = [
+                        Entity::CHANNEL => $channel,
+                        Entity::ACCOUNT_NUMBER => $accountNumber,
+                        Entity::FROM_DATE => Carbon::now(Timezone::IST)->startOfDay()->getTimestamp(),
+                        Entity::TO_DATE => Carbon::now(Timezone::IST)->endOfDay()->getTimestamp(),
+                        Entity::SAVE_IN_REDIS => $input[Entity::SAVE_IN_REDIS] ?? true
+                    ];
+                }
 
-                $attempts[$accountNumber] = $this->core()->fetchMissingAccountStatementsForChannel($channel, $fetchInput)[Constants::EXPECTED_ATTEMPTS];
+                $attempts[$accountNumber] = $this->core()->fetchMissingAccountStatementsForChannel($channel, $fetchInput, $isNewCron)[Constants::EXPECTED_ATTEMPTS];
 
                 $maxExpectedAttempts = max($maxExpectedAttempts, $attempts[$accountNumber][Constants::EXPECTED_ATTEMPTS]);
 
@@ -105,6 +120,11 @@ class Service extends Base\Service
                 'environment'   => $this->app->environment('testing'),
                 'mode'          => $this->mode
             ]);
+
+        if ($isNewCron === true)
+        {
+             return $response;
+        }
 
         if (($this->app->environment('testing') === false) and
             ($this->mode === EnvMode::LIVE))
@@ -211,6 +231,48 @@ class Service extends Base\Service
                 'debit_bas'  => $response['debit_bas'],
                 'credit_bas' => $response['credit_bas'],
                 'end_status' => $input['end_status']
+            ]);
+
+        return $response;
+    }
+
+    public function insertMissingStatementsAndProcessNeo(array $input)
+    {
+        try
+        {
+            $accountNumber = $input['account_number'];
+
+            $channel = $input['channel'];
+
+            $updateInput = [
+                Entity::CHANNEL        => $channel,
+                Entity::ACCOUNT_NUMBER => (string)$accountNumber,
+                Constants::ACTION      => $input[Constants::ACTION] ?? Constants::INSERT
+            ];
+
+            $this->insertMissingStatements($updateInput);
+
+            $response[$accountNumber][Constants::UPDATE_MISSING_STATEMENT] = Constants::SUCCESS;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                null,
+                TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_UPDATE_DISPATCH_FAILED,
+                [
+                    Entity::ACCOUNT_NUMBER => $accountNumber,
+                    Entity::CHANNEL => $channel
+                ]
+            );
+
+            $response[$accountNumber][Constants::UPDATE_MISSING_STATEMENT] = Constants::FAILURE;
+        }
+
+        $this->trace->info(
+            TraceCode::AUTOMATED_ACCOUNT_STATEMENTS_RECON_UPDATE_DISPATCH_SUCCESS,
+            [
+                Entity::CHANNEL => $channel,
             ]);
 
         return $response;

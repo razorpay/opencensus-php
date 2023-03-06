@@ -33,6 +33,7 @@ use RZP\Mail\BankingAccount\StatementMail;
 use RZP\Jobs\BankingAccountStatementUpdate;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Admin\Service as AdminService;
+use RZP\Jobs\BankingAccountStatementReconNeo;
 use RZP\Models\Admin\Validator as AdminValidator;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -3451,7 +3452,7 @@ class Core extends Base\Core
                 ($isMerchantInactive === false));
     }
 
-    public function fetchMissingAccountStatementsForChannel($channel, $input)
+    public function fetchMissingAccountStatementsForChannel($channel, $input, $isNewCron = false)
     {
         $this->trace->info(
             TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_INITIATED,
@@ -3501,15 +3502,30 @@ class Core extends Base\Core
                 Entity::SAVE_IN_REDIS           => $input[Entity::SAVE_IN_REDIS],
             ]);
 
-        BankingAccountStatementRecon::dispatch($this->mode, [
-            Entity::CHANNEL                 => $channel,
-            Entity::ACCOUNT_NUMBER          => $input[Entity::ACCOUNT_NUMBER],
-            Entity::FROM_DATE               => $input[Entity::FROM_DATE],
-            Entity::TO_DATE                 => $input[Entity::TO_DATE],
-            BASConstants::EXPECTED_ATTEMPTS => $expectedAttempts,
-            BASConstants::PAGINATION_KEY    => $paginationKey,
-            Entity::SAVE_IN_REDIS           => $input[Entity::SAVE_IN_REDIS],
-        ])->delay($delay);
+        if ($isNewCron === true)
+        {
+            BankingAccountStatementReconNeo::dispatch($this->mode, [
+                Entity::CHANNEL                 => $channel,
+                Entity::ACCOUNT_NUMBER          => $input[Entity::ACCOUNT_NUMBER],
+                Entity::FROM_DATE               => $input[Entity::FROM_DATE],
+                Entity::TO_DATE                 => $input[Entity::TO_DATE],
+                BASConstants::EXPECTED_ATTEMPTS => $expectedAttempts,
+                BASConstants::PAGINATION_KEY    => $paginationKey,
+                Entity::SAVE_IN_REDIS           => $input[Entity::SAVE_IN_REDIS],
+            ])->delay($delay);
+        }
+        else
+        {
+            BankingAccountStatementRecon::dispatch($this->mode, [
+                Entity::CHANNEL => $channel,
+                Entity::ACCOUNT_NUMBER => $input[Entity::ACCOUNT_NUMBER],
+                Entity::FROM_DATE => $input[Entity::FROM_DATE],
+                Entity::TO_DATE => $input[Entity::TO_DATE],
+                BASConstants::EXPECTED_ATTEMPTS => $expectedAttempts,
+                BASConstants::PAGINATION_KEY => $paginationKey,
+                Entity::SAVE_IN_REDIS => $input[Entity::SAVE_IN_REDIS],
+            ])->delay($delay);
+        }
 
         $this->trace->info(TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_JOB_DISPATCHED);
 
