@@ -4,6 +4,40 @@ import { storeWithInitialState } from 'merchant/store';
 import CODOrdersTab from 'merchant/views/MagicCheckout/CODOrdersTab';
 import 'jest-location-mock';
 
+jest.mock('merchant/views/MagicCheckout/CODOrdersTab/constants', () => ({
+  ...jest.requireActual('merchant/views/MagicCheckout/CODOrdersTab/constants'),
+  TABS: [
+    {
+      id: 'reviewOrdersTab',
+      title: 'Review Orders',
+      component: <div>Review orders tab</div>,
+    },
+    {
+      id: 'approvedOrdersTab',
+      title: 'Approved Orders',
+      component: <div>Approved orders tab</div>,
+    },
+    {
+      id: 'canceledOrdersTab',
+      title: 'Canceled Orders',
+      component: <div>Canceled orders tab</div>,
+    },
+    {
+      id: 'onHoldOrdersTab',
+      title: 'On Hold Orders',
+      component: <div>OnHold orders tab</div>,
+    },
+  ],
+}));
+
+jest.mock(
+  'merchant/views/MagicCheckout/OrderStatusUpload/components/MainContent',
+  () => (props) => {
+    const { activeNav, render } = props;
+    return <div>{render(activeNav)}</div>;
+  },
+);
+
 jest.mock('merchant/views/MagicCheckout/CODOrdersTab/orderInfoDrawer', () => () => (
   <div>Order Info drawer</div>
 ));
@@ -28,7 +62,7 @@ describe('COD orders tab component', () => {
     expect(element).toBeInTheDocument();
 
     await userEvent.click(element);
-    expect(screen.getByRole('combobox', { name: 'Review Mode' })).toBeInTheDocument();
+    expect(screen.getByText(/Approved orders tab/i)).toBeInTheDocument();
   });
 
   test('should open order info drawer if order id query param is available', async () => {
