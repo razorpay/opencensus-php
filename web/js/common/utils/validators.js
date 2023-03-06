@@ -65,11 +65,13 @@ const PHONE_NUMBER_REGEX_MAP = {
   IN: /^(?:(?:\+|0{0,2})91(\s*[\-]\s*)?|[0]?)?[6789]\d{9}$/,
   /**
    * Regex to verify malaysian mobile numbers
-   * (11|1) => states a number can either start with 1 or 11
+   * (60|0) => states a number can either start with 0 or 60
+   * -* => stands for proceeding with
+   * (11|1) => states a number can be 1 or 11
    * -* => stands for proceeding with
    * [0-9]{8} => followed by 8 digits between range 0 to 9
    */
-  MY: /^(11|1)-*[0-9]{8}$/,
+  MY: /^(0|60)-*(1|11)-*[0-9]{8}$/,
 };
 
 export const isMobile = (mobile, countryCode = 'IN') => {
@@ -218,8 +220,11 @@ export const maxLength = (length, message = '') => {
   };
 };
 
-const makeValidator = (truthyFn, defaultMessage) => (message = defaultMessage) => (value) =>
-  truthyFn(value) ? undefined : message;
+const makeValidator =
+  (truthyFn, defaultMessage) =>
+  (message = defaultMessage) =>
+  (value) =>
+    truthyFn(value) ? undefined : message;
 
 export const required = makeValidator(isPresent, 'Required');
 export const email = makeValidator(isEmail, 'Invalid Email');

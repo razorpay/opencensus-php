@@ -45,7 +45,7 @@ import SuspenseWithLoader from 'common/new-ui/SuspenseWithLoader';
 const gaEvents = setGaTrack('Dashboard - Partner Submerchant - BU');
 const ORG_CONTACT_PLACEHOLDER_TEXT = {
   rzp: "Affiliate's 10 digit mobile number",
-  curlec: "Affiliate's 9 or 10 digit mobile number",
+  curlec: "Affiliate's phone number starting with 0 or country code",
 };
 const PAYMENTS_MAINTENANCE_STATUS = {
   rzp: true,
@@ -54,6 +54,11 @@ const PAYMENTS_MAINTENANCE_STATUS = {
 const PAYMENTS_DISABLED_STATUS = {
   rzp: true,
   curlec: false,
+};
+
+const MOBILE_NUMBER_MAX_LENGTH = {
+  IN: 10,
+  MY: 12,
 };
 
 // eslint-disable-next-line prettier/prettier
@@ -877,7 +882,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                       <div className="form-group">
                         <label>Contact Number</label>
                         <Field
-                          maxLength={10}
+                          maxLength={MOBILE_NUMBER_MAX_LENGTH[this.countryCode]}
                           name="contact_mobile"
                           component={InputField}
                           value={merchantContact}

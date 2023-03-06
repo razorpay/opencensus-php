@@ -21,27 +21,111 @@ const IN_MOBILE_NUMBER = [
 
 const MY_MOBILE_NUMBER = [
   {
-    number: '123456789',
+    number: '60102106280',
     isValid: true,
   },
   {
-    number: '1123456789',
+    number: '60128851782',
     isValid: true,
   },
   {
-    number: '623456789',
+    number: '60132758792',
+    isValid: true,
+  },
+  {
+    number: '60146966910',
+    isValid: true,
+  },
+  {
+    number: '60164254280',
+    isValid: true,
+  },
+  {
+    number: '60176996557',
+    isValid: true,
+  },
+  {
+    number: '60189614604',
+    isValid: true,
+  },
+  {
+    number: '60193045898',
+    isValid: true,
+  },
+  {
+    number: '601117058440',
+    isValid: true,
+  },
+  {
+    number: '0102106280',
+    isValid: true,
+  },
+  {
+    number: '0128851782',
+    isValid: true,
+  },
+  {
+    number: '0132758792',
+    isValid: true,
+  },
+  {
+    number: '0146966910',
+    isValid: true,
+  },
+  {
+    number: '0164254280',
+    isValid: true,
+  },
+  {
+    number: '0176996557',
+    isValid: true,
+  },
+  {
+    number: '0189614604',
+    isValid: true,
+  },
+  {
+    number: '0193045898',
+    isValid: true,
+  },
+  {
+    number: '01117058440',
+    isValid: true,
+  },
+  {
+    number: '102106280',
     isValid: false,
   },
   {
-    number: '1223456789',
+    number: '128851782',
     isValid: false,
   },
   {
-    number: '+601223456789',
+    number: '132758792',
     isValid: false,
   },
   {
-    number: '+60122345678',
+    number: '146966910',
+    isValid: false,
+  },
+  {
+    number: '164254280',
+    isValid: false,
+  },
+  {
+    number: '176996557',
+    isValid: false,
+  },
+  {
+    number: '189614604',
+    isValid: false,
+  },
+  {
+    number: '193045898',
+    isValid: false,
+  },
+  {
+    number: '1117058440',
     isValid: false,
   },
 ];
