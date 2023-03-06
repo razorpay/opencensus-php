@@ -774,4 +774,6 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testInvoiceFetchForResellerActivatedPartner' => $autoApprovalCaptureRequestResponse,
+    'testInvoiceFetchForActivatedResellerPartnerWithMerchantKYC' => $autoApprovalCaptureRequestResponse,
 ];

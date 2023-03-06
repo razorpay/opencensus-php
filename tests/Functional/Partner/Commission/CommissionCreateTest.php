@@ -913,6 +913,56 @@ class CommissionCreateTest extends TestCase
         $this->runRequestResponseFlow($testData);
     }
 
+    public function testInvoiceFetchForResellerActivatedPartner()
+    {
+        $testData = $this->setUpCommissionCreateWith3MTU();
+        $merchant = ['partner_type' => 'reseller'];
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+        $partnerActivation = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,'activation_status' => 'activated'];
+        $testData = $this->setupForInvoiceAutoApproval($testData, $merchantDetail, $partnerActivation, $merchant);
+
+        $now = Carbon::now(Timezone::IST);
+
+        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $now->year, 'enable');
+        $this->mockAutoApprovalFinanceExp(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceFetchWithLessSubMTestDataExpDisabled'];
+
+        $testData['response']['content'] = ['can_approve' => true];
+
+        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testInvoiceFetchForActivatedResellerPartnerWithMerchantKYC()
+    {
+        $testData = $this->setUpCommissionCreateWith3MTU();
+        $merchant = ['partner_type' => 'reseller'];
+        $merchantDetail    = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID, 'activation_status'=> 'activated'];
+        $partnerActivation = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,'activation_status' => 'activated'];
+        $testData = $this->setupForInvoiceAutoApproval($testData, $merchantDetail, $partnerActivation, $merchant);
+
+        $now = Carbon::now(Timezone::IST);
+
+        $this->mockPartnerInvoiceAutoApproval(Constants::DEFAULT_PLATFORM_MERCHANT_ID, $now->year, 'enable');
+        $this->mockAutoApprovalFinanceExp(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->mockPartnerSubMtuDatalakeQuery(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData['testInvoiceFetchWithLessSubMTestDataExpDisabled'];
+
+        $testData['response']['content'] = ['can_approve' => true];
+
+        $this->ba->proxyAuth('rzp_test_' . Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
 
     private function createInvoiceDataForLessSubM()
     {

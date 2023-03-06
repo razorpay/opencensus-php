@@ -62,7 +62,9 @@ class Service extends Base\Service
 
         $this->trace->count(Metric::COMMISSION_INVOICE_BULK_FETCH_SUCCESS_TOTAL, $input);
 
-        return $invoices->toArrayPublic();
+        $canApprove = (new Core)->canPartnerApproveInvoice();
+
+        return array_merge($canApprove, $invoices->toArrayPublic());
     }
 
     /**

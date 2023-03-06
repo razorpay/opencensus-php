@@ -991,6 +991,15 @@ class Core extends Base\Core
         return $isActivated;
     }
 
+    public function canPartnerApproveInvoice(): array
+    {
+        $merchant = $this->merchant;
+
+        $isActivated = $this->checkPartnerActivationStatus($merchant, $merchant->merchantDetail);
+
+        return ['can_approve' => $isActivated];
+    }
+
     public function createInvoicePdfAndGetFilePath(Entity $invoice)
     {
         $pdf = $this->createInvoicePdf($invoice);
