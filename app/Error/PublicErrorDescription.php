@@ -952,7 +952,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_USER_ACTION_NOT_SUPPORTED                        = 'The input action is not supported for the merchant user';
     const BAD_REQUEST_ACCESS_DENIED                                             = 'Access Denied';
     const BAD_REQUEST_DASHBOARD_IP_NOT_WHITELISTED                              = 'Dashboard cant be accessed from the current location';
-    const BAD_REQUEST_IP_NOT_WHITELISTED                                        = 'Transactions from this IP are not allowed. Contact support for help.';
+    const BAD_REQUEST_IP_NOT_WHITELISTED                                        = 'This transaction is prohibited. Contact Support for help.';
     const BAD_REQUEST_IP_WHITELISTING_NOT_ALLOWED_WHEN_OPTED_OUT                = 'IP whitelisting is not allowed when you have opted out.';
     const BAD_REQUEST_IP_FORMAT_INVALID                                         = 'One or more ips are not valid as per IPv4 nd IPv6.';
 

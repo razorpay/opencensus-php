@@ -23,7 +23,7 @@ return [
             'content'     => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Transactions from this IP are not allowed. Contact support for help.'
+                    'description' => 'This transaction is prohibited. Contact Support for help.'
                 ],
             ],
             'status_code' => 400,
@@ -52,7 +52,7 @@ return [
             'content'     => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Transactions from this IP are not allowed. Contact support for help.'
+                    'description' => 'This transaction is prohibited. Contact Support for help.'
                 ],
             ],
             'status_code' => 400,
