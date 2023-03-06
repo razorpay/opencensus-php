@@ -478,7 +478,12 @@ class GatewayEmiFileTest extends TestCase
 
         $cardNumbers = ['0000000000000006709'];
 
-        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames, $cardNumbers, 0, 1, 325, 166, 57, 450, 'sbi_emi_file');
+        $payment = $this->getLastPayment(true);
+
+        $transactionDate = Carbon::createFromTimestamp($payment['authorized_at'], Timezone::IST)->format('dmY');
+
+        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames, $cardNumbers, [$transactionDate, $transactionDate],
+            0, 1, 325, 166, 57, 102, 450, 'sbi_emi_file');
 
         Mail::assertQueued(EmiMail\File::class, function ($mail)
         {
@@ -549,7 +554,12 @@ class GatewayEmiFileTest extends TestCase
 
         $cardNumbers = ['0000000000000006709'];
 
-        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames, $cardNumbers, 2, 3, 36, 67, 17, 200, 'sbi_nc_emi_file');
+        $payment = $this->getLastPayment(true);
+
+        $transactionDate = Carbon::createFromTimestamp($payment['authorized_at'], Timezone::IST)->format('dmY');
+
+        $this->assertSbiEmiFileData($content, 3, $amountData, $merchantNames, $cardNumbers, [$transactionDate, $transactionDate], 2,
+            3, 36, 67, 17, 59, 200,  'sbi_nc_emi_file');
 
         Mail::assertQueued(EmiMail\File::class, function ($mail)
         {
@@ -677,11 +687,11 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $this->assertSbiEmiFileData($content, 1, [], [], [], 0, 1, null, null, null, null, "sbi_emi_file");
+        $this->assertSbiEmiFileData($content, 1, [], [], [], [], 0, 1, null, null, null, null, null, "sbi_emi_file");
     }
 
     // One file would be encrypted and the other not encrypted
-    protected function assertSbiEmiFileData($content, $rowCount, $amountData = [], $merchantNames = [], $cardNumbers = [], $emiFileIndex = 0, $outputFileIndex = 1, $amountOffset = null, $nameOffset = null, $cardOffset = null, $rowLength = null, $emiFileName = null)
+    protected function assertSbiEmiFileData($content, $rowCount, $amountData = [], $merchantNames = [], $cardNumbers = [], $transactionDates = [], $emiFileIndex = 0, $outputFileIndex = 1, $amountOffset = null, $nameOffset = null, $cardOffset = null, $dateOffset = null, $rowLength = null, $emiFileName = null)
     {
         $files = $this->getDbEntities('file_store')->toArray();
 
@@ -699,7 +709,7 @@ class GatewayEmiFileTest extends TestCase
 
         $fileContent = $encryptor->decrypt($fileContent);
 
-        $this->checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers, false, $amountOffset, $nameOffset, $cardOffset, $rowLength, $emiFileName);
+        $this->checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers, $transactionDates, false, $amountOffset, $nameOffset, $cardOffset, $dateOffset, $rowLength, $emiFileName);
 
         $outputFile = $files[$outputFileIndex];
 
@@ -711,10 +721,10 @@ class GatewayEmiFileTest extends TestCase
             $cardNumbers = ['0000000000000006709'];
         }
 
-        $this->checkSbiEmiFileContents($outputFile, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers, true, $amountOffset, $nameOffset, $cardOffset, $rowLength, 'sbi_emi_output_file');
+        $this->checkSbiEmiFileContents($outputFile, $fileContent, $content, $rowCount, $amountData, $merchantNames, $cardNumbers, $transactionDates, true, $amountOffset, $nameOffset, $cardOffset, $dateOffset, $rowLength, 'sbi_emi_output_file');
     }
 
-    protected function checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData = [], $merchantNames = [], $cardNumbers = [], $outputFile = false, $amountOffset, $nameOffset, $cardOffset, $rowLength, $emiFileName)
+    protected function checkSbiEmiFileContents($file, $fileContent, $content, $rowCount, $amountData = [], $merchantNames = [], $cardNumbers = [], $transactionDates = [], $outputFile = false, $amountOffset, $nameOffset, $cardOffset, $dateOffset, $rowLength, $emiFileName)
     {
         $fileRows = explode("\r\n", $fileContent);
 
@@ -723,10 +733,12 @@ class GatewayEmiFileTest extends TestCase
         $amounts = [];
         $names = [];
         $cards = [];
+        $dates = [];
 
         // Remove header
         unset($fileRows[0]);
         $fileRows = array_values($fileRows);
+
 
         foreach ($fileRows as $key => $row)
         {
@@ -735,6 +747,7 @@ class GatewayEmiFileTest extends TestCase
             $amounts[] = $amount;
             $names[] = substr($row, $nameOffset, 40);
             $cards[] = substr($row, $cardOffset, 19);
+            $dates[] = substr($row, $dateOffset, 8);
 
             $this->assertEquals($rowLength, strlen($row));
         }
@@ -762,6 +775,13 @@ class GatewayEmiFileTest extends TestCase
             $this->assertArraySelectiveEquals(
                 $cardNumbers,
                 $cards
+            );
+        }
+
+        if(empty($transactionDates) !== true) {
+            $this->assertArraySelectiveEquals(
+                $transactionDates,
+                $dates
             );
         }
 

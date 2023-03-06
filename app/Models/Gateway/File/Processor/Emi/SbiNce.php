@@ -267,7 +267,7 @@ class SbiNce extends Base
                     $this->numpad($card->getLast4(), 19) .
                     $this->numpad($principalAmount, 17) .
                     $this->strpad($this->getAuthCode($emiPayment), 6) .
-                    Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
+                    Carbon::createFromTimestamp($emiPayment['authorized_at'], Timezone::IST)->format('dmY') .
                     $this->strpad($businessName, 40) .
                     $this->numpad($subventionAmount, 17) .
                     $this->strpad('', 76);

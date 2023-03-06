@@ -300,7 +300,7 @@ class Sbi extends Base
                     $this->numpad($principalAmount, 17) .
                     $this->numpad($tenure, 3) .
                     $this->strpad($this->getAuthCode($emiPayment), 6) .
-                    Carbon::createFromTimestamp($emiPayment['authorized_at'])->format('dmY') .
+                    Carbon::createFromTimestamp($emiPayment['authorized_at'], Timezone::IST)->format('dmY') .
                     $this->strpad('Razor Pay', 40) .
                     $this->numpad($mid, 16) .
                     $this->strpad($businessName, 40) .
