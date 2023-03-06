@@ -23,6 +23,8 @@ class Constants
     const UPI_ICICI        = 'upi_icici';
     const UPI_MINDGATE     = 'upi_mindgate';
     const UPI_SBI          = 'upi_sbi';
+    const UPI_AIRTEL       = 'upi_airtel';
+    const UPI_YESBANK      = 'upi_yesbank';
     const AIRTEL_MONEY     = 'airtel_money';
     const CSB              = 'csb';
     const AXIS_MIGS        = 'axis_migs';
@@ -117,6 +119,8 @@ class Constants
             self::UPI_SBI,
             self::ICICI_EMI,
             self::HDFC_CORP,
+            self::UPI_AIRTEL,
+            self::UPI_YESBANK,
         ],
         Type::CLAIM => [
         ],
@@ -424,6 +428,8 @@ class Constants
     const MERCHANT_REFERENCE    = 'merchant_reference';
     const GATEWAY_DATA          = 'gateway_data';
     const PAYMENT_ID            = 'payment_id';
+    const GATEWAY_REFERENCE     = 'gateway_reference';
+    const NPCI_TXN_ID           = 'npci_txn_id';
 
     // Models in UPS
     const AUTHORIZE = 'authorize';

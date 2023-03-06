@@ -465,6 +465,11 @@ class Service extends UpiPaymentService
             ];
         }
 
+        if (empty($content['payment_id']) === false)
+        {
+            $entities[0]['payment_id'] = $content['payment_id'];
+        }
+
         $response['entities'] = $entities;
 
         $this->content($response, $this->action);

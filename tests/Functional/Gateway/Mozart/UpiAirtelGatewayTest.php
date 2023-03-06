@@ -2,8 +2,11 @@
 
 namespace RZP\Tests\Functional\Gateway\Mozart;
 
+use Mail;
+use Excel;
 use Carbon\Carbon;
-
+use RZP\Constants\Timezone;
+use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Method;
 use RZP\Services\RazorXClient;
 use RZP\Models\Merchant\Account;
@@ -11,6 +14,8 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Exception\RuntimeException;
 use RZP\Jobs\CorePaymentServiceSync;
 use RZP\Gateway\Upi\Base as UpiBase;
+use RZP\Excel\Import as ExcelImport;
+use RZP\Gateway\Upi\Base\Entity as Upi;
 use RZP\Models\Payment\UpiMetadata\Flow;
 use RZP\Gateway\Upi\Base\Entity as UpiEntity;
 use RZP\Models\Payment\Entity as PaymentEntity;
@@ -61,7 +66,7 @@ class UpiAirtelGatewayTest extends TestCase
         $this->fixtures->on('live')->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $this->fixtures->on('live')->create('terminal:shared_bank_account_terminal');
-        
+
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
                     ->setConstructorArgs([$this->app])
                     ->onlyMethods(['getTreatment'])
@@ -294,6 +299,119 @@ class UpiAirtelGatewayTest extends TestCase
         $this->assertEquals('refunded', $payment['status']);
     }
 
+    public function testRefundPaymentFileFlow()
+    {
+        $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        // Co Proto must be working
+        $this->assertEquals('async', $response['type']);
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content, $this->gateway);
+
+        // We should have gotten a successful response
+        $this->assertEquals(['success' => true], $response);
+
+        // The payment should now be authorized
+        $payment = $this->getEntityById('payment', $paymentId, true);
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertNotNull($payment['acquirer_data']['rrn']);
+
+        $this->capturePayment($paymentId, $payment['amount']);
+
+        $upi = $this->getDbLastUpi();
+
+        $this->assertArraySubset([
+            UpiEntity::TYPE    => UpiBase\Type::COLLECT,
+            UpiEntity::ACTION  => 'authorize',
+            UpiEntity::GATEWAY => $this->gateway,
+        ], $upi->toArray());
+
+        $this->payment = $this->refundPayment($payment['id']);
+
+        $payment = $this->getDbLastPayment();
+
+        $this->assertEquals('refunded', $payment['status']);
+
+        $refund = $this->getDbLastEntityToArray('refund');
+
+        $upi = $this->getDbLastEntityToArray('upi');
+
+        $this->fixtures->edit('upi', $upi['id'], [Upi::GATEWAY_PAYMENT_ID => 'AIR3urfgi12344']);
+
+        $refundArray[] = $refund;
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse($refundArray);
+
+        $data = $this->generateRefundsExcelForAirtelUpi();
+
+        $content = $data['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $time = Carbon::now(Timezone::IST)->format('dmY_Hi');
+
+        $this->assertEquals('file_store', $file['entity']);
+        $this->assertEquals('rzp-1415-prod-sftp', $file['bucket']);
+        $this->assertEquals('ap-south-1', $file['region']);
+        $this->assertEquals('upi/upi_airtel/refund/normal_refund_file/AirtelRefund_' . $time .'.xlsx', $file['location']);
+        $this->assertEquals('upi/upi_airtel/refund/normal_refund_file/AirtelRefund_' . $time, $file['name']);
+
+        $refundFileRows = (new ExcelImport)->toArray('storage/files/filestore/'.$file['location'])[0];
+
+        $expectedRefundFile = [
+            'org_rrn'                 => $upi['npci_reference_id'],
+            'date_and_time'           => Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('m/d/Y'),
+            'bank_org_transaction_id' => 'AIR3urfgi12344',
+            'org_amount'              => '500',
+            'refund_amount'           => '500',
+            'refund_status'           => "full",
+            'refund_reason'           => "Manual Refund",
+            'refund_id'               => $refund['id'],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedRefundFile, $refundFileRows[0]);
+    }
+
+    /** Generate refunds file for Upi Airtel
+     * @param false $date
+     * @return mixed
+     */
+    protected function generateRefundsExcelForAirtelUpi($date = false)
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'     => '/gateway/files',
+            'method'  => 'POST',
+            'content' => [
+                'type'     => 'refund',
+                'targets'  => [$this->gateway],
+                'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+        ];
+
+        if ($date === true)
+        {
+            $request['content']['on'] = Carbon::now()->format('Y-m-d');
+        }
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     /**
      * Tests if the refund callback is handled properly for both the cases
      * - Refund Success
@@ -511,7 +629,7 @@ class UpiAirtelGatewayTest extends TestCase
         ->method('getTreatment')
         ->will($this->returnCallback(
             function ($mid, $feature, $mode)
-            {                
+            {
                 if ($feature === 'api_upi_airtel_pre_process_v1')
                 {
                     return 'upi_airtel';
@@ -533,7 +651,7 @@ class UpiAirtelGatewayTest extends TestCase
         ->method('getTreatment')
         ->will($this->returnCallback(
             function ($mid, $feature, $mode)
-            {   
+            {
                 if ($feature === 'api_upi_airtel_pre_process_v1')
                 {
                     return 'upi_airtel';

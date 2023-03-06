@@ -246,4 +246,24 @@ class Constants
     const TRANSACTION_ID     = 'transaction_id';
 
     const CREATED_AT = 'created_at';
+
+    // Upi Airtel Refund File
+    const ORG_RRN                 = 'Org_RRN';
+    const DATE_AND_TIME           = 'Date_and_Time';
+    const BANK_ORG_TRANSACTION_ID = 'Bank_Org_Transaction_Id';
+    const ORG_AMOUNT              = 'Org_Amount';
+    const REFUND_AMOUNT           = 'Refund_Amount';
+    const REFUND_STATUS           = 'Refund Status';
+    const REFUND_REASON           = 'Refund Reason';
+
+    // Upi Yesbank Refund File
+    const BANK_REF                = 'Bankadjref';
+    const FLAG                    = 'flag';
+    const DATE                    = 'shtdat';
+    const AMT                     = 'adjamt';
+    const SHSER                   = 'shser';
+    const UTXID                   = 'UTXID';
+    const FILENAME                = 'filename';
+    const REASON                  = 'Reason';
+    const SPECIFY_OTHER           = 'specifyother';
 }

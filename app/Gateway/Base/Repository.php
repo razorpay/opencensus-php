@@ -55,6 +55,16 @@ class Repository extends Base\Repository
         return $hotData;
     }
 
+    public function fetchByPaymentIdsAndActionOnReplica($paymentIds, $action)
+    {
+        $replicaData =  $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+                         ->whereIn('payment_id', $paymentIds)
+                         ->where('action', '=', $action)
+                         ->get();
+
+        return $replicaData;
+    }
+
     public function fetchByPaymentIdsAndActions($paymentIds, $actions)
     {
         $hotData = $this->newQuery()

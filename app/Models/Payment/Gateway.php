@@ -1516,6 +1516,8 @@ class Gateway
         Payment\Gateway::NETBANKING_UCO         => 1618511400,
         Payment\Gateway::NETBANKING_UJJIVAN     => 1618511400,
         Payment\Gateway::NETBANKING_DBS         => 1618511400,
+        Payment\Gateway::UPI_AIRTEL             => 1675967400,
+        Payment\Gateway::UPI_YESBANK            => 1675967400,
     ];
 
     public static $channels = [

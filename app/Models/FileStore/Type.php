@@ -172,6 +172,10 @@ class Type
 
     const SBI_UPI_REFUND                    = 'sbi_upi_refund';
 
+    const AIRTEL_UPI_REFUND                 = 'airtel_upi_refund';
+
+    const YESBANK_UPI_REFUND                = 'yesbank_upi_refund';
+
     const AIRTELMONEY_WALLET_FAILED_REFUND  = 'airtelmoney_wallet_failed_refund';
 
     const AXIS_MIGS_FAILED_REFUND           = 'axis_migs_failed_refund';
@@ -413,6 +417,8 @@ class Type
             self::ICICI_UPI_REFUND,
             self::MINDGATE_UPI_REFUND,
             self::SBI_UPI_REFUND,
+            self::AIRTEL_UPI_REFUND,
+            self::YESBANK_UPI_REFUND,
             self::REPORT,
             self::BENEFICIARY_FILE,
             self::EMI_FILE,
@@ -637,6 +643,8 @@ class Type
         self::ICICI_UPI_REFUND,
         self::MINDGATE_UPI_REFUND,
         self::SBI_UPI_REFUND,
+        self::AIRTEL_UPI_REFUND,
+        self::YESBANK_UPI_REFUND,
         self::FUND_TRANSFER_DEFAULT,
         self::FUND_TRANSFER_H2H,
         self::PNB_NETBANKING_REFUND,
@@ -893,6 +901,8 @@ class Type
             self::SARASWAT_NETBANKING_REFUND,
             self::KARNATAKA_NETBANKING_REFUND,
             self::SBI_UPI_REFUND,
+            self::AIRTEL_UPI_REFUND,
+            self::YESBANK_UPI_REFUND,
             self::UCO_NETBANKING_REFUND,
             self::DBS_NETBANKING_COMBINED,
             self::DBS_NETBANKING_COMBINED_UNENCRYPTED,

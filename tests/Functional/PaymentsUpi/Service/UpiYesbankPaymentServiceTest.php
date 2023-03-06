@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Entity;
 use RZP\Models\Merchant\Account;
+use RZP\Excel\Import as ExcelImport;
 
 class UpiYesbankPaymentServiceTest extends UpiPaymentServiceTest
 {
@@ -26,7 +27,7 @@ class UpiYesbankPaymentServiceTest extends UpiPaymentServiceTest
            {
                 if ($action === 'yesbank_recon')
                 {
-                    $content[0]['Customer Ref No']          = '227121351902';
+                    $content[0]['Customer Ref No']    = '227121351902';
                 }
             });
 
@@ -212,6 +213,90 @@ class UpiYesbankPaymentServiceTest extends UpiPaymentServiceTest
         $this->assertNotNull($unexpectedUpiEntity['reconciled_at']);
     }
 
+    public function testRefundPaymentFileFlow()
+    {
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(3)->getTimestamp();
+
+        $this->makeUpiYesBankPaymentsSince($createdAt,1);
+
+        $payment = $this->getDbLastPayment();
+
+        $refund = $this->createDependentEntitiesForRefund($payment);
+
+        $this->fixtures->edit('refund', $refund['id'], ['gateway_amount' => $refund['amount']]);
+
+        $this->fixtures->edit('refund', $refund['id'], ['gateway_currency' => 'INR']);
+
+        // Changes a rrn of entity fetch response
+        $this->mockServerRequestFunction(function (&$content) use ($payment)
+        {
+            $content['payment_id'] = $payment['id'];
+        });
+
+        $refund = $this->getDbLastEntityToArray('refund');
+
+        $refundArray[] = $refund;
+
+        $this->setFetchFileBasedRefundsFromScroogeMockResponse($refundArray);
+
+        $data = $this->generateRefundsExcelForYesbankUpi();
+
+        $content = $data['items'][0];
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $time = Carbon::now(Timezone::IST)->format('dmY_Hi');
+
+        $this->assertEquals('file_store', $file['entity']);
+        $this->assertEquals('rzp-1415-prod-sftp', $file['bucket']);
+        $this->assertEquals('ap-south-1', $file['region']);
+        $this->assertEquals('upi/upi_yesbank/refund/normal_refund_file/YesbankRefundFile_' . $time .'.xlsx', $file['location']);
+        $this->assertEquals('upi/upi_yesbank/refund/normal_refund_file/YesbankRefundFile_' . $time, $file['name']);
+
+        $refundFileRows = (new ExcelImport)->toArray('storage/files/filestore/'.$file['location'])[0];
+
+        $expectedRefundFile = [
+            'bankadjref'        => '227121351900',
+            'flag'              => 'C',
+            'shtdat'            => Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)->format('m/d/Y'),
+            'adjamt'            => '500',
+            'shser'             => '227121351900',
+            'utxid'             => 'FT2022712537204130',
+            'filename'          => 'REFUND_RAZORPAY',
+            'reason'            => 'Yesbank(Manual Refunds)',
+            'specifyother'      => '500',
+            'refund_id'         => $refund['id'],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedRefundFile, $refundFileRows[0]);
+    }
+
+    /** Generate refunds file for Upi Airtel
+     * @param false $date
+     * @return mixed
+     */
+    protected function generateRefundsExcelForYesbankUpi($date = false)
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'       => '/gateway/files',
+            'method'    => 'POST',
+            'content'   => [
+                'type'      => 'refund',
+                'targets'   => ['upi_yesbank'],
+                'begin'     => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'       => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+        ];
+
+        if ($date === true)
+        {
+            $request['content']['on'] = Carbon::now()->format('Y-m-d');
+        }
+
+        return $this->makeRequestAndGetContent($request);
+    }
 
     private function makeUpiYesbankPaymentsSince(int $createdAt, int $count = 3)
     {

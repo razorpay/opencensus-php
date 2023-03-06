@@ -49,6 +49,9 @@ class Constants extends Base\Constants
         Gateway::ISG                    => 'Isg refunds',
         Gateway::PAYLATER_ICICI         => 'Icici Paylater refunds',
         Gateway::UPI_SBI                => 'UPI SBI Refunds',
+        Gateway::UPI_AIRTEL             => 'UPI AIRTEL Refunds',
+        Gateway::UPI_YESBANK            => 'UPI YESBANK Refunds',
+
     ];
 
     const SUBJECT_MAP = [
@@ -71,6 +74,8 @@ class Constants extends Base\Constants
         Gateway::ISG                    => 'Isg refunds file for ',
         Gateway::PAYLATER_ICICI         => 'Icici Paylater refunds file for ',
         Gateway::UPI_SBI                => 'UPI SBI refunds file',
+        Gateway::UPI_AIRTEL             => 'UPI AIRTEL refunds file',
+        Gateway::UPI_YESBANK            => 'UPI YESBANK refunds file',
     ];
 
     const MAILTAG_MAP = [
@@ -90,6 +95,8 @@ class Constants extends Base\Constants
         Gateway::WALLET_PAYUMONEY       => MailTags::PAYU_MONEY_REFUNDS_MAIL,
         Gateway::ISG                    => MailTags::ISG_REFUNDS_MAIL,
         Gateway::UPI_SBI                => MailTags::UPI_SBI_REFUNDS_MAIL,
+        Gateway::UPI_AIRTEL             => MailTags::UPI_AIRTEL_REFUNDS_MAIL,
+        Gateway::UPI_YESBANK            => MailTags::UPI_YESBANK_REFUNDS_MAIL,
     ];
 
     const BODY_MAP = [
@@ -109,6 +116,8 @@ class Constants extends Base\Constants
         Gateway::WALLET_PAYUMONEY       => 'Please find attached refunds information for PayUMoney',
         Gateway::ISG                    => 'Please find attached refunds file for Isg',
         Gateway::UPI_SBI                => 'Please find attached refunds file for UPI SBI',
+        Gateway::UPI_AIRTEL             => 'Please find attached refunds file for UPI AIRTEL',
+        Gateway::UPI_YESBANK            => 'Please find attached refunds file for UPI YESBANK',
     ];
 
     const MAIL_TEMPLATE_MAP = [
@@ -128,5 +137,7 @@ class Constants extends Base\Constants
         GATEWAY::NETBANKING_CANARA      => 'emails.message',
         Gateway::ISG                    => 'emails.message',
         Gateway::UPI_SBI                => 'emails.message',
+        Gateway::UPI_AIRTEL             => 'emails.message',
+        Gateway::UPI_YESBANK            => 'emails.message',
     ];
 }

@@ -63,6 +63,8 @@ class MailTags
     const AXIS_CYBERSOURCE_FAILED_REFUNDS_MAIL  = 'axis_cybersource_failed_refunds_mail';
     const FAILED_REFUNDS_MAIL                   = 'failed_refunds_mail';
     const UPI_SBI_REFUNDS_MAIL                  = 'upi_sbi_refunds_mail';
+    const UPI_AIRTEL_REFUNDS_MAIL               = 'upi_airtel_refunds_mail';
+    const UPI_YESBANK_REFUNDS_MAIL              = 'upi_yesbank_refunds_mail';
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
