@@ -516,6 +516,13 @@ class Service extends Base\Service
         return $codIntelligenceConfig !==  null && $codIntelligenceConfig->getValue() === "1";
     }
 
+    public function getManualCODOrderReviewConfig(string $merchantId) : bool
+    {
+        $manualCodOrderReviewConfig =  $this->repo->merchant_1cc_configs->
+        findByMerchantAndConfigType($merchantId, Type::MANUAL_CONTROL_COD_ORDER);
+        return $manualCodOrderReviewConfig !==  null && $manualCodOrderReviewConfig->getValue() === "1";
+    }
+
     private function add1ccConfigFlags($input, string $type)
     {
         if (in_array($type, Constants::CONFIG_FLAGS) === false) {

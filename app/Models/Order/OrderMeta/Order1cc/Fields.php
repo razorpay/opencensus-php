@@ -56,6 +56,7 @@ class Fields
     //Cod Intelligence Fields
     const COD_INTELLIGENCE_ENABLED = 'enabled';
     const COD_ELIGIBLE = 'cod_eligible';
+    const MANUAL_CONTROL_COD_ORDER  = 'manual_control_cod_order';
     const COD_ELIGIBILITY_EXPERIMENTATION = 'experimentation';
     const COD_ELIGIBILITY_RISK_TIER = 'risk_tier';
     const COD_ELIGIBILITY_RTO_REASONS = 'rto_reasons';

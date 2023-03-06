@@ -241,6 +241,8 @@ class ThirdWatchService
 
             $codIntelligenceEnabled = (new Config\Service())->getCODIntelligenceConfig($merchantId);
 
+            $manualCodOrderReviewConfig = (new Config\Service())->getManualCODOrderReviewConfig($merchantId);
+
             $codEligible = $this->evaluateCodEligibility($codIntelligenceEnabled, $rtoPredictionServiceResponse);
 
             $codIntelligenceData = [
@@ -250,6 +252,7 @@ class ThirdWatchService
                 Order1cc\Fields::COD_ELIGIBILITY_RISK_TIER => $rtoPredictionServiceRiskTier,
                 Order1cc\Fields::COD_ELIGIBILITY_RTO_REASONS => $rtoReasons,
                 Order1cc\Fields::COD_ELIGIBILITY_RTO_CATEGORY => $rtoCategory,
+                Order1cc\Fields::MANUAL_CONTROL_COD_ORDER => $manualCodOrderReviewConfig,
                 ];
 
             $this->updateCODIntelligenceDataFor1ccOrder($orderId, $codIntelligenceData);
