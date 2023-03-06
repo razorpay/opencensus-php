@@ -121,6 +121,7 @@ class Metadata
     const QUICK_PAYMENT             = 'quick-payment';
     const MAGENTO_SUBSCRIPTION      = 'magento-subscription';
     const OPENCART_SUBSCRIPTION     = 'opencart-subscription';
+    const BIGCOMMERCE               = 'bigcommerce';
 
     const INTEGRATION_VALUES = [
         self::WOOCOMMERCE               => 1,
@@ -138,6 +139,7 @@ class Metadata
         self::QUICK_PAYMENT             => 13,
         self::MAGENTO_SUBSCRIPTION      => 14,
         self::OPENCART_SUBSCRIPTION     => 15,
+        self::BIGCOMMERCE               => 16,
     ];
 
     // fraud detection keys
