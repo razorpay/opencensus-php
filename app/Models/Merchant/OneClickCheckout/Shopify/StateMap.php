@@ -7,11 +7,48 @@ namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
  */
 class StateMap
 {
-    /**
-     * Fetching the corresponding state code on Shopify
-     *
-     */
-    function getShopifyStateCode($stateCode)
+    function getShopifyStateCode($address)
+    {
+        switch ($address['country']) {
+            case 'in':
+                $shopifyStateCode = $this->getShopifyStateCodeIN($address['state_code']);
+                break;
+
+            case 'za':
+                $shopifyStateCode = $this->getShopifyStateCodeZA($address['state_code']);
+                break;
+
+            case 'my':
+                $shopifyStateCode = $this->getShopifyStateCodeMY($address['state_code']);
+                break;
+
+            default:
+                $shopifyStateCode = $address['state_code'];
+                break;
+        }
+        return $shopifyStateCode;
+    }
+
+    function getShopifyStateCodeFromName($address)
+    {
+        switch ($address['country']) {
+            case 'in':
+                $shopifyStateCode = $this->getShopifyStateCodeFromNameIN($address['state']);
+                break;
+
+            case 'my':
+                $shopifyStateCode = $this->getShopifyStateCodeFromNameMY($address['state']);
+                break;
+
+            default:
+                $shopifyStateCode = $address['state'];
+                break;
+        }
+        return $shopifyStateCode;
+    }
+
+    //Fetching the state code on Shopify using the state name for India
+    function getShopifyStateCodeIN($stateCode)
     {
 
         $shippingStateCodeMap = [
@@ -60,9 +97,53 @@ class StateMap
 
         return $shopifyStateCode;
     }
-    
-    //Fetching the state code on Shopify using the state name
-    function getShopifyStateCodeFromName($stateName)
+
+    //Fetching the state code on Shopify using the state name for South Africa
+    function getShopifyStateCodeZA($stateCode)
+    {
+
+        $shippingStateCodeMap = [
+            'GP' => 'GT',
+            'KZN' => 'NL',
+        ];
+
+        $shopifyStateCode = isset($shippingStateCodeMap[$stateCode]) ? $shippingStateCodeMap[$stateCode] : $stateCode;
+
+        return $shopifyStateCode;
+    }
+
+    //Fetching the state code on Shopify using the state name for Malaysia
+    function getShopifyStateCodeMY($stateCode)
+    {
+        $shippingStateCodeMap = [
+            '01' => 'JHR',
+            '02' => 'KDH',
+            '03' => 'KTN',
+            '04' => 'MLK',
+            '05' => 'NSN',
+            '06' => 'PHG',
+            '07' => 'PNG',
+            '08' => 'PRK',
+            '09' => 'PLS',
+            '10' => 'SGR',
+            '11' => 'TRG',
+            '12' => 'SBH',
+            '13' => 'SWK',
+            '14' => 'KUL',
+            '15' => 'LBN',
+            '16' => 'PJY',
+            'labuan federal territory' => 'labuan',
+            'federal territory of kuala lumpur' => 'kuala lumpur',
+            'malacca' => 'melaka'
+        ];
+
+        $shopifyStateCode = isset($shippingStateCodeMap[$stateCode]) ? $shippingStateCodeMap[$stateCode] : $stateCode;
+
+        return $shopifyStateCode;
+    }
+
+    //Fetching the state code on Shopify using the state name for India
+    function getShopifyStateCodeFromNameIN($stateName)
     {
         $stateCodeMap = [
             'ANDAMAN&NICOBARISLANDS'   => 'AN',
@@ -112,7 +193,20 @@ class StateMap
         ];
 
         $shopifyStateCode = isset($stateCodeMap[$stateName]) ? $stateCodeMap[$stateName] : $stateName;
-    
+
         return $shopifyStateCode;
     }
+
+    //Fetching the state code on Shopify using the state name for Malaysia
+    function getShopifyStateCodeFromNameMY($stateName)
+    {
+        $stateCodeMap = [
+            'Malacca'   => 'MLK',
+        ];
+
+        $shopifyStateCode = isset($stateCodeMap[$stateName]) ? $stateCodeMap[$stateName] : $stateName;
+
+        return $shopifyStateCode;
+    }
+
 }
