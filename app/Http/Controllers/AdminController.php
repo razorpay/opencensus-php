@@ -112,7 +112,7 @@ class AdminController extends Controller
                     $build_sub_path = 'capital/';
                     $cdn = \Config::get('app.cdn_base_url');
 
-                    if($env !== 'production'){
+                    if ($env === 'stage') {
                         $branch_name = isset($_GET['branch']) ? $_GET['branch'] . '/' : 'master/';
                         $build_sub_path .= $branch_name;
                     }

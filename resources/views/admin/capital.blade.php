@@ -30,6 +30,6 @@
   </head>
   <body>
     <div id="react-root"></div>
-    <script src="{{$cdn}}/capital/admin-los-revamp/main.js"></script>
+    <script src="{{$cdn}}/{{$build_sub_path}}admin-los-revamp/main.js"></script>
   </body>
 </html>
