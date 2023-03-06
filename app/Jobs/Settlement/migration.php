@@ -270,9 +270,8 @@ class migration extends Job
                         }
                         catch(\Throwable $e)
                         {
-                            // failure has already happened; so to avoid further processing
-                            // for older job instance; marking a FAILURE here
-                            $isFailure = true;
+                            // we will not hold up further steps of migrations in case of
+                            // any type of failures in TEST mode
 
                             // in case of logical exception (parent config not found); redispatch the jobs
                             if($e->getMessage() === SettlementServiceMigration::FAILED_TO_FETCH_PARENT_CONFIG) {
@@ -316,7 +315,7 @@ class migration extends Job
                         }
                         catch(\Throwable $e)
                         {
-                            $isFailure = true;
+                            // we will not hold up further steps of migrations in case of failures in TEST mode
                             $migrationResult[self::FAILED_STEPS][Mode::TEST][self::BANK_ACCOUNT_MIGRATION][self::STATUS] = true;
                             $migrationResult[self::FAILED_STEPS][Mode::TEST][self::BANK_ACCOUNT_MIGRATION][self::REASON] = $e->getMessage();
                         }

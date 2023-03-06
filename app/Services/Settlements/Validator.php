@@ -8,10 +8,16 @@ use RZP\Models\Contact\Validator as fundAccountValidator;
 
 class Validator extends Base\Validator
 {
+    /**
+     * @var string[] validation rules for migrating a bank account
+     * along with merchant migration (eased up validation checks compared to
+     * $createBankAccountRules to allow smooth bank account migrations)
+     * this rule is only used by settlement service so changing it.
+     */
     protected static $createBankAccountRules = [
         'org_id'             =>  'required_if:type,==,org|string|size:14',
         'merchant_id'         => 'required_if:type,!=,org|string|size:14',
-        'account_number'      => 'required|alpha_num',
+        'account_number'      => 'required|string',
         'account_type'        => 'required|in:current,saving,nodal',
         'ifsc_code'           => 'required|string',
         'beneficiary_name'    => 'required|min:4|custom',

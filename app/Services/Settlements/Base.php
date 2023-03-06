@@ -427,9 +427,12 @@ class Base
 
         $entityIdentifierValue = $isOrgAccount ?  $ba->getEntityId() : $ba->getMerchantId();
 
+        // adding trimming for account number to remove extra characters on both sides
+        $accountNumber      =  trim($ba->getAccountNumber());
+
         return [
             $entityIdentifier     => $entityIdentifierValue ,
-            'account_number'      => $ba->getAccountNumber(),
+            'account_number'      => $accountNumber,
             'account_type'        => $ba->getAccountType() !== null ? $ba->getAccountType() : 'current',
             'ifsc_code'           => $ba->getIfscCode(),
             'beneficiary_name'    => $beneName,
