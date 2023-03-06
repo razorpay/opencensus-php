@@ -33,29 +33,33 @@ const DropDownSlug = ({
   fetchPaymentHandle,
 }) => {
   const isTestMode = getIsTestMode(mode);
-  const handleData = handleInfo?.data;
-  const isSlugNotAvailable = Object.keys(handleData)?.length === 0 && !isTestMode;
-  const isSlugAvailable = handleData && Object.keys(handleData)?.length > 0 && !isTestMode;
+  const handleData = handleInfo?.data || {};
+  const isSlugNotAvailable = Object.keys(handleData).length === 0 && !isTestMode;
+  const isSlugAvailable = Object.keys(handleData).length > 0 && !isTestMode;
   const routeToPH = () => history.push(PAYMENT_HANDLE_URL);
 
-  const [paymentHandleConfig, setPaymentHandleConfig] = useState({
+  const initialState = {
     paymentHandleSlug: handleData?.slug ?? '@',
     paymentHandleUrl: handleData?.url ?? `https://razorpay.me/@`,
-  });
+  };
+
+  const [paymentHandleConfig, setPaymentHandleConfig] = useState(initialState);
 
   useEffect(() => {
     const fetchHandle = async () => {
-      await fetchPaymentHandle().then((data) =>
-        setPaymentHandleConfig({
-          paymentHandleSlug: data.data.slug,
-          paymentHandleUrl: data.data.url,
-        }),
-      );
+      await fetchPaymentHandle().then((response) => {
+        if (response) {
+          setPaymentHandleConfig({
+            paymentHandleSlug: response.data?.slug ?? '@',
+            paymentHandleUrl: response.data?.url ?? `https://razorpay.me/@`,
+          });
+        }
+      });
     };
     if (isSlugNotAvailable) {
       fetchHandle();
     }
-  }, [handleInfo.loading]);
+  }, []);
 
   const openPHShareModal = (event) => {
     openModal({
