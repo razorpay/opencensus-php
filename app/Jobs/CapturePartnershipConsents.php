@@ -4,6 +4,7 @@ namespace RZP\Jobs;
 
 use App;
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Entity;
@@ -19,6 +20,8 @@ class CapturePartnershipConsents extends Job
     const RETRY_INTERVAL = 300;
 
     const MAX_RETRY_ATTEMPT = 1;
+
+    const MUTEX_KEY_PREFIX = 'capture_consent';
 
     /**
      * @var string
@@ -59,7 +62,14 @@ class CapturePartnershipConsents extends Job
         {
             $merchant  = $this->repoManager->merchant->findOrFailPublic($this->merchantId);
 
-            $this->createLegalDocumentsIfApplicable($this->input, $merchant, $this->milestone);
+            $this->mutex->acquireAndRelease(
+                self::MUTEX_KEY_PREFIX.$this->milestone.$this->merchantId,
+                function() use($merchant){
+                    $this->createLegalDocumentsIfApplicable($this->input, $merchant, $this->milestone);
+                },
+                Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS,
+                Constants::MERCHANT_MUTEX_RETRY_COUNT);
 
             $this->delete();
         }
@@ -91,15 +101,24 @@ class CapturePartnershipConsents extends Job
         {
             $input[Consent\Entity::ENTITY_ID]   =  null;
             $input[Consent\Entity::ENTITY_TYPE] =  null;
+            $userId = $input[DEConstants::USER_ID] ?? $merchant->primaryOwner()->getId();
 
             $this->trace->info(TraceCode::CREATE_MERCHANT_CONSENTS, [
                 'message' => 'Consents are not present.',
                 'input'   => $input
             ]);
 
-            $detailService->storeConsents($merchantId, $input, $merchant->primaryOwner()->getId());
+            $detailService->storeConsents($merchantId, $input, $userId);
 
-            $documents_detail = $detailService->getDocumentsDetails($input);
+            $data = $detailService->getDocumentsDetails($input);
+
+            $documents_detail = [];
+            foreach ($data as $document_detail)
+            {
+                $content = $document_detail['content'];
+                $document_detail['content'] = str_replace('</path>', '', $content);
+                array_push($documents_detail, $document_detail);
+            }
 
             $legalDocumentsInput = [
                 DEConstants::DOCUMENTS_DETAIL => $documents_detail

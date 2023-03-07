@@ -7249,6 +7249,7 @@ class Service extends Base\Service
         {
             $mode = ($this->app['env'] === Environment::TESTING) ? Mode::TEST : Mode::LIVE;
             $input[DEConstants::IP_ADDRESS ] = $this->app['request']->ip();
+            $input[DEConstants::USER_ID]     = $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID);
             $input[DEConstants::DOCUMENTS_DETAIL] = [
                 [
                     DEConstants::TYPE => Constants::TERMS,

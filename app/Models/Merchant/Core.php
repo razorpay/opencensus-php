@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Mail;
 use Config;
 use RZP\Constants\Entity as E;
+use RZP\Http\RequestHeader;
 use RZP\Constants\Environment;
 use RZP\Models\Base\UniqueIdEntity;
 use Throwable;
@@ -6772,30 +6773,30 @@ class Core extends Base\Core
 
         return (strtolower($status) === 'on');
     }
-    
+
     /**
      * @throws BadRequestValidationFailureException
      */
     public function fetchProductWiseWorkflowStatusV2($permissionName, $productRequested, Entity $merchant): array
     {
         $productWiseWorkflowStatus = [];
-        
+
         $productInternationalField = new Merchant\ProductInternational\ProductInternationalField($merchant);
-    
+
         $productInternational = $merchant->getProductInternational();
-    
+
         $productNames = Merchant\ProductInternational\ProductInternationalMapper::LIVE_PRODUCTS;
-    
+
         // Iterating over each product and checking if product is approved or not ,
         // if not approved then we are checking whether the product is requested product
         // if it is then we are fetching the last workflow status raised for this product
         // else we are showing no action received.
-        
+
         foreach ($productNames as $productName)
         {
             $isApproved = ($productInternationalField->getProductStatus($productName, $productInternational)
                            === Merchant\ProductInternational\ProductInternationalMapper::ENABLED);
-        
+
             if ($isApproved === true)
             {
                 $productWiseWorkflowStatus[$productName] = Constants::APPROVED;
@@ -6853,23 +6854,23 @@ class Core extends Base\Core
         else
         {
             $workflowsNotExistCount = 0;
-    
+
             $internationalWorkflowList = Constants::INTERNATIONAL_WORKFLOW_LIST;
-    
+
             $permissionProductCategories =
                 array_flip(Merchant\ProductInternational\ProductInternationalMapper::PRODUCT_PERMISSION);
-    
+
             foreach ($internationalWorkflowList as $workflowType)
             {
                 $permission = Constants::MERCHANT_WORKFLOWS[$workflowType][Constants::PERMISSION];
-        
+
                 $productCategory = $permissionProductCategories[$permission];
-        
+
                 $productNames =
                     Merchant\ProductInternational\ProductInternationalMapper::PRODUCT_CATEGORIES[$productCategory];
-        
+
                 $productWiseWorkflowStatus = $this->fetchProductWiseWorkflowStatus($productNames, $workflowType, $merchant);
-        
+
                 if (empty($productWiseWorkflowStatus) === false)
                 {
                     if (array_values($productWiseWorkflowStatus)[0] === Constants::NO_ACTION_RECEIVED)
@@ -6879,7 +6880,7 @@ class Core extends Base\Core
                     $response = array_merge($response, $productWiseWorkflowStatus);
                 }
             }
-    
+
             if ($workflowsNotExistCount === count($permissionProductCategories))
             {
                 $response = $this->handleOldWorkflows($response, $merchant);
@@ -9288,6 +9289,7 @@ class Core extends Base\Core
         $input = [
             DEConstants::CONSENT            => true,
             DEConstants::IP_ADDRESS         => $this->app['request']->ip(),
+            DEConstants::USER_ID            => $this->app['request']->header(RequestHeader::X_DASHBOARD_USER_ID),
             DEConstants::DOCUMENTS_DETAIL   => [
                 [
                     DEConstants::TYPE => Constants::TERMS,

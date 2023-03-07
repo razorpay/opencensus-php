@@ -311,6 +311,7 @@ class Constants
     const URL = 'url';
     const TYPE = 'type';
     const IP_ADDRESS = 'ip_address';
+    const USER_ID = 'user_id';
     const DOCUMENTS_ACCEPTANCE_TIMESTAMP = 'documents_acceptance_timestamp';
 
     /*
