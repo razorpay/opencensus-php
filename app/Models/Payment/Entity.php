@@ -317,6 +317,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     const FILE        = 'file';
     const SIGNED_FORM = 'signed_form';
     const NACH        = 'nach';
+    const RRN         = 'rrn';
+    const HDFC        = 'hdfc';
 
     // meta field in the input
     const META                              = 'meta';
@@ -5552,6 +5554,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         $data = parent::toArrayPublicWithExpand();
 
+        $app = \App::getFacadeRoot();
+
         $merchantCore = new Merchant\Core();
 
         if ($merchantCore->isShowLateAuthAttributeFeatureEnabled($this->merchant) === true)
@@ -5602,6 +5606,21 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             and $this->isFeeBearerCustomer())
         {
             $data[self::FEE] = $this->transaction->getFee();
+        }
+
+        // This is to populate rrn from cps authorization table for hdfc gateway as we were storing incorrect rrn in api table from MIS file. This check has to be removed after the database is fixed ,otherwise increases latency
+        if($this->getGateway() == self::HDFC)
+        {
+            $paymentId = $this->getId();
+
+            $request = [
+                'fields'        => [self::RRN],
+                'payment_ids'   => [$paymentId],
+            ];
+
+            $response = $app['card.payments']->fetchAuthorizationData($request);
+
+            $data[self::ACQUIRER_DATA][self::RRN] = $response[$paymentId][self::RRN];
         }
 
         $this->setConvenienceFeeAttributesForDashboard($data);
