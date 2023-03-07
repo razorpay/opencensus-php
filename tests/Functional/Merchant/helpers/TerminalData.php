@@ -4783,6 +4783,29 @@ return [
         ]
     ],
 
+    'testCreateWalletBajajTerminal' => [
+        'request' => [
+            'content' => [
+                'gateway'                   => 'wallet_bajaj',
+                'gateway_merchant_id'       => '98982332',
+                'gateway_secure_secret'     => 'randomsecret123',
+                'gateway_secure_secret2'    => 'randomsecret1234',
+                'gateway_access_code'       => '9591',
+                'enabled_wallets'           => ['bajajpay'],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content'  => [
+                'gateway'                   => 'wallet_bajaj',
+                'gateway_merchant_id'       => '98982332',
+                //Secrets are not return back in response
+                'gateway_access_code'       => '9591',
+                'enabled_wallets'           => ['bajajpay'],
+            ]
+        ]
+    ],
+
     'testFetchMerchantsInfoForIIR' => [
         'request' => [
             'url'     => '/internal/iir/merchants',

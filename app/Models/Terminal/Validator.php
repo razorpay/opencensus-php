@@ -140,6 +140,7 @@ class Validator extends Base\Validator
         Payment\Gateway::WALLET_PHONEPESWITCH,
         Payment\Gateway::WALLET_PAYPAL,
         Payment\Gateway::WALLET_FREECHARGE,
+        Payment\Gateway::WALLET_BAJAJ,
         Payment\Gateway::WALLET_AMAZONPAY,
         Payment\Gateway::UPI_AIRTEL,
         Payment\Gateway::UPI_KOTAK,
@@ -1329,6 +1330,24 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'sometimes',
         Entity::TYPE                       => 'sometimes',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+    ];
+
+    protected static $walletBajajTerminalRules = [
+        Entity::GATEWAY                    => 'required|in:wallet_bajaj',
+        Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'required|string',
+        Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
+        Entity::ENABLED_WALLETS            => 'sometimes|array',
+    ];
+
+    protected static $walletBajajEditTerminalRules = [
+        Entity::GATEWAY_MERCHANT_ID        => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET      => 'sometimes|string',
+        Entity::GATEWAY_SECURE_SECRET2     => 'sometimes|string',
+        Entity::GATEWAY_ACCESS_CODE        => 'sometimes|string',
         Entity::STATUS                     => 'sometimes|in:pending,activated,deactivated,failed',
     ];
 

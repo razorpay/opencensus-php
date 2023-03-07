@@ -4006,6 +4006,40 @@ class TerminalTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateWalletBajajTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testEditWalletBajajTerminal()
+    {
+        $url = '/merchants/100000Razorpay/terminals';
+
+        $this->testData['testCreateWalletBajajTerminal']['request']['url'] = $url;
+
+        $this->startTest($this->testData['testCreateWalletBajajTerminal']);
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $tid = $terminal['id'];
+
+        $newTerminalMerchantId = '98981234'; //new merchant id
+
+        $data = [
+            'gateway_merchant_id'=> $newTerminalMerchantId
+        ];
+
+        $this->editTerminal($tid, $data);
+
+        $terminal = $this->getEntityById('terminal', $tid, true);
+
+        $this->assertEquals($newTerminalMerchantId, $terminal['gateway_merchant_id']);
+    }
+
     public function testFetchMerchantsInfoForIIR()
     {
         $now       = Carbon::now()->timestamp;

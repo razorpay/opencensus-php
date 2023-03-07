@@ -3562,6 +3562,9 @@ class Gateway
         self::WALLET_FREECHARGE  =>  [
             Wallet::FREECHARGE
         ],
+        self::WALLET_BAJAJ  =>  [
+            Wallet::BAJAJPAY
+        ],
         self::WALLET_AMAZONPAY  =>  [
             Wallet::AMAZONPAY
         ],
