@@ -7714,8 +7714,6 @@ trait Authorize
                 'payment_id' => $payment->getId()
                 ]);
 
-            (new Token\Metric())->pushMigrateMetrics($token, Metric::FAILED, $e);
-
             (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::MIGRATE);
         }
     }
