@@ -15,11 +15,6 @@ import AddMerchant from 'merchant/views/PartnerDashboard/SubMerchant/AddMerchant
 import ListFilter from 'merchant/views/PartnerDashboard/Commissions/Daily/ListFilter';
 import EmptyDailyList from 'merchant/views/PartnerDashboard/Commissions/components/EmptyDailyList';
 
-const volume = {
-  title: 'Transaction Amount',
-  value: (item) => <Amount value={item.transactionVolume} currency="INR" />,
-};
-
 const activeMerchants = {
   title: 'No. of Active Accounts',
   value: (item) => item.activeMerchants,
@@ -28,6 +23,13 @@ const activeMerchants = {
 const transactions = {
   title: 'No. of Transactions',
   value: (item) => item.transactions,
+};
+
+const getVolmeListItem = (currency) => {
+  return {
+    title: 'Transaction Amount',
+    value: (item) => <Amount value={item.transactionVolume} currency={currency} />,
+  };
 };
 
 @connect(
@@ -97,6 +99,10 @@ export default class CommissionsDailyList extends ListContainer {
   };
 
   render() {
+    const { user } = this.props;
+    const currency = user.merchant.currency;
+    const volume = getVolmeListItem(currency);
+
     return (
       <div class="content-wrapper CommissionList--Daily">
         <ListFilter onDatesChange={this.onDatesChange} />

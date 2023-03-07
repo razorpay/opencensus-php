@@ -18,8 +18,8 @@ function renderDetails(entity) {
       total={entity.fee}
       gst={entity.tax}
       base={entity.fee - entity.tax}
-      org={entity.orgDetails}
-      user={entity.userDetails}
+      org={entity.org}
+      user={entity.user}
     />
   );
 }

@@ -49,7 +49,7 @@ export default class CommissionEntityContainer extends Component {
                 <div class="panel-body">
                   <div class="list-group details-row-container">
                     {/* earnings breakup */}
-                    {renderDetails({ ...entity, orgDetails: org, userDetails: user })}
+                    {renderDetails({ ...entity, org, user })}
 
                     {entity.source_type === 'payment' && (
                       <>

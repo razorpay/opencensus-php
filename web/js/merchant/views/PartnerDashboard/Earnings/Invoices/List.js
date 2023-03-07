@@ -19,8 +19,8 @@ import ProcessInvoice from './ProcessInvoice';
 import { fetchCommissionInvoices } from 'merchant/reducers/commissionInvoices/list';
 import { getCurrentFinancialYear } from 'common/utils/rzp-utils';
 
-function generateColumns(userDetails) {
-  const currency = userDetails.merchant.currency;
+const generateColumns = (user) => {
+  const currency = user.merchant.currency;
   return {
     invoiceId: {
       title: 'Invoice ID',
@@ -60,7 +60,7 @@ function generateColumns(userDetails) {
         item.status === 'issued' && <ProcessInvoice commissionInvoice={item} className="btn-xs" />,
     },
   };
-}
+};
 
 const MONTHLY_COMMISSION_CURRENCY_NAME = {
   rzp: 'Rupee',
