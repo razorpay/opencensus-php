@@ -9057,6 +9057,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_METADATA_DELETE_EVENT                                  = 'CARD_METADATA_DELETE_EVENT';
 
     const BEAM_PUSH_TO_NEW_URL                                        = 'BEAM_PUSH_TO_NEW_URL';
+    const BEAM_MIGRATION_RAZORX_FLAG                                  = 'BEAM_MIGRATION_RAZORX_FLAG';
     const BEAM_PUSH_TO_NEW_URL_FAILED                                 = 'BEAM_PUSH_TO_NEW_URL_FAILED';
     const TOKEN_HQ_PRICING_EVENT_DATA                                 = 'TOKEN_HQ_PRICING_EVENT_DATA';
     const TOKEN_HQ_PRICING_EVENT                                      = 'TOKEN_HQ_PRICING_EVENT_DATA';

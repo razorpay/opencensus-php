@@ -693,6 +693,8 @@ final class RazorxTreatment
 
     const DEDICATED_TERMINAL_QR_CODE = 'dedicated_terminal_qr_code';
 
+    const MIGRATE_TO_NEW_BEAM_PUSH_URL = 'migrate_to_new_beam_push_url';
+
     const RBL_CA_USE_NEW_STATE_MACHINE = 'rbl_ca_use_new_state_machine';
 
     // Experiment to migrate disputes routes from API to disputes service

@@ -13,6 +13,7 @@ use RZP\Encryption\Type;
 use RZP\Trace\TraceCode;
 use RZP\Foundation\Application;
 use Illuminate\Support\Facades\Config;
+use RZP\Models\Merchant\RazorxTreatment;
 
 class Service
 {
@@ -110,7 +111,7 @@ class Service
     {
         try
         {
-            if ($this->shouldMigrateToNewBeamPushURL($currentJobName) === true)
+            if ($this->runExperimentOnNewBeamPushUrl($currentJobName) === true)
             {
                 $this->trace->info(TraceCode::BEAM_PUSH_TO_NEW_URL,
                     [
@@ -150,6 +151,36 @@ class Service
         }
 
         return $this->isCurrentJobInMigrationList($currentJobName);
+    }
+
+    protected function runExperimentOnNewBeamPushUrl($currentJobName): bool
+    {
+        if ((empty($currentJobName) === true) or
+            (in_array($this->env, [Environment::PRODUCTION, Environment::BETA]) === false))
+        {
+            return false;
+        }
+
+        if (empty($this->app) === true)
+        {
+            $this->app = App::getFacadeRoot();
+        }
+
+        $variant = $this->app->razorx->getTreatment(
+            $currentJobName,
+            RazorxTreatment::MIGRATE_TO_NEW_BEAM_PUSH_URL,
+            $this->mode
+        );
+
+        $this->trace->info(TraceCode::BEAM_MIGRATION_RAZORX_FLAG,
+            [
+               'variant' => $variant
+            ]
+        );
+
+        $result = ($variant === 'on') ? true : false;
+
+        return $result;
     }
 
     protected function isCurrentJobInMigrationList($currentJobName) : bool {
