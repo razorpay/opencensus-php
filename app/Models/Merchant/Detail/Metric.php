@@ -48,6 +48,11 @@ final class Metric
     const COMPANY_SEARCH_EXHAUSTED           = 'company_search_exhausted';
     const REWARD_VALIDATION_EXHAUSTED        = 'reward_validation_exhausted';
 
+    const BVS_CREATE_DOCUMENT_RECORD_REQUEST_TOTAL      = 'bvs_create_document_record_request_total';
+    const BVS_CREATE_DOCUMENT_RECORD_RESPONSE_TOTAL     = 'bvs_create_document_record_response_total';
+    const BVS_GET_DOCUMENT_RECORD_REQUEST_TOTAL         = 'bvs_get_document_record_request_total';
+    const BVS_GET_DOCUMENT_RECORD_RESPONSE_TOTAL        = 'bvs_get_document_record_response_total';
+
     const BVS_GET_GST_DETAILS_REQUEST_TOTAL  = 'bvs_get_gst_details_request_total';
     const BVS_GET_GST_DETAILS_RESPONSE_TOTAL = 'bvs_get_gst_details_response_total';
     const GET_GST_DETAILS_EXHAUSTED          = 'get_gst_details_exhausted';

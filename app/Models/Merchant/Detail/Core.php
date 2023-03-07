@@ -8,6 +8,7 @@ use Config;
 use Lib\PhoneBook;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use Razorpay\Trace\Logger;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -79,6 +80,7 @@ use RZP\Listeners\ApiEventSubscriber;
 use RZP\lib\ConditionParser\Operator;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\AvgOrderValue;
+use RZP\Models\Merchant\BvsValidation;
 use RZP\Models\Workflow\Action\MakerType;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -119,6 +121,7 @@ use RZP\Models\Merchant\AutoKyc\Bvs\Autofill as BvsAutofill;
 use RZP\Models\Workflow\Action\Entity as WorkFlowActionEntity;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
 use RZP\Models\Merchant\Account\Constants as AccountConstants;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Merchant\Request\Constants as RequestConstants;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 use RZP\Models\Workflow\Observer\Constants as ObserverConstants;
@@ -503,8 +506,41 @@ class Core extends Base\Core
 
                 return false;
             }
+
+            // send requests to OCR if all sanity checks pass
+            $ocrInput = [
+                'website_url' => $input[Entity::BUSINESS_WEBSITE]
+            ];
+
+            $this->triggerOCRService($ocrInput, Constant::WEBSITE_POLICY);
+
+            $this->triggerOCRService($ocrInput, Constant::MCC_CATEGORISATION);
+
+            $this->triggerOCRService([
+                BvsValidation\Entity::OWNER_ID              => $this->merchant->getMerchantId(),
+                BvsValidation\Entity::PLATFORM              => Constant::PG,
+                Constant::DOCUMENT_TYPE                     => Constant::SITE_CHECK,
+                Constant::DETAILS                           => $ocrInput
+            ], Constant::NEGATIVE_KEYWORDS);
         }
+
         return true;
+    }
+
+    private function triggerOCRService($input, $ocrServiceName)
+    {
+        try
+        {
+            $processor = (new Factory())->getProcessor($input, $this->merchant, $ocrServiceName);
+
+            $processor->Process();
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Logger::ERROR, TraceCode::OCR_REQUEST_FAILURE, [
+                'merchant_id' => $this->merchant->getId()
+            ]);
+        }
     }
 
     public function getUrlDetails($url)
@@ -517,6 +553,7 @@ class Core extends Base\Core
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_TIMEOUT_MS, 5000);
+
         $out = curl_exec($ch);
 
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);

@@ -54,6 +54,10 @@ class Constant
     const ACTOR_ROLE        = 'role';
     const ACTOR_EMAIL       = 'email';
     const META_DATA         = 'meta_data';
+    const DOCUMENT_TYPE     = 'document_type';
+    const SITE_CHECK        = 'site_check';
+    const WEBSITE_URL       = 'website_url';
+
 
     const ENRICHMENT_DETAIL_FIELDS = "enrichment_details_fields";
 
@@ -144,6 +148,7 @@ class Constant
     const LLP_DEED                               = 'llp_deed';
     const BUSINESS_PAN                           = 'business_pan';
     const BUSINESS_PAN_FETCH                     = 'business_pan_fetch';
+    const BUSINESS_WEBSITE                       = 'business_website';
     const SHOP_ESTABLISHMENT                     = 'shop_establishment';
     const GST_CERTIFICATE                        = 'gst_certificate';
     const MSME                                   = 'msme';
@@ -185,7 +190,11 @@ class Constant
     const ONLINE_PROVIDER                 = 'online_provider';
     const VALUE                           = 'value';
 
-    const AADHAAR_EKYC                     = 'AADHAAR_EKYC';
+    const AADHAAR_EKYC                    = 'AADHAAR_EKYC';
+
+    const MCC_CATEGORISATION              = 'mcc_categorisation';
+    const WEBSITE_POLICY                  = 'website_policy';
+    const NEGATIVE_KEYWORDS               = 'negative_keywords';
 
     const FIELD_ARTEFACT_DETAILS_MAP = [
         self::PARTNERSHIP_DEED            => [
