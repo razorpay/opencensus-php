@@ -3,9 +3,8 @@ import React, { Fragment } from 'react';
 import Input from 'common/new-ui/Input';
 import Popover, { PopoverBody } from 'common/ui/Popover';
 
-import { getTPVOptions } from 'merchant/views/Navigator/components/AddProvider/util';
-
 import { WalletsMultiSelect } from './WalletsMultiSelect';
+import { getTPVOptions } from 'merchant/views/Navigator/components/AddProvider/util';
 
 export function Step3({
   isEdit,
@@ -17,17 +16,15 @@ export function Step3({
   changeGatewayWallets,
 }) {
   const selectedProviderDetails = providers?.[selectedProvider] || {};
+  const { Gateway_details } = provider;
   const walletOptions =
     selectedProviderDetails?.['Payment Methods']?.meta_data?.wallet_metadata?.wallets || [];
 
   // Filter out the fields that are required in this step i.e step 3.
   const fields = Object.entries(selectedProviderDetails).reduce((acc, [label, value]) => {
-    if (['Gateway Name', 'optimizer_seamless_disabled'].includes(label)) {
-      return acc;
+    if (!['Gateway Name', 'optimizer_seamless_disabled'].includes(label)) {
+      acc.push({ label, ...value });
     }
-
-    acc.push({ label, ...value });
-
     return acc;
   }, []);
 
@@ -47,22 +44,29 @@ export function Step3({
                     </div>
                     <div className="col-xs-9">
                       <div>
-                        {data_value.map((method) => (
-                          <span className="payment-method-checkbox-span" key={method}>
-                            <Input.Check
-                              id={method}
-                              fieldLabel={method}
-                              checked={provider?.Gateway_details?.['Payment Methods']?.includes(
-                                method,
-                              )}
-                              onChange={(e) => changeGatewayDetails(e, method)}
-                              disabled={
-                                !isEdit || (selectedProvider === 'paytm' && method === 'wallet')
-                              } // Paytm onboarding enabled wallet method by default
-                              autoRender
-                            />
-                          </span>
-                        ))}
+                        {data_value
+                          .filter((method) => {
+                            if (method === 'upi' && Gateway_details?.optimizer_seamless_disabled) {
+                              return false;
+                            }
+                            return true;
+                          })
+                          .map((method) => (
+                            <span className="payment-method-checkbox-span" key={method}>
+                              <Input.Check
+                                id={method}
+                                fieldLabel={method}
+                                checked={provider?.Gateway_details?.['Payment Methods']?.includes(
+                                  method,
+                                )}
+                                onChange={(e) => changeGatewayDetails(e, method)}
+                                disabled={
+                                  !isEdit || (selectedProvider === 'paytm' && method === 'wallet')
+                                } // Paytm onboarding enabled wallet method by default
+                                autoRender
+                              />
+                            </span>
+                          ))}
                       </div>
                       <p className="select-payment-method-desc">
                         Select the payment methods to be enabled for the {selectedProvider}

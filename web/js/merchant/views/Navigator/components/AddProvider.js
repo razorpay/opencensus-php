@@ -352,7 +352,13 @@ export default class AddProvider extends React.Component {
       return {
         provider: {
           ...rest,
-          Gateway_details: { ...Gateway_details, optimizer_seamless_disabled: bool },
+          Gateway_details: {
+            ...Gateway_details,
+            optimizer_seamless_disabled: bool,
+            ...(bool && {
+              'Payment Methods': Gateway_details?.['Payment Methods'].filter((m) => m !== 'upi'),
+            }),
+          },
         },
       };
     });
@@ -608,11 +614,17 @@ export default class AddProvider extends React.Component {
   };
 
   trackEventOnClose = () => {
-    const { isEdit } = this.state;
+    const { isEdit, selectedProvider, steps } = this.state;
+    const currentStep = Object.keys(steps).find((key) => steps[key]?.edit);
+
     trackOptimizerEvents({
       objectName: `${isEdit ? 'Edit' : 'Add'} Provider`,
       actionName: 'close',
       screen: `Optimizer ${isEdit ? 'Edit' : 'Add'} Provider`,
+      properties: {
+        gateway: selectedProvider,
+        Step: currentStep,
+      },
     });
   };
 
