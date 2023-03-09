@@ -1322,6 +1322,209 @@ class CardPaymentServiceTest extends TestCase
         $this->razorxValue = "on";
     }
 
+    public function testAuthorizationWithHeadlessViaCpsForPaytmOptimiser()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create('terminal:card_paytm_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $payment['force_terminal_id'] = 'term_100CPaytmTrmnl';
+
+        $this->fixtures->merchant->addFeatures(['allow_force_terminal_id']);
+
+        $this->enableCpsConfig();
+
+        $this->mockCps($terminal, 'headless_mock');
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('headless_otp', $payment['auth_type']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals(2, $payment['cps_route']);
+
+        $this->assertEquals("test", $payment['reference2']);
+        $this->assertEquals("Y", $payment['two_factor_auth']);
+        $this->assertEquals("paytm", $payment['gateway']);
+
+        $this->disbaleCpsConfig();
+        $this->razorxValue = "on";
+    }
+
+    public function testAuthorizationWithHeadlessViaCpsForOptimiserBilldeskOptimiser()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create('terminal:card_billdesk_optimiser_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $payment['force_terminal_id'] = 'term_100BDOptiTrmnl';
+
+        $this->fixtures->merchant->addFeatures(['allow_force_terminal_id']);
+
+        $this->enableCpsConfig();
+
+        $this->mockCps($terminal, 'headless_mock');
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('headless_otp', $payment['auth_type']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals(2, $payment['cps_route']);
+
+        $this->assertEquals("test", $payment['reference2']);
+        $this->assertEquals("Y", $payment['two_factor_auth']);
+        $this->assertEquals("billdesk_optimizer", $payment['gateway']);
+
+        $this->disbaleCpsConfig();
+        $this->razorxValue = "on";
+    }
+
+    public function testAuthorizationWithHeadlessViaCpsForPayuOptimiser()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create('terminal:card_payu_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $payment['force_terminal_id'] = 'term_1000CPayuTrmnl';
+
+        $this->fixtures->merchant->addFeatures(['allow_force_terminal_id']);
+
+        $this->enableCpsConfig();
+
+        $this->mockCps($terminal, 'headless_mock');
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('headless_otp', $payment['auth_type']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals(2, $payment['cps_route']);
+
+        $this->assertEquals("test", $payment['reference2']);
+        $this->assertEquals("Y", $payment['two_factor_auth']);
+        $this->assertEquals("payu", $payment['gateway']);
+
+        $this->disbaleCpsConfig();
+        $this->razorxValue = "on";
+    }
+
+    public function testAuthorizationWithHeadlessViaCpsForCashfreeOptimiser()
+    {
+        $this->razorxValue = "cardps";
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $terminal = $this->fixtures->create('terminal:card_cashfree_terminal', [
+            'type' => [
+                'non_recurring' => '1',
+            ]
+        ]);
+
+        $this->fixtures->iin->create([
+            'iin'     => '556763',
+            'country' => 'IN',
+            'issuer'  => 'ICIC',
+            'network' => 'MasterCard',
+            'flows'   => [
+                '3ds'          => '1',
+                'headless_otp' => '1',
+            ]
+        ]);
+
+        $paymentArray = $this->getDefaultPaymentArray();
+        $payment['force_terminal_id'] = 'term_100CashfreeTml';
+
+        $this->fixtures->merchant->addFeatures(['allow_force_terminal_id']);
+
+        $this->enableCpsConfig();
+
+        $this->mockCps($terminal, 'headless_mock');
+
+        $this->doAuthPayment($paymentArray);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(Payment\Entity::CARD_PAYMENT_SERVICE, $payment['cps_route']);
+
+        $this->assertEquals('headless_otp', $payment['auth_type']);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $this->assertEquals(2, $payment['cps_route']);
+
+        $this->assertEquals("test", $payment['reference2']);
+        $this->assertEquals("Y", $payment['two_factor_auth']);
+        $this->assertEquals("cashfree", $payment['gateway']);
+
+        $this->disbaleCpsConfig();
+        $this->razorxValue = "on";
+    }
 
     public function testHeadlessFatalErrorInCpsResponse()
     {
@@ -5154,20 +5357,6 @@ class CardPaymentServiceTest extends TestCase
         $this->assertEquals('999999', $card['iin']);
 
         $this->disbaleCpsConfig();
-    }
-
-    protected function runPaymentCallbackFlowCashfree($response, &$callback = null)
-    {
-        $mock = $this->isGatewayMocked();
-
-        list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
-
-        if ($mock)
-        {
-            $request = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
-
-            return $this->submitPaymentCallbackRequest($request);
-        }
     }
 
     public function testCreatePaymentWithSavedNetworkTokenLocalOptimizer()

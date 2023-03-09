@@ -34,6 +34,7 @@ trait PaymentTrait
     use PaymentAtomTrait;
     use PaymentHdfcTrait;
     use PaymentAuthTrait;
+    use PaymentPayuTrait;
     use PaymentPaytmTrait;
     use PaymentSharpTrait;
     use PaymentBladeTrait;
@@ -46,6 +47,7 @@ trait PaymentTrait
     use PaymentCreationTrait;
     use PaymentAxisMigsTrait;
     use PaymentBilldeskTrait;
+    use PaymentCashfreeTrait;
     use PaymentFirstDataTrait;
     use PaymentPaysecureTrait;
     use PaymentMandateHQTrait;
@@ -61,6 +63,7 @@ trait PaymentTrait
     use PaymentWalletAirtelMoneyTrait;
     use PaymentKotakDebitEmiTrait;
     use PaymentIndusindDebitEmiTrait;
+    use PaymentBilldeskOptimizerTrait;
 
     use RequestResponseFlowTrait
     {

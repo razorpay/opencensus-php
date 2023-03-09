@@ -15,6 +15,17 @@ trait PaymentPaytmTrait
 
         list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
 
+        $this->otpFlow = false;
+
+        if ($this->isOtpCallbackUrl($url) === true)
+        {
+            $this->callbackUrl = $url;
+
+            $this->otpFlow = true;
+
+            return $this->makeOtpCallback($url);
+        }
+
         if ($mock)
         {
             $url = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);

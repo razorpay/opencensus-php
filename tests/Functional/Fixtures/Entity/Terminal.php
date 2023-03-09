@@ -5018,6 +5018,101 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createCardPaytmTerminal(array $attributes = [])
+    {
+
+        $default = [
+            'id'                        => '100CPaytmTrmnl',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'paytm',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'test_merchant_id',
+            'gateway_secure_secret'     => 'test_secure_secret',
+            'gateway_terminal_id'       => 'test_terminal_id',
+            'gateway_access_code'       => 'test_access_code',
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+                Type::OPTIMIZER => '1',
+            ],
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createCardPayuTerminal(array $attributes = [])
+    {
+
+        $default = [
+            'id'                    => '1000CPayuTrmnl',
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'payu',
+            'card'                  => 1,
+            'gateway_merchant_id'   => 'abcd',
+            'network_category'      => 'ecommerce',
+            'gateway_secure_secret' => 'secret',
+            'enabled_wallets'       => ['jiomoney','mobikwik','paytm'],
+            'mode'                  =>  '2',
+            'type'                  => [
+                Type::NON_RECURRING => '1',
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+                Type::OPTIMIZER => '1',
+            ],
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createCardBilldeskOptimiserTerminal(array $attributes = [])
+    {
+
+        $default = [
+            'id'                        => '100BDOptiTrmnl',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'billdesk_optimizer',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_secure_secret2'    => 'secret',
+            'mode'                      => 2,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+                Type::OPTIMIZER => '1',
+            ],
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createCardCashfreeTerminal(array $attributes = [])
+    {
+
+        $default = [
+            'id'                    => '100CashfreeTml',
+            'merchant_id'           => '10000000000000',
+            'gateway'               => 'cashfree',
+            'card'                  => 1,
+            'gateway_merchant_id'   => 'abcd',
+            'network_category'      => 'ecommerce',
+            'gateway_secure_secret' => 'secret',
+            'type'                  => [
+                Type::NON_RECURRING => '1',
+                Type::DIRECT_SETTLEMENT_WITH_REFUND => '1',
+                Type::OPTIMIZER => '1',
+            ],
+        ];
+
+        $attributes = array_merge($default, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createPaytmIntentTerminal()
     {
         $attributes = [

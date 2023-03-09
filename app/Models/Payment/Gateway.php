@@ -1954,6 +1954,28 @@ class Gateway
         self::SHARP => [
             Network::VISA,
             Network::MC,
+        ],
+        self::PAYU => [
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
+        ],
+        self::BILLDESK_OPTIMIZER => [
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
+            Network::AMEX,
+            Network::DICL,
+        ],
+        self::PAYTM => [
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
+        ],
+        self::CASHFREE => [
+            Network::VISA,
+            Network::MC,
+            Network::RUPAY,
         ]
     ];
 

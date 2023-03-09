@@ -425,7 +425,8 @@ class CardPaymentService
         }
 
         if ((in_array($gateway, Payment\Gateway::OPTIMIZER_CARD_GATEWAYS, true) and
-            ($action === Action::CALLBACK)))
+            ($action === Action::CALLBACK) and
+            ($input['gateway']['type'] !== 'otp')))
         {
             $dynamicContent = $input['gateway'];
 
