@@ -13,6 +13,26 @@ return [
             'content' => [],
         ],
     ],
+    'testAutoPaymentCardWithDCC' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+    'testAutoPaymentCardWithDCCAfterCardChange' => [
+        'request' => [
+            'content' => [],
+            'method'    => 'POST',
+            'url'       => '/reminders/send/test/payment/card_auto_recurring/%s',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
     'testAutoPaymentCard' => [
         'request' => [
             'content' => [],

@@ -3392,6 +3392,24 @@ EOT;
                     ->first();
     }
 
+    public function fetchSubscriptionIdAndRecurringType(string $subscriptionId, string $tokenId, $recurringTypes, $paymentStatuses)
+    {
+        $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
+
+        $query = $this->newQuery()
+                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                    ->whereIn(Entity::RECURRING_TYPE, $recurringTypes)
+                    ->whereIn(Entity::STATUS, $paymentStatuses);
+
+        if (empty($tokenId) != true)
+        {
+            $query = $query->where(Entity::TOKEN_ID, $tokenId);
+        }
+
+        return $query->orderBy(Entity::CREATED_AT, 'desc')
+                     ->get();
+    }
+
     public function fetchByIdandSubscriptionId(string $paymentId, string $subscriptionId)
     {
         Entity::verifyIdAndStripSign($paymentId);

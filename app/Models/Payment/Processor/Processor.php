@@ -1942,6 +1942,59 @@ class Processor
 
             $this->addOrderIdToInputForExternalSubscription($input);
         }
+
+        $shouldCheckForDCC = $this->shouldApplyDCConSubscriptionPayments($payment);
+
+        if ($shouldCheckForDCC === true and $payment->isRecurringTypeAuto() === true and $payment->getMethod() === Method::CARD and $payment->isRecurring() === true)
+        {
+            $tokenId = '';
+
+            if ((isset($input['token_id']) === true) and empty($input['token_id']) === false)
+            {
+                $tokenId = $input['token_id'];
+            }
+
+            $subscriptionsPayments = $this->repo->payment->fetchSubscriptionIdAndRecurringType($input[Payment\Entity::SUBSCRIPTION_ID], $tokenId, ['initial', 'card_change'], ['captured', 'refunded']);
+
+            $targetPaymentId = '';
+
+            foreach ($subscriptionsPayments as $subscriptionsPayment)
+            {
+                if ($subscriptionsPayment->getRecurringType() === Payment\RecurringType::CARD_CHANGE)
+                {
+                    $targetPaymentId = $subscriptionsPayment->getId();
+
+                    break;
+                }
+                elseif ($subscriptionsPayment->getTokenId() === $this->subscription->getTokenId() or $subscriptionsPayment->getGlobalTokenId() === $this->subscription->getTokenId())
+                {
+                    if ($subscriptionsPayment->getStatus() === Status::CAPTURED)
+                    {
+                        $targetPaymentId = $subscriptionsPayment->getId();
+
+                        break;
+                    }
+                    else
+                    {
+                        $targetPaymentId = $subscriptionsPayment->getId();
+                    }
+                }
+            }
+
+            if (empty($targetPaymentId) === false)
+            {
+                $paymentMeta = $this->repo->payment_meta->findByPaymentId($targetPaymentId);
+
+                if (empty($paymentMeta) === false)
+                {
+                    $input['dcc_currency'] = $paymentMeta->getGatewayCurrency();
+
+                    $dccInfo = (new Payment\Service)->getDCCInfo($payment->getAmount(), $payment->getCurrency(), $payment->merchant->getDccRecurringMarkupPercentage());
+
+                    $input['currency_request_id'] = $dccInfo['currency_request_id'];
+                }
+            }
+        }
     }
 
     protected function addOrderIdToInputForExternalSubscription(array & $input)
@@ -3457,6 +3510,44 @@ class Processor
                 TraceCode::PAYPAL_PAYMENT_VIA_NBPLUS_SPLITZ_ERROR
             );
         }
+        return false;
+    }
+
+    protected function shouldApplyDCConSubscriptionPayments($payment): bool
+    {
+        try
+        {
+            $properties = [
+                'id'            => $payment->merchant->getId(),
+                'experiment_id' => $this->app['config']->get('app.dcc_on_auto_subscription_payments_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $payment->merchant->getId(),
+                    ]),
+            ];
+
+            $this->trace->info(TraceCode::FRESHDESK_CREATE_TICKET_INPUT_LOG, $properties);
+
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+
+            $variant = $response['response']['variant']['name'] ?? '';
+
+            $this->trace->info(TraceCode::SPLITZ_RESPONSE, $response);
+
+            if ($variant === 'variant_on')
+            {
+                return true;
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SUBSCRIPTION_AUTO_PAYMENT_DCC_SPLITZ_ERROR
+            );
+        }
+
         return false;
     }
 

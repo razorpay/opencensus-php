@@ -327,6 +327,313 @@ class SubscriptionPaymentTest extends TestCase
         $this->assertEquals($response, []);
     }
 
+    private function getDefaultPaymentFlowsRequestData($iin = null, $amount = 99900)
+    {
+        if ($iin === null)
+        {
+            $iin = $this->fixtures->iin->create(['iin' => '414366', 'country' => 'US', 'issuer' => 'UTIB', 'network' => 'Visa',
+                                                 'flows'   => ['3ds' => '1', 'pin' => '1', 'otp' => '1',]]);
+        }
+
+        $flowsData = [
+            'content' => ['amount' => $amount, 'currency' => 'INR', 'iin' => $iin->getIin()],
+            'method'  => 'POST',
+            'url'     => '/payment/flows',
+        ];
+
+        return $flowsData;
+    }
+
+    protected function mockSplitzTreatment($output)
+    {
+        $this->splitzMock = \Mockery::mock(SplitzService::class)->makePartial();
+
+        $this->app->instance('splitzService', $this->splitzMock);
+
+        $this->splitzMock
+            ->shouldReceive('evaluateRequest')
+            ->andReturn($output);
+    }
+
+    public function testAutoPaymentCardWithDCCAfterCardChange()
+    {
+        $this->subscription->customer_id = null;
+
+        $this->mockSession();
+
+        $mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
+
+        $this->app->instance('mandateHQ', $mandateHQ);
+
+        $mandateHQ->shouldReceive('isBinSupported')
+                  ->andReturnUsing(function ()
+                  {
+                      return false;
+                  });
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->ba->privateAuth();
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $payment = $this->cardPayment;
+
+        $payment['subscription_id'] = $this->subscription->getPublicId();
+        $payment['card']['number'] = '4012010000000007';
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $payment,
+        ];
+
+        $this->ba->publicAuth();
+
+        $result = $this->makeRequestAndGetContent($request);
+
+        $this->subscription->setStatus(Subscription\Status::AUTHENTICATED);
+
+        $this->capturePayment($result['razorpay_payment_id'], $this->cardPayment['amount']);
+
+        $iin = $this->fixtures->iin->create([
+                                         'iin'       => '555555',
+                                         'country'   => 'US',
+                                         'type'      => 'credit',
+                                         'recurring' => 1,
+                                     ]);
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData($iin, 500));
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardChangeCardCurrency = $responseContent['card_currency'];
+        $cardChangeCurrencyRequestId = $responseContent['currency_request_id'];
+
+        $paymentArray = array_merge($this->cardPayment, [
+            'amount' => 500,
+            'subscription_card_change' => true,
+        ]);
+        $paymentArray['card']['number'] = '5555555555554444';
+        $paymentArray['subscription_id'] = $this->subscription->getPublicId();
+        $paymentArray['dcc_currency'] = $cardChangeCardCurrency;
+        $paymentArray['currency_request_id'] = $cardChangeCurrencyRequestId;
+        $paymentArray['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $this->ba->publicAuth();
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $paymentArray,
+        ];
+
+        $result = $this->makeRequestAndGetContent($request);
+
+        $this->refundAuthorizedPayment($result['razorpay_payment_id']);
+
+        $cardChangePayment = $this->getDbLastEntity(Entity::PAYMENT);
+
+        $newToken = $this->getDbLastEntity(Entity::TOKEN);
+
+        $this->assertEquals($cardChangePayment->getTokenId(), $newToken->getId());
+
+        $this->subscription->recurring_type = 'auto';
+
+        $this->ba->subscriptionsAuth();
+
+        $order = $this->fixtures->create(
+            'order',
+            ['amount' => $this->cardPayment['amount']]);
+
+        $subPayment = $this->cardPayment;
+
+        unset($subPayment['card']);
+
+        $subPayment['subscription_id'] = $this->subscription->getPublicId();
+
+        $paymentArray = array_merge($subPayment, [
+            'token' => $newToken->getPublicId(),
+            'order_id' => $order->getPublicId(),
+        ]);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/subscriptions',
+            'content' => $paymentArray,
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($content['razorpay_payment_id'], 4));
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $payment->getId(),
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $adminDashboardPayment = json_decode($response->getContent(), true);
+
+        $this->assertEquals($payment->getId(), $paymentMeta['payment_id']);
+        $this->assertEquals($cardChangeCardCurrency, $paymentMeta['gateway_currency']);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->assertEquals($this->subscription->getId(), $payment->getSubscriptionId());
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertFalse(empty($payment->getTokenId()));
+        $this->assertFalse(empty($payment->getCardId()));
+        $this->assertEquals($payment->getTokenId(), $newToken->getId());
+        $this->assertTrue($payment->isRecurringTypeAuto());
+
+        $this->assertEquals(true, $adminDashboardPayment['dcc']);
+        $this->assertEquals($cardChangeCardCurrency, $adminDashboardPayment['gateway_currency']);
+        $this->assertEquals($paymentMeta['forex_rate'], $adminDashboardPayment['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $adminDashboardPayment['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $adminDashboardPayment['dcc_mark_up_percent']);
+    }
+
+    public function testAutoPaymentCardWithDCC()
+    {
+        $mandateHQ = Mockery::mock('RZP\Services\MandateHQ', [$this->app]);
+
+        $this->app->instance('mandateHQ', $mandateHQ);
+
+        $mandateHQ->shouldReceive('isBinSupported')
+                  ->andReturnUsing(function ()
+                  {
+                      return false;
+                  });
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'variant_on',
+                ]
+            ]
+        ];
+
+        $this->mockSplitzTreatment($output);
+
+        $this->ba->privateAuth();
+
+        $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
+        $responseContent = json_decode($response->getContent(), true);
+
+        $cardCurrency = $responseContent['card_currency'];
+        $currencyRequestId = $responseContent['currency_request_id'];
+
+        $payment = $this->cardPayment;
+
+        $payment['subscription_id'] = $this->subscription->getPublicId();
+        $payment['card']['number'] = '4012010000000007';
+        $payment['dcc_currency'] = $cardCurrency;
+        $payment['currency_request_id'] = $currencyRequestId;
+        $payment['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::CHECKOUTJS;
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $payment,
+        ];
+
+        $this->ba->publicAuth();
+
+        $result = $this->makeRequestAndGetContent($request);
+
+        $token = $this->getDbLastEntity(Entity::TOKEN);
+
+        $this->subscription->setStatus(Subscription\Status::AUTHENTICATED);
+        $this->subscription->recurring_type = 'auto';
+
+        $this->capturePayment($result['razorpay_payment_id'], $this->cardPayment['amount']);
+
+        $this->ba->subscriptionsAuth();
+
+        $order = $this->fixtures->create(
+            'order',
+            ['amount' => $this->cardPayment['amount']]);
+
+        $subPayment = $this->cardPayment;
+
+        unset($subPayment['card']);
+
+        $subPayment['subscription_id'] = $this->subscription->getPublicId();
+
+        $paymentArray = array_merge($subPayment, [
+            'token' => $token->getPublicId(),
+            'order_id' => $order->getPublicId(),
+        ]);
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/subscriptions',
+            'content' => $paymentArray,
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, substr($content['razorpay_payment_id'], 4));
+
+        $payment = $this->getDbLastEntity(Entity::PAYMENT);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals($payment->getId(), $paymentMeta['payment_id']);
+        $this->assertEquals($cardCurrency, $paymentMeta['gateway_currency']);
+
+        $this->ba->adminAuth();
+
+        $paymentFetchRequestData = [
+            'method'  => 'GET',
+            'url'     => '/admin/payment/' . $payment->getId(),
+        ];
+
+        $response = $this->sendRequest($paymentFetchRequestData);
+        $adminDashboardPayment = json_decode($response->getContent(), true);
+
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $this->assertEquals($this->subscription->getId(), $payment->getSubscriptionId());
+        $this->assertTrue($payment->isAuthorized());
+        $this->assertFalse(empty($payment->getTokenId()));
+        $this->assertFalse(empty($payment->getCardId()));
+        $this->assertEquals($this->customer->getId(), $payment->customer_id);
+        $this->assertEquals($payment->getTokenId(), $token->getId());
+        $this->assertTrue($payment->isRecurringTypeAuto());
+
+        $this->assertEquals(true, $adminDashboardPayment['dcc']);
+        $this->assertEquals($cardCurrency, $adminDashboardPayment['gateway_currency']);
+        $this->assertEquals($paymentMeta['forex_rate'], $adminDashboardPayment['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $adminDashboardPayment['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $adminDashboardPayment['dcc_mark_up_percent']);
+    }
+
     public function testAutoPaymentCard()
     {
         $request = [
@@ -336,8 +643,6 @@ class SubscriptionPaymentTest extends TestCase
         ];
 
         $this->ba->publicAuth();
-
-
 
         $this->makeRequestAndGetContent($request);
 
