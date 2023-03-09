@@ -431,7 +431,7 @@ class CapitalSubmerchantUtility
                 TraceCode::BAD_REQUEST_ADDED_SUBMERCHANT_BUT_CC_APPLICATION_NOT_CREATED,
                 [
                     'exception'   => $ex,
-                    'description' => 'Account created but corporate card application could not be created. Please contact support.',
+                    'description' => 'Account created but LOC application could not be created. Please contact support.',
                 ]
             );
 

@@ -1,263 +1,414 @@
-<!doctype html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<!DOCTYPE html>
+<html
+    xmlns="http://www.w3.org/1999/xhtml"
+>
 <head>
-    <title>
-    </title>
-    <!--[if !mso]><!-- -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <!--<![endif]-->
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,400;0,600;0,800;1,700&display=swap"
+          rel="stylesheet">
     <style type="text/css">
-        #outlook a { padding:0; }
-        .ReadMsgBody { width:100%; }
-        .ExternalClass { width:100%; }
-        .ExternalClass * { line-height:100%; }
-        body { margin:0;padding:0;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%; }
-        table, td { border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt; }
-        img { border:0;height:auto;line-height:100%; outline:none;text-decoration:none;-ms-interpolation-mode:bicubic; }
-        p { display:block;margin:13px 0; }
+        body {
+            font-family: 'Mulish', sans-serif !important;
+        }
+
+        .container {
+            display: table;
+            margin: 0px auto;
+            background-color: #f3f3f3;
+        }
+
+        .main {
+            max-width: 550px;
+            background-color: #ffffff;
+        }
+
+        .imgeContainer {
+            width: 100%;
+        }
+
+        .contents {
+            margin: 30px 25px;
+        }
+
+        .textContainer {
+            font-size: 18px;
+            line-height: 20px;
+            text-align: Left;
+            font-weight: 400;
+            padding: 0px 10px;
+            color: #060606;
+        }
+
+        .paragraph {
+            margin: 20px 0px;
+        }
+
+        .highlight {
+            font-weight: 700;
+        }
+
+        .tableContainer {
+            border-radius: 10px;
+            width: 100%;
+            background-color: #f2f2f2;
+            margin: 50px 0px 50px;
+        }
+
+        .tableContents {
+            display: flex;
+        }
+
+        .tableContentsMiddle {
+            width: 100%;
+        }
+
+        .tableHeadBlue {
+            background-color: #4297fc;
+            border-radius: 10px 0px 0px 0px;
+            color: #ffffff !important;
+            font-weight: 700;
+            font-size: 18px !important;
+            text-align: center !important;
+            padding: 35px 45px !important;
+        }
+
+        .tableHeadGrey {
+            background-color: #dbdbdb;
+            border-radius: 0px 10px 0px 0px;
+            color: #174078 !important;
+            font-weight: 700;
+            font-size: 18px !important;
+            padding: 35px 45px !important;
+        }
+
+        .tableCell {
+            padding: 25px 35px;
+            width: 50%;
+            text-align: left;
+            font-size: 15px;
+            color: #1a2145;
+        }
+
+        .tableBorderRight {
+            border-right: 2px dashed #174078;;
+        }
+
+        .tableBodyLeft {
+            background-color: #f5fbff;
+        }
+
+        .tableBodyRight {
+            background-color: #f5f5f5;
+        }
+
+        .tableBodyMiddle {
+            background-color: #174078;
+            font-size: 18px;
+            font-weight: 500;
+            color: #ffffff;
+            width: 100%;
+            white-space: nowrap;
+            padding: 15px 0px;
+            text-align: center;
+        }
+
+        .tableBorderRadiusLeft {
+            border-radius: 0px 0px 0px 10px;
+            border-bottom: none;
+        }
+
+        .tableBorderRadiusRight {
+            border-radius: 0px 0px 10px 0px;
+            border-bottom: none;
+        }
+
+        .buttonContainer {
+            display: table;
+            margin: 40px auto;
+        }
+
+        .blueButtonLoc {
+            background-color: #0d6fe6;
+            color: #ffffff !important;
+            font-style: none;
+            text-decoration: none;
+            padding: 20px 35px;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .boldText {
+            font-weight: 700;
+            line-height: 20px;
+            padding: 20px 10px;
+        }
+
+        .listContainer {
+            margin: 20px 10px;
+        }
+
+        .listItemContainer {
+            color: #23496d;
+            font-size: 18px;
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .listImageContainer {
+            width: 15%;
+        }
+
+        .listImage {
+            width: 90%;
+        }
+
+        .listDetailsContainer {
+            padding: 5px;
+            margin: 0px 0px 0px 5px;
+        }
+
+        .listDetailsBold {
+            font-weight: 700;
+        }
+
+        .bottomContainer {
+            margin: 40px auto;
+            display: table;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .textBold {
+            font-weight: bold;
+        }
+
+        .bottomContainerThanks {
+            margin: 40px auto;
+            display: table;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .textBoldBlue {
+            font-weight: bold;
+            color: #4297fc;
+        }
+
+        .footerContainer {
+            background-color: #1a2145;
+            color: #ffffff;
+            width: 100%;
+            display: table;
+            margin: 0px auto;
+            text-align: center;
+        }
+
+        .footerImage {
+            margin: 15px 0px;
+        }
     </style>
     <!--[if !mso]><!-->
     <style type="text/css">
-        @media only screen and (max-width:480px) {
-            @-ms-viewport { width:320px; }
-            @viewport { width:320px; }
+        @media only screen and (max-width: 480px) {
+            @-ms-viewport {
+                width: 320px;
+            }
+            @viewport {
+                width: 320px;
+            }
         }
     </style>
-    <!--<![endif]-->
-    <!--[if mso]>
-    <xml>
-        <o:OfficeDocumentSettings>
-            <o:AllowPNG/>
-            <o:PixelsPerInch>96</o:PixelsPerInch>
-        </o:OfficeDocumentSettings>
-    </xml>
-    <![endif]-->
-    <!--[if lte mso 11]>
-    <style type="text/css">
-        .outlook-group-fix { width:100% !important; }
-    </style>
-    <![endif]-->
-    <style type="text/css">
-        @media only screen and (min-width:480px) {
-            .mj-column-per-100 { width:100% !important; max-width: 100%; }
-        }
-    </style>
-    <style type="text/css">
-    </style>
+    <style type="text/css"></style>
 </head>
-<body style="background-color:#1E2442;">
-<div style="background-color:#1E2442;">
-    <!--[if mso | IE]>
-    <table
-        align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-    >
-        <tr>
-            <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-    <![endif]-->
-    <div class="max-width-override" style="background: #171B2F; background-color: #171B2F; Margin: 0px auto; max-width: unset;">
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background:#171B2F;background-color:#171B2F;width:100%;">
-            <tbody>
-            <tr>
-                <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                    <!--[if mso | IE]>
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td
-                                class="" style="vertical-align:top;width:600px;"
-                            >
-                    <![endif]-->
-                    <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                            <tbody>
-                            <tr>
-                                <td style="vertical-align:top;padding:0px;">
-                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-                                        <tr>
-                                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-                                                <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="header" style="box-sizing: border-box; padding-top: 16px; max-width: 100%;"> <div class="content branding rzp" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; padding-bottom: 16px;"><div class="branding-content" style="text-align: center; width: fit-content; margin: 0 auto; font-size: 12px; line-height: 1.5;"><div class="content-element logo" style="display: inline-block; vertical-align: middle; height: 18px; width: 85px;"><img src="https://cdn.razorpay.com/static/assets/logo/rzpX.png" width="100px" style="height: 100%; width: 100%;"></div></div></div><div class="content title highlight" style="border-top: 2px solid #528ff0; width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; padding-left: 16px; padding-right: 16px; background-color: #242b4d; padding-top: 24px;"><div class="title-content" style="text-align: center; width: fit-content; margin: 0 auto;"></div></div></div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+<body style="background-color: #f3f3f3">
+<div class="container">
+    <div class="main">
+        <div class="imgeContainer">
+            <img
+                src="https://cdn.razorpay.com/static/assets/email/loc/loc_head_section.png"
+                alt="header"
+                class="imgeContainer"
+            />
+        </div>
+        <div class="contents">
+            <div class="textContainer">
+                <div class="paragraph">Congratulations!</div>
+                <div class="paragraph">
+                    {{$merchant['name']}} has partnered with Razorpay to help you with your
+                    short-term loan requirements.
+                </div>
+                <div class="paragraph">
+                    Razorpay <span class="highlight">'Line of Credit'</span> powered
+                    by Gromor Finance is made to help businesses like yours with their
+                    planned & unplanned cash requirements.
+                </div>
+            </div>
+            <div class="tableContainer">
+                <div class="tableContents">
+                    <div class="tableCell tableHeadBlue tableBorderRight">
+                        Line of Credit
                     </div>
-                    <!--[if mso | IE]>
-                    </td>
-                    </tr>
-                    </table>
-                    <![endif]-->
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <!--[if mso | IE]>
-    </td>
-    </tr>
-    </table>
-    <table
-        align="center" border="0" cellpadding="0" cellspacing="0" class="max-width-override-outlook" style="width:600px;" width="600"
-    >
-        <tr>
-            <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-    <![endif]-->
-    <div class="max-width-override" style="Margin: 0px auto; max-width: unset;">
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-            <tbody>
-            <tr>
-                <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                    <!--[if mso | IE]>
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td
-                                class="" style="vertical-align:top;width:600px;"
-                            >
-                    <![endif]-->
-                    <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                            <tbody>
-                            <tr>
-                                <td style="vertical-align:top;padding:0px;">
-                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-                                        <tr>
-                                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-                                                <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="card secondary title informative descriptive" style="width: 85%; width: calc(46000% - 211600px); max-width: 460px; min-width: 308px; margin-left: auto; margin-right: auto; box-sizing: border-box; background-color: #242b4d; padding-bottom: 16px; padding-left: 24px; padding-right: 24px;">
-                                                        <div class="center-align" style="text-align: center;"><img class="image margin-top-0 medium" src="https://cdn.razorpay.com/static/assets/email/x_merchant_added.png" style="margin: 8px; background: transparent; margin-top: 0px; height: 150px;" height="80">
-                                                        </div>
-                                                        <div class="center-align font-size-18 font-color-primary line-height-26" style="text-align: center; font-size: 18px; color: #FFF; line-height: 26px;">
-                                                            HURRAY!
-                                                        </div>
-                                                        <div class="center-align" style="text-align: center;">
-                                                            <div class="puck para" style="margin: 0; padding: 12px 0;">
-                                                                <div class="bar" style="margin: 0px auto; width: 24px; height: 4px; background-color: #08CA73;"></div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="font-size-medium para-dark" style="color: #9195A6; font-size: 14px;line-height: 1.8;">
-                                                            <div class="para margin-bottom-8" style="margin: 0; margin-bottom: 20px;">
-                                                                Your Partner, {{$merchant['name']}}, has reffered you to RazorpayX Line of Credit!
-                                                            </div>
-                                                            <div class="para margin-bottom-24" style="font-size: 15px; color: #F8F9FB; margin: 0 0 5px; font-weight: bold;">
-                                                                Reasons why our line of credit is better than taking a business loan:
-                                                            </div>
-                                                            <div class="para margin-bottom-24" style="color: #F8F9FB; margin: 0; margin-bottom: 20px;">
-                                                                <ul style="list-style-type:disc;">
-                                                                    <li>Get collateral free credit line, access cash up to 25 lakhs with 24*7 withdrawals for your business.
-                                                                    </li>
-                                                                    <li>We offer low interest rates starting from 1.5%.
-                                                                    </li>
-                                                                    <li>Line of credit comes with 100% flexibility and no pre closure charges.
-                                                                    </li>
-                                                                    <li>Reduced interest flow - you can pay as you use.
-                                                                    </li>
-                                                                </ul>
-                                                            </div>
-                                                            <div class="para margin-bottom-24" style="color: #F8F9FB; margin: 0 0 4px;">
-                                                                To get started, simply click on the "Get Started" link below and follow the instructions to submit your application.
-                                                            </div>
-                                                            <div class="para margin-bottom-24" style="color: #F8F9FB; margin: 0 0 4px;">
-                                                                Once active, you can withdraw funds as per your need, repay and reuse your line for any future requirement.
-                                                            </div>
-                                                            <div class="para-dark center" style="margin: 0 0 20px; color: #9195A6; font-size: 14px; line-height: 1.5; text-align: center;">
-                                                                @if($token)
-                                                                    <a class="link btn primary font-bold" href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)
-                                                                                                        .'/forgot-password#token='. $token . '&email=' . $subMerchant['email']}}" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 1px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; margin: 24px auto 0 auto; color: #FFF; background-color: #3281FF; border-color: #3281FF;">GET STARTED</a>
-                                                                @else
-                                                                    <a class="link btn primary font-bold" href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)}}" target="_blank" style="text-decoration: none; font-weight: 700; font-size: 14px; line-height: 1.5; border: 1px solid; padding: 8px 1px; letter-spacing: 1px; border-radius: 2px; overflow: hidden; min-width: 145px; display: inline-block; font-family: Trebuchet MS; margin: 24px auto 0 auto; color: #FFF; background-color: #3281FF; border-color: #3281FF;">GET STARTED</a>
-                                                                @endif
-                                                            </div>
-                                                            <div class="para" style="margin: 0;">
-                                                                Cheers,
-                                                            </div>
-                                                            <div class="para" style="margin: 0;"> Razorpay Partnerships team.</div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                    <div class="tableCell tableHeadGrey">Business Loan</div>
+                </div>
+                <div class="tableContentsMiddle">
+                    <div class="tableBodyMiddle">Withdrawal fee</div>
+                </div>
+                <div class="tableContents">
+                    <div class="tableCell tableBodyLeft tableBorderRight">
+                        <img
+                            src="https://cdn.razorpay.com/static/assets/email/loc/loc_tick.png"
+                            alt="tick"
+                            width="14"
+                            style="margin: 0px 5px 0px 0px"
+                        />
+                        Withdraw as per need
                     </div>
-                    <!--[if mso | IE]>
-                    </td>
-                    </tr>
-                    </table>
-                    <![endif]-->
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
-    <!--[if mso | IE]>
-    </td>
-    </tr>
-    </table>
-    <table
-        align="center" border="0" cellpadding="0" cellspacing="0" class="footer-outlook" style="width:600px;" width="600"
-    >
-        <tr>
-            <td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;">
-    <![endif]-->
-    <div class="footer" style="width: 100%; Margin: 0px auto; max-width: 600px; margin-top: 8px; margin-bottom: 8px;">
-        <table align="center" border="0" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;">
-            <tbody>
-            <tr>
-                <td style="direction:ltr;font-size:0px;padding:0px;text-align:center;vertical-align:top;">
-                    <!--[if mso | IE]>
-                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td
-                                class="" style="vertical-align:top;width:600px;"
-                            >
-                    <![endif]-->
-                    <div class="mj-column-per-100 outlook-group-fix" style="font-size:13px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-                        <table border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%">
-                            <tbody>
-                            <tr>
-                                <td style="vertical-align:top;padding:0px;">
-                                    <table border="0" cellpadding="0" cellspacing="0" role="presentation" style="" width="100%">
-                                        <tr>
-                                            <td align="left" style="font-size:0px;padding:0px;word-break:break-word;">
-                                                <div style="font-family:Trebuchet MS;font-size:13px;line-height:1;text-align:left;color:#000000;">
-                                                    <div class="footer-text" style="font-size: 12px; line-height: 1; color: #9195A6; text-align: center; padding: 0px 0;">
-                                                        If you have any issues with services from
-                                                    </div>
-                                                    <div class="footer-text" style="font-size: 12px; line-height: 0; color: #9195A6; text-align: center; padding: 8px 0;">
-                                                        RazorpayX, Please raise your request&nbsp;<a class="link" href="{{ $support_url }}" target="_blank" style="text-decoration: none; color: #528FF0;">here.</a>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+                    <div class="tableCell tableBodyRight">Full disbursal</div>
+                </div>
+                <div class="tableContentsMiddle">
+                    <div class="tableBodyMiddle">Daily interest</div>
+                </div>
+                <div class="tableContents">
+                    <div class="tableCell tableBodyLeft tableBorderRight">
+                        <img
+                            src="https://cdn.razorpay.com/static/assets/email/loc/loc_tick.png"
+                            alt="tick"
+                            width="14"
+                            style="margin: 0px 5px 0px 0px"
+                        />
+                        Pay as you use
                     </div>
-                    <!--[if mso | IE]>
-                    </td>
-                    </tr>
-                    </table>
-                    <![endif]-->
-                </td>
-            </tr>
-            </tbody>
-        </table>
+                    <div class="tableCell tableBodyRight">
+                        Interest on full amount
+                    </div>
+                </div>
+                <div class="tableContentsMiddle">
+                    <div class="tableBodyMiddle">Reduce interest flow</div>
+                </div>
+                <div class="tableContents">
+                    <div class="tableCell tableBodyLeft tableBorderRight">
+                        <img
+                            src="https://cdn.razorpay.com/static/assets/email/loc/loc_tick.png"
+                            alt="tick"
+                            width="14"
+                            style="margin: 0px 5px 0px 0px"
+                        />
+                        Pay early to save
+                    </div>
+                    <div class="tableCell tableBodyRight">Fixed interest</div>
+                </div>
+                <div class="tableContentsMiddle">
+                    <div class="tableBodyMiddle">Easy to re-withdraw</div>
+                </div>
+                <div class="tableContents">
+                    <div
+                        class="tableCell tableBodyLeft tableBorderRight tableBorderRadiusLeft"
+                    >
+                        <img
+                            src="https://cdn.razorpay.com/static/assets/email/loc/loc_tick.png"
+                            alt="tick"
+                            width="14"
+                            style="margin: 0px 5px 0px 0px"
+                        />
+                        One-click draw
+                    </div>
+                    <div class="tableCell tableBodyRight tableBorderRadiusRight">
+                        New application
+                    </div>
+                </div>
+            </div>
+            <div class="buttonContainer">
+                @if($token)
+                    <a
+                        type="button"
+                        href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)
+                                .'/forgot-password#token='. $token
+                                . '&email=' . $subMerchant['email']}}"
+                        class="blueButtonLoc">
+                        Apply Now
+                    </a>
+                @else
+                    <a
+                        type="button"
+                        href="{{'https://' . parse_url(config('applications.banking_service_url'), PHP_URL_HOST)}}"
+                        class="blueButtonLoc">
+                        Apply Now
+                    </a>
+                @endif
+            </div>
+            <div class="textContainer">
+                <div class="boldText">
+                    Get a collateral-free credit line and withdraw cash 24*7 for your
+                    business needs.
+                </div>
+            </div>
+            <div class="listContainer">
+                <div class="listItemContainer">
+                    <div class="listImageContainer">
+                        <img src="https://cdn.razorpay.com/static/assets/email/loc/credit_limit.png" class="listImage"/>
+                    </div>
+                    <div class="listDetailsContainer">
+                        <div class="listDetailsBold">Credit Limit up to Rs 25 L:</div>
+                        <div class="listDetails">
+                            100% flexibility & no preclosure charges
+                        </div>
+                    </div>
+                </div>
+
+                <div class="listItemContainer">
+                    <div class="listImageContainer">
+                        <img src="https://cdn.razorpay.com/static/assets/email/loc/low_interest.png" class="listImage"/>
+                    </div>
+                    <div class="listDetailsContainer">
+                        <div class="listDetailsBold">Low interest rates:</div>
+                        <div class="listDetails">Starting from 1.5% per month</div>
+                    </div>
+                </div>
+
+                <div class="listItemContainer">
+                    <div class="listImageContainer">
+                        <img src="https://cdn.razorpay.com/static/assets/email/loc/reduce_interest.png"
+                             class="listImage"/>
+                    </div>
+                    <div class="listDetailsContainer">
+                        <div class="listDetailsBold">Low interest rates:</div>
+                        <div class="listDetails">Starting from 1.5% per month</div>
+                    </div>
+                </div>
+            </div>
+            <div class="textContainer" style="margin:40px 0px">
+                <div class="paragraph">
+                    To know more, simply click on the link below and submit your
+                    application.
+                </div>
+            </div>
+            <div class="buttonContainer">
+                <a type="button" href='https://razorpay.com/x/line-of-credit/' class="blueButtonLoc">Learn More</a>
+            </div>
+            <div class="bottomContainer">
+                <div>For assistance, reach out to us at</div>
+                <div class="textBold">capital.support@razorpay.com</div>
+            </div>
+            <div class="bottomContainerThanks">
+                <div>Thanks & Regards,</div>
+                <div class="textBoldBlue">Razorpay Partnerships Team</div>
+            </div>
+        </div>
+        <div class="footerContainer">
+            <img
+                src="https://cdn.razorpay.com/static/assets/email/loc/rzp_white_logo.png"
+                alt=" Razorpay"
+                height="25"
+                class="footerImage"
+            />
+        </div>
     </div>
-    <!--[if mso | IE]>
-    </td>
-    </tr>
-    </table>
-    <![endif]-->
 </div>
 </body>
 </html>

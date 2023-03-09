@@ -8,7 +8,7 @@ class CreateSubMerchantAffiliate extends CreateSubMerchantAffiliateForX
 {
     protected function addSubject()
     {
-        $this->subject('[IMP] ' . $this->aggregator['name'] . ' has invited you to join RazorpayX Line of Credit!');
+        $this->subject('[IMP] ' . $this->aggregator['name'] . ' has invited you to apply for ‘Razorpay Line of Credit’');
 
         return $this;
     }
