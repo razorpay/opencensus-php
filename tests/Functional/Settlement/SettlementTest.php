@@ -2997,6 +2997,98 @@ class SettlementTest extends TestCase
         $this->assertArraySelectiveEquals($expectedPartnerCommissionsConfig, $result["partner_commissions_config"]);
     }
 
+    public function testGetPartnerCommissionConfigForMalaysianResellerPartnerActivated()
+    {
+        $this->ba->settlementsAuth();
+
+        $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzot',
+            'display_name' => 'Curlec Org'
+        ]);
+
+        $this->fixtures->merchant->createMerchantWithDetails(
+            'IUXvshap3Hbzot',
+            '11000000Curlec',
+            [
+                MerchantEntity::NAME            => 'Test IIR MID 1254',
+                MerchantEntity::WEBSITE         => 'www.testIIRMid1235.com',
+                MerchantEntity::PARTNER_TYPE    => 'reseller',
+                MerchantEntity::COUNTRY_CODE    => 'MY',
+                MerchantEntity::ACTIVATED       => 1,
+                MerchantEntity::LIVE            => 1,
+                MerchantEntity::ACTIVATED_AT    => Carbon::now()->timestamp,
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => 'activated',
+                MerchantDetailsEntity::BUSINESS_TYPE            => '1',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+                MerchantDetailsEntity::PROMOTER_PAN             => 'AJDDOC1234',
+            ]);
+
+
+        $this->fixtures->create('partner_activation',[
+            'merchant_id'       => '11000000Curlec',
+            'hold_funds'        => false,
+            'activation_status' => 'activated'
+        ]);
+
+        $result = $this->getGlobalConfig('11000000Curlec');
+
+        $expectedPartnerCommissionsConfig = [
+            'hold_status'          => false,
+            'hold_reason'          => '',
+            'enabled'              => false,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPartnerCommissionsConfig, $result["partner_commissions_config"]);
+    }
+
+    public function testGetPartnerCommissionConfigForMalaysianMerchantResellerPartnerNotActivated()
+    {
+        $this->ba->settlementsAuth();
+
+        $this->fixtures->create('org',[
+            'id' => 'IUXvshap3Hbzot',
+            'display_name' => 'Curlec Org'
+        ]);
+
+        $this->fixtures->merchant->createMerchantWithDetails(
+            'IUXvshap3Hbzot',
+            '11000000Curlec',
+            [
+                MerchantEntity::NAME            => 'Test IIR MID 1254',
+                MerchantEntity::WEBSITE         => 'www.testIIRMid1235.com',
+                MerchantEntity::PARTNER_TYPE    => 'reseller',
+                MerchantEntity::COUNTRY_CODE    => 'MY',
+                MerchantEntity::ACTIVATED       => 0,
+            ],
+            [
+                MerchantDetailsEntity::ACTIVATION_STATUS        => null,
+                MerchantDetailsEntity::BUSINESS_TYPE            => '1',
+                MerchantDetailsEntity::BUSINESS_CATEGORY        => 'biz category 2',
+                MerchantDetailsEntity::BUSINESS_SUBCATEGORY     => 'biz subcategory',
+                MerchantDetailsEntity::PROMOTER_PAN             => 'AJDDOC1234',
+            ]);
+
+
+        $this->fixtures->create('partner_activation',[
+            'merchant_id'       => '11000000Curlec',
+            'hold_funds'        => false,
+            'activation_status' => 'activated'
+        ]);
+
+        $result = $this->getGlobalConfig('11000000Curlec');
+
+        $expectedPartnerCommissionsConfig = [
+            'hold_status'          => false,
+            'hold_reason'          => '',
+            'enabled'              => false,
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPartnerCommissionsConfig, $result["partner_commissions_config"]);
+    }
+
     public function testGetPartnerCommissionConfigForResellerMerchantActivated()
     {
         $this->ba->settlementsAuth();

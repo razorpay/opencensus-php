@@ -8833,6 +8833,16 @@ class Service extends Base\Service
             'enabled'              => false,
         ];
 
+        /*
+        Do not add custom configs for reseller partners for malaysia
+        We collect and store custom configurations if we think partner business is not trustable
+        In case of Malaysia, as we do manual onboard and offline verification so these are not required
+        */
+        if ($merchant->getCountry() === 'MY')
+        {
+            return $partnerCommissionConfig;
+        }
+
         $properties = [
             'id'                   => $merchant->getId(),
             'experiment_id'        => $this->app['config']->get('app.partner_independent_kyc_exp_id'),
