@@ -210,7 +210,9 @@ class SavedCardTokenisationJob extends Job
             $this->trace->info(TraceCode::DEBUG_LOGGING, [
                 'checking if we are going till the function or failing before that in catch'
             ]);
-            (new Token\Metric())->pushMigrateMetrics($token,Metric::FAILED, $e);
+
+            (new Token\Metric())->pushMigrateMetrics($token, Metric::FAILED, $e);
+
             $this->trace->info(TraceCode::DEBUG_LOGGING, [
                 'checking if after the function call it is failing or it is going beyond this call as well in catch'
             ]);
@@ -229,8 +231,6 @@ class SavedCardTokenisationJob extends Job
                 'is_global_customer_local_token' => $this->isGlobalCustomerLocalToken,
                 'asyncTokenisationJobId' => $this->asyncTokenisationJobId,
             ]);
-
-            (new Token\Metric())->pushMigrateMetrics($this->tokenId,Metric::FAILED, $e);
 
             $updateData[Token\Entity::STATUS] = Token\Constants::FAILED;
 
