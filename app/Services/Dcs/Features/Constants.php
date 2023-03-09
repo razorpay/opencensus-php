@@ -62,6 +62,9 @@ class Constants
     const SubMerchantOnBoardingEnabled = 'submerchant_onboarding_enabled';
     const WebsiteInternationalDisabled = 'website_international_disabled';
     const AdminLeadPartnerInviteEnabled = 'admin_lead_partner_invite_enabled';
+    const SubmerchantInstantActivationViaV2ApiEnabled = 'submerchant_instant_activation_via_v2_api_enabled';
+    const MerchantActivationByPartnerEnabled = 'merchant_activation_by_partner_enabled';
+    const OverridingSubmerchantConfigEnabled = 'overriding_submerchant_config_enabled';
     const AdditionalFieldsHdfcOnboarding = 'additional_fields_hdfc_onboarding';
 
     /**
@@ -119,6 +122,9 @@ class Constants
         self::SubMerchantOnBoardingEnabled => "rzp/platform/partner/onboarding/Features",
         self::WebsiteInternationalDisabled => "rzp/platform/partner/onboarding/Features",
         self::AdminLeadPartnerInviteEnabled => "rzp/platform/partner/onboarding/Features",
+        self::SubmerchantInstantActivationViaV2ApiEnabled => "rzp/platform/partner/onboarding/Features",
+        self::MerchantActivationByPartnerEnabled => "rzp/platform/partner/onboarding/Features",
+        self::OverridingSubmerchantConfigEnabled => "rzp/platform/partner/configuration/Features",
         self::AdditionalFieldsHdfcOnboarding => "rzp/pg/org/dashboard/admin/Features",
     ];
 
@@ -179,6 +185,9 @@ class Constants
         APIFeaturesConstants::SUBMERCHANT_ONBOARDING => self::SubMerchantOnBoardingEnabled,
         APIFeaturesConstants::SKIP_WEBSITE_INTERNAT => self::WebsiteInternationalDisabled,
         APIFeaturesConstants::ADMIN_LEAD_PARTNER => self::AdminLeadPartnerInviteEnabled,
+        APIFeaturesConstants::INSTANT_ACTIVATION_V2_API => self::SubmerchantInstantActivationViaV2ApiEnabled,
+        APIFeaturesConstants::PARTNER_ACTIVATE_MERCHANT => self::MerchantActivationByPartnerEnabled,
+        APIFeaturesConstants::OVERRIDE_SUB_CONFIG => self::OverridingSubmerchantConfigEnabled,
     ];
 
     /**
@@ -238,6 +247,9 @@ class Constants
         self::SubMerchantOnBoardingEnabled => APIFeaturesConstants::SUBMERCHANT_ONBOARDING,
         self::WebsiteInternationalDisabled => APIFeaturesConstants::SKIP_WEBSITE_INTERNAT,
         self::AdminLeadPartnerInviteEnabled => APIFeaturesConstants::ADMIN_LEAD_PARTNER,
+        self::SubmerchantInstantActivationViaV2ApiEnabled => APIFeaturesConstants::INSTANT_ACTIVATION_V2_API,
+        self::MerchantActivationByPartnerEnabled => APIFeaturesConstants::PARTNER_ACTIVATE_MERCHANT,
+        self::OverridingSubmerchantConfigEnabled => APIFeaturesConstants::OVERRIDE_SUB_CONFIG,
     ];
 
     /**
