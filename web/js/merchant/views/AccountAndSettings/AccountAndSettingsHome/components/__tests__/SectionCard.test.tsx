@@ -3,7 +3,7 @@ import * as trackEvents from 'common/utils/analytics';
 import SectionCard from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/SectionCard';
 import React from 'react';
 import { render, screen, userEvent } from 'test-utils';
-import { defaultProps } from './mocks/fixtures/sectionCard';
+import { defaultProps, pricingSectionProps } from './mocks/fixtures/sectionCard';
 
 describe('SectionCard', () => {
   const analyticsTrackWithUserSpy = jest.spyOn(trackEvents, 'analyticsTrackWithUserInfo');
@@ -17,6 +17,13 @@ describe('SectionCard', () => {
     const cardIcon = screen.getByText((_, element) => element?.tagName.toLowerCase() === 'i');
     expect(cardIcon).toBeInTheDocument();
     expect(cardIcon).toHaveAttribute('class', `i ${defaultProps.icon}`);
+  });
+
+  test('Should render the `New` badge in case of new section', () => {
+    renderApp(pricingSectionProps);
+
+    const newBadge = screen.getByText('NEW');
+    expect(newBadge).toBeInTheDocument();
   });
 
   test('should render divider incase of desktop', () => {

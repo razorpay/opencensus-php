@@ -7,6 +7,7 @@ interface Window {
   __VERSION__: string;
   rzpAnalytics: () => void;
   razorpayAnalytics: any;
+  Razorpay: any;
   rzpTicketSystem: any;
   LUMBERJACK_API_URL: string;
   LUMBERJACK_API_KEY: string;

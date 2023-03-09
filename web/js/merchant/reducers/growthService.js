@@ -4,6 +4,7 @@ import { set } from 'common/utils/immutable';
 import { assetNames } from 'merchant/models/GrowthService/data';
 
 const FETCH_ANNOUNCEMENTS = 'FETCH_ANNOUNCEMENTS';
+const FETCH_PRICING_BUNDLE = 'FETCH_PRICING_BUNDLE';
 const FETCH_BANNERS = 'FETCH_BANNERS';
 const FETCH_EXCLUSIVE_OFFER = 'FETCH_EXCLUSIVE_OFFER';
 const FETCH_BANNERS_CAROUSEL = 'FETCH_BANNERS_CAROUSEL';
@@ -38,6 +39,7 @@ const updateAssets = (status, assetName) => (state, action) => {
 };
 
 const updateAnnouncements = (status) => updateAssets(status, assetNames.ANNOUNCEMENT);
+const updatePricingSubscription = (status) => updateAssets(status, assetNames.PRICING_BUNDLE);
 const updateBanners = (status) => updateAssets(status, assetNames.BANNER);
 const updateExclusiveOffer = (status) => updateAssets(status, assetNames.EXCLUSIVE_OFFER);
 const updateCarouselBanners = (status) => updateAssets(status, assetNames.BANNER_CAROUSEL_ITEM);
@@ -64,6 +66,10 @@ const initialState = {
     loading: true,
     gs_modals: {},
   },
+  pricing_bundles: {
+    loading: false,
+    pricing_bundles: {},
+  },
 };
 
 export const fetchAnnouncements = ({ fromWhere = 'home' }) => {
@@ -71,6 +77,13 @@ export const fetchAnnouncements = ({ fromWhere = 'home' }) => {
   return {
     type: FETCH_ANNOUNCEMENTS,
     payload: growthService.getAnnouncements(fromWhere),
+  };
+};
+export const fetchPricingSubscription = ({ fromWhere = 'home' }) => {
+  const growthService = new GrowthService();
+  return {
+    type: FETCH_PRICING_BUNDLE,
+    payload: growthService.getPricingSubscription(fromWhere),
   };
 };
 
@@ -126,6 +139,9 @@ export default makeEntityReducer(
     [`${FETCH_GS_MODAL}::PENDING`]: updateGSModal('PENDING'),
     [`${FETCH_GS_MODAL}::SUCCESS`]: updateGSModal('SUCCESS'),
     [`${FETCH_GS_MODAL}::ERROR`]: updateGSModal('ERROR'),
+    [`${FETCH_PRICING_BUNDLE}::PENDING`]: updatePricingSubscription('PENDING'),
+    [`${FETCH_PRICING_BUNDLE}::SUCCESS`]: updatePricingSubscription('SUCCESS'),
+    [`${FETCH_PRICING_BUNDLE}::ERROR`]: updatePricingSubscription('ERROR'),
   },
   initialState,
 );

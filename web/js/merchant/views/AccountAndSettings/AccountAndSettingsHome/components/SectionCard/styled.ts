@@ -23,6 +23,13 @@ export const CardHeader = styled.div`
   }
 `;
 
+export const SubSectionItem = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+`;
+
 export const ProductIcon = styled.div`
   width: 32px;
   height: 32px;

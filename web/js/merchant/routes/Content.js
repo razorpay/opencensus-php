@@ -152,6 +152,10 @@ const PaymentsAndRefundsSettings = lazy(() =>
   ),
 );
 
+const Pricing = lazy(() =>
+  import(/* webpackChunkName: "Pricing" */ 'merchant/views/AccountAndSettings/Pricing'),
+);
+
 const BankAccountsAndSettlements = lazy(() =>
   import(
     /* webpackChunkName: "BankAccountsAndSettlements" */ 'merchant/views/AccountAndSettings/BankAccountsAndSettlements'
@@ -736,6 +740,11 @@ export default class Content extends Component {
           />
 
           <ShowWhenRoute
+            path="/pricing-plans"
+            additionalCondition={(user) => user?.isBundlePricingEnabled}
+            component={MyAccount}
+          />
+          <ShowWhenRoute
             path="/trustedbadge"
             component={MyAccount}
             additionalCondition={isTrustedBadgeAllowed}
@@ -901,6 +910,11 @@ export default class Content extends Component {
           <ShowWhenRoute
             path="/payments-and-refunds-settings"
             component={PaymentsAndRefundsSettings}
+          />
+          <ShowWhenRoute
+            path="/pricing"
+            additionalCondition={(user) => user?.isBundlePricingEnabled}
+            component={Pricing}
           />
           <ShowWhenRoute
             path="/bank-accounts-settlements"

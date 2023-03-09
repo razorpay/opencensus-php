@@ -6,6 +6,7 @@ import WebsiteAppDetails from 'merchant/views/Account/WebsiteAppDetails';
 import Balances from 'merchant/views/Account/Balances';
 import Credits from 'merchant/views/Account/Credits/List';
 import ManageTeam from 'merchant/views/Account/ManageTeam';
+import PricingPlans from 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans';
 import Referrals from 'merchant/views/Account/Referrals/List';
 import Conversations from 'merchant/views/TicketSupport/components/Conversations';
 import { CLICK_ON_BALANCES_TAB, CLICK_ON_CREDITS_TAB } from './ga';
@@ -20,12 +21,15 @@ import { fetchMerchantWebsiteDetails } from 'merchant/reducers/websitecompliance
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { isTrustedBadgeAllowed } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
+import { StyledNavLink } from 'merchant/views/AccountAndSettings/Pricing/Pricing.styles';
+import { Badge, OffersIcon } from '@razorpay/blade/components';
 
 const {
   ACCOUNT_AND_SETTINGS,
   WEBSITE_APP_SETTINGS,
   TRUSTED_BADGE,
   MANAGE_TEAM_DETAILS,
+  PRICING_PLANS,
 } = ROUTES_INFO;
 
 const MyAccount = (props) => {
@@ -61,6 +65,8 @@ const MyAccount = (props) => {
         return <Redirect to={TRUSTED_BADGE} />;
       case '/team':
         return <Redirect to={MANAGE_TEAM_DETAILS} />;
+      case '/pricing-plans':
+        return <Redirect to={PRICING_PLANS} />;
       default:
         return <Redirect to={ACCOUNT_AND_SETTINGS} />;
     }
@@ -153,6 +159,16 @@ const MyAccount = (props) => {
                 {props.user.isMobileSignupCareActive ? `Support History` : `Support Tickets`}
               </NavLink>
             </ShowWhen>
+            <ShowWhen additionalCondition={(user) => user?.isBundlePricingEnabled}>
+              <StyledNavLink>
+                <NavLink className="pricing-plan-link" to="/pricing-plans">
+                  Pricing Plans
+                </NavLink>
+                <Badge contrast="low" variant="positive" size="medium" icon={OffersIcon}>
+                  NEW
+                </Badge>
+              </StyledNavLink>
+            </ShowWhen>
           </header>
         )}
         <content>
@@ -185,6 +201,11 @@ const MyAccount = (props) => {
           />
           <Route path="/referrals" component={Referrals} />
           <Route path="/team" component={ManageTeam} />
+          <ShowWhenRoute
+            path="/pricing-plans"
+            component={PricingPlans}
+            additionalCondition={(user) => user?.isBundlePricingEnabled}
+          />
           {props.user.isMobileSignupCareActive ? (
             <Route path="/ticket-support/tickets" component={TicketsContainer} />
           ) : (
@@ -204,6 +225,7 @@ export default connect(
   (state) => ({
     user: state.session.user,
     websiteSectionDetailsData: state.websiteCompliance.websiteSectionDetailsData,
+    enrollmentStatus: state?.bundlePricing?.enrollmentStatus || {},
   }),
   { fetchMerchantWebsiteDetails },
 )(MyAccount);

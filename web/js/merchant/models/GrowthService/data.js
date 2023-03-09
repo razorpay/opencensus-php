@@ -191,6 +191,18 @@ export const routeToChannelIDMap = {
       stage: 'IUaSEhwWpxdzIZ',
       production: 'IUaZC0Vjcujv3n',
     },
+    '/pricing-plans': {
+      dev: 'LGi7Vl94BsVXu9',
+      beta: 'LGi7Vl94BsVXu9',
+      stage: 'LGi7Vl94BsVXu9',
+      production: 'LBWmAotEpITeXL',
+    },
+    '/pricing/pricing-plans': {
+      dev: 'LGi7Vl94BsVXu9',
+      beta: 'LGi7Vl94BsVXu9',
+      stage: 'LGi7Vl94BsVXu9',
+      production: 'LBWmAotEpITeXL',
+    },
     gsExclusiveOffer: {
       dev: 'IiQPZ3bmxiHyoq',
       beta: 'HTdu8cC7FJEIHC',
@@ -351,23 +363,35 @@ export const routeToChannelIDMap = {
       stage: 'IUbF3iX5UE62gt',
       production: 'IUbc5MehL8Xz3t',
     },
-    '/app/reminders': {
+    '/reminders': {
       dev: 'IUbFX1AMs3qcqC',
       beta: 'IUbFX1AMs3qcqC',
       stage: 'IUbFX1AMs3qcqC',
       production: 'IUbcXRg6xj117A',
     },
-    '/app/partners': {
+    '/partners': {
       dev: 'KYvkH86N9Sy9A1',
       beta: 'KYvkH86N9Sy9A1',
       stage: 'KYvkH86N9Sy9A1',
       production: 'KYvhzKIY0r6zhJ',
     },
-    '/app/payment-methods': {
+    '/payment-methods': {
       dev: 'IUbFrNg7pJxXMN',
       beta: 'IUbFrNg7pJxXMN',
       stage: 'IUbFrNg7pJxXMN',
       production: 'IUbcK1TFmKE1Dd',
+    },
+    '/pricing-plans': {
+      dev: 'LGi7Vl94BsVXu9',
+      beta: 'LGi7Vl94BsVXu9',
+      stage: 'LGi7Vl94BsVXu9',
+      production: 'LBWmAotEpITeXL',
+    },
+    '/pricing/pricing-plans': {
+      dev: 'LGi7Vl94BsVXu9',
+      beta: 'LGi7Vl94BsVXu9',
+      stage: 'LGi7Vl94BsVXu9',
+      production: 'LBWmAotEpITeXL',
     },
     gsExclusiveOffer: {
       dev: 'IiQPZ3bmxiHyoq',
@@ -412,6 +436,8 @@ export const routeToRouteNameMap = {
   '/partners': 'partners',
   '/reminders': 'settings-reminders',
   '/payment-methods': 'settings-payment-methods',
+  '/pricing-plans': 'pricing-plans',
+  '/pricing/pricing-plans': 'pricing-plans',
 };
 
 export const eventToGrowthEventTypeMap = {
@@ -420,13 +446,17 @@ export const eventToGrowthEventTypeMap = {
   'merchant_dashboard.display_offer_for_you': 'IMPRESSION',
   'login.non_login_card.shown': 'IMPRESSION',
   carousel_banner_notification1: 'IMPRESSION',
+  'merchant_dashboard.click_close.initiated': 'IMPRESSION', // pricing bundle -  close
   'dashboard.appswitcher.app_shown': 'IMPRESSION',
+  'merchant_dashboard.not_interested.initiated': 'DISMISSAL', // pricing bundle - not interested
   'merchant_dashboard.banner_close': 'DISMISSAL',
   carousel_banner_not_interested: 'DISMISSAL',
 };
 
 export const assetNames = {
   ANNOUNCEMENT: 'ANNOUNCEMENT',
+  JSON_SCHEMA: 'JSON_SCHEMA',
+  PRICING_BUNDLE: 'PRICING_BUNDLE',
   BANNER: 'BANNER',
   EXCLUSIVE_OFFER: 'EXCLUSIVE_OFFER',
   BANNER_CAROUSEL_ITEM: 'BANNER_CAROUSEL_ITEM',

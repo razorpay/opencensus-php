@@ -1,7 +1,7 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
-import { Heading, Link } from '@razorpay/blade/components';
-import { CardComponent, CardHeader, ProductIcon, CardItems } from './styled';
+import { Heading, Link, Badge, OffersIcon } from '@razorpay/blade/components';
+import { CardComponent, CardHeader, ProductIcon, CardItems, SubSectionItem } from './styled';
 import Divider from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/components/Divider';
 import {
   SectionCardPropsInterface,
@@ -43,9 +43,16 @@ const SectionCard = ({
       <CardItems>
         {subSections.map((each) => {
           return (
-            <Link key={each.id} variant="button" onClick={onNavLinkClick.bind(null, each)}>
-              {each.title}
-            </Link>
+            <SubSectionItem key={each.id}>
+              <Link variant="button" onClick={onNavLinkClick.bind(null, each)}>
+                {each.title}
+              </Link>
+              {each.isNew && (
+                <Badge variant="positive" fontWeight="bold" icon={OffersIcon}>
+                  NEW
+                </Badge>
+              )}
+            </SubSectionItem>
           );
         })}
       </CardItems>

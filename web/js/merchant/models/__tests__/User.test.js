@@ -35,6 +35,29 @@ describe('User model', () => {
     expect(isMerchantExpiryPL).toBe(false);
   });
 
+  test('Should return true when `bundle_pricing` experiment is enabled', () => {
+    window.rzp_user = {
+      ...window.rzp_user,
+      splitz_experiments: {
+        LEgIE3J0zaDwz1: {
+          variables: {
+            result: 'on',
+          },
+        },
+      },
+    };
+
+    const user = getDefaultUserObj();
+
+    expect(user.isBundlePricingEnabled).toBe(true);
+  });
+
+  test('Should return false when `bundle_pricing` experiment is enabled', () => {
+    const user = getDefaultUserObj();
+
+    expect(user.isBundlePricingEnabled).toBe(false);
+  });
+
   test('should return true when show_international_payments_button_ab experiment is enabled', () => {
     // mock splitz experiment
     window.rzp_user = {

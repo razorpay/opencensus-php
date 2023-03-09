@@ -1,4 +1,6 @@
-export const defaultProps = {
+import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
+
+const defaultProps = {
   title: 'Payment methods',
   icon: 'i-payment-methods',
   iconBackground: 'linear-gradient(161.88deg, #30c5d8 18.69%, #1566f1 90.37%)',
@@ -34,3 +36,18 @@ export const defaultProps = {
     },
   ],
 };
+
+const pricingSectionProps = {
+  title: 'Pricing',
+  icon: 'i-zap',
+  iconBackground: 'linear-gradient(126deg, #C8BFFF 9.01%, #553EDF 98.6%)',
+  subSections: [
+    {
+      title: 'Pricing Plans',
+      href: ROUTES_INFO.PRICING_PLANS,
+      isNew: true,
+    },
+  ],
+};
+
+export { defaultProps, pricingSectionProps };

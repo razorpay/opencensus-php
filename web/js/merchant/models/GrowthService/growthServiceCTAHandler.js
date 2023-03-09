@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import store, { getUser } from 'merchant/store';
 import {
   openModal as openModalProp,
@@ -11,11 +11,24 @@ import ThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
 import GrowthServiceModal from 'common/ui/GrowthServiceModal';
 import GrowthServiceCenterCTAModal from 'common/ui/GrowthServiceModal/CenterCTAModal';
 import { stringToLiteral } from 'merchant/models/GrowthService/commonUtils';
+import lazy from 'merchant/routes/LazyLoader';
+import Loader from 'common/ui/Loader';
+
+const PricingSubscriptionComponent = lazy(() =>
+  import(
+    /* webpackChunkName: 'PricingSubscriptionComponent' */ 'common/ui/PricingSubscription/PricingSubscriptionComponent'
+  ),
+);
 
 const MODAL_TYPE = {
   DEFAULT: 'default',
   THANKYOU: 'thank-you',
   CENTERCTA: 'center-cta',
+};
+
+export const PRICING_BUNDLE_TYPE = {
+  DEFAULT: 'default',
+  READ_ONLY: 'read-only',
 };
 
 const EVENT_TYPE = {
@@ -71,6 +84,19 @@ const showGSCenterCTAModal = (id) => {
   });
 };
 
+const showPricingBundleModal = (id, variant) => {
+  // Open Pricing Bundle Modal
+  const openModal = (payload) => store.dispatch(openModalProp(payload));
+  openModal({
+    component: (
+      <Suspense fallback={<Loader />}>
+        <PricingSubscriptionComponent templateId={id} variant={variant} />,
+      </Suspense>
+    ),
+    className: 'pricing-bundle-loader',
+  });
+};
+
 /**
  * Open thank-you variant modal
  * @param {string} id - template id
@@ -102,6 +128,8 @@ const growthServiceEventHandler = (data, history, tracking_id) => {
         if (item?.sub_asset?.variant == MODAL_TYPE.THANKYOU) {
           showThankYouModal(item?.sub_asset?.id);
         }
+      } else if (item.sub_asset?.type === 'pricing_bundle') {
+        showPricingBundleModal(item.sub_asset?.id, item.sub_asset?.variant);
       }
     }
   });

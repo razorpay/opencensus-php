@@ -32,6 +32,7 @@ export enum ROUTES_INFO {
   BANK_ACCOUNT_DETAILS = '/bank-accounts-settlements/bank-account-details',
   SETTLEMENT_DETAILS = '/bank-accounts-settlements/settlement-details',
   FIRS = '/bank-accounts-settlements/firs',
+  PRICING_PLANS = '/pricing/pricing-plans',
   CARDS = '/payment-methods/cards',
   UPI_QR = '/payment-methods/upi-qr',
   NETBANKING = '/payment-methods/netbanking',

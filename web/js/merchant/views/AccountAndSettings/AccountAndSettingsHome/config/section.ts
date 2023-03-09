@@ -38,6 +38,7 @@ import {
   NotificationSettingsFields,
   CheckoutSettingsFields,
   BankAccountSettlementFields,
+  PricingFields,
   PaymentMethodsTitles,
 } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
@@ -375,6 +376,21 @@ export const Sections: SectionCardInterface[] = [
         title: 'Trusted badge',
         href: ROUTES_INFO.TRUSTED_BADGE,
         additionalCondition: (): ((user: User) => boolean) => isTrustedBadgeAllowed,
+      },
+    ],
+  },
+  {
+    id: SectionCardDataFields.PRICING,
+    title: 'Pricing',
+    icon: 'i-zap',
+    iconBackground: 'linear-gradient(126deg, #C8BFFF 9.01%, #553EDF 98.6%)',
+    additionalCondition: (params) => (): boolean => !(params?.hasEnrolled === false),
+    subSections: [
+      {
+        id: PricingFields.PRICING_PLANS,
+        title: 'Pricing Plans',
+        href: ROUTES_INFO.PRICING_PLANS,
+        isNew: true,
       },
     ],
   },

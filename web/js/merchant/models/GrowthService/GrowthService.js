@@ -52,12 +52,13 @@ export default class GrowthService extends GenericEntity {
     return !val; // return 'false' if key/value is 'null' & not dismissed by user
   };
 
-  fetchAssetData = (channel_id, assetName) => {
+  fetchAssetData = (channel_id, assetName, dynamicAssets) => {
     return this.makeGenericAjaxCall({
       data: {
         merchant_id: this.user?.current,
         channel_id,
         asset: assetName,
+        ...(dynamicAssets && { dynamic_asset_name: dynamicAssets }),
         ...this.getPayloadData(),
       },
       method: 'post',
@@ -145,6 +146,14 @@ export default class GrowthService extends GenericEntity {
     sortAssetData(banners, assetNames.BANNER);
     if (banners.length) banners = banners.slice(0, totalBannersLimit);
     return banners;
+  };
+  getPricingSubscription = async (fromWhere) => {
+    const gsPricingSub = await this.fetchAssetData(
+      getChannelID(fromWhere, this.user.isOrgRZP),
+      assetNames.JSON_SCHEMA,
+      'pricing_bundle',
+    );
+    return gsPricingSub;
   };
 
   getExclusiveOfferModal = async (fromWhere) => {

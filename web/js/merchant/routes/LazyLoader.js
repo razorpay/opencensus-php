@@ -4,7 +4,7 @@ const CHUNK_RETRY_INTERVAL = 1000;
 const RETRY_TIMES = 3;
 
 // Retry chunk loading to avoid chunkloadfailed errors
-const lazyRetry = (fn, retriesLeft = RETRY_TIMES) => {
+export const lazyRetry = (fn, retriesLeft = RETRY_TIMES) => {
   return new Promise((resolve, reject) => {
     // Started loading component
     fn()

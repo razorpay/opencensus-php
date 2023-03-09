@@ -261,6 +261,9 @@ return [
         // Partnership for Capital
         'PARTNERSHIP_CAPITAL' => env('PARTNERSHIP_CAPITAL', ''),
 
+        // Bundle Pricing
+        'BUNDLE_PRICING' => env('BUNDLE_PRICING', ''),
+
         // settlement dashboard visibility
         'SETTLEMENT_DASHBOARD_VISIBILITY' => env('SETTLEMENT_DASHBOARD_VISIBILITY', ''),
 

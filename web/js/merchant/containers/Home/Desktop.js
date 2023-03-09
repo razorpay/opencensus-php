@@ -93,6 +93,7 @@ import { XCorporateCardStatusTracker } from 'merchant/components/StatusTracker';
 import * as LocalStorageService from 'common/utils/localStorage';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import { isMobileDevice } from 'merchant/components/Home/data';
+import PricingSubscriptionWrapper from 'common/ui/PricingSubscription';
 
 class AnalyticsDesktop extends Component {
   state = {
@@ -101,7 +102,6 @@ class AnalyticsDesktop extends Component {
     shouldShowTnCBannerForAxis: false,
     isWebsiteComplianceModalShown: false,
   };
-
   constructor(props) {
     super(props);
 
@@ -543,6 +543,7 @@ class AnalyticsDesktop extends Component {
 
     return (
       <div className="home-analytics-desktop">
+        <PricingSubscriptionWrapper />
         <ShowWhen
           additionalCondition={(user) =>
             !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Announcements)

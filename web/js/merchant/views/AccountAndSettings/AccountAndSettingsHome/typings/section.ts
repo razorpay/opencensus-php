@@ -6,6 +6,7 @@ export enum SectionCardDataFields {
   BANK_ACCOUNTS_SETTLEMENTS = 'bank_accounts_settlements',
   NOTIFICATION_SETTINGS = 'notification_settings',
   CHECKOUT_SETTINGS = 'checkout_settings',
+  PRICING = 'pricing',
 }
 
 export enum PaymentMethodsFields {
@@ -58,6 +59,10 @@ export enum CheckoutSettingsFields {
   FLASH_CHECKOUT = 'flash_checkout',
   SKIP_MANDATE_SUMMARY_PAGE = 'skip_mandate_summary_page',
   TRUSTED_BADGE = 'trusted_badge',
+}
+
+export enum PricingFields {
+  PRICING_PLANS = 'pricing_plans',
 }
 
 export enum BankAccountSettlementFields {

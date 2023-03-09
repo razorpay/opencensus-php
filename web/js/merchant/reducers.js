@@ -105,6 +105,7 @@ import { merchantReportsReducer, partnerReportsReducer } from 'merchant/reducers
 import { subscriptionsReducer, subscriptionReducer } from 'merchant/reducers/subscriptions';
 import { plansReducer, planReducer } from 'merchant/reducers/plans';
 import growthServiceReducer from 'merchant/reducers/growthService';
+import bundlePricingReducer from 'merchant/reducers/bundlePricing';
 import { addOnsReducer } from 'merchant/reducers/addons';
 import { reportsReducer } from 'merchant/reducers/reports';
 import LoanApplicationReducer from 'merchant/reducers/capital';
@@ -170,6 +171,7 @@ export default combineReducers({
   trustedBadge: trustedBadgeReducer,
   plan: planReducer,
   growthService: growthServiceReducer,
+  bundlePricing: bundlePricingReducer,
   addons: addOnsReducer,
   profile: profileReducer,
   customers: customersReducer,

@@ -6,6 +6,7 @@ import {
   NotificationSettingsFields,
   PaymentMethodsFields,
   PaymentRefundsFields,
+  PricingFields,
   SectionCardDataFields,
   WebsiteAppSettingsFields,
 } from './section';
@@ -83,10 +84,17 @@ export interface AccountAndSettingsHomePropInterface {
   fetchFeatureByNameFn: (payload: FeaturePayloadInterface) => Promise<void>;
   fetchMerchantInstrumentsFn: () => Promise<void>;
   fetchRequestedInstrumentsFn: () => Promise<void>;
+  fetchEnrollmentStatus: () => Promise<void>;
   fetchConnectedApplicationsFn: () => Promise<void>;
   showNotificationFn: (payload: NotificationPayload) => Promise<void>;
   setLoadingFn: () => Promise<void>;
   featureStatusConfig: FeatureResponse;
+  enrollmentStatus: {
+    loading: boolean;
+    hasEnrolled: boolean | null;
+    message: string | null;
+    error: unknown;
+  };
 }
 
 export interface InfoDataPayload {
@@ -111,10 +119,12 @@ export interface SubSection {
     | PaymentRefundsFields
     | NotificationSettingsFields
     | CheckoutSettingsFields
-    | BankAccountSettlementFields;
+    | BankAccountSettlementFields
+    | PricingFields;
   href: string;
   title: string;
   additionalCondition?: AdditionalConditionType;
+  isNew?: boolean;
   onLinkClick?: () => void;
 }
 
@@ -175,6 +185,7 @@ export interface AdditionalContextInterface extends FeatureInterface {
   mode: string;
   websiteSectionDetailsData: WebsiteSectionDetailsInterface;
   profile: any;
+  [key: string]: unknown;
 }
 
 interface ModalPayloadInterface {

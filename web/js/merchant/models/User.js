@@ -1875,6 +1875,10 @@ export default class User {
     return getSplitzExperimentVariant('payment_handle_onboarding')?.variables?.result === 'on';
   }
 
+  get isBundlePricingEnabled() {
+    return getSplitzExperimentVariant('bundle_pricing')?.variables?.result === 'on';
+  }
+
   get isProductLedOnboarding() {
     return getSplitzExperimentVariant('product_led_onboarding')?.variables?.result === 'on';
   }

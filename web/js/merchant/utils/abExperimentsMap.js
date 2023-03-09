@@ -530,6 +530,13 @@ export default {
     // prod
     'L3DutoiWP8H6Zn',
   ],
+  bundle_pricing: [
+    // beta
+    'LEgIE3J0zaDwz1',
+
+    // prod
+    'LJ70vtwLTYmo6I',
+  ],
   partnership_for_phantom: [
     // stage
     'Kx02jtoxYeQxtk',

@@ -8,6 +8,7 @@ import AccountAndSettingsHome from 'merchant/views/AccountAndSettings/AccountAnd
 import React from 'react';
 import { render, screen, server, waitFor } from 'test-utils';
 import { fetchMerchantInstrumentHandler, fetchRequestedInstrumentHandler } from './mocks/handler';
+import * as fetchEnrollmentStatus from 'merchant/reducers/bundlePricing';
 
 describe('AccountAndSettingsHomePage', () => {
   const fetchConnectedApplicationsSpy = jest.spyOn(
@@ -78,7 +79,7 @@ describe('AccountAndSettingsHomePage', () => {
       expect(screen.getByText('Accounts and Product Sections')).toBeInTheDocument();
     });
     await waitFor(() => {
-      expect(screen.getByText('7 sections found')).toBeInTheDocument();
+      expect(screen.getByText('8 sections found')).toBeInTheDocument();
     });
   });
 
@@ -104,5 +105,35 @@ describe('AccountAndSettingsHomePage', () => {
     await waitFor(() => {
       expect(fetchConnectedApplicationsSpy).not.toHaveBeenCalled();
     });
+  });
+
+  test('Should fetch the enrollment status if `bundle_pricing` experiment is enabled', () => {
+    const initialState = getState({
+      userData: {
+        get isBundlePricingEnabled() {
+          return true;
+        },
+      },
+    });
+    const fetchEnrollmentStatusSpy = jest.spyOn(fetchEnrollmentStatus, 'fetchEnrollmentStatus');
+
+    renderApp({ initialState });
+
+    expect(fetchEnrollmentStatusSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('Should not fetch the enrollment status if `bundle_pricing` experiment is enabled', () => {
+    const initialState = getState({
+      userData: {
+        get isBundlePricingEnabled() {
+          return false;
+        },
+      },
+    });
+    const fetchEnrollmentStatusSpy = jest.spyOn(fetchEnrollmentStatus, 'fetchEnrollmentStatus');
+
+    renderApp({ initialState });
+
+    expect(fetchEnrollmentStatusSpy).toHaveBeenCalledTimes(0);
   });
 });
