@@ -3927,6 +3927,21 @@ class Core extends Base\Core
         $email = new ClarificationEmail($data, $org->toArray());
 
         Mail::queue($email);
+
+        $this->notifyMerchantForNeedsClarification($merchant);
+    }
+
+    private function notifyMerchantForNeedsClarification(Merchant\Entity $merchant)
+    {
+        $path = "twirp/rzp.care.nc.v1.NcService/NotifyMerchantForNc";
+        $payload = [
+            "merchant" => [
+                "id" => $merchant->getId(),
+                "phone" => $merchant->merchantDetail->getContactMobile(),
+            ]
+        ];
+
+        $this->app['care_service']->internalPostRequest($path, $payload);
     }
 
     protected function isMetroMigrateOutExperimentEnabledForCmmaEvents($entityId): bool

@@ -177,7 +177,7 @@ class CareServiceClient
         return $this->sendRequestAndProcessResponse($this->getBaseUrl() .$path, Requests::POST, $input);
     }
 
-    public function chatProxyRequest($path, $input)
+    public function internalPostRequest($path, $input)
     {
         return $this->sendRequestAndProcessResponse($this->getBaseUrl() .$path, Requests::POST, $input);
     }

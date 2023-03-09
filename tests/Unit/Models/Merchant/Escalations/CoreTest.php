@@ -9,6 +9,7 @@ use Queue;
 use Mockery;
 use RZP\Models\State;
 use RZP\Constants\Mode;
+use RZP\Services\CareServiceClient;
 use RZP\Services\Mock\HarvesterClient;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Notifications\Onboarding\Events;
@@ -377,6 +378,8 @@ class CoreTest extends TestCase
             ]
         ];
 
+        $this->mockCareResponse();
+
         $this->mockSplitzTreatment($output);
 
         $merchant = $this->createPrerequisiteForNoDocEscalation();
@@ -408,6 +411,15 @@ class CoreTest extends TestCase
         $this->splitzMock
             ->shouldReceive('evaluateRequest')
             ->andReturn($output);
+    }
+
+    protected function mockCareResponse()
+    {
+        $careMock = Mockery::mock(CareServiceClient::class);
+        $this->app->instance('care_service', $careMock);
+
+        $careMock->shouldReceive('internalPostRequest')
+            ->andReturn(["success" => true]);
     }
 
     public function testEscalation10kMilestoneTimeBoundFalseFilterNoDocMerchant()

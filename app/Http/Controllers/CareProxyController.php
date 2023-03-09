@@ -303,7 +303,7 @@ class CareProxyController extends Controller
 
         $input = Request::all();
 
-        $respponse = $this->app['care_service']->chatProxyRequest($path, $input);
+        $respponse = $this->app['care_service']->internalPostRequest($path, $input);
 
         return ApiResponse::json($respponse);
     }
