@@ -90,7 +90,7 @@ class Mocks
               ]
             ],
             'inventory_behaviour' => 'decrement_obeying_policy',
-            'send_receipt' => false,
+            'send_receipt' => true,
             'test' => true
           ]
         ];

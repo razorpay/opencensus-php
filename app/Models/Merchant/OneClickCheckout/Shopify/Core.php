@@ -1717,7 +1717,7 @@ class Core extends Base\Core
             'taxes_included'         => $checkout['taxesIncluded'],
             'total_tax'              => $checkout['totalTax']['amount'],
             'inventory_behaviour'    => 'decrement_obeying_policy',
-            'send_receipt'           => false,
+            'send_receipt'           => true,
             'note_attributes'        => [
                 [
                   'name'  => 'Paid via',
