@@ -30,42 +30,40 @@ class Events
     // Even spacing differences will lead to delivery failures. So test all changes in these templates
     const WHATSAPP_TEMPLATES = [
         self::TICKET_CREATED      => [
-            'Your support ticket {ticket_id} has been registered. Our team is working to resolve your issue and will update you within 3 working days. ',
-            'You can track the support ticket by logging into the dashboard : {url} ',
+            'Your support ticket {ticket_id} has been registered. We are working to resolve your issue and will update you within 3 working days. ',
+            'You can track the support ticket by logging in to the dashboard : {url} ',
             'Team Razorpay',
         ],
         self::TICKET_DELAY_UPDATE_24HRS => [
-            'There is a short delay in resolving your issue {ticket_id}. We are working on it and will update you within the next 24 hrs. ',
-            'You can track the support ticket by logging into the dashboard : {url} ',
+            'It is taking more time than usual to resolve your issue {ticket_id}. We are working on it and will update you within the next 24 hrs. ',
+            'You can track the support ticket by logging in to the dashboard : {url} ',
             'Team Razorpay'
         ],
         self::TICKET_DELAY_UPDATE_72HRS => [
             'There is a short delay in resolving your issue {ticket_id}. We are working on it and will update you within the next 72 hrs. ',
-            'You can track your support ticket updates by logging into the dashboard : {url} ',
+            'You can track the support ticket by logging in to the dashboard : {url} ',
             'Team Razorpay',
         ],
         self::TICKET_DETAILS_PENDING => [
             'Action required: ',
-            'Our team has requested for a few more details from you on the support ticket {ticket_id}.',
-            'You can track the support ticket by logging into the dashboard : {url} ',
+            'We need a few more details from you on the support ticket {ticket_id}. ',
+            'You can track the support ticket and submit the required details by logging in to the dashboard : {url} ',
             'Team Razorpay',
         ],
         self::TICKET_RESOLVED => [
-            'Your support ticket {ticket_id} is closed as the issue has been resolved. ',
-            'If you are not satisfied with the resolution provided, you can reopen the support ticket by replying to the same support ticket. ',
+            'Your issue has been resolved  {ticket_id}. ',
             'You can track the support ticket by logging into the dashboard : {url} ',
             'Team Razorpay',
         ],
         self::TICKET_REOPENED => [
-            'Your support ticket {ticket_id} has been reopened as per your request and our team will take it up on priority to get back to you within 24 hrs. ',
-            'You can track the support ticket by logging into the dashboard : {url} ',
+            'Your support ticket {ticket_id} has been reopened as per your request. We will take it up on priority and get back to you within 24 hrs. ',
+            'You can track the support ticket by logging in to the dashboard : {url} ',
             'Team Razorpay',
         ],
         self::AGENT_TICKET_CREATED => [
             'Action required: ',
-            'Our team has requested for a few more details from you. ',
-            'Respond sooner for faster resolution. ',
-            'You can track the support ticket and reply to our team by logging into the dashboard : {url} ',
+            'We need a few more details from you. Respond sooner for faster resolution. ',
+            'You can track the support ticket and submit the required details by logging in to the dashboard : {url} ',
             'Team Razorpay',
         ],
       ];
