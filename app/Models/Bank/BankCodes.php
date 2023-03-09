@@ -365,6 +365,7 @@ class BankCodes
         '9001' => self::IFSC_TNSC,
         '9488' => self::IFSC_KUCB,
         '9771' => self::IFSC_FINO,
+        '9772' => self::IFSC_NSPB,
         //'8232' => self::IFSC_CRUB,
         //'8313' => self::IFSC_PMEC,
         '9105' => self::IFSC_JSBL,
