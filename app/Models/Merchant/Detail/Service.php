@@ -2065,16 +2065,32 @@ class Service extends Base\Service
     }
 
     /**
+     * Create Capital Application for a submerchant if referral code is present,
+     * the referred product is Capital and the capital partnership experiment is enabled for
+     * the referring partner.
+     *
      * @param Merchant\Entity $subMerchant
-     * @param string          $refCode
+     * @param string|null     $refCode
      *
      * @return void
      * @throws BadRequestValidationFailureException
      * @throws IntegrationException
      * @throws Throwable
      */
-    private function createCapitalApplicationIfApplicable(Merchant\Entity $subMerchant, string $refCode): void
+    private function createCapitalApplicationIfApplicable(Merchant\Entity $subMerchant, string $refCode = null): void
     {
+
+        // If referral code is empty or not present, we need not create an application for submerchant
+        // as it is not a partner referred submerchant
+        if (empty($refCode) === true)
+        {
+            return;
+        }
+
+        // If referral code is present, but there is no referral entity associated against it
+        // we need not create an application for submerchant.
+        // This could happen in cases where the referral code is a typo or when the merchant
+        // who referred is no longer a partner
         $referral = (new Referral\Core)->fetchReferralByReferralCode($refCode);
 
         if (empty($referral) === true)

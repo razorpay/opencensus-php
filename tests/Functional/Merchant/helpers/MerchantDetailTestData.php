@@ -3690,6 +3690,27 @@ return [
         ],
     ],
 
+    'testPutPreSignupDetailsWithInvalidCapitalReferralCode' => [
+        'request' => [
+            'content' => [
+                'business_type' => '2',
+                'department'    => '7',
+                'referral_code' => 'invalid'
+            ],
+            'url'     => '/pre_signup',
+            'method'  => 'PUT',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url'),
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'business_type' => '2',
+                'department' => '7',
+            ],
+        ],
+    ],
+
     'testPutPreSignupDetailsWithCapitalReferralCode' => [
         'request' => [
             'content' => [

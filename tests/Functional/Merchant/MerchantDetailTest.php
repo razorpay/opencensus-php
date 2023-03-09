@@ -4794,6 +4794,61 @@ Team Razorpay', '+911234567890');
         $this->assertNotContains('MerchantUser01', $referredSubMerchant->users->getIds());
     }
 
+    public function testPutPreSignupDetailsWithInvalidCapitalReferralCode()
+    {
+        $this->mockBvsService();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit(self::DEFAULT_SUBMERCHANT_ID, ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $referrerMerchantId = self::DEFAULT_MERCHANT_ID;
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->fixtures->create('referrals', ["product" => Constants\Product::CAPITAL]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $referredSubMerchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant($referredSubMerchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity(
+            'merchant_access_map',
+            [
+                'merchant_id' => $referredSubMerchantId
+            ],
+            'test'
+        );
+
+        $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
+
+        $merchantApp = $this->getDbEntity('merchant_application', ['application_id' => $app->getId()]);
+
+        $mapping = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_SUBMERCHANT_ID)
+                     ->where('user_id', '=', $referrerMerchantId)
+                     ->get();
+
+        $this->assertEmpty($mapping);
+
+        $this->assertEmpty($referredSubMerchant->tagNames());
+
+        $this->assertEmpty($merchantAcessMap);
+    }
+
     public function testPutPreSignupDetailsWithCapitalReferralCode()
     {
         $this->mockBvsService();
