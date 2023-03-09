@@ -159,7 +159,7 @@ class EnachNetbankingNpciIciciTest extends TestCase
 
         Mail::assertQueued(NachMail::class, function ($mail)
         {
-            $fileName = 'ACH-DR-ICIC-ICIC406434-{$date}-RZ0001-INP.txt';
+            $fileName = 'ACH-DR-ICIC-ICIC865719-{$date}-RZ0001-INP.txt';
 
             $date = Carbon::now(Timezone::IST)->format('dmY');
 
@@ -259,7 +259,7 @@ class EnachNetbankingNpciIciciTest extends TestCase
         $fileName1 = $files['items'][0]['name'];
         $fileName2 = $files['items'][1]['name'];
 
-        // The file naming format - 'icici/nach/debit/ACH-DR-ICIC-ICIC406434-{$date}-{$batchCode}-INP'
+        // The file naming format - 'icici/nach/debit/ACH-DR-ICIC-ICIC865719-{$date}-{$batchCode}-INP'
         // Batch code is a sequentially increasing number for every file generated
         // Different files are generated for different utility codes
         $seqNo1 = (int) substr($fileName1, -5, 1);

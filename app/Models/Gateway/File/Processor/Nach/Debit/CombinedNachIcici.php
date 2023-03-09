@@ -36,7 +36,7 @@ class CombinedNachIcici extends Debit\Base
 {
     const EXTENSION              = FileStore\Format::TXT;
     const FILE_TYPE              = FileStore\Type::ICICI_NACH_COMBINED_DEBIT;
-    const FILE_NAME              = 'ACH-DR-ICIC-ICIC406434-{$date}-{$batchCode}-INP';
+    const FILE_NAME              = 'ACH-DR-ICIC-ICIC865719-{$date}-{$batchCode}-INP';
     const STEP                   = 'debit';
     const USER_NAME              = 'RZP';
     const BASE_STORAGE_DIRECTORY = 'Icici/Nach/Debit/';

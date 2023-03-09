@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.011.001.01">
+  <MndtCxlReq>
+    <GrpHdr>
+      <MsgId>$tokenId</MsgId>
+      <CreDtTm>2020-02-11T07:21:45</CreDtTm>
+      <InstgAgt>
+        <FinInstnId>
+          <ClrSysMmbId>
+            <MmbId>ICIC0TREA00</MmbId>
+          </ClrSysMmbId>
+        </FinInstnId>
+      </InstgAgt>
+      <InstdAgt>
+        <FinInstnId>
+          <ClrSysMmbId>
+            <MmbId>HDFC0001233</MmbId>
+          </ClrSysMmbId>
+        </FinInstnId>
+      </InstdAgt>
+    </GrpHdr>
+    <UndrlygCxlDtls>
+      <CxlRsn>
+        <Rsn>
+          <Prtry>C002</Prtry>
+        </Rsn>
+      </CxlRsn>
+      <OrgnlMndt>
+        <OrgnlMndtId>ICIC0000000011506909</OrgnlMndtId>
+      </OrgnlMndt>
+    </UndrlygCxlDtls>
+  </MndtCxlReq>
+</Document>
