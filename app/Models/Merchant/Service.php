@@ -352,9 +352,14 @@ class Service extends Base\Service
 
         list($inputCopy, $isCapitalSubmerchant) = (new CapitalSubmerchantUtility())->extractInputFromCapitalBatchInvite($input, $merchantId);
 
-        $merchantDetailsInput = CapitalSubmerchantUtility::extractMerchantDetailsInput($input);
+        $merchantDetailsInput          = array();
+        $createCapitalApplicationInput = array();
 
-        $createCapitalApplicationInput = CapitalSubmerchantUtility::extractCapitalApplicationInput($input, $merchant);
+        if ($isCapitalSubmerchant === true)
+        {
+            $merchantDetailsInput          = CapitalSubmerchantUtility::extractMerchantDetailsInput($input);
+            $createCapitalApplicationInput = CapitalSubmerchantUtility::extractCapitalApplicationInput($input, $merchant);
+        }
 
         $this->trace->info(
             TraceCode::BATCH_SUBMERCHANT_ACCOUNT_CREATE_REQUEST,

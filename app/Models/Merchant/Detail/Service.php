@@ -43,6 +43,7 @@ use Illuminate\Support\Facades\Mail;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant as MerchantMail;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\IntegrationException;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Workflow\Action\MakerType;
@@ -75,6 +76,7 @@ use RZP\Models\Merchant\Document\Core as DocumentCore;
 use RZP\Models\Admin\Permission\Name as PermissionName;
 use RZP\Models\Merchant\Detail\Constants as DEConstants;
 use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Workflow\Action\Differ\Core as DifferCore;
 use RZP\Notifications\Dashboard\Events as DashboardEvents;
 use RZP\Models\Merchant\Detail\BusinessSubcategory as Sub;
@@ -1927,7 +1929,16 @@ class Service extends Base\Service
         (new Validator)->validateSignupViaChannel($input, $merchant);
         (new Validator)->validateUniqueContactMobile($input, $merchant->getId());
 
-        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input)
+        $refCode = null;
+
+        if ((isset($input[Entity::REFERRAL_CODE]) === true) and (empty($input[Entity::REFERRAL_CODE]) === false))
+        {
+            $refCode = $input[Entity::REFERRAL_CODE];
+        }
+
+        unset($input[Entity::REFERRAL_CODE]);
+
+        $this->repo->transactionOnLiveAndTest(function() use ($merchant, $input, $refCode)
         {
             $this->applyCoupon($input);
 
@@ -1943,7 +1954,12 @@ class Service extends Base\Service
                 $this->handlePreSignUpOptionalFields($input);
             }
 
-            $this->applyReferralPartner($input);
+            if (empty($refCode) === false)
+            {
+                $this->trace->info(TraceCode::MERCHANT_REFERRAL_APPLY_REQUEST, $input);
+
+                $this->applyReferralPartner($refCode);
+            }
 
             $this->saveMerchantDetailForPreSignUp($input);
 
@@ -2000,7 +2016,56 @@ class Service extends Base\Service
 
         $this->createLegalDocumentsForBanking($merchant);
 
+        $this->createCapitalApplicationIfApplicable($merchant, $refCode);
+
         return $this->getPreSignupDetails();
+    }
+
+    /**
+     * @param Merchant\Entity $subMerchant
+     * @param string          $refCode
+     *
+     * @return void
+     * @throws BadRequestValidationFailureException
+     * @throws IntegrationException
+     * @throws Throwable
+     */
+    private function createCapitalApplicationIfApplicable(Merchant\Entity $subMerchant, string $refCode): void
+    {
+        $referral = (new Referral\Core)->fetchReferralByReferralCode($refCode);
+
+        if (empty($referral) === true)
+        {
+            return;
+        }
+
+        $referralProduct = $referral->getProduct() ?? Product::PRIMARY;
+
+        if ($referralProduct === Product::CAPITAL)
+        {
+            $isCapitalPartnershipExpEnabled = (new CapitalSubmerchantUtility())->isCapitalPartnershipEnabledForPartner($referral->getMerchantId());
+
+            if ($isCapitalPartnershipExpEnabled === true)
+            {
+                $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
+
+                CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant($partner->getId(), $subMerchant);
+
+                $productIds = CapitalSubmerchantUtility::getLOSProductIds();
+
+                $locProductId = $productIds[Constants::CAPITAL_LOC_EMI_PRODUCT_NAME];
+
+                CapitalSubmerchantUtility::createCapitalApplicationForSubmerchant(
+                    $subMerchant,
+                    [
+                        Constants::LEAD_SOURCE    => "Partner",
+                        Constants::LEAD_SOURCE_ID => $partner->getId(),
+                        Constants::SOURCE_DETAILS => $partner->getName(),
+                        Constants::PRODUCT_ID     => $locProductId
+                    ]
+                );
+            }
+        }
     }
 
     /**
@@ -2049,37 +2114,21 @@ class Service extends Base\Service
     }
 
     /**
-     * @param array $input
+     * @param string $refCode
      *
-     * @throws Exception\BadRequestException
-     * @throws Exception\LogicException
-     * @throws Throwable
      */
-    private function applyReferralPartner(array &$input)
+    private function applyReferralPartner(string $refCode)
     {
-        if ((isset($input[Entity::REFERRAL_CODE]) === false) or (empty($input[Entity::REFERRAL_CODE]) === true))
-        {
-            return;
-        }
-
-        $refCode = $input[Entity::REFERRAL_CODE];
-
-        $this->trace->info(TraceCode::MERCHANT_REFERRAL_APPLY_REQUEST, $input);
-
         $subMerchant = $this->app['basicauth']->getMerchant();
 
         $referral = (new Referral\Core)->fetchReferralByReferralCode($refCode);
 
         if (empty($referral) === true)
         {
-            unset($input[Entity::REFERRAL_CODE]);
-
             return;
         }
 
         $referralProduct = $referral->getProduct() ?? Product::PRIMARY;
-
-        $isCapitalPartnershipExpEnabled = false;
 
         if ($referralProduct == Product::CAPITAL)
         {
@@ -2102,8 +2151,6 @@ class Service extends Base\Service
 
             if ($isCapitalPartnershipExpEnabled === false)
             {
-                unset($input[Entity::REFERRAL_CODE]);
-
                 return;
             }
         }
@@ -2118,31 +2165,7 @@ class Service extends Base\Service
             ];
 
             $this->applyPartnerSubMerchantMapping($subMerchant, $mappingInput, $referralProduct);
-
-            if (($isCapitalPartnershipExpEnabled === true) and ($referralProduct === Product::BANKING))
-            {
-                $partner = $this->repo->merchant->findOrFailPublic($referral->getMerchantId());
-
-                CapitalSubmerchantUtility::addTagAndAttributeForCapitalSubmerchant($partner->getId(), $subMerchant);
-
-                $productIds = CapitalSubmerchantUtility::getLOSProductIds();
-
-                $locProductId = $productIds[Constants::CAPITAL_LOC_EMI_PRODUCT_NAME];
-
-                CapitalSubmerchantUtility::createCapitalApplicationForSubmerchant(
-                    $subMerchant,
-                    [
-                        Constants::LEAD_SOURCE    => "Partner",
-                        Constants::LEAD_SOURCE_ID => $partner->getId(),
-                        Constants::SOURCE_DETAILS => $partner->getName(),
-                        Constants::PRODUCT_ID     => $locProductId
-                    ]
-                );
-
-            }
         }
-
-        unset($input[Entity::REFERRAL_CODE]);
     }
 
     private function applyPartnerSubMerchantMapping($subMerchant, $input, $product)

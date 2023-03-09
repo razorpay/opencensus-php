@@ -41,7 +41,9 @@ use RZP\Exception\ServerErrorException;
 use RZP\Services\KafkaMessageProcessor;
 use RZP\Models\Merchant\Document\Source;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Models\Merchant\MerchantApplications;
 use RZP\Mail\Merchant\MerchantDashboardEmail;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Mail\Merchant\MerchantOnboardingEmail;
 use RZP\Services\Segment\SegmentAnalyticsClient;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -78,6 +80,7 @@ use RZP\Models\Merchant\Consent\Details\Repository as MerchantConsentDetailsRepo
 
 class MerchantDetailTest extends OAuthTestCase
 {
+    use PartnerTrait;
     use BvsTrait;
     use RazorxTrait;
     use PaymentTrait;
@@ -4727,7 +4730,7 @@ Team Razorpay', '+911234567890');
 
         $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
 
-        $appType = \RZP\Models\Merchant\MerchantApplications\Entity::REFERRED;
+        $appType = MerchantApplications\Entity::REFERRED;
 
         $this->fixtures->create('pricing:two_percent_pricing_plan', [
             'plan_id' => self::DEFAULT_MERCHANT_ID,
@@ -4791,6 +4794,74 @@ Team Razorpay', '+911234567890');
         $this->assertNotContains('MerchantUser01', $referredSubMerchant->users->getIds());
     }
 
+    public function testPutPreSignupDetailsWithCapitalReferralCode()
+    {
+        $this->mockBvsService();
+
+        $this->mockCapitalPartnershipSplitzExperiment();
+
+        $this->fixtures->merchant->edit(self::DEFAULT_MERCHANT_ID, ['partner_type' => 'reseller']);
+
+        $this->fixtures->merchant->create(['id' => self::DEFAULT_SUBMERCHANT_ID]);
+
+        $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
+
+        $losServiceMock = \Mockery::mock('RZP\Services\LOSService', [$this->app])
+                                  ->makePartial()
+                                  ->shouldAllowMockingProtectedMethods();
+
+        $this->app->instance('losService', $losServiceMock);
+
+        $this->mockCreateApplicationRequestOnLOSService($losServiceMock);
+
+        $this->mockGetProductsRequestOnLOSService($losServiceMock);
+
+        $referrerMerchantId = self::DEFAULT_MERCHANT_ID;
+
+        $referredSubMerchantId = self::DEFAULT_SUBMERCHANT_ID;
+
+        $this->fixtures->create('referrals', ["product" => Constants\Product::CAPITAL]);
+
+        $this->fixtures->create('merchant_detail',[
+            'merchant_id' => $referredSubMerchantId,
+            'contact_name'=> 'Aditya',
+            'business_type' => 2
+        ]);
+
+        $merchantUser = $this->fixtures->user->createBankingUserForMerchant($referredSubMerchantId);
+
+        $this->ba->proxyAuth('rzp_test_' . $referredSubMerchantId, $merchantUser['id']);
+
+        $this->startTest();
+
+        $merchantAcessMap = $this->getDbEntity('merchant_access_map',
+                                               [
+                                                   'merchant_id' => $referredSubMerchantId
+                                               ], 'test')
+                                 ->toArray();
+
+        $referredSubMerchant = $this->getDbEntity('merchant', ['id' => $referredSubMerchantId]);
+
+        $merchantApp = $this->getDbEntity('merchant_application', ['application_id' => $app->getId()]);
+
+
+        $mapping = DB::table('merchant_users')->where('merchant_id', '=', self::DEFAULT_SUBMERCHANT_ID)
+                     ->where('user_id', '=', $referrerMerchantId)
+                     ->get();
+
+        $this->assertEmpty($mapping);
+
+        $this->assertEquals($merchantApp->type, MerchantApplications\Entity::REFERRED);
+
+        $this->assertEquals($referredSubMerchant->tagNames(), array('Ref-' . $referrerMerchantId));
+
+        $this->assertSame($referredSubMerchantId, $merchantAcessMap['merchant_id']);
+
+        $this->assertSame($referrerMerchantId, $merchantAcessMap['entity_owner_id']);
+
+        $this->assertSame($app->getId(), $merchantAcessMap['entity_id']);
+    }
+
     public function testPutPreSignUpDetailsWithBankingReferralCodeInX()
     {
         $this->mockBvsService();
@@ -4801,7 +4872,7 @@ Team Razorpay', '+911234567890');
 
         $app = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'reseller']);
 
-        $appType = \RZP\Models\Merchant\MerchantApplications\Entity::REFERRED;
+        $appType = MerchantApplications\Entity::REFERRED;
 
         $this->fixtures->create('pricing:two_percent_pricing_plan', [
             'plan_id' => self::DEFAULT_MERCHANT_ID,
@@ -4972,7 +5043,7 @@ Team Razorpay', '+911234567890');
 
         $managedApp = $this->fixtures->merchant->createDummyPartnerApp(['partner_type' => 'aggregator'], true);
 
-        $appType = \RZP\Models\Merchant\MerchantApplications\Entity::MANAGED;
+        $appType = MerchantApplications\Entity::MANAGED;
 
         $this->fixtures->create('pricing:two_percent_pricing_plan', [
             'plan_id' => self::DEFAULT_MERCHANT_ID,

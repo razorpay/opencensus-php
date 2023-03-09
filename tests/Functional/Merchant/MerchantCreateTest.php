@@ -73,6 +73,8 @@ class MerchantCreateTest extends TestCase
 
     protected mixed $repo;
 
+    const DEFAULT_MERCHANT_ID = '10000000000000';
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantCreateTestData.php';
@@ -3543,62 +3545,5 @@ class MerchantCreateTest extends TestCase
         $paymentConfig = $this->getDbEntity('config', ['merchant_id' => $merchantId]);
 
         $this->assertNotNull($paymentConfig);
-    }
-
-    protected function mockCapitalPartnershipSplitzExperiment()
-    {
-        $input = [
-            "experiment_id" => "L0rynez0HhIXHb",
-            "id"            => "10000000000000",
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-        $this->mockSplitzTreatment($input, $output);
-    }
-
-    protected function mockCreateApplicationRequestOnLOSService($mockLOSService)
-    {
-        $mockLOSService->shouldReceive('sendRequest')
-                       ->atLeast()
-                       ->once()
-                       ->with(
-                           MerchantConstants::CREATE_CAPITAL_APPLICATION_LOS_URL,
-                           Mockery::type('array'),
-                           Mockery::type('array')
-                       );
-
-        $mockLOSService->shouldReceive('parseResponse')->times(1);
-    }
-
-    protected function mockGetProductsRequestOnLOSService($mockLOSService)
-    {
-        $mockLOSService->shouldReceive('sendRequest')
-                       ->atLeast()
-                       ->once()
-                       ->with(
-                           MerchantConstants::GET_PRODUCTS_LOS_URL,
-                           Mockery::type('array'),
-                           Mockery::type('array')
-                       )
-                       ->andReturnUsing(
-                           function() {
-                               $resp              = new Response;
-                               $resp->success     = true;
-                               $resp->status_code = 200;
-                               $resp->body        = json_encode(
-                                   [
-                                       "products" => MockLOSService::PRODUCT_LIST
-                                   ]
-                               );
-
-                               return $resp;
-                           }
-                       );
     }
 }

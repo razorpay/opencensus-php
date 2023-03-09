@@ -2,9 +2,11 @@
 
 namespace RZP\Tests\Functional\Partner;
 
+use Mockery;
 use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Models\User\Role;
+use WpOrg\Requests\Response;
 use RZP\Models\Feature\Constants as FName;
 use Illuminate\Database\Eloquent\Factory;
 use RZP\Tests\Functional\OAuth\OAuthTrait;
@@ -12,6 +14,7 @@ use RZP\Models\Merchant\MerchantApplications;
 use RZP\Tests\Functional\Fixtures\Entity\User;
 use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Tests\Functional\Fixtures\Entity\Pricing;
+use RZP\Services\Mock\LOSService as MockLOSService;
 use RZP\Tests\Functional\Fixtures\Entity\Org as Org;
 use RZP\Models\Merchant\Constants as MerchantConstants;
 use RZP\Tests\Functional\Fixtures\Entity\Base as BaseFixture;
@@ -19,6 +22,63 @@ use RZP\Tests\Functional\Fixtures\Entity\Base as BaseFixture;
 trait PartnerTrait
 {
     use OAuthTrait;
+
+    public function mockCapitalPartnershipSplitzExperiment(): void
+    {
+        $input = [
+            "experiment_id" => "L0rynez0HhIXHb",
+            "id" => self::DEFAULT_MERCHANT_ID,
+        ];
+
+        $output = [
+            "response" => [
+                "variant" => [
+                    "name" => 'enable',
+                ]
+            ]
+        ];
+        $this->mockSplitzTreatment($input, $output);
+    }
+
+    public function mockCreateApplicationRequestOnLOSService($mockLOSService): void
+    {
+        $mockLOSService->shouldReceive('sendRequest')
+                       ->atLeast()
+                       ->once()
+                       ->with(
+                           MerchantConstants::CREATE_CAPITAL_APPLICATION_LOS_URL,
+                           Mockery::type('array'),
+                           Mockery::type('array')
+                       );
+
+        $mockLOSService->shouldReceive('parseResponse')->times(1);
+    }
+
+    public function mockGetProductsRequestOnLOSService($mockLOSService): void
+    {
+        $mockLOSService->shouldReceive('sendRequest')
+                       ->atLeast()
+                       ->once()
+                       ->with(
+                           MerchantConstants::GET_PRODUCTS_LOS_URL,
+                           Mockery::type('array'),
+                           Mockery::type('array')
+                       )
+                       ->andReturnUsing(
+                           function() {
+                               $resp              = new Response;
+                               $resp->success     = true;
+                               $resp->status_code = 200;
+                               $resp->body        = json_encode(
+                                   [
+                                       "products" => MockLOSService::PRODUCT_LIST
+                                   ]
+                               );
+
+                               return $resp;
+                           }
+                       );
+    }
 
     public function setUpPartnerMerchantAppAndGetClient(
         string $env = 'dev',

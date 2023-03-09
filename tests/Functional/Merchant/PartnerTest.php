@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Merchant\Partner;
 use Config;
 use DB;
 use Mail;
-use Mockery;
 use Carbon\Carbon;
 use RZP\Constants\Country;
 use RZP\Constants\Mode;
@@ -4032,42 +4031,27 @@ class PartnerTest extends OAuthTestCase
 
     private function checkReferrals(string $merchantId, string $product, string $mode = Mode::TEST)
     {
-        $bankingReferral = $this->getDbEntity('referrals',
+        return $this->getDbEntity(
+            'referrals',
             [
-                'merchant_id' => $merchantId , 'product' => $product
-            ], $mode);
-
-        return $bankingReferral;
+                'merchant_id' => $merchantId ,
+                'product' => $product
+            ],
+            $mode
+        );
     }
 
     private function mockRazorxTreatment()
     {
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
-            ->setConstructorArgs([$this->app])
-            ->setMethods(['getTreatment'])
-            ->getMock();
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
 
         $this->app->instance('razorx', $razorxMock);
 
         $this->app->razorx->method('getTreatment')
-            ->willReturn('on');
-    }
-
-    protected function mockCapitalPartnershipSplitzExperiment()
-    {
-        $input = [
-            "experiment_id" => "L0rynez0HhIXHb",
-            "id" => self::DEFAULT_MERCHANT_ID,
-        ];
-
-        $output = [
-            "response" => [
-                "variant" => [
-                    "name" => 'enable',
-                ]
-            ]
-        ];
-        $this->mockSplitzTreatment($input, $output);
+                          ->willReturn('on');
     }
 
     protected function createResellerPartnerAndAddBankingSubmerchants()
