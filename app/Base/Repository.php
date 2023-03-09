@@ -1241,6 +1241,31 @@ class Repository extends \Razorpay\Spine\Repository
         return $connection;
     }
 
+    // Applied only on production env. As _record_source column is available only in the TiDB
+    // All lower envs are pointed to RDS instance
+    protected function getDataWarehouseSourceAPIConnection(string $cluster = ConnectionType::DATA_WAREHOUSE_MERCHANT): string
+    {
+        if ((in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER], true) === true) or
+            (Environment::isEnvironmentQA($this->app['env']) === true) or
+            (Environment::isLowerEnvironment($this->app['env']) === true) or
+            ($this->app->runningUnitTests() === true))
+        {
+            return Config::get('database.default');
+        }
+
+        $mode = $mode ?? $this->app['rzp.mode'];
+
+        $connection = ($mode === Mode::TEST) ?
+            Connection::DATA_WAREHOUSE_MERCHANT_SOURCE_API_TEST : Connection::DATA_WAREHOUSE_MERCHANT_SOURCE_API_LIVE;
+
+        if ($cluster === ConnectionType::DATA_WAREHOUSE_ADMIN)
+        {
+            $connection = ($mode === Mode::TEST) ?
+                Connection::DATA_WAREHOUSE_ADMIN_SOURCE_API_TEST : Connection::DATA_WAREHOUSE_ADMIN_SOURCE_API_LIVE;
+        }
+
+        return $connection;
+    }
 
     public function getSlaveConnection(string $mode = null)
     {

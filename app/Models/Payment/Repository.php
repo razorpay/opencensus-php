@@ -149,6 +149,23 @@ EOT;
         return $serialized;
     }
 
+    protected function newQueryWithConnection($connection)
+    {
+        // DATA_WAREHOUSE_SOURCE_API_CONNECTIONS contains dummy connections. Mapping to right connection here.
+        if (in_array($connection, array_keys(Connection::DATA_WAREHOUSE_SOURCE_API_CONNECTIONS)) === true)
+        {
+            $query = parent::newQueryWithConnection(Connection::DATA_WAREHOUSE_SOURCE_API_CONNECTIONS[$connection]);
+
+            $query = $query->where($this->dbColumn(Base\Entity::RECORD_SOURCE), '=', Base\Constants::RECORD_SOURCE_API);
+        }
+        else
+        {
+            $query = parent::newQueryWithConnection($connection);
+        }
+
+        return $query;
+    }
+
     protected function validateCustomerId($attribute, $value)
     {
         $merchant = $this->merchant;

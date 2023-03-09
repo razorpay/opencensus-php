@@ -211,6 +211,11 @@ trait DualWrite
     {
         parent::incrementOrDecrement($column, $amount, $extra, $method);
 
+        if ($this->isDualWriteEnabledViaEnv() !== true)
+        {
+            return;
+        }
+
         $dualWriteStartTime = millitime();
 
         // ToDo : Re think parentEntityExists for archived entity

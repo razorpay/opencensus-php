@@ -12,6 +12,12 @@ class Entity extends \RZP\Base\EloquentEx
     const DELETED_AT = 'deleted_at';
 
     /**
+     * This column is currently used in centralised warm storage (TiDB)
+     * To identify source of the entity in Re Arch flow
+     */
+    const RECORD_SOURCE = '_record_source';
+
+    /**
      * If this is set to true, DualWrite trait will throw an exception unless both writes are successful
      */
     const SAVE_OPTION_RAZORPAY_API_STRICT_DUAL_WRITE = 'razorpay_api_strict_dual_write';

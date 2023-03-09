@@ -38,6 +38,12 @@ class Connection
 
     const RX_WHATSAPP_SLAVE_LIVE = 'rx_whatsapp_slave_live';
 
+    // connections to apply _record_source = 'api' filter on warm storage queries
+    const DATA_WAREHOUSE_MERCHANT_SOURCE_API_TEST = 'data-warehouse-merchant-api-test';
+    const DATA_WAREHOUSE_MERCHANT_SOURCE_API_LIVE = 'data-warehouse-merchant-api-live';
+    const DATA_WAREHOUSE_ADMIN_SOURCE_API_LIVE    = 'data-warehouse-admin-api-live';
+    const DATA_WAREHOUSE_ADMIN_SOURCE_API_TEST    = 'data-warehouse-admin-api-test';
+
     const DATA_WAREHOUSE_CONNECTIONS = [
         self::DATA_WAREHOUSE_LIVE,
         self::DATA_WAREHOUSE_TEST,
@@ -45,5 +51,17 @@ class Connection
         self::DATA_WAREHOUSE_MERCHANT_LIVE,
         self::DATA_WAREHOUSE_ADMIN_TEST,
         self::DATA_WAREHOUSE_MERCHANT_TEST,
+        self::DATA_WAREHOUSE_ADMIN_SOURCE_API_LIVE,
+        self::DATA_WAREHOUSE_ADMIN_SOURCE_API_TEST,
+        self::DATA_WAREHOUSE_MERCHANT_SOURCE_API_LIVE,
+        self::DATA_WAREHOUSE_MERCHANT_SOURCE_API_TEST,
+    ];
+
+    // Has mapping to corresponding warm database connections
+    const DATA_WAREHOUSE_SOURCE_API_CONNECTIONS = [
+        self::DATA_WAREHOUSE_ADMIN_SOURCE_API_LIVE    => self::DATA_WAREHOUSE_ADMIN_LIVE,
+        self::DATA_WAREHOUSE_ADMIN_SOURCE_API_TEST    => self::DATA_WAREHOUSE_ADMIN_TEST ,
+        self::DATA_WAREHOUSE_MERCHANT_SOURCE_API_LIVE => self::DATA_WAREHOUSE_MERCHANT_LIVE,
+        self::DATA_WAREHOUSE_MERCHANT_SOURCE_API_TEST => self::DATA_WAREHOUSE_MERCHANT_TEST,
     ];
 }

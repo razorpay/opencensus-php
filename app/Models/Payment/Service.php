@@ -6022,6 +6022,12 @@ class Service extends Base\Service
 
             foreach ($paymentIds as $paymentId)
             {
+                // will have null values when queried (joins) of harvester replica as it has rearch payments too
+                if (empty($paymentId) === true)
+                {
+                    continue;
+                }
+
                 $this->mutex->acquireAndRelease($paymentId, function() use ($paymentId)
                 {
                     $payment = $this->repo->payment->findOrFail($paymentId);
