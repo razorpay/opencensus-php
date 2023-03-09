@@ -449,6 +449,11 @@ class InvoiceController extends Controller
 
         if (isset($data['invoice']) and $data['invoice']['entity_type'] === Constants\Entity::SUBSCRIPTION_REGISTRATION)
         {
+            if(isset($data['invoice']['subscription_registration']['upiAutopayPromoIntentUrl']))
+            {
+                return redirect($data['invoice']['subscription_registration']['upiAutopayPromoIntentUrl']);
+            }
+
             $routeName = $this->app['api.route']->getCurrentRouteName();
 
             // Gets mode per route and sets application & db mode.

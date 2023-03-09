@@ -12,8 +12,10 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Options;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Settings;
 use RZP\Models\FileStore;
+use RZP\Http\RequestHeader;
 use RZP\Models\PaymentLink;
 use RZP\Constants\Timezone;
 use RZP\Models\BankAccount;
@@ -24,7 +26,10 @@ use RZP\Models\Options\Constants;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Preferences;
 use RZP\Models\SubscriptionRegistration;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\PaymentLink\Template\UdfSchema;
+use RZP\Models\UpiMandate\Metrics as UPIAutopayMetrics;
+use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 /**
  * This class is common source of invoice and related data to be sent
@@ -757,6 +762,64 @@ class ViewDataSerializerHosted extends Base\Core
             if ($externalEntity->getMethod() === SubscriptionRegistration\Method::UPI)
             {
                 $serialized[E::SUBSCRIPTION_REGISTRATION]['frequency'] = $order->upiMandate['frequency'];
+
+                $upiAutopayPromoIntentVariant = $this->app->razorx->getTreatment(
+                    $order->getMerchantId(),
+                    RazorxTreatment::UPI_AUTOPAY_PROMOTIONAL_INTENT,
+                    $this->mode,
+                    3
+                );
+
+                try
+                {
+                    $isUserAgentAndroid = str_contains(strtolower($this->app->request->header(RequestHeader::USER_AGENT)), 'android');
+
+                    $successfulPayment = $this->getSuccessfulPaymentForOrder($order);
+
+                    if (($isUserAgentAndroid === true) and
+                        ($upiAutopayPromoIntentVariant === 'on') and
+                        ($this->mode === 'live') and
+                        ($successfulPayment === null))
+                    {
+                        $paymentRequest = [
+                            Payment\Entity::AMOUNT      => $order->getAmount(),
+                            Payment\Entity::CURRENCY    => $order->getCurrency(),
+                            Payment\Entity::DESCRIPTION => 'Invoice #'.$this->invoice->getPublicId(),
+                            Payment\Entity::EMAIL       => $this->invoice->getCustomerEmail(),
+                            Payment\Entity::CONTACT     => $this->invoice->getCustomerContact(),
+                            Payment\Entity::CUSTOMER_ID => $this->invoice->getPublicCustomerId(),
+                            Payment\Entity::ORDER_ID    => $order->getPublicId(),
+                            Payment\Entity::RECURRING   => '1',
+                            Payment\Entity::METHOD      => 'upi',
+                            'upi'                       => [
+                                "flow" => "intent"
+                            ]
+                        ];
+
+                        $paymentProcessor = new PaymentProcessor($order->merchant);
+
+                        $paymentResponse = $paymentProcessor->process($paymentRequest);
+
+                        if(empty($paymentResponse["data"]["intent_url"]) === false)
+                        {
+                            $serialized[E::SUBSCRIPTION_REGISTRATION]['upiAutopayPromoIntentUrl'] = $paymentResponse["data"]["intent_url"];
+
+                            $this->trace->info(TraceCode::UPI_RECURRING_PROMOTIONAL_INTENT_PAYMENT_CREATED, [
+                                'merchant_id' => $order->getMerchantId(),
+                                'payment_id'  => $paymentResponse['payment_id'],
+                                'order_id'    => $order->getId()
+                            ]);
+
+                            $this->trace->count(UPIAutopayMetrics::UPI_AUTOPAY_PROMOTIONAL_INTENT_PAYMENT_CREATED, [
+                                    'merchant_id' => $order->getMerchantId()
+                                ]);
+                        }
+                    }
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException($e);
+                }
             }
 
             if ($externalEntity->getMethod() === SubscriptionRegistration\Method::EMANDATE)
@@ -957,6 +1020,28 @@ class ViewDataSerializerHosted extends Base\Core
         foreach ($payments as $payment)
         {
             if ($payment->getStatus() === Payment\Status::CAPTURED)
+            {
+                return $payment;
+            }
+        }
+
+        return null;
+    }
+
+    protected function getSuccessfulPaymentForOrder(Order\Entity $order)
+    {
+        if ($order === null)
+        {
+            return null;
+        }
+
+        $payments = $order->payments;
+
+        foreach ($payments as $payment)
+        {
+            if (($payment->getStatus() === Payment\Status::CAPTURED) or
+                ($payment->getStatus() === Payment\Status::AUTHORIZED) or
+                ($payment->getStatus() === Payment\Status::REFUNDED))
             {
                 return $payment;
             }

@@ -2607,14 +2607,33 @@ trait Authorize
 
             default:
 
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
-                    null,
-                    [
-                        'payment_id' => $payment->getId(),
-                        'method'     => $payment->getMethod(),
-                        'auth_type' => $authType
-                    ]);
+                if(($payment->isUpiIntentRecurring()) and
+                   ($authType === BasicAuth\Type::DIRECT_AUTH))
+                {
+                    $this->verifyRecurringEnabledForMerchant($merchant);
+
+                    $this->trace->info(
+                        TraceCode::MISC_TRACE_CODE,
+                        [
+                            'msg'     => 'Direct Auth payment for UPI Autopay Promotional Intent',
+                            'payment' => $payment->getId(),
+                            'merchant'=> $merchant->getId(),
+                            'type'    => $authType
+                        ]);
+
+                    break;
+                }
+                else
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_URL_NOT_FOUND,
+                        null,
+                        [
+                            'payment_id' => $payment->getId(),
+                            'method'     => $payment->getMethod(),
+                            'auth_type' => $authType
+                        ]);
+                }
         }
     }
 
