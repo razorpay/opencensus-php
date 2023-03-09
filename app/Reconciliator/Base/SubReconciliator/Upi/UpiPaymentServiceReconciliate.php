@@ -6,6 +6,7 @@ use Throwable;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -15,7 +16,9 @@ use RZP\Gateway\Upi\Base\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Base\SubReconciliator;
+use RZP\Jobs\UpsRecon\UpsGatewayEntityUpdate;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
+use RZP\Reconciliator\Base\SubReconciliator\Upi\Constants as UpsConstants;
 
 class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
 {
@@ -86,13 +89,14 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
             Constants::MODEL        => Constants::AUTHORIZE
         ];
 
-        if ($this->shouldUpdateInSync() === false)
+        if ($this->shouldUpdateInSync() === true)
         {
-            $this->publishToMetro($data);
+            $this->updateEntityOnUps($data);
             return;
         }
 
-        $this->updateEntityOnUps($data);
+        // update gateway entity asynchronously
+        $this->updateEntityAsynchronously($data);
     }
 
     protected  function shouldUpdateInSync()
@@ -333,6 +337,28 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
         }
     }
 
+    /** Dispatch the entity update message to sqs queue
+     * @param array $data
+     * @throws \Exception
+     */
+    protected function dispatchToUpsReconQueue(array $data)
+    {
+        try
+        {
+            UpsGatewayEntityUpdate::dispatch($this->mode, $data);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::UPI_PAYMENT_JOB_DISPATCH_ERROR,
+                [
+                    UpsConstants::PAYMENT_ID   => $data[ Constants::PAYMENT_ID],
+                    "error_message"            => $ex->getMessage()
+                ]);
+
+            throw $ex;
+        }
+    }
+
     /**
      * processes recon gateway data anaomalies
      *
@@ -528,5 +554,36 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
     {
         // to be implemented by gateway payment reconciliation file
         return;
+    }
+
+    /** Check if the entity updates to UPS are pushed through SQS
+     * @return bool
+     */
+    protected function shouldUpdateEntityViaSqs()
+    {
+        $gateway = $this->payment->getGateway();
+
+        $feature = 'ups_recon_sqs_update_' . $gateway;
+
+        // The experiment to route the traffic to update entities through sqs
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+            $feature, $this->mode ?? Mode::LIVE);
+
+        return ($variant === 'on');
+    }
+
+    /** Update gateway entity asynchronously via SQS
+     * @param array $data
+     * @throws Throwable
+     */
+    protected function updateEntityAsynchronously(array $data)
+    {
+        if ($this->shouldUpdateEntityViaSqs() === true)
+        {
+            $this->dispatchToUpsReconQueue($data);
+            return;
+        }
+
+        $this->publishToMetro($data);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\PaymentsUpi\Service;
 
-
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
@@ -127,6 +126,11 @@ class UpiSbiPaymentServiceTest extends UpiPaymentServiceTest
 
         $content['reconciled_at'] = Carbon::now(Timezone::IST)->getTimestamp();
 
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'ups_recon_sqs_update_' . $this->gateway, 'on');
+        });
+
         $response = $this->makeUpdatePostReconRequestAndGetContent($content);
 
         $transactionEntity = $this->getDbLastEntity('transaction');
@@ -158,6 +162,11 @@ class UpiSbiPaymentServiceTest extends UpiPaymentServiceTest
                 $content['entity_fetch_failure'] = true;
             }
         );
+
+        $this->setRazorxMock(function ($mid, $feature, $mode)
+        {
+            return $this->getRazoxVariant($feature, 'ups_recon_sqs_update_' . $this->gateway, 'on');
+        });
 
         $this->makeRequestAndCatchException
         (

@@ -8,6 +8,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -21,6 +22,7 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Jobs\UpsRecon\UpsGatewayEntityUpdate;
 use RZP\Models\Batch\Processor\Reconciliation;
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
 use RZP\Services\NbPlus\Netbanking as NetbankingService;
@@ -1058,7 +1060,7 @@ class Service extends Base\Service
 
         $dataToUpdate[UpsConstants::RECONCILED_AT] = (int) $input[UpsConstants::RECONCILED_AT];
 
-        $this->publishToMetro($dataToUpdate, $payment);
+        $this->updateGatewayEntityOnUps($dataToUpdate, $payment);
     }
 
     /** Persist/update gateway data post recon
@@ -1574,5 +1576,71 @@ class Service extends Base\Service
         ];
 
         (New NbPlusServiceRecon)->dispatchToNbplusServiceQueue($data);
+    }
+
+    /** Update gateway entity on Ups
+     * @param array $data
+     * @param Payment\Entity $payment
+     * @throws \Exception
+     */
+    protected function updateGatewayEntityOnUps(array $data, Payment\Entity $payment)
+    {
+        $updateEntityViaSqs = $this->shouldUpdateGatewayEntityViaSqs($payment);
+
+        if ($updateEntityViaSqs === true)
+        {
+            $this->dispatchToUpsReconQueue($data, $payment);
+            return;
+        }
+
+        $this->publishToMetro($data, $payment);
+    }
+
+    /** Dispatch the entity update message to sqs queue
+     * @param array $data
+     * @param Payment\Entity $payment
+     * @throws \Exception
+     */
+    protected function dispatchToUpsReconQueue(array $data, Payment\Entity $payment)
+    {
+        $pushData = [
+            UpsConstants::PAYMENT_ID   => $payment->getId(),
+            UpsConstants::GATEWAY_DATA => $data,
+            UpsConstants::GATEWAY      => $payment->getGateway(),
+            UpsConstants::BATCH_ID     => null,
+            UpsConstants::MODEL        => UpsConstants::AUTHORIZE
+        ];
+
+        try
+        {
+            UpsGatewayEntityUpdate::dispatch($this->mode, $pushData);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(TraceCode::UPI_PAYMENT_JOB_DISPATCH_ERROR,
+                [
+                    UpsConstants::PAYMENT_ID   => $payment->getId(),
+                    "error_message"            => $ex->getMessage()
+                ]);
+
+            throw $ex;
+        }
+    }
+
+    /** Check if the entity updates to UPS are pushed through SQS
+     * @param Payment\Entity $payment
+     * @return bool
+     */
+    protected function shouldUpdateGatewayEntityViaSqs(Payment\Entity $payment)
+    {
+        $gateway = $payment->getGateway();
+
+        $feature = 'ups_recon_sqs_update_' . $gateway;
+
+        // The experiment to route the traffic to update entities through sqs
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+            $feature, $this->mode ?? Mode::LIVE);
+
+       return ($variant === 'on');
     }
 }

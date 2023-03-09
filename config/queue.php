@@ -625,6 +625,11 @@ return [
         'live'       => env('AWS_TOKEN_HQ_PRICING_EVENTS_LIVE_QUEUE'),
     ],
 
+    'payments_upi_recon_entity_update' => [
+        'test'       => env('AWS_PAYMENTS_UPI_RECON_ENTITY_UPDATE_QUEUE'),
+        'live'       => env('AWS_PAYMENTS_UPI_RECON_ENTITY_UPDATE_QUEUE'),
+    ],
+
     'fulfillment_event_update' => env('AWS_ORDER_STATUS_UPDATE_QUEUE'),
 
     'merchant_based_balance_update_v1' => [

@@ -269,6 +269,14 @@ class Validator extends Base\Core
         'gateway'                   => 'required',
     ];
 
+    const UPDATE_UPS_GATEWAY_ENTITY_UPDATE_RULES = [
+        'payment_id'                => 'required',
+        'gateway'                   => 'required',
+        'model'                     => 'required',
+        'batch_id'                  => 'sometimes',
+        'gateway_data'              => 'required|array',
+    ];
+
     public function filterEmails(array $emailDetails)
     {
         $from = $emailDetails[RequestProcessor\Mailgun::FROM];
@@ -1020,6 +1028,17 @@ class Validator extends Base\Core
     public function validateUpdateRefundReconData(array $input)
     {
         (new JitValidator)->rules(self::UPDATE_REFUND_RECON_DATA_RULES)
+            ->caller($this)
+            ->input($input)
+            ->validate();
+    }
+
+    /** Validates the gateway entity update request message
+     * @param array $input
+     */
+    public function validateUpsGatewayEntityUpdate(array $input)
+    {
+        (new JitValidator)->rules(self::UPDATE_UPS_GATEWAY_ENTITY_UPDATE_RULES)
             ->caller($this)
             ->input($input)
             ->validate();

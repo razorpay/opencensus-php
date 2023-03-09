@@ -160,6 +160,17 @@ class Service
         return $this->action(self::PRE_PROCESS, $input, $gateway);
     }
 
+    /** Updates the gateway entity attributes during recon flow
+     * @param $gatewayData
+     * @return array|mixed|null
+     */
+    public function updateReconGatewayData(array $gatewayData)
+    {
+        $gateway = $gatewayData['gateway'];
+
+        return $this->action(self::RECON_ENTITY_UPDATE, $gatewayData, $gateway);
+    }
+
     /**
      * add terminal details to server callback request
      *
