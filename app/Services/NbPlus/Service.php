@@ -246,6 +246,7 @@ class Service
             'payment.status'                => 'content.input.payment.status',
             'payment.gateway'               => 'content.input.payment.gateway',
             'payment.billing_address'       => 'content.input.payment.billing_address',
+            'wallet'                        => 'content.input.wallet',
             'merchant.id'                   => 'content.input.merchant.id',
             'merchant.features'             => 'content.input.merchant.features',
             'merchant.billing_label'        => 'content.input.merchant.billing_label',

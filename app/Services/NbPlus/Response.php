@@ -14,8 +14,9 @@ class Response
     const BANK_IFSC      = 'bank_ifsc';
 
     // authorize
-    const NEXT     = 'next';
-    const REDIRECT = 'redirect';
+    const NEXT       = 'next';
+    const REDIRECT   = 'redirect';
+    const INTENT_URL = 'intent_url';
 
     const OTP_SUBMIT_URL      = 'otpSubmitUrl';
 
@@ -37,6 +38,6 @@ class Response
     // verify
     const GATEWAY_STATUS = 'gateway_status';
 
-    // debit 
+    // debit
     const GATEWAY_PAYMENT_STATUS = 'gateway_payment_status';
 }

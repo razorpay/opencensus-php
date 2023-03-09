@@ -3212,11 +3212,6 @@ class Processor
             return;
         }
 
-        if (($payment->getGateway() === Payment\Gateway::WALLET_PHONEPE) and ($gatewayInput['wallet']['flow'] === 'intent')){
-            $payment->disableCpsRoute();
-            return;
-        }
-
         // Check if the method is UPI
         if ($method === Payment\Method::UPI)
         {
@@ -3269,14 +3264,6 @@ class Processor
         if ((bool) Admin\ConfigKey::get(Admin\ConfigKey::CPS_SERVICE_ENABLED, false) === true)
         {
             $variant = $this->getRazorxVariant($payment, self::CPS_FEATURE_FLAG_PREFIX);
-
-            // Hardcoding this till wallet phonepe intent is moved to cps.
-            if (($payment->getGateway() === Payment\Gateway::WALLET_PHONEPE) and ($gatewayInput['wallet']['flow'] === 'intent'))
-            {
-                $payment->disableCpsRoute();
-
-                return;
-            }
 
             $this->setPaymentService($payment, $variant);
         }

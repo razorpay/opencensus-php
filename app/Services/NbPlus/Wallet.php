@@ -111,6 +111,14 @@ class Wallet extends Service
                 {
                     $returnData = $response[Response::DATA][Response::NEXT][Response::REDIRECT];
                 }
+                if ($this->input['wallet']['flow'] === Action::INTENT)
+                {
+                    $returnData = [
+                        'data' => [
+                            'intent_url' => $response[Response::DATA][Response::NEXT][Response::REDIRECT][Response::INTENT_URL],
+                        ],
+                    ];
+                }
                 break;
             case Action::CALLBACK:
                 $returnData = $this->getCallbackResponseData($response);

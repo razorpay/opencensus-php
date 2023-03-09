@@ -18,6 +18,7 @@ class Action
     const CALLBACK_OTP_SUBMIT    = 'callback_otp_submit';
     const OTP_RESEND             = 'otp_resend';
     const TOPUP                  = 'topup';
+    const INTENT                 = 'intent';
 
     const SUPPORTED_ACTIONS = [
         self::AUTHORIZE,
