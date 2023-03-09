@@ -175,6 +175,7 @@ class Checkout extends Base\Core
         return json_decode($res, true);
     }
 
+
     // returns notes for Rzp order using Shopify storefront id and line items
     public function getNotesForCheckout(array $checkout, string $cartId, array $cartObj = []): array
     {

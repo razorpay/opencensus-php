@@ -16,7 +16,8 @@ class Type {
     const ONE_CC_CAPTURE_BILLING_ADDRESS   = 'one_cc_capture_billing_address';
     const ONE_CC_GA_ANALYTICS              = 'one_cc_ga_analytics';
     const ONE_CC_FB_ANALYTICS              = 'one_cc_fb_analytics';
-    
+    const ONE_CC_HANDLE_DIGITAL_PRODUCT    = 'one_cc_handle_digital_product';
+
     const ONE_CC_GIFT_CARD                 = 'one_cc_gift_card';
     const ONE_CC_GIFT_CARD_RESTRICT_COUPON = 'one_cc_gift_card_restrict_coupon';
     const ONE_CC_BUY_GIFT_CARD             = 'one_cc_buy_gift_card';

@@ -456,7 +456,7 @@ class Core extends Base\Core
                                     if($taglength < self::MAX_LENGTH)
                                     {
                                         $cod = substr($tag, 3, $taglength);
-        
+
                                         if(is_numeric($cod))
                                         {
                                             if ($cod >= 0)
@@ -471,7 +471,7 @@ class Core extends Base\Core
                                         elseif(empty($cod))
                                         {
                                             $cod = 0;
-        
+
                                             if($maxCod < $cod)
                                             {
                                                 $maxCod = $cod;
@@ -489,14 +489,14 @@ class Core extends Base\Core
                         array_push($codTags, $maxCod);
 
                         $validTag = false;
-                    }    
-                    else 
+                    }
+                    else
                     {
-                        //If COD tags are not available in any of the products, COD should not be enabled. 
+                        //If COD tags are not available in any of the products, COD should not be enabled.
                         $codTags = [];
-                        
+
                         break;
-                    }       
+                    }
                 }
 
                 if(!empty($codTags))
@@ -705,10 +705,10 @@ class Core extends Base\Core
         {
             if(isset($promotion['type']) && $promotion['type'] === 'gift_card')
             {
-                (new GiftCards)->refundGiftCard($promotion, $rzpOrder, $rzpPayment, $this->merchant->getId());  
+                (new GiftCards)->refundGiftCard($promotion, $rzpOrder, $rzpPayment, $this->merchant->getId());
             }
         }
-        
+
         // Refund if applicable, please double check
         if (strtolower($rzpPayment['method']) !== 'cod')
         {
@@ -955,7 +955,7 @@ class Core extends Base\Core
                 $couponCode = $promotion['code'];
             }
         }
-        
+
         $this->updateShopifyCustomer($client, $order);
 
         // This action is need to handle the orders which is placed with both SE discount and customer specific coupons
@@ -1213,7 +1213,7 @@ class Core extends Base\Core
         if (empty($rzpOrder['notes']['gstin']) === false)
         {
             array_push($noteAttributes,
-            [   
+            [
                 'name'  => 'GSTIN',
                 'value' => $rzpOrder['notes']['gstin']
             ]);
@@ -1323,7 +1323,7 @@ class Core extends Base\Core
 
         $scriptDiscountTitle = null;
         $isSEwithCouponApplied = false;
-        
+
         // Add script discount as coupon
         if (isset($rzpOrder['notes']['Script_Discount_Amount']) && $rzpOrder['notes']['Script_Discount_Amount'] > 0)
         {
@@ -1357,7 +1357,7 @@ class Core extends Base\Core
         {
             $codFeeApplied = $rzpOrder['cod_fee'];
         }
-        
+
         $discountAmountPaise = $rzpOrder['line_items_total'] + $rzpOrder['shipping_fee'] + $codFeeApplied - $rzpPayment['amount'] - $giftCardAmount;
 
         if(isset($scriptDiscountTitle))
@@ -1377,7 +1377,7 @@ class Core extends Base\Core
         {
             $rzpOffers = $discountAmountPaise - $couponAmount;
         }
-        
+
         $rzpOffersRupee = round($rzpOffers/100,2);
 
         $discountAmountRupee = round($discountAmountPaise/100,2);
@@ -1391,7 +1391,7 @@ class Core extends Base\Core
                     'amount' => $discountAmountRupee,
                 ];
             }
-            else 
+            else
             {
                 $body['discount_codes'][] = [
                     'code'   => $couponCode,
@@ -1454,35 +1454,35 @@ class Core extends Base\Core
             {
                 $body['tags'] = $body['tags'].', RTO Risk - '.$value['cod_intelligence']['risk_tier'];
             }
-    
+
             $rtoReasons = $value['cod_intelligence']['rto_reasons'] ?? [];
-    
+
             if (empty($rtoReasons) === false)
             {
                 $noteAttributes = $body['note_attributes'];
-    
+
                 $rtoLabels = [];
-    
+
                 foreach ($rtoReasons as $rtoReason)
                 {
                     $rtoLabel = (new RtoReasons)->getRtoReasons($rtoReason);
-    
+
                     if(!empty($rtoLabel))
                     {
                         array_push($rtoLabels, $rtoLabel);
                     }
                 }
-    
+
                 $rtoString = implode(', ', $rtoLabels);
-    
+
                 array_push($noteAttributes,
-                [   
+                [
                     'name'  => 'Risk Reasons',
                     'value' => $rtoString
                 ]);
-    
+
                 $body['note_attributes'] = $noteAttributes;
-            }   
+            }
         }
         return $body;
     }
@@ -1578,7 +1578,7 @@ class Core extends Base\Core
             );
         }
     }
-    
+
     protected function updateShopifyTransaction(string $merchantOrderId, array $payment): array
     {
         $start = millitime();

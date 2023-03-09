@@ -8370,6 +8370,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHOPIFY_1CC_UPDATE_CUSTOMER                         = 'SHOPIFY_1CC_UPDATE_CUSTOMER';
     const SHOPIFY_1CC_API_CUSTOMER_ERROR                      = 'SHOPIFY_1CC_API_CUSTOMER_ERROR';
 
+    const SHOPIFY_PRODUCT_TYPE_IN_CART                        = 'SHOPIFY_PRODUCT_TYPE_IN_CART';
+
     const SHOPIFY_1CC_RATE_LIMIT                              = 'SHOPIFY_1CC_RATE_LIMIT';
     const SHOPIFY_1CC_API_RETRY                               = 'SHOPIFY_1CC_API_RETRY';
     const SHOPIFY_1CC_API_RETRY_EXCEEDED_LIMIT                = 'SHOPIFY_1CC_API_RETRY_EXCEEDED_LIMIT';

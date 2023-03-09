@@ -18,6 +18,8 @@ use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
 use RZP\Constants;
 use RZP\Models\Order\OrderMeta\Order1cc;
 use RZP\Models\Order\OrderMeta;
+use RZP\Models\Merchant\Merchant1ccConfig\Type;
+use RZP\Models\Merchant\OneClickCheckout\Shopify\ConsumerApp\Client as ConsumerAppClient;
 use RZP\Models\Merchant\OneClickCheckout\Shopify\Constants as ShopifyConstants;
 
 class Service extends Base\Service
@@ -887,6 +889,8 @@ class Service extends Base\Service
 
         $response = json_decode($response, true);
 
+        $digitalProductConfigFlagValue = $this->merchant->get1ccConfigFlagStatus(Type::ONE_CC_HANDLE_DIGITAL_PRODUCT);
+
         if (empty($response['errors']) === false
         or empty($response['data']['checkoutShippingAddressUpdateV2']['checkoutUserErrors']) === false)
         {
@@ -903,8 +907,16 @@ class Service extends Base\Service
           );
           $this->monitoring->addTraceCount(Metric::FETCH_SHIPPING_INFO_ERROR_COUNT, ['error_type' => $errorType]);
 
-          return [
-              'id'			     => $address['id'],
+          $cartRequiresShipping = true;
+
+          if(empty($response['data']['checkoutShippingAddressUpdateV2']['checkout']) === false
+          and empty($response['data']['checkoutShippingAddressUpdateV2']['checkout']['requiresShipping']) === false)
+          {
+              $cartRequiresShipping = $response['data']['checkoutShippingAddressUpdateV2']['checkout']['requiresShipping'];
+          }
+
+          $shippingResponse = [
+              'id'			 => $address['id'],
               'zipcode'      => $address['zipcode'],
               'state_code'   => $address['state_code'],
               'country'      => $address['country'],
@@ -913,9 +925,49 @@ class Service extends Base\Service
               'shipping_fee' => 0,
               'cod_fee'      => null,
           ];
+
+          if (($errorType === 'virtual_product_found' or $cartRequiresShipping === false) and $digitalProductConfigFlagValue === true)
+          {
+              $this->trace->info(
+                  TraceCode::SHOPIFY_PRODUCT_TYPE_IN_CART,
+                  [
+                      'type'        => 'digital',
+                      'checkout_id' => $checkoutId,
+                      'address'     => $address
+                  ]);
+
+              $shippingResponse['serviceable'] = true;
+              return $shippingResponse;
+          }
+          else {
+              return $shippingResponse;
+          }
         }
 
         $rates = (new Core)->sleepAndPollForShippingInfo($checkoutId);
+
+        if($digitalProductConfigFlagValue === true)
+        {
+            $checkoutResponse = $response['data']['checkoutShippingAddressUpdateV2']['checkout'];
+
+            $isDigitalProductPresent = $this->isDigitalProductPresentInCheckout($checkoutResponse);
+
+            $typeOfProduct = $isDigitalProductPresent === true ? 'physical & digital' : 'physical';
+
+            $this->trace->info(
+                TraceCode::SHOPIFY_PRODUCT_TYPE_IN_CART,
+                [
+                    'type'        => $typeOfProduct,
+                    'checkout_id' => $checkoutId,
+                    'address'     => $address
+                ]);
+
+            if($isDigitalProductPresent === true)
+            {
+                $rates['cod'] = false;
+                $rates['cod_fee'] = 0;
+            }
+        }
 
         $response = [
             'id'	       => $address['id'],
@@ -925,6 +977,23 @@ class Service extends Base\Service
         ];
 
         return array_merge($response, $rates);
+    }
+
+    private function isDigitalProductPresentInCheckout($checkoutResponse)
+    {
+        if(empty($checkoutResponse)==false && empty($checkoutResponse['lineItems']) == false)
+        {
+            $lineItems = $checkoutResponse['lineItems']['edges'];
+
+            foreach($lineItems as $item)
+            {
+                if($item['node']['variant']['requiresShipping'] == false)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     // TODO: mock this class

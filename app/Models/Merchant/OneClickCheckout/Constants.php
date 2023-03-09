@@ -35,6 +35,7 @@ class Constants
     const ONE_CC_ADDRESS_SYNC_OFF        = 'one_cc_address_sync_off';
     const ONE_CC_WHITELIST_COUPONS       = 'one_cc_whitelist_coupons';
     const ONE_CC_CACHE_COUPONS           = 'one_cc_cache_coupons';
+    const ONE_CC_HANDLE_DIGITAL_PRODUCT  = 'one_cc_handle_digital_product';
 
     // gift card configs
     const ONE_CC_GIFT_CARD                 = 'one_cc_gift_card';
@@ -137,7 +138,8 @@ class Constants
         self::ONE_CC_GIFT_CARD_COD_RESTRICT,
         self::ONE_CC_ADDRESS_SYNC_OFF,
         self::ONE_CC_WHITELIST_COUPONS,
-        self::ONE_CC_CACHE_COUPONS
+        self::ONE_CC_CACHE_COUPONS,
+        self::ONE_CC_HANDLE_DIGITAL_PRODUCT
     ];
 
     const CONFIG_CUM_FEATURE_FLAGS = [

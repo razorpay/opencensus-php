@@ -540,6 +540,7 @@ class Mutations
         ) {
           checkout {
             id
+            requiresShipping
             totalPrice {
               amount
               currencyCode
@@ -555,6 +556,15 @@ class Mutations
                 }
               }
             }
+            lineItems(first: 250) {
+             edges{
+              node{
+               variant{
+                requiresShipping
+                }
+               }
+             }
+           }
           }
           checkoutUserErrors {
             code
