@@ -7,8 +7,6 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
-use \WpOrg\Requests\Exception as RequestsException;
-use RZP\Http\Controllers\MerchantOnboardingProxyController;
 
 class Core extends Base\Core
 {
@@ -23,38 +21,6 @@ class Core extends Base\Core
             "user_id" => $userId,
             "data" => $input
         ]);
-
-        try {
-
-            $createWorkflowRequestBody = [
-                'account_id' => $merchantId,
-                'account_type' => "merchant"
-            ];
-
-            $pgosProxyController = new MerchantOnboardingProxyController();
-
-            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_sign_up', $createWorkflowRequestBody, $this->merchant);
-
-            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
-                'merchant_id' => $merchantId,
-                'response' => $response,
-            ]);
-        }
-        catch (RequestsException $e) {
-
-            if (checkRequestTimeout($e) === true) {
-                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
-                    'merchant_id' => $merchantId,
-                ]);
-            }
-
-        }
-        catch (\Throwable $exception) {
-            // this should not introduce error counts as it is running in shadow mode
-            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
-                'error_message' => $exception->getMessage()
-            ]);
-        }
 
         try
         {

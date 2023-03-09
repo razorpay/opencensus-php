@@ -97,6 +97,7 @@ use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Jobs\BulkMigrateAggregatorToResellerJob;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Jobs\MerchantSupportingEntitiesCreateJob;
+use \WpOrg\Requests\Exception as RequestsException;
 use RZP\Models\Feature\Service as FeatureService;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -107,6 +108,7 @@ use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Models\Merchant\Balance\Repository as BalanceRepo;
 use RZP\Models\Merchant\Detail\BusinessSubCategoryMetaData;
 use RZP\Models\Merchant\Detail\InternationalActivationFlow;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
@@ -228,6 +230,47 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
+        $merchantId = $merchant->getId();
+
+        // Create Workflow For Merchant in PGOS
+        try {
+
+            $createWorkflowRequestBody = [
+                'account_id' => $merchantId,
+                'account_type' => "merchant"
+            ];
+
+            $pgosProxyController = new MerchantOnboardingProxyController();
+
+            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_sign_up', $createWorkflowRequestBody, $merchant);
+
+            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response' => $response,
+            ]);
+        }
+        catch (RequestsException $e) {
+
+            if (checkRequestTimeout($e) === true) {
+                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
+                    'merchant_id' => $merchantId,
+                ]);
+            } else {
+                $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id' => $merchantId,
+                    'error_message' => $e->getMessage()
+                ]);
+            }
+
+        }
+        catch (\Throwable $exception) {
+            // this should not introduce error counts as it is running in shadow mode
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id' => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+        }
+
         $this->savePartnerIntentInSettings($input, $merchant);
 
         $this->addMerchantSupportingEntities(
@@ -249,6 +292,45 @@ class Core extends Base\Core
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
 
         $this->app['eventManager']->trackEvents($merchant, Merchant\Action::CREATED, $merchant->toArrayEvent());
+
+        // activation save for regular onboarding for pgos
+        try
+        {
+            $pgosProxyController = new MerchantOnboardingProxyController();
+
+            // merge input with detail input
+            $pgosPayload = array_merge($input, $merchantDetailInputData);
+
+            $pgosPayload['merchantId'] = $merchantId;
+
+            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $pgosPayload, $merchant);
+
+            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                'response' => $response
+            ]);
+        }
+        catch (RequestsException $e) {
+            if (checkRequestTimeout($e) === true) {
+                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
+                    'merchant_id' => $merchantId,
+                ]);
+            } else {
+                $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id' => $merchantId,
+                    'error_message' => $e->getMessage()
+                ]);
+            }
+        }
+        catch (\Throwable $exception) {
+            // this should not introduce error counts as it is running in shadow mode
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id' => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+        }
+        finally {
+            unset($input['merchantId']);
+        }
 
         return $merchant;
     }

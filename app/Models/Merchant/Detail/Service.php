@@ -428,40 +428,6 @@ class Service extends Base\Service
 
         $merchantId = $this->merchant->getMerchantId();
 
-        // send the request to merchant onboarding service
-        // this should not affect the current flow, hence wrapped in try catch
-        try
-        {
-
-            $pgosProxyController = new MerchantOnboardingProxyController();
-
-            $input['merchantId'] = $merchantId;
-
-            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant);
-
-            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
-                'response' => $response
-            ]);
-
-            unset($input['merchantId']);
-        }
-        catch (RequestsException $e) {
-            unset($input['merchantId']);
-            if (checkRequestTimeout($e) === true) {
-                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
-                    'merchant_id' => $merchantId,
-                ]);
-            }
-
-        }
-        catch (\Throwable $exception) {
-            unset($input['merchantId']);
-            // this should not introduce error counts as it is running in shadow mode
-            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
-                'error_message' => $exception->getMessage()
-            ]);
-        }
-
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $this->allowEditingOfBusinessNameAndDBAKYC($merchant, $input);
@@ -574,6 +540,44 @@ class Service extends Base\Service
         {
             $productInput = [Merchant\Product\Util\Constants::PRODUCT_NAME => Merchant\Product\Name::PAYMENT_GATEWAY];
             (new Merchant\Product\Core())->createMerchantProduct($merchant, $productInput);
+        }
+
+        // send the request to merchant onboarding service, once processing is done at API end
+        // this should not affect the current flow, hence wrapped in try catch
+        try
+        {
+            $pgosProxyController = new MerchantOnboardingProxyController();
+
+            $input['merchantId'] = $merchantId;
+
+            $pgosResponse = $pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $input, $this->merchant);
+
+            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                'response' => $pgosResponse
+            ]);
+        }
+        catch (RequestsException $e) {
+            if (checkRequestTimeout($e) === true) {
+                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
+                    'merchant_id' => $merchantId,
+                ]);
+            } else {
+                $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id' => $merchantId,
+                    'error_message' => $e->getMessage()
+                ]);
+            }
+
+        }
+        catch (\Throwable $exception) {
+            // this should not introduce error counts as it is running in shadow mode
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id' => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+        }
+        finally {
+            unset($input['merchantId']);
         }
 
         return $response;
@@ -1925,9 +1929,48 @@ class Service extends Base\Service
         $this->trace->count(Merchant\Metric::PRE_EDIT_SIGNUP_TOTAL);
 
         $merchant = $this->app['basicauth']->getMerchant();
-
+        $merchantId = $merchant->getId();
         (new Validator)->validateSignupViaChannel($input, $merchant);
-        (new Validator)->validateUniqueContactMobile($input, $merchant->getId());
+        (new Validator)->validateUniqueContactMobile($input, $merchantId);
+
+        // route request to PGOS
+        // required for regular dashboard onboarding, to be removed later
+        try {
+            $input['merchant_id'] = $merchantId;
+
+            $pgosProxyController = new MerchantOnboardingProxyController();
+
+            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_activation_save', $input, $merchant);
+
+            $this->trace->info(TraceCode::PGOS_PROXY_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response' => $response,
+            ]);
+        }
+        catch (RequestsException $e) {
+
+            if (checkRequestTimeout($e) === true) {
+                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
+                    'merchant_id' => $merchantId,
+                ]);
+            } else {
+                $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id' => $merchantId,
+                    'error_message' => $e->getMessage()
+                ]);
+            }
+
+        }
+        catch (\Throwable $exception) {
+            // this should not introduce error counts as it is running in shadow mode
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id' => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+        }
+        finally {
+           unset($input['merchant_id']);
+        }
 
         $refCode = null;
 
