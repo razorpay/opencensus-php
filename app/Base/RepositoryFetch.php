@@ -1410,15 +1410,6 @@ trait RepositoryFetch
 
     public function checkIfWDARoute(string $connectionType = null) : bool
     {
-        $experiment = $this->app['api.route']->getWdaRouteExperimentName();
-
-        if(($this->app['api.route']->isWDAServiceRoute() === true) and
-            ($connectionType === ConnectionType::DATA_WAREHOUSE_ADMIN or $connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT) and
-            $this->isExperimentEnabled($experiment) === true and $this->app->runningUnitTests() === false)
-        {
-            return true;
-        }
-
         return false;
     }
 
