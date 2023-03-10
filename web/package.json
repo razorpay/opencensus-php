@@ -12,7 +12,7 @@
     "@razorpay/blade-old-for-new-auth": "npm:@razorpay/blade-old@0.0.1",
     "@razorpay/commander-services": "1.0.38",
     "@razorpay/commander-shield": "0.0.1499",
-    "@razorpay/frontend-care": "0.5.43",
+    "@razorpay/frontend-care": "0.5.45",
     "@razorpay/universe-doctor": "4.4.16",
     "@razorpay/universe-test": "2.2.20",
     "@razorpay/universe-utils": "7.4.4",
