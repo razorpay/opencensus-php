@@ -91,6 +91,7 @@ class Route
         'merchant_methods'                         => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_methods_offers_checkout_internal'=> ['post',     'internal/methods_offers/checkout',               'MerchantController@getPaymentMethodsWithOffersForCheckout'         ],
         'merchant_methods_hdfc_debit_emi'         => ['post',      'methods/hdfc_debit_emi',                         'MerchantController@updateHdfcDebitEmiPaymentMethods'                              ],
+        'affordability_methods_migration'         =>  ['post',     'affordability_methods/migration',                'AffordabilityMigrationController@updateAffordabilityPaymentMethods'                              ],
 
         'merchant_methods_downtime'                => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
         'merchant_checkout_preferences'            => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
@@ -5509,6 +5510,7 @@ class Route
         'checkout_orders_partition_cron',
         'payout_links_batch_process',
         'merchant_methods_hdfc_debit_emi',
+        'affordability_methods_migration',
 
         // payout outbox cron creates a new partition and drops oldest partition, runs daily
         'payout_outbox_partition_cron',
@@ -14268,6 +14270,7 @@ class Route
             'orphan_payouts_count_cron',
             'banking_account_service_cron_routes',
             'merchant_methods_hdfc_debit_emi',
+            'affordability_methods_migration',
             'merchant_action_notification_cron',
             'merchant_risk_identify_blacklist_country_alerts',
             'payout_send_pending_approval_email',

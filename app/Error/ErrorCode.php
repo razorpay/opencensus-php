@@ -1783,6 +1783,8 @@ class ErrorCode
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
     const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                    = 'BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD';
 
+    const BAD_REQUEST_PREVIOUS_RUN_IN_PROGRESS                                      = 'BAD_REQUEST_PREVIOUS_RUN_IN_PROGRESS';
+
     // ES related error codes
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                     = 'BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID';
     const SERVER_ERROR_NO_ES_PRICING_FOR_POSTPAID_MERCHANT                          = 'SERVER_ERROR_NO_ES_PRICING_FOR_POSTPAID_MERCHANT';

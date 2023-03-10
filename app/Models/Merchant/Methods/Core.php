@@ -1248,7 +1248,8 @@ class Core extends Base\Core
             $providers = array_merge($providers, $enabledProviders);
 
             // Adding Experiment for checking paylater instrument status in merchant banks table
-            $variantFlag = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK,  $this->mode);
+            $variantFlag = $this->app->razorx->getTreatment($merchant->getId(),RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK,  $this->mode);
+
             if($variantFlag == 'on')
             {
 
@@ -1291,7 +1292,7 @@ class Core extends Base\Core
             }
 
             // Adding Experiment for checking cardless emi instrument status in merchant banks table
-            $variantFlag = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK,  $this->mode);
+            $variantFlag = $this->app->razorx->getTreatment($merchant->getId(),RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK,  $this->mode);
 
             if($variantFlag == 'on') {
 

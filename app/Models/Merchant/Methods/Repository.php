@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Methods;
 
+use RZP\Base\Common;
 use RZP\Models\Base;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Merchant;
@@ -73,6 +74,44 @@ class Repository extends Base\Repository
                     ->take($count)
                     ->whereNull($debitEmiProvider)
                     ->get();
+    }
+
+    public function fetchMethodsBasedOnMerchantIds($merchantIds)
+    {
+        return $this->newQuery()
+            ->whereIn(Entity::MERCHANT_ID,$merchantIds)
+            ->get();
+    }
+
+    public function fetchBasedOnAffordabilityMethods($count,$paylater,$cardlessEmi,$emi,$from)
+    {
+
+        $paylaterColumn = $this->dbColumn('paylater');
+        $cardlessEmiColumn = $this->dbColumn('cardless_emi');
+        $emiColumn = $this->dbColumn('emi');
+
+        return $this->newQuery()
+            ->take($count)
+            ->where($paylaterColumn, '=', $paylater)
+            ->where($cardlessEmiColumn, '=', $cardlessEmi)
+            ->where(function ($query) use ($emiColumn,$emi)
+            {
+                $query->where($emiColumn, '=', $emi)
+                    ->orWhere($emiColumn, '=', $emi+2);
+            })
+            ->where(Common::CREATED_AT, '>', $from)
+            ->orderBy(Common::CREATED_AT,'asc')
+            ->get();
+    }
+
+    public function bulkUpdateAddonMethodsForMerchants($merchantIds,$updatedMethods)
+    {
+
+        return $this->newQuery()
+            ->whereIn(Entity::MERCHANT_ID, $merchantIds)
+            ->update([
+                'addon_methods' => $updatedMethods,
+            ]);
     }
 
     protected function addQueryOrder($query)

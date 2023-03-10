@@ -6,6 +6,7 @@ use DB;
 use App;
 use Carbon\Carbon;
 use Razorpay\Spine\Exception\DbQueryException;
+use RZP\Base\Common;
 use RZP\Constants\Environment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -455,6 +456,18 @@ class Repository extends Base\Repository
 
         $query = $this->newQuery()
                       ->withTrashed();
+
+        $this->addMerchantWhereCondition($query, [$mid]);
+
+        return $query->get();
+    }
+
+    public function getEnabledTerminalsByMerchantId($mid)
+    {
+        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getEnabledTerminalsByMerchantId', 'route_name' => $this->fetchRouteName()]);
+
+        $query = $this->newQuery()
+            ->enabled();
 
         $this->addMerchantWhereCondition($query, [$mid]);
 
@@ -2112,6 +2125,58 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function getTerminalsforAffordabilityMethods($method,$from,$count)
+    {
+
+        $gateway = [];
+
+        if($method == 'credit_emi')
+        {
+            $gateway = ['emi_sbi','bajajfinserv'];
+        }
+        else
+        {
+            $gateway[] = $method;
+        }
+
+        return $this->newQuery()
+            ->take($count)
+            ->whereIn(Entity::GATEWAY, $gateway)
+            ->where(Common::CREATED_AT, '>', $from)
+            ->orderBy(Common::CREATED_AT,'asc')
+            ->enabled()
+            ->get();
+
+    }
+
+    public function getSubMerchantsTerminalsforAffordabilityMethods($method)
+    {
+
+        $gateway = [];
+
+        if($method == 'credit_emi')
+        {
+            $gateway = ['emi_sbi','bajajfinserv'];
+        }
+        else
+        {
+            $gateway[] = $method;
+        }
+
+        $query = \Illuminate\Support\Facades\DB::table(Table::MERCHANT_TERMINAL)
+            ->whereIn(Terminal\Entity::TERMINAL_ID, function($query) use($gateway) {
+                $query->select(Table::TERMINAL.'.'.(Entity::ID))
+                    ->from(TABLE::TERMINAL)
+                    ->where(Entity::ENABLED,'=',1)
+                    ->whereIn(Entity::GATEWAY, $gateway);
+            })
+            ->whereNotIn(Terminal\Entity::TERMINAL_ID, ['IB8vRg8y8RyyLC', 'I97PuJq0ieb9fp', 'HQ4cD44yZrTodv','EDQZCWqRJbrHmr','H2ELDFayq4gw6i']);
+
+        return $query->get();
+
+
     }
 
     protected function buildFetchByParamsQuery(array $params)

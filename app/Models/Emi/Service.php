@@ -424,7 +424,7 @@ class Service extends Base\Service
 
             $enabledProviders = $methods->getEnabledCreditEmiProviders();
 
-            $variantFlag = $this->app->razorx->getTreatment(UniqueIdEntity::generateUniqueId(), RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK,  $this->mode);
+            $variantFlag = $this->app->razorx->getTreatment($this->merchant->getId(),RazorxTreatment::PREFERENCES_INSTRUMENT_LEVEL_CHECK,  $this->mode);
 
             $sharedCreditEmiPlans = $sharedPlans->reject(function($plan) use ($emiType, $enabledProviders,$variantFlag) {
 

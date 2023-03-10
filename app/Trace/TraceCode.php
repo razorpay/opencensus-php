@@ -5656,6 +5656,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPDATE_HDFC_DEBIT_EMI_VALUE_REQUEST                      = 'UPDATE_HDFC_DEBIT_EMI_VALUE_REQUEST';
     const UPDATE_HDFC_DEBIT_EMI_VALUE_RESPONSE                     = 'UPDATE_HDFC_DEBIT_EMI_VALUE_RESPONSE';
     const UPDATE_HDFC_DEBIT_EMI_VALUE_FAILED                       = 'UPDATE_HDFC_DEBIT_EMI_VALUE_FAILED';
+    const UPDATE_METHOD_REQUEST                                     = 'UPDATE_METHOD_REQUEST';
+    const UPDATE_METHOD_RESPONSE                                    = 'UPDATE_METHOD_RESPONSE';
+    const UPDATE_METHOD_FAILED                                      = 'UPDATE_METHOD_FAILED';
+    const SKIPPED_MERCHANTS                                         = 'SKIPPED_MERCHANTS';
+
     // Payout Feature
     const PAYOUT_FEATURE_ADDED                                  = 'PAYOUT_FEATURE_ADDED';
 

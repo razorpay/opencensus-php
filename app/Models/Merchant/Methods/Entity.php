@@ -256,6 +256,9 @@ class Entity extends Base\PublicEntity
         self::PAYCASH,
         self::CITIBANKREWARDS,
         self::IN_APP,
+        self::CREDIT_EMI_PROVIDERS ,
+        self::CARDLESS_EMI_PROVIDERS ,
+        self::PAYLATER_PROVIDERS ,
         self::BAJAJPAY,
     ];
 
