@@ -29,6 +29,11 @@ final class Product
     const CAPITAL = 'capital';
 
     /**
+     * Issuing Product
+     */
+    const ISSUING = 'issuing';
+
+    /**
      * @param string $product
      *
      * @return bool

@@ -152,6 +152,15 @@ class Event
     const TOKEN_SERVICE_PROVIDER_DEACTIVATED                 = 'token.service_provider.deactivated';
     const TOKEN_SERVICE_PROVIDER_EXPIRY_UPDATED              = 'token.service_provider.deactivated';
 
+    //Issuing - Wallet Events
+    const ISSUING_LOAD_CREATED                          = 'load.created';
+    const ISSUING_LOAD_SUCCESS                          = 'load.success';
+    const ISSUING_LOAD_FAILED                           = 'load.failed';
+    const ISSUING_WITHDRAWAL_CREATED                    = 'withdrawal.created';
+    const ISSUING_WITHDRAWAL_INITIATED                  = 'withdrawal.initiated';
+    const ISSUING_WITHDRAWAL_PROCESSED                  = 'withdrawal.processed';
+    const ISSUING_WITHDRAWAL_FAILED                     = 'withdrawal.failed';
+
 
     protected static $events = [
         self::PAYMENT_AUTHORIZED,
@@ -283,6 +292,13 @@ class Event
         self::ROUTE_PRODUCT_ACTIVATED,
         self::ROUTE_PRODUCT_NEEDS_CLARIFICATION,
         self::ROUTE_PRODUCT_REJECTED,
+        self::ISSUING_LOAD_CREATED,
+        self::ISSUING_LOAD_SUCCESS,
+        self::ISSUING_LOAD_FAILED,
+        self::ISSUING_WITHDRAWAL_CREATED,
+        self::ISSUING_WITHDRAWAL_INITIATED,
+        self::ISSUING_WITHDRAWAL_PROCESSED,
+        self::ISSUING_WITHDRAWAL_FAILED,
     ];
 
     /**
@@ -421,6 +437,13 @@ class Event
         self::ROUTE_PRODUCT_ACTIVATED,
         self::ROUTE_PRODUCT_NEEDS_CLARIFICATION,
         self::ROUTE_PRODUCT_REJECTED,
+        self::ISSUING_LOAD_CREATED,
+        self::ISSUING_LOAD_SUCCESS,
+        self::ISSUING_LOAD_FAILED,
+        self::ISSUING_WITHDRAWAL_CREATED,
+        self::ISSUING_WITHDRAWAL_INITIATED,
+        self::ISSUING_WITHDRAWAL_PROCESSED,
+        self::ISSUING_WITHDRAWAL_FAILED,
     ];
 
     // We have exhausted all the below bits for webhook events, add in $bitPosition2 for any new events
@@ -692,6 +715,14 @@ class Event
         self::PAYMENT_LINKS_PRODUCT_ACTIVATED_KYC_PENDING   => [Product::PRIMARY],
         self::NO_DOC_ONBOARDING_GMV_LIMIT_WARNING           => [Product::PRIMARY],
         self::INSTANT_ACTIVATION_GMV_LIMIT_WARNING          => [Product::PRIMARY],
+
+        self::ISSUING_LOAD_CREATED                        => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_LOAD_SUCCESS                        => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_LOAD_FAILED                         => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_WITHDRAWAL_CREATED                  => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_WITHDRAWAL_INITIATED                => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_WITHDRAWAL_PROCESSED                => [Product::PRIMARY, Product::ISSUING],
+        self::ISSUING_WITHDRAWAL_FAILED                   => [Product::PRIMARY, Product::ISSUING],
 
     ];
 
