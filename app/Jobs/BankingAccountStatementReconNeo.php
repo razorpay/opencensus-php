@@ -117,8 +117,8 @@ class BankingAccountStatementReconNeo extends Job
 
                     BankingAccountStatementReconProcessNeo::dispatch($this->mode,
                     [
-                        Entity::CHANNEL        => $this->params['channel'],
-                        Entity::ACCOUNT_NUMBER => $this->params['account_number']
+                        BAS\Entity::CHANNEL        => $this->params['channel'],
+                        BAS\Entity::ACCOUNT_NUMBER => $this->params['account_number']
                     ])->delay(120);
                 }
 
