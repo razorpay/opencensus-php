@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { StorageStatePath } = require('../utils/constants');
 
 const CONSTANTS = {
   CUSTOMERS_TAB_URL: '/app/customers',
@@ -21,6 +22,9 @@ const getRandomCustomerData = () => {
 };
 
 test.describe.parallel('Test Create and Edit Customer @flow=customer', () => {
+  test.use({
+    storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
+  });
   test('should create customer @priority=critical', async ({ page }) => {
     // go to the customers tab
     await page.goto(CONSTANTS.CUSTOMERS_TAB_URL);

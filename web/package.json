@@ -113,6 +113,7 @@
     "test:build:merchant": "DANGER_ENV=true STAGE=production node tools/build.js --project=merchant",
     "test:setup": "universe-test web-e2e install",
     "test:e2e": "universe-test web-e2e test",
+    "test:e2e:auth": "npm run test:e2e -- --grep '@flow=auth' --project 'chromium'",
     "devstack-deploy": "universe-test infra-e2e devstack-deploy",
     "devstack-revert": "universe-test infra-e2e devstack-revert",
     "test:e2e-infra": "universe-test infra-e2e e2e-run"

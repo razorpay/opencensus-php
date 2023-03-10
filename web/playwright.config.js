@@ -1,7 +1,6 @@
-const universePlaywrightConfig = require('@razorpay/universe-test/src/configs/e2e.web/playwright.config');
-const { getStorageStatePath } = require('./e2e/setup/storageState');
-const { getBaseUrl } = require('./e2e/utils/config');
 const { devices } = require('@playwright/test');
+const universePlaywrightConfig = require('@razorpay/universe-test/src/configs/e2e.web/playwright.config');
+const { getBaseUrl } = require('./e2e/utils/config');
 
 module.exports = {
   ...universePlaywrightConfig,
@@ -16,14 +15,19 @@ module.exports = {
     ...universePlaywrightConfig.use,
     baseURL: getBaseUrl(),
     screenshot: 'only-on-failure',
-    storageState: getStorageStatePath(),
+    trace: 'retain-on-failure',
+    video: 'on-first-retry',
   },
   projects: [
+    ...universePlaywrightConfig.projects,
+    /* Test against mobile viewports. */
     {
-      name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-      },
+      name: 'Mobile Chrome',
+      use: { ...devices['Galaxy S8'] },
+    },
+    {
+      name: 'Mobile Safari',
+      use: { ...devices['iPhone 12'] },
     },
   ],
 };

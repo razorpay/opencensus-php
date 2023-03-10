@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { StorageStatePath } = require('../../utils/constants');
 
 const ELEMENT_CONSTANTS = {
   WEBHOOK_SETTINGS_URL: '/app/website-app-settings/webhooks',
@@ -8,6 +9,9 @@ const ELEMENT_CONSTANTS = {
 };
 
 test.describe('Test webhook creation @flow=settings', () => {
+  test.use({
+    storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
+  });
   test('should create webhook @priority=critical', async ({ page }) => {
     // go to the webhook settings tab
     await page.goto(ELEMENT_CONSTANTS.WEBHOOK_SETTINGS_URL);

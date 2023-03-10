@@ -23,4 +23,6 @@ RUN cd web && npx playwright install --with-deps
 
 COPY . .
 
-CMD npm run test:e2e
+RUN chmod +x /app/run-e2e.sh
+
+ENTRYPOINT ["/app/run-e2e.sh"]

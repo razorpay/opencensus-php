@@ -32,6 +32,8 @@
     "sizelimit:local": "npx danger local --dangerfile dangerfile-bundlelimit.js",
     "test:setup": "cd web && npm run test:setup",
     "test:e2e": "cd web && npm run test:e2e",
+    "test:e2e:auth": "cd web && npm run test:e2e:auth",
+    "test:e2e:flow": "bash run-e2e.sh",
     "test:e2e-infra": "cd web && npm run test:e2e-infra"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const { StorageStatePath } = require('../../utils/constants');
 
 const ELEMENT_CONSTANTS = {
   API_KEYS_SETTINGS_URL: '/app/website-app-settings/api-keys',
@@ -8,6 +9,9 @@ const ELEMENT_CONSTANTS = {
 };
 
 test.describe('Test Regenerate API Keys @flow=settings', () => {
+  test.use({
+    storageState: StorageStatePath.EMAIL_TEST_LOGIN_STATE,
+  });
   test('should regenerate API Keys @priority=critical', async ({ page }) => {
     // go to the api keys and settings tab
     await page.goto(ELEMENT_CONSTANTS.API_KEYS_SETTINGS_URL);
