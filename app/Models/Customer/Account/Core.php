@@ -362,6 +362,10 @@ class Core extends Base\Core
         }
 
         // if we reach this point, it means we have user profile fetched
+        $this->trace->info(TraceCode::TRUECALLER_PROFILE_FETCHED, [
+            'merchant_id' => $merchant->getId(),
+            'request_id'  => $input['request_id'],
+        ]);
         $response['status'] = TruecallerConstants::RESOLVED;
 
         $this->setUserProfileInResponse($response, $truecallerResponse);

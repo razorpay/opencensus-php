@@ -372,6 +372,10 @@ class Checkout
             if ($this->shouldDisplayTruecaller($input, $data) === true)
             {
                 $this->fillTruecallerDetails($merchantId, $data);
+
+                $this->trace->count(Metric::CREATE_TRUECALLER_ENTITY_REQUEST, [
+                    'status' => 'success',
+                ]);
             }
         }
         catch (\Exception $exception)

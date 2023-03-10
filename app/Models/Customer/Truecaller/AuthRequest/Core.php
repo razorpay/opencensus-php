@@ -218,8 +218,6 @@ class Core extends BaseCore
             }
             else
             {
-                $this->trace->info(TraceCode::TRUECALLER_PROFILE_FETCHED);
-
                 $this->trace->count(Metric::TRUECALLER_CALLBACK_SUCCESS, [
                     Metric::LABEL_SUCCESS_MESSAGE => TraceCode::TRUECALLER_PROFILE_FETCHED,
                 ]);

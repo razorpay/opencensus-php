@@ -19,10 +19,6 @@ class Service extends BaseService
             'input' => $input,
         ]);
 
-        $this->trace->count(Metric::CREATE_TRUECALLER_ENTITY_REQUEST, [
-            'status' => 'success',
-        ]);
-
         return $this->core()->create($input);
     }
 
