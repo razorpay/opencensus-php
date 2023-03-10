@@ -156,7 +156,28 @@ const xCurrentAccountStatus = {
 };
 
 const capitalStatus = {
-  title: <Fragment>Activation Status&nbsp;</Fragment>,
+  title: (
+    <Fragment>
+      Activation Status&nbsp;
+      <span>
+        <i className="i i-info-circle" />
+        &nbsp;
+        <PopoverComponent align="top" theme="dark">
+          <PopoverBody>
+            Click{' '}
+            <a
+              target="_blank"
+              href="https://betasite.razorpay.com/docs/razorpay/add-partners-capital-doc/partners/capital/#track-leads-status"
+              rel="noopener noreferrer"
+            >
+              here
+            </a>{' '}
+            to know more
+          </PopoverBody>
+        </PopoverComponent>
+      </span>
+    </Fragment>
+  ),
   value: (submerchant) => (
     <span>
       {submerchant.capitalActivationStatus ? (
@@ -432,7 +453,6 @@ class ProductSubMerchantsList extends ListContainer {
     this.setState({ affiliatesDownloading: true });
     return downloadSubmerchants(user.isPartner('pure_platform'), user.id)
       .then((response) => {
-        this.setState({ affiliatesDownloading: false });
         if (response.error) {
           this.props.showNotification({
             type: 'error',
@@ -449,6 +469,9 @@ class ProductSubMerchantsList extends ListContainer {
           message: 'Oops!, Unable to export data of submerchants',
           hidePrevious: true,
         });
+      })
+      .finally(() => {
+        this.setState({ affiliatesDownloading: false });
       });
   };
   shareReferralOn(platform, referralUrl) {

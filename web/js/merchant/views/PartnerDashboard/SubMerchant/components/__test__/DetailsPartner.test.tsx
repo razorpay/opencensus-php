@@ -15,7 +15,7 @@ import {
   productResponse,
   items,
 } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/fixtures';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { PRODUCT_TYPE, NOT_AVAILABLE } from 'merchant/views/PartnerDashboard/constants';
 
 const onResendInvite = jest.fn();
 const DetailsProps = {
@@ -133,7 +133,7 @@ describe('Details sub merchants', () => {
     expect(screen.getByText(CapitalResponse.stage)).toBeInTheDocument();
     expect(screen.getByText(CapitalResponse.company_address_pincode)).toBeInTheDocument();
     expect(screen.getByText(CapitalResponse.business_type)).toBeInTheDocument();
-    expect(screen.getByText(CapitalResponse.business_vintage)).toBeInTheDocument();
+    expect(screen.getByText(NOT_AVAILABLE)).toBeInTheDocument();
     expect(
       screen.getByText(
         `${CapitalResponse.company_address_line_1} ${CapitalResponse.company_address_line_2} ${CapitalResponse.company_address_city},${CapitalResponse.company_address_state}`,

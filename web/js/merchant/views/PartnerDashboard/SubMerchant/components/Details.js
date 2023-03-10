@@ -15,7 +15,7 @@ import {
   XSubmerchantCAStatusLabel,
   CapitalSubMerchantStatusLabel,
 } from 'merchant/components/StatusLabel';
-import { PRODUCT_TYPE } from 'merchant/views/PartnerDashboard/constants';
+import { PRODUCT_TYPE, NOT_AVAILABLE } from 'merchant/views/PartnerDashboard/constants';
 import SubMerchantKycStatusLabel from './SubMerchantKycStatusLabel';
 import DetailsAction from './DetailsAction';
 import { numberDifferentiation } from 'merchant/views/PartnerDashboard/SubMerchant/utils/index';
@@ -108,6 +108,13 @@ const Details = (props) => {
 
   const handleDetailsToggle = () => {
     setShowMoreDetails((currentValue) => !currentValue);
+  };
+
+  const handleNotAvailable = (value) => {
+    if (value.toLowerCase() === 'unknown') {
+      return NOT_AVAILABLE;
+    }
+    return value;
   };
   return (
     <div class={`content-wrapper txn-details ${isShowLargeWrapper ? 'content-lg' : 'content-sm'}`}>
@@ -300,13 +307,13 @@ const Details = (props) => {
 
                       {capitalDetails?.business_type ? (
                         <EntityDetailRow
-                          value={capitalDetails.business_type}
+                          value={handleNotAvailable(capitalDetails.business_type)}
                           label="Business Type"
                         />
                       ) : null}
                       {capitalDetails?.business_vintage ? (
                         <EntityDetailRow
-                          value={capitalDetails.business_vintage}
+                          value={handleNotAvailable(capitalDetails.business_vintage)}
                           label="Business Vintage"
                         />
                       ) : null}

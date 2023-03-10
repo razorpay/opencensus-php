@@ -220,6 +220,11 @@ export default class SubMerchantsList extends Component {
               >
                 Payments
               </NavLink>
+              <ShowWhen additionalCondition={() => isPartnershipForCapitalEnabled}>
+                <NavLink exact to="/partners/submerchants/capital">
+                  Line Of Credit
+                </NavLink>
+              </ShowWhen>
               <ShowWhen
                 additionalCondition={(currentUser) =>
                   not_pure_platform &&
@@ -233,11 +238,6 @@ export default class SubMerchantsList extends Component {
                   onClick={() => this.sendAnalytics('navlink-X')}
                 >
                   RazorpayX
-                </NavLink>
-              </ShowWhen>
-              <ShowWhen additionalCondition={() => isPartnershipForCapitalEnabled}>
-                <NavLink exact to="/partners/submerchants/capital">
-                  Line Of Credit
                 </NavLink>
               </ShowWhen>
             </div>

@@ -47,3 +47,5 @@ export const ORG_CUSTOM_CODE = {
   CURLEC: 'curlec',
   RZP: 'rzp',
 };
+
+export const NOT_AVAILABLE = 'N/A';
