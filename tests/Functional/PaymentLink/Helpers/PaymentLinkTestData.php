@@ -5949,6 +5949,17 @@ return [
             'status_code' => 200,
         ],
 
+    "testPaymentPagePendingPaymentsAndRevenue" => [
+        'request'  => [
+            'method'  => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
     "testCreatePaymentPageWithCustomDomain" => [
         'request'  => [
             'url'     => '/payment_pages',

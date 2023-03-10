@@ -1345,6 +1345,7 @@ class Route
         'payment_page_save_receipt_for_payment'    => ['post',     'payment_pages/{payment_id}/save_receipt',        'PaymentLinkController@saveReceiptForPayment'                       ],
         'payment_page_hosted_button_details'       => ['get',      'payment_buttons/{x_entity_id}/button_details',   'PaymentLinkController@getHostedButtonDetails'                      ],
         'payment_page_create_file_upload_record'   => ['post',     'payment_pages/{id}/create_record/{batch_id}',    'PaymentLinkController@createPaymentPageFileUploadRecord'           ],
+        'payment_page_get_pending_payments'        => ['get',      'payment_pages/{pl_id}/pending_payments',         'PaymentLinkController@getPendingPaymentsAndRevenue'                ],
 
         'payment_page_hosted_button_preferences'   => ['get',      'payment_buttons/{x_entity_id}/button_preferences', 'PaymentLinkController@getHostedButtonPreferences'                ],
         'payment_button_hosted_view'               => ['get,post', 'payment_buttons/{x_entity_id}/view',               'PaymentLinkController@buttonHostedView'                          ],
@@ -6198,6 +6199,7 @@ class Route
         'payment_page_get_invoice_details',
         'payment_page_send_receipt',
         'payment_page_save_receipt_for_payment',
+        'payment_page_get_pending_payments',
         'payment_handle_precreate',
         'payment_handle_create',
         'payment_handle_update_old',
@@ -11036,6 +11038,8 @@ class Route
             'payment_page_cds_fetch_plans',
             'payment_page_create_order',
             'payment_page_cds_fetch_plan',
+           'payment_page_get_pending_payments',
+
             'store_create_order' ,
             'payment_page_create_order_option',
             'store_create_order_options',
@@ -12916,6 +12920,7 @@ class Route
             'payment_page_cds_update_plans',
             'payment_page_cds_delete_plans',
             'payment_page_create_order',
+            'payment_page_get_pending_payments',
             'store_create_order',
             'payment_page_create_order_option',
             'store_create_order_options',

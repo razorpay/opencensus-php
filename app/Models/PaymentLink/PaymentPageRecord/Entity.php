@@ -41,6 +41,8 @@ class Entity extends Base\PublicEntity
     const SMS_NOTIFY            = 'sms_notify';
     const EMAIL_NOTIFY          = 'email_notify';
     const MANDATORY             = 'mandatory';
+    const TOTAL_PENDING_PAYMENTS= 'total_pending_payments';
+    const TOTAL_PENDING_REVENUE = 'total_pending_revenue';
 
     protected $generateIdOnCreate = true;
 

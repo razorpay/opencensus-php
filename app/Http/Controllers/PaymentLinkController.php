@@ -329,6 +329,16 @@ class PaymentLinkController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getPendingPaymentsAndRevenue(string $paymentPageId)
+    {
+        $response = Tracer::inSpan(['name' => 'payment_page.ppr.get'], function() use($paymentPageId)
+        {
+            return $this->service()->getPendingPaymentsAndRevenue($paymentPageId);
+        });
+
+        return ApiResponse::json($response);
+    }
+
     public function setMerchantDetails()
     {
         $input = Request::all();

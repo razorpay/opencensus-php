@@ -621,6 +621,46 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
 
     }
+    public function setUpCreateRecordForFileUpload()
+    {
+        $id = $this->setUpPaymentPageForFileUpload();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testPaymentPageRecordForFileUpload'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id . '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $this->sendRequest($testData['request']);
+
+        $testData['request']['content']['Phone'] = '883344';
+
+        $testData['request']['content']['amount'] = '200';
+
+        $batch_id = 'batch_KoGILWQCoVkOz6';
+
+        $testData['request']['url'] = '/payment_pages/'. $id . '/create_record/'. $batch_id;
+
+        $this->sendRequest($testData['request']);
+
+        return $id;
+    }
+
+    public function testPaymentPagePendingPaymentsAndRevenue()
+    {
+        $id = $this->setUpCreateRecordForFileUpload();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id . '/pending_payments/';
+
+        $this->ba->proxyAuth();
+
+        $resp = $this->startTest();
+
+        self::assertEquals($resp['total_pending_payments'], 2);
+        self::assertEquals($resp['total_pending_revenue'], 301);
+    }
 
     public function testFetchPaymentLink()
     {

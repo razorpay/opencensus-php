@@ -422,6 +422,27 @@ class Service extends Base\Service
         }
     }
 
+    public function getPendingPaymentsAndRevenue(string $paymentPageId)
+    {
+        return Tracer::inSpan(['name' => 'payment_page.ppi.update.updating'], function() use($paymentPageId)
+        {
+
+            $unpaidAmount = $this->repo->payment_page_record->findByPaymentPageIdAndStatus($paymentPageId);
+
+            $response[PaymentPageRecord\Entity::TOTAL_PENDING_PAYMENTS] = count($unpaidAmount);
+
+            $revenue = 0;
+            foreach ($unpaidAmount as $amount) {
+            $revenue = $revenue + $amount['amount'];
+            }
+
+            $response[PaymentPageRecord\Entity::TOTAL_PENDING_REVENUE] = $revenue;
+
+            return $response;
+        });
+
+    }
+
     public function setMerchantDetails(array $input)
     {
         return $this->core->setMerchantDetails($input);

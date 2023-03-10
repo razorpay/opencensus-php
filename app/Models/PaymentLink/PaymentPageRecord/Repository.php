@@ -21,4 +21,20 @@ class Repository extends Base\Repository
             ->where(Entity::PRIMARY_REFERENCE_ID, $primary_ref_id)
             ->firstOrFail();
     }
+
+    public function findByPaymentPageIdAndStatus(
+        string $payment_page_id
+    )
+    {
+        PaymentLink::silentlyStripSign($payment_page_id);
+
+        return $this->newQuery()
+            ->select(Entity::AMOUNT)
+            ->where(Entity::PAYMENT_LINK_ID, $payment_page_id)
+            ->where(Entity::STATUS, STATUS::UNPAID)
+            ->get()
+            ->toArray();
+    }
+
+
 }
