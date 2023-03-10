@@ -296,12 +296,17 @@ class Constants
     const ADMIN_LEAD_PARTNER              = 'admin_lead_partner';
 
     /**
-     * When partner auth is used, this feature flag enables the partner to
-     * 1. Create payments for sub-merchants and put them on hold for settlement
-     * 2. Make route transfers
-     * 3. Release a payment for settlement
+     * This feature will enable the linked accounts of the partner to be automatically
+     * available as recipients for transfers from all the partner sub-merchants given
+     * the transfer is made via partner auth
      */
     const ROUTE_PARTNERSHIPS = 'route_partnerships';
+
+    /**
+     * This feature enables the partner to put the payment settlements of all sub-merchants on hold
+     * by default. Later, the partner can release individual payments for settlement using an API
+     */
+    const SUBM_MANUAL_SETTLEMENT = 'subm_manual_settlement';
 
     /**
      * When creating submerchant in bulk, merchant name is synced with business name which is same for all submerchants
@@ -2443,6 +2448,7 @@ class Constants
         self::AUTO_COMM_INV_DISABLED          => true,
         self::ADMIN_LEAD_PARTNER      => true,
         self::ROUTE_PARTNERSHIPS => true,
+        self::SUBM_MANUAL_SETTLEMENT => true,
         DcsConstants::EnableMerchantExpiryForPP => true,
         DcsConstants::EnableMerchantExpiryForPL => true,
         DcsConstants::EnableCustomerAmount => true,
@@ -3428,7 +3434,12 @@ class Constants
         ],
         self::ROUTE_PARTNERSHIPS => [
             'feature'       => self::ROUTE_PARTNERSHIPS,
-            'display_name'  => 'Enables the partner to hold/release payment settlement of sub-merchants and create transfers',
+            'display_name'  => 'Enables the partner to create transfer to its linked accounts from its sub-merchants',
+            'documentation' => '',
+        ],
+        self::SUBM_MANUAL_SETTLEMENT => [
+            'feature'       => self::SUBM_MANUAL_SETTLEMENT,
+            'display_name'  => 'Enables the partner to hold the sub-merchant payments settlements and later release it',
             'documentation' => '',
         ],
         self::QR_CUSTOM_TXN_NAME => [
