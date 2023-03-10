@@ -189,6 +189,7 @@ class Constants
     const UPI                      = 'UPI';
     const CREATE                   = 'create';
     const ONLINE                   = 'online';
+    const UPI_INSTRUMENT           = 'pg.upi.onboarding';
 
     const BLOCKED_GSTIN_LIST = [
         '29AAGCR4375J1ZU'

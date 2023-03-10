@@ -130,7 +130,8 @@ class Activate extends Base\Core
         // set methods before activating
         $merchant->setDefaultMethodsBasedOnCategory();
 
-        $this->sendTerminalCreationRequest($merchant, DEConstants::UPI, DEConstants::CREATE, DEConstants::ONLINE);
+        //creating terminal request for UPI only
+        $this->sendTerminalCreationRequest($merchant, DEConstants::UPI);
 
         $merchant->activate();
         //Will be added back when we test e2e flow for onboarding all the merchants
@@ -1168,9 +1169,29 @@ class Activate extends Base\Core
         return (strtolower($variant) === 'on');
     }
 
-    private function sendTerminalCreationRequest($merchant, $paymentMethod, $action, $merchantGenre)
+    private function sendTerminalCreationRequest($merchant, $paymentMethod)
     {
-        if((new MethodsCore())->isUPIPaymentMethodAllowed($merchant) === true)
+        switch($paymentMethod)
+        {
+            case DEConstants::UPI:
+                $this->sendTerminalCreationRequestForUPI($paymentMethod, $merchant, DEConstants::CREATE, DEConstants::ONLINE, DEConstants::UPI_INSTRUMENT);
+                break;
+            default:
+                throw new Exception\LogicException(
+                    'Invalid payment method passed for terminal creation');
+        }
+    }
+
+    /**
+     * @param $paymentMethod
+     * @param $merchant
+     * @param $action
+     * @param $merchantGenre
+     * @param $instrument
+     */
+    private function sendTerminalCreationRequestForUPI($paymentMethod, $merchant, $action, $merchantGenre, $instrument): void
+    {
+        if ((new MethodsCore())->isUPIPaymentMethodAllowed($merchant) === true)
         {
             $topic = env('PAYMENT_METHOD_ENABLE_KAFKA_TOPIC_NAME');
 
@@ -1178,7 +1199,9 @@ class Activate extends Base\Core
                 'merchant_id'    => $merchant->getMerchantId(),
                 'payment_method' => $paymentMethod,
                 'action'         => $action,
-                'merchant_genre' => $merchantGenre
+                'merchant_genre' => $merchantGenre,
+                'instrument'     => $instrument,
+                'task_id'        => $this->app['request']->getTaskId() ?? gen_uuid(),
             ];
 
             app('kafkaProducerClient')->produce($topic, stringify($event));
