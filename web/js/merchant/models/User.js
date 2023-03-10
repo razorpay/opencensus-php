@@ -1010,7 +1010,7 @@ export default class User {
   }
 
   get isOptimizerEnabled() {
-    return this.findTag('raas');
+    return this.isFeatureEnabled('raas');
   }
 
   get isOptimizerOnboardingEnabled() {
