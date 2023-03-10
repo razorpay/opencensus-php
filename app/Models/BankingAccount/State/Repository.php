@@ -21,12 +21,18 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getAnySendToBankStateByBankingAccountId(string $bankingAccountId)
+    public function getFirstStatusChangeLog(string $bankingAccountId, string $status, string $substatus = null)
     {
-        return $this->newQuery()
+        $query = $this->newQuery()
             ->where(Entity::BANKING_ACCOUNT_ID, '=', $bankingAccountId)
-            ->where(Entity::STATUS, Status::INITIATED)
-            ->first();
+            ->where(Entity::STATUS, $status);
+
+        if ($substatus)
+        {
+            $query->where(Entity::SUB_STATUS, $substatus);
+        }
+
+        return $query->first();
     }
 
     public function getBankingAccountsStateBySubStateAndCreatedBetween(string $subStatus, string $from, string $to)

@@ -46,7 +46,9 @@ use RZP\Services\Segment\EventCode as SegmentEvent;
 use RZP\Models\SalesForce\SalesForceEventRequestDTO;
 use RZP\Models\SalesForce\SalesForceEventRequestType;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Mail\BankingAccount\DocketMail\DocketMail;
 use RZP\Models\BankingAccountService\Service as BasService;
+use RZP\Services\BankingAccountService as BAS;
 use RZP\Models\BankingAccount\Activation\Notification\Event;
 use RZP\Models\BankingAccount\Detail as BankingAccountDetail;
 use RZP\Models\BankingAccountStatement\Details as BASDetails;
@@ -910,7 +912,6 @@ class Core extends Base\Core
                                                                              $processor);
             }
 
-
             $isAssigneeChanged = $this->isAssigneeTeamChanged($activationDetailInput, $bankingAccount->getId());
 
             // Updating BankingAccountActivation Details
@@ -919,7 +920,6 @@ class Core extends Base\Core
                 // if ActivationDetail is passed with comment in input, entity will always be admin, not merchant.
                 $this->activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate, $entity,false);
             }
-
 
             if (($bankInternalStatusChanged === true) or
                 ($bankingAccountStatusChanged === true) or
@@ -986,9 +986,11 @@ class Core extends Base\Core
 
             $activationDetailInput = $this->setBankDueDateIfApplicable($bankingAccount);
 
-            // Again updating since the calculation of due date is dependent on banking account's latest data
-            $this->activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate, $entity,false);
-
+            if (empty($activationDetailInput) === false)
+            {
+                // Again updating since the calculation of due date is dependent on banking account's latest data
+                $this->activationDetailService->updateForBankingAccount($bankingAccount->getPublicId(), $activationDetailInput, $isAutomatedUpdate, $entity, false);
+            }
         });
 
         // re-fetch banking-account to handle case where it is updated during freshdeskticket creation
@@ -1099,7 +1101,7 @@ class Core extends Base\Core
             return false;
         }
 
-        $sendToBankState = $this->repo->banking_account_state->getAnySendToBankStateByBankingAccountId($bankingAccount->getId());
+        $sendToBankState = $this->repo->banking_account_state->getFirstStatusChangeLog($bankingAccount->getId(), Status::INITIATED);
 
         // any of the previous states should be Sent To Bank
 
@@ -2877,7 +2879,12 @@ class Core extends Base\Core
         }
         else
         {
-            $activationDetailInput[Activation\Detail\Entity::DROP_OFF_DATE] = null;
+            $activationDetails = $bankingAccount->bankingAccountActivationDetails;
+            // If set, need to unset
+            if (empty($activationDetails[Activation\Detail\Entity::DROP_OFF_DATE]) == false) {
+
+                $activationDetailInput[Activation\Detail\Entity::DROP_OFF_DATE] = null;
+            }
         }
     }
 
@@ -2909,11 +2916,21 @@ class Core extends Base\Core
             $bankDueDate = Status::getBankDueDate($status, $followUpDate);
         }
 
-        $activationDetailInput = [
-            Activation\Detail\Entity::RBL_ACTIVATION_DETAILS => [
-                Activation\Detail\Entity::BANK_DUE_DATE => $bankDueDate
-            ]
-        ];
+        $activationDetails = $bankingAccount->bankingAccountActivationDetails;
+
+        $rblActivationDetails = $activationDetails[Activation\Detail\Entity::RBL_ACTIVATION_DETAILS];
+
+        $activationDetailInput = null;
+
+        // If set, need to unset
+        if (empty(Activation\Detail\Entity::extractFieldFromJSONField($rblActivationDetails, Activation\Detail\Entity::BANK_DUE_DATE)) == false) {
+
+            $activationDetailInput = [
+                Activation\Detail\Entity::RBL_ACTIVATION_DETAILS => [
+                    Activation\Detail\Entity::BANK_DUE_DATE => $bankDueDate
+                ]
+            ];
+        }
 
         return $activationDetailInput;
     }
@@ -3031,5 +3048,382 @@ class Core extends Base\Core
         }
 
         return true;
+    }
+
+    public function sendDocketIfApplicable($bankingAccount, $entity)
+    {
+        // re-fetch banking-account to handle case where it is updated during freshdeskticket creation
+        $bankingAccount = $this->repo->banking_account->findByPublicId($bankingAccount->getPublicId());
+
+        // For Docket Initiation, we need the latest activation details
+        $bankingAccount->load('bankingAccountActivationDetails');
+
+        $currentStatus = $bankingAccount->getStatus();
+
+        $currentSubStatus = $bankingAccount->getSubStatus();
+
+        if (!($currentStatus === Status::PICKED && $currentSubStatus == Status::INITIATE_DOCKET))
+        {
+            // Not registering as a reason
+            return $bankingAccount;
+        }
+
+        [$shouldSendDocket, $reasonsToNotSend] = $this->checkIfDocketToBeSent($bankingAccount);
+
+        if ($shouldSendDocket === false)
+        {
+            $bankingAccount = $this->updateBankingAccount(
+                $bankingAccount,
+                [
+                    Entity::ACTIVATION_DETAIL => [
+                        Activation\Detail\Entity::ADDITIONAL_DETAILS => [
+                            Activation\Detail\Entity::SENT_DOCKET_AUTOMATICALLY => false,
+                            Activation\Detail\Entity::REASONS_TO_NOT_SEND_DOCKET => $reasonsToNotSend,
+                        ]
+                    ]
+                ],
+                $entity, false, false, false);
+
+            return $bankingAccount;
+        }
+        else
+        {
+            $sentDocket = $this->sendDocketEmail($bankingAccount);
+
+            if ($sentDocket)
+            {
+                $bankingAccount = $this->updateBankingAccount(
+                    $bankingAccount, 
+                    [
+                        Entity::STATUS      => Status::PICKED,
+                        Entity::SUB_STATUS  => Status::DOCKET_INITIATED,
+                        Entity::ACTIVATION_DETAIL => [
+                            Activation\Detail\Entity::ADDITIONAL_DETAILS => [
+                                Activation\Detail\Entity::SENT_DOCKET_AUTOMATICALLY => true,
+                                Activation\Detail\Entity::REASONS_TO_NOT_SEND_DOCKET => [], // empty array
+                            ]
+                        ]
+                    ],
+                    $entity, false, false, false);
+            }
+            else
+            {
+                $bankingAccount = $this->updateBankingAccount(
+                    $bankingAccount,
+                    [
+                        Entity::ACTIVATION_DETAIL => [
+                            Activation\Detail\Entity::ADDITIONAL_DETAILS => [
+                                Activation\Detail\Entity::SENT_DOCKET_AUTOMATICALLY => false,
+                                Activation\Detail\Entity::REASONS_TO_NOT_SEND_DOCKET => ['Server error'],
+                            ]
+                        ]
+                    ],
+                    $entity, false, false, false);
+            }
+        }
+
+        return $bankingAccount;
+    }
+
+    private function checkIfDocketToBeSent(Entity $bankingAccount)
+    {
+        $reasonsToNotSend = [];
+
+        $bankingAccountId = $bankingAccount->getId();
+
+        $poe = optional($bankingAccount->bankingAccountActivationDetails)->isPoEVerified() ?? false;
+
+        if ($poe == false)
+        {
+            array_push($reasonsToNotSend, Constants::POE_NOT_VERIFIED);
+        }
+
+        $entityNameCheck = optional($bankingAccount->bankingAccountActivationDetails)->businessNameMatchesMerchantName($bankingAccount->merchant->getName()) ?? false;
+
+        if ($entityNameCheck == false)
+        {
+            array_push($reasonsToNotSend, Constants::ENTITY_NAME_MISMATCH);
+        }
+
+        $entityTypeCheck = optional($bankingAccount->bankingAccountActivationDetails)->businessCategoryMatchesMerchantBusinessType($bankingAccount->merchant->merchantDetail->getBusinessType()) ?? false;
+
+        if ($entityTypeCheck == false)
+        {
+            array_push($reasonsToNotSend, Constants::ENTITY_TYPE_MISMATCH);
+        }
+
+        // For skipping DB calls for now
+        if (empty($reasonsToNotSend))
+        {
+
+            $states = $bankingAccount->getActivationStatusChangeLog()->toArray();
+
+            $expected = [
+                [
+                    Entity::STATUS => Status::CREATED,
+                ],
+                [
+                    Entity::STATUS => Status::PICKED,
+                    Entity::SUB_STATUS => Status::NONE,
+                ],
+                [
+                    Entity::STATUS => Status::PICKED,
+                    Entity::SUB_STATUS => Status::INITIATE_DOCKET,
+                ]
+            ];
+
+            $match = check_array_selective_equals_recursive($expected, $states);
+
+            if (!$match)
+            {
+                array_push($reasonsToNotSend, Constants::UNEXPECTED_STATE_CHANGE_LOG);
+            }
+        }
+
+        // For skipping DB calls for now
+        if (empty($reasonsToNotSend))
+        {
+            $existing = $this->repo->banking_account->fetchBankingAccountsWithMatchingMerchantName($bankingAccount->merchant, $bankingAccountId);
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_DOCKET_INITIATION_INFO, [
+                'stage'                 => 'core >> check if docket to be sent',
+                'duplicate_application' => $existing,
+            ]);
+
+            if ($existing != null)
+            {
+                array_push($reasonsToNotSend, Constants::DUPLICATE_MERCHANT_APPLICATION);
+            }
+        }
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_DOCKET_INITIATION_INFO, [
+            'stage'                 => 'core >> check if docket to be sent',
+            'reasons_to_not_send'    => $reasonsToNotSend,
+            'banking_account_id'    => $bankingAccountId,
+            'merchant_id'           => $bankingAccount->getMerchantId(),
+        ]);
+
+        if (empty($reasonsToNotSend))
+        {
+            return [true, $reasonsToNotSend];
+        }
+
+        return [false, $reasonsToNotSend];
+    }
+
+    private function sendDocketEmail(Entity $bankingAccount)
+    {
+        try
+        {
+            $bankingAccountId = $bankingAccount->getId();
+
+            $this->generateAndGetCredentials($bankingAccount);
+
+            $merchantName = $bankingAccount->merchant[Merchant\Entity::NAME];
+
+            $businessCategory = $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::BUSINESS_CATEGORY];
+
+            /** @var BAS $bas */
+            $bas = app('banking_account_service');
+
+            // Get PDF URL
+            $url = $bas->getDocketPdfUrl($bankingAccountId, $businessCategory, $merchantName);
+
+            if ($url)
+            {
+                // Download PDF
+                [$viewData, $recipients, $otherRecipients] = $this->getDocketMailData($bankingAccount, $url);
+
+                // Send email
+                $mailable = new DocketMail($viewData, $recipients, $otherRecipients);
+
+                $this->trace->info(TraceCode::BANKING_ACCOUNT_DOCKET_INITIATION_INFO, [
+                    'stage'             => 'core >> download pdf',
+                    'viewData'          => $viewData,
+                    'recipients'        => $recipients,
+                ]);
+
+                Mail::queue($mailable);
+
+                return true;
+            }
+            else
+            {
+                $this->trace->error(TraceCode::BANKING_ACCOUNT_DOCKET_INITIATION_ERROR, [
+                    'stage' => 'core >> Not Sending Docket',
+                    'error' => 'No PDF URL'
+                ]);
+            }
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::BANKING_ACCOUNT_DOCKET_INITIATION_ERROR, [
+                'stage' => 'core >> download pdf',
+                'error' => $ex->getMessage()
+            ]);
+        }
+
+        return false;
+    }
+
+    private function generateAndGetCredentials(Entity $bankingAccount)
+    {
+        $bankingAccountId = $bankingAccount->getId();
+
+        /** @var BAS $bas */
+        $bas = app('banking_account_service');
+
+        $credentials = $bas->getGeneratedRblCredentials($bankingAccountId);
+
+        $merchantName = $bankingAccount->merchant[Merchant\Entity::NAME];
+
+        // Check if credentials are already generated
+        if (empty($credentials['upi_handle1']))
+        {
+            $mcc = $bankingAccount->merchant[Merchant\Entity::CATEGORY];
+
+            /**
+             * Get MCC code from business category and sub-category mapping
+             * 
+             * Fallback for merchants who sign up directly on X
+             * additional_details has business_details property for this
+             * 
+             * This is different from Entity Type (banking_account_activation_details->business_category)
+             */
+            if (empty($mcc))
+            {
+                $businessDetails = ActivationDetail\Entity::extractFieldFromJSONField(
+                    $bankingAccount->bankingAccountActivationDetails[ActivationDetail\Entity::ADDITIONAL_DETAILS],
+                    ActivationDetail\Entity::BUSINESS_DETAILS
+                );
+
+                if (empty($businessDetails) === false)
+                {
+                    $category = $businessDetails[ActivationDetail\Entity::CATEGORY];
+                    $subcategory = $businessDetails[ActivationDetail\Entity::SUB_CATEGORY];
+
+                    $mcc = MccMappings::getMCCMapping($category, $subcategory);
+                }
+            }
+
+            if (empty($mcc) === true)
+            {
+                $this->trace->info(TraceCode::BANKING_ACCOUNT_DOCKET_INITIATION_INFO, [
+                    'stage'     => 'core >> Not Sending Docket',
+                    'error'     => 'MCC Code could not be resolved'
+                ]);
+
+                return false;
+            }
+
+            $rblCredentialsPayload = [
+                'banking_account_id'    => $bankingAccount->getId(),
+                'merchant_id'           => $bankingAccount->getMerchantId(),
+                'merchant_name'         => $merchantName,
+                'mcc_code'              => $mcc
+            ];
+
+            // Generate Credentials
+            $bas->generatedRblCredentials($bankingAccountId, $rblCredentialsPayload);
+        }
+    }
+
+    private function getDocketMailData(Entity $bankingAccount, string $url)
+    {
+        $bankingAccountActivationDetails = $bankingAccount->bankingAccountActivationDetails;
+
+        $city = $bankingAccountActivationDetails->merchant_city;
+
+        $pincode = $bankingAccount->getPincode();
+
+        $businessCategory = $bankingAccountActivationDetails[ActivationDetail\Entity::BUSINESS_CATEGORY];
+
+        $merchantName = $bankingAccount->merchant[Merchant\Entity::NAME];
+
+        $refNo = $bankingAccount->getBankReferenceNumber();
+
+        $entityType = ucwords(str_replace('_', ' ', $businessCategory));
+
+        $viewData = [
+            'merchantName'      => $merchantName,
+            'refNo'             => $refNo,
+            'entityType'        => $entityType,
+            'subject'           => 'RazorpayX | Stamp Paper and Docs | '.$merchantName.' | '.$refNo.' | '.$entityType,
+            'address'           => $bankingAccountActivationDetails->merchant_documents_address,
+            'city'              => $city.', '.$pincode,
+            'pocName'           => $bankingAccountActivationDetails->merchant_poc_name,
+            'pocPhoneNumber'    => $bankingAccountActivationDetails->merchant_poc_phone_number,
+            'attachment_url'    => $url,
+        ];
+
+        $recipient = [
+            'name'  => 'Umakant Vashishtha',
+            'email' => 'umakant.vashishtha@razorpay.com',
+        ];
+
+        $otherRecipients = [];
+
+        if ((new Validator())->checkFosLeadCities($city))
+        {
+            $recipient = [
+                'name'  => 'Rangaswamy S',
+                'email' => 'rangaswamy.s@lesconcierges.in',
+            ];
+
+            $otherRecipients = [
+                [
+                    'name'  => 'Hanuman S',
+                    'email' => 'hanumanth.s@lesconcierges.in',
+                ],
+                [
+                    'name'  => 'Syed',
+                    'email' => 'syed@lesconcierges.in'
+                ],
+                [
+                    'name'  => 'X Onboarding',
+                    'email' => 'x-caonboarding@razorpay.com',
+                ],
+            ];
+
+            $viewData = [
+
+            ];
+        }
+        else {
+            $recipient = [
+                'name'  => 'Suresh C',
+                'email' => 'sureshc@supersevak.com',
+            ];
+
+            $otherRecipients = [
+                [
+                    'name'  => 'Mahesh',
+                    'email' => 'mahesh@superseva.com',
+                ],
+                [
+                    'name'  => 'Musaffir',
+                    'email' => 'Musaffir@superseva.com'
+                ],
+                [
+                    'name'  => 'X Onboarding',
+                    'email' => 'x-caonboarding@razorpay.com',
+                ],
+            ];
+        }
+
+        if (in_array($city, ['Bengaluru', 'Bangalore']))
+        {
+            $viewData['pocName'] = 'Bennet/ Ferin';
+            $viewData['pocPhoneNumber'] = '9113917356 / 9980430227';
+
+            $viewData['address'] = 'Razorpay Software, SJR Cyber Laskar, Hosur Rd, Adugodi, Bengaluru, Karnataka 560030';
+            $viewData['city'] = 'Bengaluru, 560030';
+
+            $viewData['subject'] = $viewData['subject'].' | BLR';
+        }
+
+        return [
+            $viewData, $recipient, $otherRecipients
+        ];
     }
 }

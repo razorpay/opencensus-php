@@ -321,6 +321,8 @@ class Service extends Base\Service
 
             $this->upsertSalesforceLeadDetails($bankingAccount, $activationDetail);
 
+            $this->checkAndSendDocket($bankingAccount, $entity, $activationDetail);
+
             if ($activationDetail->isAssigneeTeamUpdated() === true  && $captureState === true)
             {
                 // if entity is passed, use that, else use admin.
@@ -463,6 +465,22 @@ class Service extends Base\Service
                 Comment\Entity::ADDED_AT => time()
             ]);
         }
+    }
+
+    private function checkAndSendDocket($bankingAccount, $entity, Entity $activationDetail)
+    {
+        // This is to prevent recursive updates
+
+        $additionalDetails = json_decode($activationDetail->getAdditionalDetails() ?? '{}', true);
+
+        if (array_key_exists(Entity::SENT_DOCKET_AUTOMATICALLY, $additionalDetails))
+        {
+            return;
+        }
+
+        $bankingAccountCore = new BankingAccount\Core();
+
+        $bankingAccountCore->sendDocketIfApplicable($bankingAccount, $entity ?? $bankingAccount->merchant);
     }
 
     private function checkAndPushEventForRmAssigned(BankingAccount\Entity $bankingAccount, array $activationDetail, Entity $activationDetailDbEntity, bool $isRmNotAssigned)

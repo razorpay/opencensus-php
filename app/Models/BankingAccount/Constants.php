@@ -66,4 +66,10 @@ class Constants
     const SERVICEABILITY = 'serviceability';
 
     const PARTNER_BANK = 'partner_bank';
+
+    const POE_NOT_VERIFIED = 'PoE Not Verified';
+    const ENTITY_NAME_MISMATCH = 'Entity Name Mismatch';
+    const ENTITY_TYPE_MISMATCH = 'Entity Type Mismatch';
+    const UNEXPECTED_STATE_CHANGE_LOG = 'Unexpected State Change Log';
+    const DUPLICATE_MERCHANT_APPLICATION = 'Application with Duplicate Merchant Name';
 }

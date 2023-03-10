@@ -55,23 +55,7 @@ class BankingAccountService
 
     public function getGeneratedRblCredentials(string $bankingAccountId)
     {
-        if ($bankingAccountId == '1000000lcustba')
-        {
-            return [
-                'banking_account_id'       => $bankingAccountId,
-                'merchant_id'              => 'L6NxGyvDkztFol',
-                'merchant_name'            => 'TEST MERCHANT',
-                'email'                    => 'x.rbl..4@razorpay.com',
-                'dev_portal_password'      => 'RERPD32rhbtg',
-                'ldap_id'                  => '4BK27SE1V1',
-                'ldap_password'            => 'TMAYH38ymhbp',
-                'upi_handle1'              => 'testUsername@rzp',
-                'upi_handle2'              => 'payouts.puv27-2@rbl',
-                'upi_handle3'              => 'payouts.rrp73-3@rbl',
-                'mcc_code'                 => '6012',
-            ];
-        }
-        else
+        if ($bankingAccountId == '1000000invalid')
         {
             return [
                 'banking_account_id'       => $bankingAccountId,
@@ -87,6 +71,34 @@ class BankingAccountService
                 'mcc_code'                 => '',
             ];
         }
+
+        return [
+            'banking_account_id'       => $bankingAccountId,
+            'merchant_id'              => 'L6NxGyvDkztFol',
+            'merchant_name'            => 'TEST MERCHANT',
+            'email'                    => 'x.rbl..4@razorpay.com',
+            'dev_portal_password'      => 'RERPD32rhbtg',
+            'ldap_id'                  => '4BK27SE1V1',
+            'ldap_password'            => 'TMAYH38ymhbp',
+            'upi_handle1'              => 'testUsername@rzp',
+            'upi_handle2'              => 'payouts.puv27-2@rbl',
+            'upi_handle3'              => 'payouts.rrp73-3@rbl',
+            'mcc_code'                 => '6012',
+        ];
+    }
+
+    public function generatedRblCredentials(string $bankingAccountId, $content)
+    {
+        return $this->getGeneratedRblCredentials($bankingAccountId);
+    }
+
+    public function getDocketPdfUrl(string $bankingAccountId, $businessCategory, $merchantName)
+    {
+        if ($bankingAccountId == '1000000invalid')
+        {
+            return null;
+        }
+        return 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
     }
 
     public function fetchBankingCredentials($merchantId, string $channel = 'icici', string $accountNumber = '1234566')

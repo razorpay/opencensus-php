@@ -62,6 +62,7 @@ use RZP\Tests\Functional\Fixtures\Entity\User as UserFixture;
 use RZP\Models\BankingAccountStatement\Details as BasDetails;
 use RZP\Mail\BankingAccount\StatusNotifications\Unserviceable;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use RZP\Mail\BankingAccount\DocketMail\DocketMail;
 use RZP\Models\BankingAccount\Activation\Detail as ActivationDetail;
 use RZP\Models\BankingAccount\Gateway\Rbl\Processor as RblProcessor;
 use RZP\Mail\BankingAccount\StatusNotificationsToSPOC\DiscrepancyInDoc;
@@ -3392,7 +3393,9 @@ class BankingAccountTest extends TestCase
                                                               string $initialBankStatus = null,
                                                               string $finalBankStatus = null,
                                                               array $bankingAccount = null,
-                                                              string $merchantId = '10000000000000'
+                                                              string $merchantId = '10000000000000',
+                                                              string $expectedStatus = null,
+                                                              string $expectedSubStatus = null
     )
     {
         Mail::fake();
@@ -3425,7 +3428,7 @@ class BankingAccountTest extends TestCase
             'response' => [
                 'content' => [
                     'merchant_id'                                => $merchantDetail->merchant['id'],
-                    RZP\Models\BankingAccount\Entity::STATUS     => $finalStatus,
+                    RZP\Models\BankingAccount\Entity::STATUS     => $expectedStatus ?? $finalStatus,
                 ],
             ],
         ];
@@ -3433,7 +3436,7 @@ class BankingAccountTest extends TestCase
         if (empty($finalSubStatus) === false)
         {
             $dataToReplace['request']['content'][RZP\Models\BankingAccount\Entity::SUB_STATUS] = $finalSubStatus;
-            $dataToReplace['response']['content'][RZP\Models\BankingAccount\Entity::SUB_STATUS] = $finalSubStatus;
+            $dataToReplace['response']['content'][RZP\Models\BankingAccount\Entity::SUB_STATUS] = $expectedSubStatus ?? $finalSubStatus;
         }
 
         if (empty($finalBankStatus) === false)
@@ -3495,11 +3498,11 @@ class BankingAccountTest extends TestCase
 
         $this->assertEquals($bankingAccount['id'], $bankingAccountStateUpdate->bankingAccount->getPublicId());
 
-        $this->assertEquals($finalStatus, $bankingAccountStateUpdate['status']);
+        $this->assertEquals($expectedStatus ?? $finalStatus, $bankingAccountStateUpdate['status']);
 
         $this->assertEquals($merchantId, $bankingAccountStateUpdate['merchant_id']);
 
-        $this->assertEquals($finalSubStatus, $bankingAccountStateUpdate['sub_status']);
+        $this->assertEquals($expectedSubStatus ?? $finalSubStatus, $bankingAccountStateUpdate['sub_status']);
 
         $this->assertEquals($finalBankStatus, $bankingAccountStateUpdate['bank_status']);
 
@@ -3523,6 +3526,11 @@ class BankingAccountTest extends TestCase
         {
             Mail::assertNothingSent();
         }
+    }
+
+    public function mockBankingAccountService()
+    {
+        $this->app['config']->set('applications.banking_account_service.mock', true);    
     }
 
     protected function expectStorkSendPushNotificationRequest($expectInput): void
@@ -3599,7 +3607,9 @@ class BankingAccountTest extends TestCase
     {
         $this->assertUpdateBankingAccountStatusFromTo(
             Status::UNSERVICEABLE,
-            Status::PICKED);
+            Status::PICKED,
+            null,
+            Status::NONE);
     }
 
     public function testUpdateBankingAccountStatusCancelledToPicked()
@@ -3891,6 +3901,332 @@ class BankingAccountTest extends TestCase
             "",
             $ba,
             $bankingAccount->getMerchantId());
+    }
+
+    public function testUpdateBankingAccountDocketInitiation()
+    {
+        $this->mockBankingAccountService();
+
+        Mail::fake();
+
+        $attribute = [
+            'activation_status' => 'activated',
+            'business_type'     => 4, // Merchant\Detail::PRIVATE_LIMITED
+        ];
+
+        $merchantId = '10000000000000';
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', $merchantId, $attribute);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantId, [
+            'name'  => 'Merchant Name',
+        ]);
+
+        $this->createMerchantAttribute(self::DefaultMerchantId, 'banking', 'x_merchant_current_accounts', 'skip_dwt_eligible', 'enabled');
+        // $this->createMerchantAttribute(self::DefaultMerchantId, 'banking', 'x_merchant_current_accounts', 'ca_onboarding_flow', 'ONE_CA');
+
+        $bankingAccount = [
+            'activation_detail' => [
+                'merchant_poc_name'                  => 'Umakant',
+                'merchant_poc_designation'           => 'Financial Consultant',
+                'merchant_poc_email'                 => 'sample@sample.com',
+                'merchant_poc_phone_number'          => '9876556789',
+                'business_category'                  => ActivationDetail\Validator::PRIVATE_PUBLIC_LIMITED_COMPANY,
+                'merchant_documents_address'         => 'x, y, z',
+                'sales_team'                         => 'sme',
+                'sales_poc_id'                       => 'admin_'. Org::SUPER_ADMIN,
+                'initial_cheque_value'               => 100,
+                'account_type'                       => 'insignia',
+                'merchant_city'                      => 'Bangalore',
+                'is_documents_walkthrough_complete'  => true,
+                'merchant_region'                    => 'South',
+                'expected_monthly_gmv'               => 10000,
+                'average_monthly_balance'            => 0,
+                'additional_details'                 => [
+                    'verified_constitutions' => [
+                        [
+                            'constitution' => 'PUBLIC_LIMITED',
+                            'source'       => 'gstin'
+                        ],
+                    ],
+                    'rbl_new_onboarding_flow_declarations' => [
+                        'available_at_preferred_address_to_collect_docs' => 1,
+                        'seal_available' => 1,
+                        'signatories_available_at_preferred_address' => 1,
+                        'signboard_available' => 1,
+                    ]
+                ]
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->ba->addXOriginHeader();
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($bankingAccount);
+
+        $bankingAccountActivationDetail = $bankingAccount['banking_account_activation_details'];
+
+        $bankingAccountActivationDetailEntity = $this->fixtures->edit('banking_account_activation_detail', $bankingAccountActivationDetail['id'], [
+            ActivationDetail\Entity::BUSINESS_NAME      => 'Merchant Name', // must be same as merchant name
+        ]);
+
+        // Equivalent of submiting Sales-form
+        $request  = [
+            'url'     => '/banking_accounts/' . $bankingAccount['id'],
+            'method'  => 'PATCH',
+            'content' => [
+                'activation_detail' => [
+                    'declaration_step'                   => 1,
+                    'additional_details'                 => [
+                        'business_details' => [
+                            'category' => 'financial_services',
+                            'sub_category' => 'lending',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(Status::PICKED, $response[BankingAccount\Entity::STATUS]);
+        $this->assertEquals(Status::DOCKET_INITIATED, $response[BankingAccount\Entity::SUB_STATUS]);
+
+        Mail::assertQueued(DocketMail::class);
+    }
+
+    public function testUpdateBankingAccountDocketInitiationNegativeMerchantNameMatch()
+    {
+        $this->fixtures->create('merchant', [
+            'id'    => '10000000000001',
+            'name'  => 'Merchant Name',
+        ]);
+
+        $this->fixtures->create('merchant_detail:sane', [
+            'merchant_id'       => '10000000000001',
+            'business_type'     => 1,
+            'contact_name'      => 'Merchant Name',
+            'contact_mobile'    => '8888888888',
+            'activation_status' => null
+        ]);
+
+        $this->fixtures->create('banking_account', [
+            'channel'               => 'rbl',
+            'account_type'          => 'current',
+            'merchant_id'           => '10000000000001',
+            'status'                => 'picked'
+        ]);
+
+        $this->mockBankingAccountService();
+
+        Mail::fake();
+
+        $attribute = [
+            'activation_status' => 'activated',
+            'business_type'     => 4, // Merchant\Detail::PRIVATE_LIMITED
+        ];
+
+        $merchantId = '10000000000000';
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', $merchantId, $attribute);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantId, [
+            'name'  => 'Merchant Name',
+        ]);
+
+        $this->createMerchantAttribute(self::DefaultMerchantId, 'banking', 'x_merchant_current_accounts', 'skip_dwt_eligible', 'enabled');
+        // $this->createMerchantAttribute(self::DefaultMerchantId, 'banking', 'x_merchant_current_accounts', 'ca_onboarding_flow', 'ONE_CA');
+
+        $bankingAccount = [
+            'activation_detail' => [
+                'merchant_poc_name'                  => 'Umakant',
+                'merchant_poc_designation'           => 'Financial Consultant',
+                'merchant_poc_email'                 => 'sample@sample.com',
+                'merchant_poc_phone_number'          => '9876556789',
+                'business_category'                  => ActivationDetail\Validator::PRIVATE_PUBLIC_LIMITED_COMPANY,
+                'merchant_documents_address'         => 'x, y, z',
+                'sales_team'                         => 'sme',
+                'sales_poc_id'                       => 'admin_'. Org::SUPER_ADMIN,
+                'initial_cheque_value'               => 100,
+                'account_type'                       => 'insignia',
+                'merchant_city'                      => 'Bangalore',
+                'is_documents_walkthrough_complete'  => true,
+                'merchant_region'                    => 'South',
+                'expected_monthly_gmv'               => 10000,
+                'average_monthly_balance'            => 0,
+                'additional_details'                 => [
+                    'verified_constitutions' => [
+                        [
+                            'constitution' => 'PUBLIC_LIMITED',
+                            'source'       => 'gstin'
+                        ],
+                    ],
+                    'rbl_new_onboarding_flow_declarations' => [
+                        'available_at_preferred_address_to_collect_docs' => 1,
+                        'seal_available' => 1,
+                        'signatories_available_at_preferred_address' => 1,
+                        'signboard_available' => 1,
+                    ]
+                ]
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->ba->addXOriginHeader();
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($bankingAccount);
+
+        $bankingAccountActivationDetail = $bankingAccount['banking_account_activation_details'];
+
+        $bankingAccountActivationDetailEntity = $this->fixtures->edit('banking_account_activation_detail', $bankingAccountActivationDetail['id'], [
+            ActivationDetail\Entity::BUSINESS_NAME      => 'Merchant Name', // must be same as merchant name
+        ]);
+
+        // Equivalent of submiting Sales-form
+        $request  = [
+            'url'     => '/banking_accounts/' . $bankingAccount['id'],
+            'method'  => 'PATCH',
+            'content' => [
+                'activation_detail' => [
+                    'declaration_step'                   => 1,
+                    'additional_details'                 => [
+                        'business_details' => [
+                            'category' => 'financial_services',
+                            'sub_category' => 'lending',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals([
+            BankingAccount\Entity::STATUS           => Status::PICKED,
+            BankingAccount\Entity::SUB_STATUS       => Status::INITIATE_DOCKET,
+            BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS => [
+                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                    ActivationDetail\Entity::SENT_DOCKET_AUTOMATICALLY => false,
+                    ActivationDetail\Entity::REASONS_TO_NOT_SEND_DOCKET => [
+                        'Application with Duplicate Merchant Name'
+                    ],
+                ]
+            ]
+        ], $response);
+
+        Mail::assertNotQueued(DocketMail::class);
+    }
+
+    public function testUpdateBankingAccountDocketInitiationNegativeBusinessTypeMismatch()
+    {
+        $this->mockBankingAccountService();
+
+        Mail::fake();
+
+        $attribute = [
+            'activation_status' => 'activated',
+            'business_type'     => 2
+        ];
+
+        $merchantId = '10000000000000';
+
+        $merchantDetail = $this->fixtures->edit('merchant_detail', $merchantId, $attribute);
+
+        $merchant = $this->fixtures->edit('merchant', $merchantId, [
+            'name'  => 'Merchant Name',
+        ]);
+
+        $this->createMerchantAttribute(self::DefaultMerchantId, 'banking', 'x_merchant_current_accounts', 'skip_dwt_eligible', 'enabled');
+        // $this->createMerchantAttribute(self::DefaultMerchantId, 'banking', 'x_merchant_current_accounts', 'ca_onboarding_flow', 'ONE_CA');
+
+        $bankingAccount = [
+            'activation_detail' => [
+                'merchant_poc_name'                  => 'Umakant',
+                'merchant_poc_designation'           => 'Financial Consultant',
+                'merchant_poc_email'                 => 'sample@sample.com',
+                'merchant_poc_phone_number'          => '9876556789',
+                'business_category'                  => ActivationDetail\Validator::PRIVATE_PUBLIC_LIMITED_COMPANY,
+                'merchant_documents_address'         => 'x, y, z',
+                'sales_team'                         => 'sme',
+                'sales_poc_id'                       => 'admin_'. Org::SUPER_ADMIN,
+                'initial_cheque_value'               => 100,
+                'account_type'                       => 'insignia',
+                'merchant_city'                      => 'Bangalore',
+                'is_documents_walkthrough_complete'  => true,
+                'merchant_region'                    => 'South',
+                'expected_monthly_gmv'               => 10000,
+                'average_monthly_balance'            => 0,
+                'additional_details'                 => [
+                    'verified_constitutions' => [
+                        [
+                            'constitution' => 'PUBLIC_LIMITED',
+                            'source'       => 'gstin'
+                        ],
+                    ],
+                    'rbl_new_onboarding_flow_declarations' => [
+                        'available_at_preferred_address_to_collect_docs' => 1,
+                        'seal_available' => 1,
+                        'signatories_available_at_preferred_address' => 1,
+                        'signboard_available' => 1,
+                    ]
+                ]
+            ]
+        ];
+
+        $this->ba->proxyAuth('rzp_test_10000000000000');
+
+        $this->ba->addXOriginHeader();
+
+        $bankingAccount = $this->createBankingAccountFromDashboard($bankingAccount);
+
+        $bankingAccountActivationDetail = $bankingAccount['banking_account_activation_details'];
+
+        $bankingAccountActivationDetailEntity = $this->fixtures->edit('banking_account_activation_detail', $bankingAccountActivationDetail['id'], [
+            ActivationDetail\Entity::BUSINESS_NAME      => 'Not Merchant Name', // must be same as merchant name
+        ]);
+
+        // Equivalent of submiting Sales-form
+        $request  = [
+            'url'     => '/banking_accounts/' . $bankingAccount['id'],
+            'method'  => 'PATCH',
+            'content' => [
+                'activation_detail' => [
+                    'declaration_step'                   => 1,
+                    'additional_details'                 => [
+                        'business_details' => [
+                            'category' => 'financial_services',
+                            'sub_category' => 'lending',
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals([
+            BankingAccount\Entity::STATUS           => Status::PICKED,
+            BankingAccount\Entity::SUB_STATUS       => Status::INITIATE_DOCKET,
+            BankingAccount\Entity::BANKING_ACCOUNT_ACTIVATION_DETAILS => [
+                ActivationDetail\Entity::ADDITIONAL_DETAILS => [
+                    ActivationDetail\Entity::SENT_DOCKET_AUTOMATICALLY => false,
+                    ActivationDetail\Entity::REASONS_TO_NOT_SEND_DOCKET => [
+                        'Entity Name Mismatch',
+                        'Entity Type Mismatch'
+                    ],
+                ]
+            ]
+        ], $response);
+
+        Mail::assertNotQueued(DocketMail::class);
     }
 
     public function testUpdateBankingAccountSubStatusFromDwtRequiredToDwtCompletedFailsDueToMissingDwtCompletedTimestamp()
@@ -4477,9 +4813,7 @@ class BankingAccountTest extends TestCase
             ]
         ];
 
-        $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000');
-
-        $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
+        $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $this->ba->addXOriginHeader();
 
@@ -11483,13 +11817,7 @@ class BankingAccountTest extends TestCase
 
     protected function addFasterDocCollectionAttribute(string $merchantId = '10000000000000', string $value = 'active')
     {
-        $this->fixtures->create('merchant_attribute', [
-            'merchant_id'               => $merchantId,
-            'product'                   => 'banking',
-            'group'                     => 'x_merchant_current_accounts',
-            'type'                      => 'ca_onboarding_faster_doc_collection',
-            'value'                     => $value,
-        ]);
+        return $this->createMerchantAttribute($merchantId, 'banking', 'x_merchant_current_accounts', 'ca_onboarding_faster_doc_collection', $value);
     }
 
     public function testSkipMidOfficeCallFromLMS()

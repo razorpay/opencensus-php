@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Admin;
 use RZP\Models\BankingAccount;
+use RZP\Models\Merchant\Detail\BusinessType;
 use stdClass;
 
 /**
@@ -115,6 +116,14 @@ class Entity extends Base\PublicEntity
     const MID_OFFICE_POC_NAME = 'mid_office_poc_name';
     const SKIP_MID_OFFICE_CALL = 'skip_mid_office_call';
     const APPOINTMENT_SOURCE = 'appointment_source';
+
+    const SENT_DOCKET_AUTOMATICALLY = 'sent_docket_automatically';
+    const REASONS_TO_NOT_SEND_DOCKET = 'reasons_to_not_send_docket';
+
+    // Business Details in Additional Details
+    const BUSINESS_DETAILS = 'business_details';
+    const CATEGORY = 'category';
+    const SUB_CATEGORY = 'sub_category';
 
     const SALES_PITCH_COMPLETED = 'sales_pitch_completed';
 
@@ -609,6 +618,54 @@ class Entity extends Base\PublicEntity
         return $this->extractFieldFromJSONField($this->getAdditionalDetails(), self::SKIP_MID_OFFICE_CALL);
     }
 
+    /**
+     * Check that the Business Category is matching with Merchant details -> Business Type  
+     * 
+     * Both should be non-empty
+     */
+    public function businessCategoryMatchesMerchantBusinessType($merchantBusinessType)
+    {
+        $businessCategory = $this->getBusinessCategory();
+
+        if (empty($businessCategory) || empty($merchantBusinessType))
+        {
+            return false;
+        }
+
+        if (array_key_exists($businessCategory, Validator::$xToPGBusinessTypeMapping))
+        {
+            $allowedMappings = Validator::$xToPGBusinessTypeMapping[$businessCategory];
+
+            if (in_array($merchantBusinessType, $allowedMappings))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    /**
+     * Check Business name is same as Merchant Name  
+     * Both should be non empty, check is case-insensitive
+     */
+    public function businessNameMatchesMerchantName($merchantName)
+    {
+        $businessName = $this->getBusinessName();
+
+        if (empty($businessName) || empty($merchantName))
+        {
+            return false;
+        }
+
+        if (strtolower($businessName) !== strtolower($merchantName))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function setBankPOCUserId(string $userId)
     {
         $this->setAttribute(self::BANK_POC_USER_ID, $userId);
@@ -895,12 +952,18 @@ class Entity extends Base\PublicEntity
 
     public function setPublicCustomerOnboardingTatAttribute(array &$array)
     {
-        $docCollectionDate = $array[self::DOC_COLLECTION_DATE];
+        $customerOnboardingTat = null;
 
-        $apiIRClosedDate = $array[self::API_IR_CLOSED_DATE]?? Carbon::now()->timestamp;
+        if (empty($array[self::DOC_COLLECTION_DATE]) === false)
+        {   
+            $docCollectionDate = $array[self::DOC_COLLECTION_DATE];
+    
+            $apiIRClosedDate = $array[self::API_IR_CLOSED_DATE]?? Carbon::now()->timestamp;
 
-        $array[self::CUSTOMER_ONBOARDING_TAT] =
-            self::hourDifferenceBetweenTimestamps($docCollectionDate, $apiIRClosedDate);
+            $customerOnboardingTat = self::hourDifferenceBetweenTimestamps($docCollectionDate, $apiIRClosedDate);
+        }
+
+        $array[self::CUSTOMER_ONBOARDING_TAT] = $customerOnboardingTat;
     }
 
     public function setPublicBankPocNameAttribute(array & $array)

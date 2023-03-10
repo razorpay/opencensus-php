@@ -11,6 +11,7 @@ use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Admin\Permission;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\BankingAccount\Activation\Detail\Entity;
+use RZP\Models\Merchant\Detail\BusinessType;
 
 class Validator extends Base\Validator
 {
@@ -308,6 +309,31 @@ class Validator extends Base\Validator
         self::ONE_PERSON_COMPANY,
         self::TRUST,
         self::SOCIETY
+    ];
+
+    public static $xToPGBusinessTypeMapping = [
+        self::PRIVATE_PUBLIC_LIMITED_COMPANY => [
+            BusinessType::PRIVATE_LIMITED,
+            BusinessType::PUBLIC_LIMITED,
+        ],
+        self::SOLE_PROPRIETORSHIP => [
+            BusinessType::PROPRIETORSHIP,
+        ],
+        self::LIMITED_LIABILITY_PARTNERSHIP => [
+            BusinessType::LLP,
+        ],
+        self::PARTNERSHIP => [
+            BusinessType::PARTNERSHIP,
+        ],
+        self::ONE_PERSON_COMPANY => [
+            BusinessType::PRIVATE_LIMITED,
+        ],
+        self::TRUST => [
+            BusinessType::TRUST,
+        ],
+        self::SOCIETY => [
+            BusinessType::SOCIETY,
+        ],
     ];
 
     public static $allowedBusinessTypes = [

@@ -29,7 +29,10 @@ class BankingAccountService
     const CONTENT_TYPE_JSON = 'application/json';
     const GET = 'GET';
     const DATA = 'data';
-    const GET_GENERATED_CREDENTIALS_PATH = 'rbl/banking_account/%s/credentials';
+    const GET_GENERATED_CREDENTIALS_PATH = 'internal/rbl/banking_account/%s/credentials';
+    const GENERATE_CREDENTIALS_PATH = 'internal/rbl/credentials';
+
+    const DOWNLOAD_DOCKET_PDF_PATH = 'internal/rbl/banking_account/%s/credentials/download?business_category=%s&merchant_name=%s';
 
     protected $baseUrl;
 
@@ -525,6 +528,72 @@ class BankingAccountService
 
             throw $e;
 
+        }
+    }
+
+    public function generatedRblCredentials(string $bankingAccountId, $content)
+    {
+        $path = self::GENERATE_CREDENTIALS_PATH;
+
+        try {
+
+            $response = $this->sendRequestAndProcessResponse($path, Requests::POST, $content, []);
+    
+            return $response[self::DATA];
+        } 
+        catch(\Throwable $e)
+        {
+            $this->trace->traceException($e,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_SERVICE_GET_CREDENTIALS_ERROR,
+                [
+                    'bankingAccountId' => $bankingAccountId
+                ]);
+
+            throw $e;
+
+        }
+    }
+
+    public function getDocketPdfUrl(string $bankingAccountId, $businessCategory, $merchantName)
+    {
+        /**
+         * Example: 'rbl/banking_account/LJrZXYtN4REuNo/credentials/download?business_category=private_public_limited_company&merchant_name=Testing%20user';
+         */ 
+        $path = sprintf(self::DOWNLOAD_DOCKET_PDF_PATH, $bankingAccountId, $businessCategory, $merchantName);
+
+        try
+        {
+            $response = $this->sendRequestAndProcessResponse($path, self::GET, [], []);
+
+            $this->trace->info(TraceCode::BANKING_ACCOUNT_DOCKET_INITIATION_INFO, [
+                'stage'     => 'service >> get pdf url',
+                'response'  => $response,
+            ]);
+
+            $url = '';
+            if (array_key_exists('data', $response))
+            {
+                $data = $response['data'];
+
+                if (array_key_exists('url', $data))
+                {
+                    $url = $data['url'];
+                }
+            }
+
+            return $url;
+        } 
+        catch(\Throwable $ex)
+        {
+            $this->trace->traceException($ex,
+                Trace::ERROR,
+                TraceCode::BANKING_ACCOUNT_SERVICE_GET_DOCKET_URL_ERROR,
+                [
+                    'bankingAccountId' => $bankingAccountId
+                ]);
+
+            throw $ex;
         }
     }
 

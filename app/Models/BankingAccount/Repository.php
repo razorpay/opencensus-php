@@ -205,6 +205,30 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchBankingAccountsWithMatchingMerchantName(Merchant\Entity $merchant, string $bankingAccountId, string $channel = Channel::RBL, string $accountType = AccountType::CURRENT)
+    {
+        $merchantNameColumn = $this->repo->merchant->dbColumn(Merchant\Entity::NAME);
+        $merchantIdColumn = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
+
+        $bankingAccountMerchantIdColumn = $this->repo->banking_account->dbColumn(Entity::MERCHANT_ID);
+        $bankingAccountChannelColumn = $this->repo->banking_account->dbColumn(Entity::CHANNEL);
+        $bankingAccountAccountTypeColumn = $this->repo->banking_account->dbColumn(Entity::ACCOUNT_TYPE);
+        $bankingAccountStatusColumn = $this->repo->banking_account->dbColumn(Entity::STATUS);
+        $bankingAccountIdColumn = $this->repo->banking_account->dbColumn(Entity::ID);
+
+        $merchantName = preg_replace('/[^A-Z -]/', '', strtoupper($merchant->getName()));
+
+        $query = $this->newQuery()
+                    ->where($bankingAccountIdColumn, '!=', $bankingAccountId)
+                    ->where($bankingAccountChannelColumn, '=', $channel)
+                    ->where($bankingAccountAccountTypeColumn, '=', $accountType)
+                    ->where($bankingAccountStatusColumn, '!=', Status::CREATED)
+                    ->join(Table::MERCHANT, $merchantIdColumn, '=', $bankingAccountMerchantIdColumn)
+                    ->whereRaw("UPPER({$merchantNameColumn}) LIKE '%". $merchantName."%'");
+
+        return $query->first();
+    }
+
     public function addQueryParamStatus($query, $params)
     {
         $status = $params[Entity::STATUS];
