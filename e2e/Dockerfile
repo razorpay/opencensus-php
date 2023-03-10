@@ -25,4 +25,4 @@ RUN cd /go/pkg/mod/github.com/razorpay/goutils/itf@v0.2.2/cmd/reporter && go ins
 
 ENTRYPOINT set -euo pipefail && \
     go test -v -json ./... -args -parallel | \
-    reporter -host $REPORT_PORTAL_HOST -project $REPORT_PORTAL_PROJECT -token $REPORT_PORTAL_TOKEN -name "ITF-Dashboard-E2E" -build_id $COMMIT_ID
+    reporter -host $REPORT_PORTAL_HOST -project $REPORT_PORTAL_PROJECT -token $REPORT_PORTAL_TOKEN -name $REPORT_NAME -build_id $COMMIT_ID
