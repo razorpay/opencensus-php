@@ -3,7 +3,9 @@
 namespace RZP\Models\Merchant\Detail\Upload\Processors;
 
 use RZP\Models\Batch\Header;
+use RZP\Models\Merchant\Detail;
 use Razorpay\IFSC\Bank as Banks;
+use RZP\Models\Merchant\Document;
 use RZP\Models\Card\Type as CardType;
 use RZP\Models\Card\Network as CardNetwork;
 use RZP\Constants\Product as ProductConstants;
@@ -46,6 +48,15 @@ class BulkUploadMIQParser
         BusinessType::TYPE7,
         BusinessType::TYPE9,
         BusinessType::TYPE11 ,
+    ];
+
+    private static $documentsForKyc = [
+        Document\Type::AADHAR_FRONT,
+        Document\Type::AADHAR_BACK,
+        Document\Type::BUSINESS_PROOF_URL,
+        Document\Type::BUSINESS_PAN_URL,
+        Document\Type::FORM_12A_URL,
+        Document\Type::FORM_80G_URL
     ];
 
     private static $caseInSensitiveHeaders = [
@@ -206,11 +217,13 @@ class BulkUploadMIQParser
             MDEntity::BANK_ACCOUNT_NUMBER           => $entry[Header::MIQ_BANK_ACC_NUMBER],
             MDEntity::TRANSACTION_REPORT_EMAIL      => $entry[Header::MIQ_TXN_REPORT_EMAIL],
             MDEntity::BUSINESS_CATEGORY             => $entry[Header::MIQ_BUSINESS_CATEGORY],
+            MDEntity::BUSINESS_MODEL                => $entry[Header::MIQ_BUSINESS_DESCRIPTION],
             MDEntity::BUSINESS_DESCRIPTION          => $entry[Header::MIQ_BUSINESS_DESCRIPTION],
             MDEntity::DATE_OF_ESTABLISHMENT         => $entry[Header::MIQ_ESTD_DATE],
             MDEntity::BUSINESS_INTERNATIONAL        => $entry[Header::MIQ_INTERNATIONAL] === 'yes' ? 1  : 0,
             MDEntity::COMPANY_CIN                   => $entry[Header::MIQ_CIN] !== '' ? $entry[Header::MIQ_CIN] : null,
             MDEntity::BUSINESS_WEBSITE              => $entry[Header::MIQ_WEBSITE] !== '' ? $entry[Header::MIQ_WEBSITE]  : null,
+            MDEntity::ACTIVATION_FORM_MILESTONE     => "L2",
         ];
     }
 
@@ -536,41 +549,51 @@ class BulkUploadMIQParser
         ];
     }
 
-    public function getPricingPlanInput(array $entry, string $planName): array
+    public function getPricingRulesInput(array $entry): array
     {
-        $input = [
-            PricingEntity::PLAN_NAME => $planName,
-            PricingEntity::RULES     => [],
-        ];
-
+        $rules = [];
         // upi
         $upiRules = $this->getUpiRuleInput($entry);
         if(empty($upiRules) ===  false)
         {
-            array_push($input[PricingEntity::RULES], ...$upiRules); // appending
+            array_push($rules, ...$upiRules); // appending
         }
 
         // wallet
         $walletRules = $this->getWalletRuleInput($entry);
         if(empty($walletRules) ===  false)
         {
-            array_push($input[PricingEntity::RULES], ...$walletRules); // appending
+            array_push($rules, ...$walletRules); // appending
         }
 
         // net-banking
         $netBankingRules = $this->getNBRuleInput($entry);
         if(empty($netBankingRules) ===  false)
         {
-            array_push($input[PricingEntity::RULES], ...$netBankingRules); // appending
+            array_push($rules, ...$netBankingRules); // appending
         }
 
         // card
         $cardRules = $this->getCardRuleInput($entry);
         if(empty($cardRules) ===  false)
         {
-            array_push($input[PricingEntity::RULES], ...$cardRules); // appending
+            array_push($rules, ...$cardRules); // appending
         }
 
-        return $input;
+        return $rules;
+    }
+
+    public static function getDummyActivationFiles(): array
+    {
+        $merchantDocuments = [];
+
+        foreach (self::$documentsForKyc as $document)
+        {
+            $merchantDocuments[$document] = [
+                Document\Constants::FILE_ID => Detail\Constants::DUMMY_ACTIVATION_FILE,
+                Document\Constants::SOURCE  => Document\Source::UFH,
+            ];
+        }
+        return $merchantDocuments;
     }
 }

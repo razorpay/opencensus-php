@@ -136,6 +136,27 @@ class MerchantUploadMiqBatchTest extends TestCase
         $this->startTest();
     }
 
+    public function testValidateInputMerchantUploadMIQFailed()
+    {
+        $entries = $this->getDefaultFileEntries();
+
+
+        array_push($entries, ...$entries, ...$entries);
+
+        // invalid email id
+        $entries[0][Header::MIQ_CONTACT_EMAIL] = "upload.miq@ @razorpay.com";
+
+        // invalid contact number, min len should be 10 if does not have country code.
+        $entries[1][Header::MIQ_CONTACT_EMAIL] = "999999999";
+
+        // invalid merchant name, special char not allowed except whitespace
+        $entries[2][Header::MIQ_MERCHANT_NAME] = "Test_Merchant";
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->startTest();
+    }
+
     public function testCreateMerchantUploadMIQSuccess()
     {
         $this->ba->appAuth();
@@ -208,8 +229,8 @@ class MerchantUploadMiqBatchTest extends TestCase
     {
         return [
             [
-                Header::MIQ_MERCHANT_NAME                 => 'vas_merchant',
-                Header::MIQ_DBA_NAME                      => 'vas_merchant',
+                Header::MIQ_MERCHANT_NAME                 => 'Test Merchant',
+                Header::MIQ_DBA_NAME                      => 'Test Merchant',
                 Header::MIQ_WEBSITE                       => 'https://www.vas.com',
                 Header::MIQ_WEBSITE_ABOUT_US              => 'https://www.vas.com',
                 Header::MIQ_WEBSITE_TERMS_CONDITIONS      => 'https://www.vas.com',
@@ -219,7 +240,7 @@ class MerchantUploadMiqBatchTest extends TestCase
                 Header::MIQ_WEBSITE_REFUNDS               => 'https://www.vas.com',
                 Header::MIQ_WEBSITE_CANCELLATION          => 'https://www.vas.com',
                 Header::MIQ_WEBSITE_SHIPPING_DELIVERY     => 'https://www.vas.com',
-                Header::MIQ_CONTACT_NAME                  => 'upload_miq',
+                Header::MIQ_CONTACT_NAME                  => 'Test Merchant',
                 Header::MIQ_CONTACT_EMAIL                 => 'upload.miq@razorpay.com',
                 Header::MIQ_TXN_REPORT_EMAIL              => 'upload.miq@razorpay.com',
                 Header::MIQ_ADDRESS                       => 'rzp,1st Floor, SJR',
@@ -229,15 +250,15 @@ class MerchantUploadMiqBatchTest extends TestCase
                 Header::MIQ_CONTACT_NUMBER                => '9999999999',
                 Header::MIQ_BUSINESS_TYPE                 => 'Trust',
                 Header::MIQ_CIN                           => 'U67190TN2014PTC096978',
-                Header::MIQ_BUSINESS_PAN                  => 'AAAPT0288L',
+                Header::MIQ_BUSINESS_PAN                  => 'AARCA5484G',
                 Header::MIQ_BUSINESS_NAME                 => 'ABC Ltd',
-                Header::MIQ_AUTHORISED_SIGNATORY_PAN      => 'AAAAT0288L',
+                Header::MIQ_AUTHORISED_SIGNATORY_PAN      => 'BOVPD4792K',
                 Header::MIQ_PAN_OWNER_NAME                => 'ABC',
                 Header::MIQ_BUSINESS_CATEGORY             => 'E-Commerce',
                 Header::MIQ_SUB_CATEGORY                  => 'Market Place',
                 Header::MIQ_GSTIN                         => '27AAAATO288L1Z6',
                 Header::MIQ_BUSINESS_DESCRIPTION          => 'Merchant is into apparel business , dealing on ecommerce model.',
-                Header::MIQ_ESTD_DATE                     => 'dd/mm/yyyy',
+                Header::MIQ_ESTD_DATE                     => '12/5/2021',
                 Header::MIQ_FEE_MODEL                     => 'Prepaid',
                 Header::MIQ_NB_FEE_TYPE                   => 'Flat',
                 Header::MIQ_NB_FEE_BEARER                 => 'Platform',

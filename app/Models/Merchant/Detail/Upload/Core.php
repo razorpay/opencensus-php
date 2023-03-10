@@ -8,19 +8,19 @@ use Throwable;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Pricing;
 use RZP\Models\Batch\Header;
 use RZP\Models\Batch\Status;
 use RZP\Exception\BaseException;
 use RZP\Exception\LogicException;
+use RZP\Models\Merchant\Document;
+use RZP\Models\Merchant\BusinessDetail;
 use RZP\Models\User\Service as UserService;
 use RZP\Models\Merchant\Core as MerchantCore;
-use RZP\Models\Pricing\Entity as PricingEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
-use RZP\Models\Pricing\Service as PricingService;
 use RZP\Models\Merchant\Detail\Core as MDetailCore;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
 use RZP\Models\Merchant\Detail\Upload\Processors\Factory;
-use RZP\Models\Merchant\BusinessDetail\Service as BDetailService;
 
 class Core extends Base\Core
 {
@@ -59,7 +59,7 @@ class Core extends Base\Core
 
         $this->merchantDetailCore = new MDetailCore();
 
-        $this->businessDetailService = new BDetailService();
+        $this->businessDetailService = new BusinessDetail\Service();
     }
 
     public function uploadMerchant(array $input)
@@ -130,11 +130,7 @@ class Core extends Base\Core
 
                 $feeBearer = $parser->getMerchantFeeBearerType($entry);
 
-                $this->updateMerchantIfApplicable($merchant, $entry, $feeBearer);
-
-                // saving merchant category details from business category and sub-category
-                $this->merchantCore->autoUpdateCategoryDetails($merchant, $entry[Header::MIQ_BUSINESS_CATEGORY],
-                    $entry[Header::MIQ_SUB_CATEGORY], true);
+                $this->setFeeModelAndFeeBearer($merchant, $entry, $feeBearer);
 
                 if(empty($merchant) === true)
                 {
@@ -150,12 +146,10 @@ class Core extends Base\Core
                 $this->merchantDetailCore->saveMerchantDetails($merchantDetailsInput, $merchant);
 
                 // saving dummy files, required in merchant activation.
-                $this->merchantDetailCore->saveDummyActivationFiles($merchant);
+                (new Document\Core)->storeInMerchantDocument($merchant, $merchant, $parser->getDummyActivationFiles());
 
                 // submit dummy KYC details
-                $submitData = [
-                    DetailEntity::SUBMIT   =>   '1'
-                ];
+                $submitData = [DetailEntity::SUBMIT   =>   '1'];
 
                 $response = $this->merchantDetailCore->saveMerchantDetails($submitData, $merchant);
 
@@ -170,6 +164,11 @@ class Core extends Base\Core
 
                     $batchResponse[Header::ERROR_DESCRIPTION] = 'Activation details could not be submitted successfully';
                 }
+
+                // saving merchant category details from business category and sub-category
+                $this->merchantCore->autoUpdateCategoryDetails($merchant, $entry[Header::MIQ_BUSINESS_CATEGORY],
+                    $entry[Header::MIQ_SUB_CATEGORY]);
+
                 // saving website details, required in merchant activation.
                 $websiteDetails = $parser->getWebsiteDetailInput($entry);
 
@@ -188,13 +187,12 @@ class Core extends Base\Core
                 try
                 {
                     // create forward pricing plan and assign to merchant.
-                    $planName = $merchant->getId();
+                    $plan = (new Pricing\Core)->create([ Pricing\Entity::PLAN_NAME => $merchant->getId(),
+                        Pricing\Entity::RULES => $parser->getPricingRulesInput($entry)
+                    ], $merchant->getOrgId()
+                    );
 
-                    $planInput = $parser->getPricingPlanInput($entry, $planName);
-
-                    $data = (new PricingService())->createPlan($planInput);
-
-                    $merchant->setPricingPlan($data[PricingEntity::ID]);
+                    $merchant->setPricingPlan($plan[0][Pricing\Entity::PLAN_ID]);
 
                     $this->repo->saveOrFail($merchant);
 
@@ -273,7 +271,7 @@ class Core extends Base\Core
      * @param string $feeBearer
      * @return void
      */
-    private function updateMerchantIfApplicable(MerchantEntity $merchant, array $input, string $feeBearer)
+    private function setFeeModelAndFeeBearer(MerchantEntity $merchant, array $input, string $feeBearer)
     {
         if(empty($input[Header::MIQ_FEE_MODEL]) === false)
         {

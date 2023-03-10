@@ -111,6 +111,22 @@ return [
         ],
     ],
 
+    'testValidateInputMerchantUploadMIQFailed' => [
+        'request'  => [
+            'url'     => '/admin/batches/validate',
+            'method'  => 'post',
+            'content' => [
+                'type'     => 'merchant_upload_miq',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'processable_count' => 0,
+                'error_count'       => 3,
+            ],
+        ],
+    ],
+
     'testCreateBatchMerchantUploadMIQSuccess' => [
         'request'  => [
             'url'     => '/admin/batches',

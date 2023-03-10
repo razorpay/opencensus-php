@@ -41,6 +41,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     const PAN_NUMBER_REGEX          = '/^[A-Za-z]{5}\d{4}[A-Za-z]{1}$/';
     const PERSONAL_PAN_NUMBER_REGEX = '/^[A-Za-z]{3}[Pp][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
     const COMPANY_PAN_NUMBER_REGEX  = '/^[A-Za-z]{3}[CcHhFfAaTtBbLlJjGg][A-Za-z]{1}\d{4}[A-Za-z]{1}$/';
+    const COMPANY_CIN_REGEX         = '/^([A-Z|a-z]{3}-\d{4}|[F|f]\w{3}-\d{4}|[ulUL]\d{5}[A-Z|a-z]{2}\d{4}[A-Z|a-z]{3}\d{6})$/';
 
     /**
      * Overridden from \Illuminate\Validation\Validator because we have added
@@ -540,6 +541,11 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     protected function validatePersonalPan($attribute, $value)
     {
         return (preg_match(self::PERSONAL_PAN_NUMBER_REGEX, $value) === 1);
+    }
+
+    protected function validateCompanyCin($attribute, $value)
+    {
+        return (preg_match(self::COMPANY_CIN_REGEX, $value) === 1);
     }
 
     /**
