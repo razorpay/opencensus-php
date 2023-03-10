@@ -47,11 +47,11 @@
   {{-- Do not remove below form — needed to run tests --}}
   <form class="card" id="dccform" name="dccform" action="{{$data['data']['request']['url']}}" method="post">
       <input id='currency_request_id' type="hidden" name="currency_request_id" value="{{$data['data']['dcc_info']['currency_request_id']}}">
-      <input id='dcc_currency' type="hidden" name="dcc_currency" value="{{$data['data']['dcc_info']['card_currency']}}">
-      <input id='amount' type="hidden" name="amount" value="{{$data['data']['dcc_info']['all_currencies'][$data['data']['dcc_info']['card_currency']]['amount']}}">
-      <input id='forex_rate' type="hidden" name="forex_rate" value="{{$data['data']['dcc_info']['all_currencies'][$data['data']['dcc_info']['card_currency']]['forex_rate']}}">
-      <input id='fee' type="hidden" name="fee" value="{{$data['data']['dcc_info']['all_currencies'][$data['data']['dcc_info']['card_currency']]['fee']}}">
-      <input id='conversion_percentage' type="hidden" name="conversion_percentage" value="{{$data['data']['dcc_info']['all_currencies'][$data['data']['dcc_info']['card_currency']]['conversion_percentage']}}">
+      <input id='dcc_currency' type="hidden" name="dcc_currency" value="{{$data['data']['dcc_info'][$data['data']['payment_method'].'_currency']}}">
+      <input id='amount' type="hidden" name="amount" value="{{$data['data']['dcc_info']['all_currencies'][$data['data']['dcc_info'][$data['data']['payment_method'].'_currency']]['amount']}}">
+      <input id='forex_rate' type="hidden" name="forex_rate" value="{{$data['data']['dcc_info']['all_currencies'][$data['data']['dcc_info'][$data['data']['payment_method'].'_currency']]['forex_rate']}}">
+      <input id='fee' type="hidden" name="fee" value="{{$data['data']['dcc_info']['all_currencies'][$data['data']['dcc_info'][$data['data']['payment_method'].'_currency']]['fee']}}">
+      <input id='conversion_percentage' type="hidden" name="conversion_percentage" value="{{$data['data']['dcc_info']['all_currencies'][$data['data']['dcc_info'][$data['data']['payment_method'].'_currency']]['conversion_percentage']}}">
   </form>
   <form id="form2" name="form2">
     <input type="hidden" name="type" value="{{$data['data']['type']}}">

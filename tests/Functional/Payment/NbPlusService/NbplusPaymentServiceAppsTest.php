@@ -785,105 +785,11 @@ class NbPlusPaymentServiceAppsTest extends TestCase
         $this->makeRequestAndCatchException(
             function() use ($paymentArray)
             {
-                $this->doAuthCaptureAndRefundPayment($paymentArray);
+                $this->doAuthCaptureAndRefundPaymentViaAjaxRoute($paymentArray);
             },
             BadRequestException::class);
 
     }
-
-    public function testTrustlyPaymentFromRazorpayjsLibrary()
-    {
-        $this->setConfigurationInternationalApp('trustly');
-
-        $flowsRequestData = $this->getDefaultPaymentFlowsRequestData();
-        $flowsRequestData['content']['currency'] = 'INR';
-
-        $response = $this->sendRequest($flowsRequestData);
-        $responseContent = json_decode($response->getContent(), true);
-
-        $app_currency = $responseContent['app_currency'];
-        $currencyRequestId = $responseContent['currency_request_id'];
-        $customerSelectedCurrency = 'EUR';
-
-        $this->assertEquals("EUR", $app_currency);
-        $this->assertNotNull($responseContent['all_currencies']);
-        $this->assertNotNull($currencyRequestId);
-
-        $convertedCurrency = $responseContent['all_currencies'][$customerSelectedCurrency]['amount'];
-
-        $paymentArray = $this->payment;
-        $paymentArray['_']['library'] = 'razorpayjs';
-
-        $paymentArray['dcc_currency'] = $customerSelectedCurrency;
-        $paymentArray['currency_request_id'] = $currencyRequestId;
-
-
-        $this->mockServerRequestFunction(function (&$content, $action = null)
-        {
-            $assertContent = $content;
-
-            unset($assertContent['input']['gateway_config']);
-
-            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
-
-            switch ($action)
-            {
-                case NbPlusPaymentService\Action::AUTHORIZE:
-                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
-                    break;
-                case NbPlusPaymentService\Action::CALLBACK:
-                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
-                    break;
-            }
-        });
-
-        $this->makeRequestAndCatchException(
-            function() use ($paymentArray)
-            {
-                $this->doAuthPayment($paymentArray);
-            },
-            BadRequestException::class,"Payment method not supported on this integration");
-    }
-
-    public function testTrustlyPaymentFromS2SLibrary()
-    {
-        $this->setConfigurationInternationalApp('trustly');
-        $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
-
-        $paymentArray = $this->payment;
-
-        //Removed all dcc and billing_address detail from payment request for testing Library Validation Check.
-        unset($paymentArray['billing_address']);
-
-        $paymentArray['_']['library'] = 's2s';
-
-        $this->mockServerRequestFunction(function (&$content, $action = null)
-        {
-            $assertContent = $content;
-
-            unset($assertContent['input']['gateway_config']);
-
-            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
-
-            switch ($action)
-            {
-                case NbPlusPaymentService\Action::AUTHORIZE:
-                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
-                    break;
-                case NbPlusPaymentService\Action::CALLBACK:
-                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
-                    break;
-            }
-        });
-
-        $this->makeRequestAndCatchException(
-            function() use ($paymentArray)
-            {
-                $this->doS2SPrivateAuthAndCapturePayment($paymentArray);
-            },
-            BadRequestException::class,"Payment method not supported on this integration");
-    }
-
 
     public function testVerify()
     {
@@ -1602,5 +1508,190 @@ class NbPlusPaymentServiceAppsTest extends TestCase
         $this->assertEquals(Payment\Status::AUTHORIZED, $payment[Payment\Entity::STATUS]);
 
         $this->assertEquals($this->terminal->getId(), $payment[Payment\Entity::TERMINAL_ID]);
+    }
+
+    public function testPaymentCreateForAppWithDCCS2SJson()
+    {
+
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
+        $this->setConfigurationInternationalApp();
+        $this->redirectToDCCInfo = false;
+        $this->redirectToUpdateAndAuthorize = false;
+
+        $paymentArray = $this->payment;
+        unset($paymentArray['_']);
+        unset($paymentArray['billing_address']);
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $assertContent = $content;
+
+            unset($assertContent['input']['gateway_config']);
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
+
+            switch ($action)
+            {
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    break;
+            }
+        });
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($paymentArray);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+
+        $this->assertArrayHasKey('next', $responseContent);
+
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToDCCInfoUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToDCCInfo($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertTrue($this->redirectToDCCInfo);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $this->ba->privateAuth();
+
+        $paymentEntity = $this->getEntityById('payment', $content['razorpay_payment_id'],true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($paymentEntity['id'], $content['razorpay_payment_id']);
+        $this->assertEquals($paymentEntity['cps_route'],3);
+        $this->assertEquals('EUR', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+        $dccMarkupAmount = (int) ceil(($paymentArray['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+        $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
+    }
+
+    public function testPaymentCreateForAppWithDCConMCCS2SJson()
+    {
+
+        $this->fixtures->merchant->enableInternational();
+        $this->fixtures->merchant->addFeatures(['s2s','s2s_json']);
+        $this->setConfigurationInternationalApp();
+        $this->redirectToDCCInfo = false;
+        $this->redirectToUpdateAndAuthorize = false;
+
+        $paymentArray = $this->payment;
+        $paymentEntity['currency'] = 'USD';
+        unset($paymentArray['_']);
+        unset($paymentArray['billing_address']);
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $assertContent = $content;
+
+            unset($assertContent['input']['gateway_config']);
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
+
+            switch ($action)
+            {
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    break;
+            }
+        });
+
+        $responseContent = $this->doS2SPrivateAuthJsonPayment($paymentArray);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+
+        $this->assertArrayHasKey('next', $responseContent);
+
+        $this->assertArrayHasKey('action', $responseContent['next'][0]);
+
+        $this->assertArrayHasKey('url', $responseContent['next'][0]);
+
+        $redirectContent = $responseContent['next'][0];
+
+        $this->assertTrue($this->isRedirectToDCCInfoUrl($redirectContent['url']));
+
+        $response = $this->makeRedirectToDCCInfo($redirectContent['url']);
+
+        $content = $this->getJsonContentFromResponse($response, null);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $content);
+
+        $this->assertTrue($this->redirectToDCCInfo);
+        $this->assertTrue($this->redirectToUpdateAndAuthorize);
+
+        $this->ba->privateAuth();
+
+        $paymentEntity = $this->getEntityById('payment', $content['razorpay_payment_id'],true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($paymentEntity['id'], $content['razorpay_payment_id']);
+        $this->assertEquals($paymentEntity['cps_route'],3);
+        $this->assertEquals('EUR', $paymentMeta['gateway_currency']);
+        $this->assertEquals(true, $paymentEntity['dcc']);
+        $this->assertEquals($paymentMeta['forex_rate'], $paymentEntity['forex_rate']);
+        $this->assertEquals($paymentMeta['dcc_offered'], $paymentEntity['dcc_offered']);
+        $this->assertEquals($paymentMeta['dcc_mark_up_percent'], $paymentEntity['dcc_mark_up_percent']);
+        $dccMarkupAmount = (int) ceil(($paymentArray['amount'] * $paymentMeta['forex_rate'] * $paymentMeta['dcc_mark_up_percent'])/100) ;
+        $this->assertEquals($dccMarkupAmount, $paymentEntity['dcc_markup_amount']);
+    }
+
+    public function testTrustlyPaymentFromRazorpayjsLibrary()
+    {
+        $this->setConfigurationInternationalApp('trustly');
+
+        $paymentArray = $this->payment;
+        $paymentArray['_']['library'] = \RZP\Models\Payment\Analytics\Metadata::RAZORPAYJS;
+
+        $this->mockServerRequestFunction(function (&$content, $action = null)
+        {
+            $assertContent = $content;
+
+            unset($assertContent['input']['gateway_config']);
+
+            $this->assertEquals($this->terminal->getGateway(), $content[NbPlusPaymentService\Request::GATEWAY]);
+
+            switch ($action)
+            {
+                case NbPlusPaymentService\Action::AUTHORIZE:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::AUTHORIZE_ACTION_INPUT);
+                    break;
+                case NbPlusPaymentService\Action::CALLBACK:
+                    $this->assertArrayKeysExist($assertContent[NbPlusPaymentService\Request::INPUT], self::CALLBACK_ACTION_INPUT);
+                    break;
+            }
+        });
+        $responseContent = $this->doAuthPaymentViaAjaxRoute($paymentArray);
+
+        $this->assertArrayHasKey('razorpay_payment_id', $responseContent);
+
+        $this->ba->privateAuth();
+
+        $paymentEntity = $this->getEntityById('payment', $responseContent['razorpay_payment_id'],true);
+        $paymentMeta = $this->getLastEntity('payment_meta', true);
+
+        $this->assertEquals('authorized', $paymentEntity['status']);
+        $this->assertEquals($paymentEntity['id'], $responseContent['razorpay_payment_id']);
+        $this->assertEquals($paymentEntity['cps_route'],3);
+        $this->assertEquals('EUR', $paymentMeta['gateway_currency']);
     }
 }

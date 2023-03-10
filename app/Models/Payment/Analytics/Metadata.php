@@ -190,7 +190,12 @@ class Metadata
 
     const SUPPORTED_LIBRARIES_FOR_INTERNATIONAL_APPS = [
         self::CHECKOUTJS,
-        self::HOSTED
+        self::HOSTED,
+        self::S2S,
+        self::CUSTOM,
+        self::DIRECT,
+        self::RAZORPAYJS,
+        self::EMBEDDED,
     ];
 
     const SUPPORTED_LIBRARIES_FOR_THREE_DECIMAL_CURRENCIES = [

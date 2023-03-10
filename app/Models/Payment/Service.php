@@ -16,6 +16,7 @@ use RZP\Base\RuntimeManager;
 
 use RZP\Jobs;
 use RZP\Diag\EventCode;
+use RZP\Models\Merchant\Checkout;
 use RZP\Models\Payment\Processor\CardlessEmi;
 use RZP\Models\Risk;
 use RZP\Exception;
@@ -2385,13 +2386,21 @@ class Service extends Base\Service
             );
         }
 
-        $iin = $payment->card->iinRelation;
+        $iin = $payment->card->iinRelation ?? null;
+
+        if($payment->getMethod() === Method::APP) {
+            $payment['provider'] = $payment->getWallet();
+        }
 
         $this->updateDccDataIfApplicable($payment, $iin, $merchant,$dccInfo);
+
+        $this->updateCurrencyWrapperForAppsIfApplicable($payment,$merchant,$dccInfo);
 
         $route = $this->app['api.route'];
 
         $data['type'] = 'dcc';
+
+        $this->updateCountriesForDcc($payment,$merchant,$data);
 
         $data['payment_id'] = $payment->getPublicId();
         $data['amount'] = number_format(($payment->getAmount() / 100), 2);
@@ -2412,10 +2421,14 @@ class Service extends Base\Service
         $data['merchant'] = $merchant->getBillingLabel();
 
         $data['dcc_info'] = $dccInfo;
+        $data['payment_method'] = $payment->getMethod();
+
 
         $library = $this->getLibraryFromPayment($payment);
         //Check if Address is required for DCC transaction
         $data['avs_required'] = $this->isAddressRequired($library, $iin, $merchant);
+
+        $data['address_name_required'] = $this->isAddressWithNameRequired($library,$payment,$merchant);
 
         $data['show_mor_tnc'] = $merchant->isShowMorTncEnabled();
 
@@ -2457,6 +2470,7 @@ class Service extends Base\Service
         $data['merchant_id'] = $merchant->getId();
         $data['merchant'] = $merchant->getBillingLabel();
         $data['show_mor_tnc'] = $merchant->isShowMorTncEnabled();
+        $data["countries"] = $this->getCountryCodes($payment);
 
         if ($merchant->isOpgspImportEnabled()){
             $data['address_name_required'] = true;
@@ -2517,7 +2531,7 @@ class Service extends Base\Service
 
         $data['avs_required'] = $this->isAddressRequired($library, $iinEntity, $merchant);
 
-        $data['address_name_required'] = $this->isAddressWithNameRequired($input, $merchant);
+        $data['address_name_required'] = $this->isAddressWithNameRequired($library,$input, $merchant);
 
         $this->updateCurrencyWrapperIfApplicable($input, $merchant, $data);
 
@@ -2665,6 +2679,40 @@ class Service extends Base\Service
 
             $data = array_merge($data, $currencyInfo);
         }
+    }
+
+    private function updateCountriesForDcc($payment, $merchant, & $data) {
+
+        if($merchant->isDCCEnabledInternationalMerchant() === false) {
+            return;
+        }
+        $data["countries"] = $this->getCountryCodes($payment);
+    }
+
+    /**
+     * This method returns the list of countries which are applicable for the payment method
+     * by default it will return us/gb/ca for backward compatibility
+     * @param $payment
+     * @return array
+     */
+    private function getCountryCodes($payment): array {
+
+        if(isset($payment) === false) {
+            return [];
+        }
+
+        //for alternate payment methods
+        if(Gateway::isDCCRequiredApp($payment->getWallet()) === true) {
+            $countryCodes = (new Checkout)->getCountryCodesForAlternatePaymentMethods($payment->getWallet());
+        } else {
+            // default we are returning us,gb and ca
+            $countryCodes = [Constants\Country::US,Constants\Country::GB, Constants\Country::CA];
+        }
+        $countries = [];
+        foreach ($countryCodes as $code) {
+            $countries = array_merge($countries, [Constants\Country::getCountryDetailsFromCountryCode($code)]);
+        }
+        return $countries;
     }
 
     public function isthreeDecimalCurrencySupportedForMerchant($payment, $merchant)
@@ -5403,9 +5451,10 @@ class Service extends Base\Service
      * @param Merchant\Entity $merchant
      * @return bool
      */
-    public function isAddressWithNameRequired($input, Merchant\Entity $merchant): bool
+    public function isAddressWithNameRequired($library, $input, Merchant\Entity $merchant): bool
     {
-        if (($merchant !== null) and ($merchant->isInternational() === true) and
+        if ($this->isLibrarySupportedForAddressCollection($library) and
+            ($merchant !== null) and ($merchant->isInternational() === true) and
             ($merchant->isAddressWithNameRequiredEnabled() === true))
         {
             if ((isset($input['provider']) === true) and

@@ -104,6 +104,7 @@ use RZP\Models\Invoice\Service as InvoiceService;
 use RZP\Models\Invoice\Entity as InvoiceEntity;
 use RZP\Models\Invoice\Constants as InvoiceConstants;
 use RZP\Models\Invoice\Type as InvoiceType;
+use RZP\Models\Payment\Processor\App as PaymentApp;
 
 trait Authorize
 {
@@ -4668,6 +4669,17 @@ trait Authorize
                 );
             }
         }
+    }
+
+    protected function preProcessAppCurrencyWrapperForRedirectFlow(array $input, Payment\Entity $payment) {
+        if($payment->getMethod()!==Method::APP or $payment->merchant->isDCCEnabledInternationalMerchant() === false) {
+            return;
+        }
+        $input['method'] = $payment->getMethod();
+        $input['provider'] = $payment->getWallet();
+        $input['currency'] = $payment->getCurrency();
+
+        $this->preProcessAppCurrencyWrapper($input,$payment);
     }
 
     protected function preProcessAppCurrencyWrapper(array $input, Payment\Entity $payment)
@@ -10779,6 +10791,11 @@ trait Authorize
             return false;
         }
 
+        if($payment->isMethodInternationalApp() === true and $payment->merchant->isDCCEnabledInternationalMerchant())
+        {
+            return true;
+        }
+
         if (($payment->isCard() === false) or ($payment->merchant->isDCCEnabledInternationalMerchant() === false))
         {
             return false;
@@ -10816,6 +10833,16 @@ trait Authorize
         if(($payment->merchant->isOpgspImportEnabled()) and
             (in_array($library, Analytics\Metadata::OPGSP_SUPPORTED_LIBRARIES) === true))
         {
+            return true;
+        }
+
+        if($payment->isMethodInternationalApp() === true and
+            (in_array($library,Analytics\Metadata::SUPPORTED_LIBRARIES_FOR_INTERNATIONAL_APPS) === true))
+        {
+            if($library === Analytics\Metadata::CHECKOUTJS or $library === Analytics\Metadata::HOSTED)
+            {
+                return false;
+            }
             return true;
         }
 
@@ -11264,6 +11291,7 @@ trait Authorize
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CONFLICT_ALREADY_EXISTS);
             }
             $this->preProcessDCCInputs($input, $payment);
+            $this->preProcessAppCurrencyWrapperForRedirectFlow($input,$payment);
             // This will force the terminal selection to happen for the second time
             // this is required if the DCC is applied in update and redirect
             // Usecase if merchant requests in INR, the user decides to pay in USD
@@ -12140,7 +12168,7 @@ trait Authorize
             }
 
             if (in_array($payment->getWallet(), Payment\Gateway::ADDRESS_REQUIRED_APPS) === true) {
-                $addressRequiredWithName = (new Payment\Service)->isAddressWithNameRequired($input, $payment->merchant);
+                $addressRequiredWithName = (new Payment\Service)->isAddressWithNameRequired($library,$input, $payment->merchant);
             }
         }
 

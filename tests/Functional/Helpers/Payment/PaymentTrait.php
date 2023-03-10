@@ -136,6 +136,38 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function doAuthAndCapturePaymentViaAjaxRoute($payment = null, $amount = 0, $currency = 'INR', $discountedPrice = 0, $rearch = false)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $paymentAuth =  $this->doAuthPaymentViaAjaxRoute($payment);
+
+        if($discountedPrice != 0)
+        {
+            return $this->capturePayment(
+                $paymentAuth['razorpay_payment_id'],
+                $payment['amount'], $currency, $discountedPrice);
+        }
+
+        if ($amount !== 0)
+        {
+            $payment = $this->capturePayment(
+                $paymentAuth['razorpay_payment_id'],
+                $amount, $currency, $payment['amount']);
+        }
+        else
+        {
+            $payment = $this->capturePayment(
+                $paymentAuth['razorpay_payment_id'],
+                $payment['amount'], $currency);
+        }
+
+        return $payment;
+    }
+
     protected function doAuthCaptureAndRefundPayment($payment = null, $refundAmount = null)
     {
         if ($payment === null)
@@ -144,6 +176,24 @@ trait PaymentTrait
         }
 
         $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->gateway = $payment['gateway'];
+
+        $refund = $this->refundPayment($payment['id'], $refundAmount);
+
+        return $refund;
+    }
+
+    protected function doAuthCaptureAndRefundPaymentViaAjaxRoute($payment = null, $refundAmount = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $payment = $this->doAuthAndCapturePaymentViaAjaxRoute($payment);
 
         $payment = $this->getLastEntity('payment', true);
 

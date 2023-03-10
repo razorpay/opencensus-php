@@ -99,6 +99,11 @@ class Checkout
             Country::LT,Country::NL,Country::NO,Country::PL,
             Country::SK,Country::ES,Country::SE,Country::GB
         ],
+        Payment\Gateway::SOFORT     => [
+            Country::AT, Country::BE, Country::DE, Country::IT,
+            Country::NL, Country::PL, Country::ES
+        ],
+        Payment\Gateway::GIROPAY    => [Country::DE],
     );
 
     /**
@@ -2349,5 +2354,9 @@ class Checkout
         {
             $data['experiments']['1cc_coupons_with_se_exp'] = null;
         }
+    }
+
+    public function getCountryCodesForAlternatePaymentMethods(string $paymentInstrument) {
+        return $this->alternatePaymentInstrumentCountryMapping[$paymentInstrument];
     }
 }

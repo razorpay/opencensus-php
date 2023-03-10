@@ -648,4 +648,14 @@ class Country
 
         return $data;
     }
+
+    public static function getCountryDetailsFromCountryCode($country)
+    {
+            $countryDetails = array(
+                self::COUNTRYNAME => self::getCountryNameByCode($country),
+                self::COUNTRYALPHA2CODE => $country,
+                self::COUNTRYALPHA3CODE => self::getCountryAlpha3Code($country),
+            );
+        return $countryDetails;
+    }
 }

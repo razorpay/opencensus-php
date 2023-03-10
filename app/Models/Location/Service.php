@@ -11,7 +11,7 @@ class Service extends Base\Service
     public function getCountryDetails(): array
     {
         $data = [];
-        
+
         $data = Country::getcountryDetails();
 
         return $data;
@@ -20,7 +20,7 @@ class Service extends Base\Service
     public function getstateDetailsFromCountryCode(string $id): array
     {
         $data = [];
-        
+
         $data = InternationalStates::getStatesByCode($id);
 
         return $data;
