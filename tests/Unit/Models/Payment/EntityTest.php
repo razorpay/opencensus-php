@@ -4,6 +4,7 @@ namespace RZP\Tests\Unit\Models\Payment;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Method;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\PublicCollection;
 
@@ -69,6 +70,32 @@ class EntityTest extends TestCase
             'woocommerce_order_id' => 'wc_123'
         ]);
         $this->assertEquals('wc_123', $payment->getOrderId());
+    }
+
+    public function testGetMethodWithDetailFpx()
+    {
+        $payment = $this->payment;
+        $payment -> setMethod(Method::FPX);
+        $payment -> setBank(Payment\Processor\Fpx::ARBK);
+        $methodWithDetail = $payment->getMethodWithDetail();
+        $this->assertEquals('Financial Process Exchange', $methodWithDetail[0]);
+        $this->assertEquals('AmBank Malaysia Berhad', $methodWithDetail[1]);
+    }
+
+    public function testGetBankNameFpx()
+    {
+        $payment = $this->payment;
+        $payment -> setMethod(Method::FPX);
+        $payment -> setBank(Payment\Processor\Fpx::ARBK);
+        $this->assertEquals('AmBank Malaysia Berhad', $payment->getBankName());
+    }
+
+    public function testGetBankNameNetBanking()
+    {
+        $payment = $this->payment;
+        $payment -> setMethod(Method::NETBANKING);
+        $payment -> setBank(Payment\Processor\Netbanking::HDFC_C);
+        $this->assertEquals('HDFC Bank - Corporate Banking', $payment->getBankName());
     }
 
     public function testToArrayHosted()

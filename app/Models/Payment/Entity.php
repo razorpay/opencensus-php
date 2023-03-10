@@ -58,6 +58,7 @@ use RZP\Models\Base\Traits\ExternalEntity;
 use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Models\Payment\Processor\Constants;
 use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Payment\Processor\Fpx;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payment\Processor\App as AppMethod;
 use RZP\Models\CardMandate\CardMandateNotification;
@@ -3161,6 +3162,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         if ($bankId !== null)
         {
+            $method = $this->getMethod();
+
+            if ($method == Method::FPX)
+            {
+                return Fpx::getName($bankId);
+            }
             return Netbanking::getName($bankId);
         }
     }
@@ -3493,6 +3500,8 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             case Method::EMI:
                 return [$method, $this->getFormattedCard()];
             case Method::NETBANKING:
+                return [$method, $this->getBankName()];
+            case Method::FPX:
                 return [$method, $this->getBankName()];
             case Method::WALLET:
                 return [$method, Processor\Wallet::getName($this->getWallet())];
