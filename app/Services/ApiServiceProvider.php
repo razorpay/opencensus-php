@@ -515,7 +515,7 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
             if ($dcsServiceMock === true)
             {
-                return new Mock\DcsServiceClient();
+                return new Mock\DcsServiceClient($app);
             }
 
             return new DcsService($app);

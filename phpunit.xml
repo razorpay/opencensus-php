@@ -55,6 +55,7 @@
             <directory>./tests/Functional/OneClickCheckout/</directory>
             <directory>./tests/Functional/PayoutOutbox/</directory>
             <directory>./tests/Functional/Location/</directory>
+            <directory>./tests/Unit/Services/Dcs</directory>
             <file>./tests/Functional/Merchant/PartnerTest.php</file>
         </testsuite>
         <testsuite name="Application-1 Test Suite">
@@ -255,6 +256,7 @@
             <directory>./tests/Unit/Models/Merchant/BusinessDetail/</directory>
             <directory>./tests/Unit/Models/Merchant/Bvs/</directory>
             <exclude>./tests/Unit/AdminFetch</exclude>
+            <exclude>./tests/Unit/Services/Dcs</exclude>
             <exclude>./tests/Unit/CapitalCollections</exclude>
             <exclude>./tests/Unit/CircuitBreaker</exclude>
             <exclude>./tests/Unit/EE</exclude>

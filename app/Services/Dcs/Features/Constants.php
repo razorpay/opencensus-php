@@ -191,68 +191,6 @@ class Constants
     ];
 
     /**
-     * Stores the mapping of the dcs feature name to their corresponding api feature names
-     * This is required for migrating features.
-     */
-    public static $dcsFeatureNameToAPIFeatureName = [
-        self::RefundEnabled => self::RefundEnabled,
-        self::DisableAutoRefund => self::DisableAutoRefund,
-        self::EligibilityEnabled => self::EligibilityEnabled,
-        self::ShowEmailOnCheckout => self::ShowEmailOnCheckout,
-        self::EmailOptionalOnCheckout => self::EmailOptionalOnCheckout,
-        self::UpiNumberDisabled => APIFeaturesConstants::DISABLE_UPI_NUM_CHECKOUT,
-        self::UpiNumberInUpiSectionDisabled => APIFeaturesConstants::DISABLE_UPI_NUM_ON_L1,
-        self::UpiNumberInPreferredSectionDisabled => APIFeaturesConstants::DISABLE_UPI_NUM_ON_L0,
-        self::AffordabilityWidgetSet => self::AffordabilityWidgetSet,
-        self::ReceiptUniqueEnabled => APIFeaturesConstants::ORDER_RECEIPT_UNIQUE,
-        self::CartAmountCheckEnabled => APIFeaturesConstants::CART_API_AMOUNT_CHECK,
-        self::AllowPaymentsOnPaidOrder => APIFeaturesConstants::DISABLE_AMOUNT_CHECK,
-        self::ExcessOrderAmountEnabled => APIFeaturesConstants::EXCESS_ORDER_AMOUNT,
-        self::DcsPaymentMailsDisabled => APIFeaturesConstants::PAYMENT_MAILS_DISABLED,
-        self::FreeCreditUnregDisabled => APIFeaturesConstants::DISABLE_FREE_CREDIT_UNREG,
-        self::AsyncBalanceUpdateEnabled => APIFeaturesConstants::ASYNC_BALANCE_UPDATE,
-        self::AsyncTransactionUpdateEnabled => APIFeaturesConstants::ASYNC_TXN_FILL_DETAILS,
-        self::AutoRefundsDisabled => APIFeaturesConstants::DISABLE_AUTO_REFUNDS,
-        self::AutoCommissionInvoiceDisabled => APIFeaturesConstants::AUTO_COMM_INV_DISABLED,
-        self::EnableMerchantExpiryForPL => APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PL,
-        self::EnableMerchantExpiryForPP => APIFeaturesConstants::ENABLE_MERCHANT_EXPIRY_PP,
-        self::EnableMerchantCreateOwnTemplate => APIFeaturesConstants::ENABLE_CREATE_OWN_TEMPLATE,
-        self::EnableCustomerAmount => APIFeaturesConstants::ENABLE_CUSTOMER_AMOUNT,
-        self::EnableRoutePartnerships => APIFeaturesConstants::ROUTE_PARTNERSHIPS,
-        self::AdditionalFieldsHdfcOnboarding => APIFeaturesConstants::ADDITIONAL_ONBOARDING,
-        self::ImportSettlement => self::ImportSettlement,
-        self::SavedCardsDisabled => APIFeaturesConstants::NOFLASHCHECKOUT,
-        self::PaymentRetryDisabled => APIFeaturesConstants::CHECKOUT_DISABLE_RETRY,
-        self::InternationalizationDisabled => APIFeaturesConstants::CHECKOUT_DISABLE_I18N,
-        self::GooglePayEnabled => APIFeaturesConstants::GOOGLE_PAY,
-        self::ConfigEnabled => APIFeaturesConstants::PAYMENT_CONFIG_ENABLED,
-        self::RewardsOnMxDashboardEnabled => APIFeaturesConstants::REWARD_MERCHANT_DASHBOARD,
-        self::OrgLogoEnabled => APIFeaturesConstants::ORG_CUSTOM_CHECKOUT_LOGO,
-        self::CollectCustomerAddressEnabled => APIFeaturesConstants::CUSTOMER_ADDRESS,
-        self::TruecallerLoginDisabled => APIFeaturesConstants::DISABLE_TRUECALLER_LOGIN,
-        self::TruecallerLoginOnContactScreenDisabled => APIFeaturesConstants::DISABLE_TRUECALLER_LOGIN_CONTACT_SCREEN,
-        self::TruecallerLoginOnHomeScreenDisabled => APIFeaturesConstants::DISABLE_TRUECALLER_LOGIN_HOME_SCREEN,
-        self::TruecallerLoginOnMobileWebDisabled => APIFeaturesConstants::DISABLE_TRUECALLER_LOGIN_MWEB,
-        self::TruecallerLoginOnSdkDisabled => APIFeaturesConstants::DISABLE_TRUECALLER_LOGIN_SDK,
-        self::TruecallerLoginOnAddCardScreenDisabled => APIFeaturesConstants::DISABLE_TRUECALLER_LOGIN_ADD_NEW_CARD_SCREEN,
-        self::TruecallerLoginOnSavedCardsScreenDisabled => APIFeaturesConstants::DISABLE_TRUECALLER_LOGIN_SAVED_CARDS_SCREEN,
-        self::SubMerchantOnboardDocUploadingDisabled => APIFeaturesConstants::SUBM_NO_DOC_ONBOARDING,
-        self::KycHandledByPartner => APIFeaturesConstants::KYC_HANDLED_BY_PARTNER,
-        self::SubMerchantOnboardingCommunicationDisabled => APIFeaturesConstants::SKIP_SUBM_ONBOARDING_COMM,
-        self::RazorpayCommunicationToSubMerchantDisabled => APIFeaturesConstants::NO_COMM_WITH_SUBMERCHANTS,
-        self::AggregatorOAuthClientDisabled => APIFeaturesConstants::AGGREGATOR_OAUTH_CLIENT,
-        self::OAuthCommunicationDisabled => APIFeaturesConstants::SKIP_OAUTH_NOTIFICATION,
-        self::SubMerchantQRImageContentEnabled => APIFeaturesConstants::SUBM_QR_IMAGE_CONTENT,
-        self::SubMerchantOnBoardingV2Enabled  => APIFeaturesConstants::SUBMERCHANT_ONBOARDING_V2,
-        self::SubMerchantOnBoardingEnabled => APIFeaturesConstants::SUBMERCHANT_ONBOARDING,
-        self::WebsiteInternationalDisabled => APIFeaturesConstants::SKIP_WEBSITE_INTERNAT,
-        self::AdminLeadPartnerInviteEnabled => APIFeaturesConstants::ADMIN_LEAD_PARTNER,
-        self::SubmerchantInstantActivationViaV2ApiEnabled => APIFeaturesConstants::INSTANT_ACTIVATION_V2_API,
-        self::MerchantActivationByPartnerEnabled => APIFeaturesConstants::PARTNER_ACTIVATE_MERCHANT,
-        self::OverridingSubmerchantConfigEnabled => APIFeaturesConstants::OVERRIDE_SUB_CONFIG,
-    ];
-
-    /**
      * Stores the mapping of the Merchant features to their corresponding handlers
      */
     public static $dcsNewMerchantFeatures = [
@@ -277,27 +215,39 @@ class Constants
         self::AdditionalFieldsHdfcOnboarding => 'direct',
     ];
 
-    public static function dcsReadEnabledFeaturesByEntityType(string $entityType = null, bool $withDcsNames = false): array
+    public static function dcsReadEnabledFeaturesByEntityType(string $entityType = null,
+                                                              bool $withDcsNames = false): array
     {
 
         $adminService = new AdminService;
-
+        $dcsReadEnabledOrg = [];
+        $dcsReadEnabledMerchant = [];
         $dcsReadEnabledFeatures = $adminService->getConfigKey(['key' => ConfigKey::DCS_READ_WHITELISTED_FEATURES]);
+        if (key_exists(Type::ORG, $dcsReadEnabledFeatures) === true)
+        {
+            $dcsReadEnabledOrg = $dcsReadEnabledFeatures[Type::ORG];
+        }
+
+        if (key_exists(Type::MERCHANT, $dcsReadEnabledFeatures) === true)
+        {
+            $dcsReadEnabledMerchant = $dcsReadEnabledFeatures[Type::MERCHANT];
+        }
+
         if ($dcsReadEnabledFeatures === null)
         {
             return [];
         }
-        if (($entityType === Type::PARTNER) || ($entityType === Type::MERCHANT) )
+        if (($entityType === Type::PARTNER) || ($entityType === Type::MERCHANT))
         {
-            $featureNames = $dcsReadEnabledFeatures[Type::MERCHANT]?:[];
+            $featureNames = $dcsReadEnabledMerchant;
         }
         elseif ($entityType === Type::ORG)
         {
-            $featureNames =  $dcsReadEnabledFeatures[Type::ORG]?:[];
+            $featureNames = $dcsReadEnabledOrg;
         }
         else
         {
-            $featureNames = array_merge($dcsReadEnabledFeatures[Type::ORG]?:[], $dcsReadEnabledFeatures[Type::MERCHANT]?:[]);
+            $featureNames = array_merge($dcsReadEnabledMerchant, $dcsReadEnabledOrg);
         }
 
         if ($withDcsNames === true)
@@ -308,20 +258,21 @@ class Constants
         return  $featureNames;
     }
 
-    public static function getAPIFeatureNamesFromDcsNames(array $featureNames) :array
+    public static function getAPIFeatureNamesFromDcsNames(array $featureNames): array
     {
         $apiFeatureNames = [];
         foreach ($featureNames as $featureName => $value)
         {
-            if (key_exists($featureName, self::$dcsFeatureNameToAPIFeatureName) === true)
+            $dcsFeatureNameToAPIFeatureName = array_flip(self::$apiFeatureNameToDCSFeatureName);
+            if (key_exists($featureName, $dcsFeatureNameToAPIFeatureName) === true)
             {
-                $apiFeatureNames[self::$dcsFeatureNameToAPIFeatureName[$featureName]] = $value;
+                $apiFeatureNames[$dcsFeatureNameToAPIFeatureName[$featureName]] = $value;
             }
         }
         return $apiFeatureNames;
     }
 
-    public static function getDcsFeatureNamesFromApiNames($featureNames) :array
+    public static function getDcsFeatureNamesFromApiNames($featureNames): array
     {
         $dcsFeatureNames = [];
         foreach ($featureNames as $featureName => $value)
@@ -334,20 +285,11 @@ class Constants
         return $dcsFeatureNames;
     }
 
-    public static function isShadowFeature($variant)
-    {
-        if (($variant === 'on_client_shadow')  || ($variant === 'on_direct_dcs_shadow'))
-        {
-            return true;
-        }
-         return false;
-    }
-
     public static function dcsFeatureNameFromAPIName($name): string
     {
         if (key_exists($name, self::$apiFeatureNameToDCSFeatureName) === false) {
-            $ex = new Exception\ServerErrorException('Dcs feature name missing in
-            $apiFeatureNameToDCSFeatureName please check',
+            $ex = new Exception\ServerErrorException(
+                'Dcs feature name missing in $apiFeatureNameToDCSFeatureName please check',
                 ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE,
                 "missing dcs feature name in the map");
 
@@ -359,19 +301,29 @@ class Constants
 
     public static function apiFeatureNameFromDcsName($name): string
     {
-        if (key_exists($name, self::$dcsFeatureNameToAPIFeatureName) === false) {
-            $ex = new Exception\ServerErrorException('Dcs feature name missing in
-            $dcsFeatureNameToAPIFeatureName please check with dcs team',
+        $dcsFeatureNameToAPIFeatureName = array_flip(self::$apiFeatureNameToDCSFeatureName);
+        if (key_exists($name, $dcsFeatureNameToAPIFeatureName) === false) {
+            $ex = new Exception\ServerErrorException(
+                'Dcs feature name missing in $dcsFeatureNameToAPIFeatureName please check with dcs team',
                 ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE,
                 "missing dcs feature name in the map");
 
             throw $ex;
         }
 
-        return self::$dcsFeatureNameToAPIFeatureName[$name];
+        return $dcsFeatureNameToAPIFeatureName[$name];
     }
 
-    public static function isReverseShadowFeature($variant)
+    public static function isShadowFeature($variant): bool
+    {
+        if (($variant === 'on_client_shadow')  || ($variant === 'on_direct_dcs_shadow'))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public static function isReverseShadowFeature($variant): bool
     {
         if (($variant === 'on_client_rs') || ($variant === 'on_direct_dcs_rs'))
         {
@@ -380,12 +332,7 @@ class Constants
         return false;
     }
 
-    public static function isDcsNewFeature($featureName, $isDcsName = false)
-    {
-        return (key_exists($featureName, self::dcsReadEnabledFeaturesByEntityType("", $isDcsName)) === true);
-    }
-
-    public static function isNewFeature($variant)
+    public static function isNewFeature($variant): bool
     {
         if (($variant === 'on_client_new') || ($variant === 'on_direct_dcs_new'))
         {
@@ -393,4 +340,10 @@ class Constants
         }
         return false;
     }
+
+    public static function isDcsReadEnabledFeature($featureName, $isDcsName = false): bool
+    {
+        return (key_exists($featureName, self::dcsReadEnabledFeaturesByEntityType("", $isDcsName)) === true);
+    }
+
 }

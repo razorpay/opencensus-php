@@ -180,7 +180,7 @@ class Service extends Base
      * @param string $entityId
      * @param string $apiFeatureName
      * @param string $mode
-     * @return array
+     * @return Entity
      * @throws ApiException
      * @throws Exception\BadRequestException
      * @throws Exception\ServerErrorException
@@ -191,7 +191,7 @@ class Service extends Base
 
         $key = DcsConstants::$featureToDCSKeyMapping[$featureName];
         $data = DataFormatter::toKeyMapWithOutId($key);
-        $res = [];
+        $res = null;
 
         $this->trace->info(TraceCode::DCS_FETCH_REQUEST_RECEIVED, [
             'feature_name' => $featureName,
@@ -274,28 +274,27 @@ class Service extends Base
             return $res;
         }
         $kvs =  $response->getKvs() == null ? []: $response->getKvs();
+
         foreach ($kvs as $kv)
         {
             $kvkey = $kv->getKey();
-
             $keyFeatures = DataFormatter::unMarshal($kv->getValue(), DataFormatter::convertDCSKeyToClassName($kvkey));
+            foreach ($data[DataFormatter::convertDCSKeyToStringWithOutEntityId($kvkey)] as $featureName)
+            {
+                if ($keyFeatures[$featureName] === true)
+                {
+                    $entity_data = [
+                        Entity::NAME => DcsConstants::apiFeatureNameFromDcsName($featureName),
+                        Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()),
+                        Entity::ENTITY_ID => $entityId,
+                        ];
 
-           foreach ($data[DataFormatter::convertDCSKeyToStringWithOutEntityId($kvkey)] as $featureName)
-           {
-               if ($keyFeatures[$featureName] === true)
-               {
-                   $data = [
-                       Entity::NAME => DcsConstants::apiFeatureNameFromDcsName($featureName),
-                       Entity::ENTITY_TYPE => Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()),
-                       Entity::ENTITY_ID => $entityId,
-                   ];
-
-                   $entity = (new Entity)->build($data);
-                   $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()));
-                   $entity->setEntityId($entityId);
-                   $res[] = $entity;
-               }
-           }
+                    $entity = (new Entity)->build($entity_data);
+                    $entity->setEntityType(Type::getAPIEntityTypeFromDCSType($kvkey->getEntity()));
+                    $entity->setEntityId($entityId);
+                    $res[] = $entity;
+                }
+            }
         }
 
         $this->trace->info(TraceCode::DCS_FETCH_RESPONSE_RECEIVED, [

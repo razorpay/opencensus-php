@@ -2,6 +2,7 @@
 
 namespace RZP\Services\Dcs\Features;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Feature\Constants;
 
@@ -46,8 +47,9 @@ class Type
         if (array_key_exists($dcsType, self::$dcsTypeToApiEntityTypeMap) === false)
         {
             throw new Exception\BadRequestException(
-                'Entity type is invalid',
-                ['dcs_type' => $dcsType]);
+                ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE,
+                ['dcs_type' => $dcsType], null,
+                'not a valid enityt type,please check entityType in $dcsTypeToApiEntityTypeMap');
         }
 
         return self::$dcsTypeToApiEntityTypeMap[$dcsType];

@@ -4,6 +4,7 @@ namespace RZP\Models\Feature;
 
 use Razorpay\Trace\Logger;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Constants\Table;
@@ -19,6 +20,7 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\QueryCache\CacheQueries;
 use RZP\Models\Settlement\OndemandFundAccount;
 use RZP\Trace\TraceCode;
+use function PHPUnit\Framework\isEmpty;
 
 class Repository extends Base\Repository
 {
@@ -53,7 +55,7 @@ class Repository extends Base\Repository
 
     public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)
     {
-        if (DcsFeaturesConstants::isDcsNewFeature($featureName) === true)
+        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -64,10 +66,20 @@ class Repository extends Base\Repository
             {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
-                return $dcs->fetchByEntityIdAndName($entityId, $featureName, $this->getAppMode());
+                $res = $dcs->fetchByEntityIdAndName($entityId, $featureName, $this->getAppMode());
+                if (isEmpty($res) === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, []);
+                }
+                return $res;
             }
             catch(\Throwable $e)
             {
+                if ($e->getCode() === ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND)
+                {
+                    throw $e;
+                }
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_FAILURE_TOTAL, $dimension);
                 $this->trace->traceException($e, Logger::ERROR, TraceCode::DCS_READ_FEATURES_FAILURE);
             }
@@ -82,7 +94,7 @@ class Repository extends Base\Repository
 
     public function findByEntityTypeEntityIdAndName(string $entityType, string $entityId, string $featureName)
     {
-        if (DcsFeaturesConstants::isDcsNewFeature($featureName) === true)
+        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -112,7 +124,7 @@ class Repository extends Base\Repository
 
     public function findByEntityIdAndNameOnConnection(string $entityId, string $featureName, string $mode)
     {
-        if (DcsFeaturesConstants::isDcsNewFeature($featureName) === true)
+        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -315,7 +327,8 @@ class Repository extends Base\Repository
 
     public function getMerchantIdsHavingFeature(string $featureName, array $merchantIds)
     {
-        if (DcsFeaturesConstants::isDcsNewFeature($featureName) === true)
+        $dcsRes = collect();
+        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -327,7 +340,9 @@ class Repository extends Base\Repository
             {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
                 $dcs = $this->app['dcs'];
-                return $dcs->fetchByEntityIdsAndName($merchantIds, $featureName, $this->getAppMode());
+                $res = $dcs->fetchByEntityIdsAndName($merchantIds, $featureName, $this->getAppMode());
+                $dcsRes = collect($res);
+                return $dcsRes->pluck(Entity::ENTITY_ID)->toArray();
             }
             catch(\Throwable $e)
             {
