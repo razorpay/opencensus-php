@@ -1661,19 +1661,6 @@ class PayoutServiceTest extends TestCase
     {
         $payout = $this->testCreatePayoutEntry($mode, false);
 
-        //$request = [
-        //    'method'  => 'POST',
-        //    'url'     => '/payouts_service/create_ledger',
-        //    'content' => [
-        //        "id" => "Gg7sgBZgvYjlSB",
-        //    ],
-        //];
-        //
-        //$this->ba->appAuthLive();
-        //
-        //$response = $this->makeRequestAndGetContent($request);
-        //s($response);
-
         $this->fixtures->edit('payout', $payout['id'], [
             'transaction_id' => 'randomtxnnnnnn',
             'status'         => 'created',
@@ -1706,6 +1693,25 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($payout[Entity::ID], 'pout_' . $migratedPayout->id);
 
         $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
+
+        $mock->shouldReceive('requestFundTransfer')->once()->andReturn(
+            [
+                'body' => [
+                    'status'           => 'initiated',
+                    'fund_transfer_id' => 123,
+                    'fund_account_id'  => 'D6Z9Jfir2egAUT'
+                ],
+                'code' => 201,
+            ]
+        );
 
         $this->ba->appAuthLive();
 
@@ -1752,16 +1758,15 @@ class PayoutServiceTest extends TestCase
 
         $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
 
-        $this->ba->appAuthLive();
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
 
-        $this->startTest();
+        $this->app->instance('fts_fund_transfer', $mock);
 
-        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+        $mock->shouldReceive([
+            'shouldAllowTransfersViaFts' => [true, 'Dummy'],
+        ]);
 
-        $mock = Mockery::mock(\RZP\Services\FTS\FundTransfer::class, [$this->app])->makePartial();
-        $mock = $mock->shouldAllowMockingProtectedMethods();
-
-        $mock->shouldReceive('createAndSendRequest')->once()->andReturn(
+        $mock->shouldReceive('createAndSendRequest')->twice()->andReturn(
             [
                 'body' => [
                     'status'           => 'initiated',
@@ -1772,7 +1777,11 @@ class PayoutServiceTest extends TestCase
             ]
         );
 
-        $this->app->instance('fts_fund_transfer', $mock);
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
 
         (new FtsFundTransfer('live', $fta->getId(), null))->handle();
 
@@ -1783,6 +1792,7 @@ class PayoutServiceTest extends TestCase
         $fta->reload();
 
         $this->assertEquals('Gg7sgBZgvYjlSB', $fta->source->getId());
+
         $this->assertEquals('initiated', $fta->getStatus());
     }
 

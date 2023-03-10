@@ -3515,6 +3515,9 @@ class Base extends BaseCore
                self::FTA_CREATION_PAYOUT_SERVICE . $payout->getId(),
                function() use ($payout)
                {
+                   // Enable fts sync flow. Pushing/Pulling via queue adds to the latency.
+                   $payout->setSyncFtsFundTransferFlag(true);
+
                    $payoutId = $payout->getId();
 
                    $this->trace->info(TraceCode::FTA_CREATE_REQUEST_FROM_MICROSERVICE,
@@ -3542,6 +3545,9 @@ class Base extends BaseCore
                            $this->fundTransferDestination);
 
                        $downstreamProcessor->processCreateFundTransferAttempt();
+
+                       // Make sync call to FTS.
+                       $this->syncFTSFundTransfer($payout);
                    }
                    else if (is_null($payout->getTransactionId()) === true)
                    {
