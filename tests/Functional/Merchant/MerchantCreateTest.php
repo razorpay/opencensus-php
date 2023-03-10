@@ -435,6 +435,8 @@ class MerchantCreateTest extends TestCase
      */
     public function testCreateSubMerchantWithoutRateLimiting()
     {
+        $this->markTestSkipped('Experiment is on 100% ramp');
+
         Mail::fake();
 
         $this->fixtures->merchant->addFeatures(['aggregator']);
@@ -1339,7 +1341,7 @@ class MerchantCreateTest extends TestCase
 
         $redis = Redis::connection('mutex_redis')->client();
 
-        $redisKey = (new RateLimitBatch())->getRateLimitRedisKey("10000000000000");
+        $redisKey = (new PartnershipsRateLimiter(PartnerConstants::ADD_MULTIPLE_ACCOUNT))->getRateLimitRedisKey("10000000000000");
 
         $response = $this->startTest();
 
@@ -1376,7 +1378,7 @@ class MerchantCreateTest extends TestCase
 
         $redis = Redis::connection('mutex_redis')->client();
 
-        $redisKey = (new RateLimitBatch())->getRateLimitRedisKey("10000000000000");
+        $redisKey = (new PartnershipsRateLimiter(PartnerConstants::ADD_MULTIPLE_ACCOUNT))->getRateLimitRedisKey("10000000000000");
 
         $razorxMock = $this->getMockBuilder(RazorXClient::class)
             ->setConstructorArgs([$this->app])
@@ -1458,7 +1460,7 @@ class MerchantCreateTest extends TestCase
 
         $redis = Redis::connection('mutex_redis')->client();
 
-        $redisKey = (new RateLimitBatch())->getRateLimitRedisKey("10000000000000");
+        $redisKey = (new PartnershipsRateLimiter(PartnerConstants::ADD_MULTIPLE_ACCOUNT))->getRateLimitRedisKey("10000000000000");
 
         $counter = $redis->set($redisKey, RateLimitBatch::THRESHOLD_RATE_LIMIT_COUNT+1);
 

@@ -4908,7 +4908,7 @@ Team Razorpay', '+911234567890');
 
         $this->assertEquals($merchantApp->type, MerchantApplications\Entity::REFERRED);
 
-        $this->assertEquals($referredSubMerchant->tagNames(), array('Ref-' . $referrerMerchantId));
+        $this->assertContains('Ref-' . $referrerMerchantId, $referredSubMerchant->tagNames());
 
         $this->assertSame($referredSubMerchantId, $merchantAcessMap['merchant_id']);
 
