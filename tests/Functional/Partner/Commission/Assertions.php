@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Partner\Commission;
 
+use RZP\Models\Currency\Currency;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Partner\Commission;
 use RZP\Models\Partner\Commission\Calculator;
@@ -36,6 +37,31 @@ class Assertions extends TestCase
 
         $this->assertEquals(944, $commission->getFee());
         $this->assertEquals(144, $commission->getTax());
+    }
+
+    public function testImplicitVariableWithMYRCurrency(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $this->assertImplicitPlanType($calculator, 'implicit_variable');
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::IMPLICIT);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::IMPLICIT);
+
+        $amount          = 400000; // MYR 4000
+        $merchantPricing = 2; // 2% pricing
+
+        $this->assertEquals($this->getFee($amount, $merchantPricing), $calculator->getMerchantFee());
+        $this->assertEquals($this->getTax($amount, $merchantPricing), $calculator->getMerchantTax());
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+        $this->assertEquals(Currency::MYR, $commission->getAttribute(Commission\Entity::CURRENCY));
     }
 
     public function testNoCommissionOnDetachedMerchant(array $data)
@@ -231,7 +257,7 @@ class Assertions extends TestCase
     {
         $this->assertShouldNotCreateCommission($data);
     }
-    
+
     public function testFullyManagedPartnerTypeCommission(array $data)
     {
         $this->assertShouldNotCreateCommission($data);
@@ -329,6 +355,23 @@ class Assertions extends TestCase
 
         $this->assertEquals(944, $commission->getFee());
         $this->assertEquals(144, $commission->getTax());
+    }
+
+    public function testExplicitWithMYRCurrency(array $data)
+    {
+        $this->assertShouldCreateCommission($data);
+
+        $postAction = $data['post_action'];
+
+        $calculator = $postAction['calculator'];
+
+        $commission = $this->assertCommissionCreatedByType($calculator, Commission\Type::EXPLICIT);
+
+        $this->assertNonZeroCommissionTaxByType($calculator, Commission\Type::EXPLICIT);
+
+        $this->assertEquals(944, $commission->getFee());
+        $this->assertEquals(144, $commission->getTax());
+        $this->assertEquals(Currency::MYR, $commission->getAttribute(Commission\Entity::CURRENCY));
     }
 
     public function testExplicitRecordOnly(array $data)

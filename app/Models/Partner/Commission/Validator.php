@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use RZP\Base;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Partner\Config;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -28,6 +29,7 @@ class Validator extends Base\Validator
         Entity::DEBIT       => 'required|integer',
         Entity::CREDIT      => 'required|integer',
         Entity::RECORD_ONLY => 'required|integer',
+        Entity::CURRENCY    => 'sometimes|string|in:'.Currency::INR . ',' . Currency::MYR,
     ];
 
     protected static $markForSettlementRules = [

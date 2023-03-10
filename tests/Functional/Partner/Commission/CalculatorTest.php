@@ -33,6 +33,11 @@ class CalculatorTest extends OAuthTestCase
         $this->ruleEngine->execute(__FUNCTION__);
     }
 
+    public function testImplicitVariableWithMYRCurrency()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
     public function testImplicitFixed()
     {
         $this->ruleEngine->execute(__FUNCTION__);
@@ -173,6 +178,23 @@ class CalculatorTest extends OAuthTestCase
     {
         $this->ruleEngine->execute(__FUNCTION__);
     }
+
+    /**
+     * checks that explicit commission is calculated correctly with MYR Currency
+     */
+    public function testExplicitWithMYRCurrency()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
+    /**
+     * checks that explicit commission is calculated correctly with USD Currency
+     */
+    public function testExplicitWithUSDCurrency()
+    {
+        $this->ruleEngine->execute(__FUNCTION__);
+    }
+
 
     /**
      * checks that commission is created for record-only model

@@ -29,6 +29,15 @@ class Action
         $this->instantiateCalculator($postSetupData, $postActionData);
     }
 
+    public function testExplicitWithUSDCurrency(array $postSetupData, array & $postActionData)
+    {
+        $calculator = new Calculator($postSetupData['source_entity']);
+
+        $this->invokePrivateMethod($calculator, Calculator::class, 'calculate');
+
+        $postActionData['calculator'] = $calculator;
+    }
+
     public function testPartnerDoesNotExist(array $postSetupData, array & $postActionData)
     {
         $this->instantiateCalculator($postSetupData, $postActionData);
