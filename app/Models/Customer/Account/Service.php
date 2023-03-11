@@ -140,13 +140,11 @@ class Service extends Base\Service
         $customerData = [
             'email' => '',
             'contact' =>  '',
-            'global' => $isGlobalCustomer,
-            'saved_card_tokens' => false,
-            'saved_addresses' => false,
+            'is_global_customer' => $isGlobalCustomer,
+            'has_saved_card_tokens' => false,
+            'has_saved_addresses' => false,
             '1cc_consent_banner_views' => 0,
         ];
-
-        $response['customer'] = &$customerData;
 
         if (empty($input[Payment\Entity::APP_TOKEN]) && empty($input['customer_id'])) {
             if (!empty($input['contact']) && !empty($input['device_token'])) {
@@ -159,18 +157,18 @@ class Service extends Base\Service
         }
 
         if ($customer === null) {
-            return $response;
+            return $customerData;
         }
 
         $customerData['email'] = $customer->getEmail();
         $customerData['contact'] =  $customer->getContact();
-        $customerData['global'] = $customer->isGlobal();
+        $customerData['is_global_customer'] = $customer->isGlobal();
 
         if ($appToken !== null &&
             Base\Utility::isUpdatedAndroidSdk($input) &&
             ($appToken->getMerchantId() === Account::SHARED_ACCOUNT)
         ) {
-            return $response;
+            return $customerData;
         }
 
         // This case comes when customer_id is sent in the input (always local customer).
@@ -181,7 +179,7 @@ class Service extends Base\Service
         $customerTokensCount = $this->getCardTokensCountByCustomer($customer, $this->merchant);
 
         if ($customerTokensCount > 0) {
-            $customerData['saved_card_tokens'] = true;
+            $customerData['has_saved_card_tokens'] = true;
         }
 
         if ($this->merchant->isFeatureEnabled(Constants::ONE_CLICK_CHECKOUT)) {
@@ -196,7 +194,7 @@ class Service extends Base\Service
             $customerData['addresses'] = $addresses;
 
             if (count($addresses) > 0) {
-                $customerData['saved_addresses'] = true;
+                $customerData['has_saved_addresses'] = true;
             }
 
             $customerData['1cc_consent_banner_views'] = $addressConsentView;
@@ -207,9 +205,7 @@ class Service extends Base\Service
             );
         }
 
-        $response['customer'] = $customerData;
-
-        return $response;
+        return $customerData;
     }
 
     /**

@@ -1665,14 +1665,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'customer' => [
-                    'email' => 'test@razorpay.com',
-                    'contact' => '+919988776655',
-                    'global' => true,
-                    'saved_card_tokens' => false,
-                    'saved_addresses' => false,
-                    '1cc_consent_banner_views' => 0,
-                ],
+                'email' => 'test@razorpay.com',
+                'contact' => '+919988776655',
+                'is_global_customer' => true,
+                'has_saved_card_tokens' => false,
+                'has_saved_addresses' => false,
+                '1cc_consent_banner_views' => 0,
             ],
         ],
     ],
@@ -1687,14 +1685,12 @@ return [
         ],
         'response' => [
             'content' => [
-                'customer' => [
-                    'email' => 'testlocalcustomer@razorpay.com',
-                    'contact' => '+919876543210',
-                    'global' => false,
-                    'saved_card_tokens' => true,
-                    'saved_addresses' => false,
-                    '1cc_consent_banner_views' => 0,
-                ],
+                'email' => 'testlocalcustomer@razorpay.com',
+                'contact' => '+919876543210',
+                'is_global_customer' => false,
+                'has_saved_card_tokens' => true,
+                'has_saved_addresses' => false,
+                '1cc_consent_banner_views' => 0,
             ],
         ],
     ],

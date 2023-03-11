@@ -350,6 +350,15 @@ class Service extends Base\Service
             $tokens = $this->fetchTokensForLocalCustomerForCheckout($input['customer_id']);
         }
 
+        // sending notes and card flows as empty object for empty values
+        // without this, php sends them as empty arrays
+        foreach ($tokens['items'] as $i => $token) {
+            if (isset($token['card'])) {
+                $tokens['items'][$i]['card']['flows'] = (object)($token['card']['flows'] ?? []);
+            }
+            $tokens['items'][$i]['notes'] = (object)($token['notes'] ?? []);
+        }
+
         return $tokens;
     }
 
