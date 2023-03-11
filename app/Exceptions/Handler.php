@@ -181,7 +181,9 @@ class Handler extends ExceptionHandler
 
             $this->setErrorPageData(self::ENTITY_NOT_FOUND, 404, $requestId);
         }
-        else if ($e instanceof UnexpectedValueException and preg_match('/Untrusted Host/', $e->getMessage()))
+        else if ($e instanceof UnexpectedValueException and
+                (preg_match('/Untrusted Host/', $e->getMessage()) or
+                preg_match('/Invalid Host/', $e->getMessage())))
         {
             $response = response(self::RESPONSE_403, 403)
                     ->header('Content-Type', 'text/plain');
