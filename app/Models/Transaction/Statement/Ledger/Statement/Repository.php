@@ -125,6 +125,11 @@ class Repository extends Base\Repository
             // Increasing error counter
             $this->trace->count(TxnMetric::TRANSACTION_VA_REQUEST_ERROR_COUNT, $dimensions);
 
+            $this->trace->error(TraceCode::TRANSACTION_VA_REQUEST_ERROR_RESPONSE, [
+                "merchant_id"   => $merchantId,
+                "exception"     => $ex->getMessage(),
+            ]);
+
             throw $ex;
         }
     }
