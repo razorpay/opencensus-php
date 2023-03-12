@@ -7,6 +7,7 @@ import {
   B2B_EXPORTS_UPLOAD_INVOICE,
   B2B_EXPORTS_SET_FEATURE,
   B2B_EXPORTS_GET_INVOICE_DETAILS,
+  B2B_EXPORTS_GET_BALANCE,
 } from './constants';
 
 const transactionInitialStates = {
@@ -153,4 +154,56 @@ function b2bExportsAccountsReducer(
   }
 }
 
-export { b2bExportsTransactionsReducer, b2bExportsAccountsReducer };
+function b2bExportsAccountBalanceReducer(
+  state = {
+    isLoading: false,
+    data: null,
+    error: false,
+    errorMessage: 'Failed to check account balance. Try again after sometime.',
+  },
+  action,
+) {
+  switch (action.type) {
+    case `${B2B_EXPORTS_GET_BALANCE}::PENDING`: {
+      return set(state, 'isLoading', true);
+    }
+    case `${B2B_EXPORTS_GET_BALANCE}::SUCCESS`: {
+      if (action.payload?.success) {
+        const amount = action.payload?.data?.amount;
+        const currency = action.payload?.data?.currency;
+        if (amount !== undefined && currency) {
+          return merge(state, {
+            isLoading: false,
+            data: {
+              [currency]: {
+                amount,
+                lastFetched: Date.now(),
+              },
+            },
+            error: false,
+          });
+        }
+      }
+
+      return merge(state, {
+        isLoading: false,
+        error: true,
+      });
+    }
+    case `${B2B_EXPORTS_GET_BALANCE}::ERROR`: {
+      return merge(state, {
+        isLoading: false,
+        error: true,
+      });
+    }
+    default: {
+      return state;
+    }
+  }
+}
+
+export {
+  b2bExportsTransactionsReducer,
+  b2bExportsAccountsReducer,
+  b2bExportsAccountBalanceReducer,
+};

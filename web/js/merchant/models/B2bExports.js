@@ -20,6 +20,14 @@ class B2bExports extends GenericEntity {
     };
     return merchantFetch(params);
   }
+
+  getBalance(currency) {
+    const params = {
+      url: `${this.resourceUrl}/virtual_accounts/balance/${currency}`,
+      method: 'get',
+    };
+    return merchantFetch(params);
+  }
 }
 
 export default B2bExports;

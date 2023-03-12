@@ -265,6 +265,7 @@ export default combineReducers({
   virtualAccountBatches: virtualAccountBatchesReducer,
   b2bExportsTransactions: b2bReducers.b2bExportsTransactionsReducer,
   b2bExportsAccounts: b2bReducers.b2bExportsAccountsReducer,
+  b2bExportsAccountBalance: b2bReducers.b2bExportsAccountBalanceReducer,
   apmForm: apmFormReducer,
   non3dsCardsActivation: non3dsCardsActivationReducer,
   apiLogs: apiLogsReducer,

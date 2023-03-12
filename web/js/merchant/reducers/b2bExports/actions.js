@@ -9,6 +9,7 @@ import {
   B2B_EXPORTS_ACTIVATE_ACCOUNTS,
   B2B_EXPORTS_GET_INVOICE_DETAILS,
   B2B_EXPORTS_SET_FEATURE,
+  B2B_EXPORTS_GET_BALANCE,
 } from './constants';
 
 const fetchB2bAccounts = () => {
@@ -89,6 +90,15 @@ const uploadB2bInvoice = (file) => {
   };
 };
 
+const fetchAccountBalance = (currency) => {
+  const resource = new B2bExportsResource();
+
+  return {
+    type: B2B_EXPORTS_GET_BALANCE,
+    payload: resource.getBalance(currency),
+  };
+};
+
 export {
   uploadInvoice,
   uploadInvoiceError,
@@ -102,4 +112,5 @@ export {
   activateB2bAccounts,
   setFeatureFlag,
   uploadB2bInvoice,
+  fetchAccountBalance,
 };
