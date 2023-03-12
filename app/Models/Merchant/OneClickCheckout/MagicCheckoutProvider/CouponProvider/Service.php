@@ -32,7 +32,7 @@ class Service
         {
             return ['status_code' => 200, 'data' => ['promotions' => [$body]]];
         }
-        return ['status_code' => 400, 'data' => $body];
+        return ['status_code' => 422, 'data' => $body];
     }
 
 }
