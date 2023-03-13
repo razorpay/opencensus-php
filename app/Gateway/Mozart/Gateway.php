@@ -1835,6 +1835,9 @@ class Gateway extends Base\Gateway
             $url =  $baseUrl . $prefix . '/' . $input['gateway'] . '/v1/' . $this->action;
         }
 
+        if($gateway === Payment\Gateway::PAYSECURE) {
+            $url = $baseUrl . 'cardPayments/' . $input['gateway'] . '/v4/' . $this->action;
+        }
         if ($gateway === Payment\Gateway::BT_RBL)
         {
             $url = $baseUrl . $prefix . '/' . $input['gateway'] . '/v1/' . $this->action;
@@ -2126,6 +2129,10 @@ class Gateway extends Base\Gateway
                 Action::PAY_VERIFY    => null,
                 Action::VERIFY        => null,
             ],
+            Payment\Gateway::PAYSECURE    => [
+                Action::AUTHENTICATE_VERIFY => null,
+                Action::NOTIFY              => null,
+            ],
             Payment\Gateway::BILLDESK_SIHUB => [
                 Action::AUTHENTICATE_INIT   => null,
                 Action::AUTHENTICATE_VERIFY => null,
@@ -2311,6 +2318,10 @@ class Gateway extends Base\Gateway
                 Action::PAY_INIT      => null,
                 Action::PAY_VERIFY    => null,
                 Action::VERIFY        => null,
+            ],
+            Payment\Gateway::PAYSECURE    => [
+                Action::AUTHENTICATE_VERIFY => null,
+                Action::NOTIFY              => null,
             ],
             Payment\Gateway::BILLDESK_SIHUB => [
                 Action::AUTHENTICATE_INIT   => null,
@@ -3155,6 +3166,15 @@ class Gateway extends Base\Gateway
                     $response['meta_data']['order_id']   = "order_".$input['payment']['order_id'] ?? null;
                 }
             }
+
+            if (isset($input['gateway']) && $input['gateway'] == Payment\Gateway::PAYSECURE)
+            {
+                $response['success'] = $response['formatted']['success'];
+                $response['error']['internal_error_code'] = $response['formatted']['code'] ?? null;
+                $response['error']['gateway_error_code'] = $response['formatted']['gateway_error_code'] ?? null;
+                $response['error']['gateway_error_description'] = $response['formatted']['gateway_error_description'] ?? null;
+            }
+
             $this->checkErrorsAndThrowExceptionFromMozartResponse($response);
         }
 

@@ -109,4 +109,15 @@ class Repository extends Base\Repository
                     ->latest()
                     ->get();
     }
+
+    public function findByPaymentID($paymentId)
+    {
+        $timestamp = time() - (5 * Entity::SEARCH_WINDOW);
+
+        return $this->newQuery()
+            ->where(Entity::PAYMENT_ID, '=', $paymentId)
+            ->where(Entity::CREATED_AT, '>=', $timestamp)
+            ->orderBy(Entity::CREATED_AT, 'desc')
+            ->first();
+    }
 }

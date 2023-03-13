@@ -517,6 +517,22 @@ class CardVault extends Base\Core
             ];
         }
 
+        if ((empty($cardInput['mandate_id'] === false)) &&
+            (empty($cardInput['end_date']) === false) &&
+            (empty($cardInput['rupay_recurring']) === false) &&
+            (empty($cardInput['authentication_reference_number']) === false))
+        {
+            $input['card_mandate'] = [
+                'mandate_id' => $cardInput['mandate_id'],
+                'end_date'   => $cardInput['end_date'],
+                'recurring'  => $cardInput['rupay_recurring']
+            ];
+
+            $input['authentication_data'] = [
+                'authentication_reference_number' => $cardInput['authentication_reference_number'],
+            ];
+        }
+
         $input['iin'] = $iinInfo;
 
         if (empty($cardInput['merchant_token']) === false)

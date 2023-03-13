@@ -8,4 +8,6 @@ class NotificationStatus
     const PENDING   = 'pending';
     const NOTIFIED  = 'notified';
     const FAILED    = 'failed';
+    const SUCCESS   = 'success';
+    const FAILURE   = 'failure';
 }

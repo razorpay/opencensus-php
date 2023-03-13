@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Mozart;
 
 use RZP\Trace\TraceCode;
+use RZP\Constants;
 
 trait CardMandate {
 
@@ -19,6 +20,11 @@ trait CardMandate {
     protected function cardMandatePreDebitNotify($input)
     {
         parent::action($input, Action::PAY_INIT);
+
+        if (isset($input['gateway']) and $input['gateway'] == Constants\Table::PAYSECURE)
+        {
+            parent::action($input, Action::NOTIFY);
+        }
 
         list($response) = $this->sendMozartRequestAndGetResponse($input, TraceCode::GATEWAY_PRE_DEBIT_NOTIFY_REQUEST,
             TraceCode::GATEWAY_PRE_DEBIT_NOTIFY_RESPONSE, true);

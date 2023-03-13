@@ -5096,6 +5096,13 @@ class Processor
 
                 // Value sets at Mozart based on Fixed Amount or Max Amount for Recurring payment - 1/2
                 $gatewayData['card_mandate']['pay_type']             = $cardMandate->getPayType();
+
+                $gatewayData['card_mandate']['start_date']           = $cardMandate->getStartAt();
+
+                $gatewayData['card_mandate']['end_date']             = $cardMandate->getEndAt();
+
+                $gatewayData['card_mandate']['min_debit_amount']     = $cardMandate->getAmount();
+
             }
             else {
                 throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_CARD_MANDATE_IS_NOT_ACTIVE);
@@ -5120,12 +5127,17 @@ class Processor
     {
         $payment = $this->payment;
 
-        if (($action === Payment\Action::PAY and $payment->isCardMandateRecurringInitialPayment() === true) or
-            ($payment->isCardMandateRecurringAutoPayment() === true))
+        if ($payment->isCardMandateRecurringAutoPayment() === true)
         {
             return true;
         }
 
+        if ((($action === Payment\Action::PAY or $payment->getGateway() === Payment\Gateway::PAYSECURE) and
+             $payment->isCardMandateRecurringInitialPayment() === true))
+
+        {
+            return true;
+        }
         return false;
     }
 
@@ -8018,6 +8030,11 @@ class Processor
     {
         try
         {
+            if ($token->card->isRuPay() === true)
+            {
+                return $this->createCardForNetworkToken($card, $input, $payment);
+            }
+
             if($token->cardMandate->getVaultTokenPan() === null)
             {
                 $cryptogram = (new Card\CardVault)->fetchCryptogramForPayment($card->getVaultToken(), $card->merchant);

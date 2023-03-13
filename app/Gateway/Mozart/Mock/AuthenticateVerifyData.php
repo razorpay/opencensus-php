@@ -50,6 +50,16 @@ class AuthenticateVerifyData extends Base\Mock\Server
         return $response;
     }
 
+    public function paysecure($entities)
+    {
+        return [
+            "data" => [
+                'si_registration_id' => 'DummyRegistrationID',
+                'status'             => 'success',
+            ],
+        ];
+    }
+
     public function billdesk_sihub($entities)
     {
         return [

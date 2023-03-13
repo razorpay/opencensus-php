@@ -2383,6 +2383,7 @@ class Gateway
     public static $recurringCardNetworks = [
         Network::MC,
         Network::VISA,
+        Network::RUPAY,
         Network::AMEX
     ];
 
@@ -2420,7 +2421,11 @@ class Gateway
         IFSC::VIJB,
         IFSC::PUNB,
         IFSC::STCB,
-
+        IFSC::ASBL,
+        IFSC::JSBL,
+        IFSC::PSIB,
+        IFSC::SRCB,
+        IFSC::UCBA,
     ];
 
     public static $directDebitCardNetworks = [

@@ -57,4 +57,17 @@ class NotifyData
 
         return $response;
     }
+
+    public function paysecure($entities)
+    {
+        return [
+            "data" => [
+                'status' => 'success',
+            ],
+            'error'             => null,
+            'success'           => true,
+            'mozart_id'         => '',
+            'external_trace_id' => '',
+        ];
+    }
 }

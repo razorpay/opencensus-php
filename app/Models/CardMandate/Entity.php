@@ -205,6 +205,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::MANDATE_HUB, $value);
     }
 
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
     public function setVaultTokenPan($value)
     {
         $this->setAttribute(self::VAULT_TOKEN_PAN, $value);
@@ -277,9 +282,19 @@ class Entity extends Base\PublicEntity
 
     public function getRecurringCount()
     {
-        return null;
+        return $this->getAttribute(self::TOTAL_CYCLES);
     }
 
+    public function getStartAt()
+    {
+        return $this->getAttribute(self::START_AT);
+    }
+
+    public function getEndAt()
+    {
+        return $this->getAttribute(self::END_AT);
+
+    }
     public function isActive(): bool
     {
         return $this->getAttribute(self::STATUS) === Status::ACTIVE;

@@ -92,6 +92,13 @@ class CardAutoRecurringReminderProcessor extends ReminderProcessor
             );
         }
 
+        //read payment_analytics from DB for Rupay
+        if ($payment->card->isRupay())
+        {
+            $gatewayInput['payment_analytics'] = $this->repo->payment_analytics->findByPaymentID($payment->getId());
+            $payment->setMetadataKey('payment_analytics', $gatewayInput['payment_analytics']);
+        }
+
         $processor->gatewayRelatedProcessing($payment, [], $gatewayInput);
 
         return [];

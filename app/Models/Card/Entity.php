@@ -1310,6 +1310,11 @@ class Entity extends Base\PublicEntity
 
         if (empty($cardTokenIin) === false)
         {
+            if($this->isRuPay())
+            {
+                $cardTokenIin = substr($cardTokenIin, 0, 8);
+            }
+
             $cardActualIin = Card\IIN\IIN::getTransactingIinforRange($cardTokenIin);
 
             if (empty($cardActualIin) === true)
@@ -1392,7 +1397,38 @@ class Entity extends Base\PublicEntity
                 or ($iin->isAmex() === true))
             and ($isInitial === true))
         {
-            return $iin->isCardMandateApplicable($merchant, $hasSubscription);
+            $isRecurringEnabled = $iin->isCardMandateApplicable($merchant, $hasSubscription);
+
+            if ($isRecurringEnabled === true && $iin->getNetwork() === Network::getFullName(Network::RUPAY)) {
+                return $this->IsMerchantEnabledForRupaySI($merchant->getId(), $iin->getIin());
+            }
+
+            return $isRecurringEnabled;
+        }
+
+        return true;
+    }
+
+    //Will remove this experiment after ramp-up
+    protected function IsMerchantEnabledForRupaySI(string $mid, string $iin): bool
+    {
+        $app = \App::getFacadeRoot();
+
+        $variant = $app['razorx']->getTreatment($mid,
+            Merchant\RazorxTreatment::RECURRING_THROUGH_RUPAY_CARD_MID,
+            $app['rzp.mode']);
+
+        if ($variant != 'on')
+        {
+            return false;
+        }
+
+        $variant = $app['razorx']->getTreatment($iin,
+            Merchant\RazorxTreatment::RECURRING_THROUGH_RUPAY_CARD_IIN,
+            $app['rzp.mode']);
+
+        if (strtolower($variant) !== 'on') {
+            return false;
         }
 
         return true;

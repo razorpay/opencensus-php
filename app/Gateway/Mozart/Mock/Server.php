@@ -1184,6 +1184,7 @@ class Server extends Base\Mock\Server
         if ((isset($entities['gateway']) === true) and
             (($entities['gateway'] === 'google_pay') or
              ($entities['gateway'] === 'billdesk_sihub') or
+             ($entities['gateway'] === 'paysecure') or
               $entities['gateway'] === 'bt_rbl'))
         {
             return $entities['gateway'];

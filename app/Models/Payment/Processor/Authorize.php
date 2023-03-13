@@ -6038,6 +6038,13 @@ trait Authorize
             if (($payment->isRequiredToCreateNewTokenAlways($token, $this->isPreferredRecurring($input)) === true) and
                 ($this->getRecurringTypeFromToken($payment, $token, $input) === Payment\RecurringType::INITIAL))
             {
+                if (isset($token) && isset($token->card) &&
+                    $token->card->isRuPay())
+                {
+                    throw new Exception\BadRequestValidationFailureException(
+                        'Mandate registrations through tokenised card is not allowed for Rupay. Please register using the full card number.');
+                }
+
                 $token = (new Token\Core)->cloneToken($token);
             }
 
@@ -7690,6 +7697,26 @@ trait Authorize
                 }
             }
 
+            $rupay_recurring = false;
+            if (($payment->isRecurring() === true) &&
+                ($token->getMethod() === Method::CARD) &&
+                isset($token->card) &&
+                ($token->card->isRuPay()))
+            {
+                $cardMandateId = $token->getCardMandateId();
+                $cardMandate = $this->repo->card_mandate->findByIdAndMerchant($cardMandateId, $payment->merchant);
+
+                $mandate_end_date = $cardMandate->getEndAt();
+
+                $authorizationData = (new Payment\Service)->getAuthorizationEntity($payment->getPublicId());
+                $notes = $authorizationData['notes'];
+                $data = json_decode($notes, true);
+                $mandate_id = $data['si_registration_id'];
+
+                $authReferenceNumber = $payment->card->getReference4();
+                $rupay_recurring = true;
+            }
+
             $input['payment'] = $payment->toArrayGateway();
             $input['card'] = $payment->card->toArray();
 
@@ -7704,6 +7731,9 @@ trait Authorize
                 'iin'                             => $input['card']['iin'] ?? 0,
                 'name'                            => $input['card']['name'] ?? null,
                 'authentication_reference_number' => $authReferenceNumber,
+                'mandate_id'                      => $mandate_id ?? null,
+                'end_date'                        => $mandate_end_date ?? null,
+                'rupay_recurring'                 => $rupay_recurring
             ];
 
             $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::ASYNC_TOKEN_MIGRATION, $this->mode);

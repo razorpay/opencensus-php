@@ -13,7 +13,7 @@ class MandateHubSelector extends Base\Core
      */
     public function GetMandateHubForCardMandate(CardMandate\Entity $cardMandate): BaseHub
     {
-       return $this->getHubInstance($cardMandate->getMandateHub());
+        return $this->getHubInstance($cardMandate->getMandateHub());
     }
 
     /**
@@ -24,6 +24,8 @@ class MandateHubSelector extends Base\Core
     {
         switch ($mandateHub)
         {
+            case MandateHubs::RUPAY_SIHUB:
+                return (new RupaySIHub\RupaySIHub);
             case MandateHubs::MANDATE_HQ:
                 return (new MandateHQ\MandateHQ);
             case MandateHubs::BILLDESK_SIHUB:

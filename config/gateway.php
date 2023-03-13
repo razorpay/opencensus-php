@@ -271,6 +271,7 @@ return [
     'mock_hdfc_debit_emi'         => env('HDFC_DEBIT_EMI_MOCK'),
     'mock_billdesk_sihub'         => env('BILLDESK_SIHUB_MOCK'),
     'mock_emerchantpay'           => env('EMERCHANTPAY_MOCK'),
+    'mock_rupay_sihub'            => env('RUPAY_SIHUB_MOCK'),
     'mock_upi_kotak'              => env('UPI_KOTAK_MOCK'),
     'mock_upi_rzprbl'             => env('UPI_RZPRBL_MOCK'),
 

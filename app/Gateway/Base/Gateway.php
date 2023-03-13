@@ -1885,9 +1885,10 @@ class Gateway
         if (
             (in_array($action, $nonPaymentActions)) or
             ((isset($input['gateway']) === true) and
-                (($input['gateway'] === Payment\Gateway::GOOGLE_PAY) or
-                    ($input['gateway'] === Payment\Gateway::BILLDESK_SIHUB) or
-                    ($input['gateway'] === Payment\Gateway::BT_RBL)))
+             (($input['gateway'] === Payment\Gateway::GOOGLE_PAY) or
+              ($input['gateway'] === Payment\Gateway::BILLDESK_SIHUB) or
+              ($input['gateway'] === Payment\Gateway::PAYSECURE) or
+                 ($input['gateway'] === Payment\Gateway::BT_RBL)))
         )
         {
             return $input['gateway'] ?? 'mozart';

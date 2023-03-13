@@ -6,11 +6,11 @@ use Mockery;
 
 use Queue;
 use RZP\Constants\Entity;
+use RZP\Constants\Entity as E;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
-use RZP\Constants\Entity as E;
 use RZP\Models\Card\Network;
 use RZP\Models\Currency\Currency;
 use RZP\Services\RazorXClient;
@@ -48,6 +48,8 @@ class CardMandateTest extends TestCase
 
     protected $mandateHqTerminal;
 
+    protected $rupaySiHubTerminal;
+
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/CardMandateTestData.php';
@@ -69,7 +71,7 @@ class CardMandateTest extends TestCase
             'type' => 'credit',
             'recurring' => 1,
             'issuer' => IFSC::RATN,
-            'mandate_hubs' => ['mandate_hq'=>'1', 'billdesk_sihub'=>'1'],
+            'mandate_hubs' => ['mandate_hq'=>'1', 'billdesk_sihub'=>'1', 'rupay_sihub'=>'1'],
 
         ]);
 
@@ -1038,11 +1040,16 @@ class CardMandateTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['network_tokenization_live']);
 
-        $this->setMockRazorxTreatment(['recurring_tokenisation' => 'on']);
+        $this->setMockRazorxTreatment(['recurring_through_rupay_card_mid' => 'on',
+            'recurring_tokenisation' => 'on',
+            'recurring_through_rupay_card_iin' => 'on'
+            ]);
 
         $this->mockRegisterMandate();
 
         $this->mockReportPayment();
+
+        $this->mockCps(null, 'entity_fetch');
 
         $paymentInp = $this->paymentInput;
 
@@ -1064,6 +1071,11 @@ class CardMandateTest extends TestCase
             ['entity_type' => 'subscription_registration', 'entity_id' => $subr->id, 'order_id' => $order->id]);
 
         $paymentInp['order_id'] = $order->getPublicId();
+
+        $this->setMockRazorxTreatment(['recurring_through_rupay_card_mid' => 'on',
+            'recurring_through_rupay_card_iin' => 'on',
+            'recurring_tokenisation' => 'on'
+        ]);
 
         $request = [
             'method'  => 'POST',
@@ -2316,6 +2328,7 @@ class CardMandateTest extends TestCase
     protected function mockCpsEntityFetch($url)
     {
         $payment = $this->getDbLastPayment();
+
         $case1 = 'entity/authentication/'.$payment->getId();
         $case2 = 'entity/authorization/'.$payment->getId();
         switch ($url)
@@ -2392,7 +2405,8 @@ class CardMandateTest extends TestCase
                     "avs_result" => "",
                     "network_transaction_id" => "",
                     "success" => true,
-                    "status_code" => 200
+                    "status_code" => 200,
+                    "data" => "{\"si_registration_id\":\"ratn_PP3VC146gmBVGG\"}"
                 ];
             default:
                 return [
@@ -2626,6 +2640,118 @@ class CardMandateTest extends TestCase
 
         $this->assertEquals($tokenisedCard->getId(), $tokenisedSavedCard->getId());
         $this->assertNotEquals($freshCardtoken->getId(), $savedCardToken->getId());
+    }
+
+    public function testCreateRupaySICardMandatePaymentWithAuthLink()
+    {
+        $this->ba->proxyAuth();
+        $this->startTest();
+
+        $order = $this->getDbLastEntity('order');
+
+        $this->mockCheckBin();
+
+        $this->mockRegisterMandate();
+
+        $this->mockReportPayment();
+
+        $this->fixtures->edit('iin', 400018 ,[
+            'network' => "RuPay",
+            'mandate_hubs' => ['rupay_sihub'=>'1'],
+        ]);
+
+        $this->fixtures->create('terminal:shared_rupay_sihub_terminal');
+
+        $this->fixtures->terminal->disableTerminal($this->mandateHqTerminal['id']);
+
+        $this->setMockRazorxTreatment(['recurring_through_rupay_card_mid' => 'on',
+            'recurring_through_rupay_card_iin' => 'on']);
+
+        $this->mockCps(null, 'entity_fetch');
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/create/ajax',
+            'content' => $this->paymentInput,
+        ];
+
+        $request['content']['order_id'] = $order->getPublicId();
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['razorpay_payment_id'] ?? null);
+
+        $payment = $this->getDbLastEntity(E::PAYMENT);
+        $this->assertEquals('captured', $payment->getStatus());
+        $this->assertEquals('initial', $payment->getRecurringType());
+        $this->assertNotNull($payment->getTokenId());
+
+        $token = $payment->localToken;
+        $this->assertNotEmpty($token);
+        $this->assertEquals('confirmed', $token->getRecurringStatus());
+        $this->assertEquals(123400, $token->getMaxAmount());
+
+        $cardMandate = $this->getDbLastEntity(E::CARD_MANDATE);
+        $this->assertNotEmpty($cardMandate);
+        $this->assertNotEmpty($cardMandate->getMandateSummaryUrl());
+        $this->assertEquals('active', $cardMandate->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandate->getMandateId());
+        $this->assertEquals(123400, $cardMandate->getMaxAmount());
+    }
+
+    public function testRupayHubCreateCardMandateAutoPayment()
+    {
+        $this->testCreateRupaySICardMandatePaymentWithAuthLink();
+
+        $this->mockCreatePreDebitNotification();
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $tokenId = $paymentEntity[Payment::TOKEN_ID];
+
+        $paymentInput = $this->getDefaultRecurringPaymentArray();
+        unset($paymentInput[Payment::CARD]);
+        unset($paymentInput[Payment::BANK]);
+
+        $paymentInput[Payment::TOKEN] = $tokenId;
+
+        $order = $this->fixtures->create('order', [
+            'amount' => 50000,
+            'payment_capture' => 1,
+        ]);
+        $paymentInput[Payment::ORDER_ID] = $order->getPublicId();
+
+        $this->ba->privateAuth();
+
+        $content = $this->doS2SRecurringPayment($paymentInput);
+        $this->assertNotEmpty($content['razorpay_payment_id']);
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('auto', $payment->getRecurringType());
+        $this->assertEquals('created', $payment->getStatus());
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+        $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandateNotification->notification_id);
+        $this->assertNotNull($cardMandateNotification->reminder_id);
+        $this->assertNotEmpty($cardMandateNotification->notified_at);
+
+        $this->mockPostDebitNotification();
+        $this->mockValidatePayment();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf($url, $payment->getId());
+        $this->ba->reminderAppAuth();
+
+        $this->startTest();
+
+        $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
+
+        $payment = $this->getDbLastEntity('payment');
+        $this->assertEquals('captured', $payment->getStatus());
     }
 }
 

@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
 use RZP\Constants\Mode;
 use RZP\Diag\EventCode;
 use RZP\Trace\TraceCode;
@@ -87,6 +88,11 @@ class Core extends Base\Core
             $mandate = $mandateHub->RegisterMandate($cardMandate, $payment, $input);
 
             $this->fillDataFromMandateRegisterResponse($cardMandate, $mandate);
+
+            if ($cardMandate->getMandateHub() === MandateHubs\MandateHubs::RUPAY_SIHUB)
+            {
+                $cardMandate->setStatus(Status::MANDATE_APPROVED);
+            }
 
             $this->repo->saveOrFail($cardMandate);
 

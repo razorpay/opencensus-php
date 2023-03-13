@@ -1045,7 +1045,7 @@ class CheckoutPreferencesTest extends TestCase
         $this->ba->publicAuth();
 
         $response = $this->makeRequestAndGetContent($request);
-        $this->assertEquals(["MasterCard","Visa"], $response['methods']['recurring']['card']['prepaid']);
+        $this->assertEquals(["MasterCard","Visa","RuPay"], $response['methods']['recurring']['card']['prepaid']);
     }
 
     public function testGetCheckoutPreferencesAfterFilterForMinimumAmount()

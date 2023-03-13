@@ -484,8 +484,10 @@ class Core extends Base\Core
             case CardMandate\MandateHubs\NotificationStatus::PENDING:
                 return Status::PENDING;
             case CardMandate\MandateHubs\NotificationStatus::NOTIFIED:
+            case CardMandate\MandateHubs\NotificationStatus::SUCCESS:
                 return Status::NOTIFIED;
             case CardMandate\MandateHubs\NotificationStatus::FAILED:
+            case CardMandate\MandateHubs\NotificationStatus::FAILURE:
                 return Status::FAILED;
             default:
                 throw new LogicException('Should not have reached here. Status: ' . $status);

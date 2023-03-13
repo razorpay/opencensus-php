@@ -3810,6 +3810,7 @@ return [
                             'credit' => [
                                 'MasterCard',
                                 'Visa',
+                                'RuPay',
                                 'American Express',
                             ]
                         ]

@@ -415,6 +415,7 @@ class Entity
     const CHECKOUT_DOT_COM       = 'checkout_dot_com';
     const CHECKOUT_ORDER         = 'checkout_order';
     const EMERCHANTPAY           = 'emerchantpay';
+    const RUPAY_SIHUB            = 'rupay_sihub';
     const NETBANKING_UJJIVAN     = 'netbanking_ujjivan';
     const NETBANKING_DBS         = 'netbanking_dbs';
     const CURRENCY_CLOUD         = 'currency_cloud';
@@ -1298,6 +1299,7 @@ class Entity
         self::PAYLATER_ICICI         => \RZP\Gateway\Mozart::class,
         self::HDFC_DEBIT_EMI         => \RZP\Gateway\Mozart::class,
         self::CRED                   => \RZP\Gateway\Mozart::class,
+        self::RUPAY_SIHUB            => \RZP\Gateway\Mozart::class,
         self::BILLDESK_SIHUB         => \RZP\Gateway\Mozart::class,
         self::CHECKOUT_DOT_COM       => \RZP\Gateway\Mozart::class,
         self::CCAVENUE               => \RZP\Gateway\Ccavenue::class,
