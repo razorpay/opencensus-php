@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\PaperMandate;
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use Carbon\Carbon;
 
 return [
     'testCreateAuthLinkForPaperMandate' => [

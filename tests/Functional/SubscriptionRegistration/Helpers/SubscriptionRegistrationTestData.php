@@ -212,7 +212,7 @@ return [
                 'description'               => 'test description',
                 'subscription_registration' => [
                     'method'       => 'emandate',
-                    'expire_at'    => '1484512480',
+                    'expire_at'    => Carbon::now()->addDay(30)->getTimestamp(),
                     'bank_account' => [
                         'bank_name'          => 'HDFC',
                         'ifsc_code'          => 'HDFC0001233',
@@ -244,6 +244,45 @@ return [
             ],
         ],
     ],
+
+    'testCreateAuthLinkWithPastExpireAtValue' => [
+        'request'  => [
+            'url'     => '/subscription_registration/auth_links',
+            'method'  => 'post',
+            'content' => [
+                'type'        => 'link',
+                'amount'      => '10000',
+                'receipt'     => '00000000000001',
+                'customer'    => [
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'name'    => 'test',
+                ],
+                'description' => 'test description',
+
+                'subscription_registration' => [
+                    'method' => 'card',
+                    'expire_at' => Carbon::now()->subDay(1)->getTimestamp()
+                ],
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'  => ErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'expire_at',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+
+
 
     'testCreateAuthLinkWithIncompleteBankData' => [
         'request'   => [
@@ -653,7 +692,7 @@ return [
                 'subscription_registration' => [
                     'method'       => 'emandate',
                     'auth_type'    => 'netbanking',
-                    'expire_at'    => '1484512480',
+                    'expire_at'    => Carbon::now()->addDay(30)->getTimestamp(),
                     'bank_account' => [
                         'bank_name'          => 'ICIC',
                         'ifsc_code'          => 'ICIC0004245',
@@ -991,7 +1030,7 @@ return [
                 'description'               => 'test description',
                 'subscription_registration' => [
                     'method'       => 'emandate',
-                    'expire_at'    => '1484512480',
+                    'expire_at'    => Carbon::now()->addDay(30)->getTimestamp(),
                     'bank_account' => [
                         'bank_name'          => 'HDFC',
                         'ifsc_code'          => 'HDFC0001233',

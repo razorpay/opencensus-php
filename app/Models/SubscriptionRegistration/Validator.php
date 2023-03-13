@@ -15,6 +15,7 @@ use RZP\Models\PaperMandate;
 use RZP\Models\Customer\Token;
 use RZP\Constants\Entity as E;
 use RZP\Error\PublicErrorDescription;
+use Carbon\Carbon;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\UpiMandate\Entity as UPI_MANDATE;
 use RZP\Models\Customer\Entity as CustomerEntity;
@@ -691,9 +692,21 @@ class Validator extends Base\Validator
                         'route' => App::getFacadeRoot()['api.route']->getCurrentRouteName(),
                     ]
                 );
-                
+
                 throw new BadRequestValidationFailureException(
                     'The selected account type is invalid.');
+            }
+        }
+    }
+
+    public function validateTokenExpiryDate(array $input)
+    {
+        if (empty($input[Entity::EXPIRE_AT]) === false) {
+            if (Carbon::now()->timestamp >= $input[Entity::EXPIRE_AT])
+            {
+                throw new BadRequestValidationFailureException(
+                    'expire_at cannot be less than current time'
+                );
             }
         }
     }

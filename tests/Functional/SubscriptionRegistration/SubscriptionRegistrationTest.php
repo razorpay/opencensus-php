@@ -110,6 +110,11 @@ class SubscriptionRegistrationTest extends TestCase
         $this->assertStatusesWithLastEntity(['sms_status' => 'sent', 'email_status' => 'sent']);
     }
 
+    public function testCreateAuthLinkWithPastExpireAtValue()
+    {
+        $this->startTest();
+    }
+
     public function testAuthLinkHostedPage()
     {
         $this->testCreateAuthLinkWithBankAccount();

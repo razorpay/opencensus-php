@@ -56,6 +56,12 @@ class Core extends Base\Core
 
         $validator->validateMethodAndFirstPaymentAmount($input);
 
+        if (($input[Entity::METHOD] !== Method::NACH) and
+            ($input[Entity::METHOD] !== Method::UPI))
+        {
+            $validator->validateTokenExpiryDate($input);
+        }
+
         $subscriptionRegistration = (new Entity)->build($input);
 
         $subscriptionRegistration->merchant()->associate($merchant);
