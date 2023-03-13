@@ -36,11 +36,12 @@ class Entity extends Base\PublicEntity
     const BLACKLIST     = 'blacklist';
 
     // eligibility check constants
-    public const STANDARD_CHECKOUT_ELIGIBLE = 'standardCheckoutEligible';
-    public const IS_DMT_MERCHANT            = 'isDmtMerchant';
-    public const IS_DISPUTE_MERCHANT        = 'isDisputedMerchant';
+    public const STANDARD_CHECKOUT_ELIGIBLE                = 'standardCheckoutEligible';
+    public const IS_DMT_MERCHANT                           = 'isDmtMerchant';
+    public const IS_DISPUTE_MERCHANT                       = 'isDisputedMerchant';
     public const LOW_TRANSACTING_BUT_RTB_ELIGIBLE_MERCHANT = 'lowTransactingButRTBEligibleMerchant';
-    public const HIGH_TRANSACTING_VOLUME_MERCHANT = 'highTransactingVolumeMerchant';
+    public const HIGH_TRANSACTING_VOLUME_MERCHANT          = 'highTransactingVolumeMerchant';
+    public const IS_RISK_MERCHANT                          = 'isRiskMerchant';
 
     const REDIS_EXPERIMENT_KEY = 'RTB_experiment_merchants';
 

@@ -75,6 +75,13 @@ class TrustedBadge extends Job
                 'merchantCountWithInitialChecks' => count($merchantIdListWithInitialChecksPassed),
             ]);
 
+            $merchantIdListWithRiskTags = array_flip($this->repoManager->merchant_detail->getMerchantsWithRiskTags($merchantIdListWithInitialChecksPassed));
+
+            $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
+                'checkpoint'    => 'fetched_merchants_with_risk_tags',
+                'merchantCountWithRiskTags' => count($merchantIdListWithRiskTags),
+            ]);
+
             $standardCheckoutEligibleMIDs =
                 array_flip($this->repoManager->trusted_badge->getStandardCheckoutEligibleMerchantsList());
 
@@ -122,6 +129,7 @@ class TrustedBadge extends Job
                     Entity::HIGH_TRANSACTING_VOLUME_MERCHANT => array_key_exists($merchantId, $highTransactingVolumeMIDs),
                     Entity::LOW_TRANSACTING_BUT_RTB_ELIGIBLE_MERCHANT =>
                         array_key_exists($merchantId, $lowTransactingButRTBEligibleMIDs),
+                    Entity::IS_RISK_MERCHANT => array_key_exists($merchantId, $merchantIdListWithRiskTags),
                 ];
 
                 $this->processMerchantWithEligibilityChecks($merchantId, $eligibilityChecks);
@@ -188,7 +196,8 @@ class TrustedBadge extends Job
     {
         if (
             $eligibilityChecks[Entity::IS_DMT_MERCHANT] === true ||
-            $eligibilityChecks[Entity::IS_DISPUTE_MERCHANT] === true
+            $eligibilityChecks[Entity::IS_DISPUTE_MERCHANT] === true ||
+            $eligibilityChecks[Entity::IS_RISK_MERCHANT] === true
         ) {
             return false;
         }
@@ -196,7 +205,7 @@ class TrustedBadge extends Job
         if (
             $eligibilityChecks[Entity::STANDARD_CHECKOUT_ELIGIBLE] === true ||
             $eligibilityChecks[Entity::HIGH_TRANSACTING_VOLUME_MERCHANT] === true ||
-            $eligibilityChecks[Entity::LOW_TRANSACTING_BUT_RTB_ELIGIBLE_MERCHANT] === true 
+            $eligibilityChecks[Entity::LOW_TRANSACTING_BUT_RTB_ELIGIBLE_MERCHANT] === true
         ) {
             return true;
         }

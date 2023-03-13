@@ -523,7 +523,6 @@ class Core extends Base\Core
      * but still eligible for RTB if they have passed additional checks. Those are
      * 1. Must have more than 25 txns on standard checkout in last 4 months
      * 2. Z value of refund rate of merchant must be within set limits. -0.5 <= Z <= 1.5
-     * 3. Must not have any risk tags associated
      *
      * @return array
      * @throws \Exception
@@ -532,9 +531,7 @@ class Core extends Base\Core
     {
         $lowTransactionsMerchantsData = $this->repo->trusted_badge->getLowTransactingMerchantsData();
 
-        $merchantsWithZValueWithinLimits = array_flip($this->getMerchantsWithZValueWithinLimits($lowTransactionsMerchantsData));
-
-        return $this->repo->merchant_detail->getMerchantsWithoutRiskTags(array_keys($merchantsWithZValueWithinLimits));
+        return $this->getMerchantsWithZValueWithinLimits($lowTransactionsMerchantsData);
     }
 
     /**

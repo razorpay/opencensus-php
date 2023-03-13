@@ -253,19 +253,16 @@ class TrustedBadgeTest extends TestCase
             'merchant_id' => Account::TEST_ACCOUNT,
             'business_type' => 4,
             'activation_status' => 'activated',
-            'fraud_type' => '',
         ]);
         $demoMerchantDetail = $this->fixtures->merchant_detail->createEntity('merchant_detail',[
             'merchant_id' => Account::DEMO_ACCOUNT,
             'business_type' => 4,
             'activation_status' => 'activated',
-            'fraud_type' => null,
         ]);
         $testMerchantDetail = $this->fixtures->merchant_detail->createEntity('merchant_detail',[
             'merchant_id' => Account::TEST_ACCOUNT_2,
             'business_type' => 4,
             'activation_status' => 'activated',
-            'fraud_type' => null,
         ]);
 
         $request = array(
@@ -301,6 +298,83 @@ class TrustedBadgeTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
         $this->assertEquals('ineligible', $response['status']);
         $this->assertEquals(false, $response['is_live']);
+    }
+
+    public function testMerchantsWithRiskTagsAreNotEligibleForRTB(): void
+    {
+        $ninetyOneDaysAgo = Carbon::today()->subDays(91)->getTimestamp();
+
+        $callback = static function ($query) {
+            $standardCheckoutEligibleMerchants = [
+                [
+                    'merchant_id' => Account::DEMO_ACCOUNT,
+                ],
+                [
+                    'merchant_id' => Account::TEST_ACCOUNT,
+                ],
+            ];
+
+            if ($query === Repository::STANDARD_CHECKOUT_ELIGIBLE_QUERY) {
+                return $standardCheckoutEligibleMerchants;
+            }
+
+            return [];
+        };
+
+        $this->mockPrestoService($callback);
+
+        $this->fixtures->edit('merchant', Account::TEST_ACCOUNT, [
+            'category2' => Category::SOCIAL,
+            'activated_at' => $ninetyOneDaysAgo,
+        ]);
+        $this->fixtures->create('merchant', [
+            'id' => Account::DEMO_ACCOUNT,
+            'category2' => Category::SOCIAL,
+            'activated_at' => $ninetyOneDaysAgo,
+        ]);
+
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => Account::TEST_ACCOUNT,
+            'business_type' => 4,
+            'activation_status' => 'activated',
+            'fraud_type' => 'suspended',
+        ]);
+        $this->fixtures->merchant_detail->createEntity('merchant_detail',[
+            'merchant_id' => Account::DEMO_ACCOUNT,
+            'business_type' => 4,
+            'activation_status' => 'activated',
+            'fraud_type' => '',
+        ]);
+
+        $request = array(
+            'url' => '/trusted_badge/eligibility_cron',
+            'method' => 'POST'
+        );
+
+        $this->ba->cronAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(true, $response['success']);
+
+        $request = array(
+            'url' => '/trusted_badge',
+            'method' => 'GET',
+            'content' => [],
+        );
+
+        // Though test account is standard checkout eligible, they are ineligible because of fraud_type
+
+        $this->ba->proxyAuth();
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('ineligible', $response['status']);
+        $this->assertEquals(false, $response['is_live']);
+
+        $demoMerchantUser = $this->fixtures->user->createUserForMerchant(Account::DEMO_ACCOUNT);
+        $this->ba->proxyAuth('rzp_test_' . Account::DEMO_ACCOUNT, $demoMerchantUser['id']);
+        $response = $this->makeRequestAndGetContent($request);
+        $this->assertEquals('eligible', $response['status']);
+        $this->assertEquals(true, $response['is_live']);
     }
 
     /** This method tests if merchants having gmv > 20 lakhs are eligible for RTB or not.

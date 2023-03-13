@@ -1835,9 +1835,10 @@ class Repository extends Base\Repository
                     });
             })
             ->whereNotIn($businessType, $excludedBusinessTypeList)
-            ->whereNotIn($merchantId, $blacklistedMIDs);
+            ->whereNotIn($merchantId, $blacklistedMIDs)
+            ->pluck($merchantId);
 
-        return $query->pluck($merchantId);
+        return $query->toArray();
     }
 
     /**

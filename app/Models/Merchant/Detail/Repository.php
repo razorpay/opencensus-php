@@ -587,11 +587,11 @@ class Repository extends Base\Repository
     }
 
     /**
-     * This method returns list of mids who dont have any risk tags associated
+     * This method returns list of mids who have any risk tags associated
      * @param array $merchantIds the list of mids from which to filter out merchants
      * @return array
      */
-    public function getMerchantsWithoutRiskTags(array $merchantIds): array
+    public function getMerchantsWithRiskTags(array $merchantIds): array
     {
         if (empty($merchantIds) === true)
         {
@@ -601,11 +601,8 @@ class Repository extends Base\Repository
         return $this->newQueryWithConnection($this->getSlaveConnection())
             ->select(Entity::MERCHANT_ID)
             ->whereIn(Entity::MERCHANT_ID, $merchantIds)
-            ->where(static function ($query)
-            {
-                $query->whereNull(Entity::FRAUD_TYPE)
-                    ->orWhere(Entity::FRAUD_TYPE, '');
-            })
+            ->whereNotNull(Entity::FRAUD_TYPE)
+            ->whereNot(Entity::FRAUD_TYPE, '')
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
     }
