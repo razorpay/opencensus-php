@@ -23,11 +23,9 @@ jobs:
   build-and-run-e2e:
     name: Run E2E Tests on PR Comment or PR approval or on master merge
     if: |
-      ${{
         (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/run-e2e')) ||
         (github.ref == 'refs/heads/master' && !github.event.comment.body) ||
         (github.event_name == 'pull_request_review' && github.event.review.state == 'approved')
-      }}
     timeout-minutes: 60
     runs-on: [self-hosted]
     steps:
@@ -45,6 +43,8 @@ jobs:
           echo "Condition 1 PR Comment: ${{ github.event_name == 'issue_comment' && contains(github.event.comment.body, '/run-e2e')}}"
           echo "Condition 2 Master Merge: ${{ github.ref == 'refs/heads/master' && !github.event.comment.body }}"
           echo "Condition 3 PR Approved: ${{ github.event_name == 'pull_request_review' && github.event.review.state == 'approved' }}"
+          echo "Final Condition: ${{ (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/run-e2e')) || (github.ref == 'refs/heads/master' && !github.event.comment.body) || (github.event_name == 'pull_request_review' && github.event.review.state == 'approved') }}"
+
       - name: Fetch data of comment's associated PR
         uses: xt0rted/pull-request-comment-branch@v1
         id: comment-branch
