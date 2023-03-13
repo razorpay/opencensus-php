@@ -5,6 +5,7 @@ namespace RZP\Models\Transfer;
 use RZP\Base;
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Models\Admin;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
@@ -12,7 +13,6 @@ use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Feature\Constants as FeatureConstants;
-use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsConstants;
 
 class Validator extends Base\Validator
@@ -280,6 +280,18 @@ class Validator extends Base\Validator
     public function validateTransferMaxAmount(int $amount, Merchant\Entity $merchant)
     {
         $maxAmount = $merchant->getMaxPaymentAmount();
+
+        //
+        // Direct transfer limit can be increased for specific MIDs via Redis
+        // config to allow them to bulk transfer their payment transfer volumes.
+        // Slack: https://razorpay.slack.com/archives/C03RY88T214/p1678094313684049
+        //
+        $maxAmountConfig = (new Admin\Service())->getConfigKey(['key' => Admin\ConfigKey::DIRECT_TRANSFER_LIMITS]);
+
+        if (isset($maxAmountConfig[$merchant->getId()]) === true)
+        {
+            $maxAmount = $maxAmountConfig[$merchant->getId()];
+        }
 
         if ($amount > $maxAmount)
         {
