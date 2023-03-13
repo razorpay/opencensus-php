@@ -36,11 +36,11 @@ class TrustedBadgeController extends Controller
         return ApiResponse::json([], Response::HTTP_NO_CONTENT);
     }
 
-    public function blacklistMerchants()
+    public function updateTrustedBadgeStatus()
     {
         $input = Request::all();
 
-        $response = $this->service()->blacklistMerchants($input);
+        $response = $this->service()->updateTrustedBadgeStatus($input);
 
         return ApiResponse::json($response);
     }

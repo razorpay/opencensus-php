@@ -18,6 +18,7 @@ class Validator extends Base\Validator
         Entity::ELIGIBLE,
         Entity::INELIGIBLE,
         Entity::BLACKLIST,
+        Entity::WHITELIST,
     ];
 
     protected static $validMerchantStatuses = [

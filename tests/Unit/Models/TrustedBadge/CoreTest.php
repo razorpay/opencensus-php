@@ -139,4 +139,32 @@ class CoreTest extends TestCase
 
         $this->app->instance('datalake.presto', $prestoService);
     }
+
+    public function testisMerchantLiveOnRTB():void
+    {
+        $this->fixtures->create('trusted_badge', [
+            'merchant_id'       => Account::TEST_ACCOUNT,
+            'status'            => 'whitelist',
+            'merchant_status'   => 'optout',
+        ]);
+        $this->fixtures->create('trusted_badge', [
+            'merchant_id'       => Account::DEMO_ACCOUNT,
+            'status'            => 'eligible',
+            'merchant_status'   => '',
+        ]);
+        $this->fixtures->create('trusted_badge', [
+            'merchant_id'       => Account::SHARED_ACCOUNT,
+            'status'            => 'whitelist',
+            'merchant_status'   => '',
+        ]);
+
+        $response = (new Core())->isTrustedBadgeLiveForMerchant(Account::TEST_ACCOUNT);
+        $this->assertEquals(false, $response);
+
+        $response = (new Core())->isTrustedBadgeLiveForMerchant(Account::DEMO_ACCOUNT);
+        $this->assertEquals(true, $response);
+
+        $response = (new Core())->isTrustedBadgeLiveForMerchant(Account::SHARED_ACCOUNT);
+        $this->assertEquals(true, $response);
+    }
 }

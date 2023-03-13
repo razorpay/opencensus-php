@@ -3688,7 +3688,7 @@ class Route
         'trusted_badge_eligibility_cron'          => ['post',     'trusted_badge/eligibility_cron',                         'TrustedBadgeController@eligibilityCron'                       ],
         'fetch_trusted_badge_status'              => ['get',      'trusted_badge',                                          'TrustedBadgeController@fetch'                                 ],
         'trusted_badge_merchant_status'           => ['put',      'trusted_badge/merchant_status',                          'TrustedBadgeController@updateMerchantStatus'                  ],
-        'trusted_badge_blacklist'                 => ['post',     'trusted_badge/blacklist',                                'TrustedBadgeController@blacklistMerchants'                    ],
+        'update_trusted_badge_status'             => ['put',      'trusted_badge/status',                                   'TrustedBadgeController@updateTrustedBadgeStatus'              ],
         'trusted_badge_redirect'                  => ['get',      'trusted_badge/redirect',                                 'TrustedBadgeController@redirectUrl'                           ],
         'trusted_badge_get_experiment_list'       => ['get',      'trusted_badge/experiment_list',                          'TrustedBadgeController@fetchExperimentList'                   ],
         'trusted_badge_put_experiment_list'       => ['put',      'trusted_badge/experiment_list',                          'TrustedBadgeController@putExperimentList'                     ],
@@ -7965,7 +7965,7 @@ class Route
         'bulk_regenerate_api_keys',
 
         // razorpay trusted badge
-        'trusted_badge_blacklist',
+        'update_trusted_badge_status',
 
         'tokenisation_local_cards_bulk',
 
@@ -9375,7 +9375,7 @@ class Route
 
         'user_verify_contact_batch'                       => Permission::UPDATE_USER_CONTACT_MOBILE,
         'bulk_regenerate_api_keys'                        => Permission::BULK_REGENERATE_API_KEYS,
-        'trusted_badge_blacklist'                         => Permission::TRUSTED_BADGE_BLACKLIST,
+        'update_trusted_badge_status'                     => Permission::UPDATE_TRUSTED_BADGE_STATUS,
         'tokenisation_local_cards_bulk'                   => Permission::BULK_TOKENISATION,
         'risk_attributes_get'                             => Permission::MERCHANT_ACTIONS,
         'create_risk_action'                              => Permission::MERCHANT_ACTIONS,
@@ -13565,7 +13565,7 @@ class Route
             'transfer_settlements_update',
             'transparent_redirect_get',
             'transparent_redirect_post',
-            'trusted_badge_blacklist',
+            'update_trusted_badge_status',
             'tokenisation_local_cards_bulk',
             'ufh_admin_upload_file',
             'ufh_get_file_signed_url',

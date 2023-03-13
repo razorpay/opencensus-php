@@ -63,13 +63,15 @@ class Service extends Base\Service
         $this->core->upsertMerchantStatus($merchantId, $merchantStatus);
     }
 
-    public function blacklistMerchants($input): array
+    public function updateTrustedBadgeStatus($input): array
     {
-        (new Validator())->validateInput('validate_blacklist', $input);
+        (new Validator())->validateInput('validate_status', $input);
 
         $merchantIdList = $input['merchant_ids'];
 
-        $blacklistStatus = $input['blacklist'];
+        $status= $input['status'];
+
+        $action = $input['action'];
 
         $response = [
             'success' => 0,
@@ -79,18 +81,19 @@ class Service extends Base\Service
         foreach ($merchantIdList as $merchantId)
         {
             try {
-                $status = Entity::BLACKLIST;
-
                 // check if merchant_id exists
                 $this->repo->merchant->findOrFail($merchantId);
 
-                if ($blacklistStatus === false)
+                if ($action === 'remove')
                 {
                     // fetch current status
                     $currentTrustedBadge = $this->repo->trusted_badge->fetchByMerchantId($merchantId);
 
-                    // update only if blacklisted
-                    if ($currentTrustedBadge[Entity::STATUS] === Entity::BLACKLIST)
+                    /**
+                     * We should remove merchant from blacklist if and only if they are already in blacklist.
+                     * similarly, remove them from whitelist if and only if they are already in whitelist
+                     */
+                    if ($currentTrustedBadge[Entity::STATUS] === $status)
                     {
                         $status = Entity::INELIGIBLE;
                     }
@@ -107,15 +110,14 @@ class Service extends Base\Service
 
             } catch (\Throwable $e)
             {
-
-                $this->trace->info(TraceCode::TRUSTED_BADGE_BLACKLIST_FAILURE,
+                $this->trace->info(TraceCode::TRUSTED_BADGE_STATUS_UPDATE_FAILURE,
                     [
                         'merchant_id' => $merchantId,
                         'status'      => $status,
+                        'action'      => $action,
                     ]);
 
                 $response['failures'][] = $merchantId;
-
             }
         }
 

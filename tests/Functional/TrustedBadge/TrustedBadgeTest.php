@@ -512,6 +512,20 @@ class TrustedBadgeTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddToTrustedBadgeWhitelist(): void
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testRemoveFromTrustedBadgeWhitelist(): void
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
     public function testTrustedBadgeBlacklistWithStatusCheck(): void
     {
         $this->ba->adminAuth();
@@ -521,11 +535,12 @@ class TrustedBadgeTest extends TestCase
 
         // blacklist merchant
         $request = array(
-            'url'     => '/trusted_badge/blacklist',
-            'method'  => 'POST',
+            'url'     => '/trusted_badge/status',
+            'method'  => 'PUT',
             'content' => [
                 'merchant_ids' => ['10000000000000'],
-                'blacklist'    => true
+                'status' =>  'blacklist',
+                'action' => 'add',
             ],
             'convertContentToString' => false, //to prevent converting boolean value to string
         );
@@ -551,11 +566,72 @@ class TrustedBadgeTest extends TestCase
         $this->ba->adminAuth();
 
         $request = array(
-            'url'     => '/trusted_badge/blacklist',
-            'method'  => 'POST',
+            'url'     => '/trusted_badge/status',
+            'method'  => 'PUT',
             'content' => [
                 'merchant_ids' => ['10000000000000'],
-                'blacklist'    => false,
+                'status' =>  'blacklist',
+                'action' => 'remove',
+            ],
+            'convertContentToString' => false,
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $response['success']);
+
+        $this->ba->proxyAuth();
+
+        // fetch and check status, is delisted atleast once
+        $this->startTest();
+    }
+
+    public function testTrustedBadgeWhitelistWithStatusCheck(): void
+    {
+        $this->ba->adminAuth();
+
+        $this->fixtures->create('trusted_badge');
+        $this->fixtures->create('trusted_badge_history');
+
+        // whitelist merchant
+        $request = array(
+            'url'     => '/trusted_badge/status',
+            'method'  => 'PUT',
+            'content' => [
+                'merchant_ids' => ['10000000000000'],
+                'status' =>  'whitelist',
+                'action' => 'add',
+            ],
+            'convertContentToString' => false, //to prevent converting boolean value to string
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals(1, $response['success']);
+
+        $this->ba->proxyAuth();
+
+        $request = array(
+            'url'     => '/trusted_badge',
+            'method'  => 'GET',
+            'content' => []
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals('whitelist', $response['status']);
+        $this->assertEquals(false, $response['is_live']);
+
+        // remove merchant from whitelist
+        $this->ba->adminAuth();
+
+        $request = array(
+            'url'     => '/trusted_badge/status',
+            'method'  => 'PUT',
+            'content' => [
+                'merchant_ids' => ['10000000000000'],
+                'status' =>  'whitelist',
+                'action' => 'remove',
             ],
             'convertContentToString' => false,
         );

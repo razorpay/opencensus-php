@@ -39,10 +39,11 @@ return [
         'request' => [
             'content' => [
                 'merchant_ids' => ['10000000000000', '10000000000001'],
-                'blacklist' =>  true
+                'status' =>  'blacklist',
+                'action' => 'add',
             ],
-            'url' => '/trusted_badge/blacklist',
-            'method' => 'POST',
+            'url' => '/trusted_badge/status',
+            'method' => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -54,11 +55,12 @@ return [
     'testRemoveFromTrustedBadgeBlacklist' => [
         'request' => [
             'content' => [
-                'blacklist' =>  0,
                 'merchant_ids' => ['10000000000000', '10000000000001'],
+                'status' =>  'blacklist',
+                'action' => 'remove',
             ],
-            'url' => '/trusted_badge/blacklist',
-            'method' => 'POST',
+            'url' => '/trusted_badge/status',
+            'method' => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -67,7 +69,40 @@ return [
             ]
         ]
     ],
-
+    'testAddToTrustedBadgeWhitelist' => [
+        'request' => [
+            'content' => [
+                'merchant_ids' => ['10000000000000', '10000000000001'],
+                'status' => 'whitelist',
+                'action' => 'add',
+            ],
+            'url' => '/trusted_badge/status',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'success' => 1,
+                'failures' => ['10000000000001']
+            ]
+        ]
+    ],
+    'testRemoveFromTrustedBadgeWhitelist' => [
+        'request' => [
+            'content' => [
+                'merchant_ids' => ['10000000000000', '10000000000001'],
+                'status' =>  'whitelist',
+                'action' => 'remove',
+            ],
+            'url' => '/trusted_badge/status',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'success' => 1,
+                'failures' => ['10000000000001']
+            ]
+        ]
+    ],
     'testIsDelistedAtleastOnce' => [
         'request' => [
             'content' => [],
@@ -85,6 +120,22 @@ return [
     ],
 
     'testTrustedBadgeBlacklistWithStatusCheck' => [
+        'request' => [
+            'content' => [],
+            'url'     => '/trusted_badge',
+            'method'  => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                "status"            => 'ineligible',
+                "merchant_status"   => 'optout',
+                "is_delisted_atleast_once" => 1,
+                'is_live'           => false,
+            ]
+        ]
+    ],
+
+    'testTrustedBadgeWhitelistWithStatusCheck' => [
         'request' => [
             'content' => [],
             'url'     => '/trusted_badge',

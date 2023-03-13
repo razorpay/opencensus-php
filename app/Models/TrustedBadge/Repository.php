@@ -71,7 +71,11 @@ EOT;
     {
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->merchantId($merchantId)
-            ->where(Entity::STATUS,'=', Entity::ELIGIBLE)
+            ->where(static function ($query)
+            {
+                $query->where(Entity::STATUS,'=', Entity::ELIGIBLE)
+                    ->orWhere(Entity::STATUS, '=', Entity::WHITELIST);
+            })
             ->where(Entity::MERCHANT_STATUS,'!=', Entity::OPTOUT);
 
         $merchantLiveOnRTB = $query->get()->first();
@@ -79,11 +83,18 @@ EOT;
         return isset($merchantLiveOnRTB);
     }
 
-    public function fetchRTBBlacklistedMerchantIds(): array
+    /**
+     * This query is used to fetch merchants who are blacklisted or whitelisted. we need these merchants to
+     * exclude them from the cron run so that their status doesn't get override by cron
+     *
+     * @return array
+     */
+    public function fetchRTBBlacklistedOrWhitelistedMerchantIds(): array
     {
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
             ->select(Entity::MERCHANT_ID)
             ->where(Entity::STATUS, Entity::BLACKLIST)
+            ->orWhere(Entity::STATUS, Entity::WHITELIST)
             ->get();
 
         return $query->pluck(Entity::MERCHANT_ID)->toArray();

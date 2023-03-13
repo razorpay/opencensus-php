@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const ELIGIBLE      = 'eligible';
     const INELIGIBLE    = 'ineligible';
     const BLACKLIST     = 'blacklist';
+    const WHITELIST     = 'whitelist';
 
     protected $fillable = [
         self::MERCHANT_ID,

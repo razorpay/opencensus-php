@@ -975,7 +975,7 @@ class Name
     const EMANDATE_BATCH_UPLOAD = 'emandate_batch_upload';
 
     // Razorpay Trusted Badge
-    const TRUSTED_BADGE_BLACKLIST       = 'trusted_badge_blacklist';
+    const UPDATE_TRUSTED_BADGE_STATUS       = 'update_trusted_badge_status';
 
     const BULK_TOKENISATION       = 'bulk_tokenisation';
 

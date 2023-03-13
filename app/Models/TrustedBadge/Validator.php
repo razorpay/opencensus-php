@@ -18,6 +18,7 @@ class Validator extends Base\Validator
         Entity::ELIGIBLE,
         Entity::INELIGIBLE,
         Entity::BLACKLIST,
+        Entity::WHITELIST,
     ];
 
     protected static $validMerchantStatuses = [
@@ -26,9 +27,10 @@ class Validator extends Base\Validator
         Entity::WAITLIST,
     ];
 
-    protected static $validateBlacklistRules = [
+    protected static $validateStatusRules = [
         'merchant_ids'          => 'required|array',
-        'blacklist'             => 'required|boolean'
+        'status'                => 'required|string|in:blacklist,whitelist',
+        'action'                => 'required|string|in:add,remove',
     ];
 
     protected static $validateRedirectRules = [

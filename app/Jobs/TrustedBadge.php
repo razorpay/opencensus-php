@@ -52,11 +52,11 @@ class TrustedBadge extends Job
                 'dryRun' => $this->dryRun,
             ]);
 
-            $blacklistedMIDs = $this->repoManager->trusted_badge->fetchRTBBlacklistedMerchantIds();
+            $blacklistedOrWhitelistedMIDs = $this->repoManager->trusted_badge->fetchRTBBlacklistedOrWhitelistedMerchantIds();
 
             $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
-                'checkpoint'    => 'fetched_blacklisted_mid',
-                'blacklistedMerchantCount' => count($blacklistedMIDs),
+                'checkpoint'    => 'fetched_blacklisted_or_whitelisted_mid',
+                'blacklistedOrWhitelistedMerchantCount' => count($blacklistedOrWhitelistedMIDs),
             ]);
 
             /**
@@ -68,7 +68,7 @@ class TrustedBadge extends Job
              * 5. kyc done - details table - activation_status = 'activated
              * 6. merchant not in RTB blacklist
              */
-            $merchantIdListWithInitialChecksPassed = $this->repoManager->merchant->getMerchantListEligibleForRTB($blacklistedMIDs);
+            $merchantIdListWithInitialChecksPassed = $this->repoManager->merchant->getMerchantListEligibleForRTB($blacklistedOrWhitelistedMIDs);
 
             $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
                 'checkpoint'    => 'fetched_merchants_with_initial_checks_passed',

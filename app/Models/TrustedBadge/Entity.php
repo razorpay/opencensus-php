@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const ELIGIBLE      = 'eligible';
     const INELIGIBLE    = 'ineligible';
     const BLACKLIST     = 'blacklist';
+    const WHITELIST     = 'whitelist';
 
     // eligibility check constants
     public const STANDARD_CHECKOUT_ELIGIBLE                = 'standardCheckoutEligible';
@@ -115,7 +116,7 @@ class Entity extends Base\PublicEntity
     public function isLive(): bool
     {
         return (
-            $this->status === self::ELIGIBLE &&
+            ($this->status === self::ELIGIBLE || $this->status === self::WHITELIST) &&
             $this->merchant_status !== self::OPTOUT
         );
     }

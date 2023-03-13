@@ -1804,7 +1804,7 @@ class Repository extends Base\Repository
         return array_merge($activatedIds, $rejectedIds);
     }
 
-    public function getMerchantListEligibleForRTB($blacklistedMIDs)
+    public function getMerchantListEligibleForRTB($blacklistedOrWhitelistedMIDs)
     {
         $merchantId = $this->dbColumn(Entity::ID);
         $orgId = $this->dbColumn(Entity::ORG_ID);
@@ -1835,7 +1835,7 @@ class Repository extends Base\Repository
                     });
             })
             ->whereNotIn($businessType, $excludedBusinessTypeList)
-            ->whereNotIn($merchantId, $blacklistedMIDs)
+            ->whereNotIn($merchantId, $blacklistedOrWhitelistedMIDs)
             ->pluck($merchantId);
 
         return $query->toArray();
