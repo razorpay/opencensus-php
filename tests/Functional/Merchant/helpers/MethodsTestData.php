@@ -761,9 +761,12 @@ return [
                     ['network' => 'VISA', 'type' => 'credit'],
                     ['network' => 'VISA', 'type' => 'debit'],
                     ['network' => 'VISA', 'type' => 'prepaid'],
+                    ['network' => 'UNP', 'type'=> 'credit'],
+                    ['network' => 'UNP', 'type'=> 'debit'],
+                    ['network' => 'UNP', 'type' => 'prepaid'],
                     ['network' => 'BAJAJ', 'type' => 'credit'],
                     ['network' => 'BAJAJ', 'type' => 'debit'],
-                    ['network' => 'BAJAJ', 'type' => 'prepaid'],
+                    ['network' => 'BAJAJ', 'type' => 'prepaid']
                 ],
                 'netbanking' => [
                     ['bank' => 'AUBL'],

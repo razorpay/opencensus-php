@@ -89,6 +89,7 @@ class Network
         Network::JCB   => 32,
         Network::RUPAY => 64,
         Network::BAJAJ => 128,
+        Network::UNP => 256,
 
     ];
 
@@ -114,7 +115,7 @@ class Network
         self::JCB,
 //        self::MAES,
 //        self::RUPAY,
-        self::UNP,
+//        self::UNP,
     ];
 
     public static $recurringNetworks = [
