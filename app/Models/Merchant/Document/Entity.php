@@ -44,7 +44,8 @@ class Entity extends Base\PublicEntity
         self::UPLOAD_BY_ADMIN_ID,
         self::DOCUMENT_DATE,
         self::AUDIT_ID,
-        self::METADATA
+        self::METADATA,
+        self::DELETED_AT,
     ];
 
     protected $public = [

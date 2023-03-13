@@ -352,11 +352,14 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $fillable = [
+        self::ACTIVATED_AT,
+        self::ACTIVATED,
         self::ID,
         self::NAME,
         self::EMAIL,
         self::SCOPE,
         self::WEBSITE,
+        self::WHITELISTED_DOMAINS,
         self::CHANNEL,
         self::CATEGORY,
         self::CATEGORY2,

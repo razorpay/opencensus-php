@@ -210,4 +210,9 @@ class Core
     {
         return ($this->env === Environment::PRODUCTION);
     }
+
+    public function savePGOSDataToAPI(array $data)
+    {
+
+    }
 }

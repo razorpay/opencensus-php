@@ -13,7 +13,7 @@ use RZP\Models\Merchant\AccountV2;
 use RZP\Exception\BadRequestException;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 use RZP\Trace\Tracer;
-
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 
 class Core extends Base\Core
 {
@@ -319,5 +319,39 @@ class Core extends Base\Core
         }
 
         return $existingDetails;
+    }
+
+    public function savePGOSDataToAPI(array $data)
+    {
+        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
+                $data[Entity::MERCHANT_ID],
+                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
+                MerchantOnboardingProxyController::LIVE) === true)
+        {
+            $stakeholders = (new Repository())->fetchStakeholders($data["merchant_id"]);
+
+            if ($stakeholders->isNotEmpty() === true)
+            {
+                unset($data["merchant_id"]);
+
+                foreach ($stakeholders as $stakeholder)
+                {
+                    $stakeholder->edit($data);
+
+                    $this->repo->saveOrFail($stakeholder);
+                }
+            }
+            else
+            {
+                $stakeholder = new Entity;
+
+                $stakeholder->generateId();
+
+                $stakeholder->build($data);
+
+                $this->repo->stakeholder->saveOrFail($stakeholder);
+
+            }
+        }
     }
 }

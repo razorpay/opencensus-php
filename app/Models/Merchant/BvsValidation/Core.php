@@ -16,6 +16,7 @@ use RZP\Exception\LogicException;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Feature\Constants as FeatureConstant;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\BvsValidation\Constants as BvsValidationConstant;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\BankAccount\Core as BankAccountCore;
@@ -644,5 +645,36 @@ class Core extends Base\Core
             }
         }
 
+    }
+
+    public function savePGOSDataToAPI(array $data)
+    {
+        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
+                $data[Entity::OWNER_ID],
+                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
+                MerchantOnboardingProxyController::LIVE) === true)
+        {
+            $validation = $this->repo->bvs_validation->find($data[Entity::VALIDATION_ID]);
+
+            $data[Entity::OWNER_TYPE] = Constant::MERCHANT;
+
+            $data[Entity::PLATFORM] = Constant::PG;
+
+            if (empty($validation) === false)
+            {
+                $validation->edit($data);
+
+                $this->repo->bvs_validation->saveOrFail($validation);
+            }
+            else
+            {
+                $validation = new Entity;
+
+                $validation->build($data);
+
+                $this->repo->bvs_validation->saveOrFail($validation);
+
+            }
+        }
     }
 }

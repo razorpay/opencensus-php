@@ -189,4 +189,13 @@ class Repository extends Base\Repository
             ->pluck(Entity::ARTEFACT_TYPE)
             ->toArray();
     }
+
+    public function getFromValidationId(string $validationId)
+    {
+        return $this->newQuery()
+                    ->Where(Entity::VALIDATION_ID, $validationId)
+                    ->Where(Entity::PLATFORM, "=", "pg")
+                    ->Where(Entity::OWNER_TYPE, "=", "merchant")
+                    ->first();
+    }
 }

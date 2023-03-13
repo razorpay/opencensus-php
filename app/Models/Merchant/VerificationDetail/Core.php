@@ -7,7 +7,7 @@ use Mail;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Detail;
-
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 
 class Core extends Base\Core
 {
@@ -15,7 +15,7 @@ class Core extends Base\Core
 
     public function createOrEditVerificationDetail(Detail\Entity $merchantDetails, $input)
     {
-        return $this->repo->transactionOnLiveAndTest(function () use ($merchantDetails, $input) {
+        return $this->repo->transactionOnLiveAndTest(function() use ($merchantDetails, $input) {
 
             $merchantId = $merchantDetails->getMerchantId();
 
@@ -56,7 +56,7 @@ class Core extends Base\Core
     {
         $mutexResource = self::VERIFICATION_DETAIL_CREATE_MUTEX_PREFIX . $merchantDetails->getMerchantId();
 
-        return $this->app['api.mutex']->acquireAndRelease($mutexResource, function () use ($merchantDetails, $input) {
+        return $this->app['api.mutex']->acquireAndRelease($mutexResource, function() use ($merchantDetails, $input) {
 
             $verificationDetail = new Entity;
 
@@ -72,4 +72,36 @@ class Core extends Base\Core
         });
     }
 
+
+    public function savePGOSDataToAPI(array $data)
+    {
+        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
+                $data[Entity::MERCHANT_ID],
+                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
+                MerchantOnboardingProxyController::LIVE) === true)
+        {
+            $verification = (new Repository())->getDetailsForTypeAndIdentifier($data[Entity::MERCHANT_ID],
+                                                                               $data[Entity::ARTEFACT_TYPE],
+                                                                               $data[Entity::ARTEFACT_IDENTIFIER]
+            );
+
+            if (empty($verification) === false)
+            {
+                $verification->edit($data);
+
+                $this->repo->saveOrFail($verification);
+            }
+            else
+            {
+                $verification = new Entity;
+
+                $verification->generateId();
+
+                $verification->build($data);
+
+                $this->repo->merchant_verification_detail->saveOrFail($verification);
+
+            }
+        }
+    }
 }

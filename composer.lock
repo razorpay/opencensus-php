@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a945a710856d07f4292a363cffc10d8b",
+    "content-hash": "436125e8bd7c74ae4feec61d65f01985",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -13632,6 +13632,58 @@
                 "source": "https://github.com/segmentio/analytics-php/tree/v1"
             },
             "time": "2014-06-17T00:28:51+00:00"
+        },
+        {
+            "name": "selective/transformer",
+            "version": "1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/selective-php/transformer.git",
+                "reference": "1b5d255589da70955e7fdf3ad431eb9e7f574796"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/selective-php/transformer/zipball/1b5d255589da70955e7fdf3ad431eb9e7f574796",
+                "reference": "1b5d255589da70955e7fdf3ad431eb9e7f574796",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3",
+                "phpstan/phpstan": "^1",
+                "phpunit/phpunit": "^8 || ^9",
+                "squizlabs/php_codesniffer": "^3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Selective\\Transformer\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A strictly typed array transformer with dot-access, fluent interface and filters.",
+            "homepage": "https://github.com/selective-php/transformer",
+            "keywords": [
+                "array",
+                "converter",
+                "dot",
+                "dot-access",
+                "hydator",
+                "json",
+                "mapper",
+                "transformer",
+                "typed"
+            ],
+            "support": {
+                "issues": "https://github.com/selective-php/transformer/issues",
+                "source": "https://github.com/selective-php/transformer/tree/1.2.0"
+            },
+            "time": "2022-11-08T19:26:10+00:00"
         },
         {
             "name": "sentry/sdk",

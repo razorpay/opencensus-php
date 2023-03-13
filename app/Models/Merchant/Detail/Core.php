@@ -26,6 +26,7 @@ use Rzp\Bvs\Validation\V1\TwirpError;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\PaymentLink;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher\GstinAuth;
 use RZP\Models\Merchant\Store\ConfigKey;
 use RZP\Metro\Constants as MetroConstants;
@@ -9093,5 +9094,23 @@ class Core extends Base\Core
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent(
             $this->merchant, $segmentProperties, $segmentEventName
         );
+    }
+
+    public function savePGOSDataToAPI(array $data)
+    {
+        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
+                $data[Entity::MERCHANT_ID],
+                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
+                MerchantOnboardingProxyController::LIVE) === true)
+        {
+            $merchantDetails = $this->repo->merchant_detail->getByMerchantId($data['merchant_id']);
+
+            unset($data["merchant_id"]);
+
+            $merchantDetails->edit($data);
+
+            $this->repo->saveOrFail($merchantDetails);
+        }
+
     }
 }

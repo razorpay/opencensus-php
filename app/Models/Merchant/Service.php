@@ -11884,6 +11884,29 @@ class Service extends Base\Service
         return $this->core()->fetchCapitalApplicationsForSubmerchants($partner, $input);
     }
 
+    public function savePGOSDataToAPI($sqlBinLogData)
+    {
+        /*
+        $validator = new Validator();
+
+        $validator->validateInput('sql_bin_log', $sqlBinLogData);
+
+        if ($sqlBinLogData["database"] === "pgos-prod" and $sqlBinLogData["commit"] === false)
+        {
+            return;
+        }
+        */
+
+        $transformers = (new \RZP\Base\Transformer())->getTransformers($sqlBinLogData["table"]);
+
+        foreach ($transformers as $transformer)
+        {
+            $transformer->transform($sqlBinLogData["data"]);
+        }
+
+    }
+
+
     public function saveMerchantAuthorizationToPartner(string $merchantId, array $input)
     {
         return $this->core()->saveMerchantAuthorizationToPartner($merchantId, $input);

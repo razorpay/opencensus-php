@@ -9421,6 +9421,23 @@ class Core extends Base\Core
                     );
     }
 
+    public function savePGOSDataToAPI(array $data)
+    {
+        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
+                $data[Entity::ID],
+                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
+                MerchantOnboardingProxyController::LIVE) === true)
+        {
+            $merchant = $this->repo->merchant->find($data[Entity::ID]);
+
+            unset($data[Entity::ID]);
+
+            $merchant->edit($data);
+
+            $this->repo->saveOrFail($merchant);
+        }
+    }
+
     public function getMerchantAuthorizationForPartner(string $merchantId, string $partnerId) : array
     {
         $subMerchant = $this->repo->merchant->findOrFailPublic($merchantId);

@@ -147,11 +147,16 @@ class Validator extends Base\Validator
         Entity::SIGNUP_SOURCE               => 'sometimes|string|max:32',
         Entity::CODE                        => 'custom',
         Entity::SIGNUP_VIA_EMAIL            => 'sometimes|in:0,1',
-        Entity::COUNTRY_CODE                => 'sometimes|string|max:2|in:IN,MY'
+        Entity::COUNTRY_CODE                => 'sometimes|string|max:2|in:IN,MY',
+        Entity::BILLING_LABEL               => 'sometimes|max:255',
     ];
 
     protected static $editRules = [
+        Entity::WHITELISTED_DOMAINS                   => 'sometimes|array',
+        Entity::ACTIVATED                             => 'sometimes|boolean',
+        Entity::ACTIVATED_AT                          => 'sometimes|integer',
         Entity::NAME                                  => 'sometimes|string|max:200',
+        Entity::EMAIL                                 => 'sometimes|email',
         Entity::HOLD_FUNDS                            => 'sometimes|in:0,1',
         Entity::WEBSITE                               => 'sometimes|url|max:255|nullable',
         Entity::CATEGORY                              => 'sometimes|string|digits:4',
@@ -3394,6 +3399,19 @@ class Validator extends Base\Validator
                 'zipcode is required for India');
         }
     }
+
+    protected static $sqlBinLogRules = [
+        "database"              => 'required|string',
+        "table"                 => "required|string",
+        "type"                  => "required|string|in:update,insert,delete",
+        "ts"                    => "required|integer",
+        "xid"                   => "required|integer",
+        "commit"                => "required|boolean",
+        "position"              => "required|string",
+        "primary_key_columns"   =>  "required|array",
+        "data"                  => "required|array",
+        "old"                   => "required|array"
+    ];
 
     public function validateOrgDetails(Entity $merchant){
 

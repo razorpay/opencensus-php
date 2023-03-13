@@ -160,17 +160,32 @@ class Validator extends Base\Validator
         BDConstants::OTHERS_PRESENT             => 'sometimes|boolean',
         BDConstants::ANDROID_APP_PRESENT        => 'sometimes|boolean',
         BDConstants::CONSENT                    => 'sometimes|boolean',
-        BDConstants::DOCUMENTS_DETAIL           => 'sometimes|array'
+        BDConstants::DOCUMENTS_DETAIL           => 'sometimes|array',
+
+        Entity::MERCHANT_ID                             => 'sometimes|string|max:14',
+        Entity::POI_VERIFICATION_STATUS                 => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::POA_VERIFICATION_STATUS                 => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::GSTIN_VERIFICATION_STATUS               => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::CIN_VERIFICATION_STATUS                 => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::COMPANY_PAN_VERIFICATION_STATUS         => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS    => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS     => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS  => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::MSME_DOC_VERIFICATION_STATUS            => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS    => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+
     ];
 
     protected static $editRules = [
+        Entity::SUBMITTED                                => 'sometimes|boolean',
+        Entity::SUBMITTED_AT                             => 'sometimes|integer',
         Entity::STAKEHOLDER                              => 'sometimes|array|custom',
         Entity::MERCHANT_AVG_ORDER_VALUE                 => 'filled|array|custom',
         Entity::CONTACT_NAME                             => 'sometimes|alpha_space|max:255',
         Entity::CONTACT_EMAIL                            => 'sometimes|nullable|email|max:255',
         Entity::CONTACT_MOBILE                           => 'sometimes|max:15|contact_syntax',
         Entity::CONTACT_LANDLINE                         => 'sometimes|numeric|digits_between:8,11',
-        Entity::BUSINESS_TYPE                            => 'filled|numeric|digits_between:1,10',
+        Entity::BUSINESS_TYPE                            => 'filled|numeric|digits_between:1,13',
         Entity::BUSINESS_NAME                            => 'sometimes|max:255',
         Entity::BUSINESS_DESCRIPTION                     => 'filled|max:255',
         Entity::BUSINESS_DBA                             => 'filled|max:255',
@@ -242,10 +257,12 @@ class Validator extends Base\Validator
         Entity::COMMENT                                  => 'sometimes|max:255',
         Entity::SUBMIT                                   => 'sometimes|boolean',
         Entity::ACTIVATION_STATUS                        => 'sometimes|max:30',
+        Entity::ACTIVATION_PROGRESS                      => 'sometimes|numeric|min:0|max:100',
         Entity::CLARIFICATION_MODE                       => 'sometimes|max:15',
         Entity::ISSUE_FIELDS                             => 'sometimes|string',
         Entity::ISSUE_FIELDS_REASON                      => 'sometimes|string',
         Entity::INTERNAL_NOTES                           => 'sometimes|string',
+        Entity::ACTIVATION_FLOW                          => 'sometimes|custom',
         Entity::INTERNATIONAL_ACTIVATION_FLOW            => 'sometimes|custom',
         Entity::CUSTOM_FIELDS                            => 'filled|array',
         Entity::CLIENT_APPLICATIONS                      => 'filled|array',
@@ -279,8 +296,20 @@ class Validator extends Base\Validator
         BDConstants::ANDROID_APP_PRESENT                 => 'sometimes|boolean',
         Entity::IEC_CODE                                 => 'sometimes|string|max:20',
         BDConstants::CONSENT                             => 'sometimes|boolean',
-        BDConstants::DOCUMENTS_DETAIL                    => 'sometimes|array'
-    ];
+        BDConstants::DOCUMENTS_DETAIL                    => 'sometimes|array',
+
+        Entity::POI_VERIFICATION_STATUS                 => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::POA_VERIFICATION_STATUS                 => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::GSTIN_VERIFICATION_STATUS               => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::CIN_VERIFICATION_STATUS                 => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::COMPANY_PAN_VERIFICATION_STATUS         => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::PERSONAL_PAN_DOC_VERIFICATION_STATUS    => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::COMPANY_PAN_DOC_VERIFICATION_STATUS     => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::SHOP_ESTABLISHMENT_VERIFICATION_STATUS  => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::MSME_DOC_VERIFICATION_STATUS            => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+        Entity::BANK_DETAILS_DOC_VERIFICATION_STATUS    => 'sometimes|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
+
+   ];
 
     protected static $preSignupRules = [
         Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
@@ -1500,6 +1529,27 @@ class Validator extends Base\Validator
             $activationFlowImpl = Factory::getActivationFlowImpl($this->entity);
 
             $activationFlowImpl->validateFullActivationForm($merchant);
+        }
+    }
+
+    /**
+     * Validates international activation flow
+     *
+     * @param string $attribute
+     * @param string $internationalActivationFlow
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function validateActivationFlow(string $attribute, string $activationFlow)
+    {
+        if (ActivationFlow::isValid($activationFlow) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid activation flow: ' . $activationFlow,
+                Entity::ACTIVATION_FLOW,
+                [
+                    Entity::ACTIVATION_FLOW => $activationFlow
+                ]);
         }
     }
 

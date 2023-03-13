@@ -2,12 +2,14 @@
 
 namespace RZP\Models\Merchant\BusinessDetail;
 
+use App;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Constants as MerchantConstants;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 
 class Core extends Base\Core
 {
@@ -261,5 +263,37 @@ class Core extends Base\Core
         }
 
         return $existingPluginDetails;
+    }
+
+
+    public function savePGOSDataToAPI(array $data)
+    {
+        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
+                $data[Entity::MERCHANT_ID],
+                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
+                MerchantOnboardingProxyController::LIVE) === true)
+        {
+            $businessDetail = (new Repository())->getBusinessDetailsForMerchantId($data["merchant_id"]);
+
+            if (empty($businessDetail) === false)
+            {
+                unset($data["merchant_id"]);
+
+                $businessDetail->edit($data);
+
+                $this->repo->saveOrFail($businessDetail);
+            }
+            else
+            {
+                $businessDetail = new Entity;
+
+                $businessDetail->generateId();
+
+                $businessDetail->build($data);
+
+                $this->repo->merchant_business_detail->saveOrFail($businessDetail);
+
+            }
+        }
     }
 }

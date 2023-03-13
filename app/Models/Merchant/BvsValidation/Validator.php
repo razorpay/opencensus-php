@@ -23,6 +23,7 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::VALIDATION_ID           => 'required|string|max:14',
         Entity::ARTEFACT_TYPE           => 'sometimes|string|max:255',//todo validate Artefact type
+        Entity::VALIDATION_UNIT         => 'sometimes|string|in:identifier,proof',
         Entity::OWNER_ID                => 'sometimes|string|max:14',
         Entity::OWNER_TYPE              => 'sometimes|string|in:merchant,banking_account,bas_document',
         Entity::PLATFORM                => 'sometimes|string|in:pg,capital,rx',

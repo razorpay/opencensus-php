@@ -12,6 +12,7 @@ use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Constants as MConstants;
 use RZP\Notifications\Onboarding\Events as NCEvents;
 use RZP\Models\ClarificationDetail\Core as ClarDetailCore;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Models\ClarificationDetail\Service as ClarDetailService;
 use RZP\Models\Merchant\Escalations\Constants as EscalationsConstant;
 use RZP\Notifications\Onboarding\Handler as OnboardingNotificationHandler;
@@ -330,6 +331,73 @@ class Core extends Base\Core
                 'merchant_id' => $merchant->getId(),
                 'Error Message' => $e->getMessage()
             ]);
+        }
+    }
+
+    public function savePGOSDataToAPI(array $data)
+    {
+        if ((new MerchantOnboardingProxyController)->isPGOSMigrationExperimentEnabled(
+                $data[Entity::MERCHANT_ID],
+                MerchantOnboardingProxyController::PGOS_SHADOW_MODE_EXPERIMENT_ID,
+                MerchantOnboardingProxyController::LIVE) === true)
+        {
+            $clarificationDetail = $this->repo->clarification_detail->find($data[Entity::ID]);
+
+            if (empty($clarificationDetail) === true)
+            {
+                $clarificationDetail = new Entity;
+
+                $clarificationDetail->generateId();
+
+                $this->trace->info(TraceCode::MERCHANT_CREATE_CLARIFICATION_DETAILS, $data);
+
+                $clarificationDetail->build($data);
+
+                $this->repo->clarification_detail->saveOrFail($clarificationDetail);
+
+                foreach ($clarificationDetail->getFields() as $fieldName)
+                {
+                    $clarificationReasons[$fieldName] = [
+                        [
+                            "reason_type" => $data[Entity::COMMENT_DATA][Constants::TYPE],
+                            "reason_code" => $data[Entity::COMMENT_DATA][Constants::TEXT],
+                            "from"        => $data[Entity::MESSAGE_FROM],
+                            "is_current"  => true,
+                            "nc_count" => $data[Entity::METADATA][Constants::NC_COUNT]
+                        ]
+                    ];
+                }
+
+                if (empty($clarificationReasons) === false)
+                {
+                    $activationInput = [
+                        "kyc_clarification_reasons" => [
+                            "clarification_reasons" => $clarificationReasons
+                        ]
+                    ];
+
+                    $kycClarificationReasons = (new Merchant\Detail\Core)->getUpdatedKycClarificationReasons($activationInput, $data[Entity::MERCHANT_ID],$data[Entity::MESSAGE_FROM]);
+
+                    if (empty($kycClarificationReasons) === false)
+                    {
+                        $merchantDetails = $this->repo->merchant_detail->findByPublicId($data[Entity::MERCHANT_ID]);
+
+                        $merchantDetails->setKycClarificationReasons($kycClarificationReasons);
+
+                        $this->repo->saveOrFail($merchantDetails);
+
+                    }
+                }
+            }
+            else
+            {
+                $this->trace->info(TraceCode::MERCHANT_CREATE_CLARIFICATION_DETAILS, $data);
+
+                $clarificationDetail->edit($data);
+
+                $this->repo->clarification_detail->saveOrFail($clarificationDetail);
+
+            }
         }
     }
 }

@@ -16,10 +16,14 @@ class Validator extends Base\Validator
 
     protected static $createRules = [
         Entity::DOCUMENT_TYPE => 'required|string|max:255|custom',
-        Entity::FILE          => 'required|file|mimes:pdf,jpeg,jpg,png,jfif',
+        Entity::FILE          => 'sometimes|file|mimes:pdf,jpeg,jpg,png,jfif',
         Entity::FILE_STORE_ID => 'sometimes|string|max:14',
         Entity::SOURCE        => 'required_with:file_store_id|string|custom',
-        Entity::METADATA      => 'sometimes|array'
+        Entity::METADATA      => 'sometimes|array',
+        Entity::MERCHANT_ID   => 'sometimes|string',
+        Entity::ENTITY_ID     => 'sometimes|string',
+        Entity::ENTITY_TYPE   => 'sometimes|string',
+        Entity::DELETED_AT    => 'sometimes|integer',
     ];
 
     protected static $editRules = [
@@ -28,7 +32,8 @@ class Validator extends Base\Validator
         Entity::FILE_STORE_ID => 'sometimes|string|max:14',
         Entity::SOURCE        => 'required_with:file_store_id|string|custom',
         Entity::DOCUMENT_DATE => 'sometimes|integer',
-        Entity::METADATA      => 'sometimes|array'
+        Entity::METADATA      => 'sometimes|array',
+        Entity::DELETED_AT    => 'sometimes|integer',
     ];
 
     protected static $uploadFilesByAgentRules = [

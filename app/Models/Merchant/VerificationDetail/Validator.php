@@ -10,13 +10,13 @@ class Validator extends Base\Validator
         Entity::MERCHANT_ID           => 'required|string|size:14',
         Entity::ARTEFACT_TYPE         => 'required|string',
         Entity::ARTEFACT_IDENTIFIER   => 'required|string|in:number,doc',
-        Entity::STATUS                => 'required|string|in:verified,incorrect_details,not_matched,pending,initiated',
+        Entity::STATUS                => 'required|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
     ];
 
     protected static $editRules = [
         Entity::MERCHANT_ID           => 'required|string|size:14',
         Entity::ARTEFACT_TYPE         => 'required|string',
         Entity::ARTEFACT_IDENTIFIER   => 'required|string|in:number,doc',
-        Entity::STATUS                => 'required|string|in:verified,incorrect_details,not_matched,pending,initiated',
+        Entity::STATUS                => 'required|string|in:failed,verified,incorrect_details,not_matched,pending,initiated',
     ];
 }

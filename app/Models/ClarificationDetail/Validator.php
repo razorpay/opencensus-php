@@ -17,6 +17,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules      = [
+        Entity::ID            => 'sometimes|string|size:14',
         Entity::MERCHANT_ID   => 'required|string|size:14',
         Entity::STATUS        => 'required|string|in:submitted,under_review,verified,rejected,needs_clarification',
         Entity::COMMENT_DATA  => 'sometimes|array|nullable',

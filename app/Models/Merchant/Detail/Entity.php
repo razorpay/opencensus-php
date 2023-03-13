@@ -232,6 +232,8 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
     protected $primaryKey = self::MERCHANT_ID;
 
     protected $fillable   = [
+        self::ACTIVATION_FLOW,
+        self::ACTIVATION_PROGRESS,
         self::CONTACT_NAME,
         self::CONTACT_EMAIL,
         self::CONTACT_MOBILE,
@@ -341,6 +343,17 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
         self::AUDIT_ID,
         self::INDUSTRY_CATEGORY_CODE_TYPE,
         self::INDUSTRY_CATEGORY_CODE,
+
+        self::POI_VERIFICATION_STATUS,
+        self::POA_VERIFICATION_STATUS,
+        self::GSTIN_VERIFICATION_STATUS,
+        self::CIN_VERIFICATION_STATUS,
+        self::COMPANY_PAN_VERIFICATION_STATUS,
+        self::PERSONAL_PAN_DOC_VERIFICATION_STATUS,
+        self::COMPANY_PAN_DOC_VERIFICATION_STATUS,
+        self::SHOP_ESTABLISHMENT_VERIFICATION_STATUS,
+        self::MSME_DOC_VERIFICATION_STATUS,
+        self::BANK_DETAILS_DOC_VERIFICATION_STATUS
     ];
 
     protected $public     = [
