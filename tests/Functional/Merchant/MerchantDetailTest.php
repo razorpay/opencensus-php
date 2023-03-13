@@ -33,6 +33,7 @@ use Functional\Helpers\BvsTrait;
 use RZP\Tests\Traits\MocksSplitz;
 use Illuminate\Http\UploadedFile;
 use RZP\Services\SalesForceClient;
+use Illuminate\Support\Facades\Http;
 use RZP\Error\PublicErrorDescription;
 use RZP\Mail\Merchant as MerchantMail;
 use RZP\Exception\BadRequestException;
@@ -4620,6 +4621,8 @@ Team Razorpay', '+911234567890');
 
         $this->setMockRazorxTreatment(['automation_activation' => 'on']);
 
+        Http::fake(['http://razorpays.com/' => Http::response([], 400, []),]);
+
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
 
         $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
@@ -4634,6 +4637,8 @@ Team Razorpay', '+911234567890');
         $merchantId = '1cXSLlUU8V9sXl';
 
         $this->setMockRazorxTreatment(['automation_activation' => 'on']);
+
+        Http::fake(['http://google.com/' => Http::response([], 200, []),]);
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
 
@@ -4652,7 +4657,7 @@ Team Razorpay', '+911234567890');
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        $this->setMockRazorxTreatment(['automation_activation' => 'on']);
+        $this->setMockRazorxTreatment(['automation_activation' => 'off']);
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
 
@@ -4667,7 +4672,9 @@ Team Razorpay', '+911234567890');
     {
         $merchantId = '1cXSLlUU8V9sXl';
 
-        $this->setMockRazorxTreatment(['automation_activation' => 'on']);
+        Http::fake(['http://razorpays.com/' => Http::response([], 400, []),]);
+
+        $this->setMockRazorxTreatment(['automation_activation' => 'pilot']);
 
         $this->fixtures->create('merchant_detail', ['merchant_id' => $merchantId]);
 

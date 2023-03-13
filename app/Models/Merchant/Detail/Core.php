@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Mail;
+use App;
 use Queue;
 use Config;
 use Lib\PhoneBook;
@@ -20,6 +21,7 @@ use RZP\Models\Base;
 use RZP\Models\Terminal;
 use RZP\Constants\Table;
 use RZP\Metro\MetroHandler;
+use Illuminate\Support\Facades\Http;
 use Rzp\Bvs\Validation\V1\TwirpError;
 use RZP\Jobs\UpdateMerchantContext;
 use RZP\Models\Base\EsRepository;
@@ -475,20 +477,20 @@ class Core extends Base\Core
     {
         $razorx = strtolower($this->app->razorx->getTreatment($merchantDetails->getMerchantId(), RazorxTreatment::AUTOMATION_ACTIVATION, Mode::LIVE));
 
-        if (isset($input[Detail\Entity::BUSINESS_WEBSITE]) and $input[Entity::BUSINESS_WEBSITE] != "" and
-            $oldMerchantDetail->getWebsite() !== $input[Entity::BUSINESS_WEBSITE] and
-            ($razorx === Constants::RAZORX_EXPERIMENT_PILOT or $razorx === Constants::RAZORX_EXPERIMENT_ON))
+        if ((isset($input[Detail\Entity::BUSINESS_WEBSITE]) === true) and ($input[Entity::BUSINESS_WEBSITE] !== '') and
+            ($oldMerchantDetail->getWebsite() !== $input[Entity::BUSINESS_WEBSITE]) and
+            (($razorx === Constants::RAZORX_EXPERIMENT_PILOT) or ($razorx === Constants::RAZORX_EXPERIMENT_ON)))
         {
             $response = $this->getUrlDetails($input[Entity::BUSINESS_WEBSITE]);
 
-            if(isset($response['isLive']) === true && $response['isLive'] === false)
+            if ((isset($response['isLive']) === true) and ($response['isLive'] === false))
             {
                 throw new Exception\BadRequestValidationFailureException(
                     "Enter a live/operational URL. You can enter it later if you don't have a live URL now"
                 );
             }
 
-            if(isset($response['isRedirected']) === true && $response['isRedirected'] === true)
+            if ((isset($response['isRedirected']) === true) and ($response['isRedirected'] === true))
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'The shared URL is redirecting to a different URL. Share a valid URL of your website/app');
@@ -545,58 +547,47 @@ class Core extends Base\Core
 
     public function getUrlDetails($url)
     {
-        $response = [];
+        $urlDetails = [];
 
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 5000);
-
-        $out = curl_exec($ch);
-
-        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        // handle line endings
-        $out = str_replace("\r", "", $out);
-
-
-        if(empty($out)===true or $status >= 400)
+        try{
+            $response = Http::withOptions([
+                'allow_redirects' => false,
+                'timeout'         => 5
+            ])->get($url);
+        }
+        catch (\Throwable $e)
         {
-            $response["isLive"] = false;
+            $urlDetails["isLive"] = false;
+
+            return $urlDetails;
         }
 
-        // only look at the headers
-        $headers_end = strpos($out, "\n\n");
-        if( $headers_end !== false ) {
-            $out = substr($out, 0, $headers_end);
+        if ($response->status() >= 400)
+        {
+            $urlDetails["isLive"] = false;
         }
 
-        $headers = explode("\n", $out);
-        foreach($headers as $header) {
+        $headers = array_change_key_case($response->headers(), CASE_LOWER);
 
-            if( substr($header, 0, 10) == "Location: " or substr($header, 0, 10) == "location: ") {
-                $target = substr($header, 10);
+        if ($response->redirect() === true)
+        {
+            $target = $headers['location'][0];
 
-                $urlHost = str_ireplace('www.', '', parse_url($url,PHP_URL_HOST));
+            $urlHost = str_ireplace('www.', '', parse_url($url, PHP_URL_HOST));
 
-                $targetUrlHost = str_ireplace('www.', '', parse_url($target,PHP_URL_HOST));
+            $targetUrlHost = str_ireplace('www.', '', parse_url($target, PHP_URL_HOST));
 
-                if($urlHost === $targetUrlHost)
-                {
-                    continue ;
-                }
+            if($urlHost === $targetUrlHost)
+            {
+                $urlDetails["isRedirected"] = false;
 
-                $response["isRedirected"] = true;
-
-                return $response;
+                return $urlDetails;
             }
+
+            $urlDetails["isRedirected"] = true;
         }
 
-        $response["isRedirected"] = false;
-        return $response;
-
+        return $urlDetails;
     }
 
     public function isPopularSocialMedia($url )
@@ -613,7 +604,6 @@ class Core extends Base\Core
 
         return false;
     }
-
 
     /**
      * @throws Exception\BadRequestValidationFailureException
