@@ -156,7 +156,14 @@ class Base extends DSBase
             return false;
         }
 
-        if ($payout->fundAccount->getAccountType() !== FundAccountEntity::BANK_ACCOUNT) {
+        $this->trace->info(
+            TraceCode::PARTNER_BANK_ON_HOLD_WHITELISTED_MERCHANT,
+            [
+                'payout_id'   => $payout->getId(),
+                'merchant_id' => $payout->getMerchantId()
+            ]);
+
+        if ($payout->fundAccount->getAccountType() === FundAccountEntity::WALLET_ACCOUNT) {
             return false;
         }
 
@@ -176,6 +183,15 @@ class Base extends DSBase
                     $payout->setStatus(Status::ON_HOLD);
 
                     $payout->setQueuedReason(QueuedReasons::PARTNER_BANK_DEGRADED);
+
+                    $this->trace->info(
+                        TraceCode::PARTNER_BANK_ON_HOLD_PAYOUT_CREATED,
+                        [
+                            'payout_id'   => $payout->getId(),
+                            'mode'        => $payout->getMode(),
+                            'channel'     => $payout->getChannel(),
+                            'merchant_id' => $payout->getMerchantId()
+                        ]);
 
                     return true;
                 }
