@@ -104,7 +104,7 @@ class Constants
         self::GooglePayEnabled => "rzp/pg/merchant/checkout/Upi",
         self::ConfigEnabled => "rzp/pg/merchant/checkout/CheckoutConfiguration",
         self::RewardsOnMxDashboardEnabled => "rzp/pg/merchant/checkout/Rewards",
-        self::OrgLogoEnabled => "rzp/pg/merchant/checkout/CheckoutTheme",
+        self::OrgLogoEnabled => "rzp/pg/org/checkout/CheckoutTheme",
         self::CollectCustomerAddressEnabled => "rzp/pg/merchant/checkout/AdditionalCustomerProperties",
         self::TruecallerLoginDisabled => "rzp/pg/merchant/checkout/TruecallerCustomization",
         self::TruecallerLoginOnContactScreenDisabled => "rzp/pg/merchant/checkout/TruecallerCustomization",
