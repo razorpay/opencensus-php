@@ -294,6 +294,16 @@ class Service extends Base\Service
 
         if(isset($pgRouterPublicResponse))
         {
+            if (isset($pgRouterPublicResponse['offers']) === true)
+            {
+                sort($pgRouterPublicResponse['offers']);
+            }
+
+            if (isset($result['offers']) === true)
+            {
+                sort($result['offers']);
+            }
+
             $this->trace->info(TraceCode::ORDER_RESPONSE_PARITY, [
                 "ARRAY_DIFF_API_PGROUTER" => array_diff($result, $pgRouterPublicResponse),
                 "ARRAY_DIFF_PGROUTER_API" => array_diff($pgRouterPublicResponse, $result),
