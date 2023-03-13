@@ -295,6 +295,8 @@ class CardVault extends Base\Core
                 ]);
 
                 $this->trace->count(Metric::CARD_METADATA_FETCH_AFTER_5_DAYS, ["route" => $routeName]);
+
+                return [];
             }
             else
             {
