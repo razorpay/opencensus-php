@@ -780,13 +780,13 @@ export const initialState = {
               slug: 'olamoney',
               icon: 'olamoney',
             },
-            {
-              name: 'Payzapp',
-              description: '',
-              status: 'greyed',
-              slug: 'payzapp',
-              icon: 'payzapp',
-            },
+            // {
+            //   name: 'Payzapp',
+            //   description: '',
+            //   status: 'greyed',
+            //   slug: 'payzapp',
+            //   icon: 'payzapp',
+            // },
             {
               name: 'Mobikwik',
               description: '',
