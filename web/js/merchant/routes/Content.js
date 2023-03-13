@@ -510,6 +510,7 @@ export default class Content extends Component {
             component={PaymentHandle}
             additionalCondition={(user) =>
               user.isAllowedView('payment_handle') &&
+              user.isPaymentHandleSplitzEnabled &&
               !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentHandle)
             }
           />

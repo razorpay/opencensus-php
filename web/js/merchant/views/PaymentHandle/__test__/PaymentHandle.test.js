@@ -26,6 +26,9 @@ describe('Payment Handle', () => {
         session: {
           user: {
             isPaymentHandleEnabled: props.isPaymentHandleEnabled || false,
+            isPaymentHandleSplitzEnabled: true,
+            isAllowedView: () => true,
+            findTag: () => false,
           },
         },
         paymentHandle,

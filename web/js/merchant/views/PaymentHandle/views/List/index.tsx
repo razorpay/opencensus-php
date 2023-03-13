@@ -8,7 +8,6 @@ import {
 import View from '@razorpay/blade-old/src/atoms/View';
 import Space from '@razorpay/blade-old/src/atoms/Space';
 import { getIsTestMode } from 'merchant/views/PaymentHandle/utils';
-import { fetchPaymentHandle } from 'merchant/reducers/paymentHandle';
 import { PAYMENT_INITIAL_VALUE } from 'merchant/views/PaymentHandle/constants';
 import Banner from 'merchant/views/PaymentHandle/views/List/components/Banner';
 import List from 'merchant/views/PaymentHandle/views/List/components/ListFilter';
@@ -18,24 +17,15 @@ const PaymentHandleListFilter: React.FC<PaymentHandleListFilterPropTypes> = ({
   mode,
   isMobile,
   handleInfo,
-  fetchPaymentHandle,
 }) => {
   const [isTestMode] = useState(getIsTestMode(mode));
   const [paymentHandleEntity, setPaymentPageEntity] = useState<PaymentPageEntity>(
     PAYMENT_INITIAL_VALUE,
   );
-  useEffect(() => {
-    const fetchHandle = async () => {
-      await fetchPaymentHandle();
-    };
-    if (handleInfo.loading || Object.keys(handleInfo.data).length === 0) {
-      fetchHandle();
-    }
-  }, []);
 
   useEffect(() => {
-    const getListItems = async (handleInfo) => {
-      await fetchPaymentPageEntity(handleInfo.id).then((paymentHandleData) => {
+    const getListItems = async (data) => {
+      await fetchPaymentPageEntity(data.id).then((paymentHandleData) => {
         setPaymentPageEntity(paymentHandleData.data);
       });
     };
@@ -57,14 +47,9 @@ const PaymentHandleListFilter: React.FC<PaymentHandleListFilterPropTypes> = ({
 };
 
 export default compose(
-  connect(
-    (state) => ({
-      mode: state.session.mode,
-      isMobile: state.app.isMobileResolution,
-      handleInfo: state.paymentHandle.handleInfo,
-    }),
-    {
-      fetchPaymentHandle,
-    },
-  ),
+  connect((state) => ({
+    mode: state.session.mode,
+    isMobile: state.app.isMobileResolution,
+    handleInfo: state.paymentHandle.handleInfo,
+  })),
 )(PaymentHandleListFilter);

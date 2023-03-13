@@ -20,24 +20,26 @@ const PaymentHandle = ({
 }: PaymentHandleIndexPropTypes): JSX.Element => {
   const [isOnboardingVisible, setOnboardingVisible] = useState(!getPHProductOnboarding(user));
   const [isApiFailed, setApiFailed] = useState(false);
+
+  const fetchInfo = async () => {
+    try {
+      await fetchPaymentHandle().catch((err) => {
+        if (!isHandleAvailableForMerchant(err.errors)) {
+          setOnboardingVisible(true);
+          createPaymentHandle();
+        }
+      });
+    } catch {
+      setApiFailed(true);
+      showNotification({
+        type: 'error',
+        hidePrevious: true,
+        message: 'Something went wrong, Our team will get back to you shortly.',
+      });
+    }
+  };
+
   useEffect(() => {
-    const fetchInfo = async () => {
-      try {
-        await fetchPaymentHandle().catch((err) => {
-          if (!isHandleAvailableForMerchant(err.errors)) {
-            setOnboardingVisible(true);
-            createPaymentHandle();
-          }
-        });
-      } catch {
-        setApiFailed(true);
-        showNotification({
-          type: 'error',
-          hidePrevious: true,
-          message: 'Something went wrong, Our team will get back to you shortly.',
-        });
-      }
-    };
     fetchInfo();
   }, []);
 
