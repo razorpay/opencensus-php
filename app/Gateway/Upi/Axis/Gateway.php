@@ -1412,7 +1412,8 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getGatewayEntityAttributes($input, Action::REFUND);
 
-        if ($input['payment']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE)
+        if (($input['payment']['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE)||
+            ($input['payment']['cps_route'] === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE))
         {
             $payment = $input['payment'];
 

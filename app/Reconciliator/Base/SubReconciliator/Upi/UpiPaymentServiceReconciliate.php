@@ -43,7 +43,8 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
      */
     protected function updateAndFetchGatewayPayment()
     {
-        if ($this->payment->isRoutedThroughUpiPaymentService() === true)
+        if (($this->payment->isRoutedThroughUpiPaymentService() === true) ||
+            ($this->payment->isRoutedThroughPaymentsUpiPaymentService()) === true)
         {
             return null;
         }

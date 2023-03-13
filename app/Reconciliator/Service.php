@@ -1070,7 +1070,8 @@ class Service extends Base\Service
      */
     protected function updateGatewayData(array $input, Payment\Entity $payment)
     {
-        if($payment->isRoutedThroughUpiPaymentService())
+        if (($payment->isRoutedThroughUpiPaymentService() === true) ||
+            ($payment->isRoutedThroughPaymentsUpiPaymentService() === true))
         {
             $this->updateUpsGatewayData($input, $payment);
             return;

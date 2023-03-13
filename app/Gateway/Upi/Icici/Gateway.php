@@ -1814,7 +1814,8 @@ class Gateway extends Base\Gateway
 
         $refund = $input['refund'];
 
-        if ($payment['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE)
+        if (($payment['cps_route'] === Payment\Entity::UPI_PAYMENT_SERVICE) ||
+            ($payment['cps_route'] === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE))
         {
             $fiscalEntity = $this->app['upi.payments']->findByPaymentIdAndGatewayOrFail(
                 $payment['id'],
