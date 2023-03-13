@@ -36,5 +36,16 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+    public function findByPaymentPageIdorFail(
+        string $payment_page_id
+    )
+    {
+        PaymentLink::silentlyStripSign($payment_page_id);
+
+        return $this->newQuery()
+            ->where(Entity::PAYMENT_LINK_ID, $payment_page_id)
+            ->get()
+            ->toArray();
+    }
 
 }

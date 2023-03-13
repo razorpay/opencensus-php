@@ -662,6 +662,27 @@ class PaymentLinkTest extends TestCase
         self::assertEquals($resp['total_pending_revenue'], 301);
     }
 
+    protected function createPaymentPageRecords()
+    {
+        $id = $this->setUpPaymentPageForFileUpload();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testPaymentPageRecordForFileUpload'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id . '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $this->sendRequest($testData['request']);
+
+        $entity = $this->getDbLastEntity('payment_page_record');
+
+        $entityArray = $entity->toArray();
+
+        return $entityArray['payment_link_id'];
+    }
+
     public function testFetchPaymentLink()
     {
         $this->createPaymentLinkWithMultipleItem();
@@ -820,6 +841,31 @@ class PaymentLinkTest extends TestCase
         $this->createPaymentLinkWithMultipleItem();
 
         $this->startTest();
+    }
+
+
+    public function testPaymentLinkSendNotificationForAllRecords()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $res = $this->createPaymentPageRecords();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/pl_'. $res . '/fetch_notify_details';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
+    }
+
+    public function testPaymentLinkSendNotificationForAllRecordsFailure()
+    {
+        $res = $this->createPaymentLinkWithMultipleItem();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/pl_'. $res['id'] . '/fetch_notify_details';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
     }
 
     public function testInactivePaymentLinkSendNotification()

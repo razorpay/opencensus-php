@@ -169,6 +169,22 @@ class Service extends Base\Service
         });
     }
 
+    public function sendNotificationToAllRecords(string $id)
+    {
+        $records = $this->repo->payment_page_record->findByPaymentPageIdorFail($id);
+
+        $input['contacts'] = array_unique(array_column($records, PaymentPageRecord\Entity::CONTACT));
+
+        $input['emails'] = array_unique(array_column($records, PaymentPageRecord\Entity::EMAIL));
+
+        if(count($input['contacts']) === 0 and count($input['emails']) === 0)
+        {
+            throw  new BadRequestValidationFailureException('Either email or contact should be present');
+        }
+
+        $this->sendNotification($id,$input);
+    }
+
     public function expirePaymentLinks(): array
     {
         return $this->core->expirePaymentLinks();

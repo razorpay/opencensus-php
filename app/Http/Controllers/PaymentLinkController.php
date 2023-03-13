@@ -61,6 +61,13 @@ class PaymentLinkController extends Controller
         return ApiResponse::json([]);
     }
 
+    public function sendNotificationToAllRecords(string $id)
+    {
+        $this->service()->sendNotificationToAllRecords($id);
+
+        return ApiResponse::json([]);
+    }
+
     public function expirePaymentLinks()
     {
         $summary = Tracer::inSpan(['name' => 'payment_page.expire'], function()
@@ -315,7 +322,6 @@ class PaymentLinkController extends Controller
 
         return ApiResponse::json($response);
     }
-
 
     public function createPaymentPageFileUploadRecord(string $paymentPageId, string $batchId)
     {

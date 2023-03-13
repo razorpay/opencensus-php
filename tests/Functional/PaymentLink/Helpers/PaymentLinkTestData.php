@@ -1148,6 +1148,38 @@ return [
         ],
     ],
 
+    'testPaymentLinkSendNotificationForAllRecords' => [
+        'request' => [
+            'url' => '/payment_pages/pl_100000000000pl/fetch_notify_details',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => []
+        ]
+    ],
+
+    'testPaymentLinkSendNotificationForAllRecordsFailure' => [
+        'request' => [
+            'url' => '/payment_pages/pl_100000000000pl/fetch_notify_details',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Either email or contact should be present',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testInactivePaymentLinkSendNotification' => [
         'request'  => [
             'url'     => '/payment_pages/pl_100000000000pl/notify',
