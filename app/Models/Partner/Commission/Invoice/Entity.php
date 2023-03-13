@@ -200,6 +200,6 @@ class Entity extends Base\PublicEntity
 
     public function getCurrency()
     {
-        return 'INR';
+        return $this->merchant->getCurrency();
     }
 }

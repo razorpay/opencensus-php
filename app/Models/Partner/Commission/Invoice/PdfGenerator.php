@@ -45,7 +45,14 @@ class PdfGenerator extends Base\Core
     {
         $data = (new Core)->getTemplateData($invoice);
 
-        $html = view('merchant.commission_invoice.invoice', $data)->render();
+        if ($invoice->merchant->getCountry() === 'MY')
+        {
+            $html = view('merchant.commission_invoice.my_invoice', $data)->render();
+        }
+        else
+        {
+            $html = view('merchant.commission_invoice.invoice', $data)->render();
+        }
 
         return $html;
     }

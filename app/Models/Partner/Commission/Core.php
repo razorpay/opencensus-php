@@ -281,6 +281,13 @@ class Core extends Base\Core
 
     public function getTdsPercentage(Merchant\Entity $partner): int
     {
+        // TDS percentage should be zero right now for malaysian merchants
+        // TODO: later we remove the check and add the perfect logic on basis of configs
+        if ($partner->getCountry() == 'MY')
+        {
+            return 0;
+        }
+
         $configs = (new PartnerConfig\Core)->fetchAllDefaultConfigsByPartner($partner);
 
         if ($configs->isEmpty() === true)
@@ -505,7 +512,7 @@ class Core extends Base\Core
      */
     public function shouldShowAggregateCommissionReportForPartner(Merchant\Entity $partner): bool
     {
-        if ($partner->isResellerPartner() === true)
+        if ($partner->isResellerPartner() === true && $partner->getCountry()!=='MY')
         {
             $activatedSubMerchants = (new Merchant\Core)->fetchActivatedSubMerchantsForPartner($partner);
 

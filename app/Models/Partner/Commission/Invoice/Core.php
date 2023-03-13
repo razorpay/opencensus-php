@@ -153,6 +153,12 @@ class Core extends Base\Core
     private function isFinanceAutoApprovalEnabled(Entity $invoice): bool
     {
         $merchant = $invoice->merchant;
+
+        if($merchant->getCountry() == 'MY')
+        {
+            return false;
+        }
+
         if (!$this->isPartialFinanceApprovalRemovalExpEnabled($merchant->getId())) { // partner finance exp. check
             return false;
         }
@@ -456,7 +462,7 @@ class Core extends Base\Core
             $fromTimestamp = $timestamps[Commission\Constants::FROM];
             $endTimestamp  = $timestamps[Commission\Constants::TO];
 
-            $tempData ['gross_amount_spread']   = $this->formatAmountForTemplate($invoice->getGrossAmount());
+            $tempData ['gross_amount_spread']   = $this->formatAmountForTemplate($invoice->getGrossAmount(), $invoice->getCurrency());
             $tempData ['start_date']            = Carbon::createFromTimestamp($fromTimestamp, Timezone::IST)->format('d-M-y');
             $tempData ['end_date']              = Carbon::createFromTimestamp($endTimestamp, Timezone::IST)->format('d-M-y');
 
@@ -602,8 +608,10 @@ class Core extends Base\Core
             $data['file_path'] = $pdfPath;
         }
 
-        $data['invoice']['gross_amount_spread'] = $this->formatAmountForTemplate($data['invoice']['gross_amount']);
-        $data['invoice']['tax_amount_spread'] = $this->formatAmountForTemplate($data['invoice']['tax_amount']);
+        $data['invoice']['gross_amount_spread'] = $this->formatAmountForTemplate($data['invoice']['gross_amount'],
+            $invoice->getCurrency());
+        $data['invoice']['tax_amount_spread'] = $this->formatAmountForTemplate($data['invoice']['tax_amount'],
+            $invoice->getCurrency());
 
         foreach ($data['invoice']['line_items'] as $key => &$lineItem)
         {
@@ -611,16 +619,20 @@ class Core extends Base\Core
             {
                 foreach ($lineItem['taxes'] as &$tax)
                 {
-                    $tax['tax_amount_spread'] = $this->formatAmountForTemplate($tax['tax_amount']);
+                    $tax['tax_amount_spread'] = $this->formatAmountForTemplate($tax['tax_amount'],
+                        $invoice->getCurrency());
                 }
             }
 
-            $lineItem['gross_amount_spread'] = $this->formatAmountForTemplate($lineItem['gross_amount']);
-            $lineItem['tax_amount_spread'] = $this->formatAmountForTemplate($lineItem['tax_amount']);
-            $lineItem['net_amount_spread'] = $this->formatAmountForTemplate($lineItem['net_amount']);
+            $lineItem['gross_amount_spread'] = $this->formatAmountForTemplate($lineItem['gross_amount'],
+                $invoice->getCurrency());
+            $lineItem['tax_amount_spread'] = $this->formatAmountForTemplate($lineItem['tax_amount'],
+                $invoice->getCurrency());
+            $lineItem['net_amount_spread'] = $this->formatAmountForTemplate($lineItem['net_amount'],
+                $invoice->getCurrency());
 
             $subTotal = $lineItem['gross_amount'] - $lineItem['tax_amount'];
-            $lineItem['sub_total_spread'] = $this->formatAmountForTemplate($subTotal);
+            $lineItem['sub_total_spread'] = $this->formatAmountForTemplate($subTotal, $invoice->getCurrency());
         }
 
         return $data;
@@ -653,10 +665,8 @@ class Core extends Base\Core
         return $activationStatus;
     }
 
-    protected function formatAmountForTemplate($amount)
+    protected function formatAmountForTemplate($amount, $currency)
     {
-        $currency = 'INR';
-
         $currencySymbol = Currency::SYMBOL[$currency];
 
         $denominationFactor = Currency::DENOMINATION_FACTOR[$currency] ?: 100;
@@ -848,8 +858,15 @@ class Core extends Base\Core
     protected function fetchPartnerWithOldAndNewTnc(array $merchantIds): array
     {
         $partners = $this->repo->merchant->findManyOnReadReplica($merchantIds);
+        /* Skip new Tnc for malaysain merchants
+         * We don't want malaysian merchants to go through the new flow because we don't want to add any constraint of
+         * number of sub-merchants that partner have.
+         */
         $newTncPartners = $partners->filter(function ($partner)  {
-            return $partner->getCreatedAt() >= Constants::INVOICE_TNC_UPDATED_TIMESTAMP;
+            return (
+                $partner->getCreatedAt() >= Constants::INVOICE_TNC_UPDATED_TIMESTAMP and
+                $partner->getCountry() !== 'MY'
+            );
         });
         $oldTncPartners = $partners->diff($newTncPartners);
 
@@ -951,6 +968,11 @@ class Core extends Base\Core
 
     public function isPartnerInvoiceAutoApprovalEnabled(Merchant\Entity $partner, Entity $invoice): bool
     {
+        if ($partner->getCountry() == 'MY')
+        {
+            return false;
+        }
+
         if ($invoice->getYear() <= 2022) {
             return false;
         }
@@ -1192,7 +1214,7 @@ class Core extends Base\Core
             if ($amount < 100)
             {
                 $this->trace->info(TraceCode::COMMISSION_INVOICE_LINE_ITEMS_CREATE_SKIPPED, [
-                    'reason' => 'line item amount less than 100 paisa',
+                    'reason' => 'line item amount less than 100',
                     'amount' => $amount,
                 ]);
                 continue;
@@ -1200,7 +1222,7 @@ class Core extends Base\Core
 
             $lineItem = [
                 LineItem\Entity::AMOUNT        => $amount,
-                LineItem\Entity::CURRENCY      => 'INR',
+                LineItem\Entity::CURRENCY      => $partner->getCurrency(),
                 LineItem\Entity::TAX_INCLUSIVE => true,
             ];
 
