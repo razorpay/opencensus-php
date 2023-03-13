@@ -41,12 +41,19 @@ class Commission extends Base
 
     public function updateTransaction()
     {
+        $countryCode = $this->txn->merchant->getCountry();
         $settledAt = Carbon::now(Timezone::IST)->getTimestamp();
+        $channel = Constants::COUNTRY_CODE_TO_TRANSACTION_CHANNEL_MAP[$countryCode];
 
-        // we want to settle commissions to partner from yes_bank nodal account by default
+        // We want to settle commissions to partner from yes_bank nodal account by default if not present for merchant country
+        if ($channel === null)
+        {
+            $channel = Channel::YESBANK;
+        }
+
         $attributes = [
             Transaction\Entity::SETTLED_AT => $settledAt,
-            Transaction\Entity::CHANNEL    => Channel::YESBANK,
+            Transaction\Entity::CHANNEL    => $channel,
         ];
 
         $this->txn->fill($attributes);

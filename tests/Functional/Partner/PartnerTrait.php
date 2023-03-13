@@ -300,6 +300,58 @@ trait PartnerTrait
         return [$application, $accessMap, $partner];
     }
 
+    public function createAggregatorMalaysianMerchantAndSubMerchant()
+    {
+        $partner = $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_MERCHANT_ID, true, 'MY');
+        $this->fixtures->merchant->createAccount(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID, true, 'MY');
+
+        $this->fixtures->user->createUserMerchantMapping(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'user_id'     => User::MERCHANT_USER_ID,
+                'role'        => 'owner',
+            ]);
+
+        $this->fixtures->merchant->activate(Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+        $this->fixtures->merchant->activate(Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID);
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            [
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $this->createDefaultSubmerchantPricingPlan();
+
+        $this->fixtures->merchant->edit(
+            Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            [
+                'pricing_plan_id' => Constants::DEFAULT_SUBMERCHANT_PRICING_PLAN,
+            ]
+        );
+
+        $application = $this->createOAuthApplication(
+            [
+                'merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+                'id'          => Constants::DEFAULT_PLATFORM_APP_ID,
+                'partner_type' => Merchant\Constants::AGGREGATOR,
+            ]
+        );
+
+        $accessMap = $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'merchant_id'     => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+                'entity_id'       => Constants::DEFAULT_PLATFORM_APP_ID,
+                'entity_type'     => 'application',
+                'entity_owner_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID,
+            ]
+        );
+
+        return [$application, $accessMap, $partner];
+    }
+
     public function setSubmerchantPublicAuth($merchantId = Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID)
     {
         $key = $this->fixtures->create('key', ['merchant_id' => $merchantId]);

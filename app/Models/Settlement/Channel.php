@@ -34,6 +34,8 @@ class Channel
     // This channel signifies transfer initiated through masterCard send
     const MCS  = 'mcs';
 
+    // This channel is for malaysain merchant transaction
+    const RHB = 'rhb';
 
     public static $gateways = [
         self::KOTAK => [
@@ -89,6 +91,7 @@ class Channel
             self::AXIS3,
             self::RZPX,
             self::MCS,
+            self::RHB,
         ];
     }
 

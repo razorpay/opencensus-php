@@ -187,9 +187,9 @@ class Merchant extends Base
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::ATOM_ACCOUNT, 'balance' => '1000000', 'merchant_id' => Account::ATOM_ACCOUNT]);
     }
 
-    public function createAccount($merchantId, $addKeys = true)
+    public function createAccount($merchantId, $addKeys = true, $countryCode = 'IN')
     {
-        $apiMerchant = $this->fixtures->create('merchant', ['id' => $merchantId]);
+        $apiMerchant = $this->fixtures->create('merchant', ['id' => $merchantId, 'country_code' => $countryCode]);
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => $merchantId, 'balance' => '1000000', 'merchant_id' => $merchantId]);
 
         $this->fixtures->on('test')->create('terminal', ['id' => $merchantId, 'merchant_id' => $merchantId]);

@@ -97,6 +97,19 @@ return [
         ],
     ],
 
+    'testCommissionTransactionChannelOnPaymentCaptureForMalaysainMerchants' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'captured',
+                'entity' => 'payment',
+            ],
+        ],
+    ],
+
     'testInvoiceCompleteFlow' => [
         'request' => [
             'method' => 'POST',

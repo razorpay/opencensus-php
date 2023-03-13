@@ -259,6 +259,27 @@ class CommissionCreateTest extends TestCase
         $this->assertEquals($commission[Commission\Entity::FEE] - $commission[Commission\Entity::TAX], $commissionComponent->getMerchantPricingAmount() - $commissionComponent->getCommissionPricingAmount());
     }
 
+    public function testCommissionTransactionChannelOnPaymentCaptureForMalaysainMerchants()
+    {
+        $testData = $this->setupCommissionCreateForMalaysianMerchant();
+
+        $merchantDetail = ['merchant_id' => Constants::DEFAULT_PLATFORM_MERCHANT_ID];
+
+        $this->fixtures->on(Mode::TEST)->create('merchant_detail:sane', $merchantDetail);
+        $this->fixtures->on(Mode::LIVE)->create('merchant_detail:sane', $merchantDetail);
+
+        $this->createConfigForPartnerApp(
+            Constants::DEFAULT_PLATFORM_APP_ID,
+            null,
+            [
+                'implicit_plan_id'    => Constants::DEFAULT_IMPLICIT_PRICING_PLAN,
+            ]);
+
+        $this->startTest($testData);
+
+        $this->assertCommisionAndTransactionData(CommissionType::IMPLICIT);
+    }
+
     public function testInvoiceOnHoldClear()
     {
         Mail::fake();
@@ -2396,6 +2417,37 @@ class CommissionCreateTest extends TestCase
         return $testData;
     }
 
+    protected function setupCommissionCreateForMalaysianMerchant($paymentAttributes = [])
+    {
+        $this->createAggregatorMalaysianMerchantAndSubMerchant();
+
+        $this->createImplicitPricingPlan();
+
+        $defaultPaymentAttributes = [
+            'merchant_id' => Constants::DEFAULT_PLATFORM_SUBMERCHANT_ID,
+            'amount'      => 4000 * 100,
+        ];
+
+        $paymentAttributes = array_merge($defaultPaymentAttributes, $paymentAttributes);
+
+        $payment = $this->fixtures->create('payment:authorized', $paymentAttributes);
+
+        $this->createEntityOrigin('payment', $payment->getId());
+
+        $this->setSubmerchantPrivateAuth();
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name = $trace[1]['function'];
+
+        $testData = $this->testData[$name];
+
+        $testData['request']['content']['amount'] = $payment->getAmount();
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/capture';
+
+        return $testData;
+    }
+
     /**
      * set up all the entities required in commission creation flow
      * Add 3 transacting sub merchants for the month to enable invoice creation
@@ -2473,6 +2525,34 @@ class CommissionCreateTest extends TestCase
         }
 
         return [$payment, $commissionByType];
+    }
+
+    protected function assertCommisionAndTransactionData(string $type, int $totalCount = 1)
+    {
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
+
+        $commissions = $this->getCommissionsForSourceEntity($payment['id'])->toArray();
+
+        $this->assertCount($totalCount, $commissions);
+
+        $commissionByType = null;
+
+        foreach ($commissions as $commission)
+        {
+            if ($commission['type'] === $type)
+            {
+                $commissionByType = $commission;
+                break;
+            }
+        }
+
+        $this->assertNotEmpty($commissionByType);
+
+        $transaction = $this->getDbEntityById('transaction', $commissionByType['transaction_id']);
+
+        $this->assertEquals(Channel::RHB, $transaction->getChannel());
     }
 
     protected function assertTransactionData(array $commission)
