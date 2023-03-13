@@ -3666,6 +3666,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const B2B_PAYMENT_CAPTURE_FAILURE                           = 'B2B_PAYMENT_CAPTURE_FAILURE';
     const CURRENCY_CLOUD_NOTIFICATION_REQUEST                   = 'CURRENCY_CLOUD_NOTIFICATION_REQUEST';
     const B2B_FEATURE_FLAG_ADDED                                = 'B2B_FEATURE_FLAG_ADDED';
+    const B2B_TRANSFER_NOT_APPLICABLE_FOR_THIS_PAYMENT          = 'B2B_TRANSFER_NOT_APPLICABLE_FOR_THIS_PAYMENT';
+    const FETCH_BALANCE_ON_VA_FAILED                            = 'FETCH_BALANCE_ON_VA_FAILED';
 
     // Trace codes for Fund Account Details Propagator
     const FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB                   = 'FUND_ACCOUNT_DETAILS_PROPAGATOR_JOB';

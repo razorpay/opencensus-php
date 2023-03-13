@@ -1139,6 +1139,15 @@ class Service extends Base\Service
 
                 $merchant = $this->repo->merchant->find($merchantId);
 
+                if($payment->isDirectSettlement() === true)
+                {
+                    $this->trace->info(TraceCode::B2B_TRANSFER_NOT_APPLICABLE_FOR_THIS_PAYMENT, [
+                        'payment_id' => $payment->getId(),
+                        'is_direct_settlement' => $payment->isDirectSettlement(),
+                    ]);
+
+                    continue;
+                }
                 // Transfer_id which we get from CC is stored in Reference16 attribute
                 if($payment->getReference16() != null or !$merchant->isFeatureEnabled(Feature\Constants::ENABLE_SETTLEMENT_FOR_B2B))
                 {
@@ -1204,7 +1213,7 @@ class Service extends Base\Service
                     "currency" => $currency,
                 ];
 
-                $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'get_balance',$request);
+                $response = $this->callCurrencyCloudGetBalance($request);
 
                 if(!isset($response['data']['amount']) || $response['data']['amount'] < 1)
                 {
@@ -1303,6 +1312,47 @@ class Service extends Base\Service
         $beneficiaryId = $this->app['config']->get('gateway.currency_cloud.'.$configValue);
 
         return $beneficiaryId;
+    }
+
+    public function getBalanceForMerchantVA($input, $va_currency)
+    {
+        $merchantId = $this->merchant->getId();
+
+        if(($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_GLOBAL_ACCOUNT) === true) and
+            ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_B2B_EXPORT)))
+        {
+            $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
+                $merchantId,Constants\Entity::CURRENCY_CLOUD);
+
+            $request = [
+                'on_behalf_of' => $mii->getReferenceId(),
+                'currency'     => $va_currency
+            ];
+
+            $response = $this->callCurrencyCloudGetBalance($request);
+
+            $getBalanceResponse = [
+                'amount' => $response['data']['amount'],
+                'currency' => $response['data']['currency'],
+                'account_id'=> $response['data']['account_id']
+            ];
+
+            return $getBalanceResponse;
+        }
+        else{
+            $this->trace->info(TraceCode::FETCH_BALANCE_ON_VA_FAILED,[
+                'currency'      => $va_currency,
+                'merchant_id'   => $merchantId
+            ]);
+            throw new \Exception(TraceCode::FETCH_BALANCE_ON_VA_FAILED);
+        }
+    }
+
+    protected function callCurrencyCloudGetBalance($request)
+    {
+        $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'get_balance',$request);
+
+        return $response;
     }
 
 }

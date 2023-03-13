@@ -3269,6 +3269,19 @@ class AdminFetch
                 ],
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
+            Entity::MERCHANT_INTERNATIONAL_INTEGRATIONS => [
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'integration_entity' => [
+                    Fetch::LABEL  => 'Type',
+                    Fetch::TYPE   => Fetch::TYPE_ARRAY,
+                    Fetch::VALUES => [
+                        'emerchantpay',
+                        'currency_cloud',
+                        'nium',
+                        'icici_opgsp_import',
+                    ],
+                ]
+            ],
 
             Entity::MERCHANT_INVOICE => [
                 'merchant_id' => Fetch::FIELD_MERCHANT_ID,

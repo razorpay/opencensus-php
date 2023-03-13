@@ -2226,6 +2226,7 @@ class Route
         'fetch_international_virtual_accounts'              => ['get',      'international/virtual_accounts',                 'MerchantController@getInternationalVirtualAccounts'            ],
         'fetch_international_virtual_account_by_vacurrency' => ['get',      'international/virtual_account/{va_currency}',   'MerchantController@getInternationalVirtualAccountByVACurrency' ],
         'payment_update_b2b_invoice'                        => ['patch',    'payment/{id}/update_b2b_invoice_details',        'PaymentController@updateB2BInvoiceDetails'                     ],
+        'fetch_balance_international_virtual_account'       => ['get',     'international/virtual_accounts/balance/{va_currency}',         'BankTransferController@getBalanceForMerchantVA'          ],
 
         'capture_cron_for_b2b_payments'        => ['post',     'b2b/payments/capture',                              'BankTransferController@captureCronForB2BPayments'                   ],
         'notifications_for_b2b'                => ['post',     'international/virtual_accounts/payment/create',     'BankTransferController@notificationsFromCurrencyCloud'                         ],
@@ -5865,6 +5866,7 @@ class Route
         'payment_update_b2b_invoice',
         'fetch_international_virtual_accounts',
         'create_international_virtual_accounts',
+        'fetch_balance_international_virtual_account',
         'mob_fetch_multiple_intents',
         'mob_fetch_intent',
         'mob_fetch_multiple_applications',
@@ -10304,6 +10306,7 @@ class Route
             'payment_links_subscription_fetch',
             'fetch_international_virtual_accounts',
             'create_international_virtual_accounts',
+            'fetch_balance_international_virtual_account',
             'payment_update_b2b_invoice',
             'collect_info_merchant_details_patch',
             'mob_fetch_multiple_intents',

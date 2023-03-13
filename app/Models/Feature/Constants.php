@@ -809,6 +809,11 @@ class Constants
     const ENABLE_B2B_EXPORT = 'enable_b2b_export';
 
     /**
+     * Enabled Global Bank Account solution (Temporary)
+     */
+    const ENABLE_GLOBAL_ACCOUNT = 'enable_global_account';
+
+    /**
      * Enables Settlement Flow for B2B export Transactions
      * Done by Risk Team
      */
@@ -2395,6 +2400,7 @@ class Constants
         self::INTER_ACCOUNT_TEST_PAYOUT       => true,
         self::CART_API_AMOUNT_CHECK           => true,
         self::ENABLE_B2B_EXPORT               => true,
+        self::ENABLE_GLOBAL_ACCOUNT           => true,
         self::ENABLE_INTL_BANK_TRANSFER       => true,
         self::ENABLE_SETTLEMENT_FOR_B2B       => true,
         self::OPGSP_IMPORT_FLOW               => true,

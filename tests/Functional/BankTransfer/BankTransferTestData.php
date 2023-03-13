@@ -2724,5 +2724,18 @@ return [
 
             ]
         ]
+    ],
+    'testGetBalanceDetailsForMerchantVA' => [
+        'request' => [
+            'url' => '/international/virtual_accounts/balance/USD',
+            'method' => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
     ]
 ];

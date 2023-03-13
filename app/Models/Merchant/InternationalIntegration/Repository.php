@@ -10,6 +10,11 @@ class Repository extends Base\Repository
 
     protected $entity = 'merchant_international_integrations';
 
+    protected $appFetchParamRules = [
+        Entity::MERCHANT_ID   => 'sometimes|alpha_num',
+        Entity::INTEGRATION_ENTITY => 'sometimes|string|max:20'
+    ];
+
     public function getByMerchantId($merchantId)
     {
         return $this->newQuery()

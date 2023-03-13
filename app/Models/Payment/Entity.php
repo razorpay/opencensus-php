@@ -5297,6 +5297,12 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return true;
         }
 
+        if (($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_GLOBAL_ACCOUNT) === true)
+            and ($this->getMethod() === Method::INTL_BANK_TRANSFER))
+        {
+            return true;
+        }
+
         return false;
     }
 

@@ -9458,6 +9458,7 @@ class BankTransferTest extends TestCase
                                       return [
                                           'data' => [
                                               'id'     => 'e68301d3-5b04-4c1d-8f8b-13a9b8437040',
+                                              'account_id' => '15b78101-0142-44a1-9758-8f7262429e9b',
                                               'currency' => $data['currency'],
                                               'amount' => "100.00"
                                           ]
@@ -9672,6 +9673,40 @@ class BankTransferTest extends TestCase
         $request = $this->testData[__FUNCTION__]['request'];
 
         $response = $this->sendRequest($request);
+
+    }
+
+
+    public function testGetBalanceDetailsForMerchantVA()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->addFeatures('enable_global_account',$merchantDetail['merchant_id']);
+        $this->fixtures->merchant->addFeatures('enable_b2b_export',$merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => [],
+        ]);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantDetail['merchant_id'], $merchantUser['id']);
+
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertEquals($content['currency'], "USD");
+        $this->assertNotNull($content['amount']);
+        $this->assertNotNull($content['account_id']);
 
     }
 

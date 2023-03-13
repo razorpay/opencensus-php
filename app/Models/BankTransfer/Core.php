@@ -899,6 +899,9 @@ class Core extends Base\Core
             $this->createAddressEntityForB2B($input,$payment);
 
             $this->authorizePaymentForB2B($payment);
+
+            $this->getNewProcessor($payment->merchant)->autoCapturePaymentIfApplicable($payment);
+
         }
         catch (\Exception $e)
         {
@@ -999,9 +1002,13 @@ class Core extends Base\Core
 
         $payment->setInternational();
 
+        $payment->setAuthenticatedTimestamp();
+
         $payment->setStatus(Payment\Status::AUTHORIZED);
 
-        $payment->setAuthenticatedTimestamp();
+        $payment->setAmountAuthorized();
+
+        $payment->setAuthorizeTimestamp();
 
         $this->repo->payment->saveOrFail($payment);
 
