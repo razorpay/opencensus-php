@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Merchant\Account;
 
+use RZP\Models\Merchant\Detail\Status;
+
 class Constants
 {
     // Response keys
@@ -78,6 +80,9 @@ class Constants
     const CREATED_AT         = 'created_at';
     const OWNER_INFO         = 'owner_info';
     const CONTACT_INFO       = 'contact_info';
+    const LIVE               = 'live';
+    const HOLD_FUNDS         = 'hold_funds';
+    const ACTIVATED_AT       = 'activated_at';
 
     // feature flags
     const NO_DOC_ONBOARDING  = 'no_doc_onboarding';
@@ -170,5 +175,15 @@ class Constants
     public static $validAddressTypes = [
         self::REGISTERED,
         self::OPERATION,
+    ];
+
+    const ACTIVATION_STATUS_ACCOUNT_STATUS_MAPPING = [
+        null                            => self::CREATED,
+        Status::UNDER_REVIEW            => Status::UNDER_REVIEW,
+        Status::NEEDS_CLARIFICATION     => Status::NEEDS_CLARIFICATION,
+        Status::ACTIVATED               => Status::ACTIVATED,
+        Status::REJECTED                => Status::REJECTED,
+        Status::ACTIVATED_KYC_PENDING   => Status::ACTIVATED_KYC_PENDING,
+        Status::ACTIVATED_MCC_PENDING   => Status::ACTIVATED
     ];
 }

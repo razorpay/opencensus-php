@@ -588,4 +588,6 @@ return array(
     '1cc_shipping_info_migration_splitz_experiment_id' => env('MAGIC_CHECKOUT_SHIPPING_INFO_MIGRATION_EXP_ID'),
 
     'magic_show_coupon_callout_experiment_id'  => env('MAGIC_SHOW_COUPON_CALLOUT_EXP_ID'),
+
+    'add_payment_acceptance_fields_to_account_v2_response' => env('ADD_PAYMENT_ACCEPTANCE_FIELDS_TO_ACCOUNT_V2_RESPONSE'),
 );

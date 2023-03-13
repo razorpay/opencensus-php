@@ -394,6 +394,8 @@ return [
             'content' => [
                 'type'                => 'standard',
                 'status'              => 'created',
+                'live'                => false,
+                'hold_funds'          => false,
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'phone'               => '+919999999999',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
@@ -903,6 +905,8 @@ return [
             'content' => [
                 'type'                => 'standard',
                 'status'              => 'created',
+                'live'                => false,
+                'hold_funds'          => false,
                 'email'               => 'testcreateaccountaa@razorpay.com',
                 'legal_business_name' => 'Acme Corp Pvt Ltd',
                 'customer_facing_business_name'   => 'Acme',
@@ -2020,4 +2024,103 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_ERROR_NOT_MARKETPLACE_MERCHANT,
         ],
     ],
+
+    'testAccountStatusWhenMerchantActivationStatusIsActivatedWhenExpIsEnabled' => [
+        'request' => [
+            'url'    => '/v2/accounts/{accountId}',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [
+                'type'                => 'standard',
+                'status'              => 'activated',
+                'activated_at'        => 1678107805,
+                'live'                => true,
+                'hold_funds'          => false,
+                'email'               => 'testcreateaccountaa@razorpay.com',
+                'phone'               => '+919999999999',
+                'legal_business_name' => 'Acme Corp Pvt Ltd',
+                'customer_facing_business_name'   => 'Acme',
+                'business_type'       => 'individual',
+                'profile'             => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'KARNATAKA',
+                            'postal_code' => '560034',
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'KARNATAKA',
+                            'postal_code' => '560034',
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testAccountStatusWhenMerchantActivationStatusIsActivatedWhenExpIsNotEnabled' => [
+        'request' => [
+            'url'    => '/v2/accounts/{accountId}',
+            'method' => 'GET',
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testDeleteAccountV2WhenNewPaymentAcceptanceFieldsExpIsEnabled' => [
+        'request' => [
+            'url'    => '/v2/accounts/{accountId}',
+            'method' => 'DELETE',
+        ],
+        'response' => [
+            'content' => [
+                'type'                => 'standard',
+                'status'              => 'suspended',
+                'live'                => false,
+                'hold_funds'          => true,
+                'email'               => 'testcreateaccountaa@razorpay.com',
+                'phone'               => '+919999999999',
+                'legal_business_name' => 'Acme Corp Pvt Ltd',
+                'customer_facing_business_name'   => 'Acme',
+                'business_type'       => 'individual',
+                'profile'             => [
+                    'category'       => 'healthcare',
+                    'subcategory'    => 'clinic',
+                    'description'    => 'Healthcare E-commerce platform',
+                    'business_model' => 'b2c',
+                    'addresses'      => [
+                        'operation'  => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'KARNATAKA',
+                            'postal_code' => '560034',
+                            'country'     => 'IN'
+                        ],
+                        'registered' => [
+                            'street1'     => '507, Koramangala 1st block',
+                            'street2'     => 'MG Road',
+                            'city'        => 'Bengaluru',
+                            'state'       => 'KARNATAKA',
+                            'postal_code' => '560034',
+                            'country'     => 'IN'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ]
 ];

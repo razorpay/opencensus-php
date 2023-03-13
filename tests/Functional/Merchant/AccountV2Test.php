@@ -169,6 +169,10 @@ class AccountV2Test extends TestCase
     {
         $this->setUpPartnerWithKycHandled();
 
+        $output["response"]["variant"]["name"] = "enable";
+
+        $this->mockSplitExperimentForPaymentAcceptanceAttributes($output);
+
         $response = $this->startTest();
 
         // check that stakeholder is not yet created
@@ -363,6 +367,10 @@ class AccountV2Test extends TestCase
         $expectedMetricData = $this->getDimensionsForAccountV2Metrics();
 
         $metricCaptured = false;
+
+        $output["response"]["variant"]["name"] = "enable";
+
+        $this->mockSplitExperimentForPaymentAcceptanceAttributes($output);
 
         $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_EDIT_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
 
@@ -1099,5 +1107,113 @@ class AccountV2Test extends TestCase
         $value = (new \RZP\Models\Merchant\Detail\Core())->getApplicableActivationStatus($merchantDetails);
 
         $this->assertEquals('under_review', $value);
+    }
+
+    public function testAccountStatusWhenMerchantActivationStatusIsActivatedWhenExpIsEnabled()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics();
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $output["response"]["variant"]["name"] = "enable";
+
+        $this->mockSplitExperimentForPaymentAcceptanceAttributes($output);
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $accountId = $result['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->fixtures->edit('merchant_detail', $accountId, ['activation_status' => 'activated']);
+
+        $this->fixtures->edit('merchant', $accountId, ['activated_at' => 1678107805, 'live' => true]);
+
+        $this->startTest($testData);
+
+        $this->assertTrue($metricCaptured);
+    }
+
+    public function testAccountStatusWhenMerchantActivationStatusIsActivatedWhenExpIsNotEnabled()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $metricsMock = $this->createMetricsMock();
+
+        $expectedMetricData = $this->getDimensionsForAccountV2Metrics();
+
+        $metricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(Metric::ACCOUNT_V2_FETCH_SUCCESS_TOTAL, $metricsMock, $metricCaptured, $expectedMetricData);
+
+        $output["response"]["variant"]["name"] = "off";
+
+        $this->mockSplitExperimentForPaymentAcceptanceAttributes($output);
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $accountId = $result['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $this->fixtures->edit('merchant_detail', $accountId, ['activation_status' => 'activated']);
+
+        $this->fixtures->edit('merchant', $accountId, ['activated_at' => 1678107805, 'live' => true]);
+
+        $fetchAccountResult = $this->runRequestResponseFlow($testData);
+
+        $this->assertEquals('created', $fetchAccountResult['status']);
+        $this->assertArrayNotHasKey('live', $fetchAccountResult);
+        $this->assertArrayNotHasKey('hold_funds', $fetchAccountResult);
+        $this->assertArrayNotHasKey('activated_at', $fetchAccountResult);
+
+        $this->assertTrue($metricCaptured);
+    }
+
+    public function testDeleteAccountV2WhenNewPaymentAcceptanceFieldsExpIsEnabled()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $testData = $this->testData['testCreateAccountV2ForCompletelyFilledRequest'];
+
+        $result = $this->runRequestResponseFlow($testData);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/v2/accounts/' . $result['id'];
+
+        $output["response"]["variant"]["name"] = "enable";
+
+        $this->mockSplitExperimentForPaymentAcceptanceAttributes($output);
+
+        $this->startTest($testData);
+    }
+
+    private function mockSplitExperimentForPaymentAcceptanceAttributes(array $output)
+    {
+        $input = [
+            "experiment_id" => "LPIyq5qAHqpMsj",
+            "id"            => "10000000000000"
+        ];
+
+        $this->mockSplitzTreatment($input, $output);
     }
 }

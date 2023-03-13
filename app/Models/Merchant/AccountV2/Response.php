@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\AccountV2;
 
 
+use App;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Detail;
 use RZP\Constants\IndianStates;
@@ -12,7 +13,7 @@ use RZP\Trace\TraceCode;
 
 class Response extends Core
 {
-    public function getAccountResponse(Merchant\Entity $account): array
+    public function getAccountResponse(Merchant\Entity $partner, Merchant\Entity $account): array
     {
         $accountDetails = $account->merchantDetail;
 
@@ -25,12 +26,26 @@ class Response extends Core
             Constants::EMAIL        => $account->getEmail(),
             Constants::PROFILE      => $this->getProfileData($account),
             Constants::NOTES        => $account->getNotes(),
-            Constants::CREATED_AT   => $account->getCreatedAt(),
+            Constants::CREATED_AT   => $account->getCreatedAt()
         ];
 
         if ($status === Constants::SUSPENDED)
         {
             $data[Constants::SUSPENDED_AT] = $account->getSuspendedAt();
+        }
+
+        if ($this->checkIfPaymentAcceptanceFieldsToBeAdded($partner->getId()))
+        {
+            $data[Constants::STATUS] = $this->getAccountStatus($account, $accountDetails->getActivationStatus());
+
+            $data[Constants::LIVE] = $account->isLive();
+
+            $data[Constants::HOLD_FUNDS] = $account->isFundsOnHold();
+
+            if ($data[Constants::STATUS] === Constants::ACTIVATED)
+            {
+                $data[Constants::ACTIVATED_AT] = $account->getActivatedAt();
+            }
         }
 
         $contactMobile =  $accountDetails->getContactMobile();
@@ -244,5 +259,26 @@ class Response extends Core
         }
 
         return $data;
+    }
+
+    protected function getAccountStatus(Merchant\Entity $account, $activationStatus) : string
+    {
+        if ($account->isSuspended())
+        {
+            return Constants::SUSPENDED;
+        }
+        return Constants::ACTIVATION_STATUS_ACCOUNT_STATUS_MAPPING[$activationStatus];
+    }
+
+    private function checkIfPaymentAcceptanceFieldsToBeAdded(string $partnerId) : bool
+    {
+        $app = App::getFacadeRoot();
+
+        $properties = [
+            'id'            => $partnerId,
+            'experiment_id' => $app['config']->get('app.add_payment_acceptance_fields_to_account_v2_response'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
     }
 }

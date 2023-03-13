@@ -21,7 +21,7 @@ class Service extends Merchant\Service
             return $this->core()->createAccountV2($this->merchant, $input);
         });
 
-        return $this->getResponseObject()->getAccountResponse($account);
+        return $this->getResponseObject()->getAccountResponse($this->merchant, $account);
     }
 
     public function fetchAccountV2(string $accountId): array
@@ -31,7 +31,7 @@ class Service extends Merchant\Service
             return $this->core()->fetchAccountV2($accountId);
         });
 
-        return $this->getResponseObject()->getAccountResponse($account);
+        return $this->getResponseObject()->getAccountResponse($this->merchant, $account);
     }
 
     public function editAccountV2(string $accountId, array $input): array
@@ -41,7 +41,7 @@ class Service extends Merchant\Service
             return $this->core()->editAccountV2($this->merchant, $accountId, $input);
         });
 
-        return $this->getResponseObject()->getAccountResponse($account);
+        return $this->getResponseObject()->getAccountResponse($this->merchant, $account);
     }
 
     public function deleteAccountV2(string $accountId)
@@ -79,7 +79,7 @@ class Service extends Merchant\Service
 
         $this->trace->count(Metric::ACCOUNT_V2_DELETE_SUCCESS_TOTAL, $dimensions);
 
-        return $this->getResponseObject()->getAccountResponse($account);
+        return $this->getResponseObject()->getAccountResponse($this->merchant, $account);
     }
 
     protected function getResponseObject()
