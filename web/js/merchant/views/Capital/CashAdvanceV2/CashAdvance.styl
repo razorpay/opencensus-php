@@ -1,131 +1,173 @@
-.cash-advance-v2-wrapper 
+.dark-background
+  background-color: #03042B
+
+.cash-advance-v2-wrapper
   min-height: 100vh
   padding: 60px 45px
-  background: #03042b
+  background: #03042B
   background-position: 0 -90px
   background-size: cover
 
-  &.default 
-    background-image: url('https://cdn.razorpay.com/static/assets/cash-advance/CashAdvanceBackground.svg')
+  @media (max-width 767px)
+    padding: 24px 16px
 
-  &.plain 
-    background-image: url('https://cdn.razorpay.com/static/assets/cash-advance/CashAdvancePlainBackground.png')
+  &.default
+    background-image: url("https://cdn.razorpay.com/static/assets/cash-advance/CashAdvanceBackground.svg")
+
+    @media (max-width 767px)
+      background-image: url("https://cdn.razorpay.com/static/assets/capital/line-of-credit/CashAdvancePlainBackgroundMobile.svg")
+      background-position: top
+
+  &.plain
+    background-image: url("https://cdn.razorpay.com/static/assets/cash-advance/CashAdvancePlainBackground.png")
     background-position: 0
 
-  .heading 
+    @media (max-width 767px)
+      background-image: url("assets/onboarding/CashAdvancePlainBackground.svg")
+      background-position: top
+
+  .heading
     font-size: 40px
     line-height: 48px
     text-align: left
-    color: #ffffff
+    color: #FFF
     font-weight: 700
 
-  .divider 
+    @media (max-width 767px)
+      font-size: 29px
+      line-height: 40px
+
+  .divider
     height: 5px
     width: 30px
-    background-color: #2cca74
+    background-color: #2CCA74
     margin-top: 10px
     z-index: 2
 
-  .sub-heading 
+  .sub-heading
     font-family: $mullish-font
     padding: 20px 0
     font-weight: 400
     font-size: 16px
-    color: #ffffffc2
+    color: #FFFFFFC2
     max-width: 440px
 
-    &.with-border 
+    &.with-border
       border-bottom: 1px solid #4F546E
 
-  .description 
+      @media (max-width 767px)
+        border-bottom: none
+
+  .description
     font-weight: 400
     font-size: 12px
     line-height: 16px
-    color: #8f93a4
+    color: #8F93A4
     margin-top: 20px
 
-  button 
-    background: #3281ff
-    color: #ffffff
+  button
+    background: #3281FF
+    color: #FFF
     font-weight: 700
     font-size: 18px
     min-width: 175px
     height: 52px
-    font-size: 18px
     line-height: 28px
     border-radius: 4px
-  
-  .cash-advance-v2-wrapper-flex 
+
+    @media (max-width 767px)
+      width: 100%
+
+  .cash-advance-v2-wrapper-flex
     min-height: 80vh
     display: flex
-  
-  .heading-flex 
+
+    @media (max-width 767px)
+      flex-direction: column
+
+  .heading-flex
     display: flex
     justify-content: space-between
 
-  .left-side 
+    @media (max-width 767px)
+      flex-direction: column
+
+  .left-side
     flex: 50%
-  
-  .right-side 
+
+  .right-side
     flex: 50%
     padding: 30px
     display: flex
     justify-content: space-between
     flex-direction: column
-    background: #112058b3
-    border: 1px solid #ffffff1a
+    background: #112058B3
+    border: 1px solid #FFFFFF1A
     box-sizing: border-box
     box-shadow: inset 0 0 2px #223DA4
     backdrop-filter: blur(6px)
     border-radius: 4px
 
-    .right-heading 
+    .right-heading
       font-weight: 700
       font-size: 18px
       line-height: 22px
       color: #E7E8EC
-    
-    .right-sub-heading 
+
+    .right-sub-heading
       font-size: 14px
       line-height: 20px
       color: #E7E8EC
-    
-    .application-status 
+
+    .application-status
       margin-top: 40px
-    
-    .right-footer 
+
+      @media (max-width 767px)
+        margin-top: 24px
+
+    .right-footer
       display: flex
       justify-content: space-between
       margin-top: 20px
 
-      i 
-        color: #528ff0
+      i
+        color: #528FF0
         font-size: 16px
         margin-right: 6px
 
-      img 
+      img
         width: 77px
         height: 20px
 
-  .view-content 
+  .view-content
     color: #2A86F3
     font-weight: 700
     font-size: 14px
     cursor: pointer
     padding-left: 40px
 
-    .i-chevron-up 
+    .i-chevron-up
       font-size: 14px
       margin-top: 5px
       position: absolute
 
-      &.rotate 
+      &.rotate
         transform: rotate(180deg)
 
-.card-section-wrapper 
+.card-section-wrapper
   margin-top: 130px
   display: flex
 
-  div 
+  @media (max-width 767px)
+    width: 100%
+    margin-top: 32px
+    flex-wrap: wrap
+
+  div
     margin-right: 16px
 
+    @media (max-width 767px)
+      margin-right: 0
+      margin-bottom: 16px
+      max-width: none
+      width: 100%

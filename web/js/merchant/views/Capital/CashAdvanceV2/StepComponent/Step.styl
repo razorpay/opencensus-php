@@ -1,18 +1,24 @@
-.step-wrapper 
-  .step-div 
+.step-wrapper
+  @media (max-width 767px)
+    margin-top: 40px
+
+  .step-div
     text-align: right
     margin: 5px
 
-  .particular-step-wrapper 
+    @media (max-width 767px)
+      text-align: left
+
+  .particular-step-wrapper
     display: flex
     margin-right: 5px
 
-    .particular-step 
+    .particular-step
       clip-path: polygon(6% 0, 100% 0%, 95% 50%, 0 50%)
       width: 46px
       background: #E8EAEE
       height: 12px
       margin-left: 0
 
-      &.active 
+      &.active
         background: #008659

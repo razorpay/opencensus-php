@@ -38,8 +38,21 @@ const CashAdvance = (props) => {
     setApplicationData(payload);
   };
 
+  function toggleClasses(nodes, className) {
+    for (const each of nodes) {
+      each.classList.toggle(className);
+    }
+  }
+
   useEffect(() => {
     trackLandingonCashAdvanceV2();
+    const body = document.querySelector('body');
+    const testModeLabel = body.querySelector('.highlight-test-mode-container');
+    const nodes = [body, testModeLabel];
+
+    toggleClasses(nodes, 'dark-background');
+
+    return () => toggleClasses(nodes, 'dark-background');
   }, []);
 
   useEffect(() => {
