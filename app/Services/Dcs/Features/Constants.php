@@ -67,6 +67,9 @@ class Constants
     const MerchantActivationByPartnerEnabled = 'merchant_activation_by_partner_enabled';
     const OverridingSubmerchantConfigEnabled = 'overriding_submerchant_config_enabled';
     const AdditionalFieldsHdfcOnboarding = 'additional_fields_hdfc_onboarding';
+    const NoDocOnboardingEnabled = 'no_doc_onboarding_enabled';
+    const OnboardedViaV2ApiEnabled = 'onboarded_via_v2_api_enabled';
+    const BlockSendingOnboardingSms = 'block_sending_onboarding_sms';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -128,6 +131,9 @@ class Constants
         self::MerchantActivationByPartnerEnabled => "rzp/platform/partner/onboarding/Features",
         self::OverridingSubmerchantConfigEnabled => "rzp/platform/partner/configuration/Features",
         self::AdditionalFieldsHdfcOnboarding => "rzp/pg/org/dashboard/admin/Features",
+        self::NoDocOnboardingEnabled => 'rzp/pg/merchant/onboarding/PartnershipFeatures',
+        self::OnboardedViaV2ApiEnabled => 'rzp/pg/merchant/onboarding/PartnershipFeatures',
+        self::BlockSendingOnboardingSms => 'rzp/pg/merchant/communication/PartnershipFeatures',
     ];
 
     /**
@@ -191,6 +197,9 @@ class Constants
         APIFeaturesConstants::INSTANT_ACTIVATION_V2_API                     => self::SubmerchantInstantActivationViaV2ApiEnabled,
         APIFeaturesConstants::PARTNER_ACTIVATE_MERCHANT                     => self::MerchantActivationByPartnerEnabled,
         APIFeaturesConstants::OVERRIDE_SUB_CONFIG                           => self::OverridingSubmerchantConfigEnabled,
+        APIFeaturesConstants::NO_DOC_ONBOARDING                             => self::NoDocOnboardingEnabled,
+        APIFeaturesConstants::CREATE_SOURCE_V2                              => self::OnboardedViaV2ApiEnabled,
+        APIFeaturesConstants::BLOCK_ONBOARDING_SMS                          => self::BlockSendingOnboardingSms,
     ];
 
     /**
