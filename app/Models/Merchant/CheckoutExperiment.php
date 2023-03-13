@@ -61,7 +61,7 @@ class CheckoutExperiment
             'email_less_checkout'                                => false,
             'enable_rudderstack_plugin'                          => false,
             'checkout_downtime'                                  => 'control',
-            'upi_number'                                         => 'control', 
+            'upi_number'                                         => 'control',
             '1cc_offers_fix_exp'                                 => 'control',
             '1cc_enable_v165_exp'                                => 'control',
             '1cc_address_flow_exp'                               => 'control',
@@ -70,6 +70,7 @@ class CheckoutExperiment
             '1cc_multiple_shipping'                              => 'control',
             '1cc_city_autopopulate_disable'                      => 'control',
             '1cc_show_coupon_callout_exp'                        => 'control',
+            'cvv_less'                                           => false,
         ];
 
         $this->input = $input;
@@ -296,7 +297,15 @@ class CheckoutExperiment
             'UpiNumber',
             'upi_number',
             ['merchant_id' => $this->merchantId]
-        );    
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.checkout_cvv_less_splitz_experiment_id',
+            'CvvLess',
+            'cvv_less',
+            ['merchant_id' => $this->merchantId]
+        );
     }
 
     private function fill1CcExperimentData(): void
@@ -581,6 +590,13 @@ class CheckoutExperiment
     private function handleUpiNumberResponse($response): string
     {
         return $response['variant']['name'] ?? 'control';
+    }
+
+    private function handleCvvLessResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
     }
 
     private function handleMagicGeneralExperimentResponse($response): string
