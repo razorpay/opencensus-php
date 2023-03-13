@@ -26,29 +26,29 @@ class AffordabilityMigrationService extends Base\Service
 {
     const defaultCreditEmiProviders = [
 
-        CreditEmiProvider::HDFC => '1',
-        CreditEmiProvider::UTIB => '1',
-        CreditEmiProvider::ICIC => '1',
-        CreditEmiProvider::AMEX => '1',
-        CreditEmiProvider::BARB => '1',
-        CreditEmiProvider::CITI => '1',
-        CreditEmiProvider::HSBC => '1',
-        CreditEmiProvider::INDB => '1',
-        CreditEmiProvider::KKBK => '1',
-        CreditEmiProvider::RATN => '1',
-        CreditEmiProvider::SCBL => '1',
-        CreditEmiProvider::YESB => '1',
-        CreditEmiProvider::ONECARD => '1',
+        CreditEmiProvider::HDFC => 1,
+        CreditEmiProvider::UTIB => 1,
+        CreditEmiProvider::ICIC => 1,
+        CreditEmiProvider::AMEX => 1,
+        CreditEmiProvider::BARB => 1,
+        CreditEmiProvider::CITI => 1,
+        CreditEmiProvider::HSBC => 1,
+        CreditEmiProvider::INDB => 1,
+        CreditEmiProvider::KKBK => 1,
+        CreditEmiProvider::RATN => 1,
+        CreditEmiProvider::SCBL => 1,
+        CreditEmiProvider::YESB => 1,
+        CreditEmiProvider::ONECARD => 1,
 
     ];
     const defaultCardlessEmiProviders = [
 
-        CardlessEmiProvider::EARLYSALARY  => '1',
+        CardlessEmiProvider::EARLYSALARY  => 1,
 
     ];
     const defaultPaylaterProviders =[
 
-        PaylaterProvider::ICIC => '1',
+        PaylaterProvider::ICIC => 1,
 
     ];
 
