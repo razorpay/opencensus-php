@@ -2514,11 +2514,6 @@ class BankingAccountTest extends TestCase
         $this->assertEquals($counter['balance_id'], $balance['id']);
         $this->assertEquals($counter['account_type'], $balance['account_type']);
 
-        $feature = $this->getLastEntity('feature', true);
-
-        $this->assertEquals($feature['name'], 'enable_ip_whitelist');
-        $this->assertEquals($feature['entity_id'], '10000000000000');
-
         Mail::assertNotQueued(Activated::class);
 
         Mail::assertQueued(ActivationMails\StatusChange::class, function ($mail) use($bankingAccount)

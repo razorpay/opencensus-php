@@ -957,7 +957,7 @@ class Activate extends Base\Core
 
             $this->addSkipHoldFundsOnPayout($merchant);
 
-            $this->addEnableIpWhitelistFeatureOnX($merchant, $mode);
+           // $this->addEnableIpWhitelistFeatureOnX($merchant, $mode);
 
             //create activated TPV
             (new BankingAccountTpv\Core())->createAutoApprovedTpvForActivatedMerchants($merchant, $mode);
