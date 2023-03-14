@@ -363,6 +363,14 @@ trait RecurringTrait
     public function upiRecurringUpdateGatewayStatus($statusDesc, $statusCode)
     {
         $payerResponseCode = explode("|", $statusDesc);
+
+        if((count($payerResponseCode) > 1) and
+            (strlen($payerResponseCode[0])<6))
+        {
+            unset($payerResponseCode[0]);
+            $payerResponseCode = array_values($payerResponseCode);
+        }
+        
         $gatewayData = [];
         $gatewayData[Constants::GATEWAY_STATUS_CODE] = $statusCode;
         $gatewayData[Constants::GATEWAY_STATUS_DESC] = rtrim($payerResponseCode[0]);
