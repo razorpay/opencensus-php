@@ -7,6 +7,16 @@ const StorageStatePath = {
   MOBILE_LIVE_LOGIN_STATE: `${BASE_PATH}/mobile-live-mode-login.json`,
 };
 
+const routes = {
+  DASHBOARD: '/app/dashboard',
+  ACCOUNT_SETTINGS: '/app/account-settings',
+  BALANCES: '/app/payments-and-refunds-settings/balances',
+  CREDITS: '/app/payments-and-refunds-settings/credits',
+  REMINDERS: '/app/payments-and-refunds-settings/reminders',
+  CAPTURE_AND_REFUND_SETTINGS: '/app/payments-and-refunds-settings/capture-refund-settings',
+  TRANSACTION_LIMITS: '/app/payments-and-refunds-settings/transaction-limits',
+};
+
 const EmailCredentials = [
   {
     type: 'desktop-test-mode-login.json',
@@ -40,6 +50,7 @@ const MobileCredentials = [
 ];
 
 module.exports = {
+  routes,
   EmailCredentials,
   MobileCredentials,
   StorageStatePath,
