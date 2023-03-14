@@ -1068,34 +1068,43 @@ class Core extends Base\Core
     {
         $merchant = $payment->merchant;
 
+        $delay = 0;
+
+        if (($sourceType === Constant::PAYMENT) and
+            (($merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true) or
+             ($merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true)))
+        {
+            $delay = 15 * 60; // 15 minutes
+        }
+
         if ($this->app['api.route']->getCurrentRouteName() === 'payment_transfer_batch')
         {
-            TransferProcessBatch::dispatch($this->mode, $payment->getId(), $sourceType);
+            TransferProcessBatch::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
 
             return;
         }
         else if (($merchant->isCapitalFloatRouteMerchant() === true) and
                  ($this->isLiveMode() === true))
         {
-            TransferProcessCapitalFloat::dispatch($this->mode, $payment->getId(), $sourceType);
+            TransferProcessCapitalFloat::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
 
             return;
         }
         else if (($merchant->isSliceRouteMerchant() === true) and
                  ($this->isLiveMode() === true))
         {
-            TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType);
+            TransferProcessSlice::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
 
             return;
         }
         else if ($merchant->isRouteKeyMerchant() === true)
         {
-            TransferProcessKeyMerchants::dispatch($this->mode, $payment->getId(), $sourceType);
+            TransferProcessKeyMerchants::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
 
             return;
         }
 
-        TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType);
+        TransferProcess::dispatch($this->mode, $payment->getId(), $sourceType)->delay($delay);
     }
 
     protected function traceTransferIdsFetchedForSettlementStatusUpdate(string $settlementId, array $transferIds)
