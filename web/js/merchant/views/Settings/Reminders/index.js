@@ -6,8 +6,11 @@ import {
   fetchRemindersMerchantConfigs,
 } from 'merchant/reducers/reminders';
 import Spinner from 'common/ui/Spinner';
+import ShowWhen from 'merchant/components/ShowWhen';
 import Alert from 'common/ui/Forms/Alert';
 import DocsLink from 'merchant/components/DocsLink';
+import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+
 import PaymentLinksSettings from './PaymentLinksSettings';
 
 class Reminders extends React.Component {
@@ -51,9 +54,15 @@ class Reminders extends React.Component {
 
     return (
       <div class="content-wrapper content-sm" id="settings-content">
-        <div className="documentation-section-link">
-          <DocsLink url="https://razorpay.com/docs/payment-links/reminders-payment-links/" />
-        </div>
+        <ShowWhen
+          additionalCondition={(userData) =>
+            !userData.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.Documentation)
+          }
+        >
+          <div className="documentation-section-link">
+            <DocsLink url="https://razorpay.com/docs/payment-links/reminders-payment-links/" />
+          </div>
+        </ShowWhen>
 
         {this.state.errors ? (
           <Alert type="error" message={this.state.errors} showDismiss={false} />

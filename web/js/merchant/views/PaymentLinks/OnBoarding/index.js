@@ -34,6 +34,12 @@ export const LANDING_PAGE_DESC = {
     'Create and share a Razorpay Payment Link in under a minute with your customers via email, SMS, messenger, chatbot etc. Get payments directly into your bank account.',
 };
 
+// i18
+const FEATURE_LINKS_MAPS = {
+  [ORG_CUSTOM_CODE_MAP.RAZORPAY]: FEATURES_LINKS,
+  [ORG_CUSTOM_CODE_MAP.CURLEC]: [],
+};
+
 @connect(
   (state) => ({
     user: state.session.user,
@@ -71,6 +77,9 @@ export default class PaymentPagesOnBoarding extends React.Component {
 
   render() {
     const { active, paymentLinksProductOnBoarding, org } = this.props;
+    const orgCode = org.custom_code.toLowerCase();
+    const featureLinks = FEATURE_LINKS_MAPS[orgCode] || FEATURES_LINKS;
+    const description = LANDING_PAGE_DESC[orgCode];
 
     return (
       <OnBoardingWrapper class="PaymentLinks">
@@ -88,7 +97,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
               feature={RZPFeatures.PL}
               imageUrl={PaymentLinkIcon}
               businessName={org.business_name}
-              desc={LANDING_PAGE_DESC[org.custom_code?.toLowerCase()]}
+              desc={description}
             />
           )}
 
@@ -97,7 +106,7 @@ export default class PaymentPagesOnBoarding extends React.Component {
               {...sliderProps}
               title="What makes Payment Links great?"
               nextBtn={this.getNextBtnProp(sliderProps)}
-              featureLinks={FEATURES_LINKS}
+              featureLinks={featureLinks}
               feature={RZPFeatures.PL}
               features={FEATURES_DATA}
             />
