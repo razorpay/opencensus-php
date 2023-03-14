@@ -648,7 +648,10 @@ class Entity extends Base\PublicEntity
 
     public function isPayzappEnabled()
     {
-        return $this->getAttribute(self::PAYZAPP);
+        // disabling payzapp for now as the wallet support for this is stopped and
+        // partner have a new onboarding process for new integration and has to be enabled individually again. This is
+        // temp change till we disable the wallet for merchant base from DB.
+        return false;
     }
 
     public function isOlamoneyEnabled()

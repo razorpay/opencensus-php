@@ -61,6 +61,8 @@ class PayzappV2ReconTest extends TestCase
         $this->nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Wallet', [$this->app])->makePartial();
 
         $this->app->instance('nbplus.payments', $this->nbPlusService);
+
+        $this->markTestSkipped('disabling payzapp temporarily');
     }
 
     public function testPaymentReconciliation()

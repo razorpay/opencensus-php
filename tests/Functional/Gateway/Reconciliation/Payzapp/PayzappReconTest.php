@@ -48,6 +48,8 @@ class PayzappReconTest extends TestCase
         $connector = $this->mockSqlConnectorWithReplicaLag(0);
 
         $this->app->instance('db.connector.mysql', $connector);
+
+        $this->markTestSkipped('disabling payzapp temporarily');
     }
 
     public function testPaymentReconciliation()

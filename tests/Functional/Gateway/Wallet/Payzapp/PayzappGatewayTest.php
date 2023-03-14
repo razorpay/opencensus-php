@@ -28,6 +28,8 @@ class PayzappGatewayTest extends TestCase
         $this->gateway = 'wallet_payzapp';
 
         $this->setMockGatewayTrue();
+
+        $this->markTestSkipped('disabling payzapp temporarily');
     }
 
     public function testPayment()
