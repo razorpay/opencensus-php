@@ -192,7 +192,19 @@ class UserRolePermissionsMap
                  Permission::ACCOUNTS_RECEIVABLE_ADMIN,
                  Permission::BILL_PAYMENTS_VIEW,
                  Permission::BILL_PAYMENTS_CREATE_ACCOUNT,
-                 Permission::BILL_PAYMENTS_FETCH_BILL
+                 Permission::BILL_PAYMENTS_FETCH_BILL,
+
+                 Permission::MOB_SERVICE_READ,
+                 Permission::MOB_SERVICE_WRITE,
+
+                 Permission::BANKING_ACCOUNT_READ,
+                 Permission::BANKING_ACCOUNT_WRITE,
+
+                 Permission::MERCHANT_ONBOARDING_WRITE,
+
+                 Permission::MERCHANT_USER_WRITE,
+
+                 Permission::MERCHANT_ONBOARDING,
              ],
 
              BankingRole::ADMIN => [
@@ -337,7 +349,20 @@ class UserRolePermissionsMap
                  Permission::ACCOUNTS_RECEIVABLE_ADMIN,
                  Permission::BILL_PAYMENTS_VIEW,
                  Permission::BILL_PAYMENTS_CREATE_ACCOUNT,
-                 Permission::BILL_PAYMENTS_FETCH_BILL
+                 Permission::BILL_PAYMENTS_FETCH_BILL,
+
+
+                 Permission::MOB_SERVICE_READ,
+                 Permission::MOB_SERVICE_WRITE,
+
+                 Permission::BANKING_ACCOUNT_READ,
+                 Permission::BANKING_ACCOUNT_WRITE,
+
+                 Permission::MERCHANT_ONBOARDING_WRITE,
+
+                 Permission::MERCHANT_USER_WRITE,
+
+                 Permission::MERCHANT_ONBOARDING,
              ],
 
              BankingRole::FINANCE_L1 => [
@@ -458,7 +483,19 @@ class UserRolePermissionsMap
                  Permission::ACCOUNTS_RECEIVABLE_ADMIN,
                  Permission::BILL_PAYMENTS_VIEW,
                  Permission::BILL_PAYMENTS_CREATE_ACCOUNT,
-                 Permission::BILL_PAYMENTS_FETCH_BILL
+                 Permission::BILL_PAYMENTS_FETCH_BILL,
+
+                 Permission::MOB_SERVICE_READ,
+                 Permission::MOB_SERVICE_WRITE,
+
+                 Permission::BANKING_ACCOUNT_READ,
+                 Permission::BANKING_ACCOUNT_WRITE,
+
+                 Permission::MERCHANT_ONBOARDING_WRITE,
+
+                 Permission::MERCHANT_USER_WRITE,
+
+                 Permission::MERCHANT_ONBOARDING,
              ],
 
              BankingRole::OPERATIONS => [
@@ -531,7 +568,19 @@ class UserRolePermissionsMap
                  Permission::ACCOUNTS_RECEIVABLE_ADMIN,
                  Permission::BILL_PAYMENTS_VIEW,
                  Permission::BILL_PAYMENTS_CREATE_ACCOUNT,
-                 Permission::BILL_PAYMENTS_FETCH_BILL
+                 Permission::BILL_PAYMENTS_FETCH_BILL,
+
+                 Permission::MOB_SERVICE_READ,
+                 Permission::MOB_SERVICE_WRITE,
+
+                 Permission::BANKING_ACCOUNT_READ,
+                 Permission::BANKING_ACCOUNT_WRITE,
+
+                 Permission::MERCHANT_ONBOARDING_WRITE,
+
+                 Permission::MERCHANT_USER_WRITE,
+
+                 Permission::MERCHANT_ONBOARDING,
              ],
 
              BankingRole::CHARTERED_ACCOUNTANT => [
@@ -574,6 +623,18 @@ class UserRolePermissionsMap
                  Permission::SYNC_ACCOUNTING_INTEGRATION,
                  Permission::VIEW_ACCOUNTING_INTEGRATION,
                  Permission::UPDATE_ACCOUNTING_INTEGRATION,
+
+                 Permission::MOB_SERVICE_READ,
+                 Permission::MOB_SERVICE_WRITE,
+
+                 Permission::BANKING_ACCOUNT_READ,
+                 Permission::BANKING_ACCOUNT_WRITE,
+
+                 Permission::MERCHANT_ONBOARDING_WRITE,
+
+                 Permission::MERCHANT_USER_WRITE,
+
+                 Permission::MERCHANT_ONBOARDING,
              ],
 
              BankingRole::VIEW_ONLY => [
@@ -627,7 +688,15 @@ class UserRolePermissionsMap
                  Permission::VIEW_ALL_ROLES,
                  Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
 
-                 Permission::BILL_PAYMENTS_VIEW
+                 Permission::BILL_PAYMENTS_VIEW,
+
+                 Permission::MOB_SERVICE_READ,
+
+                 Permission::BANKING_ACCOUNT_READ,
+
+                 Permission::MERCHANT_USER_WRITE,
+
+                 Permission::MERCHANT_ONBOARDING,
              ],
 
              BankingRole::VENDOR => [
@@ -640,7 +709,11 @@ class UserRolePermissionsMap
                  Permission::DOWNLOAD_REPORTING,
                  Permission::VIEW_PRIVILEGES,
                  Permission::VIEW_ALL_ROLES,
-                 Permission::CUSTOMER_SUPPORT_FULL_ACCESS
+                 Permission::CUSTOMER_SUPPORT_FULL_ACCESS,
+
+                 Permission::MERCHANT_USER_WRITE,
+
+                 Permission::MERCHANT_ONBOARDING,
              ],
         ];
 

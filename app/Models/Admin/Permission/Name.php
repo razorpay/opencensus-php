@@ -1108,6 +1108,17 @@ class Name
     const VIEW_FINANCEX_REPORT                  = 'view_financex_report';
     const CREATE_FINANCEX_REPORT                = 'create_financex_report';
 
+    const MOB_SERVICE_READ                      = 'mob_service_read';
+    const MOB_SERVICE_WRITE                     = 'mob_service_write';
+
+    // Banking Account Service permissions
+    const BANKING_ACCOUNT_READ                              = 'banking_account_read';
+    const BANKING_ACCOUNT_WRITE                             = 'banking_account_write';
+
+    const MERCHANT_ONBOARDING_WRITE             = 'merchant_onboarding_write';
+
+    const MERCHANT_USER_WRITE                   = 'merchant_user_write';
+
     public static $actionMap = [
         Merchant\Action::ARCHIVE                            => self::EDIT_MERCHANT_ARCHIVE,
         Merchant\Action::UNARCHIVE                          => self::EDIT_MERCHANT_UNARCHIVE,
