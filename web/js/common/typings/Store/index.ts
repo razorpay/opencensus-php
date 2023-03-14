@@ -6,3 +6,5 @@ export * from './settlement';
 export * from './app';
 export * from './instrument-requests';
 export * from './modal';
+export * from './config';
+export * from './b2bExports';

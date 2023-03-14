@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { connect } from 'react-redux';
 import PaymentMethodsSection from 'merchant/views/AccountAndSettings/PaymentMethods/components/Section';
 import { PaymentMethodsFields } from 'merchant/views/AccountAndSettings/AccountAndSettingsHome/typings/section';
-import { setFeatureFlag } from 'merchant/reducers/b2bExports/actions';
-import { fetchFeatureStatus } from 'merchant/reducers/config';
+import { setFeatureFlag as setFeatureFlagFn } from 'merchant/reducers/b2bExports/actions';
+import { fetchFeatureStatus as fetchFeatureStatusFn } from 'merchant/reducers/config';
 import { bindActionCreators } from 'redux';
 import { MerchantICProductStatus } from 'merchant/views/AccountAndSettings/PaymentMethods/typings';
 import { isInternationalLeafItemDisabled } from 'merchant/views/AccountAndSettings/PaymentMethods/utils';
@@ -22,6 +22,8 @@ import {
   User,
   InstrumentListItem,
   LeafListItem as LeafListItemType,
+  FetchFeatureStatusType,
+  SetFeatureFlagType,
 } from 'common/typings';
 import Firc from 'merchant/views/Settings/Configuration/components/FircAnnouncements/Firc';
 import { fetchWorkflowStatus as fetchWorkflowStatusAction } from 'merchant/reducers/workflows';
@@ -32,14 +34,18 @@ import IntoViewUsingQueryParams from 'common/ui/IntoViewUsingQueryParams';
 import { showWorkflowStatus } from 'merchant/views/Account/Profile/components/WorkflowRequests/utils';
 import { fetchUser as fetchUserFn } from 'merchant/reducers/session';
 
-export type Props = {
+type NewType = {
   user: User;
   instrument?: InstrumentListItem;
   isB2BEnabled: boolean;
   fetchWorkflowStatus: () => void;
   showNotification: ShowNotificationType;
   fetchUser: () => void;
+  setFeatureFlag: SetFeatureFlagType;
+  fetchFeatureStatus: FetchFeatureStatusType;
 };
+
+export type Props = NewType;
 
 const International = ({
   user,
@@ -48,6 +54,8 @@ const International = ({
   fetchWorkflowStatus,
   showNotification,
   fetchUser,
+  setFeatureFlag,
+  fetchFeatureStatus,
 }: Props): JSX.Element => {
   /**
    * this checks if B2B instrument container has to be shown to a
@@ -55,15 +63,18 @@ const International = ({
    */
   useEffect(() => {
     const checkB2BFeatureFlag = async () => {
-      try {
-        const response = await fetchFeatureStatus(user.id, 'enable_intl_bank_transfer').payload;
-        /* istanbul ignore else */
-        if (response?.success) {
-          setFeatureFlag({ isB2BEnabled: response?.data?.status });
-        }
-        // eslint-disable-next-line no-empty
-      } catch {}
+      if (user.id) {
+        try {
+          const response = await fetchFeatureStatus(user.id, 'enable_intl_bank_transfer');
+          /* istanbul ignore else */
+          if (response?.success && response.data) {
+            setFeatureFlag({ isB2BEnabled: response.data.status });
+          }
+          // eslint-disable-next-line no-empty
+        } catch {}
+      }
     };
+
     checkB2BFeatureFlag();
   }, [user.id]);
 
@@ -179,8 +190,8 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => {
   return bindActionCreators(
     {
-      setFeatureFlag,
-      fetchFeatureStatus,
+      setFeatureFlag: setFeatureFlagFn,
+      fetchFeatureStatus: fetchFeatureStatusFn,
       fetchWorkflowStatus: () =>
         fetchWorkflowStatusAction(WORKFLOW_TYPES.ENABLE_INTERNATIONAL_CARDS_FOR_PG_PPLI),
       showNotification: showNotificationFn,
