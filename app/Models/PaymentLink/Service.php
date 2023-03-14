@@ -9,6 +9,7 @@ use Request;
 use RZP\Encryption\AESEncryption;
 use RZP\Error\Error;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Batch\ResponseEntity;
 use RZP\Models\PaymentLink\NocodeCustomUrl;
 use RZP\Models\PaymentLink\Metric;
 use RZP\Trace\TraceCode;
@@ -455,6 +456,46 @@ class Service extends Base\Service
             $response[PaymentPageRecord\Entity::TOTAL_PENDING_REVENUE] = $revenue;
 
             return $response;
+        });
+
+    }
+
+    public function getPaymentPageBatches(string $paymentPageId,$input)
+    {
+        return Tracer::inSpan(['name' => 'payment_page.ppr.get.batches'], function() use($paymentPageId, $input)
+        {
+            $id = Entity::stripDefaultSign($paymentPageId);
+
+            //Since batch service only supports max 25 batches at a time for this route
+            if ($input['count'] > 25)
+            {
+                $input['count'] = 25;
+            }
+
+            $batches = $this->repo->payment_page_record->getBatchesByPaymentPageId($id, $input['skip'], $input['count']);
+
+            $count = 0;
+            $batchArr = [];
+            foreach ($batches as $batchId) {
+              $batchArr[$count]  = $batchId[PaymentPageRecord\Entity::BATCH_ID];
+              $count++;
+            }
+
+            $this->merchant = $this->auth->getMerchant();
+
+            $batchResponse = null;
+            if (count($batchArr) > 0) {
+                $batchResponse = $this->app->batchService->getMultipleBatchesFromBatchService($this->merchant, $batchArr);
+            }
+
+            $this->trace->info(
+                TraceCode::GET_MULTIPLE_BATCHES_BATCH_SERVICE,
+                [
+                    'Batch service Response' => $batchResponse,
+                ]);
+
+            return $batchResponse;
+
         });
 
     }

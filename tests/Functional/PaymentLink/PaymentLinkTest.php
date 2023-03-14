@@ -6,6 +6,7 @@ use DB;
 use Event;
 use Carbon\Carbon;
 use Mail;
+use Mockery;
 
 use Illuminate\Http\UploadedFile;
 use RZP\Constants\Mode;
@@ -17,6 +18,7 @@ use RZP\Models\Order;
 use RZP\Models\Currency\Currency;
 use RZP\Models\PaymentLink\Entity;
 use RZP\Models\Schedule;
+use RZP\Services\BatchMicroService;
 use RZP\Services\Elfin\Impl\Gimli;
 use RZP\Jobs\PaymentPageProcessor;
 use Illuminate\Support\Facades\Bus;
@@ -648,6 +650,23 @@ class PaymentLinkTest extends TestCase
         return $id;
     }
 
+    public function setUpCreateRecordForFileUploadGetBatch()
+    {
+        $id = $this->setUpPaymentPageForFileUpload();
+
+        $batch_id = 'batch_00000000000001';
+
+        $testData = $this->testData['testPaymentPageRecordForFileUpload'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id . '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $this->sendRequest($testData['request']);
+
+        return $id;
+    }
+
     public function testPaymentPagePendingPaymentsAndRevenue()
     {
         $id = $this->setUpCreateRecordForFileUpload();
@@ -681,6 +700,50 @@ class PaymentLinkTest extends TestCase
         $entityArray = $entity->toArray();
 
         return $entityArray['payment_link_id'];
+    }
+
+    protected function mockBatchService()
+    {
+        $mock = Mockery::mock(BatchMicroService::class)->makePartial();
+        $this->app->instance('batchService', $mock);
+
+        $batchEntity = $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_page',
+            ]);
+        $mock->shouldAllowMockingMethod('getMultipleBatchesFromBatchService')
+            ->shouldReceive('getMultipleBatchesFromBatchService')
+            ->andReturn($batchEntity);
+    }
+
+    public function testGetMultipleBatchesForPaymentPage()
+    {
+        $this->mockBatchService();
+
+        $id = $this->setUpCreateRecordForFileUploadGetBatch();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id . '/batches?count=20&skip=0';
+        $this->testData[__FUNCTION__]['request']['method'] = 'GET';
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+
+    }
+
+    public function testGetMultipleBatchesForPaymentPageCount()
+    {
+        $this->mockBatchService();
+
+        $id = $this->setUpCreateRecordForFileUploadGetBatch();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $id . '/batches?count=26&skip=0';
+        $this->testData[__FUNCTION__]['request']['method'] = 'GET';
+
+        $this->ba->proxyAuth();
+        $this->startTest();
+
     }
 
     public function testFetchPaymentLink()

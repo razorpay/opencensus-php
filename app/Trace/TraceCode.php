@@ -5000,6 +5000,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VALIDATE_FILENAME_RESPONSE                            = 'VALIDATE_FILENAME_RESPONSE';
     const INPUT_QUERY_PARAMS                                    = 'INPUT_QUERY_PARAMS';
     const GET_BATCHES_BATCH_SERVICE                             = 'GET_BATCHES_BATCH_SERVICE';
+    const GET_MULTIPLE_BATCHES_BATCH_SERVICE                    = 'GET_MULTIPLE_BATCHES_BATCH_SERVICE';
     const VALIDATE_FILE_NAME_BAD_REQUEST                        = 'VALIDATE_FILE_NAME_BAD_REQUEST';
     const VERIFY_DUPLICATE_FILE_NAME                            = 'VERIFY_DUPLICATE_FILE_NAME';
     const GET_BATCHES_IGNORE_COUNT_SKIP                         = 'GET_BATCHES_IGNORE_COUNT_SKIP';

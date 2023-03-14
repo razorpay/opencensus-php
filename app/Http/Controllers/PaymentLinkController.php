@@ -345,6 +345,18 @@ class PaymentLinkController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getPaymentPageBatches(string $paymentPageId)
+    {
+        $input = Request::all();
+
+        $response = Tracer::inSpan(['name' => 'payment_page.ppr.get'], function() use($paymentPageId, $input)
+        {
+            return $this->service()->getPaymentPageBatches($paymentPageId, $input);
+        });
+
+        return ApiResponse::json($response);
+    }
+
     public function setMerchantDetails()
     {
         $input = Request::all();

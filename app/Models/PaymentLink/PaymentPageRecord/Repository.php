@@ -48,4 +48,19 @@ class Repository extends Base\Repository
             ->toArray();
     }
 
+
+    public function getBatchesByPaymentPageId(
+        string $payment_page_id,
+        int $skip = 0,
+        int $count = 25
+    )
+    {
+        return $this->newQuery()
+            ->select(Entity::BATCH_ID)
+            ->where(Entity::PAYMENT_LINK_ID, $payment_page_id)
+            ->skip($skip)
+            ->limit($count)
+            ->get()
+            ->toArray();
+    }
 }

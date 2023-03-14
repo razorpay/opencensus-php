@@ -5992,6 +5992,36 @@ return [
         ],
     ],
 
+    "testGetMultipleBatchesForPaymentPage" => [
+        'request'  => [
+            'method'  => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                        'id'     => '00000000000001',
+                        'type'   => 'payment_page',
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
+    "testGetMultipleBatchesForPaymentPageCount" => [
+        'request'  => [
+            'method'  => 'get',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                        'id'     => '00000000000001',
+                        'type'   => 'payment_page',
+            ],
+        ],
+        'status_code' => 200,
+    ],
+
     "testCreatePaymentPageWithCustomDomain" => [
         'request'  => [
             'url'     => '/payment_pages',

@@ -617,6 +617,47 @@ class BatchMicroService
         return $response;
     }
 
+
+    public function getMultipleBatchesFromBatchService(Merchant\Entity $merchant = null, array $inputQueryParams = null)
+    {
+        $this->trace->info(
+            TraceCode::GET_MULTIPLE_BATCHES_BATCH_SERVICE,
+            [
+                'inputQueryParams' => $inputQueryParams,
+            ]);
+
+
+        if ($merchant != null)
+        {
+            // this is part headers as the referred route does not accept query params
+            //when we hit route on batch service. route = /batch/{id}
+            $options['X-Entity-Id'] = $merchant->getId();
+        }
+
+        $inputQueryParams = implode(",", $inputQueryParams);
+
+        $relativeUrl = self::BATCH_URLS['batch'] . '/getBatches/' . $inputQueryParams ;
+        $this->trace->info(TraceCode::GET_MULTIPLE_BATCHES_BATCH_SERVICE, ['$relativeUrl' => $relativeUrl]);
+
+        try
+        {
+            $options['mode'] = $this->mode;
+
+            $response = $this->getResponseFromBatchService($relativeUrl, Requests::GET, $options);
+        }
+        catch (\Exception $exception)
+        {
+            // Handling  5xx and 4xx exceptions as one.
+            // Returning null as the caller has to take care of the response.
+
+            $this->trace->info(TraceCode::GET_MULTIPLE_BATCHES_BATCH_SERVICE, ['response' => 'no response']);
+
+            return null;
+        }
+
+        return $response;
+    }
+
     /**
      * @throws Exception\BadRequestException
      * @throws Exception\ServerNotFoundException
