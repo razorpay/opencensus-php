@@ -118,6 +118,11 @@ class GatewayController extends Controller
 
         if ($mode === null)
         {
+            if ($this->shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId) === true)
+            {
+                return $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($paymentId, $input);
+            }
+
             return $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
         }
         else
@@ -276,6 +281,11 @@ class GatewayController extends Controller
         {
             if ($mode === null)
             {
+                if ($this->shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId) === true)
+                {
+                    $data = $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($paymentId, $input);
+                }
+
                 $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
             }
             else
@@ -305,6 +315,37 @@ class GatewayController extends Controller
         }
 
         return $response;
+    }
+
+    /**
+     * checks if pre processed callback can be processed through Re-Arch flow
+     *
+     * @param mixed $paymentRepo
+     * @param mixed $paymentId
+     * @return boolean
+     */
+    protected function shouldRoutePreProcessedCallbackThroughReArch($paymentRepo, $paymentId)
+    {
+        try
+        {
+            $payment = $paymentRepo->findOrFail($paymentId);
+        }
+        catch (\Throwable $th)
+        {
+            $this->trace->info(TraceCode::EXTERNAL_REPO_REQUEST_FAILURE,
+            [
+                "message" => $th->getMessage(),
+            ]);
+
+            return false;
+        }
+
+        if (empty($payment) === true)
+        {
+            return false;
+        }
+
+        return ($payment->isExternal() === true);
     }
 
     /**

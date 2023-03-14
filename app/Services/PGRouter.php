@@ -82,6 +82,8 @@ class PGRouter
 
     const PGRouterOTPSubmitPrivate = "v1/payments/%s/otp/submit";
 
+    const PG_ROUTER_STATIC_CALLBACK = "/v1/payments/%s/static_callback";
+
     const PG_ROUTER_FAILURE_STATUS_CODE = "pg_router_failure_status_code";
 
     const PG_ROUTER_REQUEST_FAILURE = "pg_router_request_failure";
@@ -1033,5 +1035,19 @@ class PGRouter
                 TraceCode::PG_ROUTER_ERROR_LOGGING_RESPONSE_TIME_METRIC
             );
         }
+    }
+
+    /**
+     * @param string $paymentId
+     * @param $input
+     * @return array
+     */
+    public function sendStaticCallbackRequestToPgRouter(string $paymentId, $input) {
+
+        $url = sprintf(self::PG_ROUTER_STATIC_CALLBACK, $paymentId);
+
+        $output = $this->sendRequest($url, Requests::POST, $input, true, 90);
+
+        return $output['body'];
     }
 }
