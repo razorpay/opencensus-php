@@ -2141,6 +2141,9 @@ class Gateway extends Base\Gateway
                 Action::MANDATE_REVOKE      => null,
                 Action::UPDATE_TOKEN        => null,
             ],
+            Payment\Gateway::PAYU => [
+                Action::CHECK_BIN => null
+            ]
         ];
 
         return $previousActionForStep[$gateway][$this->action];
@@ -3598,5 +3601,17 @@ class Gateway extends Base\Gateway
         $res['isSuccess']  = $response['success'];
 
         return $res;
+    }
+
+    // Gets BIN information from gateway. Requires, payment, terminal and card entity.
+    // Takes gateway from payment.gateway, IIN from card.iin, and terminal secrets
+    public function checkBin($input): array
+    {
+        parent::action($input, Action::CHECK_BIN);
+
+        list($response) = $this->sendMozartRequestAndGetResponse($input, TraceCode::GATEWAY_CHECK_BIN_REQUEST,
+            TraceCode::GATEWAY_CHECK_BIN_RESPONSE, true);
+
+        return $response;
     }
 }

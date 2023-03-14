@@ -62,4 +62,6 @@ class Action
     const CREATE_VIRTUAL_ACCOUNT = 'create_virtual_account';
 
     const UPDATE_TOKEN          = 'update_token';
+
+    const CHECK_BIN             = 'check_bin';
 }

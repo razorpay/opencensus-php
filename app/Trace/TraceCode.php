@@ -1580,6 +1580,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_PAYMENT_OTP_SUBMIT_RESPONSE                   = 'GATEWAY_PAYMENT_OTP_SUBMIT_RESPONSE';
     const GATEWAY_CHECK_BALANCE_REQUEST                         = 'GATEWAY_CHECK_BALANCE_REQUEST';
     const GATEWAY_CHECK_BALANCE_RESPONSE                        = 'GATEWAY_CHECK_BALANCE_RESPONSE';
+    const GATEWAY_CHECK_BIN_REQUEST                             = 'GATEWAY_CHECK_BIN_REQUEST';
+    const GATEWAY_CHECK_BIN_RESPONSE                            = 'GATEWAY_CHECK_BIN_RESPONSE';
     const GATEWAY_CHECK_USER_REQUEST                            = 'GATEWAY_CHECK_USER_REQUEST';
     const GATEWAY_CHECK_USER_RESPONSE                           = 'GATEWAY_CHECK_USER_RESPONSE';
     const GATEWAY_PAYMENT_DEBIT_REQUEST                         = 'GATEWAY_PAYMENT_DEBIT_REQUEST';

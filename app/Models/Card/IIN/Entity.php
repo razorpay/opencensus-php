@@ -346,6 +346,12 @@ class Entity extends Base\PublicEntity
 
     public function isCardMandateApplicable(Merchant\Entity $merchant, bool $hasSubscription = false)
     {
+        // For Optimizer merchants, Payu gateway acts as a mandatehub, meaning it creates mandate + payment in a single
+        // payment API call. As of march 2023, We will not override the below IIN checks for Optimizer. We will allow
+        // recurring payments for Optimizer only if below check passes + additionally during mandate creation we do BIN
+        // check with Payu.
+
+
         if ($this->getMandateHubs() > 0)
         {
             $hubs = $this->getApplicableMandateHubs($merchant, $hasSubscription);

@@ -60,6 +60,7 @@ class Action
     const CARD_MANDATE_UPDATE           = 'card_mandate_update';
     const CARD_MANDATE_CANCEL           = 'card_mandate_cancel';
     const CARD_MANDATE_UPDATE_TOKEN     = 'card_mandate_update_token';
+    const CHECK_BIN                     = 'check_bin';
 
 
     protected $merchant;
