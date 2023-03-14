@@ -40,7 +40,7 @@ return [
 
     'rotate'  => true,
 
-    'log_max_files' => 5,
+    'log_max_files' => 2,
 
     'logpath' => storage_path() . '/logs/' . env('HOSTNAME', 'localhost') . '-trace.log',
 
