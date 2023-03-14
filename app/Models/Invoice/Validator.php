@@ -704,6 +704,12 @@ class Validator extends Base\Validator
 
     public function validateReceiptRequired(array $input)
     {
+
+        if(empty($input["type"]) === false and
+            (in_array($input["type"], Type::getDCCEInvoiceTypes(), true) === true)) {
+            return;
+        }
+
         if (empty($input[Entity::RECEIPT]) === true)
         {
             $isReceiptMandatory = $this->entity

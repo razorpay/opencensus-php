@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Jobs\PaymentEInvoice;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Invoice\Constants;
 use RZP\Models\Invoice\Entity;
 use RZP\Models\Invoice\Status;
@@ -125,6 +126,23 @@ class PaymentEInvoiceTest extends TestCase
         $this->eInvoiceClientMock = \Mockery::mock('RZP\Services\EInvoice', [$this->app])->makePartial()->shouldAllowMockingProtectedMethods();
 
         $this->app['einvoice_client'] = $this->eInvoiceClientMock;
+    }
+
+    // successful invoice for tax invoice where merchant has INVOICE_RECEIPT_MANDATORY feature enabled
+    public function testDCCInvoicePaymentInvoiceReceiptMandatoryFlow()
+    {
+        $features = [Features::INVOICE_RECEIPT_MANDATORY];
+
+        $this->fixtures->merchant->addFeatures($features);
+
+        $invoice = $this->generateDCCEInvoice(Constants::PAYMENT_FLOW);
+
+        $this->assertEquals($this->payment->getId(), $invoice[Entity::ENTITY_ID]);
+        $this->assertEquals($this->payment->getId(), $invoice[Entity::REF_NUM]);
+        $this->assertEquals(Status::GENERATED, $invoice[Entity::STATUS]);
+        $this->assertEquals(Type::DCC_INV, $invoice[Entity::TYPE]);
+        $this->assertEquals(self::INVOICE_REF_NUM, $invoice[Entity::NOTES][Constants::IRN]);
+        $this->assertEmpty($invoice[Entity::COMMENT]);
     }
 
     // successful invoice for tax invoice
