@@ -18,7 +18,6 @@ use RZP\Error\ErrorClass;
 use RZP\Models\Order\Metric;
 use RZP\Http\Request\Requests;
 use Razorpay\Trace\Logger as Trace;
-use Razorpay\Edge\Passport\Passport;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Offer\EntityOffer\Repository as EntityOfferRepository;
 
@@ -689,7 +688,6 @@ class PGRouter
         $headers[self::X_MODE]              = $this->mode;
         $headers[self::X_REQUEST_ID]        = $this->request->getId();
         $headers[self::X_REQUEST_TASK_ID]   = $this->request->getTaskId();
-        $headers[Passport::PASSPORT_JWT_V1] = $this->app->basicauth->getPassportJwt(env('PG_ROUTER_URL'));
 
         $this->headers = $headers;
     }
@@ -827,11 +825,6 @@ class PGRouter
                 $content['products']);
 
             $traceRequest['content'] = json_encode($content);
-        }
-
-        if (is_array($traceRequest['headers']) === true)
-        {
-            unset($traceRequest['headers'][Passport::PASSPORT_JWT_V1]);
         }
 
         $this->trace->info(TraceCode::PG_ROUTER_REQUEST, $traceRequest);

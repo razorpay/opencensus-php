@@ -261,7 +261,6 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::VIRTUAL_ACCOUNT,
         self::CREATED_AT,
-        self::TOKEN,
         self::TRANSFERS,
         self::CHECKOUT_CONFIG_ID,
         self::TAX_INVOICE,
