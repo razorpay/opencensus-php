@@ -601,6 +601,11 @@ class Core extends Base\Core
             $input['cvv'] = null;
         }
 
+        // set dummy cvv for tokenised Visa cvvless flow
+        if ($card->isVisa() && boolval($input[Card\Entity::TOKENISED]) === true && isset($input['card'][Card\Entity::CVV]) === false) {
+            $input['cvv'] = '123';
+        }
+
         return array_merge(
             $card->toArray(),
             [
