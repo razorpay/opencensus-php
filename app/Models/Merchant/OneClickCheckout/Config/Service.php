@@ -733,6 +733,13 @@ class Service extends Base\Service
         (new Validator())->setStrictFalse()->validateInput('gettingShopifyConfig', $input);
 
         $keyId = $input['key_id'];
+        $mode = substr($keyId, 4, 4);
+        $this->trace->info(TraceCode::MERCHANT_1CC_CONFIGS_REQUESTED, [
+            'key_id' => $keyId,
+            'mode' => $mode
+        ]);
+
+        $this->app['basicauth']->authCreds->setModeAndDbConnection($mode);
 
         Key\Entity::verifyIdAndStripSign($keyId);
 

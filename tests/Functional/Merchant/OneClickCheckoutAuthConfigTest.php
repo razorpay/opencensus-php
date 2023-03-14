@@ -14,7 +14,6 @@ class OneClickCheckoutAuthConfigTest extends TestCase
     protected function setUp(): void
     {
         $this->testDataFilePath = __DIR__.'/helpers/MerchantTestData.php';
-
         parent::setUp();
     }
 
@@ -28,6 +27,41 @@ class OneClickCheckoutAuthConfigTest extends TestCase
     {
         $this->ba->appAuthTest($this->config['applications.thirdwatch_cod_score.secret']);
         $this->startTest();
+    }
+
+    public function testGetTestMerchantConfigWithLiveConsumerAppKey()
+    {
+        $this->ba->publicAuth();
+        $key_id = $this->ba->getKey();
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = $testData['request']['url'] . $key_id;
+
+        $this->ba->appAuthLive($this->config['applications.consumer_app.secret']);
+        $this->startTest($testData);
+    }
+
+    public function testGetLiveMerchantConfigWithLiveConsumerAppKey()
+    {
+        $this->ba->publicLiveAuth();
+        $key_id = $this->ba->getKey();
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = $testData['request']['url'] . $key_id;
+
+        $this->ba->appAuthLive($this->config['applications.consumer_app.secret']);
+        $this->startTest($testData);
+    }
+
+    public function testGetConfigWithInvalidMerchantKey()
+    {
+        $key_id = "invalid_key";
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = $testData['request']['url'] . $key_id;
+
+        $this->ba->appAuthLive($this->config['applications.consumer_app.secret']);
+        $this->startTest($testData);
     }
 
 }

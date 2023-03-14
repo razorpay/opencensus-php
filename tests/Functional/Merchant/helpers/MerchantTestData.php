@@ -14981,4 +14981,48 @@ return [
         ],
     ],
 
+    'testGetTestMerchantConfigWithLiveConsumerAppKey' => [
+        'request' => [
+            'url' => '/1cc/merchant/shopify/configs?key_id=',
+            'method' => 'get',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'merchant_id' => '10000000000000',
+            ],
+        ],
+    ],
+
+    'testGetLiveMerchantConfigWithLiveConsumerAppKey' => [
+        'request' => [
+            'url' => '/1cc/merchant/shopify/configs?key_id=',
+            'method' => 'get',
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [
+                'merchant_id' => '10000000000000',
+            ],
+        ],
+    ],
+
+    'testGetConfigWithInvalidMerchantKey' => [
+        'request' => [
+            'url' => '/1cc/merchant/shopify/configs?key_id=',
+            'method' => 'get',
+        ],
+        'response' => [
+            'status_code' => 400,
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR
+                ],
+            ],
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
 ];
