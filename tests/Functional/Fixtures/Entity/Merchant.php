@@ -781,6 +781,11 @@ class Merchant extends Base
         return $this->fixtures->edit('methods', $id, ['cod' => false]);
     }
 
+    public function disableInApp($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['addon_methods' => ['upi' => ['in_app' => false]]]);
+    }
+
     public function createBalanceOfBankingType(
         int $balance = 0,
         string $merchantId = '10000000000000',

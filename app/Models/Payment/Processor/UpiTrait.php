@@ -45,6 +45,17 @@ trait UpiTrait
         return false;
     }
 
+    public function isInApp($input): bool
+    {
+        if ((isset($input['upi']['mode']) === true) and
+            ($input['upi']['mode'] === Payment\UpiMetadata\Mode::IN_APP))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function isOtmPayment($input): bool
     {
         if ((isset($input[Method::UPI][Entity::TYPE]) === true) and

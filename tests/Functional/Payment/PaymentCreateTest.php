@@ -4545,7 +4545,15 @@ class PaymentCreateTest extends TestCase
 
     public function testInAppUpiBlock()
     {
-        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+        $methods = [
+            'upi'           => 1,
+            'addon_methods' => [
+                'upi' => [
+                    'in_app' => 1
+                ]
+            ]
+        ];
+        $this->fixtures->edit('methods', '10000000000000', $methods);
 
         $payment = $this->getDefaultUpiBlockIntentPaymentArray();
         $payment['upi']['mode'] = 'in_app';

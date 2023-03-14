@@ -5162,6 +5162,11 @@ trait Authorize
 
                 $this->validateUpiPspIsAllowed($payment);
             }
+            else if ($this->isInApp($input) === true and $merchant->getMethods()->isInAppEnabled() !== true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Merchant is not authorized to UPI InApp payments');
+            }
             else
             {
                 try
