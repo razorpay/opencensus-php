@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "436125e8bd7c74ae4feec61d65f01985",
+    "content-hash": "5bc03ba09d48685b06418b0cde3a72b1",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -11186,22 +11186,22 @@
         },
         {
             "name": "razorpay/outbox-php",
-            "version": "v2.0.0",
+            "version": "v2.0.1",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/outbox-php.git",
-                "reference": "0ea631a39304baa0e2eb0eee83a59508be762eff"
+                "reference": "314a9ec8fc9954de7b512a289d5d5e5e9a7567f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/outbox-php/zipball/0ea631a39304baa0e2eb0eee83a59508be762eff",
-                "reference": "0ea631a39304baa0e2eb0eee83a59508be762eff",
+                "url": "https://api.github.com/repos/razorpay/outbox-php/zipball/314a9ec8fc9954de7b512a289d5d5e5e9a7567f8",
+                "reference": "314a9ec8fc9954de7b512a289d5d5e5e9a7567f8",
                 "shasum": ""
             },
             "require": {
                 "illuminate/database": "^9.24",
                 "php": ">=8.1",
-                "razorpay/trace": "4.0.1"
+                "razorpay/trace": "4.0.2"
             },
             "require-dev": {
                 "mockery/mockery": "^1.5.0",
@@ -11221,7 +11221,7 @@
                 }
             ],
             "description": "PHP SDK for sending outbox jobs.",
-            "time": "2023-01-02T06:57:34+00:00"
+            "time": "2023-03-14T11:29:33+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -11442,16 +11442,16 @@
         },
         {
             "name": "razorpay/trace",
-            "version": "4.0.1",
+            "version": "4.0.2",
             "source": {
                 "type": "git",
                 "url": "git@github.com:razorpay/trace.git",
-                "reference": "48ae7146c178f180c63b3e1c6a4d56006386da8e"
+                "reference": "cb9fe59de80982a406459114fd4f39772a92c28a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/trace/zipball/48ae7146c178f180c63b3e1c6a4d56006386da8e",
-                "reference": "48ae7146c178f180c63b3e1c6a4d56006386da8e",
+                "url": "https://api.github.com/repos/razorpay/trace/zipball/cb9fe59de80982a406459114fd4f39772a92c28a",
+                "reference": "cb9fe59de80982a406459114fd4f39772a92c28a",
                 "shasum": ""
             },
             "require": {
@@ -11512,7 +11512,7 @@
                 "monolog",
                 "trace"
             ],
-            "time": "2022-09-07T13:11:10+00:00"
+            "time": "2023-03-14T10:57:13+00:00"
         },
         {
             "name": "razorpay/ufh-sdk-php",
