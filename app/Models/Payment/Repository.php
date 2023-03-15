@@ -600,21 +600,21 @@ EOT;
         // for WDA.
         $isWda = false;
 
-        if($this->checkWdaRouteForFetchPayment($expands, $this->getWdaConnectionType($connection)) === true)
+        try
         {
-            try
+            if($this->checkWdaRouteForFetchPayment($expands, $this->getWdaConnectionType($connection)) === true)
             {
                 $wdaQueryBuilder = $this->buildWdaQuery($query, $connection, $merchantId, $mysqlParams);
 
                 $isWda = true;
             }
-            catch(\Throwable $ex)
-            {
-                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
-                    'wda_query_builder_error' => $ex->getMessage(),
-                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
-                ]);
-            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'wda_query_builder_error' => $ex->getMessage(),
+                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+            ]);
         }
 
         //
@@ -630,9 +630,9 @@ EOT;
             $result = $this->getPaginated($query, $params);
 
             //Adding pagination for call going to tidb via wda-service
-            if($isWda === true)
+            try
             {
-                try
+                if($isWda === true)
                 {
                     $wdaStartTimeMs = round(microtime(true) * 1000);
 
@@ -640,20 +640,20 @@ EOT;
 
                     $difference = $this->compareAndLogEntitiesInShadowMode($wdaResult, $result, $wdaStartTimeMs);
 
-                    if($difference === false)
+                    if ($difference === false)
                     {
                         $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, "WDA");
 
                         return $wdaResult;
                     }
                 }
-                catch(\Throwable $ex)
-                {
-                    $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
-                        'wda_migration_error_pagination' => $ex->getMessage(),
-                        'route_name'    => $this->app['api.route']->getCurrentRouteName(),
-                    ]);
-                }
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                    'wda_migration_error_pagination' => $ex->getMessage(),
+                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                ]);
             }
 
             $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, $connection);
@@ -670,9 +670,9 @@ EOT;
             $endTimeMs = round(microtime(true) * 1000);
 
             //When the auth type does not requires pagination
-            if($isWda === true)
+            try
             {
-                try
+                if ($isWda === true)
                 {
                     $wdaStartTimeMs = round(microtime(true) * 1000);
 
@@ -680,20 +680,20 @@ EOT;
 
                     $difference = $this->compareAndLogEntitiesInShadowMode($wdaEntities, $entities, $wdaStartTimeMs);
 
-                    if($difference === false)
+                    if ($difference === false)
                     {
                         $this->traceBeforeReturnFromFetchPaymentWithForceIndex($startTimeMsForTrace, "WDA");
 
                         return $wdaEntities;
                     }
                 }
-                catch(\Throwable $ex)
-                {
-                    $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
-                        'wda_migration_error' => $ex->getMessage(),
-                        'route_name'    => $this->app['api.route']->getCurrentRouteName(),
-                    ]);
-                }
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                    'wda_migration_error' => $ex->getMessage(),
+                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                ]);
             }
 
             $queryDuration = $endTimeMs - $startTimeMs;

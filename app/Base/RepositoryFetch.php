@@ -792,10 +792,10 @@ trait RepositoryFetch
         //checking connection type twice as it's default value is null so in
         // some cases null is passed in the place of string which throws error.
 
-        if(($connectionType === ConnectionType::DATA_WAREHOUSE_ADMIN or $connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT) and
-            $this->checkWdaRouteForFetchPayment($expands, $connectionType) === true)
+        try
         {
-            try
+            if(sizeof($expands) === 0 and ($connectionType === ConnectionType::DATA_WAREHOUSE_ADMIN or $connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT) and
+            $this->checkWdaRouteForFetchPayment($expands, $connectionType) === true)
             {
                 $wdaStartTimeMs = round(microtime(true) * 1000);
 
@@ -808,13 +808,13 @@ trait RepositoryFetch
                     return $wdaEntities;
                 }
             }
-            catch ( \Throwable $ex)
-            {
-                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
-                    'migration_error_with_es_params' => $ex->getMessage(),
-                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
-                ]);
-            }
+        }
+        catch ( \Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+            'migration_error_with_es_params' => $ex->getMessage(),
+            'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+            ]);
         }
 
         return $entities;
@@ -1410,6 +1410,24 @@ trait RepositoryFetch
 
     public function checkIfWDARoute(string $connectionType = null) : bool
     {
+        try
+        {
+            $experiment = $this->app['api.route']->getWdaRouteExperimentName();
+
+            if(is_null($experiment) === false and ($this->app['api.route']->isWDAServiceRoute() === true) and
+                ($connectionType === ConnectionType::DATA_WAREHOUSE_ADMIN or $connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT) and
+                $this->isExperimentEnabled($experiment) === true and $this->app->runningUnitTests() === false)
+            {
+                return true;
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_ROUTE_VALIDATION_ERROR, [
+                'route_name'                 =>      $this->app['api.route']->getCurrentRouteName(),
+                'wda_route_validation_error' => $ex->getMessage(),
+            ]);
+        }
         return false;
     }
 

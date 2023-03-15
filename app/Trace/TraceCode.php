@@ -9161,6 +9161,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const WDA_SHADOW_MODE_LOG                            = 'WDA_SHADOW_MODE_LOG';
     const ES_WDA_RESULTS_MISMATCH                        = 'ES_WDA_RESULTS_MISMATCH';
     const WDA_HANDLE_EXTERNAL_ENTITY                     = 'WDA_HANDLE_EXTERNAL_ENTITY';
+    const WDA_ROUTE_VALIDATION_ERROR                     = 'WDA_ROUTE_VALIDATION_ERROR';
 
     //3DS2.0 callback view experiment
     const CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR            = "CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR";

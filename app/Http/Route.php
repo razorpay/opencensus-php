@@ -16791,7 +16791,7 @@ class Route
     ];
 
     public static $fetchFromWDAService = [
-        'scorecard'                                        =>  'wda_scoreboard_migration',
+        'scorecard'                                        =>  'wda_scorecard_migration',
         'order_fetch'                                      =>  'wda_order_fetch_migration',
         'order_payments'                                   =>  'wda_order_payments_migration',
         'payment_fetch_multiple'                           =>  'wda_payment_fetch_multiple_migration',
@@ -17139,7 +17139,12 @@ class Route
     {
         $routeName = $this->getCurrentRouteName();
 
-        return self::$fetchFromWDAService[$routeName];
+        if(array_key_exists($routeName, self::$fetchFromWDAService) === true)
+        {
+            return self::$fetchFromWDAService[$routeName];
+        }
+
+        return null;
     }
 
     /**
