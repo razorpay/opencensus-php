@@ -509,6 +509,18 @@ class Core extends Base\Core
 
         $subMerchant = $entity->build($input);
 
+        if ($linkedAccount === true)
+        {
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_DEBUG_LOG_1,
+                [
+                    'name'              => $subMerchant->getName(),
+                    'linked_account_id' => $subMerchant->getId(),
+                    'merchant_id'       => $aggregatorMerchant->getId(),
+                ]
+            );
+        }
+
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
         Tracer::inspan(['name' => HyperTrace::ASSIGN_SUBMERCHANT_PRICING_PLAN], function () use ($aggregatorMerchant, $subMerchant, $linkedAccount) {
@@ -524,6 +536,16 @@ class Core extends Base\Core
             $subMerchant->setMaxInternationalPaymentAmount($aggregatorMerchant->getMaxPaymentAmountTransactionType(true));
 
             $subMerchant->parent()->associate($aggregatorMerchant);
+
+            $this->trace->info(
+                TraceCode::LINKED_ACCOUNT_DEBUG_LOG_2,
+                [
+                    'name'              => $subMerchant->getName(),
+                    'linked_account_id' => $subMerchant->getId(),
+                    'parent_id'         => $subMerchant->getParentId(),
+                    'merchant_id'       => $aggregatorMerchant->getId(),
+                ]
+            );
         }
 
         $this->setSubMerchantMaxPaymentAmount($aggregatorMerchant,$subMerchant,$subMerchantBusinessType);
