@@ -52,6 +52,7 @@ jobs:
 
             As part of the API decomposition effort, we'll soon start rejecting routes not registered on Edge. All externally exposed routes need to be onboarded to Edge. Else, integration might break for customers. You'll need to do the following:
             - Onboard route to Edge (if not already). You'll need to identify which host is used for the route. Based on that, changes need to be added in corresponding service entity on Edge. Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details on how to onboard routes to Edge. eg. cron routes are onboarded [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/cron.tf)
+            - If you are onboarding a new app, internal auth has been deprecated in favour of application auth at Edge. Please get in touch with @spine-edge-oncall for auth migration to Edge. Runbook [attached](https://docs.google.com/document/d/1u6x8eVuWSzSsLzjaA-29fVAdwH1HzbnzqSiAx-iq6hw/edit#heading=h.q6a1fn7q0hkg).
 
             > Is your route consumed by any merchant dashboard or admin dashboard?
             
@@ -66,6 +67,8 @@ jobs:
             - Block access of this route via externally exposed domain like api.razorpay.com. You can use request-termination plugin to achieve the same. You just need to onboard your route [here](https://github.com/razorpay/terraform-kong/blob/master/prod/api/api-internal.tf). Refer [this doc](https://docs.google.com/document/d/1NMv94LQw5ipg4bNjVl-0wpFWVJrHu2B-t0-60cY0KW4/edit#heading=h.5mtr7jyo8fy8) for more details.
 
             > Is your route consumed by any internal Razorpay service residing in non-cde cluster?
+            
+            If you are onboarding a new app, internal auth has been deprecated in favour of application auth at Edge. Please get in touch with @spine-edge-oncall for auth migration to Edge. Runbook [attached](https://docs.google.com/document/d/1u6x8eVuWSzSsLzjaA-29fVAdwH1HzbnzqSiAx-iq6hw/edit#heading=h.q6a1fn7q0hkg).
 
             Using an externally exposed domain like api.razorpay.com for internal traffic introduces a security risk. In case of app secret leak, any attacker can use and impersonate itself as the Razorpay service. Additionally, all inter-cluster traffic should be proxied via Edge. You'll need to do the following:
             - Migrate your API host from api.razorpay.com to api-graphql.razorpay.com
