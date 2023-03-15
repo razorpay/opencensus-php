@@ -11,7 +11,9 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import { isPresent } from 'common/utils/rzp-utils';
 import { fetchSingleDayAggregate } from 'merchant/reducers/commission';
 
-@connect((state) => ({ ...state.commAggSingleDay }), { fetchSingleDayAggregate })
+@connect((state) => ({ ...state.commAggSingleDay, user: state?.session?.user }), {
+  fetchSingleDayAggregate,
+})
 export default class CommissionsDailyEntity extends Component {
   componentDidMount() {
     this.fetchData(Number(this.props.timestamp));
@@ -28,7 +30,8 @@ export default class CommissionsDailyEntity extends Component {
   }
 
   render() {
-    const { loading: isLoading, entity, error, renderBreakups, ...props } = this.props;
+    const { loading: isLoading, entity, error, renderBreakups, user, ...props } = this.props;
+    const currency = user.merchant.currency;
     const data = entity.data;
     return (
       <div class="content-wrapper content-sm txn-details Commission--Detail">
@@ -58,7 +61,7 @@ export default class CommissionsDailyEntity extends Component {
                     </div>
 
                     <EntityDetailRow label="Total Transaction Amount">
-                      <Amount value={data.transactionVolume} currency={'INR'} />
+                      <Amount value={data.transactionVolume} currency={currency} />
                     </EntityDetailRow>
 
                     <EntityDetailRow
@@ -86,21 +89,21 @@ export function EarningsBreakup(props) {
         <FeeBreakup type={props.feeBreakupType}>
           <>
             <div class="EarningsBreakup--Total">
-              <Amount value={props.value} currency={'INR'} />
+              <Amount value={props.value} currency={props.currency} />
             </div>
             <small>Total</small>
           </>
           <>
             <div class="EarningsBreakup--Components">
-              <Amount value={props.value - props.tax} currency={'INR'} />
+              <Amount value={props.value - props.tax} currency={props.currency} />
             </div>
             <small>{props.label}</small>
           </>
           <>
             <div class="EarningsBreakup--Components">
-              <Amount value={props.tax} currency={'INR'} />
+              <Amount value={props.tax} currency={props.currency} />
             </div>
-            <small>GST</small>
+            <small>{props.isRzpOrg ? 'GST' : 'Tax'}</small>
           </>
         </FeeBreakup>
       </div>

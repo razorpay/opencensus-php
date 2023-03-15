@@ -2,8 +2,8 @@ import Amount from 'common/ui/Amount';
 
 import CommissionDailyEntity, {
   EarningsBreakup,
-} from '../../Commissions/Daily/Details';
-import VerticalBreakup from './VerticalBreakup';
+} from 'merchant/views/PartnerDashboard/Commissions/Daily/Details';
+import VerticalBreakup from 'merchant/views/PartnerDashboard/Earnings/Daily/VerticalBreakup';
 
 export default function EarningsDailyEntity(props) {
   return (
@@ -17,20 +17,26 @@ export default function EarningsDailyEntity(props) {
 }
 
 function renderBreakups(props) {
-  const { entity } = props;
+  const { entity, user } = props;
   const data = entity.data;
+  const currency = user.merchant.currency;
+  const isRzpOrg = user.isOrgRZP;
   return (
     <VerticalBreakup>
-      <TotalValue data={data} />
+      <TotalValue data={data} currency={currency} />
 
       <BaseEarningsBreakup
         baseEarnings={data.baseEarnings}
         baseTax={data.baseTax}
+        currency={currency}
+        isRzpOrg={isRzpOrg}
       />
 
       <AddOnEarningsBreakup
         addonEarnings={data.addonEarnings}
         addonTax={data.addonTax}
+        currency={currency}
+        isRzpOrg={isRzpOrg}
       />
     </VerticalBreakup>
   );
@@ -43,6 +49,8 @@ function BaseEarningsBreakup(props) {
       feeBreakupType="primary"
       value={props.baseEarnings}
       tax={props.baseTax}
+      currency={props.currency}
+      isRzpOrg={props.isRzpOrg}
     />
   );
 }
@@ -54,20 +62,19 @@ function AddOnEarningsBreakup(props) {
       feeBreakupType="warning"
       value={props.addonEarnings}
       tax={props.addonTax}
+      currency={props.currency}
+      isRzpOrg={props.isRzpOrg}
     />
   );
 }
 
-function TotalValue({ data }) {
+function TotalValue({ data, currency }) {
   return (
     <div class="pair-group-item vertical">
       <div class="pair-label">Total Earnings</div>
       <div class="pair-value font-lg">
         <strong>
-          <Amount
-            value={data.baseEarnings + data.addonEarnings}
-            currency={'INR'}
-          />
+          <Amount value={data.baseEarnings + data.addonEarnings} currency={currency} />
         </strong>
       </div>
     </div>
