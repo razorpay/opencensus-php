@@ -496,7 +496,7 @@ class Reconciliator extends Base\Mock\PaymentReconciliator
                 'BANKNAME'              => '',
                 'MASKEDACCOUNTNUMBER'   => '',
                 'IFSC'                  => '',
-                'VPA'                   => 'john.miller@ybl',
+                'VPA'                   => 'john.miller@juspay',
                 'ACCOUNT_CUST_NAME'     => 'JOHN MILLER',
                 'RESPCODE'              => '0',
                 'RESPONSE'              => 'SUCCESS',

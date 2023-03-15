@@ -557,7 +557,7 @@ class VerifyData extends Base\Mock\Server
 
     public function upi_juspay($entities)
     {
-        if ($this->isV2Mock($entities['payment']['description']))
+        if ( ($entities['payment']['vpa'] === "unexpectedpayment@abfspay") or ( $this->isV2Mock($entities['payment']['description'])) )
         {
             return $this->upiMozartV2($entities);
         }
