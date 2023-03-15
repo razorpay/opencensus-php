@@ -40,7 +40,7 @@ const CashAdvance = (props) => {
 
   function toggleClasses(nodes, className) {
     for (const each of nodes) {
-      each.classList.toggle(className);
+      each?.classList?.toggle(className);
     }
   }
 
@@ -48,7 +48,7 @@ const CashAdvance = (props) => {
     trackLandingonCashAdvanceV2();
     const body = document.querySelector('body');
     const testModeLabel = body.querySelector('.highlight-test-mode-container');
-    const nodes = [body, testModeLabel];
+    const nodes = [body, testModeLabel].filter((item) => item);
 
     toggleClasses(nodes, 'dark-background');
 
