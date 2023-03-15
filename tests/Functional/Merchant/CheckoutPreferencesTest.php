@@ -809,7 +809,7 @@ class CheckoutPreferencesTest extends TestCase
         $this->enableRazorXTreatmentForInstrumentLevelCheck();
 
         $this->fixtures->merchant->enableEmiCredit();
-        
+
         $this->fixtures->emiPlan->create(
             [
                 'id'          => '10101010101310',
@@ -3517,7 +3517,12 @@ class CheckoutPreferencesTest extends TestCase
             Dcs\Features\Constants::EmailOptionalOnCheckout
         ]);
 
-        $this->enableEmailLessCheckoutExperiment();
+        $expDetails[] = [
+            'experiment_id' => 'app.email_less_checkout_experiment_id',
+            'result' => 'variant_on'
+        ];
+
+        $this->mockCheckoutBulkExperiment($expDetails);
 
         $response = $this->getPreferences();
 
@@ -3531,7 +3536,12 @@ class CheckoutPreferencesTest extends TestCase
             Dcs\Features\Constants::ShowEmailOnCheckout
         ]);
 
-        $this->enableEmailLessCheckoutExperiment();
+        $expDetails[] = [
+            'experiment_id' => 'app.email_less_checkout_experiment_id',
+            'result' => 'variant_on'
+        ];
+
+        $this->mockCheckoutBulkExperiment($expDetails);
 
         $response = $this->getPreferences();
 
@@ -3546,7 +3556,12 @@ class CheckoutPreferencesTest extends TestCase
             Dcs\Features\Constants::EmailOptionalOnCheckout
         ]);
 
-        $this->enableEmailLessCheckoutExperiment();
+        $expDetails[] = [
+            'experiment_id' => 'app.email_less_checkout_experiment_id',
+            'result' => 'variant_on'
+        ];
+
+        $this->mockCheckoutBulkExperiment($expDetails);
 
         $response = $this->getPreferences();
 
@@ -3557,7 +3572,12 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testGetPreferencesWhenEmailOptionalOnCheckoutAndShowEmailOnCheckoutFeaturesNotEnabledExpectsBothFeatureFlagsNotInPreferencesResponse()
     {
-        $this->enableEmailLessCheckoutExperiment();
+        $expDetails[] = [
+            'experiment_id' => 'app.email_less_checkout_experiment_id',
+            'result' => 'variant_on'
+        ];
+
+        $this->mockCheckoutBulkExperiment($expDetails);
 
         $response = $this->getPreferences();
 
@@ -3567,7 +3587,12 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testGetPreferencesWhenOptimizerMerchantAndEmailOptionalOnCheckoutAndShowEmailOnCheckoutFeaturesNotEnabledExpectsShowEmailOnCheckoutFeatureFlagInPreferencesResponse()
     {
-        $this->enableEmailLessCheckoutExperiment();
+        $expDetails[] = [
+            'experiment_id' => 'app.email_less_checkout_experiment_id',
+            'result' => 'variant_on'
+        ];
+
+        $this->mockCheckoutBulkExperiment($expDetails);
 
         // Enabling optimizer on the merchant
         $this->fixtures->merchant->addFeatures([
@@ -3583,7 +3608,12 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testGetPreferencesWhenOptimizerMerchantAndEmailOptionalOnCheckoutEnabledExpectsShowEmailOnCheckoutFeatureFlagInPreferencesResponse()
     {
-        $this->enableEmailLessCheckoutExperiment();
+        $expDetails[] = [
+            'experiment_id' => 'app.email_less_checkout_experiment_id',
+            'result' => 'variant_on'
+        ];
+
+        $this->mockCheckoutBulkExperiment($expDetails);
 
         // Enabling optimizer on the merchant
         $this->fixtures->merchant->addFeatures([
@@ -3600,7 +3630,12 @@ class CheckoutPreferencesTest extends TestCase
 
     public function testGetPreferencesWhenEmailLessCheckoutExperimentDisabledExpectsShowEmailOnCheckoutFeatureFlagInPreferencesResponse()
     {
-        $this->enableEmailLessCheckoutExperiment("variant_off");
+        $expDetails[] = [
+            'experiment_id' => 'app.email_less_checkout_experiment_id',
+            'result' => 'variant_off'
+        ];
+
+        $this->mockCheckoutBulkExperiment($expDetails);
 
         $response = $this->getPreferences();
 
@@ -3617,18 +3652,86 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertTrue($response['methods']['wallet']['bajajpay']);
     }
 
-    protected function enableEmailLessCheckoutExperiment($result = "variant_on")
+    public function testGetPreferencesWhenCvvLessFlowDisabledOnMerchantExpectsCvvLessFlowDisabled()
     {
-        $output = [
-            [
+        $expDetails[] = [
+            'experiment_id' => 'app.checkout_cvv_less_splitz_experiment_id',
+            'result' => 'variant_on'
+        ];
+
+        $this->mockCheckoutBulkExperiment($expDetails);
+
+        $this->fixtures->merchant->addFeatures([
+            Dcs\Features\Constants::CvvLessFlowDisabled,
+        ]);
+
+        $response = $this->getPreferences();
+
+        $this->assertTrue($response['features'][Dcs\Features\Constants::CvvLessFlowDisabled]);
+    }
+
+    public function testGetPreferencesWhenCvvLessFlowDisabledFlagNotPresentOnMerchantExpectsCvvLessFlowEnabled()
+    {
+        $expDetails[] = [
+            'experiment_id' => 'app.checkout_cvv_less_splitz_experiment_id',
+            'result' => 'variant_on'
+        ];
+
+        $this->mockCheckoutBulkExperiment($expDetails);
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayNotHasKey(Dcs\Features\Constants::CvvLessFlowDisabled, $response['features']);
+    }
+
+    public function testGetPreferencesWhenOptimizerMerchantExpectsCvvLessFlowDisabled()
+    {
+        $expDetails[] = [
+            'experiment_id' => 'app.checkout_cvv_less_splitz_experiment_id',
+            'result' => 'variant_on'
+        ];
+
+        $this->mockCheckoutBulkExperiment($expDetails);
+
+        // Enabling optimizer on the merchant
+        $this->fixtures->merchant->addFeatures([
+            Feature\Constants::RAAS,
+        ]);
+
+        $response = $this->getPreferences();
+
+        $this->assertTrue($response['features'][Dcs\Features\Constants::CvvLessFlowDisabled]);
+    }
+
+    public function testGetPreferencesWhenCvvLessFlowEnabledOnMerchantAndExperimentIsDisabledExpectsCvvLessFlowDisabled()
+    {
+        $expDetails[] = [
+            'experiment_id' => 'app.checkout_cvv_less_splitz_experiment_id',
+            'result' => 'variant_off'
+        ];
+
+        $this->mockCheckoutBulkExperiment($expDetails);
+
+        $response = $this->getPreferences();
+
+        $this->assertTrue($response['features'][Dcs\Features\Constants::CvvLessFlowDisabled]);
+    }
+
+    protected function mockCheckoutBulkExperiment($experimentIdsWithExpectedResult)
+    {
+        $output = [];
+
+        foreach ($experimentIdsWithExpectedResult as $experimentDetails)
+        {
+            $output[] = [
                 "experiment" => [
-                    "id" => $this->app['config']->get('app.email_less_checkout_experiment_id'),
+                    "id" => $this->app['config']->get($experimentDetails['experiment_id']),
                 ],
                 "variant"    => [
-                    "name" => $result,
+                    "name" => $experimentDetails['result'],
                 ],
-            ],
-        ];
+            ];
+        }
 
         $this->mockSplitzTreatmentBulkRequest($output);
     }

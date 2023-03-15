@@ -38,6 +38,7 @@ class Constants
     const ManualSettlementForSubmerchants = 'manual_settlement_for_submerchants';
 	  const ImportSettlement = 'import_settlement';
     const SavedCardsDisabled = 'saved_cards_disabled';
+    const CvvLessFlowDisabled = 'cvv_less_flow_disabled';
     const PaymentRetryDisabled = 'payment_retry_disabled';
     const InternationalizationDisabled = 'internationalization_disabled';
     const GooglePayEnabled = 'google_pay_enabled';
@@ -102,6 +103,7 @@ class Constants
         self::ManualSettlementForSubmerchants => "rzp/pg/merchant/settlements/PartnershipsFeatures",
         self::ImportSettlement => "rzp/pg/merchant/settlements/OPGSPFeatures",
         self::SavedCardsDisabled => "rzp/pg/merchant/checkout/SavedCards",
+        self::CvvLessFlowDisabled => "rzp/pg/merchant/checkout/SavedCards",
         self::PaymentRetryDisabled => "rzp/pg/merchant/checkout/PaymentCustomisation",
         self::InternationalizationDisabled => "rzp/pg/merchant/checkout/Internationalization",
         self::GooglePayEnabled => "rzp/pg/merchant/checkout/Upi",
@@ -146,6 +148,7 @@ class Constants
         self::EligibilityEnabled                                            => self::EligibilityEnabled,
         self::ShowEmailOnCheckout                                           => self::ShowEmailOnCheckout,
         self::EmailOptionalOnCheckout                                       => self::EmailOptionalOnCheckout,
+        self::CvvLessFlowDisabled                                           => self::CvvLessFlowDisabled,
         APIFeaturesConstants::DISABLE_UPI_NUM_CHECKOUT                      => self::UpiNumberDisabled,
         APIFeaturesConstants::DISABLE_UPI_NUM_ON_L0                         => self::UpiNumberInPreferredSectionDisabled,
         APIFeaturesConstants::DISABLE_UPI_NUM_ON_L1                         => self::UpiNumberInUpiSectionDisabled,
@@ -219,6 +222,7 @@ class Constants
         self::ManualSettlementForSubmerchants => 'direct',
         self::ImportSettlement => 'direct',
         self::AdminLeadPartnerInviteEnabled => 'direct',
+        self::CvvLessFlowDisabled => 'direct',
     ];
 
     /**

@@ -203,6 +203,8 @@ class Checkout
 
         $this->fillEmailRequiredOnCheckoutIfApplicable($data);
 
+        $this->fillCvvLessIfApplicable($data);
+
         $this->fillTruecallerDetailsIfApplicable($input, $data, $merchant->getId());
 
         $this->fillCovidReliefDetails($merchant, $data, $mode);
@@ -1791,6 +1793,9 @@ class Checkout
             // Show email on checkout - true and Email optional on checkout - false => Email mandatory on checkout
             $data['features'][Dcs\Features\Constants::ShowEmailOnCheckout] = true;
             $data['features'][Dcs\Features\Constants::EmailOptionalOnCheckout] = false;
+
+            // Disable CVV less flow for optimizer merchants.
+            $data['features'][Dcs\Features\Constants::CvvLessFlowDisabled] = true;
         }
     }
 
@@ -1811,6 +1816,20 @@ class Checkout
         if (!$data['experiments']['email_less_checkout'])
         {
             $data['features'][Dcs\Features\Constants::ShowEmailOnCheckout] = true;
+        }
+    }
+
+    /**
+     * Disables cvv less flow feature on checkout if cvv less experiment returns false.
+     *
+     * @param  array &$data
+     * @return void
+     */
+    protected function fillCvvLessIfApplicable(array &$data): void
+    {
+        if (!$data['experiments']['cvv_less'])
+        {
+            $data['features'][Dcs\Features\Constants::CvvLessFlowDisabled] = true;
         }
     }
 
