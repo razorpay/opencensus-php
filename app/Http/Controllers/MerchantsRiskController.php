@@ -25,6 +25,10 @@ class MerchantsRiskController extends Controller
         self::FRAUD_DETAILS         => '/twirp\/rzp.merchants_risk.fraudlist.v1.FraudlistService\/GetFraudList/'
     ];
 
+    const CREATE_ALERT_CONFIG_URL   = 'twirp/rzp.merchants_risk.riskAlertConfig.v1.RiskAlertConfigService/Create';
+    const UPDATE_ALERT_CONFIG_URL   = 'twirp/rzp.merchants_risk.riskAlertConfig.v1.RiskAlertConfigService/Update';
+    const DELETE_ALERT_CONFIG_URL   = 'twirp/rzp.merchants_risk.riskAlertConfig.v1.RiskAlertConfigService/DeleteById';
+
     const MERCHANT_ROUTES = [
         self::RISK_DETAILS,
         self::FRAUD_DETAILS
@@ -112,6 +116,67 @@ class MerchantsRiskController extends Controller
         }
 
         $response = $this->sendRequestAndParseResponse($url, $request->method(), $body, $headers);
+
+        return $response;
+    }
+
+    public function createAlertConfig() {
+        $input = Request::all();
+
+        $this->trace->info(TraceCode::MERCHANTS_RISK_ALERT_CONFIG, [
+            'request'   => $input,
+        ]);
+
+        $url     = self::CREATE_ALERT_CONFIG_URL;
+
+        $headers = [
+            'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
+            'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
+            'X-Auth-Type'   => 'admin'
+        ];
+
+        return $this->sendRequestAndParseResponse($url, "POST", $input, $headers);
+
+    }
+
+    public function updateAlertConfig($ruleId) {
+        $input = Request::all();
+        $input['id'] = $ruleId;
+
+        $this->trace->info(TraceCode::MERCHANTS_RISK_ALERT_CONFIG, [
+            'request'   => $input,
+        ]);
+
+        $url     = self::UPDATE_ALERT_CONFIG_URL;
+
+        $headers = [
+            'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
+            'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
+            'X-Auth-Type'   => 'admin'
+        ];
+
+        $response = $this->sendRequestAndParseResponse($url, "POST", $input, $headers);
+
+        return $response;
+    }
+
+    public function deleteAlertConfig($ruleId) {
+        $input = Request::all();
+        $input['id'] = $ruleId;
+
+        $this->trace->info(TraceCode::MERCHANTS_RISK_ALERT_CONFIG, [
+            'request'   => $input,
+        ]);
+
+        $url     = self::DELETE_ALERT_CONFIG_URL;
+
+        $headers = [
+            'X-Admin-Id'    => $this->ba->getAdmin()->getId() ?? '',
+            'X-Admin-Email' => $this->ba->getAdmin()->getEmail() ?? '',
+            'X-Auth-Type'   => 'admin'
+        ];
+
+        $response = $this->sendRequestAndParseResponse($url, "POST", $input, $headers);
 
         return $response;
     }
