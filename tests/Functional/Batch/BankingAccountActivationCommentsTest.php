@@ -70,6 +70,12 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::API_ONBOARDED_DATE => '20/7/2020 12:00:00 AM',
                     Batch\Header::API_ONBOARDING_LOGIN_DATE => '20/7/2020 12:00:00 AM',
                     Batch\Header::MID_OFFICE_POC_NAME => 'Name2',
+                    Batch\Header::DOCKET_REQUESTED_DATE => '28-Aug-22',
+                    Batch\Header::ESTIMATED_DOCKET_DELIVERY_DATE => '29-Aug-22',
+                    Batch\Header::DOCKET_DELIVERED_DATE => '30-Aug-22',
+                    Batch\Header::COURIER_SERVICE_NAME => 'dtdc',
+                    Batch\Header::COURIER_TRACKING_ID => 'Name2',
+                    Batch\Header::REASON_WHY_DOCKET_IS_NOT_DELIVERED => '',
                 ],
                 [
                     Batch\Header::RZP_REF_NO => $refno,
@@ -87,6 +93,12 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::API_ONBOARDED_DATE => '20/7/2020 12:00:00 AM',
                     Batch\Header::API_ONBOARDING_LOGIN_DATE => '20/7/2020 12:00:00 AM',
                     Batch\Header::MID_OFFICE_POC_NAME => 'Name2',
+                    Batch\Header::DOCKET_REQUESTED_DATE => '28-Aug-22',
+                    Batch\Header::ESTIMATED_DOCKET_DELIVERY_DATE => '29-Aug-22',
+                    Batch\Header::DOCKET_DELIVERED_DATE => '30-Aug-22',
+                    Batch\Header::COURIER_SERVICE_NAME => 'dtdc',
+                    Batch\Header::COURIER_TRACKING_ID => 'Name2',
+                    Batch\Header::REASON_WHY_DOCKET_IS_NOT_DELIVERED => '',
                 ],
                 [
                     Batch\Header::RZP_REF_NO => '102020', // non-existent
@@ -103,6 +115,12 @@ class BankingAccountActivationCommentsTest extends TestCase
                     Batch\Header::API_ONBOARDED_DATE => '20/7/2020 12:00:00 AM',
                     Batch\Header::API_ONBOARDING_LOGIN_DATE => '20/7/2020 12:00:00 AM',
                     Batch\Header::MID_OFFICE_POC_NAME => 'Name3',
+                    Batch\Header::DOCKET_REQUESTED_DATE => '28-Aug-22',
+                    Batch\Header::ESTIMATED_DOCKET_DELIVERY_DATE => '29-Aug-22',
+                    Batch\Header::DOCKET_DELIVERED_DATE => '30-Aug-22',
+                    Batch\Header::COURIER_SERVICE_NAME => 'dtdc',
+                    Batch\Header::COURIER_TRACKING_ID => 'Name2',
+                    Batch\Header::REASON_WHY_DOCKET_IS_NOT_DELIVERED => '',
                 ]
             ];
         }

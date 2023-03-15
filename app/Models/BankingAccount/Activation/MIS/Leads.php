@@ -425,10 +425,10 @@ class Leads extends Base
                 }
             }
 
-            $pcarmAH = '';
+            $pcarmAH = ActivationDetail\Entity::extractFieldFromJSONField($rblActivationDetails, ActivationDetail\Entity::PCARM_MANAGER_NAME) ?? '';
             $rmEmployeeCode = $bankingAccountActivationDetails[ActivationDetail\Entity::RM_EMPLOYEE_CODE];
 
-            if (empty($rmEmployeeCode) === false)
+            if (empty($pcarmAH) && empty($rmEmployeeCode) === false)
             {
                 $rm = (new RmMaster)->getRMByEmployeeCode($rmEmployeeCode);
 

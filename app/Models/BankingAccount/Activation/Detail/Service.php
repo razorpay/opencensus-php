@@ -323,6 +323,8 @@ class Service extends Base\Service
 
             $this->checkAndSendDocket($bankingAccount, $entity, $activationDetail);
 
+            $this->checkAndMoveToSTB($bankingAccount, $entity, $activationDetail, $input);
+
             if ($activationDetail->isAssigneeTeamUpdated() === true  && $captureState === true)
             {
                 // if entity is passed, use that, else use admin.
@@ -481,6 +483,40 @@ class Service extends Base\Service
         $bankingAccountCore = new BankingAccount\Core();
 
         $bankingAccountCore->sendDocketIfApplicable($bankingAccount, $entity ?? $bankingAccount->merchant);
+    }
+
+    private function checkAndMoveToSTB($bankingAccount, $entity, Entity $activationDetail, array $input)
+    {
+
+        if (array_key_exists(Entity::ADDITIONAL_DETAILS, $input) === true)
+        {
+            $additionalDetailsInput = $input[Entity::ADDITIONAL_DETAILS];
+
+            $additionalDetailsInput = json_decode($additionalDetailsInput, true);
+            
+            // If any of these dates is not present, no need to continue
+            if (!(array_key_exists(Entity::DOCKET_ESTIMATED_DELIVERY_DATE, $additionalDetailsInput) || 
+                array_key_exists(Entity::DOCKET_DELIVERED_DATE, $additionalDetailsInput)))
+            {
+                return;
+            }
+        }
+        else
+        {
+            return;
+        }
+
+        $additionalDetails = json_decode($activationDetail->getAdditionalDetails() ?? '{}', true);
+
+        // If both are still empty, no need to process
+        if (empty($additionalDetails[Entity::DOCKET_ESTIMATED_DELIVERY_DATE]) && empty($additionalDetails[Entity::DOCKET_DELIVERED_DATE]))
+        {
+            return;
+        }
+
+        $bankingAccountCore = new BankingAccount\Core();
+
+        $bankingAccountCore->moveToSTBIfApplicable($bankingAccount, $entity ?? $bankingAccount->merchant);
     }
 
     private function checkAndPushEventForRmAssigned(BankingAccount\Entity $bankingAccount, array $activationDetail, Entity $activationDetailDbEntity, bool $isRmNotAssigned)
@@ -665,6 +701,9 @@ class Service extends Base\Service
             Entity::API_ONBOARDED_DATE,
             Entity::API_ONBOARDING_LOGIN_DATE,
             Entity::BANK_POC_ASSIGNED_DATE,
+            Entity::DOCKET_DELIVERED_DATE,
+            Entity::DOCKET_REQUESTED_DATE,
+            Entity::DOCKET_ESTIMATED_DELIVERY_DATE,
         ];
 
         // Convert date strings to epoch

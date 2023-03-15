@@ -1205,21 +1205,27 @@ class Header
     const SEND_ACTIVATION_EMAIL    = 'send_activation_email';
 
     // RBL CA Activation
-    const RZP_REF_NO                = 'RZP Ref No';
-    const COMMENT                   = 'Comment';
-    const NEW_STATUS                = 'New Status';
-    const NEW_SUBSTATUS             = 'New SubStatus';
-    const NEW_BANK_STATUS           = 'New Bank Status';
-    const NEW_ASSIGNEE              = 'New Assignee';
-    const RM_NAME                   = 'RM Name';
-    const RM_PHONE_NUMBER           = 'RM Phone Number';
-    const ACCOUNT_OPEN_DATE         = 'Account Open Date';
-    const ACCOUNT_LOGIN_DATE        = 'Account Login Date';
-    const SALES_TEAM                = 'Sales Team';
-    const SALES_POC_EMAIL           = 'Sales POC Email';
-    const API_ONBOARDED_DATE        = 'API Onboarded Date';
-    const API_ONBOARDING_LOGIN_DATE = 'API Onboarding Login Date';
-    const MID_OFFICE_POC_NAME       = 'Called By';
+    const RZP_REF_NO                            = 'RZP Ref No';
+    const COMMENT                               = 'Comment';
+    const NEW_STATUS                            = 'New Status';
+    const NEW_SUBSTATUS                         = 'New SubStatus';
+    const NEW_BANK_STATUS                       = 'New Bank Status';
+    const NEW_ASSIGNEE                          = 'New Assignee';
+    const RM_NAME                               = 'RM Name';
+    const RM_PHONE_NUMBER                       = 'RM Phone Number';
+    const ACCOUNT_OPEN_DATE                     = 'Account Open Date';
+    const ACCOUNT_LOGIN_DATE                    = 'Account Login Date';
+    const SALES_TEAM                            = 'Sales Team';
+    const SALES_POC_EMAIL                       = 'Sales POC Email';
+    const API_ONBOARDED_DATE                    = 'API Onboarded Date';
+    const API_ONBOARDING_LOGIN_DATE             = 'API Onboarding Login Date';
+    const MID_OFFICE_POC_NAME                   = 'Called By';
+    const DOCKET_REQUESTED_DATE                 = 'Docket Requested Date';
+    const ESTIMATED_DOCKET_DELIVERY_DATE        = 'Estimated Docket Delivery Date';
+    const DOCKET_DELIVERED_DATE                 = 'Docket Delivered Date';
+    const COURIER_SERVICE_NAME                  = 'Courier Service Name';
+    const COURIER_TRACKING_ID                   = 'Courier Tracking Id';
+    const REASON_WHY_DOCKET_IS_NOT_DELIVERED    = 'Reason Why Docket Is Not Delivered';
 
     // RBL Bulk Upload Comments
     const DATE_TIME                 = 'Date-time';
@@ -4686,6 +4692,12 @@ class Header
                 self::API_ONBOARDED_DATE,
                 self::API_ONBOARDING_LOGIN_DATE,
                 self::MID_OFFICE_POC_NAME,
+                self::DOCKET_REQUESTED_DATE,
+                self::ESTIMATED_DOCKET_DELIVERY_DATE,
+                self::DOCKET_DELIVERED_DATE,
+                self::COURIER_SERVICE_NAME,
+                self::COURIER_TRACKING_ID,
+                self::REASON_WHY_DOCKET_IS_NOT_DELIVERED,
             ],
         ],
 

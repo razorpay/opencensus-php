@@ -3049,6 +3049,31 @@ class Core extends Base\Core
         return true;
     }
 
+    public function moveToSTBIfApplicable(Entity $bankingAccount, $entity)
+    {
+        $currentStatus = $bankingAccount->getStatus();
+
+        $currentSubStatus = $bankingAccount->getSubStatus();
+
+        if (!($currentStatus === Status::PICKED && $currentSubStatus == Status::DOCKET_INITIATED))
+        {
+            return;
+        }
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_DOCKET_DELIVERED_MOVE_TO_STB, [
+            'banking_account_id' => $bankingAccount->getId(),
+            'merchant_id' => $bankingAccount->getMerchantId(),
+        ]);
+
+        $bankingAccount = $this->updateBankingAccount(
+            $bankingAccount, 
+            [
+                Entity::STATUS      => Status::INITIATED,
+                Entity::SUB_STATUS  => Status::NONE,
+            ],
+            $entity, false, false, false);
+    }
+
     public function sendDocketIfApplicable($bankingAccount, $entity)
     {
         // re-fetch banking-account to handle case where it is updated during freshdeskticket creation

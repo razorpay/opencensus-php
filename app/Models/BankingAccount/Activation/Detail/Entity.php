@@ -113,6 +113,8 @@ class Entity extends Base\PublicEntity
     const FEET_ON_STREET = 'feet_on_street';
     const REVIVED_LEAD = 'revived_lead';
     const DOCKET_DELIVERED_DATE = 'docket_delivered_date';
+    const DOCKET_REQUESTED_DATE = 'docket_requested_date';
+    const DOCKET_ESTIMATED_DELIVERY_DATE = 'docket_estimated_delivery_date';
     const MID_OFFICE_POC_NAME = 'mid_office_poc_name';
     const SKIP_MID_OFFICE_CALL = 'skip_mid_office_call';
     const APPOINTMENT_SOURCE = 'appointment_source';
@@ -584,14 +586,24 @@ class Entity extends Base\PublicEntity
     {
         $poe = $this->extractFieldFromJSONField($this->getAdditionalDetails(), self::PROOF_OF_ENTITY);
 
-        return $poe ? $poe['status'] === 'verified' : false;
+        if (empty($poe) === false && isset($poe['status']))
+        {
+            return $poe['status'] === 'verified';
+        }
+
+        return $this->extractFieldFromJSONField($this->getAdditionalDetails(), self::GSTIN) ?? false;
     }
 
     public function isPoAVerified()
     {
         $poa = $this->extractFieldFromJSONField($this->getAdditionalDetails(), self::PROOF_OF_ADDRESS);
 
-        return $poa ? $poa['status'] === 'verified' : false;
+        if (empty($poa) === false && isset($poa['status']))
+        {
+            return $poa['status'] === 'verified';
+        }
+
+        return $this->extractFieldFromJSONField($this->getAdditionalDetails(), self::GSTIN_PREFILLED_ADDRESS) ?? false;
     }
 
     public function getPoESource()
