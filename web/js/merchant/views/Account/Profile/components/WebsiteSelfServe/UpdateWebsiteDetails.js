@@ -187,7 +187,13 @@ function UpdateWebsiteDetails(props) {
     }
 
     const { user } = props;
-
+    if (urlDetails?.business_website_main_page === user?.business_website) {
+      props.showNotification({
+        type: 'error',
+        message: `${type} Updating with same detail,please change main website`,
+      });
+      return;
+    }
     analyticsTrack({
       objectName: `Website submit`,
       actionName: 'clicked',
@@ -410,7 +416,6 @@ function UpdateWebsiteDetails(props) {
     } else {
       setisLinkValid(true);
     }
-
     if (props.flowType === FLOWS.ADDITIONAL_WEBSITE) {
       const { user } = props;
 
