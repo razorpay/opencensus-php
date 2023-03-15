@@ -118,6 +118,7 @@ class Constants
     const RAZORX_KEY_DIRECT_REFUND_FETCH_MULTIPLE_FROM_SCROOGE          = 'direct_refund_fetch_multiple_from_scrooge';
     const RAZORX_KEY_DIRECT_REFUND_FETCH_BY_PAYMENT_FROM_SCROOGE        = 'direct_refund_fetch_by_payment_from_scrooge';
     const RAZORX_KEY_DIRECT_REFUND_FETCH_BY_ID_AND_PAYMENT_FROM_SCROOGE = 'direct_refund_fetch_by_id_and_payment_from_scrooge';
+    const RAZORX_KEY_DIRECT_REFUND_FETCH_BY_ID_FROM_SCROOGE_OPTIMIZER   = 'direct_refund_fetch_by_id_from_scrooge_optimizer';
 
     // Experiment to set up FTA status update flow
     const REFUNDS_0_LOC_FTA_STATUS_UPDATE_FLOW_RAMP_UP = 'refunds_0_loc_fta_status_update_flow_ramp_up';

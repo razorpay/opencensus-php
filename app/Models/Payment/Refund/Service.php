@@ -443,7 +443,15 @@ class Service extends Base\Service
         // ToDO : remove this condition once optimiser settlement data fetch is supported on scrooge
         if ($this->app['basicauth']->isOptimiserDashboardRequest() === true)
         {
-            $nonShadowModeVariant = RefundConstants::RAZORX_VARIANT_OFF;
+            $nonShadowModeOptimizer = $this->app->razorx->getTreatment($experimentVariable,
+                RefundConstants::RAZORX_KEY_DIRECT_REFUND_FETCH_BY_ID_FROM_SCROOGE_OPTIMIZER,
+                $this->mode
+            );
+
+            if ($nonShadowModeOptimizer !== RefundConstants::RAZORX_VARIANT_ON)
+            {
+                $nonShadowModeVariant = RefundConstants::RAZORX_VARIANT_OFF;
+            }
         }
 
         if ($nonShadowModeVariant === RefundConstants::RAZORX_VARIANT_ON)
