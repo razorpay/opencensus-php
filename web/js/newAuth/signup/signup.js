@@ -22,7 +22,7 @@ import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
 import { fetchOrg } from 'newAuth/apis';
 import { FullPageLoader } from 'common/components/Loader';
 import PartnerSignup from './components/PartnerSignup';
-import { isNewPartnerSignup } from 'newAuth/splitz/index';
+import { isNewPartnerSignup, isSignupEnabled } from 'newAuth/splitz/index';
 
 const SignUp = () => {
   const [programDsCheck, setProgramDsCheck] = useState(false);
@@ -134,6 +134,13 @@ const SignUp = () => {
 
   // Enable signup for curlec.com (Malaysia)
   if (window.location.host === 'dashboard.curlec.com') {
+    disableSignup = false;
+  }
+
+  // splitz experiment to check if signup is enabled or disabled, should be removed when signup is enabled for all merchants
+  const signupEnabled = isSignupEnabled();
+
+  if (signupEnabled) {
     disableSignup = false;
   }
 

@@ -59,3 +59,7 @@ export const isNewPartnerSignup = () => {
 export const isOnboardAllAsResellers = () => {
   return evaluateExperiment(experimentDataMap.partner_onboard_all_as_resellers);
 };
+
+export const isSignupEnabled = () => {
+  return evaluateExperiment(experimentDataMap.signup_enabled);
+};
