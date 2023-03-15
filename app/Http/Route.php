@@ -1102,13 +1102,13 @@ class Route
 
         'nach_batch_process'                       => ['post',     'nach/batch_service',                             'EMandateController@postProcessNachDebit'                                       ],
         'emandate_batch_process'                   => ['post',     'emandate/batch_service',                         'EMandateController@postProcessEmandateDebit'                       ],
-        
+
         // Routes for emandate merchant configs
         'fetch_emandate_merchant_configs'          => ['get',       'emandate/merchant_configs',                      'EMandateController@getBulkEmandateConfigs'                        ],
         'create_emandate_merchant_configs'         => ['post',      'emandate/merchant_configs',                      'EMandateController@postBulkEmandateConfigs'                       ],
         'edit_emandate_merchant_configs'           => ['patch',     'emandate/merchant_configs',                      'EMandateController@editBulkEmandateConfigs'                       ],
-    
-    
+
+
         'test_mailgun'                             => ['post',     'test_mailgun',                                   'ReconciliatorController@testMailgunFlow'                        ],
 
         'reconciliate'                             => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
@@ -1535,7 +1535,9 @@ class Route
         'add_downtime_slack_merchant_names'        => ['post',     'gateway/downtimes/notifications/merchantNames',  'GatewayController@postDowntimeSlackNotificationMerchants'          ],
         'gateway_downtime_detection_purge_keys'    => ['post',     'gateway/downtimes/detection/keys/purge',         'GatewayController@purgeGatewayDowntimeDetectionKeys'               ],
         'downtime_manager_admin'                   => ['any',      'downtime_manager/admin/{path?}',                 'DowntimeManagerController@downtimeManagerAdmin'                    ],
-        'downtime_auto_resolve_cron'               => ['post',     'downtime_manager/Optimizer/autoresolve',          'DowntimeManagerController@runTerminalDowntimeAutoresolve'         ],
+        'downtime_auto_resolve_cron'               => ['post',     'downtime_manager/Optimizer/autoresolve',         'DowntimeManagerController@runTerminalDowntimeAutoresolve'          ],
+        'manual_downtime_fetch'                    => ['get',      'downtime_manager/Optimizer/manualdowntimes',     'DowntimeManagerController@fetchManualTerminalDowntimes'            ],
+        'downtime_manual_resolve'                  => ['post',     'downtime_manager/Optimizer/manualresolve',       'DowntimeManagerController@terminalDowntimeManualResolve'           ],
         'fetch_merchant_sr'                        => ['post',     'success-rate/merchant/{path?}',                  'DowntimeManagerController@FetchSRForMerchant'                      ],
         'downtime_detection_cron'                  => ['post',     'gateway/downtimes/detection/cron',               'GatewayController@gatewayDowntimeCron'                             ],
         'phonepe_downtime_detection_cron'          => ['post',     'gateway/downtimes/phonepe/cron',                 'GatewayController@phonepeDowntimeCron'                             ],
@@ -5742,6 +5744,10 @@ class Route
         'fetch_authz_roles_by_role_id',
 
         'internal_1cc_order_review',
+
+        // Terminal downtimes
+        'manual_downtime_fetch',
+        'downtime_manual_resolve',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -8043,7 +8049,11 @@ class Route
         '1cc_rto_merchant_model_configs_update_admin',
         '1cc_rto_merchant_model_configs_delete_admin',
         '1cc_rto_merchant_mlmodel_update_admin',
-        
+
+        // Terminal downtimes
+        'manual_downtime_fetch',
+        'downtime_manual_resolve',
+
         //emandate
         'fetch_emandate_merchant_configs',
         'create_emandate_merchant_configs',
@@ -8478,7 +8488,7 @@ class Route
         'onboarding_features_get_submissions'      => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'feature_onboarding_fetch_all_responses'   => Permission::FEATURE_ONBOARDING_FETCH_ALL_RESPONSES,
         'geoip_update'                             => Permission::UPDATE_GEO_IP,
-    
+
         'fetch_emandate_merchant_configs'          => Permission::MANAGE_EMANDATE_CONFIG,
         'create_emandate_merchant_configs'         => Permission::MANAGE_EMANDATE_CONFIG,
         'edit_emandate_merchant_configs'           => Permission::MANAGE_EMANDATE_CONFIG,
@@ -8579,6 +8589,8 @@ class Route
         'fetch_payments_resolved_downtimes'        => Permission::CREATE_GATEWAY_DOWNTIME,
         'fetch_payments_scheduled_downtimes'       => Permission::CREATE_GATEWAY_DOWNTIME,
         'add_downtime_slack_merchant_names'        => Permission::CREATE_GATEWAY_DOWNTIME,
+        'manual_downtime_fetch'                    => Permission::CREATE_GATEWAY_DOWNTIME,
+        'downtime_manual_resolve'                  => Permission::CREATE_GATEWAY_DOWNTIME,
         'gateway_file_acknowledge'                 => Permission::CREATE_GATEWAY_FILE,
         'gateway_file_retry'                       => Permission::CREATE_GATEWAY_FILE,
         'gateway_update_downtime'                  => Permission::UPDATE_GATEWAY_DOWNTIME,
@@ -13017,7 +13029,7 @@ class Route
             'payment_button_set_merchant_details',
             'payment_button_get_receipt_details',
             'payment_button_save_receipt_for_payment',
-            
+
             'fetch_emandate_merchant_configs',
             'create_emandate_merchant_configs',
             'edit_emandate_merchant_configs',
@@ -13938,6 +13950,10 @@ class Route
             '1cc_rto_merchant_model_configs_update_admin',
             '1cc_rto_merchant_model_configs_delete_admin',
             '1cc_rto_merchant_mlmodel_update_admin',
+
+            // Terminal downtimes
+            'manual_downtime_fetch',
+            'downtime_manual_resolve',
         ],
 
         //

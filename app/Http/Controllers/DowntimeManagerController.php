@@ -14,12 +14,16 @@ use RZP\Trace\TraceCode;
 
 class DowntimeManagerController extends Controller
 {
-    const GET    = 'GET';
-    const POST   = 'POST';
-    const PUT    = 'PUT';
+    const GET = 'GET';
+    const POST = 'POST';
+    const PUT = 'PUT';
     const DELETE = 'DELETE';
 
-    const OPTIMIZER_TERMINAL_DOWNTIME_AUTO_RESOLVE_CRON          = '/v1/downtimes/resolve';
+    const OPTIMIZER_TERMINAL_DOWNTIME_AUTO_RESOLVE_CRON = '/v1/downtimes/resolve';
+
+    const OPTIMIZER_TERMINAL_DOWNTIME_MANUAL_RESOLVE = '/v1/downtimes/manual/resolve';
+
+    const OPTIMIZER_MANUAL_TERMINAL_DOWNTIME_FETCH = '/v1/downtimes/manual/fetch';
 
     const WHITELIST_ADMIN_ROUTES_REGEX = [
         self::GET => [
@@ -67,15 +71,13 @@ class DowntimeManagerController extends Controller
     {
         $method = Request::method();
 
-        if(array_key_exists($method, self::WHITELIST_ADMIN_ROUTES_REGEX) === false)
-        {
+        if (array_key_exists($method, self::WHITELIST_ADMIN_ROUTES_REGEX) === false) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
 
         $whiteListedAdminRoutesRegex = implode('|', self::WHITELIST_ADMIN_ROUTES_REGEX[$method]);
 
-        if (preg_match('/' . $whiteListedAdminRoutesRegex . '/', $path, $pathMatches) == false)
-        {
+        if (preg_match('/' . $whiteListedAdminRoutesRegex . '/', $path, $pathMatches) == false) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
 
@@ -95,15 +97,13 @@ class DowntimeManagerController extends Controller
     {
         $method = Request::method();
 
-        if(array_key_exists($method, self::WHITELIST_MERCHANT_ROUTES_REGEX) === false)
-        {
+        if (array_key_exists($method, self::WHITELIST_MERCHANT_ROUTES_REGEX) === false) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
 
         $whiteListedMerchantRoutesRegex = implode('|', self::WHITELIST_MERCHANT_ROUTES_REGEX[$method]);
 
-        if (preg_match('/' . $whiteListedMerchantRoutesRegex . '/', $path, $pathMatches) == false)
-        {
+        if (preg_match('/' . $whiteListedMerchantRoutesRegex . '/', $path, $pathMatches) == false) {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
 
@@ -137,6 +137,60 @@ class DowntimeManagerController extends Controller
         $data = Request::all();
 
         $path = self::OPTIMIZER_TERMINAL_DOWNTIME_AUTO_RESOLVE_CRON;
+
+        $this->trace->info(TraceCode::DOWNTIME_MANAGER_REQUEST, [
+            'path' => $path,
+            'data' => $data
+        ]);
+
+        $response = (new DowntimeManagerService($this->app))->sendAnyRequest($path, $method, $data);
+
+        $statusCode = $response['status_code'];
+
+        $this->trace->info(TraceCode::DOWNTIME_MANAGER_RESPONSE, [
+            'response' => $response,
+        ]);
+
+        unset($response['status_code']);
+
+        return ApiResponse::json($response, $statusCode);
+    }
+
+    public function fetchManualTerminalDowntimes($path = '')
+    {
+
+        $method = Request::method();
+
+        $data = Request::all();
+
+        $path = self::OPTIMIZER_MANUAL_TERMINAL_DOWNTIME_FETCH;
+
+        $this->trace->info(TraceCode::DOWNTIME_MANAGER_REQUEST, [
+            'path' => $path,
+            'data' => $data
+        ]);
+
+        $response = (new DowntimeManagerService($this->app))->sendAnyRequest($path, $method, $data);
+
+        $statusCode = $response['status_code'];
+
+        $this->trace->info(TraceCode::DOWNTIME_MANAGER_RESPONSE, [
+            'response' => $response,
+        ]);
+
+        unset($response['status_code']);
+
+        return ApiResponse::json($response, $statusCode);
+    }
+
+    public function terminalDowntimeManualResolve($path = '')
+    {
+
+        $method = Request::method();
+
+        $data = Request::all();
+
+        $path = self::OPTIMIZER_TERMINAL_DOWNTIME_MANUAL_RESOLVE;
 
         $this->trace->info(TraceCode::DOWNTIME_MANAGER_REQUEST, [
             'path' => $path,
