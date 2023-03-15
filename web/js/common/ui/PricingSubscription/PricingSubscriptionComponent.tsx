@@ -117,6 +117,10 @@ const PricingSubscriptionComponent = ({
             ...(toggle_switch && { toggle_switch }),
             ...getAssetTrackingProperties(trackingId, tracking_data, {}, event_name),
           };
+        case 'paymentSuccess':
+          return {
+            ...getAssetTrackingProperties(trackingId, tracking_data, {}, event_name),
+          };
         case 'viewMoreCTA':
           return {
             ...(toggle_switch && { toggle_switch }),
@@ -129,7 +133,7 @@ const PricingSubscriptionComponent = ({
             ...trackingData,
           };
         default:
-          return {};
+          return trackingData;
       }
     };
 
@@ -259,7 +263,7 @@ const PricingSubscriptionComponent = ({
       type: 'success',
       message: RedirectToast,
     });
-    trackInstrumentation('', {
+    trackInstrumentation('paymentSuccess', {
       value: 'success',
       payment_id: response?.razorpay_payment_id,
       plan_Activated: togglePlan,

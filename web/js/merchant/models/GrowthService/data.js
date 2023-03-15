@@ -449,6 +449,7 @@ export const eventToGrowthEventTypeMap = {
   'merchant_dashboard.click_close.initiated': 'IMPRESSION', // pricing bundle -  close
   'dashboard.appswitcher.app_shown': 'IMPRESSION',
   'merchant_dashboard.not_interested.initiated': 'DISMISSAL', // pricing bundle - not interested
+  'merchant_dashboard.subscription_checkout.success': 'DISMISSAL', // pricing bundle - payment success
   'merchant_dashboard.banner_close': 'DISMISSAL',
   carousel_banner_not_interested: 'DISMISSAL',
 };
