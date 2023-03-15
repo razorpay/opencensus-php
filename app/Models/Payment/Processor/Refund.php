@@ -822,8 +822,8 @@ trait Refund
                  'input'      => $input,
              ]);
 
-             // Refunds for authorized payments are always full, explicitly set amount
-             $input['amount'] = $payment->getAmount();
+             // this param will help identify the authorized refund flow
+             $input['refund_authorized'] = true;
 
              // Route refund creation to scrooge
              return $this->newRefundV2Flow($payment, $input);

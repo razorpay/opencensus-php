@@ -114,6 +114,7 @@ class Scrooge
 
     const PASSPORT_AUD = 'scrooge';
     const PAYMENT_PAGE = 'Payment-Page';
+    const REFUND_ONLY_UNCAPTURED = 'refund-only-uncaptured';
 
     const TERMINAL_ID = 'terminal_id';
 
@@ -608,6 +609,12 @@ class Scrooge
         {
             $customheader[self::PAYMENT_PAGE] = ($input['payment_page'] ? 'yes': 'no');
             unset($input['payment_page']);
+        }
+
+        if (isset($input['refund_authorized']) === true)
+        {
+            $customheader[self::REFUND_ONLY_UNCAPTURED] = ($input['refund_authorized'] === true);
+            unset($input['refund_authorized']);
         }
 
         $this->setCustomHeaders($customheader);
