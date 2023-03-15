@@ -526,6 +526,7 @@ final class RazorxTreatment
 
     // razorx treatment for fetch from scrooge service
     const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE = 'entity_relational_load_from_scrooge';
+    const ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_NON_SHADOW = 'entity_relational_load_from_scrooge_non_shadow';
 
     // Razorx treatment constant to send a single request to bvs for validating aadhaar
     // document, rather than sending a single one.

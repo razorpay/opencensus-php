@@ -37,6 +37,10 @@ trait ScroogeRepo
                 (new Service())->compareRefundsAndLogDifference(
                     $apiResponse->toArray(), $scroogeResponse->toArray(), ['method_name' => __FUNCTION__]);
 
+                if ($this->validateExternalFetchEnabledForScroogeNonShadow() == true)
+                {
+                    return $scroogeResponse;
+                }
                 return $apiResponse;
             }
         }

@@ -48,6 +48,10 @@ trait ExternalScroogeRepo
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
 
+                if ($this->validateExternalFetchEnabledForScroogeNonShadow() == true)
+                {
+                    return $scroogeResponse;
+                }
                 return $apiResponse;
             }
         }
@@ -98,6 +102,11 @@ trait ExternalScroogeRepo
 
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
+
+                if ($this->validateExternalFetchEnabledForScroogeNonShadow() == true)
+                {
+                    return $scroogeResponse;
+                }
 
                 return $apiResponse;
             }
@@ -151,6 +160,10 @@ trait ExternalScroogeRepo
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
 
+                if ($this->validateExternalFetchEnabledForScroogeNonShadow() == true)
+                {
+                    return $scroogeResponse;
+                }
                 return $apiResponse;
             }
         }
@@ -193,11 +206,16 @@ trait ExternalScroogeRepo
                 ($this->validateExternalFetchEnabledForScrooge() == true) and
                 (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
-                $scroogeResponse = $this->fetchExternalRefundById($id, $merchantId);;
+                $scroogeResponse = $this->fetchExternalRefundById($id, $merchantId);
                 $apiResponse     = parent::findByIdAndMerchantId($id, $merchantId, $connectionType);
 
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
+
+                if ($this->validateExternalFetchEnabledForScroogeNonShadow() == true)
+                {
+                    return $scroogeResponse;
+                }
 
                 return $apiResponse;
             }
@@ -241,11 +259,16 @@ trait ExternalScroogeRepo
                 ($this->validateExternalFetchEnabledForScrooge() == true) and
                 (Entity::validateExternalRepoEntity($this->entityName) === true))
             {
-                $scroogeResponse = $this->fetchExternalRefundById($id, '', $params);;
+                $scroogeResponse = $this->fetchExternalRefundById($id, '', $params);
                 $apiResponse     = parent::findOrFailByPublicIdWithParams($id, $params, $connectionType);
 
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
+
+                if ($this->validateExternalFetchEnabledForScroogeNonShadow() == true)
+                {
+                    return $scroogeResponse;
+                }
 
                 return $apiResponse;
             }
@@ -294,6 +317,11 @@ trait ExternalScroogeRepo
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
 
+                if ($this->validateExternalFetchEnabledForScroogeNonShadow() == true)
+                {
+                    return $scroogeResponse;
+                }
+
                 return $apiResponse;
             }
         }
@@ -341,6 +369,10 @@ trait ExternalScroogeRepo
                 (new Service())->compareRefundsAndLogDifference(
                     [$apiResponse->toArray()], [$scroogeResponse->toArray()], ['method_name' => __FUNCTION__]);
 
+                if ($this->validateExternalFetchEnabledForScroogeNonShadow() == true)
+                {
+                    return $scroogeResponse;
+                }
                 return $apiResponse;
             }
         }
@@ -356,6 +388,30 @@ trait ExternalScroogeRepo
         }
 
         return parent::findOrFail($id, $columns, $connectionType);
+    }
+
+    public function validateExternalFetchEnabledForScroogeNonShadow($id = null)
+    {
+        $mode = $this->app['rzp.mode'] ?? 'live';
+
+        $result = $this->app['razorx']->getTreatment(
+            UniqueIdEntity::generateUniqueId(),
+            RazorxTreatment::ENTITY_RELATIONAL_LOAD_FROM_SCROOGE_NON_SHADOW,
+            $mode);
+
+        $this->trace->info(
+            TraceCode::SCROOGE_ENTITY_FETCH_NON_SHADOW_RAZORX_RESPONSE,
+            [
+                'result'    => $result,
+                'mode'      => $mode,
+            ]);
+
+        if ($result === 'on')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function validateExternalFetchEnabledForScrooge($id = null)
