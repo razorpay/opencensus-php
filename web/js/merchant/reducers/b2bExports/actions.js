@@ -10,6 +10,8 @@ import {
   B2B_EXPORTS_GET_INVOICE_DETAILS,
   B2B_EXPORTS_SET_FEATURE,
   B2B_EXPORTS_GET_BALANCE,
+  B2B_EXPORTS_GET_BENEFICIARY,
+  B2B_EXPORTS_CREATE_PAYOUT,
 } from './constants';
 
 const fetchB2bAccounts = () => {
@@ -99,6 +101,51 @@ const fetchAccountBalance = (currency) => {
   };
 };
 
+const fetchBeneficiaryDetails = () => {
+  const resource = new B2bExportsResource();
+
+  return resource.getBeneficiaryDetails();
+};
+
+const fetchBeneficiaryDetailsPending = (payload) => {
+  return {
+    type: `${B2B_EXPORTS_GET_BENEFICIARY}::PENDING`,
+    payload,
+  };
+};
+
+const fetchBeneficiaryDetailsSuccess = (payload) => {
+  return {
+    type: `${B2B_EXPORTS_GET_BENEFICIARY}::SUCCESS`,
+    payload,
+  };
+};
+
+const fetchBeneficiaryDetailsError = (payload) => {
+  return {
+    type: `${B2B_EXPORTS_GET_BENEFICIARY}::ERROR`,
+    payload,
+  };
+};
+
+const createPayout = (data) => {
+  const resource = new B2bExportsResource();
+
+  return resource.createPayout(data);
+};
+
+const createPayoutPending = () => {
+  return {
+    type: `${B2B_EXPORTS_CREATE_PAYOUT}::PENDING`,
+  };
+};
+
+const createPayoutSuccess = () => {
+  return {
+    type: `${B2B_EXPORTS_CREATE_PAYOUT}::SUCCESS`,
+  };
+};
+
 export {
   uploadInvoice,
   uploadInvoiceError,
@@ -113,4 +160,11 @@ export {
   setFeatureFlag,
   uploadB2bInvoice,
   fetchAccountBalance,
+  createPayout,
+  createPayoutPending,
+  createPayoutSuccess,
+  fetchBeneficiaryDetails,
+  fetchBeneficiaryDetailsPending,
+  fetchBeneficiaryDetailsSuccess,
+  fetchBeneficiaryDetailsError,
 };

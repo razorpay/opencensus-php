@@ -70,3 +70,57 @@ export const trackAccountError = (error) => {
     },
   });
 };
+
+export const trackCheckBalanceClicked = () => {
+  track({
+    objectName: 'b2b accounts check balance',
+    actionName: 'click',
+  });
+};
+
+export const trackCheckBalanceFailed = () => {
+  track({
+    objectName: 'b2b accounts check balance',
+    actionName: 'response',
+    properties: {
+      status: 'failed',
+    },
+  });
+};
+
+export const trackSubmitPayoutRequest = () => {
+  track({
+    objectName: 'b2b accounts submit payout',
+    actionName: 'request',
+    properties: {
+      status: 'init',
+    },
+  });
+};
+
+export const trackSubmitPayoutSuccess = () => {
+  track({
+    objectName: 'b2b accounts submit payout',
+    actionName: 'response',
+    properties: {
+      status: 'success',
+    },
+  });
+};
+
+export const trackSubmitPayoutFailed = () => {
+  track({
+    objectName: 'b2b accounts submit payout',
+    actionName: 'response',
+    properties: {
+      status: 'failed',
+    },
+  });
+};
+
+export const trackWithdrawClicked = () => {
+  track({
+    objectName: 'b2b accounts withdraw money',
+    actionName: 'click',
+  });
+};

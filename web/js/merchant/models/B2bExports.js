@@ -28,6 +28,23 @@ class B2bExports extends GenericEntity {
     };
     return merchantFetch(params);
   }
+
+  getBeneficiaryDetails() {
+    const params = {
+      url: `${this.resourceUrl}/virtual_accounts/beneficiary`,
+      method: 'get',
+    };
+    return merchantFetch(params);
+  }
+
+  createPayout(data) {
+    const params = {
+      url: `${this.resourceUrl}/virtual_accounts/payout`,
+      method: 'post',
+      data,
+    };
+    return merchantFetch(params);
+  }
 }
 
 export default B2bExports;

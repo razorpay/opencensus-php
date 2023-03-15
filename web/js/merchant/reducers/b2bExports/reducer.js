@@ -8,6 +8,8 @@ import {
   B2B_EXPORTS_SET_FEATURE,
   B2B_EXPORTS_GET_INVOICE_DETAILS,
   B2B_EXPORTS_GET_BALANCE,
+  B2B_EXPORTS_GET_BENEFICIARY,
+  B2B_EXPORTS_CREATE_PAYOUT,
 } from './constants';
 
 const transactionInitialStates = {
@@ -202,8 +204,47 @@ function b2bExportsAccountBalanceReducer(
   }
 }
 
+function b2bExportsBeneficiaryReducer(
+  state = {
+    isLoading: false,
+    isPayoutSubmitting: false,
+    data: null,
+    error: false,
+  },
+  action,
+) {
+  switch (action.type) {
+    case `${B2B_EXPORTS_GET_BENEFICIARY}::PENDING`: {
+      return set(state, 'isLoading', true);
+    }
+    case `${B2B_EXPORTS_CREATE_PAYOUT}::PENDING`: {
+      return set(state, 'isPayoutSubmitting', true);
+    }
+    case `${B2B_EXPORTS_GET_BENEFICIARY}::SUCCESS`: {
+      return merge(state, {
+        isLoading: false,
+        error: false,
+        data: action.payload,
+      });
+    }
+    case `${B2B_EXPORTS_CREATE_PAYOUT}::SUCCESS`: {
+      return set(state, 'isPayoutSubmitting', false);
+    }
+    case `${B2B_EXPORTS_GET_BENEFICIARY}::ERROR`: {
+      return merge(state, {
+        isLoading: false,
+        error: true,
+      });
+    }
+    default: {
+      return state;
+    }
+  }
+}
+
 export {
   b2bExportsTransactionsReducer,
   b2bExportsAccountsReducer,
   b2bExportsAccountBalanceReducer,
+  b2bExportsBeneficiaryReducer,
 };

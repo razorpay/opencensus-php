@@ -4,10 +4,24 @@ import { bindActionCreators } from 'redux';
 
 //redux actions
 import { showNotification } from 'merchant_common/reducers/notifications';
-import { fetchAccountBalance } from 'merchant/reducers/b2bExports/actions';
+import {
+  fetchAccountBalance,
+  createPayout,
+  createPayoutPending,
+  createPayoutSuccess,
+  fetchBeneficiaryDetailsSuccess as fetchBeneficiaryDetailsSuccessAction,
+} from 'merchant/reducers/b2bExports/actions';
 
 //analytics
-import { trackAccountCopied } from './analytics';
+import {
+  trackAccountCopied,
+  trackCheckBalanceClicked,
+  trackCheckBalanceFailed,
+  trackSubmitPayoutRequest,
+  trackSubmitPayoutSuccess,
+  trackSubmitPayoutFailed,
+  trackWithdrawClicked,
+} from './analytics';
 
 //components
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -15,9 +29,19 @@ import Instrument from 'merchant/views/Settings/PaymentMethods/components/Instru
 import LoaderDots from 'common/ui/LoaderDots';
 import CustomClipboard from 'common/ui/Clipboard/Custom';
 import { Button } from '@razorpay/blade/components';
+import GlobalBankWithdrawModal from 'merchant/views/Settings/PaymentMethods/components/GlobalBankWithdrawModal';
+import ConfirmWithdrawalModal from 'merchant/views/Settings/PaymentMethods/components/GlobalBankWithdrawModal/ConfirmWithdrawalModal';
+import StatusModal from 'merchant/views/Settings/PaymentMethods/components/GlobalBankWithdrawModal/StatusModal';
 
 //Styles
 import './LocalWireTransfer.styl';
+
+// Modal Actions
+import {
+  openModal as openModalAction,
+  closeModal as closeModalAction,
+} from 'merchant_common/reducers/modals';
+///- Modal Actions
 
 const DETAIL_FIELDS = [
   { label: 'Routing Code', key: 'Routing Code' },
@@ -58,6 +82,11 @@ const InstrumentRow = (props) => {
     accountBalance,
     fetchAccountBalance,
     showNotification,
+    openModal,
+    closeModal,
+    createPayoutPending,
+    createPayoutSuccess,
+    fetchBeneficiaryDetailsSuccess,
   } = props;
 
   //finds the current account from list of accounts
@@ -82,14 +111,98 @@ const InstrumentRow = (props) => {
     }, '');
   };
 
+  async function submitForPayout(payload) {
+    try {
+      createPayoutPending();
+      trackSubmitPayoutRequest();
+      const response = await createPayout({
+        amount: payload.amount,
+        reason: payload.reason,
+        currency: payload.currency,
+      });
+      if (response.success) {
+        openStatusModal('success');
+        trackSubmitPayoutSuccess();
+      } else {
+        throw Error('Failed');
+      }
+    } catch (err) {
+      if (Array.isArray(err.errors)) {
+        showNotification({
+          type: 'error',
+          message: err.errors[0],
+        });
+      } else {
+        showNotification({
+          type: 'error',
+          message: err.message,
+        });
+      }
+      openStatusModal('error');
+      trackSubmitPayoutFailed();
+    } finally {
+      createPayoutSuccess();
+    }
+  }
+
+  function closeStatusModal() {
+    closeModal();
+    fetchBeneficiaryDetailsSuccess({
+      amount: '',
+      reason: '',
+    });
+  }
+
+  function openStatusModal(type) {
+    openModal({
+      size: 'medium',
+      component: (
+        <StatusModal type={type} onClose={closeStatusModal} onTryAgain={openWithdrawModal} />
+      ),
+    });
+  }
+
+  function openConfirmWithdrawalModal(beneDetails) {
+    openModal({
+      size: 'medium',
+      component: (
+        <ConfirmWithdrawalModal
+          onClose={closeModal}
+          onSubmit={() => submitForPayout(beneDetails)}
+        />
+      ),
+    });
+  }
+
+  function openWithdrawModal(currency) {
+    openModal({
+      size: 'large',
+      component: (
+        <GlobalBankWithdrawModal
+          currency={currency}
+          onClose={closeModal}
+          balance={accountBalance.data?.[currency]?.balance}
+          onSubmit={openConfirmWithdrawalModal}
+        />
+      ),
+    });
+    trackWithdrawClicked();
+  }
+
+  function getBalance(currency) {
+    fetchAccountBalance(currency);
+    trackCheckBalanceClicked();
+  }
+
   useEffect(() => {
     if (accountBalance.error) {
       showNotification({
         type: 'error',
         message: accountBalance.errorMessage,
       });
+      trackCheckBalanceFailed();
     }
-  }, [accountBalance.error]);
+  }, [accountBalance.error, accountBalance.errorMessage, showNotification]);
 
   //return null if there are no accounts and current account details are not there
   if (!accountDetails && accounts?.length) return null;
@@ -119,7 +232,7 @@ const InstrumentRow = (props) => {
                 <Button
                   variant="tertiary"
                   isLoading={accountBalance.isLoading}
-                  onClick={() => fetchAccountBalance(data?.vaCurrency)}
+                  onClick={() => getBalance(data?.vaCurrency)}
                   size="small"
                   isFullWidth
                 >
@@ -136,13 +249,26 @@ const InstrumentRow = (props) => {
                   isLoading={accountBalance.isLoading}
                   size="small"
                   isFullWidth
-                  onClick={() => fetchAccountBalance(data?.vaCurrency)}
+                  onClick={() => getBalance(data?.vaCurrency)}
                 >
                   Check Balance
                 </Button>
               </div>
             </div>
           )}
+          <div className="list-item">
+            <p className="info">Withdraw funds from your account</p>
+            <div className="list-cta">
+              <Button
+                variant="primary"
+                size="small"
+                isFullWidth
+                onClick={() => openWithdrawModal(data?.vaCurrency)}
+              >
+                Withdraw Money
+              </Button>
+            </div>
+          </div>
         </ShowWhen>
         <div className="list-item">
           <p className="info">{data?.message}</p>
@@ -176,6 +302,11 @@ const mapDispatchToProps = (dispatch) =>
     {
       fetchAccountBalance,
       showNotification,
+      openModal: openModalAction,
+      closeModal: closeModalAction,
+      createPayoutPending,
+      createPayoutSuccess,
+      fetchBeneficiaryDetailsSuccess: fetchBeneficiaryDetailsSuccessAction,
     },
     dispatch,
   );
