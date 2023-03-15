@@ -240,13 +240,6 @@ EOT;
     {
         $query = $this->newQuery();
 
-        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-            $query = $this->newQueryWithConnection($connectionType);
-        }
-
         return $query->whereBetween(Payment\Entity::CAPTURED_AT, array($from, $to))
                      ->whereNull(Payment\Entity::GATEWAY_CAPTURED)
                      ->limit($limit)
@@ -262,6 +255,13 @@ EOT;
         if ($useSlave === true)
         {
             $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+            if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+            {
+                $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+                $query = $this->newQueryWithConnection($connectionType);
+            }
         }
         else
         {
@@ -983,7 +983,9 @@ EOT;
      */
     public function fetchOldCreatedPaymentsForTimeout(int $timestamp, int $limit)
     {
-        return $this->newQuery()
+        $query = $this->newQuery();
+
+        return $query
                     ->status(Payment\Status::CREATED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
                     ->with(['merchant', 'merchant.features'])
@@ -1007,7 +1009,16 @@ EOT;
     {
         return $this->repo->useSlave(function() use ($fromTimestamp, $toTimestamp, $limit, $method, $emandateRecurringType, $includeMerchantList, $excludeMerchantList, $filterPaymentPushedToKafka)
         {
-            $query = $this->newQuery()
+            $query = $this->newQuery();
+
+            if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, 'fetchOldCreatedPaymentsForMethodForTimeout') === true)
+            {
+                $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+                $query = $this->newQueryWithConnection($connectionType);
+            }
+
+            $query = $query
                         ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                         ->status(Payment\Status::CREATED)
                         ->where(Payment\Entity::CREATED_AT, '>=', $fromTimestamp)
@@ -1075,18 +1086,27 @@ EOT;
      */
     public function fetchOldAuthenticatedPaymentsForMethodForTimeout(int $fromTimestamp, int $toTimestamp, int $limit, string $method)
     {
-      return $this->repo->useSlave(function() use ($fromTimestamp, $toTimestamp, $limit, $method)
-      {
-        return $this->newQuery()
-            ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
-            ->status(Payment\Status::AUTHENTICATED)
-            ->where(Payment\Entity::AUTHENTICATED_AT, '>=', $fromTimestamp)
-            ->where(Payment\Entity::AUTHENTICATED_AT, '<=', $toTimestamp)
-            ->where(Payment\Entity::METHOD, '=', $method)
-            ->with(['merchant', 'merchant.features'])
-            ->limit($limit)
-            ->get();
-      });
+        return $this->repo->useSlave(function() use ($fromTimestamp, $toTimestamp, $limit, $method)
+        {
+            $query = $this->newQuery();
+
+            if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, 'fetchOldAuthenticatedPaymentsForMethodForTimeout') === true)
+            {
+                $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+                $query = $this->newQueryWithConnection($connectionType);
+            }
+
+            return $query
+                ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
+                ->status(Payment\Status::AUTHENTICATED)
+                ->where(Payment\Entity::AUTHENTICATED_AT, '>=', $fromTimestamp)
+                ->where(Payment\Entity::AUTHENTICATED_AT, '<=', $toTimestamp)
+                ->where(Payment\Entity::METHOD, '=', $method)
+                ->with(['merchant', 'merchant.features'])
+                ->limit($limit)
+                ->get();
+        });
     }
 
     /**
@@ -1101,7 +1121,7 @@ EOT;
     {
         return $this->repo->useSlave(function() use ($method, $emandateRecurringType, $includeMerchantList, $excludeMerchantList, $filterPaymentPushedToKafka)
         {
-            $query =  $this->newQueryWithConnection($this->getReportingReplicaConnection())
+            $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
                       ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                       ->status(Payment\Status::CREATED)
                       ->where(Payment\Entity::METHOD, '=', $method);
@@ -1142,7 +1162,14 @@ EOT;
     {
         return $this->repo->useSlave(function() use ($method)
         {
-          return  $this->newQueryWithConnection($this->getSlaveConnection())
+            $connectionType = $this->getSlaveConnection();
+
+            if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, 'fetchOldPaymentsMinAuthenticatedForMethodForTimeout') === true)
+            {
+                $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+            }
+
+            return  $this->newQueryWithConnection($connectionType)
                       ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                       ->status(Payment\Status::AUTHENTICATED)
                       ->where(Payment\Entity::METHOD, '=', $method)
@@ -1224,7 +1251,16 @@ EOT;
 
         $results = $this->repo->useSlave(function () use ($refundAt, $status, $timestamp, $limit)
         {
-            return $this->newQuery()
+            $query = $this->newQuery();
+
+            if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, 'getAuthorizedPaymentsToBeRefundedUsingRefundAt') === true)
+            {
+                $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+                $query = $this->newQueryWithConnection($connectionType);
+            }
+
+            return $query
                         ->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                         ->select($this->dbColumn('*'))
                         ->where($refundAt, '<=', $timestamp)
@@ -1240,13 +1276,6 @@ EOT;
     public function getAuthorizedPaymentsBetweenTimestamps($timeLowerLimit, $timeUpperLimit)
     {
         $query = $this->newQuery();
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-            $query = $this->newQueryWithConnection($connectionType);
-        }
 
         return $query->status(Payment\Status::AUTHORIZED)
                      ->where(Payment\Entity::CREATED_AT, '<=', $timeUpperLimit)
@@ -1317,13 +1346,6 @@ EOT;
     {
         $query = $this->newQuery();
 
-        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-            $query = $this->newQueryWithConnection($connectionType);
-        }
-
         return $query->status(Payment\Status::CAPTURED)
                      ->where(Payment\Entity::AUTO_CAPTURED, '=', true)
                      ->where(Payment\Entity::CAPTURED_AT, '<=', $timeUpperLimit)
@@ -1336,7 +1358,16 @@ EOT;
     public function getPaymentsToVerifyByGatewayAndTime(array $timestamps, $gateway, $count, $disabledGateways,
                                                         $bucket, array $filterStatus = [], $filterPaymentPushedToKafka = false)
     {
-        $query = $this->newQuery()
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        $query = $query
                       ->whereBetween(Payment\Entity::VERIFY_AT, $timestamps);
 
         if ($gateway !== null)
@@ -1466,7 +1497,16 @@ EOT;
         int $rowsToFetch = 100,
         array $disabledGateways = [])
     {
-        $query = $this->newQuery()
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        $query = $query
                       ->whereIn(Payment\Entity::ID, $paymentIds)
                       ->whereNotIn(Payment\Entity::GATEWAY, $disabledGateways);
 
@@ -1487,9 +1527,8 @@ EOT;
             $startTime = 1575384036;
         }
 
-        $query = $this->newQuery();
-
-        $query->whereNotNull(Payment\Entity::GLOBAL_CUSTOMER_ID)
+        $query = $this->newQuery()
+              ->whereNotNull(Payment\Entity::GLOBAL_CUSTOMER_ID)
               ->where(Payment\Entity::CREATED_AT, '>=', $startTime)
               ->where(Payment\Entity::METHOD, Payment\Method::UPI)
               ->whereNotNull(Payment\Entity::AUTHORIZED_AT)
@@ -1754,17 +1793,48 @@ EOT;
 
     public function fetchPaymentsForOrderId($orderId)
     {
-        return $this->newQuery()
-                    ->where(Payment\Entity::ORDER_ID, '=', $orderId)
-                    ->get();
+        $payments = $this->newQuery()
+                         ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                         ->get();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $warmPayments = $this->newQueryWithConnection($connectionType)
+                                 ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                                 ->get();
+
+            $allPayments = $this->mergeCollectionsBasedOnKey($payments, $warmPayments, Entity::ID);
+
+            return $allPayments;
+        }
+
+        return $payments;
     }
 
     public function fetchPaymentsWithCardForOrderId($orderId)
     {
-        return $this->newQuery()
-            ->where(Payment\Entity::ORDER_ID, '=', $orderId)
-            ->with(["card"])
-            ->get();
+        $payments = $this->newQuery()
+                         ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                         ->with(["card"])
+                         ->get();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $warmPayments = $this->newQueryWithConnection($connectionType)
+                                 ->where(Payment\Entity::ORDER_ID, '=', $orderId)
+                                 ->with(["card"])
+                                 ->get();
+
+            $allPayments = $this->mergeCollectionsBasedOnKey($payments, $warmPayments, Entity::ID);
+
+            return $allPayments;
+        }
+
+        return $payments;
     }
 
     public function fetchCapturedRearchPaymentsTxnNull()
@@ -1811,7 +1881,16 @@ EOT;
         $orderAuthorizedCol = $this->repo->order->dbColumn(Order\Entity::AUTHORIZED);
         $orderReceiptCol = $this->repo->order->dbColumn(Order\Entity::RECEIPT);
 
-        return $this->newQuery()
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        return $query
                     ->select($paymentCols)
                     ->join($ordersTable, $paymentOrderIdCol, '=', $orderIdCol)
                     ->whereNotNull($paymentAuthorizedAtCol)
@@ -1830,7 +1909,16 @@ EOT;
      */
     public function getPaymentsOnHoldBeforeTimestamp(int $timestamp) : Base\PublicCollection
     {
-        $data = $this->newQuery()
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        $data = $query
                      ->where(Payment\Entity::ON_HOLD, true)
                      ->where(Payment\Entity::ON_HOLD_UNTIL, '<', $timestamp)
                      ->with('transfer')
@@ -2177,10 +2265,27 @@ EOT;
 
     public function getCapturedPaymentForOrder(string $orderId)
     {
-        return $this->newQuery()
-                    ->whereNotNull(Entity::CAPTURED_AT)
-                    ->where(Entity::ORDER_ID, '=', $orderId)
-                    ->first();
+        $payment = $this->newQuery()
+                        ->whereNotNull(Entity::CAPTURED_AT)
+                        ->where(Entity::ORDER_ID, '=', $orderId)
+                        ->first();
+
+        if (empty($payment) === false)
+        {
+            return $payment;
+        }
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $payment = $this->newQueryWithConnection($connectionType)
+                            ->whereNotNull(Entity::CAPTURED_AT)
+                            ->where(Entity::ORDER_ID, '=', $orderId)
+                            ->first();
+        }
+
+        return $payment;
     }
 
     public function getTopMerchantVolumeWiseBetweenTimestamp(int $from, int $to, int $limit)
@@ -2213,7 +2318,16 @@ EOT;
 
         $minCreatedAt = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
-        return $this->newQuery()
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        return $query
                     ->selectRaw(Entity::MERCHANT_ID . ','.
                        'COUNT(*) AS count,' .
                        'DATE_FORMAT(FROM_UNIXTIME(created_at + 19800),' . $dateFormat . ') as dates'
@@ -2231,7 +2345,7 @@ EOT;
 
         if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
         {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
             $query = $this->newQueryWithConnection($connectionType);
         }
@@ -2246,11 +2360,29 @@ EOT;
 
     public function findByTransferIdAndMerchant(string $transferId, string $accountId, array $relations = [])
     {
-        return $this->newQuery()
-                    ->where(Entity::TRANSFER_ID, $transferId)
-                    ->merchantId($accountId)
-                    ->with($relations)
-                    ->firstOrFailPublic();
+        try
+        {
+            return $this->newQuery()
+                        ->where(Entity::TRANSFER_ID, $transferId)
+                        ->merchantId($accountId)
+                        ->with($relations)
+                        ->firstOrFailPublic();
+        }
+        catch (\Throwable $ex)
+        {
+            if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+            {
+                $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+                return $this->newQueryWithConnection($connectionType)
+                            ->where(Entity::TRANSFER_ID, $transferId)
+                            ->merchantId($accountId)
+                            ->with($relations)
+                            ->firstOrFailPublic();
+            }
+
+            throw $ex;
+        }
     }
 
     public function fetchCapturedSummaryBetweenTimestamp($from, $to)
@@ -2259,7 +2391,7 @@ EOT;
 
         if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
         {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
             $query = $this->newQueryWithConnection($connectionType);
         }
@@ -2316,6 +2448,7 @@ EOT;
     {
         $entityOfferTable = $this->repo->entity_offer->getTableName();
         $paymentStatusCol = $this->dbColumn(Entity::STATUS);
+        $paymentCreatedAtCol = $this->dbColumn(Entity::CREATED_AT);
         $entityOfferEntityIdCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_ID);
         $entityOfferEntityTypeCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::ENTITY_TYPE);
         $entityOfferOfferIdCol = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::OFFER_ID);
@@ -2334,17 +2467,67 @@ EOT;
         // GROUP BY `entity_offer`.`offer_id`
         // HAVING payment_count >= 1
         //
-        $query = $this->newQuery()
-                      ->select(DB::raw("count($paymentIdCol) AS payment_count, $entityOfferOfferIdCol"))
-                      ->join($entityOfferTable, $entityOfferEntityIdCol, '=', $paymentIdCol)
-                      ->where($paymentStatusCol, '=', Status::CAPTURED)
-                      ->where($entityOfferEntityTypeCol, '=', EntityName::PAYMENT)
-                      ->whereIn($entityOfferOfferIdCol, $offerIds)
-                      ->whereIn($paymentCardIdCol, $cardIds)
-                      ->groupBy($entityOfferOfferIdCol)
-                      ->having('payment_count', '>=', 1);
 
-        return $query->pluck('payment_count', 'offer_id')->toArray();
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $hotTimestamp = Carbon::now(Timezone::IST)->getTimestamp() - 86400;
+
+            $hotData = $this->newQuery()
+                            ->select(DB::raw("count($paymentIdCol) AS payment_count, $entityOfferOfferIdCol"))
+                            ->join($entityOfferTable, $entityOfferEntityIdCol, '=', $paymentIdCol)
+                            ->where($paymentStatusCol, '=', Status::CAPTURED)
+                            ->where($entityOfferEntityTypeCol, '=', EntityName::PAYMENT)
+                            ->whereIn($entityOfferOfferIdCol, $offerIds)
+                            ->whereIn($paymentCardIdCol, $cardIds)
+                            ->where($paymentCreatedAtCol, '>=', $hotTimestamp)
+                            ->groupBy($entityOfferOfferIdCol)
+                            ->having('payment_count', '>=', 1)
+                            ->pluck('payment_count', 'offer_id')
+                            ->toArray();
+
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $warmData = $this->newQueryWithConnection($connectionType)
+                             ->select(DB::raw("count($paymentIdCol) AS payment_count, $entityOfferOfferIdCol"))
+                             ->join($entityOfferTable, $entityOfferEntityIdCol, '=', $paymentIdCol)
+                             ->where($paymentStatusCol, '=', Status::CAPTURED)
+                             ->where($entityOfferEntityTypeCol, '=', EntityName::PAYMENT)
+                             ->whereIn($entityOfferOfferIdCol, $offerIds)
+                             ->whereIn($paymentCardIdCol, $cardIds)
+                             ->where($paymentCreatedAtCol, '<', $hotTimestamp)
+                             ->groupBy($entityOfferOfferIdCol)
+                             ->having('payment_count', '>=', 1)
+                             ->pluck('payment_count', 'offer_id')
+                             ->toArray();
+
+            foreach ($warmData as $offerId => $count)
+            {
+                if (array_key_exists($offerId, $hotData) === true)
+                {
+                    $hotData[$offerId] += $count;
+                }
+                else
+                {
+                    $hotData[$offerId] = $count;
+                }
+            }
+
+            return $hotData;
+        }
+        else
+        {
+            $query = $this->newQuery()
+                          ->select(DB::raw("count($paymentIdCol) AS payment_count, $entityOfferOfferIdCol"))
+                          ->join($entityOfferTable, $entityOfferEntityIdCol, '=', $paymentIdCol)
+                          ->where($paymentStatusCol, '=', Status::CAPTURED)
+                          ->where($entityOfferEntityTypeCol, '=', EntityName::PAYMENT)
+                          ->whereIn($entityOfferOfferIdCol, $offerIds)
+                          ->whereIn($paymentCardIdCol, $cardIds)
+                          ->groupBy($entityOfferOfferIdCol)
+                          ->having('payment_count', '>=', 1);
+
+            return $query->pluck('payment_count', 'offer_id')->toArray();
+        }
     }
 
     /**
@@ -2493,13 +2676,6 @@ EOT;
         $nowMinus2Days = Carbon::today(Timezone::IST)->subDays(2)->getTimestamp();
 
         $query = $this->newQueryWithConnection($this->getSlaveConnection());
-
-        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
-        {
-            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
-
-            $query = $this->newQueryWithConnection($connectionType);
-        }
 
         return $query->from(\DB::raw('`payments` FORCE INDEX (payments_status_index)'))
                      ->join($orderTable, $orderId, '=', $paymentOrderId)
@@ -3239,10 +3415,27 @@ EOT;
 
     public function getByTokenIdAndCustomerId(string $tokenId, string $customerId)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->where(Entity::TOKEN_ID, $tokenId)
-                    ->where(Entity::CUSTOMER_ID, $customerId)
-                    ->first();
+        $payment = $this->newQueryWithConnection($this->getSlaveConnection())
+                        ->where(Entity::TOKEN_ID, $tokenId)
+                        ->where(Entity::CUSTOMER_ID, $customerId)
+                        ->first();
+
+        if (empty($payment) === false)
+        {
+            return $payment;
+        }
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $payment = $this->newQueryWithConnection($connectionType)
+                            ->where(Entity::TOKEN_ID, $tokenId)
+                            ->where(Entity::CUSTOMER_ID, $customerId)
+                            ->first();
+        }
+
+        return $payment;
     }
 
     public function getByInvoiceId(string $invoiceId)
@@ -3256,7 +3449,16 @@ EOT;
     {
         return $this->repo->useSlave( function() use ($invoiceId)
         {
-            return $this->newQuery()
+            $query = $this->newQuery();
+
+            if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, 'getCapturedPaymentsForInvoice') === true)
+            {
+                $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+                $query = $this->newQueryWithConnection($connectionType);
+            }
+
+            return $query
                         ->where(Entity::INVOICE_ID, $invoiceId)
                         ->where(Entity::STATUS, '=', Status::CAPTURED)
                         ->get();
@@ -3274,20 +3476,36 @@ EOT;
 
     public function fetchPaymentsGivenIds(array $paymentIds, int $limit)
     {
-        return $this->newQuery()
-                    ->whereIn(Payment\Entity::ID, $paymentIds)
-                    ->limit($limit)
-                    ->get();
+        $payments = $this->newQuery()
+                         ->whereIn(Payment\Entity::ID, $paymentIds)
+                         ->limit($limit)
+                         ->get();
+
+        if (count($payments) === count($paymentIds))
+        {
+            return $payments;
+        }
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $warmPayments = $this->newQueryWithConnection($connectionType)
+                                 ->whereIn(Payment\Entity::ID, $paymentIds)
+                                 ->limit($limit)
+                                 ->get();
+
+            $allPayments = $this->mergeCollectionsBasedOnKey($payments, $warmPayments, Entity::ID);
+
+            return $allPayments;
+        }
+
+        return $payments;
     }
 
     public function fetchPaymentsGivenIdsFromTidb(array $paymentIds, int $limit, string $conn): Base\PublicCollection
     {
-        $query = $this->newQuery();
-
-        if ($this->isExperimentEnabled(self::ADMIN_TIDB_EXPERIMENT_REFUNDS) === true)
-        {
-            $query = $this->newQueryWithConnection($this->getConnectionFromType($conn));
-        }
+        $query = $this->newQueryWithConnection($this->getConnectionFromType($conn));
 
         return $query->whereIn(Payment\Entity::ID, $paymentIds)
                      ->limit($limit)
@@ -3339,6 +3557,24 @@ EOT;
             return Mode::TEST;
         }
 
+        // Check id in TiDB as the entity might be archived
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_ADMIN_LIVE)->where(Entity::GATEWAY, $gateway)->find($id);
+
+            if ($obj !== null)
+            {
+                return Mode::LIVE;
+            }
+
+            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_ADMIN_TEST)->where(Entity::GATEWAY, $gateway)->find($id);
+
+            if ($obj !== null)
+            {
+                return Mode::TEST;
+            }
+        }
+
         //
         // We need to set connection to null
         // because it will be set to test if the
@@ -3370,6 +3606,26 @@ EOT;
             return Mode::TEST;
         }
 
+        // Check id in TiDB as the entity might be archived
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_ADMIN_LIVE)->newQuery()->find($id);
+
+            if (($obj !== null) and
+                ($obj->getAuthenticationGateway() !== null))
+            {
+                return Mode::LIVE;
+            }
+
+            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_ADMIN_TEST)->newQuery()->find($id);
+
+            if (($obj !== null) and
+                ($obj->getAuthenticationGateway() !== null))
+            {
+                return Mode::TEST;
+            }
+        }
+
         //
         // We need to set connection to null
         // because it will be set to test if the
@@ -3387,9 +3643,25 @@ EOT;
     {
         $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
 
-        return $this->newQuery()
-                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
-                    ->first();
+        $payment = $this->newQuery()
+                        ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                        ->first();
+
+        if (empty($payment) === false)
+        {
+            return $payment;
+        }
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $payment = $this->newQueryWithConnection($connectionType)
+                            ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                            ->first();
+        }
+
+        return $payment;
     }
 
     public function fetchSubscriptionIdAndRecurringType(string $subscriptionId, string $tokenId, $recurringTypes, $paymentStatuses)
@@ -3397,17 +3669,39 @@ EOT;
         $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
 
         $query = $this->newQuery()
-                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
-                    ->whereIn(Entity::RECURRING_TYPE, $recurringTypes)
-                    ->whereIn(Entity::STATUS, $paymentStatuses);
+                      ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                      ->whereIn(Entity::RECURRING_TYPE, $recurringTypes)
+                      ->whereIn(Entity::STATUS, $paymentStatuses);
 
         if (empty($tokenId) != true)
         {
             $query = $query->where(Entity::TOKEN_ID, $tokenId);
         }
 
-        return $query->orderBy(Entity::CREATED_AT, 'desc')
-                     ->get();
+        $payments = $query->orderBy(Entity::CREATED_AT, 'desc')->get();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $query = $this->newQueryWithConnection($connectionType)
+                          ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                          ->whereIn(Entity::RECURRING_TYPE, $recurringTypes)
+                          ->whereIn(Entity::STATUS, $paymentStatuses);
+
+            if (empty($tokenId) != true)
+            {
+                $query = $query->where(Entity::TOKEN_ID, $tokenId);
+            }
+
+            $warmPayments = $query->orderBy(Entity::CREATED_AT, 'desc')->get();
+
+            $allPayments = $this->mergeCollectionsBasedOnKey($payments, $warmPayments, Entity::ID);
+
+            return $allPayments;
+        }
+
+        return $payments;
     }
 
     public function fetchByIdandSubscriptionId(string $paymentId, string $subscriptionId)
@@ -3416,16 +3710,34 @@ EOT;
 
         $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
 
-        return $this->newQuery()
-                    ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
-                    ->findOrFailPublic($paymentId);
+        try
+        {
+            return $this->newQuery()
+                        ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                        ->findOrFailPublic($paymentId);
+        }
+        catch (\Throwable $ex)
+        {
+            if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+            {
+                $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+                return $this->newQueryWithConnection($connectionType)
+                            ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
+                            ->findOrFailPublic($paymentId);
+            }
+
+            throw $ex;
+        }
     }
 
     public function fetchBySubscriptionIdEmailAndContactNotNull(string $subscriptionId)
     {
         $subscriptionId = Base\PublicEntity::stripDefaultSign($subscriptionId);
 
-        return $this->newQuery()
+        $query = $this->newQuery();
+
+        return $query
                     ->where(Entity::SUBSCRIPTION_ID, $subscriptionId)
                     ->whereNotNull(Entity::EMAIL)
                     ->whereNotNull(Entity::CONTACT)
@@ -3745,7 +4057,16 @@ EOT;
 
     public function getCapturedPaymentsForPaymentPage(PaymentLink\Entity $paymentPage)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
+        $query = $this->newQueryWithConnection($this->getSlaveConnection());
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        return $query
                     ->where(Entity::PAYMENT_LINK_ID, $paymentPage->getId())
                     ->where(Entity::MERCHANT_ID, $paymentPage->getMerchantId())
                     ->whereIn(Entity::STATUS, [Status::CAPTURED, Status::REFUNDED])
@@ -3754,10 +4075,31 @@ EOT;
 
     public function getPaymentsSortedByCreatedAt(array $ids)
     {
-        return $this->newQuery()
-                    ->whereIn(Entity::ID, $ids)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->get();
+        $payments = $this->newQuery()
+                         ->whereIn(Entity::ID, $ids)
+                         ->orderBy(Entity::CREATED_AT, 'desc')
+                         ->get();
+
+        if (count($payments) === count($ids))
+        {
+            return $payments;
+        }
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $warmPayments = $this->newQueryWithConnection($connectionType)
+                                 ->whereIn(Entity::ID, $ids)
+                                 ->orderBy(Entity::CREATED_AT, 'desc')
+                                 ->get();
+
+            $allPayments = $this->mergeCollectionsBasedOnKey($payments, $warmPayments, Entity::ID);
+
+            return $allPayments;
+        }
+
+        return $payments;
     }
 
     public function isNewCustomerToMerchant($merchantId, $contact): bool
@@ -3823,29 +4165,77 @@ EOT;
 
     public function fetchInitialPaymentIdForToken($tokenId, $merchantId)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-            ->where(Entity::TOKEN_ID, '=', $tokenId)
-            ->whereIn(Payment\Entity::RECURRING_TYPE, ['initial', 'card_change'])
-            ->where(Payment\Entity::MERCHANT_ID, $merchantId)
-            ->whereIn(Payment\Entity::STATUS, [Status::CAPTURED, Status::REFUNDED])
-            ->first();
+        $payment = $this->newQueryWithConnection($this->getSlaveConnection())
+                        ->where(Entity::TOKEN_ID, '=', $tokenId)
+                        ->whereIn(Payment\Entity::RECURRING_TYPE, ['initial', 'card_change'])
+                        ->where(Payment\Entity::MERCHANT_ID, $merchantId)
+                        ->whereIn(Payment\Entity::STATUS, [Status::CAPTURED, Status::REFUNDED])
+                        ->first();
+
+        if (empty($payment) === false)
+        {
+            return $payment;
+        }
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $payment = $this->newQueryWithConnection($connectionType)
+                            ->where(Entity::TOKEN_ID, '=', $tokenId)
+                            ->whereIn(Payment\Entity::RECURRING_TYPE, ['initial', 'card_change'])
+                            ->where(Payment\Entity::MERCHANT_ID, $merchantId)
+                            ->whereIn(Payment\Entity::STATUS, [Status::CAPTURED, Status::REFUNDED])
+                            ->first();
+        }
+
+        return $payment;
     }
 
     public function getRecurringInitialPayment(string $tokenId, string $merchantId, string $method)
     {
-        return $this->newQueryWithConnection($this->getSlaveConnection())
-                    ->where(Entity::TOKEN_ID, $tokenId)
-                    ->where(Entity::MERCHANT_ID, $merchantId)
-                    ->where(Entity::METHOD, $method)
-                    ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
-                    ->where(Entity::STATUS, Status::AUTHORIZED)
-                    ->first();
+        $payment = $this->newQueryWithConnection($this->getSlaveConnection())
+                        ->where(Entity::TOKEN_ID, $tokenId)
+                        ->where(Entity::MERCHANT_ID, $merchantId)
+                        ->where(Entity::METHOD, $method)
+                        ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
+                        ->where(Entity::STATUS, Status::AUTHORIZED)
+                        ->first();
+
+        if (empty($payment) === false)
+        {
+            return $payment;
+        }
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+            $payment = $this->newQueryWithConnection($connectionType)
+                            ->where(Entity::TOKEN_ID, $tokenId)
+                            ->where(Entity::MERCHANT_ID, $merchantId)
+                            ->where(Entity::METHOD, $method)
+                            ->where(Payment\Entity::RECURRING_TYPE, '=', 'initial')
+                            ->where(Entity::STATUS, Status::AUTHORIZED)
+                            ->first();
+        }
+
+        return $payment;
     }
 
     public function getPaymentsWithReferenceId($gateway, $status, $limit)
     {
         return $this->repo->useSlave(function () use ($gateway,$status,$limit){
-            return $this->newQuery()
+            $query = $this->newQuery();
+
+            if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, 'getPaymentsWithReferenceId') === true)
+            {
+                $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
+
+                $query = $this->newQueryWithConnection($connectionType);
+            }
+
+            return $query
                 ->where(Entity::GATEWAY, $gateway)
                 ->status($status)
                 ->whereNotNull(Entity::REFERENCE2)

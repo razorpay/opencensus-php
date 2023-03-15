@@ -1243,7 +1243,9 @@ class Repository extends \Razorpay\Spine\Repository
 
     // Applied only on production env. As _record_source column is available only in the TiDB
     // All lower envs are pointed to RDS instance
-    protected function getDataWarehouseSourceAPIConnection(string $cluster = ConnectionType::DATA_WAREHOUSE_MERCHANT): string
+    // Important Note : Use this only when _record_source filter needs to be applied.
+    // As of now, using this connection applies the _record_source = 'api' filter on payments table only
+    protected function getDataWarehouseSourceAPIConnection(string $cluster = ConnectionType::DATA_WAREHOUSE_ADMIN): string
     {
         if ((in_array($this->app['env'], [Environment::TESTING, Environment::TESTING_DOCKER], true) === true) or
             (Environment::isEnvironmentQA($this->app['env']) === true) or
@@ -1256,12 +1258,12 @@ class Repository extends \Razorpay\Spine\Repository
         $mode = $mode ?? $this->app['rzp.mode'];
 
         $connection = ($mode === Mode::TEST) ?
-            Connection::DATA_WAREHOUSE_MERCHANT_SOURCE_API_TEST : Connection::DATA_WAREHOUSE_MERCHANT_SOURCE_API_LIVE;
+            Connection::DATA_WAREHOUSE_ADMIN_SOURCE_API_TEST : Connection::DATA_WAREHOUSE_ADMIN_SOURCE_API_LIVE;
 
-        if ($cluster === ConnectionType::DATA_WAREHOUSE_ADMIN)
+        if ($cluster === ConnectionType::DATA_WAREHOUSE_MERCHANT)
         {
             $connection = ($mode === Mode::TEST) ?
-                Connection::DATA_WAREHOUSE_ADMIN_SOURCE_API_TEST : Connection::DATA_WAREHOUSE_ADMIN_SOURCE_API_LIVE;
+                Connection::DATA_WAREHOUSE_MERCHANT_SOURCE_API_TEST : Connection::DATA_WAREHOUSE_MERCHANT_SOURCE_API_LIVE;
         }
 
         return $connection;
