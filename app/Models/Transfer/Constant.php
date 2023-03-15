@@ -24,8 +24,6 @@ final class Constant
     // Retry transfer processing in case of DbQueryException
     const TRANSFER_PROCESS_RETRIES = 2;
 
-    const MUTEX_LOCK_ON_LINKED_ACCOUNT_ID_NOT_ACQUIRED = 'mutex_lock_on_linked_account_id_not_acquired';
-
     const BALANCE_UPDATE_WITH_OLD_BALANCE_CHECK_FAILED = 'balance_update_with_old_balance_check_failed';
 
     public static $keyMerchantFeatureIdentifiers = [

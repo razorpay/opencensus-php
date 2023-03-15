@@ -12,8 +12,6 @@ class TransferProcess extends Job
 {
     const MUTEX_LOCK_TIMEOUT = 600;
 
-    const JOB_RELEASE_DELAY = 5; // In seconds.
-
     protected $mutex;
 
     protected $repo;
@@ -21,8 +19,6 @@ class TransferProcess extends Job
     protected $payment;
 
     protected $transferMode;
-
-    protected $jobDeleteFlag;
 
     public $timeout = 900;
 
@@ -35,8 +31,6 @@ class TransferProcess extends Job
         $this->payment = $payment;
 
         $this->transferMode = $transfermode;
-
-        $this->jobDeleteFlag = true;
     }
 
     public function handle()
@@ -68,26 +62,9 @@ class TransferProcess extends Job
 
             $transfer->process();
 
-        }catch (\Exception $ex)
+        }
+        catch (\Exception $ex)
         {
-            if ($ex->getMessage() === Transfer\Constant::MUTEX_LOCK_ON_LINKED_ACCOUNT_ID_NOT_ACQUIRED)
-            {
-                $this->trace->traceException(
-                    $ex,
-                    null,
-                    TraceCode::TRANSFER_PROCESS_JOB_RELEASE_SINCE_MUTEX_ACQUIRE_FAILED,
-                    [
-                        'payment_id'    => $this->payment->getId(),
-                        'source_type'   => $this->transferMode,
-                        'job_attempts'  => $this->attempts(),
-                    ]
-                );
-
-                $this->jobDeleteFlag = false;
-
-                $this->release(self::JOB_RELEASE_DELAY);
-            }
-
             $this->trace->traceException(
                 $ex,
                 null,
@@ -101,10 +78,7 @@ class TransferProcess extends Job
         }
         finally
         {
-            if ($this->jobDeleteFlag === true)
-            {
-                $this->delete();
-            }
+            $this->delete();
         }
     }
 
