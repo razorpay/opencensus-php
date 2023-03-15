@@ -105,8 +105,9 @@ export const DEDUPE = {
 };
 
 export const ACTIVATION_PROGRESS = {
-  title: 'You are just few steps away from enabling live payments',
-  description: 'Submit a few KYC details and start accepting payments from your customers',
+  title: 'Few more details required',
+  description:
+    'Submit your KYC details to help us activate your account faster once we resume onboarding new businesses',
 };
 
 export const HARD_LIMIT_REACHED = {

@@ -2,9 +2,8 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
 import { analyticsTrack } from 'common/utils/analytics';
-import { activationDuration } from 'merchant/helpers/data';
-import Step, { StepTitle, StepContent, possibleStatuses } from './Step';
-import { trackGoToActivationFromError } from '../../ga';
+import { Step, StepTitle, StepContent, possibleStatuses } from './Step';
+import { trackGoToActivationFromError } from 'merchant/containers/Home/ga';
 import RTracking from 'react-tracking';
 import { getCommonSegmentProperties } from 'common/utils/rzp-utils';
 import SupportButton from 'merchant/components/Home/SupportButton';
@@ -41,37 +40,34 @@ export default class ActivationCard extends Component {
 
   UNSAFE_componentWillReceiveProps(nextProps) {
     const {
-        instantActivation,
-        isSubmitted,
-        needsClarification,
-        isActivated,
-        isRejected,
-        onActive,
-        track,
-        international,
-        tracking,
-        activated,
-        business_type,
-        poi_verification_status,
-        isUnregisteredBusiness,
-        locked,
-        isHardLimitReached,
-        merchant,
-        canSkipPoiValidation,
-      } = nextProps,
-      { isL1Submitted, isWhitelistFlow, isBlacklistFlow, isGraylistFlow } = instantActivation;
+      instantActivation,
+      isSubmitted,
+      needsClarification,
+      isActivated,
+      isRejected,
+      onActive,
+      track,
+      activated,
+      poi_verification_status,
+      isUnregisteredBusiness,
+      locked,
+      isHardLimitReached,
+      merchant,
+      canSkipPoiValidation,
+    } = nextProps;
+    const { isBlacklistFlow } = instantActivation;
 
     let { status, content, title } = initialState;
 
-    const KYCPending = () => {
+    const kycPending = () => {
       return (
         <div>
-          Give us a few KYC details to start transacting
+          Submit your KYC details to activate your account once new businesses onboarding resumes
           <div>
             <Link
               to="/activation"
               className="btn btn-primary"
-              onClick={(e) => {
+              onClick={() => {
                 track.activateAccount();
                 this.props.tracking.trackEvent(
                   window.rzpQ.onbr().initiated('act.form_fill', {
@@ -88,7 +84,7 @@ export default class ActivationCard extends Component {
                 });
               }}
             >
-              Activate Account
+              Submit KYC details
             </Link>
           </div>
         </div>
@@ -181,7 +177,7 @@ export default class ActivationCard extends Component {
                 <Link
                   to="/activation"
                   className="btn btn-primary"
-                  onClick={(e) => {
+                  onClick={() => {
                     track.activateAccount();
                     this.props.tracking.trackEvent(
                       window.rzpQ.onbr().initiated('act.form_fill', {
@@ -208,7 +204,7 @@ export default class ActivationCard extends Component {
                 <Link
                   to="/activation"
                   className="btn btn-primary"
-                  onClick={(e) => {
+                  onClick={() => {
                     track.activateAccount();
                     this.props.tracking.trackEvent(
                       window.rzpQ.onbr().initiated('act.form_fill', {
@@ -225,10 +221,10 @@ export default class ActivationCard extends Component {
           );
         } else {
           status = possibleStatuses.active;
-          content = KYCPending();
+          content = kycPending();
         }
       } else {
-        content = KYCPending();
+        content = kycPending();
       }
     }
 
@@ -473,14 +469,14 @@ export default class ActivationCard extends Component {
   }
 
   get accountUnderReviewContent() {
-    const { internationalActivationFlow, isAutoKycDone, kyc_clarification_reasons } = this.props;
+    const { internationalActivationFlow, kyc_clarification_reasons } = this.props;
     if (internationalActivationFlow.isGraylistFlow) {
       return `We are reviewing your form. Expect confirmation in ${
         kyc_clarification_reasons?.nc_count ? ' 3 ' : ' 3 - 4 '
       } business days. You can request for international payments acceptance post KYC Verification.`;
     }
 
-    return 'We are reviewing your KYC details for activation';
+    return 'We are reviewing your KYC details';
   }
 
   render() {

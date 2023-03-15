@@ -256,17 +256,10 @@ const CurrentActivationProgress: React.FC<
       let title = Messages.ACTIVATION_STATUS_UNDER_REVIEW.old_flow.title;
       let description = '';
       let titleColor = 'neutral.960';
-      if (isUnregisteredBusiness(data.business_type)) {
-        description = `This process usually takes ${
-          data.kyc_clarification_reasons?.nc_count ? ' 3 ' : ' 3 - 4 '
-        } working days after your first transaction. If we need any more information we will reach out to you on your registered email id.`;
-      } else if (!data.isAutoKycDone) {
-        description = `KYC Review process usually takes ${
-          data.kyc_clarification_reasons?.nc_count ? ' 3 ' : '3 - 4'
-        } working days. We will notify you if we require any clarifications on your KYC.`;
-      } else {
-        description = Messages.ACTIVATION_STATUS_UNDER_REVIEW.old_flow.description;
-      }
+      /* Temp Code for opening up new onboarding temporarily */
+      description =
+        'We are reviewing your KYC details. Post KYC verification, we will activate your account as soon as new business onboarding resumes.';
+
       if (isInstantActivationEnabled) {
         if (dedupeStatus === 'partial_match') {
           title = Messages.ACTIVATION_STATUS_UNDER_REVIEW.new_flow.partial_match_title;
@@ -292,35 +285,6 @@ const CurrentActivationProgress: React.FC<
       );
     }
 
-    if (isEasyNcEnabled && data.activation_status === 'needs_clarification') {
-      let description = '';
-      if (data.activated && !data.merchant.hold_funds) {
-        description = `Update the required details before ${expiryDate} to avoid settlements for your account being put on-hold`;
-      } else if (data.activated && data.merchant.hold_funds) {
-        description =
-          'You’ll be able to receive collected payments in your account only after the required details are updated';
-      } else if (!data.activated) {
-        description =
-          'You’ll be able to collect payments and receive them in your bank account only after the required details are updated';
-      }
-      return (
-        <>
-          <Pill>{Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.pill}</Pill>
-          <Info
-            title={Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title}
-            description={description}
-            isNewNCEnabled
-          />
-          <Buttons.Primary
-            onClick={() =>
-              goToNcFlow(true, { formName: Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.title })
-            }
-            title={Messages.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.buttonText}
-          />
-        </>
-      );
-    }
-
     if (data.activation_status === 'needs_clarification') {
       let description = Messages.ACTIVATION_STATUS_NEEDS_CLARIFICATION.description.normal;
       if (isInstantActivationEnabled) {
@@ -332,7 +296,7 @@ const CurrentActivationProgress: React.FC<
         }
       }
 
-      if (isEasyNcEnabled && data.activation_status === 'needs_clarification') {
+      if (isEasyNcEnabled) {
         let description = '';
         if (data.activated && !data.merchant.hold_funds) {
           description = `Update the required details before ${expiryDate} to avoid settlements for your account being put on-hold`;

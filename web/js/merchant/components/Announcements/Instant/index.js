@@ -1042,9 +1042,9 @@ export default class InstantActivationAnnouncements extends Component {
         } else if (mode !== 'live') {
           content = (
             <React.Fragment>
-              KYC Review process usually takes{' '}
-              {user.kyc_clarification_reasons?.nc_count ? '3' : '3 - 4'} working days. We will
-              notify you if we require any clarifications on your KYC. Meanwhile&nbsp;
+              We are reviewing your KYC details. Post KYC verification, we will activate your
+              account as soon as new business onboarding resumes. <br />
+              Meanwhile&nbsp;
               <button
                 className="btn-link cursor-pointer"
                 style={{ padding: '0' }}

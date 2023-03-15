@@ -1204,6 +1204,7 @@ export default class HomeContainer extends Component {
                       isFestive={this.isFestive}
                       isOnboardingV2Enabled={user.isOnboardingV2Enabled}
                       isOrgAxis={user.isOrgAxis}
+                      isOrgRZP={user.isOrgRZP}
                       isProductRecommendationEnabled={user.isProductRecommendationEnabled}
                       hideCTAs={this.hideWelcomeModalCTAs}
                       referee={this.props.referee}

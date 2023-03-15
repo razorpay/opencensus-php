@@ -21,6 +21,7 @@ const WelcomeModal = ({
   isOnboardingV2Enabled,
   isProductRecommendationEnabled,
   isOrgAxis,
+  isOrgRZP,
   hideCTAs,
   referee,
   trackEvents,
@@ -193,6 +194,21 @@ const WelcomeModal = ({
             </div>
           </div>
         </React.Fragment>
+      ) : isOrgRZP ? (
+        <React.Fragment>
+          <h1 className="welcome-title">New business onboarding</h1>
+          <h1 className="welcome-title welcome-subtitle">is temporarily paused</h1>
+          <p className="welcome-content">
+            Please submit your KYC details to make sure your business is verified and trusted.
+          </p>
+          <br />
+          <p className="welcome-content">
+            <i>
+              Note: This will help us activate your account faster once we resume onboarding new
+              businesses
+            </i>
+          </p>
+        </React.Fragment>
       ) : (
         <React.Fragment>
           <h1 className="welcome-title">Welcome to your</h1>
@@ -223,13 +239,15 @@ const WelcomeModal = ({
                 isOnboardingV2Enabled && isMobileDevice() ? '/onboarding/steps' : activationFormUrl
               }
               onClick={handleActivationClick}
-              className="btn btn-primary"
+              className={`btn btn-primary${isMobileDevice() ? ' btn-block' : ''}`}
             >
-              Activate your account
+              Submit KYC details
             </Link>
           </ShowWhen>
           <span
-            className={`btn-link cursor-pointer ${isOrgAxis ? 'shift-right' : null}`}
+            className={`btn-link cursor-pointer${isOrgAxis ? ' shift-right' : null}${
+              isMobileDevice() ? ' btn-block' : ''
+            }`}
             onClick={handleTryOutClick}
           >
             Try out the Dashboard

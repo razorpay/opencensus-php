@@ -1,4 +1,9 @@
-/* TODO: restructure this file */
+// stylelint-disable color-function-notation
+// stylelint-disable selector-id-pattern
+// stylelint-disable no-descending-specificity
+// stylelint-disable declaration-no-important
+// stylelint-disable max-nesting-depth
+// TODO: restructure this file
 $background-color = #FFF;
 $actionItemsHeight = 40px;
 
@@ -19,12 +24,13 @@ traffic-responsive() {
 }
 
 .dashboard-home {
-  .settlenow-container{
-    .disable-ondemand-msg{
+  .settlenow-container {
+    .disable-ondemand-msg {
       padding-right: 10px;
+
       .highlight-tooltip {
         color: #37F499;
-     }
+      }
     }
   }
 
@@ -39,7 +45,7 @@ traffic-responsive() {
 
   div.panel-footer {
     span.early-stl-label {
-      padding: 0 10px 0 10px;
+      padding: 0 10px;
     }
 
     i.i-early-settlement {
@@ -48,14 +54,14 @@ traffic-responsive() {
   }
 
   .settle-btn-act {
-    padding: 5px 15px 5px 15px;
+    padding: 5px 15px;
   }
 
   .v2-tour-banner {
     width: 100%;
     display: table;
     background: linear-gradient(223.96deg, #5D89E5 0%, #3059C0 100%);
-    color: white;
+    color: #FFF;
     transition: margin 0.5s ease-in;
 
     &.dismiss {
@@ -81,7 +87,7 @@ traffic-responsive() {
         color: inherit;
 
         .rzp-banner-cta button.btn {
-          background-color: #ffffff;
+          background-color: #FFF;
           color: $primary-color;
           border: none;
           box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.14);
@@ -98,7 +104,7 @@ traffic-responsive() {
         font-size: 12px;
 
         > a {
-          color: #fff;
+          color: #FFF;
           opacity: 0.8;
           font-size: 20px;
 
@@ -115,12 +121,12 @@ traffic-responsive() {
       text-align: center;
 
       .btn-link a {
-        color: #fff;
+        color: #FFF;
       }
 
       .badge {
         border-radius: 2px;
-        padding: 7px 7px;
+        padding: 7px;
         background-color: rgb(86, 129, 228);
       }
     }
@@ -164,7 +170,10 @@ traffic-responsive() {
       .rzp-group {
         margin-top: 0;
       }
-      .rzp-currency, .rzp-whole, .rzp-paise {
+
+      .rzp-currency,
+      .rzp-whole,
+      .rzp-paise {
         font-weight: bold;
       }
     }
@@ -206,13 +215,15 @@ traffic-responsive() {
 
   .extra-content {
     padding-top: 10px;
+
     &.has-ob-banner {
       .secondary-announcement-banner {
         padding-top: 0;
       }
     }
 
-    &.has-ob-banner, &.has-secondary-banner {
+    &.has-ob-banner,
+    &.has-secondary-banner {
       .announcement-banner-container {
         padding-bottom: 0;
       }
@@ -236,7 +247,8 @@ traffic-responsive() {
       padding-top: 24px;
     }
 
-    .header, .card {
+    .header,
+    .card {
       padding: 16px;
     }
 
@@ -264,7 +276,7 @@ traffic-responsive() {
       }
     }
 
-    @media (max-width: 424px) {
+    @media (max-width 424px) {
       .date-range-container {
         .icon-container {
           padding-right: 9px;
@@ -285,7 +297,7 @@ traffic-responsive() {
   .Modal-container--welcome-modal {
     width: 90%;
     max-width: 900px;
-    background-image: url('https://cdn.razorpay.com/static/assets/onboarding/welcome-illustration.png');
+    background-image: url("https://cdn.razorpay.com/static/assets/onboarding/welcome-illustration.png");
     background-position: top right;
     background-repeat: no-repeat;
     background-size: contain;
@@ -299,28 +311,40 @@ traffic-responsive() {
         font-size: 24px;
         font-weight: 600;
 
+        @media (max-width 767px) {
+          text-align left
+          font-size 22px;
+        }
+
         &.welcome-subtitle {
           margin-top: 8px;
         }
       }
 
-      p:nth-of-type(1), .welcome-modal-actions {
+      .welcome-content {
+        @media (max-width 767px) {
+          text-align left
+        }
+      }
+
+      p:nth-of-type(1),
+      .welcome-modal-actions {
         margin-top: 40px;
       }
 
       .welcome-modal-actions .btn-link {
         margin-left: 28px;
 
-        @media (max-width: 604px) {
+        @media (max-width 604px) {
           margin-left: 10px;
         }
       }
 
       .welcome-modal-actions .shift-right {
-        margin-left: 0px;
+        margin-left: 0;
 
-        @media (max-width: 604px) {
-          margin-left: 0px;
+        @media (max-width 604px) {
+          margin-left: 0;
         }
       }
 
@@ -329,7 +353,8 @@ traffic-responsive() {
         color: #515978;
         line-height: 28px;
         padding-top: 5px;
-        @media (max-width: 375px) {
+
+        @media (max-width 375px) {
           max-width: 100%;
         }
       }
@@ -338,12 +363,13 @@ traffic-responsive() {
         margin-top: 24px !important;
         color: #4A4A4A;
         max-width: 82%;
-        @media (max-width: 375px) {
+
+        @media (max-width 375px) {
           max-width: 100%;
         }
       }
 
-      .slideshow_wrapper{
+      .slideshow_wrapper {
         overflow: hidden;
         width: 470px;
         margin-top: 40px;
@@ -354,21 +380,29 @@ traffic-responsive() {
           display: flex;
           width: 1900px;
           animation: 6s autoplay2 infinite ease-in-out;
-          @media (max-width: 767px) {
+
+          @media (max-width 767px) {
             height 76px
           }
 
           @keyframes autoplay2 {
-            0%, 17% {
+            0%,
+            17% {
               right: 0%;
             }
-            27%,  45% {
+
+            27%,
+            45% {
               right: 100%;
             }
-            55%,  73% {
+
+            55%,
+            73% {
               right: 200%;
             }
-            83%, 100% {
+
+            83%,
+            100% {
               right: 300%;
             }
           }
@@ -386,12 +420,15 @@ traffic-responsive() {
             .active-product {
               margin-left: 12px;
               width 280px
-              @media (max-width: 399px) {
+
+              @media (max-width 399px) {
                 width: 51%;
               }
-              @media (max-width: 359px) {
+
+              @media (max-width 359px) {
                 width 47%
               }
+
               text-align: left;
 
               .title {
@@ -410,21 +447,21 @@ traffic-responsive() {
         }
       }
 
-      @media (max-width: 812px) {
+      @media (max-width 812px) {
         background-color: rgba(255, 255, 255, 0.8);
         padding-right: 30%;
       }
 
-      @media (max-width: 580px) {
+      @media (max-width 580px) {
         padding: 40px !important;
       }
 
-      @media (max-width: 425px) {
+      @media (max-width 425px) {
         padding: 20px !important;
       }
     }
 
-    @media (max-width: 424px) {
+    @media (max-width 424px) {
       background-image: none;
 
       .welcome-modal-content {
@@ -439,21 +476,21 @@ traffic-responsive() {
     }
 
     .Modal-close {
-      color: white;
+      color: #FFF;
 
-      @media (max-width: 812px) {
+      @media (max-width 812px) {
         color: currentColor;
       }
     }
   }
 
   .Modal-container--welcome-modal.Modal-container--festive {
-    background-image: url('assets/festive-welcome-illustration.png');
+    background-image: url("assets/festive-welcome-illustration.png");
     background-size: auto 85%;
 
     .welcome-modal-content .welcome-title {
       background: linear-gradient(to right, #4E53D2, #BA69E8 68%);
-      -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
@@ -466,21 +503,28 @@ traffic-responsive() {
     }
   }
 }
+
 .support-modal-content
   padding 25px
+
   .merchant-heading
     font-size 18px
     font-weight 600
+
   .otp-section-subtitle
     font-size 14px
     font-weight 600
     margin-top 20px
+
   .support-modal-otp-section
     margin-bottom 15px
+
     .otp-section-message
-      margin 15px 0px
+      margin 15px 0
+
     .resend-link
       margin-top: 8px
+
   .merchant-subtitle
     margin 15px 0 10px
     line-height 18px
@@ -495,32 +539,38 @@ traffic-responsive() {
   .merchant-btn
     margin-top 24px
 
-  @media (max-width: 580px)
+  @media (max-width 580px)
     padding 30px !important
 
-  @media (max-width: 425px)
+  @media (max-width 425px)
     padding 20px !important
 
 .e-self-serve
   padding 25px
+
   .e-self-serve-heading
     font-size 18px
     font-weight 600
     margin-bottom 20px
+
   .image-container
     text-align center
-    margin 15px 0px
+    margin 15px 0
+
   .otp-section
     margin-bottom 15px
+
     .otp-section-message
-      margin 15px 0px
+      margin 15px 0
+
     .resend-link
       margin-top 8px
+
   .subtitle-msg
     line-height 20px
 
   .verification-msg
-    margin 8px 0px
+    margin 8px 0
 
   .dialogue-container
     padding 12px
@@ -532,31 +582,34 @@ traffic-responsive() {
   .dialogue-msg
     font-size 12px
 
-  @media (max-width: 580px)
+  @media (max-width 580px)
     padding 30px !important
 
-  @media (max-width: 425px)
+  @media (max-width 425px)
     padding 20px !important
 
 .set-contact-email
-    font-size 12px
-    .current-email-msg
-      color rgba(22, 47, 86, 0.38);
+  font-size 12px
+
+  .current-email-msg
+    color rgba(22, 47, 86, 0.38);
 
 .new-owner-email
-  margin 10px 0px 0px 10px
+  margin 10px 0 0 10px
+
 .new-owner-role
-    color rgba(22, 47, 86, 0.38)
-    font-size 12px
-    margin-left 10px
-    text-transform capitalize
+  color rgba(22, 47, 86, 0.38)
+  font-size 12px
+  margin-left 10px
+  text-transform capitalize
 
 .btn-support {
   padding: 5px 25px;
-  background: #fff;
-  border: 1px solid #528ff0;
+  background: #FFF;
+  border: 1px solid #528FF0;
   margin-right: 10px;
 }
+
 .support-tagline {
   font-size: 16px;
   margin-top: 5px;
@@ -567,7 +620,7 @@ traffic-responsive() {
   padding: 24px;
   background-color: transparent;
 
-  @media (max-width: $screen-md-min) {
+  @media (max-width $screen-md-min) {
     padding: 16px;
   }
 
@@ -588,7 +641,7 @@ traffic-responsive() {
   div.traffic-activity-row {
     display: block;
 
-    &> div {
+    & > div {
       width: 50%;
       display: block;
       position: relative;
@@ -644,7 +697,7 @@ traffic-responsive() {
       }
     }
 
-    @media (max-width: 1185px) {
+    @media (max-width 1185px) {
       > div {
         traffic-responsive();
       }
@@ -659,7 +712,7 @@ traffic-responsive() {
   border-radius: none;
 
   .PowerSelect__Trigger {
-    /* excluding 1px border */
+    // excluding 1px border
     height: $actionItemsHeight - 2px;
 
     .PowerSelect__TriggerLabel {
@@ -675,7 +728,7 @@ traffic-responsive() {
     }
 
     .PowerSelect__TriggerLabel {
-      /* excluding 1px border */
+      // excluding 1px border
       height: $actionItemsHeight - 2px;
     }
   }
@@ -683,7 +736,8 @@ traffic-responsive() {
 
 body.analytics-v2-active {
   .tether-element {
-    &:not(.ps-in-modal__Tether), &:not(.PowerSelect__Tether) {
+    &:not(.ps-in-modal__Tether),
+    &:not(.PowerSelect__Tether) {
       z-index: 2;
     }
 
@@ -701,8 +755,8 @@ body.analytics-v2-active {
           }
 
           &.PowerSelect__Option--highlighted {
-            background-color: #9eb1c7;
-            color: #FFFFFF;
+            background-color: #9EB1C7;
+            color: #FFF;
           }
         }
       }
@@ -715,21 +769,22 @@ body.analytics-v2-active {
 }
 
 .primary {
-  color: #528ff0;
+  color: #528FF0;
 }
 
-.m-0{
-  .Button--transparent{
-    margin:0px;
+.m-0 {
+  .Button--transparent {
+    margin: 0;
   }
 }
 
 .fampay-fundraise-banner {
   .title {
-    background-image url('assets/fampay-fund-raise.png')
+    background-image url("assets/fampay-fund-raise.png")
     background-size 100% 100%
 
-    &:before, &:after {
+    &::before,
+    &::after {
       display none
     }
 
