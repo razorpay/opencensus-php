@@ -118,4 +118,6 @@ class Metric
     const QUEUE_JOB_ATTEMPT_COUNT               = 'queue_job_attempt_count';
     const QUEUE_JOB_WORKER_TIMEOUT              = 'queue_job_worker_timeout';
     const QUEUE_JOB_WORKER_EXCEPTION            = 'queue_job_worker_exception';
+
+    const LEDGER_JOURNAL_FETCH_TRANSACTION_ERROR_TOTAL = 'ledger_journal_fetch_transaction_error_total';
 }

@@ -27,6 +27,8 @@ class Metric extends Base\Core
     const FUND_ACCOUNT_VALIDATION_CREATED_TO_COMPLETED_DURATION_SECONDS  = 'fund_account_validation_created_to_completed_duration_seconds.histogram';
     const FUND_ACCOUNT_VALIDATION_CREATED_TO_FAILED_DURATION_SECONDS     = 'fund_account_validation_created_to_failed_duration_seconds.histogram';
 
+    const FAV_QUEUE_FOR_FTS_JOB_FAILED_OR_RETRY_ATTEMPT_EXHAUSTED = 'fav_queue_for_fts_job_failed_or_attempt_exhausted';
+
     public function pushCreatedMetrics(string $fundAccountType)
     {
         try

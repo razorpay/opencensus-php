@@ -27,6 +27,7 @@ use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\Webhook\Event;
@@ -46,6 +47,7 @@ use RZP\Models\Feature\Constants as Features;
 use RZP\Jobs\BankingAccountStatementProcessor;
 use RZP\Mail\Transaction\Payout as PayoutMail;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
+use RZP\Models\BankingAccountStatement\Metric;
 use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Jobs\FTS\FundTransfer as FtsFundTransfer;
@@ -66,6 +68,7 @@ class RblBankingAccountStatementTest extends TestCase
     use PayoutTrait;
     use AttemptTrait;
     use WebhookTrait;
+    use TestsMetrics;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
     use TestsBusinessBanking;
@@ -11152,6 +11155,19 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
 
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Metric::MISSING_STATEMENTS_FOUND,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'channel' => 'rbl'
+            ]
+        );
+
         $this->fixtures->create('banking_account_statement',
                                 [
                                     'type'                      => 'credit',
@@ -11238,6 +11254,8 @@ class RblBankingAccountStatementTest extends TestCase
         ];
 
         $this->assertArraySubset($basExpected, array_first($merchantMissingStatementList['2224440041626905']));
+        $this->assertTrue($boolMetricCaptured);
+
     }
 
     public function testRblAutomatedReconForMissingStatements()

@@ -227,6 +227,8 @@ class RblBankingAccountStatement extends Job
                 Logger::ERROR,
                 TraceCode::FAILED_TO_ENQUEUE_BANKING_ACCOUNT_STATEMENT_PROCESSING_JOB);
 
+            $this->trace->count(BAS\Metric::BAS_PROCESSOR_QUEUE_PUSH_FAILURES_TOTAL);
+
             Tracer::startSpanWithAttributes(HyperTrace::BAS_PROCESSOR_QUEUE_PUSH_FAILURES_TOTAL);
         }
     }

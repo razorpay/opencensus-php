@@ -21,12 +21,11 @@ use RZP\Models\Payout\Metric;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Base as BaseModel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Models\UpiMandate\Metrics as UpiMandateMetrics;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Pricing\Calculator\Tax\Base as TaxBase;
-
-use Razorpay\Trace\Logger as Trace;
 
 abstract class Base extends BaseModel\Core
 {
@@ -325,6 +324,11 @@ abstract class Base extends BaseModel\Core
             if (($this->app['basicauth']->getProduct() === Constants\Product::BANKING) and
                 ($payment->getMerchantId() !== self::TEST_MERCHANT_ID))
             {
+                $this->trace->count(Metric::SERVER_ERROR_PRICING_RULE_ABSENT_TOTAL,
+                                    [
+                                        'route_name' => $this->app['api.route']->getCurrentRouteName(),
+                                    ]);
+
                 Tracer::startSpanWithAttributes(HyperTrace::SERVER_ERROR_PRICING_RULE_ABSENT_TOTAL,
                     [
                         'route_name' => $this->app['api.route']->getCurrentRouteName(),

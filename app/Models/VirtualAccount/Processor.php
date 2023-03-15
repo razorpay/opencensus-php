@@ -183,7 +183,7 @@ abstract class Processor extends Base\Core
             $logData
         );
 
-        $this->pushMetricsToHT($entity);
+        //$this->pushMetricsToVajra($entity);
 
         return $entity;
     }
@@ -282,14 +282,14 @@ abstract class Processor extends Base\Core
 
                     $paymentProcessor->refundAuthorizedPayment($paymentProcessor->getPayment(), $refundNotes);
 
-                    
+
                 }
                 else if (($entity->getEntityName() === Constants\Entity::BANK_TRANSFER) and
                          ($entity->getUnexpectedReason() === UnexpectedPaymentReason::VIRTUAL_ACCOUNT_PAYMENT_FAILED_GATEWAY_DISABLED) and
                          (in_array(Provider::IFSC[$entity->getGateway()], Provider::getUnsuportedProviderByRazorpay()) === true))
                 {
                     $result = $this->shouldDelayUnexpectedPaymentRefund();
-                
+
                     if ($result === true)
                     {
                         $payment = $paymentProcessor->getPayment();
@@ -979,16 +979,16 @@ abstract class Processor extends Base\Core
         return false;
     }
 
-    protected function pushMetricsToHT($entity)
+    /*protected function pushMetricsToVajra($entity)
     {
-/*        $route = optional($this->app['router'])->currentRouteName();
+        $route = $this->app['route']->getCurrentRouteName();
 
         $mode = method_exists($entity, 'getMode') === true ? $entity->getMode() : null;
 
-        Tracer::startSpanWithAttributes(HyperTrace::VIRTUAL_ACCOUNT_PAYMENT_SUCCESS_TOTAL,
-            [
-                Metric::LABEL_MODE       => $mode,
-                Metric::LABEL_ROUTE_NAME => $route
-            ]);*/
-    }
+        $this->trace->count(Metric::VIRTUAL_ACCOUNT_PAYMENT_SUCCESS_TOTAL,
+                            [
+                                Metric::LABEL_MODE       => $mode,
+                                Metric::LABEL_ROUTE_NAME => $route
+                            ]);
+    }*/
 }

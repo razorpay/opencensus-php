@@ -30,6 +30,10 @@ final class Metric
     const PAYOUT_WORKFLOW_ACTION_FAILED_TOTAL                       = 'payout_workflow_action_failed_total';
     const PAYOUT_WORKFLOW_ACTION_DUPLICATE_REQUEST_TOTAL            = 'payout_workflow_action_duplicate_request_total';
     const PARTNER_BANK_ON_HOLD_FAILED                               = 'partner_bank_on_hold_failed';
+    const PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_ERROR_TOTAL           = 'payout_create_submitted_process_job_error_total';
+    const SERVER_ERROR_PRICING_RULE_ABSENT_TOTAL                    = 'server_error_pricing_rule_absent_total';
+    const PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_RETRIES_EXHAUSTED    = 'payout_to_cards_vault_token_deletion_retries_exhausted';
+
 
     // Histograms
     const PAYOUT_QUEUED_TO_CREATED_DURATION_SECONDS                      = 'payout_queued_to_created_duration_seconds.histogram';
@@ -67,11 +71,12 @@ final class Metric
 
 
     // Dimension constants
-    const SOURCE     = 'source';
-    const BATCH      = 'batch';
-    const API        = 'api';
-    const DASHBOARD  = 'dashboard';
-    const IS_BANKING = 'is_banking';
+    const SOURCE         = 'source';
+    const BATCH          = 'batch';
+    const API            = 'api';
+    const DASHBOARD      = 'dashboard';
+    const IS_BANKING     = 'is_banking';
+    const IS_JOB_DELETED = 'is_job_deleted';
 
     public static function pushStatusChangeMetrics(Entity $payout, string $previousStatus = null)
     {

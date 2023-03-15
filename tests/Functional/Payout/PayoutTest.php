@@ -22238,6 +22238,34 @@ class PayoutTest extends OAuthTestCase
         $this->assertNotNull($payout['initiated_at']);
     }
 
+    public function testProcessingOfCreateRequestSubmittedPayoutViaLowPriorityQueueAndForcedError()
+    {
+        $this->testCreatePayoutForRequestSubmitted(true);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Payout\Metric::PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_ERROR_TOTAL,
+            $metricsMock,
+            $boolMetricCaptured,
+            ['is_job_deleted' => false]);
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'status' => 'created'
+        ]);
+
+        // Manually pushing into the queue because this is the only way to do this.
+        // Keeping the queueFlag as false for this test.
+        // Payout should get processed since merchant has enough balance
+        PayoutPostCreateProcessLowPriority::dispatch('test', $payout->getId(), 'false');
+
+        $this->assertTrue($boolMetricCaptured);
+    }
+
     /**
      * In this test, we shall check if the queue used by merchant with feature PAYOUT_LP_MERCHANT is of job
      * PayoutPostCreateProcessLowPriority

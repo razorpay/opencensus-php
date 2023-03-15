@@ -16,6 +16,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\BankingAccount\Channel;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -28,6 +29,8 @@ use RZP\Models\Feature\Constants as Features;
 use RZP\Models\BankingAccount\Gateway\Fields;
 use RZP\Jobs\BankingAccountStatementProcessor;
 use RZP\Mail\Transaction\Payout as PayoutMail;
+use Razorpay\Metrics\Manager as MetricManager;
+use RZP\Models\BankingAccountStatement\Metric;
 use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\BankingAccount\Entity as BaEntity;
 use RZP\Models\External\Entity as ExternalEntity;
@@ -47,6 +50,7 @@ class IciciBankingAccountStatementTest extends TestCase
 {
     use PayoutTrait;
     use PaymentTrait;
+    use TestsMetrics;
     use WorkflowTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
@@ -795,6 +799,19 @@ class IciciBankingAccountStatementTest extends TestCase
 
         $this->setMockRazorxTreatment([RazorxTreatment::BANKING_ACCOUNT_STATEMENT_FETCH_DEDUP => 'on']);
 
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Metric::MISSING_STATEMENTS_FOUND,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'channel' => 'icici'
+            ]
+        );
+
         $this->fixtures->create('banking_account_statement',
                                 [
                                     'type'                      => 'credit',
@@ -849,6 +866,8 @@ class IciciBankingAccountStatementTest extends TestCase
             BasEntity::DESCRIPTION           => 'INF/NEFT/023629961691/SBIN0050103/TestIcici/Boruto',
             BasEntity::CHANNEL               => 'icici',
         ];
+
+        $this->assertTrue($boolMetricCaptured);
 
         $this->assertArraySubset($basExpected, array_first($merchantMissingStatementList['2224440041626905']));
     }

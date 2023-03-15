@@ -36,6 +36,13 @@ class Core extends Base\Core
             ]
         );
 
+        $this->trace->count(Metric::BANK_TRANSFER_SAVE_REQUESTS_TOTAL,
+                            [
+                                Metric::LABEL_MODE        => $this->app['rzp.mode'],
+                                Metric::LABEL_ENVIRONMENT => $this->app['env'],
+                                Metric::LABEL_GATEWAY     => $gateway
+                            ]);
+
         Tracer::startSpanWithAttributes(HyperTrace::BANK_TRANSFER_SAVE_REQUESTS_TOTAL,
             [
                 Metric::LABEL_MODE => $this->app['rzp.mode'],

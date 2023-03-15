@@ -917,6 +917,8 @@ class Core extends Base\Core
                             ] + $traceData
                         );
 
+                        $this->trace->count(Metric::PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_RETRIES_EXHAUSTED);
+
                         Tracer::startSpanWithAttributes(HyperTrace::PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_RETRIES_EXHAUSTED);
 
                         break;

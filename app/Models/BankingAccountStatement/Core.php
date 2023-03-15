@@ -422,6 +422,8 @@ class Core extends Base\Core
 
                         $this->trace->info(TraceCode::MISSING_TRANSACTIONS_FOUND, $traceData);
 
+                        $this->trace->count(Metric::MISSING_STATEMENTS_FOUND, [Metric::LABEL_CHANNEL => $channel]);
+
                         Tracer::startSpanWithAttributes(HyperTrace::MISSING_STATEMENTS_FOUND,
                             [
                                 Metric::LABEL_CHANNEL => $channel

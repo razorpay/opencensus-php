@@ -161,6 +161,8 @@ class Service extends Base\Service
                 Trace::ERROR,
                 TraceCode::LEDGER_JOURNAL_FETCH_TRANSACTION_ERROR, [$id]);
 
+            $this->trace->count(Constants\Metric::LEDGER_JOURNAL_FETCH_TRANSACTION_ERROR_TOTAL);
+
             Tracer::startSpanWithAttributes(HyperTrace::LEDGER_JOURNAL_FETCH_TRANSACTION_ERROR_TOTAL,
                                             [
                                                 'environment' => $this->app['env'],

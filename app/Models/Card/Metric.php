@@ -32,6 +32,8 @@ class Metric extends Base\Core
     const ROUTE                                    = 'route';
     const LABEL_IS_TOKENISED                       = 'is_tokenised';
 
+    const INVALID_VAULT_TOKEN_ASSOCIATED = 'invalid_vault_token_associated';
+
     public function pushCardVaultDimensions($input, $status, $statusCode = null, $action = null, $exe = null)
     {
         try

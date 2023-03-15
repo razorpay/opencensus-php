@@ -403,6 +403,11 @@ class Core extends Base\Core
                         'is_tokenised'       => $tokenised
                     ]);
 
+                $this->trace->count(
+                    Metric::INVALID_VAULT_TOKEN_ASSOCIATED,
+                    [Metric::LABEL_IS_TOKENISED => $tokenised]
+                );
+
                 Tracer::startSpanWithAttributes(HyperTrace::INVALID_VAULT_TOKEN_ASSOCIATED,
                     [
                         Metric::LABEL_IS_TOKENISED => $tokenised

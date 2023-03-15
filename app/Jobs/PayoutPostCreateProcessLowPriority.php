@@ -165,6 +165,8 @@ class PayoutPostCreateProcessLowPriority extends Job
 
             $this->trace->info(TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_RELEASED_LOW_PRIORITY, $data);
 
+            $this->pushErrorMetricsToVajra(false);
+
             $this->pushErrorMetrics(false);
         }
         else
@@ -178,12 +180,22 @@ class PayoutPostCreateProcessLowPriority extends Job
 
             $this->trace->error(TraceCode::PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_DELETED_LOW_PRIORITY, $data);
 
+            $this->pushErrorMetricsToVajra(true);
+
             $this->pushErrorMetrics(true);
 
             $operation = 'Post payout create process fetch job failed';
 
             (new SlackNotification)->send($operation, $data, null, 1, 'x-payouts-core-alerts');
         }
+    }
+
+    protected function pushErrorMetricsToVajra($isDeleted)
+    {
+        $this->trace->count(Payout\Metric::PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_ERROR_TOTAL,
+                            [
+                                Payout\Metric::IS_JOB_DELETED => $isDeleted
+                            ]);
     }
 
     protected function pushErrorMetrics($isDeleted)

@@ -17,6 +17,7 @@ use Rzp\Models\FundTransfer;
 use RZP\Services\Mock\Mozart;
 use RZP\Models\Payout\Status;
 use RZP\Models\Merchant\Balance;
+use RZP\Tests\Traits\TestsMetrics;
 use RZP\Tests\Functional\TestCase;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Models\Settlement\Channel;
@@ -42,6 +43,7 @@ use RZP\Jobs\ConnectedBankingAccountGatewayBalanceUpdate;
 class AxisCaPayoutTest extends TestCase
 {
     use PayoutTrait;
+    use TestsMetrics;
     use AttemptTrait;
     use WorkflowTrait;
     use DbEntityFetchTrait;
@@ -526,6 +528,19 @@ class AxisCaPayoutTest extends TestCase
     {
         $this->ba->privateAuth();
 
+        $metricsMock = $this->createMetricsMock();
+
+        $boolMetricCaptured = false;
+
+        $this->mockAndCaptureCountMetric(
+            Payout\Metric::SERVER_ERROR_PRICING_RULE_ABSENT_TOTAL,
+            $metricsMock,
+            $boolMetricCaptured,
+            [
+                'route_name' => 'payout_create'
+            ]
+        );
+
         $attributes = [
             'bas_business_id'   => '10000000000000',
             'merchant_id'       => '10000000000000',
@@ -536,6 +551,8 @@ class AxisCaPayoutTest extends TestCase
         $this->fixtures->edit('pricing', 'Bbg7e4oKCgaxxx', ['plan_id' => 'plan1234567890']);
 
         $this->startTest();
+
+        $this->assertTrue($boolMetricCaptured);
 
         $payout = $this->getDbLastEntity('payout');
 

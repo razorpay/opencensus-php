@@ -1304,6 +1304,8 @@ class Core extends Base\Core
                     Entity::UNIQUE_HASH . '_of_duplicate' => $uniqueHashForExistingFundAccount,
                 ]);
 
+            $this->trace->count(Metric::HASH_MISMATCH_FOR_INPUT_AND_DUPLICATE_FUND_ACCOUNT_TOTAL);
+
             Tracer::startSpanWithAttributes(HyperTrace::HASH_MISMATCH_FOR_INPUT_AND_DUPLICATE_FUND_ACCOUNT_TOTAL,
                                             [
                                                 'mode'    => $this->app['rzp.mode'],

@@ -7,17 +7,17 @@ use RZP\Models\Base;
 
 class Metric extends Base\Core
 {
-    const VIRTUAL_ACCOUNT_CREATE_SUCCESS          = 'virtual_account_create_success';
-    const VIRTUAL_ACCOUNT_CREATE_FAILED           = 'virtual_account_create_failed';
-    const VIRTUAL_ACCOUNT_CLOSE_SUCCESS           = 'virtual_account_close_success';
-    const VIRTUAL_ACCOUNT_CLOSE_FAILED            = 'virtual_account_close_failed';
-    const VIRTUAL_ACCOUNT_PAYMENT                 = 'virtual_account_payment';
-    const VIRTUAL_ACCOUNT_REFUND                  = 'virtual_account_refund';
-    const VIRTUAL_ACCOUNT_PAYMENT_SQS_PUSH        = 'virtual_account_payment_sqs_push';
-    const VIRTUAL_ACCOUNT_PAYMENT_PROCESSING_TIME = 'virtual_account_payment_processing_time';
-    const SMART_COLLECT_TERMINAL_CACHING_HIT      = 'smart_collect_terminal_caching_hit';
-    const SMART_COLLECT_TERMINAL_CACHING_MISS     = 'smart_collect_terminal_caching_miss';
-    const SMART_COLLECT_TERMINAL_CACHING_EXCEPTION= 'smart_collect_terminal_caching_exception';
+    const VIRTUAL_ACCOUNT_CREATE_SUCCESS           = 'virtual_account_create_success';
+    const VIRTUAL_ACCOUNT_CREATE_FAILED            = 'virtual_account_create_failed';
+    const VIRTUAL_ACCOUNT_CLOSE_SUCCESS            = 'virtual_account_close_success';
+    const VIRTUAL_ACCOUNT_CLOSE_FAILED             = 'virtual_account_close_failed';
+    const VIRTUAL_ACCOUNT_PAYMENT                  = 'virtual_account_payment';
+    const VIRTUAL_ACCOUNT_REFUND                   = 'virtual_account_refund';
+    const VIRTUAL_ACCOUNT_PAYMENT_SQS_PUSH         = 'virtual_account_payment_sqs_push';
+    const VIRTUAL_ACCOUNT_PAYMENT_PROCESSING_TIME  = 'virtual_account_payment_processing_time';
+    const SMART_COLLECT_TERMINAL_CACHING_HIT       = 'smart_collect_terminal_caching_hit';
+    const SMART_COLLECT_TERMINAL_CACHING_MISS      = 'smart_collect_terminal_caching_miss';
+    const SMART_COLLECT_TERMINAL_CACHING_EXCEPTION = 'smart_collect_terminal_caching_exception';
 
     const LABEL_TRACE_CODE                  = 'code';
     const LABEL_HAS_BANK_ACCOUNT            = 'has_bank_account';

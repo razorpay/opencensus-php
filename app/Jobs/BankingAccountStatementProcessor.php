@@ -105,6 +105,13 @@ class BankingAccountStatementProcessor extends Job
                 Trace::ERROR,
                 TraceCode::BANKING_ACCOUNT_STATEMENT_PROCESSOR_JOB_FAILED, $this->params);
 
+            $this->trace->count(BAS\Metric::BAS_PROCESSOR_JOB_FAILURES_TOTAL,
+                                [
+                                    BAS\Metric::LABEL_CODE          => $e->getCode(),
+                                    BAS\Metric::LABEL_CHANNEL       => $this->params[BAS\Entity::CHANNEL],
+                                    BAS\Metric::LABEL_ERROR_MESSAGE => $e->getMessage(),
+                                ]);
+
             Tracer::startSpanWithAttributes(HyperTrace::BAS_PROCESSOR_JOB_FAILURES_TOTAL,
                 [
                     BAS\Metric::LABEL_CODE          => $e->getCode(),

@@ -8,6 +8,8 @@ class Metric extends Base\Core
 {
     const FUND_ACCOUNT_CREATE = 'fund_account_create';
 
+    const HASH_MISMATCH_FOR_INPUT_AND_DUPLICATE_FUND_ACCOUNT_TOTAL = 'hash_mismatch_for_input_dup_fa';
+
     public static function pushCreateMetrics(Entity $fundAccount)
     {
         $dimensions = self::getDefaultDimensions($fundAccount);
