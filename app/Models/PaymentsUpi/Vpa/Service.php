@@ -4,9 +4,13 @@ namespace RZP\Models\PaymentsUpi\Vpa;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 
 class Service extends Base\Service
 {
+
+    const BLOCK_VALIDATE_VPA_DB_WRITES = 'block_validate_vpa_db_writes';
+
     public function handleValidateVpaRequest(array $input)
     {
         // For few test suites we have disabled this database
@@ -39,6 +43,20 @@ class Service extends Base\Service
     {
         // For few test suites we have disabled this database
         if (env('DB_UPI_PAYMENTS_MOCKED') === true)
+        {
+            return;
+        }
+
+        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
+            self::BLOCK_VALIDATE_VPA_DB_WRITES,
+            $this->app['rzp.mode'] ?? Mode::LIVE,
+            3,
+            [
+                'connect_timeout' => 1,
+                'timeout'         => 1,
+            ]);
+
+        if ($variant == 'on')
         {
             return;
         }

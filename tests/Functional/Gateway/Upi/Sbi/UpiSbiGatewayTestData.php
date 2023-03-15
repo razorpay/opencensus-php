@@ -135,6 +135,40 @@ return [
         ]
     ],
 
+    'testValidateVpaSuccessWithBlockedDBSave' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'success@sbi',
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'vpa'           => 'success@sbi',
+                'success'       => true,
+                'customer_name' => 'Test User',
+            ],
+        ]
+    ],
+
+    'testValidateVpaSuccessWithoutBlockedDBSave' => [
+        'request'   => [
+            'url'       => '/payment/validate/vpa',
+            'method'    => 'post',
+            'content'   => [
+                'vpa' => 'success@sbi',
+            ]
+        ],
+        'response'  => [
+            'content' => [
+                'vpa'           => 'success@sbi',
+                'success'       => true,
+                'customer_name' => 'Test User',
+            ],
+        ]
+    ],
+
     'testValidateVpaSuccessWithRazorx' => [
         'request'   => [
             'url'       => '/payment/validate/vpa',

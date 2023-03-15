@@ -375,6 +375,50 @@ class UpiSbiGatewayTest extends TestCase
         $this->startTest();
     }
 
+    public function testValidateVpaSuccessWithBlockedDBSave()
+    {
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
+
+        $this->app->razorx->method('getTreatment')->will($this->returnCallback(
+            function ($mid, $feature, $mode)
+            {
+                if ($feature === 'block_validate_vpa_db_writes')
+                {
+                    return 'on';
+                }
+
+                return 'control';
+            })
+        );
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $vpa = $this->getDbLastEntity('payments_upi_vpa');
+
+        $this->assertSame(null, $vpa);
+    }
+
+    public function testValidateVpaSuccessWithoutBlockedDBSave()
+    {
+        config()->set('gateway.validate_vpa_terminal_ids.test', '100UPIMgateSbi');
+
+        $this->fixtures->merchant->addFeatures(['enable_vpa_validate']);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $vpa = $this->getDbLastEntity('payments_upi_vpa');
+
+        $this->assertSame('Test User', $vpa->getName());
+        $this->assertSame('valid', $vpa->getStatus());
+        $this->assertGreaterThanOrEqual(1600000000, $vpa->getReceivedAt());
+    }
+
     public function testValidateVpaSuccessWithRazorx()
     {
         $this->app->razorx->method('getTreatment')->will($this->returnCallback(
