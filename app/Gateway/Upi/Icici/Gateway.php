@@ -723,11 +723,15 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content, 'post', $path);
 
+        $this->trace->info(TraceCode::ICICI_QR_API_REQUEST_RESPONSE_TRACE, ['request' => $request]);
+
         $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(TraceCode::ICICI_QR_API_REQUEST_RESPONSE_TRACE, ['response' => $response]);
 
         $response = $this->parseGatewayResponse($response->body);
 
-        $this->trace->info(TraceCode::ICICI_QR_API_REQUEST_RESPONSE_TRACE, ['response' => $response]);
+        $this->trace->info(TraceCode::ICICI_QR_API_REQUEST_RESPONSE_TRACE, ['decryptedResponse' => $response]);
 
         return $response['refId'];
     }
