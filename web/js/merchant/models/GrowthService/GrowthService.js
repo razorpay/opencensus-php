@@ -1,6 +1,6 @@
 import GenericEntity from 'merchant/models/GenericEntity';
 import { getMode, getUser } from 'merchant/store';
-import { assetNames } from './data';
+import { assetNames, namespace } from './data';
 import { getItem } from 'common/utils/localStorage';
 import { getChannelID, sortAssetData, isValidAssetData, sortCarouselBanner } from './commonUtils';
 
@@ -52,12 +52,13 @@ export default class GrowthService extends GenericEntity {
     return !val; // return 'false' if key/value is 'null' & not dismissed by user
   };
 
-  fetchAssetData = (channel_id, assetName, dynamicAssets) => {
+  fetchAssetData = (channel_id, assetName, dynamicAssets, channelDetail) => {
     return this.makeGenericAjaxCall({
       data: {
         merchant_id: this.user?.current,
-        channel_id,
         asset: assetName,
+        channel_id,
+        channel_detail: channelDetail,
         ...(dynamicAssets && { dynamic_asset_name: dynamicAssets }),
         ...this.getPayloadData(),
       },
@@ -75,6 +76,7 @@ export default class GrowthService extends GenericEntity {
             Object.assign(assetEntry.tracking_data, {
               template_id: template.id,
               channel_id,
+              channel_detail: channelDetail,
             });
             assetData.push({
               ...template.data,
@@ -105,7 +107,7 @@ export default class GrowthService extends GenericEntity {
   getAnnouncements = async (fromWhere) => {
     let announcements = [];
 
-    if (Array.isArray(window.old_notifications) && this.user.isOrgRZP)
+    if (Array.isArray(window.old_notifications) && this.user?.isOrgRZP)
       announcements.push(...window.old_notifications);
     if (this.user.isGSAnnouncementsEnabled) {
       const new_announcements = await this.fetchAssetData(
@@ -133,10 +135,16 @@ export default class GrowthService extends GenericEntity {
     let banners = [];
 
     if (this.user.isGSBannersEnabled) {
-      const gsBanners = await this.fetchAssetData(
-        getChannelID(fromWhere, this.user.isOrgRZP),
-        assetNames.BANNER,
-      );
+      const channelDetail = {
+        namespace,
+        route: fromWhere,
+      };
+      const gsBanners = this.user?.isOrgRZP
+        ? await this.fetchAssetData(undefined, assetNames.BANNER, undefined, channelDetail)
+        : await this.fetchAssetData(
+            getChannelID(fromWhere, this.user?.isOrgRZP),
+            assetNames.BANNER,
+          );
 
       if (Array.isArray(gsBanners)) banners.push(...gsBanners);
     }
@@ -149,7 +157,7 @@ export default class GrowthService extends GenericEntity {
   };
   getPricingSubscription = async (fromWhere) => {
     const gsPricingSub = await this.fetchAssetData(
-      getChannelID(fromWhere, this.user.isOrgRZP),
+      getChannelID(fromWhere, this.user?.isOrgRZP),
       assetNames.JSON_SCHEMA,
       'pricing_bundle',
     );
@@ -161,7 +169,7 @@ export default class GrowthService extends GenericEntity {
 
     try {
       const gsExclusiveOffer = await this.fetchAssetData(
-        getChannelID(fromWhere, this.user.isOrgRZP),
+        getChannelID(fromWhere, this.user?.isOrgRZP),
         assetNames.EXCLUSIVE_OFFER,
       );
 
@@ -177,7 +185,7 @@ export default class GrowthService extends GenericEntity {
   getCarouselBanners = async (fromWhere) => {
     let carouselBanner =
       (await this.fetchAssetData(
-        getChannelID(fromWhere, this.user.isOrgRZP),
+        getChannelID(fromWhere, this.user?.isOrgRZP),
         assetNames.BANNER_CAROUSEL_ITEM,
       )) || [];
     if (carouselBanner.length > 5) {

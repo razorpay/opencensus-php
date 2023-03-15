@@ -464,6 +464,8 @@ export const assetNames = {
   MODAL: 'GS_MODAL',
 };
 
+export const namespace = 'PG_DASHBOARD';
+
 const trackingDataSchema = yup
   .object()
   .optional()
