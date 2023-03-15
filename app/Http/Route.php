@@ -2228,11 +2228,19 @@ class Route
         'fetch_international_virtual_accounts'              => ['get',      'international/virtual_accounts',                 'MerchantController@getInternationalVirtualAccounts'            ],
         'fetch_international_virtual_account_by_vacurrency' => ['get',      'international/virtual_account/{va_currency}',   'MerchantController@getInternationalVirtualAccountByVACurrency' ],
         'payment_update_b2b_invoice'                        => ['patch',    'payment/{id}/update_b2b_invoice_details',        'PaymentController@updateB2BInvoiceDetails'                     ],
-        'fetch_balance_international_virtual_account'       => ['get',     'international/virtual_accounts/balance/{va_currency}',         'BankTransferController@getBalanceForMerchantVA'          ],
 
         'capture_cron_for_b2b_payments'        => ['post',     'b2b/payments/capture',                              'BankTransferController@captureCronForB2BPayments'                   ],
         'notifications_for_b2b'                => ['post',     'international/virtual_accounts/payment/create',     'BankTransferController@notificationsFromCurrencyCloud'                         ],
         'settlement_cron_for_b2b_payments'     => ['post',     'b2b/payments/settlement',                           'BankTransferController@settlementFromCurrencyCloud'                               ],
+
+        //Global Bank account solution
+
+        'fetch_balance_international_virtual_account'       => ['get',     'international/virtual_accounts/balance/{va_currency}',         'BankTransferController@getBalanceForMerchantVA'          ],
+        'payout_international_virtual_account'              => ['post',     'international/virtual_accounts/payout',                        'BankTransferController@merchantPayoutFromVAToBeneficiary'],
+        'fetch_all_payouts_international_virtual_account'  => ['get',       'international/virtual_accounts/payout',                       'BankTransferController@fetchAllPayoutsForIntlVA'],
+        'create_beneficiary_for_international_payout'       => ['post',    'merchant/{id}/international/virtual_accounts/beneficiary',              'BankTransferController@createBeneficiaryForMerchantInCC'],
+        'get_beneficiary_details_for_international_payout'  => ['get',    'international/virtual_accounts/beneficiary',              'BankTransferController@getBeneficiaryDetailsForMerchantPayout'],
+        'get_beneficiary_details_for_international_payout_admin'  => ['get',    'merchant/{id}/international/virtual_accounts/beneficiary',              'BankTransferController@getBeneficiaryDetailsForMerchantPayoutAdmin'],
 
         //actor info
         'fetch_actor_info_internal'                => ['get',      'actor_info_internal/{user_id}',                  'UserController@getActorInfo'                                       ],
@@ -5869,6 +5877,8 @@ class Route
         'fetch_international_virtual_accounts',
         'create_international_virtual_accounts',
         'fetch_balance_international_virtual_account',
+        'payout_international_virtual_account',
+        'fetch_all_payouts_international_virtual_account',
         'mob_fetch_multiple_intents',
         'mob_fetch_intent',
         'mob_fetch_multiple_applications',
@@ -5910,6 +5920,7 @@ class Route
         'store_patch_product',
         'developer_console_action',
         'developer_console_merchant_action',
+        'get_beneficiary_details_for_international_payout',
         'fetch_payments_ongoing_downtimes',
         'fetch_payments_resolved_downtimes',
         'fetch_payments_scheduled_downtimes',
@@ -6850,6 +6861,7 @@ class Route
         'rbl_current_account_serviceability_get_admin',
         'merchant_business_detail_fetch',
         'merchant_business_detail_save',
+        'get_beneficiary_details_for_international_payout_admin',
         'los_service_dev_admin',
         'loc_service_dev_admin',
         'admin_merchant_get_preferences',
@@ -7030,6 +7042,7 @@ class Route
         'merchant_integration_create',
         'merchant_integrations_get',
         'merchant_integrations_delete',
+        'create_beneficiary_for_international_payout',
         'setl_retry',
         'payout_retry',
         'merchant_activation_files',
@@ -9414,6 +9427,11 @@ class Route
         'merchant_integrations_get'             => Permission::VIEW_MERCHANT,
         'merchant_integrations_delete'          => Permission::VIEW_MERCHANT,
 
+        //Global Bank Account Beneficiary creation
+        'create_beneficiary_for_international_payout' => Permission::VIEW_MERCHANT,
+
+        'get_beneficiary_details_for_international_payout_admin' => Permission::VIEW_MERCHANT,
+
         //Emerchantpay APM onboarding request
         'emerchantpay_get_request_data'         => Permission::VIEW_MERCHANT,
         'emerchantpay_create_request_data'      => Permission::VIEW_MERCHANT,
@@ -10311,6 +10329,9 @@ class Route
             'fetch_international_virtual_accounts',
             'create_international_virtual_accounts',
             'fetch_balance_international_virtual_account',
+            'get_beneficiary_details_for_international_payout',
+            'payout_international_virtual_account',
+            'fetch_all_payouts_international_virtual_account',
             'payment_update_b2b_invoice',
             'collect_info_merchant_details_patch',
             'mob_fetch_multiple_intents',
@@ -12612,6 +12633,8 @@ class Route
             'merchant_integration_create',
             'merchant_integrations_get',
             'merchant_integrations_delete',
+            'create_beneficiary_for_international_payout',
+            'get_beneficiary_details_for_international_payout_admin',
             'merchant_invoice_add_bulk',
             'merchant_invoice_control',
             'merchant_invoice_entity_create_admin',

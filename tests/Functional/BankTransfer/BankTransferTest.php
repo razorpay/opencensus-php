@@ -9370,7 +9370,7 @@ class BankTransferTest extends TestCase
 
         $mozartServiceMock->method('sendMozartRequest')
                           ->will($this->returnCallback(
-                              function ($namespace,$gateway,$action,$data)
+                              function ($namespace,$gateway,$action,$data,$version)
                               {
                                   if($action == 'account_create')
                                   {
@@ -9470,6 +9470,63 @@ class BankTransferTest extends TestCase
                                           'data' => [
                                               'currency' => $data['currency'],
                                               'amount'   => $data['amount'],
+                                          ]
+                                      ];
+                                  }
+                                  elseif ($action == 'create_beneficiary')
+                                  {
+                                      return [
+                                          'data' => [
+                                              'id' => '9f658618-db68-4d30-84b5-04239e335dc7',
+                                              'status' => 'successfull',
+                                              'account_number' => '1234123',
+                                              'bic_swift' => 'ICICINBBCTS',
+                                              'bank_account_holder_name' => 'Razorpay',
+                                              'name' => 'Razorpay'
+                                          ]
+                                      ];
+                                  }
+                                  elseif ($action == 'get_beneficiary')
+                                  {
+                                      return [
+                                          'data' => [
+                                              'account_number' => '1234123',
+                                              'bank_account_holder_name' => 'Razorpay Stage',
+                                              'bank_address' => ["NO.302,GROUND FLOOR,7TH CROSS,DOMLUR LAYOUT,BANGALORE - 560071"],
+                                              'bank_country'=> 'IN',
+                                              'bank_name'=> 'ICICI Bank',
+                                              'bic_swift'=> 'ICICINBBCTS',
+                                              'currency'=> 'USD',
+                                              'id'=> 'c5423ced-048c-4b63-9c83-f91b8d991e99',
+                                              'name'=> 'Razopay Payments',
+                                              'status' => 'successful',
+                                          ]
+                                      ];
+                                  }
+                                  elseif ($action == 'get_payments')
+                                  {
+                                      return [
+                                          'data' => [
+                                              'payments' => [
+                                                  [
+                                                      'amount' => '100.00',
+                                                      'beneficiary_id' => '54973a5b-3189-4a25-9596-3c0150705633',
+                                                      'currency'=> 'USD',
+                                                      'id' => 'd652109b-6b0a-4692-9cef-0062ca2cbba5',
+                                                      'payment_date' => '2023-03-13',
+                                                      'reason' => 'For Settling Money from RZP House account to Merchants',
+                                                      'status' => 'ready_to_send',
+                                                  ],
+                                                 [
+                                                      'amount' => '100.00',
+                                                      'beneficiary_id' => '54973a5b-3189-4a25-9596-3c0150705633',
+                                                      'currency'=> 'USD',
+                                                      'id' => 'd652109b-6b0a-4692-9cef-0062ca2cbba5',
+                                                      'payment_date' => '2023-03-13',
+                                                      'reason' => 'For Settling Money from RZP House account to Merchants',
+                                                      'status' => 'ready_to_send',
+                                                  ]
+                                              ]
                                           ]
                                       ];
                                   }
@@ -9710,6 +9767,42 @@ class BankTransferTest extends TestCase
 
     }
 
+    public function testCreateBeneficiaryForMerchantInCC()
+    {
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantDetail['merchant_id']);
+
+        $this->fixtures->merchant->addFeatures('enable_global_account',$merchantDetail['merchant_id']);
+        $this->fixtures->merchant->addFeatures('enable_b2b_export',$merchantDetail['merchant_id']);
+
+        $this->fixtures->create('merchant_international_integrations',[
+            'merchant_id' => $merchantDetail['merchant_id'],
+            'integration_entity' => 'currency_cloud',
+            'integration_key' => '15b78101-0142-44a1-9758-8f7262429e9b',
+            'reference_id' => '67df28b4-766a-405d-b6ad-2972fd50be18',
+            'notes' => [],
+        ]);
+
+        $this->mockMozartResponseForCurrencyCloud();
+
+        $this->ba->adminAuth();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+        $request['url'] = "/merchant/".$merchantDetail['merchant_id']."/international/virtual_accounts/beneficiary";
+        $response = $this->sendRequest($request);
+
+        $content = $this->getJsonContentFromResponse($response);
+
+        $this->assertNotNull($content['id']);
+        $this->assertNotNull($content['account_number']);
+        $this->assertNotNull($content['name']);
+
+        $mii = $this->getLastEntity('merchant_international_integrations',true);
+
+        $this->assertNotNull($mii['notes']['beneficiary_id']);
+        $this->assertEquals($content['id'],$mii['notes']['beneficiary_id']);
+    }
 
 
 }

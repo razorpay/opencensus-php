@@ -6,7 +6,9 @@ use Config;
 use App;
 use RZP\Constants;
 use RZP\Exception;
+use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 use RZP\Models\Base;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
@@ -1087,5 +1089,81 @@ class Core extends Base\Core
             'entity_id' => $entityId,
             'txn_id'    => $txnId
         ];
+    }
+
+    public function makePayoutAndTransferCommission($input, $mii, $merchantId, $commissionFee)
+    {
+        $notes = $mii->getNotes();
+
+        try{
+            if(isset($notes['beneficiary_id']) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_REQUEST_BODY,
+                    null,
+                    "Beneficiary Not present for the merchant"
+                );
+            }
+
+            $payoutRequest = $this->createRequestBodyForCCPayouts($input, $mii);
+
+            $payoutResponse = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'payment_create',$payoutRequest);
+
+            $this->trace->info(TraceCode::PAYOUT_TRIGGERED_FROM_VA,[
+                'payout_status' => $payoutResponse['data']['status'],
+                'payout_id'     => $payoutResponse['data']['id'],
+            ]);
+        }catch (\Exception $ex)
+        {
+            $this->trace->info(TraceCode::PAYOUT_TRIGGER_FAILED_FROM_VA,[
+                'error_message' => $ex->getMessage()
+            ]);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_FAILED_UNKNOWN_ERROR,
+                null,
+            );
+        }
+
+        try{
+            $RZPCommissionFeeAccountId = $this->app['config']->get('gateway.currency_cloud.rzp_commission_fee_account_id');
+
+            $transferRequest = [
+                'currency'              => $input['currency'],
+                'amount'                => strval($commissionFee),
+                'reason'                => BankTransferConstants::COMMISSION_TRANSFER_REASON.";" . $merchantId,
+                'destination_account_id'=> $RZPCommissionFeeAccountId,
+                'payment_id'            => $payoutResponse['data']['id'],
+                'source_account_id'     => $mii->getIntegrationKey(),
+            ];
+
+            $transferResponse = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'create_transfer',$transferRequest);
+
+            $this->trace->info(TraceCode::TRANSFER_OF_COMMISSION_FEE_FOR_PAYOUT_SUCCESS,[
+                'transfer_status'   => $transferResponse['data']['status'],
+                'transfer_id'         => $transferResponse['data']['id'],
+            ]);
+        }catch (\Exception $ex)
+        {
+            $this->trace->info(TraceCode::TRANSFER_OF_COMMISSION_FEE_FOR_PAYOUT_FAILED,[
+                'input'         => $input,
+                'error_message' => $ex->getMessage()
+            ]);
+        }
+    }
+
+    protected function createRequestBodyForCCPayouts($input, $mii)
+    {
+        $notes = $mii->getNotes();
+        $request = [
+            'currency'              => $input['currency'],
+            'amount'                => strval($input['amount']),
+            'reason'                => $input['reason'],
+            'reference'             => $mii->getMerchantId(),
+            'beneficiary_id'        => $notes['beneficiary_id'],
+            'unique_request_id'     => UniqueIdEntity::generateUniqueId(),
+            'on_behalf_of'          => $mii->getReferenceId(),
+        ];
+
+        return $request;
     }
 }

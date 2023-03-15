@@ -341,7 +341,8 @@ return [
 
     'currency_cloud' => [
         'usd_beneficiary_id'        => env('CURRENCY_CLOUD_USD_BENEFICIARY_ID'),
-        'rzp_parent_account_id'     => env('CURRENCY_CLOUD_RZP_PARENT_ACCOUNT_ID')
+        'rzp_parent_account_id'     => env('CURRENCY_CLOUD_RZP_PARENT_ACCOUNT_ID'),
+        'rzp_commission_fee_account_id' => env('CURRENCY_CLOUD_RZP_COMMISSION_FEE_ACCOUNT_ID')
     ],
 
     'amex' => [

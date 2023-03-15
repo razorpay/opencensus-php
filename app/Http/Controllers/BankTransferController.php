@@ -623,6 +623,63 @@ class BankTransferController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function createBeneficiaryForMerchantInCC(string $merchantId)
+    {
+        $input = Request::all();
+
+        $input['merchant_id'] = $merchantId;
+
+        $response = $this->service()->createBeneficiaryForMerchantInCC($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getBeneficiaryDetailsForMerchantPayout()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getBeneficiaryDetailsForMerchantPayout($input);
+
+        $finalResponse = [
+            'account_number' => $response['account_number'],
+            'name'           => $response['name'],
+            'bank_name'      => $response['bank_name'],
+            'bic_swift'      => $response['bic_swift'],
+            'commission_fee' => $response['commission_fee']
+        ];
+
+        return ApiResponse::json($finalResponse);
+    }
+
+    public function getBeneficiaryDetailsForMerchantPayoutAdmin(string $merchantId)
+    {
+        $input = Request::all();
+
+        $input['merchant_id'] = $merchantId;
+
+        $response = $this->service()->getBeneficiaryDetailsForMerchantPayout($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function merchantPayoutFromVAToBeneficiary()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->merchantPayoutFromVAToBeneficiary($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function fetchAllPayoutsForIntlVA()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchAllPayoutsForIntlVA($input);
+
+        return ApiResponse::json($response);
+    }
+
     private function getIciciResponse(array $input, string $failureReason, int $statusCode = 200)
     {
         $input = $input['Virtual_Account_Number_Verification_IN'][0];

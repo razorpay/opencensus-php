@@ -99,8 +99,18 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_METHODS);
     }
 
+    public function getNotes()
+    {
+        return $this->getAttribute(self::NOTES);
+    }
+
     public function setPaymentMethods(array $paymentMethods)
     {
         return $this->setAttribute(self::PAYMENT_METHODS, $paymentMethods);
+    }
+
+    public function setNotes(array $notes)
+    {
+        return $this->setAttribute(self::NOTES, $notes);
     }
 }

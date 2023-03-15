@@ -339,6 +339,8 @@ class ConfigKey
 
     const MCC_DEFAULT_MARKDOWN_PERCENTAGE = SELF::PREFIX . 'mcc_default_markdown_percentage';
 
+    const COMMISSION_FEE_FOR_CC_MERCHANT_PAYOUT = SELF::PREFIX. 'commission_fee_for_cc_merchant_payout';
+
     const DEFAULT_OPGSP_TRANSACTION_LIMIT_USD = SELF::PREFIX . 'default_opgsp_transaction_limit_usd';
 
 
@@ -513,6 +515,7 @@ class ConfigKey
         self::PAYOUT_SERVICE_DATA_MIGRATION_BATCH_ATTEMPTS,
         self::ONDEMAND_SETTLEMENT_INTERNAL_MERCHANTS,
         self::MCC_DEFAULT_MARKDOWN_PERCENTAGE,
+        self::COMMISSION_FEE_FOR_CC_MERCHANT_PAYOUT,
         self::DEFAULT_OPGSP_TRANSACTION_LIMIT_USD,
         self::PAYOUT_SERVICE_DATA_MIGRATION_BUFFER,
         self::RX_ICICI_BLOCK_NON_2FA_NON_BAAS_FOR_CA,

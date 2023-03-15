@@ -2737,5 +2737,31 @@ return [
 
             ]
         ]
+    ],
+    'testCreateBeneficiaryForMerchantInCC' => [
+        'request' => [
+            'url' => '/merchant/%s/international/virtual_accounts/beneficiary',
+            'method' => 'post',
+            'content' => [
+                'currency'=> 'USD',
+                'account_number'=> '1234123',
+                'bank_account_holder_name'=> 'Razorpay Stage',
+                'bank_address'=> 'NO.302,GROUND FLOOR,7TH CROSS,DOMLUR LAYOUT,BANGALORE - 560071',
+                'bank_name'=> 'ICICI Bank',
+                'bank_country'=> 'IN',
+                'bic_swift'=> 'ICICINBBCTS',
+                'beneficiary_address'=> '1ST FLOOR,22 LASKAR HOSUR ROAD,ADUGODI,SJR CYBER, BANGALORE,KARNATAKA,INDIA - 560030',
+                'beneficiary_city'=> 'delhi',
+                'beneficiary_company_name'=> 'Razorpay',
+                'beneficiary_country'=> 'IN',
+                'beneficiary_entity_type'=> 'company',
+                'name'=> 'Razopay Payments'
+            ],
+        ],
+        'response' => [
+            'content' => [
+
+            ]
+        ]
     ]
 ];

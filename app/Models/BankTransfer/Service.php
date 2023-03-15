@@ -36,6 +36,7 @@ use RZP\Models\VirtualAccount\Metric;
 use RZP\Models\VirtualAccount\Provider;
 use RZP\Reconciliator\RequestProcessor;
 use RZP\Jobs\BankTransferCreateProcess;
+use RZP\Models\BankTransfer\Constants as BankTransferConstants;
 use RZP\Models\BankTransfer\Processor as BankTransferProcessor;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Merchant\InternationalIntegration;
@@ -1167,7 +1168,7 @@ class Service extends Base\Service
                 $request = [
                     'currency'              => $payment->getCurrency(),
                     'amount'                => strval($payment->getAmount()/100),
-                    'reason'                => "Sub Account Transfer to House; " . $payment->getId(),
+                    'reason'                => BankTransferConstants::HOUSE_ACCOUNT_TRANSFER_REASON."; " . $payment->getId(),
                     'destination_account_id'=> $parentRZPAccountId,
                     'payment_id'            => $payment->getId(),
                     'source_account_id'     => $merchantInternationalIntegration->getIntegrationKey(),
@@ -1289,6 +1290,12 @@ class Service extends Base\Service
                 'reason'                => $input['reason'],
             ]);
         }
+        $reasonConstants = explode(";",$reason)[0];
+
+        if($reasonConstants === BankTransferConstants::COMMISSION_TRANSFER_REASON)
+        {
+            return [];
+        }
 
         $payment_id = trim(explode(";",$reason)[1]);
 
@@ -1353,6 +1360,247 @@ class Service extends Base\Service
         $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'get_balance',$request);
 
         return $response;
+    }
+
+    protected function getCommissionFeeForPayouts()
+    {
+        $commissionFee = ConfigKey::get(ConfigKey::COMMISSION_FEE_FOR_CC_MERCHANT_PAYOUT);
+        if(isset($commissionFee) === false or empty($commissionFee) === true)
+        {
+            $commissionFee = BankTransferConstants::COMMISSION_FEE_FOR_CURRENCY_CLOUD_PAYOUT;
+        }
+
+        return $commissionFee;
+    }
+
+    public function createBeneficiaryForMerchantInCC($input)
+    {
+        $merchantId = $input['merchant_id'];
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        if(($merchant->isFeatureEnabled(Feature\Constants::ENABLE_GLOBAL_ACCOUNT) === false) or
+            ($merchant->isFeatureEnabled(Feature\Constants::ENABLE_B2B_EXPORT)) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED,
+                null,
+                "Global Bank Account is not enabled, Beneficiary creation not allowed"
+            );
+        }
+
+        $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
+            $merchantId,Constants\Entity::CURRENCY_CLOUD);
+
+        try{
+
+            $createBeneficiaryRequest = $this->createRequestBodyForBeneficiaryCreation($input, $mii);
+
+            $createBeneficiaryResponse = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'create_beneficiary',$createBeneficiaryRequest,'v2');
+
+            $this->trace->info(TraceCode::BENEFICIARY_CREATION_SUCCESSFUL,[
+                'status' => $createBeneficiaryResponse['data']['status'],
+                'beneficiary_id' => $createBeneficiaryResponse['data']['id'],
+            ]);
+
+        }catch (\Exception $ex)
+        {
+            $this->trace->info(TraceCode::BENEFICIARY_CREATION_FAILED,[
+                'error_message' => $ex->getMessage()
+            ]);
+            throw $ex;
+        }
+        $notes = [
+            'beneficiary_id' => $createBeneficiaryResponse['data']['id']
+        ];
+
+        // Todo: If notes for currency cloud is used somewhere else then we have to check and set
+
+        $mii->setNotes($notes);
+        $this->repo->merchant_international_integrations->saveOrFail($mii);
+
+        return $createBeneficiaryResponse['data'];
+    }
+
+    public function getBeneficiaryDetailsForMerchantPayout($input)
+    {
+        if(isset($input['merchant_id']))
+        {
+            $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);
+        }else
+        {
+            $merchant = $this->merchant;
+        }
+
+        $merchantId = $merchant->getId();
+
+        if(($merchant->isFeatureEnabled(Feature\Constants::ENABLE_GLOBAL_ACCOUNT) === false) or
+            ($merchant->isFeatureEnabled(Feature\Constants::ENABLE_B2B_EXPORT)) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED,
+                null,
+                "Global Bank Account is not enabled"
+            );
+        }
+
+        $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
+            $merchantId,Constants\Entity::CURRENCY_CLOUD);
+
+        if (isset($mii))
+        {
+            $notes = $mii->getNotes();
+            if (isset($notes['beneficiary_id']))
+            {
+                $request = [
+                    'on_behalf_of'      => $mii->getReferenceId(),
+                    'beneficiary_id'    => $notes['beneficiary_id'],
+                ];
+                $response = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'get_beneficiary',$request,'v2');
+
+                $response['data']['commission_fee'] = $this->getCommissionFeeForPayouts();
+
+                return $response['data'];
+
+            }else{
+                return ["status" => "No beneficiary is present"];
+            }
+        }
+        else{
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED,
+                null,
+                "Beneficiary creation blocked, Please create VA for the merchant"
+            );
+        }
+    }
+
+    public function merchantPayoutFromVAToBeneficiary($input)
+    {
+        if(($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_GLOBAL_ACCOUNT) === false) or
+            ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_B2B_EXPORT)) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED,
+                null,
+                "Global Bank Account is not enabled"
+            );
+        }
+
+        $merchantId = $this->merchant->getId();
+
+        $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
+            $merchantId,Constants\Entity::CURRENCY_CLOUD);
+
+        $request = [
+            'on_behalf_of' => $mii->getReferenceId(),
+            'currency'     => $input['currency']
+        ];
+
+        $response = $this->callCurrencyCloudGetBalance($request);
+
+        $balanceAmount = ((float)$response['data']['amount']);
+        $commissionFee = $this->getCommissionFeeForPayouts();
+        $amountToBeDeducted = $input['amount'] + $commissionFee;
+
+        if(($input['amount'] < BankTransferConstants::MINIMUM_CURRENCY_CLOUD_PAYOUT_AMOUNT))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MINIMUM_ALLOWED_AMOUNT,
+                null,
+                sprintf("Minimum payout amount is %s",BankTransferConstants::MINIMUM_CURRENCY_CLOUD_PAYOUT_AMOUNT)
+            );
+        }
+
+        if ($amountToBeDeducted > $balanceAmount)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
+                null,
+                sprintf("Payout is not possible with current balance %s",$balanceAmount)
+            );
+        }
+
+        $this->core->makePayoutAndTransferCommission($input, $mii, $merchantId, $commissionFee);
+    }
+
+    protected function createRequestBodyForBeneficiaryCreation($input, $mii)
+    {
+        $request = [
+            'name'                      => $input['name'],
+            'bank_account_holder_name'  => $input['bank_account_holder_name'],
+            'bank_country'              => $input['bank_country'],
+            'currency'                  => $input['currency'],
+            'beneficiary_address'       => $input['beneficiary_address'],
+            'beneficiary_country'       => $input['beneficiary_country'],
+            'account_number'            => $input['account_number'],
+            'bank_address'              => $input['bank_address'],
+            'bank_name'                 => $input['bank_name'],
+            'beneficiary_entity_type'   => $input['beneficiary_entity_type'],
+            'beneficiary_company_name'  => $input['beneficiary_company_name'],
+            'beneficiary_city'          => $input['beneficiary_city'],
+            'bic_swift'                 => $input['bic_swift'],
+            'on_behalf_of'              => $mii->getReferenceId(),
+            'beneficiary_postcode'      => $input['beneficiary_postcode'],
+            'beneficiary_state_or_province' => $input['beneficiary_state_or_province']
+        ];
+
+        return $request;
+    }
+
+    public function fetchAllPayoutsForIntlVA($input)
+    {
+        if(($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_GLOBAL_ACCOUNT) === false) or
+            ($this->merchant->isFeatureEnabled(Feature\Constants::ENABLE_B2B_EXPORT)) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED,
+                null,
+                "Global Bank Account is not enabled"
+            );
+        }
+
+        $merchantId = $this->merchant->getId();
+
+        $mii = $this->repo->merchant_international_integrations->getByMerchantIdAndIntegrationEntity(
+            $merchantId,Constants\Entity::CURRENCY_CLOUD);
+
+        if(!isset($input['skip']))
+        {
+            $input['skip'] = 0;
+        }
+
+        $fetchPayoutsRequest = [
+            'on_behalf_of' => $mii->getReferenceId(),
+            'page'         => strval((int)($input['skip']/BankTransferConstants::PAYOUT_ENTRIES_PER_PAGE) + 1 )
+        ];
+
+        $fetchPayoutsResponse = $this->app->mozart->sendMozartRequest('payments',Constants\Entity::CURRENCY_CLOUD,'get_payments',$fetchPayoutsRequest,'v2');
+
+        $responseList['payouts'] = [];
+
+        foreach ($fetchPayoutsResponse['data']['body']['payments'] as $payout)
+        {
+            $finalPayoutResponse = [
+                'payout_id'         => $payout['id'],
+                'status'            => BankTransferConstants::CURRENCY_CLOUD_PAYOUT_MAPPING_WITH_OUR_STATUS[$payout['status']],
+                'amount'            => $payout['amount'],
+                'currency'          => $payout['currency'],
+                'created_date'      => $payout['payment_date'],
+                'beneficiary_id'    => $payout['beneficiary_id'],
+                'reason'            => $payout['reason'],
+            ];
+            array_push($responseList['payouts'],$finalPayoutResponse);
+        }
+
+        $responseList['is_last_page'] = 0;
+
+        if($fetchPayoutsResponse['data']['body']['pagination']['next_page'] === -1)
+        {
+            $responseList['is_last_page'] = 1;
+        }
+
+        return $responseList;
     }
 
 }
