@@ -4,6 +4,7 @@ namespace RZP\Models\EMandate;
 
 use App;
 
+use RZP\Exception;
 use Carbon\Carbon;
 use Monolog\Logger;
 use RZP\Models\Base;
@@ -17,6 +18,7 @@ use RZP\Jobs\NachBatchProcessWithAsyncBalance;
 use RZP\Exception\LogicException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Jobs\ResposeFileBatchInstrumentation;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 
 class Service extends Base\Service
 {
@@ -371,5 +373,139 @@ class Service extends Base\Service
         $processor = new $processor;
         return $processor;
     }
-
+    
+    public function getBulkEmandateConfigs(array $input)
+    {
+        $this->trace->info(TraceCode::EMANDATE_CONFIG_FETCH_REQUEST,
+            [
+                "input_data" => $input
+            ]);
+        
+        $merchantIds = explode(",", $input["merchant_ids"]);
+    
+        (new Validator)->validateGetEmandateConfigs($merchantIds);
+    
+        $dcsConfigService = new DcsConfigService();
+        
+        $key = Constants::EMANDATE_MERCHANT_CONFIGURATIONS;
+        
+        $fields = Constants::EMANDATE_CONFIG_FIELDS;
+        
+        try
+        {
+            return $dcsConfigService->fetchConfigurationBulk($key, $merchantIds, $fields, $this->mode);
+        }
+        catch (\Exception $ex)
+        {
+            // Need to throw error incase of any request failure
+        
+            $this->trace->traceException($ex, null, TraceCode::EMANDATE_CONFIG_FETCH_ERROR, $merchantIds);
+    
+            throw new Exception\BadRequestValidationFailureException(
+                "error while fetching data from dcs");
+        }
+    }
+    
+    public function postBulkEmandateConfigs(array $input)
+    {
+        $this->trace->info(
+            TraceCode::EMANDATE_CONFIG_CREATE_REQUEST,
+            [
+                "input_data" => $input
+            ]);
+    
+        (new Validator)->validateCreateEmandateConfigs($input);
+        
+        $merchantIds = $input[Constants::MERCHANT_IDS];
+        
+        $merchantConfigs = [];
+        
+        foreach (Constants::EMANDATE_CONFIG_FIELDS as $config)
+        {
+            if(isset($input[$config]) === true and $input[$config] !== null)
+            {
+                $merchantConfigs[$config] = $input[$config];
+            }
+        }
+        
+        if(count($merchantConfigs) < 0)
+        {
+            return [];
+        }
+        
+        $dcsConfigService = new DcsConfigService();
+        
+        $key = Constants::EMANDATE_MERCHANT_CONFIGURATIONS;
+        
+        $response = [];
+        
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $dcsConfigService->createConfiguration($key, $merchantId, $merchantConfigs, $this->mode);
+                
+                $response["success_merchant_ids"][] = $merchantId;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex, null, TraceCode::EMANDATE_CONFIG_CREATE_ERROR, [$merchantId]);
+                
+                $response["failed_merchant_ids"][] = $merchantId;
+            }
+        }
+        
+        return $response;
+    }
+    
+    public function editBulkEmandateConfigs(array $input)
+    {
+        $this->trace->info(TraceCode::EMANDATE_CONFIG_EDIT_REQUEST,
+            [
+                "input_data" => $input
+            ]);
+    
+        (new Validator)->validateEditEmandateConfigs($input);
+    
+        $merchantIds = $input["merchant_ids"];
+    
+        $merchantConfigs = [];
+        
+        foreach (Constants::EMANDATE_CONFIG_FIELDS as $config)
+        {
+            if(isset($input[$config]) === true and $input[$config] !== null)
+            {
+                $merchantConfigs[$config] = $input[$config];
+            }
+        }
+        
+        if(count($merchantConfigs) < 0)
+        {
+            return [];
+        }
+    
+        $dcsConfigService = new DcsConfigService();
+    
+        $key = Constants::EMANDATE_MERCHANT_CONFIGURATIONS;
+        
+        $response = [];
+    
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $dcsConfigService->editConfiguration($key, $merchantId, $merchantConfigs, $this->mode);
+    
+                $response["success_merchant_ids"][] = $merchantId;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException($ex, null, TraceCode::EMANDATE_CONFIG_CREATE_ERROR, [$merchantId]);
+    
+                $response["failed_merchant_ids"][] = $merchantId;
+            }
+        }
+    
+        return $response;
+    }
 }

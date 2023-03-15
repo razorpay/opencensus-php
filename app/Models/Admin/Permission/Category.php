@@ -77,4 +77,5 @@ class Category
     const CMMA                         = 'cmma';
     const X_DASHBOARD_FE               = 'x_dashboard_fe';
     const IP_WHITELIST                 = 'ip_whitelist';
+    const EMANDATE_CONFIG             = 'emandate_config';
 }

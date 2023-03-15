@@ -418,6 +418,9 @@ class Name
     const CAPITAL_LOS_APPLICATION_DOC_VERIFICATION_DETAILS_READ     = 'capital_los_application_doc_verification_details_read';
     const CAPITAL_LOS_APPLICATION_DOC_VERIFICATION_DETAILS_TRIGGER  = 'capital_los_application_doc_verification_details_trigger';
 
+    // Emandate config
+    const MANAGE_EMANDATE_CONFIG                      = 'manage_emandate_config';
+    
     //permission to edit/execute bulk international disable/enable workflowAction
     const EDIT_MERCHANT_DISABLE_INTERNATIONAL_BULK    = 'edit_merchant_disable_international_bulk';
     const EDIT_MERCHANT_ENABLE_INTERNATIONAL_BULK     = 'edit_merchant_enable_international_bulk';

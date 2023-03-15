@@ -1339,6 +1339,14 @@ return [
                 'assignable'  => true
             ],
         ],
+    
+        // RZP White label emandate config
+        PermissionCategory::EMANDATE_CONFIG => [
+            Permission::MANAGE_EMANDATE_CONFIG   => [
+                'description' => 'Edit EMANDATE Config',
+                'assignable'  => true
+            ]
+        ],
 
         PermissionCategory::BATCH => [
             Permission::RETRY_BATCH        => [

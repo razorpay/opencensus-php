@@ -216,6 +216,15 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DCS_EDIT_FEATURE_SCHEDULED_JOB_MERCHANT_IDS           = 'DCS_EDIT_FEATURE_SCHEDULED_JOB_MERCHANT_IDS';
     const DCS_EDIT_FEATURE_SCHEDULED_JOB                        = 'DCS_EDIT_FEATURE_SCHEDULED_JOB';
 
+    const DCS_FETCH_SERVICE_CONFIG_REQUEST                      = 'DCS_FETCH_SERVICE_CONFIG_REQUEST';
+    const DCS_FETCH_SERVICE_CONFIG_RESPONSE                     = 'DCS_FETCH_SERVICE_CONFIG_RESPONSE';
+    const DCS_CREATE_SERVICE_CONFIG_REQUEST                     = 'DCS_CREATE_SERVICE_CONFIG_REQUEST';
+    const DCS_CREATE_SERVICE_CONFIG_RESPONSE                    = 'DCS_CREATE_SERVICE_CONFIG_RESPONSE';
+    const DCS_EDIT_SERVICE_CONFIG_REQUEST                       = 'DCS_EDIT_SERVICE_CONFIG_REQUEST';
+    const DCS_EDIT_SERVICE_CONFIG_RESPONSE                      = 'DCS_EDIT_SERVICE_CONFIG_RESPONSE';
+
+
+
     // payout links
     const PAYOUT_LINK_GET_MODE_AND_MERCHANT                     = "PAYOUT_LINK_GET_MODE_AND_MERCHANT";
     const PAYOUT_LINK_APPROVE_WORKFLOW                          = "PAYOUT_LINK_APPROVE_WORKFLOW";
@@ -1276,7 +1285,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_DEBIT_ENTITY_CREATE                          = 'EMANDATE_DEBIT_ENTITY_CREATE';
     const EMANDATE_FILE_DATA                                    = 'EMANDATE_FILE_DATA';
     const EMANDATE_FILE_NAME                                    = 'EMANDATE_FILE_NAME';
-
+    
+    const EMANDATE_CONFIG_FETCH_REQUEST                         = 'EMANDATE_CONFIG_FETCH_REQUEST';
+    const EMANDATE_CONFIG_FETCH_ERROR                           = 'EMANDATE_CONFIG_FETCH_ERROR';
+    
+    const EMANDATE_CONFIG_CREATE_REQUEST                        = 'EMANDATE_CONFIG_CREATE_REQUEST';
+    const EMANDATE_CONFIG_CREATE_ERROR                          = 'EMANDATE_CONFIG_CREATE_ERROR';
+    
+    const EMANDATE_CONFIG_EDIT_REQUEST                          = 'EMANDATE_CONFIG_EDIT_REQUEST';
+    const EMANDATE_CONFIG_EDIT_ERROR                            = 'EMANDATE_CONFIG_EDIT_ERROR';
+    
     const NACH_REGISTER_REQUEST                                 = 'NACH_REGISTER_REQUEST';
     const NACH_REGISTER_RESPONSE_ERROR                          = 'NACH_REGISTER_RESPONSE_ERROR';
     const NACH_ACKNOWLEDGE_RESPONSE_ERROR                       = 'NACH_ACKNOWLEDGE_RESPONSE_ERROR';

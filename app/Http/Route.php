@@ -1102,7 +1102,13 @@ class Route
 
         'nach_batch_process'                       => ['post',     'nach/batch_service',                             'EMandateController@postProcessNachDebit'                                       ],
         'emandate_batch_process'                   => ['post',     'emandate/batch_service',                         'EMandateController@postProcessEmandateDebit'                       ],
-
+        
+        // Routes for emandate merchant configs
+        'fetch_emandate_merchant_configs'          => ['get',       'emandate/merchant_configs',                      'EMandateController@getBulkEmandateConfigs'                        ],
+        'create_emandate_merchant_configs'         => ['post',      'emandate/merchant_configs',                      'EMandateController@postBulkEmandateConfigs'                       ],
+        'edit_emandate_merchant_configs'           => ['patch',     'emandate/merchant_configs',                      'EMandateController@editBulkEmandateConfigs'                       ],
+    
+    
         'test_mailgun'                             => ['post',     'test_mailgun',                                   'ReconciliatorController@testMailgunFlow'                        ],
 
         'reconciliate'                             => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
@@ -8036,7 +8042,12 @@ class Route
         '1cc_rto_merchant_model_configs_get_admin',
         '1cc_rto_merchant_model_configs_update_admin',
         '1cc_rto_merchant_model_configs_delete_admin',
-        '1cc_rto_merchant_mlmodel_update_admin'
+        '1cc_rto_merchant_mlmodel_update_admin',
+        
+        //emandate
+        'fetch_emandate_merchant_configs',
+        'create_emandate_merchant_configs',
+        'edit_emandate_merchant_configs'
     ];
 
     public static $routePermission = [
@@ -8467,6 +8478,10 @@ class Route
         'onboarding_features_get_submissions'      => Permission::MANAGE_ONBOARDING_SUBMISSIONS,
         'feature_onboarding_fetch_all_responses'   => Permission::FEATURE_ONBOARDING_FETCH_ALL_RESPONSES,
         'geoip_update'                             => Permission::UPDATE_GEO_IP,
+    
+        'fetch_emandate_merchant_configs'          => Permission::MANAGE_EMANDATE_CONFIG,
+        'create_emandate_merchant_configs'         => Permission::MANAGE_EMANDATE_CONFIG,
+        'edit_emandate_merchant_configs'           => Permission::MANAGE_EMANDATE_CONFIG,
 
         'sub_virtual_account_create'               => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
         'sub_virtual_account_list_admin'           => Permission::ADMIN_SUB_VIRTUAL_ACCOUNT,
@@ -13002,6 +13017,10 @@ class Route
             'payment_button_set_merchant_details',
             'payment_button_get_receipt_details',
             'payment_button_save_receipt_for_payment',
+            
+            'fetch_emandate_merchant_configs',
+            'create_emandate_merchant_configs',
+            'edit_emandate_merchant_configs',
 
             'nca_store_create',
             'nca_store_list',

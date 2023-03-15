@@ -73,4 +73,31 @@ class EMandateController extends Controller
         }
         return ApiResponse::json(['body' => $data], 200);
     }
+    
+    public function getBulkEmandateConfigs()
+    {
+        $input = Request::all();
+    
+        $data = $this->service()->getBulkEmandateConfigs($input);
+    
+        return ApiResponse::json($data);
+    }
+    
+    public function postBulkEmandateConfigs()
+    {
+        $input = Request::all();
+        
+        $data = $this->service()->postBulkEmandateConfigs($input);
+        
+        return ApiResponse::json($data);
+    }
+    
+    public function editBulkEmandateConfigs()
+    {
+        $input = Request::all();
+    
+        $data = $this->service()->editBulkEmandateConfigs($input);
+    
+        return ApiResponse::json($data);
+    }
 }
