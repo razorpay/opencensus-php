@@ -412,6 +412,15 @@ class Validator extends Base\Validator
             }
         }
 
+        // adding a fix for city regex match
+        foreach (Constants::FOS_CITIES_REGEX as $city)
+        {
+            if (str_contains(strtolower($merchantCity), strtolower($city)))
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 

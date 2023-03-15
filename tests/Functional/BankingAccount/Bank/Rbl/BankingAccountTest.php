@@ -12528,6 +12528,7 @@ class BankingAccountTest extends TestCase
 
         Mail::fake();
 
+
         $this->assertFreshDeskTicketCreatedEventFired(false,[]);
 
         $this->startTest();

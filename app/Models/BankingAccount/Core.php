@@ -1044,7 +1044,6 @@ class Core extends Base\Core
                     ActivationDetail\Entity::API_ONBOARDING_LOGIN_DATE => null,
                     ActivationDetail\Entity::API_ONBOARDED_DATE => null,
                     ActivationDetail\Entity::ACCOUNT_OPENING_WEBHOOK_DATE => null,
-                    BankLms\Constants::FEET_ON_STREET => null
                 ],
 
                 ActivationDetail\Entity::RBL_ACTIVATION_DETAILS => [

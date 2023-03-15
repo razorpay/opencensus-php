@@ -41,6 +41,13 @@ class Constants
         'Bangalore',
     ];
 
+    const FOS_CITIES_REGEX = [
+        'delhi',
+        'mumbai',
+        'bengaluru',
+        'bangalore',
+    ];
+
     const NON_FOS = 'Non_FOS';
 
     const ACTIVATION_ACCOUNT_TYPE = 'activation_account_type';

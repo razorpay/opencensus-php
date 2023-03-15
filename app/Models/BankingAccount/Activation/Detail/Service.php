@@ -211,6 +211,24 @@ class Service extends Base\Service
         // - change in assignee team requires a comment
         // - update via batch service.
 
+        if ($this->app['basicauth']->isMobApp() === false)
+        {
+            $commentInput = $this->extractCommentInput($input);
+        } else
+        {
+            $commentInput = $input['comment'] ?? null;
+        }
+
+        $callDateAndTime = $this->extractCallDateAndTime($input);
+
+        $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
+
+        if ($activationDetail === null)
+        {
+            // has not been created yet. Create an entry with NULLs
+            $activationDetail = $this->core->create([Entity::BANKING_ACCOUNT_ID => $bankingAccount->getId()], 'create_null');
+        }
+
         $addressPrefilledViaGstin = $this->core->checkAddressUpdate($bankingAccount->bankingAccountActivationDetails, $input);
         // TODO: Remove dupe code
         // To eliminate dirty reads and reduce nested Db txns we are saving value in to entity
@@ -242,24 +260,6 @@ class Service extends Base\Service
         $bankingAccountCore->checkAndSendFreshDeskEmailIfFormIsSubmitted($bankingAccount, $input);
 
         $bankingAccountCore->moveSubstatusIfSkipDwtExpEligible($bankingAccount, $input);
-
-        if ($this->app['basicauth']->isMobApp() === false)
-        {
-            $commentInput = $this->extractCommentInput($input);
-        } else
-        {
-            $commentInput = $input['comment'] ?? null;
-        }
-
-        $callDateAndTime = $this->extractCallDateAndTime($input);
-
-        $activationDetail = $this->repo->banking_account_activation_detail->findByBankingAccountId($bankingAccount->getId());
-
-        if ($activationDetail === null)
-        {
-            // has not been created yet. Create an entry with NULLs
-            $activationDetail = $this->core->create([Entity::BANKING_ACCOUNT_ID => $bankingAccount->getId()], 'create_null');
-        }
 
         $this->calculateCustomerBookingAppointmentDate($activationDetail, $input);
 
