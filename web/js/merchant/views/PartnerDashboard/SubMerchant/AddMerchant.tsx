@@ -48,11 +48,11 @@ const ORG_CONTACT_PLACEHOLDER_TEXT = {
   curlec: "Affiliate's phone number starting with 0 or country code",
 };
 const PAYMENTS_MAINTENANCE_STATUS = {
-  rzp: true,
+  rzp: false,
   curlec: false,
 };
 const PAYMENTS_DISABLED_STATUS = {
-  rzp: true,
+  rzp: false,
   curlec: false,
 };
 

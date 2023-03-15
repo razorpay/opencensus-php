@@ -14,9 +14,9 @@ export default function ReferralBox({
   tracking,
   partnerID,
   partnershipForXEnabled,
-  product = PRODUCT_TYPE.X,
+  product = PRODUCT_TYPE.PG,
 }) {
-  const [productType, setProductType] = useState(PRODUCT_TYPE.X);
+  const [productType, setProductType] = useState(PRODUCT_TYPE.PG);
   const pgReferralLink = referralData?.[PRODUCT_TYPE.PG]?.url ?? '';
   const bankingReferralLink = referralData?.[PRODUCT_TYPE.X]?.url ?? '';
   const capitalReferralLink = referralData?.[PRODUCT_TYPE.CAPITAL]?.url ?? '';
@@ -31,8 +31,15 @@ export default function ReferralBox({
     return '';
   };
   useEffect(() => {
-    if (product === PRODUCT_TYPE.CAPITAL) {
-      setProductType(PRODUCT_TYPE.CAPITAL);
+    switch (product) {
+      case PRODUCT_TYPE.CAPITAL:
+        setProductType(PRODUCT_TYPE.CAPITAL);
+        break;
+      case PRODUCT_TYPE.X:
+        setProductType(PRODUCT_TYPE.X);
+        break;
+      default:
+        setProductType(PRODUCT_TYPE.PG);
     }
   }, [product]);
 
@@ -101,8 +108,6 @@ export default function ReferralBox({
           description="Invite affiliates to use Razorpay Payment products to collect payments"
           onClick={() => setProductType(PRODUCT_TYPE.PG)}
           checked={productType === PRODUCT_TYPE.PG}
-          disabled
-          isMaintenance
         >
           {productType === PRODUCT_TYPE.PG ? (
             <SocialShareGroup

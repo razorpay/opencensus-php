@@ -26,7 +26,7 @@ export const getInitialState = ({ user, addType, referralData }) => {
     addMode: ADD_MODE.single,
     bulkContactsCount: 0,
     step: 1,
-    merchantType: PRODUCT_TYPE.X,
+    merchantType: PRODUCT_TYPE.PG,
     merchantEmail: '',
     merchantName: '',
     merchantContact: '',
@@ -34,6 +34,11 @@ export const getInitialState = ({ user, addType, referralData }) => {
     isFormValid: false,
   };
   switch (addType) {
+    case PRODUCT_TYPE.PG: {
+      state.step = 1;
+      state.merchantType = PRODUCT_TYPE.PG;
+      break;
+    }
     case PRODUCT_TYPE.X: {
       state.step = 2;
       state.merchantType = PRODUCT_TYPE.X;

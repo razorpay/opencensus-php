@@ -242,7 +242,7 @@ export const defaultAddMerchantState = {
   addMode: ADD_MODE.single,
   bulkContactsCount: 0,
   step: 1,
-  merchantType: PRODUCT_TYPE.X,
+  merchantType: PRODUCT_TYPE.PG,
   merchantEmail: '',
   merchantName: '',
   merchantContact: '',

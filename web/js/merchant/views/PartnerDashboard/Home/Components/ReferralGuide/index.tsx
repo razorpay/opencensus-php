@@ -26,7 +26,7 @@ const pgIcon = `${assetBase}/pg-icon.svg`;
 const bankingIcon = `${assetBase}/banking-icon.svg`;
 const subIcon = `${assetBase}/referral-guide-sub-icon.svg`;
 const PAYMENT_PRODUCT_DISABLED_STATUS = {
-  rzp: true,
+  rzp: false,
   curlec: false,
 };
 
