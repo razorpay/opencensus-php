@@ -56,6 +56,11 @@ const PAYMENTS_DISABLED_STATUS = {
   curlec: false,
 };
 
+const PAYMENTS_NOTE_STATUS = {
+  rzp: true,
+  curlec: false,
+};
+
 const MOBILE_NUMBER_MAX_LENGTH = {
   IN: 10,
   MY: 12,
@@ -699,6 +704,7 @@ class AddMerchant extends Component<AddMerchantPropsT, AddMerchantStateT> {
                     checked={merchantType === PRODUCT_TYPE.PG}
                     disabled={PAYMENTS_DISABLED_STATUS[this.orgCode]}
                     isMaintenance={PAYMENTS_MAINTENANCE_STATUS[this.orgCode]}
+                    showNote={PAYMENTS_NOTE_STATUS[this.orgCode]}
                     orgName={this.orgName}
                   />
                   <ShowWhen

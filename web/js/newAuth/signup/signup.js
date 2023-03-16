@@ -22,12 +22,18 @@ import CommanderShieldThemeWrapper from 'newAuth/commanderShieldThemeWrapper';
 import { fetchOrg } from 'newAuth/apis';
 import { FullPageLoader } from 'common/components/Loader';
 import PartnerSignup from './components/PartnerSignup';
+import { Modal, ModalBody } from 'common/components/Modal';
+import { ModalHeader, ModalFooter } from 'common/components/Modal/Styled';
+import { Button } from '@razorpay/blade/components';
+import { trackWithSegment } from 'newAuth/trackEvents';
+import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { isNewPartnerSignup, isSignupEnabled } from 'newAuth/splitz/index';
 
 const SignUp = () => {
   const [programDsCheck, setProgramDsCheck] = useState(false);
   const [orgName, setOrgName] = useState();
   const [isFetchingOrgData, setFetchingOrgData] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [oneTapInfo, setOneTapInfo] = useState({
     isExpOn: true,
     isScriptFailed: window.isOneTapScriptFailed,
@@ -38,6 +44,17 @@ const SignUp = () => {
     if (isSignUpFromWebsite) {
       setCookie('auth_source', auth_source);
     }
+
+    // show partner onboarding resumed notification modal
+    setIsOpen(true);
+    trackWithSegment({
+      objectName: 'Partner Onboarding Paused Modal',
+      actionName: 'Loaded',
+      location: '',
+      properties: {
+        mobileSignup: isNewPartnerSignup(),
+      },
+    });
   }, []);
 
   useEffect(() => {
@@ -127,6 +144,18 @@ const SignUp = () => {
     window.location.href = '/#/access/signin';
   };
 
+  const onClose = () => {
+    setIsOpen(false);
+    trackWithSegment({
+      objectName: 'Partner Onboarding Paused Modal Continue',
+      actionName: 'Clicked',
+      location: '',
+      properties: {
+        mobileSignup: isNewPartnerSignup(),
+      },
+    });
+  };
+
   const query = QueryString.parse(window.location.search);
 
   // enable signup for invitation merchant
@@ -144,7 +173,8 @@ const SignUp = () => {
     disableSignup = false;
   }
 
-  if (!disableSignup && isNewPartnerSignup()) return <PartnerSignup />;
+  // r=partner query param is passed in the signup url when user wants to signup as a partner
+  if (!disableSignup && query.r === 'partner' && isNewPartnerSignup()) return <PartnerSignup />;
 
   return (
     <ThemeProvider theme={theme}>
@@ -189,6 +219,23 @@ const SignUp = () => {
                       <InfoContainer handleContactUsClick={handleContactUsClick} />
                     </RelativeView>
                   )}
+                  <Modal
+                    isOpen={isOpen}
+                    onClose={onClose}
+                    bottomsheet={isMobileAndTablet()}
+                    bottomSheetHeight="265px"
+                  >
+                    <ModalHeader>New business onboarding is temporarily paused</ModalHeader>
+                    <ModalBody>
+                      Please submit your details so that your partner account can be activated at
+                      the earliest when we resume onboarding.
+                      <br />
+                      *You can keep referring your clients in the meanwhile
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button onClick={onClose}>Continue</Button>
+                    </ModalFooter>
+                  </Modal>
                 </ContentContainer>
               </Flex>
             </Size>

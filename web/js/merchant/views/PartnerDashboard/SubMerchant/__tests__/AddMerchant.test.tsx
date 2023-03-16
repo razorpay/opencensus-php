@@ -120,9 +120,17 @@ describe('AddMerchant', () => {
     jest.clearAllMocks();
   });
 
+  test('should show the note for resuming partner onboarding', () => {
+    renderApp();
+    expect(
+      screen.getByText(
+        'Note: New Business onboarding is temporarily paused! Your clients can submit their details so that their account can be activated at the earliest when we resume onboarding',
+      ),
+    ).toBeInTheDocument();
+  });
+
   test('should render correctly Corporate Card option with props', () => {
     renderApp();
-
     expect(screen.getByText('Line Of Credit')).toBeInTheDocument();
     expect(
       screen.getByText('Refer merchants to Capital products like Line Of Credit'),
