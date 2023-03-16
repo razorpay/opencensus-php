@@ -5744,10 +5744,6 @@ class Route
         'fetch_authz_roles_by_role_id',
 
         'internal_1cc_order_review',
-
-        // Terminal downtimes
-        'manual_downtime_fetch',
-        'downtime_manual_resolve',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
