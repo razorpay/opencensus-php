@@ -9,6 +9,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Admin\Org\Hostname;
 use RZP\Models\Admin\Base;
 use RZP\Models\Admin\Permission;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base\RepositoryUpdateTestAndLive;
 
 class Repository extends Base\Repository
@@ -81,7 +82,7 @@ class Repository extends Base\Repository
                 ->where($hostnameAttr, '=', $hostname)
                 ->firstOrFailPublic();
         }
-        catch (\RZP\Exception\BadRequestException $e)
+        catch (BadRequestException $e)
         {
             //if not found with given hostname, normalize th hostname if it is for devserve, if not raise exeception
             $hostname = $this->checkIfDeserveHostName($hostname);
@@ -93,7 +94,6 @@ class Repository extends Base\Repository
                 ->where($hostnameAttr, '=', $hostname)
                 ->firstOrFailPublic();
         }
-
     }
 
     /**
@@ -157,12 +157,12 @@ class Repository extends Base\Repository
         {
             // if org host has the pattern dashboard-.*.dev.razorpay.in -> dashboard.dev.razorpay.in
             case preg_match('/dashboard-(\b(?!curlec\b)\w+).dev.razorpay.in/', $hostname) === 1:
-                return \RZP\Models\Admin\Org\Constants::DEVSERVE_HOST_URL;
+                return Constants::DEVSERVE_HOST_URL;
             // if org host has the pattern dashboard-.*-curlec.dev.razorpay.in -> dashboard-curlec.dev.razorpay.in
             case preg_match('/dashboard-(.*)-curlec.dev.razorpay.in/', $hostname) === 1:
-                return \RZP\Models\Admin\Org\Constants::DEVSERVE_CURLEC_HOST_URL;
+                return Constants::DEVSERVE_CURLEC_HOST_URL;
             default:
-                throw new Exception\BadRequestException(
+                throw new BadRequestException(
                     ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, $hostname);
         }
 
