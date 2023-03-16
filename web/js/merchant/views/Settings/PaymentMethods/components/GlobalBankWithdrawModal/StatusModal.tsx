@@ -54,7 +54,7 @@ function StatusModal({ type, onClose, onTryAgain }: StatusModalProps): JSX.Eleme
             <img width="45" src={SuccessIcon} alt="Withdrawal Success" />
           </FormRow>
           <FormRow textCenter>
-            <Heading size="large">Payment successful</Heading>
+            <Heading size="large">Withdrawal successful</Heading>
           </FormRow>
           <FormRow>
             <Button isFullWidth type="button" variant="primary" onClick={onClose}>
