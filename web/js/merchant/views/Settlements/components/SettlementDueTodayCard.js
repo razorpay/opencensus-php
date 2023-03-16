@@ -8,9 +8,11 @@ import { BADGE_INFO, HEADING_INFO, SETTLEMENT_SLA_IN_HOURS, SETTLEMENT_STATUS } 
 import { FlexBetween, CardFooterIcon, TextFooter } from './styledUtils';
 import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
 
+const InitiatedSettlementStatuses = [SETTLEMENT_STATUS.CREATED, SETTLEMENT_STATUS.INITIATED];
+
 const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency }) => {
-  const initiatedSettlements = settlementsList?.filter(
-    (setl) => setl?.status?.toLowerCase() === SETTLEMENT_STATUS.CREATED,
+  const initiatedSettlements = settlementsList?.filter((setl) =>
+    InitiatedSettlementStatuses.includes(setl?.status?.toLowerCase()),
   );
   const dailySettlement = settlementConfig?.data?.config?.preferences?.daily_settlement;
   const delayedInitiate = settlementConfig?.data?.config?.initate_types?.delayed?.enable;

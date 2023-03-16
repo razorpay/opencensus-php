@@ -47,6 +47,9 @@ const state = {
   profile: {
     bankAccountChangeStatus: false,
   },
+  settlements: {
+    items: [],
+  },
 };
 
 describe('SettlementsBannerV2', () => {
@@ -487,5 +490,37 @@ describe('SettlementsBannerV2', () => {
     render(<App initialState={initialState} />);
     expect(screen.getByLabelText('settlement-banner')).toBeInTheDocument();
     expect(screen.getByText('SettlementMessage')).toBeInTheDocument();
+  });
+
+  test('should not render banner when loading ', () => {
+    const initialState = {
+      ...state,
+      session: {
+        mode: 'live',
+        session: {
+          ...state.session,
+          user: {
+            isSubmitted: false,
+            isActivated: false,
+          },
+        },
+      },
+      home: {
+        current_balance: {
+          data: {
+            balance: 10099,
+          },
+        },
+        settlement_amount: {
+          loading: true,
+          data: {
+            settlement_amount: 11999,
+            next_settlement_time: moment().add(3, 'hours').format('X'),
+          },
+        },
+      },
+    };
+    render(<App initialState={initialState} />);
+    expect(screen.queryByLabelText('settlement-banner')).not.toBeInTheDocument();
   });
 });

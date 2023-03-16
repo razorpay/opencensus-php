@@ -111,6 +111,7 @@ export const ALERT_INTENT = {
 
 export const SETTLEMENT_STATUS = {
   CREATED: 'created',
+  INITIATED: 'initiated',
   FAILED: 'failed',
   PROCESSED: 'processed',
 };

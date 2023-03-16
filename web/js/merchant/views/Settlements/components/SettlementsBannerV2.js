@@ -35,6 +35,13 @@ const SettlementsBannerV2 = ({
   history,
   settlementsList,
 }) => {
+  const isBannerLoading =
+    settlement_amount?.loading ||
+    settlementConfig?.loading ||
+    current_balance?.loading ||
+    holidayList?.loading ||
+    settlementsList?.loading;
+
   const no_settlement = settlement_amount?.data?.no_settlement;
 
   const isOnTemporaryHold = settlementConfig?.data?.config?.features?.hold?.status;
@@ -51,7 +58,7 @@ const SettlementsBannerV2 = ({
 
   const nextSettlement = settlement_amount?.data?.settlement_amount;
 
-  const previousSettlement = settlementsList?.[0];
+  const previousSettlement = settlementsList?.items?.[0];
 
   const previousSettlementFailed =
     previousSettlement?.status?.toLowerCase() === SETTLEMENT_STATUS.FAILED;
@@ -197,29 +204,32 @@ const SettlementsBannerV2 = ({
     intent = ALERT_INTENT.NOTICE;
   }
 
-  return title && mode === 'live' ? (
-    <BannerWrapper aria-label="settlement-banner">
-      <Alert
-        intent={intent}
-        isDismissible={false}
-        title={title}
-        description={subTitle}
-        isFullWidth={true}
-        actions={actions}
-      />
-    </BannerWrapper>
-  ) : user?.isOndemandSettlementEnabled ? (
-    <BannerWrapper aria-label="settlement-banner">
-      <div className="Announcement_Banner">
-        <SettlementMessage
-          user={user}
-          holidayList={holidayList}
-          openModal={openModal}
-          balance={balance}
+  return (
+    !isBannerLoading &&
+    (title && mode === 'live' ? (
+      <BannerWrapper aria-label="settlement-banner">
+        <Alert
+          intent={intent}
+          isDismissible={false}
+          title={title}
+          description={subTitle}
+          isFullWidth={true}
+          actions={actions}
         />
-      </div>
-    </BannerWrapper>
-  ) : null;
+      </BannerWrapper>
+    ) : user?.isOndemandSettlementEnabled ? (
+      <BannerWrapper aria-label="settlement-banner">
+        <div className="Announcement_Banner">
+          <SettlementMessage
+            user={user}
+            holidayList={holidayList}
+            openModal={openModal}
+            balance={balance}
+          />
+        </div>
+      </BannerWrapper>
+    ) : null)
+  );
 };
 
 const mapStateToProps = (state) => {
@@ -232,7 +242,7 @@ const mapStateToProps = (state) => {
     config: state?.config?.config,
     bankAccountChangeStatus: state?.profile?.bankAccountChangeStatus,
     current_balance: state?.home?.current_balance,
-    settlementsList: state?.settlements?.items,
+    settlementsList: state?.settlements,
   };
 };
 

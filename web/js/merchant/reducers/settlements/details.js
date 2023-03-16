@@ -209,6 +209,13 @@ export default (state = initialState, action) => {
         isBreakupNew: null,
       });
 
+    case `${SETTLEMENT_SCHEDULE_FETCH}::PENDING`:
+      return set(state, 'schedule', {
+        loading: true,
+        data: [],
+        error: null,
+      });
+
     case `${SETTLEMENT_SCHEDULE_FETCH}::SUCCESS`:
       return set(state, 'schedule', {
         loading: false,
@@ -223,6 +230,13 @@ export default (state = initialState, action) => {
         error: action.payload.errors,
       });
 
+    case `${HOLIDAY_LIST_FETCH}::PENDING`:
+      return set(state, 'holidayList', {
+        loading: true,
+        data: {},
+        error: null,
+      });
+
     case `${HOLIDAY_LIST_FETCH}::SUCCESS`:
       return set(state, 'holidayList', {
         loading: false,
@@ -235,6 +249,13 @@ export default (state = initialState, action) => {
         loading: false,
         data: {},
         error: action.payload.errors,
+      });
+
+    case `${SETTLEMENT_CONFIG_FETCH}::PENDING`:
+      return set(state, 'config', {
+        loading: true,
+        data: {},
+        error: null,
       });
 
     case `${SETTLEMENT_CONFIG_FETCH}::SUCCESS`:
@@ -286,6 +307,13 @@ export default (state = initialState, action) => {
         loading: false,
         data: null,
         error: action.payload?.errors,
+      });
+
+    case `${PREVIOUS_SETTLEMENTS_FETCH}::PENDING`:
+      return set(state, 'previousSettlements', {
+        loading: true,
+        data: {},
+        error: null,
       });
 
     case `${PREVIOUS_SETTLEMENTS_FETCH}::SUCCESS`:

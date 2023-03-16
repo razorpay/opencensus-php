@@ -53,4 +53,21 @@ describe('UpcomingSettlementCard', () => {
     expect(screen.getByText('NA')).toBeInTheDocument();
     expect(screen.getByText('Blocked')).toBeInTheDocument();
   });
+
+  test('should render footer in case the amount is < 1 rupee', () => {
+    const current_balance = {
+      data: {
+        balance: 10099,
+      },
+    };
+    const next_settlement = {
+      settlement_amount: 99,
+      next_settlement_time: moment().add(3, 'hours').format('X'),
+    };
+    render(<App current_balance={current_balance} next_settlement={next_settlement} />);
+    expect(screen.getByText('Upcoming settlement')).toBeInTheDocument();
+    expect(screen.getByText(HEADING_INFO.UPCOMING_SETTLEMENT)).toBeInTheDocument();
+    expect(screen.getByText('.99')).toBeInTheDocument();
+    expect(screen.getByText('Amount more than ₹1 is settled')).toBeInTheDocument();
+  });
 });

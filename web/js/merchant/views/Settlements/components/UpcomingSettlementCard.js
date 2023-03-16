@@ -63,6 +63,14 @@ const UpcomingSettlementCard = ({
     );
   }
 
+  if (next_settlement?.next_settlement_time && next_settlement?.settlement_amount < 100) {
+    footer = (
+      <TextFooter>
+        <span>Amount more than ₹1 is settled </span>
+      </TextFooter>
+    );
+  }
+
   const customCardStyle = `
     padding-top: 0;
     padding-bottom: 0;
