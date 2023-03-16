@@ -1860,6 +1860,12 @@ export default class User {
     return getSplitzExperimentVariant('show_aff_widget_wooc_wait_list').variables?.result === 'on';
   }
 
+  get isShowSegregatedCreditEmi() {
+    return (
+      getSplitzExperimentVariant('show_segregated_credit_emi_methods').variables?.result === 'on'
+    );
+  }
+
   get isApiKeysRevampEnabled() {
     return getSplitzExperimentVariant('api_keys_revamp')?.variables?.result === 'on';
   }

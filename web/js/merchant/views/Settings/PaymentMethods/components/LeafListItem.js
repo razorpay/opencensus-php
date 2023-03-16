@@ -18,6 +18,8 @@ import {
 } from 'merchant/reducers/instrumentRequests';
 
 import { getIcon } from './InstrumentIcons';
+import { getIcon as getPaymentMethodIcon } from './paymentMethodIcons';
+
 import PaytmWalletIntegration from './Modals/PaytmWallet/PaytmWalletIntegration';
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { DetailsDrawer } from './Modals/PaytmWallet/DetailsDrawer';
@@ -349,7 +351,17 @@ class LeafListItem extends React.Component {
   };
 
   render() {
-    const { instrument, intermediateInstrument, instrumentsTat } = this.props;
+    const { instrument, intermediateInstrument, instrumentsTat, user } = this.props;
+
+    const isAffordabilityOnboardingActive = user.isShowSegregatedCreditEmi;
+
+    // If affordability Onboarding experiment only then we need to show the credit emi changes
+    if (instrument.slug === 'credit' && isAffordabilityOnboardingActive)
+      instrument.name = 'Other banks';
+    if (instrument.slug === 'credit.sbi' && !isAffordabilityOnboardingActive) {
+      return null;
+    }
+
     const getListClass = (status, path) => {
       if ([REJECTED, ACTION_REQUIRED].includes(status)) {
         return 'action-required-list-item';
@@ -396,6 +408,9 @@ class LeafListItem extends React.Component {
     return (
       <li className={getListClass(instrument.status, instrument.path)}>
         <div>
+          {instrument.slug === 'credit' && isAffordabilityOnboardingActive ? (
+            <div className="icon">{getPaymentMethodIcon('card')}</div>
+          ) : null}
           {instrument.icon && (
             <div className="icon">
               <img
@@ -430,7 +445,16 @@ class LeafListItem extends React.Component {
                   </Popover>
                 </span>
               ) : null} */}
-              {instrument.description && <p>{instrument.description}</p>}
+              {instrument.description && isAffordabilityOnboardingActive ? (
+                <p>
+                  {instrument.description}
+                  {instrument.docLink && (
+                    <a href={instrument.docLink} target="_blank" rel="noopener noreferrer">
+                      &nbsp; &amp; more
+                    </a>
+                  )}
+                </p>
+              ) : null}
             </div>
             {shouldReinitiateRequest && (
               <button

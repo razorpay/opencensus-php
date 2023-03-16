@@ -499,6 +499,13 @@ export default {
     //prod experiment ids,
     'L4jWAHTviz9Tbu',
   ],
+  show_segregated_credit_emi_methods: [
+    //beta experiment ids
+    'L7aXE1B8IJ8E3Q',
+
+    //prod experiment ids,
+    'L7uAKxhCggh6Na',
+  ],
   get_ticket_migration: [
     // beta
     'KoBY1gZStTu3ic',

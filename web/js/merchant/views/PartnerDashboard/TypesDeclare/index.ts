@@ -10,6 +10,7 @@ export interface UserT extends Record<string, unknown> {
   isShowAffordabilityWidget: boolean;
   isShowAffWidgetShopifyWaitlist: boolean;
   isShowAffWidgetWoocWaitlist: boolean;
+  isShowSegregatedCreditEmi: boolean;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

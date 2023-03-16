@@ -672,9 +672,18 @@ export const initialState = {
           list: [
             {
               name: 'Credit Cards',
-              description: '',
+              description: 'HDFC, ICICI, Kotak, Axis',
               status: 'greyed',
               slug: 'credit',
+              docLink:
+                'https://razorpay.com/docs/payments/payment-methods/emi/credit-card-emi/#supported-banks-for-credit-card-emis',
+            },
+            {
+              name: 'SBI CC EMI',
+              description: '',
+              status: 'greyed',
+              slug: 'credit.sbi',
+              icon: 'https://cdn.razorpay.com/bank/SBIN.gif',
             },
           ],
         },
@@ -698,7 +707,9 @@ export const initialState = {
             },
             {
               name: 'Instacred',
-              description: '',
+              description: 'ICICI, Kotak, HDFC, Federal',
+              docLink:
+                'https://razorpay.com/docs/payments/payment-methods/emi/cardless-emi/#supported-payment-partners',
               status: 'greyed',
               slug: 'cardless_emi.instacred',
               icon: 'instacred',
@@ -858,13 +869,6 @@ export const initialState = {
               slug: 'lazypay',
               icon: 'https://cdn.razorpay.com/paylater-sq/lazypay.svg',
             },
-            // {
-            //   name: 'ePayLater',
-            //   description: '',
-            //   status: 'greyed',
-            //   slug: 'epaylater',
-            //   icon: 'epaylater',
-            // },
           ],
         },
       ],
