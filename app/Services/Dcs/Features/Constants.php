@@ -71,6 +71,8 @@ class Constants
     const NoDocOnboardingEnabled = 'no_doc_onboarding_enabled';
     const OnboardedViaV2ApiEnabled = 'onboarded_via_v2_api_enabled';
     const BlockSendingOnboardingSms = 'block_sending_onboarding_sms';
+    const AssumeSubAccount = 'assume_sub_account';
+    const AssumeMasterAccount = 'assume_master_account';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -136,6 +138,8 @@ class Constants
         self::NoDocOnboardingEnabled => 'rzp/pg/merchant/onboarding/PartnershipFeatures',
         self::OnboardedViaV2ApiEnabled => 'rzp/pg/merchant/onboarding/PartnershipFeatures',
         self::BlockSendingOnboardingSms => 'rzp/pg/merchant/communication/PartnershipFeatures',
+        self::AssumeSubAccount => 'rzp/x/merchant/payouts/SubAccountRoles',
+        self::AssumeMasterAccount => 'rzp/x/merchant/payouts/SubAccountRoles'
     ];
 
     /**
@@ -203,6 +207,8 @@ class Constants
         APIFeaturesConstants::NO_DOC_ONBOARDING                             => self::NoDocOnboardingEnabled,
         APIFeaturesConstants::CREATE_SOURCE_V2                              => self::OnboardedViaV2ApiEnabled,
         APIFeaturesConstants::BLOCK_ONBOARDING_SMS                          => self::BlockSendingOnboardingSms,
+        APIFeaturesConstants::ASSUME_SUB_ACCOUNT                            => self::AssumeSubAccount,
+        APIFeaturesConstants::ASSUME_MASTER_ACCOUNT                         => self::AssumeMasterAccount,
     ];
 
     /**
@@ -223,6 +229,8 @@ class Constants
         self::ImportSettlement => 'direct',
         self::AdminLeadPartnerInviteEnabled => 'direct',
         self::CvvLessFlowDisabled => 'direct',
+        self::AssumeSubAccount => 'direct',
+        self::AssumeMasterAccount => 'direct',
     ];
 
     /**

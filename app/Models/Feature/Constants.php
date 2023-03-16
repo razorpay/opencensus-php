@@ -667,6 +667,14 @@ class Constants
 
     const BLOCK_OFFER_CREATION     = 'block_offer_creation';
 
+    // With this feature, an Rx merchant can act as a sub-account on top of a master merchant.
+    // Sub account is a virtual segregation that can be independently operated by the sub-merchant
+    const ASSUME_SUB_ACCOUNT = 'assume_sub_account';
+
+    // With this feature, an Rx merchant with a bank account can act as a master account onto
+    // which they can onboard sub-account(s)
+    const ASSUME_MASTER_ACCOUNT = 'assume_master_account';
+
     /*
      * this is used for displaying the parent payment id for linked accounts in Route
      */
@@ -2476,6 +2484,10 @@ class Constants
         self::OPTIMIZER_ONLY_MERCHANT         => true,
         self::REGULAR_TEST_MERCHANT           => true,
         DcsConstants::AffordabilityWidgetSet           => true,
+        self::ASSUME_MASTER_ACCOUNT           => true,
+        self::ASSUME_SUB_ACCOUNT              => true,
+        DcsConstants::AssumeSubAccount        => true,
+        DcsConstants::AssumeMasterAccount     => true,
     ];
 
     // Entity type constants
@@ -3465,6 +3477,16 @@ class Constants
             'feature'       => self::AFFORDABILITY_WIDGET,
             'display_name'  => 'Affordability Widget',
             'documentation' => 'Feature to enable Affordability Widget',
+        ],
+        self::ASSUME_SUB_ACCOUNT => [
+            'feature'       => self::ASSUME_SUB_ACCOUNT,
+            'display_name'  => 'Assume Sub Account',
+            'documentation' => 'Rx merchant can act as a sub-account on top of a master merchant.',
+        ],
+        self::ASSUME_MASTER_ACCOUNT => [
+            'feature'       => self::ASSUME_MASTER_ACCOUNT,
+            'display_name'  => 'Assume Master Account',
+            'documentation' => 'Rx merchant with a bank account can act as a master account',
         ],
     ];
 
