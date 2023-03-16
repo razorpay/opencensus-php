@@ -1674,7 +1674,8 @@ class Entity extends Base\PublicEntity
         if (($currentStatus === Status::CREATED) and
             ($status === Status::INITIATED) and
             ($this->isBalanceAccountTypeDirect() === true) and
-            ($this->getFeeType() !== Transaction\CreditType::REWARD_FEE))
+            ($this->getFeeType() !== Transaction\CreditType::REWARD_FEE) and
+            ($this->getIsPayoutService() === false))
         {
             (new FeeRecovery\Core)->createFeeRecoveryEntityForSource($this);
         }

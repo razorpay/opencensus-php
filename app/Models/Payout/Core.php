@@ -4185,7 +4185,9 @@ class Core extends Base\Core
         }
         // the below logic tries to find entry in Banking account statement table(BAS) for a payout
         // BAS table has rows only for CA payouts. So skipping below code for VA payouts
-        if ($payout->balance->isAccountTypeShared() === true)
+        // We are also skipping this for payouts done via PS, since these checks will be migrated there.
+        if (($payout->balance->isAccountTypeShared() === true) or
+            ($payout->getIsPayoutService() === true))
         {
             return;
         }
@@ -6198,6 +6200,8 @@ class Core extends Base\Core
                 Attempt\Constants::BENEFICIARY_NAME => $ftaData[Attempt\Constants::BENEFICIARY_NAME] ?? null,
                 Attempt\Entity::BANK_STATUS_CODE    => $ftaData[Attempt\Entity::BANK_STATUS_CODE] ?? null,
                 Attempt\Constants::FTA_STATUS       => $ftaData[Attempt\Constants::FTA_STATUS] ?? null,
+                Attempt\Entity::CMS_REF_NO          => $ftaData[Attempt\Entity::CMS_REF_NO] ?? null,
+                Attempt\Entity::GATEWAY_REF_NO      => $ftaData[Attempt\Entity::GATEWAY_REF_NO] ?? null,
                 Entity::STATUS_DETAILS              => [
                     'beneficiary_bank'      => $payout->provideBeneBankName() ?? 'beneficiary bank',
                     'processed_by_time'     => $ftaData[Attempt\Entity::STATUS_DETAILS][Attempt\Entity::PARAMETERS][Attempt\Constants::PROCESSED_BY_TIME] ?? null,
@@ -7563,7 +7567,9 @@ class Core extends Base\Core
 
     private function updateStatusFromFailedToReversedIfDebitAndCreditFoundForCA(&$status, Entity $payout)
     {
-        if ($status !== Status::FAILED || $payout->balance->isAccountTypeShared() === true)
+        if (($status !== Status::FAILED) or
+            ($payout->balance->isAccountTypeShared() === true) or
+            ($payout->getIsPayoutService() === true))
         {
             return;
         }

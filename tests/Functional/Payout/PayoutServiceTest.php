@@ -7,6 +7,7 @@ use Config;
 use Queue;
 use Mockery;
 use Carbon\Carbon;
+use Database\Connection;
 use \WpOrg\Requests\Response;
 
 use RZP\Constants\Mode;
@@ -1796,6 +1797,69 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals('initiated', $fta->getStatus());
     }
 
+    public function testPayoutServiceFtaCreationWithoutPayoutInAPIForDirectAccount()
+    {
+        $payout = $this->testCreatePayoutEntry('IMPS', false);
+
+        $this->fixtures->edit('payout', $payout['id'], [
+            'transaction_id' => null,
+            'status'         => 'created',
+        ]);
+
+        $this->fixtures->edit('balance', $payout['balance_id'], [
+            'account_type' => 'direct',
+        ]);
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        (new PayoutServiceDataMigration('live', [
+            DataMigration\Processor::FROM => $payout->getCreatedAt(),
+            DataMigration\Processor::TO   => $payout->getCreatedAt(),
+            Entity::BALANCE_ID            => $payout->getBalanceId()
+        ]))->handle();
+
+        $migratedPayout = \DB::connection('test')->select("select * from ps_payouts where id = 'Gg7sgBZgvYjlSB'")[0];
+
+        $this->assertEquals($payout->getId(), $migratedPayout->id);
+
+        $this->fixtures->edit('payout', 'Gg7sgBZgvYjlSB', ['id' => 'Gg7sgBZgvYjlSC']);
+
+        $this->ba->appAuthLive();
+
+        $testData = $this->testData['testPayoutServiceFtaCreationWithoutPayoutInAPI'];
+
+        $this->startTest($testData);
+
+        $fta = $this->getDbLastEntity('fund_transfer_attempt', 'live');
+
+        $mock = Mockery::mock(\RZP\Services\FTS\FundTransfer::class, [$this->app])->makePartial();
+        $mock = $mock->shouldAllowMockingProtectedMethods();
+
+        $mock->shouldReceive('createAndSendRequest')->once()->andReturn(
+            [
+                'body' => [
+                    'status'           => 'initiated',
+                    'fund_transfer_id' => 123,
+                    'fund_account_id'  => 'D6Z9Jfir2egAUT'
+                ],
+                'code' => 201,
+            ]
+        );
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        (new FtsFundTransfer('live', $fta->getId(), null))->handle();
+
+        $payouts = $this->getDbEntities('payout', ['id' => 'Gg7sgBZgvYjlSB']);
+
+        $this->assertCount(0, $payouts);
+
+        $fta->reload();
+
+        $this->assertEquals('Gg7sgBZgvYjlSB', $fta->source->getId());
+        $this->assertEquals('initiated', $fta->getStatus());
+    }
+
     public function testCreatePayoutServiceFtaCreationWithFeeRewards($mode = 'IMPS')
     {
         $payout = $this->testCreatePayoutEntry($mode, false);
@@ -2684,6 +2748,110 @@ class PayoutServiceTest extends TestCase
         //$payout->reload();
 
         //$this->assertEquals('reversed', $payout->getStatus());
+    }
+
+    public function testUpdateFTAAndPayoutToFailedForDirectAccountPayouts()
+    {
+        $payout = $this->testCreatePayout();
+
+        $payout = (new Core)->getAPIModelPayoutFromPayoutService(substr($payout['id'], 5));
+
+        $this->testData[__FUNCTION__]['request']['content']['source_id'] = $payout->getId();
+
+        $this->fixtures->edit('balance', $payout['balance_id'], [
+            'account_type' => 'direct',
+        ]);
+
+        $debitBas = $this->fixtures->create('banking_account_statement', [
+            'type'                => 'credit',
+            'utr'                 => $payout['utr'],
+            'amount'              => $payout['amount'],
+            'channel'             => 'rbl',
+            'account_number'      => 2224440041626905,
+            'bank_transaction_id' => 'SDHDH',
+            'balance'             => 11355,
+            'transaction_date'    => 1584987183,
+            'posted_date'         => 1584987183,
+            'entity_type'         => 'external',
+            'entity_id'           => 'Gy7sgBrgvYjlwB',
+            'transaction_id'      => 'Gy7srTyIvUElwB',
+        ]);
+
+        $creditBas = $this->fixtures->create('banking_account_statement', [
+            'type'                => 'credit',
+            'utr'                 => $payout['utr'],
+            'amount'              => $payout['amount'],
+            'channel'             => 'rbl',
+            'account_number'      => 2224440041626905,
+            'bank_transaction_id' => 'SDHDH',
+            'balance'             => 11355,
+            'transaction_date'    => 1584987183,
+            'posted_date'         => 1584987183,
+            'entity_type'         => 'external',
+            'entity_id'           => 'Gy7sgBrgvYjlw1',
+            'transaction_id'      => 'Gy7srTyIvUElw2',
+        ]);
+
+        \DB::connection(Connection::TEST)
+           ->update("update ps_payouts set transaction_id = null where id = 'Gg7sgBZgvYjlSB';");
+
+        $payoutServiceDetailsMock = Mockery::mock(PayoutServiceDetails::class, [$this->app])->makePartial();
+
+        $this->app->instance(PayoutServiceDetails::PAYOUT_SERVICE_DETAIL, $payoutServiceDetailsMock);
+
+        $payoutServiceDetailsMock->shouldReceive('updatePayoutDetailsViaFTS')
+                                 ->andReturnUsing(function($payout, array $input = []) {
+
+                                     self::assertArrayHasKey('gateway_ref_no', $input);
+                                     self::assertEquals('Trdj7rh214', $input['gateway_ref_no']);
+                                     self::assertArrayHasKey('cms_ref_no', $input);
+                                     self::assertEquals('d10ce8e4167f11eab1750a0047330000', $input['cms_ref_no']);
+                                     self::assertEquals('Gg7sgBZgvYjlSB', $payout->getId());
+
+                                     return $this->createResponseForPayoutServiceMock(false);
+                                 })->once();
+
+        $payoutServiceStatusMock = Mockery::mock(PayoutServiceStatus::class, [$this->app])->makePartial();
+
+        $this->app->instance(PayoutServiceStatus::PAYOUT_SERVICE_STATUS, $payoutServiceStatusMock);
+
+        $payoutServiceStatusMock->shouldReceive('updatePayoutStatusViaFTS')
+                                ->andReturnUsing(function($payoutId,
+                                                          string $status,
+                                                          string $failureReason = null,
+                                                          string $bankStatusCode = null,
+                                                          array $ftsInfo = []) {
+
+                                    self::assertEquals('failed', $status);
+                                    self::assertEquals('Gg7sgBZgvYjlSB', $payoutId);
+
+                                    return $this->createResponseForPayoutServiceMock(false, 'failed');
+                                })->once();
+
+        $this->ba->appAuthLive();
+
+        $testData = $this->testData['testUpdateFTAAndPayoutToFailed'];
+        $testData['request']['content']['gateway_ref_no'] = 'Trdj7rh214';
+
+        $this->startTest($testData);
+
+        $debitBas->reload();
+        $creditBas->reload();
+
+        $this->assertEquals('external', $debitBas->getEntityType());
+        $this->assertEquals('external', $creditBas->getEntityType());
+
+        // Assert that payout status didn't update
+        $this->assertEquals('created', $payout->getStatus());
+
+        $ftaForPayout = $this->getDbEntities('fund_transfer_attempt',
+                                             [
+                                                 'source_id'   => $payout->getId(),
+                                                 'source_type' => 'payout',
+                                             ], 'live')->first();
+
+        // Assert that fta status is updated
+        $this->assertEquals('failed', $ftaForPayout->getStatus());
     }
 
     public function testUpdateFTAAndPayoutDetailsFailure()

@@ -690,6 +690,7 @@ class Core extends Base\Core
             'bank_response_code'       => $fta->getBankResponseCode(),
             'failure_reason'           => $fta->getFailureReason(),
             'channel'                  => $fta->getChannel(),
+            Entity::GATEWAY_REF_NO     => $fta->getGatewayRefNo(),
             Entity::SOURCE_ACCOUNT_ID  => $sourceAccountID,
             Entity::BANK_ACCOUNT_TYPE  => $bankAccountType,
             Entity::GATEWAY_ERROR_CODE => $gatewayErrorCode,

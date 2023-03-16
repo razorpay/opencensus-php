@@ -3527,13 +3527,16 @@ class Base extends BaseCore
 
                    $payout->reload();
 
+                   $accountType = optional($payout->balance)->getAccountType();
+
                    $fta = $this->repo->fund_transfer_attempt->getAttemptBySourceId($payoutId, Entity::PAYOUT);
 
                    $status = $payout->getStatus();
 
                    if (($status === Status::CREATED) and
                        (is_null($fta) === true) and
-                       (is_null($payout->getTransactionId()) === false))
+                       ((is_null($payout->getTransactionId()) === false) or
+                        ($accountType === Balance\AccountType::DIRECT)))
                    {
                        $payoutType = $this->getPayoutType();
 
