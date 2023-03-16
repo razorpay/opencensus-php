@@ -202,7 +202,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/user/verify_contact', 'UserController@verifyContact');
     });
 
-    Route::group(['middleware'  =>  ['admin', 'admin_access', 'set_x_frame']], function()
+    Route::group(['middleware'  =>  ['admin', 'admin_access', 'set_x_frame', 'set_csp_header']], function()
     {
         Route::any('/admin/stats/{id}', 'AdminController@getMerchantStats')->name('admin_merchant_stats');
         Route::get('/admin/user', 'AdminController@getAdmin');
