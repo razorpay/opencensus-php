@@ -4818,6 +4818,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ORIGIN_CREATED                                        = 'ORIGIN_CREATED';
     const ORIGIN_SET_FAILED                                     = 'ORIGIN_SET_FAILED';
     const ORIGIN_INVALID_TYPE                                   = 'ORIGIN_INVALID_TYPE';
+    const SET_ORIGIN_FROM_PUBLIC_KEY_FAILED                     = 'SET_ORIGIN_FROM_PUBLIC_KEY_FAILED';
+    const SET_ORIGIN_FROM_PAYMENT_PUBLIC_KEY                    = 'SET_ORIGIN_FROM_PAYMENT_PUBLIC_KEY';
+    const SET_ORIGIN_FROM_ORDER_PUBLIC_KEY                      = 'SET_ORIGIN_FROM_ORDER_PUBLIC_KEY';
 
     // auth selector
     const AUTH_SELECTION                                        = 'AUTH_SELECTION';

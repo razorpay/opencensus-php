@@ -6,6 +6,9 @@ use DB;
 use Illuminate\Database\Eloquent\Factory;
 
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\EntityOrigin;
+use RZP\Models\Order\Entity as OrderEntity;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -50,6 +53,78 @@ class EntityOriginTest extends TestCase
         $this->assertArraySelectiveEquals($expectedOrigin, $origin);
     }
 
+    /**
+     * Asserts that the origin entity is created for a payment with public key
+     */
+    public function testEntityOriginCreateFromPaymentPublicKey()
+    {
+        $this->app['basicauth']->setModeAndDbConnection('test');
+        $partnerId = '100000Razorpay';
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev', [], $partnerId);
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $paymentEntity = new PaymentEntity($payment);
+        $paymentEntity->setPublicKey('rzp_test_partner_'.$client->getId());
+
+        (new EntityOrigin\Core)->createEntityOrigin($paymentEntity);
+
+        $origin = $this->getDbLastEntity('entity_origin');
+        $app = DB::Connection('auth')
+                 ->table('applications')
+                 ->orderBy('created_at', 'desc')
+                 ->first();
+
+        $this->assertNotNull($origin);
+
+        $origin = $origin->toArray();
+
+        $this->assertEquals(substr($payment['id'], -14), $origin['entity_id']);
+         $this->assertEquals($app->id, $origin['origin_id']);
+    }
+
+    /**
+     * Asserts that the origin entity is created for a order with oauth key
+     */
+    public function testEntityOriginCreateFromOrderOauthKey()
+    {
+        $this->app['basicauth']->setModeAndDbConnection('test');
+        $this->generateOAuthAccessToken(['public_token' => 'TheTestAuthKey', 'scopes' => ['read_write']]);
+        $payment = $this->getDefaultPaymentArray();
+        $order = [
+          "id"=> "order_EKwxwAgItmmXdp",
+          "entity" => "order",
+          "amount" => 50000,
+          "amount_paid"=> 0,
+          "amount_due"=> 50000,
+          "currency"=> "INR"
+        ];
+
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        // creating order with public key and associating to payment
+        $paymentEntity = new PaymentEntity($payment);
+        $orderEntity = new OrderEntity($order);
+        $orderEntity->setPublicKey('rzp_test_oauth_TheTestAuthKey');
+        $paymentEntity->order()->associate($orderEntity);
+        $paymentEntity->setPublicKey(null);
+
+        (new EntityOrigin\Core)->createEntityOrigin($paymentEntity);
+        $origin = $this->getDbLastEntity('entity_origin');
+        $app = DB::Connection('auth')
+                 ->table('applications')
+                 ->orderBy('created_at', 'desc')
+                 ->first();
+
+        $this->assertNotNull($origin);
+
+        $origin = $origin->toArray();
+
+        $this->assertEquals(substr($payment['id'], -14), $origin['entity_id']);
+        $this->assertEquals($app->id, $origin['origin_id']);
+    }
     /**
      * Asserts that the origin entity is created for a payment initiated using the partner credentials.
      */

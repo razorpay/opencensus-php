@@ -3,6 +3,7 @@
 namespace RZP\Models\EntityOrigin;
 
 use Razorpay\OAuth\Application as OAuthApp;
+use Razorpay\OAuth\Token as OAuthToken;
 
 use RZP\Models\Base;
 use RZP\Models\Key\Metric;
@@ -12,9 +13,13 @@ use RZP\Models\PaymentLink;
 use RZP\Models\Order;
 use RZP\Constants\Entity as E;
 use RZP\Models\Plan\Subscription;
+use Razorpay\OAuth\Client as OAuthClient;
 
 class Core extends Base\Core
 {
+    const PARTNER_KEY_REGEX = '/^(rzp_(test|live)_partner_[a-zA-Z0-9]{14})$/';
+    const OAUTH_KEY_REGEX   = '/^(rzp_(test|live)_oauth_[a-zA-Z0-9]{14})$/';
+
     /**
      * Origin entity can be an instance of Merchant entity or an Oauth application
      *
@@ -123,10 +128,31 @@ class Core extends Base\Core
         //
         if (empty($originEntity) === true)
         {
-            return null;
+            // if origin entity is not created as a fallback try to get public key from payment
+            // if public key is not found in payment check for public key in order.
+            if( $entity->getEntityName() === E::PAYMENT && $entity->getPublicKey() != null)
+            {
+                $this->trace->info(TraceCode::SET_ORIGIN_FROM_PAYMENT_PUBLIC_KEY, [
+                    'payment_id'  => $entity->getId(),
+                    'method'      => $entity->getMethod()
+                ]);
+                $dimensions = array('Method' => $entity->getMethod());
+                $this->trace->count(Metric::ENTITY_ORIGIN_CREATE_FROM_PAYMENT_PUBLIC_KEY, $dimensions);
+                $originEntity = $this->getOriginEntityFromPublicKey($entity->getPublicKey());
+            }
+            else if(optional($entity->order)->getPublicKey() !== null)
+            {
+                $this->trace->info(TraceCode::SET_ORIGIN_FROM_ORDER_PUBLIC_KEY, [
+                    'payment_id'    => $entity->getId(),
+                    'method'        => $entity->getMethod(),
+                    'product_type'  => $entity->order->getProductType()
+                ]);
+                $dimensions = array('product_type' => $entity->order->getProductType(), 'Method' => $entity->getMethod());
+                $this->trace->count(Metric::ENTITY_ORIGIN_CREATE_FROM_ORDER_PUBLIC_KEY, $dimensions);
+                $originEntity = $this->getOriginEntityFromPublicKey($entity->order->getPublicKey());
+            }
         }
-
-        return $this->build($entity, $originEntity);
+        return empty($originEntity) === false  ? $this->build($entity, $originEntity) : null;
     }
 
     /**
@@ -328,5 +354,50 @@ class Core extends Base\Core
         }
 
         return $originEntity;
+    }
+
+    /**
+     * Extracts the origin entity from public key
+     *
+     * @param string $publicKey
+     *
+     * @return mixed|null
+     */
+    protected function getOriginEntityFromPublicKey(string $publicKey)
+    {
+        try
+        {
+            // publickey will be in format of rzp_mode_partner_clientID-acc_accountId incase of partner auth
+            // and rzp_mode_oauth_clientID in case of oauth
+            $publicKey    = explode('-', $publicKey)[0];
+            $keyId     = substr($publicKey, -14);
+
+            $applicationId = null;
+            if (preg_match(self::PARTNER_KEY_REGEX, $publicKey) === 1)
+            {
+                $applicationId     = (new OAuthClient\Repository)->getClientByIdAndEnv(
+                    $keyId, $this->mode == 'test' ? 'dev' : 'prod'
+                )->getApplicationId();
+            }
+            else if (preg_match(self::OAUTH_KEY_REGEX, $publicKey) === 1)
+            {
+                $token = (new OAuthToken\Repository)->findByTypePublicTokenAndMode($keyId, $this->mode);
+                $applicationId = $token->getClient()->getApplicationId();
+            }
+
+            return  $applicationId !== null ? (new OAuthApp\Repository)->findOrFail($applicationId) : null ;
+        }
+        catch (\Throwable $e)
+        {
+            // Should not fail even if the origin extraction from public key is failed.
+            $this->trace->critical(TraceCode::SET_ORIGIN_FROM_PUBLIC_KEY_FAILED,
+                [
+                    'message'           => $e->getMessage(),
+                    'publicKey'         => $publicKey,
+                    'stack_trace'       => $e->getTraceAsString(),
+                ]);
+            return null;
+        }
+
     }
 }
