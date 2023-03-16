@@ -1,5 +1,6 @@
 import errorService from '@razorpay/universe-utils/errorService';
-import { captureErrorOnAnalytics } from 'common/utils/analytics';
+import { captureErrorOnAnalytics, capturePrometheusMetric, Metrics } from 'common/utils/analytics';
+import { getPathForMetrics } from 'common/new-ui/ErrorBoundary/utils';
 
 export function initSentry(appName) {
   let environment = window.APP_ENV;
@@ -21,6 +22,16 @@ export function initSentry(appName) {
           }
 
           captureErrorOnAnalytics(event, hint);
+
+          if (event?.level === 'error') {
+            capturePrometheusMetric({
+              name: Metrics.ERROR_COUNT,
+              labels: {
+                rank: event?.rank ?? event?.tags?.rank,
+                pathname: getPathForMetrics(window?.location?.pathname),
+              },
+            });
+          }
 
           return event;
         },
@@ -51,6 +62,7 @@ export function initSentry(appName) {
         app: appName,
         role: window.rzp_user?.role,
         protocol: performance?.getEntriesByType?.('navigation')?.[0]?.nextHopProtocol,
+        deployment_type: window.INSTANCE_TYPE,
       },
     });
   }

@@ -275,3 +275,55 @@ export const analyticsTrackWithUserInfo = ({
     properties: propertiesWithUserInfo,
   });
 };
+
+export const Metrics = {
+  ERROR_COUNT: 'error.count',
+  PAGE_VIEW: 'page.view',
+};
+
+const ALLOWED_METRIC_ENVS = ['production'];
+export const capturePrometheusMetric = ({ name, labels = {} }) => {
+  try {
+    const data = {
+      key: window.LUMBERJACK_API_KEY,
+      metrics: [
+        {
+          name,
+          labels: [
+            {
+              env: window.APP_ENV,
+              app: window.APP_NAME,
+              deployment_type: window.INSTANCE_TYPE,
+              ...labels,
+            },
+          ],
+        },
+      ],
+    };
+
+    if (ALLOWED_METRIC_ENVS.includes(`${window.APP_ENV}`)) {
+      fetch(window.LUMBERJACK_METRICS_API_URL, {
+        method: 'post',
+        body: JSON.stringify(data),
+        headers: {
+          accept: 'application/json',
+          'Content-Type': 'text/plain',
+        },
+      });
+    } else {
+      for (const metric of data.metrics) {
+        console.groupCollapsed(
+          '%c Prometheus Metric',
+          'color: #FFFFF; background: #1566F1; padding: 1px;',
+          `${metric.name}`,
+        );
+        for (const label of metric.labels) {
+          console.log('Properties: ', label);
+        }
+        console.groupEnd();
+      }
+    }
+  } catch (err) {
+    //
+  }
+};

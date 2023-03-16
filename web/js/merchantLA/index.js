@@ -1,7 +1,4 @@
-__webpack_public_path__ = (window.cdnDashboardUrl || '') + `/dist/`;
-import 'regenerator-runtime/runtime.js';
-import 'core-js/es/map';
-import 'core-js/es/set';
+import 'regenerator-runtime/runtime.js'; // eslint-disable-line
 import 'core-js/es/map';
 import 'core-js/es/set';
 import React from 'react';
@@ -16,16 +13,27 @@ import store from 'merchantLA/store';
 import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 
 import App from 'merchantLA/containers/App';
-import css from '../../css/merchant-la.styl';
-import fontconfig from '../../dashboard.font';
+import '../../css/merchant-la.styl';
+import '../../dashboard.font';
+import ErrorBoundary from 'common/new-ui/ErrorBoundary';
+import { capturePrometheusMetric, Metrics } from 'common/utils/analytics';
+import { getPathForMetrics } from 'common/new-ui/ErrorBoundary/utils';
 
+__webpack_public_path__ = (window.cdnDashboardUrl || '') + `/dist/`; // eslint-disable-line
+
+capturePrometheusMetric({
+  name: Metrics.PAGE_VIEW,
+  labels: { pathname: getPathForMetrics(window?.location?.pathname) },
+});
 render(
   <Provider store={store}>
     <ConfirmModalProvider>
       <Router basename="/app">
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </Router>
     </ConfirmModalProvider>
   </Provider>,
-  document.getElementById('react-root')
+  document.getElementById('react-root'),
 );

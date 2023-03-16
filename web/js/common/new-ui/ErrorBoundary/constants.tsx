@@ -23,6 +23,7 @@ export enum Teams {
   DEV_EXP = 'Developer Experience',
   XPAYROLL = 'XPayroll',
   AFFORDABILITY = 'Affordability',
+  RAZORPAY_X = 'RazorpayX',
 }
 
 // Maintain this list in ascending order
@@ -31,31 +32,63 @@ export const RoutesConfig = {
   '/': Teams.COMMON,
   '/dashboard': Teams.COMMON,
 
+  '/account-settings': Teams.PG_DASHBOARD,
   '/addfunds': Teams.PG_DASHBOARD,
+  '/affordability/widget': Teams.AFFORDABILITY,
+  '/affordability/widget/platforms': Teams.AFFORDABILITY,
+  '/announcements': Teams.PLATFORM_GROWTH,
+  '/api-keys': Teams.PG_DASHBOARD,
   '/applications': Teams.PG_DASHBOARD,
+  '/bank-accounts-settlements': Teams.BANKING,
+  '/bank-accounts-settlements/bank-account-details': Teams.BANKING,
+  '/bank-accounts-settlements/firs': Teams.BANKING,
+  '/bank-accounts-settlements/settlement-details': Teams.BANKING,
   '/bbps': Teams.PG_DASHBOARD,
-
+  '/business-settings': Teams.PG_DASHBOARD,
+  '/business-settings/account-activation-details': Teams.PG_DASHBOARD,
+  '/business-settings/business': Teams.PG_DASHBOARD,
+  '/business-settings/contact': Teams.PG_DASHBOARD,
+  '/business-settings/customer-support': Teams.PG_DASHBOARD,
+  '/business-settings/gst': Teams.PG_DASHBOARD,
+  '/business-settings/invitations': Teams.PG_DASHBOARD,
+  '/business-settings/team': Teams.PG_DASHBOARD,
+  '/business-settings/ticket-support/tickets': Teams.CARE,
+  '/business-settings/ticket-support/tickets/agent': Teams.CARE,
+  '/business-settings/ticket-support/tickets/merchant': Teams.CARE,
   '/capital': Teams.CAPITAL,
   '/capital/cash-advance': Teams.CAPITAL,
   '/capital/cash-advance/repayments-schedule': Teams.CAPITAL,
   '/capital/corporate-cards': Teams.CAPITAL,
+  '/capital/line-of-credit': Teams.CAPITAL,
+  '/capital/loans': Teams.CAPITAL,
   '/capital/non-fldg-loans': Teams.CAPITAL,
 
   '/checkout-rewards': Teams.CHECKOUT,
-
+  '/checkout-settings': Teams.CHECKOUT,
+  '/checkout-settings/branding': Teams.CHECKOUT,
+  '/checkout-settings/flash-checkout': Teams.CHECKOUT,
+  '/checkout-settings/skip-mandatory-summary-page': Teams.CHECKOUT,
+  '/checkout-settings/trustedbadge': Teams.CHECKOUT,
   '/config': Teams.PG_DASHBOARD,
+
+  '/connected-banking': Teams.PLATFORM_GROWTH,
   '/credits': Teams.PG_DASHBOARD,
   '/customers': Teams.PG_DASHBOARD,
-  '/disputes': Teams.PG_DASHBOARD,
   '/developers': Teams.DEV_EXP,
+  '/developers/apis': Teams.DEV_EXP,
+  '/developers/webhooks': Teams.DEV_EXP,
+  '/disputes': Teams.PG_DASHBOARD,
+  '/instantsettlement_details': Teams.PG_DASHBOARD,
   '/instantsettlements': Teams.PG_DASHBOARD,
-
   '/invoices': Teams.PG_DASHBOARD,
   '/invoices/new': Teams.PG_DASHBOARD,
-
   '/items': Teams.PG_DASHBOARD,
   '/keys': Teams.PG_DASHBOARD,
-
+  '/magic': Teams.CHECKOUT,
+  '/notification-settings': Teams.PG_DASHBOARD,
+  '/notification-settings/email': Teams.PG_DASHBOARD,
+  '/notification-settings/sms': Teams.PG_DASHBOARD,
+  '/notification-settings/whatsapp': Teams.PG_DASHBOARD,
   '/offers': Teams.CHECKOUT,
 
   '/optimizer': Teams.ROUTING,
@@ -63,12 +96,14 @@ export const RoutesConfig = {
   '/optimizer/create-rule': Teams.ROUTING,
   '/optimizer/update-rule': Teams.ROUTING,
   '/optimizer/rules': Teams.ROUTING,
-
+  '/optimizer/onboarding': Teams.ROUTING,
+  '/optimizer/update-provider': Teams.ROUTING,
   '/orders': Teams.PG_DASHBOARD,
 
   '/partners': Teams.PARTNERSHIP,
   '/partners/applications': Teams.PARTNERSHIP,
   '/partners/applications/new': Teams.PARTNERSHIP,
+  '/partners/config': Teams.PARTNERSHIP,
   '/partners/earnings': Teams.PARTNERSHIP,
   '/partners/earnings/daily': Teams.PARTNERSHIP,
   '/partners/earnings/invoices': Teams.PARTNERSHIP,
@@ -81,16 +116,35 @@ export const RoutesConfig = {
   '/partners/subventions/transactional': Teams.PARTNERSHIP,
 
   '/payment-methods': Teams.TERMINAL,
-
+  '/payment-methods/cards': Teams.TERMINAL,
+  '/payment-methods/emi': Teams.TERMINAL,
+  '/payment-methods/international-payments': Teams.TERMINAL,
+  '/payment-methods/netbanking': Teams.TERMINAL,
+  '/payment-methods/pay-later': Teams.TERMINAL,
+  '/payment-methods/upi-qr': Teams.TERMINAL,
+  '/payment-methods/wallet': Teams.TERMINAL,
   '/paymentbuttons': Teams.APPS,
+  '/paymenthandle': Teams.APPS,
+  '/payment-handle': Teams.APPS,
   '/paymentlinks': Teams.APPS,
   '/paymentlinks/batchuploads': Teams.APPS,
   '/paymentpages': Teams.APPS,
+  '/paymentpages/products': Teams.APPS,
 
+  '/payments-and-refunds-settings': Teams.PG_DASHBOARD,
+  '/payments-and-refunds-settings/balances': Teams.PG_DASHBOARD,
+  '/payments-and-refunds-settings/capture-refund-settings': Teams.PG_DASHBOARD,
+  '/payments-and-refunds-settings/credits': Teams.PG_DASHBOARD,
+  '/payments-and-refunds-settings/failed-payments-recovery': Teams.PG_DASHBOARD,
+  '/payments-and-refunds-settings/fee-bearer': Teams.PG_DASHBOARD,
+  '/payments-and-refunds-settings/reminders': Teams.PG_DASHBOARD,
+  '/payments-and-refunds-settings/transaction-limits': Teams.PG_DASHBOARD,
   '/payments': Teams.PG_DASHBOARD,
+  '/payments/b2b-exports': Teams.CROSS_BORDER,
   '/payments/batchuploads': Teams.PG_DASHBOARD,
+  '/payments/invoices': Teams.CROSS_BORDER,
   '/paypal_onboard_redirect': Teams.PG_DASHBOARD,
-
+  '/payroll': Teams.XPAYROLL,
   '/plans': Teams.APPS,
   '/plans/new': Teams.APPS,
 
@@ -99,7 +153,7 @@ export const RoutesConfig = {
   '/qr_codes': Teams.APPS,
   '/qr_codes/new': Teams.APPS,
   '/qr_codes/payments': Teams.APPS,
-
+  '/razorpayx': Teams.RAZORPAY_X,
   '/recurring_payments': Teams.APPS,
 
   '/referrals': Teams.PG_DASHBOARD,
@@ -121,12 +175,12 @@ export const RoutesConfig = {
   '/route/payments': Teams.APPS,
   '/route/reversals': Teams.APPS,
   '/route/transfers': Teams.APPS,
-
+  '/routeinstantsettlements': Teams.PG_DASHBOARD,
   '/settlements': Teams.PG_DASHBOARD,
-
-  '/smartcollect/payments': Teams.APPS,
   '/smartcollect': Teams.APPS,
-  '/virtualaccounts': Teams.APPS,
+  '/smartcollect/batchuploads': Teams.APPS,
+  '/smartcollect/payments': Teams.APPS,
+  '/smartcollect/virtualaccounts': Teams.APPS,
 
   '/stores': Teams.APPS,
   '/stores/orders': Teams.APPS,
@@ -136,7 +190,7 @@ export const RoutesConfig = {
   '/subscriptions': Teams.APPS,
   '/subscriptions/batchuploads': Teams.APPS,
   '/subscriptions/settings': Teams.APPS,
-
+  '/success-rate': Teams.PG_DASHBOARD,
   '/super-checkout': Teams.CHECKOUT,
 
   '/team': Teams.PG_DASHBOARD,
@@ -149,17 +203,14 @@ export const RoutesConfig = {
   '/transfers': Teams.PG_DASHBOARD,
 
   '/trustedbadge': Teams.CHECKOUT,
-
+  '/virtualaccounts': Teams.APPS,
+  '/wallet/accounts': Teams.PG_DASHBOARD,
   '/webhooks': Teams.PG_DASHBOARD,
-
-  '/connected-banking': Teams.PLATFORM_GROWTH,
-  '/announcements': Teams.PLATFORM_GROWTH,
-
-  '/payments/b2b-exports': Teams.CROSS_BORDER,
-  '/payments/invoices': Teams.CROSS_BORDER,
-
-  '/payroll': Teams.XPAYROLL,
-
-  '/affordability/widget': Teams.AFFORDABILITY,
-  '/affordability/widget/platforms': Teams.AFFORDABILITY,
+  '/website-app-details': Teams.PG_DASHBOARD,
+  '/website-app-settings': Teams.PG_DASHBOARD,
+  '/website-app-settings/api-keys': Teams.PG_DASHBOARD,
+  '/website-app-settings/applications': Teams.PG_DASHBOARD,
+  '/website-app-settings/business-website-details': Teams.PG_DASHBOARD,
+  '/website-app-settings/webhooks': Teams.PG_DASHBOARD,
+  '/website-app-settings/website-app': Teams.PG_DASHBOARD,
 };

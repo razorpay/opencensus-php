@@ -15,6 +15,8 @@ import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
 import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import '../../css/merchant.styl';
 import '../../dashboard.font';
+import { capturePrometheusMetric, Metrics } from 'common/utils/analytics';
+import { getPathForMetrics } from 'common/new-ui/ErrorBoundary/utils';
 
 (async () => {
   if (localStorage.referrer === 'chrome-extension') {
@@ -22,6 +24,10 @@ import '../../dashboard.font';
   }
 })();
 
+capturePrometheusMetric({
+  name: Metrics.PAGE_VIEW,
+  labels: { pathname: getPathForMetrics(window.location.pathname) },
+});
 render(
   <Provider store={store}>
     <ConfirmModalProvider>
