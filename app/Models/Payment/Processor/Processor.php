@@ -4689,7 +4689,15 @@ class Processor
             throw $exception;
         }
 
-        $returnData = [];
+        $returnData = [
+            'razorpay_payment_id'      => $payment->getPublicId(),
+            'razorpay_order_id'        => $payment->getPublicOrderId(),
+            'error_code'               => $exception->getError()->getPublicErrorCode(),
+            'error_desc'               => $exception->getError()->getDescription(),
+            'error_source'             => $exception->getError()->getSource(),
+            'error_step'               => $exception->getError()->getStep(),
+            'error_reason'             => $exception->getError()->getReason(),
+        ];
 
         $this->fillReturnRequestDataForMerchant($payment,$returnData);
 
