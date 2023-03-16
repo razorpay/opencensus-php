@@ -247,8 +247,27 @@ class Selector extends Base\Core
                             // populating terminalIds array for data link layer
                             array_push($terminalIds, $terminal['id']);
 
+                            //https://razorpay.slack.com/archives/CNV2GTFEG/p1678886082906659?thread_ts=1678871157.017139&cid=CNV2GTFEG
+                            if ($terminalSetSentToSmartRouting[$terminal['id']] != null)
+                            {
                             // populating newSortedTerminals array for the payment process
-                            array_push($newSelectedTerminals, $terminalSetSentToSmartRouting[$terminal['id']]);
+                                array_push($newSelectedTerminals, $terminalSetSentToSmartRouting[$terminal['id']]);
+                            }
+                            else
+                            {
+                                $this->trace->info(
+                                    TraceCode::TERMINAL_API_SELECTION_MISMATCH,
+                                    [
+                                        'payment'     => $payment->getId(),
+                                        'terminal_id' => $terminal['id'],
+                                    ]);
+
+                                $data = [
+                                    'route' => $this->app['request.ctx']->getRoute()
+                                ];
+
+                                $this->trace->count(Terminal\Metric::TERMINAL_API_SELECTION_MISS, $data);
+                            }
 
                         };
                     }
