@@ -5135,9 +5135,21 @@ class Service extends Base\Service
 
                 try
                 {
-                    $this->getNewProcessor($payment->merchant)
-                        ->setPayment($payment)
-                        ->timeoutPayment();
+                    if ($payment->getMethod() === Payment\Method::CARD and
+                        $payment->isRecurring() and
+                        $payment->getRecurringType() === Payment\RecurringType::AUTO and
+                        isset($payment->token->cardMandate) and
+                        $payment->token->cardMandate->getMandateHub() === IIN\MandateHub::MANDATE_HQ)
+                    {
+                        $this->getNewProcessor($payment->merchant)
+                            ->setPayment($payment)
+                            ->failMandateHQPaymentAFANotApproved($payment);
+                    }
+                    else {
+                        $this->getNewProcessor($payment->merchant)
+                            ->setPayment($payment)
+                            ->timeoutPayment();
+                    }
 
                     if ($payment->getMethod() === Payment\Method::NACH and
                         $payment->isRecurring() and

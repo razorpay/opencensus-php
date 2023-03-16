@@ -1335,7 +1335,7 @@ class CardMandateTest extends TestCase
     {
         $this->testCreateCardMandatePayment();
 
-        $this->mockCreatePreDebitNotification(true, false, true);
+        $this->mockCreatePreDebitNotification(true, false);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -1363,9 +1363,8 @@ class CardMandateTest extends TestCase
         $this->assertEquals('created', $payment->getStatus());
 
         $cardMandateNotification = $this->getDbLastEntity('card_mandate_notification');
-        $this->assertEquals('created', $cardMandateNotification->getStatus());
+        $this->assertEquals('notified', $cardMandateNotification->getStatus());
         $this->assertEquals('ratn_PP3VC146gmBVGG', $cardMandateNotification->notification_id);
-        $this->assertNull($cardMandateNotification->reminder_id);
 
         $this->testData[__FUNCTION__]['request']['content']['payload']['mandate.notification']['entity']['id'] = $cardMandateNotification->getNotificationId();
 

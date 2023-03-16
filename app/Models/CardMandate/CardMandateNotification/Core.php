@@ -16,6 +16,7 @@ use RZP\Models\CardMandate;
 use RZP\Constants\Entity as E;
 use RZP\Exception\LogicException;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Card\IIN\MandateHub;
 use RZP\Models\CardMandate\MandateHubs;
 
 class Core extends Base\Core
@@ -99,7 +100,9 @@ class Core extends Base\Core
 
         if ($payment !== null and
             !$cardMandateNotification->isAfaRequired() and
-            $cardMandateNotification->getStatus() === Status::NOTIFIED and
+            ($cardMandateNotification->getStatus() === Status::NOTIFIED or
+                ($cardMandateNotification->getStatus() == Status::CREATED and
+                    $cardMandate->getMandateHub() == MandateHub::MANDATE_HQ)) and
             $cardMandateNotification->getAfaStatus() !== AfaStatus::REJECTED)
         {
             $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification, $cardMandate->getMandateHub());
@@ -361,19 +364,7 @@ class Core extends Base\Core
 
         if ($payment !== null)
         {
-            if ($cardMandateNotification->payment !== null and
-                !$cardMandateNotification->isAfaRequired() and
-                $cardMandateNotification->getStatus() === Status::NOTIFIED and
-                $cardMandateNotification->getAfaStatus() !== AfaStatus::REJECTED and
-                $isNotified === true)
-            {
-                $reminderId = $this->setCardAutoRecurringReminder($cardMandateNotification);
-
-                $cardMandateNotification->setReminderId($reminderId);
-
-                $cardMandateNotification->saveOrFail();
-            }
-            else if (($cardMandateNotification->isAfaRequired() and
+            if (($cardMandateNotification->isAfaRequired() and
                     $cardMandateNotification->getAfaStatus() === AfaStatus::APPROVED and
                     $isApproved === true) and ($payment->getStatus() === Payment\Status::CREATED))
             {

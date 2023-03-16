@@ -4740,6 +4740,22 @@ class Processor
         $this->updatePaymentFailed($exception, $traceCode);
     }
 
+    public function failMandateHQPaymentAFANotApproved(Payment\Entity $payment)
+    {
+        $this->payment = $payment;
+
+        $traceCode = TraceCode::PAYMENT_CARD_MANDATE_AFA_NOT_APPROVED;
+
+        $errorCode = ErrorCode::BAD_REQUEST_CARD_MANDATE_CUSTOMER_NOT_APPROVED;
+
+        $exception = new BadRequestException($errorCode,
+            null,
+            null,
+            'The payment request failed as the predebit notification was not approved');
+
+        $this->updatePaymentFailed($exception, $traceCode);
+    }
+
     protected function updatePaymentFailed($exception, $traceCode)
     {
         $error = $exception->getError();

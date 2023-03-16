@@ -202,7 +202,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            if ($mandateHub === MandateHubs\MandateHubs::BILLDESK_SIHUB)
+            if ($mandateHub === MandateHubs\MandateHubs::BILLDESK_SIHUB or $mandateHub === MandateHubs\MandateHubs::MANDATE_HQ)
             {
                 $time->addDay()->addHours(12)->addMinutes(5);
             }
