@@ -2,8 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
 use RZP\Constants\Entity;
 
 class TransferController extends Controller
@@ -99,18 +99,6 @@ class TransferController extends Controller
         $transfer = $this->service()->edit($id, $input);
 
         return ApiResponse::json($transfer);
-    }
-
-    public function transferUpdateSettelements(string $id)
-    {
-        $transferscount = $this->service()->processTransfersSettelements($id);
-
-        $data = [
-            'settlementId'       => $id ,
-            'transfersCount'     => $transferscount,
-
-        ];
-        return ApiResponse::json($data);
     }
 
     public function updateSettlementStatusInTransfer()

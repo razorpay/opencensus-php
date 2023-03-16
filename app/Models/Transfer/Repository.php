@@ -9,7 +9,6 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
-use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 
 class Repository extends Base\Repository
@@ -183,43 +182,6 @@ class Repository extends Base\Repository
                     ->distinct()
                     ->pluck(Entity::SOURCE_ID)
                     ->toArray();
-    }
-
-    //update transfers set recipient_settlement_id = 'ES69iARhvUoyCo' where id in
-    //  (
-    //  select tr.id from transactions t inner join payments p
-    //  ON t.entity_id = p.id inner join transfers tr on tr.id = p.transfer_id and
-    //  t.type = 'payment' and tr.recipient_settlement_id is null  and t.settlement_id = 'ES69iARhvUoyCo'
-    //  )
-    public function updatetransfersWithSettelement(string $settelementId)
-    {
-        Settlement\Entity::verifyIdAndStripSign($settelementId);
-
-        $paymentId            = $this->repo->payment->dbColumn(Payment\Entity::ID);
-        $paymentIdColumn      = $this->repo->payment->dbColumn(Entity::ID);
-        $transferIdColumn     = $this->repo->payment->dbColumn(Payment\Entity::TRANSFER_ID);
-        $entityIdCol          = $this->repo->transaction->dbColumn(Transaction\Entity::ENTITY_ID);
-        $entityType           = $this->repo->transaction->dbColumn(Transaction\Entity::TYPE);
-        $settlementCol        = $this->repo->transaction->dbColumn(Transaction\Entity::SETTLEMENT_ID);
-        $settlementIdColumn   = $this->dbColumn(Entity::RECIPIENT_SETTLEMENT_ID);
-        $transferColumn       = $this->dbColumn(Entity::ID);
-
-        $transfers =  $this->newQuery()
-                           ->join(Table::PAYMENT,$transferIdColumn, '=', $transferColumn)
-                           ->join(Table::TRANSACTION,$entityIdCol, '=', $paymentIdColumn)
-                           ->where($entityType, Constant::PAYMENT)
-                           ->whereNull($settlementIdColumn)
-                           ->where($settlementCol, $settelementId)
-                           ->select($transferColumn)
-                           ->get();
-
-                      $this->newQuery()
-                            ->whereIn($transferColumn, $transfers)
-                            ->update
-                            ([
-                              Entity::RECIPIENT_SETTLEMENT_ID => $settelementId
-                            ]);
-        return $transfers;
     }
 
     /**
