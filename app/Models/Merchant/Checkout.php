@@ -227,6 +227,18 @@ class Checkout
         {
             $order = $this->app['pg_router']->getOrderEntityFromOrderAttributes($input['order']);
         }
+        elseif (isset($input['invoice_id']))
+        {
+            $invoice = $this->repo->invoice->findByPublicIdAndMerchant(
+                $input[Payment\Entity::INVOICE_ID],
+                $merchant
+            );
+
+            if ($invoice->getOrderId() !== null)
+            {
+                $order = $this->setOrGetOrder('order_'.$invoice->getOrderId(), $merchant);
+            }
+        }
 
         $data['methods'] = $this->getMerchantPaymentMethodsForCheckout($input, $merchant, $order);
 

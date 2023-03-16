@@ -1588,6 +1588,35 @@ class MethodsTest extends TestCase
         $this->assertEquals($offer2->getPublicId(), $response['offers'][1]['id']);
     }
 
+    public function testGetPaymentMethodsAndOffersForCheckoutWithInvoiceId(): void
+    {
+        $this->ba->checkoutServiceProxyAuth();
+
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->fixtures->merchant->enablePaytm();
+
+        $offer1 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $offer2 = $this->fixtures->create('offer:live_card', ['iins' => ['401200']]);
+
+        $order = $this->fixtures->order->createWithOffers([
+            $offer1,
+            $offer2,
+        ]);
+
+        $invoice = $this->fixtures->create('invoice', ["order_id" => $order->getId()]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['invoice_id'] = $invoice->getPublicId();
+
+        $response = $this->startTest($testData);
+
+        $this->assertEquals($offer1->getPublicId(), $response['offers'][0]['id']);
+        $this->assertEquals($offer2->getPublicId(), $response['offers'][1]['id']);
+    }
+
     public function testEnableBajajPay()
     {
         $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
