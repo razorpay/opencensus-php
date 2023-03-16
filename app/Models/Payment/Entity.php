@@ -6246,4 +6246,35 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         return false;
     }
 
+    // Return fee in payment currency
+    // Slack: https://razorpay.slack.com/archives/C7WEGELHJ/p1677061101772369?thread_ts=1675832734.858449&cid=C7WEGELHJ
+    public function getFeeInMcc()
+    {
+        $fee = 0;
+
+        $app = \App::getFacadeRoot();
+
+        $mode = (empty($app['rzp.mode']) === true) ? "live" : $app['rzp.mode'];
+
+        $variant = $app['razorx']->getTreatment(
+                    $this->merchant->getId(),
+                    RazorxTreatment::INTL_PL_FEE_IN_MCC,
+                    $mode);
+
+        if ((strtolower($variant) !== 'on') or 
+            ($this->getCurrency() === Currency\Currency::INR))
+        {
+            return $fee;
+        }
+
+        $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($this->getId());
+
+        if ((isset($paymentMeta) === true) and 
+            (empty($paymentMeta->getMccForexRate()) === false))
+        {
+            $fee = (float)$this->getFee() / $paymentMeta->getMccForexRate();
+        }
+
+        return (int)ceil($fee);
+    }
 }

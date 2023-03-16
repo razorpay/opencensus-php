@@ -43,6 +43,7 @@ use RZP\Models\Base\UniqueIdEntity;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Gateway\Mpi\Blade\Mock\CardNumber;
 use RZP\Tests\Traits\PaymentLinkTestTrait;
 use RZP\Models\PaymentLink as PaymentLinkModel;
 use RZP\Models\Admin\Permission\Name as Permission;
@@ -4827,5 +4828,151 @@ class PaymentLinkTest extends TestCase
     public function testCreate1CCPaymentLink()
     {
         $this->startTest();
+    }
+
+    // Test for asserting fee_in_mcc attribute when calling
+    // PlinkController@fetchPaymentDetails
+    public function testFetchPaymentDetails()
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment', 'getCachedTreatment'])
+                           ->getMock();
+
+        $this->app->instance('razorx', $razorxMock);
+
+        $this->app->razorx->method('getTreatment')
+                          ->will($this->returnCallback(
+                              function ($mid, $feature, $mode)
+                              {
+                                  if ($feature === RazorxTreatment::INTL_PL_FEE_IN_MCC)
+                                  {
+                                      return 'on';
+                                  }
+
+                                  return 'off';
+                              }));
+
+        // test for fee_in_mcc as zero value
+        // 
+        $payment = $this->fixtures->create('payment', ['merchant_id' => self::TEST_MID]);
+
+        $fetchPaymentDetails = [
+            'url' => '/v1/payment_links_payment/' . $payment['public_id'],
+            'method' => 'get',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($fetchPaymentDetails);
+
+        $this->assertNotNull($response['payment']);
+        $this->assertEquals($response['payment']['currency'], 'INR');
+        $this->assertEquals($response['payment']['merchant_id'], self::TEST_MID);
+        $this->assertEquals($response['payment']['fee_in_mcc'], 0);
+
+
+        // test for fee_in_mcc as non zero value and
+        // no payment meta
+        // 
+        $card = $this->fixtures->create('card', [
+            'network'           =>  'Visa',
+            'country'           =>  'US',
+            'international'     => true,
+        ]);
+
+        // Sample payment: https://admin-dashboard.razorpay.com/admin/entity/payment/live/pay_LG3qJUh0ZeoJBw
+        // Slack: https://razorpay.slack.com/archives/C7WEGELHJ/p1676352566252339?thread_ts=1675832734.858449&cid=C7WEGELHJ
+        $paymentAttributes = [
+            'base_amount'       => 487066,
+            'amount'            => 6042,
+            'currency'          => 'USD',
+            'method'            => 'card',
+            'email'             => 'am@rzp.io',
+            'contact'           => '9876543210',
+            'card_id'           => $card->getId(),
+            'merchant_id'       => self::TEST_MID,
+            'international'     => true,
+            'fee'               => 16652,
+            'tax'               => 2540,
+            'mdr'               => 4384,
+            'fee_bearer'        => 'customer',
+        ];
+
+        $payment = $this->fixtures->edit('payment', $payment['id'], $paymentAttributes);
+
+        $fetchPaymentDetails = [
+            'url' => '/v1/payment_links_payment/' . $payment['public_id'],
+            'method' => 'get',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($fetchPaymentDetails);
+
+        $this->assertNotNull($response['payment']);
+        $this->assertEquals($response['payment']['currency'], 'USD');
+        $this->assertEquals($response['payment']['merchant_id'], self::TEST_MID);
+        $this->assertEquals($response['payment']['fee'], 16652);
+        $this->assertEquals($response['payment']['fee_in_mcc'], 0);
+
+
+        // test for fee_in_mcc as non zero value and
+        // payment meta set as zero value
+        // 
+        $metaAttributes = [
+            'payment_id'        => $payment['id'],
+            'mcc_forex_rate'    => '0',
+            'mcc_applied'       => true,
+            'mcc_mark_down_percent' => '2.5',
+        ];
+
+        $meta = $this->fixtures->create('payment_meta', $metaAttributes);
+
+        $fetchPaymentDetails = [
+            'url' => '/v1/payment_links_payment/' . $payment['public_id'],
+            'method' => 'get',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($fetchPaymentDetails);
+
+        $this->assertNotNull($response['payment']);
+        $this->assertEquals($response['payment']['currency'], 'USD');
+        $this->assertEquals($response['payment']['merchant_id'], self::TEST_MID);
+        $this->assertEquals($response['payment']['fee'], 16652);
+        $this->assertEquals($response['payment']['fee_in_mcc'], 0);
+
+
+        // test for fee_in_mcc as non zero value and
+        // payment meta set as non-zero value
+        // 
+        $metaAttributes = [
+            'mcc_forex_rate' => '82.609197',
+        ];
+
+        $this->fixtures->edit('payment_meta', $meta['id'], $metaAttributes);
+
+        $fetchPaymentDetails = [
+            'url' => '/v1/payment_links_payment/' . $payment['public_id'],
+            'method' => 'get',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->makeRequestAndGetContent($fetchPaymentDetails);
+
+        $this->assertNotNull($response['payment']);
+        $this->assertTrue($response['payment']['international']);
+        $this->assertEquals($response['payment']['currency'], 'USD');
+        $this->assertEquals($response['payment']['merchant_id'], self::TEST_MID);
+        $this->assertEquals($response['payment']['amount'], 6042);
+        $this->assertEquals($response['payment']['fee'], 16652);
+        $this->assertEquals($response['payment']['fee_in_mcc'], 202);
     }
 }

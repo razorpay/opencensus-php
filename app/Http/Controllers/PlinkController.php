@@ -393,6 +393,8 @@ class PlinkController extends Controller
             'discount' => isset($payment->discount) ? $payment->discount->toArrayPublic() : null,
         ];
 
+        $response['payment']['fee_in_mcc'] = $payment->getFeeInMcc() ?? 0;
+
         return ApiResponse::json($response);
     }
 }
