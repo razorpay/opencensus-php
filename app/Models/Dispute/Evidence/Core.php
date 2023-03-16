@@ -407,6 +407,19 @@ class Core extends Base\Core
             Dispute\Entity::BACKFILL => false,
         ]);
 
+        $submittedBy = ($this->app['basicauth']->isAdminLoggedInAsMerchantOnDashboard() === true) ? Constants::ADMIN : Constants::MERCHANT;
+        $merchantId = $dispute->getMerchantId();
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $eventData = [
+            'submitted_by' => $submittedBy,
+        ];
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant,
+            $eventData,
+            Constants::SEGMENT_EVENT_DISPUTE_EVIDENCE_DOCUMENT_UPLOAD,
+        );
+
         return $result;
     }
 

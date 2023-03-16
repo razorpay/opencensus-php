@@ -15,4 +15,9 @@ class Constants
     const IGNORE_FIELDS_FOR_UPDATE_REQUEST = [
         Entity::SUBMITTED_AT,
     ];
+
+    const SEGMENT_EVENT_DISPUTE_EVIDENCE_DOCUMENT_UPLOAD = 'dispute_evidence_document_upload';
+
+    const ADMIN = "admin";
+    const MERCHANT = "merchant";
 }
