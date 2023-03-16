@@ -75,17 +75,24 @@ class CapturePartnershipConsents extends Job
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::CAPTURE_CONSENT_ERROR,
-                [
-                    'merchant_id'  => $this->merchantId,
-                    'milestone'    => $this->milestone,
-                ]
-            );
+            if($e->getCode() === ErrorCode::BAD_REQUEST_MERCHANT_EDIT_OPERATION_IN_PROGRESS)
+            {
+                 $this->delete();
+            }
+            else
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::CAPTURE_CONSENT_ERROR,
+                    [
+                        'merchant_id'  => $this->merchantId,
+                        'milestone'    => $this->milestone,
+                    ]
+                );
 
-            $this->checkRetry($e);
+                $this->checkRetry($e);
+            }
         }
     }
 
