@@ -19,15 +19,8 @@ const Details = ({ showNotification }) => {
     isUneditable,
     purposeCode,
   } = useContext(formContext);
-  const {
-    values,
-    touched,
-    errors,
-    handleChange,
-    handleBlur,
-    setFieldValue,
-    validateForm,
-  } = useFormikContext();
+  const { values, touched, errors, handleChange, handleBlur, setFieldValue, validateForm } =
+    useFormikContext();
 
   /**
    * 1. calls post document api to save the file

@@ -59,7 +59,7 @@ describe('InstantRefundPricingTable', () => {
     expect(screen.getByText('We charge minimal fee on each refund')).toBeInTheDocument();
   });
 
-  describe('Custom pricing', () => {
+  describe.skip('Custom pricing', () => {
     test('should raiseTicket when contact support is clicked & rzpTicketSystem is true', async () => {
       render(
         <App

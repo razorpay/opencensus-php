@@ -20,10 +20,12 @@ export const selfServerTrack = ({ type, actionType = 'fetch' }) => {
   action && trackSelfServe({ action, page });
 };
 
-export const handleChangeTrack = (type) => ({ type: actionType, args }) => {
-  const [, newValue] = args;
-  newValue && selfServerTrack({ type, actionType });
-};
+export const handleChangeTrack =
+  (type) =>
+  ({ type: actionType, args }) => {
+    const [, newValue] = args;
+    newValue && selfServerTrack({ type, actionType });
+  };
 
 export const selfServeTrackResult = ({ type, actionType = 'fetch' }) => {
   const { action, page } = getAction(type, actionType);

@@ -42,9 +42,8 @@ test('should render correct valdiation error in case input is not valid', async 
 test('should reflect the changes in the api response', async () => {
   render(<App />, {});
   await waitForLoadingToFinish();
-  const [contactNameInput, contactNumber, contactEmailInput] = screen.getAllByTestId(
-    'ds-text-input',
-  );
+  const [contactNameInput, contactNumber, contactEmailInput] =
+    screen.getAllByTestId('ds-text-input');
   fireEvent.change(contactNameInput, { target: { value: 'Neeraj' } });
   fireEvent.change(contactNumber, { target: { value: '1234567890' } });
   fireEvent.change(contactEmailInput, { target: { value: 'Neeraj@abc.com' } });

@@ -38,7 +38,7 @@ const CountryCodeInput = ({
   value,
 }: CountryCodeInputPropsInterface): JSX.Element => {
   const dropdownMenuRef = useRef<HTMLDivElement>();
-
+  // prettier-ignore
   const [countryData, setCountryData] = useState<typeof countryListData[number]>(() => {
     return (
       countryListData.find((countryData) => countryData.value === dialCode) || defaultCountryData

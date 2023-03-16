@@ -183,14 +183,8 @@ export default class PaymentsListContainer extends ListContainer {
   };
 
   render() {
-    const {
-      docUrl,
-      quickTourFeature,
-      isRoute,
-      user,
-      failureAnalysisData,
-      terminalProviders,
-    } = this.props;
+    const { docUrl, quickTourFeature, isRoute, user, failureAnalysisData, terminalProviders } =
+      this.props;
 
     return (
       <div className="content-wrapper">

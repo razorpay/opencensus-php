@@ -1,0 +1,285 @@
+const path = require('path');
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const WorkbboxWebpackPlugin = require('workbox-webpack-plugin');
+// const ImageminWebpWebpackPlugin = require('imagemin-webp-webpack-plugin');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
+const isProd = process.env.STAGE !== 'development';
+const project = process.env.PROJECT;
+
+const fontsToProjectMap = {
+  pokedex: 'merchant',
+};
+const PROJECTS_USING_WORKBOX = ['merchant', 'merchantLA'];
+const PLUGINS_TO_BE_REMOVED = ['CompressionPlugin', 'LoadablePlugin', 'ImageMinimizerPlugin'];
+const PRELOAD_ASSETS_FOR = ['merchant', 'merchantLA'];
+const RZP_CDN_URL = 'https://cdn.razorpay.com/dashboard';
+
+module.exports = {
+  browserConfig: ({ config, isStoryBook = false }) => {
+    // *** config.entry *** //
+    config.entry = {
+      [project]: `./js/${project}/index.js`, // merchant to be replaced by [project]
+    };
+
+    if (isProd || isStoryBook) {
+      config.cache = false;
+      config.output.pathinfo = false;
+    } else {
+      config.cache.cacheDirectory = path.resolve(
+        __dirname,
+        `node_modules/.cache/webpack/${project}`,
+      );
+      config.devServer.devMiddleware = {
+        writeToDisk: true,
+        publicPath: path.resolve(__dirname, `../public/dist`),
+      };
+    }
+
+    config.experiments.backCompat = false;
+    config.parallelism = 500;
+
+    // *** config.output *** //
+    config.output = {
+      ...config.output,
+      path: path.resolve(__dirname, `../public/dist`),
+      publicPath: `/dist/`,
+      filename: `js/${project}/[name].[chunkhash:8].js`,
+      chunkFilename: `js/${project}/[name].[chunkhash:8].js`,
+      hashFunction: 'xxhash64',
+    };
+
+    // *** config.resolve *** //
+    config.resolve.modules.push(path.resolve(__dirname, 'js'));
+    config.resolve.alias = {
+      v2: path.resolve(__dirname, './v2'),
+      react: path.resolve(__dirname, './node_modules/react'),
+      assets: path.resolve(__dirname, './css/assets'),
+    };
+
+    // *** config.module *** //
+    config.module.rules[0].exclude = new RegExp(
+      '/node_modules/(?!(@commander|@razorpay|@universe)/).*/',
+    );
+    // from native config of dashboard
+    config.module.rules.push(
+      {
+        test: /\.styl$/,
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+          },
+          {
+            loader: 'css-loader',
+            options: {
+              url: false,
+            },
+          },
+          {
+            loader: 'stylus-loader',
+            options: {
+              stylusOptions: {
+                include: [path.join(__dirname, 'node_modules/bootstrap-styl')],
+                resolveURL: false,
+              },
+            },
+          },
+        ],
+      },
+      {
+        test: /\.font\.js/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: 'css-loader',
+            options: {
+              url: false,
+            },
+          },
+          {
+            loader: 'webfonts-loader',
+            options: {
+              publicPath: '../',
+              classPrefix: 'i-',
+              files: [`icons/${fontsToProjectMap[project] || project}/*.svg`],
+              fontName: `${project}-icons`,
+              fileName: isProd ? 'css/[fontname].[hash].[ext]' : 'css/[fontname].[ext]',
+              htmlDest: `css/[fontname].html`,
+              html: true,
+            },
+          },
+        ],
+      },
+      {
+        test: /\.(graphql|gql)$/,
+        exclude: /node_modules/,
+        loader: 'graphql-tag/loader',
+      },
+    );
+
+    // *** config.plugins *** //
+    if (project === 'merchant') {
+      // run this only once for merchant as it is common folder
+      config.plugins.push(
+        new CopyWebpackPlugin({
+          patterns: [
+            {
+              from: './css/assets',
+              to: './css/assets',
+            },
+          ],
+        }),
+      );
+    }
+
+    // adds new plugins as per dashboard
+    config.plugins.push(
+      new HtmlWebpackPlugin({
+        filename: `${project}-entry.js`,
+        inject: false,
+        cache: false,
+        chunks: [project],
+        version: JSON.stringify(process.env.VERSION),
+        templateContent: ({ htmlWebpackPlugin }) => {
+          return `(function(){
+            ${
+              process.env.REDIRECTOR === 'true'
+                ? "window.cdnDashboardUrl = 'http://localhost:8000';"
+                : ''
+            }
+            var websiteAssets = {
+              js : ${JSON.stringify(htmlWebpackPlugin.files.js)},
+              css : ${JSON.stringify(htmlWebpackPlugin.files.css)}
+            };
+            window.__VERSION__ = ${htmlWebpackPlugin.options.version};
+            ${require(`./entry/${project}-entry`)()}})()`;
+        },
+      }),
+      new webpack.ProvidePlugin({
+        React: 'react',
+        moment: 'moment',
+        Chart: 'chart',
+        axios: 'axios',
+        PropTypes: 'prop-types',
+      }),
+      new MiniCssExtractPlugin({
+        filename: !isProd ? 'css/[name].css' : 'css/[name].[contenthash].css',
+        chunkFilename: !isProd ? 'css/[id].css' : 'css/[id].[contenthash].css',
+      }),
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^\.\/locale$/,
+        contextRegExp: /moment$/,
+      }),
+      new webpack.DefinePlugin({
+        'process.env.PROJECT': JSON.stringify(project),
+        'process.env.PUBLIC_ENV': JSON.stringify(process.env.STAGE),
+      }),
+      new NodePolyfillPlugin({}),
+    );
+
+    if (PROJECTS_USING_WORKBOX.indexOf(project) > -1) {
+      config.plugins.push(
+        new WorkbboxWebpackPlugin.InjectManifest({
+          modifyURLPrefix: {
+            '/dist/': `${RZP_CDN_URL}/dist/`,
+          },
+          include: [/\.(js|css)?$/, /\.(woff|woff2)?$/],
+          exclude: [/(merchant-entry|merchantLA-entry).js$/],
+          swSrc: './sw/workbox.js',
+          swDest: `sw-utils/sw-${project}.js`,
+        }),
+      );
+    }
+
+    // TODO: need to be added back once optimisation is fixed
+    if (project === 'merchant') {
+      // config.plugins.push(
+      //   new ImageminWebpWebpackPlugin({
+      //     config: [
+      //       {
+      //         test: /\.(jpe?g|png)/,
+      //         options: {
+      //           quality: 75,
+      //         },
+      //       },
+      //     ],
+      //     strict: isProd,
+      //   })
+      // );
+    }
+
+    if (PRELOAD_ASSETS_FOR.includes(project) && isProd) {
+      config.plugins.push(
+        new HtmlWebpackPlugin({
+          filename: `${project}-preload.blade.php`,
+          inject: false,
+          cache: false,
+          chunks: [project],
+          version: JSON.stringify(process.env.VERSION),
+          templateContent: ({ htmlWebpackPlugin, compilation: { assets } }) => {
+            return `
+              ${htmlWebpackPlugin.files.css
+                .map(
+                  (css) => `<link rel="preload" href='{{$cdnDashboardUrl}}${css}' as="style" />\n`,
+                )
+                .join('')}
+              ${htmlWebpackPlugin.files.js
+                .map(
+                  (js) => `<link rel="preload" href='{{$cdnDashboardUrl}}${js}' as="script" />\n`,
+                )
+                .join('')}
+              ${Object.keys(assets)
+                .reduce((accumulator, asset) => {
+                  if (/\.(woff|woff2)?$/.test(asset)) {
+                    const type = asset.match(/\.(woff|woff2)?$/);
+                    accumulator.push(
+                      `<link rel="preload" href='{{$cdnDashboardUrl}}/dist/${asset}' as="font" type="font/${type[1]}" crossorigin >\n`,
+                    );
+                  }
+                  return accumulator;
+                }, [])
+                .join('')}`;
+          },
+        }),
+      );
+    }
+
+    // *** config.plugins *** //
+    // remove plugins not needed as per dashboard
+    config.plugins = config.plugins.filter((plugin) => {
+      return PLUGINS_TO_BE_REMOVED.indexOf(plugin?.constructor?.name) === -1;
+    });
+
+    // Configure the build analysis folder for each project
+    config.plugins.forEach((plugin) => {
+      if (plugin?.constructor?.name === 'BundleAnalyzerPlugin') {
+        plugin.opts.reportFilename = `${project}-bundle-analysis.html`;
+      }
+    });
+
+    // *** config.plugins *** //
+    // update plugins needed as per dashboard
+    if (process.env.DANGER_ENV && true) {
+      // replace default plugin config
+      config.plugins = config.plugins.filter((plugin) => {
+        return plugin?.constructor?.name !== 'BundleAnalyzerPlugin';
+      });
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'json',
+          openAnalyzer: false,
+          reportFilename: `${project}/${project}-stats.json`,
+          defaultSizes: 'gzip',
+        }),
+      );
+    }
+
+    config.output.pathinfo = !isProd;
+
+    return config;
+  },
+};

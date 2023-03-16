@@ -5,12 +5,10 @@ module.exports = {
     'kentcdodds',
     'kentcdodds/react',
     'plugin:prettier/recommended',
-    // TODO: Uncomment later plugins: 'plugin:jsx-a11y/recommended',
     'plugin:json/recommended-with-comments',
     'plugin:yml/standard',
   ],
   plugins: ['no-relative-import-paths'],
-  // TODO: Uncomment later plugins: ['jsx-a11y'],
   ignorePatterns: ['.eslintrc.js'],
   rules: {
     'no-shadow': 'off',
@@ -64,7 +62,7 @@ module.exports = {
       parser: '@babel/eslint-parser',
       parserOptions: {
         babelOptions: {
-          configFile: path.resolve(__dirname, './web/.babelrc.json'),
+          configFile: path.resolve(__dirname, './web/.babelrc.js'),
         },
       },
     },

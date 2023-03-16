@@ -26,9 +26,8 @@ test('renders all the input fields of the form correctly', async () => {
   await waitForLoadingToFinish();
   expect(screen.getByText('About Your Business')).toBeInTheDocument();
 
-  const [businessTypeInput, businessCategorySelect, AovField]: any = screen.getAllByTestId(
-    'ds-text-input',
-  );
+  const [businessTypeInput, businessCategorySelect, AovField]: any =
+    screen.getAllByTestId('ds-text-input');
 
   const businessModal = screen.getByTestId('ds-text-area');
   fireEvent.click(businessTypeInput);

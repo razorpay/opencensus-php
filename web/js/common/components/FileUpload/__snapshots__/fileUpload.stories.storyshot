@@ -10,7 +10,7 @@ exports[`Storyshots Onboarding/file upload File Upload Component 1`] = `
       >
         <div>
           <label
-            class="Styled__DashedButton-qnm17h-0 dpPSnm Sizeweb__Size-sc-1e5yf1-0 ksTiZA"
+            class="Styled__DashedButton-sc-qnm17h-0 cVMilr Sizeweb__Size-sc-1e5yf1-0 ksTiZA"
             data-testid="upload-button"
           >
             <img

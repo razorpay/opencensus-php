@@ -29,14 +29,14 @@ exports[`Storyshots Modal Bottom Sheet 1`] = `
         >
           <div>
             <div
-              class="Styled__DialogContainer-yakibk-0 kjjoSV"
+              class="Styled__DialogContainer-sc-yakibk-0 cLmiRM"
             >
               <div
-                class="Styled__BottomSheet-yakibk-3 dbmlAk"
+                class="Styled__BottomSheet-sc-yakibk-3 dVZOUN"
                 style="transform: translateY(100%);"
               >
                 <div
-                  class="Textweb__Text-sc-1qrdpx3-0 Styled__BodyText-yakibk-6 llkvqG"
+                  class="Textweb__Text-sc-1qrdpx3-0 Styled__BodyText-sc-yakibk-6 iDBDnz"
                   color="shade.980"
                   data-testid="ds-text"
                 >
@@ -108,35 +108,35 @@ exports[`Storyshots Modal Modal With Controls 1`] = `
         >
           <div>
             <div
-              class="Styled__DialogContainer-yakibk-0 eoloeX"
+              class="Styled__DialogContainer-sc-yakibk-0 fdWvse"
             >
               <div
-                class="Styled__Dialog-yakibk-1 fmOvKO"
+                class="Styled__Dialog-sc-yakibk-1 bQOHyf"
                 role="dialog"
               >
                 <div
-                  class="Textweb__Text-sc-1qrdpx3-0 Styled__HeaderText-yakibk-5 fGdwjt"
+                  class="Textweb__Text-sc-1qrdpx3-0 Styled__HeaderText-sc-yakibk-5 mwJqk"
                   color="shade.980"
                   data-testid="ds-text"
                 >
                    Default Modal Header 
                 </div>
                 <div
-                  class="Textweb__Text-sc-1qrdpx3-0 Styled__BodyText-yakibk-6 llkvqG"
+                  class="Textweb__Text-sc-1qrdpx3-0 Styled__BodyText-sc-yakibk-6 iDBDnz"
                   color="shade.980"
                   data-testid="ds-text"
                 >
                   Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged
                 </div>
                 <div
-                  class="Textweb__Text-sc-1qrdpx3-0 Styled__FooterText-yakibk-7 bzXQIs"
+                  class="Textweb__Text-sc-1qrdpx3-0 Styled__FooterText-sc-yakibk-7 dbGpcp"
                   color="shade.980"
                   data-testid="ds-text"
                 >
                    Default Modal Footer
                 </div>
                 <div
-                  class="Styled__CloseIconContainer-yakibk-2 BfMRb"
+                  class="Styled__CloseIconContainer-sc-yakibk-2 ipewOa"
                   data-testid="modalCloseButton"
                 >
                   <button

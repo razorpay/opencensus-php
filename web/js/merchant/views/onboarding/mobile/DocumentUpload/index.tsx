@@ -785,8 +785,7 @@ const DocumentUpload = ({ isFormLocked }: IDocumentUploadProps): React.ReactElem
                         'What is Udyog Aadhar/Udyam Cerificate? View Sample :',
                         [
                           {
-                            url:
-                              'http://www.msmeudyogaadhaar.org/msme-ssi-udyog-certificate-sample/',
+                            url: 'http://www.msmeudyogaadhaar.org/msme-ssi-udyog-certificate-sample/',
                             label: 'Udyog Aadhar Certificate',
                             analyticsActionName: 'Udyog Aadhar Certificate',
                           },

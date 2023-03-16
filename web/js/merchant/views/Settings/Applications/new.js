@@ -103,13 +103,15 @@ class NewApplicationForm extends Component {
       });
   }
 
-  setWebhookState = (mode) => ({ webhookLoading, webhook }) => {
-    mode = mode || '';
-    this.setState({
-      [`${mode}webhookLoading`]: webhookLoading,
-      [`${mode}webhook`]: webhook,
-    });
-  };
+  setWebhookState =
+    (mode) =>
+    ({ webhookLoading, webhook }) => {
+      mode = mode || '';
+      this.setState({
+        [`${mode}webhookLoading`]: webhookLoading,
+        [`${mode}webhook`]: webhook,
+      });
+    };
 
   fetchWebhooks(mode) {
     const changeWebhookState = this.setWebhookState(mode);
@@ -253,20 +255,22 @@ class NewApplicationForm extends Component {
     changeWebhookState({ webhook: webhook.data });
   };
 
-  showWebhookModal = (mode = '') => () => {
-    this.props.openModal({
-      component: (
-        <AppWebhook
-          webhook={this.state[`${mode}webhook`]}
-          loading={this.state[`${mode}webhookLoading`]}
-          appId={this.props.match.params.id}
-          onSave={this.onWebhookSave(mode)}
-          mode={mode}
-          isApplication
-        />
-      ),
-    });
-  };
+  showWebhookModal =
+    (mode = '') =>
+    () => {
+      this.props.openModal({
+        component: (
+          <AppWebhook
+            webhook={this.state[`${mode}webhook`]}
+            loading={this.state[`${mode}webhookLoading`]}
+            appId={this.props.match.params.id}
+            onSave={this.onWebhookSave(mode)}
+            mode={mode}
+            isApplication
+          />
+        ),
+      });
+    };
 
   render() {
     const {

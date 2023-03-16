@@ -21,12 +21,8 @@ export const settleNowRestrictionMsgFn = (
   isNodalAccountBalanceLow,
 ) => {
   if (!settlementRestricted) return null;
-  const {
-    attempts_left,
-    settlable_amount,
-    max_amount_limit,
-    settlements_count_limit,
-  } = ondemand_restrictions.data;
+  const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
+    ondemand_restrictions.data;
   if (isOnDemandDisabled()) {
     const restrictedItem = restrictedFeatures
       .filter((feat) => user.isFeatureEnabled(feat))
@@ -48,7 +44,7 @@ export const settleNowRestrictionMsgFn = (
           );
         } else {
           return (
-            <span className="highlight-tooltip">
+            <span className="highlight-tooltip" key={`${item}_${i}`}>
               {item}
               {i === restrictedItem.length - 1 ? '.' : i === restrictedItem.length - 2 ? ' ' : ', '}
             </span>

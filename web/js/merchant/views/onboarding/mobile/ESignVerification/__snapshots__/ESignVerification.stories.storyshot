@@ -26,7 +26,7 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                   Aadhaar Verification ( via OTP )
                 </div>
                 <div
-                  class="Viewweb__View-sc-1o0hmxm-0 Styled__StyledView-rwemlf-1 jCiXGV"
+                  class="Viewweb__View-sc-1o0hmxm-0 Styled__StyledView-sc-rwemlf-1 bhlXyY"
                 >
                   <div
                     class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 eiPEMl"
@@ -144,7 +144,7 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                     </div>
                   </div>
                   <div
-                    class="Viewweb__View-sc-1o0hmxm-0 Styled__StyledView-rwemlf-1 jCiXGV Flexweb__Flex-sc-1yhcoea-0 kSCwNs"
+                    class="Viewweb__View-sc-1o0hmxm-0 Styled__StyledView-sc-rwemlf-1 bhlXyY Flexweb__Flex-sc-1yhcoea-0 kSCwNs"
                   >
                     <div
                       class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 iEeqkg"
@@ -180,13 +180,13 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                   </div>
                 </div>
                 <div
-                  class="Styled__Divider-rwemlf-0 aGWLm Spaceweb__Space-sc-1abqisc-0 jdZBCQ"
+                  class="Styled__Divider-sc-rwemlf-0 SIZFX Spaceweb__Space-sc-1abqisc-0 jdZBCQ"
                 />
                 <div
                   class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 dELwZA"
                 >
                   <div
-                    class="Viewweb__View-sc-1o0hmxm-0 Styled__StyledView-rwemlf-1 jCiXGV"
+                    class="Viewweb__View-sc-1o0hmxm-0 Styled__StyledView-sc-rwemlf-1 bhlXyY"
                   >
                     <div
                       class="Textweb__Text-sc-1qrdpx3-0 dFPmAI"
@@ -203,10 +203,10 @@ exports[`Storyshots Onboarding/ESignVerification Default 1`] = `
                       class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 iyJkr"
                     >
                       <label
-                        class="Viewweb__View-sc-1o0hmxm-0 Labelweb__Label-rq06rg-0 fWvWEc Flexweb__Flex-sc-1yhcoea-0 kSCwNs"
+                        class="Viewweb__View-sc-1o0hmxm-0 Labelweb__Label-sc-rq06rg-0 iqBTUF Flexweb__Flex-sc-1yhcoea-0 kSCwNs"
                       >
                         <input
-                          class="Inputweb__Input-vlwi0r-0 hORnkh"
+                          class="Inputweb__Input-sc-vlwi0r-0 gVGPFM"
                           data-testid="ds-checkbox"
                           type="checkbox"
                         />

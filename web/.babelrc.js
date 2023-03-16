@@ -1,0 +1,23 @@
+module.exports = {
+  presets: ['@razorpay/universe-cli/babel.react.typescript.legacy'],
+  plugins: [
+    ['@babel/plugin-proposal-decorators', { legacy: true }],
+    [
+      '@babel/plugin-proposal-class-properties',
+      {
+        loose: true,
+      },
+    ],
+    '@babel/plugin-proposal-do-expressions',
+    '@babel/plugin-proposal-function-bind',
+    './babel-plugin-react-html-attrs',
+    [
+      '@babel/plugin-transform-spread',
+      {
+        loose: true,
+      },
+    ],
+    ['babel-plugin-graphql-tag'],
+    'react-require',
+  ],
+};

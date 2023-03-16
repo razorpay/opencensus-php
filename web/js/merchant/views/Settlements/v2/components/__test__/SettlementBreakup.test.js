@@ -30,20 +30,18 @@ describe('SettlementBreakup', () => {
   test('should load settlements breakup', async () => {
     renderApp();
 
-    const {
-      expectedDebitNodes,
-      expectedCreditNodes,
-    } = SettlementsDB.settleBreakupDetails.items.reduce(
-      (acc, item) => {
-        if (item.type === 'debit') {
-          acc.expectedDebitNodes.push(item);
-        } else if (item.type === 'credit') {
-          acc.expectedCreditNodes.push(item);
-        }
-        return acc;
-      },
-      { expectedDebitNodes: [], expectedCreditNodes: [] },
-    );
+    const { expectedDebitNodes, expectedCreditNodes } =
+      SettlementsDB.settleBreakupDetails.items.reduce(
+        (acc, item) => {
+          if (item.type === 'debit') {
+            acc.expectedDebitNodes.push(item);
+          } else if (item.type === 'credit') {
+            acc.expectedCreditNodes.push(item);
+          }
+          return acc;
+        },
+        { expectedDebitNodes: [], expectedCreditNodes: [] },
+      );
 
     await waitForLoadingToFinish();
 

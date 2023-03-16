@@ -1,7 +1,7 @@
 export const holidayList = {
   loading: false,
   data: {
-    '2022': [
+    2022: [
       {
         date: '26/01/2022',
         description: 'Republic Day',

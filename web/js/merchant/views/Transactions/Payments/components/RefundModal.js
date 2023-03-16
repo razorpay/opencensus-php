@@ -121,15 +121,8 @@ class RefundModal extends Component {
   }
 
   componentDidMount() {
-    const {
-      payment,
-      user,
-      fetchTransfers,
-      fetchMerchantBalance,
-      transfers,
-      onMount,
-      initialize,
-    } = this.props;
+    const { payment, user, fetchTransfers, fetchMerchantBalance, transfers, onMount, initialize } =
+      this.props;
 
     if (user?.isMarketplaceEnabled) {
       fetchTransfers(payment);
@@ -725,11 +718,8 @@ class RefundModal extends Component {
 
   render() {
     const { handleSubmit, payment, transfers, user } = this.props;
-    const {
-      gateway_refund_support,
-      payment_age_limit_for_gateway_refund,
-      instant_refund_support,
-    } = payment;
+    const { gateway_refund_support, payment_age_limit_for_gateway_refund, instant_refund_support } =
+      payment;
 
     const amountError = amountValidation(this.props);
     const partial = isPartialPayment(this.props);

@@ -17,16 +17,18 @@ const filterOptions = (options, selectedReminders, selectedOption) => {
 };
 
 export default class ReminderOptionSetting extends React.Component {
-  handleChange = (id) => ({ option }) => {
-    const newList = [...this.props.selectedReminders];
-    newList[id] = option;
-    selfServeTrackInitiate({
-      selfServeAction: 'PL Reminder Created',
-      page: 'Reminders',
-      screen: 'Settings',
-    });
-    this.props.onChange(newList, this.props.name);
-  };
+  handleChange =
+    (id) =>
+    ({ option }) => {
+      const newList = [...this.props.selectedReminders];
+      newList[id] = option;
+      selfServeTrackInitiate({
+        selfServeAction: 'PL Reminder Created',
+        page: 'Reminders',
+        screen: 'Settings',
+      });
+      this.props.onChange(newList, this.props.name);
+    };
 
   handleRemove = (option) => () => {
     const newList = this.props.selectedReminders.filter((ele) => ele.value != option.value);

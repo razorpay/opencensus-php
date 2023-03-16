@@ -620,7 +620,7 @@ class webhookForm extends Component {
                       );
                     })
                   ) : (
-                    <span stlye={{ paddingTop: '10px' }}>No Webhooks available</span>
+                    <span style={{ paddingTop: '10px' }}>No Webhooks available</span>
                   )}
                 </div>
                 <div

@@ -3,7 +3,8 @@
 $cdn_dashboard_url = env('CDN_DASHBOARD_URL');
 
 // Add canary inside dashboard CDN URL if instance type is `canary`
-if (env('INSTANCE_TYPE') === 'canary')
+// TODO: add support for canary for non prod envs then we can remove `production` check
+if (env('APP_ENV') === 'production' &&  env('INSTANCE_TYPE') === 'canary')
 {
     $cdn_dashboard_url = $cdn_dashboard_url . '/canary';
 }

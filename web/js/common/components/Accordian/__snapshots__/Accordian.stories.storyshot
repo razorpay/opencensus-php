@@ -10,14 +10,14 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
       >
         <div>
           <ul
-            class="Styled__Root-wt9mm2-0 hehzvE"
+            class="Styled__Root-sc-wt9mm2-0 iJuVEN"
           >
             <li
-              class="Styled__PanelContainer-wt9mm2-1 hbnvKt"
+              class="Styled__PanelContainer-sc-wt9mm2-1 iikuYg"
             >
               <div
                 aria-expanded="true"
-                class="Styled__Header-wt9mm2-2 dqtSdD"
+                class="Styled__Header-sc-wt9mm2-2 dpWOUm"
                 role="button"
               >
                 <div
@@ -41,17 +41,17 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
                 </svg>
               </div>
               <div
-                class="Styled__Content-wt9mm2-3 TAVCX"
+                class="Styled__Content-sc-wt9mm2-3 gWOTEe"
               >
                 Hola this is random content 1
               </div>
             </li>
             <li
-              class="Styled__PanelContainer-wt9mm2-1 hbnvKt"
+              class="Styled__PanelContainer-sc-wt9mm2-1 iikuYg"
             >
               <div
                 aria-expanded="false"
-                class="Styled__Header-wt9mm2-2 dqtSdD"
+                class="Styled__Header-sc-wt9mm2-2 dpWOUm"
                 role="button"
               >
                 <div
@@ -75,15 +75,15 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
                 </svg>
               </div>
               <div
-                class="Styled__Content-wt9mm2-3 fozTur"
+                class="Styled__Content-sc-wt9mm2-3 fSyCkK"
               />
             </li>
             <li
-              class="Styled__PanelContainer-wt9mm2-1 hbnvKt"
+              class="Styled__PanelContainer-sc-wt9mm2-1 iikuYg"
             >
               <div
                 aria-expanded="false"
-                class="Styled__Header-wt9mm2-2 dqtSdD"
+                class="Styled__Header-sc-wt9mm2-2 dpWOUm"
                 role="button"
               >
                 <div
@@ -107,7 +107,7 @@ exports[`Storyshots Accordian Stateless Accordian 1`] = `
                 </svg>
               </div>
               <div
-                class="Styled__Content-wt9mm2-3 fozTur"
+                class="Styled__Content-sc-wt9mm2-3 fSyCkK"
               />
             </li>
           </ul>

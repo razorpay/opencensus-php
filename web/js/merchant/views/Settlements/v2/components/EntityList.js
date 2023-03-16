@@ -79,12 +79,8 @@ const sortKeys = (item, user) => {
 };
 
 const ListItem = ({ item, source, user, terminalProviders }) => {
-  const {
-    selfServeActionName,
-    page,
-    INIT_POINT,
-    INIT_PAGE,
-  } = getSelfServeDetailForSettlementDetails(source);
+  const { selfServeActionName, page, INIT_POINT, INIT_PAGE } =
+    getSelfServeDetailForSettlementDetails(source);
 
   const selfServeInitiateData = {
     selfServeAction: selfServeActionName,

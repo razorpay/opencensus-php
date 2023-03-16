@@ -33,7 +33,7 @@ describe('Tests for the Pricing Subscription', () => {
     const isAllowedToFetch =
       user?.isBundlePricingEnabled &&
       mode === 'live' &&
-      impressionCount < maxImpressions &&
+      impressionCount <= maxImpressions &&
       !isWithinTimeInterval &&
       !isNotInterested;
     expect(isAllowedToFetch).toBeTruthy();

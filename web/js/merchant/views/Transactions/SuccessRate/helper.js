@@ -109,8 +109,11 @@ export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) =
   const activeTab = refreshMetricTabs ? 'Overall' : stateActiveTab;
   const mode = activeTab === 'Overall' || !isOptimizerEnabled ? 'razorpay' : 'optimizer';
   const { startDate, endDate } = filters;
-  const { selectedDropdownFilterOptions = {}, selectedInterval, selectedCardType } =
-    tabs[activeTab] || {};
+  const {
+    selectedDropdownFilterOptions = {},
+    selectedInterval,
+    selectedCardType,
+  } = tabs[activeTab] || {};
 
   let _group_by = [DEFAULT_GROUP_BY[activeTab]];
   let filterMethods = DEFAULT_METHOD[activeTab]?.map(({ method }) => method);

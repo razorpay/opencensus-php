@@ -278,10 +278,8 @@ const AcceptPaymentsCard: React.FC = () => {
       },
     },
   );
-  const {
-    fetchPayment: fetchPaymentInfo,
-    transactionAmount: transactionAmountInfo,
-  } = usePaymentVolume();
+  const { fetchPayment: fetchPaymentInfo, transactionAmount: transactionAmountInfo } =
+    usePaymentVolume();
 
   const { status: escalationsStatus, data: escalationsData } = useEscalation();
 

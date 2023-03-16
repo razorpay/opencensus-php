@@ -2,7 +2,16 @@ name: Format Checker Workflow
 
 on:
   pull_request:
-    types: [ edited, opened, synchronize, reopened, assigned, labeled, review_requested ]
+    types:
+      [
+        edited,
+        opened,
+        synchronize,
+        reopened,
+        assigned,
+        labeled,
+        review_requested,
+      ]
 
 env:
   GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
@@ -18,10 +27,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Use Node v16
+      - name: Use Node v18.12.1
         uses: actions/setup-node@v1
         with:
-          node-version: 16.13.0
+          node-version: 18.12.1
 
       - name: Setup yarn
         run: npm install -g yarn
@@ -40,7 +49,7 @@ jobs:
           args: "--id formatchecker_dangerjs"
         env:
           GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-          DANGER_DISABLE_TRANSPILATION: 'true'
+          DANGER_DISABLE_TRANSPILATION: "true"
 
       - name: Get changed files
         id: changed-files
@@ -83,8 +92,8 @@ jobs:
             startsWith(steps.branch-name.outputs.current_branch, 'skiplint-')
           )
         with:
-          repo-token: '${{ secrets.GITHUB_TOKEN }}'
-          report-json: 'eslint_report.json'
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          report-json: "eslint_report.json"
           check-name: "Eslint Report"
 
       - name: Get changed Stylus files

@@ -12,15 +12,13 @@ export const SETTLEMENTS_TIMING = [
     time: '09:00 AM',
     label: 'Morning Settlement',
     icon: 'clock-nine',
-    info:
-      'Transactions successfully completed between 5:00PM to 8:59AM (next day) shall be settled to your bank account at 9:00AM on the same bank working day.',
+    info: 'Transactions successfully completed between 5:00PM to 8:59AM (next day) shall be settled to your bank account at 9:00AM on the same bank working day.',
   },
   {
     time: '05:00 PM',
     label: 'Evening Settlement',
     icon: 'clock-five',
-    info:
-      'Transactions successfully completed between 9:00AM to 4:59PM (same day) shall be settled to the your bank account at 5:00PM on the same bank working day.',
+    info: 'Transactions successfully completed between 9:00AM to 4:59PM (same day) shall be settled to the your bank account at 5:00PM on the same bank working day.',
   },
 ];
 

@@ -23,38 +23,41 @@ jest.mock('common/utils/selfServeAnalytics', () => ({
 
 jest.mock(
   'merchant/views/Transactions/Orders/components/OrderDetails',
-  () => ({ onTogglePayments, isLoading, order, statusMsg }) => {
-    return (
-      <>
-        <div>OrderDetails Component</div>
-        {isLoading ? (
-          <div>Loading</div>
-        ) : (
-          <button type="button" onClick={() => onTogglePayments(order)}>
-            Order Details onTogglePayments
-          </button>
-        )}
-        {statusMsg?.message && <p>{statusMsg.message}</p>}
-      </>
-    );
-  },
+  () =>
+    ({ onTogglePayments, isLoading, order, statusMsg }) => {
+      return (
+        <>
+          <div>OrderDetails Component</div>
+          {isLoading ? (
+            <div>Loading</div>
+          ) : (
+            <button type="button" onClick={() => onTogglePayments(order)}>
+              Order Details onTogglePayments
+            </button>
+          )}
+          {statusMsg?.message && <p>{statusMsg.message}</p>}
+        </>
+      );
+    },
 );
 
 jest.mock(
   'merchant/views/Transactions/Orders/components/MagicCheckoutOrderDetails',
-  () => ({ onTogglePayments, isLoading, order, statusMsg }) => (
-    <>
-      <div>MagicCheckoutOrderDetails Component</div>
-      {isLoading ? (
-        <div>Loading</div>
-      ) : (
-        <button type="button" onClick={() => onTogglePayments(order)}>
-          Magic Checkout Order Details onTogglePayments
-        </button>
-      )}
-      {statusMsg?.message && <p>{statusMsg.message}</p>}
-    </>
-  ),
+  () =>
+    ({ onTogglePayments, isLoading, order, statusMsg }) =>
+      (
+        <>
+          <div>MagicCheckoutOrderDetails Component</div>
+          {isLoading ? (
+            <div>Loading</div>
+          ) : (
+            <button type="button" onClick={() => onTogglePayments(order)}>
+              Magic Checkout Order Details onTogglePayments
+            </button>
+          )}
+          {statusMsg?.message && <p>{statusMsg.message}</p>}
+        </>
+      ),
 );
 
 const initState = {

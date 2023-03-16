@@ -76,12 +76,8 @@ class PaymentsListContainer extends ListContainer {
   };
 
   onUploadInvoice = async (id, file) => {
-    const {
-      uploadInvoicePending,
-      uploadInvoiceSuccess,
-      uploadInvoiceError,
-      showNotification,
-    } = this.props;
+    const { uploadInvoicePending, uploadInvoiceSuccess, uploadInvoiceError, showNotification } =
+      this.props;
     uploadInvoicePending({ id });
     trackInvoiceUploadClick({
       paymentId: id,
@@ -112,12 +108,8 @@ class PaymentsListContainer extends ListContainer {
   };
 
   onView = async (id) => {
-    const {
-      viewInvoicePending,
-      viewInvoiceSuccess,
-      viewInvoiceError,
-      showNotification,
-    } = this.props;
+    const { viewInvoicePending, viewInvoiceSuccess, viewInvoiceError, showNotification } =
+      this.props;
     viewInvoicePending({ id });
     trackInvoiceViewClick({
       documentId: id,

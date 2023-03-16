@@ -2,7 +2,7 @@ name: Track Bundle Limit Threshold
 
 on:
   pull_request:
-    branches: 
+    branches:
       - master
     types:
       - closed
@@ -22,10 +22,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Use Node v16
+      - name: Use Node v18.12.1
         uses: actions/setup-node@v1
         with:
-          node-version: 16.13.1
+          node-version: 18.12.1
 
       - name: Install libraries for webp conversion
         run: |
@@ -40,7 +40,7 @@ jobs:
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
-          
+
       - name: Build All
         run: cd web && npm run test:build:merchant
         env:
@@ -56,8 +56,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
-          DANGER_DISABLE_TRANSPILATION: 'true'
-                
+          DANGER_DISABLE_TRANSPILATION: "true"
+
       - name: Print Bundle Size Report
         run: echo "Bundle Size Report - ${{ steps.tracksizelimit_dangerjs.outputs.reportTable }}"
 

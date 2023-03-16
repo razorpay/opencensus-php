@@ -19,7 +19,7 @@ exports[`Storyshots Onboarding/Home Default 1`] = `
               class="Viewweb__View-sc-1o0hmxm-0 eayzPs Spaceweb__Space-sc-1abqisc-0 fsHGcL"
             >
               <div
-                class="Viewweb__View-sc-1o0hmxm-0 Home__StatusUpdates-mcc624-0 btTCEi"
+                class="Viewweb__View-sc-1o0hmxm-0 Home__StatusUpdates-sc-mcc624-0 gDhUVX"
               />
             </div>
             <div
@@ -33,10 +33,10 @@ exports[`Storyshots Onboarding/Home Default 1`] = `
                   class="Viewweb__View-sc-1o0hmxm-0 eayzPs Flexweb__Flex-sc-1yhcoea-0 eSXEJE"
                 >
                   <div
-                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__HeadingContainer-h67uoz-1 hrJYDM"
+                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__HeadingContainer-sc-h67uoz-1 dKlocp"
                   >
                     <div
-                      class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__HeadingContainer-h67uoz-1 hrJYDM Spaceweb__Space-sc-1abqisc-0 ekUIxk"
+                      class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__HeadingContainer-sc-h67uoz-1 dKlocp Spaceweb__Space-sc-1abqisc-0 ekUIxk"
                     >
                       <div
                         class="Textweb__Text-sc-1qrdpx3-0 iAZzAb"
@@ -47,7 +47,7 @@ exports[`Storyshots Onboarding/Home Default 1`] = `
                       </div>
                     </div>
                     <div
-                      class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 eAGDot Spaceweb__Space-sc-1abqisc-0 eWXaAy"
+                      class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-sc-h67uoz-2 hsa-DEw Sizeweb__Size-sc-1e5yf1-0 eAGDot Spaceweb__Space-sc-1abqisc-0 eWXaAy"
                     />
                   </div>
                   <img
@@ -56,25 +56,25 @@ exports[`Storyshots Onboarding/Home Default 1`] = `
                   />
                 </div>
                 <div
-                  class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Separator-h67uoz-0 pKBln"
+                  class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Separator-sc-h67uoz-0 cHfNKK"
                 />
                 <div
                   class="Viewweb__View-sc-1o0hmxm-0 eayzPs"
                 >
                   <div
-                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 dmNVka Spaceweb__Space-sc-1abqisc-0 jxpzzb"
+                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-sc-h67uoz-2 hsa-DEw Sizeweb__Size-sc-1e5yf1-0 dmNVka Spaceweb__Space-sc-1abqisc-0 jxpzzb"
                   />
                   <div
-                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 cBoAPd Spaceweb__Space-sc-1abqisc-0 jxpzzb"
+                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-sc-h67uoz-2 hsa-DEw Sizeweb__Size-sc-1e5yf1-0 cBoAPd Spaceweb__Space-sc-1abqisc-0 jxpzzb"
                   />
                   <div
-                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 dmNVka Spaceweb__Space-sc-1abqisc-0 jxpzzb"
+                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-sc-h67uoz-2 hsa-DEw Sizeweb__Size-sc-1e5yf1-0 dmNVka Spaceweb__Space-sc-1abqisc-0 jxpzzb"
                   />
                   <div
-                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 cBoAPd Spaceweb__Space-sc-1abqisc-0 jxpzzb"
+                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-sc-h67uoz-2 hsa-DEw Sizeweb__Size-sc-1e5yf1-0 cBoAPd Spaceweb__Space-sc-1abqisc-0 jxpzzb"
                   />
                   <div
-                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-h67uoz-2 kXejWt Sizeweb__Size-sc-1e5yf1-0 dmNVka"
+                    class="Viewweb__View-sc-1o0hmxm-0 OnboardingCardShimmer__Container-sc-h67uoz-2 hsa-DEw Sizeweb__Size-sc-1e5yf1-0 dmNVka"
                   />
                 </div>
               </div>

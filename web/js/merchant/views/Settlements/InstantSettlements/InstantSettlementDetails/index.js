@@ -17,13 +17,8 @@ class InstantSettlementDetails extends Component {
   }
 
   render() {
-    const {
-      loading,
-      error,
-      instantSettlement,
-      closeModal,
-      fetchTotalSettlementAmount,
-    } = this.props;
+    const { loading, error, instantSettlement, closeModal, fetchTotalSettlementAmount } =
+      this.props;
     let statusMsg = {};
 
     if (error) {

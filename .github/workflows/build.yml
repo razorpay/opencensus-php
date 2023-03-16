@@ -7,12 +7,12 @@ jobs:
     runs-on: [self-hosted]
     steps:
       - name: Checkout Codebase
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      - name: Use Node v16.13.1
-        uses: actions/setup-node@v1
+      - name: Use Node v18.12.1
+        uses: actions/setup-node@v3
         with:
-          node-version: 16.13.1
+          node-version: 18.12.1
 
       - name: Install libraries for webp conversion
         run: |
@@ -31,7 +31,7 @@ jobs:
 
       - name: Build All
         # Runs in parellel
-        run: cd web && npm run production:build
+        run: cd web && npm run prod-build-all
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
@@ -84,7 +84,6 @@ jobs:
             GIT_COMMIT_HASH=${{ github.sha }}
             GIT_USERNAME=rzp
 
-
   workflow_status:
     runs-on: [self-hosted]
     name: Update Status Check
@@ -112,7 +111,7 @@ jobs:
 
   build-e2e:
     name: E2E test build
-    runs-on: [ self-hosted ]
+    runs-on: [self-hosted]
     needs: [build]
     steps:
       - uses: actions/checkout@v2
@@ -142,8 +141,8 @@ jobs:
 
   e2e-test-webhook:
     name: E2E test webhook
-    runs-on: [ self-hosted ]
-    needs: [ build-e2e ]
+    runs-on: [self-hosted]
+    needs: [build-e2e]
     steps:
       - name: Get Prod API commit
         uses: fjogeleit/http-request-action@52ba495021567f279f4a6577ac8fb73672197af8

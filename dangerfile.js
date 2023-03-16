@@ -8,7 +8,6 @@ const frontendSensitiveFiles = [
   'web/package.json',
   'web/tsconfig.json',
   'web/webpack.client.js',
-  'web/tools/build.js',
   'web/entry/**',
 ];
 

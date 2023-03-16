@@ -10,7 +10,7 @@ const { pr, printMessage } = require('../utils');
 const getStats = () => {
   let stats = [];
   try {
-    stats = require('../../../public/dist/merchant-stats');
+    stats = require('../../../public/dist/merchant/merchant-stats');
   } catch (error) {
     logger.error('File not Found', error);
   }

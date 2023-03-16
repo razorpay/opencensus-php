@@ -1,4 +1,4 @@
-import uuid from 'uuid';
+import { v4 as uuid } from 'uuid';
 import { titleCase, getCommonAnalyticsProperties } from './rzp-utils';
 import { getCookie } from 'common/utils/cookies';
 import errorService from '@razorpay/universe-utils/errorService';

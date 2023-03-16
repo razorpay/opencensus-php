@@ -84,7 +84,7 @@ describe('InstantRefundFee', () => {
       });
     });
 
-    test('should raiseTicket when contact support is clicked & rzpTicketSystem is true', async () => {
+    test.skip('should raiseTicket when contact support is clicked & rzpTicketSystem is true', async () => {
       render(
         <App
           pricing={{

@@ -13,14 +13,8 @@ import { LOADING } from 'merchant/components/Activation/Constants';
 import Input from 'common/new-ui/Input';
 
 const OwnerPrompt = ({ saveData }) => {
-  const {
-    setInitialValues,
-    ownerCount,
-    setOwnerCount,
-    setLoading,
-    activeOwner,
-    setActiveOwner,
-  } = useContext(formContext);
+  const { setInitialValues, ownerCount, setOwnerCount, setLoading, activeOwner, setActiveOwner } =
+    useContext(formContext);
   const { values, errors, dirty, validateForm } = useFormikContext();
 
   /**

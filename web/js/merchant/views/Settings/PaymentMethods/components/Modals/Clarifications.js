@@ -124,14 +124,8 @@ const Clarifications = (props) => {
   const [isDisabled, setIsDisabled] = useState(false);
   const [files, setFiles] = useState({});
   const [clarifications, setClarifications] = useState(false);
-  const {
-    onCloseClick,
-    mirId,
-    merchantDiscrepancies,
-    discrepancyCategories,
-    loading,
-    status,
-  } = props;
+  const { onCloseClick, mirId, merchantDiscrepancies, discrepancyCategories, loading, status } =
+    props;
   const lastTab = filteredTabs.length - 1;
   async function fetchIirDiscrepancies() {
     await props.getIirDiscrepancies(mirId);

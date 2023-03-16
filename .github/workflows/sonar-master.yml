@@ -18,10 +18,10 @@ jobs:
         with:
           token: ${{ secrets.CI_BOT_TOKEN }}
 
-      - name: Use Node v16.13.1
+      - name: Use Node v18.12.1
         uses: actions/setup-node@v1
         with:
-          node-version: 16.13.1
+          node-version: 18.12.1
 
       - name: Install libraries for webp conversion
         run: |

@@ -1,5 +1,5 @@
 import { mergeAll } from 'common/utils/immutable';
-import uuid from 'uuid';
+import { v4 as uuid } from 'uuid';
 
 const PUSH_SLIDER = 'PUSH_SLIDER';
 const POP_SLIDER = 'POP_SLIDER';
@@ -56,6 +56,7 @@ export default (state = initialState, action) => {
 
   switch (action.type) {
     case PUSH_SLIDER:
+      // eslint-disable-next-line prettier/prettier, no-case-declarations
       const { sliderComponent } = action.payload;
 
       if (sliderComponent.component) newSliderStack.push(sliderComponent);

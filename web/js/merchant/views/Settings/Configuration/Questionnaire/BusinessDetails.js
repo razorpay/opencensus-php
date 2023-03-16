@@ -169,8 +169,7 @@ const BusinessDetails = ({
           placeholder="Enter Website / App Link"
           info={{
             'Sample Website url': 'https://www.google.com',
-            App:
-              'Please provide Google play store URL; In case your app is not hosted on google play store, share any other app store URL',
+            App: 'Please provide Google play store URL; In case your app is not hosted on google play store, share any other app store URL',
             'Sample App url': 'https://play.google.com/store/apps/details?id=com.whatsapp',
           }}
           onBlur={handleChange}

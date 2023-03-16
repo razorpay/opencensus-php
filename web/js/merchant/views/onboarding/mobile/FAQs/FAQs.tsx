@@ -43,8 +43,7 @@ const FAQs = ({ activeTab }: IFAQsProps): React.ReactElement => {
     Q8: 'Unlock Growth with Razorpay',
     Q9: 'I have signed up with Razorpay. How do I complete my activation form?',
     Q10: 'My account is not yet activated, its been too long since I got any update, what do I do?',
-    Q11:
-      'I have submitted my activation form but my account is not activated. Can I start integrating?',
+    Q11: 'I have submitted my activation form but my account is not activated. Can I start integrating?',
     Q12: 'I had submitted the form long back. How do I get my account activated?',
     Q13: 'Do you support unregistered businesses?',
     Q14: 'What are the payment methods supported?',

@@ -74,10 +74,10 @@ jobs:
       - name: Checkout Codebase
         uses: actions/checkout@v2
 
-      - name: Use Node v16.13.1
+      - name: Use Node v18.12.1
         uses: actions/setup-node@v1
         with:
-          node-version: 16.13.1
+          node-version: 18.12.1
       - name: Install libraries for webp conversion
         run: |
           apt-get update && apt-get install -y libjpeg-dev libpng-dev libtiff-dev libgif-dev
@@ -125,7 +125,7 @@ jobs:
         uses: lewagon/wait-on-check-action@v1.2.0
         with:
           ref: ${{ env.COMMIT_ID }}
-          check-name: 'Build Dashboard'
+          check-name: "Build Dashboard"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 30
 
@@ -135,5 +135,4 @@ jobs:
           COMMIT_ID: ${{ env.COMMIT_ID }}
           PR_NUMBER: ${{ github.event.issue.number }}
           REPO_NAME: ${{ github.event.repository.name }}
-          JOB_URL: 'https://argo.dev.razorpay.in/api/v1/events/argo-workflows/dashboard-fe-e2e'
-
+          JOB_URL: "https://argo.dev.razorpay.in/api/v1/events/argo-workflows/dashboard-fe-e2e"

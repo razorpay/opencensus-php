@@ -49,17 +49,19 @@ class RefundListFilter extends React.Component {
           </div>
         ) : null}
 
-        {user?.isSingleReconEnabled && user?.isOptimizerEnabled && terminalProviders?.length > 0 && (
-          <div className="form-group list-filter-item">
-            <label>Processed by</label>
-            <ProviderSelector
-              name="provider"
-              providers={terminalProviders}
-              provider={provider}
-              setProvider={this.setProvider}
-            />
-          </div>
-        )}
+        {user?.isSingleReconEnabled &&
+          user?.isOptimizerEnabled &&
+          terminalProviders?.length > 0 && (
+            <div className="form-group list-filter-item">
+              <label>Processed by</label>
+              <ProviderSelector
+                name="provider"
+                providers={terminalProviders}
+                provider={provider}
+                setProvider={this.setProvider}
+              />
+            </div>
+          )}
 
         <div class="form-group list-filter-item">
           <label>Notes</label>

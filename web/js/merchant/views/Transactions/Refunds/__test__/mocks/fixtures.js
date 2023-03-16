@@ -107,8 +107,7 @@ export const RefundMilestones = {
       text: 'Instant Refund for this payment has failed due to a bank issue and normal refund',
     },
     RefundInitiated: {
-      text:
-        'The refund has been initiated. Once the refund is completed, the status of the refund will change to',
+      text: 'The refund has been initiated. Once the refund is completed, the status of the refund will change to',
     },
   },
 };

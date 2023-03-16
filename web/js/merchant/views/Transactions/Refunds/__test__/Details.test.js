@@ -20,21 +20,22 @@ jest.mock('common/utils/selfServeAnalytics', () => ({
 
 jest.mock(
   'merchant/views/Transactions/Refunds/components/RefundDetails',
-  () => ({ viewRefundHistory, isLoading, refund, statusMsg }) => {
-    return (
-      <>
-        <div>RefundDetails Component</div>
-        {isLoading ? (
-          <div>Loading</div>
-        ) : (
-          <button type="button" onClick={() => viewRefundHistory(refund)}>
-            RefundDetails viewRefundHistory
-          </button>
-        )}
-        {statusMsg?.message && <p>{statusMsg.message}</p>}
-      </>
-    );
-  },
+  () =>
+    ({ viewRefundHistory, isLoading, refund, statusMsg }) => {
+      return (
+        <>
+          <div>RefundDetails Component</div>
+          {isLoading ? (
+            <div>Loading</div>
+          ) : (
+            <button type="button" onClick={() => viewRefundHistory(refund)}>
+              RefundDetails viewRefundHistory
+            </button>
+          )}
+          {statusMsg?.message && <p>{statusMsg.message}</p>}
+        </>
+      );
+    },
 );
 
 const initState = {

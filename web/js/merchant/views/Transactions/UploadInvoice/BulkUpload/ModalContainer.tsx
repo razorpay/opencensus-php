@@ -20,8 +20,8 @@ import Button from 'common/new-ui/Button';
 
 const DropScreen = lazy(() => import(/* webpackChunkName: 'DropScreen' */ './DropScreen'));
 const UploadResult = lazy(() => import(/* webpackChunkName: 'UploadResult' */ './UploadResult'));
-const ExitConfirmation = lazy(() =>
-  import(/* webpackChunkName: 'UploadResult' */ './ExitConfirmation'),
+const ExitConfirmation = lazy(
+  () => import(/* webpackChunkName: 'UploadResult' */ './ExitConfirmation'),
 );
 
 const ModalContainer: React.FC<ModalContainerProps> = ({

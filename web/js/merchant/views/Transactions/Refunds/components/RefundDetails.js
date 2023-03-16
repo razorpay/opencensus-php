@@ -59,15 +59,8 @@ class PaymentDetailsContainer extends Component {
   };
 
   render() {
-    const {
-      isLoading,
-      statusMsg,
-      viewRefundHistory,
-      refund,
-      user,
-      terminalProviders,
-      location,
-    } = this.props;
+    const { isLoading, statusMsg, viewRefundHistory, refund, user, terminalProviders, location } =
+      this.props;
     const navigationState = location?.state;
     return (
       <div className="content-wrapper content-sm txn-details">

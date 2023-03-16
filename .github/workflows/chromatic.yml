@@ -16,10 +16,10 @@ jobs:
         with:
           fetch-depth: 0 # Chromatic for some reason needs git history
 
-      - name: Use Node v16.13.1
+      - name: Use Node v18.12.1
         uses: actions/setup-node@v1
         with:
-          node-version: 16.13.1
+          node-version: 18.12.1
 
       - name: Setup yarn
         run: npm install -g yarn

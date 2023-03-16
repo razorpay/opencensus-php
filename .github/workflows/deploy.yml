@@ -10,10 +10,10 @@ jobs:
       - name: Checkout Codebase
         uses: actions/checkout@v2
 
-      - name: Use Node v16.13.1
+      - name: Use Node v18.12.1
         uses: actions/setup-node@v1
         with:
-          node-version: 16.13.1
+          node-version: 18.12.1
 
       # Set AWS creds and download Artifacts
       - name: Configure AWS credentials - Actions Cache
@@ -71,8 +71,8 @@ jobs:
           CDN_PATH: ${{ github.event.deployment.payload.CDN_PATH }}
           AWS_KEY: ${{ secrets.PROD_AWS_ACCESS_KEY_ID }}
           AWS_SECRET: ${{ secrets.PROD_AWS_ACCESS_SECRET }}
-          AWS_CDN_BUCKET: "rzp-1415-prod-checkout-live"
-          AWS_REGION: "ap-south-1"
+          AWS_CDN_BUCKET: 'rzp-1415-prod-checkout-live'
+          AWS_REGION: 'ap-south-1'
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
         run: |
@@ -88,8 +88,8 @@ jobs:
         env:
           AWS_KEY: ${{ secrets.STAGE_AWS_ACCESS_KEY_ID }}
           AWS_SECRET: ${{ secrets.STAGE_AWS_ACCESS_SECRET }}
-          AWS_CDN_BUCKET: "rzp-1018-nonprod-betacdn"
-          AWS_REGION: "ap-south-1"
+          AWS_CDN_BUCKET: 'rzp-1018-nonprod-betacdn'
+          AWS_REGION: 'ap-south-1'
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
           # CDN_PATH for beta: dashboard, for zeta dashboard/zeta, for automation dashboard/qa

@@ -110,6 +110,7 @@ class BatchUploadContainer extends Component {
   };
 
   render() {
+    // eslint-disable-next-line react/no-this-in-sfc
     const Header = ({ title }) => <ModalHeader title={title} onCloseClick={this.closeModal} />;
     const Loader = () => (
       <div class="page-spinner-container">

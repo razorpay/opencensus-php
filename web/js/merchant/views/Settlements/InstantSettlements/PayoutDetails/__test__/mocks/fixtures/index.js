@@ -1,11 +1,13 @@
 jest.mock(
   'merchant/views/Settlements/InstantSettlements/PayoutDetails/DetailsListContainer',
-  () => ({ instantSettlement: { entity } }) => (
-    <div>
-      <h4>Details List Container</h4>
-      <span>{entity}</span>;
-    </div>
-  ),
+  () =>
+    ({ instantSettlement: { entity } }) =>
+      (
+        <div>
+          <h4>Details List Container</h4>
+          <span>{entity}</span>;
+        </div>
+      ),
 );
 
 jest.mock('merchant/views/Settlements/InstantSettlements/PayoutDetails/BreakupList', () => () => (

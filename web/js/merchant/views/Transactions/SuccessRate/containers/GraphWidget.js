@@ -48,15 +48,8 @@ const GraphWidget = (props) => {
     setCardTypeFilter,
     user,
   } = props;
-  const {
-    isLoading,
-    tabLoading,
-    activeTab,
-    metrics,
-    tabs,
-    isDropdownFilterLoading,
-    filters,
-  } = successRate;
+  const { isLoading, tabLoading, activeTab, metrics, tabs, isDropdownFilterLoading, filters } =
+    successRate;
 
   const tabPane = getTabsPane(metrics);
   const [isSRDashboardFirstTime, setIsSRDashboardFirstTime] = useLocalStorage(

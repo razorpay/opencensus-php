@@ -38,40 +38,41 @@ jest.mock('merchant/views/Transactions/Disputes/Details', () => ({ onCloseSecVie
 
 jest.mock(
   'merchant/views/Transactions/Payments/components/PaymentDetails',
-  () => ({
-    confirmCapture,
-    goToLink,
-    openRefundModal,
-    onRefundDetailsToggleClick,
-    onUpdateReferenceId,
-    viewSettlementOverview,
-    showCustomSettlDetails,
-    loading,
-    payment,
-  }) =>
-    loading ? null : (
-      <div>
-        Payment Details {showCustomSettlDetails && <div>Settlement Details</div>}
-        <button type="button" onClick={() => confirmCapture(payment)}>
-          Confirm Capture
-        </button>
-        <button type="button" onClick={() => goToLink('details')}>
-          Go To Link
-        </button>
-        <button type="button" onClick={() => openRefundModal(payment, {})}>
-          Open Refund Modal
-        </button>
-        <button type="button" onClick={onRefundDetailsToggleClick}>
-          Refund Details Toggle Click
-        </button>
-        <button type="button" onClick={onUpdateReferenceId}>
-          Update Reference Id
-        </button>
-        <button type="button" onClick={viewSettlementOverview}>
-          View Settlement Overview
-        </button>
-      </div>
-    ),
+  () =>
+    ({
+      confirmCapture,
+      goToLink,
+      openRefundModal,
+      onRefundDetailsToggleClick,
+      onUpdateReferenceId,
+      viewSettlementOverview,
+      showCustomSettlDetails,
+      loading,
+      payment,
+    }) =>
+      loading ? null : (
+        <div>
+          Payment Details {showCustomSettlDetails && <div>Settlement Details</div>}
+          <button type="button" onClick={() => confirmCapture(payment)}>
+            Confirm Capture
+          </button>
+          <button type="button" onClick={() => goToLink('details')}>
+            Go To Link
+          </button>
+          <button type="button" onClick={() => openRefundModal(payment, {})}>
+            Open Refund Modal
+          </button>
+          <button type="button" onClick={onRefundDetailsToggleClick}>
+            Refund Details Toggle Click
+          </button>
+          <button type="button" onClick={onUpdateReferenceId}>
+            Update Reference Id
+          </button>
+          <button type="button" onClick={viewSettlementOverview}>
+            View Settlement Overview
+          </button>
+        </div>
+      ),
 );
 
 jest.mock('merchant/views/Transactions/Payments/components/RefundModal', () => ({ onRefund }) => (

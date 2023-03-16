@@ -10,7 +10,7 @@ export interface StepListPropsT {
 const StepList: React.FC<StepListPropsT> = ({ steps = [] }) => {
   const stepList = steps.map((step, index) => {
     if (index === steps.length - 1) {
-      return <Step {...step} />;
+      return <Step {...step} key={index} />;
     }
 
     return (

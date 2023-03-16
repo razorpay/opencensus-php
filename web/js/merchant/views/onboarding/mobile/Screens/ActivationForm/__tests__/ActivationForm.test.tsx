@@ -33,9 +33,8 @@ test('ActivationForm Flow', async () => {
   render(<ActivationForm />, {});
   await waitForLoaderToFinish();
   expect(screen.getByText('Contact Name')).toBeInTheDocument();
-  const [contactNameInput, contactNumber, contactEmailInput]: any = screen.getAllByTestId(
-    'ds-text-input',
-  );
+  const [contactNameInput, contactNumber, contactEmailInput]: any =
+    screen.getAllByTestId('ds-text-input');
 
   fireEvent.change(contactNameInput, { target: { value: 'Neeraj' } });
   fireEvent.change(contactEmailInput, { target: { value: 'Neeraj@abc.com' } });

@@ -17,7 +17,7 @@ COPY --chown=node:node .npmrc package.json package-lock.json ./
 COPY --chown=node:node ./web/.npmrc ./web/package.json ./web/package-lock.json ./web
 
 RUN npm config set unsafe-perm true \
-    && HUSKY=0 npm ci --legacy-peer-deps
+    && HUSKY=0 npm ci
 
 RUN cd web && npx playwright install --with-deps
 

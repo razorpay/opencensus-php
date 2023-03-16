@@ -420,12 +420,8 @@ class PaymentDetailsContainer extends Component {
       settlement_amount,
       entity_id,
     } = this.props;
-    const {
-      customSettlementLoading,
-      adminAsMerchant,
-      showCustomSettlDetails,
-      bankSettleStatus,
-    } = this.state;
+    const { customSettlementLoading, adminAsMerchant, showCustomSettlDetails, bankSettleStatus } =
+      this.state;
     let statusMsg = {};
 
     const { card = {} } = payment;

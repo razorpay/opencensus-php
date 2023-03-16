@@ -1,12 +1,16 @@
 process.env.STAGE = 'development';
 const path = require('path');
 const paths = require('@universe/configs/paths');
-const babelConfig = require('../.babelrc.json');
+const babelConfig = require('../.babelrc.js');
 const universeWebpackClientConfig = require(paths.universeConfigs.webpackClientConfig)({
   babelConfig: babelConfig,
 });
-const webpackClientConfig = require(paths.consumer.webpackClientConfig)({
-  config: universeWebpackClientConfig,
+const webpackClientConfig = require(path.resolve(__dirname, `../webpack.config.js`)).browserConfig({
+  config: {
+    ...universeWebpackClientConfig,
+    experiments: { backCompat: false },
+  },
+  isStoryBook: true,
   project: 'merchant',
 });
 webpackClientConfig.module.rules[0].use.push({

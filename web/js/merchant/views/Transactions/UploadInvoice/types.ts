@@ -18,9 +18,10 @@ export type UploadInvoiceReducerActionType = {
 
 export type Params<V = string | number | boolean | null | undefined> = Record<string, V>;
 
-type ReduxActionType = (
-  payload: UploadInvoiceReducerActionType['payload'],
-) => { type: string; payload: UploadInvoiceReducerActionType['payload'] };
+type ReduxActionType = (payload: UploadInvoiceReducerActionType['payload']) => {
+  type: string;
+  payload: UploadInvoiceReducerActionType['payload'];
+};
 
 export type PaymentsListContainerProps = UploadInvoiceInitialState & {
   uploadInvoicePending: ReduxActionType;

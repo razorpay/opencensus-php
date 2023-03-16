@@ -7,12 +7,14 @@ import cloneDeep from 'lodash/cloneDeep';
 
 jest.mock(
   'merchant/views/Transactions/Payments/components/PaymentsTable',
-  () => ({ EmptyComponent }) => (
-    <div>
-      Payments Table
-      <EmptyComponent />
-    </div>
-  ),
+  () =>
+    ({ EmptyComponent }) =>
+      (
+        <div>
+          Payments Table
+          <EmptyComponent />
+        </div>
+      ),
 );
 
 jest.mock('merchant/views/Transactions/Payments/components/PaymentFailureAnalysis', () => () => (
@@ -21,27 +23,29 @@ jest.mock('merchant/views/Transactions/Payments/components/PaymentFailureAnalysi
 
 jest.mock(
   'merchant/views/Transactions/Payments/components/PaymentsListFilter',
-  () => ({ onSearchAnalytics, onClearAnalytics, onSubmit }) => (
-    <div>
-      Payments List Filter{' '}
-      <button
-        type="button"
-        onClick={() =>
-          onSearchAnalytics({
-            key1: 'value1',
-          })
-        }
-      >
-        Search Analytics
-      </button>
-      <button type="button" onClick={() => onClearAnalytics()}>
-        Clear Analytics
-      </button>
-      <button type="button" onClick={() => onSubmit({})}>
-        Submit Search
-      </button>
-    </div>
-  ),
+  () =>
+    ({ onSearchAnalytics, onClearAnalytics, onSubmit }) =>
+      (
+        <div>
+          Payments List Filter{' '}
+          <button
+            type="button"
+            onClick={() =>
+              onSearchAnalytics({
+                key1: 'value1',
+              })
+            }
+          >
+            Search Analytics
+          </button>
+          <button type="button" onClick={() => onClearAnalytics()}>
+            Clear Analytics
+          </button>
+          <button type="button" onClick={() => onSubmit({})}>
+            Submit Search
+          </button>
+        </div>
+      ),
 );
 
 jest.mock('common/ui/HeaderAction', () => ({ children }) => <div>{children}</div>);
