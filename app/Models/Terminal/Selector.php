@@ -991,6 +991,12 @@ class Selector extends Base\Core
             }
         }
 
+        // if its a BVT and its an app payment the call should go through router
+        if((in_array($this->app['env'], [Environment::BVT]) === true) and $payment->isInAppUPI())
+        {
+            return true;
+        }
+
         // Route payments to router in Prod and stage
         if (in_array($this->app['env'], [Environment::PRODUCTION, Environment::BETA, Environment::AXIS, Environment::FUNC, Environment::PERF, Environment::PERF2]) === false)
         {

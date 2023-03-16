@@ -2197,7 +2197,7 @@ class Repository extends Base\Repository
     {
         $gateway = $entity->getGateway();
 
-        if (in_array($gateway, Payment\Gateway::TOKENISATION_GATEWAYS) === true)
+        if (in_array($gateway, Payment\Gateway::TOKENISATION_GATEWAYS) === true || in_array($gateway, Entity::upiGatewaysOnlyOnTs) === true)
         {
             return false;
         }
