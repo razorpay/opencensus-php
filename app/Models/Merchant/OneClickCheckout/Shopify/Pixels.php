@@ -90,7 +90,7 @@ class Pixels
         // To support backward compatibility of Shopify API version update from 2022-01 to 2022-10
         if(substr($id, 0, 3) != "gid")
         {
-            $id = base64_decode($checkoutId);
+            $id = base64_decode($id);
         }
 
         return (int)str_replace($base, '', $id);
