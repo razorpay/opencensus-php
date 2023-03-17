@@ -11,7 +11,7 @@ import ExperimentsModal from 'razorx/views/Experiments/Modal';
 import { statusPill } from 'razorx/helpers/data';
 import Timeline from 'razorx/components/ui/Timeline';
 import { TextAreaField } from 'razorx/components/ui/Field';
-import { isRzpApprover } from '../../../user';
+import { isRzpApprover } from 'razorx/user';
 import Comment from 'razorx/components/ui/Comment';
 import { EXPERIMENT_DELETE } from './constants';
 import { formatDate } from 'razorx/helpers/utils';
@@ -485,6 +485,11 @@ export default class ExperimentDetails extends React.Component {
               const whitelistedIds = this.getWhitelistedIds(variant.id);
               return (
                 <div className="segment pad-highlight" key={variant.id}>
+                  <div className="sub-description column">
+                    <div>
+                      <b>ID: </b> {variant.id}
+                    </div>
+                  </div>
                   <div>
                     <span className="square-pills label-semi-muted">
                       <b>Name:</b> {variant.name}
