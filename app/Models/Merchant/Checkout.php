@@ -282,6 +282,8 @@ class Checkout
             $this->resetMethodsIfValidBanksPresent($data, $order, $merchant);
         }
 
+        $this->filterMethodsBasedOnAmount($data, $input);
+
         $this->checkAndAddCustomProviders($data);
 
         $this->filterMethodBasedOnRecurring($data, $input);

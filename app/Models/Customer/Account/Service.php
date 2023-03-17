@@ -143,7 +143,6 @@ class Service extends Base\Service
             'is_global_customer' => $isGlobalCustomer,
             'has_saved_card_tokens' => false,
             'has_saved_addresses' => false,
-            '1cc_consent_banner_views' => 0,
         ];
 
         if (empty($input[Payment\Entity::APP_TOKEN]) && empty($input['customer_id'])) {
