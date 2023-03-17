@@ -4082,6 +4082,7 @@ class Route
         '1cc_configs_update'                        => ['post',       '1cc/merchant/configs',                                  'MerchantController@update1ccConfig'],
         '1cc_configs_get'                           => ['get',        '1cc/merchant/configs',                                  'MerchantController@get1ccConfig'],
         'internal_1cc_configs_get'                  => ['get',        'internal/1cc/merchants/{id}/configs',                   'MerchantController@getInternal1ccConfig'],
+        'checkout_1cc_configs_get'                  => ['get',        'checkout/1cc/merchant/configs',                         'MerchantController@getCheckout1ccConfig'],
         '1cc_merchant_preferences'                  => ['get',        'merchant/1cc_preferences',                                  'MerchantController@get1ccMerchantPreferences'],
         '1cc_disable_magic'                         => ['post',       '1cc/magic/disable',                                       'MerchantController@disable1ccMagicCheckout'],
         '1cc_apply_gift_card'                       => ['post',       '1cc/orders/{id}/giftcard/apply',                          'MerchantController@applyGiftCard'             ],
@@ -6799,6 +6800,7 @@ class Route
         'fetch_payment_config_checkout_internal',
         'order_fetch_internal_checkout',
         'merchant_methods_offers_checkout_internal',
+        'checkout_1cc_configs_get',
 
         'partner_config_fetch',
         'partner_config_edit',
@@ -15165,6 +15167,7 @@ class Route
             'checkout_personalisation_internal',
             'internal_feature_bulk_fetch',
             'customer_fetch_internal_for_checkout',
+            'checkout_1cc_configs_get',
         ],
 
         'trusted_badge' => [

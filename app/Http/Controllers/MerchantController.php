@@ -3517,6 +3517,11 @@ class MerchantController extends Controller
         }
     }
 
+    public function getCheckout1ccConfig()
+    {
+        return (new Merchant\OneClickCheckout\Config\Service())->getCheckout1ccConfig();
+    }
+
     public function getInternalShopifyCustomerAddresses($merchantId)
     {
         $input = Request::all();

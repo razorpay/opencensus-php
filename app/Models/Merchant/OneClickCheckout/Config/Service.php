@@ -470,6 +470,11 @@ class Service extends Base\Service
         return $result;
     }
 
+    public function getCheckout1ccConfig(): array
+    {
+        return $this->get1ccConfigFlagsStatus($this->merchant);
+    }
+
     public function getInternal1ccConfig($merchantId)
     {
         try
