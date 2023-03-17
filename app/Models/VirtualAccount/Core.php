@@ -2,8 +2,8 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use Cache;
 use Carbon\Carbon;
-
 use RZP\Constants\Environment;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -38,6 +38,10 @@ class Core extends Base\Core
     const VA_BANK_ACCOUNT_GENERATION = 'va_bank_account_generation';
 
     const DEFAULT                    = 'default';
+
+    const DORMANT_VA_START_DATE      = 'dormantva_start_date_';
+
+    const DORMANT_VA_START_DATE_TTL  = 259200;      // 3days
 
     public function __construct()
     {
@@ -576,6 +580,25 @@ class Core extends Base\Core
 
         return $virtualAccount;
     }
+
+    public function getDormantVaStartDate(string $startDate)
+    {
+        $key = self::DORMANT_VA_START_DATE . $startDate;
+
+        $cachedStartDate = Cache::get($key);
+
+        return (empty($cachedStartDate) === false) ? $cachedStartDate : $startDate;
+    }
+
+    public function setDormantVaStartDate(string $startDate, string $newStartDate)
+    {
+        $key = self::DORMANT_VA_START_DATE . $startDate;
+
+        $ttl = self::DORMANT_VA_START_DATE_TTL;
+
+        Cache::put($key, $newStartDate, $ttl);
+    }
+
 
     public function updateStatus(Entity $virtualAccount, string $status)
     {

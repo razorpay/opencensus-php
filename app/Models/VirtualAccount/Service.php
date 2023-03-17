@@ -613,32 +613,54 @@ class Service extends Base\Service
 
         $processedCount = 0;
 
-        do
+        $endDateDelta = $input['end_date_delta'] ?? 30;
+
+        $startDate = $newStartDate = $input['start_date'] ?? null;
+
+        if (empty($startDate) === false)
         {
-            $input['skip']  =  $processedCount;
-
-            $startTime = microtime(true);
-
-            // - if a hard limit is passed in request, do process more VAs more than the limit.
-            if($maxLimit > 0 and $processedCount >= $maxLimit)
-            {
-                break;
-            }
-
-            $inactiveVirtualAccountIds = $this->repo->virtual_account->fetchInactiveVirtualAccounts($input, $expiryDelta);
-
-            $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_AUTO_CLOSE_CRON_DISPATCH,
-                [
-                    'input'         => $input,
-                    'count'         =>  sizeof($inactiveVirtualAccountIds),
-                    'time_taken'    =>  microtime(true) - $startTime,
-                ]);
-
-            VirtualAccountsAutoCloseInactive::dispatch($this->mode, $inactiveVirtualAccountIds->toArray());
-
-            $processedCount += sizeof($inactiveVirtualAccountIds);
+            $newStartDate = $this->core->getDormantVaStartDate($startDate);
         }
-        while(sizeof($inactiveVirtualAccountIds) === $input['count']);
+
+        while( date('Y', strtotime($newStartDate)) === date('Y', strtotime($startDate)))
+        {
+            $input['start_date'] = $newStartDate;
+
+            $date = new DateTime($newStartDate);
+
+            $input['end_date'] = $date->modify("+$endDateDelta day")->format('Y-m-d');
+
+            do
+            {
+                $input['skip']  =  $processedCount;
+
+                $startTime = microtime(true);
+
+                // - if a hard limit is passed in request, do process more VAs more than the limit.
+                if($maxLimit > 0 and $processedCount >= $maxLimit)
+                {
+                    break;
+                }
+
+                $inactiveVirtualAccountIds = $this->repo->virtual_account->fetchInactiveVirtualAccounts($input, $expiryDelta);
+
+                $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_AUTO_CLOSE_CRON_DISPATCH,
+                    [
+                        'input'         => $input,
+                        'count'         =>  sizeof($inactiveVirtualAccountIds),
+                        'time_taken'    =>  microtime(true) - $startTime,
+                    ]);
+
+                VirtualAccountsAutoCloseInactive::dispatch($this->mode, $inactiveVirtualAccountIds->toArray());
+
+                $processedCount += sizeof($inactiveVirtualAccountIds);
+            }
+            while(sizeof($inactiveVirtualAccountIds) === $input['count']);
+
+            $newStartDate = $input['end_date'];
+
+            $this->core->setDormantVaStartDate($startDate, $newStartDate);
+        }
 
         $this->trace->info(
             TraceCode::VIRTUAL_ACCOUNT_AUTO_CLOSE_INACTIVE_CRON_REQUEST_SUCCESS,

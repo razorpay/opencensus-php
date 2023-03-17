@@ -17,6 +17,7 @@ use RZP\Models\Merchant\Balance;
 use RZP\Models\Base\PublicEntity;
 use Illuminate\Support\Facades\DB;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\UpiTransfer\Entity as UpiTransferEntity;
 use RZP\Models\BankTransfer\Entity as BankTransferEntity;
 
 class Repository extends Base\Repository
@@ -256,28 +257,47 @@ class Repository extends Base\Repository
         $bankTransfersCreatedAt = $this->repo->bank_transfer->dbColumn(BankTransferEntity::CREATED_AT);
         $bankTransferPaymentId = $this->repo->bank_transfer->dbColumn(BankTransferEntity::PAYMENT_ID);
 
+        $upiTransferId = $this->repo->upi_transfer->dbColumn(UpiTransferEntity::ID);
+        $upiTransferVaId = $this->repo->upi_transfer->dbColumn(UpiTransferEntity::VIRTUAL_ACCOUNT_ID);
+        $upiTransferCreatedAt = $this->repo->upi_transfer->dbColumn(UpiTransferEntity::CREATED_AT);
+        $upiTransferPaymentId = $this->repo->upi_transfer->dbColumn(UpiTransferEntity::PAYMENT_ID);
+
 
         $query = $this->newQueryWithConnection($this->getSlaveConnection())
-                      ->select(DB::raw("count($bankTransferId) as payment_count, $virtualAccountId"))
-                      ->leftJoin(Table::BANK_TRANSFER,function($join)
-                      use (
-                          $expiryDelta,
-                          $virtualAccountId,
-                          $bankTransferVAId,
-                          $bankTransfersCreatedAt,
-                          $vaExpiryTimeStamp,
-                          $bankTransferPaymentId)
-                      {
-                          $join
-                              ->on($virtualAccountId, '=', $bankTransferVAId)
-                              ->where($bankTransfersCreatedAt,'>=', $vaExpiryTimeStamp)
-                              ->where($bankTransferPaymentId,'<>', '');
+            ->select(DB::raw("count($bankTransferId) as bank_payment_count, count($upiTransferId) as upi_payment_count, $virtualAccountId"))
+            ->leftJoin(Table::BANK_TRANSFER,function($join)
+            use (
+                $expiryDelta,
+                $virtualAccountId,
+                $bankTransferVAId,
+                $bankTransfersCreatedAt,
+                $vaExpiryTimeStamp,
+                $bankTransferPaymentId)
+            {
+                $join
+                    ->on($virtualAccountId, '=', $bankTransferVAId)
+                    ->where($bankTransfersCreatedAt,'>=', $vaExpiryTimeStamp)
+                    ->where($bankTransferPaymentId,'<>', '');
 
-                      })
-                     ->whereIn($virtualAccountStatus, [Status::PAID,Status::ACTIVE])
-                     ->whereNotNull($vaBankAccountId)
-                     ->where($virtualAccountCreatedAt, '<=', $vaExpiryTimeStamp);
+            })
+            ->leftJoin(Table::UPI_TRANSFER,function($join)
+            use (
+                $expiryDelta,
+                $virtualAccountId,
+                $upiTransferVaId,
+                $upiTransferCreatedAt,
+                $vaExpiryTimeStamp,
+                $upiTransferPaymentId)
+            {
+                $join
+                    ->on($virtualAccountId, '=', $upiTransferVaId)
+                    ->where($upiTransferCreatedAt,'>=', $vaExpiryTimeStamp)
+                    ->where($upiTransferPaymentId,'<>', '');
 
+            })
+            ->whereIn($virtualAccountStatus, [Status::PAID,Status::ACTIVE])
+            ->whereNotNull($vaBankAccountId)
+            ->where($virtualAccountCreatedAt, '<=', $vaExpiryTimeStamp);
 
             $this->addQueryParamGatewayIfapplicable($query, $params);
 
@@ -288,9 +308,11 @@ class Repository extends Base\Repository
             $this->addQueryParamVirtualAccountIdIfApplicable($query, $params);
 
             $query = $query->orderBy($virtualAccountCreatedAt)
-                           ->groupBy($virtualAccountId)
-                           ->having('payment_count','=',0);
-            return $this->getPaginated($query, $params)->pluck(Entity::ID);
+            ->groupBy($virtualAccountId)
+            ->having('bank_payment_count', '=', 0)
+            ->having('upi_payment_count', '=', 0);
+
+        return $this->getPaginated($query, $params)->pluck(Entity::ID);
     }
 
     private function addQueryParamGatewayIfapplicable($query, $params)
@@ -318,6 +340,11 @@ class Repository extends Base\Repository
         {
             $query->whereIn($merchantId,$params['merchant_ids']);
         }
+
+        if(isset($params['exclude_mids']) === true)
+        {
+            $query->whereNotIn($merchantId,$params['exclude_mids']);
+        }
     }
 
     private function addQueryParamCreatedAtIfApplicable($query, $params)
@@ -335,7 +362,7 @@ class Repository extends Base\Repository
 
         if (isset($params['end_date']) === true and empty($params['end_date']) === false)
         {
-            $endDateTimestamp = Carbon::createFromFormat('Y-m-d',$params['end_date'])->endOfDay()
+            $endDateTimestamp = Carbon::createFromFormat('Y-m-d',$params['end_date'])->startOfDay()
                                                                                             ->timezone(Timezone::IST)
                                                                                             ->getTimestamp();
             $query->where($createdAt,'<',$endDateTimestamp);
