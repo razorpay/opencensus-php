@@ -13,6 +13,7 @@ use RZP\Http\Request\Requests;
 use RZP\Models\Base;
 use RZP\Models\Merchant\OneClickCheckout;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
+use RZP\Models\Merchant\OneClickCheckout\MigrationUtils\SplitzExperimentEvaluator;
 use RZP\Models\Customer\CustomerConsent1cc;
 use RZP\Models\Payment\Method as PaymentMethod;
 use RZP\Models\Payment\Status as PaymentStatus;
@@ -1412,7 +1413,24 @@ class Core extends Base\Core
 
         $body['current_total_discounts'] = $discountAmountRupee;
 
-        $body['financial_status'] = 'paid';
+        $defaultPendingStatus = false;
+
+        try {
+            $defaultPendingStatus = $this->canSetOrderStatusPending($rzpOrder['id'], $this->merchant);
+        } catch (\Throwable $e) {
+            $defaultPendingStatus = false;
+        }
+
+        // Based on the exp value this status will be set.
+        if ($defaultPendingStatus === true)
+        {
+            $body['financial_status'] = 'pending';
+        }
+        else
+        {
+            $body['financial_status'] = 'paid';
+        }
+
 
         if (strtolower($rzpPayment['method']) === 'cod')
         {
@@ -1587,6 +1605,8 @@ class Core extends Base\Core
 
         $client = $this->getShopifyClientByMerchant();
 
+        $errorMessage = null;
+
         try
         {
           $this->monitoring->addTraceCount(Metric::UPDATE_SHOPIFY_TRANSACTION_REQUEST_COUNT, []);
@@ -1598,6 +1618,7 @@ class Core extends Base\Core
             [
               'type' => 'update_transaction_initiated',
               'body' => $body,
+              'order_id' => $payment['order_id']
             ]
           );
 
@@ -1621,23 +1642,24 @@ class Core extends Base\Core
                 [
                     'type' => 'update_transaction_failed',
                     'error' => $e->getMessage(),
-                    'time' => millitime() - $start
+                    'time' => millitime() - $start,
+                    'order_id' => $payment['order_id']
                 ]
             );
 
-            $message = strtolower($e->getMessage());
+            $errorMessage = strtolower($e->getMessage());
 
             $errorBadGateway = "502 bad gateway";
 
-
-            if(strpos($message, $errorBadGateway) !== false)
+            if(strpos($errorMessage, $errorBadGateway) !== false)
             {
                 $this->trace->info(
                     TraceCode::SHOPIFY_1CC_API_ERROR,
                     [
                         'type' => 'update_transaction_retry_initiated',
                         'strategy' => 'retry',
-                        'error_message' => $message
+                        'error_message' => $errorMessage,
+                        'order_id' => $payment['order_id']
                     ]
                 );
 
@@ -1655,6 +1677,7 @@ class Core extends Base\Core
 
                     $this->monitoring->traceResponseTime(Metric::UPDATE_SHOPIFY_TRANSACTION_CALL_TIME,$updateRequestStart, []);
 
+                    $errorMessage = null;
                 }
                 catch (\Exception $e)
                 {
@@ -1664,10 +1687,21 @@ class Core extends Base\Core
                         TraceCode::SHOPIFY_1CC_API_TRANSACTION_ERROR,
                         [
                             'type' => 'update_transaction_retry_failed',
-                            'error' => $e->getMessage()
+                            'error' => $e->getMessage(),
+                            'order_id' => $payment['order_id']
                         ]
                     );
+
+                    $errorMessage = strtolower($e->getMessage());
                 }
+            }
+
+            if ($errorMessage != null)
+            {
+                $order = (new RzpOrders)->findOrderByIdAndMerchant($payment['order_id']);
+
+                $newNotes = array_merge($order->getNotes()->toArray(), ['Transaction Error' => $errorMessage]);
+                (new RzpOrders)->updateOrderNotes($payment['order_id'], $newNotes);
             }
             return [];
         }
@@ -2154,5 +2188,31 @@ class Core extends Base\Core
             ]
         );
         return $customerId;
+    }
+
+    /**
+     * Will return false if platform in apart from shopify or test mode keys,
+     * and return true in case of variant is equal to magic_order
+     */
+    public function canSetOrderStatusPending($orderId, $merchant): bool
+    {
+        $platformConfig = $merchant->getMerchantPlatformConfig();
+        if ((app()->isEnvironmentProduction() === true && $this->mode === Mode::TEST) ||
+            ($platformConfig != null && $platformConfig->getValue() !== Constants::SHOPIFY))
+        {
+            return false;
+        }
+
+        $expResult = (new SplitzExperimentEvaluator())->evaluateExperiment(
+            [
+                'id'            => $orderId,
+                'experiment_id' => $this->app['config']->get('app.1cc_order_default_pending_splitz_experiment_id'),
+                'request_data'  => json_encode(
+                    [
+                        'merchant_id' => $merchant->getId(),
+                    ]),
+            ]
+        );
+        return $expResult['variant'] === 'magic_order';
     }
 }

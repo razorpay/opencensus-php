@@ -13,6 +13,8 @@ class Constants
     const ACCESS_TOKEN = 'access_token';
     const REFRESH_TOKEN = 'refresh_token';
 
+    const SHOPIFY = 'shopify';
+
     const GID_PRODUCT = 'gid://shopify/Product/';
     const GID_PRODUCT_VARIANT = 'gid://shopify/ProductVariant/';
     const GID_CHECKOUT = 'gid://shopify/Checkout/';
