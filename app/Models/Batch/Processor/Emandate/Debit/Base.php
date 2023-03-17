@@ -4,6 +4,7 @@ namespace RZP\Models\Batch\Processor\Emandate\Debit;
 
 use RZP\Constants\HyperTrace;
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Gateway;
@@ -13,6 +14,7 @@ use RZP\Base\RuntimeManager;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Reconciliator\Base\Constants;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Payment\Processor\Processor;
 use RZP\Gateway\Base\Action as GatewayAction;
 use RZP\Models\Batch\Processor\Emandate\Base as BaseProcessor;
@@ -186,7 +188,30 @@ class Base extends BaseProcessor
         $processor = new Processor($merchant);
 
         $errorCode = $this->getApiErrorCode($content);
-
+        
+        
+        if($payment->isFailed() !== true)
+        {
+            try
+            {
+                $variant = $this->app->razorx->getTreatment(
+                    $payment->getMerchantId(),
+                    RazorxTreatment::EMANDATE_NET_REVENUE_IMPROVEMENT,
+                    $this->mode);
+            
+            } catch (\Throwable $ex)
+            {
+                $variant = "off";
+            }
+            
+            if($variant === "on")
+            {
+                $nrErrorCode = $this->getNRErrorCode($content);
+    
+                $processor->updatePaymentTokenDetails($payment, $nrErrorCode);
+            }
+        }
+        
         $e = new Exception\GatewayErrorException(
             $errorCode,
             $content[self::GATEWAY_ERROR_CODE] ?? null,
@@ -194,15 +219,21 @@ class Base extends BaseProcessor
             [
                 'payment_id' => $payment->getId(),
             ]);
-
+    
         $processor = $processor->setPayment($payment);
-
+    
         $processor->updatePaymentAuthFailed($e);
+    
     }
 
     protected function getApiErrorCode(array $content): string
     {
         return ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+    }
+    
+    protected function getNRErrorCode(array $content)
+    {
+        return [];
     }
 
     protected function getGatewayErrorDesc(array $content): string

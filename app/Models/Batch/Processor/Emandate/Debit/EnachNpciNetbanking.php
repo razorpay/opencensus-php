@@ -74,6 +74,11 @@ class EnachNpciNetbanking extends Base
     {
         return NetBanking\ErrorCodes\FileBasedErrorCodes::getDebitPublicErrorCode($content);
     }
+    
+    protected function getNRErrorCode(array $content)
+    {
+        return Netbanking\ErrorCodes\NRImprovementErrorCodes::getNRErrorCodes($content);
+    }
 
     protected function removeCriticalDataFromTracePayload(array & $payloadEntry)
     {

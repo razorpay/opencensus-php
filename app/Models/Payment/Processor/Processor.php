@@ -90,8 +90,11 @@ use RZP\Tests\Functional\Payment\OtpPaymentTest;
 use RZP\Models\CardMandate\CardMandateNotification;
 use RZP\Models\Transfer\Constant as TransferConstant;
 use RZP\Models\UpiMandate\Status as UpiMandateStatus;
+use RZP\Models\EMandate\Constants as EmandateConstants;
+use RZP\Models\Customer\Token\Constants as TokenConstants;
 use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
 use RZP\Models\UpiMandate\RecurringType as UPIMandateRecurringType;
+use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Models\Payment\Method;
 
 use Razorpay\Trace\Logger as Trace;
@@ -436,7 +439,9 @@ class Processor
     protected $segment;
 
     protected $verifyRefundStatus;
-
+    
+    protected $emandateDescError;
+    
     /**
      * Api Route instance
      *
@@ -3103,6 +3108,26 @@ class Processor
 
             $input[Payment\Entity::METHOD] = $tokenMethod;
 
+            if ($tokenMethod === Payment\Method::EMANDATE or $tokenMethod === Payment\Method::NACH)
+            {
+                try
+                {
+                    $variant = $this->app->razorx->getTreatment(
+                        $merchant->getId(),
+                        Merchant\RazorxTreatment::EMANDATE_NET_REVENUE_IMPROVEMENT,
+                        $this->mode);
+                }
+                catch (\Throwable $ex)
+                {
+                    $variant = 'off';
+                }
+    
+                if($variant === 'on')
+                {
+                    $this->validateEmandateTokenStatus($token, $merchant);
+                }
+            }
+
             if ($tokenMethod === Payment\Method::EMANDATE)
             {
                 $input[Payment\Entity::BANK] = $token->getBank();
@@ -3117,6 +3142,93 @@ class Processor
             $input[Payment\Entity::METHOD] = Payment\Method::CARD;
         }
     }
+
+    protected function validateEmandateTokenStatus(Token\Entity $token, Merchant\Entity $merchant)
+    {
+        $response = $this->fetchEmandateConfigs($token, $merchant);
+        
+        $tokenStatus = $response[TokenConstants::EMANDATE_TOKEN_STATUS] ?? null;
+        
+        $coolDownPeriod = $response[TokenConstants::COOLDOWN_PERIOD] ?? "";
+        
+        if($tokenStatus !== null and $tokenStatus === TokenConstants::BLOCKED_TEMPORARILY)
+        {
+            $msg = "token_" . $token->getId() . " has been put on hold temporarily for creating recurring payments.".
+                "The next recurring payment can be created on the token after " . $coolDownPeriod;
+    
+            throw new Exception\BadRequestValidationFailureException($msg, 'token');
+        }
+    }
+    
+    protected function fetchEmandateConfigs(Token\Entity $token, Merchant\Entity $merchant)
+    {
+        try
+        {
+            $debitConfig = $this->fetchEmandateDcsConfigs($merchant->getId());
+    
+            $tempErrorEnableFlag = $debitConfig[EmandateConstants::TEMPORARY_ERRORS_ENABLE_FLAG] ?? false;
+            
+            $tokenNotes = $token->getNotes();
+    
+            if ($tokenNotes !== null and isset($tokenNotes[TokenConstants::EMANDATE_CONFIGS]) === true)
+            {
+                $emandateTokenStatus = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][TokenConstants::EMANDATE_TOKEN_STATUS] ?? null;
+        
+                $presentTime = Carbon::now()->getTimestamp();
+        
+                $coolDowntime = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][TokenConstants::COOLDOWN_PERIOD] ?? $presentTime;
+        
+                $timeDifference = (int) $presentTime - $coolDowntime;
+                
+                if($tempErrorEnableFlag === true and ($emandateTokenStatus === TokenConstants::BLOCKED_TEMPORARILY)  and $timeDifference < 0)
+                {
+                    return
+                        [
+                            TokenConstants::COOLDOWN_PERIOD           => date("Y-m-d H:i:s", (int) $coolDowntime),
+                            TokenConstants::EMANDATE_TOKEN_STATUS     => TokenConstants::BLOCKED_TEMPORARILY
+                        ];
+                }
+        
+                if($emandateTokenStatus === TokenConstants::BLOCKED_TEMPORARILY and $timeDifference >= 0)
+                {
+                    $token->setNotes([]);
+            
+                    $this->repo->save($token);
+                }
+            }
+        }
+        catch(\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+        }
+        
+        return [];
+    }
+    
+    protected function fetchEmandateDcsConfigs(string $merchantId)
+    {
+        try
+        {
+            $dcsConfigService = new DcsConfigService();
+            
+            $key = EmandateConstants::EMANDATE_MERCHANT_CONFIGURATIONS;
+            
+            $fields = EmandateConstants::EMANDATE_CONFIG_FIELDS;
+            
+            return $dcsConfigService->fetchConfiguration($key, $merchantId, $fields, $this->mode);
+        }
+        catch (\Exception $ex) {
+            
+            $this->trace->traceException($ex);
+        }
+        
+        return [
+            TokenConstants::COOLDOWN_PERIOD => 0,
+            TokenConstants::RETRY_ATTEMPTS => 0,
+            EmandateConstants::TEMPORARY_ERRORS_ENABLE_FLAG => false
+        ];
+    }
+    
 
     protected function validateTokenisedPayment(& $input)
     {
@@ -4839,6 +4951,11 @@ class Processor
         );
 
         $payment->setError($code, $desc, $internalCode);
+        
+        if(($payment->isEmandate() === true or $payment->isNach() === true) and $this->emandateDescError !== null)
+        {
+            $payment->setEmandateErrorDesc($this->emandateDescError);
+        }
 
         if (($exception instanceof Exception\GatewayErrorException) and
             ($this->payment->merchant !== null) and

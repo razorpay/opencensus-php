@@ -1275,6 +1275,13 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         //$this->setAttribute(self::REFERENCE13, $error->getAttributes(Error::REASON_CODE));
     }
+    
+    public function setEmandateErrorDesc($errorDesc)
+    {
+        $finalErrorDesc = $this->getErrorDescription() . $errorDesc;
+        
+        $this->setAttribute(self::ERROR_DESCRIPTION, $finalErrorDesc);
+    }
 
     public function setInternalErrorCode($internalErrorCode)
     {

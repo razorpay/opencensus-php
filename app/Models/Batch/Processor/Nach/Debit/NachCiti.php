@@ -9,6 +9,7 @@ use RZP\Gateway\Enach\Citi\Status;
 use RZP\Models\Payment\RecurringType;
 use RZP\Gateway\Enach\Base\Entity as EnachEntity;
 use RZP\Gateway\Enach\Citi\ErrorCodes as ErrorCode;
+use RZP\Gateway\Enach\Citi\NRImprovementErrorCodes as NRErrorCode;
 use RZP\Gateway\Enach\Citi\NachDebitFileHeadings as Headings;
 
 class NachCiti extends Base
@@ -186,6 +187,11 @@ class NachCiti extends Base
     protected function getApiErrorCode(array $content): string
     {
         return ErrorCode::getDebitInternalErrorCode($content);
+    }
+    
+    protected function getNRErrorCode(array $content)
+    {
+        return NRErrorCode::getNRErrorCodes($content);
     }
 
     protected function getGatewayErrorDesc(array $content): string

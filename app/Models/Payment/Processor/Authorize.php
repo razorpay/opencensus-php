@@ -7433,6 +7433,22 @@ trait Authorize
 
         (new Payment\Metric)->pushAuthenticationMetrics($this->payment);
     }
+    
+    public function updatePaymentTokenDetails(Payment\Entity $payment, array $nrErrorCode)
+    {
+        try
+        {
+            if((isset($nrErrorCode["temporary_error_code"]) === true and $nrErrorCode["temporary_error_code"] !== null)
+                or (isset($nrErrorCode["permanent_error_code"]) === true and $nrErrorCode["permanent_error_code"] !== null))
+            {
+                $this->updateEmandateToken($payment, $nrErrorCode);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->traceException($ex);
+        }
+    }
 
     protected function updateAndNotifyPaymentAuthorized(array $data = [], bool $wasFailed = false)
     {

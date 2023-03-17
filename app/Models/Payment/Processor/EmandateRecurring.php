@@ -10,6 +10,8 @@ use RZP\Models\Payment\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Gateway;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\EMandate\Constants as EmandateConstants;
+
 
 trait EmandateRecurring
 {
@@ -37,7 +39,7 @@ trait EmandateRecurring
             // Only skip authorize flow if gateway has not processed payment.
             // We will wait for webhook in this case.
             if ((isset($data['additional_data']) === true) and
-                (isset($data['additional_data']['gateway_payment_status']) === true) and 
+                (isset($data['additional_data']['gateway_payment_status']) === true) and
                 ($data['additional_data']['gateway_payment_status'] === 'pending'))
             {
                 return true;
@@ -47,7 +49,7 @@ trait EmandateRecurring
         }
 
         // Other checks for initial payment
-        // 
+        //
         $token = $payment->getGlobalOrLocalTokenEntity();
 
         if ($token === null)
@@ -56,12 +58,12 @@ trait EmandateRecurring
         }
 
         //
-        // If payment is authorized and token is not yet updated, it means 
-        // gateway is sending a webhook with token status asynchronously. 
+        // If payment is authorized and token is not yet updated, it means
+        // gateway is sending a webhook with token status asynchronously.
         // In such cases, just update the token.
         //
         if (($payment->isEmandate() === true) and
-            ($token->isRecurring() === false) and 
+            ($token->isRecurring() === false) and
             ($payment->hasBeenAuthorized() === true))
         {
             return true;
@@ -71,7 +73,7 @@ trait EmandateRecurring
     }
 
     /**
-     * updateRecurringEntitiesForEmandateIfApplicable : Update token recurring 
+     * updateRecurringEntitiesForEmandateIfApplicable : Update token recurring
      * parameters.
      *
      * Called from updateAndNotifyPaymentAuthorized.
@@ -114,7 +116,7 @@ trait EmandateRecurring
                 'gateway_data'    => $data,
             ]);
 
-        // Token used count should not be incremented here, 
+        // Token used count should not be incremented here,
         // since this flow is there to update only the recurring parameters
 
         $oldRecurringStatus = $token->getRecurringStatus();
@@ -223,7 +225,7 @@ trait EmandateRecurring
     }
 
     /**
-     * This is called when gateway returns a pending status. 
+     * This is called when gateway returns a pending status.
      * In such cases we return the payment id and other details to merchant.
      * For payment to reach terminal status, we wait for webhook from gateway.
      *
@@ -251,7 +253,7 @@ trait EmandateRecurring
         throw new Exception\LogicException('Should not be called for any payment other than Emandate Auto Recurring');
     }
 
-    // if we got a webhook and payment is still in pending status, 
+    // if we got a webhook and payment is still in pending status,
     // then just log it and skip authorize flow.
     // No need to update any entities.
     protected function updatePaymentEntityForEmandateAsyncRecurringPayment(Entity $payment, array $data)
@@ -259,7 +261,7 @@ trait EmandateRecurring
         if (($payment->isCreated() === true) and
             (Gateway::isApiBasedAsyncEMandateGateway($payment->getGateway()) === true) and
             (isset($data['additional_data']) === true) and
-            (isset($data['additional_data']['gateway_payment_status']) === true) and 
+            (isset($data['additional_data']['gateway_payment_status']) === true) and
             ($data['additional_data']['gateway_payment_status'] === 'pending'))
         {
             $this->trace->info(
@@ -269,6 +271,151 @@ trait EmandateRecurring
                     'token_id'        => $payment->getTokenId(),
                     'gateway_data'    => $data,
                 ]);
+        }
+    }
+    
+    public function updateEmandateToken(Entity $payment, $nrErrorCode)
+    {
+        // dcs config fetch
+        $this->trace->info(
+            TraceCode::EMANDATE_PAYMENT_UPDATE_TOKEN,
+            [
+                'payment_id'      => $payment->getId(),
+                'token_id'        => $payment->getTokenId(),
+                'global_token_id' => $payment->getGlobalTokenId(),
+                'nr_error_code'   => $nrErrorCode
+            ]);
+        
+        $merchantConfig = $this->fetchEmandateDcsConfigs($payment->getMerchantId());
+    
+        $this->trace->info(
+            TraceCode::EMANDATE_FETCH_MERCHANT_CONFIG,
+            [
+                "merchant_config" => $merchantConfig
+            ]);
+        
+        $token = $payment->getGlobalOrLocalTokenEntity();
+        
+        if ($merchantConfig === null or $token === null)
+        {
+            return [];
+        }
+        
+        $emandateConfig = $this->fetchConfigsForToken($token, $merchantConfig, $nrErrorCode);
+    
+        $this->trace->info(
+            TraceCode::EMANDATE_CONFIG_DETAILS,
+            [
+                "emandate_configs" => $emandateConfig
+            ]);
+        
+        if($emandateConfig === null)
+        {
+            return [];
+        }
+    
+        (new Token\Core)->updateTokenForEmandateRecurringDetails($token, $emandateConfig);
+        
+        $this->repo->saveOrFail($token);
+        
+        if(isset($emandateConfig[Token\Constants::EMANDATE_TOKEN_STATUS]) === true and
+            $emandateConfig[Token\Constants::EMANDATE_TOKEN_STATUS] === Token\Constants::BLOCKED_TEMPORARILY)
+        {
+            $coolDownPeriod = $emandateConfig[Token\Constants::COOLDOWN_PERIOD];
+    
+            $this->emandateDescError = " The token has been put on hold temporarily for raising recurring payments until " .
+                                        date("Y-m-d H:i:s", (int) $coolDownPeriod);
+        }
+        
+        return [];
+    }
+    
+    public function fetchConfigsForToken($token, $merchantConfig, $nrErrorCode)
+    {
+        // merchant configs
+        $retriesAllowed = $merchantConfig[Token\Constants::RETRY_ATTEMPTS] ?? null;
+        
+        $coolDownPeriod = $merchantConfig[Token\Constants::COOLDOWN_PERIOD] ?? null;
+    
+        $tempErrorEnableFlag = $merchantConfig[EmandateConstants::TEMPORARY_ERRORS_ENABLE_FLAG] ?? false;
+        
+    
+        // token configs
+        $emandateConfig = $token->getNotes()[Token\Constants::EMANDATE_CONFIGS] ?? [];
+        
+        if($tempErrorEnableFlag === false or $emandateConfig === null)
+        {
+            return null;
+        }
+    
+        $retriesAttempted = (int) $emandateConfig[Token\Constants::RETRY_ATTEMPTS] ?? 0;
+    
+        $emandateTokenStatus = $emandateConfig[Token\Constants::EMANDATE_TOKEN_STATUS] ?? null;
+    
+    
+        // Case 1: already token blocked, no need to block again
+        if($emandateTokenStatus !== null)
+        {
+            return null;
+        }
+    
+        // cases for temporarily blocking token
+        if($tempErrorEnableFlag === true and
+            (isset($nrErrorCode["temporary_error_code"]) === true and $nrErrorCode["temporary_error_code"] !== null) and
+            ($retriesAllowed !== null and $retriesAllowed > 0) and
+            ($coolDownPeriod !== null and $coolDownPeriod > 0))
+        {
+            $previousError = $emandateConfig[Token\Constants::GATEWAY_ERROR] ?? null;
+            
+            $temporaryErrorCode = $nrErrorCode["temporary_error_code"] ?? null;
+            
+            // Case 2: Previous error doesn't match with present error, reset with new error
+            // Case 3: Previously no error present, start new retry
+            if($previousError === null or $previousError !== $temporaryErrorCode)
+            {
+                return [
+                    Token\Constants::RETRY_ATTEMPTS                 => 1,
+                    Token\Constants::GATEWAY_ERROR                  => $nrErrorCode["temporary_error_code"]
+                ];
+                
+            } else {
+                // Case 4: Already max retries attempted, will block token
+                // Case 5: If not reached, will increase retry count
+                if ($retriesAttempted + 1 >= $retriesAllowed)
+                {
+                    return [
+                        Token\Constants::RETRY_ATTEMPTS             => $retriesAttempted + 1,
+                        Token\Constants::COOLDOWN_PERIOD            => $this->calculateBlockPeriod($coolDownPeriod),
+                        Token\Constants::EMANDATE_TOKEN_STATUS      => Token\Constants::BLOCKED_TEMPORARILY,
+                        Token\Constants::GATEWAY_ERROR              => $nrErrorCode["temporary_error_code"]
+                    ];
+                }
+                else {
+                    return [
+                        Token\Constants::RETRY_ATTEMPTS             => $retriesAttempted + 1,
+                        Token\Constants::GATEWAY_ERROR              => $nrErrorCode["temporary_error_code"]
+                    ];
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    public function calculateBlockPeriod($coolDownPeriod)
+    {
+        $currentTime = Carbon::now('Asia/Kolkata');
+        
+        $blockDate = $currentTime->addDays((int) $coolDownPeriod);
+        
+        $endOfMonthDate = Carbon::now('Asia/Kolkata')->endOfMonth();
+        
+        if($blockDate <= $endOfMonthDate)
+        {
+            return $blockDate->getTimestamp();
+        }
+        else {
+            return $endOfMonthDate->getTimestamp();
         }
     }
 }

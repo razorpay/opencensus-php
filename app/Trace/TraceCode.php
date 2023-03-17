@@ -1466,7 +1466,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPDATED_IIN_AND_CARD_ENTITY                           = 'UPDATED_IIN_AND_CARD_ENTITY';
     const UPI_RECURRING_SET_TERMINAL_FROM_TOKEN                 = 'UPI_RECURRING_SET_TERMINAL_FROM_TOKEN';
     const CARD_META_DATA_EVENT                                  = 'CARD_META_DATA_EVENT';
-
+    const EMANDATE_PAYMENT_UPDATE_TOKEN                         = 'EMANDATE_PAYMENT_UPDATE_TOKEN';
+    const EMANDATE_FETCH_MERCHANT_CONFIG                        = 'EMANDATE_FETCH_MERCHANT_CONFIG';
+    const EMANDATE_CONFIG_DETAILS                               = 'EMANDATE_CONFIG_DETAILS';
+    
     //Pricing
     const PRICING_RULE_SELECTION                                = 'PRICING_RULE_SELECTION';
     const PAYMENT_PRICING_RULE_NOT_FOUND                        = 'PAYMENT_PRICING_RULE_NOT_FOUND';
