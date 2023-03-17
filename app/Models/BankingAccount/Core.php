@@ -3408,10 +3408,6 @@ class Core extends Base\Core
                     'email' => 'x-caonboarding@razorpay.com',
                 ],
             ];
-
-            $viewData = [
-
-            ];
         }
         else {
             $recipient = [
@@ -3435,7 +3431,7 @@ class Core extends Base\Core
             ];
         }
 
-        if (in_array($city, ['Bengaluru', 'Bangalore']))
+        if (in_array($city, ['Bengaluru', 'Bangalore', 'bengaluru', 'bangalore']))
         {
             $viewData['pocName'] = 'Bennet/ Ferin';
             $viewData['pocPhoneNumber'] = '9113917356 / 9980430227';

@@ -514,9 +514,9 @@ class Service extends Base\Service
             return;
         }
 
-        $bankingAccountCore = new BankingAccount\Core();
+        $bankingAccountService = new BankingAccount\Service();
 
-        $bankingAccountCore->moveToSTBIfApplicable($bankingAccount, $entity ?? $bankingAccount->merchant);
+        $bankingAccountService->moveToSTBIfApplicable($bankingAccount, $entity ?? $bankingAccount->merchant);
     }
 
     private function checkAndPushEventForRmAssigned(BankingAccount\Entity $bankingAccount, array $activationDetail, Entity $activationDetailDbEntity, bool $isRmNotAssigned)

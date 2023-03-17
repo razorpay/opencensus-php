@@ -373,6 +373,32 @@ class Service extends Base\Service
         return $account->toArrayPublic();
     }
 
+
+    public function moveToSTBIfApplicable(Entity $bankingAccount)
+    {
+        $currentStatus = $bankingAccount->getStatus();
+
+        $currentSubStatus = $bankingAccount->getSubStatus();
+
+        if (!($currentStatus === Status::PICKED && $currentSubStatus == Status::DOCKET_INITIATED))
+        {
+            return;
+        }
+
+        $this->trace->info(TraceCode::BANKING_ACCOUNT_DOCKET_DELIVERED_MOVE_TO_STB, [
+            'banking_account_id' => $bankingAccount->getId(),
+            'merchant_id' => $bankingAccount->getMerchantId(),
+        ]);
+
+        $bankingAccount = $this->update(
+            $bankingAccount->getPublicId(),
+            [
+                Entity::STATUS      => Status::INITIATED,
+                Entity::SUB_STATUS  => Status::NONE,
+            ]);
+    }
+
+
     /**
      * Changes input array based on sub-status change
      * > Sub-status is changing either from or to `Pending on Sales | <REASON>`

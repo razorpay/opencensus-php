@@ -4226,10 +4226,13 @@ class BankingAccountTest extends TestCase
 
     public function testUpdateBankingAccountDocketInitiatedToSentToBank()
     {
+        $response = $this->setupBankLMSTest();
 
-        $bankingAccount = $this->createBankingAccount();
-        
-        $merchant = $this->fixtures->edit('banking_account', $bankingAccount['id'], [
+        $user = $response['user'];
+
+        $bankingAccount = $response['bankingAccount'];
+
+        $this->fixtures->edit('banking_account', $bankingAccount['id'], [
             BankingAccount\Entity::STATUS       => Status::PICKED,
             BankingAccount\Entity::SUB_STATUS   => Status::DOCKET_INITIATED,
         ]);
@@ -4282,6 +4285,19 @@ class BankingAccountTest extends TestCase
             BankingAccount\Entity::STATUS           => Status::INITIATED,
             BankingAccount\Entity::SUB_STATUS       => Status::NONE,
         ], $response);
+
+        $this->ba->proxyAuth('rzp_test_' . self::DefaultPartnerMerchantId, $user->getId());
+
+        $this->ba->addXBankLMSOriginHeader();
+
+        $request  = [
+            'url'     => '/banking_accounts/rbl/lms/banking_account/'. $bankingAccount['id'],
+            'method'  => 'GET',
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['id'], $bankingAccount['id']);
     }
 
     public function testUpdateBankingAccountSubStatusFromDwtRequiredToDwtCompletedFailsDueToMissingDwtCompletedTimestamp()
@@ -11123,7 +11139,7 @@ class BankingAccountTest extends TestCase
         $response = $this->addBankLmsFeatureToTheMerchant();
 
         // Invite new user to join RBL merchant
-        $this->inviteNewUserToJoinRBLMerchant(self::DefaultPartnerMerchantId, 'random@rbl.com', BankingRole::BANK_MID_OFFICE_MANAGER);
+        $invitation = $this->inviteNewUserToJoinRBLMerchant(self::DefaultPartnerMerchantId, 'random@rbl.com', BankingRole::BANK_MID_OFFICE_MANAGER);
 
         // Accept invitation
         $response = $this->acceptInvitation();
@@ -11714,14 +11730,16 @@ class BankingAccountTest extends TestCase
      *
      * @return void
      */
-    private function inviteNewUserToJoinRBLMerchant(string $merchantId = self::DefaultPartnerMerchantId, string $userEmail = 'random@rbl.com', string $role = BankingRole::BANK_MID_OFFICE_POC): void
+    private function inviteNewUserToJoinRBLMerchant(string $merchantId = self::DefaultPartnerMerchantId, string $userEmail = 'random@rbl.com', string $role = BankingRole::BANK_MID_OFFICE_POC)
     {
-        $this->fixtures->create('invitation', [
+        $invitation = $this->fixtures->create('invitation', [
             'email'       => $userEmail,
             'merchant_id' => $merchantId,
             'role'        => $role,
             'product'     => 'banking',
         ]);
+
+        return $invitation;
     }
 
     /**
