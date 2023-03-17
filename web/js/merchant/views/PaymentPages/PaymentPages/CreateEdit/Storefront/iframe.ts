@@ -34,9 +34,7 @@ export const getAllowedStorefrontDomain = (): string => {
   // adding additional check, to avoid overriding the window object
   const envUrl = window.PP_ECOMMERCE_URL || '';
   if (isProd) {
-    return envUrl.endsWith('razorpay.com')
-      ? envUrl
-      : 'https://frontend-payment-pages-ecommerce.razorpay.com';
+    return envUrl.endsWith('razorpay.com') ? envUrl : 'https://pages.razorpay.com';
   } else {
     return envUrl.endsWith('razorpay.in')
       ? envUrl
