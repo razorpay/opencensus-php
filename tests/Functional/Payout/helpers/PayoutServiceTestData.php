@@ -2968,6 +2968,26 @@ return [
         ],
     ],
 
+    'testRemoveFeatureFromMerchantDashboard' => [
+        'request'   => [
+            'url'     => '/merchants/me/features',
+            'method'  => 'post',
+            'content' => [
+                "features"    => [
+                    'skip_workflow_for_api' => 0
+                ],
+            ],
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'test@razorpay.com',
+            ],
+        ],
+        'response'  => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDecrementFreePayoutsConsumedForPayoutsService' => [
         'request'  => [
             'method'  => 'POST',

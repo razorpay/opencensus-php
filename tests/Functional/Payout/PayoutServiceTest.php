@@ -23,6 +23,7 @@ use RZP\Services\RazorXClient;
 use RZP\Models\Payout\Validator;
 use RZP\Models\Feature\Constants;
 use RZP\Jobs\BatchPayoutsProcess;
+use RZP\Services\FTS\FundTransfer;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payout\DataMigration;
 use RZP\Jobs\PayoutSourceUpdaterJob;
@@ -5127,6 +5128,17 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testRemoveFeatureFromMerchantDashboard()
+    {
+        $this->fixtures->merchant->addFeatures(['skip_workflow_for_api']);
+
+        $this->ba->proxyAuth();
+
+        $this->mockPayoutServiceMerchantConfigUpdate();
+
+        $this->startTest();
+    }
+
     public function testPayoutsServiceCreateFailureProcessingCron()
     {
         $this->ba->cronAuth();
@@ -5202,7 +5214,7 @@ class PayoutServiceTest extends TestCase
                         return false;
                     }
                 }
-            )
+            )->once()
             ->andReturn(
             // We are returning this response only as we don't have a use case of supporting
             // response based on $request, if needed, that can also be added here using

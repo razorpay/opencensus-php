@@ -5752,6 +5752,11 @@ class Service extends Base\Service
             if ($feature !== null)
             {
                 $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
+
+                (new Feature\Core)->updatePayoutsMicroserviceOnFeatureUpdate($feature,
+                                                                             $feature->getEntityType(),
+                                                                             $feature->getEntityId(),
+                                                                             EntityConstants::DISABLE);
             }
         }
     }
