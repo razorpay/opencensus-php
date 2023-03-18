@@ -140,7 +140,7 @@ class Validator extends Base\Validator
             }
             elseif ($method === Payment\Method::CARD or $method === null)
             {
-                $maxAmountLimit = Token\Entity::CARD_MAX_AMOUNT_LIMIT;
+                $maxAmountLimit = Token\Entity::CARD_RECURRING_MAX_AMOUNT;
             }
 
             if ($maxAmount > $maxAmountLimit)

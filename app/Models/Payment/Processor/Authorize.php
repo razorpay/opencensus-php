@@ -6455,14 +6455,6 @@ trait Authorize
                             $maxAmount =  SubscriptionRegistration\Entity::DEFAULT_MAX_AMOUNT;
                         }
                     }
-                    elseif (($inn !== null) and
-                            (IIN\IIN::isDomesticBin($inn->getCountry(), $payment->merchant->getCountry())) and
-                            ($maxAmount > SubscriptionRegistration\Entity::CARD_MANDATE_DEFAULT_MAX_AMOUNT))
-                    {
-                        throw new Exception\BadRequestValidationFailureException(
-                            'Token max amount can not be greater than ' . SubscriptionRegistration\Entity::CARD_MANDATE_DEFAULT_MAX_AMOUNT,
-                            Token\Entity::MAX_AMOUNT);
-                    }
 
                     $saveMethodInput[Token\Entity::MAX_AMOUNT] = $maxAmount;
 

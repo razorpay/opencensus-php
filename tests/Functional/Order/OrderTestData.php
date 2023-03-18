@@ -936,7 +936,7 @@ return [
         ],
     ],
 
-    'testCreateCardWithMaxAmountMoreThan15000' => [
+    'testCreateCardWithMaxAmountMoreThan1000000' => [
         'request' => [
             'content' => [
                 'amount'          => 150000,
@@ -946,7 +946,7 @@ return [
                 'customer_id'     => 'cust_100000customer',
                 'payment_capture' => 1,
                 'token'           => [
-                    'max_amount'   => 1600000,
+                    'max_amount'   => 100000100,
                     'expire_at'    => 1880118306,
                 ]
             ],
@@ -957,7 +957,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The max amount may not be greater than 1500000.',
+                    'description' => 'The max amount may not be greater than 100000000.',
                 ],
             ],
             'status_code' => 400,
