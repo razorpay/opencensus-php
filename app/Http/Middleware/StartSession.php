@@ -7,6 +7,7 @@ use Illuminate\Session\Middleware\StartSession as BaseStartSession;
 use Illuminate\Support\Str;
 use Predis\PredisException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Http\Route;
 use RZP\Trace\TraceCode;
 
 class StartSession extends BaseStartSession
@@ -44,6 +45,21 @@ class StartSession extends BaseStartSession
 
             // Do not store a session in cache if the request is coming from
             // PHP SDK to /v1/preferences endpoint
+            return;
+        }
+
+        /** @var string $csMode The mode checkout-service is running in. */
+        $csMode = $request->header('X-Checkout-Service-Mode', 'live');
+
+        if (($csMode === 'shadow' || $route !== 'customer_fetch_internal_for_checkout') &&
+            in_array($route, Route::$internalApps['checkout_service'], true)
+        ) {
+            // Do not store a session in cache if checkout-service is running in
+            // shadow mode (or) the request is coming to internal routes called
+            // in parallel by the checkout-service except for the customer fetch
+            // route. They are part of Route::$session only to ensure they are
+            // able to detect a global customer & apply business logic accordingly.
+
             return;
         }
 
