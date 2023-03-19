@@ -31,6 +31,7 @@ class ProviderPsp
     const JUPITER_MONEY     = 'jupiter_money';
     const BHIM_PNB          = 'bhim_pnb';
     const FAM_PAY           = 'fam_pay';
+    const FAVE              = 'fave';
 
 
     // used only for testing.

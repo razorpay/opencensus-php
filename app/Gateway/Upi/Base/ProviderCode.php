@@ -178,7 +178,8 @@ class ProviderCode
     const YESG               = 'yesg';
     const AXB                = 'axb';
     const FAM                = 'fam';
-    const RAPL                = 'rapl';
+    const RAPL               = 'rapl';
+    const PINELABS           = 'pinelabs';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -349,6 +350,7 @@ class ProviderCode
         self::AXB                => IFSC::UTIB,
         self::FAM                => self::PPIW,
         self::RAPL               => IFSC::RATN,
+        self::PINELABS           => self::PPIW,
     ];
 
     /**
@@ -443,6 +445,7 @@ class ProviderCode
         ProviderPsp::JUPITER_MONEY,
         ProviderPsp::BHIM_PNB,
         ProviderPsp::FAM_PAY,
+        ProviderPsp::FAVE,
     ];
 
     /**
@@ -484,6 +487,7 @@ class ProviderCode
         self::JUPITERAXIS   => ProviderPsp::JUPITER_MONEY,
         self::PNB           => ProviderPsp::BHIM_PNB,
         self::FAM           => ProviderPsp::FAM_PAY,
+        self::PINELABS      => ProviderPsp::FAVE,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
