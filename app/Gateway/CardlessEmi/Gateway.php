@@ -38,6 +38,8 @@ class Gateway extends Base\Gateway
 
     const SUCCESS_RESPONSE = 'success';
 
+    const GET = 'get';
+
     protected $map = [
         ResponseFields::PROVIDER_PAYMENT_ID   => Entity::GATEWAY_REFERENCE_ID,
         RequestFields::PAYMENT_ID             => Entity::PAYMENT_ID,
@@ -121,7 +123,17 @@ class Gateway extends Base\Gateway
          * If user does not exist exception is thrown here, customer will be asked to choose an alternate mode
          * of payment
          */
-        $this->checkAccountExists($responseArray);
+        try
+        {
+            $this->checkAccountExists($responseArray);
+        }
+        catch (Exception\GatewayErrorException $exception)
+        {
+            if(!$this->isEarlySalaryRedirectApplicable($input))
+            {
+                throw $exception;
+            }
+        }
 
         // in case of method: paylater, there are no emi plans.
         if ($this->gateway === Payment\Gateway::PAYLATER)
@@ -135,9 +147,7 @@ class Gateway extends Base\Gateway
 
             return;
         }
-        elseif (($this->gateway === Payment\Gateway::CARDLESS_EMI) and
-                (strtolower($this->provider) === CardlessEmi::EARLYSALARY) and
-                (in_array(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY , $input['merchant_features'])))
+        elseif ($this->isEarlySalaryRedirectApplicable($input))
         {
             if(isset($responseArray[ResponseFields::REDIRECT_URL_EARLYSALARY]) === false)
             {
@@ -207,9 +217,7 @@ class Gateway extends Base\Gateway
 
             $this->createCacheData($brandingCacheKey, $brandingUrl);
         }
-        elseif (($this->gateway === Payment\Gateway::CARDLESS_EMI) and
-                (strtolower($this->provider) === CardlessEmi::EARLYSALARY) and
-                (in_array(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY,$input['merchant_features']) === true))
+        elseif ($this->isEarlySalaryRedirectApplicable($input))
         {
             $url = $responseArray[ResponseFields::REDIRECT_URL_EARLYSALARY];
 
@@ -513,13 +521,13 @@ class Gateway extends Base\Gateway
                 $content[RequestFields::MERCHANT_WEBSITE] = $input['merchant_website'] ?? '';
                 $content[RequestFields::MERCHANT_MCC] = $input['merchant_mcc'] ?? '';
 
-                if (in_array(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY,$input['merchant_features']))
+                if ($this->isEarlySalaryRedirectApplicable($input))
                 {
                     $content[RequestFields::REDIRECT_URL] = $input['callbackUrl'];
 
                     $content[RequestFields::PAYMENT_ID] = explode("_",$input['payment_id'])[1];
 
-                    $receipt = null;
+                    $receipt = explode("_",$input['payment_id'])[1];
 
                     if (isset($input['order']['receipt']))
                     {
@@ -935,8 +943,10 @@ class Gateway extends Base\Gateway
 
         $request = parent::getStandardRequestArray($content, $method, $type);
 
-        $request['headers'] = $this->getRequestHeaders();
-
+        if($method !== self::GET)
+        {
+            $request['headers'] = $this->getRequestHeaders();
+        }
         $replacePairs = [
             '{id}' => $this->input['payment']['id'] ?? null,
         ];
@@ -1577,5 +1587,17 @@ class Gateway extends Base\Gateway
         }
 
         return;
+    }
+
+    protected function isEarlySalaryRedirectApplicable($input)
+    {
+        if(($this->gateway === Payment\Gateway::CARDLESS_EMI) and
+            (strtolower($this->provider) === CardlessEmi::EARLYSALARY) and
+            (in_array(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY , $input['merchant_features'])))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -1822,6 +1822,7 @@ class Constants
         self::PHONEPE_INTENT,
         self::SAVE_VPA,
         self::REDIRECT_TO_ZESTMONEY,
+        self::REDIRECT_TO_EARLYSALARY,
         self::DISABLE_NATIVE_CURRENCY,
         self::ALLOW_CFB_INTERNATIONAL,
         self::UPI_OTM,
