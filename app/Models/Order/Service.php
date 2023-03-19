@@ -304,10 +304,15 @@ class Service extends Base\Service
                 sort($result['offers']);
             }
 
+            $responseParity = $result == $pgRouterPublicResponse;
+            $responseParityWithTripleCheck = $result === $pgRouterPublicResponse;
+
             $this->trace->info(TraceCode::ORDER_RESPONSE_PARITY, [
                 "ARRAY_DIFF_API_PGROUTER" => array_diff($result, $pgRouterPublicResponse),
                 "ARRAY_DIFF_PGROUTER_API" => array_diff($pgRouterPublicResponse, $result),
-                "SAME_VALUE" => $result == $pgRouterPublicResponse
+                "SAME_VALUE" => $responseParity,
+                "SAME_VALUE_AND_TYPE" => $responseParityWithTripleCheck,
+                "ORDER_RESPONSE" => $responseParity ? "SUCCESS" : $result
             ]);
         }
         else

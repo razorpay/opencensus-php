@@ -195,6 +195,8 @@ class Entity extends Base\PublicEntity
 
             unset($publicArrayBankAccount['entity']);
 
+            $paperMandate->reload();
+
             $nachArray[Entity::CREATE_FORM] = empty($paperMandate->getGeneratedFileID()) === true ? false : true;
 
             $nachArray[Entity::FORM_REFERENCE1] = $paperMandate->getReference1();
