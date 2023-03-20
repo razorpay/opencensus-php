@@ -973,6 +973,21 @@ class Validator extends Base\Validator
         Entity::FILE_ID              => 'required_without:file|public_id',
     ];
 
+    protected static $createWalletAccountsCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:51200' . self::CSV_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+    ];
+
+    protected static $createWalletLoadsCreateRules = [
+        Entity::TYPE                 => 'required|custom',
+        Entity::NAME                 => 'filled|string|max:255',
+        Entity::FILE                 => 'required_without:file_id|file|max:51200' . self::CSV_MIME_RULE,
+        Entity::FILE_ID              => 'required_without:file|public_id',
+    ];
+
+
     protected static $creditCreateRules = [
         Entity::TYPE    => 'required|in:credit',
         Entity::NAME    => 'filled|string|max:255',

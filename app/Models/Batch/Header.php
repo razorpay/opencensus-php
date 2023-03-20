@@ -1531,6 +1531,22 @@ class Header
     const TOKEN_HQ_FEE_MODEL         = 'fee_model';
     const TOKEN_HQ_CREATED_DATE      = 'created_date';
 
+    // Wallet create accounts batch headers
+    const WALLET_ACCOUNTS_NAME = 'Name';
+    const WALLET_ACCOUNTS_EMAIL = 'Email';
+    const WALLET_ACCOUNTS_CONTACT = 'Contact';
+    const WALLET_ACCOUNTS_IDENTIFICATION_ID = 'Identification ID';
+    const WALLET_ACCOUNTS_IDENTIFICATION_TYPE = 'Identification Type';
+    const WALLET_ACCOUNTS_PARTNER_CUSTOMER_ID = 'Partner Customer ID';
+    const WALLET_ACCOUNTS_DOB = 'Date Of Birth';
+
+    // Wallet create load batch headers
+    const WALLET_LOAD_CONTACT = 'Contact';
+    const WALLET_LOAD_AMOUNT = 'Amount (In Paise)';
+    const WALLET_LOAD_DESCRIPTION = 'Description (Optional)';
+    const WALLET_LOAD_CATEGORY = 'Category (Optional)';
+    const WALLET_LOAD_REFERENCE_ID = 'Reference ID (Optional)';
+
     // consent collection for creation of local tokens
     //input
     const CONSENT_COLLECTION_MERCHANT_ID = 'merchantId';
@@ -1539,6 +1555,24 @@ class Header
     const CONSENT_COLLECTION_SUCCESS           = "success";
     const CONSENT_COLLECTION_ERROR_CODE        = "Error Code";
     const CONSENT_COLLECTION_ERROR_DESCRIPTION = "Error description";
+
+    // mandatory headers for wallet account batch
+    const MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS = [
+        Header::WALLET_ACCOUNTS_NAME,
+        Header::WALLET_ACCOUNTS_EMAIL,
+        Header::WALLET_ACCOUNTS_CONTACT,
+        Header::WALLET_ACCOUNTS_IDENTIFICATION_ID,
+        Header::WALLET_ACCOUNTS_IDENTIFICATION_TYPE,
+        Header::WALLET_ACCOUNTS_PARTNER_CUSTOMER_ID,
+        Header::WALLET_ACCOUNTS_DOB
+    ];
+
+    // mandatory headers for wallet loads batch
+    const MANDATORY_HEADERS_FOR_WALLET_LOADS = [
+        Header::WALLET_LOAD_CONTACT,
+        Header::WALLET_LOAD_AMOUNT
+    ];
+
 
     // Following is a list of columns that are mandatory headers in the fund account (contact) batch file
     const MANDATORY_AND_CONDITIONALLY_MANDATORY_HEADERS_FOR_FUND_ACCOUNTS = [
@@ -5144,6 +5178,30 @@ class Header
                 self::CONSENT_COLLECTION_ERROR_DESCRIPTION,
             ],
         ],
+
+        Type::CREATE_WALLET_LOADS => [
+            self::INPUT => [
+                self::WALLET_LOAD_CONTACT,
+                self::WALLET_LOAD_AMOUNT,
+                self::WALLET_LOAD_CATEGORY,
+                self::WALLET_LOAD_DESCRIPTION,
+                self::WALLET_LOAD_REFERENCE_ID,
+            ],
+            self::OUTPUT => []
+        ],
+
+        Type::CREATE_WALLET_ACCOUNTS => [
+            self::INPUT => [
+                self::WALLET_ACCOUNTS_NAME,
+                self::WALLET_ACCOUNTS_EMAIL,
+                self::WALLET_ACCOUNTS_CONTACT,
+                self::WALLET_ACCOUNTS_IDENTIFICATION_ID,
+                self::WALLET_ACCOUNTS_IDENTIFICATION_TYPE,
+                self::WALLET_ACCOUNTS_PARTNER_CUSTOMER_ID,
+                self::WALLET_ACCOUNTS_DOB
+            ],
+            self::OUTPUT => []
+        ],
     ];
 
     /**
@@ -5313,6 +5371,16 @@ class Header
             self::validateCODEligibilityAttributeBlacklistBulkHeaders($expectedHeaders, $actualHeaders);
         }
 
+        if ($type === Type::CREATE_WALLET_ACCOUNTS) 
+        {
+            self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_WALLET_ACCOUNTS);
+        }
+
+        if ($type === Type::CREATE_WALLET_LOADS) 
+        {
+            self::validateWalletBatchHeaders($expectedHeaders, $actualHeaders, self::MANDATORY_HEADERS_FOR_WALLET_LOADS);
+        }
+        
         // For payouts, we do not want to match exact headers, because we are allowing some headers to be skipped.
         // Since some headers can be skipped, we are also allowing for rearrangement of headers
         // and hence there are no strict checks inside payout batch file header validations.
@@ -5423,6 +5491,44 @@ class Header
                 }
             }
         }
+    }
+
+    public static function validateWalletBatchHeaders(array $expectedHeaders, array $actualHeaders, array $mandatoryHeaders)
+    {
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $mandatoryHeaders, true) === true)
+            {
+                // This will remove the header we just validated from the list of mandatory headers.
+                $mandatoryHeaders = array_diff($mandatoryHeaders, [$actualHeader]);
+            }
+        }
+
+        if (count($mandatoryHeaders) > 0)
+        {
+            $msg = 'Uploaded file is missing mandatory header(s) [%s]';
+
+            $msg = sprintf($msg, implode(', ',$mandatoryHeaders));
+
+            throw new BadRequestValidationFailureException($msg);
+        }
+
+        // Now make sure that all headers provided are part of our headers list.
+        foreach ($actualHeaders as $actualHeader)
+        {
+            if (in_array($actualHeader, $expectedHeaders, true) === false)
+            {
+                $msg = 'Uploaded file has has invalid header [%s]';
+
+                $msg = sprintf($msg, $actualHeader);
+
+                throw new BadRequestValidationFailureException($msg);
+            }
+
+            // This is required so that we throw an exception if the same header is repeated twice.
+            $expectedHeaders = array_diff($expectedHeaders, [$actualHeader]);
+        }
+
     }
 
     protected static function validateAdminBatchHeader($actualHeaders)

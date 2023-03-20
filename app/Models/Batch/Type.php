@@ -14,6 +14,11 @@ class Type
     const RAW_ADDRESS               = 'raw_address';
     const FULFILLMENT_ORDER_UPDATE  = 'fulfillment_order_update';
 
+
+    // Wallet batch types
+    const CREATE_WALLET_ACCOUNTS = 'create_wallet_accounts';
+    const CREATE_WALLET_LOADS = 'create_wallet_loads';
+
     //Cod eligibility attribute batch
     const ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_WHITELIST = 'one_cc_cod_eligibility_attribute_whitelist_upsert';
     const ONE_CC_COD_ELIGIBILITY_ATTRIBUTE_BLACKLIST = 'one_cc_cod_eligibility_attribute_blacklist_upsert';
@@ -567,6 +572,8 @@ class Type
         self::MERCHANT_UPLOAD_MIQ,
         self::HITACHI_FULCRUM_ONBOARD,
         self::PAYMENT_PAGE,
+        self::CREATE_WALLET_ACCOUNTS,
+        self::CREATE_WALLET_LOADS
     ];
 
     /**
@@ -655,6 +662,8 @@ class Type
         self::TOKEN_HQ_CHARGE,
         self::HITACHI_FULCRUM_ONBOARD,
         self::PAYMENT_PAGE,
+        self::CREATE_WALLET_ACCOUNTS,
+        self::CREATE_WALLET_LOADS
     ];
 
     // For following batches, sensitive data is encrypted in storeInputFileAndSaveBatchWithSettings() so that file with sensitive/PCI data
