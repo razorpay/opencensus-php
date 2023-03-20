@@ -26,6 +26,7 @@ export const PAYMENT_ENABLE = {
   secondryButtonText: 'Complete KYC',
 };
 
+// TODO OE comms changes part-2
 export const PAYMENT_DISABLE = {
   title: 'Few more details required',
   description:

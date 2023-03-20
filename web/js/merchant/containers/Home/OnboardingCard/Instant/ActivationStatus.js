@@ -77,6 +77,7 @@ class ActivationCard extends Component {
               </div>
             ) : (
               <div>
+                {/* TODO OE comms changes part-2 */}
                 Submit a few KYC details to start accepting payments and receive{' '}
                 <a
                   className="btn-link"
@@ -148,6 +149,7 @@ class ActivationCard extends Component {
         status = possibleStatuses.active;
         content = (
           <div>
+            {/* TODO OE comms changes part-2 */}
             Submit a few KYC details to start accepting payments and receive{' '}
             <a
               className="btn-link"

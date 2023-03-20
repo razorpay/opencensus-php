@@ -51,6 +51,7 @@ export const kycModalContent = (args = {}) => {
         subtitle: null,
         body: (
           <div>
+            {/* TODO OE comms changes part-2 */}
             For your business model we need a few more KYC details to alow you to accept payments
           </div>
         ),
@@ -340,6 +341,7 @@ export const kycModalContent = (args = {}) => {
         title: 'KYC Under Review',
         subtitle: 'Payment limits have been removed',
         body: (
+          // TODO OE comms changes part-2
           <div>
             Your payment limits have been removed and KYC is under review. You may experience a
             delay.
@@ -375,6 +377,7 @@ export const kycModalContent = (args = {}) => {
         title: 'KYC is under review',
         subtitle: 'Our team is reviewing your KYC details',
         body: (
+          // TODO OE comms changes part-2
           <div>
             Your KYC details are under review. We will reach out to you in case we need any
             clarifications. You may experience a delay.
@@ -417,6 +420,7 @@ export const kycModalContent = (args = {}) => {
         title: 'KYC Under Review',
         subtitle: 'Our team is reviewing your KYC details',
         body: (
+          // TODO OE comms changes part-2
           <div>
             You may experience a delay in KYC review.
             <br />
@@ -451,8 +455,9 @@ export const kycModalContent = (args = {}) => {
         title: 'KYC Clarification',
         body: (
           <div>
-            We need some clarification regarding your KYC details. Please clarify at the earliest to
-            get your KYC approved
+            {/* NOTE OE comms changes part-1 */}
+            Update these details to help us activate your account faster once we resume onboarding
+            new businesses
           </div>
         ),
         background: 'pending',
@@ -613,9 +618,10 @@ export const kycModalContent = (args = {}) => {
       return {
         title: 'We need a few more details to complete KYC verification',
         body: (
+          // NOTE OE comms changes part-1
           <div>
-            You’ll be able to collect payments and receive them in your bank account only after the
-            required details are updated
+            Update these details to help us activate your account faster once we resume onboarding
+            new businesses
           </div>
         ),
         pill: 'ACTION REQUIRED',

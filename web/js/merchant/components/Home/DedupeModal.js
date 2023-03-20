@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { ModalMask, Modal } from 'common/new-ui/Modal';
 import SupportButton from './SupportButton';
 
@@ -19,10 +18,11 @@ const DedupeModal = () => {
           </div>
           <div className="modal-body">
             <div className="modal-description">
+              {/* NOTE OE comms changes part-1 */}
               <div>
                 <p>
                   We need some more information regarding your submitted details. Please contact us
-                  to activate your account.
+                  to help us activate your account faster once we resume onboarding new businesses.
                 </p>
               </div>
             </div>

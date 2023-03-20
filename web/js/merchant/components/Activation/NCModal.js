@@ -65,9 +65,10 @@ const NCModal = ({
         return {
           title: 'We need a few more details to complete KYC verification',
           body: (
+            // NOTE OE comms changes part-1
             <div>
-              You’ll be able to collect payments and receive them in your bank account only after
-              the required details are updated
+              Update these details to help us activate your account faster once we resume onboarding
+              new businesses
             </div>
           ),
           pill: 'ACTION REQUIRED',
@@ -132,11 +133,12 @@ const NCModal = ({
             <div className="modal-body">
               <div className="modal-description">
                 <div>
+                  {/* NOTE OE comms changes part-1 */}
+                  <p>We need clarifications on few details to complete KYC verification</p>
+                  <br />
                   <p>
-                    We have a few questions about your KYC submission, please provide required
-                    clarifications at the earliest for quick account activation. Please note,
-                    settlements will only be enabled to your bank account, after your revised KYC is
-                    reviewed and approved.
+                    Update these details to help us activate your account faster once we resume
+                    onboarding new businesses
                   </p>
                 </div>
               </div>

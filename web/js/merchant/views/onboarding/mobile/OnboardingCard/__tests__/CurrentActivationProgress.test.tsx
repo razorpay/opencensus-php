@@ -354,7 +354,7 @@ test('should show needs clarification messafe with payments disabled', async () 
   await waitFor(() => {
     expect(
       screen.queryByText(
-        'You’ll be able to collect payments and receive them in your bank account only after the required details are updated',
+        'Update these details to help us activate your account faster once we resume onboarding new businesses',
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText('ACTION REQUIRED')).toBeInTheDocument();

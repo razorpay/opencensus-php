@@ -395,6 +395,7 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'warning';
           title = <div>KYC Under Review</div>;
           content = (
+            // TODO OE comms changes part-2
             <div>
               We are reviewing your KYC details. We will notify you if we require any clarifications
               on your KYC. You may experience a delay.
@@ -477,8 +478,9 @@ export default class InstantActivationAnnouncements extends Component {
           content = (
             <div class="announcement-container">
               <div class="announcement-info">
-                We need some clarfication regarding your KYC details. Please clarify at the earliest
-                to get your KYC approved{' '}
+                {/* NOTE OE comms changes part-1 */}
+                Update these details to help us activate your account faster once we resume
+                onboarding new businesses{' '}
               </div>
               <div className="big-circle-seprator" />
               <Link to={activationUrl}>Update details</Link>
@@ -553,14 +555,15 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Action required';
           content = (
+            // NOTE OE comms changes part-1
             <div class="announcement-container">
               <div>
                 <div class="announcement-info-header">
                   We need a few more details to complete KYC verification.
                 </div>
                 <div class="full-width-info">
-                  Your payments acceptance and settlement to your bank account will be made live
-                  after getting the required inputs
+                  Update these details to help us activate your account faster once we resume
+                  onboarding new businesses
                 </div>
               </div>
               <div className="big-circle-seprator" />
@@ -875,14 +878,15 @@ export default class InstantActivationAnnouncements extends Component {
           theme = 'danger';
           title = 'Action required';
           content = (
+            // NOTE OE comms changes part-1
             <div class="announcement-container">
               <div>
                 <div class="announcement-info-header">
                   We need a few more details to complete KYC verification.
                 </div>
                 <div class="full-width-info">
-                  You’ll be able to collect payments and receive them in your bank account only
-                  after the required details are updated
+                  Update these details to help us activate your account faster once we resume
+                  onboarding new businesses
                 </div>
               </div>
               <div className="big-circle-seprator" />
@@ -902,11 +906,12 @@ export default class InstantActivationAnnouncements extends Component {
             </div>
           );
         } else {
+          // NOTE OE comms changes part-1
           title = 'KYC Clarification';
           content = (
             <React.Fragment>
-              Your KYC details require further clarifications. Update required details within 1 day,
-              otherwise your settlements might get paused. &nbsp;
+              We need some clarfication regarding your KYC details. Update these details to help us
+              activate your account faster once we resume onboarding new businesses. &nbsp;
               <Link to={activationUrl} style={{ 'font-weight': 'bold' }}>
                 Update Details
               </Link>
@@ -1010,6 +1015,7 @@ export default class InstantActivationAnnouncements extends Component {
           </div>
         );
       } else {
+        // TODO OE comms changes part-2
         let activation_tat = '1-2 days';
         const clarification_submitted = LocalStorageService.getItem(
           `rzp_onboarding--${user.current}--clarification_submitted`,

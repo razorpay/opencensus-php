@@ -493,8 +493,9 @@ export const getModalContent = (
       image = <NCImg src={ImgNcKyc} />;
       description = (
         <>
-          You’ll be able to collect payments and receive them in your bank account only after the
-          required details are updated
+          {/* NOTE OE comms changes part-1 */}
+          Update these details to help us activate your account faster once we resume onboarding new
+          businesses
         </>
       );
       pill = Message.NEEDS_CLARIFICATION_WITH_PAYMENT_STATUS.pill;
