@@ -1,13 +1,30 @@
 import { render, screen, waitFor, userEvent } from 'test-utils';
 import { Provider } from 'react-redux';
+import { fetchCODOrders } from 'merchant/reducers/magicCheckout/codOrders/action';
 import { storeWithInitialState } from 'merchant/store';
 import OnHoldOrdersTab from 'merchant/views/MagicCheckout/CODOrdersTab/tabs/OnHoldOrdersTab';
+
+jest.mock('merchant/reducers/magicCheckout/codOrders/action', () => ({
+  ...jest.requireActual('merchant/reducers/magicCheckout/codOrders/action'),
+  fetchCODOrders: jest.fn(),
+}));
 
 jest.mock('react-async-button', () => ({ onClick, text }) => (
   <button type="button" onClick={onClick}>
     {text || 'Async button'}
   </button>
 ));
+
+fetchCODOrders.mockReturnValue({
+  type: 'RTO_RECOMMENDATION_COD_ORDERS_FETCH',
+  payload: Promise.resolve({
+    status_code: 200,
+    success: true,
+    data: {
+      items: [],
+    },
+  }),
+});
 
 const initState = {
   magicCODOrders: {
