@@ -115,7 +115,7 @@ export const queryFilters = (updateDropdownOptions, refreshMetricTabs = false) =
     selectedCardType,
   } = tabs[activeTab] || {};
 
-  let _group_by = [DEFAULT_GROUP_BY[activeTab]];
+  let _group_by = [successRate.tabs[stateActiveTab]?.group_by];
   let filterMethods = DEFAULT_METHOD[activeTab]?.map(({ method }) => method);
 
   if (updateDropdownOptions) {
