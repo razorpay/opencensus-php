@@ -344,6 +344,13 @@ class ApiEventSubscriber extends Base\Core
         $this->dispatchEventToStork($payload);
     }
 
+    protected function onAccountKycQualifiedUnactivated($merchant)
+    {
+        $payload = $this->getMerchantPayload($merchant);
+
+        $this->dispatchEventToStork($payload);
+    }
+
     protected function onAccountActivatedKycPending($merchant)
     {
         $payload = $this->getMerchantPayload($merchant);

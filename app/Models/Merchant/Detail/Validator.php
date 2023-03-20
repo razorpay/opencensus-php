@@ -28,13 +28,15 @@ class Validator extends Base\Validator
 {
     protected $env;
 
+    protected $app;
+
     public function __construct($entity = null)
     {
         parent::__construct($entity);
 
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
-        $this->env = $app['env'];
+        $this->env = $this->app['env'];
     }
 
     const INVALID_REVIEWER                              = 'Invalid reviewer';
@@ -937,7 +939,8 @@ class Validator extends Base\Validator
 
     public function validateActivationStatus(array $input)
     {
-        $validActivationStatuses = array_keys(Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING);
+        $validActivationStatuses = ($this->checkIfKQUStateExperimentEnabled($this->entity->merchant->getId()) === true) ?
+            array_keys(Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU) : array_keys(Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING);
 
         if (in_array($input[Entity::ACTIVATION_STATUS], $validActivationStatuses, true) === false)
         {
@@ -993,7 +996,7 @@ class Validator extends Base\Validator
             return Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_LINKED_ACCOUNT[$currentStatus];
         }
 
-       return Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$currentStatus];
+        return ($this->checkIfKQUStateExperimentEnabled($this->entity->merchant->getId()) === true) ? Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU[$currentStatus] : Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$currentStatus];
     }
 
     public function validateActivationFormMilestone($attribute, $value)
@@ -1785,5 +1788,21 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException('Additional websites may not have more than 5 items');
         }
+    }
+
+    /**
+     * @param $merchantId
+     *
+     * @return bool
+     */
+    public function checkIfKQUStateExperimentEnabled($merchantId): bool
+    {
+        return (new Merchant\Core)->isSplitzExperimentEnable(
+            [
+                'id'            => $merchantId,
+                'experiment_id' => $this->app['config']->get('app.enable_kyc_qualified_unactivated'),
+            ],
+            'variables'
+        );
     }
 }

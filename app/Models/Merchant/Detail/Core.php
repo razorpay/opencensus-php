@@ -3214,10 +3214,12 @@ class Core extends Base\Core
             (new ClarificationDetailValidator())->validateClarificationExists($merchant->getId());
         }
 
+        $isExpEnabled = (new Validator())->checkIfKQUStateExperimentEnabled($merchant->getId());
+
         if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED or
             $input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING or
             $input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING or
-            $input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION )
+            ($isExpEnabled === false and $input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION))
         {
             if($this->blockMerchantActivations($merchant) === true) {
 
@@ -3227,7 +3229,6 @@ class Core extends Base\Core
                     'This merchant is not eligible for activation');
             }
         }
-
 
         $merchantDetails->getValidator()
                         ->validateActivationStatusChange(
@@ -3283,6 +3284,7 @@ class Core extends Base\Core
             switch ($input[Entity::ACTIVATION_STATUS])
             {
                 case Status::ACTIVATED:
+                case Status::KYC_QUALIFIED_UNACTIVATED:
 
                     if ($merchant->isLinkedAccount() === false)
                     {
@@ -3360,6 +3362,34 @@ class Core extends Base\Core
                     $this->trace->info(TraceCode::NO_DOC_MERCHANT_FULLY_ACTIVATED, [
                         'merchant_id' => $merchantId,
                         'step'        => 'No-doc onboarded merchant is fully activated before its Gmv limit breaches'
+                    ]);
+                }
+            }
+
+            if (($input[Entity::ACTIVATION_STATUS] === Status::KYC_QUALIFIED_UNACTIVATED) and
+                ($merchant->isLinkedAccount() === false))
+            {
+                /*
+                 * Setup workflow for activation_status change in merchantDetail entity,
+                 * which will be triggered once all the validations are checked in the activate method.
+                 */
+                $this->app['workflow']
+                    ->setEntity($merchantDetails->getEntity())
+                    ->setOriginal($oldMerchantDetails)
+                    ->setDirty($newMerchantDetails);
+
+                //Creating workflow for this state till onboarding completely resumes
+                $this->app['workflow']
+                    ->handle();
+
+                $this->triggerRequestToBvs($merchant, Status::KYC_QUALIFIED_UNACTIVATED);
+
+                if ($merchant->isNoDocOnboardingFeatureEnabled() === true)
+                {
+                    (new Merchant\AccountV2\Core())->removeNoDocOnboardingFeature($merchantId);
+
+                    $this->trace->info(TraceCode::NO_DOC_MERCHANT_MARKED_KYC_QUALIFIED, [
+                        'merchant_id' => $merchantId
                     ]);
                 }
             }
@@ -3644,6 +3674,7 @@ class Core extends Base\Core
 
         return $merchantDetails;
     }
+
     public function getNCAdditionalDocuments() : array
     {
         $response = [];

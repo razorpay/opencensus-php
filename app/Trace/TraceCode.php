@@ -9009,6 +9009,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const NO_DOC_MERCHANT_MARKED_MCC_PENDING                          = 'NO_DOC_MERCHANT_MARKED_MCC_PENDING';
 
+    const NO_DOC_MERCHANT_MARKED_KYC_QUALIFIED                        = 'NO_DOC_MERCHANT_MARKED_KYC_QUALIFIED';
+
     const NO_DOC_MERCHANT_PARTIALLY_ACTIVATED                         = 'NO_DOC_MERCHANT_PARTIALLY_ACTIVATED';
 
     const NO_DOC_MERCHANT_REJECTED                                    = 'NO_DOC_MERCHANT_REJECTED';

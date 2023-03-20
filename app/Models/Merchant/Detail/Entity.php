@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\Detail;
 
+use App;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Lib\PhoneBook;
 use RZP\Models\Base;
@@ -693,9 +694,11 @@ class Entity extends Base\PublicEntity implements AutoKyc\KycEntity
 
         $allowedNextActivationStatuses = [];
 
+        $app = App::getFacadeRoot();
+
         if (empty($activationStatus) === false)
         {
-            $allowedNextActivationStatuses = Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$activationStatus];
+            $allowedNextActivationStatuses = ((new Validator())->checkIfKQUStateExperimentEnabled($this->merchant->getId()) === true) ? Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING_WITH_KQU[$activationStatus] : Status::ALLOWED_NEXT_ACTIVATION_STATUSES_MAPPING[$activationStatus];
         }
 
         $array[self::ALLOWED_NEXT_ACTIVATION_STATUSES] = $allowedNextActivationStatuses;
