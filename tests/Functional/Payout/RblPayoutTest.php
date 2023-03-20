@@ -30,6 +30,7 @@ use RZP\Tests\Traits\TestsWebhookEvents;
 use RZP\Services\Mozart as MozartService;
 use RZP\Models\BankingAccount\Gateway\Rbl;
 use RZP\Models\Merchant\Balance\FreePayout;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Feature\Constants as Features;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Tests\Functional\Fixtures\Entity\User;
@@ -548,6 +549,64 @@ class RblPayoutTest extends TestCase
     public function testDispatchGatewayBalanceUpdateJob()
     {
         Queue::fake();
+
+        $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
+
+        Queue::assertPushed(RblBankingAccountGatewayBalanceUpdate::class, 1);
+
+        Queue::assertPushed(RblBankingAccountGatewayBalanceUpdate::class, function($job)
+        {
+            $this->assertEquals($job->getOriginProduct(), 'banking');
+
+            return true;
+        });
+    }
+
+    public function testDispatchGatewayBalanceV2UpdateJobWhenBASDetailsInMaintenance()
+    {
+        Queue::fake();
+
+        $this->setMockRazorxTreatment(['gateway_balance_fetch_v2' => 'on']);
+
+        $basDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+            $basDetails[Details\Entity::ID],
+            [
+                'status'                    => Details\Status::UNDER_MAINTENANCE,
+                'account_number'            => '2224440041626905',
+                'channel'                   => Details\Channel::RBL,
+                'balance_last_fetched_at'   => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+                'gateway_balance_change_at' => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp()
+            ]);
+
+        $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
+
+        Queue::assertPushed(RblBankingAccountGatewayBalanceUpdate::class, 1);
+
+        Queue::assertPushed(RblBankingAccountGatewayBalanceUpdate::class, function($job)
+        {
+            $this->assertEquals($job->getOriginProduct(), 'banking');
+
+            return true;
+        });
+    }
+
+    public function testDispatchGatewayBalanceV1UpdateJobWhenBASDetailsInMaintenance()
+    {
+        Queue::fake();
+
+        $basDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+            $basDetails[Details\Entity::ID],
+            [
+                'status'                    => Details\Status::UNDER_MAINTENANCE,
+                'account_number'            => '2224440041626905',
+                'channel'                   => Details\Channel::RBL,
+                'balance_last_fetched_at'   => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+                'gateway_balance_change_at' => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp()
+            ]);
 
         $this->setupRblDispatchGatewayBalanceUpdateForMerchants();
 

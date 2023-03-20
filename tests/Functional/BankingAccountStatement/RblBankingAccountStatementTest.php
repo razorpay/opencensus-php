@@ -12680,4 +12680,53 @@ class RblBankingAccountStatementTest extends TestCase
 
         $this->assertEquals(Payout\Status::PROCESSED, $payout->getStatus());
     }
+
+    public function testPayoutCreationWhenBASDetailsUnderMaintenance()
+    {
+        $basDetails = $this->getLastEntity(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS, true);
+
+        $this->fixtures->edit(EntityConstants::BANKING_ACCOUNT_STATEMENT_DETAILS,
+            $basDetails[BasDetails\Entity::ID],
+            [
+            'status'                    => BasDetails\Status::UNDER_MAINTENANCE,
+            'account_number'            => '2224440041626905',
+            'channel'                   => BasDetails\Channel::RBL,
+            'balance_last_fetched_at'   => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+            'gateway_balance_change_at' => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp()
+            ]);
+
+        $this->ba->privateAuth();
+
+        $this->createContact();
+
+        $this->createFundAccount();
+
+        $this->mockMozartResponseForFetchingBalanceFromRblGateway(500);
+
+        $content = [
+            'account_number'  => '2224440041626905',
+            'amount'          => 100,
+            'currency'        => 'INR',
+            'purpose'         => 'payout',
+            'narration'       => 'Rbl account payout',
+            'fund_account_id' => 'fa_' . $this->fundAccount->getId(),
+            'mode'            => 'IMPS',
+            'queue_if_low_balance' => 1,
+            'notes'           => [
+                'abc' => 'xyz',
+            ],
+        ];
+
+        $request = [
+            'url'       => '/payouts',
+            'method'    => 'POST',
+            'content'   => $content
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertEquals('created', $payout['status']);
+    }
 }

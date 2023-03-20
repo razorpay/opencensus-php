@@ -69,10 +69,16 @@ class Repository extends Base\Repository
 
         $basDetailsAttr = $this->dbColumn('*');
 
+        $statusList =
+            [
+                Status::ACTIVE,
+                Status::UNDER_MAINTENANCE
+            ];
+
         return $this->newQuery()
                     ->select($basDetailsAttr)
                     ->where($channelColumn, '=', $channel)
-                    ->where($statusColumn, '=', Status::ACTIVE)
+                    ->whereIn($statusColumn, $statusList)
                     ->where($accountTypeColumn, '=', $accountType)
                     ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
                     ->get();
@@ -87,10 +93,16 @@ class Repository extends Base\Repository
 
         $basDetailsAttr = $this->dbColumn('*');
 
+        $statusList =
+            [
+                Status::ACTIVE,
+                Status::UNDER_MAINTENANCE
+            ];
+
         return $this->newQuery()
                     ->select($basDetailsAttr)
                     ->where($channelColumn, '=', $channel)
-                    ->where(Entity::STATUS, '=', Status::ACTIVE)
+                    ->whereIn(Entity::STATUS, $statusList)
                     ->where($accountTypeColumn, '=', AccountType::DIRECT)
                     ->oldest(Entity::BALANCE_LAST_FETCHED_AT)
                     ->limit($limit)
@@ -110,6 +122,12 @@ class Repository extends Base\Repository
 
         $basDetailsAttr = $this->dbColumn('*');
 
+        $statusList =
+        [
+            Status::ACTIVE,
+            Status::UNDER_MAINTENANCE
+        ];
+
         return $this->newQuery()
                     ->select($basDetailsAttr)
                     ->where($merchantIdColumn, '=', $merchantId)
@@ -117,7 +135,7 @@ class Repository extends Base\Repository
                     ->where($accountTypeColumn, '=', Merchant\Balance\AccountType::DIRECT)
                     ->where($balanceTypeColumn, '=', Merchant\Balance\Type::BANKING)
                     ->where($channelColumn, '=', $channel)
-                    ->where($statusColumn, '=', Status::ACTIVE)
+                    ->whereIn($statusColumn, $statusList)
                     ->first();
     }
 
