@@ -1576,20 +1576,6 @@ return [
         ],
     ],
 
-    'testDefaultInstrumentRequestOnMerchantActivation' => [
-        'request' => [
-            'content' => [
-                'activation_status'  => 'activated',
-            ],
-            'method' => 'PATCH'
-        ],
-        'response' => [
-            'content' => [
-                'activation_status'  => 'activated',
-            ],
-        ],
-    ],
-
     'testMerchantDetailsFetchAccountServiceAccountDoesNotExist' => [
         'request' => [
             'method' => 'GET',

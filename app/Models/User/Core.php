@@ -591,7 +591,7 @@ class Core extends Base\Core
     public function isSignupEnabled()
     {
         $properties = [
-            'id'            => substr(uniqid(), offset: -14),
+            'id'            => substr(uniqid(), -14),
             'experiment_id' => $this->app['config']->get('app.enable_signups'),
         ];
 
