@@ -1,8 +1,9 @@
-import { render, screen, waitFor, userEvent } from 'test-utils';
-import { Provider } from 'react-redux';
-import { storeWithInitialState } from 'merchant/store';
 import { fetchCODOrders } from 'merchant/reducers/magicCheckout/codOrders/action';
+import { storeWithInitialState } from 'merchant/store';
 import CanceledOrdersTab from 'merchant/views/MagicCheckout/CODOrdersTab/tabs/CanceledOrdersTab';
+import 'react-dates/initialize';
+import { Provider } from 'react-redux';
+import { render, screen, userEvent, waitFor } from 'test-utils';
 
 jest.mock('merchant/reducers/magicCheckout/codOrders/action', () => ({
   ...jest.requireActual('merchant/reducers/magicCheckout/codOrders/action'),

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import * as d3 from 'd3';
 
 import Tooltip from 'common/ui/Tooltip';
 import { getFormattedNumber, getFormattedAmountNew } from 'common/utils/rzp-utils';
@@ -84,7 +83,7 @@ export default class Treemap extends Component {
       this.node,
       data,
       isCurrency,
-      d3,
+      window.d3,
       this.onTransition,
       this.onShowTooltip,
       this.onHideTooltip,

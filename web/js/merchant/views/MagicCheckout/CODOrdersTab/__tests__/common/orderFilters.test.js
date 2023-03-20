@@ -1,7 +1,8 @@
-import { render, screen, waitFor, userEvent } from 'test-utils';
-import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
 import OrderFilters from 'merchant/views/MagicCheckout/CODOrdersTab/common/OrderFilters';
+import 'react-dates/initialize';
+import { Provider } from 'react-redux';
+import { render, screen, userEvent, waitFor } from 'test-utils';
 
 jest.mock('common/ui/DateRangePicker', () => () => <div>DateRangePicker</div>);
 

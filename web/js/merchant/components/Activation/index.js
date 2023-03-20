@@ -367,9 +367,8 @@ export default class ActivationWizard extends React.Component {
         const defaultAdditionalDoc = getDefaultAdditionalDoc(this);
         this.state.additional_doc = defaultAdditionalDoc || '';
         const ADDITIONAL_DOC_SELECT_FIELD_INDEX = 15;
-        FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
-          ADDITIONAL_DOC_SELECT_FIELD_INDEX
-        ].options = getAdditionalDocOptions(this);
+        FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][ADDITIONAL_DOC_SELECT_FIELD_INDEX].options =
+          getAdditionalDocOptions(this);
       }
 
       if (doesHaveBusinessProofDocs(this)) {
@@ -1935,9 +1934,8 @@ export default class ActivationWizard extends React.Component {
           FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP] &&
           FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][ADDITIONAL_DOC_SELECT_FIELD_INDEX]
         ) {
-          FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][
-            ADDITIONAL_DOC_SELECT_FIELD_INDEX
-          ].options = additionalDocOptions;
+          FORM_TABS_CONTENT[DOCUMENT_UPLOAD_STEP][ADDITIONAL_DOC_SELECT_FIELD_INDEX].options =
+            additionalDocOptions;
         }
 
         sideEffectFieldsToUpdate.additional_doc = additionalDoc;
@@ -3112,8 +3110,8 @@ export function ActivationField(field) {
     defaultValue = this.props.data[rest.name];
   }
 
-  const partnerActivationStatus = this.props?.partnerActivationData?.partner_activation
-    ?.activation_status;
+  const partnerActivationStatus =
+    this.props?.partnerActivationData?.partner_activation?.activation_status;
   if (
     !this.isOnKYCTab() && // don't check for NC tab, as we need to keep fields unlocked for NC tab
     this.props?.user?.isIndependentPartnerKYCEnabled &&

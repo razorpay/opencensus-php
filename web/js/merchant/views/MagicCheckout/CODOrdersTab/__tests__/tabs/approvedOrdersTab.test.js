@@ -3,6 +3,7 @@ import { Provider } from 'react-redux';
 import { storeWithInitialState } from 'merchant/store';
 import { fetchCODOrders } from 'merchant/reducers/magicCheckout/codOrders/action';
 import ApprovedOrdersTab from 'merchant/views/MagicCheckout/CODOrdersTab/tabs/ApprovedOrdersTab';
+import 'react-dates/initialize';
 
 jest.mock('merchant/reducers/magicCheckout/codOrders/action', () => ({
   ...jest.requireActual('merchant/reducers/magicCheckout/codOrders/action'),

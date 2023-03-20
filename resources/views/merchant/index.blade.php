@@ -27,6 +27,7 @@
   })();
 </script>
 
+
 <script>
   document.domain = window.location.hostname.split(".").slice(-2).join(".");
 
@@ -73,6 +74,12 @@
 <!-- if logged in and not on website -->
 @if (($isConfirmed || $isMobileConfirmed) and $isPreSignupComplete and (app('request')->input('auth_source') !== 'website' and app('request')->input('auth_source') !== 'website_homepage'))
   <!-- Preconnect to required domains  -->
+  <script 
+    defer 
+    src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" 
+    crossorigin="anonymous" 
+    integrity="sha512-oJp0DdQuQQrRsKVly+Ww6fAN1GwJN7d1bi8UubpEbzDUh84WrJ2CFPBnT4LqBCcfqTcHR5OGXFFhaPe3g1/bzQ=="
+  ></script>
   <link rel="preload" href="https://cdn.razorpay.com/dashboard/dist/merchant-entry.js" as="script">
   <link rel="dns-prefetch" href="https://rzp-1415-prod-dashboard-activation.s3.amazonaws.com">
   <link rel="dns-prefetch" href="https://maxcdn.bootstrapcdn.com">
