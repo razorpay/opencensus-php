@@ -1,4 +1,15 @@
 export const partnerProducts = {
+  gallabox: {
+    slug: 'gallabox',
+    title: 'Gallabox',
+    url: 'https://app.gallabox.com/login',
+    category: 'Customer Communications',
+    description:
+      'Gallabox is a single, collaborative conversational platform that helps SMBs and users manage communication channels',
+    logo: 'Gallabox.png', // relative to web/css/assets/app-store/partner-logo/
+    brandColor: '#3364FA',
+    isNew: true,
+  },
   pabbly: {
     slug: 'pabbly',
     title: 'Pabbly Connect',
@@ -24,8 +35,7 @@ export const partnerProducts = {
   haptik: {
     slug: 'haptik',
     title: 'Haptik Interakt',
-    url:
-      'https://www.interakt.shop/signup?utm_source=Razorpay+&utm_medium=Razorpay+App+Store+&utm_campaign=Razorpay',
+    url: 'https://www.interakt.shop/signup?utm_source=Razorpay+&utm_medium=Razorpay+App+Store+&utm_campaign=Razorpay',
     category: 'Conversational Commerce',
     description: 'Multiply sales using payment links in automated WhatsApp Commerce chat flows.',
     logo: 'haptik.png', // relative to web/css/assets/app-store/partner-logo/
@@ -76,8 +86,7 @@ export const partnerProducts = {
   aisensy: {
     slug: 'aisensy',
     title: 'AiSensy',
-    url:
-      'https://app.aisensy.com/signup?utm_source=razorpay&utm_medium=cta&utm_campaign=integration&utm_id=rzp',
+    url: 'https://app.aisensy.com/signup?utm_source=razorpay&utm_medium=cta&utm_campaign=integration&utm_id=rzp',
     category: 'Customer Communications',
     description: 'Share payment links and invoice links through Whatsapp to your customers',
     logo: 'aisensy.png', // relative to web/css/assets/app-store/partner-logo/
