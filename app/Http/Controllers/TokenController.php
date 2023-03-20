@@ -73,6 +73,22 @@ class TokenController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function tokensList()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchMerchantsWithTokenPresent($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function tokensPushFetch($id)
+    {
+        $data = $this->service()->tokensPushFetch($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function updateStatus()
     {
         $input = Request::all();
@@ -188,15 +204,6 @@ class TokenController extends Controller
         $input = Request::all();
 
         $data = $this->service()->fetchLocalOrGlobalCustomerTokens($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function tokensList()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->fetchMerchantsWithTokenPresent($input);
 
         return ApiResponse::json($data);
     }

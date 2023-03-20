@@ -16,5 +16,6 @@ class Action
     const FETCH_FINGERPRINT = 'fetch_fingerprint';
     const FETCH_MERCHANTS   = 'fetch_merchants';
     const TOKEN_PUSH        = 'token_push';
+    const TOKEN_PUSH_FETCH  = 'token_push_fetch';
     const TOKEN_MIGRATE     = 'token_migrate';
 }

@@ -518,6 +518,53 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function tokensPushFetch($id) {
+
+        $startTime = microtime(true);
+
+        $this->trace->info(
+            TraceCode::TOKEN_PUSH_FETCH_INFO, ['mode' => $this->app['rzp.mode'], 'features' => $this->merchant->getEnabledFeatures(), 'public_id' => $id]);
+
+        $mode = $this->app['rzp.mode'] ?? Mode::LIVE;
+
+        try
+        {
+            $response = [];
+
+            if ($this->merchant->isFeatureEnabled(Feature\Constants::PUSH_PROVISIONING_LIVE) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR, null, null, "push provisioning is not enabled for merchant");
+            }
+
+            if ((($mode === Mode::LIVE) || app()->isEnvironmentQA() === true))
+            {
+
+                $token = $this->repo->token->findByPublicId($id);
+
+                $response['status'] = $token['status'];
+
+                return $response;
+
+            }
+
+            $response['status'] = 'test'; //response for test mode
+
+            return  $response;
+        }
+
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::PUSH_TOKEN_FETCH_EXCEPTION);
+
+            (new Metric())->pushTokenHQResponseTimeMetrics($startTime, BaseMetric::FAILED, Token\Action::TOKEN_PUSH_FETCH);
+
+            throw $e;
+        }
+    }
+
     public function migrateToGatewayTokens(array $input = [])
     {
         $failureCount = $total = $successCount = 0;

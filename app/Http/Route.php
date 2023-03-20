@@ -4033,6 +4033,7 @@ class Route
         //Push Token Provisioning
         'tokens_push'                             => ['post',          'tokens/push',                                          'TokenController@tokensPush'                                  ],
         'tokens_list'                             => ['post',          'tokens/list',                                          'TokenController@tokensList'                                  ],
+        'tokens_push_fetch'                       => ['get',           'tokens/push/{id}',                                     'TokenController@tokensPushFetch'                             ],
 
         // Async tokenisation
         'tokenisation_local_cards'                => ['post',        'tokenisation/local_cards',                                 'TokenController@localSavedCardAsyncTokenisation'          ],
@@ -4814,6 +4815,7 @@ class Route
         //Push Token Provisioning routes
         'tokens_push',
         'tokens_list',
+        'tokens_push_fetch',
 
         // 1CC Routes
         'update_shipping_slabs',
