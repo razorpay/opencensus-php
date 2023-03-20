@@ -753,7 +753,7 @@ class Service extends Base\Service
             {
                 $this->trace->info(
                     TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
-                    ['checkout_id' => $checkoutId, 'reason' => $e.getMessage()]);
+                    ['checkout_id' => $checkoutId, 'reason' => $e->getMessage()]);
 
             $this->monitoring->addTraceCount(Metric::SHOPIFY_UPDATE_EMAIL_ERROR_COUNT, ['error_type' => 'email_update_failed']);
             }
@@ -818,7 +818,7 @@ class Service extends Base\Service
             {
                 $this->trace->error(
                     TraceCode::SHOPIFY_1CC_UPDATE_EMAIL_FAILED,
-                    ['checkout_id' => $checkoutId, 'reason' => $e.getMessage()]);
+                    ['checkout_id' => $checkoutId, 'reason' => $e->getMessage()]);
 
                 $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_UPDATE_EMAIL_FAILURE_COUNT, ['error_type' => 'shopify_1cc_apply_coupon_error']);
 
