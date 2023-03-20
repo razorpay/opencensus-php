@@ -209,6 +209,8 @@ class Entity extends Base\PublicEntity
     const RM_NOT_ASSIGNED = 'rm not assigned';
     const RM_NAME_EMPTY = '';
 
+    const MASTER_BANKING_ACCOUNT = 'master_banking_account';
+
     // Current Account Channels
     const Neostone = 'neostone';
 
@@ -323,6 +325,7 @@ class Entity extends Base\PublicEntity
         self::SPOCS,
         self::OPS_MX_POCS,
         self::PASSWORD,
+        self::MASTER_BANKING_ACCOUNT,
     ];
 
     protected $public = [
@@ -352,6 +355,7 @@ class Entity extends Base\PublicEntity
         self::BANKING_ACCOUNT_CA_SPOC_DETAILS,
         self::USING_NEW_STATES,
         self::FASTER_DOC_COLLECTION_ENABLED,
+        self::MASTER_BANKING_ACCOUNT,
     ];
 
     protected $relations = [
@@ -663,6 +667,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $lastUpdatedAt;
+    }
+
+    public function setMasterBankingAccount($masterBankingAccount)
+    {
+        $this->setAttribute(self::MASTER_BANKING_ACCOUNT, $masterBankingAccount);
     }
 
     // --------------------------- Relations ---------------------------------- //

@@ -10,12 +10,14 @@ class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
-            Entity::ID             => 'sometimes|unsigned_id',
-            Entity::MERCHANT_ID    => 'sometimes|unsigned_id',
-            Entity::BALANCE_ID     => 'sometimes|unsigned_id',
-            Entity::ENTITY_ID      => 'sometimes|unsigned_id',
-            Entity::UTR            => 'sometimes|unsigned_id',
-            Entity::TRANSACTION_ID => 'sometimes|unsigned_id',
+            Entity::ID                => 'sometimes|unsigned_id',
+            Entity::MERCHANT_ID       => 'sometimes|unsigned_id',
+            Entity::BALANCE_ID        => 'sometimes|unsigned_id',
+            Entity::ENTITY_ID         => 'sometimes|unsigned_id',
+            Entity::UTR               => 'sometimes|unsigned_id',
+            Entity::TRANSACTION_ID    => 'sometimes|unsigned_id',
+            Entity::PAYER_MERCHANT_ID => 'sometimes|unsigned_id',
+            self::EXPAND_EACH         => 'sometimes|in:payer_user,payer_merchant,merchant'
         ],
     ];
 
@@ -23,6 +25,7 @@ class Fetch extends BaseFetch
         AuthType::ADMIN_AUTH => [
             Entity::ID,
             Entity::MERCHANT_ID,
+            Entity::PAYER_MERCHANT_ID,
             Entity::BALANCE_ID,
             Entity::ENTITY_ID,
             Entity::UTR,
@@ -36,5 +39,12 @@ class Fetch extends BaseFetch
             Entity::UTR,
             Entity::TRANSACTION_ID
         ],
+
+        AuthType::PROXY_AUTH => [
+            Entity::MERCHANT_ID,
+            Entity::BALANCE_ID,
+            Entity::PAYER_MERCHANT_ID,
+            self::EXPAND_EACH,
+        ]
     ];
 }

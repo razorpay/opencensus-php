@@ -35,6 +35,9 @@ class CreateSubVirtualAccountsTable extends Migration
 
             $table->string(SubVirtualAccount::SUB_ACCOUNT_NUMBER, 40);
 
+            $table->string(SubVirtualAccount::SUB_ACCOUNT_TYPE, 30)
+                  ->default(\RZP\Models\SubVirtualAccount\Type::DEFAULT);
+
             $table->tinyInteger(SubVirtualAccount::ACTIVE)
                   ->default(1);
 
@@ -46,6 +49,8 @@ class CreateSubVirtualAccountsTable extends Migration
             $table->index(SubVirtualAccount::MASTER_MERCHANT_ID);
 
             $table->index(SubVirtualAccount::MASTER_ACCOUNT_NUMBER);
+
+            $table->index(SubVirtualAccount::SUB_ACCOUNT_NUMBER);
         });
     }
 

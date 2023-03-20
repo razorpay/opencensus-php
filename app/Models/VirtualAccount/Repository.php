@@ -443,4 +443,35 @@ class Repository extends Base\Repository
 
         $virtualAccount->entity()->associate($order);
     }
+
+    /*
+     * select `virtual_accounts`.* from `virtual_accounts` inner join `balance` on
+     *      `virtual_accounts`.`balance_id` = `balance`.`id` where
+     *          `virtual_accounts`.`status` = ? and
+     *          `virtual_accounts`.`merchant_id` = ? and
+     *          `balance`.`type` = ? and
+     *          `balance`.`account_type` = ? and
+     *          `virtual_accounts`.`deleted_at` is null
+     */
+    public function fetchActiveBankingVirtualAccountsFromMerchantId($merchantId)
+    {
+        $virtualAccountCols             = $this->dbColumn('*');
+        $virtualAccountBalanceIdColumn  = $this->dbColumn(Entity::BALANCE_ID);
+        $virtualAccountStatusColumn     = $this->dbColumn(Entity::STATUS);
+        $virtualAccountMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $balanceTable             = $this->repo->balance->getTableName();
+        $balanceIdColumn          = $this->repo->balance->dbColumn(Balance\Entity::ID);
+        $balanceTypeColumn        = $this->repo->balance->dbColumn(Balance\Entity::TYPE);
+        $balanceAccountTypeColumn = $this->repo->balance->dbColumn(Balance\Entity::ACCOUNT_TYPE);
+
+        return $this->newQuery()
+                    ->select($virtualAccountCols)
+                    ->join($balanceTable, $virtualAccountBalanceIdColumn, '=', $balanceIdColumn)
+                    ->where($virtualAccountStatusColumn, '=', Status::ACTIVE)
+                    ->where($virtualAccountMerchantIdColumn, '=', $merchantId)
+                    ->where($balanceTypeColumn, '=', Balance\Type::BANKING)
+                    ->where($balanceAccountTypeColumn, '=', Balance\AccountType::SHARED)
+                    ->get();
+    }
 }

@@ -1322,6 +1322,16 @@ class Core extends Base\Core
         }
     }
 
+    public function checkAndDisableSubAccountFeatureChange(string $featureToChange)
+    {
+        if (in_array($featureToChange, Feature::ACCOUNT_SUB_ACCOUNT_FEATURES) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Manually enabling/disabling sub account feature ' . $featureToChange . ' is not allowed.'
+            );
+        }
+    }
+
     public function removeFeature(string $featureName, bool $shouldSync = false)
     {
         $merchant = $this->merchant;

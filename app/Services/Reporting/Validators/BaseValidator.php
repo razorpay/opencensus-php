@@ -19,7 +19,8 @@ abstract class BaseValidator
 {
     use ValidationHelper;
 
-    const EMAILS = "emails";
+    const EMAILS           = "emails";
+    const SUB_MERCHANT_IDS = "sub_merchant_ids";
 
     protected $input;
     protected $merchantService;
@@ -54,6 +55,11 @@ abstract class BaseValidator
                 (is_array($this->input[self::EMAILS]) === true))
             {
                 $this->validateEmails($this->input[self::EMAILS]);
+            }
+
+            if (empty($this->input[self::SUB_MERCHANT_IDS]) === false)
+            {
+                $this->validateMasterMerchantIdSubMerchantIdsAndFilters();
             }
         }
         catch(BadRequestValidationFailureException $e)

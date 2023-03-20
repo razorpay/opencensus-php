@@ -30,4 +30,14 @@ class Service extends Base\Service
     {
         return $this->core->createAsync($input);
     }
+
+    public function fetchMultiple(array $params, $isMerchantIdRequired = true)
+    {
+        if ($isMerchantIdRequired === false)
+        {
+            $this->entityRepo->setMerchantIdRequiredForMultipleFetch(false);
+        }
+
+        return $this->entityRepo->fetch($params);
+    }
 }

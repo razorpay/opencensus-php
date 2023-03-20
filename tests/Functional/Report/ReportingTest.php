@@ -135,6 +135,169 @@ class ReportingTest extends TestCase
         $this->startTest();
     }
 
+    public function testRXReportingLogForValidMasterAndSubMerchantIds()
+    {
+        $user = (new User())->createBankingUserForMerchant('10000000000000', [
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->fixtures->create('sub_virtual_account', [
+            "master_merchant_id" => '10000000000000',
+            "sub_account_type"   => 'sub_direct_account',
+            "sub_merchant_id"    => 'sub_merchant_1'
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testRXReportingLogForValidMasterMerchantAndInvalidSubMerchantIds()
+    {
+        $user = (new User())->createBankingUserForMerchant('10000000000000', [
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->fixtures->create('sub_virtual_account', [
+            "master_merchant_id" => '10000000000000',
+            "sub_account_type"   => 'sub_direct_account',
+            "sub_merchant_id"    => 'sub_merchant_1'
+        ]);
+
+        $this->fixtures->create('sub_virtual_account', [
+            "master_merchant_id" => '10000000000000',
+            "sub_account_type"   => 'sub_direct_account',
+            "sub_merchant_id"    => 'sub_merchant_2'
+        ]);
+
+        $this->startTest();
+    }
+
+    public function testRXReportingLogForInvalidMasterMerchant()
+    {
+        $user = (new User())->createBankingUserForMerchant('10000000000000', [
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->fixtures->create('sub_virtual_account', [
+            "master_merchant_id" => '10000000000001',
+            "sub_account_type"   => 'sub_direct_account',
+            "sub_merchant_id"    => 'sub_merchant_1'
+        ]);
+
+        $this->fixtures->create('sub_virtual_account', [
+            "master_merchant_id" => '10000000000001',
+            "sub_account_type"   => 'sub_direct_account',
+            "sub_merchant_id"    => 'sub_merchant_2'
+        ]);
+
+        $this->startTest();
+    }
+
+    /*
+     * Here payer_merchant_id in filter is not the merchant who is requesting the report.
+     * Hence we throw an "Access Denied" error.
+     */
+    public function testRXReportingLogForInvalidPayerMerchantIdInFilters()
+    {
+        $user = (new User())->createBankingUserForMerchant('10000000000000', [
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->fixtures->create('sub_virtual_account', [
+            "master_merchant_id" => '10000000000000',
+            "sub_account_type"   => 'sub_direct_account',
+            "sub_merchant_id"    => 'sub_merchant_1'
+        ]);
+
+        $this->fixtures->create('sub_virtual_account', [
+            "master_merchant_id" => '10000000000000',
+            "sub_account_type"   => 'sub_direct_account',
+            "sub_merchant_id"    => 'sub_merchant_2'
+        ]);
+
+        $this->startTest();
+    }
+
+    /*
+     * Here, the account_numbers provided in the filters does not belong to the sub merchants.
+     * Thus, in this case also, we will throw an "Access Denied" error.
+     */
+    public function testRXReportingLogForInvalidAccountNumbersInFilters()
+    {
+        $user = (new User())->createBankingUserForMerchant('10000000000000', [
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->fixtures->create('sub_virtual_account', [
+            "master_merchant_id" => '10000000000000',
+            "sub_account_type"   => 'sub_direct_account',
+            "sub_merchant_id"    => 'sub_merchant_1',
+            "sub_account_number" => '343411111111'
+        ]);
+
+        $this->fixtures->create('sub_virtual_account', [
+            "master_merchant_id" => '10000000000000',
+            "sub_account_type"   => 'sub_direct_account',
+            "sub_merchant_id"    => 'sub_merchant_2',
+            "sub_account_number" => '343422222222',
+        ]);
+
+        $this->startTest();
+    }
+
+    /*
+     * Here the payer_merchant_id is correct hence request goes through
+     */
+    public function testRXReportingLogForValidPayerMerchantIdInFilters()
+    {
+        $user = (new User())->createBankingUserForMerchant('10000000000000', [
+            'email' => 'test2@razorpay.com',
+        ]);
+
+        $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
+
+        $this->mockRazorxTreatment();
+
+        $this->fixtures->create('sub_virtual_account', [
+            "master_merchant_id" => '10000000000000',
+            "sub_account_type"   => 'sub_direct_account',
+            "sub_merchant_id"    => 'sub_merchant_1'
+        ]);
+
+        $this->fixtures->create('sub_virtual_account', [
+            "master_merchant_id" => '10000000000000',
+            "sub_account_type"   => 'sub_direct_account',
+            "sub_merchant_id"    => 'sub_merchant_2'
+        ]);
+
+        $testData['request'] = $this->testData['testRXReportingLogForInvalidPayerMerchantIdInFilters']['request'];
+
+        $testData['request']['content']['template_overrides']['filters']['credit_transfers']['payer_merchant_id']['values'] = ['10000000000000'];
+
+        $testData['response'] = $this->testData['testRXReportingLogForValidMasterAndSubMerchantIds']['response'];
+
+        $this->startTest($testData);
+    }
+
     public function testPGReportLogEditForInvalidEmails()
     {
         $user = (new User())->createUserForMerchant('10000000000000', [

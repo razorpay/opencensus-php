@@ -4,6 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use RZP\Models\User;
 use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\Transaction;
@@ -41,9 +42,11 @@ class CreateCreditTransfersTable extends Migration
             $table->string(CreditTransfer::UTR,64)
                   ->nullable();
 
-            $table->char(CreditTransfer::ENTITY_ID, CreditTransfer::ID_LENGTH);
+            $table->char(CreditTransfer::ENTITY_ID, CreditTransfer::ID_LENGTH)
+                  ->nullable();
 
-            $table->string(CreditTransfer::ENTITY_TYPE, 32);
+            $table->string(CreditTransfer::ENTITY_TYPE, 32)
+                  ->nullable();
 
             $table->string(CreditTransfer::MODE, 32)
                   ->nullable();
@@ -55,6 +58,12 @@ class CreateCreditTransfersTable extends Migration
                   ->nullable();
 
             $table->string(CreditTransfer::STATUS,32)
+                  ->nullable();
+
+            $table->char(CreditTransfer::PAYER_MERCHANT_ID, Merchant\Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->char(CreditTransfer::PAYER_USER_ID, User\Entity::ID_LENGTH)
                   ->nullable();
 
             $table->string(CreditTransfer::PAYER_NAME)
@@ -86,6 +95,7 @@ class CreateCreditTransfersTable extends Migration
             $table->index(CreditTransfer::MERCHANT_ID);
             $table->index(CreditTransfer::ENTITY_ID);
             $table->index(CreditTransfer::CREATED_AT);
+            $table->index(CreditTransfer::PAYER_MERCHANT_ID);
         });
     }
 

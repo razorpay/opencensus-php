@@ -240,6 +240,7 @@ class Validator extends Base\Validator
         ConfigKey::DCS_READ_WHITELISTED_FEATURES                                       => 'filled|array',
         ConfigKey::UNEXPECTED_PAYMENT_DELAY_REFUND                                     => 'filled|integer',
         ConfigKey::DIRECT_TRANSFER_LIMITS                                              => 'filled|array',
+        ConfigKey::ACCOUNT_SUB_ACCOUNT_RESTRICTED_PERMISSIONS_LIST                     => 'filled|array',
     ];
 
     protected static $setRedisKeysRules = [

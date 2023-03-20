@@ -1014,6 +1014,7 @@ class UserRolesScope
             'stakeholder_update_v2'                                => [Role::OWNER, Role::ADMIN],
             'sub_virtual_account_list'                             => [Role::OWNER, Role::ADMIN],
             'sub_virtual_account_transfer_with_otp'                => [Role::OWNER, Role::ADMIN],
+            'sub_virtual_account_transfer_list'                    => [Role::OWNER, Role::ADMIN],
             'subscription_cancel_changes'                          => [Role::OWNER, Role::ADMIN],
             'subscription_cancel_token'                            => [Role::OWNER, Role::ADMIN],
             'subscription_create_addon'                            => [Role::OWNER, Role::ADMIN],

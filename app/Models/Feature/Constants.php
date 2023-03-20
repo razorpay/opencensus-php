@@ -2450,14 +2450,14 @@ class Constants
         self::BLOCK_FAV                       => true,
         self::SPR_DISABLE_METHOD_RESET        => true,
         self::SEND_NAME_IN_EMAIL_FOR_QR       => true,
-        self::ONE_CC_DISABLE_EMAIL_COOKIE       => true,
+        self::ONE_CC_DISABLE_EMAIL_COOKIE     => true,
         self::ROUTE_NO_DOC_KYC                => true,
-        DcsConstants::RefundEnabled => true,  // Example Feature for DCS
-        DcsConstants::DisableAutoRefund => true,  // Example Feature for DCS
-        DcsConstants::EligibilityEnabled => true,
+        DcsConstants::RefundEnabled           => true,  // Example Feature for DCS
+        DcsConstants::DisableAutoRefund       => true,  // Example Feature for DCS
+        DcsConstants::EligibilityEnabled      => true,
         DcsConstants::EmailOptionalOnCheckout => true,
-        DcsConstants::ShowEmailOnCheckout => true,
-        DcsConstants::CvvLessFlowDisabled => true,
+        DcsConstants::ShowEmailOnCheckout     => true,
+        DcsConstants::CvvLessFlowDisabled     => true,
         self::DISABLE_UPI_NUM_CHECKOUT => true,
         self::DISABLE_UPI_NUM_ON_L0 => true,
         self::DISABLE_UPI_NUM_ON_L1 => true,
@@ -2485,8 +2485,6 @@ class Constants
         self::OPTIMIZER_ONLY_MERCHANT         => true,
         self::REGULAR_TEST_MERCHANT           => true,
         DcsConstants::AffordabilityWidgetSet           => true,
-        self::ASSUME_MASTER_ACCOUNT           => true,
-        self::ASSUME_SUB_ACCOUNT              => true,
         DcsConstants::AssumeSubAccount        => true,
         DcsConstants::AssumeMasterAccount     => true,
     ];
@@ -3570,6 +3568,11 @@ class Constants
     const PAYOUT_SERVICE_IDEMPOTENCY_KEY_FEATURES = [
         self::IDEMPOTENCY_API_TO_PS,
         self::IDEMPOTENCY_PS_TO_API,
+    ];
+
+    const ACCOUNT_SUB_ACCOUNT_FEATURES = [
+        self::SUB_VA_FOR_DIRECT_BANKING,
+        self::ASSUME_SUB_ACCOUNT,
     ];
 
     /**

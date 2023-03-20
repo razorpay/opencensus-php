@@ -267,7 +267,9 @@ class FundTransfer extends Base
                 $product = Constants::PAYOUT_REFUND;
             }
 
-            if (($this->fta->isRefund() === true) && ($source->isBalanceAccountTypeDirect() === false))
+            if (($this->fta->isRefund() === true) and
+                ($source->isBalanceAccountTypeDirect() === false) and
+                ($source->isSubAccountPayout() === false))
             {
                 $product = Constants::PAYOUT_REFUND;
             }
@@ -417,12 +419,12 @@ class FundTransfer extends Base
 
         if ($sourceType === Entity::PAYOUT)
         {
-            [$shouldFetch, $isSubMerchant] = $this->shouldFetchSourceFtsFundAccountId($source, $channel);
+            [$shouldFetch, $isSubAccountPayout] = $this->shouldFetchSourceFtsFundAccountId($source, $channel);
 
             if ($shouldFetch === true)
             {
                 $request[Constants::TRANSFER] += [
-                    Constants::PREFERRED_SOURCE_ACCOUNT_ID => (int) $source->getSourceFtsFundAccountId($isSubMerchant),
+                    Constants::PREFERRED_SOURCE_ACCOUNT_ID => (int) $source->getSourceFtsFundAccountId($isSubAccountPayout),
                 ];
             }
 
@@ -1755,8 +1757,10 @@ class FundTransfer extends Base
      * Returns a list of booleans [$shouldFetch, $isSubVa].
      * 1. $shouldFetch is true if
      *  i.  the balance if of type direct and FTS needs preferred_source_account_id in /transfer payload.
-     *  ii. the balance is of type shared but the merchant has feature SUB_VA_FOR_DIRECT_BANKING enabled. This feature
-     *      indicates that money movement must happen from Master Merchant's DA and not from merchant's own VA.
+     *  ii. the balance is of type shared and
+     *          ii.a. the merchant has feature SUB_VA_FOR_DIRECT_BANKING enabled or
+     *          ii.b. the payout type is "sub_account".
+     *      This indicates that money movement must happen from Master Merchant's DA and not from sub merchant's own VA.
      *
      * 2. $isSubVA is true only if the feature SUB_VA_FOR_DIRECT_BANKING is enabled on the merchant.
      */
@@ -1771,7 +1775,8 @@ class FundTransfer extends Base
         }
 
         if (($balanceAccountType === Balance\AccountType::SHARED) and
-            ($payout->merchant->isSubMerchantOnDirectMasterMerchant() === true))
+            (($payout->merchant->isSubMerchantOnDirectMasterMerchant() === true) or
+             ($payout->isSubAccountPayout() === true)))
         {
             return [true, true];
         }

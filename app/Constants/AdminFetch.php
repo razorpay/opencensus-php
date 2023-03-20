@@ -2331,6 +2331,10 @@ class AdminFetch
                     Fetch::LABEL   => 'Transaction Id',
                     Fetch::TYPE    => Fetch::TYPE_STRING,
                 ],
+                'payer_merchant_id' => [
+                    Fetch::LABEL => 'Payer Merchant Id',
+                    Fetch::TYPE => Fetch::TYPE_STRING,
+                ],
             ],
 
             Entity::CREDITS => [

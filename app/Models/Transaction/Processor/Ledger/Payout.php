@@ -402,7 +402,8 @@ class Payout extends Base
 
         $payload = $this->createLedgerPayloadFromEntity($payout, null, $reversal, $ftsSourceAccountInformation);
 
-        if (($payout->isVaToVaPayout() === true) and
+        if ((($payout->isVaToVaPayout() === true) or
+             ($payout->isSubAccountPayout() === true)) and
             ($payload['transactor_event'] === self::DEFAULT_EVENT))
         {
             return [];

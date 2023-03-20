@@ -12,7 +12,6 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Product;
 use RZP\Models\Transaction;
-use RZP\Models\Currency\Currency;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\BalanceConfig;
 use RZP\Models\Merchant\Credits;

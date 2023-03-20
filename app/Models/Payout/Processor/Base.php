@@ -66,6 +66,7 @@ use RZP\Models\FundTransfer\Attempt\Initiator;
 use RZP\Jobs\PayoutPostCreateProcessLowPriority;
 use RZP\Models\PayoutMeta\Core as PayoutMetaCore;
 use RZP\Models\Payout\PayoutsIntermediateTransactions;
+use RZP\Models\BankingAccountStatement\Details as BASD;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Metric as FundTransferMetric;
 use RZP\Models\PayoutsDetails\Core as PayoutsDetailsCore;
@@ -2266,13 +2267,14 @@ class Base extends BaseCore
         }
 
         $payout->balance()->associate($this->balance);
-
         //
         // Doing this after all the associations since
         // the modifiers and validators require payout
         // account and merchant to be associated.
         //
         $payout = $payout->build($input);
+
+        $this->validateSubAccountPayoutAndSetPayoutType($payout);
 
         //
         // Doing only user and batch association after build because
@@ -2293,11 +2295,12 @@ class Base extends BaseCore
 
         $payout->setExpectedFeeType($feeType);
 
-        if ($this->isPayoutDetailsApplicable($input) === true)
+        if (($this->isPayoutDetailsApplicable($input) === true) or
+            ($payout->isSubAccountPayout() === true))
         {
             $this->setPayoutQueueFlag($input, $payout);
 
-            $payoutDetailsInput = $this->preparePayoutDetailsFromRequestInput($input);
+            $payoutDetailsInput = $this->preparePayoutDetailsFromRequestInput($input, $payout);
 
             (new PayoutsDetailsCore)->create($payoutDetailsInput, $payout);
         }
@@ -2312,6 +2315,50 @@ class Base extends BaseCore
         }
 
         return $payout;
+    }
+
+    public function validateSubAccountPayoutAndSetPayoutType(Entity $payout)
+    {
+        if ($this->balance->isAccountTypeShared() === false)
+        {
+            return;
+        }
+
+        if ($this->merchant->isFeatureEnabled(Features::ASSUME_SUB_ACCOUNT) === false)
+        {
+            return;
+        }
+
+        /** @var SubVirtualAccount\Entity $subVirtualAccount */
+        $subVirtualAccount = $this->repo->sub_virtual_account->getSubVirtualAccountFromSubAccountNumber($this->balance->getAccountNumber(), true);
+
+        if ((empty($subVirtualAccount) === true) or
+            ($subVirtualAccount->getSubAccountType() !== SubVirtualAccount\Type::SUB_DIRECT_ACCOUNT))
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_DOES_NOT_EXIST);
+        }
+
+        $masterBASD = $this->repo->banking_account_statement_details->fetchAccountStatementByBalance($subVirtualAccount->getMasterBalanceId());
+
+        if (($masterBASD === null) or
+            (in_array($masterBASD->getStatus(), BASD\Status::getStatusesForWhichSubAccountPayoutIsAllowed()) === false))
+        {
+            throw new BadRequestValidationFailureException(
+                "Payouts not supported for the debit account."
+            );
+        }
+
+        $payout->setType(Entity::SUB_ACCOUNT);
+
+        $payout->setMasterBalance($subVirtualAccount->balance);
+
+        $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_PAYOUT_TYPE_SET);
+
+        $this->trace->count(Metric::SUB_ACCOUNT_PAYOUT_TYPE_SET_TOTAL,
+                            [
+                                SubVirtualAccount\Entity::MASTER_BALANCE_ID => $subVirtualAccount->balance->getId(),
+                                SubVirtualAccount\Entity::SUB_MERCHANT_ID   => $subVirtualAccount->getSubMerchantId(),
+                            ]);
     }
 
     protected function createPayoutEntityForNewCompositePayoutFlow(array $input, bool $compositePayoutSaveOrFail = true, array $metadata = [])
@@ -2405,7 +2452,7 @@ class Base extends BaseCore
         }
     }
 
-    protected function preparePayoutDetailsFromRequestInput(array $input)
+    protected function preparePayoutDetailsFromRequestInput(array $input, Entity $payout = null)
     {
         $payoutDetailsInput = array();
 
@@ -2440,6 +2487,12 @@ class Base extends BaseCore
             $attachmentsInfo = PayoutsDetailsUtils::prepareAttachmentInfoFromInput($input);
 
             $additionalInfo[PayoutsDetailsEntity::ATTACHMENTS_KEY] = $attachmentsInfo;
+        }
+
+        if (($payout !== null) and ($payout->getPayoutType() === Payout\Entity::SUB_ACCOUNT))
+        {
+            $additionalInfo[PayoutsDetailsEntity::MASTER_BALANCE_ID] = $payout->getMasterBalance()->getId();
+            $additionalInfo[PayoutsDetailsEntity::MASTER_MERCHANT_ID] = $payout->getMasterBalance()->getMerchantId();
         }
 
         if (empty($additionalInfo) === false)

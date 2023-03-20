@@ -1505,6 +1505,7 @@ final class FactoryData
                                                                 'master_account_number' => '2224440041626905',
                                                                 'sub_account_number'    => '2323230041626906',
                                                                 'master_balance_id'     => 'xbalance000000',
+                                                                'sub_account_type'      => 'default',
                                                                 'created_at'            => $faker->timestamp,
                                                                 'updated_at'            => $faker->timestamp,
                                                             ]

@@ -570,6 +570,195 @@ return [
         ]
     ],
 
+    'testRXReportingLogForValidMasterAndSubMerchantIds' => [
+        'request'  => [
+            'url'     => '/reporting/logs',
+            'method'  => 'POST',
+            'content' => [
+                "config_id"  => "config_HABdF4z6EKiBth",
+                "start_time" => "1614537000",
+                "end_time"   => "1617215399",
+                "send_email" => true,
+                "emails"     => ["test2@razorpay.com"],
+                "sub_merchant_ids" => ["sub_merchant_1"],
+            ],
+            'server'  => [
+                'HTTP_X-Report-Type' => 'razorpayx'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "entity" => "collection",
+                "count"  => 3,
+                "items"  => [
+                    [
+                        "id"          => "config_D5RAgPWrrUgP9K",
+                        "consumer"    => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id"          => "config_CC39ZQphE0ox5U",
+                        "consumer"    => "100000Razorpay",
+                        "report_type" => "merchant"
+                    ],
+                    [
+                        "id"          => "config_C1eAjMzFDEU074",
+                        "consumer"    => "10000000000000",
+                        "report_type" => "merchant"
+                    ]
+                ]
+            ]
+        ]
+
+    ],
+
+    'testRXReportingLogForValidMasterMerchantAndInvalidSubMerchantIds' => [
+        'request'  => [
+            'url'     => '/reporting/logs',
+            'method'  => 'POST',
+            'content' => [
+                "config_id"  => "config_HABdF4z6EKiBth",
+                "start_time" => "1614537000",
+                "end_time"   => "1617215399",
+                "send_email" => true,
+                "emails"     => ["test2@razorpay.com"],
+                "sub_merchant_ids" => ["sub_merchant_1", "sub_merchant_3"],
+            ],
+            'server'  => [
+                'HTTP_X-Report-Type' => 'razorpayx'
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid sub_merchant_ids list in input',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRXReportingLogForInvalidMasterMerchant' => [
+        'request'  => [
+            'url'     => '/reporting/logs',
+            'method'  => 'POST',
+            'content' => [
+                "config_id"  => "config_HABdF4z6EKiBth",
+                "start_time" => "1614537000",
+                "end_time"   => "1617215399",
+                "send_email" => true,
+                "emails"     => ["test2@razorpay.com"],
+                "sub_merchant_ids" => ["sub_merchant_1", "sub_merchant_3"],
+            ],
+            'server'  => [
+                'HTTP_X-Report-Type' => 'razorpayx'
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid master merchant id: 10000000000000',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testRXReportingLogForInvalidPayerMerchantIdInFilters' => [
+        'request'  => [
+            'url'     => '/reporting/logs',
+            'method'  => 'POST',
+            'content' => [
+                "config_id"  => "config_HABdF4z6EKiBth",
+                "start_time" => "1614537000",
+                "end_time"   => "1617215399",
+                "send_email" => true,
+                "emails"     => ["test2@razorpay.com"],
+                "sub_merchant_ids" => ["sub_merchant_1", "sub_merchant_2"],
+                'template_overrides' => [
+                    'filters' => [
+                        'credit_transfers' => [
+                            'payer_merchant_id' => [
+                                'op' => ['IN'],
+                                'values' => ['10000000000001']
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'server'  => [
+                'HTTP_X-Report-Type' => 'razorpayx'
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
+    'testRXReportingLogForInvalidAccountNumbersInFilters' => [
+        'request'  => [
+            'url'     => '/reporting/logs',
+            'method'  => 'POST',
+            'content' => [
+                "config_id"  => "config_HABdF4z6EKiBth",
+                "start_time" => "1614537000",
+                "end_time"   => "1617215399",
+                "send_email" => true,
+                "emails"     => ["test2@razorpay.com"],
+                "sub_merchant_ids" => ["sub_merchant_1", "sub_merchant_2"],
+                'template_overrides' => [
+                    'filters' => [
+                        'balance' => [
+                            'account_number' => [
+                                'op' => ['IN'],
+                                'values' => [
+                                    '343411111111', //correct account number
+                                    '343488888888', //wrong account number
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'server'  => [
+                'HTTP_X-Report-Type' => 'razorpayx'
+            ],
+        ],
+        'response' => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Access Denied',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCESS_DENIED,
+        ],
+    ],
+
     'testPGReportLogEditForInvalidEmails' => [
         'request' => [
             'url'     => '/reporting/logs/log_100000Squirtle',

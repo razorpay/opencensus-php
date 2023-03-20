@@ -4,6 +4,7 @@ namespace RZP\Http;
 
 use RZP\Models\User\BankingRole;
 use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\SubVirtualAccount\Constants as SubVaConstants;
 
 class UserRolePermissionsMap
 {
@@ -722,6 +723,27 @@ class UserRolePermissionsMap
 
         self::$rolePermissions = $rolePermissions;
     }
+
+    /** @var array Permissions which are restricted for sub merchants on account-sub-account flow */
+    public static $restrictedPermissions = [
+        SubVaConstants::ACCOUNT_SUB_ACCOUNT => [
+            SubVaConstants::SUB_MERCHANT => [
+                Permission::PAY_TAX_PAYMENTS,
+                Permission::CREATE_TAX_PAYMENTS,
+                Permission::GENERATE_TDS_CHALLAN_ZIP,
+                Permission::UPDATE_TAX_PAYMENT_SETTINGS,
+                Permission::UPDATE_TAX_PAYMENT_SETTINGS_AUTO,
+                Permission::VIEW_TAX_PAYMENTS,
+                Permission::VIEW_TAX_PAYMENT_SETTINGS,
+                Permission::VIEW_TAX_STATES,
+                Permission::CREATE_VENDOR_PAYMENTS,
+                Permission::EDIT_VENDOR_PAYMENTS,
+                Permission::CANCEL_VENDOR_PAYMENTS,
+                Permission::VIEW_FINANCEX_REPORT,
+                Permission::CREATE_FINANCEX_REPORT
+            ]
+        ],
+    ];
 
     private static function getRolePermissionMap()
     {

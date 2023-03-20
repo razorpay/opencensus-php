@@ -1,6 +1,7 @@
 <?php
 
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
@@ -10,7 +11,7 @@ return [
             'content' => [
                 'master_account_number' => '2224440041626905',
                 'name'                  => 'sample',
-                'sub_account_number'    => '2323230041626906'
+                'sub_account_number'    => '2323230041626906',
             ],
             'url'    => '/admin/sub_virtual_accounts',
             'method' => 'POST'
@@ -592,6 +593,318 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED,
+        ],
+    ],
+
+    'testCreateSubVirtualAccountForAccountSubAccountFlow' => [
+        'request' => [
+            'content' => [
+                'master_account_number' => '2323230041626907',
+                'name'                  => 'sample',
+                'sub_account_number'    => '2323230041626906',
+                'sub_account_type'      => 'sub_direct_account'
+            ],
+            'url'    => '/admin/sub_virtual_accounts',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'                  => 'sample',
+                'master_account_number' => '2323230041626907',
+                'sub_account_number'    => '2323230041626906',
+                'active'                => true
+            ],
+            'status_code' => '200'
+        ],
+    ],
+
+    'testCreateSubVirtualAccountWithDuplicateSubAccountNumberForAccountSubAccountFlow' => [
+        'request' => [
+            'content' => [
+                'master_account_number' => '2323230041626900',
+                'name'                  => 'sample',
+                'sub_account_number'    => '2323230041626906',
+                'sub_account_type'      => 'sub_direct_account'
+            ],
+            'url'    => '/admin/sub_virtual_accounts',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_ALREADY_EXISTS,
+        ],
+
+    ],
+
+    'testCreateSubVirtualAccountForAccountSubAccountFlowWithInvalidType' => [
+        'request' => [
+            'content' => [
+                'master_account_number' => '2224440041626906',
+                'name'                  => 'sample',
+                'sub_account_number'    => '2323230041626906',
+                'sub_account_type'      => 'random'
+            ],
+            'url'    => '/admin/sub_virtual_accounts',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => TraceCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_INVALID_TYPE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubVirtualAccountWhenMasterMerchantHasFeatureEnabled' => [
+        'request' => [
+            'content' => [
+                'master_account_number' => '2323230041626907',
+                'name'                  => 'sample',
+                'sub_account_number'    => '2323230041626906',
+                'sub_account_type'      => 'sub_direct_account'
+            ],
+            'url'    => '/admin/sub_virtual_accounts',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => "Master merchant cannot have sub_virtual_account feature enabled",
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateSubVirtualAccountForAccountSubAccountFlowWhenSubMerchantSharedBalanceIsNonZero' => [
+        'request' => [
+            'content' => [
+                'master_account_number' => '2323230041626907',
+                'name'                  => 'sample',
+                'sub_account_number'    => '2323230041626906',
+                'sub_account_type'      => 'sub_direct_account'
+            ],
+            'url'    => '/admin/sub_virtual_accounts',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => TraceCode::BAD_REQUEST_SUB_MERCHANT_SHARED_BALANCE_NOT_ZERO,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisableSubVirtualAccountOfTypeSubDirectAccount' => [
+        'request'  => [
+            'content' => [
+                'active' => 0,
+            ],
+            'url'     => '/admin/sub_virtual_accounts/subva_HM8yTa58wo3qRZ',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'sub_virtual_account',
+                'active'                => false,
+                'sub_account_type'      => 'sub_direct_account',
+                'master_account_number' => '2323230041626907',
+                'sub_account_number'    => '2323230041626906',
+            ],
+        ],
+    ],
+
+    'testEnableSubVirtualAccountOfTypeSubDirectAccount' => [
+        'request'  => [
+            'content' => [
+                'active' => 1,
+            ],
+            'url'     => '/admin/sub_virtual_accounts/subva_',
+            'method'  => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'sub_virtual_account',
+                'active'                => true,
+                'sub_account_type'      => 'sub_direct_account',
+                'master_account_number' => '2323230041626907',
+                'sub_account_number'    => '2323230041626906',
+            ],
+        ],
+    ],
+
+
+    'testAddLimitToSubAccountWithOtpViaCreditTransfer' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/sub_virtual_account_transfer_with_otp',
+            'content' => [
+                'master_account_number' => '2323230041626907',
+                'sub_account_number'    => '2323230041626906',
+                'amount'                => 200,
+                'currency'              => 'INR',
+                'token'                 => 'BUIj3m2Nx2VvVj',
+                'otp'                   => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'credit_transfer',
+                'amount'      => 200,
+                'currency'    => 'INR',
+                'payer_name'  => 'OG NBFC',
+                'status'      => 'processed',
+            ],
+        ],
+    ],
+
+    'testLimitAdditionToSubMerchantWhenMasterMerchantFeatureIsNotEnabled' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/sub_virtual_account_transfer_with_otp',
+            'content' => [
+                'master_account_number' => '2323230041626907',
+                'sub_account_number'    => '2323230041626906',
+                'amount'                => 200,
+                'currency'              => 'INR',
+                'token'                 => 'BUIj3m2Nx2VvVj',
+                'otp'                   => '0007',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED,
+        ],
+    ],
+
+    'testFetchSubVirtualAccountWithClosingBalance' => [
+        'request' => [
+            'url'    => '/sub_virtual_accounts',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 2,
+                'items'  => [
+                    [
+                        'entity'                => 'sub_virtual_account',
+                        'active'                => true,
+                        'master_account_number' => '2323230041626907',
+                        'sub_account_number'    => '2323230041626906',
+                        'sub_account_type'      => 'sub_direct_account',
+                        'sub_account_balance'   => 1000,
+                        'name'                  => 'Sub Merchant 1',
+                    ],
+                    [
+                        'entity'                => 'sub_virtual_account',
+                        'active'                => false,
+                        'master_account_number' => '2323230041626907',
+                        'sub_account_number'    => '2323230041626908',
+                        'sub_account_type'      => 'sub_direct_account',
+                        'sub_account_balance'   => 2020,
+                        'name'                  => 'Fin Lease'
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFetchSubVirtualAccountCreditTransfers' => [
+        'request'  => [
+            'url'    => '/sub_virtual_accounts/credit_transfers?merchant_id=100abc000abc01&expand[]=payer_user&expand[]=merchant',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 3,
+                'items'  => [
+                    [
+                        'entity'            => 'credit_transfer',
+                        'amount'            => 500,
+                        'status'            => 'processing',
+                        'merchant_id'       => '100abc000abc01',
+                        'merchant'    => [
+                            'id' => '100abc000abc01',
+                        ],
+                        'payer_merchant_id' => '10000000000000',
+                        'payer_user_id' => 'MerchantUser02',
+                        'payer_user' => [
+                            'id' => 'MerchantUser02',
+                            'email' => 'merchant2@gmail.com'
+                        ]
+
+                    ],
+                    [
+                        'entity'            => 'credit_transfer',
+                        'amount'            => 400,
+                        'status'            => 'failed',
+                        'merchant_id'       => '100abc000abc01',
+                        'merchant'    => [
+                            'id' => '100abc000abc01',
+                        ],
+                        'payer_merchant_id' => '10000000000000',
+                        'payer_user_id' => 'MerchantUser02',
+                        'payer_user' => [
+                            'id' => 'MerchantUser02',
+                            'email' => 'merchant2@gmail.com'
+                        ]
+                    ],
+                    [
+                        'entity'            => 'credit_transfer',
+                        'amount'            => 300,
+                        'status'            => 'processed',
+                        'merchant_id'       => '100abc000abc01',
+                        'merchant'    => [
+                            'id' => '100abc000abc01',
+                        ],
+                        'payer_merchant_id' => '10000000000000',
+                        'payer_user_id' => 'MerchantUser02',
+                        'payer_user' => [
+                            'id' => 'MerchantUser02',
+                            'email' => 'merchant2@gmail.com',
+                        ]
+                    ],
+                ],
+            ],
         ],
     ],
 ];

@@ -2,17 +2,21 @@
 
 namespace RZP\Models\SubVirtualAccount;
 
+use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
-use RZP\Models\Merchant\Balance\Type;
+use RZP\Constants\Timezone;
+use RZP\Models\VirtualAccount\Status;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Balance\Type as BalanceType;
 use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
 /**
@@ -26,7 +30,9 @@ class Core extends Base\Core
 
     public function create(array $input): Entity
     {
-        $subVirtualAccount = $this->repo->sub_virtual_account->getSubVirtualAccountWithSimilarDetails($input);
+        $input[Entity::SUB_ACCOUNT_TYPE] = $input[Entity::SUB_ACCOUNT_TYPE] ?? Type::DEFAULT;
+
+        $subVirtualAccount = $this->getSubVirtualAccountWithSimilarDetails($input);
 
         if ($subVirtualAccount !== null)
         {
@@ -43,11 +49,36 @@ class Core extends Base\Core
             );
         }
 
-        $masterBalance = $this->repo->balance->getBalanceByTypeAccountNumberAndAccountTypeOrFail($input[Entity::MASTER_ACCOUNT_NUMBER], Type::BANKING, AccountType::SHARED);
+        $accountType = AccountType::SHARED;
+
+        /* For account sub-account setup, master_balance will be the direct balance of the master merchant */
+        if ($input[Entity::SUB_ACCOUNT_TYPE] === Type::SUB_DIRECT_ACCOUNT)
+        {
+            $accountType = AccountType::DIRECT;
+        }
+
+        $masterBalance = $this->repo->balance->getBalanceByTypeAccountNumberAndAccountTypeOrFail($input[Entity::MASTER_ACCOUNT_NUMBER],
+                                                                                                       BalanceType::BANKING,
+                                                                                                       $accountType);
 
         $masterMerchant = $masterBalance->merchant;
 
-        $subBalance = $this->repo->balance->getBalanceByTypeAccountNumberAndAccountTypeOrFail($input[Entity::SUB_ACCOUNT_NUMBER],Type::BANKING, AccountType::SHARED);
+        if (($input[Entity::SUB_ACCOUNT_TYPE] === Type::SUB_DIRECT_ACCOUNT) and
+            ($masterMerchant->isFeatureEnabled(\RZP\Models\Feature\Constants::SUB_VIRTUAL_ACCOUNT) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "Master merchant cannot have sub_virtual_account feature enabled",
+                null,
+                [
+                    'master_merchant_id' => $masterMerchant->getId(),
+                    'input' => $input
+                ]
+            );
+        }
+
+        $subBalance = $this->repo->balance->getBalanceByTypeAccountNumberAndAccountTypeOrFail($input[Entity::SUB_ACCOUNT_NUMBER],
+                                                                                                    BalanceType::BANKING,
+                                                                                                    AccountType::SHARED);
 
         $subMerchant = $subBalance->merchant;
 
@@ -59,21 +90,67 @@ class Core extends Base\Core
 
         $subVirtualAccount->balance()->associate($masterBalance);
 
+        if ($input[Entity::SUB_ACCOUNT_TYPE] === Type::SUB_DIRECT_ACCOUNT)
+        {
+            return $this->onboardMasterAndSubMerchantOnAccountSubAccountFlow($subVirtualAccount);
+        }
+
         $this->repo->saveOrFail($subVirtualAccount);
 
         $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_CREATED,
-            [
-                Entity::ID => $subVirtualAccount->getId(),
-            ]);
+                           [
+                               Entity::ID => $subVirtualAccount->getId(),
+                           ]);
 
         return $subVirtualAccount;
+    }
+
+    protected function getSubVirtualAccountWithSimilarDetails($input)
+    {
+        switch ($input[Entity::SUB_ACCOUNT_TYPE])
+        {
+            case Type::SUB_DIRECT_ACCOUNT:
+                return $this->repo->sub_virtual_account->getSubVirtualAccountFromSubAccountNumber($input[Entity::SUB_ACCOUNT_NUMBER],
+                                                                                                  false);
+
+            case Type::DEFAULT:
+                return $this->repo->sub_virtual_account->getSubVirtualAccountOfTypeDefaultWithSimilarDetails($input);
+
+            default:
+                throw new Exception\LogicException("Not a valid " . Entity::SUB_ACCOUNT_TYPE);
+        }
     }
 
     public function fetchMultiple(array $input)
     {
         $this->repo->sub_virtual_account->setMerchantIdRequiredForMultipleFetch(false);
 
-        return $this->repo->sub_virtual_account->fetch($input);
+        if (($this->app['basicauth']->isProxyAuth() === true) and
+            ($this->merchant->isFeatureEnabled(Feature\Constants::ASSUME_MASTER_ACCOUNT) === true))
+        {
+            unset($input[Entity::ACTIVE]);
+        }
+
+        $subVirtualAccounts = $this->repo->sub_virtual_account->fetch($input);
+
+        /** @var Entity $subVirtualAccount */
+        foreach ($subVirtualAccounts as $subVirtualAccount)
+        {
+            if ($subVirtualAccount->getSubAccountType() === Type::SUB_DIRECT_ACCOUNT)
+            {
+                $subMerchant = $subVirtualAccount->subMerchant;
+
+                $subAccountBalance = $subMerchant->sharedBankingBalance;
+
+                $currentAvailableBalance = $subAccountBalance->getBalanceWithLockedBalanceFromLedger();
+
+                $subVirtualAccount->setClosingBalance($currentAvailableBalance);
+
+                $subVirtualAccount->setName($subMerchant->getDisplayNameElseName());
+            }
+        }
+
+        return $subVirtualAccounts;
     }
 
     public function enableOrDisable(string $id, array $input)
@@ -100,6 +177,11 @@ class Core extends Base\Core
             );
         }
 
+        if ($subVirtualAccount->getSubAccountType() === Type::SUB_DIRECT_ACCOUNT)
+        {
+            return $this->handleEnableDisableForSubDirectAccount($subVirtualAccount, $input);
+        }
+
         $subVirtualAccount->setActive($input[Entity::ACTIVE]);
 
         $this->repo->saveOrFail($subVirtualAccount);
@@ -107,67 +189,26 @@ class Core extends Base\Core
         return $subVirtualAccount;
     }
 
-    public function transfer(array $input, MerchantEntity $masterMerchant, MerchantEntity $subMerchant)
+    public function transfer(array $input, Entity $subVirtualAccount)
     {
-        $masterBalance = $this->repo->balance->getBankingBalanceWithMerchantIdAndAccountNumberOrFail($masterMerchant->getId(), $input[Entity::MASTER_ACCOUNT_NUMBER]);
+        $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_TRANSFER_INIT);
 
-        $amount = $input[Entity::AMOUNT];
+        $transfer = new Transfer();
 
-        if ($masterBalance->getBalance() < $amount) {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_TRANSFER_NOT_ENOUGH_BANKING_BALANCE,
-                null,
-                [
-                    Entity::MASTER_MERCHANT_ID => $this->merchant->getId(),
-                ]
-            );
+        switch ($subVirtualAccount->getSubAccountType())
+        {
+            case Type::SUB_DIRECT_ACCOUNT:
+                return $transfer->transferToSubAccountUsingCreditTransfer($subVirtualAccount, $input);
+
+            case Type::DEFAULT:
+                return $transfer->transferToSubMerchantUsingAdjustments($subVirtualAccount, $input);
         }
-
-        $masterDescription = 'Internal Fund Transfer to ' . $input[Entity::SUB_ACCOUNT_NUMBER];
-
-        $subDescription = 'Internal Fund Transfer from ' . $input[Entity::MASTER_ACCOUNT_NUMBER];
-
-        $masterAdjInput = [
-            Entity::AMOUNT => -$amount,
-            Entity::DESCRIPTION => $masterDescription,
-            BalanceEntity::TYPE => Type::BANKING,
-            Entity::CURRENCY => $input[Entity::CURRENCY] ?? 'INR',
-        ];
-
-        $subAdjInput = [
-            Entity::AMOUNT => $amount,
-            Entity::DESCRIPTION => $subDescription,
-            BalanceEntity::TYPE => Type::BANKING,
-            Entity::CURRENCY => $input[Entity::CURRENCY] ?? 'INR',
-        ];
-
-        $masterAdjEntity = $this->repo->transaction(function() use (
-            $masterAdjInput,
-            $masterMerchant,
-            $subAdjInput,
-            $subMerchant
-        ) {
-            $masterAdjEntity = (new Adjustment\Core())->createAdjustment($masterAdjInput, $masterMerchant);
-
-            $subAdjEntity = (new Adjustment\Core())->createAdjustment($subAdjInput, $subMerchant);
-
-            $this->trace->info(
-                TraceCode::SUB_VIRTUAL_ACCOUNT_TRANSFER_ADJUSTMENT_RESPONSE,
-                [
-                    Entity::MASTER_ADJUSTMENT_ID => $masterAdjEntity->getId(),
-                    Entity::SUB_ADJUSTMENT_ID    => $subAdjEntity->getId(),
-                ]);
-
-            return $masterAdjEntity;
-        });
-
-        return $masterAdjEntity;
     }
 
-    public function getDirectBalanceOfMasterMerchantFromSubMerchantIdForSubVaPayout($subMerchantId)
+    public function getDirectBalanceOfMasterMerchantForSubAccountPayout($subAccountNumber, $subMerchantId)
     {
         /** @var Entity $subVirtualAccount */
-        $subVirtualAccount = $this->repo->sub_virtual_account->getSubVirtualAccountFromSubMerchantId($subMerchantId);
+        $subVirtualAccount = $this->repo->sub_virtual_account->getSubVirtualAccountFromSubAccountNumber($subAccountNumber);
 
         $subVirtualAccountValidator = new Validator();
 
@@ -183,11 +224,19 @@ class Core extends Base\Core
             /** @var MerchantEntity $masterMerchant */
             $masterMerchant =  $this->repo->merchant->findOrFail($subVirtualAccount->getMasterMerchantId());
 
-            $subVirtualAccountValidator->validateMasterMerchant($masterMerchant);
+            $subVirtualAccountValidator->validateMasterMerchant($masterMerchant, $subVirtualAccount);
 
-            $directBalance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType($masterMerchant->getId(),
-                                                                                           Type::BANKING,
-                                                                                           AccountType::DIRECT);
+            if ($subVirtualAccount->getSubAccountType() === Type::SUB_DIRECT_ACCOUNT)
+            {
+                $directBalance = $subVirtualAccount->balance;
+            }
+            else
+            {
+                $directBalance = $this->repo->balance->getMerchantBalanceByTypeAndAccountType($masterMerchant->getId(),
+                                                                                              BalanceType::BANKING,
+                                                                                              AccountType::DIRECT);
+            }
+
             if (empty($directBalance) === true)
             {
                 throw new BadRequestException(
@@ -223,5 +272,230 @@ class Core extends Base\Core
         }
 
         return $directBalance;
+    }
+
+    /*
+     * If sub merchant's shared banking balance is Not 0, throws an error.
+     *      Reason being, as once linked to master merchant, the fund movement will happen from
+     *      master merchant's DA and hence cause money loss for the master merchant
+     * Enable the feature flag sub_mid_on_acc_sub_acc on sub merchant
+     * Enable the feature flag block_fav for sub merchant
+     * Enable the feature flag block_x_amazonpay for sub merchant
+     * Enable the feature flag master_mid_on_acc_sub_acc for master merchant
+     * Mark VA(s) of sub merchant as CLOSED
+     * Mark sub_virtual_account entity as active and save to DB
+     */
+    public function onboardMasterAndSubMerchantOnAccountSubAccountFlow(Entity $subVirtualAccount)
+    {
+        $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_ON_BOARDING_INIT,
+                           [
+                               'sub_virtual_account' => $subVirtualAccount
+                           ]);
+
+        $subMerchant         = $subVirtualAccount->subMerchant;
+        $masterMerchant      = $subVirtualAccount->masterMerchant;
+        $sharedBalanceAmount = $subMerchant->sharedBankingBalance->getBalanceWithLockedBalanceFromLedger();
+
+        if ($sharedBalanceAmount !== 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                TraceCode::BAD_REQUEST_SUB_MERCHANT_SHARED_BALANCE_NOT_ZERO,
+                null,
+                [
+                    'sub_merchant_balance' => $sharedBalanceAmount
+                ]
+            );
+        }
+
+        $this->repo->transaction(function() use ($masterMerchant, $subMerchant, $subVirtualAccount)
+        {
+            if ($subMerchant->isFeatureEnabled(Feature\Constants::ASSUME_SUB_ACCOUNT) === false)
+            {
+                $this->enableMerchantFeature($subMerchant->getId(), Feature\Constants::ASSUME_SUB_ACCOUNT);
+            }
+
+            if ($subMerchant->isFeatureEnabled(Feature\Constants::BLOCK_FAV) === false)
+            {
+                $this->enableMerchantFeature($subMerchant->getId(), Feature\Constants::BLOCK_FAV);
+            }
+
+            if ($subMerchant->isFeatureEnabled(Feature\Constants::DISABLE_X_AMAZONPAY) === false)
+            {
+                $this->enableMerchantFeature($subMerchant->getId(), Feature\Constants::DISABLE_X_AMAZONPAY);
+            }
+
+            if ($masterMerchant->isFeatureEnabled(Feature\Constants::ASSUME_MASTER_ACCOUNT) === false)
+            {
+                $this->enableMerchantFeature($masterMerchant->getId(), Feature\Constants::ASSUME_MASTER_ACCOUNT);
+            }
+
+            $this->markVirtualAccountsOfSubMerchantAsClosed($subMerchant);
+
+            $subVirtualAccount->setActive(true);
+
+            $this->repo->saveOrFail($subVirtualAccount);
+
+            $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_ON_BOARDING_COMPLETE,
+                               [
+                                   Entity::SUB_MERCHANT_ID    => $subMerchant->getId(),
+                                   Entity::MASTER_MERCHANT_ID => $masterMerchant->getId()
+                               ]);
+
+        });
+
+        return $subVirtualAccount;
+    }
+
+    public function enableMerchantFeature($merchantId, $featureName, $entityType = Feature\Constants::MERCHANT)
+    {
+        $featureCreateInput = [
+            Feature\Entity::NAME        => $featureName,
+            Feature\Entity::ENTITY_ID   => $merchantId,
+            Feature\Entity::ENTITY_TYPE => $entityType,
+        ];
+
+        try
+        {
+            (new Feature\Core())->create($featureCreateInput, true);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Logger::ERROR,
+                TraceCode::SUB_VIRTUAL_ACCOUNT_FEATURE_ASSIGNMENT_ERROR,
+                [
+                    'feature_name' => $featureName,
+                    'merchant_id' => $merchantId
+                ]
+            );
+
+            throw $ex;
+        }
+    }
+
+    public function markVirtualAccountsOfSubMerchantAsClosed(MerchantEntity $merchant)
+    {
+        $virtualAccounts = $this->repo->virtual_account->fetchActiveBankingVirtualAccountsFromMerchantId($merchant->getId());
+
+        /** @var \RZP\Models\VirtualAccount\Entity $virtualAccount */
+        foreach ($virtualAccounts as $virtualAccount)
+        {
+            if ($virtualAccount->getStatus() === Status::CLOSED)
+            {
+                continue;
+            }
+
+            $virtualAccount->setStatus(Status::CLOSED);
+
+            $virtualAccount->setClosedAt(Carbon::now(Timezone::IST)->getTimestamp());
+
+            $this->repo->saveOrFail($virtualAccount);
+
+            $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_CLOSED,
+                               [
+                                   'id'     => $virtualAccount->getId(),
+                                   'reason' => 'linking_to_master_merchant'
+                               ]);
+        }
+
+        return $virtualAccounts;
+    }
+
+    public function handleEnableDisableForSubDirectAccount(Entity $subVirtualAccount, $input)
+    {
+        $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_ENABLE_DISABLE_OF_SUB_DIRECT_INIT,
+                           [
+                               'sub_virtual_account' => $subVirtualAccount
+                           ]);
+
+        switch (boolval($input[Entity::ACTIVE]))
+        {
+            case true:
+               $this->handleEnableForSubDirectAccount($subVirtualAccount);
+               break;
+
+            case false:
+                $this->handleDisableForSubDirectAccount($subVirtualAccount);
+
+                $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_DISABLE_COMPLETE,
+                                   [
+                                       'input'               => $input,
+                                       'sub_virtual_account' => $subVirtualAccount->toArray()
+                                   ]);
+                break;
+        }
+
+        return $subVirtualAccount;
+    }
+
+    public function handleEnableForSubDirectAccount(Entity $subVirtualAccount)
+    {
+        $subMerchant = $subVirtualAccount->subMerchant;
+
+        $subVirtualAccount = $this->repo->transaction(function() use ($subVirtualAccount, $subMerchant)
+        {
+            if ($subMerchant->isFeatureEnabled(Feature\Constants::BLOCK_VA_PAYOUTS) === true)
+            {
+                $featureCore = new Feature\Core();
+
+                $blockVaPayoutFeature = $this->repo->feature->findByEntityTypeEntityIdAndName(Feature\Constants::MERCHANT,
+                                                                                              $subMerchant->getId(),
+                                                                                              Feature\Constants::BLOCK_VA_PAYOUTS);
+
+                $featureCore->delete($blockVaPayoutFeature);
+            }
+
+            $subVirtualAccount->setActive(true);
+
+            $this->repo->saveOrFail($subVirtualAccount);
+
+            return $subVirtualAccount;
+        });
+
+        $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_ENABLE_COMPLETE,
+                           [
+                               'sub_virtual_account' => $subVirtualAccount->toArray(),
+                               'sub_mid_features'    => $subMerchant->getEnabledFeatures(),
+                           ]);
+    }
+
+    public function handleDisableForSubDirectAccount(Entity $subVirtualAccount)
+    {
+        $masterMerchant                 = $subVirtualAccount->masterMerchant;
+        $subMerchant                    = $subVirtualAccount->subMerchant;
+        $subMerchantSharedBalanceAmount = $subMerchant->sharedBankingBalance->getBalanceWithLockedBalanceFromLedger();
+
+        if ($subMerchantSharedBalanceAmount !== 0)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                TraceCode::BAD_REQUEST_SUB_MERCHANT_SHARED_BALANCE_NOT_ZERO,
+                null,
+                [
+                    'sub_merchant_balance' => $subMerchantSharedBalanceAmount
+                ]
+            );
+        }
+
+        $this->repo->transaction(function() use ($subVirtualAccount, $masterMerchant, $subMerchant)
+        {
+            /* We will not allow VA payouts on the shared balance once we disable the sub virtual account */
+            if ($subMerchant->isFeatureEnabled(Feature\Constants::BLOCK_VA_PAYOUTS) === false)
+            {
+                $this->enableMerchantFeature($subMerchant->getId(), Feature\Constants::BLOCK_VA_PAYOUTS);
+            }
+
+            $subVirtualAccount->setActive(false);
+
+            $this->repo->saveOrFail($subVirtualAccount);
+        });
+
+        $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_OFF_BOARDING_COMPLETE,
+                           [
+                               'sub_merchant_features'    => $subMerchant->getEnabledFeatures(),
+                               'master_merchant_features' => $masterMerchant->getEnabledFeatures(),
+                               'sub_virtual_account'      => $subVirtualAccount->toArray(),
+                           ]);
+
     }
 }

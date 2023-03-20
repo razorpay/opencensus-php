@@ -3936,12 +3936,12 @@ class Route
         'audit_info_partition_cron'            => ['post',     'audit_info/partition',                                'AuditingController@createAuditInfoPartition'           ],
 
         // Sub Virtual Account Routes
-        'sub_virtual_account_list'                => ['get',      'sub_virtual_accounts',                                   'SubVirtualAccountController@list'                             ],
-        'sub_virtual_account_create'              => ['post',     'admin/sub_virtual_accounts',                             'SubVirtualAccountController@create'                           ],
-        'sub_virtual_account_list_admin'          => ['get',      'admin/sub_virtual_accounts/merchant/{id}',               'SubVirtualAccountController@listAdmin'                        ],
-        'sub_virtual_account_enable_disable'      => ['post',     'admin/sub_virtual_accounts/{id}',                        'SubVirtualAccountController@enableOrDisable'                  ],
-        'sub_virtual_account_transfer_with_otp'   => ['post',     'sub_virtual_account_transfer_with_otp',                  'SubVirtualAccountController@transferWithOtp'                  ],
-
+        'sub_virtual_account_list'                => ['get',      'sub_virtual_accounts',                                      'SubVirtualAccountController@list'                             ],
+        'sub_virtual_account_create'              => ['post',     'admin/sub_virtual_accounts',                                'SubVirtualAccountController@create'                           ],
+        'sub_virtual_account_list_admin'          => ['get',      'admin/sub_virtual_accounts/merchant/{id}',                  'SubVirtualAccountController@listAdmin'                        ],
+        'sub_virtual_account_enable_disable'      => ['post',     'admin/sub_virtual_accounts/{id}',                           'SubVirtualAccountController@enableOrDisable'                  ],
+        'sub_virtual_account_transfer_with_otp'   => ['post',     'sub_virtual_account_transfer_with_otp',                     'SubVirtualAccountController@transferWithOtp'                  ],
+        'sub_virtual_account_transfer_list'       => ['get',      'sub_virtual_accounts/credit_transfers',                     'SubVirtualAccountController@listCreditTransfers'              ],
         // Ledger Routes
         'create_ledger_account'                           => ['post',      'ledger_service/create_account',                             'LedgerController@createAccount'],
         'create_ledger_accounts_on_event'                 => ['post',      'ledger_service/create_accounts_on_event',                   'LedgerController@createAccountsOnEvent'],
@@ -6708,6 +6708,7 @@ class Route
         // Sub Virtual Account routes
         'sub_virtual_account_list',
         'sub_virtual_account_transfer_with_otp',
+        'sub_virtual_account_transfer_list',
 
         //Toggle Fee Bearer
         'merchant_toggle_fee_bearer',
@@ -9914,6 +9915,7 @@ class Route
         // Sub VA Routes
         'sub_virtual_account_list'                     => Permission::MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT,
         'sub_virtual_account_transfer_with_otp'        => Permission::MERCHANT_SUB_VIRTUAL_ACCOUNT_TRANSFER,
+        'sub_virtual_account_transfer_list'            => Permission::MERCHANT_FETCH_SUB_VIRTUAL_ACCOUNT,
 
         // Allow coupon validation for X
         'coupon_validate'                              => Permission::COUPON_VALIDATE,
@@ -11425,6 +11427,7 @@ class Route
             'subscriptions_overview',
             'sub_virtual_account_list',
             'sub_virtual_account_transfer_with_otp',
+            'sub_virtual_account_transfer_list',
             'tax_create',
             'tax_delete',
             'tax_get',
@@ -16147,6 +16150,7 @@ class Route
         'admin_merchants_tpvs_create',
 
         'sub_virtual_account_transfer_with_otp',
+        'sub_virtual_account_transfer_list',
 
         // Low Balance Configs for X - Autoload
         'create_low_balance_config_admin',

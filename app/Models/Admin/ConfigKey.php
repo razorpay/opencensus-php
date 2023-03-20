@@ -361,6 +361,8 @@ class ConfigKey
 
     const PAYOUT_ASYNC_APPROVE_PROCESSING_WINDOW_LENGTH = SELF::PREFIX . 'payout_async_approve_processing_window_length';
 
+    const ACCOUNT_SUB_ACCOUNT_RESTRICTED_PERMISSIONS_LIST = self::PREFIX . 'account_sub_account_restricted_permissions_list';
+
     // UPI turbo
     const UPI_TURBO_POPULAR_BANK_LIST           = self::PREFIX . 'upi_turbo_popular_bank_list';
 

@@ -26,6 +26,7 @@ use RZP\Services\BankingAccountService as BAS;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\IntegrationException;
 use Razorpay\Spine\Exception\DbQueryException;
+use RZP\Models\SubVirtualAccount as SubVA;
 use RZP\Mail\BankingAccount\UpdatesForAuditor;
 use RZP\Models\BankingAccount\Activation\Comment;
 use RZP\Models\BankingAccount\Gateway\Rbl\Fields;
@@ -604,7 +605,16 @@ class Service extends Base\Service
             if(($balance->getType() === Balance\Type::BANKING) &&
                 ($balance->getAccountType() === Balance\AccountType::SHARED))
             {
-                // Only call ledger when "ledger_journal_reads" is enabled on the merchant.
+                [$shouldAppend, $subVirtualAccount] = $this->shouldAppendMasterBankingAccountDetailsInResponse($balance);
+
+                if ($shouldAppend === true)
+                {
+                    $masterBankingAccount = $this->getDirectBankingAccountOfMasterMerchant($subVirtualAccount);
+
+                    $ba->setMasterBankingAccount($masterBankingAccount);
+                }
+
+                // Only call ledger when "ledger_reverse_shadow" is enabled on the merchant.
                 if($this->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === true)
                 {
                     $ledgerResponse = (new LedgerCore())->fetchBalanceFromLedger($this->merchant->getId(), $ba->getPublicId());
@@ -666,6 +676,96 @@ class Service extends Base\Service
         $response[Base\PublicCollection::ITEMS] = array_values($response[Base\PublicCollection::ITEMS]);
 
         return $response;
+    }
+
+    public function shouldAppendMasterBankingAccountDetailsInResponse(Balance\Entity $balance)
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ASSUME_SUB_ACCOUNT) === false)
+        {
+            return [false, null];
+        }
+
+        /** @var SubVA\Entity $subVirtualAccount */
+        $subVirtualAccount = $this->repo->sub_virtual_account->getSubVirtualAccountFromSubAccountNumber($balance->getAccountNumber(), true);
+
+        if ((empty($subVirtualAccount) === true) or
+            ($subVirtualAccount->getSubAccountType() !== SubVA\Type::SUB_DIRECT_ACCOUNT))
+        {
+            return [false, $subVirtualAccount];
+        }
+
+        return [true, $subVirtualAccount];
+
+    }
+
+    public function getDirectBankingAccountOfMasterMerchant(\RZP\Models\SubVirtualAccount\Entity $subVirtualAccount)
+    {
+        $masterBalance  = $subVirtualAccount->balance;
+        $masterMerchant = $subVirtualAccount->masterMerchant;
+
+        $masterDirectBankingAccount = $this->repo->banking_account->findByMerchantAndAccountNumberPublic($masterMerchant, $subVirtualAccount->getMasterAccountNumber());
+
+        if ($masterDirectBankingAccount === null)
+        {
+            try
+            {
+                $basBankingAccount = $this->app['banking_account_service']->fetchBankingAccountByAccountNumberAndChannel($masterMerchant->getId(), $masterBalance->getAccountNumber(), $masterBalance->getChannel());
+
+                $masterDirectBankingAccount = (new BankingAccountService\Core())->generateInMemoryBankingAccount($masterMerchant->getId(), $basBankingAccount);
+            }
+            catch (\Throwable $exception)
+            {
+                (new Metrics())->pushErrorMetrics(Metrics::MASTER_DIRECT_BANKING_ACCOUNT_FETCH_FAILURES_TOTAL,
+                                                  [
+                                                      Entity::MERCHANT_ID => $masterMerchant->getId(),
+                                                      Entity::CHANNEL     => $masterBalance->getChannel(),
+                                                  ]);
+
+                throw $exception;
+            }
+        }
+
+        $isUpiAllowedForMasterBankingAccount = $this->checkIfUpiTransferIsAllowedOnMasterMerchant($masterDirectBankingAccount->getChannel(), $masterMerchant->getId());
+
+        return [
+            Entity::ID                => $masterDirectBankingAccount->getId(),
+            Constants::NAME           => $masterMerchant->getDisplayNameElseName(),
+            Entity::CHANNEL           => $masterDirectBankingAccount->getChannel(),
+            Entity::STATUS            => $masterDirectBankingAccount->getStatus(),
+            Entity::ACCOUNT_TYPE      => $masterDirectBankingAccount->getAccountType(),
+            Entity::ACCOUNT_NUMBER    => mask_except_last4($masterDirectBankingAccount->getAccountNumber()),
+            Constants::IS_UPI_ALLOWED => $isUpiAllowedForMasterBankingAccount,
+        ];
+    }
+
+    public function checkIfUpiTransferIsAllowedOnMasterMerchant($bankingAccountChannel, $merchantId)
+    {
+        $payoutValidator = new \RZP\Models\Payout\Validator;
+
+        $isUpiEnabled = false;
+
+        try
+        {
+            if (($bankingAccountChannel === Channel::RBL) and
+                ($payoutValidator->isUpiModeEnabledOnRblDirectAccountForMerchantId($merchantId) === true))
+            {
+                $isUpiEnabled =  true;
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                TraceCode::UPI_MODE_ENABLED_ON_RBL_DIRECT_ACCOUNT_CHECK_EXCEPTION,
+                null,
+                [
+                    Entity::CHANNEL => $bankingAccountChannel,
+                    Entity::MERCHANT_ID => $merchantId
+                ]
+            );
+        }
+
+        return $isUpiEnabled;
     }
 
     public function setFeeRecoveryFlagForBankingAccounts($bankingAccounts, $input)

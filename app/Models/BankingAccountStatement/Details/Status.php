@@ -37,4 +37,12 @@ class Status
             throw new Exception\BadRequestValidationFailureException('Invalid status: ' . $status);
         }
     }
+
+    public static function getStatusesForWhichSubAccountPayoutIsAllowed()
+    {
+        return [
+            self::ACTIVE,
+            self::UNDER_MAINTENANCE,
+        ];
+    }
 }

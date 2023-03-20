@@ -8049,6 +8049,58 @@ class UserTest extends TestCase
         $response = $this->startTest();
 
         $this->assertArrayHasKey(Constants::PERMISSIONS, $response['merchants'][1]);
+
+        return $response;
+    }
+
+    public function testGetBankingUserWithPermissionsForSubMerchant()
+    {
+        $user = $this->fixtures->create('user');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->create('feature', [
+            'name'        => 'assume_sub_account',
+            'entity_id'   => $merchant->getId(),
+            'entity_type' => 'merchant'
+        ]);
+
+        $this->disableRazorXTreatmentCAC();
+
+        $mappingData = [
+            'user_id'     => $user->getId(),
+            'merchant_id' => $merchant->getId(),
+            'role'        => 'owner',
+            'product'     => 'banking',
+        ];
+
+        $this->fixtures->create('user:user_merchant_mapping', $mappingData);
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $request = [
+            'method'    => 'GET',
+            'url'       => '/users/' . $user->getId(),
+            'server'     => [
+                'HTTP_X-Dashboard-User-Id'      => $user->getId(),
+                'HTTP_X-Request-Origin'         => 'https://x.razorpay.com',
+            ],
+        ];
+
+        $testData['request'] = $request;
+
+        $this->ba->dashboardGuestAppAuth();
+
+        $response = $this->startTest();
+
+        $this->assertArrayHasKey(Constants::PERMISSIONS, $response['merchants'][1]);
+
+        $subMerchantBlockedPermissions = UserRolePermissionsMap::$restrictedPermissions['account_sub_account']['sub_merchant'];
+
+        foreach ($subMerchantBlockedPermissions as $permission)
+        {
+            $this->assertNotContains($permission, $response['merchants'][1]['permissions']);
+        }
     }
 
     public function testGetPermissionsForCARoles()

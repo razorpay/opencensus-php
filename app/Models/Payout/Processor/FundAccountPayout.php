@@ -180,6 +180,11 @@ class FundAccountPayout extends Base
 
     public function getAccountTypeForFundTransfer(Payout\Entity $payout)
     {
+        if ($payout->isSubAccountPayout() === true)
+        {
+            return AccountType::DIRECT;
+        }
+
         return $payout->balance->getAccountType() ?? AccountType::SHARED;
     }
 
@@ -188,7 +193,10 @@ class FundAccountPayout extends Base
      * which the payout should be routed in case of shared accounts.
      * Till the time we achieve this by Dynamic routing, we are doing
      * a hack of using RazorX experiments to route certain merchants via a certain
-     * channel (ICICI, CITI or YESBANK) based on mode of payout
+     * channel (ICICI, CITI or YESBANK) based on mode of payout.
+     *
+     * However, for sub account payouts via master direct balance, the channel of fund transfer is
+     * already determined.
      *
      * @param $accountType
      * @return string
@@ -205,6 +213,11 @@ class FundAccountPayout extends Base
 
     protected function getChannelForDirectAccountFundTransfer(Payout\Entity $payout)
     {
+        if ($payout->isSubAccountPayout() === true)
+        {
+            return $payout->getMasterBalance()->getChannel();
+        }
+
         return $payout->balance->getChannel();
     }
 
@@ -261,6 +274,11 @@ class FundAccountPayout extends Base
 
         $merchantId = $payout->getMerchantId();
 
+        if ($payout->isSubAccountPayout() === true)
+        {
+            $merchantId = $payout->getMasterBalance()->getMerchantId();
+        }
+
         /** @var Payout\Validator $validator */
         $validator = $payout->getValidator();
 
@@ -268,7 +286,7 @@ class FundAccountPayout extends Base
 
         if ($valid === false)
         {
-            if ($this->getAccountTypeForFundTransfer($payout) === AccountType::SHARED)
+            if ($accountType === AccountType::SHARED)
             {
                 $errorMsg =  $mode . ' is not supported';
             }

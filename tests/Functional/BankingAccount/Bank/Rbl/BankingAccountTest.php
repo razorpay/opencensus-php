@@ -3525,7 +3525,7 @@ class BankingAccountTest extends TestCase
 
     public function mockBankingAccountService()
     {
-        $this->app['config']->set('applications.banking_account_service.mock', true);    
+        $this->app['config']->set('applications.banking_account_service.mock', true);
     }
 
     protected function expectStorkSendPushNotificationRequest($expectInput): void
@@ -13043,4 +13043,110 @@ class BankingAccountTest extends TestCase
         $this->startTest($request);
     }
 
+    public function testListBankingAccounts()
+    {
+        [$balance, $bankingAccount, $masterDirectBankingAccount] = $this->fixtureSetupForSubMerchant();
+
+        $testData = $this->testData['testFetchBankingAccountForPayoutService'];
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $expectedResponse = [
+            'count' => 1,
+            'items' => [
+                [
+                    'id'      => $bankingAccount->getPublicId(),
+                    'balance' => [
+                        'id' => $balance->getId(),
+                    ],
+                ],
+            ],
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        // master_banking_account key should NOT be present in the response
+        $this->assertArrayNotHasKey('master_banking_account', $expectedResponse['items'][0]);
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ASSUME_SUB_ACCOUNT]);
+
+        // master_banking_account key SHOULD be present in the response
+        $expectedResponse['items'][0]['master_banking_account'] = [
+            'id'             => $masterDirectBankingAccount->getId(),
+            'account_number' => mask_except_last4($masterDirectBankingAccount->getAccountNumber()),
+            'status'         => 'activated',
+            'is_upi_allowed' => false,
+            'name'           => 'Master Merchant'
+        ];
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $this->assertArrayHasKey('master_banking_account', $expectedResponse['items'][0]);
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $this->fixtures->create('feature', [
+            'name'        => 'rbl_ca_upi',
+            'entity_id'   => '20000000000000',
+            'entity_type' => 'merchant',
+        ]);
+
+        /* Since rbl_ca_upi feature is enabled on master merchant, is_upi_allowed should be true */
+        $expectedResponse['items'][0]['master_banking_account']['is_upi_allowed'] = true;
+
+        $response = $this->makeRequestAndGetContent($testData['request']);
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    public function fixtureSetupForSubMerchant()
+    {
+        $balance = $this->fixtures->create('balance', [
+            'id'             => 'subBalance0000',
+            'type'           => 'banking',
+            'account_type'   => 'shared',
+            'merchant_id'    => '10000000000000',
+            'account_number' => '34341234567890',
+        ]);
+
+        $bankingAccount = $this->fixtures->create('banking_account', [
+            'id'           => 'subBacc0000000',
+            'balance_id'   => $balance->getId(),
+            'merchant_id'  => '10000000000000',
+            'account_type' => 'nodal'
+        ]);
+
+        $masterMerchant = $this->fixtures->create('merchant', [
+            'id' => '20000000000000',
+            'display_name' => 'Master Merchant',
+        ]);
+
+        $masterDirectBalance = $this->fixtures->create('balance', [
+            'merchant_id'    => $masterMerchant->getId(),
+            'type'           => 'banking',
+            'account_type'   => 'direct',
+            'channel'        => 'rbl',
+            'account_number' => '300400500600'
+        ]);
+
+        $masterDirectBankingAccount = $this->fixtures->create('banking_account', [
+            'merchant_id'    => $masterMerchant->getId(),
+            'channel'        => 'rbl',
+            'balance_id'     => $masterDirectBalance->getId(),
+            'account_number' => '300400500600',
+            'status'         => 'activated',
+            'account_type'   => 'current'
+        ]);
+
+        $this->fixtures->create('sub_virtual_account', [
+            'master_merchant_id'    => '20000000000000',
+            'master_balance_id'     => $masterDirectBalance->getId(),
+            'name'                  => 'Sub VA 1',
+            'master_account_number' => $masterDirectBalance->getAccountNumber(),
+            'sub_account_type'      => 'sub_direct_account',
+            'sub_account_number'    => $balance->getAccountNumber(),
+        ]);
+
+        return [$balance, $bankingAccount, $masterDirectBankingAccount];
+    }
 }

@@ -7,8 +7,9 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
 
 /**
- * @property Merchant\Entity $merchant
+ * @property Merchant\Entity $masterMerchant
  * @property Balance\Entity $balance
+ * @property Merchant\Entity $subMerchant
  */
 class Entity extends Base\PublicEntity
 {
@@ -19,6 +20,8 @@ class Entity extends Base\PublicEntity
     const MASTER_BALANCE_ID         = 'master_balance_id';
     const SUB_MERCHANT_ID           = 'sub_merchant_id';
     const ACTIVE                    = 'active';
+    const SUB_ACCOUNT_TYPE          = 'sub_account_type';
+    const SUB_ACCOUNT_BALANCE       = 'sub_account_balance';
 
     const DESCRIPTION               = 'description';
     const AMOUNT                    = 'amount';
@@ -44,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::MASTER_ACCOUNT_NUMBER,
         self::SUB_ACCOUNT_NUMBER,
+        self::SUB_ACCOUNT_TYPE,
     ];
 
     protected $public = [
@@ -56,6 +60,8 @@ class Entity extends Base\PublicEntity
         self::SUB_MERCHANT_ID,
         self::MASTER_BALANCE_ID,
         self::ACTIVE,
+        self::SUB_ACCOUNT_TYPE,
+        self::SUB_ACCOUNT_BALANCE,
         self::CREATED_AT,
     ];
 
@@ -68,12 +74,15 @@ class Entity extends Base\PublicEntity
         self::MASTER_BALANCE_ID,
         self::NAME,
         self::ACTIVE,
+        self::SUB_ACCOUNT_TYPE,
+        self::SUB_ACCOUNT_BALANCE,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
 
     protected $defaults = [
-        self::ACTIVE => true,
+        self::ACTIVE           => true,
+        self::SUB_ACCOUNT_TYPE => Type::DEFAULT,
     ];
 
     protected $casts = [
@@ -112,6 +121,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MASTER_BALANCE_ID);
     }
 
+    public function getSubAccountType()
+    {
+        return $this->getAttribute(self::SUB_ACCOUNT_TYPE);
+    }
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
     // ------------- End Getters -------------
 
     // --------------- Setters ---------------
@@ -119,6 +138,21 @@ class Entity extends Base\PublicEntity
     public function setActive(bool $active)
     {
         return $this->setAttribute(self::ACTIVE, $active);
+    }
+
+    public function setSubAccountType($subAccountType)
+    {
+        return $this->setAttribute(self::SUB_ACCOUNT_TYPE, $subAccountType);
+    }
+
+    public function setClosingBalance($closingBalance)
+    {
+        return $this->setAttribute(self::SUB_ACCOUNT_BALANCE, $closingBalance);
+    }
+
+    public function setName($name)
+    {
+        return $this->setAttribute(self::NAME, $name);
     }
 
     // ------------- End Setters -------------
@@ -147,6 +181,11 @@ class Entity extends Base\PublicEntity
     public function isActive(): bool
     {
         return ($this->getActive() === true);
+    }
+
+    public function isSubDirectAccount(): bool
+    {
+        return ($this->getSubAccountType() === Type::SUB_DIRECT_ACCOUNT);
     }
 
     // ------------- End Helpers -------------

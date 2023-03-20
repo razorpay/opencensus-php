@@ -39,6 +39,8 @@ class Entity extends PublicEntity
     const ATTACHMENTS_FILE_HASH = 'file_hash';
     const UPDATE_REQUEST        = 'update_request';
     const PAYOUT_IDS            = 'payout_ids';
+    const MASTER_MERCHANT_ID    = 'master_merchant_id';
+    const MASTER_BALANCE_ID     = 'master_balance_id';
 
     // Relations
     const PAYOUT = 'payout';

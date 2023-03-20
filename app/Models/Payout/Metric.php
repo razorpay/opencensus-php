@@ -33,6 +33,7 @@ final class Metric
     const PAYOUT_CREATE_SUBMITTED_PROCESS_JOB_ERROR_TOTAL           = 'payout_create_submitted_process_job_error_total';
     const SERVER_ERROR_PRICING_RULE_ABSENT_TOTAL                    = 'server_error_pricing_rule_absent_total';
     const PAYOUT_TO_CARDS_VAULT_TOKEN_DELETION_RETRIES_EXHAUSTED    = 'payout_to_cards_vault_token_deletion_retries_exhausted';
+    const SUB_ACCOUNT_PAYOUT_TYPE_SET_TOTAL                         = 'sub_account_payout_type_set_total';
 
 
     // Histograms

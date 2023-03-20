@@ -6,6 +6,7 @@ use RZP\Exception;
 
 use RZP\Base;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\User\Entity as UserEntity;
 use RZP\Models\Feature\Constants as Features;
@@ -22,6 +23,7 @@ class Validator extends Base\Validator
         Entity::NAME                   => 'required|regex:/^[a-zA-Z0-9][\w\-&\'’,.:()\s\/]+$/|between:4,120|string',
         Entity::MASTER_ACCOUNT_NUMBER  => 'required|string|between:5,35',
         Entity::SUB_ACCOUNT_NUMBER     => 'required|string|between:5,35',
+        Entity::SUB_ACCOUNT_TYPE       => 'sometimes|nullable|string|custom',
     ];
 
     // We want to make sure we are not receving any extra keys that
@@ -43,22 +45,22 @@ class Validator extends Base\Validator
         Entity::CURRENCY               => 'sometimes|size:3|in:INR',
     ];
 
+    protected static $subDirectAccountTransferRules = [
+        Entity::MASTER_ACCOUNT_NUMBER  => 'required|string|between:5,35',
+        Entity::SUB_ACCOUNT_NUMBER     => 'required|string|between:5,35',
+        Entity::AMOUNT                 => 'required|integer|min:1',
+        Entity::CURRENCY               => 'sometimes|size:3|in:INR',
+    ];
+
     protected static $enableOrDisableRules = [
         Entity::ACTIVE  =>  'required|boolean',
     ];
 
-    public function validateMasterMerchant(MerchantEntity $masterMerchant)
+    public function validateMasterMerchant(MerchantEntity $masterMerchant, Entity $subVirtualAccount)
     {
-        if ($masterMerchant->isFeatureEnabled(Features::SUB_VIRTUAL_ACCOUNT) === false)
+        if ($this->isMasterMerchantFeatureEnabled($subVirtualAccount, $masterMerchant) === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED,
-                null,
-                [
-                    Entity::MASTER_MERCHANT_ID       => $masterMerchant->getId(),
-                    MerchantEntity::BUSINESS_BANKING => $masterMerchant->isBusinessBankingEnabled(),
-                ]
-            );
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_FEATURE_NOT_ENABLED);
         }
 
         if ($masterMerchant->isBusinessBankingEnabled() === false)
@@ -73,17 +75,6 @@ class Validator extends Base\Validator
             );
         }
 
-        if ($masterMerchant->isLive() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MASTER_MERCHANT_NOT_LIVE_ACTION_DENIED,
-                null,
-                [
-                    Entity::MASTER_MERCHANT_ID  =>  $masterMerchant->getId(),
-                ]
-            );
-        }
-
         if (($masterMerchant->isFundsOnHold() === true) and
             ($masterMerchant->isFeatureEnabled(Features::SKIP_HOLD_FUNDS_ON_PAYOUT) === false))
         {
@@ -94,6 +85,25 @@ class Validator extends Base\Validator
                     Entity::MASTER_MERCHANT_ID  =>  $masterMerchant->getId(),
                 ]
             );
+        }
+
+        $merchantCoreClass = new \RZP\Models\Merchant\Core();
+
+        if (($masterMerchant->isLive() === false) and
+            ($merchantCoreClass->isXVaActivated($masterMerchant) === false))
+        {
+            if (($subVirtualAccount->getSubAccountType() === Type::SUB_DIRECT_ACCOUNT) and
+                ($merchantCoreClass->isCurrentAccountActivated($masterMerchant) === true))
+            {
+                return;
+            }
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MASTER_MERCHANT_NOT_LIVE_ACTION_DENIED,
+                null,
+                [
+                    Entity::MASTER_MERCHANT_ID => $masterMerchant->getId(),
+                ]);
         }
     }
 
@@ -110,7 +120,8 @@ class Validator extends Base\Validator
             );
         }
 
-        if ($subMerchantEntity->isLive() === false)
+        if (($subMerchantEntity->isLive() === false) and
+            ((new \RZP\Models\Merchant\Attribute\Core())->isXVaActivated($subMerchantEntity)) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUB_MERCHANT_NOT_LIVE_ACTION_DENIED,
@@ -142,6 +153,47 @@ class Validator extends Base\Validator
                 null,
                 [
                     Entity::INPUT => $input
+                ]
+            );
+        }
+    }
+
+    protected function isMasterMerchantFeatureEnabled(Entity $subVirtualAccount, MerchantEntity $masterMerchant)
+    {
+        $isFeatureEnabled = true;
+
+        switch ($subVirtualAccount->getSubAccountType())
+        {
+            case Type::SUB_DIRECT_ACCOUNT:
+                if ($masterMerchant->isFeatureEnabled(Features::ASSUME_MASTER_ACCOUNT) === false)
+                {
+                    $isFeatureEnabled = false;
+                }
+                break;
+
+            case Type::DEFAULT:
+                if ($masterMerchant->isFeatureEnabled(Features::SUB_VIRTUAL_ACCOUNT) === false)
+                {
+                    $isFeatureEnabled = false;
+                }
+                break;
+
+            default:
+                $isFeatureEnabled = false;
+        }
+
+        return $isFeatureEnabled;
+    }
+
+    public function validateSubAccountType($attribute, $value)
+    {
+        if (Type::isValid($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                TraceCode::BAD_REQUEST_SUB_VIRTUAL_ACCOUNT_INVALID_TYPE,
+                null,
+                [
+                    $attribute => $value
                 ]
             );
         }

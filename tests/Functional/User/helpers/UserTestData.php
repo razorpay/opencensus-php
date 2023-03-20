@@ -5310,6 +5310,20 @@ return [
         ],
     ],
 
+    'testGetBankingUserWithPermissionsForSubMerchant'   => [
+        'response'      => [
+            'content'     => [
+                'merchants' => [
+                    [],
+                    [
+                        'banking_role' => 'owner',
+                        'role'         => null,
+                    ]
+                ],
+            ],
+        ],
+    ],
+
     'testGetPermissionsForCARoles'  => [
         'response'      => [
             'content'     => [

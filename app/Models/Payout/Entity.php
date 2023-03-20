@@ -173,8 +173,9 @@ class Entity extends Base\PublicEntity
     const BUFFER_AMOUNT                         = 'buffer_amount';
 
     // Constants for payout types
-    const DEFAULT   = 'default';
-    const ON_DEMAND = 'on_demand';
+    const DEFAULT     = 'default';
+    const ON_DEMAND   = 'on_demand';
+    const SUB_ACCOUNT = 'sub_account';
 
     //Constants for null types
     // These strings if passed by the merchant will be treated as null
@@ -457,6 +458,9 @@ class Entity extends Base\PublicEntity
      * @var bool
      */
     protected $shouldValidateAndUpdateBalancesFlag = true;
+
+    /** @var Balance\Entity */
+    protected $masterBalance = null;
 
     protected $entity = 'payout';
 
@@ -1445,7 +1449,7 @@ class Entity extends Base\PublicEntity
         return [];
     }
 
-    public function getSourceFtsFundAccountId($isSubMerchantOnDirectMasterMerchant = false)
+    public function getSourceFtsFundAccountId($isSubAccountPayout = false)
     {
         $payoutBalance = $this->balance;
 
@@ -1453,10 +1457,10 @@ class Entity extends Base\PublicEntity
 
         $app = App::getFacadeRoot();
 
-        if (($isSubMerchantOnDirectMasterMerchant === true) and
+        if (($isSubAccountPayout === true) and
             ($payoutBalance->isAccountTypeShared() === true))
         {
-            $directBalance = (new SubVaCore())->getDirectBalanceOfMasterMerchantFromSubMerchantIdForSubVaPayout($this->getMerchantId());
+            $directBalance = (new SubVaCore())->getDirectBalanceOfMasterMerchantForSubAccountPayout($this->balance->getAccountNumber(), $this->getMerchantId());
 
             $this->balance()->associate($directBalance);
 
@@ -1479,7 +1483,7 @@ class Entity extends Base\PublicEntity
         }
 
         //Need to set the balance back to the shared balance as we do not want fee recovery entity being created for this payout
-        if ($isSubMerchantOnDirectMasterMerchant === true)
+        if ($isSubAccountPayout === true)
         {
             $this->balance()->associate($payoutBalance);
         }
@@ -1530,6 +1534,11 @@ class Entity extends Base\PublicEntity
     public function getCancellationUserId()
     {
         return $this->getAttribute(self::CANCELLATION_USER_ID);
+    }
+
+    public function getMasterBalance()
+    {
+        return $this->masterBalance;
     }
 
     // ============================= END GETTERS =============================
@@ -1600,6 +1609,11 @@ class Entity extends Base\PublicEntity
     public function setTransactionCreatedAtWhenBalancePreDeducted(int $timestamp)
     {
         $this->transactionCreatedAtWhenBalancePreDeducted = $timestamp;
+    }
+
+    public function setMasterBalance(Balance\Entity $masterBalance)
+    {
+        $this->masterBalance = $masterBalance;
     }
 
     public function setChannel($channel)
@@ -1682,7 +1696,8 @@ class Entity extends Base\PublicEntity
 
         $this->setAttribute(self::STATUS, $status);
 
-        if ($this->getIsPayoutService() === true)
+        if ($this->getIsPayoutService() === true &&
+            $this->merchant->isFeatureEnabled(Features::APPS_STATUS_UPDATE_VIA_PS) === true)
         {
             return;
         }
@@ -1825,9 +1840,9 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
-    public function setType($onDemand)
+    public function setType($type)
     {
-        $this->setAttribute(self::TYPE, $onDemand);
+        $this->setAttribute(self::TYPE, $type);
     }
 
     public function setFTSTransferId($ftsTransferId)
@@ -3332,6 +3347,11 @@ class Entity extends Base\PublicEntity
         }
 
         return true;
+    }
+
+    public function isSubAccountPayout() : bool
+    {
+        return ($this->getPayoutType() === self::SUB_ACCOUNT);
     }
 
     public function isVendorPayment() :bool

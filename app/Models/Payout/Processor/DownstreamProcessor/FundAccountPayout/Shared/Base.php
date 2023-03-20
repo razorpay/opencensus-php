@@ -30,12 +30,15 @@ use RZP\Exception\GatewayTimeoutException;
 use RZP\Models\Transaction\Core as TxnCore;
 use RZP\Constants\Entity as EntityConstant;
 use RZP\Models\Transaction\Processor\Ledger;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Transaction\Processor\Payout as PayoutTxnProcessor;
 use RZP\Models\Payout\Processor\DownstreamProcessor\FundAccountPayout;
 use RZP\Models\PayoutsStatusDetails\Core as PayoutsStatusDetailsCore;
 
 class Base extends FundAccountPayout\Base
 {
+    const NON_ZERO_PRICING_ERROR_MESSAGE = "Payout failed. Contact support for help.";
+
     public function process(Entity $payout, PublicEntity $ftaAccount)
     {
         try
@@ -53,7 +56,8 @@ class Base extends FundAccountPayout\Base
 
             // We are overriding only for live mode for now. To check for test mode later.
             if (($payout->getChannel() === Channel::YESBANK) and
-                ($this->isLiveMode() === true))
+                ($this->isLiveMode() === true) and
+                ($payout->isSubAccountPayout() === false))
             {
                 $payout->setChannel(Channel::ICICI);
             }
@@ -394,6 +398,12 @@ class Base extends FundAccountPayout\Base
 
         $accountType = $payout->balance->getAccountType();
 
+        if ($payout->isSubAccountPayout() === true)
+        {
+            $accountType = Merchant\Balance\AccountType::DIRECT;
+            $merchantId  = $payout->getMasterBalance()->getMerchantId();
+        }
+
         $valid = $validator->validateChannelAndModeForPayouts($merchantId, $channel, $destinationType, $mode, $accountType);
 
         if ($valid === false)
@@ -426,6 +436,12 @@ class Base extends FundAccountPayout\Base
             ($payout->merchant->isFeatureEnabled(Feature\Constants::PAYOUT_SERVICE_ENABLED) === false))
         {
             $this->adjustMerchantFeesThroughRewardFeeCreditsForPayout($payout, $fees, $tax);
+        }
+
+        if (($payout->isSubAccountPayout() === true) and
+            (($fees !== 0) or ($tax !== 0)))
+        {
+            throw new BadRequestValidationFailureException(self::NON_ZERO_PRICING_ERROR_MESSAGE);
         }
 
         $payout->setFees($fees);

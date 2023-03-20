@@ -22,6 +22,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
+use Razorpay\Trace\Logger;
 use RZP\Models\AuthzAdmin;
 use RZP\Constants\Product;
 use RZP\Constants\Timezone;
@@ -59,6 +60,7 @@ use RZP\Models\Merchant\Escalations as MerchantEscalation;
 use RZP\Models\Merchant\Balance\Ledger\Core as LedgerCore;
 use RZP\Modules\SecondFactorAuth\Constants as AuthConstants;
 use RZP\Models\Merchant\Detail\Constants as DetailConstants;
+use RZP\Models\SubVirtualAccount\Constants as SubVaConstants;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetailEntity;
 use RZP\Models\Merchant\Credits\Balance\Entity as CreditEntity;
 use RZP\Mail\User\ContactMobileUpdated as ContactMobileUpdatedMail;
@@ -3685,7 +3687,15 @@ class Core extends Base\Core
             {
                 $authzRoles = (new \RZP\Models\RoleAccessPolicyMap\Service())->getAuthzRolesForRoleId($merchant[Entity::BANKING_ROLE]);
 
-                return (new AuthzAdmin\Service())->adminAPIListPolicy($authzRoles);
+                $authzPolicies = (new AuthzAdmin\Service())->adminAPIListPolicy($authzRoles);
+
+                /*
+                 * Currently there is no way to hide specific permissions/policies using CAC.
+                 * Hence after fetching allowed policies from AuthZ, we are filtering out restricted
+                 * permissions for sub merchants on Account <> Sub-Account flow.
+                 * TODO: Migrate this filtering to AuthZ once permission filtering based on Razorx/Splitz is supported
+                 */
+                return $this->removePermissionsForSubMerchantOnAccountSubAccountFlow($authzPolicies, $merchant[Entity::ID]);
             }
             catch (\Exception $exception)
             {
@@ -3700,6 +3710,8 @@ class Core extends Base\Core
 
         // Fetch static role permissions map
         $basePermissions = UserRolePermissionsMap::getRolePermissions($merchant[Entity::BANKING_ROLE]);
+
+        $basePermissions = $this->removePermissionsForSubMerchantOnAccountSubAccountFlow($basePermissions, $merchant[Entity::ID]);
 
         try {
             // Fetch merchant role permissions preferences for this specific user role
@@ -6021,5 +6033,41 @@ class Core extends Base\Core
         }
 
         return $context;
+    }
+
+    protected function removePermissionsForSubMerchantOnAccountSubAccountFlow($basePermissions, $merchantId)
+    {
+        $this->merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        if ($this->merchant->isFeatureEnabled(Features::ASSUME_SUB_ACCOUNT) === false)
+        {
+            return $basePermissions;
+        }
+
+        $accountSubAccountRestrictedPermissions = $this->fetchSubAccountRestrictedPermissions();
+
+        $subMerchantRestrictedPermissions = $accountSubAccountRestrictedPermissions[SubVaConstants::SUB_MERCHANT];
+
+        $filteredPermissions = array_diff($basePermissions, $subMerchantRestrictedPermissions);
+
+        $this->trace->info(TraceCode::SUB_MERCHANT_PERMISSIONS_FILTERED,
+                           [
+                               'feature' => SubVaConstants::ACCOUNT_SUB_ACCOUNT,
+                               'permissions' => $filteredPermissions
+                           ]);
+
+        return array_values($filteredPermissions);
+    }
+
+    protected function fetchSubAccountRestrictedPermissions(): array
+    {
+        $restrictedPermissions = Admin\ConfigKey::get(Admin\ConfigKey::ACCOUNT_SUB_ACCOUNT_RESTRICTED_PERMISSIONS_LIST, []);
+
+        if (empty($restrictedPermissions) === false)
+        {
+            return $restrictedPermissions;
+        }
+
+        return UserRolePermissionsMap::$restrictedPermissions[SubVaConstants::ACCOUNT_SUB_ACCOUNT];
     }
 }

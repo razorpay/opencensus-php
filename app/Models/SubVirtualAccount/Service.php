@@ -3,12 +3,17 @@
 namespace RZP\Models\SubVirtualAccount;
 
 use RZP\Constants;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\User;
 use RZP\Trace\TraceCode;
-use RZP\Models\Adjustment\Entity as AdjustmentEntity;
+use RZP\Models\CreditTransfer;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Merchant\Balance\Entity as BalEntity;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Adjustment\Entity as AdjustmentEntity;
 
 /**
  * Class Service
@@ -114,33 +119,32 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_TRANSFER_REQUEST, ['input' => $input]);
 
-        $validator = new Validator;
-
-        $validator->validateInput('sub_virtual_account_transfer', $input);
-
         $masterMerchantId = $this->merchant->getId();
 
         $subVirtualAccount = $this->repo->sub_virtual_account->getSubVirtualAccountWithMasterMerchantIdAndAccountNumbers($input, $masterMerchantId);
 
+        $validator = new Validator;
+
         $validator->validateSubVirtualAccount($subVirtualAccount, $input);
 
-        $validator->validateMasterMerchant($this->merchant);
+        if ($subVirtualAccount->getSubAccountType() === Type::SUB_DIRECT_ACCOUNT)
+        {
+            $validator->validateInput('sub_direct_account_transfer', $input);
+        }
+        else
+        {
+            $validator->validateInput('sub_virtual_account_transfer', $input);
+        }
 
-        /** @var  $subMerhcantEntity  MerchantEntity*/
-        $subMerhcantEntity = $this->repo->merchant->findOrFail($subVirtualAccount->getSubMerchantId());
+        $validator->validateMasterMerchant($this->merchant, $subVirtualAccount);
 
-        $validator->validateSubMerchant($subMerhcantEntity);
+        $subMerchantEntity = $subVirtualAccount->subMerchant;
 
-        /** @var  $masterAdjEntity AdjustmentEntity*/
-        $masterAdjEntity = $this->core->transfer($input, $this->merchant, $subMerhcantEntity);
+        $validator->validateSubMerchant($subMerchantEntity);
 
-        $this->trace->info(
-            TraceCode::SUB_VIRTUAL_ACCOUNT_TRANSFER_RESPONSE,
-            [
-                Entity::MASTER_ADJUSTMENT_ENTITY => $masterAdjEntity->toArrayPublic(),
-            ]);
+        $transferResponse = $this->core->transfer($input, $subVirtualAccount);
 
-        return $masterAdjEntity->toArrayPublic();
+        return $transferResponse->toArrayPublic();
     }
 
     private function verifyOtpForTransfer(array $input)
@@ -153,5 +157,23 @@ class Service extends Base\Service
             $this->mode === Constants\Mode::TEST);
 
         return array_except($input, ['otp', 'token']);
+    }
+
+    public function listCreditTransfers($input)
+    {
+        $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_CREDIT_TRANSFER_FETCH_REQUEST, ['input' => $input]);
+
+        $input[CreditTransfer\Entity::PAYER_MERCHANT_ID] = $this->merchant->getId();
+
+        $creditTransferService = new CreditTransfer\Service();
+
+        $creditTransfers = $creditTransferService->fetchMultiple($input, false);
+
+        $this->trace->info(TraceCode::SUB_VIRTUAL_ACCOUNT_CREDIT_TRANSFER_FETCH_SUCCESS,
+                           [
+                               'count' => count($creditTransfers)
+                           ]);
+
+        return $creditTransfers->toArrayPublic();
     }
 }

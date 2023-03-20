@@ -79,4 +79,8 @@ class Constants
     const ENTITY_TYPE_MISMATCH = 'Entity Type Mismatch';
     const UNEXPECTED_STATE_CHANGE_LOG = 'Unexpected State Change Log';
     const DUPLICATE_MERCHANT_APPLICATION = 'Application with Duplicate Merchant Name';
+
+    const NAME = 'name';
+
+    const IS_UPI_ALLOWED = 'is_upi_allowed';
 }

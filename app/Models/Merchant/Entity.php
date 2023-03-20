@@ -3819,5 +3819,4 @@ class Entity extends Base\PublicEntity
         }
         return Timezone::IST;
     }
-
 }

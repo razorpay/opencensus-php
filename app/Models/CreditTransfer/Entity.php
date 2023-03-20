@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
 
     const ID                 = 'id';
     const MERCHANT_ID        = 'merchant_id';
+    const MERCHANT           = 'merchant';
     const BALANCE_ID         = 'balance_id';
     const AMOUNT             = 'amount';
     const CURRENCY           = 'currency';
@@ -35,6 +36,10 @@ class Entity extends Base\PublicEntity
     const PAYER_NAME         = 'payer_name';
     const PAYER_ACCOUNT      = 'payer_account';
     const PAYER_IFSC         = 'payer_ifsc';
+    const PAYER_MERCHANT_ID  = 'payer_merchant_id';
+    const PAYER_MERCHANT     = 'payer_merchant';
+    const PAYER_USER_ID      = 'payer_user_id';
+    const PAYER_USER         = 'payer_user';
 
     // payee details
     const PAYEE_ACCOUNT_TYPE = 'payee_account_type';
@@ -56,6 +61,7 @@ class Entity extends Base\PublicEntity
         self::PAYER_ACCOUNT,
         self::PAYER_NAME,
         self::PAYER_IFSC,
+        self::PAYER_MERCHANT_ID,
         self::PAYEE_ACCOUNT_ID,
         self::PAYEE_ACCOUNT_TYPE,
         self::FAILED_AT,
@@ -69,11 +75,18 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::MODE,
         self::DESCRIPTION,
+        self::MERCHANT_ID,
+        self::MERCHANT,
         self::TRANSACTION_ID,
         self::UTR,
+        self::STATUS,
         self::PAYER_NAME,
         self::PAYER_ACCOUNT,
         self::PAYER_IFSC,
+        self::PAYER_MERCHANT_ID,
+        self::PAYER_MERCHANT,
+        self::PAYER_USER_ID,
+        self::PAYER_USER,
         self::CREATED_AT,
         self::PROCESSED_AT,
         self::FAILED_AT,
@@ -95,6 +108,10 @@ class Entity extends Base\PublicEntity
         self::PAYER_ACCOUNT,
         self::PAYER_NAME,
         self::PAYER_IFSC,
+        self::PAYER_MERCHANT_ID,
+        self::PAYER_MERCHANT,
+        self::PAYER_USER_ID,
+        self::PAYER_USER,
         self::PAYEE_ACCOUNT_ID,
         self::PAYEE_ACCOUNT_TYPE,
         self::CREATED_AT,
@@ -110,12 +127,19 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::UTR            => null,
         self::TRANSACTION_ID => null,
+        self::PAYER_USER_ID  => null,
         self::FAILED_AT      => null,
         self::PROCESSED_AT   => null
     ];
 
     protected $amounts = [
         self::AMOUNT
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::STATUS,
     ];
 
     // ----------------------- Associations ------------------------------------
@@ -125,9 +149,19 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function payerMerchant()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
     public function transaction()
     {
         return $this->belongsTo('RZP\Models\Transaction\Entity');
+    }
+
+    public function payerUser()
+    {
+        return $this->belongsTo('RZP\Models\User\Entity');
     }
 
     // -------------------------- Getters --------------------------------------
@@ -165,6 +199,11 @@ class Entity extends Base\PublicEntity
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getPayerMerchantId()
+    {
+        return $this->getAttribute(self::PAYER_MERCHANT_ID);
     }
 
     public function getPayerName()
@@ -212,6 +251,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FAILED_AT);
     }
 
+    public function getUserId()
+    {
+        return $this->getAttribute(self::PAYER_USER_ID);
+    }
+
     // ----------------------- Setters -----------------------------------------
 
     public function setStatus($status)
@@ -246,6 +290,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FAILED_AT, $date);
     }
 
+    public function setPayerMerchantId($payerMerchantId)
+    {
+        $this->setAttribute(self::PAYER_MERCHANT_ID, $payerMerchantId);
+    }
+
     // ============================= MUTATORS =============================
 
     protected function setStatusAttribute($status)
@@ -260,6 +309,15 @@ class Entity extends Base\PublicEntity
 
             $this->setAttribute($timestampKey, $currentTime);
         }
+    }
+
+    public function setPublicStatusAttribute(&$input)
+    {
+        $internalStatus = $input[self::STATUS];
+
+        $publicStatus = Status::$internalToPublicStatusMap[$internalStatus];
+
+        $input[self::STATUS] = $publicStatus;
     }
 
     // ============================= END MUTATORS =============================

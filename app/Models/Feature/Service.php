@@ -67,6 +67,8 @@ class Service extends Base\Service
 
             $featureCore->checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures($featureToAssign->getName());
 
+            $featureCore->checkAndDisableSubAccountFeatureChange($featureToAssign->getName());
+
             return $featureCore->create($item, $shouldSync);
         });
 
@@ -751,11 +753,15 @@ class Service extends Base\Service
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
-        (new Core)->checkAndDisableRxLedgerAndPayoutFeatureChanges($feature->getName());
+        $core = new Core();
 
-        (new Core)->checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures($featureName);
+        $core->checkAndDisableRxLedgerAndPayoutFeatureChanges($feature->getName());
 
-        (new Core)->delete($feature, $shouldSync);
+        $core->checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures($featureName);
+
+        $core->checkAndDisableSubAccountFeatureChange($featureName);
+
+        $core->delete($feature, $shouldSync);
 
         // We delete the tag also along with feature.
         $this->deleteTagIfApplicable($entityType, $entityId, $feature->getName());
@@ -831,11 +837,15 @@ class Service extends Base\Service
 
                 try
                 {
-                    (new Core())->checkAndDisableRxLedgerAndPayoutFeatureChanges($featureName);
+                    $core = new Core();
 
-                    (new Core())->checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures($featureName);
+                    $core->checkAndDisableRxLedgerAndPayoutFeatureChanges($featureName);
 
-                    (new Core())->create($featureParam, $shouldSync);
+                    $core->checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures($featureName);
+
+                    $core->checkAndDisableSubAccountFeatureChange($featureName);
+
+                    $core->create($featureParam, $shouldSync);
 
                     $successfulMerchant[] = $entityId;
 
@@ -898,6 +908,8 @@ class Service extends Base\Service
 
         $entityType = $input[Constants::ENTITY_TYPE] ?? Constants::MERCHANT;
 
+        $core = new Core();
+
         foreach ($names as $featureName)
         {
             $failedMerchant = $successfulMerchant = [];
@@ -911,9 +923,11 @@ class Service extends Base\Service
             {
                 try
                 {
-                    (new Core())->checkAndDisableRxLedgerAndPayoutFeatureChanges($featureName);
+                    $core->checkAndDisableRxLedgerAndPayoutFeatureChanges($featureName);
 
-                    (new Core())->checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures($featureName);
+                    $core->checkAndDisableFeatureChangesForPayoutServiceIdempotencyFeatures($featureName);
+
+                    $core->checkAndDisableSubAccountFeatureChange($featureName);
 
                     $feature = $this->repo->feature->findByEntityTypeEntityIdAndNameOrFail(
                         $entityType,

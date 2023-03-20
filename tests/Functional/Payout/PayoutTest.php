@@ -33728,21 +33728,21 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($reversal->getAmount(), $payout->getFees() + $payout->getAmount());
     }
 
-    public function createRelevantEntitiesForSubVirtualAccountSetup($masterMerchant)
+    public function createRelevantEntitiesForSubVirtualAccountSetup($masterMerchant, $mode = 'test')
     {
         //direct balance of master va
-        $this->fixtures->on('test')->edit('merchant', $masterMerchant->getId(), [
+        $this->fixtures->on($mode)->edit('merchant', $masterMerchant->getId(), [
             'business_banking' => 1,
             'live'             => 1
         ]);
 
-        $this->fixtures->on('test')->create('feature', [
+        $this->fixtures->on($mode)->create('feature', [
             'id'        => random_alphanum_string(14),
             'entity_id' => $masterMerchant->getId(),
             'name'      => 'sub_virtual_account',
         ]);
 
-        $this->fixtures->on('test')->create('balance', [
+        $masterDirectBalance = $this->fixtures->on($mode)->create('balance', [
             'id'             => random_alphanum_string(14),
             'merchant_id'    => $masterMerchant->getId(),
             'account_number' => '0004001156789',
@@ -33751,8 +33751,16 @@ class PayoutTest extends OAuthTestCase
             'channel'        => 'axis'
         ]);
 
+        $this->fixtures->on($mode)->create('banking_account_statement_details', [
+            'id' => 'masterBASD0000',
+            'balance_id' => $masterDirectBalance->getId(),
+            'account_number' => $masterDirectBalance->getAccountNumber(),
+            'channel' => $masterDirectBalance->getChannel(),
+            'status' => 'active',
+        ]);
+
         // shared balance of sub VA
-        $this->fixtures->on('test')->create('balance', [
+        $subBalance = $this->fixtures->on($mode)->create('balance', [
             'type'           => 'banking',
             'account_type'   => 'shared',
             'account_number' => '2323230041626905',
@@ -33760,14 +33768,17 @@ class PayoutTest extends OAuthTestCase
             'balance'        => 10000000
         ]);
 
-        $this->fixtures->on('test')->create('sub_virtual_account', [
+        $subVirtualAccount = $this->fixtures->on($mode)->create('sub_virtual_account', [
             'id'                    => random_alphanum_string(14),
             'master_merchant_id'    => $masterMerchant->getId(),
             'master_balance_id'     => 'xbalance123456',
             'sub_merchant_id'       => '10000000000000',
             'master_account_number' => '34341234567890',
+            'sub_account_number'    => $subBalance->getAccountNumber(),
             'active'                => true
         ]);
+
+        return [$subVirtualAccount, $masterDirectBalance, $subBalance];
     }
 
     public function testPayoutsBlockedFromMasterMerchantSharedAccount()
@@ -33796,6 +33807,320 @@ class PayoutTest extends OAuthTestCase
         $payout = $this->getDbLastEntity('payout');
 
         $this->assertEquals('initiated', $payout->getStatus());
+    }
+
+    public function testCreateSubAccountPayout()
+    {
+        [$subVirtualAccount, $masterBalance, $subBalance] = $this->setUpForSubAccountPayout();
+
+        $this->setUpZeroPricing();
+
+        $testData = &$this->testData['testCreatePayout'];
+        $testData['response']['content']['fees'] = 0;
+        $testData['response']['content']['tax'] = 0;
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        /** @var TransactionEntity $transaction */
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertEquals('initiated', $payout->getStatus());
+        $this->assertEquals('sub_account', $payout->getPayoutType());
+        $this->assertEquals('axis', $masterBalance->getChannel());
+        $this->assertEquals($transaction->getId(), $payout->getTransactionId());
+        $this->assertEquals($transaction->getEntityId(), $payout->getId());
+        $this->assertEquals($transaction->getFee(), $payout->getFees());
+        $this->assertEquals($transaction->getTax(), $payout->getTax());
+
+        $payoutAdditionalInfo = $payoutDetails->getAdditionalInfo();
+        $expectedPayoutAdditionalInfo = [
+            'master_balance_id'  => $masterBalance->getId(),
+            'master_merchant_id' => '10000000000012',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPayoutAdditionalInfo, $payoutAdditionalInfo);
+
+        return [$payout, $transaction];
+    }
+
+    public function testCreateSubAccountPayoutWithNonZeroPricing()
+    {
+        $this->setUpForSubAccountPayout();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request'] = $this->testData['testCreatePayout']['request'];
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->assertNull($payout);
+    }
+
+    public function testCreateSubAccountPayoutWithInactiveMasterBASD()
+    {
+        $this->setUpForSubAccountPayout();
+
+        $masterBASD = $this->getDbLastEntity('banking_account_statement_details');
+
+        $this->fixtures->edit('banking_account_statement_details', $masterBASD->getId(), ['status' => 'archived']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request'] = $this->testData['testCreatePayout']['request'];
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateSubAccountPayoutFailedWithUpiMode()
+    {
+        $this->setUpForSubAccountPayout();
+
+        $testData = $this->testData['testRblPayoutWithInvalidMode'];
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateSubAccountPayoutWithUpiModeWhenMasterMerchantFeatureNotEnabled()
+    {
+        $this->setUpForSubAccountPayout();
+
+        $directMasterBalance = $this->getDbEntity('balance', ['merchant_id' => '10000000000012', 'channel' => 'axis']);
+
+        $this->fixtures->edit('balance', $directMasterBalance->getId(), ['channel' => 'rbl']);
+
+        $testData = $this->testData['testRblPayoutWithInvalidMode'];
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateSubAccountPayoutWithUpiModeWhenMasterMerchantFeatureEnabled()
+    {
+        $this->setUpForSubAccountPayout();
+
+        $directMasterBalance = $this->getDbEntity('balance', ['merchant_id' => '10000000000012', 'channel' => 'axis']);
+
+        $this->fixtures->edit('balance', $directMasterBalance->getId(), ['channel' => 'rbl']);
+
+        $this->fixtures->create('feature', [
+            'entity_id'   => $directMasterBalance->merchant->getId(),
+            'entity_type' => 'merchant',
+            'name'        => 'rbl_ca_upi',
+        ]);
+
+        $this->setUpZeroPricing(Payout\Mode::UPI);
+
+        $fundAccountRequest = [
+            'method'  => 'POST',
+            'url'     => '/fund_accounts',
+            'content' => [
+                "account_type" => "vpa",
+                "contact_id"   => "cont_1000001contact",
+                "vpa"          => [
+                    "address" => 'yv@upi',
+                ]
+            ]
+        ];
+
+        $this->ba->privateAuth();
+
+        $fundAccount = $this->makeRequestAndGetContent($fundAccountRequest);
+
+        $testData = $this->testData['testCreateFreePayoutForUPIModeSharedAccountPrivateAuth'];
+        $testData['request']['content']['fund_account_id'] = $fundAccount['id'];
+        $testData['response']['content']['fund_account_id'] = $fundAccount['id'];
+        $testData['response']['content']['fees'] = 0;
+        $testData['response']['content']['tax'] = 0;
+        $testData['response']['content']['mode'] = Payout\Mode::UPI;
+
+        $this->startTest($testData);
+    }
+
+    public function testCreateSubAccountPayoutInLedgerShadowMode()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_JOURNAL_WRITES]);
+
+        $ledgerSnsPayloadArray = [];
+
+        $this->mockLedgerSns(1, $ledgerSnsPayloadArray);
+
+        [$payout, $transaction] = $this->testCreateSubAccountPayout();
+
+        $ledgerRequestPayload = $ledgerSnsPayloadArray[0];
+
+        $ledgerRequestPayload['notes']             = json_decode($ledgerRequestPayload['notes'], true);
+        $ledgerRequestPayload['identifiers']       = json_decode($ledgerRequestPayload['identifiers'], true);
+        $ledgerRequestPayload['additional_params'] = json_decode($ledgerRequestPayload['additional_params'], true);
+
+        $this->assertArraySelectiveEquals(
+            [
+                'tenant'             => 'X',
+                'transactor_id'      => $payout->getPublicId(),
+                'transactor_event'   => 'va_to_va_payout_initiated',
+                'tax'                => '0',
+                'commission'         => '0',
+                'base_amount'        => (string) $payout->getAmount(),
+                'amount'             => (string) $payout->getAmount(),
+                'identifiers'        => [
+                    'banking_account_id' => $this->bankingBalance->bankingAccount->getPublicId()
+                ],
+                'notes'              => [
+                    'balance_id'     => $this->bankingBalance->getId(),
+                    'transaction_id' => $transaction->getPublicId(),
+                ],
+                'api_transaction_id' => $transaction->getId(),
+            ],
+            $ledgerRequestPayload
+        );
+    }
+
+    public function testCreateSubAccountPayoutInLedgerReverseShadow()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::LEDGER_REVERSE_SHADOW]);
+
+        $this->app['config']->set('applications.ledger.enabled', true);
+
+        $this->app['rzp.mode'] = Mode::TEST;
+
+        $ledgerMock = Mockery::mock(Ledger::class, [$this->app])->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $this->app->instance('ledger', $ledgerMock);
+
+        $testDataContent = $this->testData['testCreatePayout']['request']['content'];
+
+        $expectedPayload = [
+            'merchant_id'      => '10000000000000',
+            'transactor_event' => 'va_to_va_payout_initiated',
+            'amount'           => (string) $testDataContent['amount'],
+            'base_amount'      => (string) $testDataContent['amount'],
+            'commission'       => '0',
+            'tax'              => '0',
+        ];
+
+        $ledgerMock->shouldReceive('createJournal')
+                   ->withArgs(function($payload, $headers, $throwExOnFailure) use ($expectedPayload)
+                   {
+                       $this->assertArraySelectiveEquals($expectedPayload, $payload);
+                       return true;
+                   });
+
+        [$subVirtualAccount, $masterBalance, $subBalance] = $this->setUpForSubAccountPayout();
+
+        $this->setUpZeroPricing();
+
+        $testData = &$this->testData['testCreatePayout'];
+        $testData['response']['content']['fees'] = 0;
+        $testData['response']['content']['tax'] = 0;
+
+        $this->startTest($testData);
+
+        $payout = $this->getDbLastEntity('payout');
+        $payoutDetails = $this->getDbLastEntity('payouts_details');
+        /** @var TransactionEntity $transaction */
+        $transaction = $this->getDbLastEntity('transaction');
+
+        $this->assertNull($transaction);
+        $this->assertEquals('initiated', $payout->getStatus());
+        $this->assertEquals('sub_account', $payout->getPayoutType());
+        $this->assertEquals('axis', $masterBalance->getChannel());
+
+        $payoutAdditionalInfo = $payoutDetails->getAdditionalInfo();
+        $expectedPayoutAdditionalInfo = [
+            'master_balance_id'  => $masterBalance->getId(),
+            'master_merchant_id' => '10000000000012',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedPayoutAdditionalInfo, $payoutAdditionalInfo);
+    }
+
+    public function setUpForSubAccountPayout()
+    {
+        $this->fixtures->merchant->addFeatures([Feature\Constants::ASSUME_SUB_ACCOUNT]);
+
+        $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $masterMerchant = $this->getDbEntityById('merchant', '10000000000012');
+
+        [$subVirtualAccount, $masterBalance, $subBalance] = $this->createRelevantEntitiesForSubVirtualAccountSetup($masterMerchant);
+
+        $this->fixtures->edit('sub_virtual_account', $subVirtualAccount->getId(), [
+            'sub_account_type'      => 'sub_direct_account',
+            'master_account_number' => $masterBalance->getAccountNumber(),
+            'master_balance_id'     => $masterBalance->getId(),
+            'sub_account_number'    => '2224440041626905',
+        ]);
+
+        $featureToReplace = $this->getDbEntity('feature', ['name' => 'sub_virtual_account', 'entity_id' => '10000000000012']);
+
+        $this->fixtures->edit('feature', $featureToReplace->getId(), ['name' => Feature\Constants::ASSUME_MASTER_ACCOUNT]);
+
+        $this->ba->privateAuth();
+
+        $this->app['rzp.mode'] = EnvMode::TEST;
+
+        $mock = Mockery::mock(FundTransfer::class, [$this->app])
+                       ->shouldAllowMockingProtectedMethods()->makePartial();
+
+        $ftsRequest = [
+            'product' => 'payout',
+            'transfer' => [
+                'preferred_source_account_id' => 12345678,
+            ]
+        ];
+
+        $mock->shouldReceive('shouldAllowTransfersViaFts')
+             ->andReturn([true, 'Dummy']);
+        $mock->shouldReceive('createAndSendRequest')
+             ->withArgs(function($endpoint, $method, $input) use ($ftsRequest)
+             {
+                 $this->assertArraySelectiveEquals($ftsRequest, $input);
+             });
+
+        $this->app->instance('fts_fund_transfer', $mock);
+
+        return [$subVirtualAccount, $masterBalance, $subBalance];
+    }
+
+    public function setUpZeroPricing($mode = Payout\Mode::IMPS)
+    {
+        $planId = random_alphanum_string(14);
+
+        $this->fixtures->create('pricing', [
+            'id'                  => 'zeroPricing000',
+            'plan_id'             => $planId,
+            'plan_name'           => 'Zero Pricing Plan',
+            'product'             => 'banking',
+            'feature'             => 'payout',
+            'payment_method'      => ($mode === Payout\Mode::UPI) ? 'upi' : 'fund_transfer',
+            'auth_type'           => null,
+            'percent_rate'        => 0,
+            'fixed_rate'          => 0,
+            'amount_range_active' => false,
+            'payouts_filter'      => null,
+            'org_id'              => '100000razorpay',
+            'account_type'        => AccountType::SHARED,
+            'channel'             => null,
+            'expired_at'          => null,
+            'created_at'          => time(),
+            'updated_at'          => time(),
+        ]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => $planId]);
+    }
+
+    public function testSubAccountPayoutStatusUpdateToProcessedInLedgerShadow()
+    {
+        [$payout, $transaction] = $this->testCreateSubAccountPayout();
+
+        $this->fixtures->merchant->addFeatures(Feature\Constants::LEDGER_JOURNAL_WRITES);
+
+        $this->updateFtaAndSource($payout->getId(), Status::PROCESSED);
+
+        $payout->reload();
+
+        $this->assertEquals('processed', $payout->getStatus());
     }
 
     public function testAsyncPayoutApprove()

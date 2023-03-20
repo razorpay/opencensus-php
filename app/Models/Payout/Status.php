@@ -348,9 +348,9 @@ class Status
             $payoutStatus = $payout->getStatus();
         }
 
-        if ($payout->isVaToVaPayout() === true)
+        if (($payout->isVaToVaPayout() === true) or ($payout->isSubAccountPayout() === true))
         {
-            // for VA to VA payouts
+            // for VA to VA payouts or sub account payouts
             return self::$payoutStatusToLedgerEventMapForVaToVaPayouts[$payoutStatus] ?? Ledger\Base::DEFAULT_EVENT;
         }
 

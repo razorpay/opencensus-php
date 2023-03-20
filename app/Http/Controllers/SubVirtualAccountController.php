@@ -42,4 +42,13 @@ class SubVirtualAccountController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function listCreditTransfers()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->listCreditTransfers($input);
+
+        return ApiResponse::json($response);
+    }
 }

@@ -55,4 +55,6 @@ final class Constants
     const TRANSACTIONS_DEBIT             = 'transactions_debit';
 
     const TRANSACTIONS_CREDIT            = 'transactions_credit';
+
+    const GENERATED_BY                   = 'generated_by';
 }
