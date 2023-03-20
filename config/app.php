@@ -512,6 +512,8 @@ return array(
 
     'checkout_recurring_upi_intent_splitz_experiment_id' => env('CHECKOUT_RECURRING_UPI_INTENT_SPLITZ_EXPERIMENT_ID'),
 
+    'checkout_recurring_intl_verify_phone_splitz_experiment_id' => env('CHECKOUT_RECURRING_INTL_VERIFY_PHONE_SPLITZ_EXPERIMENT_ID'),
+
     'checkout_recurring_upi_qr_splitz_experiment_id' => env('CHECKOUT_RECURRING_UPI_QR_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_recurring_payment_method_configuration_splitz_experiment_id' => env('CHECKOUT_RECURRING_PAYMENT_METHOD_CONFIGURATION_SPLITZ_EXPERIMENT_ID'),

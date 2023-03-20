@@ -49,6 +49,7 @@ class CheckoutExperiment
             'recurring_redesign_v1_5'                            => false,
             'reuse_upi_paymentId'                                => false,
             'recurring_upi_intent'                               => false,
+            'recurring_intl_verify_phone'                        => false,
             'recurring_upi_qr'                                   => false,
             'recurring_payment_method_configuration'             => false,
             'recurring_upi_all_psp'                              => false,
@@ -197,6 +198,14 @@ class CheckoutExperiment
 
         $this->fillExperimentData(
             UniqueIdEntity::generateUniqueId(),
+            'app.checkout_recurring_intl_verify_phone_splitz_experiment_id',
+            'RecurringIntlVerifyPhone',
+            'recurring_intl_verify_phone',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
             'app.checkout_recurring_upi_qr_splitz_experiment_id',
             'RecurringUpiQr',
             'recurring_upi_qr',
@@ -306,6 +315,7 @@ class CheckoutExperiment
             'cvv_less',
             ['merchant_id' => $this->merchantId]
         );
+
     }
 
     private function fill1CcExperimentData(): void
@@ -481,6 +491,13 @@ class CheckoutExperiment
     }
 
     private function handleRecurringUpiIntentResponse($response): bool
+    {
+        $variant = $response['variant']['name'] ?? '';
+
+        return $variant === 'variant_on';
+    }
+
+    private function handleRecurringIntlVerifyPhoneResponse($response): bool
     {
         $variant = $response['variant']['name'] ?? '';
 
