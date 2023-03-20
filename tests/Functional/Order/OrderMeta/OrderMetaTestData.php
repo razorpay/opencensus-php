@@ -54,9 +54,9 @@ return [
                     'shipping_address' => [
                         'type'    => 'shipping_address',
                         'line1'   => 'line123',
-                        'zipcode' => '305001',
-                        'city'    => 'Ajmer',
-                        'state'   => 'Rajasthan',
+                        'zipcode' => '110085',
+                        'city'    => 'Delhi',
+                        'state'   => 'Delhi',
                         'country' => 'in',
                     ],
                     'device'    => [
@@ -80,9 +80,9 @@ return [
                     'shipping_address' => [
                         'type'    => 'shipping_address',
                         'line1'   => 'line123',
-                        'zipcode' => '305001',
-                        'city'    => 'Ajmer',
-                        'state'   => 'Rajasthan',
+                        'zipcode' => '110085',
+                        'city'    => 'Delhi',
+                        'state'   => 'Delhi',
                         'country' => 'in',
                     ],
                     'device'    => [
@@ -218,9 +218,9 @@ return [
                     'shipping_address' => [
                         'type'    => 'shipping_address',
                         'line1'   => 'line123',
-                        'zipcode' => '305001',
-                        'city'    => 'Ajmer',
-                        'state'   => 'Rajasthan',
+                        'zipcode' => '110085',
+                        'city'    => 'Delhi',
+                        'state'   => 'Delhi',
                         'country' => 'in',
                     ],
                     'device'    => [

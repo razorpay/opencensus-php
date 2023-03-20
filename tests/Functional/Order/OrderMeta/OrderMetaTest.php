@@ -363,14 +363,14 @@ class OrderMetaTest extends TestCase
 
         $cacheKey = "SHIPPING_INFO_10000000000000_"
             . $orderId
-            . "_305001_in";
+            . "_1000_110085_Delhi_in";
 
         $this->app['cache']->put($cacheKey, [
             "serviceable"  => true,
             "cod"          => true,
             "cod_fee"      => 50,
             "shipping_fee" => 60,
-        ]);
+        ],2400);
 
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['url'] = $url;
@@ -386,14 +386,14 @@ class OrderMetaTest extends TestCase
 
         $cacheKey = "SHIPPING_INFO_10000000000000_"
             . $orderId
-            . "_305001_in";
+            . "_1000_110085_Delhi_in";
 
         $this->app['cache']->put($cacheKey, [
             "serviceable"  => false,
             "cod"          => true,
             "cod_fee"      => 50,
             "shipping_fee" => 60,
-        ]);
+        ],2400);
 
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['url'] = $url;
@@ -454,14 +454,14 @@ class OrderMetaTest extends TestCase
 
         $cacheKey = "SHIPPING_INFO_10000000000000_"
             . $orderId
-            . "_305001_in";
+            . "_1000_110085_Delhi_in";
 
         $this->app['cache']->put($cacheKey, [
             "serviceable"  => true,
             "cod"          => true,
             "cod_fee"      => 50,
             "shipping_fee" => 60,
-        ]);
+        ], 2400);
 
         $testData = $this->testData[__FUNCTION__];
         $testData['request']['url'] = $url;
