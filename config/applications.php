@@ -942,8 +942,8 @@ return [
         'secret'        => env('NOCODE_APP_SERVICE_SECRET'),
         'timeout'       => env('NOCODE_APP_SERVICE_TIMEOUT_SECS'),
         'nca_urls'      => [
-            'example'           => 'v1/example',
-            'payment_process'   => 'v1/payments/%s/process',
+            'example'           => 'example',
+            'payment_process'   => 'payments/%s/process',
         ]
     ],
     'smart_collect' => [

@@ -193,6 +193,16 @@ class PaymentPageProcessor extends Job
 
         $paymentLink    = $payment->paymentLink;
 
+        if (empty($paymentLink) === true) {
+            $this->delete();
+
+            $this->trace->info(TraceCode::PAYMENT_LINK_POST_PROCESSOR_FAILED, $this->context + [
+                    'payment_id'    => $payment->getId(),
+                ]);
+
+            return;
+        }
+
         $traceContext = $this->context + [
                     'payment_id'        => $payment->getId(),
                     'payment_page_id'   => $paymentLink->getId(),

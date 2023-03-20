@@ -585,12 +585,12 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onPaymentCaptured($payment)
     {
-        if ($payment->hasPaymentLink() === true || $this->isForNocodeApps($payment))
+        if ($payment->hasPaymentLink() === true)
         {
             (new PaymentLink\Core)->postPaymentCaptureUpdatePaymentPage($payment);
         }
 
-        if ($payment->hasOrder() === true && $this->isForNocodeApps($payment))
+        if ($this->isForNocodeApps($payment))
         {
             (new PaymentLink\Core)->handleNocodeAppsPaymentEvent($payment);
         }
@@ -1036,7 +1036,7 @@ class ApiEventSubscriber extends Base\Core
             (new PaymentLink\Core)->postPaymentRefundUpdatePaymentPageDispatcher($refund);
         }
 
-        if ($refund->payment->hasOrder() === true && $this->isForNocodeApps($refund->payment))
+        if ($this->isForNocodeApps($refund->payment))
         {
             (new PaymentLink\Core)->handleNocodeAppsPaymentEvent($refund->payment);
         }
