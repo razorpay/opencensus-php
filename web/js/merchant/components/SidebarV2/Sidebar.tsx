@@ -154,7 +154,7 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Icon class="i i-external-link" />
+                    <Icon className="i i-external-link" />
                     <Typo>{org?.external_redirect_url_text}</Typo>
                   </ExternalLink>
                 </ShowWhen>

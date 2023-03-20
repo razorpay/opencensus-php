@@ -31,7 +31,7 @@ exports[`Storyshots Onboarding/Field Multiple Field 1`] = `
                         class="Viewweb__View-sc-1o0hmxm-0 TextInputweb__FillContainer-sc-18gz688-2 jxHNUe Spaceweb__Space-sc-1abqisc-0 fAtZGf Sizeweb__Size-sc-1e5yf1-0 dCxfKl"
                       >
                         <div
-                          class="Viewweb__View-sc-1o0hmxm-0 Labelweb__FloatView-sc-1eubdu6-0 kxSngp Spaceweb__Space-sc-1abqisc-0 zryoY"
+                          class="Viewweb__View-sc-1o0hmxm-0 Labelweb__FloatView-sc-1eubdu6-0 bwlVAU Spaceweb__Space-sc-1abqisc-0 zryoY"
                         >
                           <label
                             class="Textweb__Text-sc-1qrdpx3-0 Labelweb__StyledText-sc-1eubdu6-1 dtOgfF"
@@ -83,7 +83,7 @@ exports[`Storyshots Onboarding/Field Multiple Field 1`] = `
                         class="Viewweb__View-sc-1o0hmxm-0 TextInputweb__FillContainer-sc-18gz688-2 jxHNUe Spaceweb__Space-sc-1abqisc-0 fAtZGf Sizeweb__Size-sc-1e5yf1-0 dCxfKl"
                       >
                         <div
-                          class="Viewweb__View-sc-1o0hmxm-0 Labelweb__FloatView-sc-1eubdu6-0 kxSngp Spaceweb__Space-sc-1abqisc-0 zryoY"
+                          class="Viewweb__View-sc-1o0hmxm-0 Labelweb__FloatView-sc-1eubdu6-0 bwlVAU Spaceweb__Space-sc-1abqisc-0 zryoY"
                         >
                           <label
                             class="Textweb__Text-sc-1qrdpx3-0 Labelweb__StyledText-sc-1eubdu6-1 dtOgfF"
@@ -147,7 +147,7 @@ exports[`Storyshots Onboarding/Field Multiple Field 1`] = `
                       class="Viewweb__View-sc-1o0hmxm-0 TextInputweb__FillContainer-sc-18gz688-2 jxHNUe Spaceweb__Space-sc-1abqisc-0 fAtZGf Sizeweb__Size-sc-1e5yf1-0 dCxfKl"
                     >
                       <div
-                        class="Viewweb__View-sc-1o0hmxm-0 Labelweb__FloatView-sc-1eubdu6-0 kxSngp Spaceweb__Space-sc-1abqisc-0 zryoY"
+                        class="Viewweb__View-sc-1o0hmxm-0 Labelweb__FloatView-sc-1eubdu6-0 bwlVAU Spaceweb__Space-sc-1abqisc-0 zryoY"
                       >
                         <label
                           class="Textweb__Text-sc-1qrdpx3-0 Labelweb__StyledText-sc-1eubdu6-1 dtOgfF"
@@ -223,7 +223,7 @@ exports[`Storyshots Onboarding/Field Single Field 1`] = `
                       class="Viewweb__View-sc-1o0hmxm-0 TextInputweb__FillContainer-sc-18gz688-2 jxHNUe Spaceweb__Space-sc-1abqisc-0 fAtZGf Sizeweb__Size-sc-1e5yf1-0 dCxfKl"
                     >
                       <div
-                        class="Viewweb__View-sc-1o0hmxm-0 Labelweb__FloatView-sc-1eubdu6-0 kxSngp Spaceweb__Space-sc-1abqisc-0 zryoY"
+                        class="Viewweb__View-sc-1o0hmxm-0 Labelweb__FloatView-sc-1eubdu6-0 bwlVAU Spaceweb__Space-sc-1abqisc-0 zryoY"
                       >
                         <label
                           class="Textweb__Text-sc-1qrdpx3-0 Labelweb__StyledText-sc-1eubdu6-1 dtOgfF"

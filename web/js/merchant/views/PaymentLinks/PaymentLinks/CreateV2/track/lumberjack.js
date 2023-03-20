@@ -1,11 +1,11 @@
-import uuid from 'uuid';
 import moment from 'moment';
+import { v4 as uuid } from 'uuid';
 
 function _track() {
+  // eslint-disable-next-line
   let track = function () {};
   const defaultOptions = {};
-  let local_order_id;
-  let initialization_time;
+  let local_order_id, initialization_time;
 
   function send(event, options) {
     track(

@@ -48,7 +48,7 @@ export const AccountDetails = styled.div`
   }
 `;
 
-export const Chip = styled.span`
+export const Chip = styled.span<any>`
   border-radius: 100px;
   color: #ffffff;
   padding: 2px 8px;
@@ -67,7 +67,7 @@ export const Chip = styled.span`
   }
 `;
 
-export const StyledLink = styled.div`
+export const StyledLink = styled.div<any>`
   ${({ isDisable }) =>
     isDisable &&
     css`

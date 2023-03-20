@@ -27,7 +27,7 @@ jobs:
       - name: Install Dependencies
         run: |
           cd web
-          npm ci
+          yarn --frozen-lockfile
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
@@ -35,7 +35,7 @@ jobs:
         # Storybook builds inside web folder, Chromatic references that
         run: |
           cd web
-          CHROMATIC_TOKEN=$CHROMATIC_TOKEN npm run chromatic
+          CHROMATIC_TOKEN=$CHROMATIC_TOKEN yarn chromatic
         env:
           CHROMATIC_TOKEN: ${{secrets.CHROMATIC_PROJECT_TOKEN}}
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}

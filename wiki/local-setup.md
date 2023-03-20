@@ -213,17 +213,17 @@ There are different setups for frontend and backend, you can follow either of th
 - Run this in your dashboard root directory -
 
   ```sh
-  npm ci --verbose
+  yarn || yarn install --frozen-lockfile
   ```
 
-  > **Note -** In case you're facing issues with npm install, Try running `npm i --legacy-peer-deps` inside web folder
+  > **Note -** In case you're facing issues with npm install, Try running `yarn --legacy-peer-deps` inside web folder
 
 **4.4. Start bundling the FE source**
 
 - This builds the static folder, generates the code and keeps it in public/dist. Run this in your dashboard root directory -
 
   ```
-  npm start
+  yarn start
   ```
 
   **Phew!!**

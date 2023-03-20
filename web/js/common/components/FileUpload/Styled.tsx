@@ -15,7 +15,7 @@ export const DashedButton = styled.label`
     cursor: pointer;
   }
 `;
-export const UploadedBox = styled.div`
+export const UploadedBox = styled.div<any>`
   border-radius: ${spacings.xsmall};
   border: 1px solid ${colors.cloud[960]};
   box-sizing: border-box;

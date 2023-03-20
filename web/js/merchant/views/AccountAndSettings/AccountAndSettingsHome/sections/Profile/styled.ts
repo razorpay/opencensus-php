@@ -120,7 +120,7 @@ export const TooltipContainer = styled.div`
 
 export const MobileProfileContainer = styled.div``;
 
-export const MobileProfileView = styled.div`
+export const MobileProfileView = styled.div<any>`
   display: flex;
   justify-content: space-between;
   padding: 24px 0;

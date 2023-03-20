@@ -23,7 +23,7 @@ const UserInfo = ({ infoData, onClick, isMobile }: UserInfoPropsInterface): JSX.
                 {each.displayName}
               </Text>
               {each.tooltip && (
-                <TooltipContainer class="name-tooltip">
+                <TooltipContainer className="name-tooltip">
                   <i className="i i-info-tooltip" />
                   <Popover theme="dark" align="top" horizontalAdjustment={isMobile ? 80 : 100}>
                     <PopoverBody>
@@ -36,7 +36,7 @@ const UserInfo = ({ infoData, onClick, isMobile }: UserInfoPropsInterface): JSX.
             <SubInfo>
               <Text type="subtle">{truncatedString(each.value, 26)}</Text>
               {each.isEditEnable ? (
-                <Pointer class="i i-icon-container" onClick={() => onClick(each)} />
+                <Pointer className="i i-icon-container" onClick={() => onClick(each)} />
               ) : null}
             </SubInfo>
           </UserInfoItem>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { addDecorator } from '@storybook/react';
-import { addParameters } from '@storybook/client-api';
-import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport';
+// import { addParameters } from '@storybook/client-api';
+// import { INITIAL_VIEWPORTS } from '@storybook/addon-viewport';
 import Wrapper from 'common/components/Bootstrap/Wrapper';
 import { Router, Route } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
@@ -30,12 +30,12 @@ const mockRazorXExp = {
   isFeEasyDashboardNCEnabled: true,
 };
 
-addParameters({
-  viewport: {
-    viewports: INITIAL_VIEWPORTS, // newViewports would be an ViewportMap. (see below for examples)
-    defaultViewport: 'galaxys5',
-  },
-});
+// addParameters({
+//   viewport: {
+//     viewports: INITIAL_VIEWPORTS, // newViewports would be an ViewportMap. (see below for examples)
+//     defaultViewport: 'galaxys5',
+//   },
+// });
 addDecorator((story) => (
   <Router history={createMemoryHistory({ initialEntries: ['/'] })}>
     <Route path="/" component={() => story()} />

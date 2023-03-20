@@ -13,7 +13,7 @@ export const UploadContainer = styled(Flexbox.Column)`
   gap: 9px;
 `;
 
-export const StyledUploadContainer = styled.div`
+export const StyledUploadContainer = styled.div<any>`
   background: rgba(82, 143, 240, 0.02);
   .Dropzone {
     ${({ isMulti }) =>

@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
 
-export const DialogContainer = styled.div`
+export const DialogContainer = styled.div<any>`
   position: fixed;
   right: 0;
   bottom: 0;
@@ -20,7 +20,7 @@ export const DialogContainer = styled.div`
   z-index: 200000;
 `;
 
-export const Dialog = styled.div`
+export const Dialog = styled.div<any>`
   position: relative;
   background-color: ${({ theme }) => getColor(theme, 'background.100')};
   margin-left: ${({ theme }) => theme.bladeOld.spacings.medium};
@@ -39,7 +39,7 @@ export const Dialog = styled.div`
   }
 `;
 // Button from blade not attaching className to DOM, hence using container
-export const CloseIconContainer = styled.div`
+export const CloseIconContainer = styled.div<any>`
   position: absolute;
   top: ${({ theme }) => theme.bladeOld.spacings.small};
   right: ${({ theme }) => theme.bladeOld.spacings.small};
@@ -48,12 +48,12 @@ export const CloseIconContainer = styled.div`
   justify-content: center;
 `;
 
-export const BottomSheet = styled.div.attrs((props) => ({
+export const BottomSheet = styled.div.attrs((props: any) => ({
   style: {
     opacity: props.$opacity,
     transform: `translateY(${props.$y}%)`,
   },
-}))`
+}))<any>`
   position: relative;
   background-color: ${({ theme }) => getColor(theme, 'background.100')};
   max-width: 100%;
@@ -70,7 +70,7 @@ export const BottomSheet = styled.div.attrs((props) => ({
   }
 `;
 
-export const BottomSheetHandle = styled.div`
+export const BottomSheetHandle = styled.div<any>`
   height: ${({ theme }) => theme.bladeOld.spacings.xsmall};
   background-color: ${({ theme }) => getColor(theme, 'shade.920')};
   border-radius: ${({ theme }) => theme.bladeOld.spacings.xsmall};

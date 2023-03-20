@@ -37,8 +37,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm config set unsafe-perm true
-          npm ci # Automatically installs npm ci in web too
+          yarn config set unsafe-perm true
+          yarn --frozen-lockfile # Automatically installs modules in web too
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
@@ -71,7 +71,7 @@ jobs:
           )
         run: |
           echo 'PR Branch: ${{ steps.branch-name.outputs.current_branch }}'
-          base=$base npm run validate-lint
+          base=$base yarn validate-lint
           npx eslint \
           --output-file eslint_report.json --format json \
           --ext .js,.jsx,.ts,.tsx \

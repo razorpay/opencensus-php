@@ -84,7 +84,7 @@ const NavLinkItem = ({
           isActive={activeTab === product_id}
           onClick={onNavLinkItemClick}
         >
-          <Icon class={`i ${icon}`} />
+          <Icon className={`i ${icon}`} />
           <Typo>{title}</Typo>
           {Tags}
         </LinkItem>

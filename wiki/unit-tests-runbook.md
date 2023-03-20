@@ -54,13 +54,13 @@ We have already set up the test runner using Jest.
 - To run and watch all tests, run this in the root directory -
 
   ```bash
-  npm run test:jest-watch
+  yarn test:jest-watch
   ```
 
 - To run individual tests, run -
 
   ```bash
-  npm run test:jest -t filename
+  yarn test:jest -t filename
   ```
 
 For more CLI options, see [here](https://jestjs.io/docs/cli)
@@ -457,11 +457,11 @@ fixtures.js / // or /fixtures (can be a file or folder) - For common fixtures
 
 20) How to run UTs through the command line?
 
-- `npm run test` - runs all the unit tests.
-- `npm run test:jest-watch-changed` - runs all the unit tests initially and thereon runs only changed files with silent mode.
-- `npm run test:jest-watch` - runs all the unit tests on any changes without silent mode.
+- `yarn test` - runs all the unit tests.
+- `yarn test:jest-watch-changed` - runs all the unit tests initially and thereon runs only changed files with silent mode.
+- `yarn test:jest-watch` - runs all the unit tests on any changes without silent mode.
 
-> **Note -** To run specific test file(s) use the file name regex with the test commands. For e.g. `npm run test:jest-watch <payments> | <relative path your test file>`
+> **Note -** To run specific test file(s) use the file name regex with the test commands. For e.g. `yarn test:jest-watch <payments> | <relative path your test file>`
 
 21. How to query Screen/DOM elements?
 

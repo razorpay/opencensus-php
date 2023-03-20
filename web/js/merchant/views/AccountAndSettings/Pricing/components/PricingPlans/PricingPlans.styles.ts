@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Theme } from '@razorpay/blade/components';
 
-const Flex = styled.div`
+const Flex = styled.div<any>`
   display: flex;
   gap: ${({ gap, theme }) => `${theme.spacing[gap]}px`};
   flex-direction: ${({ flexDirection }) => flexDirection || 'row'};

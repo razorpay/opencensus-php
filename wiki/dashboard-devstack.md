@@ -61,7 +61,7 @@ Time to install some chrome extensions, yes we prefer using Chrome. But don’t 
 
   ```bash
   # In terminal 1, this builds the dashboard frontend
-  npm start
+  yarn start
   ```
 
   ```bash

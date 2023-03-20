@@ -34,12 +34,12 @@ const StyledSeparator = styled(View)`
   background-color: rgba(22, 47, 86, 0.1);
 `;
 
-const ScreenContainer = styled.div.attrs((props) => ({
+const ScreenContainer = styled.div.attrs((props: any) => ({
   style: {
     opacity: props.$opacity,
     transform: `translateY(${props.$y}%)`,
   },
-}))`
+}))<any>`
   min-height: 100%;
 `;
 

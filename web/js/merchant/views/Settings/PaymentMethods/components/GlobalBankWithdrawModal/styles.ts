@@ -36,7 +36,7 @@ export const ModalBody = styled.div<{ small?: boolean }>`
 export const FormRow = styled.div<{
   flex?: boolean;
   textCenter?: boolean;
-  mt?: string;
+  mt?: string | boolean | undefined;
   mb?: string;
 }>`
   ${({ mt }) => (mt ? `margin-top: ${mt};` : '')}

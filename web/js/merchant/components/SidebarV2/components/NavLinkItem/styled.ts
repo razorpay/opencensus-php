@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 
-export const LinkItem = styled(Link)`
+export const LinkItem = styled(Link)<any>`
   height: 29px;
   width: 100%;
   display: flex;
@@ -37,7 +37,7 @@ export const LinkItem = styled(Link)`
   }
 `;
 
-export const LinkButtonItem = styled(Link)`
+export const LinkButtonItem = styled(Link)<any>`
   display: flex;
   color: #80a5ff;
   width: 100%;

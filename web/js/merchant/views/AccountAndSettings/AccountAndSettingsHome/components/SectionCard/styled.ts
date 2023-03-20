@@ -30,7 +30,7 @@ export const SubSectionItem = styled.div`
   justify-content: flex-start;
 `;
 
-export const ProductIcon = styled.div`
+export const ProductIcon = styled.div<any>`
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -56,7 +56,7 @@ export const ProductIcon = styled.div`
   }
 `;
 
-export const CardItems = styled.div`
+export const CardItems = styled.div<any>`
   padding-top: 16px;
   display: flex;
   flex-direction: column;

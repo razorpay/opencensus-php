@@ -96,7 +96,7 @@ const BusinessOverview = ({ isFormLocked }: IBusinessOverviewProps): React.React
   const WithoutWebsiteListText = styled.ul`
     padding: 0;
   `;
-  const List = styled.li`
+  const List = styled.li<any>`
     margin-bottom: 12px;
     padding: ${({ isLast }) => (isLast ? '12px' : 'initial')};
     list-style: ${({ isLast }) => (isLast ? 'none' : 'initial')};

@@ -1,7 +1,7 @@
 import { isMobileDevice } from 'merchant/components/Home/data';
 import getMobileDetect from 'common/utils/mobileDetect';
 import { getCookie, setCookie } from 'common/utils/cookies';
-import uuid from 'uuid';
+import { v4 as uuid } from 'uuid';
 
 let source = null;
 let linked_id = null;

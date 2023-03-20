@@ -32,8 +32,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm config set unsafe-perm true
-          npm ci # Automatically installs npm ci in web too
+          yarn config set unsafe-perm true
+          yarn --frozen-lockfile # Automatically installs modules in web too
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
@@ -41,8 +41,8 @@ jobs:
       - name: Run Test Cases
         # Automatically installs npm ci in web too
         run: |
-          npm run test
-          npm run test:jest
+          yarn test
+          yarn test:jest
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}

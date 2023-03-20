@@ -125,7 +125,7 @@ export const PricePreview = ({
   return null;
 };
 
-const LinkTextWrapper = styled.p(
+const LinkTextWrapper = styled.p<any>(
   ({ theme, isRemove }: { theme: Theme; isRemove: boolean }) => `
   color: ${theme.colors.action.text.secondary.default};
   font-style: normal;

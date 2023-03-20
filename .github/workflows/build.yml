@@ -23,15 +23,15 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm config set unsafe-perm true
-          HUSKY=0 npm ci # Automatically installs npm ci in web too
+          yarn config set unsafe-perm true
+          HUSKY=0 yarn --frozen-lockfile # Automatically installs modules in web too
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build All
         # Runs in parellel
-        run: cd web && npm run prod-build-all
+        run: cd web && yarn prod-build-all
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}

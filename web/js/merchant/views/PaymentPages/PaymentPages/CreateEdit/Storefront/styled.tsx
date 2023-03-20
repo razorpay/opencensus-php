@@ -112,7 +112,7 @@ export const AddProductBox = styled.div`
   }
 `;
 
-export const Iframe = styled.iframe`
+export const Iframe = styled.iframe<any>`
   border: 0.6px solid rgba(121, 135, 156, 0.09);
   box-shadow: 0px 12.4019px 39.2727px rgba(21, 45, 75, 0.12),
     0px 0px 2.06699px rgba(21, 45, 75, 0.2);

@@ -1,6 +1,6 @@
 import styled, { css } from 'styled-components';
 
-export const StyledLayout = styled.div`
+export const StyledLayout = styled.div<any>`
   background: #ffffff;
   box-shadow: 0px 1px 2px rgba(21, 45, 75, 0.2), 0px 0px 1px rgba(21, 45, 75, 0.2);
   border-radius: 4px;
@@ -40,7 +40,7 @@ export const IconWrapper = styled.div`
   cursor: pointer;
 `;
 
-export const StyledLayoutContent = styled.div`
+export const StyledLayoutContent = styled.div<any>`
   display: flex;
   flex-direction: column;
   ${({ isCentered }) =>

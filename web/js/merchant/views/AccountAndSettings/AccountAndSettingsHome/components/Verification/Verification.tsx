@@ -31,7 +31,7 @@ const Verification = ({ isMobile, user }: VerificationPropsInterface): JSX.Eleme
         <Text type="subtle" weight="bold">
           2-step verification
         </Text>
-        <TooltipContainer class="verification-tooltip">
+        <TooltipContainer className="verification-tooltip">
           <i className="i i-info-tooltip" />
           <Popover theme="dark" align="top" horizontalAdjustment={isMobile ? 80 : 100}>
             <PopoverBody>

@@ -24,7 +24,7 @@ const shimmerEffectFrame = keyframes`
   }
 `;
 
-export const ShimmerBar = styled.span`
+export const ShimmerBar = styled.span<any>`
   height: 20px;
   width: 100%;
   background: rgba(255, 255, 255, 0.3);

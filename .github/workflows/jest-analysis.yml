@@ -37,8 +37,8 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm config set unsafe-perm true
-          HUSKY=0 npm ci
+          yarn config set unsafe-perm true
+          HUSKY=0 yarn --frozen-lockfile
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
@@ -48,6 +48,6 @@ jobs:
         uses: artiomtr/jest-coverage-report-action@v2.1.2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          test-script: npm run test:jest:ci
+          test-script: yarn test:jest:ci
           working-directory: web # directory where report is getting generated
           skip-step: install # skip npm install step

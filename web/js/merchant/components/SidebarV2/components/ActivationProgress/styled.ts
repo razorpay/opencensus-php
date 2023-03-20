@@ -19,7 +19,7 @@ export const ActivationLink = styled.div`
   justify-content: space-between;
 `;
 
-export const Typo = styled.span`
+export const Typo = styled.span<any>`
   color: #ffffff;
   font-size: ${({ size }) => size}px;
   font-weight: ${({ weight }) => weight}px;

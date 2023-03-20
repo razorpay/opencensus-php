@@ -1,8 +1,8 @@
-import React, { ReactNode } from 'react';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
-import View from '@razorpay/blade-old/src/atoms/View';
 import Size from '@razorpay/blade-old/src/atoms/Size';
-import { PanelContainer, Header, Content } from './Styled';
+import View from '@razorpay/blade-old/src/atoms/View';
+import React, { ReactNode } from 'react';
+import { Content, Header, PanelContainer } from './Styled';
 /* 
  Future additions 
   - Aria controls 

@@ -63,3 +63,6 @@ web/e2e/storageState/*
 
 # Sonar
 .scannerwork
+
+# debug logs
+yarn-error.log

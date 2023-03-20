@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/playwright:v1.24.0-focal
+FROM mcr.microsoft.com/playwright:v1.31.0-focal
 
 ARG GITHUB_ACCESS_TOKEN
 ARG NPM_RAZORPAY_TOKEN
@@ -11,13 +11,13 @@ WORKDIR /app
 RUN mkdir web
 
 # Copy dependencies files so we can have better caching as these don't change often
-COPY --chown=node:node .npmrc package.json package-lock.json ./
+COPY --chown=node:node .npmrc package.json yarn.lock ./
 
 # Copy dependencies files so we can have better caching as these don't change often
-COPY --chown=node:node ./web/.npmrc ./web/package.json ./web/package-lock.json ./web
+COPY --chown=node:node ./web/.npmrc ./web/package.json ./web/yarn.lock ./web
 
-RUN npm config set unsafe-perm true \
-    && HUSKY=0 npm ci
+RUN yarn config set unsafe-perm true \
+    && HUSKY=0 yarn --frozen-lockfile
 
 RUN cd web && npx playwright install --with-deps
 

@@ -1,9 +1,9 @@
-import BatchUpload from 'merchant/views/Transactions/BatchRefunds/components/BatchUpload';
-import { screen, fireEvent, render, waitFor } from 'test-utils';
-import { getCustomURL } from 'merchant/components/DocsLink';
-import { SAMPLE_BATCH_REFUND_FILE } from 'merchant/views/Transactions/BatchRefunds/List';
 import ConfirmModalProvider from 'common/ui/ConfirmModal/ConfirmModalProvider';
+import { getCustomURL } from 'merchant/components/DocsLink';
+import BatchUpload from 'merchant/views/Transactions/BatchRefunds/components/BatchUpload';
+import { SAMPLE_BATCH_REFUND_FILE } from 'merchant/views/Transactions/BatchRefunds/List';
 import * as ModalActions from 'merchant_common/reducers/modals';
+import { fireEvent, render, screen, waitFor } from 'test-utils';
 
 const initProps = {
   batchType: 'refund',
@@ -31,7 +31,7 @@ describe('Refunds - RefundListFilter Component', () => {
     openModal.mockClear();
   });
 
-  const uploadFileToEnableButton = ({ ...props }) => {
+  const uploadFileToEnableButton = ({ ...props } = {}) => {
     const { container } = render(<App {...initProps} {...props} />);
     const fileInput = container.querySelector(`input[type="file"]`);
     expect(fileInput).toBeInTheDocument();

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Input from 'common/new-ui/Input';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import uuid from 'uuid';
+import { v4 as uuid } from 'uuid';
 import { merchantFetch } from 'merchant/utils/ajax';
 import { showNotification as displayNotification } from 'merchant_common/reducers/notifications';
 import { connect } from 'react-redux';

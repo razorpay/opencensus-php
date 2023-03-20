@@ -716,7 +716,7 @@ export const CountryCodeContainer = styled.div`
   }
 `;
 
-export const DropDownMenu = styled.div`
+export const DropDownMenu = styled.div<any>`
   cursor: pointer;
   width: 100%;
   height: auto;

@@ -34,7 +34,7 @@ export const TabsHeader = styled.div`
   display: flex;
 `;
 
-export const TabsHeaderItem = styled.div`
+export const TabsHeaderItem = styled.div<any>`
   flex: 1;
   padding: 16px;
   border: 1px solid rgba(121, 135, 156, 0.18);

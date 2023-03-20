@@ -227,7 +227,7 @@ export const LeftContainer = styled(View)`
   }
 `;
 
-export const Circle = styled.div`
+export const Circle = styled.div<any>`
   border-radius: 50%;
   width: ${(props) => (props.width ? props.width : '32px')};
   height: ${(props) => (props.height ? props.height : '32px')};
@@ -263,7 +263,7 @@ export const RightPanel = styled(View)`
 
 export const StyledText = styled.div.attrs(({ className }) => ({
   className: `custom-class ${className}`,
-}))`
+}))<any>`
   color: ${(props) => (props.color ? props.color : '')};
   font-size: ${(props) => (props.fontSize ? props.fontSize : '14px')};
   font-weight: ${(props) => (props.fontWeight ? props.fontWeight : '')};

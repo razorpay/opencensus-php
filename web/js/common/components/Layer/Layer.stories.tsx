@@ -20,7 +20,7 @@ BasicLayer.args = {
   children: <div>Layer Child</div>,
 };
 
-const Wrapper = styled.div`
+const Wrapper = styled.div<any>`
   position: fixed;
   top: ${(props) => (props.$offset ? props.$offset : '10%')};
   left: ${(props) => (props.$offset ? props.$offset : '15%')};

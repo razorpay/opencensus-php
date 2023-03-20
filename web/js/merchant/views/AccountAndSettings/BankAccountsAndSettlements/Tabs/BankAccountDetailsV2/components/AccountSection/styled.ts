@@ -25,7 +25,7 @@ export const HeaderTopBar = styled.div`
   justify-content: space-between;
 `;
 
-export const StyledAccountSectionContent = styled.div`
+export const StyledAccountSectionContent = styled.div<any>`
   background: #f2f4f8;
   padding: ${({ isSections }) => (isSections ? 12 : 24)}px;
   display: flex;
@@ -43,7 +43,7 @@ export const StyledAccountSectionContent = styled.div`
   }
 `;
 
-export const CollapsibleIcon = styled.div`
+export const CollapsibleIcon = styled.div<any>`
   height: 20px;
   width: 20px;
   cursor: pointer;

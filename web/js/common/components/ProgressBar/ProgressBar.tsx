@@ -11,7 +11,7 @@ export interface ProgressBarPropsT {
   progressBarCompletedColor?: string;
   progressBarBackgroundColor?: string;
 }
-const ProgressContainer = styled.div`
+const ProgressContainer = styled.div<any>`
   width: 100%;
   max-height: ${(props) => props.height};
   height: ${(props) => props.height};
@@ -20,7 +20,7 @@ const ProgressContainer = styled.div`
   background-color: ${(props) => getColor(theme, props.progressBarBackgroundColor)};
 `;
 
-const StyledProgressBar = styled.div`
+const StyledProgressBar = styled.div<any>`
   background-color: ${(props) => getColor(theme, props.progressBarCompletedColor)};
   width: ${(props) => `${props.width}%`};
   height: ${(props) => props.height};

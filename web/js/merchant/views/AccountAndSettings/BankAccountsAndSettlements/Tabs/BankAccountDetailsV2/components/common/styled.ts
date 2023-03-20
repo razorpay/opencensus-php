@@ -1,6 +1,6 @@
 import styled, { css } from 'styled-components';
 
-export const StyledDivider = styled.div`
+export const StyledDivider = styled.div<any>`
   border: 1px solid rgba(121, 135, 156, 0.18);
   ${({ isFullWidth }) =>
     isFullWidth &&

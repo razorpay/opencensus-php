@@ -33,14 +33,14 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm config set unsafe-perm true
-          HUSKY=0 npm ci
+          yarn config set unsafe-perm true
+          HUSKY=0 yarn --frozen-lockfile
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}
 
       - name: Build All
-        run: cd web && npm run test:build:merchant
+        run: cd web && yarn test:build:merchant
         env:
           NPM_RAZORPAY_TOKEN: ${{ secrets.NPM_RAZORPAY_TOKEN }}
           GITHUB_ACCESS_TOKEN: ${{ secrets.CI_BOT_TOKEN }}

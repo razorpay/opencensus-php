@@ -5,7 +5,7 @@ interface DividerPropsInterface {
   noMargin?: boolean;
 }
 
-const StyledDivider = styled.div`
+const StyledDivider = styled.div<any>`
   border: 1px solid rgba(121, 135, 156, 0.09);
   flex: none;
   align-self: stretch;

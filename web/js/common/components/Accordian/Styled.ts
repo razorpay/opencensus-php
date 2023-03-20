@@ -1,5 +1,5 @@
-import styled from 'styled-components';
 import { getColor } from '@razorpay/blade-old/src/_helpers/theme';
+import styled from 'styled-components';
 
 export const Root = styled.ul`
   width: 100%;
@@ -20,7 +20,7 @@ export const PanelContainer = styled.li`
   border-bottom-color: ${({ theme }) => getColor(theme, 'shade.920')};
 `;
 
-export const Header = styled.div`
+export const Header = styled.div<any>`
   justify-content: space-between;
   cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
   display: flex;
@@ -32,7 +32,7 @@ export const Header = styled.div`
   padding-bottom: ${(props) => props.theme.bladeOld.spacings.medium};
 `;
 
-export const Content = styled.div`
+export const Content = styled.div<any>`
   max-height: ${(props) => (props.$expanded ? '100%' : 0)};
   height: ${(props) => (props.$expanded ? 'auto' : 0)};
   color: ${({ theme }) => getColor(theme, 'shade.970')};

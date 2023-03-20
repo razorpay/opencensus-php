@@ -44,7 +44,7 @@ const StyledTable = styled.table(
   }
 `,
 );
-const StyledTr = styled.tr`
+const StyledTr = styled.tr<any>`
   text-align: center;
 
   & > :not(:first-child) {
@@ -91,7 +91,7 @@ const StyledTr = styled.tr`
     }
   }
 `;
-const StyledTh = styled.th`
+const StyledTh = styled.th<any>`
   text-align: center;
   position: relative;
   border-radius: 8px 8px 0 0;
@@ -105,7 +105,7 @@ const StyleHeroImage = styled.div`
   }
 `;
 
-const StyledTd = styled.td`
+const StyledTd = styled.td<any>`
   min-height: 48px;
   position: relative;
   border-radius: ${({ lastRow }) => (lastRow ? '0 0 8px 8px' : 'unset')};
@@ -158,7 +158,7 @@ const PlanLeftSection = styled.div`
     }
   }
 `;
-const StyledCloseIcon = styled.div`
+const StyledCloseIcon = styled.div<any>`
   cursor: pointer;
   margin-left: 10px;
   display: flex;
