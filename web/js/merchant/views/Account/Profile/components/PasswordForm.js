@@ -52,7 +52,7 @@ export default class PasswordForm extends PureComponent {
         const { user } = this.props;
         selfServeTrackSuccess({
           selfServeAction: 'Password Updated',
-          page: user.isAccountAndSettingsRevampEnabled ? 'Your Profile' : 'Profile',
+          page: user.isAccountAndSettingsRevampEnabled ? 'Personal Profile' : 'Profile',
           screen: user.isAccountAndSettingsRevampEnabled
             ? Modules.AccountAndSettings
             : Modules.MyAccount,

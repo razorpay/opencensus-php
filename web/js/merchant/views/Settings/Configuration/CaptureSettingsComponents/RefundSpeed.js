@@ -10,7 +10,8 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import { parseTimeoutValues } from './data';
 import { renderTimeoutAsString } from 'merchant/views/Settings/Configuration/PaymentCaptureComponents/util';
 import { GraphicalExplanation } from './GraphicalExplanation';
-import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { Modules } from 'common/constant/enums';
 
 function RefundSpeed(props) {
   const [refundSpeed, setrefundSpeed] = useState(() => {
@@ -79,12 +80,6 @@ function RefundSpeed(props) {
       label = `Change | Manual Capture | Next | Normal Refund | Save`;
     }
 
-    selfServeTrackInitiate({
-      selfServeAction: 'Payment Capture Period Updated',
-      page: 'Config',
-      screen: 'Settings',
-    });
-
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Payments Capture Settings v2',
       eventAction: 'Save',
@@ -129,10 +124,15 @@ function RefundSpeed(props) {
     props
       .createLateAuthConfig(payload, method)
       .then(() => {
+        const { user } = props;
         selfServeTrackSuccess({
           selfServeAction: 'Payment Capture Period Updated',
-          page: 'Config',
-          screen: 'Settings',
+          page: user.isAccountAndSettingsRevampEnabled
+            ? Modules.CaptureRefundSettings
+            : Modules.Config,
+          screen: user.isAccountAndSettingsRevampEnabled
+            ? Modules.AccountAndSettings
+            : Modules.Settings,
         });
         props.showNotification({
           type: 'success',
@@ -228,52 +228,6 @@ function RefundSpeed(props) {
                   <p class="highlight__subtext">Refund will be made in 5-7 days.</p>
                 </div>
               </div>
-              {/* TODO: Commented for now, as there is no support for optimum refund for authorised payments */}
-
-              {/* <div class={`highlight-border-top ${refundSpeed ? handleLayout().lower : ``}`}>
-                <div class="left-col">
-                  <input
-                    type="radio"
-                    onClick={(_) => {
-                      setrefundSpeed(`optimum`);
-                    }}
-                    checked={refundSpeed === `optimum`}
-                  />
-                </div>
-                <div class="right-col">
-                  <strong>Optimum Speed</strong>
-                  <p class="highlight__subtext" style={{ marginBottom: '30px' }}>
-                    Refund will be made instantly. A minimal fee would be charged for payments
-                    refunded instantly.
-                  </p>
-                  {refundSpeed === `optimum` && props.refund_pricing.custom_pricing === true && (
-                    <>
-                      <div class="custom-pricing__contact-support">
-                        <div> Minimal fee on each refund </div>
-                        <div style={{ color: '#515978' }}>Fees as per agreement with Razorpay</div>
-                      </div>
-                      <p class="highlight__subtext" style={{ marginBottom: '63px' }}>
-                        Currently, Instant refunds are available only on select credit cards, TPV,
-                        netbanking and UPI.
-                      </p>
-                    </>
-                  )}
-                  {refundSpeed === `optimum` && props.refund_pricing.custom_pricing === false && (
-                    <div style={{ marginBottom: '40px' }}>
-                      <img
-                        src="https://cdn.razorpay.com/static/assets/capture-settings/standard-pricing.png"
-                        style={{
-                          marginTop: '-20px',
-                        }}
-                      />
-                      <p class="highlight__subtext" style={{ marginBottom: '25px' }}>
-                        Currently, Instant refunds are available only on select credit cards, TPV,
-                        netbanking and UPI.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div> */}
             </div>
           </div>
           <div class="lower-panel flex-7">

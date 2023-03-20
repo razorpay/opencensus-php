@@ -136,8 +136,8 @@ describe('Contact Details', () => {
         expect(selfServeTrackInitiateMock).toHaveBeenCalled();
         expect(selfServeTrackInitiateMock).toHaveBeenCalledWith({
           selfServeAction: 'Display Name Updated',
-          page: 'Contact Details',
-          screen: Modules.BusinessSettings,
+          page: Modules.Profile,
+          screen: Modules.MyAccount,
         });
       });
 

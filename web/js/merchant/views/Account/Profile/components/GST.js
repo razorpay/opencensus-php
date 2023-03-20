@@ -24,6 +24,7 @@ import {
 import TextHighlighter from 'common/ui/TextHighlighter';
 import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { Modules } from 'common/constant/enums';
 
 class GSTDetails extends Component {
   state = {
@@ -78,10 +79,13 @@ class GSTDetails extends Component {
 
   openEditGSTModal = () => {
     const { business_suggested_address, business_suggested_pin, activationResponse } = this.state;
+    const { user } = this.props;
     selfServeTrackInitiate({
       selfServeAction: 'GST Updated',
-      page: 'Profile',
-      screen: 'My Account',
+      page: user.isAccountAndSettingsRevampEnabled ? Modules.GSTDetails : Modules.Profile,
+      screen: user.isAccountAndSettingsRevampEnabled
+        ? Modules.AccountAndSettings
+        : Modules.MyAccount,
     });
     analyticsTrack({
       objectName: 'Merchant clicks on edit gstin',

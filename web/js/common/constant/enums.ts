@@ -1,8 +1,14 @@
 export enum Modules {
   AccountAndSettings = 'Account & Settings',
-  MyAccount = 'my account',
+  MyAccount = 'My Account',
   BusinessSettings = 'Business Settings',
   Offers = 'Offers',
+  Profile = 'Profile',
+  PersonalProfile = 'Personal Profile',
+  GSTDetails = 'GST details',
+  Settings = 'Settings',
+  Config = 'Config',
+  CaptureRefundSettings = 'Capture and refund settings',
 }
 
 export enum WorkflowStates {

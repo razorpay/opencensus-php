@@ -31,6 +31,7 @@ const ContactDetails = ({
   updateMerchantConfig,
   updateSession,
   isFlowRevamped = true,
+  page,
 }: ContactDetailsProps): JSX.Element => {
   const updateMerchantConfigFn = (args) => {
     return updateMerchantConfig(args)
@@ -49,8 +50,10 @@ const ContactDetails = ({
           });
           selfServeTrackSuccess({
             selfServeAction: 'Display Name Updated',
-            page: 'Contact Details',
-            screen: Modules.BusinessSettings,
+            page: user.isAccountAndSettingsRevampEnabled ? 'Contact details' : 'Profile',
+            screen: user.isAccountAndSettingsRevampEnabled
+              ? Modules.AccountAndSettings
+              : Modules.MyAccount,
           });
           showNotification({
             type: 'success',
@@ -105,7 +108,16 @@ const ContactDetails = ({
       },
     });
 
-  const openChangeDisplayName = () => openAttrSaveModal('display_name');
+  const openChangeDisplayName = () => {
+    selfServeTrackInitiate({
+      selfServeAction: 'Display Name Updated',
+      page: user.isAccountAndSettingsRevampEnabled ? 'Contact details' : 'Profile',
+      screen: user.isAccountAndSettingsRevampEnabled
+        ? Modules.AccountAndSettings
+        : Modules.MyAccount,
+    });
+    openAttrSaveModal('display_name');
+  };
 
   const labelHandler = (hashedWith, content) => (
     <TextHighlighter hashedWith={hashedWith}>{content}</TextHighlighter>
@@ -144,11 +156,6 @@ const ContactDetails = ({
                 <a
                   className="p-l"
                   onClick={() => {
-                    selfServeTrackInitiate({
-                      selfServeAction: 'Display Name Updated',
-                      page: 'Contact Details',
-                      screen: Modules.BusinessSettings,
-                    });
                     analyticsTrack({
                       objectName: 'dispay name edit',
                       actionName: 'clicked',
@@ -209,7 +216,7 @@ const ContactDetails = ({
           </a>
         )}
       />
-      <UserContactMobile />
+      <UserContactMobile page={page} />
     </div>
   );
 };

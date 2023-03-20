@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import { compose } from 'redux';
-
 import { closeModal, openModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import {
@@ -16,13 +16,13 @@ import {
   verifyTwoFactorOtpMobile,
 } from 'merchant_common/reducers/twoFactor';
 import { updateContactMobile, updateUser } from 'merchant_common/reducers/user';
-
 import TwoFactorVerificationOTP from 'common/ui/TwoFactorVerification/TwoFactorVerificationOTP';
-
 import EditContactMobileForm from './EditContactMobileForm';
 import { analyticsTrackWithUserInfo } from 'common/utils/analytics';
+import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import { Modules } from 'common/constant/enums';
 
+// eslint-disable-next-line react/no-unsafe
 class UpdateContactMobile extends React.Component {
   state = {};
 
@@ -57,8 +57,33 @@ class UpdateContactMobile extends React.Component {
     // Passing contact_mobile_verified hardcoded as true in callback
     // Ideally this should come from API, but BE is unable send that as response
     // in current state
+    const { user } = this.props;
+    const page = this.getPageOpenedOn();
+    if (page) {
+      selfServeTrackSuccess({
+        selfServeAction: 'Mobile Updated',
+        page,
+        screen: user.isAccountAndSettingsRevampEnabled
+          ? Modules.AccountAndSettings
+          : Modules.MyAccount,
+      });
+    }
     this.props.updateUser({ contact_mobile: data.data.contact_mobile });
     return this.props.onComplete({ contact_mobile_verified: true });
+  };
+
+  getPageOpenedOn = () => {
+    const { pathname } = this.props?.location;
+    switch (pathname) {
+      case '/account-settings':
+        return 'Personal Profile';
+      case '/profile':
+        return 'Profile';
+      case '/business-settings/contact':
+        return 'Contact details';
+      default:
+        return null;
+    }
   };
 
   onContactMobileVerificationOtpConfirm = (data) => {
@@ -220,6 +245,7 @@ const mapStateToProps = (state) => ({
 });
 
 export default compose(
+  withRouter,
   // eslint-disable-next-line babel/new-cap
   RTracking(() => window.rzpQ.component('UpdateContactMobile')),
   connect(mapStateToProps, {

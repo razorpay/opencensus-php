@@ -23,6 +23,7 @@ import { fetchWorkflowStatus as fetchWorkflowStatusReducer } from 'merchant/redu
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { BusinessWebsiteDetailsProps } from 'merchant/views/AccountAndSettings/WebsiteAppSettings/typings';
 import { ATTR_DETAILS } from 'merchant/views/Account/constants';
+import { Store } from 'common/typings';
 
 const isWorkflowChangeAllowed = (workflow) => {
   return (
@@ -302,6 +303,6 @@ const mapDispatchToProps = (dispatch) =>
   );
 
 export default connect(
-  (state) => ({ user: state.session.user, workflows: state.workflows }),
+  (state: Store) => ({ user: state.session.user, workflows: state.workflows }),
   mapDispatchToProps,
 )(BusinessWebsiteDetails);

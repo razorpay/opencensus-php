@@ -20,6 +20,7 @@ import Input from 'common/new-ui/Input';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
+import { Modules } from 'common/constant/enums';
 
 const GST_SUCCESS_MSG = 'Entered GSTIN will be applicable only from current month onwards.';
 
@@ -55,6 +56,7 @@ class AddGST extends Component {
   updateGSTIN = async (event) => {
     event.preventDefault();
     const formData = new FormData();
+    const { user } = this.props;
     formData.append('gstin_self_serve_certificate', this.state.gstinCertificate);
     formData.append('gstin', this.state.gstin);
 
@@ -79,8 +81,10 @@ class AddGST extends Component {
         this.props.fetchStatus();
         selfServeTrackSuccess({
           selfServeAction: 'GST Updated',
-          page: 'Profile',
-          screen: 'My Account',
+          page: user.isAccountAndSettingsRevampEnabled ? Modules.GSTDetails : Modules.Profile,
+          screen: user.isAccountAndSettingsRevampEnabled
+            ? Modules.AccountAndSettings
+            : Modules.MyAccount,
         });
         this.props.openModal({
           size: 'small',
@@ -277,6 +281,7 @@ const mapStateToProps = (state) => ({
   merchant_gst: state.profile.merchant_gst,
   rzp_gst: state.profile.rzp_gst,
   session: state.session,
+  user: state.session.user,
 });
 
 const mapDispatchToProps = (dispatch) =>

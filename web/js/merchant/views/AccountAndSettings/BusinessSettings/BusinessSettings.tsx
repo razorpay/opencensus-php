@@ -28,44 +28,47 @@ import {
 } from 'merchant/views/AccountAndSettings/utils/conditionUtils';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 
-const ContactDetails = lazy(() =>
-  import(/* webpackChunkName: "ContactDetails" */ './Tabs/ContactDetails'),
+const ContactDetails = lazy(
+  () => import(/* webpackChunkName: "ContactDetails" */ './Tabs/ContactDetails'),
 );
 
-const AccountDetails = lazy(() =>
-  import(/* webpackChunkName: "AccountDetails" */ './Tabs/AccountDetails'),
+const AccountDetails = lazy(
+  () => import(/* webpackChunkName: "AccountDetails" */ './Tabs/AccountDetails'),
 );
 
-const BusinessDetails = lazy(() =>
-  import(/* webpackChunkName: "BusinessDetails" */ './Tabs/BusinessDetails'),
+const BusinessDetails = lazy(
+  () => import(/* webpackChunkName: "BusinessDetails" */ './Tabs/BusinessDetails'),
 );
 
-const GSTDetails = lazy(() =>
-  import(/* webpackChunkName: "GSTDetails" */ 'merchant/views/Account/Profile/components/GST'),
+const GSTDetails = lazy(
+  () =>
+    import(/* webpackChunkName: "GSTDetails" */ 'merchant/views/Account/Profile/components/GST'),
 );
 
-const CustomerSupportDetails = lazy(() =>
-  import(
-    /* webpackChunkName: "CustomerSupportDetails" */ 'merchant/views/Account/Profile/components/SupportDetails'
-  ),
+const CustomerSupportDetails = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "CustomerSupportDetails" */ 'merchant/views/Account/Profile/components/SupportDetails'
+    ),
 );
 
-const TeamDetails = lazy(() =>
-  import(/* webpackChunkName: "TeamDetailsTab" */ 'merchant/views/Account/ManageTeam'),
+const TeamDetails = lazy(
+  () => import(/* webpackChunkName: "TeamDetailsTab" */ 'merchant/views/Account/ManageTeam'),
 );
 
-const SupportTickets = lazy(() =>
-  import(/* webpackChunkName: "SupportTicketsTab" */ './Tabs/SupportTickets'),
+const SupportTickets = lazy(
+  () => import(/* webpackChunkName: "SupportTicketsTab" */ './Tabs/SupportTickets'),
 );
 
-const Conversations = lazy(() =>
-  import(
-    /* webpackChunkName: "SupportTicketConversations" */ 'merchant/views/TicketSupport/components/Conversations'
-  ),
+const Conversations = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "SupportTicketConversations" */ 'merchant/views/TicketSupport/components/Conversations'
+    ),
 );
 
-const TeamInvitations = lazy(() =>
-  import(/* webpackChunkName: "TeamInvitations" */ './Tabs/TeamInvitations'),
+const TeamInvitations = lazy(
+  () => import(/* webpackChunkName: "TeamInvitations" */ './Tabs/TeamInvitations'),
 );
 
 const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Element => {

@@ -20,10 +20,19 @@ import {
 import { selfServeTrackInitiate, selfServeTrackSuccess } from 'common/utils/selfServeAnalytics';
 import ShowWhen from 'merchant/components/ShowWhen';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import { Modules } from 'common/constant/enums';
 
 class WebhooksContainer extends ListContainer {
   fetchEntityList(params) {
-    return this.props.fetchWebhooks(params);
+    return this.props.fetchWebhooks(params).then(() => {
+      selfServeTrackSuccess({
+        selfServeAction: 'Webhook List Fetched',
+        page: 'Webhooks',
+        screen: this.props.user.isAccountAndSettingsRevampEnabled
+          ? Modules.AccountAndSettings
+          : 'Settings',
+      });
+    });
   }
 
   @RTracking(() =>

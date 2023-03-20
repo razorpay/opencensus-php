@@ -18,11 +18,13 @@ import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import CaptureMode from './CaptureSettingsComponents/CaptureMode';
 import rolesList from 'merchant/helpers/permissions/roles-list';
-
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { parseTimeoutValues } from './CaptureSettingsComponents/data';
 import { renderTimeoutAsString } from './PaymentCaptureComponents/util';
 import { CAPTURE_SETTINGS } from './deeplink-constants';
 import TextHighlighter from 'common/ui/TextHighlighter';
+import { Modules } from 'common/constant/enums';
+
 const CAPTURE_ASSETS_CDN_URL = 'https://cdn.razorpay.com/static/assets/capture-settings';
 
 const CAPTURE_DETAILS = [
@@ -439,6 +441,12 @@ class PaymentSettings extends Component {
   };
 
   changeSettings = () => {
+    const { user } = this.props;
+    selfServeTrackInitiate({
+      selfServeAction: 'Payment Capture Period Updated',
+      page: user.isAccountAndSettingsRevampEnabled ? 'Capture and refund settings' : 'Config',
+      screen: user.isAccountAndSettingsRevampEnabled ? Modules.AccountAndSettings : 'Settings',
+    });
     triggerHotjarRecording(`Capture_Setting`);
     this.props.openModal({
       size: 'medium',

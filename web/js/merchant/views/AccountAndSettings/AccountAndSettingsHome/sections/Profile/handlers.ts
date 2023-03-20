@@ -79,6 +79,7 @@ export const FORM_MAP: Record<
   [PersonalProfileFields.CONTACT_MOBILE]: ({ props }) => {
     const obj = {
       onComplete: updateContactMobileHandler(props),
+      page: 'Personal Profile',
     };
     return {
       attributes: obj,

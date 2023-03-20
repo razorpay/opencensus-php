@@ -75,7 +75,7 @@ const MerchantDetails = ({ user, changeBillingLabel, openModal, closeModal, trac
   return (
     <div className="list-group details-row-container">
       <IntoView hashedWith={[EMAIL_UPDATE, CONTACT_NUMBER_UPDATE]}>
-        <ContactDetails isFlowRevamped={false} />
+        <ContactDetails isFlowRevamped={false} page="Profile" />
       </IntoView>
 
       <BusinessDetails isFlowRevamped={false} />

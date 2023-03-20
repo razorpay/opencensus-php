@@ -12,6 +12,7 @@ export interface ContactDetailsProps extends RouteComponentProps {
   updateMerchantConfig: (data: unknown) => Promise<any>;
   updateSession: (data: unknown) => unknown;
   isFlowRevamped: boolean;
+  page: string;
 }
 
 export interface BusinessSettingsProps extends RouteComponentProps {

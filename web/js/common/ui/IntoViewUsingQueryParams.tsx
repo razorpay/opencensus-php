@@ -1,13 +1,15 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import scrollTo from 'common/utils/scrollTo';
-import TriggerOnQueryParamMatch from 'common/ui/TriggerOnQueryParamMatch';
+import qs from 'query-string';
+import get from 'lodash/get';
+import { RouteComponentProps, withRouter } from 'react-router';
 
 type Props = {
   children: JSX.Element;
   queryKey: string;
   queryValue: string;
   elementRef?: React.RefObject<HTMLDivElement>;
-};
+} & RouteComponentProps;
 
 const handleScrollIntoView = (offsetTop: number) => {
   // add delay to wait for whole dom to load then scroll to the target element
@@ -23,6 +25,7 @@ function IntoViewUsingQueryParams({
   queryKey,
   queryValue,
   elementRef,
+  location,
 }: Props): JSX.Element {
   const showView = useRef<HTMLDivElement>(null);
 
@@ -34,19 +37,15 @@ function IntoViewUsingQueryParams({
     }
   };
 
-  return (
-    <TriggerOnQueryParamMatch
-      queryParamsMapping={[
-        {
-          key: queryKey,
-          value: queryValue,
-          trigger: scrollIntoView,
-        },
-      ]}
-    >
-      <div ref={showView}>{children}</div>
-    </TriggerOnQueryParamMatch>
-  );
+  useEffect(() => {
+    if (!location.search) return;
+    const queryParams = qs.parse(location.search);
+    if (get(queryParams, queryKey) === queryValue) {
+      scrollIntoView();
+    }
+  }, [location.search]);
+
+  return <div ref={showView}>{children}</div>;
 }
 
-export default IntoViewUsingQueryParams;
+export default withRouter(IntoViewUsingQueryParams);

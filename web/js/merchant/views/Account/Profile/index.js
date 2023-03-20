@@ -322,7 +322,7 @@ class Profile extends Component {
     const { user } = this.props;
     selfServeTrackInitiate({
       selfServeAction: 'Password Updated',
-      page: user.isAccountAndSettingsRevampEnabled ? 'Your Profile' : 'Profile',
+      page: user.isAccountAndSettingsRevampEnabled ? Modules.PersonalProfile : Modules.Profile,
       screen: user.isAccountAndSettingsRevampEnabled
         ? Modules.AccountAndSettings
         : Modules.MyAccount,
@@ -353,7 +353,7 @@ class Profile extends Component {
           selfServeTrackSuccess({
             selfServeAction: 'Display Name Updated',
             page: 'Profile',
-            screen: 'My Account',
+            screen: Modules.MyAccount,
           });
           analyticsTrack({
             objectName: 'display name update',
@@ -402,6 +402,11 @@ class Profile extends Component {
   };
 
   openChangeDisplayName = () => {
+    selfServeTrackInitiate({
+      selfServeAction: 'Display Name Updated',
+      page: 'Profile',
+      screen: Modules.MyAccount,
+    });
     this.openAttrSaveModal('display_name');
   };
 
@@ -525,13 +530,8 @@ class Profile extends Component {
   };
 
   saveBankAccountChanges = (data, setBankDetailsStepCallback = () => {}) => {
-    const {
-      user,
-      saveBankAccountChangesAutomate,
-      fetchBankAccount,
-      closeModal,
-      showNotification,
-    } = this.props;
+    const { user, saveBankAccountChangesAutomate, fetchBankAccount, closeModal, showNotification } =
+      this.props;
     const body = { ...data };
     const formdata = new FormData();
 
@@ -692,19 +692,9 @@ class Profile extends Component {
               <div className="panel-heading">
                 Merchant Id: <strong>{user.id}</strong>
                 {user.user?.signup_via_email || profile.check_password.data.set_password ? (
-                  <TriggerOnQueryParamMatch
-                    queryParamsMapping={[
-                      {
-                        key: ACTION_QUERY_PARAM_KEY,
-                        value: CHANGE_PASSWORD,
-                        trigger: this.openChangePasswordModal,
-                      },
-                    ]}
-                  >
-                    <a className="pull-right" onClick={this.openChangePasswordModal}>
-                      Change Password
-                    </a>
-                  </TriggerOnQueryParamMatch>
+                  <a className="pull-right" onClick={this.openChangePasswordModal}>
+                    Change Password
+                  </a>
                 ) : null}
               </div>
             )}
