@@ -107,7 +107,7 @@ const Activation = (props) => {
     });
     setIsFormLocked(
       activationData.partner_activation?.locked ||
-        ['needs_clarification', 'under_review'].includes(
+        ['needs_clarification', 'under_review', 'kyc_qualified_unactivated'].includes(
           activationData.partner_activation?.activation_status,
         ),
     );

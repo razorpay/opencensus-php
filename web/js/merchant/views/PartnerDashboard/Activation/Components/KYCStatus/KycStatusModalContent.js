@@ -70,6 +70,7 @@ export const kycModalContent = (args = {}) => {
   }
 
   switch (activationState) {
+    case 'kyc_qualified_unactivated':
     case 'under_review': {
       return {
         title: 'Partner KYC Under Review',

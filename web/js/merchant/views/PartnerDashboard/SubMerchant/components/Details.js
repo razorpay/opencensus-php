@@ -47,9 +47,13 @@ const Details = (props) => {
   const isCapitalProduct = product === PRODUCT_TYPE.CAPITAL;
   const contact_mobile = submerchant?.user?.contact_mobile;
   const activation_status = submerchant?.details?.activation_status;
-  const smallWrapper = ['activated', 'activated_mcc_pending', 'under_review', 'rejected'].includes(
-    activation_status,
-  );
+  const smallWrapper = [
+    'activated',
+    'activated_mcc_pending',
+    'under_review',
+    'kyc_qualified_unactivated',
+    'rejected',
+  ].includes(activation_status);
   const isShowLargeWrapper = isReseller && isSubMerchantKycResellerEnabled && !smallWrapper;
   const [capitalDetails, setCapitalDetails] = useState();
   const [showMoreDetails, setShowMoreDetails] = useState(false);

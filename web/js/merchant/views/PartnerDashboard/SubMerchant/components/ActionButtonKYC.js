@@ -89,7 +89,13 @@ const ActionButtonKYC = ({
   }
 
   if (
-    ['activated', 'activated_mcc_pending', 'under_review', 'rejected'].includes(activation_status)
+    [
+      'activated',
+      'activated_mcc_pending',
+      'under_review',
+      'kyc_qualified_unactivated',
+      'rejected',
+    ].includes(activation_status)
   ) {
     return null;
   }

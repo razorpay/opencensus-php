@@ -431,7 +431,12 @@ export const checkIfDedupe = (data: any): string => {
     }
     return 'passed';
   } else {
-    if (!!data?.locked && data?.activation_status === 'under_review' && data?.isDedupe) {
+    if (
+      !!data?.locked &&
+      (data?.activation_status === 'under_review' ||
+        data?.activation_status === 'kyc_qualified_unactivated') &&
+      data?.isDedupe
+    ) {
       return 'blocked';
     }
     return 'passed';

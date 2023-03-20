@@ -135,6 +135,7 @@ const GreylistedSteps: React.FC<
   const canShowCTA =
     [
       'under_review',
+      'kyc_qualified_unactivated',
       'activated',
       'activated_mcc_pending',
       'needs_clarification',
@@ -143,6 +144,7 @@ const GreylistedSteps: React.FC<
 
   const getMessageInfo = (context) => {
     switch (context.activation_status) {
+      case 'kyc_qualified_unactivated':
       case 'under_review':
         return !isDedupe ? 'You have submitted all the details. Our team is reviewing them' : '';
       case 'activated_mcc_pending':

@@ -626,7 +626,10 @@ class ActivationCard extends Component {
       );
     }
 
-    if (activationStatus === 'under_review' && this.internationalPGStatus === 'approved') {
+    if (
+      (activationStatus === 'under_review' || activationStatus === 'kyc_qualified_unactivated') &&
+      this.internationalPGStatus === 'approved'
+    ) {
       return (
         <>
           You can now start accepting domestic and international payments via the Payment Gateway.

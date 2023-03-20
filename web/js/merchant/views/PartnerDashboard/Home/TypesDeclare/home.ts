@@ -32,6 +32,7 @@ export type ActivationStatesT =
   | 'rejected'
   | 'needs_clarification'
   | 'under_review'
+  | 'kyc_qualified_unactivated'
   | 'instantly_activated'
   | 'activated_mcc_pending';
 

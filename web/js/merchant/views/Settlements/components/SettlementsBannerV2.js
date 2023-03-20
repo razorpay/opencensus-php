@@ -83,7 +83,10 @@ const SettlementsBannerV2 = ({
 
   let title, subTitle, actions, intent;
 
-  if (user?.activation_status === 'under_review') {
+  if (
+    user?.activation_status === 'under_review' ||
+    user?.activation_status === 'kyc_qualified_unactivated'
+  ) {
     // We are showing this banner in live mode if user's KYC has not been submitted or user's KYC is under review
     title = 'Your KYC details are currently under review';
     subTitle =

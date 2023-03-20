@@ -1,11 +1,14 @@
 import React from 'react';
 import Banner from 'common/ui/Banner';
 
-const onHoldBanner = ({ ctaOnClick, user, payments }) => {
+const onHoldBanner = ({ ctaOnClick, user }) => {
   let content = <>Your settlements are not being processed. They have been put on hold.</>;
 
   if (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) {
-    if (user.activation_status === 'under_review') {
+    if (
+      user.activation_status === 'under_review' ||
+      user.activation_status === 'kyc_qualified_unactivated'
+    ) {
       content = (
         <>
           Your Settlements are not being processed currently because your KYC is pending review. It

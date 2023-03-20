@@ -20,7 +20,10 @@ export const getActionStatus = ({
   isL1Submitted,
 }: ActionStatusProp): string => {
   let status;
-  if (user.activation_status === 'under_review') {
+  if (
+    user.activation_status === 'under_review' ||
+    user.activation_status === 'kyc_qualified_unactivated'
+  ) {
     status = 'KYC Under Review';
   } else if (user.activation_progress < 100) {
     status = 'Activate your account';

@@ -90,7 +90,7 @@ export const ActivateAccountStep = ({
   };
   // Note : above default stepContent for instantly_activated
 
-  if (activation_status === 'under_review') {
+  if (activation_status === 'under_review' || activation_status === 'kyc_qualified_unactivated') {
     stepContent.title = 'Account activation in process';
     stepContent.subTitle =
       'Hold tight, you are one step closer to earning commissions. Our team is verifying your details.';

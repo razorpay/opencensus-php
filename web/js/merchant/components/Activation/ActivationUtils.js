@@ -458,7 +458,8 @@ function isDedupe(activation) {
 function isDedupeOldFunc(activation) {
   if (
     !!activation.locked &&
-    activation.activation_status === 'under_review' &&
+    (activation.activation_status === 'under_review' ||
+      activation.activation_status === 'kyc_qualified_unactivated') &&
     activation.isDedupe
   ) {
     return true;
@@ -549,7 +550,10 @@ function getActivationState(activationData = {}, isUnregisteredBusiness, isNcEli
       activation_status !== 'needs_clarification' // if nc skip dedupe state
     ) {
       activationState = 'L2_dedupe_blocked';
-    } else if (activation_status === 'under_review') {
+    } else if (
+      activation_status === 'under_review' ||
+      activation_status === 'kyc_qualified_unactivated'
+    ) {
       if (dedupeStatus === 'partial') {
         activationState = tncRequired
           ? 'under_review_without_tnc_partial'

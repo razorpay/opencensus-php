@@ -8,6 +8,7 @@ const statusMap = {
   rejected: 'label-light-negative',
   needs_clarification: 'label-light-warning',
   under_review: 'label-light-neutral',
+  kyc_qualified_unactivated: 'label-light-neutral',
   instantly_activated: 'label-light-information',
   activated_mcc_pending: 'label-light-positive',
 };
@@ -58,7 +59,13 @@ const SubMerchantKycStatusLabel = ({
   }
 
   if (
-    ['activated', 'activated_mcc_pending', 'under_review', 'rejected'].includes(activation_status)
+    [
+      'activated',
+      'activated_mcc_pending',
+      'under_review',
+      'kyc_qualified_unactivated',
+      'rejected',
+    ].includes(activation_status)
   ) {
     description = ``;
   }

@@ -4,6 +4,7 @@ export const formatStatus = (status) => {
       return 'details required';
     case 'submitted':
     case 'under_review':
+    case 'kyc_qualified_unactivated':
     case 'rejected':
       return 'under review';
     case 'needs_clarification':

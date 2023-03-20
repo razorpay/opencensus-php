@@ -42,9 +42,13 @@ function SupportActions({
         </li>
       )}
       {window.rzp_user ? (
-        ['activated', 'under_review', 'instantly_activated', 'needs_clarification'].indexOf(
-          activationStatus,
-        ) > -1 &&
+        [
+          'activated',
+          'under_review',
+          'kyc_qualified_unactivated',
+          'instantly_activated',
+          'needs_clarification',
+        ].indexOf(activationStatus) > -1 &&
         (show_chat || isChatWithUsDisabled) ? (
           <li
             className={`support-item p-all chat ${isChatDisabled ? 'disabled' : ''}`}

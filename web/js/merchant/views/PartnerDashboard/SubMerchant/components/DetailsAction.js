@@ -11,7 +11,7 @@ import { isMobileAndTablet } from 'common/utils/rzp-utils';
 import { withRouter } from 'react-router-dom';
 import WaitingApprovalImg from 'assets/partner-dashboard/waiting-approval.png';
 import DefaultImg from 'assets/partner-dashboard/req-by-email-1.png';
-import Image from '../../../../../common/ui/Image';
+import Image from 'common/ui/Image';
 
 const DetailsAction = ({
   activation_status = null,
@@ -115,7 +115,13 @@ const DetailsAction = ({
   }
 
   if (
-    ['activated', 'activated_mcc_pending', 'under_review', 'rejected'].includes(activation_status)
+    [
+      'activated',
+      'activated_mcc_pending',
+      'under_review',
+      'kyc_qualified_unactivated',
+      'rejected',
+    ].includes(activation_status)
   ) {
     return null;
   }

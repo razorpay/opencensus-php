@@ -4,7 +4,10 @@ import ModalHeader from 'common/ui/ModalHeader';
 import rTracking from 'react-tracking';
 
 const KYCAlertModal = ({ user, switchToTestMode, closeModal, tracking }) => {
-  if (user.activation_status === 'under_review') {
+  if (
+    user.activation_status === 'under_review' ||
+    user.activation_status === 'kyc_qualified_unactivated'
+  ) {
     return (
       <div class="MarketPlace--KYC-UnderReview-Modal">
         <ModalHeader title="KYC is Under Review" onCloseClick={closeModal} />

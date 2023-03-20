@@ -71,7 +71,10 @@ class SettlementDetail extends Component {
     const user = this.props.user;
     const isOnHold = this.isOnHold();
     if (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) {
-      if (user.activation_status === 'under_review') {
+      if (
+        user.activation_status === 'under_review' ||
+        user.activation_status === 'kyc_qualified_unactivated'
+      ) {
         return 'Settlements under review';
       }
       if (!user.isSubmitted) {
@@ -87,7 +90,10 @@ class SettlementDetail extends Component {
   get onHoldSubtitle() {
     const user = this.props.user;
     if (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) {
-      if (user.activation_status === 'under_review') {
+      if (
+        user.activation_status === 'under_review' ||
+        user.activation_status === 'kyc_qualified_unactivated'
+      ) {
         return 'We are reviewing your documents.';
       }
       if (!user.isSubmitted) {
@@ -103,7 +109,10 @@ class SettlementDetail extends Component {
     const isBankAccountChanged = this.isBankAccountChanged();
 
     if (user.instantActivation.isWhitelistFlow || user.isUnregisteredBusiness) {
-      if (user.activation_status === 'under_review') {
+      if (
+        user.activation_status === 'under_review' ||
+        user.activation_status === 'kyc_qualified_unactivated'
+      ) {
         return (
           <>
             We have received your KYC information. The review process will take approximately 1-2

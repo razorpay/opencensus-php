@@ -45,13 +45,16 @@ export default function usePartnerActivation(): any {
     let description = ``;
     if (
       commonLockedFields.includes(field) &&
-      ['activated', 'under_review'].includes(partnerActivationStatus || '')
+      ['activated', 'under_review', 'kyc_qualified_unactivated'].includes(
+        partnerActivationStatus || '',
+      )
     ) {
       isDisabled = true;
       switch (partnerActivationStatus) {
         case 'activated':
           description = 'Verified under Partner KYC';
           break;
+        case 'kyc_qualified_unactivated':
         case 'under_review':
           description = `Under review in Partner KYC`;
           break;

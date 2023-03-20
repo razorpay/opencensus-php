@@ -623,7 +623,8 @@ class AnalyticsDesktop extends Component {
               )}
             {!this.props.user.isInstantActivationEnabled &&
               !!this.props.user.locked &&
-              this.props.user.activation_status === 'under_review' &&
+              (this.props.user.activation_status === 'under_review' ||
+                this.props.user.activation_status === 'kyc_qualified_unactivated') &&
               this.props.user.isDedupe && <DedupeModal />}
             {!user.isFeatureEnabled('covid_19_relief') &&
               user.isCovidReliefFlowEnabled &&

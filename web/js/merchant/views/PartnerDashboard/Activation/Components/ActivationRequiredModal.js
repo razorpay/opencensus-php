@@ -20,7 +20,11 @@ export default ({ onCloseClick, partnerActivationStatus }) => {
     </div>
   );
 
-  if (['under_review', 'needs_clarification', 'rejected'].includes(partnerActivationStatus)) {
+  if (
+    ['under_review', 'kyc_qualified_unactivated', 'needs_clarification', 'rejected'].includes(
+      partnerActivationStatus,
+    )
+  ) {
     const modalAction = (
       <div class="Modal__actions text-right">
         <button class="btn btn-primary btn-block" onClick={onCloseClick}>

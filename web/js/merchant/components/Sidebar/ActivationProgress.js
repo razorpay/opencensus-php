@@ -19,7 +19,10 @@ function ActivationProgress(props) {
   let actionCopy;
   let trackingIntent = null;
 
-  if (user.activation_status === 'under_review') {
+  if (
+    user.activation_status === 'under_review' ||
+    user.activation_status === 'kyc_qualified_unactivated'
+  ) {
     actionCopy = 'KYC Under Review';
   } else if (user.activation_progress < 100) {
     // If user form is still unfilled

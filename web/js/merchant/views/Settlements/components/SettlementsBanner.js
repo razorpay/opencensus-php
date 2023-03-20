@@ -47,14 +47,19 @@ const SettlementsBanner = (props) => {
   };
 
   let icon, title, subTitle, actions, className;
-  if (user.activation_status === 'under_review' || (user.isActivated && !user.isSubmitted)) {
+  if (
+    user.activation_status === 'under_review' ||
+    user.activation_status === 'kyc_qualified_unactivated' ||
+    (user.isActivated && !user.isSubmitted)
+  ) {
     // We are showing this banner in live mode if user's KYC has not been submitted or user's KYC is under review
     if (mode === 'live') {
       icon = <i className="i i-info-outline alert-yellow" />;
       title = 'Your settlements are currently not being processed';
       // Different communication for KYC not submitted and KYC under review
       subTitle =
-        user.activation_status === 'under_review' ? (
+        user.activation_status === 'under_review' ||
+        user.activation_status === 'kyc_qualified_unactivated' ? (
           <>
             Settlements will be enabled once your KYC has been reviewed successfully. It generally
             takes 1-2 working days <strong>from the first transaction</strong> for the review

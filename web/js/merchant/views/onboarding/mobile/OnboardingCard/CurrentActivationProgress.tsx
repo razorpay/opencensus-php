@@ -158,7 +158,9 @@ const CurrentActivationProgress: React.FC<
       experiments.canGenerateTnCPage &&
       !data.business_website &&
       !data.merchant_tnc &&
-      ['under_review', 'activated_mcc_pending'].includes(data.activation_status)
+      ['under_review', 'kyc_qualified_unactivated', 'activated_mcc_pending'].includes(
+        data.activation_status,
+      )
     ) {
       let title = 'Payments and Settlements have been enabled, Generate TnC';
       let titleColor = 'shade.970';
@@ -169,7 +171,10 @@ const CurrentActivationProgress: React.FC<
         <Redirect to="/tncform">Generate TnC</Redirect>
       );
 
-      if (data.activation_status === 'under_review') {
+      if (
+        data.activation_status === 'under_review' ||
+        data.activation_status === 'kyc_qualified_unactivated'
+      ) {
         title = Messages.GENERATE_TNC.under_review.old_title;
         titleColor = 'neutral.960';
         desc = Messages.GENERATE_TNC.under_review.description;
@@ -198,6 +203,7 @@ const CurrentActivationProgress: React.FC<
             descriptionJSX={descriptionJSX}
           />
           {data.activation_status === 'under_review' ||
+          data.activation_status === 'kyc_qualified_unactivated' ||
           (data.activation_status === 'activated_mcc_pending' &&
             (!isTestMode || isInstantActivationEnabled)) ? (
             <Buttons.Primary
@@ -252,7 +258,10 @@ const CurrentActivationProgress: React.FC<
       );
     }
 
-    if (data.activation_status === 'under_review') {
+    if (
+      data.activation_status === 'under_review' ||
+      data.activation_status === 'kyc_qualified_unactivated'
+    ) {
       let title = Messages.ACTIVATION_STATUS_UNDER_REVIEW.old_flow.title;
       let description = '';
       let titleColor = 'neutral.960';

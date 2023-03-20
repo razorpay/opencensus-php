@@ -393,7 +393,10 @@ export default class User {
   }
 
   get isUnderReview() {
-    return this.activation_status === 'under_review';
+    return (
+      this.activation_status === 'under_review' ||
+      this.activation_status === 'kyc_qualified_unactivated'
+    );
   }
 
   get isRejected() {

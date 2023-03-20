@@ -406,6 +406,7 @@ function withInternationalConfig(WrappedComponent) {
       if (this.isInternationalGreyList && !this.isKycComplete) {
         if (
           user.activation_status === 'under_review' ||
+          user.activation_status === 'kyc_qualified_unactivated' ||
           user.activation_status === 'needs_clarification'
         ) {
           line =

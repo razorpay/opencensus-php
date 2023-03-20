@@ -139,6 +139,7 @@ export default class InstantActivationAnnouncements extends Component {
       const isInstantActivationVideoEnabled = user.isInstantActivationVideoEnabled;
 
       if (isInstantActivationVideoEnabled) {
+        // eslint-disable-next-line
         const { tracking } = this.props;
         tracking.trackEvent(
           window.rzpQ.onbr().initiated('Instant Activation Video enabled', {
@@ -160,6 +161,7 @@ export default class InstantActivationAnnouncements extends Component {
               <a
                 rel="noreferrer noopener"
                 onClick={() => {
+                  // eslint-disable-next-line
                   this.setState({ showVideoModal: true });
                   handleVideoClick();
                 }}
@@ -170,9 +172,11 @@ export default class InstantActivationAnnouncements extends Component {
               to watch a short video that will take you through your next steps.
             </div>
             <VideoModal
+              // eslint-disable-next-line
               visible={this.state.showVideoModal}
               width={853}
               height={505}
+              // eslint-disable-next-line
               onClose={() => this.setState({ showVideoModal: false })}
               src="https://www.youtube-nocookie.com/embed/FM2P1D-yjOU?rel=0"
             />
@@ -938,7 +942,12 @@ export default class InstantActivationAnnouncements extends Component {
         title = commonSettlementBanner.title;
         content =
           'Congratulations! You can start accepting payments now. Payments will be settled to your bank account according to your settlement schedule. Please note that as part of the routine compliance checks mandated by our banking partners, we will review your business model, website details and reach out for further clarifications.';
-      } else if (user.activation_status === 'under_review' && !!user.locked && user.isDedupe) {
+      } else if (
+        (user.activation_status === 'under_review' ||
+          user.activation_status === 'kyc_qualified_unactivated') &&
+        !!user.locked &&
+        user.isDedupe
+      ) {
         title = 'Contact Support';
         content = (
           <>

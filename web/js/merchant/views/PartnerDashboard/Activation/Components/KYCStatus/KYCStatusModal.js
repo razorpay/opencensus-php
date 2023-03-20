@@ -30,6 +30,7 @@ const KYCStatusModal = ({
   const onCloseModal = () => {
     const shouldShowModal =
       activationState === 'under_review' ||
+      activationState === 'kyc_qualified_unactivated' ||
       activationState === 'needs_clarification' ||
       activationState === 'rejected';
     if (!shouldShowModal) {

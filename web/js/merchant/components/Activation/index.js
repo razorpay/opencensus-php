@@ -3123,11 +3123,14 @@ export function ActivationField(field) {
     // disable common fields which are either under review or activated in Partner KYC
     rest.disabled = true;
 
-    if (['activated', 'under_review'].includes(partnerActivationStatus)) {
+    if (
+      ['activated', 'under_review', 'kyc_qualified_unactivated'].includes(partnerActivationStatus)
+    ) {
       switch (partnerActivationStatus) {
         case 'activated':
           rest.description = 'Verified under Partner KYC';
           break;
+        case 'kyc_qualified_unactivated':
         case 'under_review':
           rest.description = `Cannot edit this field because it's under review in Partner KYC`;
           break;
