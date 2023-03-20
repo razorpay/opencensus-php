@@ -200,4 +200,12 @@ export default class GrowthService extends GenericEntity {
     }
     return {};
   };
+
+  getXBankingWidget = async (fromWhere) => {
+    const xBankingWidget = await this.fetchAssetData(
+      getChannelID(fromWhere, this.user.isOrgRZP),
+      assetNames.X_BANKING_WIDGET,
+    );
+    return xBankingWidget;
+  };
 }

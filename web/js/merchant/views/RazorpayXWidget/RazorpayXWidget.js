@@ -1,9 +1,9 @@
 import React from 'react';
-import Onboarding from './Onboarding';
+import XBankingWidget from 'common/ui/XBankingWidget';
 import './razorpayx-widget-content.styl';
 
 const RazorpayXWidget = () => {
-  return <Onboarding />;
+  return <XBankingWidget />;
 };
 
 export default RazorpayXWidget;

@@ -215,6 +215,12 @@ export const routeToChannelIDMap = {
       stage: 'Il7nf6M5YIxTIo',
       production: 'IlAgclzcAgy3Vf',
     },
+    '/razorpayx': {
+      dev: 'LIzxAJvJlqWT0m',
+      beta: 'LIzxAJvJlqWT0m',
+      stage: 'LIzxAJvJlqWT0m',
+      production: 'LLrHYG5dbSsYCg',
+    },
   },
   banking: {
     default: {
@@ -405,6 +411,12 @@ export const routeToChannelIDMap = {
       stage: 'Il7nf6M5YIxTIo',
       production: 'IlAgclzcAgy3Vf',
     },
+    '/razorpayx': {
+      dev: 'LIzxAJvJlqWT0m',
+      beta: 'LIzxAJvJlqWT0m',
+      stage: 'LIzxAJvJlqWT0m',
+      production: 'LLrHYG5dbSsYCg',
+    },
   },
 };
 
@@ -438,6 +450,7 @@ export const routeToRouteNameMap = {
   '/payment-methods': 'settings-payment-methods',
   '/pricing-plans': 'pricing-plans',
   '/pricing/pricing-plans': 'pricing-plans',
+  '/razorpayx': 'x-banking-widget',
 };
 
 export const eventToGrowthEventTypeMap = {
@@ -462,6 +475,7 @@ export const assetNames = {
   EXCLUSIVE_OFFER: 'EXCLUSIVE_OFFER',
   BANNER_CAROUSEL_ITEM: 'BANNER_CAROUSEL_ITEM',
   MODAL: 'GS_MODAL',
+  X_BANKING_WIDGET: 'X_BANKING_WIDGET',
 };
 
 export const namespace = 'PG_DASHBOARD';

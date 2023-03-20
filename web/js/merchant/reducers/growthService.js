@@ -9,6 +9,7 @@ const FETCH_BANNERS = 'FETCH_BANNERS';
 const FETCH_EXCLUSIVE_OFFER = 'FETCH_EXCLUSIVE_OFFER';
 const FETCH_BANNERS_CAROUSEL = 'FETCH_BANNERS_CAROUSEL';
 const FETCH_GS_MODAL = 'FETCH_GS_MODAL';
+const FETCH_X_BANKING_WIDGET = 'FETCH_X_BANKING_WIDGET';
 
 const updateAssets = (status, assetName) => (state, action) => {
   const key = `${assetName.toLowerCase()}s`;
@@ -44,6 +45,7 @@ const updateBanners = (status) => updateAssets(status, assetNames.BANNER);
 const updateExclusiveOffer = (status) => updateAssets(status, assetNames.EXCLUSIVE_OFFER);
 const updateCarouselBanners = (status) => updateAssets(status, assetNames.BANNER_CAROUSEL_ITEM);
 const updateGSModal = (status) => updateAssets(status, assetNames.MODAL);
+const updateXBankingWidget = (status) => updateAssets(status, assetNames.X_BANKING_WIDGET);
 
 const initialState = {
   announcements: {
@@ -65,6 +67,10 @@ const initialState = {
   gs_modals: {
     loading: true,
     gs_modals: {},
+  },
+  x_banking_widgets: {
+    loading: true,
+    x_banking_widgets: {},
   },
   pricing_bundles: {
     loading: false,
@@ -121,6 +127,14 @@ export const fetchGSModal = ({ template_id }) => {
   };
 };
 
+export const fetchXBankingWidget = ({ fromWhere = 'home' }) => {
+  const growthService = new GrowthService();
+  return {
+    type: FETCH_X_BANKING_WIDGET,
+    payload: growthService.getXBankingWidget(fromWhere),
+  };
+};
+
 export default makeEntityReducer(
   FETCH_ANNOUNCEMENTS,
   {
@@ -139,6 +153,9 @@ export default makeEntityReducer(
     [`${FETCH_GS_MODAL}::PENDING`]: updateGSModal('PENDING'),
     [`${FETCH_GS_MODAL}::SUCCESS`]: updateGSModal('SUCCESS'),
     [`${FETCH_GS_MODAL}::ERROR`]: updateGSModal('ERROR'),
+    [`${FETCH_X_BANKING_WIDGET}::PENDING`]: updateXBankingWidget('PENDING'),
+    [`${FETCH_X_BANKING_WIDGET}::SUCCESS`]: updateXBankingWidget('SUCCESS'),
+    [`${FETCH_X_BANKING_WIDGET}::ERROR`]: updateXBankingWidget('ERROR'),
     [`${FETCH_PRICING_BUNDLE}::PENDING`]: updatePricingSubscription('PENDING'),
     [`${FETCH_PRICING_BUNDLE}::SUCCESS`]: updatePricingSubscription('SUCCESS'),
     [`${FETCH_PRICING_BUNDLE}::ERROR`]: updatePricingSubscription('ERROR'),

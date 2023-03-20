@@ -19,11 +19,11 @@ import {
   setActivePageName as fnSetActivePageName,
   setBaseLocation as fnSetBaseLocation,
 } from 'merchant/reducers/app';
-import { trackLoad, trackExpand, trackAnnouncement } from '../NotificationsDropdown/ga';
-import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
+import { trackLoad, trackExpand, trackAnnouncement } from 'common/ui/NotificationsDropdown/ga';
+import RazorpayXNitroAnnouncement from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
-import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnouncementV2';
-import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnouncement10L';
+import OpfinAnnouncementV2 from 'common/ui/NotificationsDropdown/components/OpfinAnnouncementV2';
+import OpfinAnnouncement10L from 'common/ui/NotificationsDropdown/components/OpfinAnnouncement10L';
 import { analyticsTrack } from 'common/utils/analytics';
 
 import { openSlider } from 'merchant_common/reducers/slider';
@@ -37,10 +37,10 @@ import { fetchAnnouncements } from 'merchant/reducers/growthService';
 import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
 import moment from 'moment';
 import { getButtonClass, iconMap, getQueryData, getNotificationTrackingProperties } from './common';
-import ExclusiveOffer from '../ExclusiveOffer';
-import GrowthServiceModal from '../GrowthServiceModal';
-import GrowthServiceCenterCTAModal from '../GrowthServiceModal/CenterCTAModal';
-import GrowthServiceThankYouModal from '../GrowthServiceModal/ThankYouModal';
+import ExclusiveOffer from 'common/ui/ExclusiveOffer';
+import GrowthServiceModal from 'common/ui/GrowthServiceModal';
+import GrowthServiceCenterCTAModal from 'common/ui/GrowthServiceModal/CenterCTAModal';
+import GrowthServiceThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
 import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
 
