@@ -647,6 +647,7 @@ class Core extends Base\Core
 
         $processor = $this->getProcessor($channel);
 
+        $bankingAccount = null;
         try
         {
             $processor->preProcessAccountInfoNotification($input);
@@ -693,6 +694,8 @@ class Core extends Base\Core
                     'input'          => $input,
                     'failure_reason' => $e->getMessage()
                 ]);
+
+            $processor->postProcessNotifyWebhookFailureToOps($input,$e->getMessage(),$bankingAccount);
 
             $response = $processor->postProcessAccountInfoNotificationResponse($input, Status::CANCELLED);
         }

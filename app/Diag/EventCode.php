@@ -839,6 +839,11 @@ class EventCode
         'name'  => 'x.ca.freshdesk_ticket.create'
     ];
 
+    const X_CA_ONBOARDING_RBL_WEBHOOK_FAILURE = [
+        'group' => 'onboarding',
+        'name'  => 'x.ca.rbl.webhook.failure'
+    ];
+
     const VIRTUAL_ACCOUNT_CREATED = [
         'group' => 'virtual_account',
         'name'  => 'virtual_account.created',

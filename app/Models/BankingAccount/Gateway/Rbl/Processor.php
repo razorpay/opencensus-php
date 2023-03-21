@@ -4,6 +4,7 @@ namespace RZP\Models\BankingAccount\Gateway\Rbl;
 
 use Carbon\Carbon;
 
+use RZP\Diag\EventCode;
 use RZP\Services\FTS;
 use RZP\Models\Admin;
 use RZP\Services\Mozart;
@@ -201,6 +202,25 @@ class Processor extends BankingAccount\Gateway\Processor
         ];
 
         return $response;
+    }
+
+    public function postProcessNotifyWebhookFailureToOps(array $input, string $errorMessage,Entity|null $bankingAccount): void
+    {
+        $bankReferenceNumber = $input[Fields::RZP_ALERT_NOTIFICATION_REQUEST][Fields::BODY][Fields::RZP_REFERENCE_NUMBER] ?? 'Missing';
+
+        $merchant = optional($bankingAccount)->merchant ?? null;
+        $this->app['diag']->trackOnboardingEvent(EventCode::X_CA_ONBOARDING_RBL_WEBHOOK_FAILURE, $merchant, null, [
+            'input'          => $input,
+            'failure_reason' => $errorMessage
+        ]);
+
+        $this->trace->info(
+            TraceCode::BANKING_ACCOUNT_BANK_WEBHOOK_FAILURE_NOTIFICATION,
+            [
+                'bank_reference_number'         => $bankReferenceNumber,
+                'channel'                       => BankingAccount\Channel::RBL,
+                'message'                       => 'Event fired'
+            ]);
     }
 
     public function validateAccountBeforeUpdating(array $input)

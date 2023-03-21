@@ -101,6 +101,10 @@ abstract class Processor extends Base\Core
         return [];
     }
 
+    public function postProcessNotifyWebhookFailureToOps(array $attributes, string $errorMessage,Entity|null $bankingAccount): void
+    {
+    }
+
     public function validateAccountBeforeUpdating(array $input)
     {
         return;

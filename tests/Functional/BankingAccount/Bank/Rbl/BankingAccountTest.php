@@ -13,6 +13,7 @@ use Razorpay\OAuth\Client;
 use RZP\Constants\Timezone;
 use RZP\Models\BankingAccount;
 use RZP\Models\Merchant\RazorxTreatment;
+use RZP\Services\DiagClient;
 use RZP\Services\HubspotClient;
 use RZP\Models\Admin\Permission;
 use RZP\Services\Mock\BankingAccountService;
@@ -1543,6 +1544,8 @@ class BankingAccountTest extends TestCase
 
         $merchantId = '1cXSLlUU8V9sXl';
 
+        $this->fixtures->user->createUserForMerchant($merchantId, [], 'owner', 'test');
+
         $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->ba->addXOriginHeader();
@@ -1827,6 +1830,12 @@ class BankingAccountTest extends TestCase
                                   'status' => 'initiated',
                               ]);
 
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $diagMock->shouldReceive('trackEmailEvent')->withAnyArgs()->andReturn([]);
+
+        $diagMock->shouldNotReceive('trackOnboardingEvent');
+
         $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
 
         $dataToReplace = [
@@ -1872,6 +1881,20 @@ class BankingAccountTest extends TestCase
         $merchantDetail = $this->fixtures->edit('merchant_detail', '10000000000000', $attribute);
 
         $bankingAccount = $this->setAuthAndCreateBankingAccount($merchantDetail->merchant['id']);
+
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $expectedPayload = [
+            'group' => 'onboarding',
+            'name'  => 'x.ca.rbl.webhook.failure',
+        ];
+        $diagMock->shouldReceive('trackOnboardingEvent')
+            ->once()
+            ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
+                $this->assertEquals($expectedPayload, $eventData);
+                return true;
+            })
+            ->andReturnNull();
 
         $dataToReplace = [
             'request' => [
@@ -2117,7 +2140,25 @@ class BankingAccountTest extends TestCase
     {
         $this->createAccountOpeningSuccessfulWebhook();
 
+        $this->fixtures->user->createUserForMerchant('1cXSLlUU8V9sXl', [], 'owner', 'test');
+
+        $this->createMerchantDetail(['merchant_id' => '1cXSLlUU8V9sXl','business_name' => 'foo']);
+
         $bankingAccount = $this->setAuthAndCreateBankingAccount('1cXSLlUU8V9sXl');
+
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $expectedPayload = [
+            'group' => 'onboarding',
+            'name'  => 'x.ca.rbl.webhook.failure',
+        ];
+        $diagMock->shouldReceive('trackOnboardingEvent')
+            ->once()
+            ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
+                $this->assertEquals($expectedPayload, $eventData);
+                return true;
+            })
+            ->andReturnNull();
 
         $dataToReplace = [
             'request' => [
@@ -2147,6 +2188,21 @@ class BankingAccountTest extends TestCase
         $this->ba->proxyAuth('rzp_test_' . $merchantDetail->merchant['id']);
 
         $this->ba->privateAuth('rzp_test', 'RANDOM_RBL_SECRET');
+
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $expectedPayload = [
+            'group' => 'onboarding',
+            'name'  => 'x.ca.rbl.webhook.failure',
+        ];
+        $diagMock->shouldReceive('trackOnboardingEvent')
+            ->once()
+            ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
+                $this->assertEquals($expectedPayload, $eventData);
+                $this->assertEquals('100000Razorpay',$merchant->getId());
+                return true;
+            })
+            ->andReturnNull();
 
         $dataToReplace = [
             'request' => [
@@ -2296,6 +2352,20 @@ class BankingAccountTest extends TestCase
             ]
         ];
 
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $expectedPayload = [
+            'group' => 'onboarding',
+            'name'  => 'x.ca.rbl.webhook.failure',
+        ];
+        $diagMock->shouldReceive('trackOnboardingEvent')
+            ->once()
+            ->withArgs(function($eventData, $merchant, $ex, $actualData) use ($expectedPayload) {
+                $this->assertEquals($expectedPayload, $eventData);
+                return true;
+            })
+            ->andReturnNull();
+
         $this->startTest($dataToReplace);
 
         // we are asserting that the values passed in second webhook will not be updated
@@ -2323,6 +2393,10 @@ class BankingAccountTest extends TestCase
         ]);
 
         $this->ba->appAuth('rzp_test', 'RANDOM_RBL_SECRET');
+
+        $diagMock = $this->createAndReturnDiagMock();
+
+        $diagMock->shouldReceive('trackOnboardingEvent');
 
         $dataToReplace = [
             'request' => [
