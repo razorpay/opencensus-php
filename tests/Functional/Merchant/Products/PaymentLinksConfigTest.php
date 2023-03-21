@@ -9,6 +9,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Feature\Core;
 use RZP\Models\Feature\Entity;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\OAuth\OAuthTestCase;
 use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\WebhookTrait;
@@ -123,6 +124,10 @@ class PaymentLinksConfigTest extends OAuthTestCase
         $response = $this->runRequestResponseFlow($testData);
 
         $this->fixtures->merchant->activate($subMerchant->getId());
+
+        // Attaching tag 'no_doc_partially_activated' to the xpress merchant,
+        // so that merchant becomes part of xpress onboarding pro-active KYC flow
+        $this->fixtures->merchant->addTags([Account\Constants::NO_DOC_PARTIALLY_ACTIVATED], $subMerchant->getId());
 
         $attribute = [
             'activation_status'         => 'activated_kyc_pending'

@@ -52,6 +52,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Methods\Core as MethodCore;
 use RZP\Models\Payment\Config as PaymentConfig;
 use RZP\Models\Partner\Activation as PartnerActivation;
+use RZP\Models\Merchant\Account\Constants as AccountConstants;
 use MVanDuijker\TransactionalModelEvents as TransactionalModelEvents;
 /**
  * @property Org\Entity               $org
@@ -2577,12 +2578,21 @@ class Entity extends Base\PublicEntity
 
     public function isNoDocOnboardingEnabled(): bool
     {
-        return (($this->isFeatureEnabled(Feature\Constants::NO_DOC_ONBOARDING) === true) and ($this->isLive() === false));
+        return (($this->isFeatureEnabled(Feature\Constants::NO_DOC_ONBOARDING) === true)
+            and ($this->isNoDocPartiallyActivatedTagAttached() === false));
     }
 
     public function isNoDocOnboardingPaymentsEnabled(): bool
     {
-        return (($this->isFeatureEnabled(Feature\Constants::NO_DOC_ONBOARDING) === true) and ($this->isLive() === true));
+        return (($this->isFeatureEnabled(Feature\Constants::NO_DOC_ONBOARDING) === true)
+            and ($this->isNoDocPartiallyActivatedTagAttached() === true));
+    }
+
+    public function isNoDocPartiallyActivatedTagAttached()
+    {
+        $existingTags = $this->liveTagNames();
+
+        return (in_array(AccountConstants::NO_DOC_PARTIALLY_ACTIVATED, array_map('strtolower', $existingTags)) === true);
     }
 
     protected function setEmailAttribute($email)

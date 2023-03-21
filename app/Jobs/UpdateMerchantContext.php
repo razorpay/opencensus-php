@@ -144,7 +144,7 @@ class UpdateMerchantContext extends Job
 
             $newActivationStatus = $detailCore->getApplicableActivationStatus($merchantDetail);
 
-            if ($newActivationStatus !== Status::ACTIVATED_KYC_PENDING or $newActivationStatus !== Status::ACTIVATED)
+            if ($newActivationStatus !== Status::ACTIVATED_KYC_PENDING and $newActivationStatus !== Status::ACTIVATED)
             {
                 $clarificationCore = new Core();
 

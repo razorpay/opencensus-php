@@ -3217,7 +3217,6 @@ class Core extends Base\Core
         $isExpEnabled = (new Validator())->checkIfKQUStateExperimentEnabled($merchant->getId());
 
         if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED or
-            $input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_KYC_PENDING or
             $input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED_MCC_PENDING or
             ($isExpEnabled === false and $input[Entity::ACTIVATION_STATUS] === Status::NEEDS_CLARIFICATION))
         {

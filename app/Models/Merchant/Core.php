@@ -9531,4 +9531,14 @@ class Core extends Base\Core
 
         (new Merchant\Detail\Service())->createMerchantConsent($merchant->getId(), $consentDetails, $legalDocumentsInput, [MerchantConsentConstants::PARTNER_AUTH_TERMS]);
     }
+
+    public function isPaymentsEnabledForNoDocMerchants()
+    {
+        $properties = [
+            'id'            => UniqueIdEntity::generateUniqueId(),
+            'experiment_id' => $this->app['config']->get('app.enable_payments_for_no_doc_merchants_experiment_id')
+        ];
+
+        return $this->isSplitzExperimentEnable($properties, 'enable');
+    }
 }

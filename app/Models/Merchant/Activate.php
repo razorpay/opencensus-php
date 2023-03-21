@@ -133,11 +133,34 @@ class Activate extends Base\Core
         //creating terminal request for UPI only
         $this->sendTerminalCreationRequest($merchant, DEConstants::UPI);
 
-        $merchant->activate();
-        //Will be added back when we test e2e flow for onboarding all the merchants
-        //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
+        $isNoDocOnboardedMerchant = $merchant->isFeatureEnabled(Feature\Constants::NO_DOC_ONBOARDING);
 
-        $merchant->releaseFunds();
+        if($isNoDocOnboardedMerchant === false)
+        {
+            $merchant->activate();
+            //Will be added back when we test e2e flow for onboarding all the merchants
+            //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
+
+            $merchant->releaseFunds();
+        }
+        else
+        {
+            $isEnablePaymentsForNoDocMerchants = (new Core)->isPaymentsEnabledForNoDocMerchants();
+
+            $this->trace->info(TraceCode::NO_DOC_MERCHANT_PAYMENTS_ACTIVATION, [
+                'merchant_id'        => $merchant->getId(),
+                'is_enable_payments' => $isEnablePaymentsForNoDocMerchants
+            ]);
+
+            if($isEnablePaymentsForNoDocMerchants === true)
+            {
+                $merchant->activate();
+                //Will be added back when we test e2e flow for onboarding all the merchants
+                //(new Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
+
+                $merchant->releaseFunds();
+            }
+        }
 
         // making sure that merchant's has_key_access is set to true when website is set.
         if ((empty($merchantDetail->getWebsite()) === false) and

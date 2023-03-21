@@ -324,6 +324,10 @@ class AccountV2Test extends TestCase
 
         $this->fixtures->merchant->activate($accountId);
 
+        // Attaching tag 'no_doc_partially_activated' to the xpress merchant,
+        // so that merchant becomes part of xpress onboarding pro-active KYC flow
+        $this->fixtures->merchant->addTags([Account\Constants::NO_DOC_PARTIALLY_ACTIVATED], $accountId);
+
         $value = (new Detail\Core())->getApplicableActivationStatus($merchantDetails);
 
         $this->assertEquals('under_review', $value);
@@ -647,6 +651,10 @@ class AccountV2Test extends TestCase
 
         $this->fixtures->merchant->activate($accountId);
 
+        // Attaching tag 'no_doc_partially_activated' to the xpress merchant,
+        // so that merchant becomes part of xpress onboarding pro-active KYC flow
+        $this->fixtures->merchant->addTags([Account\Constants::NO_DOC_PARTIALLY_ACTIVATED], $accountId);
+
         $data = (new Detail\Core())->getValidationFields($merchant->merchantDetail);
 
         $this->assertNotNull($data);
@@ -678,6 +686,10 @@ class AccountV2Test extends TestCase
         $merchant = $this->getDbEntity('merchant', ['id' => $accountId]);
 
         $this->fixtures->merchant->activate($accountId);
+
+        // Attaching tag 'no_doc_partially_activated' to the xpress merchant,
+        // so that merchant becomes part of xpress onboarding pro-active KYC flow
+        $this->fixtures->merchant->addTags([Account\Constants::NO_DOC_PARTIALLY_ACTIVATED], $accountId);
 
         $attribute = [
             'activation_status'         => 'activated_kyc_pending'

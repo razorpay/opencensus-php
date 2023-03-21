@@ -598,6 +598,8 @@ return array(
 
     'magic_show_coupon_callout_experiment_id'  => env('MAGIC_SHOW_COUPON_CALLOUT_EXP_ID'),
 
+    'enable_payments_for_no_doc_merchants_experiment_id'  => env('ENABLE_PAYMENTS_FOR_NO_DOC_MERCHANTS_EXPERIMENT_ID'),
+
     'add_payment_acceptance_fields_to_account_v2_response' => env('ADD_PAYMENT_ACCEPTANCE_FIELDS_TO_ACCOUNT_V2_RESPONSE'),
 
     'enable_kyc_qualified_unactivated' => env('ENABLE_KYC_QUALIFIED_UNACTIVATED_EXP_ID'),
