@@ -35,8 +35,10 @@ class Image extends Component {
   }
 
   render() {
-    const { children, src, isWebP = false, ...props } = this.props;
+    const { children, src, ...props } = this.props;
     const { validUrl, loading } = this.state;
+    // TODO: Remove this condition after adding support for WebP
+    const isWebP = false;
     const imgProps = {
       ...props,
       onLoad: this.onImageFetchSuccess,

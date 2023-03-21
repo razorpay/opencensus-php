@@ -261,6 +261,12 @@ module.exports = {
       }
     });
 
+    config.module.rules.forEach((rule) => {
+      if (rule?.type === 'asset/resource') {
+        rule.generator.filename = '[path][name][ext]';
+      }
+    });
+
     // *** config.plugins *** //
     // update plugins needed as per dashboard
     if (process.env.DANGER_ENV && true) {
