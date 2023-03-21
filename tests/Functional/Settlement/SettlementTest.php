@@ -2631,6 +2631,180 @@ class SettlementTest extends TestCase
        $this->assertEquals(200, $response['status_code']);
     }
 
+    public function testGetSettlementFromStatusWithTimeInterval()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+
+        $result = $this->createSettlementEntry($content);
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $from = Carbon::now()->subDays(1)->getTimestamp();
+
+        $to = Carbon::now()->timestamp;
+
+        $request = [
+            'url'     => '/settlements?status=processed&from=' . $from . '&to=' . $to,
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($content);
+
+        $this->assertArraySelectiveEquals($content['items'][0], $settlement);
+    }
+
+    public function testGetSettlementForProcessedStatusWithoutTimeInterval()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+
+        $result = $this->createSettlementEntry($content);
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $request = [
+            'url'     => '/settlements',
+            'method'  => 'GET',
+            'content' => [
+                'status' => 'processed'
+            ]
+        ];
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($content);
+
+        $this->assertArraySelectiveEquals($content['items'][0], $settlement);
+    }
+
+    public function testGetSettlementForFailedStatusWithoutTimeInterval()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+
+        $result = $this->createSettlementEntry($content);
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $request = [
+            'url'     => '/settlements',
+            'method'  => 'GET',
+            'content' => [
+                'status' => 'failed'
+            ]
+        ];
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($content);
+
+        $this->assertEquals(sizeof($content['items']), 0);
+    }
+
+    public function testGetSettlementForProcessedStatusBeforeDefaultIntervalWithoutTimeInterval()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+
+        $result = $this->createSettlementEntry($content);
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $settlementId = $settlement['id'];
+
+        $settlementEntity = $this->getDbEntityById('settlement', $settlementId);
+
+        $fiftyDaysAgoTimestamp = Carbon::now(Timezone::IST)->subDays(50)->startOfDay()->getTimestamp();
+
+        $settlementEntity->setCreatedAt($fiftyDaysAgoTimestamp);
+
+        $settlementEntity->saveOrFail();
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $request = [
+            'url'     => '/settlements',
+            'method'  => 'GET',
+            'content' => [
+                'status' => 'processed'
+            ]
+        ];
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($content);
+
+        $this->assertEquals(sizeof($content['items']), 0);
+    }
+
+    public function testGetSettlementFromUtr()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+
+        $result = $this->createSettlementEntry($content);
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $settlementId = $settlement['id'];
+
+        $settlementEntity = $this->getDbEntityById('settlement', $settlementId);
+
+        $settlementEntity->setUtr('UTR1234');
+
+        $settlementEntity->saveOrFail();
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $request = [
+            'url'     => '/settlements?utr=UTR1234',
+            'method'  => 'GET',
+            'content' => []
+        ];
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($content);
+
+        $this->assertArraySelectiveEquals($content['items'][0], $settlement);
+    }
+
+    public function testGetSettlementDetails()
+    {
+        $content = $this->testData['testSettlementCreateFromNewService'];
+
+        $result = $this->createSettlementEntry($content);
+
+        $settlement = $this->getLastEntity('settlement', true);
+
+        $settlementId = $settlement['id'];
+
+        $settlementDetails = $this->getEntities('settlement_details', ['settlement_id' => $settlement['id']], true);
+
+        $request = [
+            'url'     => '/settlements/' . $settlementId . '/details',
+            'method'  => 'GET',
+            'content' => [],
+        ];
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEmpty($content);
+
+        $this->assertArrayHasKey('has_aggregated_fee_tax', $content);
+    }
+
     public function testSettlementServiceMigration()
     {
         $this->ba->adminAuth();

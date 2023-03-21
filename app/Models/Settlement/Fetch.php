@@ -20,6 +20,10 @@ class Fetch extends BaseFetch
             Entity::SETTLED_BY             => 'sometimes|string',
             Entity::OPTIMIZER_PROVIDER     => 'sometimes|alpha_num|size:14'
         ],
+        AuthType::PROXY_AUTH => [
+            Entity::UTR                    => 'sometimes|alpha_num',
+            Entity::STATUS                 => 'sometimes|in:created,initiated,processed,failed',
+        ],
     ];
 
     const ACCESSES = [
@@ -32,6 +36,10 @@ class Fetch extends BaseFetch
             Entity::UTR,
             Entity::CHANNEL,
             Entity::BALANCE_ID,
+        ],
+        AuthType::PROXY_AUTH => [
+            Entity::UTR,
+            Entity::STATUS
         ],
     ];
 

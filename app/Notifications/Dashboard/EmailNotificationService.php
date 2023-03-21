@@ -44,7 +44,7 @@ class EmailNotificationService extends BaseNotificationService
 
             $this->trace->info(TraceCode::MERCHANT_NOTIFICATION_VIA_EMAIL_SENT, [
                 Events::EVENT => $this->event,
-                ]);
+            ]);
         }
 
         catch (\Throwable $e)

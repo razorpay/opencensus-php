@@ -341,7 +341,29 @@ class Service extends Base\Service
 
     public function fetchMultiple($input)
     {
+        // Status is not indexed so keeping the time interval as 30days by default in case date filter is not passed from UI
+        if ((isset($input['status']) === true) and
+            (isset($input['from']) === false) and
+            (isset($input['to']) === false))
+        {
+            $to = Carbon::now(Timezone::IST)->endOfDay()->getTimestamp();
+
+            $from = Carbon::now(Timezone::IST)->subDays(30)->startOfDay()->getTimestamp();
+
+            $input['to'] = $to;
+
+            $input['from'] = $from;
+        }
+
         if ($this->auth->isOptimiserDashboardRequest()) {
+
+            // Currently the value of status is stored in all caps in NSS DB.
+            // In case of search by status filter, FE passes the value in lowercase so converting it to uppercase
+            // when fetching the data from NSS
+            if (isset($input['status']) === true)
+            {
+                $input['status'] = strtoupper($input['status']);
+            }
 
             try {
                 $fetchInput = $this->createFetchMultipleInput($input);

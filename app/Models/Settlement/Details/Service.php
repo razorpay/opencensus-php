@@ -15,6 +15,8 @@ class Service extends Base\Service
 
         $setlDetails = (new Core)->getSettlementDetails($id, $merchant);
 
+        $setlDetails['setl_details']['has_aggregated_fee_tax'] = $setlDetails['has_aggregated_fee_tax'];
+
         return $setlDetails['setl_details'];
     }
 
