@@ -623,8 +623,17 @@ class Service extends Base\Service
             //fetch customer consent
             $data['1cc_customer_consent'] = $this->core->fetchCustomerConsentFor1CC($customer->getContact(), $this->merchant->getId());
 
+            // we are introducing strict param for this use case: to check if customer has saved tokens even when we
+            // dont send otp. this is required for truecaller feature.
+            $strict = false;
+
+            if (isset($input['strict']) === true)
+            {
+                $strict = ($input['strict'] === 'true' || $input['strict'] === true);
+            }
+
             // Check tokens count only when the device token is not present or not valid.
-            if ($sendOtp === true)
+            if ($sendOtp === true || ($sendOtp === false && $strict === true))
             {
                 $customerTokensCount = $this->getCardTokensCountByCustomer($customer, $this->merchant);
 
