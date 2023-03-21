@@ -7,6 +7,7 @@ use Closure;
 use Carbon\Carbon;
 
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Collection;
 use RZP\Exception;
 use RZP\Base\Common;
 use RZP\Exception\LogicException;
@@ -1804,7 +1805,7 @@ class Repository extends Base\Repository
         return array_merge($activatedIds, $rejectedIds);
     }
 
-    public function getMerchantListEligibleForRTB($blacklistedOrWhitelistedMIDs)
+    public function getMerchantListEligibleForRTB($blacklistedOrWhitelistedMIDs): Collection
     {
         $merchantId = $this->dbColumn(Entity::ID);
         $orgId = $this->dbColumn(Entity::ORG_ID);
@@ -1835,10 +1836,9 @@ class Repository extends Base\Repository
                     });
             })
             ->whereNotIn($businessType, $excludedBusinessTypeList)
-            ->whereNotIn($merchantId, $blacklistedOrWhitelistedMIDs)
-            ->pluck($merchantId);
+            ->whereNotIn($merchantId, $blacklistedOrWhitelistedMIDs);
 
-        return $query->toArray();
+        return $query->pluck($merchantId);
     }
 
     /**

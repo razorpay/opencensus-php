@@ -75,7 +75,7 @@ class TrustedBadge extends Job
                 'merchantCountWithInitialChecks' => count($merchantIdListWithInitialChecksPassed),
             ]);
 
-            $merchantIdListWithRiskTags = array_flip($this->repoManager->merchant_detail->getMerchantsWithRiskTags($merchantIdListWithInitialChecksPassed));
+            $merchantIdListWithRiskTags = array_flip($this->repoManager->merchant_detail->getMerchantsWithRiskTags());
 
             $this->trace->info(TraceCode::RTB_CRON_CHECKPOINT_REACHED, [
                 'checkpoint'    => 'fetched_merchants_with_risk_tags',
