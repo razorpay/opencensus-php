@@ -22,6 +22,7 @@ use RZP\Models\Payment\Gateway;
 use RZP\Gateway\Upi\Icici\Fields;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\InvalidArgumentException;
 use RZP\Models\QrCode\Constants as Constants;
 use RZP\Models\BharatQr\Constants as BQRConstants;
 use RZP\Models\Payment\Processor\TerminalProcessor;
@@ -84,12 +85,29 @@ class Generator extends QrCode\Generator
             //@todo:: Check for static and dynamic QR. For static QR, terminal type offline should be passed
             $terminal = (new VirtualAccount\Provider())->getTerminalForMethod(Payment\Method::UPI, $qrCode);
 
-            if (($terminal !== null) and
-                (empty($terminal->getGatewayMerchantId2()) === false))
+            if ($terminal !== null)
             {
-                $this->terminalId = $terminal->getId();
+                switch ($terminal->getGateway())
+                {
+                    case Gateway::UPI_YESBANK:
+                    {
+                        $this->terminalId = $terminal->getId();
 
-                return $terminal->getGatewayMerchantId2();
+                        $vpa = $terminal->getVpa();
+
+                        return $vpa ?? throw new InvalidArgumentException('VPA is required for generating QR');
+                    }
+
+                    default:
+                    {
+                        if(empty($terminal->getGatewayMerchantId2()) === false)
+                        {
+                            $this->terminalId = $terminal->getId();
+
+                            return $terminal->getGatewayMerchantId2();
+                        }
+                    }
+                }
             }
         }
 
