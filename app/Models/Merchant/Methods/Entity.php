@@ -260,6 +260,7 @@ class Entity extends Base\PublicEntity
         self::CARDLESS_EMI_PROVIDERS ,
         self::PAYLATER_PROVIDERS ,
         self::BAJAJPAY,
+        self::PAYZAPP,
     ];
 
 
@@ -381,6 +382,7 @@ class Entity extends Base\PublicEntity
         self::PAYCASH,
         self::CITIBANKREWARDS,
         self::BAJAJPAY,
+        self::PAYZAPP,
     ];
 
     protected static $aff_method_public_name_mapping = [
@@ -648,10 +650,7 @@ class Entity extends Base\PublicEntity
 
     public function isPayzappEnabled()
     {
-        // disabling payzapp for now as the wallet support for this is stopped and
-        // partner have a new onboarding process for new integration and has to be enabled individually again. This is
-        // temp change till we disable the wallet for merchant base from DB.
-        return false;
+        return $this->getPayzapp();
     }
 
     public function isOlamoneyEnabled()
@@ -1020,6 +1019,11 @@ class Entity extends Base\PublicEntity
     public function getBajajPay(): bool
     {
         return in_array(self::BAJAJPAY, $this->getAttribute(self::ADDITIONAL_WALLETS));
+    }
+
+    public function getPayzapp(): bool
+    {
+        return in_array(self::PAYZAPP, $this->getAttribute(self::ADDITIONAL_WALLETS));
     }
 
     public function getOpenwallet()
@@ -1613,6 +1617,11 @@ class Entity extends Base\PublicEntity
     protected function getBajajPayAttribute()
     {
         return $this->getBajajPay();
+    }
+
+    protected function getPayzappAttribute()
+    {
+        return $this->getPayzapp();
     }
 
     protected function getAddonMethodsAttribute()

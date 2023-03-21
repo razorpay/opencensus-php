@@ -1645,4 +1645,33 @@ class MethodsTest extends TestCase
 
         $this->assertTrue($response[Wallet::BAJAJPAY]);
     }
+
+    public function testEnablePayzappWallet()
+    {
+        $merchantMethods = $this->getDbEntityById('merchant', '10000000000000')->getMethods();
+
+        $this->assertFalse($merchantMethods->isPayzappEnabled());
+
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/merchants/10000000000000/methods',
+            'content' => [
+                'payzapp' => 1,
+            ],
+        ];
+
+        $admin = $this->ba->getAdmin();
+
+        $admin->merchants()->attach('10000000000000');
+
+        $this->ba->adminAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response[Wallet::PAYZAPP]);
+    }
 }

@@ -4617,6 +4617,7 @@ class Gateway
             Method::WALLET => [
                 self::WALLET_AMAZONPAY,
                 self::WALLET_BAJAJ,
+                self::WALLET_PAYZAPP,
             ]
         ];
 
