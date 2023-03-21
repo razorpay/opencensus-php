@@ -199,6 +199,7 @@ export const WalletIssuersOptions = [
   { label: 'M PESA', name: 'mpesa' },
   { label: 'Phone Pe', name: 'phonepe' },
   { label: 'Paypal', name: 'paypal' },
+  { label: 'Bajaj Pay', name: 'bajajpay' },
 ];
 
 export const CardLessEmiIssuersOptions = [

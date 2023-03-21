@@ -1,76 +1,46 @@
+const instrumentIconEnum = {
+  airtelmoney: 'airtelmoney',
+  amazonpay: 'amazonpay',
+  amex: 'amex',
+  diners: 'diners',
+  earlysalary: 'earlysalary',
+  epaylater: 'epaylater',
+  freecharge: 'freecharge',
+  icici: 'icici',
+  instacred: 'instacred',
+  jiomoney: 'jiomoney',
+  maestro: 'maestro',
+  masterCard: 'masterCard',
+  mobikwik: 'mobikwik',
+  mpesa: 'mpesa',
+  olamoney: 'olamoney',
+  paypal: 'paypal',
+  paytm: 'paytm',
+  payumoney: 'payumoney',
+  payzapp: 'payzapp',
+  phonepe: 'phonepe',
+  rupay: 'rupay',
+  sbibuddy: 'sbibuddy',
+  getsimpl: 'simpl',
+  visa: 'visa',
+  zestmoney: 'zestmoney',
+  itzcash: 'itzcash',
+  paycash: 'paycash',
+  citibankrewards: 'citibankrewards',
+  sezzle: 'sezzle',
+  walnut369: 'walnut369',
+  trustly: 'trustly',
+  poli: 'poli',
+  giropay: 'giropay',
+  sofort: 'sofort',
+  bajajpay: 'bajajpay',
+};
+
 function getIconFn(iconName) {
-  switch (iconName) {
-    case 'airtelmoney':
-      return 'airtelmoney';
-    case 'amazonpay':
-      return 'amazonpay';
-    case 'amex':
-      return 'amex';
-    case 'diners':
-      return 'diners';
-    case 'earlysalary':
-      return 'earlysalary';
-    case 'epaylater':
-      return 'epaylater';
-    case 'freecharge':
-      return 'freecharge';
-    case 'icici':
-      return 'icici';
-    case 'instacred':
-      return 'instacred';
-    case 'jiomoney':
-      return 'jiomoney';
-    case 'maestro':
-      return 'maestro';
-    case 'masterCard':
-      return 'masterCard';
-    case 'mobikwik':
-      return 'mobikwik';
-    case 'mpesa':
-      return 'mpesa';
-    case 'olamoney':
-      return 'olamoney';
-    case 'paypal':
-      return 'paypal';
-    case 'paytm':
-      return 'paytm';
-    case 'payumoney':
-      return 'payumoney';
-    case 'payzapp':
-      return 'payzapp';
-    case 'phonepe':
-      return 'phonepe';
-    case 'rupay':
-      return 'rupay';
-    case 'sbibuddy':
-      return 'sbibuddy';
-    case 'getsimpl':
-      return 'simpl';
-    case 'visa':
-      return 'visa';
-    case 'zestmoney':
-      return 'zestmoney';
-    case 'itzcash':
-      return 'itzcash';
-    case 'paycash':
-      return 'paycash';
-    case 'citibankrewards':
-      return 'citibankrewards';
-    case 'sezzle':
-      return 'sezzle';
-    case 'walnut369':
-      return 'walnut369';
-    case 'trustly':
-      return 'trustly';
-    case 'poli':
-      return 'poli';
-    case 'giropay':
-      return 'giropay';
-    case 'sofort':
-      return 'sofort';
-    default:
-      return '';
+  if (Object.keys(instrumentIconEnum).includes(iconName)) {
+    return instrumentIconEnum[iconName];
   }
+  return '';
 }
 
 export const getIcon = (iconName) => {

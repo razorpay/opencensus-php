@@ -826,6 +826,13 @@ export const initialState = {
               slug: 'citibankrewards',
               icon: 'citibankrewards',
             },
+            {
+              name: 'Bajaj Pay Wallet',
+              description: '',
+              status: 'greyed',
+              slug: 'bajajpay',
+              icon: 'bajajpay',
+            },
           ],
         },
       ],
