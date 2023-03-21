@@ -114,6 +114,7 @@ class BulkUploadClient extends Job
 
     public function uploadAddressesToKafka(array $input)
     {
+        parent::handle();
         foreach ($input as $contact)
         {
             $start = $this->getCurrentTimeInMillis();
@@ -292,6 +293,7 @@ class BulkUploadClient extends Job
 
     public function pushKafkaMessageToDB(array $kafkaMessage)
     {
+        parent::handle();
         try
         {
             $this->rawAddressValidator->validateInput('process_kafka_message', $kafkaMessage);
@@ -423,6 +425,8 @@ class BulkUploadClient extends Job
     }
 
     public function findAndDeleteInvalidAddress(array $message){
+        parent::handle();
+
         if($message['address_id'] === null || strlen($message['address_id']) === 0){
 
             $this->trace->info(TraceCode::INVALID_ADDRESS_CONSUMER_CLIENT_PROCESSING,[
