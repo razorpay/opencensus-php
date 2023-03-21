@@ -25,6 +25,18 @@ trait UpiRecurring
 {
     public function processRecurringDebitForUpi(Payment\Entity $payment)
     {
+        try
+        {
+            if($payment->isRecurringTypeAuto())
+            {
+                $this->validateAutoRecurringForUpiBeforeDebit($payment);
+            }
+        }
+        catch (\Exception $e)
+        {
+            return;
+        }
+
         $input = [
             'action'        => Payment\Action::DEBIT,
             'gateway'       => $payment->getGateway(),
@@ -472,6 +484,49 @@ trait UpiRecurring
         // TODO: Add predebit validation, these will go as logic exception for now
     }
 
+    protected function validateAutoRecurringForUpiBeforeDebit(Entity $payment)
+    {
+        try
+        {
+            $token = $payment->localToken;
+
+            if($token !== null and
+                $token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
+                    null,
+                    [
+                        'payment_id'      => $payment->getId(),
+                        'token_id'        => $token->getId() ?? null,
+                        'recurring_status'=> $token->getRecurringStatus() ?? null
+                    ]);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::UPI_RECURRING_UNCONFIRMED_TOKEN_IN_AUTO_DEBIT,
+                [
+                    'payment_id'       => $payment->getId(),
+                    'token_id'         => $payment->localToken->getId() ?? null,
+                    'recurring_status' => $payment->localToken->getRecurringStatus() ?? null,
+                ]);
+
+            $this->lockForUpdateAndReload($payment);
+
+            $metadata = $payment->getUpiMetadata();
+            $metadata->setInternalStatus(UpiMetadata\InternalStatus::FAILED);
+            $metadata->setRemindAt(null);
+            (new UpiMetadata\Core)->update($metadata);
+
+            $this->updatePaymentAuthFailed($e);
+
+            throw $e;
+        }
+    }
     /**
      * Only called from Payment::runPaymentMethodRelatedPreProcessing, when even the payment is not commited to DB
      */
