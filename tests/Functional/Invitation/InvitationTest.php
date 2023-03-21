@@ -6,6 +6,8 @@ use DB;
 use Mail;
 use Carbon\Carbon;
 
+use Mockery;
+use Nyholm\Psr7\Factory\HttplugFactory;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
@@ -20,6 +22,7 @@ use RZP\Mail\Invitation\Invite as InvitationMail;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
 use RZP\Mail\Invitation\RazorpayX\Invite as xInvitationMail;
+use RZP\Mail\Invitation\Razorpayx\IntegrationInvite as XAccountingIntegrationInviteMail;
 use RZP\Models\Merchant\MerchantUser\Entity as MerchantUserEntity;
 use RZP\Models\Feature\Constants as FeatureConstants;
 
@@ -1581,5 +1584,149 @@ class InvitationTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->startTest();
+    }
+
+    public function testPostSendXAccountingIntegrationInvitationToNewUserInX()
+    {
+        Mail::fake();
+
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $data = [
+            'id' => 'sampleInviteId',
+            'to_email_id'       => 'testteaminvite@razorpay.com',
+            'from_email_id' => 'testteamxinvite@razorpay.com',
+        ];
+
+        $httpMock = $this->mockEdgeProxyHttpClient($data, 200);
+
+        $this->app->instance('edge_proxy_http_client', $httpMock);
+
+        $this->startTest();
+
+        Mail::assertQueued(xInvitationMail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+            $this->assertArrayHasKey('sender_name', $viewData);
+
+            $this->assertEquals(xInvitationMail::NEW_USER_TEMPLATE_PATH, $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testPostSendOnlyXAccountingIntegrationInvitationToNewUserInX()
+    {
+        Mail::fake();
+
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $data = [
+            'id' => 'sampleInviteId',
+            'to_email_id'       => 'testteaminvite@razorpay.com',
+            'from_email_id' => 'testteamxinvite@razorpay.com',
+        ];
+
+        $httpMock = $this->mockEdgeProxyHttpClient($data, 200);
+
+        $this->app->instance('edge_proxy_http_client', $httpMock);
+
+        $this->startTest();
+
+        Mail::assertQueued(XAccountingIntegrationInviteMail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('sender_name', $viewData);
+
+            $this->assertEquals(XAccountingIntegrationInviteMail::NEW_INVITATION_TEMPLATE_PATH, $mail->view);
+
+            return true;
+        });
+
+        $httpMock->shouldHaveReceived('sendRequest');
+    }
+
+    public function testResendXAccountingIntegrationInvitationToNewUserInX()
+    {
+        Mail::fake();
+
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $this->startTest();
+
+        Mail::assertQueued(XAccountingIntegrationInviteMail::class, function ($mail)
+        {
+            $viewData = $mail->viewData;
+
+            $this->assertArrayHasKey('sender_name', $viewData);
+
+            $this->assertEquals(XAccountingIntegrationInviteMail::REMINDER_INVITATION_TEMPLATE_PATH, $mail->view);
+
+            return true;
+        });
+    }
+
+    public function testPostSendOnlyXAccountingIntegrationInvitationToNewUserInXFailed()
+    {
+
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $httpMock = $this->mockEdgeProxyHttpClientThrowException();
+
+        $this->app->instance('edge_proxy_http_client', $httpMock);
+
+        $this->startTest();
+
+        $httpMock->shouldHaveReceived('sendRequest');
+    }
+
+    public function testPostSendOnlyXAccountingIntegrationInvitationToNewUserInXBadRequest()
+    {
+        $xMerchantUser = $this->createXMerchantUser();
+
+        $this->ba->proxyAuth('rzp_test_' . self::DEFAULT_X_MERCHANT_ID, $xMerchantUser->getId());
+
+        $data = [
+            'message'=>'not found',
+        ];
+
+        $httpMock = $this->mockEdgeProxyHttpClient($data, 404);
+
+        $this->app->instance('edge_proxy_http_client', $httpMock);
+
+        $this->startTest();
+
+        $httpMock->shouldHaveReceived('sendRequest');
+    }
+
+    protected function mockEdgeProxyHttpClient(array $data, int $statusCode)
+    {
+        $expectedResp = (new HttplugFactory)->createResponse($statusCode, null, [], json_encode($data));
+
+        $httpMock = Mockery::mock('RZP\Base\Http');
+
+        $httpMock->shouldReceive('sendRequest')->andReturn($expectedResp);
+
+        return $httpMock;
+    }
+
+    protected function mockEdgeProxyHttpClientThrowException()
+    {
+        $httpMock = Mockery::mock('RZP\Base\Http');
+
+        $exceptions = new ServerErrorException('microservice error', ErrorCode::SERVER_ERROR);
+
+        $httpMock->shouldReceive('sendRequest')->andThrow($exceptions);
+
+        return $httpMock;
     }
 }

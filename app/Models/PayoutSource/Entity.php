@@ -18,14 +18,15 @@ class Entity extends Base\PublicEntity
     const SOURCE_TYPE     = 'source_type';
     const PRIORITY        = 'priority';
 
-    const PAYOUT_LINK         = 'payout_links';
-    const VENDOR_PAYMENTS     = 'vendor_payments';
-    const TAX_PAYMENTS        = 'tax_payments';
-    const VENDOR_SETTLEMENTS  = 'vendor_settlements';
-    const SETTLEMENTS         = 'settlements';
-    const XPAYROLL            = 'xpayroll';
-    const REFUND              = 'refund';
-    const CAPITAL_COLLECTIONS = 'capital_collections';
+    const PAYOUT_LINK                    = 'payout_links';
+    const VENDOR_PAYMENTS                = 'vendor_payments';
+    const TAX_PAYMENTS                   = 'tax_payments';
+    const VENDOR_SETTLEMENTS             = 'vendor_settlements';
+    const SETTLEMENTS                    = 'settlements';
+    const XPAYROLL                       = 'xpayroll';
+    const REFUND                         = 'refund';
+    const CAPITAL_COLLECTIONS            = 'capital_collections';
+    const GENERIC_ACCOUNTING_INTEGRATION = 'generic_accounting_integration';
 
     // Relations
     const PAYOUT = 'payout';

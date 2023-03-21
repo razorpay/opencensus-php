@@ -1836,6 +1836,11 @@ class BasicAuth
         return $this->internalApp === 'business_reporting';
     }
 
+    public function isAccountingIntegrationsApp()
+    {
+        return $this->internalApp === 'accounting_integrations';
+    }
+
     public function isPayoutService()
     {
         return $this->internalApp === 'payouts_service';

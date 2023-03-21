@@ -9191,6 +9191,59 @@ class PayoutTest extends OAuthTestCase
         Queue::assertPushed(PayoutSourceUpdaterJob::class);
     }
 
+    public function testPayoutSourceUpdaterForVanillaPayout()
+    {
+        $this->app->instance('rzp.mode', "live");
+
+        Queue::fake();
+
+        $payout = $this->fixtures->create('payout', [
+            'status'          => 'created',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+        ]);
+
+        $payout->setStatus(Status::PROCESSING);
+
+        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
+
+        // moving to processed, push should not happen as experiment is disbaled
+        $payout->setStatus(Status::PROCESSED);
+
+        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
+
+        $payout = $this->fixtures->create('payout', [
+            'status'          => 'initiated',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+        ]);
+
+        $payout->setStatus(Status::CREATED);
+
+        // Job is pushed for vanilla payouts in created state
+        Queue::assertPushed(PayoutSourceUpdaterJob::class);
+
+        // Enabling experiment
+        $this->app['config']->set('app.generic_ai_enabled_experiment_result_mock', true);
+
+        $payout = $this->fixtures->create('payout', [
+            'status'          => 'created',
+            'pricing_rule_id' => '1nvp2XPMmaRLxb',
+        ]);
+
+        $payout->setStatus(Status::PROCESSING);
+
+        Queue::assertNotPushed(PayoutSourceUpdaterJob::class);
+
+        $payout->setStatus(Status::PROCESSED);
+
+        // Job pushed for GenericAccountingIntegration
+        Queue::assertPushed(PayoutSourceUpdaterJob::class);
+
+        $payout->setStatus(Status::REVERSED);
+
+        // Job pushed for GenericAccountingIntegration
+        Queue::assertPushed(PayoutSourceUpdaterJob::class);
+    }
+
     public function testCreatePayoutFundsOnHoldOnTestMode()
     {
         $contactId = $this->getDbLastEntity('contact')->getId();

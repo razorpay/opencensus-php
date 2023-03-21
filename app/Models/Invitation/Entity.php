@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const ROLE_NAME    = 'role_name';
     const DELETED_AT   = 'deleted_at';
     const PRODUCT      = 'product';
+    const INVITATIONTYPE = 'invitation_type';
 
     // Other constants
     const ACTION        = 'action';

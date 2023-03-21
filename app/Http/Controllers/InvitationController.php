@@ -119,4 +119,14 @@ class InvitationController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function resendXAccountingIntegrationInvites()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->resendXAccountingIntegrationInvites($input);
+
+        return ApiResponse::json($data);
+    }
+
 }

@@ -92,6 +92,7 @@ use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Services\XPayroll\Service as XPayrollService;
 use AuthzAdmin\Client\Configuration as AdminConfiguration;
 use RZP\Services\VendorPortal\Service as VendorPortalService;
+use RZP\Services\GenericAccountingIntegration\Service as AccountingIntegrationService;
 Use RZP\Models\Merchant\Acs\AsvClient\Constant as AsvConstant;
 use RZP\Services\VendorPayments\Service as VendorPaymentService;
 use RZP\Models\Merchant\OneClickCheckout\ShippingProvider\Service as ShippingProviderService;
@@ -238,6 +239,11 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('vendor-portal', function($app)
         {
             return new VendorPortalService($app);
+        });
+
+        $this->app->singleton('accounting-integration-service', function($app)
+        {
+            return new AccountingIntegrationService($app);
         });
 
         $this->app->singleton('tax-payments', function($app)

@@ -63,8 +63,9 @@ class EdgeProxyController extends Controller
     }
 
     /**
-     * @param  \Illuminate\Http\Request $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
+     * @throws Throwable
      */
     public function proxy(Request $request)
     {

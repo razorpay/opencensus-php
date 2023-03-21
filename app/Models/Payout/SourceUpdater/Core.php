@@ -12,6 +12,7 @@ use RZP\Jobs\PayoutSourceUpdaterJob;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Payout\Entity as PayoutEntity;
 
+
 /**
  * Class SourceUpdater
  *
@@ -48,10 +49,38 @@ class Core
         // we push it to queue, only if it has payout-sources that need this status update
         $sourceDetails = $payout->getSourceDetails();
 
-        if (($sourceDetails->count() === 0) and
-            ($payout->getStatus() !== Status::CREATED))
+        $pushStatusUpdate = false;
+
+        if ($sourceDetails->count() !== 0)
         {
-            // no need to push to the queue
+            $pushStatusUpdate = true;
+        }
+        else
+        {
+            if ($payout->getStatus() === Status::CREATED)
+            {
+                // While payout is being created, because of the inserts being inside a transaction, it is possible
+                // that source details are empty, hence pushing the event to queue, where it will be filtered out.
+                // TODO: Fix this not to push updates in the first place.
+                $pushStatusUpdate = true;
+            }
+            else if ((in_array($expectedCurrentStatus, [Status::PROCESSED, Status::REVERSED]) === true) and
+                     (GenericAccountingUpdater::isGAIExperimentEnabled($payout->getMerchantId()) === true))
+            {
+                /*
+                 * This is the case of Vanilla Payouts
+                 * These status updates are required, for Generic Accounting Integrations,
+                 * if the following are conditions are met,
+                 *   1. If there are no SourceDetails
+                 *   2. If the status is either Processed OR Reversed
+                 *   3. If the GAI Experiment for this merchant is enabled
+                 */
+                $pushStatusUpdate = true;
+            }
+        }
+
+        if ($pushStatusUpdate === false)
+        {
             return;
         }
 

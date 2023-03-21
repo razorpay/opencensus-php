@@ -1218,6 +1218,8 @@ class PublicErrorDescription
     const BAD_REQUEST_CONTACT_ID_MISSING_FOR_INVITATION                        = 'Contact Id missing for vendor portal invitation';
     const BAD_REQUEST_CONTACT_WITHOUT_EMAIL                                    = 'Contact does not have email id';
 
+    const BAD_REQUEST_TO_EMAIL_ID_MISSING_FOR_INTEGRATION_INVITATION           = 'to_email_id missing for integration invitation';
+
     const BAD_REQUEST_BULK_PAYOUTS_PAYOUT_HEADER_MISMATCH                      = 'Payout amount header needs to be of either rupees or paise type';
     const BAD_REQUEST_VA_TO_VA_PAYOUTS_BLOCKED                                 = 'Payouts to RazorpayX Lite account is not enabled for your account. Please contact support for any further assistance';
     const BAD_REQUEST_VA_TO_VA_PAYOUTS_NOT_ALLOWED                             = 'Payouts between different RazorpayX Lite accounts is not allowed. Please contact support for any further assistance';

@@ -32,8 +32,11 @@ use RZP\Services\Segment\Constants as SegmentConstants;
 use RZP\Mail\Invitation\Razorpayx\Invite as RazorpayXInvitationMail;
 use RZP\Mail\Invitation\Razorpayx\BankLmsInvite as BankLmsInvite;
 use RZP\Mail\Invitation\Razorpayx\VendorPortalInvite as VendorPortalInvitationMail;
+use RZP\Mail\Invitation\Razorpayx\IntegrationInvite as XAccountingIntegrationInviteMail;
 use RZP\Trace\Tracer;
 use RZP\Tests\P2p\Service\Base\Traits;
+
+define('JOINING_INTEGRATION_INVITATION', 'joining_integration_invitation');
 
 class Core extends Base\Core
 {
@@ -45,11 +48,18 @@ class Core extends Base\Core
      */
     protected $vendorPortalService;
 
+    /**
+     * @var \RZP\Services\GenericAccountingIntegration\Service
+     */
+    protected $integrationInviteService;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->vendorPortalService = $this->app['vendor-portal'];
+
+        $this->integrationInviteService = $this->app['accounting-integration-service'];
     }
 
     public function create(array $input): Entity
@@ -112,7 +122,16 @@ class Core extends Base\Core
 
         $invitedUserExists = (empty($invitedUser) === false);
 
-        $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser);
+        $isIntegrationInvite = false;
+
+        if (empty($input[Entity::INVITATIONTYPE]) === false && $input[Entity::INVITATIONTYPE] == JOINING_INTEGRATION_INVITATION)
+        {
+            $integrationInvite = $this->createXAccountingIntegrationInvitation($input,false);
+
+            $isIntegrationInvite = true;
+        }
+
+        $this->sendEmail($invitation, $senderName, $invitedUserExists, $allMerchantsForInvitedUser, $isIntegrationInvite);
 
         $this->pushSelfServeSuccessEventsToSegmentForMemberInvitation();
 
@@ -451,7 +470,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function sendEmail(Entity $invitation, string $senderName, bool $invitedUserExists, Collection $allMerchantsForInvitedUser = null)
+    protected function sendEmail(Entity $invitation, string $senderName, bool $invitedUserExists, Collection $allMerchantsForInvitedUser = null, bool $isIntegrationInvite = false)
     {
         $product = $invitation->getProduct();
 
@@ -497,7 +516,7 @@ class Core extends Base\Core
             if (empty($merchantIds) === false && $this->merchant->getId() === $merchantIds[0])
                 $inviteMailer = new BankLmsInvite($invitation->getId(), $senderName, $invitedUserExists, $isAnExistingUserOnX, $invitation->getRole());
             else
-                $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName, $invitedUserExists, $isAnExistingUserOnX, $invitation->getRole());
+                $inviteMailer = new RazorpayXInvitationMail($invitation->getId(), $senderName, $invitedUserExists, $isAnExistingUserOnX, $invitation->getRole(), $isIntegrationInvite);
 
             Mail::queue($inviteMailer);
         }
@@ -733,6 +752,7 @@ class Core extends Base\Core
             $this->merchant, $segmentProperties, $segmentEventName
         );
     }
+
     protected function isExistingUserOnX($allMerchantsForInvitedUser)
     {
         if (empty($allMerchantsForInvitedUser) === true)
@@ -750,4 +770,52 @@ class Core extends Base\Core
 
         return false;
     }
+
+    public function createXAccountingIntegrationInvitation(array $input, bool $isSendMail): array
+    {
+        $user = $this->app['basicauth']->getUser();
+
+        $data = [
+            'to_email_id' => $input[Entity::EMAIL],
+            'from_email_id' => $user->getEmail(),
+            'merchant_id' => $this->merchant->getId(),
+        ];
+
+        $invite = $this->integrationInviteService->createOrUpdateInvitation($data);
+
+        if ($isSendMail)
+        {
+            $senderName = $this->getSenderName($input);
+
+            $this->sendXAccountingIntegrationInviteEmail($senderName,$input[Entity::EMAIL]);
+        }
+
+        return $invite;
+    }
+
+    public function resendXAccountingIntegrationInvites(string $toEmailId): array
+    {
+
+        $user = $this->app['basicauth']->getUser();
+
+        $senderName = $this->merchant->getName();
+
+        $invite = [
+            "to_email_id" => $toEmailId,
+            "from_email_id" => $user->getEmail(),
+            "merchant_id" => $this->merchant->getId(),
+        ];
+
+        $this->sendXAccountingIntegrationInviteEmail($senderName,$toEmailId,true);
+
+        return $invite;
+    }
+
+    protected function sendXAccountingIntegrationInviteEmail(string $senderName, string $toEmailId, bool $isReminder = false)
+    {
+        $inviteMailer = new XAccountingIntegrationInviteMail($senderName,$toEmailId,$isReminder);
+
+        Mail::queue($inviteMailer);
+    }
+
 }

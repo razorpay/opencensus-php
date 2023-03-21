@@ -1232,4 +1232,125 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testPostSendXAccountingIntegrationInvitationToNewUserInX' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'POST',
+            'content' => [
+                'email'       => 'testteaminvite@razorpay.com',
+                'role'        => 'finance_l1',
+                'sender_name' => 'sender_name',
+                'invitation_type' => 'joining_integration_invitation'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '100XInviteMerc',
+                'email'       => 'testteaminvite@razorpay.com',
+                'role'        => 'finance_l1'
+            ]
+        ]
+    ],
+
+    'testPostSendOnlyXAccountingIntegrationInvitationToNewUserInX' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'POST',
+            'content' => [
+                'email'       => 'testteaminvite@razorpay.com',
+                'sender_name' => 'sender_name',
+                'invitation_type' => 'integration_invitation'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'sampleInviteId',
+                'to_email_id'       => 'testteaminvite@razorpay.com',
+                'from_email_id' => 'testteamxinvite@razorpay.com',
+            ]
+        ]
+    ],
+
+    'testResendXAccountingIntegrationInvitationToNewUserInX' => [
+        'request' => [
+            'url'    => '/accounting-integrations-invite/resend',
+            'method' => 'PUT',
+            'content' => [
+                'to_email_id'       => 'testteaminvite@razorpay.com'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '100XInviteMerc',
+                'to_email_id'       => 'testteaminvite@razorpay.com',
+                'from_email_id' => 'testteamxinvite@razorpay.com',
+            ]
+        ]
+    ],
+
+    'testPostSendOnlyXAccountingIntegrationInvitationToNewUserInXFailed' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'POST',
+            'content' => [
+                'email'       => 'testteaminvite@razorpay.com',
+                'sender_name' => 'sender_name',
+                'invitation_type' => 'integration_invitation'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ServerErrorException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR,
+        ],
+    ],
+
+    'testPostSendOnlyXAccountingIntegrationInvitationToNewUserInXBadRequest' => [
+        'request' => [
+            'url'    => '/invitations',
+            'method' => 'POST',
+            'content' => [
+                'email'       => 'testteaminvite@razorpay.com',
+                'sender_name' => 'sender_name',
+                'invitation_type' => 'integration_invitation'
+            ],
+            'server'  => [
+                'HTTP_X-Request-Origin'    => config('applications.banking_service_url')
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'not found'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACCOUNTING_PAYOUTS_SERVICE_FAILED
+        ],
+    ]
 ];

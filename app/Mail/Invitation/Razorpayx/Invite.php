@@ -38,9 +38,11 @@ class Invite extends Mailable
 
     protected $isAnExistingUserOnX;
 
+    protected $isIntegrationInvite;
+
     protected $role;
 
-    public function __construct($invitationId, $senderName, bool $invitedUserExists, bool $isAnExistingUserOnX, $role = null)
+    public function __construct($invitationId, $senderName, bool $invitedUserExists, bool $isAnExistingUserOnX, $role = null, bool $isIntegrationInvite = false)
     {
         parent::__construct();
 
@@ -55,6 +57,8 @@ class Invite extends Mailable
         $this->invitedUserExists = $invitedUserExists;
 
         $this->isAnExistingUserOnX = $isAnExistingUserOnX;
+
+        $this->isIntegrationInvite = $isIntegrationInvite;
 
         $this->role = $role;
     }
@@ -108,6 +112,7 @@ class Invite extends Mailable
                 'role'          => $this->getLabel($roleName != null ? $roleName : ''),
                 'invite_link'   => $inviteLink,
                 'support_url'   => self::SUPPORT_URL,
+                'integration_invite' => $this->isIntegrationInvite ? ' and integrate Zoho Books':'',
             ]
         );
 

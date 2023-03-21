@@ -17,14 +17,19 @@ class Factory
 
         $sourceDetails = $payout->getSourceDetails();
 
+        if (count($sourceDetails) == 0)
+        {
+            array_push($subscriberList, (new GenericAccountingUpdater($payout, $mode)));
+        }
+
         foreach ($sourceDetails as $source)
         {
 
             switch ($source->getSourceType())
             {
                 case PayoutSourceEntity::VENDOR_PAYMENTS:
-
                 case PayoutSourceEntity::TAX_PAYMENTS:
+                case PayoutSourceEntity::VENDOR_SETTLEMENTS:
 
                     array_push($subscriberList, (new VendorPaymentUpdater($payout, $mode)));
 
@@ -59,13 +64,6 @@ class Factory
                     array_push($subscriberList, (new CapitalCollectionsUpdater($payout, $mode)));
 
                     break;
-
-                case PayoutSourceEntity::VENDOR_SETTLEMENTS:
-
-                    array_push($subscriberList, (new VendorPaymentUpdater($payout, $mode)));
-
-                    break;
-
             }
         }
 

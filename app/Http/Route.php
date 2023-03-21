@@ -2339,6 +2339,9 @@ class Route
         'invitation_action'                        => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
         'migrate_tokens_to_gateway_tokens'         => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
 
+        // X Accounting Integration invitation routes
+        'accounting_integrations_invite_resend'    => ['put',      'accounting-integrations-invite/resend',          'InvitationController@resendXAccountingIntegrationInvites'          ],
+
         //Draft invitation Links
         'banking_axis_invitations_send'            => ['post',     'banking_axis_invitations',                        'InvitationController@sendAxisInvitations'                         ],
         'draft_invitation_fetch'                   => ['get',      'banking_axis_invitations',                        'InvitationController@listDraftInvitations'                          ],
@@ -6136,6 +6139,7 @@ class Route
         'invitation_resend',
         'invitation_edit',
         'invitation_delete',
+        'accounting_integrations_invite_resend',
         'oauth_token_fetch_multiple',
         'oauth_token_fetch',
         'oauth_token_revoke',
@@ -9763,6 +9767,7 @@ class Route
         'invitation_edit'                              => Permission::UPDATE_INVITATION,
         'invitation_delete'                            => Permission::DELETE_INVITATION,
         'invitation_action'                            => Permission::CREATE_INVITATION,
+        'accounting_integrations_invite_resend'        => Permission::CREATE_INVITATION,
         'merchant_product_switch'                      => Permission::MERCHANT_PRODUCT_SWITCH,
         'user_otp_create'                              => Permission::CREATE_USER_OTP,
         'banking_account_statement_generate'           => Permission::GENERATE_BANKING_ACCOUNT_STATEMENT,
@@ -10301,6 +10306,16 @@ class Route
             'merchant_fetch_internal_users',
         ],
 
+        'accounting_integrations' => [
+            'merchant_fetch_internal_users',
+            'payout_fetch_multiple_internal',
+            'contact_get_internal',
+            'contact_create_internal',
+            'contact_list_internal',
+            'contact_update_internal',
+            'fund_account_get_internal',
+        ],
+
         'metro' => [
             'payout_email_attachments',
             'account_service_handle_update_event',
@@ -10767,6 +10782,7 @@ class Route
             'invitation_edit',
             'invitation_fetch',
             'invitation_resend',
+            'accounting_integrations_invite_resend',
             'invoice_add_line_items',
             'invoice_cancel',
             'invoice_cancel_by_batch',
@@ -12464,6 +12480,7 @@ class Route
             'invitation_edit',
             'invitation_fetch',
             'invitation_resend',
+            'accounting_integrations_invite_resend',
             'invoice_add_line_items',
             'invoice_cancel',
             'invoice_cancel_by_batch',
@@ -15956,6 +15973,7 @@ class Route
         'vendor_payment_get_quick_filter_amounts',
         'vendor_payment_get_auto_processed_invoice',
         'accounting_integrations_proxy_routes',
+        'accounting_integrations_invite_resend',
 
         'vendor_invoices_list',
         'vendor_invoice_create',

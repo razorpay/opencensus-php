@@ -23,6 +23,11 @@ class Service extends Base\Service
     {
         $input[Entity::PRODUCT] = $this->auth->getRequestOriginProduct();
 
+        if (empty($input[Entity::INVITATIONTYPE]) === false && $input[Entity::INVITATIONTYPE] == 'integration_invitation')
+        {
+            return $this->core()->createXAccountingIntegrationInvitation($input,true);
+        }
+
         $invitation = $this->core()->create($input);
 
         return $invitation->toArrayPublic();
@@ -219,6 +224,15 @@ class Service extends Base\Service
         $invitations = $this->core()->listDraftInvitations($product);
 
         return $invitations;
+    }
+
+    public function resendXAccountingIntegrationInvites(array $request): array
+    {
+        if (empty($request['to_email_id'])) {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_VALIDATION_FAILURE, null, null, PublicErrorDescription::BAD_REQUEST_TO_EMAIL_ID_MISSING_FOR_INTEGRATION_INVITATION);
+        }
+
+        return $this->core()->resendXAccountingIntegrationInvites($request['to_email_id']);
     }
 
 }

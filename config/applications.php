@@ -992,6 +992,14 @@ return [
         'timeout' => env('BUSINESS_REPORTING_TIMEOUT_SECS', 60),
     ],
 
+    'accounting_integrations' => [
+        'url' => env('ACCOUNTING_INTEGRATIONS_HOST_URL'),
+        // the secret used by the accounts receviable to call apis under internal auth
+        // this same secret is used as the password to call APIs on the micro-service
+        'secret' => env('ACCOUNTING_INTEGRATIONS_PASSWORD'),
+        'timeout' => env('ACCOUNTING_INTEGRATIONS_TIMEOUT_SECS', 60),
+    ],
+
     'banking_service_url' => env('BANKING_SERVICE_URL', 'https://x.razorpay.com'),
     'bank_lms_banking_service_url' => env('BANK_LMS_BANKING_SERVICE_URL', 'https://partner-lms.razorpay.com'),
 

@@ -23,6 +23,7 @@ class Validator extends Base\Validator
         Entity::SENDER_NAME => 'sometimes|string',
         Entity::PRODUCT     => 'sometimes|string|in:primary,banking',
         Entity::IS_DRAFT    => 'sometimes|boolean|',
+        Entity::INVITATIONTYPE => 'sometimes|string',
     ];
 
     protected static $editRules = [
