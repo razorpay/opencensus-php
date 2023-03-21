@@ -38,13 +38,13 @@ import {
   FooterButtonType,
   PricingHeaderType,
   GetPlanPriceType,
-  PlansType,
+  ViewMoreParams,
 } from './PricingSubscriptionProps.type';
 
-const TogglePlanValue = Object.freeze({
+const TogglePlanValue = {
   monthly: 'monthly',
-  yearly: 'yearly',
-});
+  annual: 'annual',
+} as const;
 
 const FooterButton = ({ isFullView, handleToggle, handleClose }: FooterButtonType): JSX.Element => {
   return (
@@ -65,40 +65,43 @@ const FooterButton = ({ isFullView, handleToggle, handleClose }: FooterButtonTyp
   );
 };
 
-const plansDetailsForViewMore = (
-  text: string,
-  pricingPlans: Array<PlansType> | [],
-  featureId: string,
-  featureIndex: number,
-  handleMouseEnter: (title: string) => void,
-  handleMouseLeave: (title: string) => void,
-): JSX.Element => {
+const plansDetailsForViewMore = ({
+  text,
+  pricingPlans,
+  featureId,
+  featureIndex,
+  handleMouseEnter,
+  handleMouseLeave,
+  togglePlan,
+}: ViewMoreParams): JSX.Element => {
   return (
     <StyledTr key={text}>
-      <StyledTd removeCss textAlign>
+      <StyledTd removeCss textAlign verticalAlign={featureIndex === 0 ? undefined : 'baseline'}>
         <PlanLeftSection>
           <Heading contrast="low" size="small" type="normal" variant="regular" weight="bold">
             {text}
           </Heading>
         </PlanLeftSection>
       </StyledTd>
-      {(pricingPlans as PlansType[]).map(
-        (plans: PlansType): JSX.Element => {
-          return (
-            <StyledTd
-              key={plans?.id}
-              addShadow
-              addRightMargin
-              addLineGradient={featureIndex === 0}
-              isRecommend={plans?.isRecommended}
-              onMouseEnter={handleMouseEnter(plans?.title)}
-              onMouseLeave={handleMouseLeave(plans?.title)}
-            >
-              <Text>{plans[featureId]}</Text>
-            </StyledTd>
-          );
-        },
-      )}
+      {pricingPlans.map((plans): JSX.Element => {
+        let featureOffering = plans?.[featureId]?.[togglePlan];
+        featureOffering = featureOffering ? String(featureOffering).trim() : '';
+
+        return (
+          <StyledTd
+            verticalAlign={featureIndex === 0 ? undefined : 'baseline'}
+            key={plans?.id}
+            addShadow
+            addRightMargin
+            addLineGradient={featureIndex === 0}
+            isRecommend={plans?.isRecommended}
+            onMouseEnter={handleMouseEnter(plans?.title)}
+            onMouseLeave={handleMouseLeave(plans?.title)}
+          >
+            <Text>{featureOffering}</Text>
+          </StyledTd>
+        );
+      })}
     </StyledTr>
   );
 };
@@ -192,7 +195,7 @@ const getPlanPrice = ({
           </Text>
         </StyleMonthlyPrice>
       ) : null}
-      {togglePlan === TogglePlanValue.yearly ? (
+      {togglePlan === TogglePlanValue.annual ? (
         <StyleStrikePrice>
           <Text contrast="high" size="small" type="placeholder" variant="body">
             ₹

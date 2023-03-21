@@ -21,9 +21,10 @@ import { closeModal as fnCloseModal } from 'merchant_common/reducers/modals';
 import { LS_LABELS, IMPRESSION_TIME_INTERVAL } from 'common/ui/PricingSubscription/constants';
 import { setCookie } from 'common/utils/cookies';
 import { fetchGSModal as fetchGSModalAction } from 'merchant/reducers/growthService';
-import {
+import type {
   PlansType,
   PricingSubscriptionProps,
+  TogglePlan,
 } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';
 
 import { PRICING_BUNDLE_TYPE } from 'merchant/models/GrowthService/growthServiceCTAHandler';
@@ -56,7 +57,7 @@ const PricingSubscriptionComponent = ({
   const [isChecked, setChecked] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState('');
-  const [togglePlan, setTogglePlan] = useState<string>(TogglePlanValue.monthly);
+  const [togglePlan, setTogglePlan] = useState<TogglePlan>(TogglePlanValue.monthly);
   const { trackEvent } = useTracking({ page: 'Home' });
   const totalPlanTimer = {};
   const {
@@ -240,9 +241,9 @@ const PricingSubscriptionComponent = ({
 
   const toggleAnnualPlan = (): void => {
     if (togglePlan == TogglePlanValue.monthly) {
-      setTogglePlan(TogglePlanValue.yearly);
+      setTogglePlan(TogglePlanValue.annual);
       trackInstrumentation('toogleSwitch', {
-        toggle_switch: TogglePlanValue.yearly,
+        toggle_switch: TogglePlanValue.annual,
         event_name: 'merchant_dashboard.toggle_switch.initiated',
       });
     } else {
@@ -292,92 +293,94 @@ const PricingSubscriptionComponent = ({
     });
     throw new Error('Something went wrong . Please try again');
   };
-  const handleCheckoutPayment = (
-    plans: PlansType,
-  ): ((
-    plans?: PlansType | React.MouseEvent<HTMLButtonElement, MouseEvent>,
-  ) => Promise<void>) => async () => {
-    trackInstrumentation('choosePlanCTA', {
-      toggle_switch: togglePlan,
-      cta_value: plans.button?.label,
-      section: plans?.title,
-      plan_id: plans?.id,
-    });
-    setSelectedPlanId(plans.id);
-    setLoading(true);
-    await loadCheckoutScript();
-
-    try {
-      const subscriptionData = await merchantFetch({
-        method: 'post',
-        url: `pricing/merchant/subscriptions?plan_id=${plans.id}&frequency=${togglePlan}`,
-        mode: 'live',
+  const handleCheckoutPayment =
+    (
+      plans: PlansType,
+    ): ((plans?: PlansType | React.MouseEvent<HTMLButtonElement, MouseEvent>) => Promise<void>) =>
+    async () => {
+      trackInstrumentation('choosePlanCTA', {
+        toggle_switch: togglePlan,
+        cta_value: plans.button?.label,
+        section: plans?.title,
+        plan_id: plans?.id,
       });
-      const { data: { response = {}, status_code = '' } = {} } = subscriptionData || {};
+      setSelectedPlanId(plans.id);
+      setLoading(true);
+      await loadCheckoutScript();
 
-      if (status_code === 200) {
-        const { subscription = {} } = response;
-        const options = {
-          key: subscription?.account_key,
-          subscription_id: subscription?.payment_subscription_id,
-          name: `Razorpay - ${togglePlan} ${plans?.title}`,
-          image: rzpLogo,
-          // eslint-disable-next-line func-names
-          handler: function (response) {
-            handlePaymentSuccess(response);
-          },
-        };
-        const razorpayCheckout = new window.Razorpay(options);
-        razorpayCheckout.open();
-        // eslint-disable-next-line func-names
-        razorpayCheckout.on('payment.failed', function (response) {
-          handlePaymentFailure(response);
+      try {
+        const subscriptionData = await merchantFetch({
+          method: 'post',
+          url: `pricing/merchant/subscriptions?plan_id=${plans.id}&frequency=${togglePlan}`,
+          mode: 'live',
         });
-        handleCheckoutInitiation();
-      } else {
-        handleCheckoutError();
+        const { data: { response = {}, status_code = '' } = {} } = subscriptionData || {};
+
+        if (status_code === 200) {
+          const { subscription = {} } = response;
+          const options = {
+            key: subscription?.account_key,
+            subscription_id: subscription?.payment_subscription_id,
+            name: `Razorpay - ${togglePlan} ${plans?.title}`,
+            image: rzpLogo,
+            // eslint-disable-next-line func-names
+            handler: function (response) {
+              handlePaymentSuccess(response);
+            },
+          };
+          const razorpayCheckout = new window.Razorpay(options);
+          razorpayCheckout.open();
+          // eslint-disable-next-line func-names
+          razorpayCheckout.on('payment.failed', function (response) {
+            handlePaymentFailure(response);
+          });
+          handleCheckoutInitiation();
+        } else {
+          handleCheckoutError();
+        }
+      } catch (e) {
+        showNotificationToast({
+          type: 'error',
+          message: (e as Error)?.message || 'Something went wrong . Please try again',
+        });
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      showNotificationToast({
-        type: 'error',
-        message: (e as Error)?.message || 'Something went wrong . Please try again',
+    };
+
+  const handleClose =
+    (buttonType: string | undefined): (() => void) =>
+    () => {
+      if (isLoading) return;
+      trackInstrumentation(buttonType === 'close' ? 'CloseCTA' : 'NotInterestedCTA', {
+        toggle_switch: togglePlan,
+        cta_value: buttonType === 'close' ? 'Close' : 'Not Interested',
+        event_name:
+          buttonType === 'close'
+            ? 'merchant_dashboard.click_close.initiated'
+            : 'merchant_dashboard.not_interested.initiated',
       });
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const handleClose = (buttonType: string | undefined): (() => void) => () => {
-    if (isLoading) return;
-    trackInstrumentation(buttonType === 'close' ? 'CloseCTA' : 'NotInterestedCTA', {
-      toggle_switch: togglePlan,
-      cta_value: buttonType === 'close' ? 'Close' : 'Not Interested',
-      event_name:
-        buttonType === 'close'
-          ? 'merchant_dashboard.click_close.initiated'
-          : 'merchant_dashboard.not_interested.initiated',
-    });
+      if (buttonType !== 'close' && !templateId)
+        localStorage.setItem(`${LS_LABELS.NOT_INTERESTED}-${user?.current}`, '1');
 
-    if (buttonType !== 'close' && !templateId)
-      localStorage.setItem(`${LS_LABELS.NOT_INTERESTED}-${user?.current}`, '1');
-
-    const tempTimer = {};
-    if (Object.entries(totalPlanTimer).length) {
-      for (const [key, value] of Object.entries(totalPlanTimer)) {
-        // TODO: Fix `any`
-        tempTimer[key] = (value as any)?.totalTime;
+      const tempTimer = {};
+      if (Object.entries(totalPlanTimer).length) {
+        for (const [key, value] of Object.entries(totalPlanTimer)) {
+          // TODO: Fix `any`
+          tempTimer[key] = (value as any)?.totalTime;
+        }
+        trackInstrumentation('', {
+          // section
+          time_spent: {
+            outside: outsidePlanSectionTimer.totalTime,
+            ...tempTimer,
+          },
+          event_name: 'merchant_dashboard.hover_plan.success',
+        });
       }
-      trackInstrumentation('', {
-        // section
-        time_spent: {
-          outside: outsidePlanSectionTimer.totalTime,
-          ...tempTimer,
-        },
-        event_name: 'merchant_dashboard.hover_plan.success',
-      });
-    }
-    closeModal();
-  };
+      closeModal();
+    };
 
   const handleMouseEnter = (title) => (): void => {
     outsidePlanSectionTimer?.pause(outsidePlanSectionTimer);
@@ -402,14 +405,15 @@ const PricingSubscriptionComponent = ({
   }
 
   const renderPlansDetails = (featureId, index) =>
-    plansDetailsForViewMore(
-      featureIdToFeatureCopyMap[featureId],
+    plansDetailsForViewMore({
+      text: featureIdToFeatureCopyMap[featureId],
       pricingPlans,
       featureId,
-      index,
+      featureIndex: index,
       handleMouseEnter,
       handleMouseLeave,
-    );
+      togglePlan,
+    });
   return (
     <StyledDiv fullView={isFullView}>
       <PricingHeader

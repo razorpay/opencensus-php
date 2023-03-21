@@ -1,3 +1,5 @@
+import { TogglePlanValue } from 'common/ui/PricingSubscription/PricingBundleCommon';
+
 interface pricingBundleAsset {
   pricingPlans?: Array<Record<string, string>> | [];
   featureIdOrder?: Array<string> | [];
@@ -48,6 +50,18 @@ interface FooterButtonType {
   handleToggle: () => void;
   handleClose: (buttonType?: string | undefined) => () => void;
 }
+
+type TogglePlan = keyof typeof TogglePlanValue;
+
+interface ViewMoreParams {
+  text: string;
+  pricingPlans: Array<PlansType>;
+  featureId: string;
+  featureIndex: number;
+  handleMouseEnter: (title: string) => void;
+  handleMouseLeave: (title: string) => void;
+  togglePlan: TogglePlan;
+}
 interface PricingHeaderType {
   headerSrc: string;
   headerAlt: string;
@@ -67,10 +81,12 @@ interface GetPlanPriceType {
     plans: PlansType,
   ) => (plans?: PlansType | React.MouseEvent<HTMLButtonElement, MouseEvent>) => Promise<void>;
 }
-export {
+export type {
   PricingSubscriptionProps,
   FooterButtonType,
   GetPlanPriceType,
   PricingHeaderType,
   PlansType,
+  ViewMoreParams,
+  TogglePlan,
 };

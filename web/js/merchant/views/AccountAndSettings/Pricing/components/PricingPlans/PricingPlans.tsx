@@ -43,6 +43,7 @@ const PricingPlans = ({
     },
     {
       retry: false,
+      staleTime: Infinity,
       enabled: !enrollmentStatus.loading && !enrollmentStatus.hasEnrolled === false,
     },
   );

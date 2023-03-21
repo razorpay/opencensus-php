@@ -118,6 +118,7 @@ const StyledTd = styled.td<any>`
   > p {
     white-space: pre-line;
   }
+  ${({ verticalAlign }) => verticalAlign && `vertical-align: ${verticalAlign}`}
 `;
 
 const StyledFooter = styled.div(
@@ -139,7 +140,7 @@ const StyledFooter = styled.div(
 `,
 );
 const StyledHeader = styled.div`
-  min-width: 700px;
+  min-width: 900px;
   padding: 12px 12px;
   position: absolute;
   left: 50%;
@@ -187,9 +188,6 @@ const StyleSwitchContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  > p {
-    color: ${({ theme }) => theme.colors.surface.text.muted.lowContrast};
-  }
 `;
 const StyleMonthlyPrice = styled.div`
   margin-top: 10px;
