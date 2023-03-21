@@ -52,92 +52,136 @@ export const Sections: SectionCardInterface[] = [
     title: 'Payment methods',
     icon: 'i-payment-methods',
     iconBackground: 'linear-gradient(161.88deg, #30c5d8 18.69%, #1566f1 90.37%)',
-    additionalCondition: ({ mode }: AdditionalContextInterface) => (user: User): boolean =>
-      isPaymentMethodEnabled(user, mode),
+    additionalCondition:
+      ({ mode }: AdditionalContextInterface) =>
+      (user: User): boolean =>
+        isPaymentMethodEnabled(user, mode),
     subSections: [
       {
         id: PaymentMethodsFields.CARDS,
         title: PaymentMethodsTitles[PaymentMethodsFields.CARDS],
         href: ROUTES_INFO.CARDS,
-        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.UPI,
         title: PaymentMethodsTitles[PaymentMethodsFields.UPI],
         href: ROUTES_INFO.UPI_QR,
-        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.NETBANKING,
         title: PaymentMethodsTitles[PaymentMethodsFields.NETBANKING],
         href: ROUTES_INFO.NETBANKING,
-        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.EMI,
         title: PaymentMethodsTitles[PaymentMethodsFields.EMI],
         href: ROUTES_INFO.EMI,
-        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.WALLET,
         title: PaymentMethodsTitles[PaymentMethodsFields.WALLET],
         href: ROUTES_INFO.WALLET,
-        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.PAYLATER,
         title: PaymentMethodsTitles[PaymentMethodsFields.PAYLATER],
         href: ROUTES_INFO.PAY_LATER,
-        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.INTERNATIONAL,
         title: PaymentMethodsTitles[PaymentMethodsFields.INTERNATIONAL],
         href: ROUTES_INFO.INTERNATIONAL_PAYMENTS,
-        additionalCondition: () => (user: User): boolean => user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.CARDS,
         title: 'Cards',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=card`,
-        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            !user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.UPI,
         title: 'UPI/QR',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=upi`,
-        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            !user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.NETBANKING,
         title: 'Netbanking',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=netbanking`,
-        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            !user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.EMI,
         title: 'EMI',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=emi`,
-        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            !user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.WALLET,
         title: 'Wallet',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=wallet`,
-        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            !user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.PAYLATER,
         title: 'Pay Later',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=paylater`,
-        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            !user.isIERevampEnabled,
       },
       {
         id: PaymentMethodsFields.INTERNATIONAL,
         title: 'International payments',
         href: `${ROUTES_INFO.PAYMENT_METHODS}?instrument=international`,
-        additionalCondition: () => (user: User): boolean => !user.isIERevampEnabled,
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            !user.isIERevampEnabled,
       },
     ],
   },
@@ -151,9 +195,10 @@ export const Sections: SectionCardInterface[] = [
         id: WebsiteAppSettingsFields.WEBSITE_APP_DETAIL,
         title: 'Website/App detail',
         href: ROUTES_INFO.WEBSITE_APP_SETTINGS,
-        additionalCondition: ({ websiteSectionDetailsData }: AdditionalContextInterface) => (
-          user: User,
-        ): boolean => isWebsiteDetailsEnabled({ user, websiteSectionDetailsData }),
+        additionalCondition:
+          ({ websiteSectionDetailsData }: AdditionalContextInterface) =>
+          (user: User): boolean =>
+            isWebsiteDetailsEnabled({ user, websiteSectionDetailsData }),
       },
       {
         id: WebsiteAppSettingsFields.BUSINESS_WEBSITE_DETAILS,
@@ -164,13 +209,19 @@ export const Sections: SectionCardInterface[] = [
         id: WebsiteAppSettingsFields.API_KEYS,
         title: 'API keys',
         href: ROUTES_INFO.API_KEYS,
-        additionalCondition: () => (user: User): boolean => isApiKeyEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isApiKeyEnabled(user),
       },
       {
         id: WebsiteAppSettingsFields.WEBHOOKS,
         title: 'Webhooks',
         href: ROUTES_INFO.WEBHOOKS,
-        additionalCondition: () => (user: User): boolean => isWebhookEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isWebhookEnabled(user),
         onLinkClick: (): void => {
           selfServeTrackInitiate({
             selfServeAction: 'Webhook List Fetched',
@@ -183,7 +234,10 @@ export const Sections: SectionCardInterface[] = [
         id: WebsiteAppSettingsFields.APPLICATIONS,
         title: 'Applications',
         href: ROUTES_INFO.APPLICATIONS,
-        additionalCondition: () => (user: User): boolean => isApplicationEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isApplicationEnabled(user),
       },
     ],
   },
@@ -207,7 +261,10 @@ export const Sections: SectionCardInterface[] = [
         id: BusinessSettingsFields.GST_DETAILS,
         title: 'GST details',
         href: ROUTES_INFO.GST_DETAILS,
-        additionalCondition: () => (user: User): boolean => isGstDetailsEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isGstDetailsEnabled(user),
       },
       {
         id: BusinessSettingsFields.CUSTOMER_SUPPORT_DETAILS,
@@ -218,25 +275,37 @@ export const Sections: SectionCardInterface[] = [
         id: BusinessSettingsFields.ACCOUNT_DETAILS,
         title: 'Account details',
         href: ROUTES_INFO.ACCOUNT_DETAILS,
-        additionalCondition: () => (user: User): boolean => isAccountDetailsEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isAccountDetailsEnabled(user),
       },
       {
         id: BusinessSettingsFields.MANAGE_TEAM,
         title: 'Manage team',
         href: ROUTES_INFO.MANAGE_TEAM_DETAILS,
-        additionalCondition: () => (user: User): boolean => isTeamManagementAllowed(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isTeamManagementAllowed(user),
       },
       {
         id: BusinessSettingsFields.INVITATIONS,
         title: 'Invitations',
         href: ROUTES_INFO.TEAM_INVITATIONS,
-        additionalCondition: () => (user: User): boolean => shouldShowTeamInvitations(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            shouldShowTeamInvitations(user),
       },
       {
         id: BusinessSettingsFields.SUPPORT_TICKETS,
         title: 'Support tickets',
         href: ROUTES_INFO.SUPPORT_TICKETS_MERCHANT,
-        additionalCondition: () => (user: User): boolean => isSupportTicketEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isSupportTicketEnabled(user),
       },
     ],
   },
@@ -250,19 +319,28 @@ export const Sections: SectionCardInterface[] = [
         id: PaymentRefundsFields.BALANCES,
         title: 'Balances',
         href: ROUTES_INFO.BALANCES,
-        additionalCondition: () => (user: User): boolean => isBalancesEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isBalancesEnabled(user),
       },
       {
         id: PaymentRefundsFields.CREDITS,
         title: 'Credits',
         href: ROUTES_INFO.CREDITS,
-        additionalCondition: () => (user: User): boolean => isCreditsEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isCreditsEnabled(user),
       },
       {
         id: PaymentRefundsFields.CREDITS,
         title: 'Reminders',
         href: ROUTES_INFO.REMINDERS,
-        additionalCondition: () => (user: User): boolean => isReminderEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isReminderEnabled(user),
       },
       {
         id: PaymentRefundsFields.TRANSACTION_LIMITS,
@@ -273,21 +351,28 @@ export const Sections: SectionCardInterface[] = [
         id: PaymentRefundsFields.FEE_BEARER,
         title: 'Fee bearer',
         href: ROUTES_INFO.FEE_BEARER,
-        additionalCondition: ({ allowCFBInternational }: AdditionalContextInterface) => (
-          user: User,
-        ): boolean => shouldShowFeeBearerSelfServe({ allowCFBInternational, user }),
+        additionalCondition:
+          ({ allowCFBInternational }: AdditionalContextInterface) =>
+          (user: User): boolean =>
+            shouldShowFeeBearerSelfServe({ allowCFBInternational, user }),
       },
       {
         id: PaymentRefundsFields.CAPTURE_REFUND_SETTINGS,
         title: 'Capture and refund settings',
         href: ROUTES_INFO.CAPTURE_AND_REFUND_SETTINGS,
-        additionalCondition: () => (user: User): boolean => isPaymentCaptureAndRefundEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isPaymentCaptureAndRefundEnabled(user),
       },
       {
         id: PaymentRefundsFields.FAILED_PAYMENTS_RETRY,
         title: 'Failed payments retry',
         href: ROUTES_INFO.FAILED_PAYMENTS_RETRY,
-        additionalCondition: () => (user: User): boolean => isFailedPaymentRetryEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isFailedPaymentRetryEnabled(user),
       },
     ],
   },
@@ -322,7 +407,10 @@ export const Sections: SectionCardInterface[] = [
     title: 'Notification settings',
     icon: 'i-notification-bell',
     iconBackground: 'linear-gradient(156.8deg, #C592FF 3.75%, #1566F1 130.62%)',
-    additionalCondition: () => (user: User): boolean => isConfigurationViewAllowed(user),
+    additionalCondition:
+      () =>
+      (user: User): boolean =>
+        isConfigurationViewAllowed(user),
     subSections: [
       {
         id: NotificationSettingsFields.EMAIL,
@@ -333,13 +421,19 @@ export const Sections: SectionCardInterface[] = [
         id: NotificationSettingsFields.SMS,
         title: 'SMS',
         href: ROUTES_INFO.SMS_NOTIFICATIONS,
-        additionalCondition: () => (user: User): boolean => isSmsNotificationEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isSmsNotificationEnabled(user),
       },
       {
         id: NotificationSettingsFields.WHATSAPP,
         title: 'WhatsApp',
         href: ROUTES_INFO.WHATSAPP_NOTIFICATIONS,
-        additionalCondition: () => (user: User): boolean => isWhatsappNotificationEnabled(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isWhatsappNotificationEnabled(user),
       },
     ],
   },
@@ -348,28 +442,37 @@ export const Sections: SectionCardInterface[] = [
     title: 'Checkout settings',
     icon: 'i-shopping-cart',
     iconBackground: 'linear-gradient(155.9deg, #EC9B26 10.71%, #BD7A03 59.94%)',
-    additionalCondition: () => (user: User): boolean =>
-      isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user),
+    additionalCondition:
+      () =>
+      (user: User): boolean =>
+        isConfigurationViewAllowed(user) || isTrustedBadgeAllowed(user),
     subSections: [
       {
         id: CheckoutSettingsFields.BRANDING,
         title: 'Branding',
         href: ROUTES_INFO.BRANDING,
-        additionalCondition: () => (user: User): boolean => isConfigurationViewAllowed(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isConfigurationViewAllowed(user),
       },
       {
         id: CheckoutSettingsFields.FLASH_CHECKOUT,
         title: 'Flash checkout',
         href: ROUTES_INFO.FLASH_CHECKOUT,
-        additionalCondition: () => (user: User): boolean =>
-          isConfigurationViewAllowed(user) && isFlashCheckoutAllowed(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isConfigurationViewAllowed(user) && isFlashCheckoutAllowed(user),
       },
       {
         id: CheckoutSettingsFields.SKIP_MANDATE_SUMMARY_PAGE,
         title: 'Skip mandate summary page',
         href: ROUTES_INFO.SKIP_MANDATORY_SUMMARY_PAGE,
-        additionalCondition: () => (user: User): boolean =>
-          isConfigurationViewAllowed(user) && isSkipMandatorySummaryPageAllowed(user),
+        additionalCondition:
+          () =>
+          (user: User): boolean =>
+            isConfigurationViewAllowed(user) && isSkipMandatorySummaryPageAllowed(user),
       },
       {
         id: CheckoutSettingsFields.TRUSTED_BADGE,
@@ -384,7 +487,7 @@ export const Sections: SectionCardInterface[] = [
     title: 'Pricing',
     icon: 'i-zap',
     iconBackground: 'linear-gradient(126deg, #C8BFFF 9.01%, #553EDF 98.6%)',
-    additionalCondition: (params) => (): boolean => !(params?.hasEnrolled === false),
+    additionalCondition: (params) => (): boolean => !!params?.hasEnrolled,
     subSections: [
       {
         id: PricingFields.PRICING_PLANS,
