@@ -24,14 +24,23 @@ class BulkUploadClient extends Job
     const STATUS_PROCESSING      = 'processing';
     const STATUS_PROCESSED       = 'processed';
     const STATUS_INVALID         = 'invalid';
-    const PROCESSING_DELAY       = 50;
+    const PROCESSING_DELAY       = 70;
 
     protected $trace;
+
+    protected $addressCore;
+
+    protected $customerCore;
+
+    protected RawAddress\Validator $rawAddressValidator;
 
     public function __construct()
     {
         parent::__construct();
         $this->trace = App::getFacadeRoot()['trace'];
+        $this->addressCore = new Address\Core;
+        $this->customerCore = new Customer\Core;
+        $this->rawAddressValidator = new RawAddress\Validator();
     }
 
     /**
@@ -108,7 +117,7 @@ class BulkUploadClient extends Job
         foreach ($input as $contact)
         {
             $start = $this->getCurrentTimeInMillis();
-            $rawAddresses = (new RawAddress\Repository())->fetchRawAddressesForContact($contact['contact'],
+            $rawAddresses =  $this->repoManager->raw_address->fetchRawAddressesForContact($contact['contact'],
                                                                                        self::STATUS_PROCESSING);
             $timeTaken = $this->getCurrentTimeInMillis() - $start;
             $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["fetchRawAddressesForContact:113" => $timeTaken]);
@@ -119,13 +128,13 @@ class BulkUploadClient extends Job
             }
 
             $start = $this->getCurrentTimeInMillis();
-            $customer = (new Customer\Repository())->findByContactAndMerchantId($contact['contact'],Account::SHARED_ACCOUNT);
+            $customer =  $this->repoManager->customer->findByContactAndMerchantId($contact['contact'],Account::SHARED_ACCOUNT);
             $timeTaken = $this->getCurrentTimeInMillis() - $start;
             $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["findByContactAndMerchantId:123" => $timeTaken]);
             if ($customer !== null)
             {
                 $start = $this->getCurrentTimeInMillis();
-                $addresses = (new Address\Repository())->fetchAddressesForEntity($customer,[]);
+                $addresses = $this->repoManager->address->fetchAddressesForEntity($customer,[]);
                 $timeTaken = $this->getCurrentTimeInMillis() - $start;
                 $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["fetchAddressesForEntity:129" => $timeTaken]);
             }
@@ -137,12 +146,12 @@ class BulkUploadClient extends Job
                     $this->trace->info(TraceCode::CUSTOMER_CREATE_FROM_RAW_ADDRESS,[]);
 
                     $start = $this->getCurrentTimeInMillis();
-                    $customer = (new Customer\Core)->createGlobalCustomer($details, true);
+                    $customer = $this->customerCore->createGlobalCustomer($details, true);
                     $timeTaken = $this->getCurrentTimeInMillis() - $start;
                     $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["createGlobalCustomer:141" => $timeTaken]);
 
                     $start = $this->getCurrentTimeInMillis();
-                    $addresses = (new Address\Repository())->fetchAddressesForEntity($customer,[]);
+                    $addresses = $this->repoManager->address->fetchAddressesForEntity($customer,[]);
                     $timeTaken = $this->getCurrentTimeInMillis() - $start;
                     $this->trace->info(TraceCode::RAW_ADDRESS_TO_ADDRESS_CREATION_WORKER, ["fetchAddressesForEntity:146" => $timeTaken]);
                 }
@@ -265,9 +274,9 @@ class BulkUploadClient extends Job
     {
         try
         {
-            $rawAddress = (new RawAddress\Repository())->findOrFail($rawAddressId);
+            $rawAddress = $this->repoManager->raw_address->findOrFail($rawAddressId);
             $rawAddress->setStatus($statusValue);
-            (new RawAddress\Repository())->saveOrFail($rawAddress);
+            $this->repoManager->raw_address->saveOrFail($rawAddress);
         }
         catch (\Exception $e)
         {
@@ -285,7 +294,7 @@ class BulkUploadClient extends Job
     {
         try
         {
-            (new RawAddress\Validator())->validateInput('process_kafka_message', $kafkaMessage);
+            $this->rawAddressValidator->validateInput('process_kafka_message', $kafkaMessage);
 
             if ($kafkaMessage['statusCode'] !== Response\StatusCode::SUCCESS)
             {
@@ -333,7 +342,7 @@ class BulkUploadClient extends Job
             $raw_address = null;
             if ($firstAddress[Constants::ADDRESS_TYPE] === Constants::ADDRESS_TYPE_RAW)
             {
-                $raw_address = (new RawAddress\Repository())->findOrFail($source_id);
+                $raw_address = $this->repoManager->raw_address->findOrFail($source_id);
             }
 
             // new->tw,pp; raw
@@ -347,13 +356,13 @@ class BulkUploadClient extends Job
                     "source_type" => $source_type,
                 ]);
 
-                $customer = (new Customer\Repository())->findByContactAndMerchantId($contact,Account::SHARED_ACCOUNT);
+                $customer =  $this->repoManager->customer->findByContactAndMerchantId($contact,Account::SHARED_ACCOUNT);
                 if ($customer == null)
                 {
                     $details = array('contact' => $contact);
-                    $customer = (new Customer\Core)->createGlobalCustomer($details, true);
+                    $customer = $this->customerCore->createGlobalCustomer($details, true);
                 }
-                (new Address\Core)->create($customer, Type::CUSTOMER, $firstAddress,true);
+                $this->addressCore->create($customer, Type::CUSTOMER, $firstAddress,true);
             }
         }
         catch (\Exception $e)
@@ -429,7 +438,7 @@ class BulkUploadClient extends Job
 
         try{
 
-            $address = (new Address\Repository())->findOrFail($message['address_id']);
+            $address = $this->repoManager->address->findOrFail($message['address_id']);
 
         }catch (\Exception $ex){
 
@@ -448,7 +457,7 @@ class BulkUploadClient extends Job
 
         try{
 
-            $deleted_address = (new Address\Core)->delete($address);
+            $deleted_address = $this->addressCore->delete($address);
 
         } catch (\Exception $ex){
 
@@ -479,7 +488,6 @@ class BulkUploadClient extends Job
         ]);
 
         $this->trace->count(TraceCode::ONE_CC_DELETE_ADDRESS_DELETE_PROCESS_FAILED);
-        return;
     }
 
 }
