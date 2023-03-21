@@ -285,8 +285,10 @@ class GatewayController extends Controller
                 {
                     $data = $this->app['pg_router']->sendStaticCallbackRequestToPgRouter($paymentId, $input);
                 }
-
-                $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
+                else
+                {
+                    $data = $this->processNonExistingPaymentCallback($input, $paymentId, $gatewayDriver, true);
+                }
             }
             else
             {
