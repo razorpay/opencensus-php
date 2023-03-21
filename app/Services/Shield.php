@@ -190,13 +190,14 @@ class Shield
 
     protected function populateMerchantDetails(Merchant\Entity $merchant, array & $payloadDetails)
     {
-        $payloadDetails[ShieldConstants::MERCHANT_ID]             = $merchant->getId();
-        $payloadDetails[ShieldConstants::MERCHANT_NAME]           = $merchant->getBillingLabel();
-        $payloadDetails[ShieldConstants::MERCHANT_EMAIL]          = $merchant->getEmail();
-        $payloadDetails[ShieldConstants::MERCHANT_BUSINESS_TYPE]  = $merchant->merchantDetail->getBusinessType();
-        $payloadDetails[ShieldConstants::MERCHANT_CATEGORY]       = $merchant->getCategory2();
-        $payloadDetails[ShieldConstants::MERCHANT_CATEGORY_CODE]  = (string) $merchant->getCategory();
-        $payloadDetails[ShieldConstants::MERCHANT_RISK_THRESHOLD] = $merchant->getRiskThreshold();
+        $payloadDetails[ShieldConstants::MERCHANT_ID]                = $merchant->getId();
+        $payloadDetails[ShieldConstants::MERCHANT_NAME]              = $merchant->getBillingLabel();
+        $payloadDetails[ShieldConstants::MERCHANT_EMAIL]             = $merchant->getEmail();
+        $payloadDetails[ShieldConstants::MERCHANT_CATEGORY]          = $merchant->getCategory2();
+        $payloadDetails[ShieldConstants::MERCHANT_CATEGORY_CODE]     = (string) $merchant->getCategory();
+        $payloadDetails[ShieldConstants::MERCHANT_RISK_THRESHOLD]    = $merchant->getRiskThreshold();
+        $payloadDetails[ShieldConstants::MERCHANT_BUSINESS_TYPE]     = $merchant->merchantDetail->getBusinessType();
+        $payloadDetails[ShieldConstants::MERCHANT_BUSINESS_CATEGORY] = $merchant->merchantDetail->getBusinessCategory();
 
         if (isset($merchant->merchantDetail) === true)
         {

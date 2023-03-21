@@ -28,15 +28,20 @@ class PaymentEvent extends Event
                 'method'        => $input['payment']['method'],
                 'gateway'       => $input['payment']['gateway'],
                 'international' => $input['payment']['international'],
-                'contact'       => $input['payment']['contact'] ?? '',
-                'email'         => $input['payment']['email'] ?? '',
+                'contact'       => $input['payment']['contact'] ?? null,
+                'email'         => $input['payment']['email'] ?? null,
+                'vpa'           => $input['payment']['vpa'] ?? null,
+                'upi_type'      => $input['payment']['upi_type'] ?? null,
             ],
             'merchant'  => [
                 'id'        => $input['merchant']['id'],
                 'name'      => $input['merchant']['billing_label'],
                 'mcc'       => $input['merchant']['category'],
                 'category'  => $input['merchant']['category2'],
-            ]
+            ],
+            'payment_analytics' => [
+                'ip' => $input['payment_analytics']['ip'] ?? null,
+            ],
         ];
 
         if (isset($input['card']) === true)
