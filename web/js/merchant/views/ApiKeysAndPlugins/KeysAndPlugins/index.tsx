@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PowerSelect } from 'react-power-select';
 import { connect } from 'react-redux';
 import Spinner from 'common/ui/Spinner';
@@ -7,7 +7,7 @@ import * as PluginActions from 'merchant/reducers/plugins';
 import isEmpty from '@universe/utils/isEmpty';
 import * as NotificationsActions from 'merchant_common/reducers/notifications';
 import { isPgMerchant } from 'merchant/components/Activation/ActivationUtils';
-import { Platform, Plugins } from './types';
+import { Platform } from './types';
 import { INTEGRATION_TITLE, NO_PLUGIN_OPTION, PLATFORM_TITLE } from './constants';
 import { getAvailablePlatform, getAvailablePlugin, getProvidedChannels } from './utils';
 import { trackCTAClick, trackPluginSelect } from './events';
@@ -57,23 +57,15 @@ const KeysAndPluginsSection = ({
 
   const options = Object.values(supportedPlugins.items).concat([NO_PLUGIN_OPTION]);
 
-  const getSteps = useCallback(() => {
-    const pluginSteps: JSX.Element[] = [];
-    //* do not show Generate Key step for Shopify plugin
-    if (selectedPlugin !== Plugins.SHOPIFY || !isWebsitePlatform) {
-      pluginSteps.push(<GenerateKey product={product} selectedPlatform={selectedPlatform} />);
-    }
-
-    pluginSteps.push(
-      <Integrate
-        product={product}
-        selectedPlugin={selectedPlugin}
-        selectedPlatform={selectedPlatform}
-      />,
-    );
-
-    return pluginSteps;
-  }, [selectedPlugin, isWebsitePlatform, product, selectedPlatform]);
+  const pluginSteps: JSX.Element[] = [
+    <GenerateKey product={product} selectedPlatform={selectedPlatform} key="generate" />,
+    <Integrate
+      product={product}
+      selectedPlugin={selectedPlugin}
+      selectedPlatform={selectedPlatform}
+      key="integrate"
+    />,
+  ];
 
   useEffect(() => {
     fetchKeys({ mode }, user?.has_key_access);
@@ -183,7 +175,7 @@ const KeysAndPluginsSection = ({
         </div>
 
         {!!platformURL ? (
-          getSteps().map((component, index, steps) => (
+          pluginSteps.map((component, index, steps) => (
             <Step step={index + 1} borderBottom={index !== steps.length - 1} key={index}>
               {component}
             </Step>
