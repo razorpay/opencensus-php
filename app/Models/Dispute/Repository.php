@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Constants\Timezone;
+use RZP\Base\ConnectionType;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Method as Method;
 use RZP\Trace\TraceCode;
@@ -165,8 +166,22 @@ class Repository extends Base\Repository
 
         $paymentIdColumn = $this->repo->payment->dbColumn(Entity::ID);
         $paymentMethodColumn = $this->repo->payment->dbColumn(Payment::METHOD);
+        $paymentRecordSourceColumn = $this->repo->payment->dbColumn(Base\PublicEntity::RECORD_SOURCE);
 
-        return $this->newQuery()
+        $useTiDBSourceApiFilter = false;
+
+        $query = $this->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $query = $this->newQueryWithConnection($connectionType);
+
+            $useTiDBSourceApiFilter = true;
+        }
+
+        $query = $query
             ->select($disputeMerchantIdColumn)
             ->join(Table::PAYMENT, $disputePaymentIdColumn, '=', $paymentIdColumn)
             ->where(function ($q) use ($paymentMethodColumn, $disputePhaseColumn)
@@ -179,7 +194,14 @@ class Repository extends Base\Repository
                 ->orWhere($paymentMethodColumn, '!=', Method::CARD);
             })
             ->where($disputeCreatedAtColumn, '>=', $fromTimestamp)
-            ->where($disputeCreatedAtColumn, '<', $toTimestamp)
+            ->where($disputeCreatedAtColumn, '<', $toTimestamp);
+
+        if ($useTiDBSourceApiFilter === true)
+        {
+            $query = $query->where($paymentRecordSourceColumn, '=', Base\Constants::RECORD_SOURCE_API);
+        }
+
+        return $query
             ->distinct()
             ->pluck(Entity::MERCHANT_ID)
             ->toArray();
@@ -229,9 +251,27 @@ class Repository extends Base\Repository
     {
         $disputePaymentIdColumn = $this->dbColumn(Entity::PAYMENT_ID);
 
+        $paymentRecordSourceColumn = $this->repo->payment->dbColumn(Base\PublicEntity::RECORD_SOURCE);
+
+        $useTiDBSourceApiFilter = false;
+
         $query = $this->newQuery();
 
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $query = $this->newQueryWithConnection($connectionType);
+
+            $useTiDBSourceApiFilter = true;
+        }
+
         $this->getMerchantDisputedPaymentsQueryForRiskAnalysis($merchantId, $fromTimestamp, $toTimestamp, $query);
+
+        if ($useTiDBSourceApiFilter === true)
+        {
+            $query = $query->where($paymentRecordSourceColumn, '=', Base\Constants::RECORD_SOURCE_API);
+        }
 
         return $query->count($disputePaymentIdColumn);
     }
@@ -240,15 +280,35 @@ class Repository extends Base\Repository
     {
         $paymentIdColumn = $this->repo->payment->dbColumn(Entity::ID);
         $paymentBaseAmountColumn = $this->repo->payment->dbColumn(Payment::BASE_AMOUNT);
+        $paymentRecordSourceColumn = $this->repo->payment->dbColumn(Base\PublicEntity::RECORD_SOURCE);
 
         $disputeRepo = $this;
 
-        return $this->repo->payment->newQuery()
+        $useTiDBSourceApiFilter = false;
+
+        $query = $this->repo->payment->newQuery();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+            $query = $this->repo->payment->newQueryWithConnection($connectionType);
+
+            $useTiDBSourceApiFilter = true;
+        }
+
+        $query = $query
             ->whereIn($paymentIdColumn, function($query) use ($merchantId, $fromTimestamp, $toTimestamp, $disputeRepo)
             {
                 $disputeRepo->getMerchantDisputedPaymentsQueryForRiskAnalysis($merchantId, $fromTimestamp, $toTimestamp, $query);
-            })
-            ->sum($paymentBaseAmountColumn);
+            });
+
+        if ($useTiDBSourceApiFilter === true)
+        {
+            $query = $query->where($paymentRecordSourceColumn, '=', Base\Constants::RECORD_SOURCE_API);
+        }
+
+        return $query->sum($paymentBaseAmountColumn);
     }
 
     public function getMerchantDisputedPaymentsCountbyPhaseForRiskAnalysis(string $merchantId, int $fromTimestamp, int $toTimestamp, array $phases = [])

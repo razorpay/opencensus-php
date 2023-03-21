@@ -11,6 +11,7 @@ use RZP\Services\RazorXClient;
 use RZP\Constants\Entity as E;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Admin\Role\TenantRoles;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Org\CustomBrandingTrait;
@@ -2119,6 +2120,19 @@ class PaymentFetchTest extends TestCase
 
         $this->assertNotEquals($paymentCreatedTimeStamp, $paymentFetchTimeStamp);
         $this->assertLessThanOrEqual( $threshold, $timeLag);
+    }
+
+    // Used in payment fetch in fetchPaymentsForOrderId, fetchPaymentsWithCardForOrderId
+    public function testUidToTimestampConversion()
+    {
+        $timestamp = UniqueIdEntity::uidToTimestamp('LMIkw3J7K1VtOs');
+        $this->assertEquals(1677682755, $timestamp);
+
+        $timestamp = UniqueIdEntity::uidToTimestamp('K33BosGfCa8LrD');
+        $this->assertEquals(1659942387, $timestamp);
+
+        $timestamp = UniqueIdEntity::uidToTimestamp('16b56bb43d04da');
+        $this->assertEquals(1403512117, $timestamp);
     }
 
     public function testFetchPaymentWithExposeArn()

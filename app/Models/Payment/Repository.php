@@ -1799,6 +1799,20 @@ EOT;
 
         if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
         {
+            if (strlen($orderId) === UniqueIdEntity::ID_LENGTH)
+            {
+                $idGeneratedTimestamp = UniqueIdEntity::uidToTimestamp($orderId);
+
+                $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+                // If orderId is created < 7 days from current time, just returning data from hot storage
+                // As all payments created for the order will be present in the hot storage
+                if ($currentTimestamp - $idGeneratedTimestamp < 604800)
+                {
+                    return $payments;
+                }
+            }
+
             $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
             $warmPayments = $this->newQueryWithConnection($connectionType)
@@ -1822,6 +1836,20 @@ EOT;
 
         if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
         {
+            if (strlen($orderId) === UniqueIdEntity::ID_LENGTH)
+            {
+                $idGeneratedTimestamp = UniqueIdEntity::uidToTimestamp($orderId);
+
+                $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
+
+                // If orderId is created < 7 days from current time, just returning data from hot storage
+                // As all payments created for the order will be present in the hot storage
+                if ($currentTimestamp - $idGeneratedTimestamp < 604800)
+                {
+                    return $payments;
+                }
+            }
+
             $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_ADMIN);
 
             $warmPayments = $this->newQueryWithConnection($connectionType)

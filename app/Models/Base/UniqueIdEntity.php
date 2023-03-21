@@ -331,15 +331,21 @@ class UniqueIdEntity extends Entity
         return $str;
     }
 
+    // Use this function to convert RZP ID to epoch timestamp
+    // Note : This timestamp generated here might be +/- 1 second from the original ID generation time because of rounding
     public static function uidToTimestamp($uid)
     {
+        // Timestamp of 1st Jan 2014
+        $ts1stJan2014 = 1388534400;
+
         $b62 = substr($uid, 0, 10);
 
         $nanotime = self::base10($b62);
 
-        $timestamp = $nanotime / 1000000000;
+        // Additional seconds elapsed from $ts1stJan2014
+        $timestamp = (int) round($nanotime / 1000000000);
 
-        return $timestamp;
+        return $ts1stJan2014 + $timestamp;
     }
 
     public static function nanotimeToBase62($nanotime)
