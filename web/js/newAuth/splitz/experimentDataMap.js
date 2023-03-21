@@ -16,7 +16,7 @@
 export default {
   new_partner_signup: {
     stage_exp_id: 'KZ3T8q3CYvdx4z',
-    prod_exp_id: 'KZ3PzinESUIs5D',
+    prod_exp_id: 'LUAS1Of9UtpYoU',
     default_variant: 'not_exposed',
     experiment_variable: 'exposed',
     trackImpression: true,
