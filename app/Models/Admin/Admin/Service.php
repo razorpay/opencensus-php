@@ -591,11 +591,15 @@ class Service extends Base\Service
 
         if (empty($input[Entity::ROLES]) === false)
         {
+            $input[Entity::ROLES] = array_unique($input[Entity::ROLES]);
+
             Role\Entity::verifyIdAndStripSignMultiple($input[Entity::ROLES]);
         }
 
         if (empty($input[Entity::GROUPS]) === false)
         {
+            $input[Entity::GROUPS] = array_unique($input[Entity::GROUPS]);
+
             Group\Entity::verifyIdAndStripSignMultiple(
                 $input[Entity::GROUPS]);
         }
