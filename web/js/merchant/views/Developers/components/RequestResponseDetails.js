@@ -5,18 +5,18 @@ import Size from '@razorpay/blade-old/src/atoms/Size';
 import Icon from '@razorpay/blade-old/src/atoms/Icon';
 import Text from '@razorpay/blade-old/src/atoms/Text';
 import Space from '@razorpay/blade-old/src/atoms/Space';
+import styled from 'styled-components';
+import copyToClipboard from 'common/utils/copyToClipboard';
+
+const ClickableContainer = styled(View)`
+  cursor: pointer;
+`;
 
 const Accordion = ({ title, children, textToCopy, onOpen }) => {
   const [isOpen, setOpen] = useState(false);
 
   const onCopy = () => {
-    const $body = document.getElementsByTagName('body')[0];
-    const $tempInput = document.createElement('INPUT');
-    $body.appendChild($tempInput);
-    $tempInput.setAttribute('value', textToCopy);
-    $tempInput.select();
-    document.execCommand('copy');
-    $body.removeChild($tempInput);
+    copyToClipboard(JSON.stringify(textToCopy, undefined, 2));
   };
 
   const toggleAccordionOpen = () => {
@@ -32,22 +32,22 @@ const Accordion = ({ title, children, textToCopy, onOpen }) => {
           <Flex flexDirection="row" justifyContent="space-between">
             <View>
               <Flex flexDirection="row" alignItems="center" flex="1">
-                <View onClick={toggleAccordionOpen} style={{ cursor: 'pointer' }}>
+                <ClickableContainer onClick={toggleAccordionOpen}>
                   <Icon name={isOpen ? 'chevronDown' : 'chevronRight'} fill="white.960" />
                   <Text color="white.960">{title}</Text>
-                </View>
+                </ClickableContainer>
               </Flex>
-              <View
+              <ClickableContainer
                 onClick={onCopy}
-                style={{ cursor: 'pointer' }}
                 data-tip="Copied"
                 data-event="active"
+                data-testid="request-response-copy-button"
               >
                 <Icon name="copy" fill="white.960" />
-              </View>
+              </ClickableContainer>
             </View>
           </Flex>
-          {isOpen ? children : null}
+          {isOpen ? <div data-testid="request-response-data">{children}</div> : null}
         </View>
       </Space>
     </Size>

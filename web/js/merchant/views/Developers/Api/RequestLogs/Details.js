@@ -67,7 +67,7 @@ export default class RequestDetails extends Component {
                   <p>Details</p>
                   <RequestResponseDetails
                     title="Request Headers"
-                    textToCopy={JSON.stringify(apiLog.request.header)}
+                    textToCopy={apiLog.request.header}
                     onOpen={() => this.handleAccordionOpen('Request Headers')}
                   >
                     <SyntaxHighlighter
@@ -80,7 +80,7 @@ export default class RequestDetails extends Component {
                   </RequestResponseDetails>
                   <RequestResponseDetails
                     title="Request"
-                    textToCopy={JSON.stringify(apiLog.request.body)}
+                    textToCopy={apiLog.request.body}
                     onOpen={() => this.handleAccordionOpen('Request Body')}
                   >
                     <SyntaxHighlighter
@@ -93,7 +93,7 @@ export default class RequestDetails extends Component {
                   </RequestResponseDetails>
                   <RequestResponseDetails
                     title="Response Headers"
-                    textToCopy={JSON.stringify(apiLog.response.header)}
+                    textToCopy={apiLog.response.header}
                     onOpen={() => this.handleAccordionOpen('Response Headers')}
                   >
                     <SyntaxHighlighter
@@ -106,7 +106,7 @@ export default class RequestDetails extends Component {
                   </RequestResponseDetails>
                   <RequestResponseDetails
                     title="Response"
-                    textToCopy={JSON.stringify(apiLog.response.body)}
+                    textToCopy={apiLog.response.body}
                     onOpen={() => this.handleAccordionOpen('Response Body')}
                   >
                     <SyntaxHighlighter

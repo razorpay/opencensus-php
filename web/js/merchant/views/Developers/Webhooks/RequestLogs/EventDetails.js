@@ -51,7 +51,7 @@ const RequestDetails = ({ id, items: webhookLogs }) => {
                 <p>Details</p>
                 <RequestResponseDetails
                   title="Request Headers"
-                  textToCopy={JSON.stringify(webhookLog.request.header)}
+                  textToCopy={webhookLog.request.header}
                   onOpen={() => handleAccordionOpen('Request Headers')}
                 >
                   <SyntaxHighlighter
@@ -64,7 +64,7 @@ const RequestDetails = ({ id, items: webhookLogs }) => {
                 </RequestResponseDetails>
                 <RequestResponseDetails
                   title="Request"
-                  textToCopy={JSON.stringify(webhookLog.request.body)}
+                  textToCopy={webhookLog.request.body}
                   onOpen={() => handleAccordionOpen('Request Body')}
                 >
                   <SyntaxHighlighter
@@ -77,7 +77,7 @@ const RequestDetails = ({ id, items: webhookLogs }) => {
                 </RequestResponseDetails>
                 <RequestResponseDetails
                   title="Response Headers"
-                  textToCopy={JSON.stringify(webhookLog.response.header)}
+                  textToCopy={webhookLog.response.header}
                   onOpen={() => handleAccordionOpen('Response Headers')}
                 >
                   <SyntaxHighlighter
@@ -90,7 +90,7 @@ const RequestDetails = ({ id, items: webhookLogs }) => {
                 </RequestResponseDetails>
                 <RequestResponseDetails
                   title="Response"
-                  textToCopy={JSON.stringify(webhookLog.response.body)}
+                  textToCopy={webhookLog.response.body}
                   onOpen={() => handleAccordionOpen('Response Headers')}
                 >
                   <SyntaxHighlighter

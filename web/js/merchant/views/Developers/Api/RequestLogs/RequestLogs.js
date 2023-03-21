@@ -80,24 +80,27 @@ export default class RequestLogs extends ListContainer {
     const { status, httpStatus } = this.state;
 
     return (
-      <div className="api-logs-container content-wrapper" style={{ marginTop: 20 }}>
+      <div className="api-logs-container content-wrapper">
         <h5 className="mb-20">
-          API logs {dateRange ? `in ${dateRange}` : ''} ({fromDate} - {toDate})
+          <strong>API Request Logs {dateRange ? `in ${dateRange}` : ''}</strong> ({fromDate} -{' '}
+          {toDate})
         </h5>
         <div className="list-filter-container">
           <div className="form-group list-filter-item">
             <label>Search</label>
-            <input
-              type="text"
-              name="searchField"
-              placeholder="Search for any keyword from request, response or headers"
-              className="form-control input-sm"
-              style={{ width: 345 }}
-              value={this.state.searchField}
-              onChange={(e) => this.setState({ searchField: e.target.value })}
-              onBlur={() => trackApiLogsSearchKeywordChanged()}
-              onKeyDown={this.handleSearchClick}
-            />
+            <div className="search-input">
+              <i className="i i-search input-icon" />
+              <input
+                type="text"
+                name="searchField"
+                placeholder="Search for any keyword from request, response or headers"
+                className="form-control input-sm input-field"
+                value={this.state.searchField}
+                onChange={(e) => this.setState({ searchField: e.target.value })}
+                onBlur={() => trackApiLogsSearchKeywordChanged()}
+                onKeyDown={this.handleSearchClick}
+              />
+            </div>
           </div>
           <div className="form-group list-filter-item">
             <label>Response Code</label>

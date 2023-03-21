@@ -84,24 +84,27 @@ export default class RequestLogs extends ListContainer {
     const { status, shouldCtasBeDisabled, httpStatus } = this.state;
 
     return (
-      <div className="webhook-logs-container content-wrapper" style={{ marginTop: 20 }}>
-        <h4 className="title mb-20">
-          Webhook logs {dateRange ? `in ${dateRange}` : ''} ({fromDate} - {toDate})
-        </h4>
+      <div className="webhook-logs-container content-wrapper">
+        <h5 className="title mb-20">
+          <strong>Webhook Request Logs {dateRange ? `in ${dateRange}` : ''}</strong> ({fromDate} -{' '}
+          {toDate})
+        </h5>
         <div className="list-filter-container">
           <div className="form-group list-filter-item">
             <label>Search</label>
-            <input
-              type="text"
-              name="searchField"
-              placeholder="Search for any keyword from request, response or headers"
-              class="form-control input-sm"
-              style={{ width: 345 }}
-              value={this.state.searchField}
-              onChange={(e) => this.setState({ searchField: e.target.value })}
-              onBlur={() => trackWebhookLogsSearchKeywordChanged()}
-              onKeyDown={this.handleSearchClick}
-            />
+            <div className="search-input">
+              <i className="i i-search input-icon" />
+              <input
+                type="text"
+                name="searchField"
+                placeholder="Search for any keyword from request, response or headers"
+                className="form-control input-sm input-field"
+                value={this.state.searchField}
+                onChange={(e) => this.setState({ searchField: e.target.value })}
+                onBlur={() => trackWebhookLogsSearchKeywordChanged()}
+                onKeyDown={this.handleSearchClick}
+              />
+            </div>
           </div>
           <div className="form-group list-filter-item">
             <label>Response Code</label>
