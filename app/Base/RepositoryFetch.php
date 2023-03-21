@@ -1839,7 +1839,30 @@ trait RepositoryFetch
         $query->whereIn($contactColumn, $contacts);
     }
 
+    protected function addWDAQueryParamContact($wdaQueryBuilder, $params): void
+    {
+        $contact = $params[PaymentEntity::CONTACT];
+
+        $contacts = array($contact);
+
+        if (isset($params['country_code']) === true)
+        {
+            $contacts[] = $params['country_code'] . $contact;
+
+            unset($params['country_code']);
+        }
+
+        $wdaQueryBuilder->filters($this->getTableName(), PaymentEntity::CONTACT, $contacts, Symbol::IN);
+    }
+
     protected function addQueryParamCountryCode($query, $params): void
+    {
+        // Empty function as we don't have country code column in payments table.
+        // Country code is getting used in addQueryParamContact for fetching
+        // payments of given contact with and without country code.
+    }
+
+    protected function addWDAQueryParamCountryCode($wdaQueryBuilder, $params): void
     {
         // Empty function as we don't have country code column in payments table.
         // Country code is getting used in addQueryParamContact for fetching
