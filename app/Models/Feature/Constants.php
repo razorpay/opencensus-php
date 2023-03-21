@@ -3487,6 +3487,11 @@ class Constants
             'display_name'  => 'Assume Master Account',
             'documentation' => 'Rx merchant with a bank account can act as a master account',
         ],
+        self::PAYOUT_SERVICE_ENABLED => [
+            'feature'       => self::PAYOUT_SERVICE_ENABLED,
+            'display_name'  => 'Payouts Service',
+            'documentation' => 'To control onboarding to the new payouts service',
+        ],
     ];
 
     /**
