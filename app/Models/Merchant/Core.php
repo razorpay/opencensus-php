@@ -7115,6 +7115,12 @@ class Core extends Base\Core
 
                 $bankAccount = $this->repo->bank_account->getBankAccount($merchant);
 
+                if ($bankAccount === null)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
+                }
+
                 return [$bankAccount->getId(), $bankAccount->getEntity()];
 
             default:
