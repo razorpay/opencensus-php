@@ -956,7 +956,16 @@ class Entity extends Base\PublicEntity
 
             $markUpPercent = $paymentMeta->getDccMarkUpPercent();
 
-            $convertedAmount = $this->getAmount() * $forexRate;
+            $denominationFactorInputCurr = Currency\Currency::DENOMINATION_FACTOR[$this->payment->getCurrency()];
+
+            $denominationFactorMerchantCurrency = Currency\Currency::DENOMINATION_FACTOR[$paymentMeta->getGatewayCurrency()];
+
+            $denominationFactor = $denominationFactorMerchantCurrency / $denominationFactorInputCurr;
+
+            // multiplying with denomination factor is required as now we are supporting 3 decimal currencies.
+            // In case base amount is in KWD (denomination 1000) and convert currency is USD (denomination 100)
+            // $denominationFactor will be 0.1
+            $convertedAmount = $this->getAmount() * $forexRate * $denominationFactor;
 
             $gatewayAmount = (int) floor($convertedAmount + (($markUpPercent * $convertedAmount) / 100));
         }

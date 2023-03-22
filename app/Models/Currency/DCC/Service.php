@@ -101,9 +101,12 @@ class Service extends Base\Service
         return floor(time() / (self::TIME_INTERVAL_MINS * 60)) * (self::TIME_INTERVAL_MINS * 60);
     }
 
-    public function getConvertedAmount($baseAmount, $rate, $markUpPercent)
+    public function getConvertedAmount($baseAmount, $rate, $markUpPercent, $denominationFactor = 1)
     {
-        $convertedAmount = $baseAmount * $rate;
+        // multiplying with denomination factor is required as now we are supporting 3 decimal currencies.
+        // In case base amount is in KWD (denomination 1000) and convert currency is USD (denomination 100)
+        // $denominationFactor will be 0.1
+        $convertedAmount = $baseAmount * $rate * $denominationFactor;
 
         return (int) ceil($convertedAmount + (($markUpPercent * $convertedAmount) / 100));
     }
@@ -125,15 +128,20 @@ class Service extends Base\Service
 
         $supportedCurrencies = $this->core->getSupportedCurrenciesDetails($isThreeDecimalCurrencySupported);
 
+        $denominationFactorInputCurr = Currency\Currency::DENOMINATION_FACTOR[$baseCurrency];
+
         foreach (array_keys($supportedCurrencies) as $currency)
         {
+            $denominationFactorMerchantCurrency = Currency\Currency::DENOMINATION_FACTOR[$currency];
+            $denominationFactor = $denominationFactorMerchantCurrency / $denominationFactorInputCurr;
+
             if(isset($rates[$currency]) === true)
             {
                 $markUpPercent = $this->getDCCMarkUpPercentage($rates, $currency, $baseCurrency, $merchantMarkupPercent);
 
                 $forexRateConverted =  number_format($rates[$currency], 6, '.', '');
 
-                $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $forexRateConverted, $markUpPercent);
+                $supportedCurrencies[$currency]['amount'] = $this->getConvertedAmount($baseAmount, $forexRateConverted, $markUpPercent, $denominationFactor);
                 $supportedCurrencies[$currency]['forex_rate'] = (float) $forexRateConverted;
                 $supportedCurrencies[$currency]['fee'] =
                     (new Entity())->getCurrencyConversionFee($baseAmount, $forexRateConverted, $markUpPercent);
@@ -164,11 +172,17 @@ class Service extends Base\Service
 
                 $markUpPercent = $this->getDCCMarkUpPercentage($rates, $requestedCurrency, $baseCurrency, $merchantMarkUpPercent);
 
+                $denominationFactorMerchantCurrency = Currency\Currency::DENOMINATION_FACTOR[$requestedCurrency];
+
+                $denominationFactorInputCurr = Currency\Currency::DENOMINATION_FACTOR[$baseCurrency];
+
+                $denominationFactor = $denominationFactorMerchantCurrency / $denominationFactorInputCurr;
+
                 $requestedCurrencyData['currency'] = $requestedCurrency;
 
                 $requestedCurrencyData['forex_rate'] = $forexRate;
 
-                $requestedCurrencyData['amount'] = (string)$this->getConvertedAmount($baseAmount,$forexRate, $markUpPercent);
+                $requestedCurrencyData['amount'] = (string)$this->getConvertedAmount($baseAmount,$forexRate, $markUpPercent, $denominationFactor);
 
                 $requestedCurrencyData['dcc_mark_up_percent'] = $markUpPercent;
             }
