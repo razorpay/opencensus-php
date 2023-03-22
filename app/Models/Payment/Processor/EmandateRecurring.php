@@ -321,10 +321,7 @@ trait EmandateRecurring
         if(isset($emandateConfig[Token\Constants::EMANDATE_TOKEN_STATUS]) === true and
             $emandateConfig[Token\Constants::EMANDATE_TOKEN_STATUS] === Token\Constants::BLOCKED_TEMPORARILY)
         {
-            $coolDownPeriod = $emandateConfig[Token\Constants::COOLDOWN_PERIOD];
-    
-            $this->emandateDescError = " The token has been put on hold temporarily for raising recurring payments until " .
-                                        date("Y-m-d H:i:s", (int) $coolDownPeriod);
+            $this->emandateDescError = " The token has been put on hold temporarily for raising recurring payments.";
         }
         
         return [];
