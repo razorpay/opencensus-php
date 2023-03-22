@@ -252,7 +252,23 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function saveOrFail($entity, array $options = array())
     {
+        $reInsert = false;
+        $currentTimestampsProperty = $entity->timestamps;
+
+        if ((method_exists($entity, 'isArchived') === true) and
+            ($entity->isArchived() === true))
+        {
+            $reInsert = true;
+
+            $entity->timestamps = false;
+        }
+
         $this->saveOrFailImplementation($entity, $options, true);
+
+        if ($reInsert === true)
+        {
+            $entity->timestamps = $currentTimestampsProperty;
+        }
     }
 
     public function saveOrFailWithoutEsSync($entity, array $options = array())

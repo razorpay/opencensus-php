@@ -91,6 +91,9 @@ trait DualWrite
 
             App::getFacadeRoot()['trace']->histogram(Metric::DUAL_WRITES_TIME_TAKEN, millitime() - $dualWriteStartTime);
         });
+
+        // set archived value to false post successful save
+        $this->setArchived(false);
     }
 
     /**
@@ -222,6 +225,9 @@ trait DualWrite
         $this->validateAndUpsert(false, true);
 
         App::getFacadeRoot()['trace']->histogram(Metric::DUAL_WRITES_TIME_TAKEN, millitime() - $dualWriteStartTime);
+
+        // set archived value to false post successful save
+        $this->setArchived(false);
     }
 
     private function isDualWriteEnabledViaEnv() : bool

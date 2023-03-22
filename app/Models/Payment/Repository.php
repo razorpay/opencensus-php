@@ -49,6 +49,7 @@ use RZP\Models\Bank\IFSC;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Base\Traits\ExternalCore;
+use RZP\Models\Base\Traits\ArchivedCore;
 use RZP\Constants\Entity as EntityName;
 use RZP\Models\Base\Traits\ExternalRepo;
 use RZP\Models\Gateway\Downtime\DowntimeDetection;
@@ -60,7 +61,7 @@ use Rzp\Wda_php\WDAQueryBuilder;
 
 class Repository extends Base\Repository
 {
-    use ExternalRepo, ExternalCore;
+    use ExternalRepo, ExternalCore, ArchivedCore;
 
     const SECONDS_IN_A_YEAR = 31536000;
 
@@ -959,6 +960,26 @@ EOT;
      */
     public function lockForUpdate(string $id, bool $withTrashed = false)
     {
+        $archivalFallbackEnvKey = 'ENABLE_QUERY_FALLBACK_ON_ARCHIVED_PAYMENT';
+
+        $archivalFallbackEnvValue = getenv($archivalFallbackEnvKey);
+
+        if ($archivalFallbackEnvValue == true)
+        {
+            // Not fetching external payments. lockForUpdate not needed
+            $payment = $this->findOrFailArchived($id);
+
+            try
+            {
+                if ((method_exists($payment, 'isArchived') === true) and
+                    ($payment->isArchived() === true))
+                {
+                    $this->saveOrFail($payment);
+                }
+            }
+            catch (\Exception $ex) {}
+        }
+
         return $this->newQuery()
                     ->lockForUpdate()->findOrFail($id);
     }
@@ -4175,6 +4196,21 @@ EOT;
     {
         if ($payment->isExternal() === false)
         {
+            $archivalFallbackEnvKey = 'ENABLE_QUERY_FALLBACK_ON_ARCHIVED_PAYMENT';
+
+            $archivalFallbackEnvValue = getenv($archivalFallbackEnvKey);
+
+            if ($archivalFallbackEnvValue == true)
+            {
+                $reloadedEntity = $this->findOrFailArchived($payment->getKey());
+
+                $attributes = $reloadedEntity->getAttributes();
+
+                $payment->setRawAttributes($attributes, true);
+
+                return $payment;
+            }
+
             return parent::reload($payment);
         }
 

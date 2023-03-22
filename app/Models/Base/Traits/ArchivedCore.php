@@ -42,7 +42,12 @@ trait ArchivedCore
         }
         catch (Throwable $e)
         {
-            if ($this->isArchivalFallbackEnabledViaEnv() === true)
+            $logData = [
+                'id'     => $id,
+                'caller' => __FUNCTION__,
+            ];
+
+            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
             {
                 $this->tracePreQueryMetrics(__FUNCTION__);
 
@@ -79,7 +84,12 @@ trait ArchivedCore
         }
         catch (Throwable $e)
         {
-            if ($this->isArchivalFallbackEnabledViaEnv() === true)
+            $logData = [
+                'id'     => $id,
+                'caller' => __FUNCTION__,
+            ];
+
+            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
             {
                 $this->tracePreQueryMetrics(__FUNCTION__);
 
@@ -116,7 +126,12 @@ trait ArchivedCore
         }
         catch (Throwable $e)
         {
-            if ($this->isArchivalFallbackEnabledViaEnv() === true)
+            $logData = [
+                'id'     => $id,
+                'caller' => __FUNCTION__,
+            ];
+
+            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
             {
                 $this->tracePreQueryMetrics(__FUNCTION__);
 
@@ -149,7 +164,12 @@ trait ArchivedCore
         }
         catch (Throwable $e)
         {
-            if ($this->isArchivalFallbackEnabledViaEnv() === true)
+            $logData = [
+                'id'     => $id,
+                'caller' => __FUNCTION__,
+            ];
+
+            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
             {
                 $this->tracePreQueryMetrics(__FUNCTION__);
 
@@ -182,7 +202,12 @@ trait ArchivedCore
         }
         catch (Throwable $e)
         {
-            if ($this->isArchivalFallbackEnabledViaEnv() === true)
+            $logData = [
+                'id'     => $id,
+                'caller' => __FUNCTION__,
+            ];
+
+            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
             {
                 $this->tracePreQueryMetrics(__FUNCTION__);
 
@@ -215,7 +240,12 @@ trait ArchivedCore
         }
         catch (Throwable $e)
         {
-            if ($this->isArchivalFallbackEnabledViaEnv() === true)
+            $logData = [
+                'id'     => $id,
+                'caller' => __FUNCTION__,
+            ];
+
+            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
             {
                 $this->tracePreQueryMetrics(__FUNCTION__);
 
@@ -248,7 +278,12 @@ trait ArchivedCore
         }
         catch (Throwable $e)
         {
-            if ($this->isArchivalFallbackEnabledViaEnv() === true)
+            $logData = [
+                'id'     => $id,
+                'caller' => __FUNCTION__,
+            ];
+
+            if ($this->isArchivalFallbackEnabledViaEnv($logData) === true)
             {
                 $this->tracePreQueryMetrics(__FUNCTION__);
 
@@ -270,8 +305,10 @@ trait ArchivedCore
         }
     }
 
-    private function isArchivalFallbackEnabledViaEnv() : bool
+    private function isArchivalFallbackEnabledViaEnv(array $logData = []) : bool
     {
+        $app = App::getFacadeRoot();
+
         $entityName = $this->entity;
 
         if (empty($entityName) === true)
@@ -290,15 +327,7 @@ trait ArchivedCore
 
         $archivalFallbackEnvValue = getenv($archivalFallbackEnvKey);
 
-        // Note : Explicitly setting `==` to handle env datatype conversions. Do not change to `===`
-        if ($archivalFallbackEnvValue == true)
-        {
-            return true;
-        }
-
         $archivalFallbackConfigEnabled = false;
-
-        $app = App::getFacadeRoot();
 
         $isWorkerPod = ($app->runningInQueue() === true);
 
@@ -308,7 +337,20 @@ trait ArchivedCore
             $archivalFallbackConfigEnabled = $this->isArchivalFallbackConfigKeyEnabled($entityName);
         }
 
-        return $archivalFallbackConfigEnabled;
+        // Logging critical info for debugging
+        if ($entityName === Entity::PAYMENT)
+        {
+            $app['trace']->info(TraceCode::ARCHIVAL_FALLBACK_ENABLEMENT_CONFIG, [
+                'extra_log_data'                   => $logData,
+                'runningInQueue'                   => $isWorkerPod,
+                'instance_type'                    => getenv('INSTANCE_TYPE'),
+                $archivalFallbackEnvKey            => $archivalFallbackEnvValue,
+                'archival_fallback_config_enabled' => $archivalFallbackConfigEnabled,
+            ]);
+        }
+
+        // Note : Explicitly setting `==` for $archivalFallbackEnvValue to handle env datatype conversions. Do not change to `===`
+        return (($archivalFallbackEnvValue == true) or ($archivalFallbackConfigEnabled === true));
     }
 
     private function isArchivalFallbackConfigKeyEnabled($entityName): bool

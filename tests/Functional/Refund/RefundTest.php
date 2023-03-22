@@ -8013,6 +8013,71 @@ class RefundTest extends TestCase
 
     }
 
+    public function testRefundCreateOnArchivedPayment()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->gateway = 'hdfc';
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        // Test archival case : remove payment data from test db (current) and add in live db.
+        $paymentId = substr($payment['id'], 4);
+
+        $paymentEntity = \DB::connection('test')->table('payments')->select(\DB::raw("*"))->where('id', '=', $paymentId)->get()->first();
+
+        $paymentArray = (array)$paymentEntity;
+
+        $originalPaymentCreatedAt = $paymentArray['created_at'];
+
+        \DB::connection('test')->statement('SET FOREIGN_KEY_CHECKS=0');
+        \DB::connection('live')->statement('SET FOREIGN_KEY_CHECKS=0');
+
+        // insert card into live DB
+        \DB::connection('live')->table('payments')->insert($paymentArray);
+
+        // remove payment from test db
+        \DB::connection('test')->table('payments')->where('id', '=', $paymentId)->limit(1)->update(['id' => 'KOOmLB0xqazzXp']);
+
+        $paymentEntity = \DB::connection('test')->table('payments')->select(\DB::raw("*"))->where('id', '=', $paymentId)->get()->first();
+
+        $this->assertNull($paymentEntity);
+
+        // adding delay to assert created_at on payment reinsert
+        sleep(1);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals(RefundSpeed::NORMAL, $refund['speed_processed']);
+
+        $paymentEntity = \DB::connection('test')->table('payments')->select(\DB::raw("*"))->where('id', '=', $paymentId)->get()->first();
+
+        $paymentArray = (array)$paymentEntity;
+
+        $this->assertEquals($originalPaymentCreatedAt, $paymentArray['created_at']);
+
+        \DB::connection('test')->statement('SET FOREIGN_KEY_CHECKS=1');
+        \DB::connection('live')->statement('SET FOREIGN_KEY_CHECKS=1');
+    }
+
     public function testZeroDebitCreditRefund()
     {
         $this->mockRazorxForFallback();

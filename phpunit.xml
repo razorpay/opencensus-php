@@ -499,5 +499,6 @@
         <ini name="memory_limit" value="8192M"/>
         <env name="ENABLE_DUAL_WRITE_PAYMENTS" value="true" force="true" />
         <env name="ENABLE_QUERY_FALLBACK_ON_ARCHIVED_CARD" value="true" force="true" />
+        <env name="ENABLE_QUERY_FALLBACK_ON_ARCHIVED_PAYMENT" value="true" force="true" />
     </php>
 </phpunit>
