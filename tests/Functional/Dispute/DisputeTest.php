@@ -336,13 +336,33 @@ class DisputeTest extends TestCase
 
     public function assertDualWriteDisputeEntityById($table, $actualEntityDataSent, $action)
     {
-        if($table === Table::DISPUTE_EVIDENCE_DOCUMENT && $action === 'purge_dispute_document'){
+        $expectedDataSent = [];
+
+        if ($table === Table::DISPUTE_EVIDENCE_DOCUMENT)
+        {
+            foreach ($actualEntityDataSent["evidence_documents"] as $actualData)
+            {
+                $expectedDataSent = $this->getTrashedDbEntityById(self::TableVsEntityList[$table], $actualData['id'])
+                                         ->toDualWriteArray();
+
+                unset($actualData["type"]);
+
+                $this->assertEquals($expectedDataSent, $actualData);
+            }
+
             return;
         }
 
-        $expectedDataSent = [];
-
-        $expectedDataSent = $this->getDbEntityById(self::TableVsEntityList[$table], $actualEntityDataSent['id'])->toDualWriteArray();
+        if ($table === Table::DISPUTE_EVIDENCE)
+        {
+            $expectedDataSent = $this->getTrashedDbEntityById(self::TableVsEntityList[$table], $actualEntityDataSent['id'])
+                                     ->toDualWriteArray();
+        }
+        else
+        {
+            $expectedDataSent = $this->getDbEntityById(self::TableVsEntityList[$table], $actualEntityDataSent['id'])
+                                     ->toDualWriteArray();
+        }
 
         $this->assertEquals($expectedDataSent, $actualEntityDataSent);
     }

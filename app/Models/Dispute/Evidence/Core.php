@@ -251,10 +251,10 @@ class Core extends Base\Core
     protected function purgeDisputeEvidence(Dispute\Entity $dispute): void
     {
         $this->repo->transaction(function() use ($dispute){
-            $this->repo->dispute_evidence_document->deleteDocumentsForDispute($dispute->getId());
+            $deletedData = $this->repo->dispute_evidence_document->deleteDocumentsForDispute($dispute->getId());
 
             //the logic of this function is implemented on dispute service
-            $this->app['disputes']->sendDualWriteToDisputesService(["dispute_id"=> $dispute->getId()], Table::DISPUTE_EVIDENCE_DOCUMENT, Dispute\Constants::PURGE_DISPUTE_DOCUMENT);
+            $this->app['disputes']->sendDualWriteToDisputesService([Dispute\Constants::EVIDENCE_DOCUMENTS => $deletedData], Table::DISPUTE_EVIDENCE_DOCUMENT, Dispute\Constants::UPDATE);
         });
 
         if ($dispute->evidence()->first() === null)
@@ -266,6 +266,10 @@ class Core extends Base\Core
         $evidence = $dispute->evidence()->firstOrFail();
 
         $this->repo->dispute_evidence->deleteOrFail($evidence);
+
+        $evidence->refresh();
+
+        $this->app['disputes']->sendDualWriteToDisputesService($evidence->toDualWriteArray(), Table::DISPUTE_EVIDENCE, Dispute\Constants::UPDATE);
     }
 
     protected function acceptForDispute(Dispute\Entity $dispute, array $input)

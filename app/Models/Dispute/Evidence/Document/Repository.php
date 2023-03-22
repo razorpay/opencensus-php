@@ -23,12 +23,22 @@ class Repository extends BaseRepository
 
     public function deleteDocumentsForDispute(string $disputeId)
     {
-        $this->repo
+        $currentTime = time();
+
+        $query = $this->repo
             ->dispute_evidence_document
             ->newQuery()
-            ->where(Entity::DISPUTE_ID, '=', $disputeId)
-            ->delete();
+            ->where(Entity::DISPUTE_ID, '=', $disputeId);
 
+        $query->delete();
+
+        $data = $query->where(Entity::DELETED_AT, '>=', $currentTime)
+                ->onlyTrashed()
+                ->get()
+                ->toArray();
+
+
+        return $data;
     }
 
     protected function addQueryOrder($query)

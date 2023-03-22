@@ -22,6 +22,7 @@ class Constants
 
     const UPDATE = "update";
     const CREATE = "create";
+    const EVIDENCE_DOCUMENTS = "evidence_documents";
     const PURGE_DISPUTE_DOCUMENT = "purge_dispute_document";
 
     const DEFAULT_DEDUCTION_REVERSAL_AT_IN_SECONDS = (24 * 60 * 60) * 45;

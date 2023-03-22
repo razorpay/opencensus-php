@@ -32,21 +32,9 @@ class Core extends Base\Core
                 $documents[] = ($this->create($dispute, $row, true)->toDualWriteArray());
             }
 
+            $this->app['disputes']->sendDualWriteToDisputesService([Dispute\Constants::EVIDENCE_DOCUMENTS => $documents], Table::DISPUTE_EVIDENCE_DOCUMENT, Dispute\Constants::CREATE);
             return $documents;
         });
-
-        //it will not be a transaction
-        foreach ($documents as $document)
-        {
-            try
-            {
-                $this->app['disputes']->sendDualWriteToDisputesService($document, Table::DISPUTE_EVIDENCE_DOCUMENT, Dispute\Constants::CREATE);
-            }
-            catch (\Throwable $e)
-            {
-
-            }
-        }
     }
 
     protected function create(Dispute\Entity $dispute, $input, $bulk = false): Entity
@@ -67,7 +55,7 @@ class Core extends Base\Core
 
             $document->refresh();
 
-            $this->app['disputes']->sendDualWriteToDisputesService($document->toDualWriteArray(), Table::DISPUTE_EVIDENCE_DOCUMENT, Dispute\Constants::CREATE);
+            $this->app['disputes']->sendDualWriteToDisputesService([Dispute\Constants::EVIDENCE_DOCUMENTS => $document], Table::DISPUTE_EVIDENCE_DOCUMENT, Dispute\Constants::CREATE);
 
             return $document;
         });

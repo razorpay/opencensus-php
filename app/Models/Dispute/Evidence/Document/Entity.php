@@ -41,6 +41,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOM_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DELETED_AT,
     ];
 
     protected $entity = Constants\Entity::DISPUTE_EVIDENCE_DOCUMENT;
@@ -70,6 +71,33 @@ class Entity extends Base\PublicEntity
     public function isOthersType(): bool
     {
         return $this->getType() === Types::OTHERS;
+    }
+
+    public function toArray(): array
+    {
+        $data = parent::toArray();
+
+        if ($data[self::DELETED_AT] === null)
+        {
+            unset($data[self::DELETED_AT]);
+        }
+        else
+        {
+            $data[self::DELETED_AT] = [
+                "Int64" => strtotime($data[self::DELETED_AT]),
+                "Valid" => true,
+            ];
+            $data[self::DOCUMENT_TYPE] = $data[self::TYPE];
+        }
+
+        return $data;
+    }
+
+    public function toArrayAdmin(): array
+    {
+        $data = parent::toArrayAdmin();
+        unset($data[self::DELETED_AT]);
+        return $data;
     }
 
     public function toDualWriteArray() : array
