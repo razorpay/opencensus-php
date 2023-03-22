@@ -792,7 +792,8 @@ class Core extends Base\Core
 
             if(Session()->has($this->mode . '_app_token') === false)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
             }
 
             $appToken = Session()->get($this->mode . '_app_token');
@@ -882,7 +883,8 @@ class Core extends Base\Core
 
             if(Session()->has($this->mode . '_app_token') === false)
             {
-                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_USER_NOT_AUTHENTICATED);
             }
             $appToken = Session()->get($this->mode . '_app_token');
             Customer\Validator::validateEditGlobalAddress($input);
