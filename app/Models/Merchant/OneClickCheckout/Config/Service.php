@@ -827,4 +827,58 @@ class Service extends Base\Service
             );
         }
     }
+
+    public function get1ccAddressIngestionConfig($input): array
+    {
+        (new Validator())->setStrictFalse()->validateInput('get1ccAddressIngestionConfig', $input);
+
+        $configs = [];
+
+        $keys = [];
+
+        if (isset($input['keys']))
+        {
+            $keys = $input['keys'];
+        }
+
+        if (sizeof($keys) == 0 || in_array(Constants::ONE_CLICK_CHECKOUT, $keys))
+        {
+            $feature = $this->repo->feature->findByEntityTypeEntityIdAndName(
+                'merchant',
+                $this->merchant->getId(),
+                Constants::ONE_CLICK_CHECKOUT
+            );
+
+            if (!is_null($feature))
+            {
+                $config = $this->merchant->get1ccConfig(Constants::ONE_CLICK_CHECKOUT);
+                if (is_null($config))
+                {
+                    $configs[Constants::ONE_CLICK_CHECKOUT] = true;
+                }
+                else
+                {
+                    $configs[Constants::ONE_CLICK_CHECKOUT] = $config->getValue() === "1";
+                }
+                $configs[Constants::ONE_CC_ONBOARDED_TIMESTAMP] = $feature->getCreatedAt();
+            }
+            else
+            {
+                $configs[Constants::ONE_CLICK_CHECKOUT] = false;
+            }
+        }
+
+        if (sizeof($keys) == 0 || in_array(Constants::ONE_CC_ADDRESS_SYNC_OFF, $keys))
+        {
+            $configs[Constants::ONE_CC_ADDRESS_SYNC_OFF] = $this->merchant->isFeatureEnabled(Constants::ONE_CC_ADDRESS_SYNC_OFF);
+        }
+
+        if (sizeof($keys) == 0 || in_array(Constants::ONE_CC_ADDRESS_INGESTION_JOB, $keys))
+        {
+            unset($input['keys']);
+            $configs[Constants::ONE_CC_ADDRESS_INGESTION_JOB] = $this->app['magic_address_provider_service']->getJobConfig($input, $this->merchant->getId());
+        }
+
+        return $configs;
+    }
 }

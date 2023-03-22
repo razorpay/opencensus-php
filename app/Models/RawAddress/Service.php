@@ -3,6 +3,7 @@
 namespace RZP\Models\RawAddress;
 
 use Carbon\Carbon;
+use RZP\Constants\IndianStates;
 use RZP\Trace\TraceCode;
 use RZP\Models\{Base,Merchant};
 use RZP\Error\ErrorCode;
@@ -72,15 +73,29 @@ class Service extends Base\Service
      */
     public function createAddressBulk(array $inputArr)
     {
+        (new RawAddress\Validator())->validateInput("bulk_create_for_address", $inputArr);
         $rawAddressArr = array();
         $addresses = $inputArr['addresses'];
+        $source = $inputArr['source'];
         foreach ($addresses as $input)
         {
             try
             {
                 if(!isset($input['batch_id']))
                 {
-                    $input['batch_id'] = "";
+                    if (strlen($source) == 0)
+                    {
+                        $input['batch_id'] = "";
+                    }
+                    else if ($source === Constants::ADDRESS_SOURCE_TYPE_WOOCOMMERCE)
+                    {
+                        $input['batch_id'] = $source;
+                    }
+                    $state = IndianStates::getStateName($input[Entity::STATE]);
+                    if (!is_null($state))
+                    {
+                        $input[Entity::STATE] = ucwords(strtolower($state));
+                    }
                 }
 
                 $rawAddress = $this->validateAndStandardiseAddress($input);

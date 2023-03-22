@@ -17,6 +17,7 @@ class Validator extends Base\Validator
     const ADDRESSES   = 'addresses';
     const STATUS_CODE = 'statusCode';
     const MESSAGE     = 'message';
+    const SOURCE = 'source';
 
     protected static $createRules = [
         Entity::CONTACT          => 'sometimes|contact_syntax',
@@ -47,6 +48,11 @@ class Validator extends Base\Validator
         Entity::TAG              => 'sometimes|string|between:2,32',
         Entity::LANDMARK         => 'sometimes|string|between:2,32',
         Address\Entity::PRIMARY  => 'sometimes|in:0,1',
+    ];
+
+    protected static $bulkCreateForAddressRules = [
+        self::ADDRESSES => 'required|array|min:1',
+        self::SOURCE => 'sometimes|string|in:woocommerce',
     ];
 
     protected static $processKafkaMessageRules = [

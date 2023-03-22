@@ -208,10 +208,18 @@ class BulkUploadClient extends Job
         {
             try
             {
+                // If batch_id is empty then source type is shopify
+                // Else if batch_id is not empty and has value woocommerce then source type is woocommerce
+                // Else if batch_id is not empty and has value not equal to woocommerce then source type is bulk_upload
                 $sourceType = Constants::ADDRESS_SOURCE_TYPE_SHOPIFY;
                 if (strlen($address[RawAddress\Entity::BATCH_ID]) > 0)
                 {
                     $sourceType = Constants::ADDRESS_SOURCE_TYPE_BULK_UPLOAD;
+
+                    if ($address[RawAddress\Entity::BATCH_ID] === Constants::ADDRESS_SOURCE_TYPE_WOOCOMMERCE)
+                    {
+                        $sourceType = Constants::ADDRESS_SOURCE_TYPE_WOOCOMMERCE;
+                    }
                 }
                 $address[Constants::ADDRESS_TYPE]=Constants::ADDRESS_TYPE_RAW;
                 $address[Address\Entity::SOURCE_ID] = $address[RawAddress\Entity::ID];

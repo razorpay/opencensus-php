@@ -1502,6 +1502,12 @@ return [
     ],
 
     'address_service' => [
+        'api' => [
+            'url'           => env('APP_ADDRESS_SERVICE_API_URL'),
+            'username'      => 'api',
+            'secret'        => env('APP_ADDRESS_SERVICE_API_SECRET', ''),
+            'timeout'       => env('APP_ADDRESS_SERVICE_API_TIMEOUT', 3),
+        ],
         'secret'  => env('APP_ADDRESS_SERVICE_SECRET')
     ],
 

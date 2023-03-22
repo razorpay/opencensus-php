@@ -111,6 +111,8 @@ use RZP\Models\Merchant\OneClickCheckout\RtoFileUploadAuditService\Service as Rt
 use RZP\Models\Merchant\OneClickCheckout\RtoFeatureReasonProvider\Service as RtoFeatureReasonProviderService;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutService\Client as  MagicCheckoutServiceClient;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\CouponProvider\Service as MagicCheckoutCouponService;
+use RZP\Models\Merchant\OneClickCheckout\MagicAddressProvider\Service as MagicAddressProviderService;
+use RZP\Models\Merchant\OneClickCheckout\MagicAddressService\Client as MagicAddressServiceClient;
 
 class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvider
 {
@@ -689,6 +691,10 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->registerRtoPredictionMLModelConfigService();
 
         $this->registerFulfillmentOrderService();
+
+        $this->registerMagicAddressProviderService();
+
+        $this->registerMagicAddressServiceClient();
 
         $this->registerFreshchatClient();
 
@@ -1718,6 +1724,22 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
         $this->app->singleton('fulfillment_order_service', function($app)
         {
             return new FulfillmentOrderService($app);
+        });
+    }
+
+    protected function registerMagicAddressProviderService()
+    {
+        $this->app->singleton('magic_address_provider_service', function($app)
+        {
+            return new MagicAddressProviderService($app);
+        });
+    }
+
+    protected function registerMagicAddressServiceClient()
+    {
+        $this->app->singleton('magic_address_service_client', function($app)
+        {
+            return new MagicAddressServiceClient($app);
         });
     }
 

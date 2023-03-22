@@ -72,6 +72,10 @@ class Constants
     const DISABLE_MAGIC_CHECKOUT = 'disable_magic_checkout';
     const DISABLE_MAGIC_CHECKOUT_ADDITIONAL_COMMENT = 'disable_magic_checkout_additional_comment';
 
+    // address ingestion
+    const ONE_CC_ONBOARDED_TIMESTAMP = 'one_cc_onboarded_timestamp';
+    const ONE_CC_ADDRESS_INGESTION_JOB = 'job';
+
     const SHOPIFY_API_TYPES = [
         self::STOREFRONT,
         self::ADMIN_REST,

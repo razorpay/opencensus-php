@@ -71,6 +71,12 @@ class Validator extends Base\Validator
          'keys'                          => 'sometimes|string|custom:keys',
     ];
 
+    protected static $get1ccAddressIngestionConfigRules = [
+        'platform' => 'required|string|in:woocommerce',
+        'keys' => 'sometimes|array',
+        'keys.*' => 'distinct|string|in:one_click_checkout,one_cc_address_sync_off,job',
+    ];
+
     /**
      * @throws BadRequestValidationFailureException
      */

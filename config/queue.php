@@ -632,6 +632,8 @@ return [
 
     'fulfillment_event_update' => env('AWS_ORDER_STATUS_UPDATE_QUEUE'),
 
+    'one_cc_address_ingestion_standardization' => env('AWS_ONE_CC_ADDRESS_INGESTION_STANDARDIZATION_QUEUE'),
+
     'merchant_based_balance_update_v1' => [
         'live'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_V1'),
         'test'       => env('AWS_MERCHANT_BASED_BAL_UPDATE_V1'),

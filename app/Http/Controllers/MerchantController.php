@@ -3960,4 +3960,18 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+    public function get1ccAddressIngestionConfig()
+    {
+        $input = Request::all();
+
+        return (new Merchant\OneClickCheckout\Config\Service())->get1ccAddressIngestionConfig($input);
+    }
+
+    public function push1ccAddresses()
+    {
+        $input = Request::all();
+
+        return $this->app['magic_address_provider_service']->push1ccAddresses($input);
+    }
+
 }

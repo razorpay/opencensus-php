@@ -4150,6 +4150,8 @@ class Route
         '1cc_process_webhooks'                      => ['post',       '1cc/process_webhooks/{platform}',                                   'OneClickCheckoutController@processWebhook'              ],
         'update_shopify_1cc_config'               => ['post',         'merchant/1cc/shopify/config',                           'MerchantController@updateShopify1ccConfig'                   ],
         '1cc_fetch_analytics'                       => ['post',       '1cc/analytics/shopify',                                 'OneClickCheckoutController@getOrderAnalytics'                   ],
+        '1cc_address_ingestion_config_get'          => ['get',        '1cc/merchant/address_ingestion/config',    'MerchantController@get1ccAddressIngestionConfig' ],
+        '1cc_address_ingestion_addresses_post'      => ['post',       '1cc/merchant/address_ingestion/addresses', 'MerchantController@push1ccAddresses' ],
 
         'get_affordability_suite'                 => ['get',          'affordability',                                         'AffordabilityController@__invoke'                             ],
 
@@ -4839,7 +4841,10 @@ class Route
         // Generate and send NIUM settlements file via manual trigger
         'generate_nium_settlement_file_admin',
  	    'fetch_customer_eligibility',
-        'fetch_customer_eligibility_by_id'
+        'fetch_customer_eligibility_by_id',
+
+        '1cc_address_ingestion_config_get',
+        '1cc_address_ingestion_addresses_post'
     ];
 
     // Only routes defined in internalApps go here
