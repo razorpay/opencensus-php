@@ -2,7 +2,7 @@ import { connect } from 'react-redux';
 import { withRouter, NavLink, Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
 import { Field } from 'redux-form';
-import HeaderAction from 'common/ui/HeaderAction';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
 import {
@@ -12,6 +12,7 @@ import {
 } from 'common/utils/rzp-utils';
 import moment from 'moment';
 import { analyticsTrack } from 'common/utils/analytics';
+import ProductWrapper from 'common/ui/ProductWrapper';
 import { fetchPaymentLinks } from 'merchant/reducers/paymentlinks/list';
 import { fetchReminders } from 'merchant/reducers/reminders';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -116,7 +117,22 @@ export default class PaymentLinksContainer extends ListContainer {
   constructor(props) {
     super(props);
 
-    this.state = { ...this.state, date: { from: '', to: '' } };
+    const isVisible =
+      props.user.isAllowedView('payment_links_batch_uploads') &&
+      props.user.isPLBatchUploadEnabled &&
+      (!props.user.isSellerAppRole || props.user.isPaymentLinkBatchEnabledForSellerAppRole);
+    this.state = {
+      ...this.state,
+      date: { from: '', to: '' },
+      tabsData: [
+        { title: 'Payment Links', url: '/paymentlinks' },
+        {
+          title: 'Batch Uploads',
+          url: '/paymentlinks/batchuploads',
+          hidden: !isVisible,
+        },
+      ],
+    };
   }
 
   componentDidMount() {
@@ -255,11 +271,12 @@ export default class PaymentLinksContainer extends ListContainer {
         </span>
       );
     }
-
+    const { tabsData } = this.state;
     return (
-      <div class="content-wrapper">
-        <HeaderAction responsive>
-          <div class="btn-toolbar pull-right">
+      <ProductWrapper
+        tabsData={tabsData}
+        extra={
+          <>
             <span class="btn btn-link">
               <span class="badge bg-success m-r hidden-xs">new</span>
 
@@ -293,78 +310,89 @@ export default class PaymentLinksContainer extends ListContainer {
                 (mode !== 'live' || !user.isRejected) && user.isAllowedEdit('payment_links')
               }
             >
-              <span className="cta-container">
-                <NavLink className="btn btn-primary btn-shine" to="/paymentlinks/new">
-                  <i class="i i-plus" />
-                  <span
-                    onClick={() => {
-                      tracking.trackEvent(
-                        window.rzpQ.onbr().success('dash.pl_action', {
-                          action: 'Initiate_PL_Creation',
-                        }),
-                      );
-                      selfServeTrackInitiate({
-                        selfServeAction: 'Create Payment Link',
-                        page: 'Paymentlink',
-                        screen: 'Payment Links',
-                      });
-                      analyticsTrack({
-                        objectName: 'create payment link',
-                        actionName: 'clicked',
-                        screen: 'create payment link',
-                        properties: {
-                          ...getCommonAnalyticsProperties(window.rzp_user),
-                        },
-                      });
-                    }}
-                  >
-                    Create Payment Link
-                  </span>
-                </NavLink>
+              <span className="tabbed-header-actions">
+                <span className="cta-container">
+                  <NavLink className="btn btn-primary btn-shine" to="/paymentlinks/new">
+                    <i class="i i-plus" />
+                    <span
+                      onClick={() => {
+                        tracking.trackEvent(
+                          window.rzpQ.onbr().success('dash.pl_action', {
+                            action: 'Initiate_PL_Creation',
+                          }),
+                        );
+                        selfServeTrackInitiate({
+                          selfServeAction: 'Create Payment Link',
+                          page: 'Paymentlink',
+                          screen: 'Payment Links',
+                        });
+                        analyticsTrack({
+                          objectName: 'create payment link',
+                          actionName: 'clicked',
+                          screen: 'create payment link',
+                          properties: {
+                            ...getCommonAnalyticsProperties(window.rzp_user),
+                          },
+                        });
+                      }}
+                    >
+                      Create Payment Link
+                    </span>
+                  </NavLink>
+                </span>
               </span>
             </ShowWhen>
+          </>
+        }
+      >
+        <content>
+          <div class="content-wrapper">
+            <TestModeBanner />
+            <ListFilter
+              form="InvoiceListFilter"
+              type="link"
+              count={this.state.count}
+              date={this.state.date}
+              onSubmit={this.search}
+              onSearchAnalytics={this.onSearchAnalytics}
+              onClearAnalytics={this.onClearAnalytics}
+              isInttCurrenciesEnabled={users.isInttCurrenciesEnabled}
+              trackSearchFilterForInternational={trackSearchFilterForInternational}
+              isPaymentlinksV2Enabled={users.isPaymentlinksV2Enabled}
+              extraFields={getExtraFields(users, this.props.tracking, this.onDatesChange)}
+            />
+
+            <Alert
+              type={status.type}
+              message={status.message}
+              onCloseClick={this.onAlertCloseClick}
+            />
+
+            <List
+              invoices={paymentlinks}
+              isLoading={loading}
+              type="link"
+              onCopy={this.onCopy}
+              onDuplicate={this.onDuplicate}
+              EmptyList={EmptyComponent}
+              isPaymentlinksV2Enabled={users.isPaymentlinksV2Enabled}
+              onShareLinkSuccess={track.onShareLinkSuccess}
+            />
+
+            <Pager
+              count={this.state.count}
+              skip={this.state.skip}
+              length={paymentlinks.length}
+              onClick={(params, type) => {
+                const page = params.skip % params.count;
+                track.paginate(type, page);
+                this.paginate(params);
+              }}
+            />
+            <EasterEgg extraClass="ftx-payment-links" page="Payment Links" />
           </div>
-        </HeaderAction>
-
-        <ListFilter
-          form="InvoiceListFilter"
-          type="link"
-          count={this.state.count}
-          date={this.state.date}
-          onSubmit={this.search}
-          onSearchAnalytics={this.onSearchAnalytics}
-          onClearAnalytics={this.onClearAnalytics}
-          isInttCurrenciesEnabled={users.isInttCurrenciesEnabled}
-          trackSearchFilterForInternational={trackSearchFilterForInternational}
-          isPaymentlinksV2Enabled={users.isPaymentlinksV2Enabled}
-          extraFields={getExtraFields(users, this.props.tracking, this.onDatesChange)}
-        />
-
-        <Alert type={status.type} message={status.message} onCloseClick={this.onAlertCloseClick} />
-
-        <List
-          invoices={paymentlinks}
-          isLoading={loading}
-          type="link"
-          onCopy={this.onCopy}
-          onDuplicate={this.onDuplicate}
-          EmptyList={EmptyComponent}
-          isPaymentlinksV2Enabled={users.isPaymentlinksV2Enabled}
-          onShareLinkSuccess={track.onShareLinkSuccess}
-        />
-
-        <Pager
-          count={this.state.count}
-          skip={this.state.skip}
-          length={paymentlinks.length}
-          onClick={(params, type) => {
-            const page = params.skip % params.count;
-            track.paginate(type, page);
-            this.paginate(params);
-          }}
-        />
-        <EasterEgg extraClass="ftx-payment-links" page="Payment Links" />
-      </div>
+        </content>
+      </ProductWrapper>
     );
   }
 }

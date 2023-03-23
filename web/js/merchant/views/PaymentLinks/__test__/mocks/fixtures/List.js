@@ -35,6 +35,7 @@ export const user = {
   isPaymentlinksV2Enabled: true,
   isInttCurrenciesEnabled: false,
   isPaymentlinksV2CompatEnabled: true,
+  isAllowedView: () => true,
 };
 
 export const org = {

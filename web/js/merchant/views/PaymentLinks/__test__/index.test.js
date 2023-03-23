@@ -1,29 +1,21 @@
 import React from 'react';
-import store from 'merchant/store';
 import '@testing-library/jest-dom/extend-expect';
 import {
   onboarding,
-  updateUser,
   defaultProps,
   rzpUserConfig,
   paymentLinkStoreConfiguration,
 } from 'merchant/views/PaymentLinks/__test__/mocks/fixtures/fixtures';
 import PaymentLink from 'merchant/views/PaymentLinks/Index';
-import { render, screen, userEvent } from 'test-utils';
-
-const getStateSpy = jest.spyOn(store, 'getState');
+import { render, screen, userEvent, waitFor } from 'test-utils';
 
 describe('Payment Link', () => {
-  /*
-   * Mocking 'user/merchant' level configuration from redux store.
-   */
-  updateUser(getStateSpy, paymentLinkStoreConfiguration);
-
   /**
    * Setting 'user/merchant' window level configuration
    */
   beforeAll(() => {
     window.rzp_user = rzpUserConfig('activated', 'owner');
+    window.scrollTo = jest.fn();
     jest.useFakeTimers();
   });
 
@@ -36,7 +28,16 @@ describe('Payment Link', () => {
    * @return <PaymentLink /> index file
    */
   const renderApp = ({ props } = {}) => {
-    return render(<PaymentLink {...defaultProps} {...props} />, { showModal: true });
+    return render(<PaymentLink {...defaultProps} {...props} />, {
+      showModal: true,
+      initialState: {
+        session: {
+          user: paymentLinkStoreConfiguration,
+        },
+      },
+      historyOptions: { initialEntries: ['/paymentlinks'] },
+      path: '/paymentlinks',
+    });
   };
 
   test('should render component without errors', () => {
@@ -54,9 +55,11 @@ describe('Payment Link', () => {
   });
 
   test('should render batch uploads', async () => {
-    renderApp();
-    userEvent.click(await screen.findByText('Batch Uploads'));
-    expect(screen.getByText('Batch Uploads')).toBeInTheDocument();
+    const { history } = renderApp();
+    const batchUploadTab = screen.getByText('Batch Uploads');
+    expect(batchUploadTab).toBeInTheDocument();
+    await userEvent.click(batchUploadTab);
+    expect(history.location.pathname).toEqual('/paymentlinks/batchuploads');
   });
 
   test('should load onboarding screen', () => {
@@ -88,8 +91,8 @@ describe('Payment Link', () => {
 
   test('should load mobile pop up', async () => {
     renderApp();
-    expect(
-      await screen.findByText('Send Payment Links Faster with the Mobile App'),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Send Payment Links Faster with the Mobile App')).toBeInTheDocument();
+    });
   });
 });

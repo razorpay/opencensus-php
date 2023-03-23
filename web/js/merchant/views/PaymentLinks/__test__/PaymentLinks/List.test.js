@@ -100,7 +100,7 @@ describe('PaymentLink - List Component', () => {
     expect(await screen.findByText(/customer email/i)).toBeInTheDocument();
     expect(await screen.findByText(/notes/i)).toBeInTheDocument();
     expect(await screen.findByText(/payment link status/i)).toBeInTheDocument();
-    expect(await screen.findByText(/count/i)).toBeInTheDocument();
+    expect(await screen.findByText(/\bcount\b/i)).toBeInTheDocument();
   });
 
   test('should have Search filters Button Available', () => {

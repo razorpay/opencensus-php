@@ -22,6 +22,7 @@ describe('Batch List', () => {
         session: {
           user: {
             isPaymentlinksV2Enabled: true,
+            isAllowedView: () => true,
           },
         },
       },

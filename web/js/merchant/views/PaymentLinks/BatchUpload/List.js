@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import BatchList from 'merchant/containers/BatchNew/List';
+import BatchList from 'merchant/containers/BatchNew/ListV2';
 import BatchUpload from 'merchant/containers/BatchNew/Upload';
 import { openModal } from 'merchant_common/reducers/modals';
 import {

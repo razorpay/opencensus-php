@@ -1,3 +1,5 @@
+/* eslint-disable babel/new-cap */
+import React from 'react';
 import { RZPFeatures, PossibleStatuses } from 'merchant/helpers/data';
 
 import QuickGuide, {
@@ -14,6 +16,8 @@ import { getQuickGuideData } from './data';
 
 const { done, locked, active, loading } = PossibleStatuses;
 
+const Title = <QuickGuideTitle />;
+
 @QuickGuide({
   feature: RZPFeatures.PL,
   data_points: ['paymentlinks'],
@@ -25,17 +29,13 @@ const { done, locked, active, loading } = PossibleStatuses;
   },
 })
 export default class PaymentPagesQuickGuide extends React.Component {
-  getCloseBtn = isCompleted => {
-    return (
-      <QuickGuideCloseBtn
-        isCompleted={isCompleted}
-        onClick={this.props.onClickClose}
-      />
-    );
+  getCloseBtn = (isCompleted) => {
+    return <QuickGuideCloseBtn isCompleted={isCompleted} onClick={this.props.onClickClose} />;
   };
 
   render() {
     const { paymentLinkStatus, paymentReceiveStatus } = getStatus(this.props);
+    const { className = '' } = this.props;
 
     const CloseBtn = this.getCloseBtn(paymentReceiveStatus === done);
 
@@ -48,7 +48,7 @@ export default class PaymentPagesQuickGuide extends React.Component {
     return (
       <QuickStepGuide
         activeStep={activeStep}
-        class="Route"
+        class={`Route ${className}`}
         title={Title}
         closeBtn={CloseBtn}
       >
@@ -70,17 +70,16 @@ export default class PaymentPagesQuickGuide extends React.Component {
   }
 }
 
-const Title = <QuickGuideTitle />;
-
-export const getPaymentLinksQuickGuideIsClosed = props => {
-  let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PL);
+export function getPaymentLinksQuickGuideIsClosed(props) {
+  const isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.PL);
 
   // Check if transfers non created state count is more then or equal to 2
   if (isClosed || props.paymentlinks.paymentlinks.length <= 2) {
     return isClosed;
   }
 
-  props.paymentlinks.paymentlinks.forEach(page => {
+  // eslint-disable-next-line consistent-return
+  props.paymentlinks.paymentlinks.forEach((page) => {
     if (page.status === 'paid' || page.status === 'partially_paid') {
       setQuickGuideIsClosedInLocalStorage(RZPFeatures.PL, true);
       return false;
@@ -88,11 +87,11 @@ export const getPaymentLinksQuickGuideIsClosed = props => {
   });
 
   return true;
-};
+}
 
-const getStatus = ({ paymentlinks }) => {
-  let paymentLinkStatus = loading,
-    paymentReceiveStatus = loading;
+function getStatus({ paymentlinks }) {
+  let paymentLinkStatus = loading;
+  let paymentReceiveStatus = loading;
 
   if (paymentlinks.loading) {
     return {
@@ -105,7 +104,8 @@ const getStatus = ({ paymentlinks }) => {
     paymentLinkStatus = done;
     paymentReceiveStatus = active;
 
-    paymentlinks.items.forEach(page => {
+    // eslint-disable-next-line consistent-return
+    paymentlinks.items.forEach((page) => {
       if (page.status === 'paid' || page.status === 'partially_paid') {
         paymentReceiveStatus = done;
 
@@ -121,4 +121,4 @@ const getStatus = ({ paymentlinks }) => {
     paymentLinkStatus,
     paymentReceiveStatus,
   };
-};
+}
