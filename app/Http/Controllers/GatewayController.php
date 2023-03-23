@@ -12,6 +12,7 @@ use RZP\Models\Admin;
 use RZP\Models\QrCode;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Services\NbPlus;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -38,6 +39,7 @@ use RZP\Gateway\Netbanking\Base\Repository;
 use RZP\Gateway\Enach\Npci\Netbanking as EnachNb;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Services\UpiPayment\Service as UpiPaymentService;
+use RZP\Models\Merchant\Repository as MerchantRepository;
 use RZP\Gateway\Wallet\Amazonpay\ResponseFields as AmazonResponse;
 use RZP\Gateway\P2p\Upi\Axis\Actions\UpiAction as p2pUpiAxisActions;
 use RZP\Models\Gateway\Downtime\Webhook\Constants\Vajra as VajraConstants;
@@ -186,6 +188,22 @@ class GatewayController extends Controller
                 }
 
                 $terminal = $terminal->toArrayWithPassword();
+
+                if (empty($terminal[Terminal\Entity::GATEWAY_SECURE_SECRET]) === true)
+                {
+                    $merchant = (new MerchantRepository())->find($terminal->getMerchantId());
+
+                    if ($merchant->isFeatureEnabled(RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === true)
+                    {
+                        $terminal = (new Terminal\Service())->getEntityFromTerminalServiceResponse($terminal);
+
+                        $this->trace->info(
+                            TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_FETCH_REQUEST,
+                            [
+                                'terminal' => $terminal->getId(),
+                            ]);
+                    }
+                }
 
                 $gateway->setTerminal($terminal);
 
