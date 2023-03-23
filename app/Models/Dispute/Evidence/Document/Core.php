@@ -55,7 +55,7 @@ class Core extends Base\Core
 
             $document->refresh();
 
-            $this->app['disputes']->sendDualWriteToDisputesService([Dispute\Constants::EVIDENCE_DOCUMENTS => $document], Table::DISPUTE_EVIDENCE_DOCUMENT, Dispute\Constants::CREATE);
+            $this->app['disputes']->sendDualWriteToDisputesService([Dispute\Constants::EVIDENCE_DOCUMENTS => $document->toDualWriteArray()], Table::DISPUTE_EVIDENCE_DOCUMENT, Dispute\Constants::CREATE);
 
             return $document;
         });
