@@ -27,9 +27,14 @@ class Shipping extends Base\Core
     {
         $mutation = (new Mutations)->getUpdateShippingAddressMutation();
 
-        $stateCode = (new StateMap)->getShopifyStateCode($address['state_code']);
+        $stateCode = $stateCodeFromName = (new StateMap)->getPincodeMappedStateCode($address['zipcode']);
 
-        $stateCodeFromName = (new StateMap)->getShopifyStateCodeFromName($address['state']);
+        if($stateCode === null)
+        {
+            $stateCode = (new StateMap)->getShopifyStateCode($address);
+
+            $stateCodeFromName = (new StateMap)->getShopifyStateCodeFromName($address);
+        }
 
         // name and address1 are compulsory fields but we don't collect it from
         // user at this time so we put default value

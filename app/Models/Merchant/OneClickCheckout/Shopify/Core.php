@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Http\Request\Requests;
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant\OneClickCheckout;
 use RZP\Models\Merchant\OneClickCheckout\AuthConfig;
@@ -239,9 +240,14 @@ class Core extends Base\Core
 
         $mutation = (new Mutations)->getUpdateShippingAddressMutation();
 
-        $stateCode = (new StateMap)->getShopifyStateCode($address);
+        $stateCode = $stateCodeFromName = (new StateMap)->getPincodeMappedStateCode($address['zipcode']);
 
-        $stateCodeFromName = (new StateMap)->getShopifyStateCodeFromName($address);
+        if($stateCode === null)
+        {
+            $stateCode = (new StateMap)->getShopifyStateCode($address);
+
+            $stateCodeFromName = (new StateMap)->getShopifyStateCodeFromName($address);
+        }
 
         // name and address1 are compulsory fields but we don't collect it from
         // user at this time so we put default value
@@ -1418,6 +1424,14 @@ class Core extends Base\Core
         try {
             $defaultPendingStatus = $this->canSetOrderStatusPending($rzpOrder['id'], $this->merchant);
         } catch (\Throwable $e) {
+
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_API_ERROR,
+                [
+                    'type' => 'canSetOrderStatusPending',
+                    'errorMessage' => $e->getMessage()
+                ]
+            );
             $defaultPendingStatus = false;
         }
 
@@ -2200,6 +2214,15 @@ class Core extends Base\Core
         if ((app()->isEnvironmentProduction() === true && $this->mode === Mode::TEST) ||
             ($platformConfig != null && $platformConfig->getValue() !== Constants::SHOPIFY))
         {
+            $this->trace->info(
+                TraceCode::SHOPIFY_1CC_API_ERROR,
+                [
+                    'type' => 'canSetOrderStatusPending',
+                    'mode' => $this->mode,
+                    'env' => app()->isEnvironmentProduction(),
+                    'platform' => $platformConfig->getValue()
+                ]
+            );
             return false;
         }
 
@@ -2211,6 +2234,17 @@ class Core extends Base\Core
                     [
                         'merchant_id' => $merchant->getId(),
                     ]),
+            ]
+        );
+
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_API_ERROR,
+            [
+                'type' => 'canSetOrderStatusPending',
+                'mode' => $this->mode,
+                'env' => app()->isEnvironmentProduction(),
+                'platform' => $platformConfig->getValue(),
+                'variant' => $expResult['variant']
             ]
         );
         return $expResult['variant'] === 'magic_order';

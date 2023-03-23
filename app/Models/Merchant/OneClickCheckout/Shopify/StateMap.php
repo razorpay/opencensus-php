@@ -209,4 +209,27 @@ class StateMap
         return $shopifyStateCode;
     }
 
+    /**
+     * Mapped the pincode to state code to handle the mismatch in google and shopify pincode mapping
+     *
+    */
+    function getPincodeMappedStateCode($pinCode)
+    {
+        $pinCodeMap = [
+            '194101' => 'LA',
+            '194104' => 'LA',
+            '194105' => 'LA',
+            '194106' => 'LA',
+            '194201' => 'LA',
+            '194401' => 'LA',
+            '194402' => 'LA',
+            '194404' => 'LA',
+            '140133' => 'PB',
+        ];
+
+        $shopifyStateCode = $pinCodeMap[$pinCode] ?? null;
+
+        return $shopifyStateCode;
+    }
+
 }
