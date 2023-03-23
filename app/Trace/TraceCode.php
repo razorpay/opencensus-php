@@ -1475,7 +1475,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_PAYMENT_UPDATE_TOKEN                         = 'EMANDATE_PAYMENT_UPDATE_TOKEN';
     const EMANDATE_FETCH_MERCHANT_CONFIG                        = 'EMANDATE_FETCH_MERCHANT_CONFIG';
     const EMANDATE_CONFIG_DETAILS                               = 'EMANDATE_CONFIG_DETAILS';
-    
+
     //Pricing
     const PRICING_RULE_SELECTION                                = 'PRICING_RULE_SELECTION';
     const PAYMENT_PRICING_RULE_NOT_FOUND                        = 'PAYMENT_PRICING_RULE_NOT_FOUND';
@@ -8637,6 +8637,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MTU_COUPON_APPLY_FAILURE                              = 'MTU_COUPON_APPLY_FAILURE';
     const PENNY_TESTING_ATTEMPT_EXCEEDED                        = 'PENNY_TESTING_ATTEMPT_EXCEEDED';
+
+    const TERMINAL_CREATION_EVENT_SENT                          = 'TERMINAL_CREATION_EVENT_SENT';
 
     //Segment Event Push Failure
 

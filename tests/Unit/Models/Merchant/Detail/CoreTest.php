@@ -3378,6 +3378,64 @@ class CoreTest extends TestCase
         $this->assertEquals(false, $methods['upi']);
     }
 
+    public function testTerminalCreationForRegularMerchantFromAMPToActivated()
+    {
+        Mail::fake();
+
+        $this->mockRazorxTreatment();
+
+        $detailCoreMock = $this->getMockBuilder(DetailCore::class)
+                               ->setMethods(['isAutoKycDone'])
+                               ->getMock();
+
+        $detailCoreMock->expects($this->any())
+                       ->method('isAutoKycDone')
+                       ->willReturn(true);
+
+        $merchantDetails = $this->fixtures->create('merchant_detail', [
+            'business_type'             => 4,
+            'business_category'         => 'financial_services',
+            'business_subcategory'      => 'accounting',
+            'activation_flow'           => 'whitelist',
+            'activation_form_milestone' => 'L2',
+            'poi_verification_status'   => 'verified',
+            'promoter_pan'              => 'AAAPA1234J',
+            'activation_status'         => 'activated_mcc_pending',
+            'submitted'=>true,
+            'business_Website'=> null
+        ]);
+
+        $this->mockRazorxTreatment();
+
+        $this->assertEquals(Status::ACTIVATED_MCC_PENDING, $detailCoreMock->getApplicableActivationStatus($merchantDetails));
+
+        $activationStatusData = [
+            Entity::ACTIVATION_STATUS => Status::ACTIVATED,
+        ];
+
+        $admin = $this->fixtures->connection('live')->create('admin', [
+            'org_id' => OrgEntity::RAZORPAY_ORG_ID,
+        ]);
+
+        $this->app->instance("rzp.mode", Mode::LIVE);
+
+        $this->app['basicauth']->setOrgId(OrgEntity::RAZORPAY_ORG_ID);
+
+        $this->app['workflow']->setWorkflowMaker($admin);
+
+        $kafkaProducerMock = Mockery::mock(KafkaProducerClientMock::class)->makePartial();
+
+        $this->app->instance('kafkaProducerClient', $kafkaProducerMock);
+
+        $detailCoreMock->updateActivationStatus($merchantDetails->merchant,$activationStatusData,$merchantDetails->merchant);
+
+        $kafkaProducerMock->shouldHaveReceived('produce');
+
+        $methods = $this->getDbEntityById('methods', $merchantDetails->getMerchantId())->toArray();
+
+        $this->assertEquals(false, $methods['upi']);
+    }
+
     public function testTerminalCreationForNonRegularMerchant()
     {
         Mail::fake();

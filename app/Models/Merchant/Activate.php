@@ -362,6 +362,9 @@ class Activate extends Base\Core
 
         $merchant->releaseFunds();
 
+        //creating terminal request for UPI only
+        $this->sendTerminalCreationRequest($merchant, DEConstants::UPI);
+
         $merchantCore = new Merchant\Core;
 
         $merchantCore->updateInternationalIfApplicable($merchant, $merchantDetail);
@@ -1219,13 +1222,19 @@ class Activate extends Base\Core
             $topic = env('PAYMENT_METHOD_ENABLE_KAFKA_TOPIC_NAME');
 
             $event = [
-                'merchant_id'    => $merchant->getMerchantId(),
+                'merchant_id'    => $merchant->getId(),
                 'payment_method' => $paymentMethod,
                 'action'         => $action,
                 'merchant_genre' => $merchantGenre,
                 'instrument'     => $instrument,
                 'task_id'        => $this->app['request']->getTaskId() ?? gen_uuid(),
             ];
+
+            $this->trace->info(TraceCode::TERMINAL_CREATION_EVENT_SENT, [
+                'merchant_id'       => $merchant->getId(),
+                'topic'             => $topic,
+                'event_data'        => $event
+            ]);
 
             app('kafkaProducerClient')->produce($topic, stringify($event));
         }
