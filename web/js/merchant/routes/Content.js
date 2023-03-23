@@ -549,10 +549,12 @@ export default class Content extends Component {
             }
           />
           <ShowWhenRoute
-            path="/wallet/accounts"
+            path="/wallet"
             exact={false}
             component={Wallet}
-            additionalCondition={(user) => user.isIssuingDashboardEnabled}
+            additionalCondition={(user) =>
+              user.isIssuingDashboardEnabled || user.isIssuingBulkUploadEnabled
+            }
           />
 
           <Route path="/super-checkout">

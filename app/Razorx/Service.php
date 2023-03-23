@@ -226,7 +226,8 @@ class Service extends Base\Service
             'sync_call_for_fresh_balance',
             'issuinghq_wallet_dashboard_enabled',
             'sync_call_for_fresh_balance',
-            'dedicated_terminal_qr_code'
+            'dedicated_terminal_qr_code',
+            'issuinghq_wallet_bulk_actions_enabled'
         ];
 
         $experimentsResults = $this->getBulkTreatment($features);

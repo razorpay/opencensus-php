@@ -919,6 +919,10 @@ export default class User {
     return this.getExpStatus('issuinghq_wallet_dashboard_enabled');
   }
 
+  get isIssuingBulkUploadEnabled() {
+    return this.getExpStatus('issuinghq_wallet_bulk_actions_enabled');
+  }
+
   get isRegistrationLinkTokenAndPaymentsEnabled() {
     return (
       this.userRole !== rolesList.REGISTRATION_LINK_AGENT &&

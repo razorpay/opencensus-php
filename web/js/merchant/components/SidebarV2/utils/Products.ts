@@ -180,9 +180,10 @@ export const PRODUCTS_DATA = {
       ) && user.isAccountAndSettingsRevampEnabled,
   },
   wallet: {
-    icon: 'i-notes',
+    icon: 'i-wallet',
     additionalCondition: (user: any) =>
-      user.isIssuingDashboardEnabled && user.isAccountAndSettingsRevampEnabled,
+      (user.isIssuingDashboardEnabled || user.isIssuingBulkUploadEnabled) &&
+      user.isAccountAndSettingsRevampEnabled,
   },
   internationalPaymentsBtn: {
     additionalCondition: (user: any) => user.isShowInternationalPaymentBtnExpEnabled,

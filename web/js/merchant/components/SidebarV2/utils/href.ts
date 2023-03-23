@@ -1,10 +1,13 @@
 const ROUTE_REG = {
-  accountsettings: /^\/(account-settings|payment-methods|checkout-settings|notification-settings|website-app-settings|payments-and-refunds-settings|business-settings|bank-accounts-settlements)/,
+  accountsettings:
+    /^\/(account-settings|payment-methods|checkout-settings|notification-settings|website-app-settings|payments-and-refunds-settings|business-settings|bank-accounts-settlements)/,
   transactions: /^\/(payments|refunds|orders|batch-refunds|disputes|success-rate)/,
   // eslint-disable-next-line prettier/prettier
-  settlements: /^\/(settlements|routeinstantsettlements|instantsettlement_details|instantsettlements)/,
+  settlements:
+    /^\/(settlements|routeinstantsettlements|instantsettlement_details|instantsettlements)/,
   // eslint-disable-next-line prettier/prettier
-  my_account: /^\/(trustedbadge|profile|credits|addfunds|referrals|website-app-details|ticket-support|team)/,
+  my_account:
+    /^\/(trustedbadge|profile|credits|addfunds|referrals|website-app-details|ticket-support|team)/,
   settings: /^\/(config|webhooks|keys|applications|reminders|payment-methods)/,
   invoices: /^\/(invoices|items)/,
   route: /^\/route(\/(payments|transfers|reversals|accounts|batchuploads))?/,
@@ -13,7 +16,8 @@ const ROUTE_REG = {
   payment_pages: /^\/(paymentpages)/,
   payment_handle: /^\/(payment-handle)/,
   // eslint-disable-next-line prettier/prettier
-  subscriptions: /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks|registration_links)/,
+  subscriptions:
+    /^\/(subscriptions(\/batchuploads)?|plans|addons|recurring_payments|tokens|authlinks|registration_links)/,
   partner: /^\/(submerchants(\/(applications|settings))?|commissions)/,
   magic_checkout: /^\/(magic)/,
   optimizer: /^\/optimizer(\/(add-provider|create-rule|update-rule|rules))?/,
@@ -70,7 +74,7 @@ const BASE_ROUTES = {
   accountsettings: '/account-settings',
   affordability: 'affordability/widget',
   payment_handle: '/payment-handle',
-  wallet: '/wallet/accounts',
+  wallet: '/wallet',
   internationalPaymentsBtn: '/payment-methods/international-payments',
 };
 

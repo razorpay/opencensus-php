@@ -27,8 +27,11 @@ import {
 } from 'merchant/views/PartnerDashboard/Settings/configuration/__tests__/mocks/handlers';
 import { subMerchantListHandlers } from 'merchant/views/PartnerDashboard/SubMerchant/__tests__/mocks/handlers';
 import { instrumentHandlers } from 'merchant/views/AccountAndSettings/PaymentMethods/__test__/mocks/handlers';
+import batchHandler from 'merchant/views/Wallet/BatchActions/__tests__/mocks/handlers';
 
 export const handlers = [
+  ...batchHandler,
+
   // Handles a "Login" mutation
   graphql.mutation('Login', (req, res, ctx) => {
     const { username } = req.variables;

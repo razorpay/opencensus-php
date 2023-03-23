@@ -33,6 +33,7 @@ import { Typo, Icon } from './components/NavLinkItem/styled';
 import { Routes, SidebarPropsInterface } from './typings';
 import { trackViewedBankingNavBar } from 'merchant/components/Sidebar/ga';
 import { getIsBankingEnabled } from 'merchant/components/Sidebar/helpers';
+import { LOYALTY_PRODUCTS_SECTION } from 'merchant/components/SidebarV2/utils/Fallback';
 
 const SideBar = (props: SidebarPropsInterface): JSX.Element => {
   const {
@@ -135,6 +136,17 @@ const SideBar = (props: SidebarPropsInterface): JSX.Element => {
                   {...each}
                 />
               ))}
+              {/* temporary solution until wallet is onboarded on merchant navigation API */}
+              <NavLinkProduct
+                key={LOYALTY_PRODUCTS_SECTION.section_name}
+                heading={LOYALTY_PRODUCTS_SECTION.section_name}
+                products={LOYALTY_PRODUCTS_SECTION.product_options}
+                section_id={LOYALTY_PRODUCTS_SECTION.section_id}
+                routes={routesInfo}
+                activeTab={activeTab}
+                loading={isLoading}
+                user={user}
+              />
               <Items>
                 {CUSTOMERS_PRODUCTS.map((product, index) => (
                   <NavLinkItem

@@ -125,9 +125,11 @@ function _createBatch(data, batchType, customBatch, customHeaders) {
 }
 
 /* method to create action for create batch action */
-export const createBatch = (batchType, actionPrefix, customHeaders = {}) => (data) => {
-  return _createBatch(data, batchType, actionPrefix, customHeaders);
-};
+export const createBatch =
+  (batchType, actionPrefix, customHeaders = {}) =>
+  (data) => {
+    return _createBatch(data, batchType, actionPrefix, customHeaders);
+  };
 
 /////
 
@@ -430,6 +432,16 @@ export const validateLinkedAccountBatch = validateBatch('linked_account_create')
 export const createReversalsBatch = createBatch('transfer_reversal');
 export const validateReversalsBatch = validateBatch('transfer_reversal');
 export const fetchRouteBatchDetails = fetchBatchDetails();
+
+/* batches for wallet */
+export const fetchAllWalletBatches = fetchBatches([
+  'create_wallet_accounts',
+  'create_wallet_loads',
+]);
+export const createWalletAccountsBatch = createBatch('create_wallet_accounts');
+export const validateWalletAccountsBatch = validateBatch('create_wallet_accounts');
+export const createWalletLoadsBatch = createBatch('create_wallet_loads');
+export const validateWalletLoadsBatch = validateBatch('create_wallet_loads');
 
 /* reducers */
 export const refundBatchesReducer = makeActionCollectionReducer(REFUND);

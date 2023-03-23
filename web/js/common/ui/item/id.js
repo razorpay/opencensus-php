@@ -15,7 +15,7 @@ const baseUrl = {
   offer: '/offers/',
   qr: '/qr_codes/',
   ppi: '/stores/products/',
-  iacc: '/wallet/accounts/',
+  iacc: '/wallet/',
 };
 
 const sources = {

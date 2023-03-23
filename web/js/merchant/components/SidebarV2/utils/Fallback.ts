@@ -133,14 +133,17 @@ export const FALLBACK_PRODUCTS = [
     ],
     max_default_options: 3,
   },
-  {
-    section_name: 'LOYALTY PRODUCTS',
-    section_id: 'issuing',
-    product_options: [
-      {
-        title: 'Wallet',
-        product_id: 'wallet',
-      },
-    ],
-  },
 ];
+
+export const LOYALTY_PRODUCTS_SECTION = {
+  section_name: 'LOYALTY PRODUCTS',
+  section_id: 'issuing',
+  product_options: [
+    {
+      title: 'Wallet',
+      product_id: 'wallet',
+      category: '',
+      tags: [],
+    },
+  ],
+};
