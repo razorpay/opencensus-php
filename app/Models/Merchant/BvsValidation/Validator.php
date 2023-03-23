@@ -46,5 +46,8 @@ class Validator extends Base\Validator
         Constants::STATUS                   => 'required|string|max:255',
         Constants::COUNT                    => 'sometimes|int',
         Constants::DOCUMENTS_DETAIL         => 'sometimes|array',
+        Constants::OWNER_ID                 => 'sometimes|string',
+        Constants::CLIENT_ID                => 'sometimes|string',
+        Constants::PLATFORM                 => 'sometimes|string'
     ];
 }
