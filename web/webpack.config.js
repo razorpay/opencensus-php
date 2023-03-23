@@ -269,7 +269,7 @@ module.exports = {
 
     // *** config.plugins *** //
     // update plugins needed as per dashboard
-    if (process.env.DANGER_ENV && true) {
+    if (process.env.DANGER_ENV) {
       // replace default plugin config
       config.plugins = config.plugins.filter((plugin) => {
         return plugin?.constructor?.name !== 'BundleAnalyzerPlugin';
@@ -285,6 +285,14 @@ module.exports = {
     }
 
     config.output.pathinfo = !isProd;
+
+    // use --warn agrs to see warn logs
+    // Eg: `npm run serve --warn`
+    if (!isProd && !process.argv.includes('--warn')) {
+      config.infrastructureLogging = {
+        level: 'error',
+      };
+    }
 
     return config;
   },
