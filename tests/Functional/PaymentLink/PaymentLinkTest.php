@@ -562,80 +562,6 @@ class PaymentLinkTest extends TestCase
         return $resp['id'];
     }
 
-    protected function createPaymentPageRecords($id = null)
-    {
-        $id = $id ?? $this->setUpPaymentPageForFileUpload();
-
-        $batch_id = 'batch_KoGILWQCoVkOz5';
-
-        $testData = $this->testData['testPaymentPageRecordForFileUpload'];
-
-        $testData['request']['url'] = '/payment_pages/'. $id . '/create_record/'. $batch_id;
-
-        $this->ba->batchAppAuth();
-
-        $this->sendRequest($testData['request']);
-
-        $entity = $this->getDbLastEntity('payment_page_record');
-
-        $entityArray = $entity->toArray();
-
-        return $entityArray['payment_link_id'];
-    }
-
-    public function testPaymentPageStatusUpdate()
-    {
-        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
-
-        $testData = $this->testData['setUpPaymentPageForFileUpload'];
-
-        $testData['request']['content']['payment_page_items'] = [
-            [
-                PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
-                    'name'        =>  'amount',
-                    Item\Entity::AMOUNT => 5000,
-                    'currency'    => 'INR',
-                ],
-                'mandatory'         => true,
-            ],
-            [
-                PaymentLinkModel\PaymentPageItem\Entity::ITEM => [
-                    'name'        =>  'testName2',
-                    Item\Entity::AMOUNT => 10000,
-                    'currency'    => 'INR',
-                ],
-                'mandatory'         => false,
-            ]
-        ];
-
-        $resp = $this->startTest($testData);
-
-        $paymentLink = (new PaymentLink\Repository())->findByPublicId($resp['id']);
-
-        $paymentPageItems = (new PaymentLink\PaymentPageItem\Repository())->fetchByPaymentLinkIdAndMerchant($paymentLink->getId(), '10000000000000');
-
-        $this->createPaymentPageRecords($paymentLink->getId());
-
-        $this->createOrderForPaymentLink($paymentPageItems);
-
-        $orderEntity = $this->getDbLastEntity("order");
-
-        $order = $orderEntity;
-
-        $this->makePaymentForPaymentLinkWithOrderAndAssert($paymentLink, $order, Payment\Status::CAPTURED,[
-            'pri__ref__id'  => '1234567890',
-            'email' => 'abc@abc.com',
-            'phone' => '1234567890',
-        ]);
-
-        $entity = $this->getDbLastEntity('payment_page_record');
-
-        $entityArray = $entity->toArray();
-
-        $this->assertEquals('paid',$entityArray['status']);
-
-    }
-
     public function testPaymentPageRecordForFileUpload()
     {
         $id = $this->setUpPaymentPageForFileUpload();
@@ -698,7 +624,6 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
 
     }
-
     public function setUpCreateRecordForFileUpload()
     {
         $id = $this->setUpPaymentPageForFileUpload();
@@ -755,6 +680,27 @@ class PaymentLinkTest extends TestCase
 
         self::assertEquals($resp['total_pending_payments'], 2);
         self::assertEquals($resp['total_pending_revenue'], 301);
+    }
+
+    protected function createPaymentPageRecords()
+    {
+        $id = $this->setUpPaymentPageForFileUpload();
+
+        $batch_id = 'batch_KoGILWQCoVkOz5';
+
+        $testData = $this->testData['testPaymentPageRecordForFileUpload'];
+
+        $testData['request']['url'] = '/payment_pages/'. $id . '/create_record/'. $batch_id;
+
+        $this->ba->batchAppAuth();
+
+        $this->sendRequest($testData['request']);
+
+        $entity = $this->getDbLastEntity('payment_page_record');
+
+        $entityArray = $entity->toArray();
+
+        return $entityArray['payment_link_id'];
     }
 
     protected function mockBatchService()

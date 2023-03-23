@@ -1453,26 +1453,6 @@ class Core extends Base\Core
                 E::PAYMENT_LINK    => $paymentLink->toArrayPublic(),
             ]);
 
-        //Update PaymentPageRecord entity
-
-        if ($this->merchant->isFeatureEnabled(Feature::FILE_UPLOAD_PP) === true)
-        {
-            $notes = $payment->toArray()['notes'];
-
-            if(array_key_exists(PaymentPageRecord\Entity::PRIMARY_REF_ID,$notes) === true)
-            {
-                $priRefId = $notes[PaymentPageRecord\Entity::PRIMARY_REF_ID];
-
-                $paymentPageRecord = $this->repo->payment_page_record->findByPaymentPageAndPrimaryRefIdOrFail($paymentLink->getId(),$priRefId);
-
-                $paymentPageRecord->setStatus(PaymentPageRecord\Status::PAID);
-
-                $this->repo->saveOrFail($paymentPageRecord);
-            }
-
-        }
-
-
         // update donation goal tracker dynamic keys if applicable
         $this->updateDonationGoalTrackerKeys($paymentLink, [
             Entity::SOLD_UNITS          => $unitsSold,
