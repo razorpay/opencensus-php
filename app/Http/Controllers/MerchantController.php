@@ -606,7 +606,7 @@ class MerchantController extends Controller
     public function getProductInternationalStatus()
     {
         $input = Request::all();
-        
+
         $response = $this->service(E::MERCHANT)->getProductInternationalStatus($input);
 
         return ApiResponse::json($response);
@@ -1374,13 +1374,17 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function postMerchantResponseToClarifications()
+    public function postMerchantResponseToClarifications($id="")
     {
         $input = Request::all();
 
         $this->trace->info(TraceCode::CLARIFICATION_DETAILS_EDIT_REQUEST, $input);
 
-        $response = $this->service(E::CLARIFICATION_DETAIL)->saveMerchantResponseToClarifications($input);
+        if (strlen($id) === 0){
+            $id = $this->ba->getMerchantId();
+        }
+
+        $response = $this->service(E::CLARIFICATION_DETAIL)->saveMerchantResponseToClarifications($input, $id);
 
         return ApiResponse::json($response);
     }

@@ -135,10 +135,8 @@ class Service extends Base\Service
         return $this->core->getClarificationDetail($merchantId);
     }
 
-    public function saveMerchantResponseToClarifications(array $input)
+    public function saveMerchantResponseToClarifications(array $input, string $merchantId)
     {
-        $merchantId = $this->ba->getMerchantId();
-
         $this->validator->validateClarificationDetails($merchantId, $input);
 
         //NC Partial Submission
@@ -184,6 +182,9 @@ class Service extends Base\Service
                             "clarification_reasons" => $clarificationReasons
                         ]
                     ];
+
+                    $merchant = $this->repo->merchant->findByPublicId($merchantId);
+                    $this->app['basicauth']->setMerchant($merchant);
 
                     (new Detail\Service())->saveMerchantDetailsForActivation($activationInput);
                 }

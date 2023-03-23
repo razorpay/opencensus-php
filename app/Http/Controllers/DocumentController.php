@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\Document;
 use RZP\Constants\Entity as Entity;
 
@@ -17,7 +18,18 @@ class DocumentController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service(Entity::MERCHANT_DOCUMENT)->uploadActivationFileMerchant($input);
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->uploadActivationFileMerchant($input, $id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function uploadMerchantDocumentsInternal($id)
+    {
+        $input = Request::all();
+
+        $merchant = (new Core())->get($id);
+
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->uploadActivationFileForMerchant($input, $merchant);
 
         return ApiResponse::json($response);
     }

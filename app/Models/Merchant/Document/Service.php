@@ -23,6 +23,7 @@ use RZP\Trace\Tracer;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Jobs\MerchantFirsDocumentsZip;
+use function Doctrine\Common\Cache\Psr6\get;
 
 class Service extends Base\Service
 {
@@ -62,19 +63,27 @@ class Service extends Base\Service
      *
      * @param array $input
      *
+     * @param string $merchantId
      * @return array
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
      */
     public function uploadActivationFileMerchant(array $input)
     {
         $merchant = $this->merchant;
 
+        return $this->uploadActivationFileForMerchant($input, $merchant);
+    }
+
+    public function uploadActivationFileForMerchant(array $input, $merchant)
+    {
         return $this->mutex->acquireAndRelease(
 
             $merchant->getId(),
 
             function() use ($merchant, $input) {
-
-                return $this->core->uploadActivationFile($this->merchant, $input);
+                return $this->core->uploadActivationFile($merchant, $input);
             },
 
             Merchant\Constants::MERCHANT_MUTEX_LOCK_TIMEOUT,

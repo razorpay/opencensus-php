@@ -144,7 +144,7 @@ class UfhService
             $this->merchantId = $merchantId ?? $this->repo->merchant->getSharedAccount()->getId();
         }
 
-        if((($this->ba->isCron() === true) or ($this->ba->isReminderServiceAuth() === true)) &&
+        if((($this->ba->isCron() === true) or ($this->ba->isReminderServiceAuth() === true) or ($this->ba->isCareApp() === true)) &&
             ($this->merchantId == null) &&
             ($merchantId == null))
         {

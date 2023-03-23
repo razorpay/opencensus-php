@@ -25,6 +25,9 @@ class Route
         'merchant_activation_clarifications_fetch_admin'    => ['get',      'merchant/activation/{id}/clarifications',              'MerchantController@getMerchantClarificationDetails'                ],
         'merchant_activation_clarifications_save'           => ['post',     'merchant/activation/clarifications',                   'MerchantController@postMerchantResponseToClarifications'           ],
         'merchant_activation_clarifications_fetch'          => ['get',      'merchant/activation/clarifications',                   'MerchantController@getMerchantClarificationDetails'                ],
+        'merchant_activation_clarifications_fetch_internal' => ['get',      'merchant/internal/activation/{id}/clarifications',     'MerchantController@getMerchantClarificationDetails'                ],
+        'merchant_activation_clarifications_save_internal'  => ['post',     'merchant/internal/activation/{id}/clarifications',     'MerchantController@postMerchantResponseToClarifications'           ],
+        'merchant_nc_revamp_eligibility_internal'           => ['get',      'merchant/internal/activation/{id}/clarifications/eligibility', 'MerchantController@getMerchantNcRevampEligibility'         ],
 
         // internal
         'internal_create'    => ['post', 'internal', 'InternalController@create'],
@@ -3399,6 +3402,7 @@ class Route
         //merchant document related routes
         'merchant_document_delete'                => ['delete',   'merchant/documents/{id}',                                   'DocumentController@delete'                                 ],
         'merchant_document_upload'                => ['post',     'merchant/documents/upload',                                 'DocumentController@uploadMerchantDocuments'                ],
+        'merchant_document_upload_internal'       => ['post',     'merchant/internal/documents/{id}/upload',                   'DocumentController@uploadMerchantDocumentsInternal'        ],
         'merchant_document_fetch'                 => ['get',      'merchant/documents',                                        'DocumentController@getMerchantDocuments'                   ],
         'merchant_document_admin_fetch'           => ['get',      'merchant/documents/{mid}',                                  'DocumentController@getMerchantDocumentsByAdmin'            ],
         'merchant_document_types_fetch'           => ['get',      'merchant_document/types',                                   'DocumentController@getDocumentTypes'                       ],
@@ -4853,6 +4857,10 @@ class Route
     // Put it in the Admin Array instead
     public static $internal = [
         'merchant_entities_info',
+        'merchant_document_upload_internal',
+        'merchant_activation_clarifications_save_internal',
+        'merchant_activation_clarifications_fetch_internal',
+        'merchant_nc_revamp_eligibility_internal',
         'dcc_invoice_generation_cron',
         'internal_merchant_details_fetch',
         'internal_merchant_partnership',
@@ -15058,6 +15066,10 @@ class Route
             'setl_fetch_multiple',
             'refund_fetch_multiple',
             'merchant_fetch_keys',
+            'merchant_activation_clarifications_fetch_internal',
+            'merchant_activation_clarifications_save_internal',
+            'merchant_nc_revamp_eligibility_internal',
+            'merchant_document_upload_internal',
         ],
 
         'cmma' => [
