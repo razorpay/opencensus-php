@@ -37,6 +37,7 @@ class Repository extends Base\Repository
                     ->where(Entity::RETRY_COUNT, '<', Constants::STORE_CONSENTS_MAX_ATTEMPT)
                     ->whereIn(Entity::CONSENT_FOR, $validLegalDocs)
                     ->where(Entity::CREATED_AT, '>', $intervalTime)
+                    ->take(1000)
                     ->distinct()
                     ->get()
                     ->pluck(Entity::MERCHANT_ID)
