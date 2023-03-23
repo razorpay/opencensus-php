@@ -13,6 +13,9 @@ class Constants
     const MERCHANT_MAX_AOV          = 'merchant_max_aov';
     const MERCHANT_HAS_AOV          = 'merchant_has_aov';
 
+    const MERCHANT_LAST_UPDATED_WORKFLOW = 'merchant_last_updated_workflow_days';
+
+
     const MERCHANT_PAYMENTS_DISPUTED_GMV          = 'merchant_payments_disputed_gmv';
     const MERCHANT_PAYMENTS_DISPUTED_COUNT        = 'merchant_payments_disputed_count';
     const MERCHANT_PAYMENTS_HIGHER_DISPUTED_COUNT = 'merchant_payments_higher_disputed_count';

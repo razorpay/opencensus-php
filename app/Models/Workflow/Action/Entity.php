@@ -290,6 +290,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::MAKER_TYPE);
     }
 
+    public function getUpdatedAt()
+    {
+        return $this->getAttribute(self::UPDATED_AT);
+    }
+
     public function isOpen()
     {
         $state = $this->getState();
