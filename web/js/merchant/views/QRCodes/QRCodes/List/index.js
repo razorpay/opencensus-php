@@ -2,7 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 import RTracking from 'react-tracking';
 import { withRouter, NavLink } from 'react-router-dom';
-import HeaderAction from 'common/ui/HeaderAction';
+import ProductWrapper from 'common/ui/ProductWrapper';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import DataTable from 'common/ui/Table/DataTable';
 import Pager from 'common/ui/Pager';
 import Alert from 'common/ui/Forms/Alert';
@@ -23,6 +24,11 @@ import EmptyList from 'merchant/components/EmptyList';
 
 import ListFilter from './Filter';
 import track from './track';
+
+const tabsData = [
+  { title: 'QR Codes', url: '/qr_codes' },
+  { title: 'Payments', url: '/qr_codes/payments' },
+];
 
 const QR_CODE_CREATE_HOTJAR = {
   trigger: 'QR_Creation',
@@ -68,6 +74,7 @@ export const status = {
     ...state.qr_codes,
     ...state.session,
     isMobileResolution: state.app.isMobileResolution,
+    isTestMode: state.session.mode === 'test',
   }),
   {
     fetchAll,
@@ -97,10 +104,12 @@ export default class QRCodesListContainer extends ListContainer {
   };
 
   render() {
+    const { isTestMode } = this.props;
     return (
-      <div class="QRCode--List content-wrapper">
-        <HeaderAction responsive>
-          <div class="btn-toolbar pull-right">
+      <ProductWrapper
+        tabsData={tabsData}
+        extra={
+          <>
             <TakeATourButton
               feature={RZPFeatures.QR_CODES}
               onSuccess={() => track.tourStatus(true)}
@@ -109,54 +118,62 @@ export default class QRCodesListContainer extends ListContainer {
 
             <DocsLink url="https://razorpay.com/docs/qr-codes/" onClick={track.docs} />
             <ShowWhen additionalCondition={(user) => user.isAllowedEdit('qr_codes')}>
-              <span className="cta-container">
-                <NavLink class="btn btn-primary" to="/qr_codes/new" onClick={this.onCreateQRCode}>
-                  <i class="i i-plus" />
-                  Create QR Codes
-                </NavLink>
+              <span className="tabbed-header-actions">
+                <span className="cta-container">
+                  <NavLink class="btn btn-primary" to="/qr_codes/new" onClick={this.onCreateQRCode}>
+                    <i class="i i-plus" />
+                    Create QR Codes
+                  </NavLink>
+                </span>
               </span>
             </ShowWhen>
+          </>
+        }
+      >
+        <content>
+          <div class="QRCode--List content-wrapper">
+            {isTestMode && <TestModeBanner />}
+
+            <ListFilter
+              form="QRCodesListFilter"
+              type="link"
+              count={this.state.count}
+              onSubmit={this.search}
+              onSearchAnalytics={this.onSearchAnalytics}
+              onClearAnalytics={this.onClearAnalytics}
+            />
+
+            <Alert
+              type={this.state.status.type}
+              message={this.state.status.message}
+              onCloseClick={this.onAlertCloseClick}
+            />
+
+            <DataTable
+              {...this.props}
+              title="QR Codes"
+              EmptyComponent={EmptyComponent}
+              mobileColumns={[qrCodeId, status]}
+              customMobileRow={QRCodeMobileListItem}
+              isMobileResolution={this.props.isMobileResolution}
+              columns={[qrCodeId, description, qrUsage, amountReceived, createdAt, status]}
+            />
+
+            <Pager
+              count={this.state.count}
+              skip={this.state.skip}
+              length={this.props.items.length}
+              onClick={(params, type) => {
+                track.browse(type, {
+                  page: params.skip / params.count,
+                });
+
+                this.paginate(params);
+              }}
+            />
           </div>
-        </HeaderAction>
-
-        <ListFilter
-          form="QRCodesListFilter"
-          type="link"
-          count={this.state.count}
-          onSubmit={this.search}
-          onSearchAnalytics={this.onSearchAnalytics}
-          onClearAnalytics={this.onClearAnalytics}
-        />
-
-        <Alert
-          type={this.state.status.type}
-          message={this.state.status.message}
-          onCloseClick={this.onAlertCloseClick}
-        />
-
-        <DataTable
-          {...this.props}
-          title="QR Codes"
-          EmptyComponent={EmptyComponent}
-          mobileColumns={[qrCodeId, status]}
-          customMobileRow={QRCodeMobileListItem}
-          isMobileResolution={this.props.isMobileResolution}
-          columns={[qrCodeId, description, qrUsage, amountReceived, createdAt, status]}
-        />
-
-        <Pager
-          count={this.state.count}
-          skip={this.state.skip}
-          length={this.props.items.length}
-          onClick={(params, type) => {
-            track.browse(type, {
-              page: params.skip / params.count,
-            });
-
-            this.paginate(params);
-          }}
-        />
-      </div>
+        </content>
+      </ProductWrapper>
     );
   }
 }

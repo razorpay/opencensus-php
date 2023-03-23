@@ -1,9 +1,8 @@
+/* eslint-disable babel/new-cap */
+import React from 'react';
 import { RZPFeatures, PossibleStatuses } from 'merchant/helpers/data';
 
-import quickGuide, {
-  setQuickGuideIsClosedInLocalStorage,
-  getQuickGuideIsClosedFromLocalStorage,
-} from 'merchant/components/QuickGuide';
+import quickGuide, { getQuickGuideIsClosedFromLocalStorage } from 'merchant/components/QuickGuide';
 import QuickStepGuide, {
   QuickGuideStep,
   QuickGuideTitle,
@@ -12,7 +11,9 @@ import QuickStepGuide, {
 
 import { getQuickGuideData } from './data';
 
-const { done, locked, active, loading } = PossibleStatuses;
+const { done, locked, active } = PossibleStatuses;
+
+const Title = <QuickGuideTitle />;
 
 @quickGuide({
   feature: RZPFeatures.QR_CODES,
@@ -24,6 +25,8 @@ export default class QRCodesQuickGuide extends React.Component {
 
     const closeBtn = getCloseBtn(paymentReceiveStatus === done, this.props.onClickClose);
 
+    const { className = '' } = this.props;
+
     let activeStep = 0;
 
     if (paymentReceiveStatus === done) {
@@ -31,10 +34,15 @@ export default class QRCodesQuickGuide extends React.Component {
     }
 
     return (
-      <QuickStepGuide activeStep={activeStep} class="QRCode" title={Title} closeBtn={closeBtn}>
+      <QuickStepGuide
+        activeStep={activeStep}
+        class={`QRCode ${className}`}
+        title={Title}
+        closeBtn={closeBtn}
+      >
         <QuickGuideStep
           status={qrCodeStatus}
-          step="QRCode"
+          step={`QRCode`}
           feature={RZPFeatures.QR_CODES}
           {...getQuickGuideData.QRCodes(qrCodeStatus)}
         />
@@ -50,17 +58,15 @@ export default class QRCodesQuickGuide extends React.Component {
   }
 }
 
-const Title = <QuickGuideTitle />;
-
 function getCloseBtn(isCompleted, onClickClose) {
   return <QuickGuideCloseBtn isCompleted={isCompleted} onClick={onClickClose} />;
 }
 
-export const getQRCodeQuickGuideIsClosed = (props) => {
+export const getQRCodeQuickGuideIsClosed = () => {
   return getQuickGuideIsClosedFromLocalStorage(RZPFeatures.QR_CODES);
 };
 
-const getStatus = ({ items, loading }) => {
+function getStatus({ items, loading }) {
   let qrCodeStatus = loading;
   let paymentReceiveStatus = loading;
 
@@ -75,6 +81,7 @@ const getStatus = ({ items, loading }) => {
     qrCodeStatus = done;
     paymentReceiveStatus = active;
 
+    // eslint-disable-next-line consistent-return
     items.forEach((account) => {
       if (account.amount_paid > 0) {
         paymentReceiveStatus = done;
@@ -91,4 +98,4 @@ const getStatus = ({ items, loading }) => {
     qrCodeStatus,
     paymentReceiveStatus,
   };
-};
+}

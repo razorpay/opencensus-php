@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 
 import { RZPFeatures } from 'merchant/helpers/data';
 
@@ -8,8 +8,6 @@ import {
   handleProductQuickGuide,
   getCurrentProductOnBoardingDetails,
 } from 'merchant/reducers/onboarding';
-
-import TestModeBanner from 'merchant/components/TestModeBanner';
 
 import OnBoarding from './OnBoarding';
 import QuickGuide from './QuickGuide';
@@ -23,6 +21,7 @@ import ErrorBoundary from 'common/new-ui/ErrorBoundary';
 import BatchExpiryUpdate from './BatchExpiryUpdate/List';
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { fetchFeatureStatus } from 'merchant/reducers/config';
+import { updateVirtualAccountBulkEditStatus } from 'merchant/reducers/virtualaccounts';
 
 @connect(
   (state) => {
@@ -35,26 +34,21 @@ import { fetchFeatureStatus } from 'merchant/reducers/config';
     handleProductQuickGuide,
     showNotification,
     fetchFeatureStatus,
+    updateVirtualAccountBulkEditStatus,
   },
 )
 export default class SmartCollectContainer extends React.Component {
-  state = {
-    isVaEditBulkMid: false,
-  };
-
   componentDidMount() {
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Smart Collect',
       eventAction: 'Go To - Smart Collect',
     });
-    // check va_edit_bulk MID feature
+    // check va_edit_bulk MID feature - common API for all sub routes. This updates a flag in the reducer
     this.props
       .fetchFeatureStatus(this.props.user.id, 'va_edit_bulk')
       .then((fetchFeatureStatusResp) => {
         if (fetchFeatureStatusResp.data.status) {
-          this.setState({
-            isVaEditBulkMid: true,
-          });
+          this.props.updateVirtualAccountBulkEditStatus(true);
         }
       })
       .catch((err) => {
@@ -83,12 +77,10 @@ export default class SmartCollectContainer extends React.Component {
       return <OnBoarding />;
     }
 
-    const className = this.props.location.pathname.includes('virtualaccounts') && 'active';
-
     return (
       <div class="SmartCollect-Container">
-        <ShowWhen additionalCondition={(usr) => usr.isVAAccountOnSCMigration}>
-          <div className="banner-container">
+        <div className="banner-container">
+          <ShowWhen additionalCondition={(usr) => usr.isVAAccountOnSCMigration}>
             <AnnouncementBanner
               class="rewards-anc"
               theme="danger"
@@ -100,37 +92,21 @@ export default class SmartCollectContainer extends React.Component {
                 the new customer identifier details with your customers
               </span>{' '}
             </AnnouncementBanner>
-          </div>
-        </ShowWhen>
+          </ShowWhen>
+        </div>
 
-        <tabbed-container>
-          {isQuickGuideOpen && <QuickGuide />}
+        {isQuickGuideOpen && <QuickGuide className="QuickGuide-v2" />}
 
-          <header id="smart-collect-header">
-            <NavLink to="/smartcollect/virtualaccounts" class={className}>
-              Customer Identifiers
-            </NavLink>
-            <NavLink to="/smartcollect/payments">Payments</NavLink>
-            {this.state.isVaEditBulkMid && (
-              <NavLink to="/smartcollect/batchuploads">Batch Expiry Update</NavLink>
-            )}
-          </header>
-
-          <TestModeBanner />
-
-          <content>
-            <ErrorBoundary resetOnProps>
-              <Switch>
-                <Route
-                  path={['/smartcollect/virtualaccounts', '/virtualaccounts']}
-                  component={VirtualAccountsList}
-                />
-                <Route path="/smartcollect/payments" component={PaymentsList} />
-                <Route path="/smartcollect/batchuploads" component={BatchExpiryUpdate} />
-              </Switch>
-            </ErrorBoundary>
-          </content>
-        </tabbed-container>
+        <ErrorBoundary resetOnProps>
+          <Switch>
+            <Route
+              path={['/smartcollect/virtualaccounts', '/virtualaccounts']}
+              component={VirtualAccountsList}
+            />
+            <Route path="/smartcollect/payments" component={PaymentsList} />
+            <Route path="/smartcollect/batchuploads" component={BatchExpiryUpdate} />
+          </Switch>
+        </ErrorBoundary>
       </div>
     );
   }

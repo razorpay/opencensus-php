@@ -9,7 +9,12 @@ const ProductWrapper = ({ children, extra, isMobile, tabsData }) => {
           {tabsData.map(
             (tab) =>
               !tab.hidden && (
-                <NavLink exact to={tab.url} key={tab.title}>
+                <NavLink
+                  exact
+                  to={tab.url}
+                  key={tab.title}
+                  isActive={typeof tab.isActive === 'function' ? tab.isActive : undefined}
+                >
                   {tab.title}
                 </NavLink>
               ),

@@ -6,8 +6,8 @@ import Amount from 'common/ui/Amount';
 import Alert from 'common/ui/Forms/Alert';
 import { NavLink } from 'react-router-dom';
 import { paymentId, amount, email, contact, createdAt, status } from 'common/ui/item/pair';
-import HeaderAction from 'common/ui/HeaderAction';
-import DashboardBanner from 'common/ui/DashboardBanner';
+import ProductWrapper from 'common/ui/ProductWrapper';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import DocsLink from 'merchant/components/DocsLink';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import ListContainer from 'merchant/containers/ListContainer';
@@ -21,6 +21,11 @@ import track from './track';
 import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
 import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
 import { SelfServeActionPages } from 'common/constant/enums';
+
+const tabsData = [
+  { title: 'QR Codes', url: '/qr_codes' },
+  { title: 'Payments', url: '/qr_codes/payments' },
+];
 
 const paymentListRowItem = (item) => (
   <EntityItemRow id={item.id}>
@@ -56,6 +61,7 @@ const paymentListRowItem = (item) => (
 @connect(
   (state) => ({
     ...state.qrCodePayments,
+    isTestMode: state.session.mode === 'test',
     isMobileResolution: state.app.isMobileResolution,
   }),
   {
@@ -94,50 +100,53 @@ export default class QRPaymentsListContainer extends ListContainer {
   onClearAnalytics = () => track.clear();
 
   render() {
+    const { isTestMode } = this.props;
     return (
-      <>
-        <div className="banner-container">
-          <DashboardBanner />
-        </div>
-        <div class="content-wrapper">
-          <HeaderAction responsive>
-            <div class="btn-toolbar pull-right">
-              <TakeATourButton
-                feature={RZPFeatures.QR_CODES}
-                onSuccess={() => track.tourStatus(true)}
-                onAbort={() => track.tourStatus(false)}
-              />
+      <ProductWrapper
+        tabsData={tabsData}
+        extra={
+          <>
+            <TakeATourButton
+              feature={RZPFeatures.QR_CODES}
+              onSuccess={() => track.tourStatus(true)}
+              onAbort={() => track.tourStatus(false)}
+            />
 
-              <DocsLink url="https://razorpay.com/docs/qr-codes/" onClick={track.docs} />
-            </div>
-          </HeaderAction>
+            <DocsLink url="https://razorpay.com/docs/qr-codes/" onClick={track.docs} />
+          </>
+        }
+      >
+        <content>
+          <div class="content-wrapper">
+            {isTestMode && <TestModeBanner />}
 
-          <PaymentsListFilter
-            form="qrPaymentListFilter"
-            count={this.state.count}
-            onSubmit={this.search}
-            onSearchAnalytics={this.onSearchAnalytics}
-            onClearAnalytics={this.onClearAnalytics}
-          />
+            <PaymentsListFilter
+              form="qrPaymentListFilter"
+              count={this.state.count}
+              onSubmit={this.search}
+              onSearchAnalytics={this.onSearchAnalytics}
+              onClearAnalytics={this.onClearAnalytics}
+            />
 
-          <Alert
-            type={this.state.status.type}
-            message={this.state.status.message}
-            onCloseClick={this.onAlertCloseClick}
-          />
+            <Alert
+              type={this.state.status.type}
+              message={this.state.status.message}
+              onCloseClick={this.onAlertCloseClick}
+            />
 
-          <PaymentsTable
-            {...this.props}
-            count={this.state.count}
-            skip={this.state.skip}
-            paginate={this.paginate}
-            customMobileRow={paymentListRowItem}
-            isMobileResolution={this.props.isMobileResolution}
-            mobileColumns={[this.paymentIdCol, amount, status]}
-            paymentColumns={[this.paymentIdCol, amount, email, contact, createdAt, status]}
-          />
-        </div>
-      </>
+            <PaymentsTable
+              {...this.props}
+              count={this.state.count}
+              skip={this.state.skip}
+              paginate={this.paginate}
+              customMobileRow={paymentListRowItem}
+              isMobileResolution={this.props.isMobileResolution}
+              mobileColumns={[this.paymentIdCol, amount, status]}
+              paymentColumns={[this.paymentIdCol, amount, email, contact, createdAt, status]}
+            />
+          </div>
+        </content>
+      </ProductWrapper>
     );
   }
 }

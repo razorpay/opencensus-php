@@ -1,3 +1,5 @@
+/* eslint-disable babel/new-cap */
+import React from 'react';
 import { RZPFeatures, PossibleStatuses } from 'merchant/helpers/data';
 
 import QuickGuide, {
@@ -13,25 +15,21 @@ import QuickStepGuide, {
 import { getQuickGuideData } from './data';
 
 const { done, locked, active, loading } = PossibleStatuses;
+const Title = <QuickGuideTitle />;
 
 @QuickGuide({
   feature: RZPFeatures.VA,
   data_points: ['virtualaccounts'],
 })
 export default class InvoicesQuickGuide extends React.Component {
-  getCloseBtn = isCompleted => {
-    return (
-      <QuickGuideCloseBtn
-        isCompleted={isCompleted}
-        onClick={this.props.onClickClose}
-      />
-    );
+  getCloseBtn = (isCompleted) => {
+    return <QuickGuideCloseBtn isCompleted={isCompleted} onClick={this.props.onClickClose} />;
   };
 
   render() {
-    const { virtualAccountsStatus, paymentReceiveStatus } = getStatus(
-      this.props
-    );
+    const { virtualAccountsStatus, paymentReceiveStatus } = getStatus(this.props);
+
+    const { className = '' } = this.props;
 
     const CloseBtn = this.getCloseBtn(paymentReceiveStatus === done);
 
@@ -44,7 +42,7 @@ export default class InvoicesQuickGuide extends React.Component {
     return (
       <QuickStepGuide
         activeStep={activeStep}
-        class="SmartCollect"
+        class={`SmartCollect ${className}`}
         title={Title}
         closeBtn={CloseBtn}
       >
@@ -66,10 +64,8 @@ export default class InvoicesQuickGuide extends React.Component {
   }
 }
 
-const Title = <QuickGuideTitle />;
-
-export const getVAQuickGuideIsClosed = props => {
-  let isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.VA);
+export const getVAQuickGuideIsClosed = (props) => {
+  const isClosed = getQuickGuideIsClosedFromLocalStorage(RZPFeatures.VA);
 
   // Check if transfers non created state count is more then or equal to 2
   if (isClosed || props.items.length <= 2) {
@@ -83,9 +79,9 @@ export const getVAQuickGuideIsClosed = props => {
   return true;
 };
 
-const getStatus = ({ virtualaccounts }) => {
-  let virtualAccountsStatus = loading,
-    paymentReceiveStatus = loading;
+function getStatus({ virtualaccounts }) {
+  let virtualAccountsStatus = loading;
+  let paymentReceiveStatus = loading;
 
   if (virtualaccounts.loading) {
     return {
@@ -98,7 +94,8 @@ const getStatus = ({ virtualaccounts }) => {
     virtualAccountsStatus = done;
     paymentReceiveStatus = active;
 
-    virtualaccounts.items.forEach(account => {
+    // eslint-disable-next-line consistent-return
+    virtualaccounts.items.forEach((account) => {
       if (account.amount_paid > 0) {
         paymentReceiveStatus = done;
 
@@ -114,4 +111,4 @@ const getStatus = ({ virtualaccounts }) => {
     virtualAccountsStatus,
     paymentReceiveStatus,
   };
-};
+}

@@ -1,3 +1,4 @@
+// stylelint-disable no-descending-specificity
 // stylelint-disable stylus/selector-type-no-unknown
 
 tabbed-container,
@@ -16,7 +17,8 @@ tabbed-container,
     background-color: #FFF;
     padding: 0 12px 0 24px;
 
-    a:not(.dropdown a) {
+    & > a:not(.dropdown a),
+    .header-left a:not(.dropdown a) {
       color: #555;
       border-bottom: 3px solid transparent;
       display: inline-block;

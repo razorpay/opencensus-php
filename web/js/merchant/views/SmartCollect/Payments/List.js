@@ -4,7 +4,8 @@ import { RZPFeatures } from 'merchant/helpers/data';
 import { getKeysSeparatedByPipe, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { analyticsTrack } from 'common/utils/analytics';
 import { paymentId, amount, email, contact, createdAt, status } from 'common/ui/item/pair';
-import HeaderAction from 'common/ui/HeaderAction';
+import ProductWrapper from 'common/ui/ProductWrapper';
+import TestModeBanner from 'merchant/components/TestModeBanner';
 import DocsLink from 'merchant/components/DocsLink';
 import ListContainer from 'merchant/containers/ListContainer';
 import TakeATourButton from 'merchant/components/QuickGuide/TakeATourButton';
@@ -13,10 +14,36 @@ import PaymentsListFilter from './Filter';
 import { fetchSmartCollectPayments as fetchAll } from 'merchant/reducers/collection';
 import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
 import { SelfServeActionPages } from 'common/constant/enums';
+import { checkIfVirtualAccountRoute } from 'merchant/views/SmartCollect/utils';
 
-@connect((state) => ({ ...state.scPayments, user: state.session.user }), { fetchAll })
+@connect(
+  (state) => ({
+    ...state.scPayments,
+    user: state.session.user,
+    isVaEditBulkMid: state.virtualaccount.isVaEditBulkMid,
+  }),
+  { fetchAll },
+)
 @RTracking(() => window.rzpQ.component('VAPaymentsListContainer'))
 export default class VAPaymentsListContainer extends ListContainer {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tabsData: [
+        {
+          title: 'Customer Identifiers',
+          url: '/smartcollect/virtualaccounts',
+          isActive: checkIfVirtualAccountRoute,
+        },
+        { title: 'Payments', url: '/smartcollect/payments' },
+        {
+          title: 'Batch Expiry Update',
+          url: '/smartcollect/batchuploads',
+          hidden: !props.isVaEditBulkMid,
+        },
+      ],
+    };
+  }
   componentDidMount() {
     window.rzpAnalytics?.({
       eventCategory: 'Dashboard - Smart Collect',
@@ -24,6 +51,26 @@ export default class VAPaymentsListContainer extends ListContainer {
     });
 
     this.track('loaded');
+  }
+
+  UNSAFE_componentWillReceiveProps(nextProps) {
+    if (nextProps.isVaEditBulkMid != this.props.isVaEditBulkMid) {
+      this.setState({
+        tabsData: [
+          {
+            title: 'Customer Identifiers',
+            url: '/smartcollect/virtualaccounts',
+            isActive: checkIfVirtualAccountRoute,
+          },
+          { title: 'Payments', url: '/smartcollect/payments' },
+          {
+            title: 'Batch Expiry Update',
+            url: '/smartcollect/batchuploads',
+            hidden: !nextProps.isVaEditBulkMid,
+          },
+        ],
+      });
+    }
   }
 
   track = (event, options) => {
@@ -109,10 +156,12 @@ export default class VAPaymentsListContainer extends ListContainer {
   }
 
   render() {
+    const { tabsData } = this.state;
     return (
-      <div class="content-wrapper">
-        <HeaderAction>
-          <div class="btn-toolbar pull-right">
+      <ProductWrapper
+        tabsData={tabsData}
+        extra={
+          <>
             <TakeATourButton
               feature={RZPFeatures.VA}
               onClick={() => this.track('tour')}
@@ -126,34 +175,39 @@ export default class VAPaymentsListContainer extends ListContainer {
                 this.track('docs');
               }}
             />
+          </>
+        }
+      >
+        <content>
+          <div class="content-wrapper">
+            <TestModeBanner />
+            <PaymentsListFilter
+              form="paymentListFilter"
+              count={this.state.count}
+              onSearchAnalytics={this.onSearchAnalytics}
+              onClearAnalytics={this.onClearAnalytics}
+              onSubmit={this.onSearchSubmit}
+              onEleBlur={this.onSearchEleBlur}
+            />
+
+            <PaymentsTable
+              count={this.state.count}
+              skip={this.state.skip}
+              {...this.props}
+              paginate={(params, type) => {
+                this.track(`list.${type}`, {
+                  page: params.skip % params.count,
+                });
+
+                this.paginate(params);
+              }}
+              onErrorCloseClick={this.onErrorCloseClick}
+              paymentColumns={[this.paymentIdCol, amount, email, contact, createdAt, status]}
+              selfServeActionsPage={SelfServeActionPages.SmartcollectPayments}
+            />
           </div>
-        </HeaderAction>
-
-        <PaymentsListFilter
-          form="paymentListFilter"
-          count={this.state.count}
-          onSearchAnalytics={this.onSearchAnalytics}
-          onClearAnalytics={this.onClearAnalytics}
-          onSubmit={this.onSearchSubmit}
-          onEleBlur={this.onSearchEleBlur}
-        />
-
-        <PaymentsTable
-          count={this.state.count}
-          skip={this.state.skip}
-          {...this.props}
-          paginate={(params, type) => {
-            this.track(`list.${type}`, {
-              page: params.skip % params.count,
-            });
-
-            this.paginate(params);
-          }}
-          onErrorCloseClick={this.onErrorCloseClick}
-          paymentColumns={[this.paymentIdCol, amount, email, contact, createdAt, status]}
-          selfServeActionsPage={SelfServeActionPages.SmartcollectPayments}
-        />
-      </div>
+        </content>
+      </ProductWrapper>
     );
   }
 }

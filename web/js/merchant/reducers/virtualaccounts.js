@@ -11,6 +11,7 @@ const VIRTUAL_ACCOUNT_FETCH = 'VIRTUAL_ACCOUNT_FETCH';
 const VIRTUAL_ACCOUNT_PAYMENTS_FETCH = 'VIRTUAL_ACCOUNT_PAYMENTS_FETCH';
 const VIRTUAL_ACCOUNT_CONFIG = 'VIRTUAL_ACCOUNT_CONFIG';
 const VPA_PREFIX = 'VPA_PREFIX';
+const VIRTUAL_ACCOUNT_BULK_EDIT_STATUS = 'VIRTUAL_ACCOUNT_BULK_EDIT_STATUS';
 
 export const fetchConfigForVirtualAccount = () => {
   return {
@@ -18,6 +19,12 @@ export const fetchConfigForVirtualAccount = () => {
     payload: merchantFetch({
       url: `virtual_account/configs`,
     }),
+  };
+};
+export const updateVirtualAccountBulkEditStatus = (status) => {
+  return {
+    type: VIRTUAL_ACCOUNT_BULK_EDIT_STATUS,
+    payload: status,
   };
 };
 
@@ -145,6 +152,7 @@ const detailsInitialState = {
   entity: {},
   error: null,
   va_payments: [],
+  isVaEditBulkMid: false,
 };
 export const virtualAccountReducer = makeEntityReducer(
   VIRTUAL_ACCOUNT_FETCH,
@@ -153,6 +161,9 @@ export const virtualAccountReducer = makeEntityReducer(
 
     [`${VIRTUAL_ACCOUNT_PAYMENTS_FETCH}::SUCCESS`]: (state, action) => {
       return set(state, 'va_payments', action.payload.data.items);
+    },
+    [`${VIRTUAL_ACCOUNT_BULK_EDIT_STATUS}`]: (state, action) => {
+      return set(state, 'isVaEditBulkMid', action.payload);
     },
   },
   detailsInitialState,
