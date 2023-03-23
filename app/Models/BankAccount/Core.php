@@ -1222,8 +1222,12 @@ class Core extends Base\Core
 
         $currentBankAccount = (new Service)->getOwnBankAccount();
 
+        $bankAccountId = str_starts_with($currentBankAccount[Merchant\Constants::ID], 'ba_')
+            ? $currentBankAccount[Merchant\Constants::ID]
+            : 'ba_' . $currentBankAccount[Merchant\Constants::ID];
+
         $response = $this->app['care_service']->dashboardProxyRequest(CareProxyController::ADD_BANK_ACCOUNT_UPDATE_RECORD, [
-            Merchant\Constants::BANK_ACCOUNT_ID => 'ba_'. $currentBankAccount[Merchant\Constants::ID]
+            Merchant\Constants::BANK_ACCOUNT_ID => $bankAccountId
         ]);
 
         $this->sendSelfServeSuccessAnalyticsEventToSegmentForBankAccountUpdateViaBvs($merchant);
@@ -1684,8 +1688,12 @@ class Core extends Base\Core
 
         $currentBankAccount = (new Service)->getBankAccount($merchantId);
 
+        $bankAccountId = str_starts_with($currentBankAccount[Merchant\Constants::ID], 'ba_')
+                            ? $currentBankAccount[Merchant\Constants::ID]
+                            : 'ba_' . $currentBankAccount[Merchant\Constants::ID];
+
         $response = $this->app['care_service']->adminProxyRequest(CareProxyController::ADD_BANK_ACCOUNT_UPDATE_RECORD, [
-            Merchant\Constants::BANK_ACCOUNT_ID => 'ba_' . $currentBankAccount['id'],
+            Merchant\Constants::BANK_ACCOUNT_ID => $bankAccountId,
             Merchant\Constants::MERCHANT        => [
                 'id' => $merchantId,
             ]
