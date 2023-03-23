@@ -335,4 +335,28 @@ class MerchantCoreTest extends OAuthTestCase
 
         return [$partnerId, $app, $subMerchant];
     }
+
+    public function testFetchAllMerchantEntitiesRelatedInfoWithId()
+    {
+        $this->fixtures->merchant->createAccount('100submerchant');
+
+        $result = (new Core())->fetchAllMerchantEntitiesRelatedInfo(['100submerchant'], "id");
+
+        $this->assertNotEmpty($result);
+        $this->assertArrayKeysExist($result, ['merchant_info', 'count', 'error']);
+        $this->assertArrayKeysExist($result['merchant_info'][0], ['merchant','merchant_detail','merchant_business_detail','merchant_website','merchant_verification_detail','bvs_validation','merchant_document']);
+        $this->assertEquals(1, $result['count']);
+        $this->assertEquals("", $result['error']);
+    }
+
+    public function testFetchAllMerchantEntitiesRelatedInfoWithEmail()
+    {
+        $result = (new Core())->fetchAllMerchantEntitiesRelatedInfo(['test@razorpay.com'], "email");
+
+        $this->assertNotEmpty($result);
+        $this->assertArrayKeysExist($result, ['merchant_info', 'count', 'error']);
+        $this->assertArrayKeysExist($result['merchant_info'][0], ['merchant','merchant_detail','merchant_business_detail','merchant_website','merchant_verification_detail','bvs_validation','merchant_document']);
+        $this->assertEquals(1, $result['count']);
+        $this->assertEquals("", $result['error']);
+    }
 }

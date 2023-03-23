@@ -777,6 +777,7 @@ class Route
         'merchant_business_types_admin'            => ['get',      'merchant/onboarding/business_types/admin',        'MerchantController@getBusinessTypes'                              ],
         'merchant_supported_plugins'               => ['get',      'onboarding/merchant/supported_plugins',          'MerchantController@getMerchantSupportedPlugins'                    ],
         'merchant_info'                            => ['get',      'merchant/{id}/info',                             'MerchantController@getMerchantInfo'                                ],
+        'merchant_entities_info'                   => ['get',      'merchant_entities_info',                         'MerchantController@fetchAllMerchantEntitiesRelatedInfo'            ],
         'merchant_plugin_fetch'                    => ['get',      'onboarding/merchants/{id}/plugin',               'MerchantController@getMerchantPlugin'                              ],
         'merchant_logs_search'                     => ['post',     'merchant/logs',                                  'MerchantController@createLogSearch'                                ],
         'merchant_logs_fetch'                      => ['get',      'merchant/logs',                                  'MerchantController@getMerchantLogs'                                ],
@@ -4851,6 +4852,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'merchant_entities_info',
         'dcc_invoice_generation_cron',
         'internal_merchant_details_fetch',
         'internal_merchant_partnership',
@@ -15069,6 +15071,10 @@ class Route
             'internal_fd_add_note',
             'internal_fd_fetch_agent_detail_for_ticket',
             'internal_create_risk_action'
+        ],
+
+        'pgos' => [
+            'merchant_entities_info'
         ],
 
         'banking_account_service' => [

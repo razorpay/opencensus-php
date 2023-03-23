@@ -1179,6 +1179,27 @@ return [
             ]
         ]
     ],
+    env('APP_V2_ID_PGOS')          => [
+        "name"        => "pgos",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_PGOS'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_PGOS'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.pgos"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_PGOS'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_PGOS'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.pgos"
+                ]
+            ]
+        ]
+    ],
     env('APP_V2_ID_FRIEND_BUY_WEBHOOK')          => [
         "name"        => "friend_buy_webhook",
         "credentials" => [

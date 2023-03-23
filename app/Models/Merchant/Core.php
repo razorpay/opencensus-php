@@ -163,6 +163,8 @@ class Core extends Base\Core
 
     const DEFAULT_IP_WHITELIST = '*';
 
+    const MAX_ARRAY_LIMIT_FOR_MERCHANT_ENTITIES_INFO = 10;
+
     /**
      * @var CapitalSubmerchantUtility
      */
@@ -9464,6 +9466,107 @@ class Core extends Base\Core
 
             $this->repo->saveOrFail($merchant);
         }
+    }
+
+    public function fetchAllMerchantEntitiesRelatedInfo(array $merchantList, string $type = "")
+    {
+        $this->app['rzp.mode'] = 'live';
+
+        $merchantEntitiesInfoErrorCode = [
+            'LIST_MAX_SIZE_EXCEEDED' => 'List size exceeded the max limit',
+            'INVALID_LIST_TYPE' => 'Invalid merchant list type'
+        ];
+
+        $responseArray = [
+            'merchant_info' => [],
+            'count' => 0,
+            'error' => ['code' => '', 'description' => '']
+        ];
+
+        $merchantIds = [];
+
+        if (count($merchantList) > self::MAX_ARRAY_LIMIT_FOR_MERCHANT_ENTITIES_INFO)
+        {
+            $errorCode = 'LIST_MAX_SIZE_EXCEEDED';
+            $responseArray['error'] = ['code' => $errorCode, 'description' => $merchantEntitiesInfoErrorCode[$errorCode]];
+
+            return $responseArray;
+        }
+
+        switch ($type)
+        {
+            case "email":
+                foreach ($merchantList as $email)
+                {
+                    $merchant      = $this->repo->merchant->fetchByEmailAndOrgId($email);
+
+                    $merchantIds[] = optional(optional($merchant)->first())->getId();
+                }
+                break;
+
+            case "id":
+                $merchantIds = $merchantList;
+                break;
+
+            default:
+                $errorCode = 'INVALID_LIST_TYPE';
+                $responseArray['error'] = ['code' => $errorCode, 'description' => $merchantEntitiesInfoErrorCode[$errorCode]];
+
+                return $responseArray;
+        }
+
+        $count = 0;
+
+        foreach($merchantIds as $merchantId)
+        {
+            try {
+                $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+                $merchantWebsite = $this->repo->merchant_website->getAllWebsiteDetailsForMerchantId($merchantId);
+
+                $merchantVerificationDetail = $this->repo->merchant_verification_detail->getDetailsForMerchant($merchantId);
+
+                $bvsValidation = $this->repo->bvs_validation->getAllValidationsForMerchant($merchantId);
+
+                $documents = $this->repo->merchant_document->findAllDocumentsForMerchant($merchantId);
+
+                $merchantInfo = [
+                    'merchant'                      => $merchant->getAttributes(),
+                    'merchant_detail'               => optional($merchant->merchantDetail)->getAttributes(),
+                    'merchant_business_detail'      => optional($merchant->merchantBusinessDetail)->getAttributes(),
+                    'merchant_website'              => optional($merchantWebsite->toArray())[0],
+                    'merchant_verification_detail'  => $merchantVerificationDetail->toArray(),
+                    'bvs_validation'                => $bvsValidation->toArray(),
+                    'merchant_document'             => $documents->toArray()
+                ];
+
+                $merchantInfo['merchant_business_detail']['website_details'] = (count(optional($merchant->merchantBusinessDetail)->getWebsiteDetails())>0 ?
+                    optional($merchant->merchantBusinessDetail)->getWebsiteDetails() : null);
+
+                $merchantInfo['merchant_business_detail']['app_urls'] = optional($merchant->merchantBusinessDetail)->getAppUrls();
+
+                $count += 1;
+
+                $responseArray['merchant_info'][] = $merchantInfo;
+
+            } catch (Throwable $e) {
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::ERROR_IN_FETCHING_MERCHANT_ENTITIES_INFO,
+                    [
+                        Base\PublicEntity::MERCHANT_ID => $merchantId,
+                    ]
+                );
+
+                continue;
+            }
+        }
+
+        $responseArray['count'] = $count;
+
+        return $responseArray;
     }
 
     public function getMerchantAuthorizationForPartner(string $merchantId, string $partnerId) : array

@@ -327,6 +327,11 @@ class Service extends Base\Service
         return $this->repo->merchant->findOrFailPublic($mid);
     }
 
+    public function fetchAllMerchantEntitiesRelatedInfo(array $merchantList, string $type = "")
+    {
+        return $this->core()->fetchAllMerchantEntitiesRelatedInfo($merchantList, $type);
+    }
+
     public function syncStakeholderFromMerchant($input)
     {
         $data = $this->core()->syncStakeholderFromMerchant($input);

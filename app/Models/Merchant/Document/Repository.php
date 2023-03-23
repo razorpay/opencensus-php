@@ -243,4 +243,13 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function findAllDocumentsForMerchant(string $merchantId)
+    {
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->where(Entity::SOURCE, 'UFH')
+                    ->where(Entity::ENTITY_TYPE, 'merchant')
+                    ->get();
+    }
+
 }

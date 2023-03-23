@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant\BvsValidation;
 
 use RZP\Models\Base;
 use RZP\Constants\Table;
+use RZP\Base\ConnectionType;
 use RZP\Models\Base\PublicEntity;
 
 class Repository extends Base\Repository
@@ -197,5 +198,15 @@ class Repository extends Base\Repository
                     ->Where(Entity::PLATFORM, "=", "pg")
                     ->Where(Entity::OWNER_TYPE, "=", "merchant")
                     ->first();
+    }
+
+    public function getAllValidationsForMerchant(string $merchantId)
+    {
+
+        return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
+                    ->Where(Entity::OWNER_ID, $merchantId)
+                    ->Where(Entity::PLATFORM, "=", "pg")
+                    ->Where(Entity::OWNER_TYPE, "=", "merchant")
+                    ->get();
     }
 }

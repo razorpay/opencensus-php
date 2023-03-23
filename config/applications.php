@@ -498,7 +498,6 @@ return [
 
     'pgos' => [
         'secret'       => env('PGOS_SERVICE_API_SECRET'),
-        'password'     => env('PGOS_SERVICE_PASSWORD'),
     ],
 
 
