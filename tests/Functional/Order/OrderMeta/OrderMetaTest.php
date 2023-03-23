@@ -622,4 +622,44 @@ class OrderMetaTest extends TestCase
         $this->startTest();
 
     }
+
+    public function testUpdateCustomerDetailsForPlaced1CCOrder()
+    {
+        $this->setUp1CCMerchant();
+        $orderId = $this->create1CCOrder();
+        $this->fixtures->order->edit($orderId, ['status' => 'placed']);
+        $this->ba->publicAuth();
+        $url = "/orders/1cc/$orderId/customer/";
+
+        $cacheKey = "SHIPPING_INFO_10000000000000_"
+                    . $orderId
+                    . "_1000_110085_Delhi_in";
+
+        $this->app['cache']->put($cacheKey, [
+            "serviceable"  => true,
+            "cod"          => true,
+            "cod_fee"      => 50,
+            "shipping_fee" => 60,
+        ], 2400);
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $url;
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testReset1CCOrderWithPlacedOrder()
+    {
+        $this->setUp1CCMerchant();
+        $orderId = $this->create1CCOrder();
+        $this->fixtures->order->edit($orderId, ['status' => 'placed']);
+
+        $url = "/orders/1cc/$orderId/reset/";
+
+        $this->ba->publicAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+        $testData['request']['url'] = $url;
+
+        $this->runRequestResponseFlow($testData);
+    }
 }

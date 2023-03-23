@@ -239,6 +239,11 @@ class Core extends Base\Core
             throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
         }
 
+        if($order->getStatus() === 'placed')
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID);
+        }
+
         if($order->hasOrderMeta() === false)
         {
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_1CC_ORDER);
