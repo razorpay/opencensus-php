@@ -47,6 +47,19 @@ class WorkflowEntityMap extends Base
     {
         $payoutServiceWorkflowEntityMap = $this->repo->workflow_entity_map->getPayoutServiceWorkflowEntityMap($payoutId);
 
+        return $this->modifyEntityMapEntity($payoutServiceWorkflowEntityMap);
+    }
+
+    public function getAPIWorkflowEntityMapFromPayoutServiceByWorkflowId(string $workflowId)
+    {
+        $payoutServiceWorkflowEntityMap = $this->repo->workflow_entity_map->
+        getPayoutServiceWorkflowEntityMapByWorkflowId($workflowId);
+
+        return $this->modifyEntityMapEntity($payoutServiceWorkflowEntityMap);
+    }
+
+    protected function modifyEntityMapEntity($payoutServiceWorkflowEntityMap)
+    {
         if (count($payoutServiceWorkflowEntityMap) === 0)
         {
             return null;

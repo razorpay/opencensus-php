@@ -5785,6 +5785,48 @@ class PayoutServiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testWorkflowStateCallbackWithoutEntityMapFromPayoutService()
+    {
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $workflowEntityMapData = [
+            'id'          => 'randomid111126',
+            'workflow_id' => 'randomid111127',
+            'entity_id'   => 'randomid111111',
+            'config_id'   => 'randomid111128',
+            'entity_type' => 'payout',
+            'merchant_id' => "10000000000000",
+            'org_id'      => 'randomid111129',
+            'created_at'  => 1000000003,
+            'updated_at'  => 1000000001
+        ];
+
+        \DB::connection('test')->table('ps_workflow_entity_map')->insert($workflowEntityMapData);
+
+        $this->ba->payoutInternalAppAuth('live');
+
+        $this->startTest();
+
+        $wfEntityMap = $this->getLastEntity('workflow_entity_map', true,'live');
+
+        $this->assertEquals($wfEntityMap['id'], 'randomid111126');
+
+        $this->assertEquals($wfEntityMap['workflow_id'], 'randomid111127');
+
+        $wfStateMap = $this->getLastEntity('workflow_state_map', true,'live');
+
+        $this->assertEquals($wfStateMap['workflow_id'], 'randomid111127');
+    }
+
+    public function testWorkflowStateCallbackWithoutEntityMapFromPayoutServiceFailure()
+    {
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->ba->payoutInternalAppAuth('live');
+
+        $this->startTest();
+    }
+
     public function testWorkflowStateUpdateCallbackFromPayoutService()
     {
         $this->testWorkflowStateCallbackFromPayoutService();

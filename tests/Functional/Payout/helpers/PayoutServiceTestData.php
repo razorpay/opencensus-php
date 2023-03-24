@@ -3149,6 +3149,71 @@ return [
         ],
     ],
 
+    'testWorkflowStateCallbackWithoutEntityMapFromPayoutService' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/wf-service/state/callback',
+            'content' => [
+                "Id"         => "FSYqHROoUij6TF",
+                "GroupName"  => "ABC",
+                "Name"       => "Owner_Approval",
+                "Rules"      => [
+                    "ActorPropertyKey"   => "role",
+                    "ActorPropertyValue" => "owner",
+                ],
+                "Status"     => "created",
+                "Type"       => "checker",
+                "WorkflowId" => "randomid111127",
+            ],
+        ],
+        'response' => [
+            'content' => [
+                "workflow_id"      => "randomid111127",
+                "merchant_id"      => "10000000000000",
+                "org_id"           => "100000razorpay",
+                "actor_type_key"   => "role",
+                "actor_type_value" => "owner",
+                "state_id"         => "FSYqHROoUij6TF",
+                "state_name"       => "Owner_Approval",
+                "status"           => "created",
+                "group_name"       => "ABC",
+                "type"             => "checker"
+            ],
+        ],
+    ],
+
+    'testWorkflowStateCallbackWithoutEntityMapFromPayoutServiceFailure' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/wf-service/state/callback',
+            'content' => [
+                "Id"         => "FSYqHROoUij6TF",
+                "GroupName"  => "ABC",
+                "Name"       => "Owner_Approval",
+                "Rules"      => [
+                    "ActorPropertyKey"   => "role",
+                    "ActorPropertyValue" => "owner",
+                ],
+                "Status"     => "created",
+                "Type"       => "checker",
+                "WorkflowId" => "randomid111127",
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No db records found.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ],
+    ],
+
     'testWorkflowStateUpdateCallbackFromPayoutService' => [
         'request'  => [
             'method'  => 'PATCH',

@@ -18,6 +18,16 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
+    // If db records are not found, should not return exception
+    public function getByWorkflowIdByFirst($workflowId)
+    {
+        $workflowIdColumn = $this->dbColumn(Entity::WORKFLOW_ID);
+
+        return $this->newQuery()
+                    ->where($workflowIdColumn, '=', $workflowId)
+                    ->first();
+    }
+
     /**
      * @param string $entityType
      * @param string $entityId
@@ -50,4 +60,18 @@ class Repository extends Base\Repository
         return \DB::connection($this->getPayoutsServiceConnection())
                   ->select("select * from $tableName where entity_id = '$payoutId' and entity_type = 'payout'");
     }
+
+    public function getPayoutServiceWorkflowEntityMapByWorkflowId(string $workflowId)
+    {
+        $tableName = Table::WORKFLOW_ENTITY_MAP;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_' . $tableName;
+        }
+
+        return \DB::connection($this->getPayoutsServiceConnection())
+                  ->select("select * from $tableName where workflow_id = '$workflowId'");
+    }
+
 }
