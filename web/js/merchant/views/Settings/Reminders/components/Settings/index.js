@@ -117,6 +117,11 @@ class ReminderSettings extends React.Component {
   };
 
   onSaveClick = () => {
+    selfServeTrackInitiate({
+      selfServeAction: 'PL Reminder Created',
+      page: 'Reminders',
+      screen: 'Settings',
+    });
     return this.props
       .onSaveClick({
         ...this.state.settings,
@@ -160,11 +165,6 @@ class ReminderSettings extends React.Component {
   };
 
   handleChannelChange = (type) => (e) => {
-    selfServeTrackInitiate({
-      selfServeAction: 'PL Reminder Created',
-      page: 'Reminders',
-      screen: 'Settings',
-    });
     const { settings } = this.state;
     this.setState({
       settings: {

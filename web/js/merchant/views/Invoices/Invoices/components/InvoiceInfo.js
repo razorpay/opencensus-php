@@ -1,21 +1,41 @@
-import { NavLink } from 'react-router-dom';
-import Time from 'common/ui/Time';
+import React from 'react';
 import Clipboard from 'common/ui/Clipboard';
 import { titleCase } from 'common/utils/rzp-utils';
 import Table from 'common/ui/Table/Index';
 import { paymentId, amount, createdAt } from 'common/ui/item/pair';
+import { SelfServeActionPages } from 'common/constant/enums';
+import { makeIdLink } from 'merchant/views/Transactions/Payments/Utils';
 
 const notificationClassMap = {
   sent: 'text-success',
   pending: 'text-warning',
 };
 
+const _paymentId = (trackUpdateInvoice) => {
+  return {
+    title: paymentId.title,
+    value: (item) => {
+      const intermediateElement = makeIdLink('payment')(
+        item,
+        SelfServeActionPages.InvoicesInvoices,
+        'invoice-details',
+      );
+      return (
+        <div onClick={() => trackUpdateInvoice('payment_id')}>
+          {intermediateElement}
+          <div>{createdAt.value(item)}</div>
+        </div>
+      );
+    },
+  };
+};
+
 export default ({ invoice, trackUpdateInvoice }) => {
-  let status = invoice.status;
-  let isNew = !invoice.id;
-  let isDraft = status === 'draft';
-  let isPaid = status === 'paid';
-  let isPartiallyPaid = status === 'partially_paid';
+  const status = invoice.status;
+  const isNew = !invoice.id;
+  const isDraft = status === 'draft';
+  const isPaid = status === 'paid';
+  const isPartiallyPaid = status === 'partially_paid';
 
   if (isNew || isDraft) {
     return null;
@@ -28,6 +48,8 @@ export default ({ invoice, trackUpdateInvoice }) => {
     payments = invoice.payments.items;
   }
 
+  const cols = [_paymentId(trackUpdateInvoice), amount];
+
   return (
     <div class="inv__info">
       <h4>Invoice - {titleCase(invoice.status)}</h4>
@@ -39,19 +61,7 @@ export default ({ invoice, trackUpdateInvoice }) => {
               <Table
                 class="table-noborder table-inv_payments"
                 rows={payments}
-                columns={[
-                  {
-                    value: item => {
-                      return (
-                        <div onClick={() => trackUpdateInvoice('payment_id')}>
-                          {paymentId.value(item)}
-                          <div>{createdAt.value(item)}</div>
-                        </div>
-                      );
-                    },
-                  },
-                  amount,
-                ]}
+                columns={cols}
                 showHeaders={false}
               />
             </div>;

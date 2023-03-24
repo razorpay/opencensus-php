@@ -43,4 +43,5 @@ export enum SelfServeActionPages {
   SettlementsSettlements = 'Settlements.Settlements',
   SettlementsReversals = 'Settlements.Reversals',
   SettlementsTransfers = 'Settlements.Transfers',
+  InvoicesInvoices = 'Invoices.Invoices',
 }
