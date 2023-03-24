@@ -1092,6 +1092,7 @@ export default class HomeContainer extends Component {
     const isShowBankAccountWokrflow =
       user.isAccountAndSettingsRevampEnabled &&
       user.isBankAccountUpdateRevampEnabled &&
+      user.activation_status === 'activated' &&
       isBankAccountDetailsAllowed(user);
 
     const hasLakhmiVilasBankAcc =
