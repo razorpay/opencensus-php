@@ -5442,6 +5442,37 @@ class ActivationTest extends OAuthTestCase
         $this->assertEquals('success', $consentDetail['status']);
     }
 
+    public function testKafkaSuccessForLegalDocumentWithExtraFieldsInPayload()
+    {
+        Config::set('services.bvs.mock', true);
+
+        $merchantConsent = $this->fixtures->create('merchant_consents');
+
+        $kafkaEventPayload = [
+            'data' => [
+                'id'                => 'KdRvpX6ffYF7yG',
+                'status'            => "success",
+                'documents_details' => [
+                    [
+                        'type'                 => 'L2_Terms and Conditions',
+                        'acceptance_timestamp' => "1651060634",
+                        'status'               => "success"
+                    ]
+                ],
+                'owner_id'          => "LP2f6TKmiuec10",
+                'client_id'         => "API",
+                'platform'          => "pg",
+                'mode'              => "test"
+            ]
+        ];
+
+        (new KafkaMessageProcessor)->process('api-bvs-legal-document-result-events', $kafkaEventPayload, 'test');
+
+        $consentDetail = $this->getDbLastEntity('merchant_consents', 'test');
+
+        $this->assertEquals('success', $consentDetail['status']);
+    }
+
 
     public function testKafkaFailureForLegalDocument()
     {

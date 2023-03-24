@@ -14,6 +14,7 @@ use RZP\Models\Merchant\Service;
 use RZP\Models\Merchant\Consent;
 use RZP\Exception\LogicException;
 use RZP\Jobs\UpdateMerchantContext;
+use RZP\Exception\ExtraFieldsException;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
 use RZP\Models\Feature\Constants as FeatureConstant;
 use RZP\Http\Controllers\MerchantOnboardingProxyController;
@@ -99,7 +100,7 @@ class Core extends Base\Core
 
     public function processBvsLegalDocuments(array $payload)
     {
-        (new Validator())->validateInput('process_kafka_message_legal_document', $payload);
+        $this->validateInput('process_kafka_message_legal_document', $payload);
 
         $id = $payload[Constants::ID];
 
@@ -120,7 +121,7 @@ class Core extends Base\Core
             $this->trace->traceException(
                 $e,
                 null,
-                TraceCode::ONBOARDING_BVS_VERIFICATION_JOB_ERROR,
+                TraceCode::BVS_CONSENT_PROCESSING_ERROR,
                 $payload);
 
             throw $e;
@@ -675,6 +676,26 @@ class Core extends Base\Core
                 $this->repo->bvs_validation->saveOrFail($validation);
 
             }
+        }
+    }
+
+    /**
+     * @param string $operation
+     * @param array  $payload
+     */
+    private function validateInput(string $operation, array $payload): void
+    {
+        try
+        {
+            (new Validator())->validateInput($operation, $payload);
+        }
+        catch (ExtraFieldsException $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                TraceCode::KAFKA_PAYLOAD_CONTAINS_EXTRA_FIELDS,
+                $payload);
         }
     }
 }
