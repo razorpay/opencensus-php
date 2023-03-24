@@ -882,6 +882,8 @@ class Core extends Base\Core
             unset($input[Constants::SYNC_ONLY]);
         }
 
+        $this->removeNewLineCharIfAny($input);
+
         $isWorkflowOpen = (new Merchant\Service())->isBankAccountChangeWorkflowOpen($merchant->getMerchantId());
 
         if ($isWorkflowOpen === true)
@@ -947,6 +949,24 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    private function removeNewLineCharIfAny(array &$input)
+    {
+        if (isset($input[Entity::IFSC_CODE]))
+        {
+            $input[Entity::IFSC_CODE] = str_replace('\n', '', $input[Entity::IFSC_CODE]);
+        }
+
+        if (isset($input[Entity::BENEFICIARY_NAME]))
+        {
+            $input[Entity::BENEFICIARY_NAME] = str_replace('\n', '', $input[Entity::BENEFICIARY_NAME]);
+        }
+
+        if (isset($input[Entity::ACCOUNT_NUMBER]))
+        {
+            $input[Entity::ACCOUNT_NUMBER] = str_replace('\n', '', $input[Entity::ACCOUNT_NUMBER]);
+        }
     }
 
     private function syncOnlyBankAccountUpdateFlow($input, $merchant, $newBankAccount)

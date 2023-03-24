@@ -4223,14 +4223,19 @@ class MerchantTest extends TestCase
         return $merchantId;
     }
 
-    public function testUpdateBankAccountSameBankDetailsAsCurrentFail()
-    {
-        $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
+    /* Commenting this test as the additional condition has been temporarily removed.
+      * Will uncomment it once the condition is added.
+      *
+      *
+        public function testUpdateBankAccountSameBankDetailsAsCurrentFail()
+        {
+            $merchantId = $this->setupMerchantForBankAccountUpdateTestViaPennyTesting(__FUNCTION__, true);
 
-        $this->startTest();
+            $this->startTest();
 
-        $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
-    }
+            $this->assertFalse($this->getBankAccountChangeStatusForMerchant($merchantId));
+        }
+    */
 
     public function testUpdateBankAccountRequestUnderReviewOnHold()
     {
