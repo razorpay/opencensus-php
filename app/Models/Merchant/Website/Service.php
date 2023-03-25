@@ -1265,17 +1265,16 @@ class Service extends Base\Service
 
         $websiteDetail = $this->repo->merchant_website->getWebsiteDetailsForMerchantId($merchantDetails->getMerchantId());
 
-        //added trace to fetch entity id to get website detail record.
-        $this->trace->info(TraceCode::MERCHANT_WEBSITE_DETAILS, [
-            "merchant_id"       => $merchant->getId(),
-            "entity_id"         => $websiteDetail->getId(),
-            "website_detail"    => $websiteDetail
-        ]);
-
         if (empty($websiteDetail) === true)
         {
             $websiteDetail = $this->core->createOrEditWebsiteDetails($merchantDetails, []);
         }
+
+        $this->trace->info(TraceCode::MERCHANT_WEBSITE_DETAILS, [
+            "merchant_id"       => $merchant->getId(),
+            "entity_id"         => optional($websiteDetail)->getId(),
+            "website_detail"    => $websiteDetail
+        ]);
 
         switch ($input[Constants::ACTION])
         {

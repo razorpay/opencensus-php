@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Services\RazorXClient;
 use RZP\Http\Response\Response;
 use RZP\Models\Admin\Permission;
+use Illuminate\Http\UploadedFile;
 use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Exception\BadRequestException;
@@ -258,6 +259,13 @@ class TncActivationTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', $input);
 
         $merchant = $merchantDetail->merchant;
+
+        $this->fixtures->create('merchant_business_detail', [
+            'merchant_id' => $merchant->getId(),
+            'app_urls' => [
+                'playstore_url' => 'https://play.google.com/store/apps/details?id=com.whatsapp',
+            ]
+        ]);
 
         if ($mockSplitz === true)
         {
@@ -810,6 +818,108 @@ class TncActivationTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testGetMerchantDocumentId()
+    {
+
+        $merchantWebsite = Mockery::mock('\RZP\Models\Merchant\Website\Entity')
+                                  ->makePartial();
+
+        $merchantWebsite->shouldReceive('getAttribute')->andReturn([
+                                                                       'section' => [
+                                                                           'playstore_url' => [
+                                                                               'www.playstoreurl.com'  => [
+                                                                                   'document_id' => 'id',
+                                                                               ],
+                                                                               'www.playstoreurl1.com'  => [
+                                                                                   'document_id' => 'id1',
+                                                                               ],
+                                                                               'www.playstoreurl2.com'  => [
+                                                                                   'document_id'
+                                                                               ],
+                                                                               'www.playstoreurl3.com'
+                                                                           ],
+                                                                       ],
+                                                                   ]);
+
+        $result = $merchantWebsite->getMerchantDocumentId('section', 'playstore_url', 'www.playstoreurl.com');
+
+        $this->assertEquals('id', $result);
+
+        $result1 = $merchantWebsite->getMerchantDocumentId('section', 'playstore_url', 'www.playstoreurl1.com');
+
+        $this->assertEquals('id1', $result1);
+
+        $result2 = $merchantWebsite->getMerchantDocumentId('section', 'playstore_url', 'www.playstoreurl2.com');
+
+        $this->assertEquals(null, $result2);
+
+        $result3 = $merchantWebsite->getMerchantDocumentId('section', 'playstore_url', 'www.playstoreurl3.com');
+
+        $this->assertEquals(null, $result3);
+    }
+
+    public function testMerchantWebsiteSectionActionUploadAndDelete()
+    {
+        // Uploading the merchant screenshot
+
+        $merchant = $this->createMerchant(['business_website' => 'https://hello.com'], false);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->createWebsiteDetails(['merchant_id'              => $merchant->getId(),
+                                     "shipping_period"          => "3-5 days",
+                                     "refund_request_period"    => "3-5 days",
+                                     "refund_process_period"    => "3-5 days",
+                                     "additional_data"          => [
+                                         "support_contact_number" => "9980004017",
+                                         "support_email"          => "kakarla.vasanthi@razorpay.com"
+                                     ],
+                                     "merchant_website_details" => [
+                                         "contact_us" => [
+                                             "section_status" => 3
+                                         ]
+                                     ]]);
+
+        $file = UploadedFile::fake()->create('test.pdf', 100);
+
+        $input = [
+            'merchant_id'  => '10000000000000',
+            'section_name' => 'contact_us',
+            'url_type'     => 'playstore_url',
+            'action'       => 'upload',
+            'file'         => $file
+        ];
+
+        $websiteDetail = (new Merchant\Website\Service())->postWebsiteSectionAction($input);
+
+        $this->assertArrayHasKey('document_id', $websiteDetail['merchant_website_details']['contact_us']
+                                                ['playstore_url']['https://play.google.com/store/apps/details?id=com.whatsapp']);
+        $this->assertNotNull($websiteDetail['merchant_website_details']['contact_us']['playstore_url']
+                             ['https://play.google.com/store/apps/details?id=com.whatsapp']['document_id']);
+
+        $this->assertArrayHasKey('signed_url', $websiteDetail['merchant_website_details']['contact_us']
+                                               ['playstore_url']['https://play.google.com/store/apps/details?id=com.whatsapp']);
+        $this->assertNotNull($websiteDetail['merchant_website_details']['contact_us']
+                             ['playstore_url']['https://play.google.com/store/apps/details?id=com.whatsapp']['signed_url']);
+
+        // deleting the merchant screenshot
+
+        $input = [
+            'merchant_id'  => '10000000000000',
+            'section_name' => 'contact_us',
+            'url_type'     => 'playstore_url',
+            'action'       => 'delete',
+        ];
+
+        $websiteDetail = (new Merchant\Website\Service())->postWebsiteSectionAction($input);
+
+        $this->assertArrayHasKey('document_id', $websiteDetail['merchant_website_details']['contact_us']
+                                                ['playstore_url']['https://play.google.com/store/apps/details?id=com.whatsapp']);
+        $this->assertNull($websiteDetail['merchant_website_details']['contact_us']['playstore_url']
+                          ['https://play.google.com/store/apps/details?id=com.whatsapp']['document_id']);
+
     }
 
     //it should be functional test case

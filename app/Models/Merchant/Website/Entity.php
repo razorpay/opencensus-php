@@ -143,12 +143,23 @@ class Entity extends Base\PublicEntity
     }
 
     /*
+     Document Id is present -
      "merchant_website_details": {
            "contact_us": {
                "playstore_url": {
                    "https://play.google.com/store/apps/details?id=com.Slack&hl=en_IN&gl=US": {
                        "document_id": "JyJ2aph3msZl9r"
                     }
+               },
+               "updated_at": 1658906510
+           }
+       }
+
+     Document Id is not present
+     "merchant_website_details": {
+           "contact_us": {
+               "playstore_url": {
+                   "https://play.google.com/store/apps/details?id=com.Slack&hl=en_IN&gl=US"
                },
                "updated_at": 1658906510
            }
@@ -160,13 +171,15 @@ class Entity extends Base\PublicEntity
 
         $details = $merchantWebsiteDetail[$sectionName][$urlType] ?? null;
 
+       // $details is an array
+
         if (empty($details) === false)
         {
-            foreach ($merchantWebsiteDetail[$sectionName][$urlType] as $url => $constant)
+            foreach ($merchantWebsiteDetail[$sectionName][$urlType] as $url => $urlDetails)
             {
                 if (trim(strtolower($url), '/') === $inputUrl)
                 {
-                    return $merchantWebsiteDetail[$sectionName][$urlType][$url][$constant] ?? null;
+                    return $urlDetails['document_id'] ?? null;
                 }
             }
         }
