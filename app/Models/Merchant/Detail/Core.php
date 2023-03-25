@@ -1088,19 +1088,6 @@ class Core extends Base\Core
             'action'          => $action,
         ]);
 
-        if($this->blockMerchantActivations($merchant) === false)
-        {
-            if($this->canActivateMerchant($merchantDetails, $isRiskyMerchant) === true)
-            {
-                $merchant->activate();
-
-                $this->repo->saveOrFail($merchant);
-
-                //Will be added back when we test e2e flow for onboarding all the merchants
-                //(new \RZP\Models\Merchant\Core)->checkAndPushMessageToMetroForNetworkOnboard($merchant->getId());
-            }
-        }
-
         $merchantDetails->setActivationFormMilestone(DetailConstants::L2_SUBMISSION);
 
         $this->autoUpdateMerchantActivationFlows(
