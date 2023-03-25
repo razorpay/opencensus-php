@@ -82,11 +82,11 @@ class Core extends Base\Core
         return new $processor($source);
     }
 
-    public function createTransactionForSource(Base\Entity $source)
+    public function createTransactionForSource(Base\Entity $source, $txnId=null)
     {
         $txnProcessor = $this->getFactory($source);
 
-        return $txnProcessor->createTransaction();
+        return $txnProcessor->createTransaction($txnId);
     }
 
     /**
@@ -147,9 +147,9 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createOrUpdateFromPaymentCaptured(Payment\Entity $payment)
+    public function createOrUpdateFromPaymentCaptured(Payment\Entity $payment, $txnId = null)
     {
-        list($txn, $feesSplit) = $this->createTransactionForSource($payment);
+        list($txn, $feesSplit) = $this->createTransactionForSource($payment, $txnId);
 
         $shouldDispatchSettlementBucket = true;
 
@@ -158,6 +158,11 @@ class Core extends Base\Core
             ($payment->isExternal() === false)))
         {
             $shouldDispatchSettlementBucket = false;
+        }
+
+        if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            $shouldDispatchSettlementBucket = true;
         }
 
         if ($shouldDispatchSettlementBucket === true)
@@ -753,21 +758,21 @@ class Core extends Base\Core
         return false;
     }
 
-    public function createFromRefund(Refund\Entity $refund)
+    public function createFromRefund(Refund\Entity $refund, $txnId = null)
     {
         // refund's payment must have transaction
         $payment = $refund->payment;
 
         assertTrue ($payment->hasTransaction() === true);
 
-        return $this->createTransactionForSource($refund);
+        return $this->createTransactionForSource($refund, $txnId);
     }
 
-    public function createFromRefundReversal(Reversal\Entity $reversal)
+    public function createFromRefundReversal(Reversal\Entity $reversal, $txnId = null)
     {
         $txnProcessor = (new TransactionProcessor\Reversal($reversal));
 
-        list($txn, $feesSplit) = $txnProcessor->createTransaction();
+        list($txn, $feesSplit) = $txnProcessor->createTransaction($txnId);
 
         return [$txn, $feesSplit];
     }
@@ -781,9 +786,9 @@ class Core extends Base\Core
         return [$txn, $feesSplit];
     }
 
-    public function createFromAdjustment(Adjustment\Entity $adj)
+    public function createFromAdjustment(Adjustment\Entity $adj, $txnId = null)
     {
-        list($txn, $feeSplit) = $this->createTransactionForSource($adj);
+        list($txn, $feeSplit) = $this->createTransactionForSource($adj, $txnId);
 
         return $txn;
     }
@@ -1026,9 +1031,9 @@ class Core extends Base\Core
         return $txn;
     }
 
-    public function createFromSettlement(Settlement\Entity $settlement)
+    public function createFromSettlement(Settlement\Entity $settlement, $journalID)
     {
-        list($txn, $feeSplit) = $this->createTransactionForSource($settlement);
+        list($txn, $feeSplit) = $this->createTransactionForSource($settlement, $journalID);
 
         $this->createLedgerEntryForSettlement($txn, $settlement);
 

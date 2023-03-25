@@ -31,6 +31,7 @@ use RZP\Models\Transaction\Processor\Ledger\Adjustment as LedgerAdjustment;
 use RZP\Models\Ledger\MerchantReserveBalanceJournalEvents;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
+use RZP\Models\Ledger\ReverseShadow\Adjustments\Core as ReverseShadowAdjustmentsCore;
 
 class Core extends Base\Core
 {
@@ -214,13 +215,13 @@ class Core extends Base\Core
 
     public function createLedgerEntriesForManualAdjustment(Adjustment\Entity $adj, Merchant\Entity $merchant, string $publicId)
     {
+        if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        {
+            return;
+        }
+
         try
         {
-            if($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
-            {
-                return;
-            }
-
             $transactionMessage= AdjustmentJournalEvents::createTransactionMessageForManualAdjustment($adj, $publicId);
 
             \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage)
@@ -263,13 +264,22 @@ class Core extends Base\Core
 
         $adjustment->entity()->associate($source);
 
-        $this->repo->saveOrFail($adjustment);
-
         if (($adjustment->isBalanceTypePrimary() === true) and
             ($adjustment->getEntityType() !== DefaultConstants\Entity::DISPUTE))
         {
-            $this->createLedgerEntriesForManualAdjustment($adjustment, $source->merchant, $source->getPublicId());
+            if ($source->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
+                (new ReverseShadowAdjustmentsCore())->createLedgerEntryForManualAdjustmentReverseShadow($adjustment, $source->getPublicId());
+
+                $adjustment->setStatus(Status::PROCESSED);
+            }
+            else
+            {
+                $this->createLedgerEntriesForManualAdjustment($adjustment, $source->merchant, $source->getPublicId());
+            }
         }
+
+        $this->repo->saveOrFail($adjustment);
 
         return $adjustment;
     }
@@ -412,7 +422,7 @@ class Core extends Base\Core
         return [true, $data];
     }
 
-    protected function createAdjInTransaction(Entity $adj, $merchant): Entity
+    public function createAdjInTransaction(Entity $adj, $merchant, $txnId = null): Entity
     {
         $this->repo->assertTransactionActive();
 
@@ -441,10 +451,16 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($adj);
 
-        // if not RX case (OR) RX but no reverse shadow case
-        if (($adj->isBalanceTypeBanking() === false) || ($adj->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false))
+        // if (not RX case (OR) RX but no reverse shadow case) (AND) no PG Ledger reverse shadow case
+        if (($adj->isBalanceTypeBanking() === false) ||
+                ($adj->merchant->isFeatureEnabled(Feature\Constants::LEDGER_REVERSE_SHADOW) === false))
         {
-            $txn = (new Transaction\Core)->createFromAdjustment($adj);
+            if($adj->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
+                return $adj;
+            }
+
+            $txn = (new Transaction\Core)->createFromAdjustment($adj, $txnId);
             $this->repo->saveOrFail($txn);
             $adj->setStatus(Status::PROCESSED);
             $this->repo->saveOrFail($adj);

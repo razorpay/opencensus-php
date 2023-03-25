@@ -36,6 +36,7 @@ class Entity extends Base\PublicEntity
     const IS_NEW_SERVICE         = 'is_new_service';
     const SETTLED_BY             = 'settled_by';
     const OPTIMIZER_PROVIDER     = 'optimizer_provider';
+    const JOURNAL_ID             = 'journal_id';
 
     // Nodal Nodal Settlement Constants
     const GATEWAY                = 'gateway';

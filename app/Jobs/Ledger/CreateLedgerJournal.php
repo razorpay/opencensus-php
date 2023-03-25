@@ -4,6 +4,7 @@ namespace RZP\Jobs\Ledger;
 
 use App;
 use Exception;
+use RZP\Constants\Metric;
 use RZP\Jobs\Job;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
@@ -67,7 +68,7 @@ class CreateLedgerJournal extends Job
 
             $kafkaProducer->Produce();
 
-            $this->trace->info(TraceCode::KAFKA_JOURNAL_ENTRY_PUSH_SUCESS, [
+            $this->trace->info(TraceCode::KAFKA_JOURNAL_ENTRY_PUSH_SUCCESS, [
                 "producer_key" => $producerKey,
                 "topic" => $topic,
                 "message" => $message
@@ -88,7 +89,7 @@ class CreateLedgerJournal extends Job
             $dimensions = [
                 'transactor_event' => $this->transactionMessage[LedgerConstants::TRANSACTOR_EVENT],
             ];
-            $this->trace->count(TraceCode::PG_LEDGER_KAFKA_PUSH_FAILURE, $dimensions);
+            $this->trace->count(Metric::PG_LEDGER_KAFKA_PUSH_FAILURE, $dimensions);
 
             $this->checkRetry();
         }

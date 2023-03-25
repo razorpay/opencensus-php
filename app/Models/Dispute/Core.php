@@ -33,8 +33,10 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\{Entity as E, Mode, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
-use RZP\Models\{Base,
+use RZP\Models\{Adjustment\Status,
+    Base,
     Ledger\ChargebackJournalEvents,
+    Ledger\ReverseShadow\Adjustments\Core as ReverseShadowAdjustmentsCore,
     Payment,
     Merchant,
     Adjustment,
@@ -607,9 +609,20 @@ class Core extends Base\Core
 
             $this->updateDeductionSourceTypeAndId($dispute, $adjustment->getEntityName(), $adjustment->getId());
 
-            $dispute_public_id = $dispute->getPublicId();
+            $disputePublicId = $dispute->getPublicId();
 
-            $this->createLedgerEntriesForRazorpayDisputeDeduct($adjustment, $dispute_public_id);
+            if ($dispute->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
+                (new ReverseShadowAdjustmentsCore())->createLedgerEntryForRazorpayDisputeDeductReverseShadow($adjustment, $disputePublicId);
+
+                $adjustment->setStatus(Status::PROCESSED);
+
+                $this->repo->saveOrFail($adjustment);
+            }
+            else
+            {
+                $this->createLedgerEntriesForRazorpayDisputeDeduct($adjustment, $disputePublicId);
+            }
         }
 
         $dispute->setAmountDeducted($amount);
@@ -632,9 +645,20 @@ class Core extends Base\Core
         {
             $adjustment = (new Adjustment\Core)->createAdjustmentForSource($input, $dispute);
 
-            $dispute_public_id = $dispute->getPublicId();
+            $disputePublicId = $dispute->getPublicId();
 
-            $this->createLedgerEntriesForRazorpayDisputeReversal($adjustment, $dispute_public_id);
+            if ($dispute->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+            {
+                (new ReverseShadowAdjustmentsCore())->createLedgerEntryForForRazorpayDisputeReversalReverseShadow($adjustment, $disputePublicId);
+
+                $adjustment->setStatus(Status::PROCESSED);
+
+                $this->repo->saveOrFail($adjustment);
+            }
+            else
+            {
+                $this->createLedgerEntriesForRazorpayDisputeReversal($adjustment, $disputePublicId);
+            }
         }
 
         $dispute->setAmountReversed($amount);
@@ -644,7 +668,7 @@ class Core extends Base\Core
         $dispute->resetDeductionSourceAttributes();
     }
 
-    private function createLedgerEntriesForRazorpayDisputeDeduct(Adjustment\Entity $adjustment, $dispute_public_id)
+    private function createLedgerEntriesForRazorpayDisputeDeduct(Adjustment\Entity $adjustment, $disputePublicId)
     {
         if($adjustment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
         {
@@ -653,7 +677,7 @@ class Core extends Base\Core
 
         try
         {
-            $transactionMessage = ChargebackJournalEvents::createTransactionMessageForRazorpayDisputeDeduct($adjustment, $dispute_public_id);
+            $transactionMessage = ChargebackJournalEvents::createTransactionMessageForRazorpayDisputeDeduct($adjustment, $disputePublicId);
 
             LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
 
@@ -678,7 +702,7 @@ class Core extends Base\Core
         }
     }
 
-    private function createLedgerEntriesForRazorpayDisputeReversal(Adjustment\Entity $adjustment, $dispute_public_id)
+    private function createLedgerEntriesForRazorpayDisputeReversal(Adjustment\Entity $adjustment, $disputePublicId)
     {
         if($adjustment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
         {
@@ -687,7 +711,7 @@ class Core extends Base\Core
 
         try
         {
-            $transactionMessage = ChargebackJournalEvents::createTransactionMessageForRazorpayDisputeReversal($adjustment, $dispute_public_id);
+            $transactionMessage = ChargebackJournalEvents::createTransactionMessageForRazorpayDisputeReversal($adjustment, $disputePublicId);
 
             \Event::dispatch(new TransactionalClosureEvent(function () use ($transactionMessage) {
                 // Job will be dispatched only if the transaction commits.

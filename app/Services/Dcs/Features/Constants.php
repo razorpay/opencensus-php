@@ -68,6 +68,7 @@ class Constants
     const MerchantActivationByPartnerEnabled = 'merchant_activation_by_partner_enabled';
     const OverridingSubmerchantConfigEnabled = 'overriding_submerchant_config_enabled';
     const AdditionalFieldsHdfcOnboarding = 'additional_fields_hdfc_onboarding';
+    const PgLedgerReverseShadowEnabled = 'pg_ledger_reverse_shadow_enabled';
     const ShopifyPaymentsReport = 'shopify_payments_report';
     const NoDocOnboardingEnabled = 'no_doc_onboarding_enabled';
     const OnboardedViaV2ApiEnabled = 'onboarded_via_v2_api_enabled';
@@ -101,6 +102,7 @@ class Constants
         self::FreeCreditUnregDisabled => "rzp/pg/org/payments/credits/Features",
         self::AsyncBalanceUpdateEnabled => "rzp/pg/merchant/payments/ledger/Features",
         self::AsyncTransactionUpdateEnabled => "rzp/pg/merchant/payments/ledger/Features",
+        self::PgLedgerReverseShadowEnabled => "rzp/pg/merchant/payments/ledger/Features",
         self::AutoRefundsDisabled => "rzp/pg/merchant/payments/refunds/Features",
         self::EnableRoutePartnerships => "rzp/platform/partner/route/Features",
         self::ManualSettlementForSubmerchants => "rzp/pg/merchant/settlements/PartnershipsFeatures",
@@ -171,6 +173,7 @@ class Constants
         APIFeaturesConstants::PAYMENT_MAILS_DISABLED                        => self::DcsPaymentMailsDisabled,
         APIFeaturesConstants::DISABLE_FREE_CREDIT_UNREG                     => self::FreeCreditUnregDisabled,
         APIFeaturesConstants::ASYNC_BALANCE_UPDATE                          => self::AsyncBalanceUpdateEnabled,
+        APIFeaturesConstants::PG_LEDGER_REVERSE_SHADOW                      => self::PgLedgerReverseShadowEnabled,
         APIFeaturesConstants::ASYNC_TXN_FILL_DETAILS                        => self::AsyncTransactionUpdateEnabled,
         APIFeaturesConstants::DISABLE_AUTO_REFUNDS                          => self::AutoRefundsDisabled,
         APIFeaturesConstants::ROUTE_PARTNERSHIPS                            => self::EnableRoutePartnerships,
@@ -231,6 +234,7 @@ class Constants
         self::ManualSettlementForSubmerchants => 'direct',
         self::ImportSettlement => 'direct',
         self::AdminLeadPartnerInviteEnabled => 'direct',
+        self::PgLedgerReverseShadowEnabled => 'direct',
         self::CvvLessFlowDisabled => 'direct',
         self::AssumeSubAccount => 'direct',
         self::AssumeMasterAccount => 'direct',

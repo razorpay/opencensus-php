@@ -5,11 +5,16 @@ namespace RZP\Models\Payment\Processor;
 use Mail;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Exception as defaultException;
 
+use RZP\Constants\Metric;
 use RZP\Diag\EventCode;
 use RZP\Exception;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Ledger\RefundJournalEvents;
+use RZP\Models\Ledger\ReverseShadow\Refunds\Core as ReverseShadowRefundsCore;
+use RZP\Models\Ledger\ReverseShadow\ReverseShadowTrait;
 use RZP\Models\Vpa;
 use RZP\Models\Batch;
 use RZP\Models\Order;
@@ -76,6 +81,9 @@ trait Refund
      *
      * @throws Exception\BadRequestException
      */
+
+    use ReverseShadowTrait;
+
     public function refund(Payment\Entity $payment, array $input, Batch\Entity $batch = null, $batchId = null)
     {
         if ($this->isInvalidInstantRefundsRequest($payment, $input) === true)
@@ -901,7 +909,7 @@ trait Refund
                 TraceCode::REFUND_FROM_CAPTURED_REQUEST_SCROOGE,
                 [
                     'payment_id' => $payment->getId(),
-                    'input'      => $input,
+                    'input' => $input,
                 ]);
 
             // For captured payments, refund amount either needs to be defined in $input params, or
@@ -1033,9 +1041,10 @@ trait Refund
      *
      * @return null|Transaction\Entity
      * @throws Exception\LogicException
+     * @throws Exception\ServerErrorException
      */
     public function createTransactionForRefund(
-        Payment\Refund\Entity $refund, Payment\Entity $payment)
+        Payment\Refund\Entity $refund, Payment\Entity $payment, $txnId = null)
     {
         $this->trace->info(
             TraceCode::REFUND_TRANSACTION_CREATE_REQUEST,
@@ -1055,45 +1064,67 @@ trait Refund
                 ]);
         }
 
+        //NOTE:
+        //if txn_id is not set and feature is enabled then cls is called
+        //if txn_id is set then a transaction is created (CLS flow is not called irrespective of feature flag).
+
+        // For cases such as ds with refund (normal speed), we do not create CLS entries but transaction might be created
+        // We send txn_id as "" in such cases as the feature is enabled for the merchant (if we do not send, it'll end up calling CLS again)
+
+        // feature is not enabled ---> flow is v1  ----> transaction created (no txn id is passed)
+        // feature is not enabled ---> flow is v2  ----> transaction created (no txn id is passed)
+        // feature is enabled ---> flow is v1 ---> journal is created ---> transaction created (with journal id)
+        // feature is enabled ---> flow is v2 ---> journal id is sent ---> transaction created (with journal id)
+        // feature is enabled ---> flow is v2 ---> journal id is not sent ---> transaction created (without journal id) (send journal id as empty string)
+        if ($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true and $txnId === null)
+        {
+            $journalResponse = (new ReverseShadowRefundsCore())->createLedgerEntriesForRefundReverseShadow($refund);
+            if (isset($journalResponse['id']) === true)
+            {
+                $txnId = $journalResponse['id'];
+            }
+            else
+            {
+                $this->trace->debug(TraceCode::JOURNAL_ID_NOT_PRESENT, [
+                   "response"   => $journalResponse
+                ]);
+            }
+        }
+
         //
         // We should create a refund transaction ONLY after payment transaction is created
         // to ensure the ledger flow is correct. If it's a non-captured payment and does not
         // have transaction, then we will skip refund transaction creation. Captured payments
         // should ideally have transactions so we will block refund creation in such cases.
         //
-            if ($payment->getTransactionId() === null)
+        if ($payment->getTransactionId() === null and $this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            if ($payment->hasBeenCaptured() === false)
             {
-                if ($payment->hasBeenCaptured() === false)
-                {
-                    return null;
-                }
-                else
-                {
-                    throw new Exception\LogicException(
-                        'Payment transaction should have been present',
-                        null,
-                        [
-                            'payment_id'    => $payment->getId(),
-                            'refund_id'     => $refund->getId(),
-                        ]);
-                }
+                return null;
             }
+            else
+            {
+                throw new Exception\LogicException(
+                    'Payment transaction should have been present',
+                    null,
+                    [
+                        'payment_id'    => $payment->getId(),
+                        'refund_id'     => $refund->getId(),
+                    ]);
+            }
+        }
 
         $txnCore = new Transaction\Core;
 
-        list($txn, $feesSplit) = $txnCore->createFromRefund($refund);
+        // if $txnId is an empty string then we want to auto generate id, hence passing it as null
+        if ($txnId === "")
+        {
+            $txnId = null;
+        }
+        list($txn, $feesSplit) = $txnCore->createFromRefund($refund, $txnId);
 
         $this->repo->saveOrFail($txn);
-
-
-
-        if($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_JOURNAL_WRITES) === true)
-        {
-            \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $refund)
-            {
-                RefundJournalEvents::createLedgerEntriesForRefunds($this->mode, $refund, $txn);
-            }));
-        }
 
         $txnCore->saveFeeDetails($txn, $feesSplit);
 
@@ -1104,6 +1135,14 @@ trait Refund
                 'refund_id'         => $refund->getId(),
                 'transaction_id'    => $txn->getId(),
             ]);
+
+        if($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_JOURNAL_WRITES) === true)
+        {
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $refund)
+            {
+                RefundJournalEvents::createLedgerEntriesForRefunds($this->mode, $refund, $txn);
+            }));
+        }
 
         return $txn;
     }
@@ -1118,14 +1157,22 @@ trait Refund
                 'gateway'    => $refund->getGateway()
             ]);
 
-        //
+        if (($refund->payment->hasBeenCaptured() === false) or (($feeOnlyReversal === true) and ($refund->getFee() === 0)))
+        {
+            return null;
+        }
+
+        // If PG_LEDGER_REVERSE_SHADOW flag is enabled, check if refund transaction exists, else return null
         // To ensure that refund forward transaction has this amount / fees debited, if debit is 0, it
         // could be a Direct Settlement just an authorized transaction refund - for which we have handled before this,
-        //
-        if (($refund->payment->hasBeenCaptured() === false) or
-            (($refund->transaction->getDebit() === 0) and
-                ($refund->transaction->getCreditType() === Transaction\CreditType::DEFAULT)) or (($feeOnlyReversal === true) and ($refund->getFee() === 0))) {
-            return null;
+
+        if ($this->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            if (($refund->transaction->getDebit() === 0) and
+                ($refund->transaction->getCreditType() === Transaction\CreditType::DEFAULT))
+            {
+                return null;
+            }
         }
 
         if (($refund->isStatusReversed() === true)) {
@@ -1182,6 +1229,11 @@ trait Refund
         }
         catch (\Exception $ex)
         {
+            if($ex->getCode() === ErrorCode::BAD_REQUEST_REFUND_REVERSAL_NOT_APPLICABLE)
+            {
+                return null;
+            }
+
             $this->trace->traceException($ex,
                 Trace::CRITICAL,
                 TraceCode::REFUND_REVERSAL_FAILED,
@@ -1842,6 +1894,8 @@ trait Refund
 
         $refundId = $refundInput[RefundEntity::ID];
 
+        $journalId = (isset($refundInput[RefundConstants::JOURNAL_ID]) === true) ? $refundInput[RefundConstants::JOURNAL_ID] : null;
+
         $amount = intval($refundInput[RefundEntity::AMOUNT]);
 
         $baseAmount = intval($refundInput[RefundEntity::BASE_AMOUNT]);
@@ -1866,14 +1920,21 @@ trait Refund
         // Validates and throws exception in case of insufficient balance for applicable refunds
         $this->refundBalanceChecks($refund);
 
-        // Updates payment attributes. Throws exception on failure
-        $this->handlePaymentUpdate($payment, $refundId, $amount, $baseAmount);
+        $isPGLedgerEnabled = $this->merchant->isFeatureEnabled(RefundConstants::PG_LEDGER_REVERSE_SHADOW);
+
+        // Handle payment update only if PG Ledger reverse shadow feature flag is not enabled, as the payment update will happen in v2 flow itself.
+        // for few cases where we do not update payment but just send a kafka message to create transaction, we need to ensure payment update
+        // successfully happens. If journalId is present in the request but is an empty string then payment update did not happen on scrooge
+        if($isPGLedgerEnabled === false or $journalId === "") {
+            // Updates payment attributes. Throws exception on failure
+            $this->handlePaymentUpdate($payment, $refundId, $amount, $baseAmount);
+        }
 
         try
         {
-            $transaction = $this->repo->transaction(function() use ($refund, $payment)
+            $transaction = $this->repo->transaction(function() use ($refund, $payment, $journalId)
             {
-                return $this->createTransactionForRefund($refund, $payment);
+                return $this->createTransactionForRefund($refund, $payment, $journalId);
             });
 
             $transactionId = null;
@@ -4223,6 +4284,9 @@ trait Refund
         return $notifier->getEmailDataForRefund($refund);
     }
 
+    /**
+     * @throws Exception\BadRequestException
+     */
     public function isRefundRequestV1_1(string $merchantId, Payment\Entity $payment): bool
     {
         $v2Variant = $this->app->razorx->getTreatment($payment->getId(),

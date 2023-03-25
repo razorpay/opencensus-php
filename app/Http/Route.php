@@ -1011,6 +1011,7 @@ class Route
         'adj_add_reverse'                          => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                             => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
         'adj_add_batch'                            => ['post',     'adjustments/batch',                              'AdjustmentController@postAdjustmentBatch'                          ],
+        'adj_transaction_create'                   => ['post',     'adjustments/transaction_create',                 'AdjustmentController@adjustmentsTransactionCreate'                          ],
         'mock_hdfc_enroll'                         => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                        => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                  => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
@@ -3986,6 +3987,11 @@ class Route
         'pg_onboard_merchant'                           => ['post',     'pg_ledger/merchant/onboard',           'FeatureController@onboardMerchantsOnPgLedger'],
         'pg_offboard_merchant'                          => ['post',      'pg_ledger/merchant/offboard', 'FeatureController@offboardMerchantsOnPgLedger'],
         'pg_sync_balances_merchant'                     => ['post', 'pg_ledger/merchant/sync_balances', 'FeatureController@syncMerchantBalancesOnPgLedger'],
+        // Creates refund reversal for ledger timed out refunds
+        'refunds_reversal_create'                       => ['post',  'refunds/reversal_create', 'RefundController@reversalCreateForVirtualRefund'],
+        // Ledger Outbox cron
+        'ledger_outbox_retry'                           => ['post',           'ledger_outbox/retry',                               'LedgerOutboxController@postRetryFailedReverseShadowTransactions'],
+        'ledger_outbox_partition_cron'           => ['post',      'ledger/outbox/partition',                    'LedgerOutboxController@createLedgerOutboxPartition'              ],
 
         // Recon service proxy route
         'recon_service_request_proxy'             => ['any',        'recon/service/common/{path?}',                         'ReconServiceController@handleAny'                             ],
@@ -4211,7 +4217,6 @@ class Route
         'relay_get_props_history'               => ['get',                    'relay/apps/{app_id}/props/{prop_id}/history',                'RelayController@getPropsHistory'],
         'fetch_customer_eligibility'            => ['post',          'customers/eligibility',                               'EligibilityController@fetchCustomerEligibility'],
         'fetch_customer_eligibility_by_id'      => ['get',           'customers/eligibility/{id}',                          'EligibilityController@fetchCustomerEligibilityById'],
-
         //Capital corp card for payouts
         'corp_card_banking_account_create'      => ['post', 'merchant/onboardCCCForBanking', 'CorpCardController@onboardCapitalCorpCardForRzpX'],
     ];
@@ -4856,6 +4861,8 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'refunds_reversal_create',
+        'adj_transaction_create',
         'merchant_entities_info',
         'merchant_document_upload_internal',
         'merchant_activation_clarifications_save_internal',
@@ -5753,7 +5760,8 @@ class Route
 
         'partner_config_fetch_guest',
         'terminal_toggle_internal',
-
+        // Ledger Outbox
+        'ledger_outbox_retry',
         'workflow_config_create_internal',
         'downtime_auto_resolve_cron',
         'merchant_validate_public_auth_over_internal_auth',
@@ -5765,6 +5773,7 @@ class Route
         'fetch_authz_roles_by_role_id',
 
         'internal_1cc_order_review',
+        'ledger_outbox_partition_cron',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -14412,8 +14421,10 @@ class Route
 
             'payouts_service_redis_key_set',
             'payout_service_idempotency_key_feature_remove',
+            'ledger_outbox_retry',
+            'downtime_auto_resolve_cron',
+            'ledger_outbox_partition_cron',
             'token_hq_cron',
-            'downtime_auto_resolve_cron'
         ],
 
         'subscriptions' => [
@@ -14625,6 +14636,8 @@ class Route
         ],
 
         'scrooge' => [
+            'refunds_reversal_create',
+            'internal_merchant_fetch',
             'refund_update_status',
             'refund_gateway_call',
             'scrooge_refund_create',
@@ -14994,6 +15007,8 @@ class Route
             'internal_merchant_risk_notification',
             'internal_sign_payload',
             'internal_generate_coproto',
+            'adj_transaction_create',
+            'refund_scrooge_transaction_create',
             'internal_token_create',
         ],
 
@@ -16611,6 +16626,7 @@ class Route
         'payout_links_shopify_app_shop_redact'              => HeartbeatLagChecker::SLAVE,
         'payout_links_shopify_customers_data_request'       => HeartbeatLagChecker::SLAVE,
         'create_local_tokens_from_consents_bulk'            => HeartbeatLagChecker::SLAVE,
+        'ledger_outbox_retry'                               => HeartBeatLagChecker::MASTER,
     ];
 
     public static $terminalsServiceFormRequestsRoutes = [

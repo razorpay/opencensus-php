@@ -8815,19 +8815,20 @@ class Service extends Base\Service
 
         // RSR-2002; global_hold_status & global_hold_reason will be provided to new settlement service as Global config.
         return [
-            "active"                     => $merchant->isActivated(),
-            "parent"                     => $this->settlementToPartner($mid),
-            "partner_bank_account"       => isset($merchantSettleToPartner[$mid]) ? $merchantSettleToPartner[$mid] : null,
-            "pan_details"                => $this->getMerchantPANDetails($merchant),
-            "purpose_code"               => $merchant->getPurposeCode(),
-            "iec_code"                   => $merchant->getIecCode(),
-            "business_address"           => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getBusinessRegisteredAddressAsText(', ') : null,
-            "global_hold_status"         => $merchant->getHoldFunds(),
-            "global_hold_reason"         => ($merchant->getHoldFunds() === false) ? '' : ($merchant->getHoldFundsReason() ?? 'merchant funds are on hold'),
-            "settle_to_org"              => $this->getMerchantOrgSettleValue($merchant),
-            "org_id"                     => $merchant->getOrgId(),
-            "merchant_email"             => $email,
-            "partner_commissions_config" => $partnerCommissionConfig,
+            "active"                           => $merchant->isActivated(),
+            "parent"                           => $this->settlementToPartner($mid),
+            "partner_bank_account"             => isset($merchantSettleToPartner[$mid]) ? $merchantSettleToPartner[$mid] : null,
+            "pan_details"                      => $this->getMerchantPANDetails($merchant),
+            "purpose_code"                     => $merchant->getPurposeCode(),
+            "iec_code"                         => $merchant->getIecCode(),
+            "business_address"                 => ($merchant->merchantDetail !== null) ? $merchant->merchantDetail->getBusinessRegisteredAddressAsText(', ') : null,
+            "global_hold_status"               => $merchant->getHoldFunds(),
+            "global_hold_reason"               => ($merchant->getHoldFunds() === false) ? '' : ($merchant->getHoldFundsReason() ?? 'merchant funds are on hold'),
+            "settle_to_org"                    => $this->getMerchantOrgSettleValue($merchant),
+            "org_id"                           => $merchant->getOrgId(),
+            "merchant_email"                   => $email,
+            "partner_commissions_config"       => $partnerCommissionConfig,
+            "pg_ledger_reverse_shadow_enabled" => $this->isMerchantOnPGReverseShadow($merchant),
         ];
     }
 
@@ -8903,6 +8904,11 @@ class Service extends Base\Service
     {
         return (($merchant->isFeatureEnabled(Feature\Constants::CANCEL_SETTLE_TO_BANK) === false) and
             ($merchant->org->isFeatureEnabled(Feature\Constants::ORG_SETTLE_TO_BANK) === true) and ($merchant->isFeatureEnabled(Feature\Constants::OLD_CUSTOM_SETTL_FLOW) === false));
+    }
+
+    private function isMerchantOnPGReverseShadow($merchant)
+    {
+        return $merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true;
     }
 
     public function getPersonalisedMethods($input)
@@ -9143,6 +9149,7 @@ class Service extends Base\Service
         if (empty($oldBankAccount) === true) {
             return false;
         }
+
 
         $actions = (new Action\Core())->fetchOpenActionOnEntityOperation(
             $oldBankAccount->getId(), $oldBankAccount->getEntity(), Permission::EDIT_MERCHANT_BANK_DETAIL);

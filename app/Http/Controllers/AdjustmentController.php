@@ -77,4 +77,19 @@ class AdjustmentController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    /**
+     * will be used to create adjustment transaction as fallback
+     * if ledger reverse-shadow mode enabled
+     *
+     * @return ApiResponse
+     */
+    public function adjustmentsTransactionCreate()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->createAdjustmentInTransaction($input);
+
+        return ApiResponse::json($data);
+    }
 }

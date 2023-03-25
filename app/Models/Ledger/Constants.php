@@ -33,19 +33,22 @@ class Constants
     const CUSTOMER_WALLET_LOADING                           = "customer_wallet_loading";
 
     //Refund events
-    const REFUND_REVERSAL                                       = "refund_reversed";
-    const REFUND_PROCESSED                                      = "refund_processed";
-    const DISPUTE_REFUND_PROCESSED                              = "dispute_refund_processed";
-    const REFUND_INSTANT_PROCESSED                              = "instant_refund_processed";
-    const REFUND_INSTANT_PROCESSED_POSTPAID_MODEL               = "instant_refund_processed_postpaid_model";
-    const REFUND_PROCESSED_WITH_CREDITS                         = "refund_credits_normal";
-    const REFUND_PROCESSED_WITH_CREDITS_INSTANT                 = "instant_refund_processed_with_credits";
-    const REFUND_PROCESSED_WITH_CREDITS_INSTANT_POSTPAID_MODEL  = "instant_refund_processed_with_credits_postpaid_model";
-    const REFUND_REVERSED_CREDITS                               = "refund_reversed_credits";
-    const INSTANT_REFUND_REVERSED_CREDITS                       = "instant_refund_reversed_credits";
-    const INSTANT_REFUND_REVERSED                               = "instant_refund_reversed";
-    const REFUND_ACCOUNTING                                     = "refund_accounting";
-    const REFUND_CREDITS                                        = "refund_credits";
+    const REFUND_REVERSAL                                   = "refund_reversed";
+    const REFUND_PROCESSED                                  = "refund_processed";
+    const DISPUTE_REFUND_PROCESSED                          = "dispute_refund_processed";
+    const REFUND_INSTANT_PROCESSED                          = "instant_refund_processed";
+    const REFUND_PROCESSED_WITH_CREDITS                     = "refund_credits_normal";
+    const REFUND_PROCESSED_WITH_CREDITS_INSTANT             = "instant_refund_processed_with_credits";
+    const REFUND_REVERSED_CREDITS                           = "refund_reversed_credits";
+    const INSTANT_REFUND_REVERSED_CREDITS                   = "instant_refund_reversed_credits";
+    const INSTANT_REFUND_REVERSED                           = "instant_refund_reversed";
+    const REFUND_ACCOUNTING                                 = "refund_accounting";
+    const REFUND_CREDITS                                    = "refund_credits";
+    const ACCOUNT_ENTITIES                                  = "account_entities";
+    const REFUND_ID                                         = "refund_id";
+
+    const INSTANT_REFUND_PROCESSED_WITH_CREDITS_POSTPAID_MODEL  = "instant_refund_processed_with_credits_postpaid_model";
+    const INSTANT_REFUND_PROCESSED_POSTPAID_MODEL               = "instant_refund_processed_postpaid_model";
 
     //Chargeback Events
     const RAZORPAY_DISPUTE_DEDUCT                           = "razorpay_dispute_deduct";
@@ -82,6 +85,7 @@ class Constants
     const ENTRY_TYPE_DEBIT                                  = "debit";
     const ENTRY_TYPE_CREDIT                                 = "credit";
     const RESERVE_BALANCE_AMOUNT                            = "reserve_balance_amount";
+    const LEDGER_ENTRY                                      = "ledger_entry";
 
     //Refund events Direct Settlement
     const REFUND_PROCESSED_DIRECT_SETTLEMENT                = "refund_processed_ds";
@@ -94,8 +98,9 @@ class Constants
     const AUTO_REFUND_DIRECT_SETTLEMENT_INSTANT             = "auto_refund_direct_settlement_instant";
     const AUTO_REFUND_DIRECT_SETTLEMENT_CREDITS_INSTANT     = "auto_refund_direct_settlement_credits_instant";
     const AUTOREFUND                                        = "auto_refund";
-    const REVERSE_REFUND_ACCOUNTING                         = 'reverse_refund_accounting';
+    const REVERSE_REFUND_ACCOUNTING                         = "reverse_refund_accounting";
     const REVERSED_AMOUNT                                   = "reversed_amount";
+    const CUSTOMER_REFUND                                   = "customer_refund";
 
     //Payload Keys
     const API_TRANSACTION_ID                                = "api_transaction_id";
@@ -109,6 +114,13 @@ class Constants
     const BASE_AMOUNT                                       = 'base_amount';
     const GATEWAY_COMMISSION                                = "gateway_commission";
     const GATEWAY_TAX                                       = "gateway_tax";
+    const LEDGER_INTEGRATION_MODE                           = "ledger_integration_mode";
+    const TENANT                                            = "tenant";
+    const IDEMPOTENCY_KEY                                   = "idempotency_key";
+    const ID                                                = "id";
+    const JOURNAL_ID                                        = "journal_id";
+    const ADJUSTMENT_ID                                     = "adjustment_id";
+    const PAYMENT_ID                                        = "payment_id";
 
     const MONEY_PARAMS                                      = 'money_params';
     const MERCHANT_ID                                       = 'merchant_id';
@@ -131,4 +143,34 @@ class Constants
     const MERCHANT_FEE_CREDIT_LOADING                       = "merchant_fee_credit_loading";
     const MERCHANT_RESERVE_BALANCE_LOADING                  = "merchant_reserve_balance_loading";
 
+
+    //Reverse Shadow constants
+    const MERCHANT_FEE_CREDITS       = 'merchant_fee_credits';
+    const MERCHANT_AMOUNT_CREDITS    = 'merchant_amount_credits';
+    const MERCHANT_REFUND_CREDITS    = 'merchant_refund_credits';
+    const MERCHANT_BALANCE           = 'merchant_balance';
+    const MERCHANT_RESERVE_BALANCE   = 'merchant_reserve_balance';
+    const MERCHANT_NEGATIVE_BALANCE  = 'merchant_negative_balance';
+    const REWARD                     = 'reward';
+    const PAYABLE                    = 'payable';
+    const BALANCE                    = 'balance';
+    const ACCOUNT_TYPE               = 'account_type';
+    const FUND_ACCOUNT_TYPE          = 'fund_account_type';
+    const ENTITIES                   = 'entities';
+    const MIN_BALANCE                = 'min_balance';
+    const TENANT_PG                  = 'PG';
+    const FEES                       = 'fees';
+    const TYPE                       = 'type';
+    const SHADOW                     = 'shadow';
+    const REVERSE_SHADOW             = 'reverse-shadow';
+
+    const JOURNAL_PAYLOAD               = 'JOURNAL_PAYLOAD';
+
+    const CREATE_TXN_FOR_REFUND_TASK          = 'create_transaction_for_refund';
+    const CREATE_REFUND_TXN_API               = 'create-payment-transaction-event';
+    const CREATE_TRANSACTION_FOR_ADJUSTMENT   = 'create_transaction_for_adjustment';
+
+    const PRODUCER_KEY  = 'producer_key';
+    const TOPIC         = 'topic';
+    const MESSAGE       = 'message';
 }

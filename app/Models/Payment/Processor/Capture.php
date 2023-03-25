@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Admin;
 use RZP\Diag\EventCode;
+use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
 use RZP\Models\Feature;
@@ -342,6 +343,12 @@ trait Capture
 //                            ]);
 
                         $this->publishMessageToSqsBarricade($this->payment);
+
+                        if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                        {
+                            (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
+                        }
+
                         $this->createLedgerEntriesForGatewayCapture($this->payment);
                     }
 
@@ -361,7 +368,8 @@ trait Capture
 
     public function createLedgerEntriesForGatewayCapture(Payment\Entity $payment)
     {
-        if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        if(($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false)
+        or ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
         {
             return;
         }
@@ -681,6 +689,11 @@ trait Capture
 
                     $this->publishMessageToSqsBarricade($this->payment);
 
+                    if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                    {
+                        (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
+                    }
+
                     $this->createLedgerEntriesForGatewayCapture($this->payment);
                 }
             }
@@ -859,9 +872,31 @@ trait Capture
                 $payment->setLateBalanceUpdate();
             }
 
+            $txn = null;
+
+            /* Get Original Payment Fee (i.e Fee In Same as Merchant Initiated Currency)
+             * from Payment Entity Before Transaction Creation Since it will update Payment Fee to INR
+            */
             $originalPaymentFee = $payment->getFee();
 
-            list($txn, $merchantBalance) = $this->createTransactionFromCapturedPayment($payment);
+            if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            {
+                list($txn, $merchantBalance) = $this->createTransactionFromCapturedPayment($payment);
+            }
+            else
+            {
+                $discount = $this->getDiscountIfApplicableForLedger($payment);
+
+                [$fee, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($payment, $discount);
+
+                $this->trace->info(TraceCode::PAYMENT_MERCHANT_CAPTURED_REVERSE_SHADOW, [
+                    LedgerConstants::PAYMENT_ID => $payment->getId(),
+                    LedgerConstants::FEES       => $fee,
+                    LedgerConstants::TAX        =>$tax
+                ]);
+
+                $this->repo->payment->saveOrFail($payment);
+            }
 
             $this->updateVirtualAccountStatusIfApplicable($payment);
 
@@ -876,7 +911,7 @@ trait Capture
                 $this->handleLateBalanceUpdate($txn, $merchantBalance);
             }
 
-            // We will create ledger entries in central ledger only if async_txn_fill_details feature is not set.
+            // We will create ledger entries in central ledger for shadow only if async_txn_fill_details feature is not set.
             // If it is set then fee and tax get updated later and we will create ledger entries at that point.
             if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)
             {
@@ -895,9 +930,13 @@ trait Capture
             $this->updateOrderAfterCapture($payment,$originalPaymentFee);
         });
 
-        $this->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
+        if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            $this->handleAsyncUpdateBalanceIfApplicable($payment, $payment->transaction);
+        }
 
-        if ($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false)
+        if (($payment->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === false) and
+            ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false))
         {
             $this->processTransferIfApplicable($payment);
         }
@@ -924,29 +963,32 @@ trait Capture
         $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
     }
 
-
-    public function createLedgerEntriesForMerchantCapture(Payment\Entity $payment, Transaction\Entity $txn)
+    public function createLedgerEntriesForMerchantCapture(Payment\Entity $payment, Transaction\Entity $txn = null)
     {
+
+        if (($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === false) or
+            ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true))
+        {
+            return;
+        }
+
         try
         {
-            if($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_JOURNAL_WRITES) === true)
-            {
-                $discount = $this->getDiscountIfApplicableForLedger($payment);
+            $discount = $this->getDiscountIfApplicableForLedger($payment);
 
-                $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn, $discount);
+            $transactionMessage = CaptureJournalEvents::createTransactionMessageForMerchantCapture($payment, $txn, $discount);
 
-                \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $transactionMessage) {
-                    // Job will be dispatched only if the transaction commits.
-                    LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
-                }));
+            \Event::dispatch(new TransactionalClosureEvent(function () use ($txn, $transactionMessage) {
+                // Job will be dispatched only if the transaction commits.
+                LedgerEntryJob::dispatchNow($this->mode, $transactionMessage);
+            }));
 
-                $this->trace->info(
-                    TraceCode::PAYMENT_MERCHANT_CAPTURED_EVENT_TRIGGERED,
-                    [
-                        'payment_id'            => $payment->getId(),
-                        'message'               => $transactionMessage
-                    ]);
-            }
+            $this->trace->info(
+                TraceCode::PAYMENT_MERCHANT_CAPTURED_EVENT_TRIGGERED,
+                [
+                    'payment_id'            => $payment->getId(),
+                    'message'               => $transactionMessage
+                ]);
         }
         catch (\Exception $e)
         {
@@ -1267,11 +1309,11 @@ trait Capture
             ]);
     }
 
-    protected function createTransactionFromCapturedPayment(Payment\Entity $payment)
+    public function createTransactionFromCapturedPayment(Payment\Entity $payment, $txnId = null)
     {
         $txnCore = new Transaction\Core;
 
-        list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment);
+        list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment, $txnId);
 
         if($payment->isHdfcNonDSSurcharge())
         {
@@ -1321,7 +1363,7 @@ trait Capture
             $payment->merchant->isCustomerFeeBearerAllowedOnInternational() and
             $payment->isInternational() === true)
         {
-            //set and fee values from txn
+            // set and fee values from txn as it will have INR For Both DCC or MCC Payments
             $payment->setFee($txn->getFee());
         }
 
@@ -1498,7 +1540,7 @@ trait Capture
         }
     }
 
-    protected function processTransferIfApplicable(Payment\Entity $payment)
+    public function processTransferIfApplicable(Payment\Entity $payment)
     {
         $this->trace->info(
             TraceCode::ORDER_TRANSFER_PROCESS_INITIATED,

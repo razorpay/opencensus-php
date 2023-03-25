@@ -172,6 +172,7 @@ class Entity
     const ORDER_META                 = 'order_meta';
     const TOKENISED_IIN              = 'tokenised_iin';
     const TOKEN_CARD                 = 'token_card';
+    const LEDGER_OUTBOX              = 'ledger_outbox';
 
     const RAW_ADDRESS                = 'raw_address';
     const FUND_TRANSFER_ATTEMPT      = 'fund_transfer_attempt';
@@ -1081,6 +1082,7 @@ class Entity
         self::INVITATION                => \RZP\Models\Invitation::class,
         self::FILE_STORE                => \RZP\Models\FileStore::class,
         self::FEE_BREAKUP               => \RZP\Models\Transaction\FeeBreakup::class,
+        self::LEDGER_OUTBOX             => \RZP\Models\LedgerOutbox::class,
         self::ENTITY_OFFER              => \RZP\Models\Offer\EntityOffer::class,
         self::BANK_ACCOUNT              => \RZP\Models\BankAccount::class,
         self::OFFLINE_CHALLAN           => \RZP\Models\OfflineChallan::class,

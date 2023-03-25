@@ -184,6 +184,22 @@ class Validator extends Base\Validator
         'mode'             => 'sometimes|string|in:IMPS,UPI,NEFT,RTGS,IFT,CT',  // instant refunds mode
         'fee'              => 'sometimes|integer',
         'tax'              => 'sometimes|integer',
+        'journal_id'       => 'sometimes|unsigned_id',
+    ];
+
+    protected static $createReversalRules = [
+        'journal_id'               => 'required|unsigned_id|max:14',
+        'payment_id'               => 'required|unsigned_id|max:14',
+        'refund_id'                => 'required|unsigned_id|max:14',
+        'merchant_id'              => 'required|unsigned_id|max:14',
+        'speed_decisioned'         => 'required|string',
+        'base_amount'              => 'required|integer|min:0',
+        'fee'                      => 'required|integer|min:0',
+        'tax'                      => 'required|integer|min:0',
+        'fee_only_reversal'        => 'required|bool',
+        'currency'                 => 'required|string',
+        'created_at'               => 'required|epoch',
+        'gateway'                  => 'required|string',
     ];
 
     protected static $refundEmailDataRules = [

@@ -4,6 +4,7 @@ namespace RZP\Reconciliator;
 
 use RZP\Models\Base;
 use RZP\Models\Batch;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -102,7 +103,8 @@ class Core extends Base\Core
                 {
                     $txn = $this->createMissingRefundTransaction($refund);
 
-                    if ($txn === null)
+                    if (($txn === null) and
+                        (($refund->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === false)))
                     {
                         return false;
                     }

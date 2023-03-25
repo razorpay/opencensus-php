@@ -29,6 +29,7 @@ class Table
     const DEVICE                       = 'devices';
     const PAYOUT                       = 'payouts';
     const PAYOUT_OUTBOX                = 'payout_outbox';
+    const LEDGER_OUTBOX                = 'ledger_outbox';
     const REFUND                       = 'refunds';
     const REPORT                       = 'reports';
     const CONTACT                      = 'contacts';
@@ -183,7 +184,6 @@ class Table
     const MERCHANT_INTERNATIONAL_INTEGRATIONS = 'merchant_international_integrations';
     const SETTLEMENT_INTERNATIONAL_REPATRIATION = 'settlement_international_repatriation';
     const MERCHANT_OWNER_DETAILS     = 'merchant_owner_details';
-
 
     const D2C_BUREAU_DETAIL         = 'd2c_bureau_details';
     const D2C_BUREAU_REPORT         = 'd2c_bureau_reports';

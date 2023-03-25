@@ -103,14 +103,15 @@ class Ledger
     ];
 
     // Headers
-    const ACCEPT                 = 'Accept';
-    const X_MODE                 = 'X-Mode';
-    const ADMIN_EMAIL            = 'X-Dashboard-Admin-Email';
-    const CONTENT_TYPE           = 'Content-Type';
-    const X_REQUEST_ID           = 'X-Request-ID';
-    const TENANT                 = 'tenant';
-    const LEDGER_TENANT_HEADER   = 'ledger-tenant';
-    const IDEMPOTENCY_KEY_HEADER = 'idempotency-key';
+    const ACCEPT                         = 'Accept';
+    const X_MODE                         = 'X-Mode';
+    const ADMIN_EMAIL                    = 'X-Dashboard-Admin-Email';
+    const CONTENT_TYPE                   = 'Content-Type';
+    const X_REQUEST_ID                   = 'X-Request-ID';
+    const TENANT                         = 'tenant';
+    const LEDGER_TENANT_HEADER           = 'ledger-tenant';
+    const IDEMPOTENCY_KEY_HEADER         = 'idempotency-key';
+    const LEDGER_INTEGRATION_MODE_HEADER = 'Ledger-Integration-Mode';
 
     const REQUEST_TIMEOUT = 60; // In seconds
 
@@ -669,6 +670,12 @@ class Ledger
         if(isset($headers[self::IDEMPOTENCY_KEY_HEADER]) === true)
         {
             $this->headers[self::IDEMPOTENCY_KEY_HEADER] = $headers[self::IDEMPOTENCY_KEY_HEADER];
+        }
+
+        // Add Ledger-Integration-Mode header
+        if(isset($headers[self::LEDGER_INTEGRATION_MODE_HEADER]) === true)
+        {
+            $this->headers[self::LEDGER_INTEGRATION_MODE_HEADER] = $headers[self::LEDGER_INTEGRATION_MODE_HEADER];
         }
 
         // Add passport header

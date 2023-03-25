@@ -10,7 +10,6 @@ use RZP\Models\Base;
 use RZP\Models\Payout;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
-use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Transfer;
 use RZP\Models\Reversal;
 use RZP\Error\ErrorCode;
@@ -38,10 +37,12 @@ use RZP\Models\BankingAccountStatement\Channel;
 use RZP\Models\Adjustment\Core as AdjustmentCore;
 use RZP\Models\Ledger\RouteReversalJournalEvents;
 use RZP\Models\Ledger\Constants as LedgerConstants;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 use RZP\Models\FundAccount\Validation as FundAccountValidation;
 use RZP\Models\Transaction\Processor\Ledger\Payout as PayoutLedger;
 use RZP\Models\Transaction\Processor\Ledger\FundAccountValidation as FavLedger;
+use RZP\Models\Ledger\ReverseShadow\Reversals\Core as ReverseShadowReversalsCore;
 
 class Core extends Base\Core
 {
@@ -479,7 +480,7 @@ class Core extends Base\Core
      *
      * @return Entity
      */
-    public function reverseForRefund(Payment\Refund\Entity $refund, bool $feeOnlyReversal): Entity
+    public function reverseForRefund(Payment\Refund\Entity $refund, bool $feeOnlyReversal, bool $isReversalForVirtualRefund = false): Entity
     {
         $reversalInput = [
             Entity::AMOUNT   => ($feeOnlyReversal === false) ? $refund->getBaseAmount() : 0,
@@ -500,20 +501,43 @@ class Core extends Base\Core
 
         $txnCore = new Transaction\Core;
 
-        $reversal = $this->repo->transaction(function() use ($reversal, $txnCore, $feeOnlyReversal)
+        if ($refund->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === true)
         {
-            list($txn, $feesSplit) = $txnCore->createFromRefundReversal($reversal);
+            $this->repo->transaction(function () use ($reversal, $refund, $feeOnlyReversal, $isReversalForVirtualRefund) {
 
-            $this->repo->saveOrFail($txn);
+                if($isReversalForVirtualRefund === true)
+                {
+                    $this->stripRefundRelationIfApplicable($reversal);
+                }
 
-            $this->repo->saveOrFail($reversal);
+                $this->repo->saveOrFail($reversal);
 
-            $txnCore->saveFeeDetails($txn, $feesSplit);
+                if($isReversalForVirtualRefund === true)
+                {
+                    $this->associateRefundIfApplicable($reversal, $refund);
+                }
 
-            $this->createLedgerEntriesForReversals($txn, $reversal, $feeOnlyReversal);
+//               Note: If merchant has Reverse Shadow flag enabled, create reversal entity and ledger entries only.
+//               reversal txn will be created in async via acknowledgement worker
+                (new ReverseShadowReversalsCore())->createLedgerEntriesForReversalReverseShadow($reversal, $refund, $refund->payment, $feeOnlyReversal);
+            });
+        }
+        else
+        {
+            $reversal = $this->repo->transaction(function () use ($reversal, $txnCore, $feeOnlyReversal) {
+                list($txn, $feesSplit) = $txnCore->createFromRefundReversal($reversal);
 
-            return $reversal;
-        });
+                $this->repo->saveOrFail($txn);
+
+                $this->repo->saveOrFail($reversal);
+
+                $txnCore->saveFeeDetails($txn, $feesSplit);
+
+                $this->createLedgerEntriesForReversals($txn, $reversal, $feeOnlyReversal);
+
+                return $reversal;
+            });
+        }
 
         $this->trace->info(
             TraceCode::REFUND_REVERSAL_CREATED,
@@ -525,6 +549,60 @@ class Core extends Base\Core
             ]);
 
         return $reversal;
+    }
+
+    protected function stripRefundRelationIfApplicable(Reversal\Entity $reversal)
+    {
+        $entity = $reversal->entity;
+
+        if (($entity === null) or
+            ($entity->getEntityName() !== E::REFUND))
+        {
+            return;
+        }
+
+        $reversal->entity()->dissociate();
+
+        $reversal->setAttribute(Entity::ENTITY_ID, $entity->getId());
+
+        $reversal->setAttribute(Entity::ENTITY_TYPE, E::REFUND);
+
+        return $entity;
+    }
+
+    protected function associateRefundIfApplicable($reversal, $refund = null)
+    {
+        if ($refund === null)
+        {
+            return;
+        }
+
+        $reversal->entity()->associate($refund);
+    }
+
+    public function createReversalTransaction(Entity $reversal, $journalId)
+    {
+        $txnCore = new Transaction\Core;
+
+        $txn = $this->repo->transaction(function () use ($reversal, $txnCore, $journalId) {
+
+            $txn = $this->repo->transaction->find($journalId);
+
+            if (isset($txn) === true)
+            {
+                return $txn;
+            }
+
+            list($txn, $feesSplit) = $txnCore->createFromRefundReversal($reversal, $journalId);
+
+            $this->repo->saveOrFail($txn);
+
+            $txnCore->saveFeeDetails($txn, $feesSplit);
+
+            return $txn;
+        });
+
+        return $txn;
     }
 
     private function createLedgerEntriesForReversals(Transaction\Entity $txn, Reversal\Entity $reversal, bool $feeOnlyReversal)

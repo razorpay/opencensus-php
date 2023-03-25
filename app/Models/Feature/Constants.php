@@ -1266,6 +1266,8 @@ class Constants
      */
     const PG_LEDGER_JOURNAL_WRITES = 'pg_ledger_journal_writes';
 
+    const PG_LEDGER_REVERSE_SHADOW = 'pg_ledger_reverse_shadow';
+
     /**
      * If contact number updated via admin dashboard, mark it verified by default if feature present on org
      */
@@ -2282,6 +2284,7 @@ class Constants
         self::LEDGER_JOURNAL_WRITES           => true,
         self::DA_LEDGER_JOURNAL_WRITES        => true,
         self::PG_LEDGER_JOURNAL_WRITES        => true,
+        self::PG_LEDGER_REVERSE_SHADOW        => true,
         self::LEDGER_JOURNAL_READS            => true,
         self::LEDGER_REVERSE_SHADOW           => true,
         self::ORG_AXIS_PAYPAL                 => true,

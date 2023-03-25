@@ -94,6 +94,7 @@ use RZP\Models\EMandate\Constants as EmandateConstants;
 use RZP\Models\Customer\Token\Constants as TokenConstants;
 use RZP\Models\UpiMandate\Frequency as UPIMandateFrequency;
 use RZP\Models\UpiMandate\RecurringType as UPIMandateRecurringType;
+use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Services\Dcs\Configurations\Service as DcsConfigService;
 use RZP\Models\Payment\Method;
 
@@ -4474,6 +4475,11 @@ class Processor
                 $this->payment->setGatewayCaptured(true);
 
                 $this->repo->saveOrFail($this->payment);
+
+                if ($this->payment->merchant->isFeatureEnabled(Features::PG_LEDGER_REVERSE_SHADOW) === true)
+                {
+                    (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
+                }
 
                 $this->createLedgerEntriesForGatewayCapture($this->payment);
             }, 20);

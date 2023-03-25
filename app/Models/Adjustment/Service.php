@@ -3,15 +3,21 @@
 namespace RZP\Models\Adjustment;
 
 use RZP\Error\Error;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
+use RZP\Models\Transaction;
 use RZP\Models\Merchant\Balance;
 use RZP\Constants as DefaultConstants;
 use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Models\Ledger\ReverseShadow\Adjustments\Core as ReverseShadowAdjustmentsCore;
+
 
 class Service extends Base\Service
 {
@@ -38,15 +44,33 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $adj = (new Adjustment\Core)->createAdjustment($input, $merchant);
+        $adj = $this->repo->transaction(
+            function () use ($merchant, $input)
+            {
+                $adj = (new Adjustment\Core)->createAdjustment($input, $merchant);
 
-        $publicId = $adj->getPublicId();
+                $publicId = $adj->getPublicId();
 
-        if (($adj->isBalanceTypePrimary() === true) and
-            ($adj->getEntityType() !== DefaultConstants\Entity::DISPUTE))
-        {
-            (new Adjustment\Core)->createLedgerEntriesForManualAdjustment($adj, $merchant, $publicId);
-        }
+                if (($adj->isBalanceTypePrimary() === true) and
+                    ($adj->getEntityType() !== DefaultConstants\Entity::DISPUTE))
+                {
+                    if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                    {
+                        (new ReverseShadowAdjustmentsCore())->createLedgerEntryForManualAdjustmentReverseShadow($adj, $publicId);
+
+                        $adj->setStatus(Status::PROCESSED);
+
+                        $this->repo->saveOrFail($adj);
+                    }
+                    else
+                    {
+                        (new Adjustment\Core)->createLedgerEntriesForManualAdjustment($adj, $merchant, $publicId);
+                    }
+                }
+
+                return $adj;
+            }
+        );
 
         // Todo: need to check if we need to push to slack channel before final state of adj ?
         $this->logActionToSlack($merchant, SlackActions::ADD_ADJUSTMENT, $input);
@@ -249,4 +273,51 @@ class Service extends Base\Service
         return (new Adjustment\Core)->createAdjustmentViaLedgerCronJob($blacklistIds, $whitelistIds, $limit);
     }
 
+    public function createAdjustmentInTransaction($input) :array
+    {
+        if((isset($input[Entity::ID]) === false) or (isset($input[Entity::TRANSACTION_ID]) === false))
+        {
+            throw new BadRequestValidationFailureException('Both id and transaction_id are required.');
+        }
+
+        $txnId = $input[Entity::TRANSACTION_ID];
+
+        $adjustmentId = $input[Entity::ID];
+
+        try
+        {
+            $adjustment = $this->repo->adjustment->findOrFail($adjustmentId);
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID,
+                null,
+                [
+                    LedgerConstants::ADJUSTMENT_ID      => $adjustmentId,
+                ]);
+        }
+
+        $txn = $this->repo->transaction(function() use ($adjustment, $txnId)
+        {
+            $txn = (new Transaction\Core)->createFromAdjustment($adjustment, $txnId);
+
+            $this->repo->saveOrFail($txn);
+
+            $this->repo->saveOrFail($adjustment);
+
+            (new Transaction\Core)->dispatchEventForTransactionCreated($txn);
+
+            return $txn;
+
+        });
+
+        $this->trace->info(TraceCode::ADJUSTMENT_TRANSACTION_CREATED,
+            [
+                LedgerConstants::ADJUSTMENT_ID      => $adjustmentId,
+                LedgerConstants::JOURNAL_ID         => $txnId,
+                LedgerConstants::API_TRANSACTION_ID => $txn->getId(),
+        ]);
+
+        return $adjustment->toArrayPublic();
+    }
 }

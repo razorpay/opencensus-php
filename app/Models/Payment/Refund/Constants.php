@@ -74,6 +74,7 @@ class Constants
     const CURRENCY                 = 'currency';
     const ACQUIRER_DATA            = 'acquirer_data';
     const FUNDS_ON_HOLD            = 'funds_on_hold';
+    const INPUT                    = 'input';
 
     const RESPONSE_CODE          = 'code';
     const RESPONSE_BODY          = 'body';
@@ -247,6 +248,10 @@ class Constants
     const TRANSACTION_ID     = 'transaction_id';
 
     const CREATED_AT = 'created_at';
+
+    const PG_LEDGER_REVERSE_SHADOW                  = 'pg_ledger_reverse_shadow';
+    const JOURNAL_ID                                = 'journal_id';
+    const FEE_ONLY_REVERSAL                         = 'fee_only_reversal';
 
     // Upi Airtel Refund File
     const ORG_RRN                 = 'Org_RRN';

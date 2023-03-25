@@ -13,12 +13,13 @@ use RZP\Trace\Tracer;
 class KafkaMessageProcessor
 {
     // Topic name constants to map job
-    const API_BVS_EVENTS            = 'api-bvs-validation-result-events';
-    const ADDRESS_DEDUPE_EVENT      = 'address-dedupe-response';
-    const RAW_ADDRESS_CONTACTS      = 'raw-address-contacts';
-    const MERCHANT_WEBSITE_INFO     = 'merchant-website-info-result';
-    const LEGAL_DOCUMENTS_EVENTS    = 'api-bvs-legal-document-result-events';
-    const INVALID_ADDRESS_EVENTS    = 'invalid-address-events';
+    const API_BVS_EVENTS                = 'api-bvs-validation-result-events';
+    const ADDRESS_DEDUPE_EVENT          = 'address-dedupe-response';
+    const RAW_ADDRESS_CONTACTS          = 'raw-address-contacts';
+    const MERCHANT_WEBSITE_INFO         = 'merchant-website-info-result';
+    const LEGAL_DOCUMENTS_EVENTS        = 'api-bvs-legal-document-result-events';
+    const INVALID_ADDRESS_EVENTS        = 'invalid-address-events';
+    const API_PG_LEDGER_ACKNOWLEDGMENTS = 'outbox_jobs_api';
 
     /** @var Application $app */
     protected $app;
@@ -126,6 +127,9 @@ class KafkaMessageProcessor
 
             case self::LEGAL_DOCUMENTS_EVENTS:
                 return new KafkaJobs\BvsLegalDocumentsJob($payload['data'], $mode);
+
+            case self::API_PG_LEDGER_ACKNOWLEDGMENTS:
+                return new KafkaJobs\PGLedgerAcknowledgmentJob($payload, $mode);
 
             case self::INVALID_ADDRESS_EVENTS:
                 return new InvalidAddressConsumer($payload, $mode);

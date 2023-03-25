@@ -11,6 +11,7 @@ use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
+use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Services\Shield;
 use RZP\Constants\Procurer;
 use RZP\Gateway\Base\Metric as BaseMetric;
@@ -10191,11 +10192,18 @@ trait Authorize
             {
                 $payment->setGatewayCaptured(true);
 
+                if ($payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+                {
+                    [$txn, $feesSplit] = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+
+                    $this->repo->saveOrFail($txn);
+                }
+                else
+                {
+                    (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($payment);
+                }
                 // Also sets the transaction association with the payment.
                 // Fee Split would be null, as its the dummy transaction, so we are not saving fee split.
-                [$txn, $feesSplit] = (new Transaction\Core)->createFromPaymentAuthorized($payment);
-
-                $this->repo->saveOrFail($txn);
 
                 $this->trace->info(
                     TraceCode::PAYMENT_GATEWAY_CAPTURED,

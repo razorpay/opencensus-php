@@ -147,8 +147,14 @@ class DEventsKafkaConsumer extends Command
         {
             $conf->set('session.timeout.ms', env('RAW_CONTACTS_KAFKA_SESSION_TIMEOUT_MS'));
         }
+        else if (count($topics) == 1 && $topics[0] == env('PG_LEDGER_ACK_TOPIC')){
 
+            $consumerGroup = env('QUEUE_KAFKA_COSUMER_GROUP');
 
+            $this->info('setting consumer group : '.$consumerGroup. ' for topic : '.$topics[0]);
+
+            $conf->set('group.id', $consumerGroup);
+        }
         return $conf;
 
     }
@@ -225,6 +231,11 @@ class DEventsKafkaConsumer extends Command
         if ($devstack_label != '')
         {
             $topic = str_replace('-' . $devstack_label, '', $topic);
+        }
+
+        if(str_contains($topic,'outbox_jobs_api'))
+        {
+            $topic = 'outbox_jobs_api';
         }
 
         $isProcessed = $this->messageProcessor->process($topic, $payload, $this->mode);

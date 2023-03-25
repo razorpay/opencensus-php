@@ -163,15 +163,15 @@ class Merchant
         return $this->setl;
     }
 
-    public function createTransaction($settlement)
+    public function createTransaction($settlement, $journalID=null)
     {
         try
         {
             $this->setl = $settlement;
 
-            $this->repo->transaction(function()
+            $this->repo->transaction(function() use ($journalID)
             {
-                $this->setlTransaction = (new Transaction\Core)->createFromSettlement($this->setl);
+                $this->setlTransaction = (new Transaction\Core)->createFromSettlement($this->setl, $journalID);
 
                 $this->repo->saveOrFail($this->setlTransaction);
 
@@ -729,6 +729,13 @@ class Merchant
 
         $destinationMerchantId = null;
 
+        $journalID = null;
+
+        if (!empty($params['journal_id']))
+        {
+            $journalID = $params['journal_id'];
+        }
+
         if(($params['type'] === Feature\Constants::AGGREGATE_SETTLEMENT) and isset($params['destination_merchant_id']) === true)
         {
             $destinationMerchantId = $params['destination_merchant_id'];
@@ -740,7 +747,7 @@ class Merchant
 
         }
 
-        $settlementTransfer = $this->repo->transaction(function() use ($merchantSettleToPartner, $balance, $input, $destinationMerchantId)
+        $settlementTransfer = $this->repo->transaction(function() use ($merchantSettleToPartner, $balance, $input, $destinationMerchantId, $journalID)
         {
             //create new settlement entity
             $this->newSettlementEntity($merchantSettleToPartner, $balance, $input);
@@ -755,7 +762,7 @@ class Merchant
             $this->repo->saveOrFailCollection($this->setlDetails);
 
             //create transaction corresponding to settlement
-            $this->createTransaction($this->setl);
+            $this->createTransaction($this->setl, $journalID);
 
             $settlementTransfer = null;
 

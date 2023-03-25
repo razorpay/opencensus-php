@@ -1320,4 +1320,206 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_REFUND_NOT_ENOUGH_CREDITS
         ]
     ],
+
+    'testCronRetrySuccessForNormalRefundReversalWithCredits' => [
+        'request' => [
+            'url' => '/ledger_outbox/retry',
+            'method' => 'POST',
+            'content' => [
+                'limit'        =>  1,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "count" => 1
+            ],
+        ]
+    ],
+
+    'testCronRetryForNormalRefundReversalWithCreditsUpdateRetryCount' => [
+        'request' => [
+            'url' => '/ledger_outbox/retry',
+            'method' => 'POST',
+            'content' => [
+                'limit'        =>  1,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "count" => 0
+            ],
+        ]
+    ],
+
+    'testCronRetryFailureForNormalRefundReversalWithCreditsWithDuplicateError' => [
+        'request' => [
+            'url' => '/ledger_outbox/retry',
+            'method' => 'POST',
+            'content' => [
+                'limit'        =>  1,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "count" => 0
+            ],
+        ]
+    ],
+
+    'testCronRetryFailureForNormalRefundReversalWithCreditsWithExhaustedRetries' => [
+        'request' => [
+            'url' => '/ledger_outbox/retry',
+            'method' => 'POST',
+            'content' => [
+                'limit'        =>  1,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "count" => 0
+            ],
+        ]
+    ],
+
+    'testVirtualRefundReversalFaliureWithInvalidInput' => [
+        'request' => [
+            'url' => '/refunds/reversal_create',
+            'method' => 'POST',
+            'content' => [
+                "journal_id"               => "LReSY2s4HTYIOx",
+                "payment_id"               => "LRX0c0kDMUfCsC",
+                "refund_id"                => "LRei1RkDqc1WBd",
+                "merchant_id"              => "10000000000000",
+                "speed_decisioned"         => "normal",
+                "base_amount"              => "10000",
+                "tax"                      => "0",
+                "fee"                      => "0",
+                "fee_only_reversal"        =>  0,
+                "currency"                 => "INR",
+                "created_at"               => "1678851765",
+            ]
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
+    'testVirtualRefundReversalFaliureWithReverseShadowNotEnabled' => [
+        'request' => [
+            'url' => '/refunds/reversal_create',
+            'method' => 'POST',
+            'content' => [
+                "journal_id"               => "LReSY2s4HTYIOx",
+                "payment_id"               => "LRX0c0kDMUfCsC",
+                "refund_id"                => "LRei1RkDqc1WBd",
+                "merchant_id"              => "10000000000000",
+                "speed_decisioned"         => "normal",
+                "base_amount"              => "10000",
+                "tax"                      => "0",
+                "fee"                      => "0",
+                "fee_only_reversal"        => 0,
+                "currency"                 => "INR",
+                "created_at"               => "1678851765",
+                "gateway"                  => "hdfc",
+            ]
+        ],
+        'response'  => [
+            'content'     => [],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_REFUND_REVERSAL_NOT_APPLICABLE
+        ],
+    ],
+
+    'testVirtualRefundReversalFaliureWithDuplicateReversal' => [
+        'request' => [
+            'url' => '/refunds/reversal_create',
+            'method' => 'POST',
+            'content' => [
+                "journal_id"               => "LReSY2s4HTYIOx",
+                "payment_id"               => "LRX0c0kDMUfCsC",
+                "refund_id"                => "LRei1RkDqc1WBd",
+                "merchant_id"              => "10000000000000",
+                "speed_decisioned"         => "normal",
+                "base_amount"              => "10000",
+                "tax"                      => "0",
+                "fee"                      => "0",
+                "fee_only_reversal"        => 0,
+                "currency"                 => "INR",
+                "created_at"               => "1678851765",
+                "gateway"                  => "hdfc",
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                "refund_id" => "LRei1RkDqc1WBd",
+                "reversal_id" => "LRei1RkDqc1KPT",
+                "is_duplicate" => true
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testVirtualRefundReversalSuccess' => [
+        'request' => [
+            'url' => '/refunds/reversal_create',
+            'method' => 'POST',
+            'content' => [
+                'journal_id'               => 'LP6jffEeZejP3v',
+                'payment_id'               => 'LRX0c0kDMUfCsC',
+                'refund_id'                => 'LRei1RkDqc1WBd',
+                'merchant_id'              => '10000000000000',
+                'speed_decisioned'         => 'normal',
+                'base_amount'              => '10000',
+                'fee'                      => '0',
+                'tax'                      => '0',
+                'fee_only_reversal'        => 0,
+                'currency'                 => 'INR',
+                'created_at'               => '1678851765',
+                'gateway'                  => 'hdfc',
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                "refund_id" => "LRei1RkDqc1WBd",
+                "is_duplicate" => false
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testKafkaAckSuccessForVirtualRefundReversalEvent' => [
+        'request' => [
+            'url' => '/refunds/reversal_create',
+            'method' => 'POST',
+            'content' => [
+                "journal_id"               => "LP6jffEeZejP3v",
+                "payment_id"               => "LRX0c0kDMUfCsC",
+                "refund_id"                => "LRei1RkDqc1WBd",
+                "merchant_id"              => "10000000000000",
+                "speed_decisioned"         => "normal",
+                "base_amount"              => "10000",
+                "tax"                      => "0",
+                "fee"                      => "0",
+                "fee_only_reversal"        => 0,
+                "currency"                 => "INR",
+                "created_at"               => "1678851765",
+                "gateway"                  => "hdfc",
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                "refund_id" => "LRei1RkDqc1WBd",
+                "is_duplicate" => false
+            ],
+            'status_code' => 200,
+        ],
+    ],
 ];

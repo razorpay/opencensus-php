@@ -1141,6 +1141,14 @@ class Processor extends Base\Core
         }
         catch (\Throwable $e)
         {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SETTLEMENT_CREATE_FAILED_FOR_SERVICE,
+                [
+                    'input' => $input,
+                ]);
+
             $errorMsg      = $e->getMessage();
             $exceptionData = $e->getData();
 

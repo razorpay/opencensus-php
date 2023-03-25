@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Card;
+use RZP\Models\Ledger\ReverseShadow\Payments\Core as ReverseShadowPaymentsCore;
 use RZP\Models\QrCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -2107,6 +2108,11 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
             {
                 $this->paymentTransaction->saveOrFail();
 
+                if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+                {
+                    (new ReverseShadowPaymentsCore())->createLedgerEntryForCaptureGatewayCommissionReverseShadow($this->payment, $reconGatewayFee, $reconGatewayServiceTax);
+                }
+
                 // commenting this as currently there is issue with kafka flush resulting in increase in batch processing time.
                 // Also, this data is not being used for dual comparison right now.
                 //$this->createLedgerEntriesForCaptureGatewayCommission($this->payment, $this->paymentTransaction);
@@ -2301,6 +2307,8 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
                 'batch_id'      => $this->batchId,
             ]);
 
+        $paymentProcessor = new Payment\Processor\Processor($this->merchant);
+
         //
         // We should always create a transaction if the payment comes in the recon file.
         // This is needed because currently nodal and merchant transactions are tracked via
@@ -2311,18 +2319,39 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         //
         if ($this->payment->hasBeenCaptured() === true)
         {
-            list($txn, $feesSplit) = (new Transaction\Core)->createOrUpdateFromPaymentCaptured($this->payment);
+            if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+            {
+                list($txn, $feesSplit) = (new Transaction\Core)->createOrUpdateFromPaymentCaptured($this->payment);
+            }
+            else
+            {
+                (new ReverseShadowPaymentsCore())->createLedgerEntryForGatewayCaptureReverseShadow($this->payment);
+
+                $discount = $paymentProcessor->getDiscountIfApplicableForLedger($this->payment);
+
+                [$fee, $tax] = (new ReverseShadowPaymentsCore())->createLedgerEntryForMerchantCaptureReverseShadow($this->payment, $discount);
+
+                $this->trace->info(TraceCode::PAYMENT_MERCHANT_CAPTURED_REVERSE_SHADOW, [
+                    'payment_id' => $this->payment->getId(),
+                    "fee" => $fee,
+                    "tax" =>$tax
+                ]);
+            }
         }
         else
         {
             list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($this->payment);
         }
 
-        $this->repo->saveOrFail($txn);
+        if ($this->payment->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            $this->repo->saveOrFail($txn);
+
+            $this->saveFeeDetails($txn, $feesSplit);
+        }
+
         // This is required to save the association of the transaction with the payment.
         $this->repo->saveOrFail($this->payment);
-
-        $paymentProcessor = new Payment\Processor\Processor($this->merchant);
 
         $paymentProcessor->createLedgerEntriesForGatewayCapture($this->payment);
 
@@ -2330,8 +2359,6 @@ class PaymentReconciliate extends Base\Foundation\SubReconciliate
         {
             $paymentProcessor->createLedgerEntriesForMerchantCapture($this->payment, $txn);
         }
-
-        $this->saveFeeDetails($txn, $feesSplit);
 
         if ($this->payment->isExternal() === true)
         {

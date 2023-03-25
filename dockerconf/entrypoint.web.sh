@@ -54,7 +54,7 @@ configure(){
     chown 0775 /var/log/apache/
     alohomora cast --region ap-south-1 --env "$APP_MODE" --app api "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
      # log the output into stdout as php monolog has a bug in logging
-    tail -F storage/logs/$HOSTNAME-trace-$(date +%Y-%m-%d).log &
+     tail -F storage/logs/$HOSTNAME-trace-$(date +%Y-%m-%d)*.log &
  else
     alohomora cast --region ap-south-1 --env "$APP_MODE" --app api "environment/.env.vault.j2" "environment/env.php.j2" "dockerconf/api.apache.conf.j2"
   fi

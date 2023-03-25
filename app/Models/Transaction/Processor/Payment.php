@@ -126,7 +126,7 @@ class Payment extends Base
             return $this->fillEmptyTxnFeesAndAmount();
         }
 
-        return parent::createTransaction();
+        return parent::createTransaction($txnId);
     }
 
     protected function shouldUpdateBalance()
@@ -164,6 +164,10 @@ class Payment extends Base
 
             return false;
         }
+        else if ($this->source->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            return true;
+        }
         else if (($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_BALANCE_UPDATE) === true) and
             ($this->source->isExternal() === false))
         {
@@ -186,7 +190,12 @@ class Payment extends Base
 
     protected function shouldMoveTxnFillToAsync(): bool
     {
-        return (($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS)) and
+        if($this->source->merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === true)
+        {
+            return false;
+        }
+
+        return (($this->source->merchant->isFeatureEnabled(Feature\Constants::ASYNC_TXN_FILL_DETAILS) === true) and
             ($this->source->isExternal() === false));
     }
 

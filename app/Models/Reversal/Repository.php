@@ -369,4 +369,14 @@ class Repository extends Base\Repository
         return \DB::connection($this->getPayoutsServiceConnection())
                   ->select("select * from $tableName where id = '$id' limit 1");
     }
+
+    public function findReversalByRefundId(string $refundId)
+    {
+        $query = $this->newQueryWithConnection($this->getSlaveConnection())
+                      ->where(Entity::ENTITY_TYPE, E::REFUND)
+                      ->where(Entity::ENTITY_ID, $refundId);
+
+        return $query->first();
+    }
+
 }

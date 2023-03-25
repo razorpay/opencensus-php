@@ -6,6 +6,7 @@ use Config;
 use ApiResponse;
 use Carbon\Carbon;
 
+use Ramsey\Uuid\Uuid;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Models\Base;
@@ -13,9 +14,15 @@ use RZP\Error\Error;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Services\Ledger as LedgerService;
+
+use RZP\Models\Reversal;
+
+use RZP\Models\Reversal\Constants as ReversalConstants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Base\Repository;
@@ -55,6 +62,7 @@ use RZP\Models\Merchant\Email\Core as MerchantEmailCore;
 use RZP\Models\Payment\Refund\Constants as RefundConstants;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 use RZP\Models\Terminal\Entity as TerminalEntity;
+use RZP\Models\Ledger\Constants as LedgerConstants;
 
 class Service extends Base\Service
 {
@@ -1769,7 +1777,8 @@ class Service extends Base\Service
                                         ->createTransactionForRefund(
                                             $refundWithoutTxn, $payment);
 
-                    if ($transaction === null)
+                    if (($transaction === null) and
+                        ($refundWithoutTxn->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === false))
                     {
                         throw new Exception\LogicException(
                             'Transaction did not get created',
@@ -2360,6 +2369,84 @@ class Service extends Base\Service
         }
 
         return $refund;
+    }
+
+    /**
+     * @throws \Throwable
+     */
+    public function createReversalForVirtualRefund(array $input)
+    {
+        (new RefundEntity())->getValidator()->validateInput('create_reversal', $input);
+
+        $this->trace->info(
+            TraceCode::VIRTUAL_REFUND_REVERSAL_REQUEST,
+            [
+                RefundConstants::INPUT  => $input,
+            ]);
+
+        $refundId = $input['refund_id'];
+
+        $merchantId = $input['merchant_id'];
+
+        $merchant = $this->repo->merchant->find($merchantId);
+
+        if ($merchant->isFeatureEnabled(Feature\Constants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            $this->trace->info(TraceCode::REVERSAL_CREATION_FOR_VIRTUAL_REFUND_NOT_APPLICABLE, [
+                RefundConstants::REFUND_ID      => $refundId,
+            ]);
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_REFUND_REVERSAL_NOT_APPLICABLE,
+                null,
+                [
+                    RefundConstants::REFUND_ID      => $refundId,
+                    ReversalConstants::REASON       => "Merchant not onboarded on pg_ledger_reverse_shadow"
+                ]);
+        }
+
+        $reversal = $this->repo->reversal->findReversalByRefundId($refundId);
+
+        // We will create a new reversal only if there are no existing reversals for the given refund Id
+        if ($reversal !== null)
+        {
+            $this->trace->info(TraceCode::REVERSAL_CREATION_FOR_VIRTUAL_REFUND_DUPLICATE_REQUEST, [
+                RefundConstants::REFUND_ID      => $refundId,
+                ReversalConstants::REVERSAL_ID  => $reversal->getId(),
+            ]);
+
+            return [
+                RefundConstants::REFUND_ID      => $refundId,
+                ReversalConstants::REVERSAL_ID  => $reversal->getId(),
+                ReversalConstants::IS_DUPLICATE => true
+            ];
+        }
+
+        $payment = $this->repo->payment->findOrFail($input[RefundConstants::PAYMENT_ID]);
+
+        $refund = $this->buildVirtualRefundEntity($payment, $input, $input[RefundConstants::REFUND_ID]);
+        $refund[RefundEntity::ID] = $refundId;
+
+        $response = [];
+
+        try
+        {
+            $reversal = (new Reversal\Core)->reverseForRefund($refund, $input[RefundConstants::FEE_ONLY_REVERSAL], true);
+
+            $response[RefundConstants::REFUND_ID]   = $refundId;
+            $response[ReversalConstants::REVERSAL_ID] = $reversal->getId();
+            $response[ReversalConstants::IS_DUPLICATE] = false;
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, null, null, [
+                RefundConstants::REFUND_ID  => $input[RefundConstants::REFUND_ID],
+                RefundConstants::MESSAGE    => $ex->getMessage()
+            ]);
+
+            throw $ex;
+        }
+        return $response;
     }
 
     public function markProcessedBulk(array $input)

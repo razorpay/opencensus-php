@@ -437,4 +437,13 @@ class RefundController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function reversalCreateForVirtualRefund()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->createReversalForVirtualRefund($input);
+
+        return ApiResponse::json($response);
+    }
 }
