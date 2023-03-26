@@ -1079,6 +1079,11 @@ class Service
             return sprintf('%s/vpa/validate', $version);
         }
 
+        if ($action === self::TRANSACTION_UPSERT)
+        {
+            return sprintf('%s/transaction/upsert', $version);
+        }
+
         return sprintf('%s/%s', $version, $action);
     }
 
