@@ -447,7 +447,7 @@ class Core extends Base\Core
         ];
 
         $isExpEnabled = (new Merchant\Core)->isSplitzExperimentEnable(
-            $properties, 'enable', TraceCode::PARTNERSHIP_SERVICE_COMMISSION_SYNC_SPLITZ_ERROR
+            $properties, 'enable', TraceCode::PRTS_COMMISSION_DUAL_WRITE_SPLITZ_ERROR
         );
 
         if(! $isExpEnabled)
@@ -466,6 +466,14 @@ class Core extends Base\Core
 
             \Event::dispatch(new TransactionalClosureEvent(function () use ($data) {
                 // Job will be dispatched only if the transaction commits.
+                $this->trace->info(
+                    TraceCode::PRTS_COMMISSION_DUAL_WRITE_DISPATCHING,
+                    [
+                        'mode' => $this->mode,
+                        'id' => $data['commission']['id'],
+                    ]
+                );
+
                 $this->pushJobToSQS($data);
                 $this->trace->count(Metric::PARTNERSHIP_COMMISSION_SYNC_JOB_PUSH_SUCCESS);
             }));
@@ -475,7 +483,7 @@ class Core extends Base\Core
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::PARTNERSHIP_SERVICE_COMMISSION_SYNC_FAILED,
+                TraceCode::PRTS_COMMISSION_DUAL_WRITE_FAILED,
                 [ $commission->toArrayPublic() ]
             );
             $this->trace->count(Metric::PARTNERSHIP_COMMISSION_SYNC_JOB_PUSH_FAILURE);
@@ -489,7 +497,7 @@ class Core extends Base\Core
      */
     private function pushJobToSQS($data): void
     {
-        $queueName = $this->config->get('queue.partnerships_commission' . $this->app['rzp.mode']);
+        $queueName = $this->config->get('queue.partnerships_commission.' . $this->app['rzp.mode']);
 
         if (in_array(app('env'), self::LOCALSTACK_ENVIRONMENTS, true) === true)
         {
@@ -500,7 +508,15 @@ class Core extends Base\Core
             $connection = 'sqs';
         }
 
-        $this->app['queue']->connection($connection)->pushRaw(json_encode($data), $queueName);
+        $messageId = $this->app['queue']->connection($connection)->pushRaw(json_encode($data), $queueName);
+
+        $this->trace->info(
+            TraceCode::PRTS_COMMISSION_DUAL_WRITE_DISPATCHED,
+            [
+                'id' => $data['commission']['id'],
+                'messageId' => $messageId
+            ]
+        );
     }
 
     /**
