@@ -1,15 +1,18 @@
 import React, { Component } from 'react';
 import Popover, { PopoverBody } from 'common/ui/Popover';
+
 import * as storage from 'common/utils/localStorage';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ModesDropdown from './SwitchMode';
 import SwitchMerchant from './SwitchMerchant';
 import OffersForYou from 'common/ui/OffersForYou';
-import { fetchExclusiveOffer as fetchExclusiveOfferProp } from '../../../merchant/reducers/growthService';
+import { fetchExclusiveOffer as fetchExclusiveOfferProp } from 'merchant/reducers/growthService';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import GrowthAssetEB from 'common/ui/GrowthAssetEB';
+import { FtuxModal } from './FtuxModal';
+import moment from 'moment';
 
 class NavFragment extends Component {
   constructor(props) {
@@ -23,6 +26,7 @@ class NavFragment extends Component {
 
     this.state = {
       showSwitchModeTooltip: !hideSwitchModeTooltip && showSwitchModeTooltip,
+      showFtuxModal: false,
     };
 
     if (hideSwitchModeTooltip && showSwitchModeTooltip) {
@@ -41,9 +45,46 @@ class NavFragment extends Component {
     storage.removeItem(this.showModePopoverToken);
   }
 
+  handleModalVisibilty() {
+    const expireAt = moment().add(1, 'day').unix();
+    localStorage.setItem('ftux_modal', expireAt);
+  }
+
+  shouldShowFtuxModal() {
+    const storedTimeStamp = localStorage.getItem('ftux_modal');
+    // if the item doesn't exist, store expire time and return null
+    if (!storedTimeStamp) {
+      this.handleModalVisibilty();
+      this.setState({
+        showFtuxModal: false,
+      });
+    }
+    if (!this.props.user.isFtuxEnabled || this.props.user.isTransacted) {
+      this.setState({
+        showFtuxModal: false,
+      });
+      return;
+    }
+    const current = moment().unix();
+    if (current > Number(storedTimeStamp) && !this.state.showFtuxModal) {
+      this.setState({
+        showFtuxModal: true,
+      });
+    }
+  }
+
   componentDidMount() {
     const { fetchExclusiveOffer } = this.props;
     fetchExclusiveOffer({ fromWhere: 'gsExclusiveOffer' });
+    if (this.props.user.isFtuxEnabled) {
+      this.shouldShowFtuxModal();
+    }
+  }
+
+  componentDidUpdate() {
+    if (this.props.user.isFtuxEnabled && !this.props.user.isTransacted) {
+      this.shouldShowFtuxModal();
+    }
   }
 
   render() {
@@ -58,7 +99,7 @@ class NavFragment extends Component {
       mtuOfferCount,
       exclusive_offers,
     } = this.props;
-    const { showSwitchModeTooltip } = this.state;
+    const { showSwitchModeTooltip, showFtuxModal } = this.state;
 
     const isReferredMerchant = referee?.status === 'signup';
 
@@ -70,6 +111,12 @@ class NavFragment extends Component {
     const showOFYNitroFlow = user.isPartOfNeostone
       ? user.isNeostoneFlowEnabled('offers-for-you')
       : user.isProjectNitroEnabled;
+
+    const closeModal = () => {
+      this.setState({
+        showFtuxModal: false,
+      });
+    };
 
     return (
       <React.Fragment>
@@ -119,6 +166,9 @@ class NavFragment extends Component {
           <li class="SwitchMerchantDropdown">
             <SwitchMerchant user={user} onSwitchMerchant={onSwitchMerchant} />
           </li>
+        ) : null}
+        {showFtuxModal ? (
+          <FtuxModal closeModal={closeModal} handleModalVisibilty={this.handleModalVisibilty} />
         ) : null}
       </React.Fragment>
     );
