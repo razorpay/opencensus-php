@@ -3732,4 +3732,23 @@ class CoreTest extends TestCase
 
         $this->assertEquals('activated', $merchantDetailData['activation_status']);
     }
+
+    public function testHasKeyAccess()
+    {
+        $merchant = Mockery::mock('RZP\Models\Merchant\Entity');
+
+        $merchantId = '10000000000000';
+
+        $merchantDetails = Mockery::mock('RZP\Models\Merchant\Detail\Entity');
+
+        $merchant->shouldReceive('getAttribute')->andReturn($merchantDetails);
+
+        $merchant->shouldReceive('getId')->andReturn($merchantId);
+
+        $merchantDetails->shouldReceive('getWebsite')->andReturn('www.test.com');
+
+        $response = (new DetailCore())->hasWebsite($merchant);
+
+        $this->assertTrue($response);
+    }
 }

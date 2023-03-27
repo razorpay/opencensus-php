@@ -1536,7 +1536,7 @@ return [
             "proof_of_profession"               => "Proof of profession",
             "gia_certificate"                   => "GIA certificate",
             "pm_wani_certificate"               => "PM WANI certificate",
-            "pesco_license"                     => "PESCO license",
+            "peso_license"                     => "PESO license",
             "domain_ownership_document"         => "Domain ownership invoice / Self Declaration / AOC for PCI DSS",
             "iec_license"                       => "IEC license",
             "business_correspondent_document"   => "Business correspondent document",

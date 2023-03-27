@@ -72,10 +72,10 @@ class Activate extends Base\Core
 
             return $this->markKycVerified($merchant, $triggerWorkflow, $shouldSave);
         }
-        //
+
         // For merchants who never went through the instant activations flow, and,
         // who went through the instant activations flow and got greylisted
-        //
+
         $this->trace->info(TraceCode::NOT_ACTIVATED, $merchant->toArrayPublic());
 
         return $this->activateAndMarkKycVerified($merchant, $triggerWorkflow, $shouldSave);
@@ -162,8 +162,9 @@ class Activate extends Base\Core
             }
         }
 
-        // making sure that merchant's has_key_access is set to true when website is set.
-        if ((empty($merchantDetail->getWebsite()) === false) and
+        // Merchant's has_key_access is set to true when website or App Store url or PlayStore url is set.
+
+        if (((new Merchant\Detail\Core())->hasWebsite($merchant) === true) and
             ($merchant->getHasKeyAccess() === false))
         {
             $merchant->setHasKeyAccess(true);

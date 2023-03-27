@@ -2871,7 +2871,7 @@ class Core extends Base\Core
                 'merchant_id'      => $merchant->getId()
             ]);
 
-        if (empty($merchantDetails->getWebsite()) === true)
+        if ((new Detail\Core())->hasWebsite($merchant) === false)
         {
             return;
         }
@@ -9130,4 +9130,43 @@ class Core extends Base\Core
         }
 
     }
+
+    public function hasWebsite(Merchant\Entity $merchant)
+    {
+        // To check whether any of the business website/appstore url/ playstore url is present
+
+        $hasWebsite = false;
+
+        $appStoreUrl = null;
+
+        $playStoreUrl = null;
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $businessDetails = $this->repo->merchant_business_detail->getBusinessDetailsForMerchantId($merchant->getId());
+
+        $websiteUrl = $merchantDetails->getWebsite();
+
+        if (empty($businessDetails) === false)
+        {
+            $playStoreUrl = $businessDetails->getPlaystoreUrl();
+
+            $appStoreUrl = $businessDetails->getAppstoreUrl();
+        }
+
+        if ((empty($websiteUrl) === false) or
+            (empty($playStoreUrl) === false) or
+            (empty($appStoreUrl) === false))
+        {
+            $hasWebsite = true;
+        }
+
+        $this->trace->info(TraceCode::MERCHANT_BUSINESS_WEBSITE_DETAILS, [
+            'MerchantId' => $merchant->getId(),
+            'hasWebsite'  => $hasWebsite
+        ]);
+
+        return $hasWebsite;
+    }
+
 }

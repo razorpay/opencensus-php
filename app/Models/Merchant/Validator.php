@@ -1770,16 +1770,7 @@ class Validator extends Base\Validator
     {
         $merchant = $this->entity;
 
-        $website = $merchant->merchantDetail->getWebsite();
-
-        // If the merchant has submitted activation form with website/app data
-        // i.e merchant will have access to keys.
-        // or if website is not null [this check to be removed later]
-        if (($merchant->getHasKeyAccess() === true) or
-            (empty($website) === false))
-        {
-            $attributes[] = Entity::WEBSITE;
-        }
+        $this->validateWebsitesPresentIfApplicable($merchant);
 
         foreach ($attributes as $attribute)
         {
@@ -1789,6 +1780,45 @@ class Validator extends Base\Validator
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Please set value for attribute: ' . $attribute);
+            }
+        }
+    }
+
+    protected function validateWebsitesPresentIfApplicable($merchant)
+    {
+        /*
+        We are checking two conditions here -
+
+        1.  If the merchant has access to keys he should have either of the playstore/website/app store url.
+        2.  If the business website is there in the merchant detail table then the website should also be present in the merchant table
+
+        => getAttribute - fetches website from the merchant table
+        => we need not check 2nd condition above in case of the appstore and playstore url as right now in the current scenerio we only store
+        app store and play store url in the business details table
+
+        Future scope - We need to update the business website of the merchant in the merchant detail table with the playstore url or app store url
+        if the merchant has only submitted either one of them (and we will put check later on to check that the business website of the merchant should
+        be set if the playstore or the app store url is present)
+
+        */
+
+        if (($merchant->getHasKeyAccess() === true))
+        {
+            if (((new Detail\Core()))->hasWebsite($merchant) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Website details are missing');
+            }
+
+            // fetching website from the merchant details table
+
+            $website = $merchant->merchantDetail->getWebsite();
+
+            if ((empty($website) === false) and
+                (empty($merchant->getAttribute(Entity::WEBSITE)) === true))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Website attributes are missing');
             }
         }
     }

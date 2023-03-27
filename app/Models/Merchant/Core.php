@@ -7817,10 +7817,9 @@ class Core extends Base\Core
      */
     public function addHasKeyAccessToMerchantIfApplicable(Merchant\Entity $merchant)
     {
-        $merchantDetail = $merchant->merchantDetail;
+        // Merchant's has_key_access is set to true when website Url or App Store url or PlayStore url is set.
 
-        // making sure that merchant's has_key_access is set to true when website is set.
-        if ((empty($merchantDetail->getWebsite()) === false) and
+        if (((new Merchant\Detail\Core())->hasWebsite($merchant) === true) and
             ($merchant->getHasKeyAccess() === false))
         {
             $merchant->setHasKeyAccess(true);

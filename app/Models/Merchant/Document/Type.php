@@ -121,7 +121,7 @@ class Type
     const BIS_CERTIFICATE                   = 'bis_certificate';
     const GIA_CERTIFICATE                   = 'gia_certificate';
     const PM_WANI_CERTIFICATE               = 'pm_wani_certificate';
-    const PESCO_LICENSE                     = 'pesco_license';
+    const PESO_LICENSE                     =  'peso_license';
     const DOMAIN_OWNERSHIP_DOCUMENT         = 'domain_ownership_document';
     const IEC_LICENSE                       = 'iec_license';
     const BUSINESS_CORRESPONDENT_DOCUMENT   = 'business_correspondent_document';
@@ -181,7 +181,7 @@ class Type
         self::PROOF_OF_PROFESSION,
         self::GIA_CERTIFICATE,
         self::PM_WANI_CERTIFICATE,
-        self::PESCO_LICENSE,
+        self::PESO_LICENSE,
         self::DOMAIN_OWNERSHIP_DOCUMENT,
         self::IEC_LICENSE,
         self::BUSINESS_CORRESPONDENT_DOCUMENT,
@@ -241,7 +241,7 @@ class Type
         self::PROOF_OF_PROFESSION               => "Proof of profession",
         self::GIA_CERTIFICATE                   => "GIA certificate",
         self::PM_WANI_CERTIFICATE               => "PM WANI certificate",
-        self::PESCO_LICENSE                     => "PESCO license",
+        self::PESO_LICENSE                     =>  "PESO license",
         self::DOMAIN_OWNERSHIP_DOCUMENT         => "Domain ownership invoice / Self Declaration / AOC for PCI DSS",
         self::IEC_LICENSE                       => "IEC license",
         self::BUSINESS_CORRESPONDENT_DOCUMENT   => "Business correspondent document",
@@ -382,7 +382,7 @@ class Type
         self::PROOF_OF_PROFESSION,
         self::GIA_CERTIFICATE,
         self::PM_WANI_CERTIFICATE,
-        self::PESCO_LICENSE,
+        self::PESO_LICENSE,
         self::DOMAIN_OWNERSHIP_DOCUMENT,
         self::IEC_LICENSE,
         self::BUSINESS_CORRESPONDENT_DOCUMENT,
@@ -438,7 +438,7 @@ class Type
         self::PROOF_OF_PROFESSION               => self::ADDITIONAL_DOCUMENTS,
         self::GIA_CERTIFICATE                   => self::ADDITIONAL_DOCUMENTS,
         self::PM_WANI_CERTIFICATE               => self::ADDITIONAL_DOCUMENTS,
-        self::PESCO_LICENSE                     => self::ADDITIONAL_DOCUMENTS,
+        self::PESO_LICENSE                      => self::ADDITIONAL_DOCUMENTS,
         self::DOMAIN_OWNERSHIP_DOCUMENT         => self::ADDITIONAL_DOCUMENTS,
         self::IEC_LICENSE                       => self::ADDITIONAL_DOCUMENTS,
         self::BUSINESS_CORRESPONDENT_DOCUMENT   => self::ADDITIONAL_DOCUMENTS,
