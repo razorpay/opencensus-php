@@ -263,7 +263,8 @@ module.exports = {
 
     config.module.rules.forEach((rule) => {
       if (rule?.type === 'asset/resource') {
-        rule.generator.filename = '[path][name][ext]';
+        rule.generator.filename = 'images/[name].[hash][ext]';
+        rule.generator.emit = true;
       }
     });
 
