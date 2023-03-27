@@ -46,8 +46,8 @@ class Indusind extends Base
                 Service::BEAM_PUSH_BUCKET_REGION  => $bucketConfig['region'],
             ];
 
-            // In seconds
-            $timelines = [];
+            // Retry in 15, 30 and 45 minutes
+            $timelines = [900, 1800, 2700];
 
             $mailInfo = [
                 'fileInfo'  => $fileInfo,
