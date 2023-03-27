@@ -461,7 +461,13 @@ class PaperNachCiti extends Base
 
             $utilityCode = $token->terminal->getGatewayMerchantId2();
 
-            $payment = $this->repo->payment->find($paymentId);
+            $payment = null;
+
+            try
+            {
+                $payment = $this->repo->payment->findOrFail($paymentId);
+            }
+            catch (\Throwable $exception){}
 
             $url = (new SubscriptionRegistration\Core())->getUploadedFileUrlByPaymentForNachMethod($payment);
 

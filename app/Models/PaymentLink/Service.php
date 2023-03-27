@@ -6,6 +6,7 @@ use App;
 use phpseclib\Crypt\AES;
 use Razorpay\Trace\Logger as Trace;
 use Request;
+use RZP\Base\ConnectionType;
 use RZP\Encryption\AESEncryption;
 use RZP\Error\Error;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -553,7 +554,14 @@ class Service extends Base\Service
 
         $payments = Tracer::inSpan(['name' => 'payment_page.payments.get.fetch_payments'], function() use($input, $merchant)
         {
-            return $this->repo->payment->fetch($input, $merchant->getId());
+            if ($this->repo->payment->isExperimentEnabledForId(\RZP\Base\Repository::PAYMENT_QUERIES_TIDB_MIGRATION, 'paymentLinkGetPayments') === true)
+            {
+                return $this->repo->payment->fetch($input, $merchant->getId(), ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            }
+            else
+            {
+                return $this->repo->payment->fetch($input, $merchant->getId());
+            }
         });
 
         foreach ($payments as $payment)

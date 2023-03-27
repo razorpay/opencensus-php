@@ -1041,7 +1041,13 @@ class Service extends Base\Service
 
         $paymentId = Payment\Entity::stripDefaultSign($paymentId);
 
-        $payment = $this->repo->payment->find($paymentId);
+        $payment = null;
+
+        try
+        {
+            $payment = $this->repo->payment->findOrFail($paymentId);
+        }
+        catch (\Throwable $exception){}
 
         $orderId = $payment->getApiOrderId();
 

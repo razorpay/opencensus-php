@@ -9,6 +9,7 @@ use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\Timezone;
+use RZP\Base\ConnectionType;
 use RZP\Constants\Entity as E;
 
 class Repository extends Base\Repository
@@ -147,7 +148,16 @@ class Repository extends Base\Repository
         $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
         $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
 
-        return $this->newQueryOnSlave()
+        $query = $this->newQueryOnSlave();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getPaymentFetchReplicaConnection();
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        return $query
                     ->join(Table::PAYMENT, $sourceId, '=', $orderId)
                     ->select(Entity::SOURCE_ID)
                     ->whereNotIn($merchantId, $excludeMerchantIds)
@@ -170,7 +180,16 @@ class Repository extends Base\Repository
         $transferStatus = $this->repo->transfer->dbColumn(Entity::STATUS);
         $updatedAt      = $this->repo->transfer->dbColumn(Entity::UPDATED_AT);
 
-        return $this->newQueryOnSlave()
+        $query = $this->newQueryOnSlave();
+
+        if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $connectionType = $this->getPaymentFetchReplicaConnection();
+
+            $query = $this->newQueryWithConnection($connectionType);
+        }
+
+        return $query
                     ->join(Table::PAYMENT, $sourceId, '=', $orderId)
                     ->select(Entity::SOURCE_ID)
                     ->whereIn($merchantId, $merchantIds)

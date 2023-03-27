@@ -1657,7 +1657,13 @@ class Processor
         {
             $library = $input['_']['library'] ?? '';
 
-            $paymentObject = $this->repo->payment->find(Payment\Entity::stripDefaultSign($paymentId)) ?? null;
+            $paymentObject = null;
+
+            try
+            {
+                $paymentObject = $this->repo->payment->findOrFail(Payment\Entity::stripDefaultSign($paymentId));
+            }
+            catch (\Throwable $exception){}
 
             $isRecurringInitialPayment = ($paymentObject !== null and
                                           $paymentObject->isRecurring() and
@@ -1733,7 +1739,13 @@ class Processor
             // we are saving the acknowledged_at value of the original card token in redis for the saved card flow in CAW
             // this value will be set to the new token's acknowledged_at after payment authorization
 
-            $paymentObject = $this->repo->payment->find(Payment\Entity::stripDefaultSign($paymentId)) ?? null;
+            $paymentObject = null;
+
+            try
+            {
+                $paymentObject = $this->repo->payment->findOrFail(Payment\Entity::stripDefaultSign($paymentId));
+            }
+            catch (\Throwable $exception){}
 
             $recurringInitialPaymentDataChecksForSavedCardFlow = ($paymentObject !== null and
                                                                   $paymentObject->isRecurring() and
@@ -3942,7 +3954,13 @@ class Processor
 
         if (isset($data['razorpay_payment_id']) === true)
         {
-            $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($data['razorpay_payment_id']));
+            $payment = null;
+
+            try
+            {
+                $payment = $this->repo->payment->findOrFail(Payment\Entity::stripDefaultSign($data['razorpay_payment_id']));
+            }
+            catch (\Throwable $exception){}
 
             $publicKey = $payment->getPublicKey();
 
@@ -4889,7 +4907,13 @@ class Processor
 
         $internalCode = $error->getInternalErrorCode();
 
-        $updatedPayment = $this->repo->payment->find($this->payment->getId());
+        $updatedPayment = null;
+
+        try
+        {
+            $updatedPayment = $this->repo->payment->findOrFail($this->payment->getId());
+        }
+        catch (\Throwable $exception){}
 
         if(isset($updatedPayment) === true)
         {
@@ -5674,8 +5698,13 @@ class Processor
 
         if ($this->isAffordabilityReusePayment($input) === true)
         {
-                $payment = $this->repo->payment->find(Payment\Entity::stripDefaultSign($input['payment_id']));
+            $payment = null;
 
+            try
+            {
+                $payment = $this->repo->payment->findOrFail(Payment\Entity::stripDefaultSign($input['payment_id']));
+            }
+            catch (\Throwable $exception){}
         }
 
         if ($payment == null)

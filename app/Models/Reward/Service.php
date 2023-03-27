@@ -247,7 +247,13 @@ class Service extends Base\Service
         {
             try
             {
-                $payment = $this->repo->payment->find($paymentId);
+                $payment = null;
+
+                try
+                {
+                    $payment = $this->repo->payment->findOrFail($paymentId);
+                }
+                catch (\Throwable $exception){}
 
                 if ((isset($payment) === true) and
                     ($payment->isAuthorized() === true) or
@@ -274,7 +280,13 @@ class Service extends Base\Service
         {
             try
             {
-                $payment = $this->repo->payment->find($paymentId);
+                $payment = null;
+
+                try
+                {
+                    $payment = $this->repo->payment->findOrFail($paymentId);
+                }
+                catch (\Throwable $exception){}
 
                 if ((isset($payment) === true) and
                     ($payment->isAuthorized() === true) or
@@ -311,7 +323,13 @@ class Service extends Base\Service
         {
             try
             {
-                $payment = $this->repo->payment->find($paymentId);
+                $payment = null;
+
+                try
+                {
+                    $payment = $this->repo->payment->findOrFail($paymentId);
+                }
+                catch (\Throwable $exception){}
 
                 if ((isset($payment) === true) and
                     ($payment->isAuthorized() === true) or
@@ -357,7 +375,13 @@ class Service extends Base\Service
         {
             try
             {
-                $payment = $this->repo->payment->find($paymentId);
+                $payment = null;
+
+                try
+                {
+                    $payment = $this->repo->payment->findOrFail($paymentId);
+                }
+                catch (\Throwable $exception){}
 
                 if ((isset($payment) === true) and
                     ($payment->isAuthorized() === true) or
@@ -411,7 +435,13 @@ class Service extends Base\Service
         {
             try
             {
-                $payment = $this->repo->payment->find($payment_id);
+                $payment = null;
+
+                try
+                {
+                    $payment = $this->repo->payment->findOrFail($payment_id);
+                }
+                catch (\Throwable $exception){}
 
                 if ((isset($payment) === true) and
                     ($payment->isAuthorized() === true) or

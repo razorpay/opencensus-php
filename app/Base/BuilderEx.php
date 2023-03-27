@@ -5,7 +5,6 @@ namespace RZP\Base;
 use Illuminate\Database\Query\JoinClause;
 
 use RZP\Exception;
-use RZP\Models\Card;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
@@ -146,41 +145,53 @@ class BuilderEx extends \Razorpay\Spine\BuilderEx
             // For nested eager loads we'll skip loading them here, and they will be set as an
             // eager load on the query to retrieve the relation so that they will be eager
             // loaded on that query, because that is where they get hydrated as models.
-            if (($name === Entity::CARD) or ($name === Card\Entity::RELATION_GLOBAL_CARD))
+            if (in_array($name, Entity::getCustomEagerLoadRelations(), true) === true)
             {
-                $models = $this->cardEagerLoad($name, $models);
+                $models = $this->customEagerLoad($name, $models);
             }
         }
 
         return $models;
     }
 
-    private function cardEagerLoad($name, $models)
+    // Currently, used for custom eager loading relations of archived entities
+    private function customEagerLoad($name, $models)
     {
+        // use config key for payment
+        if ($name === Entity::PAYMENT)
+        {
+            $customPaymentEagerLoad = (bool) ConfigKey::get(ConfigKey::PAYMENT_ARCHIVAL_EAGER_LOAD, false);
+
+            if ($customPaymentEagerLoad === false)
+            {
+                return $models;
+            }
+        }
+
         foreach ($models as $model)
         {
             if ($model->hasRelation($name) === false)
             {
+                // Exceptions in this flow can be silent.
                 try
                 {
-                    // Exceptions in this flow can be silent.
-                    $cardId = ($name === Card\Entity::RELATION_GLOBAL_CARD) ?
-                        $model->getAttribute(Card\Entity::GLOBAL_CARD_ID) : $model->getCardId();
+                    $relationId = $model->getAttribute(Entity::getCustomEagerLoadEntityKey($name));
 
-                    if (empty($cardId) === false)
+                    if (empty($relationId) === false)
                     {
-                        $card = (new Card\Repository)->findOrFail($cardId);
+                        $repoClass = Entity::getEntityRepository(Entity::getCustomEagerLoadRelationEntity($name));
 
-                        if (empty($card) === false)
+                        $entity = (new $repoClass)->findOrFail($relationId);
+
+                        if (empty($entity) === false)
                         {
-                            $model->setRelation($name, $card);
+                            $model->setRelation($name, $entity);
                         }
                     }
                 }
                 catch (\Throwable $exception) {}
             }
         }
-
         return $models;
     }
 }

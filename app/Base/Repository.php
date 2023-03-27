@@ -1430,7 +1430,7 @@ class Repository extends \Razorpay\Spine\Repository
         return $data->limit($limit)->update(['balance_id' => $balanceId]);
     }
 
-    protected function isExperimentEnabledForId(string $feature, string $id = null): bool
+    public function isExperimentEnabledForId(string $feature, string $id = null): bool
     {
         $app = $this->app;
 

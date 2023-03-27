@@ -57,7 +57,17 @@ class Processor
 
             $this->assignAutomationAgentToTicket();
 
-            $this->payment = $this->repo->payment->findWithRelations($paymentId, ['merchant']);
+            $this->payment = null;
+
+            try
+            {
+                $this->payment = $this->repo->payment->findOrFail($paymentId);
+
+                $merchant = $this->repo->merchant->findOrFail($this->payment->getMerchantId());
+
+                $this->payment->merchant()->associate($merchant);
+            }
+            catch (\Throwable $exception) {}
 
             if (is_null($this->payment) === true)
             {

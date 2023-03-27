@@ -9,6 +9,7 @@ use RZP\Models;
 use RZP\Gateway;
 use RZP\Exception;
 use RZP\Base\Fetch;
+use RZP\Models\Card;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Observer as BaseObserver;
 use RZP\Models\Base\QueryCache\Constants as QueryCacheConstants;
@@ -1589,10 +1590,23 @@ class Entity
 
     public static $archivalFallbackConfigKey = [
         self::CARD    => Models\Admin\ConfigKey::CARD_ARCHIVAL_FALLBACK_ENABLED,
+        self::PAYMENT => Models\Admin\ConfigKey::PAYMENT_ARCHIVAL_FALLBACK_ENABLED,
     ];
 
     public static $dualWriteConfigKey = [
         'payments' => Models\Admin\ConfigKey::PAYMENTS_DUAL_WRITE,
+    ];
+
+    protected static array $customEagerLoadEntityMapping = [
+        self::CARD                        => self::CARD,
+        Card\Entity::RELATION_GLOBAL_CARD => self::CARD,
+        self::PAYMENT                     => self::PAYMENT,
+    ];
+
+    protected static array $customEagerLoadEntityKeys = [
+        self::CARD                        => 'card_id',
+        self::PAYMENT                     => 'payment_id',
+        Card\Entity::RELATION_GLOBAL_CARD => 'global_card_id',
     ];
 
     protected static $externalServiceClass = [
@@ -1964,6 +1978,21 @@ class Entity
         {
             return $entity;
         }
+    }
+
+    public static function getCustomEagerLoadRelations() : array
+    {
+        return array_keys(self::$customEagerLoadEntityMapping);
+    }
+
+    public static function getCustomEagerLoadRelationEntity(string $entity) : string
+    {
+        return self::$customEagerLoadEntityMapping[$entity];
+    }
+
+    public static function getCustomEagerLoadEntityKey(string $relation) : string
+    {
+        return self::$customEagerLoadEntityKeys[$relation];
     }
 
     public static function isEntitySyncedInLiveAndTest($entity)

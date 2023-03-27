@@ -146,7 +146,13 @@ class PaymentPageProcessor extends Job
         }
 
         /** @var $payment Payment\Entity*/
-        $payment = $this->repoManager->payment->find($paymentId);
+        $payment = null;
+
+        try
+        {
+            $payment = $this->repoManager->payment->findOrFail($paymentId);
+        }
+        catch (\Throwable $exception){}
 
         $traceContext = $this->context + [
                 'payment_id' => $payment->getId()
@@ -189,7 +195,13 @@ class PaymentPageProcessor extends Job
             return;
         }
 
-        $payment        = $this->repoManager->payment->find($paymentId);
+        $payment = null;
+
+        try
+        {
+            $payment = $this->repoManager->payment->findOrFail($paymentId);
+        }
+        catch (\Throwable $exception){}
 
         $paymentLink    = $payment->paymentLink;
 

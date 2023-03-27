@@ -10,6 +10,7 @@ use Lib\PhoneBook;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use Razorpay\Trace\Logger;
+use RZP\Base\ConnectionType;
 use RZP\Constants\Environment;
 use RZP\Models\Merchant\Detail\Core as DetailCore;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -8602,7 +8603,14 @@ class Core extends Base\Core
             "skip"  => 0
         ];
 
-        $response['transactions'] = $this->repo->payment->fetch($input, $merchantId)->toArrayPublic()['items'];
+        if ($this->repo->payment->isExperimentEnabledForId(\RZP\Base\Repository::PAYMENT_QUERIES_TIDB_MIGRATION, 'getMerchantInfo') === true)
+        {
+            $response['transactions'] = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT)->toArrayPublic()['items'];
+        }
+        else
+        {
+            $response['transactions'] = $this->repo->payment->fetch($input, $merchantId)->toArrayPublic()['items'];
+        }
 
         $response['refunds'] = $this->repo->refund->fetch($input, $merchantId)->toArrayPublic()['items'];
 

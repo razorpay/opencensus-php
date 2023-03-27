@@ -24,7 +24,13 @@ class RefundReconciliate extends Base\SubReconciliator\RefundReconciliate
 
         $paymentId = trim($row[self::COLUMN_PAYMENT_ID]);
 
-        $payment = $this->repo->payment->find($paymentId);
+        $payment = null;
+
+        try
+        {
+            $payment = $this->repo->payment->findOrFail($paymentId);
+        }
+        catch (\Throwable $exception){}
 
         if ($payment === null)
         {

@@ -4,11 +4,13 @@ namespace RZP\Base;
 
 use Closure;
 use Illuminate;
+use Database\Connection;
 
 use RZP\Models;
 use RZP\Gateway;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Base\Database\MySqlConnection;
 use RZP\Base\Database\Connectors\MySqlConnector;
@@ -374,6 +376,35 @@ class RepositoryManager extends Illuminate\Support\Manager
         if ($obj !== null)
         {
             return Mode::TEST;
+        }
+
+        // Handles archived entities
+        $variant = $this->app['razorx']->getTreatment(
+            __FUNCTION__,
+            Repository::PAYMENT_QUERIES_TIDB_MIGRATION,
+            $this->app['basicauth']->getMode() ?? Mode::LIVE);
+
+        $this->app['trace']->info(TraceCode::ARCHIVAL_EXPERIMENTS_REPOSITORY_VARIANT, [
+            'variant'    => $variant,
+            'feature'    => Repository::PAYMENT_QUERIES_TIDB_MIGRATION,
+            'context_id' => __FUNCTION__,
+        ]);
+
+        if ($variant === 'on')
+        {
+            $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->find($id);
+
+            if ($obj !== null)
+            {
+                return Mode::LIVE;
+            }
+
+            $obj = $repo->connection(Connection::ARCHIVED_DATA_REPLICA_TEST)->find($id);
+
+            if ($obj !== null)
+            {
+                return Mode::TEST;
+            }
         }
 
         //

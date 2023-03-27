@@ -1571,7 +1571,13 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::FRESHDESK_SUPPORT_TICKETS_ID, ['payment_id' => $paymentId]);
 
-        $payment = $this->repo->payment->find($paymentId);
+        $payment = null;
+
+        try
+        {
+            $payment = $this->repo->payment->findOrFail($paymentId);
+        }
+        catch (\Throwable $exception){}
 
         if (empty($payment) === false)
         {

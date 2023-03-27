@@ -105,6 +105,8 @@ trait DualWrite
 
         $actionType = $this->getOperationTypeForMetrics($parentEntityExists, $dualEntityExists);
 
+        $originalTimeStampsValue = $this->timestamps;
+
         try
         {
             $this->timestamps         = false;
@@ -158,7 +160,7 @@ trait DualWrite
 
             // original entity shouldn't have this modified even in case of failures,
             // as it can be accessed from different flows
-            $this->timestamps         = true;
+            $this->timestamps         = $originalTimeStampsValue;
             $this->exists             = true;
             $this->generateIdOnCreate = true;
 
@@ -172,7 +174,7 @@ trait DualWrite
             }
         }
 
-        $this->timestamps         = true;
+        $this->timestamps         = $originalTimeStampsValue;
         $this->generateIdOnCreate = true;
 
         $this->setDualWrite(false);
@@ -212,6 +214,8 @@ trait DualWrite
      */
     protected function incrementOrDecrement($column, $amount, $extra, $method)
     {
+        $entityExists = $this->exists;
+
         parent::incrementOrDecrement($column, $amount, $extra, $method);
 
         if ($this->isDualWriteEnabledViaEnv() !== true)
@@ -221,8 +225,7 @@ trait DualWrite
 
         $dualWriteStartTime = millitime();
 
-        // ToDo : Re think parentEntityExists for archived entity
-        $this->validateAndUpsert(false, true);
+        $this->validateAndUpsert(false, $entityExists);
 
         App::getFacadeRoot()['trace']->histogram(Metric::DUAL_WRITES_TIME_TAKEN, millitime() - $dualWriteStartTime);
 

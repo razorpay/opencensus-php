@@ -324,7 +324,13 @@ class PaperNachIcici extends Base
     {
         $paymentId = $token['payment_id'];
 
-        $payment = $this->repo->payment->find($paymentId);
+        $payment = null;
+
+        try
+        {
+            $payment = $this->repo->payment->findOrFail($paymentId);
+        }
+        catch (\Throwable $exception){}
 
         $url = (new SubscriptionRegistration\Core())->getUploadedFileUrlByPaymentForNachMethod($payment);
 

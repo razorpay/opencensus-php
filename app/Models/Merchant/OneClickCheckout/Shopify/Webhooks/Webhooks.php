@@ -422,7 +422,16 @@ class Webhooks extends Base\Core
 
         $this->app['basicauth']->setModeAndDbConnection($mode);
         $this->mode = $mode;
-        return $this->repo->payment->find($paymentId);
+
+        $payment = null;
+
+        try
+        {
+            $payment = $this->repo->payment->findOrFail($paymentId);
+        }
+        catch (\Throwable $exception){}
+
+        return $payment;
     }
 
 protected function processFulfillmentUpdateEvent(array $data)

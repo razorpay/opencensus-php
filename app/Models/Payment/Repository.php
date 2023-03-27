@@ -259,7 +259,7 @@ EOT;
 
             if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
             {
-                $connectionType = $this->getDataWarehouseSourceAPIConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+                $connectionType = $this->getPaymentFetchReplicaConnection();
 
                 $query = $this->newQueryWithConnection($connectionType);
             }
@@ -3616,7 +3616,7 @@ EOT;
                 return Mode::LIVE;
             }
 
-            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_ADMIN_TEST)->where(Entity::GATEWAY, $gateway)->find($id);
+            $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_TEST)->where(Entity::GATEWAY, $gateway)->find($id);
 
             if ($obj !== null)
             {
@@ -3666,7 +3666,7 @@ EOT;
                 return Mode::LIVE;
             }
 
-            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_ADMIN_TEST)->newQuery()->find($id);
+            $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_TEST)->newQuery()->find($id);
 
             if (($obj !== null) and
                 ($obj->getAuthenticationGateway() !== null))

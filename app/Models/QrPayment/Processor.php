@@ -142,7 +142,13 @@ class Processor extends Base\Core
                 }
                 else
                 {
-                    $payment = $this->repo->payment->find($this->gatewayInput['payment_id']);
+                    $payment = null;
+
+                    try
+                    {
+                        $payment = $this->repo->payment->findOrFail($this->gatewayInput['payment_id']);
+                    }
+                    catch (\Throwable $exception){}
                 }
 
                 $qrPayment->payment()->associate($payment);
@@ -187,7 +193,13 @@ class Processor extends Base\Core
 
         if($this->merchant->isFeatureEnabled(Constants::UPIQR_V1_HDFC) === true)
         {
-            $payment = $this->repo->payment->find($entity->payment_id);
+            $payment = null;
+
+            try
+            {
+                $payment = $this->repo->payment->findOrFail($entity->payment_id);
+            }
+            catch (\Throwable $exception){}
         }
         else
         {

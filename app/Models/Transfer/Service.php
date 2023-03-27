@@ -10,6 +10,7 @@ use RZP\Models\Reversal;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Base\ConnectionType;
 use RZP\Jobs\TransferProcess;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
@@ -321,7 +322,14 @@ class Service extends Base\Service
             $input['expand'] = ['transfer', 'transfer.recipient_settlement'];
 
             // fetching by payments fetch to handle notes search.
-            $payments = $this->repo->payment->fetch($input, $merchantId);
+            if ($this->repo->payment->isExperimentEnabledForId(\RZP\Base\Repository::PAYMENT_QUERIES_TIDB_MIGRATION, 'fetchLinkedAccountTransfers') === true)
+            {
+                $payments = $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
+            }
+            else
+            {
+                $payments = $this->repo->payment->fetch($input, $merchantId);
+            }
 
             $transfers = $this->createResponse($payments);
 
@@ -363,7 +371,7 @@ class Service extends Base\Service
 
             if ($paymentTransfers->count() == 0)
             {
-                $payment = $this->repo->payment->findOrFailPublicWithRelations($parentPaymentId);
+                $payment = $this->repo->payment->findOrFailPublic($parentPaymentId);
 
                 $orderId = $payment->getApiOrderId();
 
@@ -377,7 +385,7 @@ class Service extends Base\Service
 
             if ($paymentTransfers->count() == 0)
             {
-                $payment = $this->repo->payment->findOrFailPublicWithRelations($parentPaymentId);
+                $payment = $this->repo->payment->findOrFailPublic($parentPaymentId);
 
                 $orderId = $payment->getApiOrderId();
 

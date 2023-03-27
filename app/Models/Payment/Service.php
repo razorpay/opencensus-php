@@ -1864,7 +1864,16 @@ class Service extends Base\Service
 
             Entity::verifyIdAndStripSignMultiple($paymentIds);
 
-            $payments = $this->repo->payment->findMany($paymentIds);
+            $payments = [];
+
+            foreach ($paymentIds as $paymentId)
+            {
+                try
+                {
+                    $payments[] = $this->repo->payment->findOrFail($paymentId);
+                }
+                catch (\Throwable $e) {}
+            }
         }
         else
         {
@@ -3803,7 +3812,16 @@ class Service extends Base\Service
 
        $onHold = $input['on_hold'];
 
-       $paymentsToUpdate = $this->repo->payment->findManyByPublicIds($input['payment_ids']);
+        $paymentsToUpdate = [];
+
+        foreach ($input['payment_ids'] as $paymentId)
+        {
+            try
+            {
+                $paymentsToUpdate[] = $this->repo->payment->findOrFailPublic($paymentId);
+            }
+            catch (\Throwable $e) {}
+        }
 
         $this->trace->info(
             TraceCode::PAYMENT_ON_HOLD_TOGGLE,
@@ -4070,7 +4088,13 @@ class Service extends Base\Service
 
         if ($paymentId !== null)
         {
-            $payment = $this->repo->payment->find($paymentId);
+            $payment = null;
+
+            try
+            {
+                $payment = $this->repo->payment->findOrFail($paymentId);
+            }
+            catch (\Throwable $exception){}
 
             $card = null;
 
@@ -4093,7 +4117,14 @@ class Service extends Base\Service
 
     public function updateMerchantBalance(string $paymentId)
     {
-        $payment = $this->repo->payment->find($paymentId);
+        $payment = null;
+
+        try
+        {
+            $payment = $this->repo->payment->findOrFail($paymentId);
+        }
+        catch (\Throwable $exception){}
+
         $transaction = $payment->transaction;
 
         if (($payment->hasBeenCaptured() === false) or
@@ -4948,7 +4979,13 @@ class Service extends Base\Service
 
         $statusToVerify = [Payment\Status::FAILED, Payment\Status::CREATED, Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
 
-        $payment =  $this->repo->payment->find($id);
+        $payment = null;
+
+        try
+        {
+            $payment =  $this->repo->payment->findOrFail($id);
+        }
+        catch (\Throwable $exception){}
 
         if (isset($payment) === false)
         {
@@ -5067,7 +5104,13 @@ class Service extends Base\Service
         $data = [];
         $data['retry_timeout'] = false;
 
-        $payment = $this->repo->payment->find($paymentId);
+        $payment = null;
+
+        try
+        {
+            $payment = $this->repo->payment->findOrFail($paymentId);
+        }
+        catch (\Throwable $exception){}
 
         if (isset($payment) === false)
         {
@@ -5206,7 +5249,13 @@ class Service extends Base\Service
         $isReference6Updated = $this->mutex->acquireAndRelease($id,
             function() use ($id)
             {
-                $payment = $this->repo->payment->find($id);
+                $payment = null;
+
+                try
+                {
+                    $payment = $this->repo->payment->findOrFail($id);
+                }
+                catch (\Throwable $exception){}
 
                 if (isset($payment) === true)
                 {
@@ -5532,7 +5581,13 @@ class Service extends Base\Service
                 {
                     $unexpectedPaymentId = $upiEntity->first()->getPaymentId();
 
-                    $payment = $this->repo->payment->find($unexpectedPaymentId);
+                    $payment = null;
+
+                    try
+                    {
+                        $payment = $this->repo->payment->findOrFail($unexpectedPaymentId);
+                    }
+                    catch (\Throwable $exception){}
 
                     $this->handleUnExpectedPaymentRefundInRecon($payment);
 
@@ -5555,7 +5610,13 @@ class Service extends Base\Service
             {
                 $unexpectedPaymentId = $response['payment_id'];
 
-                $payment = $this->repo->payment->find($unexpectedPaymentId);
+                $payment = null;
+
+                try
+                {
+                    $payment = $this->repo->payment->findOrFail($unexpectedPaymentId);
+                }
+                catch (\Throwable $exception){}
 
                 $this->handleUnExpectedPaymentRefundInRecon($payment);
 

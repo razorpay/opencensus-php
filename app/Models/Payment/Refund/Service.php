@@ -18,6 +18,7 @@ use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Base\ConnectionType;
 use RZP\Services\Ledger as LedgerService;
 
 use RZP\Models\Reversal;
@@ -2818,7 +2819,13 @@ class Service extends Base\Service
         {
             $paymentId = $upiEntity->getPaymentId();
 
-            $payment = $this->repo->payment->find($paymentId);
+            $payment = null;
+
+            try
+            {
+                $payment = $this->repo->payment->findOrFail($paymentId);
+            }
+            catch (\Throwable $exception){}
 
             if (empty($payment) === false)
             {
@@ -2839,7 +2846,14 @@ class Service extends Base\Service
      */
     protected function fetchRefundDetailsForCustomerFromMerchantNotes($id, array &$return)
     {
-        $payment = $this->repo->payment->fetch([Payment\Entity::NOTES => $id]);
+        if ($this->repo->payment->isExperimentEnabledForId(Repository::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
+        {
+            $payment = $this->repo->payment->fetch([Payment\Entity::NOTES => $id, null, ConnectionType::DATA_WAREHOUSE_MERCHANT]);
+        }
+        else
+        {
+            $payment = $this->repo->payment->fetch([Payment\Entity::NOTES => $id]);
+        }
 
         if (empty($payment->toArray()) === false)
         {
@@ -2854,7 +2868,11 @@ class Service extends Base\Service
                 );
             }
 
-            $payment = $this->repo->payment->find($payment->toArray()[0][Payment\Entity::ID]);
+            try
+            {
+                $payment = $this->repo->payment->findOrFail($payment->toArray()[0][Payment\Entity::ID]);
+            }
+            catch (\Throwable $exception){}
 
             $this->populateRefundDetailsForCustomer($return, $payment);
 
@@ -2986,7 +3004,13 @@ class Service extends Base\Service
     {
         Payment\Entity::stripSignWithoutValidation($paymentId);
 
-        $payment = $this->repo->payment->find($paymentId);
+        $payment = null;
+
+        try
+        {
+            $payment = $this->repo->payment->findOrFail($paymentId);
+        }
+        catch (\Throwable $exception){}
 
         if (empty($payment) === true)
         {

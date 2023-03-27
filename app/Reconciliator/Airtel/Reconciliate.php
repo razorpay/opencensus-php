@@ -60,7 +60,13 @@ class Reconciliate extends Base\Reconciliate
             if ((isset($row[CombinedReconciliate::COLUMN_ENTITY_TYPE]) === true) and
                 ($row[CombinedReconciliate::COLUMN_ENTITY_TYPE] === CombinedReconciliate::COLUMN_REFUND))
             {
-                $payment = $this->repo->payment->find($row[RefundReconciliate::COLUMN_PAYMENT_ID]);
+                $payment = null;
+
+                try
+                {
+                    $payment = $this->repo->payment->findOrFail($row[RefundReconciliate::COLUMN_PAYMENT_ID]);
+                }
+                catch (\Throwable $exception){}
 
                 if ($payment->isNetbanking() === true)
                 {
