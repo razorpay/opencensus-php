@@ -1,6 +1,6 @@
 import { Fragment, Component } from 'react';
 import { connect } from 'react-redux';
-import { NavLink, Route, Switch, withRouter } from 'react-router-dom';
+import { Route, Switch, withRouter } from 'react-router-dom';
 
 import { openModal, closeModal } from 'merchant_common/reducers/modals';
 import { showNotification } from 'merchant_common/reducers/notifications';
@@ -19,6 +19,7 @@ import { trackAddNewMerchantEvents } from 'merchant/views/PartnerDashboard/ga';
 import { analyticsTrack } from 'common/utils/analytics';
 import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
+import ProductWrapper from 'common/ui/ProductWrapper';
 @withRouter
 @connect(
   (state) => ({
@@ -36,8 +37,6 @@ import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 )
 @RTracking(() => window.rzpQ.component('SubMerchantsList'))
 export default class SubMerchantsList extends Component {
-  state = {};
-
   componentDidMount() {
     const { user, location } = this.props;
     if (location?.state?.addType) {
@@ -54,6 +53,22 @@ export default class SubMerchantsList extends Component {
     // triggered because Affiliate Razorpay Accounts is default view
     this.trackUserEvent('partnerships.dashboard.affiliate_account.payments');
   }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.location.pathname !== this.props.location.pathname) {
+      const product = this.getProductType();
+      if (product === PRODUCT_TYPE.PG) {
+        this.sendAnalytics('navlink-Payments');
+      }
+      if (product === PRODUCT_TYPE.X) {
+        this.sendAnalytics('navlink-X');
+      }
+      if (product === PRODUCT_TYPE.CAPITAL) {
+        this.sendAnalytics('navlink-Capital');
+      }
+    }
+  }
+
   getProductType = () => {
     const basePath = this.props?.match?.path;
     switch (this.props?.location?.pathname) {
@@ -160,6 +175,28 @@ export default class SubMerchantsList extends Component {
       })
       .catch(() => {});
     super(props);
+
+    this.showX =
+      props.user.isPartner() &&
+      !props.user.isPartner('pure_platform') &&
+      props.user.isPartnershipForXEnabled &&
+      !props.user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.RazorpayXAffiliateAccount);
+
+    this.state = {
+      tabsData: [
+        { url: '/partners/submerchants', title: 'Payments' },
+        {
+          url: '/partners/submerchants/capital',
+          title: 'Line Of Credit',
+          hidden: !props.user.isPartnershipForCapitalEnabled,
+        },
+        {
+          url: '/partners/submerchants/x',
+          title: 'RazorpayX',
+          hidden: !this.showX,
+        },
+      ],
+    };
   }
 
   trackUserEvent = (eventName, properties = {}) => {
@@ -196,7 +233,7 @@ export default class SubMerchantsList extends Component {
   render() {
     const { user } = this.props;
     const { isPartnershipForCapitalEnabled } = user;
-    const not_pure_platform = user.isPartner() && !user.isPartner('pure_platform');
+    const { tabsData } = this.state;
     if (user.isPartnerIntent()) {
       this.props.openModal({
         size: 'xlarge',
@@ -210,40 +247,10 @@ export default class SubMerchantsList extends Component {
     return (
       <Fragment>
         <Announcement user={this.props.user} mode={this.props.mode} />
-        <tabbed-container>
-          <header className="partner-dashboard-header">
-            <div>
-              <NavLink
-                exact
-                to="/partners/submerchants"
-                onClick={() => this.sendAnalytics('navlink-Payments')}
-              >
-                Payments
-              </NavLink>
-              <ShowWhen additionalCondition={() => isPartnershipForCapitalEnabled}>
-                <NavLink exact to="/partners/submerchants/capital">
-                  Line Of Credit
-                </NavLink>
-              </ShowWhen>
-              <ShowWhen
-                additionalCondition={(currentUser) =>
-                  not_pure_platform &&
-                  currentUser.isPartnershipForXEnabled &&
-                  !currentUser.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.RazorpayXAffiliateAccount)
-                }
-              >
-                <NavLink
-                  exact
-                  to="/partners/submerchants/x"
-                  onClick={() => this.sendAnalytics('navlink-X')}
-                >
-                  RazorpayX
-                </NavLink>
-              </ShowWhen>
-            </div>
-            {/* Moved Share Referral and Add New Accounts from content to header, 
-            removed HeaderAction and added some CSS to fix screen responsive issue */}
-            <div className="partner-dashboard-header-action">
+        <ProductWrapper
+          tabsData={tabsData}
+          extra={
+            <>
               <ShowWhen
                 additionalCondition={(currentUser) =>
                   currentUser.isPartner() &&
@@ -265,16 +272,13 @@ export default class SubMerchantsList extends Component {
                   currentUser.isPartner() && !currentUser.isPartner('pure_platform')
                 }
               >
-                <button
-                  className="btn btn-primary pull-right m-l"
-                  onClick={this.handleAddMerchant}
-                  type="button"
-                >
+                <button className="btn btn-primary" onClick={this.handleAddMerchant} type="button">
                   <i className="i i-plus" /> Add New Accounts
                 </button>
               </ShowWhen>
-            </div>
-          </header>
+            </>
+          }
+        >
           <content>
             <div className="sub-merchants-list">
               <Switch>
@@ -321,7 +325,7 @@ export default class SubMerchantsList extends Component {
               </Switch>
             </div>
           </content>
-        </tabbed-container>
+        </ProductWrapper>
       </Fragment>
     );
   }

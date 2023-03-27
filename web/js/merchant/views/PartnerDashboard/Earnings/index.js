@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Switch, NavLink, Redirect } from 'react-router-dom';
+import { Switch, Redirect } from 'react-router-dom';
 
 import ShowWhen, { ShowWhenRoute } from 'merchant/components/ShowWhen';
 
@@ -13,10 +13,24 @@ import { showNotification } from 'merchant_common/reducers/notifications';
 import Transactional from 'merchant/views/PartnerDashboard/Earnings/Transactional/List';
 import Daily from 'merchant/views/PartnerDashboard/Earnings/Daily/List';
 import CommissionInvoicesList from 'merchant/views/PartnerDashboard/Earnings/Invoices/List';
+import ProductWrapper from 'common/ui/ProductWrapper';
 
 class EarningsContainer extends Component {
   state = {
     commissionBalance: null,
+    tabsData: [
+      { url: '/partners/earnings/daily', title: 'Daily Earnings' },
+      {
+        url: '/partners/earnings/transactional',
+        title: 'Transactional Details',
+        hidden: !!this.props.user.isPartner('reseller'),
+      },
+      {
+        url: '/partners/earnings/invoices',
+        title: 'Invoices',
+        hidden: !this.props.user.isCommissionInvoicesEnabled,
+      },
+    ],
   };
 
   componentDidMount() {
@@ -38,30 +52,14 @@ class EarningsContainer extends Component {
 
   render() {
     const { commissionBalance } = this.state;
-    const { sessionUser } = this.props;
-    const currency = sessionUser.merchant.currency;
+    const { user } = this.props;
+    const currency = user.merchant.currency;
 
     return (
       <div className="earnings-page">
-        <tabbed-container>
-          <header className="partner-dashboard-header">
-            <div>
-              <NavLink exact to="/partners/earnings/daily">
-                Daily Earnings
-              </NavLink>
-              <ShowWhen additionalCondition={(user) => !user.isPartner('reseller')}>
-                <NavLink exact to="/partners/earnings/transactional">
-                  Transactional Details
-                </NavLink>
-              </ShowWhen>
-              <ShowWhen additionalCondition={(user) => user.isCommissionInvoicesEnabled}>
-                <NavLink exact to="/partners/earnings/invoices">
-                  Invoices
-                </NavLink>
-              </ShowWhen>
-            </div>
-            {/* Moved Commission Balance from content to header, removed HeaderAction and added some 
-            CSS to fix screen responsive issue */}
+        <ProductWrapper
+          tabsData={this.state.tabsData}
+          extra={
             <ShowWhen
               additionalCondition={(user) =>
                 user.isShowCommissionBalanceEnabled &&
@@ -75,7 +73,8 @@ class EarningsContainer extends Component {
                 </span>
               </div>
             </ShowWhen>
-          </header>
+          }
+        >
           <content>
             <Switch>
               <Redirect to="/partners/earnings/daily" from="/partners/earnings" exact />
@@ -94,7 +93,7 @@ class EarningsContainer extends Component {
               />
             </Switch>
           </content>
-        </tabbed-container>
+        </ProductWrapper>
       </div>
     );
   }
@@ -102,7 +101,7 @@ class EarningsContainer extends Component {
 
 export default connect(
   (state) => ({
-    sessionUser: state.session.user,
+    user: state.session.user,
   }),
   { showNotification },
 )(EarningsContainer);
