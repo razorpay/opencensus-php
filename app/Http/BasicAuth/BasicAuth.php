@@ -1891,7 +1891,6 @@ class BasicAuth
                 ($this->isCapitalEarlySettlementApp() === true) or
                 ($this->isSettlementsApp() === true) or
                 ($this->isScroogeApp() === true) or
-                ($this->isCareApp() === true) or
                 ($this->isReminderServiceAuth() === true) or
                 (($this->isBatchApp() === true) and
                  $this->request->headers->get(RequestHeader::X_Creator_Type) == 'user') or
