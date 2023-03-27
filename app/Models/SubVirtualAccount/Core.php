@@ -10,14 +10,12 @@ use RZP\Models\Base;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Adjustment;
 use RZP\Constants\Timezone;
 use RZP\Models\VirtualAccount\Status;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Balance\AccountType;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Balance\Type as BalanceType;
-use RZP\Models\Merchant\Balance\Entity as BalanceEntity;
 
 /**
  * Class Core
@@ -278,10 +276,10 @@ class Core extends Base\Core
      * If sub merchant's shared banking balance is Not 0, throws an error.
      *      Reason being, as once linked to master merchant, the fund movement will happen from
      *      master merchant's DA and hence cause money loss for the master merchant
-     * Enable the feature flag sub_mid_on_acc_sub_acc on sub merchant
+     * Enable the feature flag assume_sub_account on sub merchant
      * Enable the feature flag block_fav for sub merchant
      * Enable the feature flag block_x_amazonpay for sub merchant
-     * Enable the feature flag master_mid_on_acc_sub_acc for master merchant
+     * Enable the feature flag assume_master_account for master merchant
      * Mark VA(s) of sub merchant as CLOSED
      * Mark sub_virtual_account entity as active and save to DB
      */
@@ -322,6 +320,22 @@ class Core extends Base\Core
             if ($subMerchant->isFeatureEnabled(Feature\Constants::DISABLE_X_AMAZONPAY) === false)
             {
                 $this->enableMerchantFeature($subMerchant->getId(), Feature\Constants::DISABLE_X_AMAZONPAY);
+            }
+
+            $featureCore = new Feature\Core();
+
+            $capitalCardsFeature = $this->repo->feature->findByEntityTypeEntityIdAndName('merchant', $subMerchant->getId(), Feature\Constants::CAPITAL_CARDS);
+
+            if ($capitalCardsFeature !== null)
+            {
+                $featureCore->delete($capitalCardsFeature);
+            }
+
+            $capitalCardsEligibleFeature = $this->repo->feature->findByEntityTypeEntityIdAndName('merchant', $subMerchant->getId(), Feature\Constants::CAPITAL_CARDS_ELIGIBLE);
+
+            if ($capitalCardsEligibleFeature !== null)
+            {
+                $featureCore->delete($capitalCardsEligibleFeature);
             }
 
             if ($masterMerchant->isFeatureEnabled(Feature\Constants::ASSUME_MASTER_ACCOUNT) === false)

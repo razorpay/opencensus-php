@@ -434,6 +434,8 @@ class SubVirtualAccountsTest extends TestCase
 
         $this->fixtureSetUpForSubVirtualAccount();
 
+        $this->fixtures->merchant->addFeatures([Features::CAPITAL_CARDS, Features::CAPITAL_CARDS_ELIGIBLE], '100abc000abc01');
+
         $this->fixtures->merchant->removeFeatures([Features::SUB_VIRTUAL_ACCOUNT]);
 
         $masterMerchant = $this->getDbEntityById('merchant', '10000000000000');
@@ -456,6 +458,8 @@ class SubVirtualAccountsTest extends TestCase
         $this->assertTrue($subMerchant->isFeatureEnabled(Features::ASSUME_SUB_ACCOUNT));
         $this->assertTrue($subMerchant->isFeatureEnabled(Features::BLOCK_FAV));
         $this->assertTrue($subMerchant->isFeatureEnabled(Features::DISABLE_X_AMAZONPAY));
+        $this->assertFalse($subMerchant->isFeatureEnabled(Features::CAPITAL_CARDS));
+        $this->assertFalse($subMerchant->isFeatureEnabled(Features::CAPITAL_CARDS_ELIGIBLE));
 
         //The feature flag is being replaced by another feature
         $this->assertFalse($masterMerchant->isFeatureEnabled(Features::SUB_VIRTUAL_ACCOUNT));

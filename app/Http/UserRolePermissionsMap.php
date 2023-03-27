@@ -739,8 +739,9 @@ class UserRolePermissionsMap
                 Permission::CREATE_VENDOR_PAYMENTS,
                 Permission::EDIT_VENDOR_PAYMENTS,
                 Permission::CANCEL_VENDOR_PAYMENTS,
+                Permission::VIEW_VENDOR_PAYMENTS,
                 Permission::VIEW_FINANCEX_REPORT,
-                Permission::CREATE_FINANCEX_REPORT
+                Permission::CREATE_FINANCEX_REPORT,
             ]
         ],
     ];
