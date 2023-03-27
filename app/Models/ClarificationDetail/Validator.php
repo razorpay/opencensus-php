@@ -8,6 +8,7 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Merchant\Document\Type;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Merchant\Repository as MerchantRepo;
 
 class Validator extends Base\Validator
 {
@@ -31,17 +32,20 @@ class Validator extends Base\Validator
     {
         $this->validateInput('admin_create', $input);
 
-        $merchant = (new \RZP\Models\Merchant\Repository())->getMerchant($merchantId);
-
-        $merchantDetails = $merchant->merchantDetail;
-
-        $merchantStatus = $merchantDetails->getActivationStatus();
-
-        if ($merchantStatus === Status::NEEDS_CLARIFICATION)
+        if (empty($input[Constants::CLARIFICATION_REASONS]) === false)
         {
-            throw new BadRequestValidationFailureException(
-                PublicErrorDescription::BAD_REQUEST_INVALID_INPUT_FOR_NC
-            );
+            $merchant = (new MerchantRepo())->getMerchant($merchantId);
+
+            $merchantDetails = $merchant->merchantDetail;
+
+            $merchantStatus = $merchantDetails->getActivationStatus();
+
+            if ($merchantStatus === Status::NEEDS_CLARIFICATION)
+            {
+                throw new BadRequestValidationFailureException(
+                    PublicErrorDescription::BAD_REQUEST_INVALID_INPUT_FOR_NC
+                );
+            }
         }
     }
 
@@ -92,7 +96,7 @@ class Validator extends Base\Validator
 
     public function validateClarificationDetails($merchantId, $input)
     {
-        $merchant = (new \RZP\Models\Merchant\Repository())->getMerchant($merchantId);
+        $merchant = (new MerchantRepo())->getMerchant($merchantId);
 
         $merchantDetails = $merchant->merchantDetail;
 
@@ -144,7 +148,7 @@ class Validator extends Base\Validator
 
     public function validateFieldDetails($merchantId, $input)
     {
-        $merchant = (new \RZP\Models\Merchant\Repository())->getMerchant($merchantId);
+        $merchant = (new MerchantRepo())->getMerchant($merchantId);
 
         $merchantDetails = $merchant->merchantDetail;
 

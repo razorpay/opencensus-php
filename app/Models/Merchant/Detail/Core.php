@@ -3201,6 +3201,8 @@ class Core extends Base\Core
             (new ClarificationDetailValidator())->validateClarificationExists($merchant->getId());
         }
 
+        (new ClarificationDetailService())->updateClarificationDetails($merchant->getId(),$input[Entity::ACTIVATION_STATUS]);
+
         $isExpEnabled = (new Validator())->checkIfKQUStateExperimentEnabled($merchant->getId());
 
         if ($input[Entity::ACTIVATION_STATUS] === Status::ACTIVATED or

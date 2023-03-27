@@ -16,6 +16,7 @@ use RZP\Http\Request\Requests;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\EsDao;
 use RZP\Constants\Timezone;
+use RZP\Models\ClarificationDetail\Repository;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Core;
 use RZP\Models\Merchant\Cron\Jobs\NcRevampReminderCronJob;
@@ -897,7 +898,83 @@ class MerchantDetailTest extends OAuthTestCase
         });
 
     }
+    public function testUnderReviewStateChange()
+    {
+        Mail::fake();
 
+        $this->enableRazorXTreatmentForRazorX();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => true,
+            'activated'  => 1,
+            'hold_funds' => true
+        ]);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields', [
+            'merchant_id' => $merchant->getId()
+        ]);
+
+        $this->createDocumentEntities($merchantDetail[MerchantDetails::MERCHANT_ID],
+                                      [
+                                          'address_proof_url',
+                                          'business_pan_url',
+                                          'business_proof_url',
+                                          'promoter_address_url',
+                                          'personal_pan',
+                                          'cancelled_cheque',
+                                      ]);
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $merchantUser = $this->fixtures->user->createUserForMerchant($merchantId);
+
+        $this->fixtures->create('user_device_detail', [
+            'merchant_id'     => $merchant->getId(),
+            'user_id'         => $merchantUser->getId(),
+            'signup_campaign' => 'easy_onboarding'
+        ]);
+
+        // add review notes for fields
+
+        $testData = $this->testData['testAddClarificationReasons'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/clarifications";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        // put merchant to NC state
+
+        $testData = $this->testData['changeActivationStatusToNeedsClarification'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        // put merchant to UR state
+
+        $testData = $this->testData['changeActivationStatusToUnderReview'];
+
+        $testData['request']['url'] = "/merchant/activation/$merchantId/activation_status";
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->startTest($testData);
+
+        $result = (new Repository())->getByMerchantIdAndStatuses($merchantId, [\RZP\Models\ClarificationDetail\Constants::SUBMITTED, \RZP\Models\ClarificationDetail\Constants::NEEDS_CLARIFICATION]);
+
+        $this->assertEquals(0, $result->count());
+
+    }
     public function testGroupMerchantClarificationReasonsFlow()
     {
         Mail::fake();
@@ -1087,6 +1164,10 @@ class MerchantDetailTest extends OAuthTestCase
                                          ]
                                      ]
                                  ],$merchantDetails->getKycClarificationReasons());
+
+        $this->assertArraySubset(["issue_fields_reason"=> "Reason Details",
+                                  "internal_notes"=> "Internal notes"],
+                                 $merchantDetails->toArray());
 
         $testData = $this->testData['testSaveGroupMerchantClarificationReasonsDocValidation'];
 
@@ -1296,6 +1377,10 @@ class MerchantDetailTest extends OAuthTestCase
                                      ]
                                  ],$merchantDetails->getKycClarificationReasons());
 
+        $this->assertArraySubset(["issue_fields_reason"=> "Reason Details",
+                                  "internal_notes"=> "Internal notes"],
+                                 $merchantDetails->toArray());
+
         //submit nc form
 
         $testData = $this->testData['testSubmitNCFormGroupFields'];
@@ -1465,6 +1550,10 @@ class MerchantDetailTest extends OAuthTestCase
                                      ]
                                  ],$merchantDetails->getKycClarificationReasons());
 
+        $this->assertArraySubset(["issue_fields_reason"=> "Reason Details",
+                                  "internal_notes"=> "Internal notes"],
+                                 $merchantDetails->toArray());
+
         // test submit validations
         $testData = $this->testData['testSubmitNCFormNonGroupFieldsWithoutGroupSubmission'];
 
@@ -1548,6 +1637,10 @@ class MerchantDetailTest extends OAuthTestCase
                                          ]
                                      ]
                                  ],$merchantDetails->getKycClarificationReasons());
+
+        $this->assertArraySubset(["issue_fields_reason"=> "Reason Details",
+                                  "internal_notes"=> "Internal notes"],
+                                 $merchantDetails->toArray());
 
         //submit nc form
 

@@ -69,22 +69,14 @@ class Service extends Base\Service
 
             $response = $this->core->getClarificationDetail($merchantId);
 
-            $kycClarificationReasons = Tracer::inspan(['name' => HyperTrace::GET_UPDATED_KYC_CLARIFICATION_REASONS], function() use ($input, $merchantId) {
-
-                return $this->merchantDetailCore->getUpdatedKycClarificationReasons($input['old_clarification_reasons'], $merchantId);
-            });
-
-            if (empty($kycClarificationReasons) === false)
+            if (empty($input['old_clarification_reasons']) === false)
             {
-                $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
-
-                $merchantDetails->setKycClarificationReasons($kycClarificationReasons);
-
-                $this->repo->saveOrFail($merchantDetails);
-
-                $response['kyc_clarification_reasons'] = $kycClarificationReasons;
-
+                $this->merchantDetailService->editMerchantDetails($merchantId, $input['old_clarification_reasons']);
             }
+
+            $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchantId);
+
+            $response['kyc_clarification_reasons'] = $merchantDetails->getKycClarificationReasons();;
 
             return $response;
         });
@@ -372,5 +364,27 @@ class Service extends Base\Service
         ]);
 
         return ["nc_revamp_enabled" => $this->isEligibleForRevampNC($merchantId)];
+    }
+
+    public function updateClarificationDetails($merchantId,$status)
+    {
+        if ($status === Status::UNDER_REVIEW)
+        {
+            $clarifications = $this->repo->clarification_detail->getByMerchantIdAndStatuses($merchantId, [Constants::SUBMITTED, Constants::NEEDS_CLARIFICATION]);
+
+            foreach ($clarifications as $clarification)
+            {
+                $this->trace->info(TraceCode::NC_REVAMP_MERCHANT_RESPONSE, [
+                    "step"               => "under review",
+                    "merchantId"         => $merchantId,
+                    "groupClarification" => $clarification
+                ]);
+
+                $clarification->edit([Entity::STATUS => Constants::UNDER_REVIEW], 'edit');
+
+                $this->repo->clarification_detail->saveOrFail($clarification);
+
+            }
+        }
     }
 }

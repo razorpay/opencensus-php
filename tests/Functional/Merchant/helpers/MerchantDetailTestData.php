@@ -477,6 +477,8 @@ return [
                     ]
                 ],
                 "old_clarification_reasons" => [
+                    "issue_fields_reason"=> "Reason Details",
+                    "internal_notes"=> "Internal notes",
                     "issue_fields" => "bank_account_number,bank_account_name,bank_branch_ifsc",
                     "kyc_clarification_reasons" => [
                         "clarification_reasons" => [
@@ -605,6 +607,8 @@ return [
                     ]
                 ],
                 "old_clarification_reasons" => [
+                    "issue_fields_reason"=> "Reason Details",
+                    "internal_notes"=> "Internal notes",
                     "issue_fields" => "bank_account_number,bank_account_name,bank_branch_ifsc",
                     "kyc_clarification_reasons" => [
                         "clarification_reasons" => [
@@ -676,6 +680,8 @@ return [
                     ]
                 ],
                 "old_clarification_reasons" => [
+                    "issue_fields_reason"=> "Reason Details",
+                    "internal_notes"=> "Internal notes",
                     "issue_fields" => "website",
                     "kyc_clarification_reasons" => [
                         "clarification_reasons" => [
@@ -737,6 +743,8 @@ return [
                     ]
                 ],
                 "old_clarification_reasons" => [
+                    "issue_fields_reason"=> "Reason Details",
+                    "internal_notes"=> "Internal notes",
                     "issue_fields" => "website",
                     "kyc_clarification_reasons" => [
                         "clarification_reasons" => [
@@ -829,7 +837,19 @@ return [
             ],
         ],
     ],
-
+    'changeActivationStatusToUnderReview' => [
+        'request'  => [
+            'content' => [
+                'activation_status' => 'under_review',
+            ],
+            'method'  => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'activation_status' => 'under_review',
+            ],
+        ],
+    ],
     'changeActivationStatusToNeedsClarificationWithoutReasons' => [
         'request'  => [
             'content' => [

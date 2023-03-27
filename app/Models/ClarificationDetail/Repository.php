@@ -40,6 +40,16 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getByMerchantIdAndStatuses($merchantId, array $status)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, $merchantId)
+                    ->whereIn(Entity::STATUS, $status)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->get();
+    }
+
+
     public function getLatestByMerchantIdAndGroup($merchantId, string $groupName)
     {
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::REPLICA))
