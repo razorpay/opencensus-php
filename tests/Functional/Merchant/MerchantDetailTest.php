@@ -981,6 +981,8 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
         $merchant = $this->fixtures->create('merchant', [
             'live'       => true,
             'activated'  => 1,
@@ -1661,6 +1663,8 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+
         $merchant = $this->fixtures->create('merchant', [
             'live'       => true,
             'activated'  => 1,
@@ -2256,7 +2260,7 @@ class MerchantDetailTest extends OAuthTestCase
             'mpesa'         => true,
             'olamoney'      => true,
             'payumoney'     => true,
-            'payzapp'       => true,
+            'payzapp'       => false,
             'sbibuddy'      => true,
         ];
 
