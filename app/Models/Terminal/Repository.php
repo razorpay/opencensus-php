@@ -169,7 +169,12 @@ class Repository extends Base\Repository
 
     public function getByTypeAndMerchantIds($type, $merchantIds)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getByTypeAndMerchantIds', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $terminalMerchantIdColumn = $this->dbColumn(Entity::MERCHANT_ID);
         $terminalAllColumn = $this->dbColumn('*');
@@ -191,6 +196,8 @@ class Repository extends Base\Repository
             if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
                 $content = ["merchant_ids" => $merchantIds];
 
@@ -222,6 +229,8 @@ class Repository extends Base\Repository
             $data['message'] = $ex->getMessage();
 
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
         }
 
        return $apiTerminals;
@@ -242,6 +251,11 @@ class Repository extends Base\Repository
 
     public function getById($id, $withTrashed = true, $fromTerminalsService = true)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
         if (($this->app->runningUnitTests() === false) and $fromTerminalsService === true and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "getById", "terminal_id" => $id, "with_trashed" => $withTrashed];
@@ -249,6 +263,8 @@ class Repository extends Base\Repository
             try
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
                 $path = "v1/terminals/" . $id ."?with_trashed=". ($withTrashed ? 'true' : 'false') ;
 
@@ -263,8 +279,12 @@ class Repository extends Base\Repository
                 $data['message'] = $ex->getMessage();
 
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery();
 
@@ -280,7 +300,12 @@ class Repository extends Base\Repository
     {
         $gateways = Payment\Gateway::$methodMap['wallet'];
 
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getTerminalsWithNullEnabledWallets', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $terminals = $this->newQuery()
                           ->whereIn(Entity::GATEWAY, $gateways)
@@ -292,7 +317,12 @@ class Repository extends Base\Repository
 
     public function findOrFail($id, $columns = array('*'), string $connectionType = null)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findOrFail', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $model = $this->find($id, $columns, $connectionType);
 
@@ -311,7 +341,12 @@ class Repository extends Base\Repository
 
     public function findOrFailPublic($id, $columns = ['*'], string $connectionType = null)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findOrFailPublic', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $model = $this->find($id, $columns, $connectionType);
 
@@ -332,6 +367,11 @@ class Repository extends Base\Repository
 
     public function find($id, $columns = ['*'], string $connectionType = null)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
         if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
             $data = ["function" => "find", "terminal_id" => $id];
@@ -339,6 +379,8 @@ class Repository extends Base\Repository
             try
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
                 $path = "v1/terminals/" . $id;
 
@@ -350,7 +392,7 @@ class Repository extends Base\Repository
                 // In case of activated PayPal terminals it is present in both API service DB and TS service DB.
                 if(!$terminalEntityByTS->isTerminalOnlyOnTerminalsService()){
 
-                    $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'find', 'route_name' => $this->fetchRouteName()]);
+                    $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
                     $terminal = parent::find($id, $columns, $connectionType);
 
@@ -367,10 +409,12 @@ class Repository extends Base\Repository
                 $data['message'] = $ex->getMessage();
 
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'find', 'route_name' => $this->fetchRouteName()]);
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
 
         /*
@@ -395,6 +439,11 @@ class Repository extends Base\Repository
 
     public function fetch(array $params, string $merchantId = null, string $connectionType = null, $fromTerminalsService = true): PublicCollection
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
         //In production all the terminals are fetched from the terminals service, a prod check included for unit testing cases
         if( in_array($this->app['env'], [Environment::PRODUCTION, Environment::AUTOMATION, Environment::BVT, Environment::BETA], true) === true ) {
             if ($merchantId != null)
@@ -405,6 +454,8 @@ class Repository extends Base\Repository
             $data = ["function" => "fetch", "params" => $params];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             $path = "v1/admin/terminals/?";
 
@@ -425,7 +476,7 @@ class Repository extends Base\Repository
             return $tsTerminals;
         }
         else {
-            $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'fetch', 'route_name' => $this->fetchRouteName()]);
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
             $terminals = parent::fetch($params, $merchantId, $connectionType);
             return $terminals;
@@ -452,7 +503,12 @@ class Repository extends Base\Repository
 
     public function getByMerchantId($mid)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getByMerchantId', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->withTrashed();
@@ -464,7 +520,12 @@ class Repository extends Base\Repository
 
     public function getEnabledTerminalsByMerchantId($mid)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getEnabledTerminalsByMerchantId', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
             ->enabled();
@@ -476,6 +537,11 @@ class Repository extends Base\Repository
 
     public function getActivatedDirectSettlementTerminalsByMerchant(string $mId)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
         try
         {
             if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
@@ -483,6 +549,8 @@ class Repository extends Base\Repository
                 $data = ["function" => "getActivatedDirectSettlementTerminalsByMerchant", "merchant_id"=> $mId];
 
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
                 $content["merchant_ids"] = [$mId];
 
@@ -507,9 +575,11 @@ class Repository extends Base\Repository
             $data['message'] = $ex->getMessage();
 
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
         }
 
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getActivatedDirectSettlementTerminalsByMerchant', 'route_name' => $this->fetchRouteName()]);
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery();
 
@@ -526,6 +596,11 @@ class Repository extends Base\Repository
 
     public function findByGatewayAndTerminalData(string $gateway, array $terminalData = [], bool $withTrashed = false, $mode = null)
     {
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
         try
         {
             $data = ["function" => "findByGatewayAndTerminalData", "gateway"=> $gateway, "terminal_data" => $terminalData, "withTrashed" => $withTrashed];
@@ -533,6 +608,8 @@ class Repository extends Base\Repository
             if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
                 $content = Terminal\Service::getTerminalServiceRequestFromParam($terminalData);
 
@@ -554,6 +631,8 @@ class Repository extends Base\Repository
             $data['message'] = $ex->getMessage();
 
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
         }
 
         $query =  $this->newQueryWithConnection($this->getSlaveConnection($mode))
@@ -569,7 +648,7 @@ class Repository extends Base\Repository
             $query->withTrashed();
         }
 
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findByGatewayAndTerminalData', 'route_name' => $this->fetchRouteName()]);
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $apiTerminals = $query->get();
 
@@ -578,7 +657,12 @@ class Repository extends Base\Repository
 
     public function findByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findByGatewayMerchantId', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $terminal =  $this->newQuery()
                     ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
@@ -592,6 +676,8 @@ class Repository extends Base\Repository
                 $data = ["function" => "findByGatewayMerchantId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway"=> $gateway];
 
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
                 $content["fetch_where_submerchant"] = false;
 
@@ -630,6 +716,8 @@ class Repository extends Base\Repository
             $data['message'] = $ex->getMessage();
 
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
         }
 
         return $terminal;
@@ -637,7 +725,12 @@ class Repository extends Base\Repository
 
     public function findActivatedTerminalByGatewayMerchantId(string $gatewayMerchantId, string $gateway)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findActivatedTerminalByGatewayMerchantId', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $terminal =  $this->newQuery()
             ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
@@ -652,6 +745,8 @@ class Repository extends Base\Repository
                 $data = ["function" => "findActivatedTerminalByGatewayMerchantId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway"=> $gateway];
 
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
                 $content["fetch_where_submerchant"] = false;
 
@@ -685,6 +780,8 @@ class Repository extends Base\Repository
             $data['message'] = $ex->getMessage();
 
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
         }
 
         return $terminal;
@@ -692,7 +789,12 @@ class Repository extends Base\Repository
 
     public function findTerminalByGatewayMerchantIdAndGatewayTerminalId(string $gatewayMerchantId, string $gatewayTerminalId, string $gateway)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findTerminalByGatewayMerchantIdAndGatewayTerminalId', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $terminal =  $this->newQuery()
                     ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
@@ -707,6 +809,8 @@ class Repository extends Base\Repository
                 $data = ["function" => "findTerminalByGatewayMerchantIdAndGatewayTerminalId", "gateway_merchant_id"=> $gatewayMerchantId, "gateway_terminal_id"=> $gatewayTerminalId, "gateway"=> $gateway];
 
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
                 $identifiers["gateway_merchant_id"] = $gatewayMerchantId;
 
@@ -742,6 +846,8 @@ class Repository extends Base\Repository
             $data['message'] = $ex->getMessage();
 
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
         }
 
         return $terminal;
@@ -749,7 +855,12 @@ class Repository extends Base\Repository
 
     public function findEnabledTerminalByMpanAndGatewayMerchantId(string $gatewayMerchantId, string $gateway, string $mpan)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findEnabledTerminalByMpanAndGatewayMerchantId', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $terminal = $this->newQuery()
         ->where(Entity::GATEWAY, '=', $gateway)
@@ -773,6 +884,8 @@ class Repository extends Base\Repository
             ];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -804,6 +917,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -812,7 +927,12 @@ class Repository extends Base\Repository
 
     public function getByParams(array $params, bool $fetchWhereSubmerchant = false)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getByParams', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->buildFetchByParamsQuery($params);
 
@@ -825,6 +945,8 @@ class Repository extends Base\Repository
             if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
             {
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
                 $content = Terminal\Service::getTerminalServiceRequestFromParam($params);
 
@@ -858,6 +980,8 @@ class Repository extends Base\Repository
             $data['message'] = $ex->getMessage();
 
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
         }
 
         return $terminals;
@@ -865,7 +989,12 @@ class Repository extends Base\Repository
 
     public function getNonFailedNonDeactivatedByParams(array $params, $proxyTs = true)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getNonFailedNonDeactivatedByParams', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->buildFetchByParamsQuery($params);
 
@@ -882,6 +1011,8 @@ class Repository extends Base\Repository
                 if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
                 {
                     $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                    $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
                     $content = Terminal\Service::getTerminalServiceRequestFromParam($params);
 
@@ -905,6 +1036,8 @@ class Repository extends Base\Repository
                 $data['message'] = $ex->getMessage();
 
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -913,7 +1046,12 @@ class Repository extends Base\Repository
 
     public function getTerminalsForMerchantAndSharedMerchant(Merchant\Entity $merchant)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getTerminalsForMerchantAndSharedMerchant', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $merchantIds = [$merchant->getId(), Merchant\Account::SHARED_ACCOUNT];
 
@@ -951,7 +1089,12 @@ class Repository extends Base\Repository
         $query->remember($this->getCacheTtl())
               ->cachetags($cacheTags);
 
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getTerminalForMerchantParentMerchantAndSharedMerchant', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         return $query->get();
     }
@@ -968,7 +1111,12 @@ class Repository extends Base\Repository
         // This is because we don't have different terminals for the first
         // auth transaction and then subsequent recurring transactions.
         //
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getEmandateTerminalsForMerchantAndSharedMerchant', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->enabled()
@@ -987,6 +1135,8 @@ class Repository extends Base\Repository
                 $data = ["function" => "getEmandateTerminalsForMerchantAndSharedMerchant", "gateways" => $gateways];
 
                 $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
                 $content['merchant_ids'] = $merchantIds;
 
@@ -1024,6 +1174,8 @@ class Repository extends Base\Repository
             $data['message'] = $ex->getMessage();
 
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
         }
 
         return $terminals;
@@ -1031,7 +1183,12 @@ class Repository extends Base\Repository
 
     public function getHitachiTerminalsForCurrencyOrStatusUpdate($limit): PublicCollection
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getHitachiTerminalsForCurrencyOrStatusUpdate', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $currencyLength = strlen(json_encode(Currency::SUPPORTED_CURRENCIES));
 
@@ -1045,7 +1202,12 @@ class Repository extends Base\Repository
 
     public function getAllBankTransferTerminals($gateway, $merchantIds = []): PublicCollection
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getAllBankTransferTerminals', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->select([Entity::ID, Entity::GATEWAY_MERCHANT_ID, Entity::GATEWAY, Entity::GATEWAY_MERCHANT_ID2, Entity::MERCHANT_ID, Entity::ACCOUNT_TYPE])
@@ -1064,6 +1226,8 @@ class Repository extends Base\Repository
             $data = ["function" => "getAllBankTransferTerminals", "gateway" => $gateway];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1097,6 +1261,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1115,7 +1281,12 @@ class Repository extends Base\Repository
 
         $newQuery = clone $query;
 
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'addMerchantWhereCondition', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
 
@@ -1142,7 +1313,12 @@ class Repository extends Base\Repository
 
     public function getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull($gatewayTerminalId, $gateway)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $terminal = $this->newQuery()
                     ->withTrashed()
@@ -1160,6 +1336,8 @@ class Repository extends Base\Repository
             ];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1195,6 +1373,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1203,7 +1383,12 @@ class Repository extends Base\Repository
 
     public function getByIdAndMerchantId($mid, $tid)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getByIdAndMerchantId', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->withTrashed();
@@ -1217,6 +1402,8 @@ class Repository extends Base\Repository
             $data = ["function" => "getByIdAndMerchantId", "mid" => $mid, "tid" => $tid];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1250,6 +1437,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1258,7 +1447,12 @@ class Repository extends Base\Repository
 
     public function getByMerchantIdAndGateway($mid, $gateway)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getByMerchantIdAndGateway', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY, '=', $gateway)
@@ -1273,6 +1467,8 @@ class Repository extends Base\Repository
             $data = ["function" => "getByMerchantIdAndGateway", "mid" => $mid, "gateway" => $gateway];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1311,6 +1507,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1319,7 +1517,12 @@ class Repository extends Base\Repository
 
     public function getIdsByMerchantIdsAndGateway($mids, $gateway)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getIdsByMerchantIdsAndGateway', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                     ->where(Entity::GATEWAY, $gateway)
@@ -1339,6 +1542,8 @@ class Repository extends Base\Repository
             $data = ["function" => "getIdsByMerchantIdsAndGateway", "mids" => $mids, "gateway" => $gateway];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1372,6 +1577,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1380,7 +1587,12 @@ class Repository extends Base\Repository
 
     public function getRecurringTerminalsByMidAndGateway($mid, $gateway)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getRecurringTerminalsByMidAndGateway', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
             ->where(Entity::GATEWAY, $gateway)
@@ -1399,6 +1611,8 @@ class Repository extends Base\Repository
             $data = ["function" => "getRecurringTerminalsByMidAndGateway", "mid" => $mid, "gateway" => $gateway];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1434,6 +1648,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1442,7 +1658,12 @@ class Repository extends Base\Repository
 
     public function getUpiRecurringTerminalsByMid($mid)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getUpiRecurringTerminalsByMid', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->whereIn(Entity::GATEWAY, Payment\Gateway::$upiRecurringGateways)
@@ -1458,6 +1679,8 @@ class Repository extends Base\Repository
             $data = ["function" => "getUpiRecurringTerminalsByMid", "mid" => $mid];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1492,6 +1715,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1500,7 +1725,12 @@ class Repository extends Base\Repository
 
     public function getSharedTerminalForGateway($gateway)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getSharedTerminalForGateway', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         return $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
@@ -1511,7 +1741,12 @@ class Repository extends Base\Repository
 
     public function getSharedTerminalForGatewayWithCategory($gateway, $category)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getSharedTerminalForGatewayWithCategory', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         return $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
@@ -1523,7 +1758,12 @@ class Repository extends Base\Repository
 
     public function getEmiTerminal($mId, $gateway, $duration)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getEmiTerminal', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
@@ -1539,7 +1779,12 @@ class Repository extends Base\Repository
 
     public function getSharedTerminalsOnCommonAccount()
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getSharedTerminalsOnCommonAccount', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         return $this->newQuery()
                     ->merchantId(Merchant\Account::SHARED_ACCOUNT)
@@ -1549,7 +1794,12 @@ class Repository extends Base\Repository
 
     public function getAllSharedTerminals()
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getAllSharedTerminals', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $map = Terminal\Shared::getSharedTerminalMapping();
 
@@ -1563,7 +1813,12 @@ class Repository extends Base\Repository
 
     public function getByTerminalIds(array $ids, bool $proxy = true)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getByTerminalIds', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $apiTerminals = $this->newQuery()
             ->whereIn(Entity::ID, $ids)
@@ -1574,6 +1829,8 @@ class Repository extends Base\Repository
             $data = ["function" => "getByTerminalIds", "ids" => $ids];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1599,6 +1856,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1616,7 +1875,12 @@ class Repository extends Base\Repository
 
     public function getTpvTerminalIdsForGateway($gateway)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getTpvTerminalIdsForGateway', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $tpvCategories = Category::getTPVCategories();
 
@@ -1629,7 +1893,12 @@ class Repository extends Base\Repository
 
     public function getTerminalIdsForGateway($gateway, $exclude = [])
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getTerminalIdsForGateway', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         return $this->newQuery()
                     ->where(Entity::GATEWAY, $gateway)
@@ -1640,7 +1909,12 @@ class Repository extends Base\Repository
 
     public function getDirectTerminalsForGateway(string $gateway): PublicCollection
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getDirectTerminalsForGateway', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $apiTerminals = $this->newQuery()
                     ->where(Entity::GATEWAY, $gateway)
@@ -1656,6 +1930,8 @@ class Repository extends Base\Repository
             ];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1681,6 +1957,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1689,7 +1967,12 @@ class Repository extends Base\Repository
 
     public function findByGatewayMpan(string $mpan, string $gateway)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findByGatewayMpan', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $terminal = $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
@@ -1706,6 +1989,8 @@ class Repository extends Base\Repository
             $data = ["function" => "findByGatewayMpan", "gateway" => $gateway, "mpan" => $mpan];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1737,6 +2022,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1822,7 +2109,12 @@ class Repository extends Base\Repository
 
     public function getByMerchantProviderAndMethod(string $provider, string $merchantId, string $method)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'getByMerchantProviderAndMethod', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY_ACQUIRER, '=', $provider)
@@ -1838,6 +2130,8 @@ class Repository extends Base\Repository
             $data = ["function" => "getByMerchantProviderAndMethod", "mid" => $merchantId, "gateway_acquirer" => $provider];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1872,6 +2166,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1880,7 +2176,12 @@ class Repository extends Base\Repository
 
     public function findByMerchantIdAndMethod(string $merchantId, string $method)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findByMerchantIdAndMethod', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->where($method, '=', 1)
@@ -1895,6 +2196,8 @@ class Repository extends Base\Repository
             $data = ["function" => "findByMerchantIdAndMethod", "mid" => $merchantId, "method" => $method];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1921,6 +2224,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1929,7 +2234,12 @@ class Repository extends Base\Repository
 
     public function findManyEnabledByIds($ids)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findManyEnabledByIds', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $apiTerminals = $this->newQuery()
                     ->whereIn(Entity::ID, $ids)
@@ -1941,6 +2251,8 @@ class Repository extends Base\Repository
             $data = ["function" => "findManyEnabledByIds", "ids" => $ids];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -1966,6 +2278,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -1974,7 +2288,12 @@ class Repository extends Base\Repository
 
     public function fetchForSyncToTerminalsService(array $input)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'fetchForSyncToTerminalsService', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->where(Entity::SYNC_STATUS, '=', SyncStatus::getValueForSyncStatusString($input[Entity::SYNC_STATUS]));
@@ -1989,7 +2308,12 @@ class Repository extends Base\Repository
 
     public function findByMerchantIdGatewayAndCurrency(string $merchantId, string $gateway, string $currency)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findByMerchantIdGatewayAndCurrency', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY, '=', $gateway)
@@ -2005,6 +2329,8 @@ class Repository extends Base\Repository
             $data = ["function" => "findByMerchantIdGatewayAndCurrency", "mid" => $merchantId, "gateway" => $gateway];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -2032,6 +2358,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -2041,7 +2369,12 @@ class Repository extends Base\Repository
 
     public function fetchByMerchantIdGatewayAndStatus(string $mid, string $gateway, array $status)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'fetchByMerchantIdGatewayAndStatus', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $apiTerminals = $this->newQuery()
                     ->where(Entity::GATEWAY, '=', $gateway)
@@ -2054,6 +2387,8 @@ class Repository extends Base\Repository
             $data = ["function" => "fetchByMerchantIdGatewayAndStatus", "mid" => $mid, "gateway" => $gateway, "status" => $status];
 
             $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V1, $data);
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_PROXY_V1, $metricData);
 
             try
             {
@@ -2081,6 +2416,8 @@ class Repository extends Base\Repository
             {
                 $data['message'] = $ex->getMessage();
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
+
+                $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
             }
         }
 
@@ -2089,7 +2426,12 @@ class Repository extends Base\Repository
 
     public function findMerchantIdByGatewayMerchantID(string $gatewayMerchantId)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findMerchantIdByGatewayMerchantID', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
@@ -2100,7 +2442,12 @@ class Repository extends Base\Repository
 
     public function findMerchantIdByGatewayMerchantIDAll(string $gatewayMerchantId)
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'findMerchantIdByGatewayMerchantIDAll', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId);
@@ -2110,7 +2457,12 @@ class Repository extends Base\Repository
 
     public function fetchTerminalsForTokenization(int $count, array $terminalIds = [])
     {
-        $this->trace->info(TraceCode::TERMINALS_REPO_READ_CALL_RECEIVED, ['method' => 'fetchTerminalsForTokenization', 'route_name' => $this->fetchRouteName()]);
+        $metricData = [
+            'route' => $this->fetchRouteName(),
+            "function" => __FUNCTION__
+        ];
+
+        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $gatewayHavingMpans = [Payment\Gateway::WORLDLINE, Payment\Gateway::HITACHI, Payment\Gateway::ISG];
 
