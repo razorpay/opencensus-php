@@ -44,7 +44,7 @@ class Gateway extends Base\Gateway
                 $provider = strtolower(CardlessEmi::getProviderForBank($provider));
             }
 
-            if((in_array($provider, Payment\Gateway::$redirectFlowProvider) === false))
+            if((in_array($provider, Payment\Gateway::$redirectFlowProvider) === false) and !($provider == CardlessEmi::ZESTMONEY and $this->mode === Mode::TEST))
             {
                 return;
             }

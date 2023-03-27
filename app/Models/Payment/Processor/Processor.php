@@ -2255,6 +2255,11 @@ class Processor
 
         $input['payment_id'] = $payment->getPublicId();
 
+        if($payment->getWallet() === CardlessEmi::ZESTMONEY and $this->mode === Mode::TEST)
+        {
+            return;
+        }
+
         //adding this to redirecting to gateway via nbplus
         if ($payment->getWallet() === CardlessEmi::ZESTMONEY)
         {

@@ -2010,6 +2010,12 @@ trait Authorize
             return;
         }
 
+        if (($input[Payment\Entity::PROVIDER] === CardlessEmi::ZESTMONEY) and
+            ($this->mode == Mode::TEST) )
+        {
+            return false;
+        }
+
         if(($input[Payment\Entity::PROVIDER] === CardlessEmi::EARLYSALARY) and
             ($payment->merchant->isFeatureEnabled(\RZP\Models\Feature\Constants::REDIRECT_TO_EARLYSALARY)))
         {
@@ -5096,7 +5102,7 @@ trait Authorize
         {
             $input = Customer\Validator::validateAndParseContactInInput($input);
 
-            if (Payment\Gateway::isCardlessEmiPlanValidationApplicable($input, $payment) === true)
+            if (Payment\Gateway::isCardlessEmiPlanValidationApplicable($input, $payment,$this->mode) === true)
             {
                 $gatewayInput['gateway'] = [
                     'emi_duration' => $input['emi_duration']
@@ -7426,7 +7432,7 @@ trait Authorize
 
         (new Payment\Metric)->pushAuthenticationMetrics($this->payment);
     }
-    
+
     public function updatePaymentTokenDetails(Payment\Entity $payment, array $nrErrorCode)
     {
         try

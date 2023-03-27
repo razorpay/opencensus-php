@@ -3692,7 +3692,7 @@ class Gateway
             (in_array(CardlessEmi::getProviderForBank($provider), Payment\Gateway::$checkAccountSkipProvider, true) === true));
     }
 
-    public static function isCardlessEmiPlanValidationApplicable($input, $payment)
+    public static function isCardlessEmiPlanValidationApplicable($input, $payment, $mode)
     {
         if (Payment\Gateway::isCardlessEmiSkipCheckAccountProvider($input[Payment\Entity::PROVIDER]))
         {
@@ -3707,6 +3707,12 @@ class Gateway
 
         if (($input[Payment\Entity::PROVIDER] === CardlessEmi::ZESTMONEY) and
             ($payment->getCpsRoute() === Payment\Entity::NB_PLUS_SERVICE))
+        {
+            return false;
+        }
+
+        if (($input[Payment\Entity::PROVIDER] === CardlessEmi::ZESTMONEY) and
+            ($mode == Mode::TEST) )
         {
             return false;
         }
