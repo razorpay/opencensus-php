@@ -21,6 +21,10 @@ class Events
     const NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     = 'NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER';
     const NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER = 'NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER';
     const NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  = 'NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER';
+    const NC_COUNT_1_ONBOARDING_PAUSE          = 'NC_COUNT_1_ONBOARDING_PAUSE';
+    const NC_COUNT_2_ONBOARDING_PAUSE          = 'NC_COUNT_2_ONBOARDING_PAUSE';
+    const NC_COUNT_1_ONBOARDING_PAUSE_REMINDER = 'NC_COUNT_1_ONBOARDING_PAUSE_REMINDER';
+    const NC_COUNT_2_ONBOARDING_PAUSE_REMINDER = 'NC_COUNT_2_ONBOARDING_PAUSE_REMINDER';
 
 
     const PARTNER_EVENTS_PREFIX             = 'PARTNER_';
@@ -71,6 +75,7 @@ class Events
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE         => 'sms.onboarding.nc_revamp',
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => 'sms.onboarding.nc_revamp',
         self::NC_COUNT_1_PAYMENTS_NOT_LIVE                      => 'sms.onboarding.nc_revamp',
+        self::NC_COUNT_1_ONBOARDING_PAUSE                       => 'sms.onboarding.nc_revamp',
 
         self::PAYMENTS_ENABLED                            => 'sms.onboarding.payments_enabled',
         self::NEEDS_CLARIFICATION                         => 'sms.onboarding.needs_clarification',
@@ -133,7 +138,9 @@ class Events
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => RazorxTreatment::NC_REVAMP,
         self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE     => RazorxTreatment::NC_REVAMP,
         self::NC_COUNT_1_PAYMENTS_NOT_LIVE                      => RazorxTreatment::NC_REVAMP,
-        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                      => RazorxTreatment::NC_REVAMP
+        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                      => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_1_ONBOARDING_PAUSE                       => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_2_ONBOARDING_PAUSE                       => RazorxTreatment::NC_REVAMP,
     ];
 
     const WHATSAPP_TEMPLATES = [
@@ -148,17 +155,21 @@ class Events
     const WHATSAPP_TEMPLATE_NAMES = [
 
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'nc_count_payments_live_settlements_live',
-        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'nc_count_payments_live_settlements_live',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'nc_count_2_payments_live_settlements_live',
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'nc_count_payments_live_settlements_not_live',
-        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'nc_count_payments_live_settlements_not_live',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'nc_count_2_payments_live_settlements_not_live',
         self::NC_COUNT_1_PAYMENTS_NOT_LIVE                  => 'nc_count_payments_not_live',
-        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                  => 'nc_count_payments_not_live',
+        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                  => 'nc_count_2_payments_not_live',
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => 'nc_revamp_payments_live_settlements_live_reminder',
         self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => 'nc_revamp_payments_live_settlements_live_reminder',
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'nc_revamp_payments_live_settlements_not_live_reminder',
         self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'nc_revamp_payments_live_settlements_not_live_reminder',
         self::NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                  => 'nc_revamp_payments_not_live_reminder',
         self::NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  => 'nc_revamp_payments_not_live_reminder',
+        self::NC_COUNT_1_ONBOARDING_PAUSE          => 'nc_revamp_onboarding_pause',
+        self::NC_COUNT_2_ONBOARDING_PAUSE          => 'nc_revamp_2_onboarding_pause',
+        self::NC_COUNT_1_ONBOARDING_PAUSE_REMINDER => 'nc_revamp_onboarding_pause_reminder',
+        self::NC_COUNT_2_ONBOARDING_PAUSE_REMINDER => 'nc_revamp_onboarding_pause_reminder',
 
         self::PARTNER_ADDED_SUBMERCHANT                           => 'whatsapp_partnerships_add_sub_merchant_partner',
         self::PARTNER_ADDED_SUBMERCHANT_FOR_X                      => 'whatsapp_partnerships_add_sub_merchant_partner_for_x',
@@ -196,6 +207,10 @@ class Events
         self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => RazorxTreatment::NC_REVAMP,
         self::NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                  => RazorxTreatment::NC_REVAMP,
         self::NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_1_ONBOARDING_PAUSE                            => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_2_ONBOARDING_PAUSE                            => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                   => RazorxTreatment::NC_REVAMP,
+        self::NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => RazorxTreatment::NC_REVAMP,
 
         self::DOWNLOAD_MERCHANT_WEBSITE_SECTION       => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
         self::WEBSITE_SECTION_PUBLISHED               => RazorxTreatment::WEBSITE_ADHERENCE_WHATSAPP_COMMUNICATION,
@@ -217,6 +232,10 @@ class Events
         self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'onboarding/needs-clarification',
         self::NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                  => 'onboarding/needs-clarification',
         self::NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  => 'onboarding/needs-clarification',
+        self::NC_COUNT_1_ONBOARDING_PAUSE                            => 'onboarding/needs-clarification',
+        self::NC_COUNT_2_ONBOARDING_PAUSE                            => 'onboarding/needs-clarification',
+        self::NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                   => 'onboarding/needs-clarification',
+        self::NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => 'onboarding/needs-clarification',
 
         self::WEBSITE_ADHERENCE_HARD_NUDGE            => 'app/website-app-detail',
         self::WEBSITE_ADHERENCE_SOFT_NUDGE            => 'app/website-app-detail',
@@ -230,17 +249,21 @@ class Events
     // blade templates
     const WHATSAPP_TEMPLATES_NEW = [
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'whatsapp.merchant.onboarding.nc_count_payments_live_settlements_live',
-        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'whatsapp.merchant.onboarding.nc_count_payments_live_settlements_live',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE     => 'whatsapp.merchant.onboarding.nc_count_2_payments_live_settlements_live',
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'whatsapp.merchant.onboarding.nc_count_payments_live_settlements_not_live',
-        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'whatsapp.merchant.onboarding.nc_count_payments_live_settlements_not_live',
+        self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE => 'whatsapp.merchant.onboarding.nc_count_2_payments_live_settlements_not_live',
         self::NC_COUNT_1_PAYMENTS_NOT_LIVE                  => 'whatsapp.merchant.onboarding.nc_count_payments_not_live',
-        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                  => 'whatsapp.merchant.onboarding.nc_count_payments_not_live',
+        self::NC_COUNT_2_PAYMENTS_NOT_LIVE                  => 'whatsapp.merchant.onboarding.nc_count_2_payments_not_live',
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => 'whatsapp.merchant.onboarding.nc_revamp_payments_live_settlements_live_reminder',
         self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER     => 'whatsapp.merchant.onboarding.nc_revamp_payments_live_settlements_live_reminder',
         self::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'whatsapp.merchant.onboarding.nc_revamp_payments_live_settlements_not_live_reminder',
         self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'whatsapp.merchant.onboarding.nc_revamp_payments_live_settlements_not_live_reminder',
         self::NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                  => 'whatsapp.merchant.onboarding.nc_revamp_payments_not_live_reminder',
         self::NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  => 'whatsapp.merchant.onboarding.nc_revamp_payments_not_live_reminder',
+        self::NC_COUNT_1_ONBOARDING_PAUSE                            => 'whatsapp.merchant.onboarding.nc_revamp_onboarding_pause',
+        self::NC_COUNT_2_ONBOARDING_PAUSE                            => 'whatsapp.merchant.onboarding.nc_revamp_2_onboarding_pause',
+        self::NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                   => 'whatsapp.merchant.onboarding.nc_revamp_onboarding_pause_reminder',
+        self::NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => 'whatsapp.merchant.onboarding.nc_revamp_onboarding_pause_reminder',
 
         self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => 'whatsapp.merchant.onboarding.payments_limit_breach',
         self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => 'whatsapp.merchant.onboarding.payments_breach_blocked',
@@ -291,6 +314,10 @@ class Events
         self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => 'emails.merchant.onboarding.nc_count_2_payments_live_settlements_not_live_reminder',
         self::NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                  => 'emails.merchant.onboarding.nc_count_1_payments_not_live_reminder',
         self::NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  => 'emails.merchant.onboarding.nc_count_2_payments_not_live_reminder',
+        self::NC_COUNT_1_ONBOARDING_PAUSE                            => 'emails.merchant.onboarding.nc_count_1_onboarding_pause',
+        self::NC_COUNT_2_ONBOARDING_PAUSE                            => 'emails.merchant.onboarding.nc_count_2_onboarding_pause',
+        self::NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                   => 'emails.merchant.onboarding.nc_count_1_onboarding_pause_reminder',
+        self::NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => 'emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder',
 
         self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => 'emails.merchant.onboarding.payments_limit_breach',
         self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => 'emails.merchant.onboarding.payments_breach_blocked',
@@ -327,6 +354,10 @@ class Events
         self::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER => '[Action required] Reminder to update your details for KYC verification',
         self::NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER                  => '[Action required] Reminder to update your details for KYC verification',
         self::NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                  => '[Action required] Reminder to update your details for KYC verification',
+        self::NC_COUNT_1_ONBOARDING_PAUSE                            => '[Action required] Few more details required to complete KYC verification',
+        self::NC_COUNT_2_ONBOARDING_PAUSE                            => '[Action required] Few more details required to complete KYC verification',
+        self::NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                   => '[Action required] Reminder to update your details for KYC verification',
+        self::NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => '[Action required] Reminder to update your details for KYC verification',
 
         self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION   => 'Razorpay Reminder: Update your KYC details to continue accepting payments',
         self::PAYMENTS_BREACH_AFTER_L1_SUBMISSION_BLOCKED => 'Razorpay Alert: Your payments are paused, submit KYC details to resume payments',
@@ -349,6 +380,7 @@ class Events
         self::PARTNER_SUBMERCHANT_REGISTERED_SETTLEMENTS_ENABLED   => 'Your affiliate {merchantName} can now accept payments via Razorpay',
         self::PARTNER_SUBMERCHANT_PAYMENTS_ENABLED                 => 'Your affiliate {merchantName} can now accept payments via Razorpay',
     ];
+
 
     const EMAIL_CC = [
         self::PAYMENTS_LIMIT_BREACH_AFTER_L1_SUBMISSION            => Constants::MAIL_ADDRESSES[Constants::RAZORPAY_HELP_DESK],

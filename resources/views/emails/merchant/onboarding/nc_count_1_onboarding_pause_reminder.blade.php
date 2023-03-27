@@ -61,8 +61,7 @@
                                     </div>
                                     <br />
                                     <div style="background-color: #f54a2a14; border-radius: 12px; padding: 16px;">
-                                        Please note, you will not be able to collect payments from customers or receive
-                                        it in your bank account until the required details are updated.
+                                        Please note, your response on the identified items is crucial for us to process your account further.
                                     </div>
                                     <br />
                                     <div>

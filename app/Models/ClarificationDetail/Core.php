@@ -277,9 +277,18 @@ class Core extends Base\Core
             {
                 if ($merchant->isActivated() === false)
                 {
-                    $event = ($ncCount <= 1) ?
-                        NCEvents::NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER :
-                        NCEvents::NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER;
+                    if ((new Detail\Core())->blockMerchantActivations($merchant) === false)
+                    {
+                        $event = ($ncCount <= 1) ?
+                            NCEvents::NC_COUNT_1_PAYMENTS_NOT_LIVE_REMINDER :
+                            NCEvents::NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER;
+                    }
+                    else
+                    {
+                        $event = ($ncCount <= 1) ?
+                            NCEvents::NC_COUNT_1_ONBOARDING_PAUSE_REMINDER :
+                            NCEvents::NC_COUNT_2_ONBOARDING_PAUSE_REMINDER;
+                    }
                 }
             }
         }

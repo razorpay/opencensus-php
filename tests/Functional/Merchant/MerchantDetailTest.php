@@ -855,6 +855,110 @@ class MerchantDetailTest extends OAuthTestCase
 
     }
 
+    // Onboarding Pause - Nc count 1
+    public function testSendEmailReminderForNcRevampOnboardingPauseCount1()
+    {
+        Mail::fake();
+
+        Config::set('applications.test_case.execution', false);
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => false,
+            'activated'  => 0,
+            'hold_funds' => true
+        ]) ;
+
+        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'notenable', ]]]);
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        //verify email has been sent
+
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.nc_count_1_onboarding_pause_reminder', $mail->getTemplate());
+
+            return true;
+        });
+
+    }
+    // Onboarding Pause - Nc count 2
+    public function testSendEmailReminderForNcRevampOnboardingPausecount2()
+    {
+        Mail::fake();
+
+        $this->enableRazorXTreatmentForRazorX();
+
+        $this->ba->cronAuth();
+
+        Config::set('applications.test_case.execution', false);
+
+        $merchant = $this->fixtures->create('merchant', [
+            'live'       => false,
+            'activated'  => 0,
+            'hold_funds' => true
+        ]) ;
+
+        $merchantId = $merchant->getId();
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('state',[
+            'entity_id' => $merchantId,
+            'name'    => 'needs_clarification',
+            'entity_type' => 'merchant_detail',
+            'created_at' => Carbon::now()->subDays(1)->getTimestamp()
+        ]);
+
+        $this->fixtures->create('clarification_detail',[
+            'merchant_id' => $merchantId,
+            'group_name' =>  'bank_details'
+        ]);
+
+        $this->fixtures->create('merchant_detail:valid_fields',[
+            'merchant_id'=>$merchant->getId(),
+            'activation_status'     => 'needs_clarification'
+        ]);
+
+        (new NcRevampReminderCronJob(['cron_name' => 'nc_revamp_reminder']))->process();
+
+        //verify email has been sent
+
+        Mail::assertQueued(MerchantOnboardingEmail::class, function($mail) {
+            $this->assertEquals('emails.merchant.onboarding.nc_count_2_onboarding_pause_reminder', $mail->getTemplate());
+
+            return true;
+        });
+
+    }
+
     public function testSendEmailFailReminderForNcRevamp()
     {
         Mail::fake();

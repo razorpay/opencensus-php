@@ -54,19 +54,26 @@
                                     <div>
                                         Hey {{{$merchant['name']}}},
                                     </div>
-                                    <br />
                                     <div>
-                                        This is a quick reminder to update your given details in order for us to complete KYC verification
-                                        for your account.
+                                        Hope you're doing well.
                                     </div>
-                                    <br />
+                                    <br/>
+                                    <div>
+                                        We’re reaching out to you as we need a few more details from you again. You’re
+                                        just a few steps
+                                        away from KYC
+                                        completion, so we request you to go to your Razorpay dashboard and update the
+                                        required details
+                                        soon.
+                                    </div>
+                                    <br/>
                                     <div style="background-color: #f54a2a14; border-radius: 12px; padding: 16px;">
-                                        Please note, you will not be able to collect payments from customers or receive
-                                        it in your bank account until the required details are updated.
+                                        Please note, your response on the identified items is crucial for us to process your account further.
                                     </div>
-                                    <br />
+                                    <br/>
                                     <div>
-                                        We request you to take the action required immediately on your Razorpay dashboard now:
+                                        We request you to take the action required immediately on your Razorpay
+                                        dashboard now:
                                     </div>
                                     <table
                                         style="margin-top:24px; margin-bottom: 24px; font-size: 14px; line-height: 20px; border-collapse: collapse;"
@@ -105,6 +112,7 @@
                                                 </td>
                                             </tr>
                                         @endforeach
+
                                     </table>
                                     <br/>
                                     <a href="https://easy.razorpay.com/onboarding/needs-clarification" target="_blank"

@@ -61,13 +61,13 @@
                                     </div>
                                     <br />
                                     <div style="background-color: #f54a2a14; border-radius: 12px; padding: 16px;">
-                                        Please note, you will not be able to collect payments from customers or receive
-                                        it in your bank account until the required details are updated.
+                                        Please note, your response on the identified items is crucial for us to process your account further.
                                     </div>
                                     <br />
                                     <div>
                                         We request you to take the action required immediately on your Razorpay dashboard now:
                                     </div>
+                                    <br/>
                                     <table
                                         style="margin-top:24px; margin-bottom: 24px; font-size: 14px; line-height: 20px; border-collapse: collapse;"
                                         class="doc-table">
@@ -105,6 +105,7 @@
                                                 </td>
                                             </tr>
                                         @endforeach
+
                                     </table>
                                     <br/>
                                     <a href="https://easy.razorpay.com/onboarding/needs-clarification" target="_blank"

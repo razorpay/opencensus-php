@@ -37,6 +37,10 @@ class Handler extends BaseHandler
         Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE_REMINDER       => [Channel::EMAIL, Channel::WHATSAPP],
         Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE_REMINDER   => [Channel::EMAIL, Channel::WHATSAPP],
         Events::NC_COUNT_2_PAYMENTS_NOT_LIVE_REMINDER                    => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::NC_COUNT_1_ONBOARDING_PAUSE                            => [Channel::SMS, Channel::WHATSAPP, Channel::EMAIL],
+        Events::NC_COUNT_1_ONBOARDING_PAUSE_REMINDER                   => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::NC_COUNT_2_ONBOARDING_PAUSE                            => [Channel::EMAIL, Channel::WHATSAPP],
+        Events::NC_COUNT_2_ONBOARDING_PAUSE_REMINDER                   => [Channel::EMAIL, Channel::WHATSAPP],
 
         Events::UNREGISTERED_SETTLEMENTS_ENABLED                     => [Channel::SMS, Channel::WHATSAPP],
         Events::REGISTERED_SETTLEMENTS_ENABLED                       => [Channel::SMS, Channel::WHATSAPP],
@@ -164,40 +168,33 @@ class Handler extends BaseHandler
 
             if ($merchant->isActivated() === true and $merchant->isFundsOnHold() === false)
             {
-                if ($ncCount <= 1)
-                {
-                    array_push($events, Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE);
-                }
-                else
-                {
-                    array_push($events, Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE);
-                }
+                array_push($events, ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_LIVE : Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_LIVE);
+
             }
             else
             {
                 if ($merchant->isActivated() === true and $merchant->isFundsOnHold() === true)
                 {
-                    if ($ncCount <= 1)
-                    {
-                        array_push($events, Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE);
-                    }
-                    else
-                    {
-                        array_push($events, Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE);
-                    }
+                    array_push($events, ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE : Events::NC_COUNT_2_PAYMENTS_LIVE_SETTLEMENTS_NOT_LIVE);
+
                 }
                 else
                 {
                     if ($merchant->isActivated() === false)
                     {
-                        if ($ncCount <= 1)
+
+                        if ((new DetailCore())->blockMerchantActivations($merchant) === false)
                         {
-                            array_push($events, Events::NC_COUNT_1_PAYMENTS_NOT_LIVE);
+                            array_push($events, ($ncCount <= 1) ? Events::NC_COUNT_1_PAYMENTS_NOT_LIVE : Events::NC_COUNT_2_PAYMENTS_NOT_LIVE);
+
                         }
+                        // merchant new communications while onboarding is paused
                         else
                         {
-                            array_push($events, Events::NC_COUNT_2_PAYMENTS_NOT_LIVE);
+                            array_push($events, ($ncCount <= 1) ? Events::NC_COUNT_1_ONBOARDING_PAUSE : Events::NC_COUNT_2_ONBOARDING_PAUSE);
+
                         }
+
                     }
                 }
             }
