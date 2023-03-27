@@ -391,7 +391,7 @@ class Base
         return $beneName;
     }
 
-    public function getBankAccountCreateRequestForSettlementService($ba, $via = 'payout', $isOrgAccount = false)
+    public function getBankAccountCreateRequestForSettlementService($ba, $via = 'payout', $isOrgAccount = false, $merchant = null)
     {
         $beneCityPattern    = '/[^a-zA-Z0-9 _-]/';
 
@@ -442,7 +442,7 @@ class Base
             'beneficiary_country' => $ba->getBeneficiaryCountry() ?? '',
             'beneficiary_email'   => $beneEmail,
             'beneficiary_mobile'  => $beneMobile,
-            'accepted_currency'   => Currency::INR,
+            'accepted_currency'   => $merchant === null ? $merchant->getCurrency() : Currency::INR,
             'extra_info'          => [
                 'via' => $via
             ],

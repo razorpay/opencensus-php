@@ -106,14 +106,14 @@ class Api extends Base
      * @throws RuntimeException
      * @throws \Throwable
      */
-    public function migrateBankAccount($input, $mode, $via = 'payout')
+    public function migrateBankAccount($input, $mode, $via = 'payout', $merchant = null)
     {
         if ($input->getType() !== Type::MERCHANT)
         {
             return null;
         }
 
-        $req = $this->getBankAccountCreateRequestForSettlementService($input, $via);
+        $req = $this->getBankAccountCreateRequestForSettlementService($input, $via, false, $merchant);
 
         $this->trace->info(
             TraceCode::SETTLEMENT_SERVICE_BANK_ACCOUNT_REQUEST,

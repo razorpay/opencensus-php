@@ -104,7 +104,7 @@ class Core extends Base\Core
                     if ($this->app['basicauth']->isAdminAuth() === true) {
                         app('settlements_dashboard')->createBankAccount($ba, $this->mode);
                     } else {
-                        app('settlements_api')->migrateBankAccount($ba, $this->mode);
+                        app('settlements_api')->migrateBankAccount($ba, $this->mode, "payout", $merchant);
                     }
                 }
 
@@ -149,7 +149,7 @@ class Core extends Base\Core
             }
             else
             {
-                app('settlements_api')->migrateBankAccount($ba, $this->mode);
+                app('settlements_api')->migrateBankAccount($ba, $this->mode, "payout", $merchant);
             }
         }
 
@@ -506,7 +506,7 @@ class Core extends Base\Core
             }
             else
             {
-                app('settlements_api')->migrateBankAccount($ba, Mode::TEST);
+                app('settlements_api')->migrateBankAccount($ba, Mode::TEST, "payout", $merchant);
             }
         }
 
@@ -751,7 +751,7 @@ class Core extends Base\Core
             return;
         }
 
-        app('settlements_api')->migrateBankAccount($ba, $mode, $via);
+        app('settlements_api')->migrateBankAccount($ba, $mode, $via, $merchant);
 
         $this->trace->info(
             TraceCode::SETTLEMENT_SERVICE_BA_MIGRATION_SUCCESS,

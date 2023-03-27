@@ -8829,6 +8829,7 @@ class Service extends Base\Service
             "merchant_email"                   => $email,
             "partner_commissions_config"       => $partnerCommissionConfig,
             "pg_ledger_reverse_shadow_enabled" => $this->isMerchantOnPGReverseShadow($merchant),
+            "country_code"                     => $merchant->getCountry()
         ];
     }
 

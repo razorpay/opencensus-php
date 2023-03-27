@@ -52,7 +52,7 @@ class Api extends BaseSettlementsApi
         return $merchantConfig;
     }
 
-    public function migrateBankAccount($input, $mode, $via = 'payout')
+    public function migrateBankAccount($input, $mode, $via = 'payout', $merchant = null)
     {
         return [
             'id' => 'bankAccount123',
