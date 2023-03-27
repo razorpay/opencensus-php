@@ -79,7 +79,8 @@ class DefaultMethodsForCategory
             '9405',
             '6012',
             '4829',
-            '6534'
+            '6534',
+            '5816'
         ];
 
         const AMAZONPAY_DISABLED_MCCS = [
@@ -623,7 +624,7 @@ class DefaultMethodsForCategory
                 // Games
                 '5816'  =>  [
                     Category::OTHERS    =>  [
-                        self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI, Entity::CARDLESS_EMI, Entity::FREECHARGE, Entity::HDFC_DEBIT_EMI],
+                        self::BLACKLISTED_METHODS => [ENTITY::AMEX, Entity::EMI, Entity::CARDLESS_EMI, Entity::FREECHARGE, Entity::HDFC_DEBIT_EMI, Entity::PAYLATER],
                         self::GREYLISTED_METHODS =>[],
                         self::IGNORE_BLACKLIST_FOR_INSTRUMENT_REQUEST_METHODS => [Entity::AMEX],
                     ]
