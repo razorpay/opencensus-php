@@ -657,13 +657,13 @@ export const initialState = {
               slug: 'debit.indusind',
               icon: 'https://cdn.razorpay.com/bank/INDB.gif',
             },
-            {
-              name: 'KOTAK Bank',
-              description: '',
-              status: 'Request',
-              slug: 'debit.kotak',
-              icon: 'https://cdn.razorpay.com/paylater-sq/kkbk.svg',
-            },
+            // {
+            //   name: 'KOTAK Bank',
+            //   description: '',
+            //   status: 'Request',
+            //   slug: 'debit.kotak',
+            //   icon: 'https://cdn.razorpay.com/paylater-sq/kkbk.svg',
+            // },
           ],
         },
         {
