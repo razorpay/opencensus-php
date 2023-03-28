@@ -33,7 +33,7 @@ use RZP\Constants\Entity as EntityConstants;
 use RZP\Constants\{Entity as E, Mode, Timezone, Table};
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Models\Dispute\File\Core as DisputeFileCore;
-use RZP\Models\{Adjustment\Status,
+use RZP\Models\{
     Base,
     Ledger\ChargebackJournalEvents,
     Ledger\ReverseShadow\Adjustments\Core as ReverseShadowAdjustmentsCore,
@@ -41,7 +41,9 @@ use RZP\Models\{Adjustment\Status,
     Merchant,
     Adjustment,
     Currency,
-    Payment\Method};
+    Payment\Method,
+    Adjustment\Status as AdjustmentStatus
+};
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 use Neves\Events\TransactionalClosureEvent;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
@@ -615,7 +617,7 @@ class Core extends Base\Core
             {
                 (new ReverseShadowAdjustmentsCore())->createLedgerEntryForRazorpayDisputeDeductReverseShadow($adjustment, $disputePublicId);
 
-                $adjustment->setStatus(Status::PROCESSED);
+                $adjustment->setStatus(AdjustmentStatus::PROCESSED);
 
                 $this->repo->saveOrFail($adjustment);
             }
@@ -651,7 +653,7 @@ class Core extends Base\Core
             {
                 (new ReverseShadowAdjustmentsCore())->createLedgerEntryForForRazorpayDisputeReversalReverseShadow($adjustment, $disputePublicId);
 
-                $adjustment->setStatus(Status::PROCESSED);
+                $adjustment->setStatus(AdjustmentStatus::PROCESSED);
 
                 $this->repo->saveOrFail($adjustment);
             }
