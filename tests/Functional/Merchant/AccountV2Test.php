@@ -4,6 +4,7 @@ namespace Functional\Merchant;
 
 use Mail;
 
+use RZP\Services\RazorXClient;
 use RZP\Models\Feature\Core;
 use RZP\Models\Feature\Entity;
 use RZP\Models\Merchant\Detail;
@@ -1227,5 +1228,54 @@ class AccountV2Test extends TestCase
         ];
 
         $this->mockSplitzTreatment($input, $output);
+    }
+
+    public function testUpiPaymentMethodUnsetDuringAccountCreation()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $this->mockRazorxTreatment();
+
+        $testData = $this->testData['testCreateAccountV2ForMandatoryFilledRequest'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $methods = $this->getDbEntity('methods', ['merchant_id' => $accountId])->toArray();
+
+        $this->assertEquals(false, $methods['upi']);
+    }
+
+    public function testUpiPaymentMethodSetDuringAccountCreation()
+    {
+        $this->setUpPartnerWithKycHandled();
+
+        $this->mockRazorxTreatment('off');
+
+        $testData = $this->testData['testCreateAccountV2ForMandatoryFilledRequest'];
+
+        $accountResponse = $this->runRequestResponseFlow($testData);
+
+        $accountId = $accountResponse['id'];
+
+        Account\Entity::verifyIdAndSilentlyStripSign($accountId);
+
+        $methods = $this->getDbEntity('methods', ['merchant_id' => $accountId])->toArray();
+
+        $this->assertEquals(true, $methods['upi']);
+    }
+
+    protected function mockRazorxTreatment(string $returnValue = 'on')
+    {
+        $razorxMock = $this->getMockBuilder(RazorXClient::class)
+                           ->setConstructorArgs([$this->app])
+                           ->setMethods(['getTreatment'])
+                           ->getMock();
+        $this->app->instance('razorx', $razorxMock);
+        $this->app->razorx->method('getTreatment')
+                          ->willReturn($returnValue);
     }
 }

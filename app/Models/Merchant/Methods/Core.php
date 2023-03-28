@@ -769,6 +769,12 @@ class Core extends Base\Core
                     $methods->setJiomoney(true);
                     $methods->setPayLater(true);
                     $methods->setPhonepeSwitch(true);
+
+                    //disable UPI for certain merchants
+                    if($this->isUPIPaymentMethodAllowed($merchant) === true)
+                    {
+                        $methods->setUpi(false);
+                    }
                 }
             }
         }
