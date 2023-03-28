@@ -115,7 +115,7 @@ class Validator extends Base\Validator
         'exclude_mids'          =>  'sometimes|array',
         'end_date_delta'        =>  'sometimes|integer',
         'virtual_account_ids'   =>  'sometimes|array|min:1',
-        'start_date'            =>  'required|date_format:Y-m-d',
+        'start_date'            =>  'sometimes|date_format:Y-m-d',
         'end_date'              =>  'sometimes|date_format:Y-m-d',
         'gateway'               =>  'sometimes|string',
         'expiry_delta'          =>  'sometimes|numeric',
