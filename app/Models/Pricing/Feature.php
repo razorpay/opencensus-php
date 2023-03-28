@@ -20,12 +20,14 @@ class Feature
     const MAGIC_CHECKOUT          = 'magic_checkout';
     const AFFORDABILITY_WIDGET    = 'affordability_widget';
     const TOKEN_HQ                = 'token_hq';
+    const UPI_INAPP               = 'upi_inapp';
 
     const FEATURE_LIST = [
         self::MAGIC_CHECKOUT,
         self::PAYMENT,
         self::PAYOUT,
         self::RECURRING,
+        self::UPI_INAPP,
         self::TRANSFER,
         self::EMI,
         self::ESAUTOMATIC,

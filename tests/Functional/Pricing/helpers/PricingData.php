@@ -5147,4 +5147,87 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testCreateUpiInAppPlanWithoutAmountRange' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'upiInAppWithoutAmountRange',
+                'rules'     => [
+                    [
+                        'product'                => 'primary',
+                        'feature'                => 'upi_inapp',
+                        'payment_method'         => 'upi',
+                        'percent_rate'           => 100,
+                        'type'                   => 'pricing'
+                    ]
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'      => 'upiInAppWithoutAmountRange',
+                'entity'    => 'pricing',
+                'count'     => 1,
+                'rules'     => [
+                    [
+                        'plan_name'             => 'upiInAppWithoutAmountRange',
+                        'payment_method'        => 'upi',
+                        'payment_method_type'   => null,
+                        'payment_method_subtype'=> null,
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 100,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'upi_inapp',
+                        'amount_range_active'    => false,
+                    ]
+                ],
+            ],
+        ],
+    ],
+    'testCreateUpiInAppPlanWithAmountRange' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'upiInAppWithAmountRange',
+                'rules'     => [
+                    [
+                        'product'                => 'primary',
+                        'feature'                => 'upi_inapp',
+                        'payment_method'         => 'upi',
+                        'percent_rate'           => 100,
+                        'type'                   => 'pricing',
+                        'amount_range_active'    => '1',
+                        'amount_range_min'       => 0,
+                        'amount_range_max'       => 50000,
+                    ]
+                ],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name'      => 'upiInAppWithAmountRange',
+                'entity'    => 'pricing',
+                'count'     => 1,
+                'rules'     => [
+                    [
+                        'plan_name'             => 'upiInAppWithAmountRange',
+                        'payment_method'        => 'upi',
+                        'payment_method_type'   => null,
+                        'payment_method_subtype'=> null,
+                        'payment_issuer'        => null,
+                        'percent_rate'          => 100,
+                        'type'                  => 'pricing',
+                        'product'               => 'primary',
+                        'feature'               => 'upi_inapp',
+                        'amount_range_active'    => true,
+                        'amount_range_min'       => 0,
+                        'amount_range_max'       => 50000,
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];

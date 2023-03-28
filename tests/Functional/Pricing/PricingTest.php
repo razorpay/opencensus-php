@@ -3231,4 +3231,16 @@ class PricingTest extends TestCase
 
         $this->startTest($testData);
     }
+
+    public function testCreateUpiInAppPlanWithoutAmountRange()
+    {
+        // assertions and test is run as per the helper file PricingData.php
+        $this->startTest();
+    }
+
+    public function testCreateUpiInAppPlanWithAmountRange()
+    {
+        // assertions and test is run as per the helper file PricingData.php
+        $this->startTest();
+    }
 }

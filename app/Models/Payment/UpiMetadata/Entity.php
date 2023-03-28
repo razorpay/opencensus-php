@@ -359,4 +359,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->isInternalStatus(InternalStatus::AUTHORIZE_INITIATED);
     }
+
+    public function isInAppMode(): bool
+    {
+        return ($this->getAttribute(self::MODE) === Mode::IN_APP);
+    }
 }

@@ -1275,11 +1275,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         //$this->setAttribute(self::REFERENCE13, $error->getAttributes(Error::REASON_CODE));
     }
-    
+
     public function setEmandateErrorDesc($errorDesc)
     {
         $finalErrorDesc = $this->getErrorDescription() . $errorDesc;
-        
+
         $this->setAttribute(self::ERROR_DESCRIPTION, $finalErrorDesc);
     }
 
@@ -2614,6 +2614,10 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                 ($upiMetadata->isOtm() === true));
     }
 
+    /**
+     * This is a method to get is in app upi flag
+     * @return bool
+     */
     public function isInAppUPI()
     {
         if ($this->isUpi() === false)
@@ -2621,13 +2625,38 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             return false;
         }
 
+        // if meta data does not exists in upi fetch and attach
         if ($this->hasMetadata(UpiMetadata\Entity::UPI_METADATA) === false)
         {
-            return false;
+            $upiMetadata = $this->fetchUpiMetadataAttributeForValidation();
+
+            // if upi metadata is null we can directly return;
+            if($upiMetadata == null)
+            {
+                return false;
+            }
+
+            // feed metadata in case the metadata does not exist
+            $this->metadata[UpiMetadata\Entity::UPI_METADATA] = $upiMetadata;
         }
 
+        // Already upi metadata won't be null
         $upiMetadata = $this->getMetadata(UpiMetadata\Entity::UPI_METADATA);
-        return ($upiMetadata[UpiMetadata\Entity::MODE] === UpiMetadata\Mode::IN_APP);
+
+        // return true in case of in app mode present
+        return ((isset($upiMetadata[UpiMetadata\Entity::MODE]) === true) and
+                ($upiMetadata[UpiMetadata\Entity::MODE] === UpiMetadata\Mode::IN_APP));
+    }
+
+    public function fetchUpiMetadataAttributeForValidation()
+    {
+        // if payment id is not existing return null
+        if($this->getId() == null)
+        {
+            return null;
+        }
+
+        return (new UpiMetadata\Repository())->fetchByPaymentId($this->getId());
     }
 
     public function isTransfer()
@@ -5027,6 +5056,11 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
             $features[] = Pricing\Feature::RECURRING;
         }
 
+        if($this->isInAppUPI() === true)
+        {
+            $features[] = Pricing\Feature::UPI_INAPP;
+        }
+
         if (($this->isEmi() === true) and
             ($this->merchant->getEmiSubvention() === Emi\Subvention::MERCHANT))
         {
@@ -6289,7 +6323,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
                     RazorxTreatment::INTL_PL_FEE_IN_MCC,
                     $mode);
 
-        if ((strtolower($variant) !== 'on') or 
+        if ((strtolower($variant) !== 'on') or
             ($this->getCurrency() === Currency\Currency::INR))
         {
             return $fee;
@@ -6297,7 +6331,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
         $paymentMeta = (new PaymentMeta\Repository())->findByPaymentId($this->getId());
 
-        if ((isset($paymentMeta) === true) and 
+        if ((isset($paymentMeta) === true) and
             (empty($paymentMeta->getMccForexRate()) === false))
         {
             $fee = (float)$this->getFee() / $paymentMeta->getMccForexRate();
