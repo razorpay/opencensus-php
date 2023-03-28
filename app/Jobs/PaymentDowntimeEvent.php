@@ -3,6 +3,7 @@
 namespace RZP\Jobs;
 
 use RZP\Jobs\Job;
+use RZP\Models\Payment;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Gateway\Downtime\Webhook\Constants\DowntimeService;
 use RZP\Models\Payment\Downtime\Metric;
@@ -55,6 +56,16 @@ class PaymentDowntimeEvent extends Job
                 TraceCode::PAYMENT_DOWNTIME_EVENT_JOB_RECEIVED,
                 ['status' => $this->status, 'downtime' => $downtime->getId(), "merchantId" => $downtime->getMerchantId()]
             );
+
+            /*
+             * FPX is a payment method supported in Malaysia. Merchants in a country other than My are not supposed to
+             * receive this downtime notification hence we need to suppress this notification temporarily to avoid the noise for those merchants
+             * and redundant load on the razorpay infra (Stork Service).
+             */
+            if ($downtime->getMethod() === Payment\Method::FPX)
+            {
+                return ;
+            }
 
             if(((bool) ConfigKey::get(ConfigKey::ENABLE_DOWNTIME_WEBHOOKS, false)) === true)
             {

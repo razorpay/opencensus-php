@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Tests\Functional\Helpers\WebhookTrait;
 use \WpOrg\Requests\Response;
 
 use RZP\Constants\Timezone;
@@ -22,6 +23,7 @@ class PaymentDowntimeTest extends TestCase
     use PaymentTrait;
     use DowntimeTrait;
     use TestsWebhookEvents;
+    use WebhookTrait;
 
     protected function setUp(): void
     {
@@ -2177,6 +2179,8 @@ class PaymentDowntimeTest extends TestCase
     {
         $this->terminal = $this->fixtures->create('terminal:shared_FPX_banking_terminal');
 
+        $this->ba->adminAuth();
+
         $request = [
             'method'  => 'POST',
             'url'     => '/gateway/downtimes/fpx/cron',
@@ -2185,7 +2189,19 @@ class PaymentDowntimeTest extends TestCase
             ]
         ];
 
+        $this->makeRequestAndGetContent([
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'config:enable_downtime_webhooks' => '1',
+            ],
+        ]);
+
         $this->ba->cronAuth();
+
+        $this->setExpectationForGetMerchantsSubscribingToWebhookEvent('payment.downtime.started', 0);
+
+        $this->dontExpectStorkServiceRequest('/twirp/rzp.stork.webhook.v1.WebhookAPI/List');
 
         $this->makeRequestAndGetContent($request);
 
@@ -2406,8 +2422,10 @@ class PaymentDowntimeTest extends TestCase
      * Also returns mocked response with total 3 merchant ids, containing 2 uniques.
      *
      * @param string $event
+     * @param integer $occurence
      */
-    protected function setExpectationForGetMerchantsSubscribingToWebhookEvent(string $event)
+
+    protected function setExpectationForGetMerchantsSubscribingToWebhookEvent(string $event, $occurence = 1)
     {
         $this->createStorkMock();
 
@@ -2419,7 +2437,7 @@ class PaymentDowntimeTest extends TestCase
 
         $this->storkMock
             ->shouldReceive('request')
-            ->once()
+            ->times($occurence)
             ->with('/twirp/rzp.stork.webhook.v1.WebhookAPI/List', Mockery::subset($expectedReqArgs), 15000)
             ->andReturn($mockedRes);
     }
