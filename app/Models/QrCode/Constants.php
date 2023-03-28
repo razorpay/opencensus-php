@@ -78,5 +78,7 @@ class Constants
     // in seconds
     const NO_ORDER_CHECKOUT_QR_DEFAULT_EXPIRY_WINDOW = 15 * 60;
 
+    const MAX_RETRY_ATTEMPTS_FOR_QR_CODE_URL_SHORTEN_GIMLI_FAILURES = 3;
+
     const REQUEST_SOURCE              = 'X-Razorpay-Request-Source';
 }

@@ -3934,6 +3934,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BHARAT_QR_CARD_IDENTIFIERS                            = 'BHARAT_QR_CARD_IDENTIFIERS';
     const BHARAT_QR_UPI_IDENTIFIERS                             = 'BHARAT_QR_UPI_IDENTIFIERS';
     const QR_CODE_URL                                           = 'QR_CODE_URL';
+    const GIMLI_REQUEST_FAILED_FOR_QR_CODE_URL_SHORTEN          = "GIMLI_REQUEST_FAILED_FOR_QR_CODE_URL_SHORTEN";
     const SETTING_QR_STRING_WITH_MPANS_TOKENIZED                = 'SETTING_QR_STRING_WITH_MPANS_TOKENIZED';
     const SETTING_QR_CODE_MPANS_TOKENIZED_TO_TRUE               = 'SETTING_QR_CODE_MPANS_TOKENIZED_TO_TRUE';
     const QUERY_CACHE_STORE_ERROR                               = 'QUERY_CACHE_STORE_ERROR';

@@ -14,10 +14,11 @@ use RZP\Models\FileStore;
 use RZP\Mail\System\Trace;
 use RZP\Services\UfhService;
 use RZP\Constants\HyperTrace;
+use RZP\Models\QrCode\Constants;
 use Illuminate\Http\UploadedFile;
 use RZP\Models\Merchant\RazorxTreatment;
-use RZP\Services\Mock\UfhService as MockUfhService;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Services\Mock\UfhService as MockUfhService;
 
 
 class Core extends Base\Core
@@ -316,7 +317,23 @@ class Core extends Base\Core
     {
         $longUrl = $this->getQrCodeLink($qrCode);
 
-        $shortenedUrl = $this->elfin->shorten($longUrl);
+        $retryAttempts = Constants::MAX_RETRY_ATTEMPTS_FOR_QR_CODE_URL_SHORTEN_GIMLI_FAILURES;
+
+        while ($retryAttempts--)
+        {
+            $shortenedUrl = $this->elfin->shorten($longUrl);
+
+            if (empty($shortenedUrl) === false)
+            {
+                break;
+            }
+
+            $this->trace->info(TraceCode::GIMLI_REQUEST_FAILED_FOR_QR_CODE_URL_SHORTEN,
+                [
+                    'qr_code_id' => $qrCode->getId(),
+                    'attempt' => (Constants::MAX_RETRY_ATTEMPTS_FOR_QR_CODE_URL_SHORTEN_GIMLI_FAILURES - $retryAttempts),
+                ]);
+        }
 
         $this->trace->info(
             TraceCode::QR_CODE_URL,
