@@ -1116,6 +1116,8 @@ class Repository extends Base\Repository
 
         $gateways = Payment\Gateway::getEmandateGatewaysForAuthType($authType);
 
+        $terminals = new PublicCollection();
+
         //
         // Emandate terminals have type 6 (recurring 3ds + recurring non 3ds)
         // This is because we don't have different terminals for the first
@@ -1126,7 +1128,10 @@ class Repository extends Base\Repository
             "function" => __FUNCTION__
         ];
 
-        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
+        if($this->isTestEnv())
+        {
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->newQuery()
                       ->enabled()
@@ -1137,6 +1142,10 @@ class Repository extends Base\Repository
         $this->addMerchantWhereCondition($query, $merchantIds);
 
         $terminals = $query->get();
+
+            return $terminals;
+
+        }
 
         try
         {
@@ -1169,14 +1178,9 @@ class Repository extends Base\Repository
                     $response = [];
                 }
 
-                $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
+                $terminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                if (Terminal\Service::compareTerminalCollection($terminals, $tsTerminals) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                }
-
-                return $tsTerminals;
+                return $terminals;
             }
         }
         catch (\Throwable $ex)
@@ -1186,6 +1190,11 @@ class Repository extends Base\Repository
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
+
+            if(!$this->isTestEnv())
+            {
+                throw $ex;
+            }
         }
 
         return $terminals;
