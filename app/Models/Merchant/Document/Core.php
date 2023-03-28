@@ -16,6 +16,7 @@ use RZP\Models\Merchant\Stakeholder;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Merchant\AutoKyc\Bvs\Constant;
+use \WpOrg\Requests\Exception as RequestsException;
 use RZP\Models\FileStore\Entity as FileStoreEntity;
 use RZP\Models\Merchant\AutoKyc\Bvs\requestDispatcher;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -155,6 +156,52 @@ class Core extends Base\Core
 
         $document->merchant()->associate($merchant);
         $fileAttributes = (new Detail\Service())->storeActivationFile($document, $param);
+        $merchantId = $merchant->getMerchantId();
+
+        // route request to PGOS
+        try {
+
+            $payload = [
+                "document_type" => $documentType,
+                "file_store_id" => $fileAttributes[$documentType]['file_id'],
+                "merchant_id" => $merchantId,
+                "original_file_name" => $fileAttributes[$documentType]['original_file_name'],
+            ];
+
+            $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_REQUEST, [
+                '$payload' => $payload,
+            ]);
+
+            $pgosProxyController = new MerchantOnboardingProxyController();
+
+            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_document_upload', $payload, $merchant);
+
+            $this->trace->info(TraceCode::PGOS_DOCUMENT_CREATE_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response' => $response,
+            ]);
+        }
+        catch (RequestsException $e) {
+
+            if (checkRequestTimeout($e) === true) {
+                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
+                    'merchant_id' => $merchantId,
+                ]);
+            } else {
+                $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id' => $merchantId,
+                    'error_message' => $e->getMessage()
+                ]);
+            }
+
+        }
+        catch (\Throwable $exception) {
+            // this should not introduce error counts as it is running in shadow mode
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id' => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+        }
 
         $entity = $entity ?? $merchant;
 

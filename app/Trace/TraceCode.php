@@ -3328,6 +3328,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Trace codes for PGOS service
 
     const PGOS_PROXY_REQUEST                        = "PGOS_PROXY_REQUEST";
+    const PGOS_DOCUMENT_CREATE_REQUEST              = "PGOS_DOCUMENT_CREATE_REQUEST";
+    const PGOS_DOCUMENT_CREATE_RESPONSE             = "PGOS_DOCUMENT_CREATE_RESPONSE";
+    const PGOS_DOCUMENT_DELETE_REQUEST              = "PGOS_DOCUMENT_DELETE_REQUEST";
+    const PGOS_DOCUMENT_DELETE_RESPONSE             = "PGOS_DOCUMENT_DELETE_RESPONSE";
     const PGOS_PROXY_RESPONSE                       = "PGOS_PROXY_RESPONSE";
     const PGOS_PROXY_ERROR                          = "PGOS_PROXY_ERROR";
     const PGOS_PROXY_TIMEOUT                        = "PGOS_PROXY_TIMEOUT";

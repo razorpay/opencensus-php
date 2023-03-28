@@ -18,7 +18,7 @@ class DocumentController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service(Entity::MERCHANT_DOCUMENT)->uploadActivationFileMerchant($input, $id);
+        $response = $this->service(Entity::MERCHANT_DOCUMENT)->uploadActivationFileMerchant($input);
 
         return ApiResponse::json($response);
     }

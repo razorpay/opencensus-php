@@ -17,8 +17,10 @@ use RZP\Models\Merchant\Product;
 use RZP\Models\Merchant\AccountV2;
 use RZP\Models\Merchant\Stakeholder;
 use RZP\Models\Merchant\Detail\NeedsClarification;
+use \WpOrg\Requests\Exception as RequestsException;
 use RZP\Jobs\ProductConfig\AutoUpdateMerchantProducts;
 use RZP\Models\Gateway\File\Constants as GatewayConstants;
+use RZP\Http\Controllers\MerchantOnboardingProxyController;
 use RZP\Trace\Tracer;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
@@ -175,6 +177,51 @@ class Service extends Base\Service
         $entity = $this->entityRepo->findByPublicIdAndMerchant($id, $this->merchant);
 
         $response = $this->core->delete($entity);
+
+        $merchantId =  $this->merchant->getMerchantId();
+
+        // route request to PGOS for deletion
+        try {
+
+            $payload = [
+                "merchant_id" =>  $merchantId,
+                "id" => $id,
+            ];
+
+            $this->trace->info(TraceCode::PGOS_DOCUMENT_DELETE_REQUEST, [
+                '$payload' => $payload,
+            ]);
+
+            $pgosProxyController = new MerchantOnboardingProxyController();
+
+            $response = $pgosProxyController->handlePGOSProxyRequests('merchant_document_delete', $payload, $this->merchant);
+
+            $this->trace->info(TraceCode::PGOS_DOCUMENT_DELETE_RESPONSE, [
+                'merchant_id' => $merchantId,
+                'response' => $response,
+            ]);
+        }
+        catch (RequestsException $e) {
+
+            if (checkRequestTimeout($e) === true) {
+                $this->trace->info(TraceCode::PGOS_PROXY_TIMEOUT, [
+                    'merchant_id' => $merchantId,
+                ]);
+            } else {
+                $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                    'merchant_id' => $merchantId,
+                    'error_message' => $e->getMessage()
+                ]);
+            }
+
+        }
+        catch (\Throwable $exception) {
+            // this should not introduce error counts as it is running in shadow mode
+            $this->trace->info(TraceCode::PGOS_PROXY_ERROR, [
+                'merchant_id' => $merchantId,
+                'error_message' => $exception->getMessage()
+            ]);
+        }
 
         return $response;
     }
