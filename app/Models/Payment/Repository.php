@@ -2638,7 +2638,9 @@ EOT;
         $entityOfferOfferIdCol         = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::OFFER_ID);
         $entityOfferCreatedAtCol       = $this->repo->entity_offer->dbColumn(EntityOffer\Entity::CREATED_AT);
 
-        $query = $this->newQueryWithConnection($this->getReportingReplicaConnection())
+        $connectionType = $this->getDataWarehouseConnection(ConnectionType::DATA_WAREHOUSE_MERCHANT);
+
+        $query = $this->newQueryWithConnection($connectionType)
             ->select(DB::raw("$entityOfferOfferIdCol, count(*) AS offer_usage"))
             ->join($entityOfferTable, $paymentIdCol, '=', $entityOfferEntityIdCol)
             ->whereNotNull($paymentAuthorizedAtColumn)
