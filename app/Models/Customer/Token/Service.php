@@ -19,6 +19,7 @@ use RZP\Models\Batch\Header;
 use RZP\Constants\Mode;
 use RZP\Models\Card;
 use RZP\Models\Customer;
+use RZP\Models\Customer\Token\Constants as TokenConstants;
 use RZP\Models\Merchant;
 use RZP\Models\Feature;
 use RZP\Encryption;
@@ -468,6 +469,9 @@ class Service extends Base\Service
                 $customer = $this->repo->customer->findByPublicIdAndMerchant($input['customer_id'], $this->merchant);
 
                 //Should be in an async function
+
+                $tokensResponse = [];
+
                 foreach ($input[Token\Entity::ACCOUNT_IDS] as $account_id)
                 {
                     $merchantId =  trim(str_replace("acc_", "", $account_id));
@@ -481,26 +485,45 @@ class Service extends Base\Service
                         Customer\Entity::EMAIL         => $customer->getEmail(),
                     ], $this->merchant, false);
 
-                    $createTokenInput = [
-                        'customer_id' => $localCustomer->getPublicId(),
-                        'method' => $input['method'],
-                        'card' => [
-                            'number' => $input['card']['number'],
-                            'expiry_month' => $input['card']['expiry_month'],
-                            'expiry_year' => $input['card']['expiry_year']
-                        ],
-                        'via_push_provisioning' => true
+                    $network = Card\Network::detectNetwork(substr($input['card']['number'], 0, 6));
+
+                    $cardInput = [
+                        Card\Entity::NUMBER           => $input['card']['number'],
+                        Card\Entity::EXPIRY_MONTH     => $input['card']['expiry_month'],
+                        Card\Entity::EXPIRY_YEAR      => $input['card']['expiry_year'],
+                        Card\Entity::VAULT            => Card\Vault::RZP_VAULT,
+                        Card\Entity::CVV              => Card\Entity::getDummyCvv($network)
                     ];
 
-                    $asyncTokenisationJobId = UniqueIdEntity::generateUniqueId();
+                    $cardData = (new Card\Core)->createAndReturnWithSensitiveData($cardInput, $merchantPushProvisioning, false, false);
 
-                    PushProvisioningTokenCreateJob::dispatch($this->mode, $createTokenInput, $merchantPushProvisioning, $asyncTokenisationJobId);
+                    $tokenCreateInput = [
+                        Token\Entity::CARD_ID           => $cardData['id'],
+                        Token\Entity::METHOD            => Payment\Method::CARD
+                    ];
+
+                    $token = (new Token\Core)->create($localCustomer, $tokenCreateInput);
+
+                    $token->setAcknowledgedAt(Carbon::now(Timezone::IST)->getTimestamp());
+
+                    $token->setSource(TokenConstants::ISSUER);
+
+                    $this->repo->saveOrFail($token);
+
+                    $asyncTokenisationJobId = "pushtokenmigrate";
+
+                    (new Token\Core())->updateTokenStatus($token['id'], Token\Constants::INITIATED);
+
+                    SavedCardTokenisationJob::dispatch($this->mode, $token['id'], $asyncTokenisationJobId, null);
+
+                    $tokensResponse[$account_id] = "token_".$token['id'];
 
                 }
 
                 (new Metric())->pushTokenProvisioningResponseTimeMetrics($startTime, BaseMetric::SUCCESS, Token\Action::TOKEN_PUSH);
 
             }
+            $response['tokens'] = $tokensResponse;
         }
         catch (\Throwable $e)
         {

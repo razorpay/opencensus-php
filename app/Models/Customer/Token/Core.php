@@ -2127,7 +2127,7 @@ class Core extends Base\Core
         return $tokenStatus;
     }
 
-    public function migrateToTokenizedCard($token, $cardInput, $payment = null, $isAsync = false)
+    public function migrateToTokenizedCard($token, $cardInput, $payment = null, $isAsync = false, $asyncTokenisationJobId = null)
     {
         $cardInput += [
             'merchant_token' => $token->getId(),
@@ -2136,7 +2136,7 @@ class Core extends Base\Core
             'email'          => ($payment !== null) ? $payment->getEmaiL() : ""
         ];
 
-        list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput, $payment);
+        list($card, $serviceProviderTokens) = (new Card\Core)->migrateToTokenizedCard($token->card, $token->merchant, $cardInput, $payment, $asyncTokenisationJobId);
 
         $this->trace->info(
             TraceCode::TOKEN_MIGREATE_FOR_TOKENIZED_CARD);
@@ -2151,6 +2151,7 @@ class Core extends Base\Core
         else {
             $tokenStatus = $serviceProviderTokens[0]['status'];
         }
+
         $token->setStatus($tokenStatus);
 
         $token->card()->associate($card);

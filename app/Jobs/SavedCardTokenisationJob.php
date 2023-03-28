@@ -122,7 +122,7 @@ class SavedCardTokenisationJob extends Job
                 $payment = $this->repoManager->payment->findOrFail($this->paymentId);
             }
 
-            $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true);
+            $this->tokenCore->migrateToTokenizedCard($token, $cardInput, $payment, true, $this->asyncTokenisationJobId);
 
             // Notify to mandateHQ for successful tokenisation
             if($token->isRecurring() === true and $token->getCardMandateId() !== null)

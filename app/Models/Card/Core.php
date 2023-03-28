@@ -145,11 +145,11 @@ class Core extends Base\Core
         }
     }
 
-    public function migrateToTokenizedCard($card, $merchant, $input, $payment = null)
+    public function migrateToTokenizedCard($card, $merchant, $input, $payment = null, $asyncTokenisationJobId)
     {
         $response = $this->getTokenizedCardResponseFromAnExistingVault($card, $merchant, $input);
 
-        return $this->migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment);
+        return $this->migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment, $asyncTokenisationJobId);
     }
 
     public function fetchParValue($input)
@@ -165,11 +165,19 @@ class Core extends Base\Core
     }
 
 
-    protected function migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment = null)
+    protected function migrationCardToTokenisedCard($card, $input, $merchant, $response, $payment = null, $asyncTokenisationJobId)
     {
-        $tokenisedCard = $card->replicate();
+        if($asyncTokenisationJobId === "pushtokenmigrate" ) {
 
-        $tokenisedCard->generateID();
+            $tokenisedCard = $card;
+
+        } else {
+
+            $tokenisedCard = $card->replicate();
+
+            $tokenisedCard->generateID();
+        }
+
 
         $tokenisedCard->setVaultToken($response['token']);
 

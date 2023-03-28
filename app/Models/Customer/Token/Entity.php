@@ -309,8 +309,9 @@ class Entity extends Base\PublicEntity
         self::COMPLIANT_WITH_TOKENISATION_GUIDELINES,
         self::STATUS,
         self::NOTES,
-        self::ERROR_DESCRIPTION,
-        self::SOURCE
+        self::ERROR_DESCRIPTION
+        //TODO: uncomment once we are live with push provisioning officially.
+        //self::SOURCE
         // TODO: uncomment when we start accepting token as input
         // self::MAX_AMOUNT,
     ];
