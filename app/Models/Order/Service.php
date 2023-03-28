@@ -312,7 +312,7 @@ class Service extends Base\Service
                 "ARRAY_DIFF_PGROUTER_API" => array_diff($pgRouterPublicResponse, $result),
                 "SAME_VALUE" => $responseParity,
                 "SAME_VALUE_AND_TYPE" => $responseParityWithTripleCheck,
-                "ORDER_RESPONSE" => $responseParity ? "SUCCESS" : $result
+                "ORDER_RESPONSE" => $responseParityWithTripleCheck ? "SUCCESS" : $result
             ]);
         }
         else
