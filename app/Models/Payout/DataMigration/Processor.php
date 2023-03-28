@@ -8,9 +8,12 @@ use Illuminate\Foundation\Application;
 
 use Razorpay\Trace\Logger as Trace;
 
+use RZP\Error\ErrorCode;
+use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payout\Entity;
 use RZP\Base\RepositoryManager;
+use RZP\Models\Payout\Constants;
 use RZP\Models\Payout\DataMigration\Payout as PayoutMigration;
 use RZP\Models\Payout\DataMigration\Reversal as ReversalMigration;
 use RZP\Models\Payout\DataMigration\PayoutDetails as PayoutDetailsMigration;
@@ -40,6 +43,8 @@ class Processor
     const PS_TABLE_PREFIX     = 'ps_';
     const MIGRATED_DATA_COUNT = 'migrated_data_count';
 
+    const PAYOUT_MUTEX_LOCK_TIMEOUT = 180;
+
     const ID              = Entity::ID;
     const CREATED_AT      = Entity::CREATED_AT;
     const END_TIMESTAMP   = 'end_timestamp';
@@ -60,6 +65,11 @@ class Processor
     protected $repo;
 
     /**
+     * @var Mutex
+     */
+    protected $mutex;
+
+    /**
      * Trace instance used for tracing
      *
      * @var Trace
@@ -71,6 +81,8 @@ class Processor
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
+
+        $this->mutex = $this->app['api.mutex'];
 
         $this->env = $this->app['env'];
 
@@ -112,30 +124,55 @@ class Processor
         // We will remove the duplicate payouts from $sourceData also.
         list ($lastId, $lastCreatedAt) = $this->dedupeCheckAtDestination($sourceData);
 
-        // Data to be stored on PS will be generated for all payouts.
-        $payoutServiceData = $this->getDataForPayoutService($sourceData);
-
         // For logging purpose.
         $migrationDataCounts = [];
 
-        foreach ($payoutServiceData as $table => $data)
-        {
-            $migrationDataCounts[$table] = count($data);
+        // Data to be stored on PS will be generated for all payouts.
+        /* @var $payout Entity */
+        foreach ($sourceData as $payout) {
+
+            $this->mutex->acquireAndRelease(
+                Constants::MIGRATION_REDIS_SUFFIX . $payout->getId(),
+                function() use ($payout) {
+
+                    $payoutServiceData = $this->getDataForPayoutService($payout);
+
+                    foreach ($payoutServiceData as $table => $data)
+                    {
+                        if (isset($migrationDataCounts[$table]) === true)
+                        {
+                            $migrationDataCounts[$table] += count($data);
+                        }
+                        else
+                        {
+                            $migrationDataCounts[$table] = count($data);
+                        }
+                    }
+
+                    // Opens a DB transaction on PS DB.
+                    $this->repo->payout->dbTransactionOnPS(
+                        function() use ($payoutServiceData) {
+                            foreach ($payoutServiceData as $table => $data)
+                            {
+                                $this->repo->payout->insertIntoPayoutServiceDB($table, $data);
+                            }
+                        }
+                    );
+
+                    // Doing it for all migrated payouts , considering if there is any state change (terminal to terminal)
+                    // after migration , better to do it in PS
+                    $payout->setIsPayoutService(1);
+                    $payout->setSavePayoutServicePayoutFlag(true);
+
+                    $this->repo->payout->saveOrFail($payout);
+                },
+                self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_PAYOUT_OPERATION_FOR_MERCHANT_IN_PROGRESS);
         }
 
         $this->trace->info(
             TraceCode::PAYOUTS_DATA_MIGRATION_DATA_COUNTS,
             ['data' => $migrationDataCounts]
-        );
-
-        // Opens a DB transaction on PS DB.
-        $this->repo->payout->dbTransactionOnPS(
-            function() use ($payoutServiceData) {
-                foreach ($payoutServiceData as $table => $data)
-                {
-                    $this->repo->payout->insertIntoPayoutServiceDB($table, $data);
-                }
-            }
         );
 
         return [
@@ -173,7 +210,7 @@ class Processor
         return [$lastId, $lastCreatedAt];
     }
 
-    protected function getDataForPayoutService($payouts)
+    protected function getDataForPayoutService($payout)
     {
         $payoutServiceData                                                           = [];
         $payoutServiceData[$this->getPSTableName(self::PAYOUTS)]               = [];
@@ -185,63 +222,60 @@ class Processor
         $payoutServiceData[$this->getPSTableName(self::WORKFLOW_STATE_MAP)]   = [];
         $payoutServiceData[$this->getPSTableName(self::PAYOUT_STATUS_DETAILS)] = [];
 
-        foreach ($payouts as $payout)
+        $payoutServiceData[$this->getPSTableName(self::PAYOUTS)][] =
+            (new PayoutMigration)->getPayoutServicePayoutFromApiPayout($payout);
+
+        $payoutServiceData[$this->getPSTableName(self::REVERSALS)] =
+            array_merge(
+                $payoutServiceData[$this->getPSTableName(self::REVERSALS)],
+                (new ReversalMigration)->getPayoutServiceReversalForApiPayout($payout)
+            );
+
+        $payoutServiceData[$this->getPSTableName(self::PAYOUT_LOGS)] =
+            array_merge(
+                $payoutServiceData[$this->getPSTableName(self::PAYOUT_LOGS)],
+                (new PayoutLogsMigration)->getPayoutServicePayoutLogsForApiPayout($payout)
+            );
+
+        $payoutServiceData[$this->getPSTableName(self::PAYOUT_SOURCES)] =
+            array_merge(
+                $payoutServiceData[$this->getPSTableName(self::PAYOUT_SOURCES)],
+                (new PayoutSourceMigration)->getPayoutServicePayoutSourcesForApiPayout($payout)
+            );
+
+        $payoutServiceData[$this->getPSTableName(self::PAYOUT_DETAILS)] =
+            array_merge(
+                $payoutServiceData[$this->getPSTableName(self::PAYOUT_DETAILS)],
+                (new PayoutDetailsMigration)->getPayoutServicePayoutDetailsForApiPayout($payout)
+            );
+
+        $payoutServiceWorkflowEntityMapForApiPayout = (new WorkflowEntityMapMigration)
+            ->getPayoutServiceWorkflowEntityMapForApiPayout($payout);
+
+        $payoutServiceData[$this->getPSTableName(self::WORKFLOW_ENTITY_MAP)] =
+            array_merge(
+                $payoutServiceData[$this->getPSTableName(self::WORKFLOW_ENTITY_MAP)],
+                $payoutServiceWorkflowEntityMapForApiPayout
+            );
+
+        if (empty($payoutServiceWorkflowEntityMapForApiPayout) === false)
         {
-            $payoutServiceData[$this->getPSTableName(self::PAYOUTS)][] =
-                (new PayoutMigration)->getPayoutServicePayoutFromApiPayout($payout);
+            foreach ($payoutServiceWorkflowEntityMapForApiPayout as $WorkflowEntityMap) {
+                $workflowId = $WorkflowEntityMap[WorkflowEntityMapEntity::WORKFLOW_ID];
 
-            $payoutServiceData[$this->getPSTableName(self::REVERSALS)] =
-                array_merge(
-                    $payoutServiceData[$this->getPSTableName(self::REVERSALS)],
-                    (new ReversalMigration)->getPayoutServiceReversalForApiPayout($payout)
-                );
-
-            $payoutServiceData[$this->getPSTableName(self::PAYOUT_LOGS)] =
-                array_merge(
-                    $payoutServiceData[$this->getPSTableName(self::PAYOUT_LOGS)],
-                    (new PayoutLogsMigration)->getPayoutServicePayoutLogsForApiPayout($payout)
-                );
-
-            $payoutServiceData[$this->getPSTableName(self::PAYOUT_SOURCES)] =
-                array_merge(
-                    $payoutServiceData[$this->getPSTableName(self::PAYOUT_SOURCES)],
-                    (new PayoutSourceMigration)->getPayoutServicePayoutSourcesForApiPayout($payout)
-                );
-
-            $payoutServiceData[$this->getPSTableName(self::PAYOUT_DETAILS)] =
-                array_merge(
-                    $payoutServiceData[$this->getPSTableName(self::PAYOUT_DETAILS)],
-                    (new PayoutDetailsMigration)->getPayoutServicePayoutDetailsForApiPayout($payout)
-                );
-
-            $payoutServiceWorkflowEntityMapForApiPayout = (new WorkflowEntityMapMigration)
-                ->getPayoutServiceWorkflowEntityMapForApiPayout($payout);
-
-            $payoutServiceData[$this->getPSTableName(self::WORKFLOW_ENTITY_MAP)] =
-                array_merge(
-                    $payoutServiceData[$this->getPSTableName(self::WORKFLOW_ENTITY_MAP)],
-                    $payoutServiceWorkflowEntityMapForApiPayout
-                );
-
-            if (empty($payoutServiceWorkflowEntityMapForApiPayout) === false)
-            {
-                foreach ($payoutServiceWorkflowEntityMapForApiPayout as $WorkflowEntityMap) {
-                    $workflowId = $WorkflowEntityMap[WorkflowEntityMapEntity::WORKFLOW_ID];
-
-                    $payoutServiceData[$this->getPSTableName(self::WORKFLOW_STATE_MAP)] =
-                        array_merge(
-                            $payoutServiceData[$this->getPSTableName(self::WORKFLOW_STATE_MAP)],
-                            (new WorkflowStateMapMigration())->getPayoutServiceWorkflowStateMapForApiPayout($workflowId)
-                        );
-                }
+                $payoutServiceData[$this->getPSTableName(self::WORKFLOW_STATE_MAP)] =
+                    array_merge(
+                        $payoutServiceData[$this->getPSTableName(self::WORKFLOW_STATE_MAP)],
+                        (new WorkflowStateMapMigration())->getPayoutServiceWorkflowStateMapForApiPayout($workflowId)
+                    );
             }
-
-            $payoutServiceData[$this->getPSTableName(self::PAYOUT_STATUS_DETAILS)] =
-                array_merge(
-                    $payoutServiceData[$this->getPSTableName(self::PAYOUT_STATUS_DETAILS)],
-                    (new PayoutStatusDetailsMigration)->getPayoutServicePayoutStatusDetailsForApiPayout($payout)
-                );
         }
+
+        $payoutServiceData[$this->getPSTableName(self::PAYOUT_STATUS_DETAILS)] =
+            array_merge(
+                $payoutServiceData[$this->getPSTableName(self::PAYOUT_STATUS_DETAILS)],
+                (new PayoutStatusDetailsMigration)->getPayoutServicePayoutStatusDetailsForApiPayout($payout)
+            );
 
         return $payoutServiceData;
     }

@@ -6,7 +6,7 @@ use App;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
+use RZP\Services\Mutex;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
@@ -26,9 +26,12 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Constants\Mode as ModeConstants;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Card\Entity as CardVault;
+use RZP\Models\FundTransfer\Attempt\Type;
 use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Payout\Constants as PayoutConstants;
 use RZP\Models\BankAccount\Core as BankAccountCore;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Models\PayoutSource\Entity as PayoutSources;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Holidays as TransferHoliday;
@@ -67,6 +70,13 @@ class FundTransfer extends Base
     protected $startTimeHourNeft;
 
     protected $startTimeHourRtgs;
+
+    const PAYOUT_MUTEX_LOCK_TIMEOUT         = 180;
+
+    /**
+     * @var Mutex
+     */
+    protected $mutex;
 
     /**
      * Array to keep working hours of NEFT/RTGS for various channels
@@ -175,6 +185,7 @@ class FundTransfer extends Base
 
         $this->app     = $app;
 
+        $this->mutex = $this->app['api.mutex'];
     }
 
     /**
@@ -348,7 +359,7 @@ class FundTransfer extends Base
             if ($bankingAcc === null)
             {
                 $bankingAcc = $this->app['banking_account_service']->fetchBankingAccountByAccountNumberAndChannel($balance->getMerchantId(), $balance->getAccountNumber(), $balance->getChannel());
-                
+
                 if ($bankingAcc !== null)
                 {
                     $onboardingTime = intdiv($bankingAcc['created_at'], 1000); // CreatedAt is in Milliseconds in BAS
@@ -884,10 +895,29 @@ class FundTransfer extends Base
 
         if ($fta->getStatus() === FundTransferAttempt\Status::INITIATED)
         {
-            if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
+            if ($fta->getSourceType() === Type::PAYOUT)
             {
-                $sourceCore->updateStatusAfterFtaInitiated($source, $this->fta);
+                $this->mutex->acquireAndRelease(
+                    PayoutConstants::MIGRATION_REDIS_SUFFIX . $source->getId(),
+                    function() use ($source, $fta, $sourceCore) {
+                        $source->reload();
+
+                        if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
+                        {
+                            $sourceCore->updateStatusAfterFtaInitiated($source, $this->fta);
+                        }
+                    },
+                    self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                    ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
             }
+            else
+            {
+                if (method_exists($sourceCore, 'updateStatusAfterFtaInitiated') === true)
+                {
+                    $sourceCore->updateStatusAfterFtaInitiated($source, $this->fta);
+                }
+            }
+
         }
         elseif (in_array($this->fta->getStatus(), FundTransferAttempt\Status::TERMINAL_STATUSES))
         {

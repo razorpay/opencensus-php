@@ -4,15 +4,17 @@ namespace RZP\Tests\Functional\Workflow;
 
 use Hash;
 use Mockery;
+use Carbon\Carbon;
 
 use Illuminate\Support\Facades\DB;
 
+use RZP\Http\RequestHeader;
 use RZP\Models\Feature;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\Permission;
-use RZP\Models\Admin\Role\Repository as RoleRepository;
-use RZP\Models\Workflow\Service\Config\Service as WorkflowConfigService;
 use RZP\Tests\Functional\TestCase;
+use Razorpay\Edge\Passport\Passport;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Workflow;
@@ -268,7 +270,6 @@ class WorkflowTest extends TestCase
 
     public function testWorkflowStateCallbackFromNWFS()
     {
-//        $this->markTestSkipped();
         $this->liveSetUp();
 
         $this->setUpExperimentForNWFS();
@@ -294,16 +295,209 @@ class WorkflowTest extends TestCase
         $this->startTest();
     }
 
+    public function testWorkflowStateCallbackFromPayouts()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'workflow_id'     => 'FSYpen1s24sSbs',
+                'entity_id'       => 'Exag5ZpN5MWuBW',
+                'entity_type'     => 'payout',
+                'merchant_id'     => '10000000000000',
+                'org_id'          => '100000razorpay',
+            ]);
+
+        // Approve with Owner role user
+        $this->ba->payoutInternalAppAuth('live');
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/wf-service/state/callback';
+
+        $this->startTest();
+
+        $workflowStateMap = $this->getDbLastEntity('workflow_state_map', 'live');
+
+        $this->assertNotEmpty($workflowStateMap);
+        $this->assertEquals('created',$workflowStateMap->getStatus());
+    }
+
+    public function testWorkflowStateUpdateCallbackFromPayouts()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'workflow_id'     => 'FSYpen1s24sSbs',
+                'entity_id'       => 'Exag5ZpN5MWuBW',
+                'entity_type'     => 'payout',
+                'merchant_id'     => '10000000000000',
+                'org_id'          => '100000razorpay',
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_state_map',
+            [
+                "workflow_id"       => "FSYpen1s24sSbs",
+                "merchant_id"       => "10000000000000",
+                "org_id"            => "100000razorpay",
+                "actor_type_key"    => "role",
+                "actor_type_value"  => "owner",
+                "state_id"          => "FSYqHROoUij6TF",
+                "state_name"        => "Owner_Approval",
+                "status"            => "created",
+                "group_name"        => "ABC",
+                "type"              => "checker"
+            ]);
+
+        // Approve with Owner role user
+        $this->ba->payoutInternalAppAuth('live');
+
+        $this->startTest();
+
+        $workflowStateMap = $this->getDbLastEntity('workflow_state_map', 'live');
+
+        $this->assertNotEmpty($workflowStateMap);
+        $this->assertEquals('processed',$workflowStateMap->getStatus());
+    }
+
+    // Forwarding call to PS which is mocked if payout service flag is enabled
+    public function testWorkflowStateCallbackFromNWFSToPS()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $payoutData = [
+            'id'                =>  'Exag5ZpN5MWuBW',
+            'status'            => 'created',
+            'balance_id'        =>  $balance->getId(),
+            'merchant_id'       =>  '10000000000000',
+            'amount'            =>  1,
+            'created_at'        => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+            'updated_at'        => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+        ];
+
+        $payout = $this->fixtures->on('live')->create('payout' , $payoutData);
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'workflow_id'     => 'FSYpen1s24sSbs',
+                'entity_id'       =>  $payout->getId(),
+                'entity_type'     => 'payout',
+                'merchant_id'     => '10000000000000',
+                'org_id'          => '100000razorpay',
+            ]);
+
+        $success = false;
+        $this -> mockPayoutServiceWorkflow('created', $success);
+
+        $payout = $this->fixtures->on('live')->edit('payout' , $payout->getId(), [
+            'is_payout_service' => 1,
+        ]);
+
+        // Approve with Owner role user
+        $this->ba->workflowsAppAuth('live');
+
+        $this->createPsPayout();
+
+        $testData = & $this->testData[__FUNCTION__];
+        $testData['request']['url'] = '/wf-service/state/callback';
+
+        $this->startTest();
+        $this->assertTrue($success);
+    }
+
+
+    // Forwarding call to PS which is mocked if payout service flag is enabled
+    public function testWorkflowStateUpdateCallbackFromNWFSToPS()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $balance = $this->getDbLastEntity('balance', 'live');
+
+        $payoutData = [
+            'id'                    =>  'Exag5ZpN5MWuBW',
+            'status'                => 'created',
+            'balance_id'            =>  $balance->getId(),
+            'merchant_id'           =>  '10000000000000',
+            'amount'                =>  1,
+            'created_at'            => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+            'updated_at'            => Carbon::now(Timezone::IST)->subHours(2)->getTimestamp(),
+        ];
+
+        $payout = $this->fixtures->on('live')->create('payout' , $payoutData);
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'workflow_id'     => 'FSYpen1s24sSbs',
+                'entity_id'       =>  $payout->getId(),
+                'entity_type'     => 'payout',
+                'merchant_id'     => '10000000000000',
+                'org_id'          => '100000razorpay',
+            ]);
+
+        $this->fixtures->on('live')->create(
+            'workflow_state_map',
+            [
+                "workflow_id"       => "FSYpen1s24sSbs",
+                "merchant_id"       => "10000000000000",
+                "org_id"            => "100000razorpay",
+                "actor_type_key"    => "role",
+                "actor_type_value"  => "owner",
+                "state_id"          => "FSYqHROoUij6TF",
+                "state_name"        => "Owner_Approval",
+                "status"            => "created",
+                "group_name"        => "ABC",
+                "type"              => "checker"
+            ]);
+
+        $success = false;
+        $this -> mockPayoutServiceWorkflow('processed', $success);
+
+        $payout = $this->fixtures->on('live')->edit('payout' , $payout->getId(), [
+            'is_payout_service' => 1,
+        ]);
+
+        // Approve with Owner role user
+        $this->ba->workflowsAppAuth('live');
+
+        $this->createPsPayout();
+
+        $this->startTest();
+        $this->assertTrue($success);
+    }
+
     public function testCreateWorkflowConfigWithAccountNumber()
     {
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id'     => $user->getId(),
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ]);
 
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -335,11 +529,11 @@ class WorkflowTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id'     => $user->getId(),
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ]);
 
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -371,11 +565,11 @@ class WorkflowTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id' => $user->getId(),
-            'product' => 'banking',
-            'role' => 'owner',
-        ]);
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id' => $user->getId(),
+                                                             'product' => 'banking',
+                                                             'role' => 'owner',
+                                                         ]);
 
         $this->ba->capitalCardsAuth();
 
@@ -401,11 +595,11 @@ class WorkflowTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id' => $user->getId(),
-            'product' => 'banking',
-            'role' => 'owner',
-        ]);
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id' => $user->getId(),
+                                                             'product' => 'banking',
+                                                             'role' => 'owner',
+                                                         ]);
 
         $this->ba->privateAuth();
 
@@ -425,11 +619,11 @@ class WorkflowTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id' => $user->getId(),
-            'product' => 'banking',
-            'role' => 'owner',
-        ]);
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id' => $user->getId(),
+                                                             'product' => 'banking',
+                                                             'role' => 'owner',
+                                                         ]);
 
         $this->ba->capitalCardsAuth();
 
@@ -537,11 +731,11 @@ class WorkflowTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id'     => $user->getId(),
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ]);
 
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -559,30 +753,30 @@ class WorkflowTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id'     => $user->getId(),
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ]);
 
         $this->ba->proxyAuth('rzp_test_10000000000000', $user->getId());
 
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
         $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([
-            'entity' => 'collection',
-            'count' => 2,
-            'items' => [
-                [
-                    'id' => 'poutlk_id1',
-                    'amount' => '1000',
-                ],
-                [
-                    'id' => 'poutlk_id2',
-                    'amount' => '2000',
-                ]
-            ]
-        ]);
+                                                                                    'entity' => 'collection',
+                                                                                    'count' => 2,
+                                                                                    'items' => [
+                                                                                        [
+                                                                                            'id' => 'poutlk_id1',
+                                                                                            'amount' => '1000',
+                                                                                        ],
+                                                                                        [
+                                                                                            'id' => 'poutlk_id2',
+                                                                                            'amount' => '2000',
+                                                                                        ]
+                                                                                    ]
+                                                                                ]);
 
         $this->app->instance('payout-links', $plMock);
 
@@ -596,11 +790,11 @@ class WorkflowTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id'     => $user->getId(),
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ]);
 
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
@@ -652,11 +846,11 @@ class WorkflowTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id'     => $user->getId(),
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ]);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
 
@@ -684,11 +878,11 @@ class WorkflowTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id'     => $user->getId(),
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ]);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
 
@@ -697,19 +891,19 @@ class WorkflowTest extends TestCase
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
         $plMock->shouldReceive('fetchPayoutLinksSummaryForMerchant')->andReturn([
-            'entity' => 'collection',
-            'count' => 2,
-            'items' => [
-                [
-                    'id' => 'poutlk_id1',
-                    'amount' => '1000',
-                ],
-                [
-                    'id' => 'poutlk_id2',
-                    'amount' => '2000',
-                ]
-            ]
-        ]);
+                                                                                    'entity' => 'collection',
+                                                                                    'count' => 2,
+                                                                                    'items' => [
+                                                                                        [
+                                                                                            'id' => 'poutlk_id1',
+                                                                                            'amount' => '1000',
+                                                                                        ],
+                                                                                        [
+                                                                                            'id' => 'poutlk_id2',
+                                                                                            'amount' => '2000',
+                                                                                        ]
+                                                                                    ]
+                                                                                ]);
 
         $this->app->instance('payout-links', $plMock);
 
@@ -723,11 +917,11 @@ class WorkflowTest extends TestCase
         $user = $this->fixtures->create('user');
 
         $this->fixtures->user->createUserMerchantMapping([
-            'merchant_id' => '10000000000000',
-            'user_id'     => $user->getId(),
-            'product'     => 'banking',
-            'role'        => 'owner',
-        ]);
+                                                             'merchant_id' => '10000000000000',
+                                                             'user_id'     => $user->getId(),
+                                                             'product'     => 'banking',
+                                                             'role'        => 'owner',
+                                                         ]);
 
         $this->fixtures->merchant->addFeatures([Feature\Constants::PAYOUT_WORKFLOWS]);
 
@@ -801,10 +995,10 @@ class WorkflowTest extends TestCase
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
         $plMock->shouldReceive('fetchPendingPayoutLinks')->andReturn([
-            'entity' => 'collection',
-            'count' => 0,
-            'items' => []
-        ]);
+                                                                         'entity' => 'collection',
+                                                                         'count' => 0,
+                                                                         'items' => []
+                                                                     ]);
 
         $this->app->instance('payout-links', $plMock);
 
@@ -859,19 +1053,19 @@ class WorkflowTest extends TestCase
         $plMock = Mockery::mock('RZP\Services\PayoutLinks');
 
         $plMock->shouldReceive('fetchPendingPayoutLinks')->andReturn([
-            'entity' => 'collection',
-            'count' => 2,
-            'items' => [
-                [
-                    'id' => 'poutlk_id1',
-                    'amount' => '1000',
-                ],
-                [
-                    'id' => 'poutlk_id2',
-                    'amount' => '2000',
-                ]
-            ]
-        ]);
+                                                                         'entity' => 'collection',
+                                                                         'count' => 2,
+                                                                         'items' => [
+                                                                             [
+                                                                                 'id' => 'poutlk_id1',
+                                                                                 'amount' => '1000',
+                                                                             ],
+                                                                             [
+                                                                                 'id' => 'poutlk_id2',
+                                                                                 'amount' => '2000',
+                                                                             ]
+                                                                         ]
+                                                                     ]);
 
         $this->app->instance('payout-links', $plMock);
 
@@ -1229,4 +1423,113 @@ class WorkflowTest extends TestCase
 
         return $config;
     }
+
+    /**
+     * @return void
+     */
+    private function createPsPayout(): void
+    {
+        $payoutData = [
+            'id'                   => "Exag5ZpN5MWuBW",
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "processed",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'scheduled_at'         => null,
+            'queued_at'            => null,
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'cancellation_user_id' => null,
+            'registered_name'      => "SUSANTA BHUYAN",
+            'queued_reason'        => "beneficiary_bank_down",
+            'on_hold_at'           => 1663092113,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+    }
+
+    public function mockPayoutServiceWorkflow($status,&$success, $request = [])
+    {
+        // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
+        // are going to be sent to payout service.
+        $payoutServiceWorkflowMock = Mockery::mock('RZP\Services\PayoutService\Workflow',
+                                                   [$this->app])->makePartial();
+
+        $payoutServiceWorkflowMock->shouldReceive('sendRequest')
+                                  ->withArgs(
+                                      function($arg) use ($request, $status, &$success) {
+                                          try
+                                          {
+                                              $this->assertNotEmpty($arg['headers'][Passport::PASSPORT_JWT_V1 ]);
+                                              $this->assertNotEmpty($arg['headers'][RequestHeader::X_Creator_Id]);
+                                              $this->assertNotEmpty($arg['headers'][RequestHeader::X_RAZORPAY_ACCOUNT]);
+
+                                              $success =  true;
+
+                                              return true;
+                                          }
+                                          catch (\Throwable $e)
+                                          {
+                                              $success =  false;
+
+                                              return false;
+                                          }
+                                      }
+                                  )
+                                  ->andReturn(
+                                      $this->createResponseForPayoutServiceWorkflowMock($status)
+                                  );
+
+        $this->app->instance(\RZP\Services\PayoutService\Workflow::PAYOUT_SERVICE_WORKFLOW, $payoutServiceWorkflowMock);
+    }
+
+    public function createResponseForPayoutServiceWorkflowMock($status)
+    {
+        $response = new \WpOrg\Requests\Response();
+
+        $content = [
+            "workflow_id"       => "FSYpen1s24sSbs",
+            "merchant_id"       => "10000000000000",
+            "org_id"            => "100000razorpay",
+            "actor_type_key"    => "role",
+            "actor_type_value"  => "owner",
+            "state_id"          => "FSYqHROoUij6TF",
+            "state_name"        => "Owner_Approval",
+            "status"            => $status,
+            "group_name"        => "ABC",
+            "type"              => "checker"
+        ];
+
+        $response->body = json_encode($content);
+        $response->status_code = 200;
+        $response->success = true;
+
+        return $response;
+    }
+
 }

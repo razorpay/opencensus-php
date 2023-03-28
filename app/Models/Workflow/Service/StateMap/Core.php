@@ -2,16 +2,53 @@
 
 namespace RZP\Models\Workflow\Service\StateMap;
 
+use App;
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
+use RZP\Services\Mutex;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
+use RZP\Services\PayoutService;
+use RZP\Http\BasicAuth\BasicAuth;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Payout\DualWrite\WorkflowEntityMap;
+use RZP\Models\Payout\Entity as PayoutEntity;
+use RZP\Models\Payout\Constants as PayoutConstants;
+use RZP\Models\Workflow\Service\EntityMap\Entity as WorkflowEntityMap;
+use RZP\Models\Payout\DualWrite\WorkflowEntityMap as WorkflowDualWrite;
 
 class Core extends Base\Core
 {
+    const PAYOUT                  = Constants\Entity::PAYOUT;
+
+    /** @var PayoutService\Workflow*/
+    protected $payoutWorkflowServiceClient;
+
+    /**
+     * @var Mutex
+     */
+    protected $mutex;
+
+    /**
+     * BasicAuth entity
+     * @var BasicAuth
+     */
+    protected $auth;
+
+    const PAYOUT_MUTEX_LOCK_TIMEOUT = 180;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+
+        $this->auth = $this->app['basicauth'];
+
+        $this->payoutWorkflowServiceClient = $this->app[PayoutService\Workflow::PAYOUT_SERVICE_WORKFLOW];
+    }
+
     /**
      * @param array $input
      * @return Entity
@@ -20,41 +57,47 @@ class Core extends Base\Core
     {
         try
         {
-            $workflowId = $input[Entity::REQUEST_WORKFLOW_ID];
+            $workflowEntityMap = $this->getWorkflowEntityMap($input[Entity::REQUEST_WORKFLOW_ID]);
 
-            /** @var Entity $config */
-            $workflowEntityMap = $this->repo->workflow_entity_map->getByWorkflowIdByFirst($workflowId);
-
-            if (empty($workflowEntityMap) === true)
+            if ($this->auth->isPayoutService() === true)
             {
-                $workflowEntityMap = $this->getPayoutServiceWorkflowEntityMap($workflowId);
+                return $this->createStateMap($workflowEntityMap, $input);
             }
+            else
+            {
+                return $this->mutex->acquireAndRelease(
+                    PayoutConstants::MIGRATION_REDIS_SUFFIX . $workflowEntityMap->getEntityId(),
+                    function() use ($workflowEntityMap, $input) {
+                        $source = $workflowEntityMap->source()->first();
 
-            $merchantId = $workflowEntityMap->getMerchantId();
+                        if (($workflowEntityMap->getEntityType() === self::PAYOUT) and
+                            (empty($source) === false))
+                        {
+                            // considering if the source is preloaded in workflow , better to reload
+                            /** @var PayoutEntity $source */
+                            $source->reload();
 
-            /** @var Merchant\Entity $config */
-            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+                            if (($source->getIsPayoutService() === true) and
+                                ($this->auth->isPayoutService() === false))
+                            {
+                                $response = $this->payoutWorkflowServiceClient->createStateCallbackViaMicroservice($input);
 
-            $attributes = [
-                Entity::WORKFLOW_ID      => $input[Entity::REQUEST_WORKFLOW_ID],
-                Entity::STATE_ID         => $input[Entity::REQUEST_STATE_ID],
-                Entity::STATE_NAME       => $input[Entity::REQUEST_STATE_NAME],
-                Entity::TYPE             => $input[Entity::REQUEST_TYPE],
-                Entity::GROUP_NAME       => $input[Entity::REQUEST_GROUP_NAME],
-                Entity::STATUS           => $input[Entity::REQUEST_STATUS],
-                Entity::ACTOR_TYPE_KEY   => $input[Entity::REQUEST_RULES][Entity::REQUEST_ACTOR_PROPERTY_KEY],
-                Entity::ACTOR_TYPE_VALUE => $input[Entity::REQUEST_RULES][Entity::REQUEST_ACTOR_PROPERTY_VALUE],
-            ];
+                                $stateMapEntity = new Entity();
 
-            $stateMapEntity = (new Entity)->build($attributes);
+                                foreach ($response as $key => $value)
+                                {
+                                    $stateMapEntity->$key = $value;
+                                }
 
-            $stateMapEntity->merchant()->associate($merchant);
+                                return $stateMapEntity;
+                            }
+                        }
 
-            $stateMapEntity->org()->associate($merchant->org);
-
-            $this->repo->saveOrFail($stateMapEntity);
-
-            return $stateMapEntity;
+                        return $this->createStateMap($workflowEntityMap, $input);
+                    },
+                    self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                    ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
+            }
         }
         catch (\Throwable $exception)
         {
@@ -70,6 +113,92 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * @param Entity $stateMap
+     * @param array $input
+     * @return Entity
+     */
+    public function update(Entity $stateMap, array $input, string $id): Entity
+    {
+        try
+        {
+            $workflowEntityMap = $this->getWorkflowEntityMap($input[Entity::REQUEST_WORKFLOW_ID]);
+
+            if ($this->auth->isPayoutService() === true)
+            {
+                return $this->updateStateMap($stateMap, $input[Entity::REQUEST_STATUS]);
+            }
+            else
+            {
+                return $this->mutex->acquireAndRelease(
+                    PayoutConstants::MIGRATION_REDIS_SUFFIX . $workflowEntityMap->getEntityId(),
+                    function() use ($workflowEntityMap, $input, $id, $stateMap) {
+                        $source = $workflowEntityMap->source()->first();
+
+                        if (($workflowEntityMap->getEntityType() === self::PAYOUT) and
+                            (empty($source) === false))
+                        {
+                            // considering if the source is preloaded in workflow , better to reload
+                            /** @var PayoutEntity $source */
+                            $source->reload();
+
+                            if (($source->getIsPayoutService() === true) and
+                                ($this->auth->isPayoutService() === false))
+                            {
+                                $response = $this->payoutWorkflowServiceClient->updateStateCallbackViaMicroservice($id, $input);
+
+                                $stateMapEntity = new Entity();
+
+                                foreach ($response as $key => $value)
+                                {
+                                    $stateMapEntity->$key = $value;
+                                }
+
+                                return $stateMapEntity;
+                            }
+                        }
+
+                        return $this->updateStateMap($stateMap, $input[Entity::REQUEST_STATUS]);
+                    },
+                    self::PAYOUT_MUTEX_LOCK_TIMEOUT,
+                    ErrorCode::BAD_REQUEST_ANOTHER_OPERATION_IN_PROGRESS);
+            }
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::WORKFLOW_STATE_MAP_UPDATION_FAILED,
+                [
+                    'input' => $input,
+                ]);
+
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param $input
+     *
+     * @return WorkflowEntityMap
+     * @throws Exception\BadRequestException
+     */
+    private function getWorkflowEntityMap($input): WorkflowEntityMap
+    {
+        $workflowId = $input;
+
+        /** @var WorkflowEntityMap $config */
+        $workflowEntityMap = $this->repo->workflow_entity_map->getByWorkflowIdByFirst($workflowId);
+
+        if (empty($workflowEntityMap) === true)
+        {
+            $workflowEntityMap = $this->getPayoutServiceWorkflowEntityMap($workflowId);
+        }
+
+        return $workflowEntityMap;
+    }
+
     protected function getPayoutServiceWorkflowEntityMap(string $workflowId)
     {
         /**
@@ -77,7 +206,7 @@ class Core extends Base\Core
          * Hence we try to get that record from PS DB and store in API DB.
          */
 
-        $psWorkflowEntityMap = (new WorkflowEntityMap)->
+        $psWorkflowEntityMap = (new WorkflowDualWrite())->
         getAPIWorkflowEntityMapFromPayoutServiceByWorkflowId($workflowId);
 
         $this->trace->info(
@@ -99,16 +228,51 @@ class Core extends Base\Core
     }
 
     /**
-     * @param Entity $stateMap
-     * @param array $input
+     * @param WorkflowEntityMap $workflowEntityMap
+     * @param array             $input
+     *
      * @return Entity
      */
-    public function update(Entity $stateMap, array $input): Entity
+    private function createStateMap(WorkflowEntityMap $workflowEntityMap, array $input): Entity
     {
-        $stateMap->setStatus($input[Entity::REQUEST_STATUS]);
+        /** @var Merchant\Entity $config */
+        $merchant = $this->repo->merchant->findOrFailPublic($workflowEntityMap->getMerchantId());
+
+        $attributes = [
+            Entity::WORKFLOW_ID      => $input[Entity::REQUEST_WORKFLOW_ID],
+            Entity::STATE_ID         => $input[Entity::REQUEST_STATE_ID],
+            Entity::STATE_NAME       => $input[Entity::REQUEST_STATE_NAME],
+            Entity::TYPE             => $input[Entity::REQUEST_TYPE],
+            Entity::GROUP_NAME       => $input[Entity::REQUEST_GROUP_NAME],
+            Entity::STATUS           => $input[Entity::REQUEST_STATUS],
+            Entity::ACTOR_TYPE_KEY   => $input[Entity::REQUEST_RULES][Entity::REQUEST_ACTOR_PROPERTY_KEY],
+            Entity::ACTOR_TYPE_VALUE => $input[Entity::REQUEST_RULES][Entity::REQUEST_ACTOR_PROPERTY_VALUE],
+        ];
+
+        $stateMapEntity = (new Entity)->build($attributes);
+
+        $stateMapEntity->merchant()->associate($merchant);
+
+        $stateMapEntity->org()->associate($merchant->org);
+
+        $this->repo->saveOrFail($stateMapEntity);
+
+        return $stateMapEntity;
+    }
+
+    /**
+     * @param Entity $stateMap
+     * @param string $status
+     *
+     * @return Entity
+     */
+    private function updateStateMap(Entity $stateMap, string $status): Entity
+    {
+        $stateMap->setStatus($status);
 
         $this->repo->saveOrFail($stateMap);
 
         return $stateMap;
     }
+
 }

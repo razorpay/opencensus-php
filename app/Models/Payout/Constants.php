@@ -52,4 +52,6 @@ class Constants
 
     public const ACCOUNT_NUMBERS            = 'account_numbers';
 
+    public const MIGRATION_REDIS_SUFFIX     = 'migration_';
+
 }

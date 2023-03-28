@@ -28,6 +28,8 @@ class WorkflowStateMap
     const STATE_STATUS  = 'state_status';
     const ACTOR_ROLE    = 'actor_role';
 
+    const COUNT_OF_APPROVALS_NEEDED   = 'count_of_approvals_needed';
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -66,6 +68,7 @@ class WorkflowStateMap
             self::ACTOR_ROLE                    => $workflowStateMap->getActorTypeValue(),
             WorkflowStateMapEntity::CREATED_AT  => $workflowStateMap->getCreatedAt(),
             WorkflowStateMapEntity::UPDATED_AT  => $workflowStateMap->getUpdatedAt(),
+            self::COUNT_OF_APPROVALS_NEEDED     => 1
         ];
     }
 }
