@@ -22,6 +22,7 @@ import { TokenStatusLabel } from 'merchant/components/StatusLabel';
 import MandatePaymentMethod from 'merchant/views/Subscriptions/components/MandatePaymentMethod';
 import MandateCustomerDetails from 'merchant/views/Subscriptions/components/MandateCustomerDetails';
 import MandateBankAccountDetails from 'merchant/views/Subscriptions/components/MandateBankAccountDetails';
+import analytics from 'merchant/views/Subscriptions/analytics';
 
 import { fetchToken, deleteToken, resubmitNACHFile, cancelToken } from 'merchant/reducers/token';
 import { downloadSignedNACHFile } from 'merchant/reducers/registration_link';
@@ -37,7 +38,6 @@ import {
   trackClickResubmitNachForm,
   trackClickViewNACHForm,
 } from './ga';
-import analytics from '../analytics';
 
 @withRouter
 @connect((state) => ({ ...state.token, user: state.session.user }), {
@@ -216,11 +216,16 @@ export default class TokenDetailsContainer extends Component {
     let expireAt = entity.subscription_registration && entity.subscription_registration.expire_at;
     let maxAmount = null;
     let isDomesticCard = null;
+    let defaultAFAMaxAmount = rupeesToPaise(CARD_AFA_MAX_LIMIT);
     if (entity.method === 'card') {
       expireAt = entity.expired_at;
       isDomesticCard = !entity.card.international;
+
       maxAmount =
         entity?.subscription_registration?.max_amount || rupeesToPaise(CARD_AFA_MAX_LIMIT);
+      if (maxAmount <= defaultAFAMaxAmount) {
+        defaultAFAMaxAmount = maxAmount;
+      }
     }
 
     return (
@@ -299,7 +304,7 @@ export default class TokenDetailsContainer extends Component {
                                   maxAmount,
                                 )} for each recurring payment. Payments above
                                 ₹${getFormattedAmount(
-                                  maxAmount,
+                                  defaultAFAMaxAmount,
                                 )} will ask for OTP verification from customer.`}
                             </PopoverBody>
                           </Popover>

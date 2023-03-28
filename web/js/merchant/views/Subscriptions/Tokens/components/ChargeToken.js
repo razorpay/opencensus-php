@@ -13,8 +13,7 @@ import { AsyncBtn } from 'common/new-ui/Button';
 
 import { chargeToken } from 'merchant/reducers/token';
 import { AmountTooltip } from 'common/ui/Amount';
-
-const CARD_MAX_DEFAULT_AMOUN = 500000;
+import { CARD_AFA_MAX_LIMIT } from 'merchant/views/Subscriptions/constants';
 
 @withRouter
 @connect(null, { chargeToken, showNotification })
@@ -65,14 +64,17 @@ export default class ChargeToken extends Component {
     const isCard = token.method === 'card';
     let isDomesticCard = null;
     let maxAmount = null;
+    const defaultCardAFALimit = rupeesToPaise(CARD_AFA_MAX_LIMIT);
     if (isCard) {
       isDomesticCard = !token.card.international;
-      maxAmount = token?.subscription_registration?.max_amount || CARD_MAX_DEFAULT_AMOUN;
+      maxAmount = token?.subscription_registration?.max_amount || CARD_AFA_MAX_LIMIT;
     }
     const amount = rupeesToPaise(this.state.amount);
-    let isTwoFactorNeeded = true;
-    if (maxAmount && amount <= maxAmount) {
-      isTwoFactorNeeded = false;
+    let isTwoFactorNeeded = false;
+    // If charge amount is greater than token max_amount or is greater than
+    // RBI's default AFA limit (15k) AFA is required
+    if (amount >= maxAmount || amount >= defaultCardAFALimit) {
+      isTwoFactorNeeded = true;
     }
     const currency = token.subscription_registration
       ? token.subscription_registration.currency

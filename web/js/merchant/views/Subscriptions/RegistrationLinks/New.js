@@ -37,6 +37,7 @@ import {
   MAX_TOKEN_AMOUNT,
   GATEWAY_MAX_LIMIT,
   CARD_AFA_MAX_LIMIT,
+  CARD_TOKEN_MAX_AMOUNT,
   topEmandateBankCodes,
   MAX_TOKEN_AMOUNT_NACH,
   DEFAULT_NACH_LIMIT,
@@ -605,7 +606,7 @@ export default class NewRegistrationLink extends React.Component {
           }
         }
         if (this.isCardPayment) {
-          if (maxAmount > CARD_AFA_MAX_LIMIT) {
+          if (maxAmount > CARD_TOKEN_MAX_AMOUNT) {
             return false;
           }
         }
