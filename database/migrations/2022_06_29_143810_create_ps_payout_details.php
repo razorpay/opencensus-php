@@ -27,6 +27,18 @@ class CreatePsPayoutDetails extends Migration
 
             $table->tinyInteger(Entity::QUEUE_IF_LOW_BALANCE_FLAG);
 
+            $table->string(Entity::TAX_PAYMENT_ID)
+                  ->nullable()
+                  ->default(null);
+
+            $table->unsignedInteger(Entity::TDS_CATEGORY_ID)
+                  ->nullable()
+                  ->default(null);
+
+            $table->json(Entity::ADDITIONAL_INFO)
+                  ->nullable()
+                  ->default(null);
+
             $table->integer(Entity::CREATED_AT);
 
             $table->integer(Entity::UPDATED_AT);

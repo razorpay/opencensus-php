@@ -543,10 +543,18 @@ class PayoutTest extends OAuthTestCase
 
         \DB::connection('test')->table('ps_payout_status_details')->insert($payoutStatusDetailsData);
 
+        $expectedAdditionalInfo = [
+            'tds_amount'                           => 1000,
+            PayoutsDetails\Entity::SUBTOTAL_AMOUNT => 10000,
+        ];
+
         $payoutDetailsData = [
             'id'                        => 'randomid111119',
             'payout_id'                 => 'randomid111111',
             'queue_if_low_balance_flag' => 1,
+            'tds_category_id'           => 1,
+            'tax_payment_id'            => 'txpy_F2qwMZe97QTGG1',
+            'additional_info'           => json_encode($expectedAdditionalInfo),
             'created_at'                => 1000000002,
             'updated_at'                => 1000000001
         ];
@@ -652,7 +660,15 @@ class PayoutTest extends OAuthTestCase
         $payoutDetailsData[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG] = true;
         unset($payoutDetailsData[PayoutsDetails\Entity::ID]);
 
-        $this->assertArraySubset($payoutDetailsData, $payoutDetails->toArray());
+        $payoutDetailsData[PayoutsDetails\Entity::ADDITIONAL_INFO] =
+            json_decode($payoutDetailsData[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $payoutDetailsArray = $payoutDetails->toArray();
+
+        $payoutDetailsArray[PayoutsDetails\Entity::ADDITIONAL_INFO] =
+            json_decode($payoutDetailsArray[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $this->assertArraySubset($payoutDetailsData, $payoutDetailsArray);
 
         /** @var WorkflowEntityMapEntity $workflowEntityMap */
         $workflowEntityMap = $this->getDbLastEntity('workflow_entity_map', 'live');
