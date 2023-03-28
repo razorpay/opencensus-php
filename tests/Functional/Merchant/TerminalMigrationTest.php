@@ -2783,25 +2783,14 @@ class TerminalMigrationTest extends TestCase
 
         $mock = $this->createMetricsMock();
 
-        $expectedSuccess1 = [
+        $expectedSuccess = [
             'route'       => 'merchant_get_terminals',
-            'message'     => null,
-            'terminal_id' => 'term_1n25f6uN5S1Z5a',
-        ];
-
-        $expectedSuccess2 = [
-            'route'       => 'merchant_get_terminals',
-            'message'     => null,
-            'terminal_id' => 'term_'.$terminal['id'],
+            'function'     => 'addMerchantWhereCondition'
         ];
 
         $mock->expects($this->at(6))
             ->method('count')
-            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess1);
-
-        $mock->expects($this->at(7))
-            ->method('count')
-            ->with(Terminal\Metric::TERMINAL_FETCH_BY_ID_COMPARISON_SUCCESS, 1, $expectedSuccess2);
+            ->with(Terminal\Metric::TERMINAL_REPO_READ, 1, $expectedSuccess);
 
         $this->startTest();
     }
