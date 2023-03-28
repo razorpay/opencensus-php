@@ -38,8 +38,15 @@ const SignUp = () => {
     isExpOn: true,
     isScriptFailed: window.isOneTapScriptFailed,
   });
-  const { auth_source } = getURLQueryParams(window.location.search);
+  const {
+    auth_source,
+    r: query_reference,
+    invitation,
+    merchant_invitation,
+  } = getURLQueryParams(window.location.search);
   const isSignUpFromWebsite = auth_source && auth_source === 'website';
+  const isSigningUpAsPartner = query_reference === 'partner';
+
   useEffect(() => {
     if (isSignUpFromWebsite) {
       setCookie('auth_source', auth_source);
@@ -47,8 +54,11 @@ const SignUp = () => {
 
     // show partner onboarding resumed notification modal
     setIsOpen(true);
+    const objectName = isSigningUpAsPartner
+      ? 'Partner Onboarding Paused Modal'
+      : 'SubM Onboarding Paused Modal';
     trackWithSegment({
-      objectName: 'Partner Onboarding Paused Modal',
+      objectName,
       actionName: 'Loaded',
       location: '',
       properties: {
@@ -146,8 +156,11 @@ const SignUp = () => {
 
   const onClose = () => {
     setIsOpen(false);
+    const objectName = isSigningUpAsPartner
+      ? 'Partner Onboarding Paused Modal Continue'
+      : 'SubM Onboarding Paused Modal Continue';
     trackWithSegment({
-      objectName: 'Partner Onboarding Paused Modal Continue',
+      objectName,
       actionName: 'Clicked',
       location: '',
       properties: {
@@ -156,10 +169,8 @@ const SignUp = () => {
     });
   };
 
-  const query = QueryString.parse(window.location.search);
-
   // enable signup for invitation merchant
-  let disableSignup = !query.invitation && !programDsCheck && !query.merchant_invitation;
+  let disableSignup = !invitation && !programDsCheck && !merchant_invitation;
 
   // Enable signup for curlec.com (Malaysia)
   if (window.location.host === 'dashboard.curlec.com') {
@@ -173,8 +184,7 @@ const SignUp = () => {
     disableSignup = false;
   }
 
-  // r=partner query param is passed in the signup url when user wants to signup as a partner
-  if (!disableSignup && query.r === 'partner' && isNewPartnerSignup()) return <PartnerSignup />;
+  if (!disableSignup && isSigningUpAsPartner && isNewPartnerSignup()) return <PartnerSignup />;
 
   return (
     <ThemeProvider theme={theme}>
@@ -227,10 +237,19 @@ const SignUp = () => {
                   >
                     <ModalHeader>New business onboarding is temporarily paused</ModalHeader>
                     <ModalBody>
-                      Please submit your details so that your partner account can be activated at
-                      the earliest when we resume onboarding.
-                      <br />
-                      *You can keep referring your clients in the meanwhile
+                      {isSigningUpAsPartner ? (
+                        <>
+                          Please submit your details so that your partner account can be activated
+                          at the earliest when we resume onboarding.
+                          <br />
+                          *You can keep referring your clients in the meanwhile
+                        </>
+                      ) : (
+                        <>
+                          Please submit your details so that your merchant account can be activated
+                          at the earliest when we resume onboarding.
+                        </>
+                      )}
                     </ModalBody>
                     <ModalFooter>
                       <Button onClick={onClose}>Continue</Button>
