@@ -8,6 +8,8 @@ use Request;
 use Neves\Events\TransactionalClosureEvent;
 use Route;
 use Config;
+use DateTime;
+use DateTimeZone;
 use Carbon\Carbon;
 use RZP\Base\Luhn;
 use RZP\Base\Repository;
@@ -3192,7 +3194,7 @@ class Processor
             {
                 $emandateTokenStatus = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][TokenConstants::EMANDATE_TOKEN_STATUS] ?? null;
         
-                $presentTime = Carbon::now()->getTimestamp();
+                $presentTime = Carbon::now('Asia/Kolkata')->getTimestamp();
         
                 $coolDowntime = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][TokenConstants::COOLDOWN_PERIOD] ?? $presentTime;
         
@@ -3200,9 +3202,13 @@ class Processor
                 
                 if($tempErrorEnableFlag === true and ($emandateTokenStatus === TokenConstants::BLOCKED_TEMPORARILY)  and $timeDifference < 0)
                 {
+                    $date = new DateTime("@$coolDowntime");
+    
+                    $date->setTimeZone(new DateTimeZone('Asia/Kolkata'));
+                    
                     return
                         [
-                            TokenConstants::COOLDOWN_PERIOD           => date("Y-m-d H:i:s", (int) $coolDowntime),
+                            TokenConstants::COOLDOWN_PERIOD           => $date->format('Y-m-d H:i:s'),
                             TokenConstants::EMANDATE_TOKEN_STATUS     => TokenConstants::BLOCKED_TEMPORARILY
                         ];
                 }
