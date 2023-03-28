@@ -25,6 +25,7 @@ class Dashboard extends Base
     const BENE_NAME_UPDATE             = '/twirp/rzp.settlements.bank_account.v1.BankAccountService/UpdateBeneficiaryName';
 
     const EXECUTION_REGISTER           = '/twirp/rzp.settlements.execution.v1.ExecutionService/Register';
+    const SET_DCS_OBJECT               = '/twirp/rzp.settlements.dcs.v1.DCS/Set';
     const EXECUTION_TRIGGER_MULTIPLE   = '/twirp/rzp.settlements.execution.v1.ExecutionService/TriggerMultiple';
     const EXECUTION_RESUME             = '/twirp/rzp.settlements.execution.v1.ExecutionService/Resume';
     const BULK_REGISTRATION_REMINDER   = '/twirp/rzp.settlements.execution.v1.ExecutionService/BulkRegisterReminders';
@@ -436,6 +437,18 @@ class Dashboard extends Base
         $input['options'] = (object) $input['options'];
 
         return $this->makeRequest(self::EXECUTION_REGISTER, $input, self::SERVICE_DASHBOARD);
+    }
+
+    /**
+     * Used to register the execution
+     * @param array $input
+     * @return array
+     * @throws RuntimeException
+     * @throws \Throwable
+     */
+    public function setDCSObject(array $input) : array
+    {
+        return $this->makeRequest(self::SET_DCS_OBJECT, $input, self::SERVICE_DASHBOARD);
     }
 
     /**

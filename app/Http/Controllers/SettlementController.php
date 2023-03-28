@@ -532,7 +532,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service()->sendGifuFile($input , $orgId);
+        $data = $this->service()->sendGifuFile($input, $orgId);
 
         return ApiResponse::json($data);
     }
@@ -622,7 +622,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data =$this->service()->cronRunMigrations($input);
+        $data = $this->service()->cronRunMigrations($input);
 
         return ApiResponse::json($data);
     }
@@ -631,7 +631,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data =$this->service()->migrateBlockedTransactions($input);
+        $data = $this->service()->migrateBlockedTransactions($input);
 
         return ApiResponse::json($data);
     }
@@ -650,6 +650,15 @@ class SettlementController extends Controller
         $input = Request::all();
 
         $data = $this->service()->executionRegister($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function setDCSObject()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->setDCSObject($input);
 
         return ApiResponse::json($data);
     }

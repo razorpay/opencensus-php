@@ -1689,6 +1689,11 @@ class Service extends Base\Service
         return app('settlements_dashboard')->executionRegister($input);
     }
 
+    public function setDCSObject(array $input) : array
+    {
+        return app('settlements_dashboard')->setDCSObject($input);
+    }
+
     public function executionTriggerMultiple(array $input) : array
     {
         return app('settlements_dashboard')->executionTriggerMultiple($input);

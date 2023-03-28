@@ -507,7 +507,7 @@ class RouteTeamMap
         'setl_amount_check'                               => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_bulk_reminder_es_registration'              => [self::TEAM_PAYMENTS_SETTLEMENTS],
         'setl_trigger_es_multiple'                        => [self::TEAM_PAYMENTS_SETTLEMENTS],
-
+        'setl_set_dcs_object'                             => [self::TEAM_PAYMENTS_SETTLEMENTS],
         //downtime manager route
         'downtime_auto_resolve_cron'                      =>[self::TEAM_PAYMENTS_DOWNTIME]
     ];
