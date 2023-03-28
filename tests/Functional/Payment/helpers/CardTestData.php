@@ -242,4 +242,30 @@ return [
             ],
         ],
     ],
+
+    'testVaultPingSuccess' => [
+        'request' => [
+            'url' => '/vault_ping',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => true
+            ],
+        ],
+    ],
+
+    'testVaultPingFailure' => [
+        'request' => [
+            'url' => '/vault_ping',
+            'method' => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => false
+            ],
+        ],
+    ],
 ];
