@@ -1150,11 +1150,7 @@ class Core extends Base\Core
 
         if(empty($invoice) === true)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR,
-                null,
-                null,
-                'Receipt is not generated for this payment');
+            $invoice = $this->generateInvoiceForGetRecieptIfPosssible($payment);
         }
 
         $invoiceId = $invoice->getPublicId();
@@ -3783,5 +3779,65 @@ class Core extends Base\Core
         $protocol = $this->config->get("services.custom_domain_service.hosted.protocol");
 
         return $protocol . "://" . $customDomain;
+    }
+
+    /**
+     * @param \RZP\Models\Payment\Entity $payment
+     *
+     * @return \RZP\Models\Invoice\Entity
+     * @throws \RZP\Exception\BadRequestException
+     */
+    private function generateInvoiceForGetRecieptIfPosssible(Payment\Entity $payment): Invoice\Entity
+    {
+        $error = new BadRequestException(
+            ErrorCode::BAD_REQUEST_ERROR,
+            null,
+            null,
+            'Receipt is not generated for this payment');
+
+        if (empty($payment->paymentLink) === true)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                null,
+                null,
+                'Receipt cannot be generated for this payment as there are no payment page linked');
+        }
+
+        if($payment->paymentLink->isReceiptEnabled() === false)
+        {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_RECIEPT_NOT_ENABLED, ["payment_id" => $payment->getPublicId()]);
+            throw $error;
+        }
+
+        try
+        {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_CREATE_INVOICE, ["payment_id" => $payment->getPublicId()]);
+            $this->createInvoiceIfEnabled($payment->paymentLink, $payment);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+
+            throw $error;
+        }
+
+        $order = $payment->order;
+
+        if (empty($order) === true)
+        {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_ORDER_EMPTY, ["payment_id" => $payment->getPublicId()]);
+            throw $error;
+        }
+
+        $invoice = $order->invoice;
+
+        if (empty($invoice) === true)
+        {
+            $this->trace->info(TraceCode::PAYMENT_PAGE_INVOICE_STILL_EMPTY, ["payment_id" => $payment->getPublicId()]);
+            throw $error;
+        }
+
+        return $invoice;
     }
 }
