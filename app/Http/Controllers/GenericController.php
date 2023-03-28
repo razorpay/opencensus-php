@@ -15,9 +15,6 @@ use App\Generic;
 use App\Http\AppResponse;
 use App\Session\Entity as AppSession;
 
-use Razorpay\Api\Errors\ErrorCode;
-use Razorpay\Api\Errors\BadRequestError;
-
 class GenericController extends Controller
 {
     const WHITELISTED_HEADERS = [
@@ -91,19 +88,8 @@ class GenericController extends Controller
 
     const UNSUSPEND                  = 'unsuspend';
 
-    public function handleAny($mode, $path = null)
+    public function handleAny($mode, $path)
     {
-        if ((($mode !== 'live') and
-            ($mode !== 'test')) or
-            ($path === null))
-        {
-            throw new BadRequestError(
-                'Invalid parameters.',
-                ErrorCode::BAD_REQUEST_ERROR,
-                400
-            );
-        }
-
         // Epos App Deprecated. Blocking Signin for Epos App Users
         $mobileApp = \Request::header('X-Razorpay-App');
 
