@@ -42,7 +42,12 @@ trait BatchTestTrait
 
         $uploadedFile = $this->createUploadedFile($url);
 
-        $this->testData[$callee]['request']['files']['file'] = $uploadedFile;
+        // IRCTC input has nested data payload
+        if($name == 'irctc.txt'){
+            $this->testData[$callee]['request']['content']['data']['refund'] = $uploadedFile;
+        }else{
+            $this->testData[$callee]['request']['files']['file'] = $uploadedFile;
+        }
     }
 
     public function createUploadedFile(string $url, $fileName = 'file.xlsx', $mime = null): UploadedFile

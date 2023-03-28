@@ -1751,5 +1751,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_CARD_INVALID                                                  = 'The card data provided are invalid. Please check & try again.';
 
+    const BAD_REQUEST_INCORRECT_RESERVATION_OR_CANCELLATION_ID_FOR_REFUND           = 'Invalid request. The Reservation/Cancellation ID should be numeric entries';
+
 
 }

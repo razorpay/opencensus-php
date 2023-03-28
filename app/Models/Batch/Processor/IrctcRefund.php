@@ -25,6 +25,8 @@ class IrctcRefund extends Base
 
         $type = $entry[Batch\Header::REFUND_TYPE];
 
+        $this->validateEntry($entry);
+
         $processor = 'process' . studly_case($type) .'TypeRefunds';
 
         $refund = $this->$processor($entry, $payment);
@@ -192,5 +194,13 @@ class IrctcRefund extends Base
                                     [
                                         'channel'   => Config::get('slack.channels.ops_irctc'),
                                     ]);
+    }
+
+    // Check if the Merchant Reference and Cancellation ID are numeric
+    protected function validateEntry(array $entry)
+    {
+        if (!is_numeric($entry[Batch\Header::MERCHANT_REFERENCE]) || !is_numeric($entry[Batch\Header::CANCELLATION_ID])){
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCORRECT_RESERVATION_OR_CANCELLATION_ID_FOR_REFUND);
+        }
     }
 }
