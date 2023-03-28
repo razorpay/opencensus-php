@@ -7756,22 +7756,13 @@ trait Authorize
                 'rupay_recurring'                 => $rupay_recurring
             ];
 
-            $variant = $this->app->razorx->getTreatment($this->request->getTaskId(), Merchant\RazorxTreatment::ASYNC_TOKEN_MIGRATION, $this->mode);
-
-            $this->trace->info(TraceCode::ASYNC_TOKEN_MIGRATION_RAZORX_VARIANT, [
-                'payment_id'     => $payment->getId(),
-                'token'          => $token->getId(),
-                'merchant_id'    => $payment->getMerchantId(),
-                'razorx_variant' => $variant,
-            ]);
-
-            if ((strtolower($variant) === 'on') && ($payment['recurring'] === false)){
+            if ($payment['recurring'] === false){
 
                 $asyncTokenisationJobId = "paymentmigrate";
 
-                SavedCardTokenisationJob::dispatch($this->mode, $token->getId(), $asyncTokenisationJobId,  $payment->getId());
-
                 $core->updateTokenStatus($token->getId(), Token\Constants::INITIATED);
+
+                SavedCardTokenisationJob::dispatch($this->mode, $token->getId(), $asyncTokenisationJobId,  $payment->getId());
 
                 $this->trace->info(TraceCode::TRACE_TOKEN_DISPATCH_LOG, [
                     'tokenid'     =>  $token->getId(),

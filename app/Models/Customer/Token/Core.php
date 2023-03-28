@@ -886,7 +886,7 @@ class Core extends Base\Core
         $emandateConfig = [
             "emandate_configs" => $configs
         ];
-        
+
         $token->setNotes($emandateConfig);
     }
 
@@ -2914,7 +2914,7 @@ class Core extends Base\Core
             ($token->hasBeenAcknowledged() === false))
         {
             $this->trace->info(TraceCode::TRACE_TOKEN_MIGRATION_FAILURE, [
-                'method'                => $this->payment->isMethodCardOrEmi(),
+                'method'                => $token->getMethod(),
                 'hasBeenAcknowledged'   => $token->hasBeenAcknowledged(),
                 'token'      => $token->getId()
             ]);

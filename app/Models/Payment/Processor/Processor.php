@@ -442,9 +442,9 @@ class Processor
     protected $segment;
 
     protected $verifyRefundStatus;
-    
+
     protected $emandateDescError;
-    
+
     /**
      * Api Route instance
      *
@@ -3141,7 +3141,7 @@ class Processor
                 {
                     $variant = 'off';
                 }
-    
+
                 if($variant === 'on')
                 {
                     $this->validateEmandateTokenStatus($token, $merchant);
@@ -3166,30 +3166,30 @@ class Processor
     protected function validateEmandateTokenStatus(Token\Entity $token, Merchant\Entity $merchant)
     {
         $response = $this->fetchEmandateConfigs($token, $merchant);
-        
+
         $tokenStatus = $response[TokenConstants::EMANDATE_TOKEN_STATUS] ?? null;
-        
+
         $coolDownPeriod = $response[TokenConstants::COOLDOWN_PERIOD] ?? "";
-        
+
         if($tokenStatus !== null and $tokenStatus === TokenConstants::BLOCKED_TEMPORARILY)
         {
             $msg = "token_" . $token->getId() . " has been put on hold temporarily for creating recurring payments.".
                 "The next recurring payment can be created on the token after " . $coolDownPeriod;
-    
+
             throw new Exception\BadRequestValidationFailureException($msg, 'token');
         }
     }
-    
+
     protected function fetchEmandateConfigs(Token\Entity $token, Merchant\Entity $merchant)
     {
         try
         {
             $debitConfig = $this->fetchEmandateDcsConfigs($merchant->getId());
-    
+
             $tempErrorEnableFlag = $debitConfig[EmandateConstants::TEMPORARY_ERRORS_ENABLE_FLAG] ?? false;
-            
+
             $tokenNotes = $token->getNotes();
-    
+
             if ($tokenNotes !== null and isset($tokenNotes[TokenConstants::EMANDATE_CONFIGS]) === true)
             {
                 $emandateTokenStatus = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][TokenConstants::EMANDATE_TOKEN_STATUS] ?? null;
@@ -3197,9 +3197,9 @@ class Processor
                 $presentTime = Carbon::now('Asia/Kolkata')->getTimestamp();
         
                 $coolDowntime = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][TokenConstants::COOLDOWN_PERIOD] ?? $presentTime;
-        
+
                 $timeDifference = (int) $presentTime - $coolDowntime;
-                
+
                 if($tempErrorEnableFlag === true and ($emandateTokenStatus === TokenConstants::BLOCKED_TEMPORARILY)  and $timeDifference < 0)
                 {
                     $date = new DateTime("@$coolDowntime");
@@ -3212,11 +3212,11 @@ class Processor
                             TokenConstants::EMANDATE_TOKEN_STATUS     => TokenConstants::BLOCKED_TEMPORARILY
                         ];
                 }
-        
+
                 if($emandateTokenStatus === TokenConstants::BLOCKED_TEMPORARILY and $timeDifference >= 0)
                 {
                     $token->setNotes([]);
-            
+
                     $this->repo->save($token);
                 }
             }
@@ -3225,34 +3225,34 @@ class Processor
         {
             $this->trace->traceException($ex);
         }
-        
+
         return [];
     }
-    
+
     protected function fetchEmandateDcsConfigs(string $merchantId)
     {
         try
         {
             $dcsConfigService = new DcsConfigService();
-            
+
             $key = EmandateConstants::EMANDATE_MERCHANT_CONFIGURATIONS;
-            
+
             $fields = EmandateConstants::EMANDATE_CONFIG_FIELDS;
-            
+
             return $dcsConfigService->fetchConfiguration($key, $merchantId, $fields, $this->mode);
         }
         catch (\Exception $ex) {
-            
+
             $this->trace->traceException($ex);
         }
-        
+
         return [
             TokenConstants::COOLDOWN_PERIOD => 0,
             TokenConstants::RETRY_ATTEMPTS => 0,
             EmandateConstants::TEMPORARY_ERRORS_ENABLE_FLAG => false
         ];
     }
-    
+
 
     protected function validateTokenisedPayment(& $input)
     {
@@ -4992,7 +4992,7 @@ class Processor
         );
 
         $payment->setError($code, $desc, $internalCode);
-        
+
         if(($payment->isEmandate() === true or $payment->isNach() === true) and $this->emandateDescError !== null)
         {
             $payment->setEmandateErrorDesc($this->emandateDescError);
