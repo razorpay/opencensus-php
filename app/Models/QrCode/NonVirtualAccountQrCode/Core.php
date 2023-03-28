@@ -76,23 +76,8 @@ class Core extends QrCode\Core
             $this->repo->saveOrFail($qrCode);
         });
 
-        $this->generateQrCodeFileIfApplicable($qrCode);
 
         return $qrCode;
-    }
-
-    protected function generateQrCodeFileIfApplicable($qrCode)
-    {
-        $variant = $this->app['razorx']->getTreatment(
-            $qrCode->getMerchantId(),
-            RazorxTreatment::QR_CODE_GENERATE_IMAGE,
-            $this->mode
-        );
-
-        if (strtolower($variant) !== RazorxTreatment::RAZORX_VARIANT_ON)
-        {
-            $this->generateQrCodeFile($qrCode);
-        }
     }
 
     public function generateQrCodeFile($qrCode)
