@@ -91,7 +91,7 @@ class GenericController extends Controller
 
     const UNSUSPEND                  = 'unsuspend';
 
-    public function handleAny($mode, $path)
+    public function handleAny($mode, $path = null)
     {
         if ((($mode !== 'live') and
             ($mode !== 'test')) or
