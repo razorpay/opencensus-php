@@ -285,8 +285,16 @@ class Repository extends Base\Repository
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
+
+                if(!$this->isTestEnv())
+                {
+                    throw $ex;
+                }
             }
         }
+
+        if($this->isTestEnv() or $fromTerminalsService === false)
+        {
 
         $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
@@ -298,6 +306,8 @@ class Repository extends Base\Repository
         }
 
         return $query->findOrFailPublic($id);
+
+        }
     }
 
     public function getTerminalsWithNullEnabledWallets($count)
@@ -392,20 +402,6 @@ class Repository extends Base\Repository
 
                 $terminalEntityByTS = Terminal\Service::getEntityFromTerminalServiceResponse($response);
 
-                // Only saving and comparing the terminals which are present in the API service DB.
-                // In case of activated PayPal terminals it is present in both API service DB and TS service DB.
-                if(!$terminalEntityByTS->isTerminalOnlyOnTerminalsService()){
-
-                    $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
-
-                    $terminal = parent::find($id, $columns, $connectionType);
-
-                    if (Terminal\Service::compareTerminalEntity($terminal, $terminalEntityByTS) === false)
-                    {
-                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                    }
-                }
-
                 return $terminalEntityByTS;
             }
             catch (\Throwable $ex)
@@ -415,8 +411,16 @@ class Repository extends Base\Repository
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
+
+                if(!$this->isTestEnv())
+                {
+                    throw $ex;
+                }
             }
         }
+
+        if($this->isTestEnv())
+        {
 
         $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
@@ -434,6 +438,8 @@ class Repository extends Base\Repository
         }
 
         return parent::find($id, $columns, $connectionType);
+
+        }
     }
 
     public function findMany($ids, $columns = array('*'))
