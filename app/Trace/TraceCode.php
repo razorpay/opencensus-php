@@ -228,6 +228,11 @@ class TraceCode
     const LOGIN_BLOCKED_EPOS_APP                    = 'LOGIN_BLOCKED_EPOS_APP';
     const ROUTE_BLOCKED_EPOS_APP                    = 'ROUTE_BLOCKED_EPOS_APP';
 
+    const OPTIONS_ROUTE_ERROR_MODE_NULL             = 'OPTIONS_ROUTE_ERROR_MODE_NULL';
+    const OPTIONS_ROUTE_ERROR_MODE_ERROR            = 'OPTIONS_ROUTE_ERROR_MODE_ERROR';
+    const FETCH_ORG_DETAILS_ERROR                   = 'FETCH_ORG_DETAILS_ERROR';
+    const FETCH_USER_DETAILS_ERROR                  = 'FETCH_USER_DETAILS_ERROR';
+
     const GET_CONFIG_STORE_KEYS_FAILED              = 'GET_CONFIG_STORE_KEYS_FAILED';
 
     protected static $messages = array(

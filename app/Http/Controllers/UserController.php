@@ -66,7 +66,33 @@ class UserController extends Controller
 
         list($orgError, $org) = (new Admin\Service)->getOrg($domain);
 
+        if (empty($orgError) == false)
+        {
+            $this->trace->info(TraceCode::FETCH_ORG_DETAILS_ERROR, [
+                'error' => $orgError
+            ]);
+
+//            throw new BadRequestError(
+//                'Error in fetching org details',
+//                ErrorCode::BAD_REQUEST_ERROR,
+//                400
+//            );
+        }
+
         list($userError, $details) = (new User\Service)->getUserDetails();
+
+        if (empty($userError) == false)
+        {
+            $this->trace->info(TraceCode::FETCH_USER_DETAILS_ERROR, [
+                'error' => $userError
+            ]);
+
+//            throw new BadRequestError(
+//                'Error in fetching user details',
+//                ErrorCode::BAD_REQUEST_ERROR,
+//                400
+//            );
+        }
 
         $data = [
             'isAuthenticated'       => false,

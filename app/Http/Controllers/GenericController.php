@@ -15,6 +15,9 @@ use App\Generic;
 use App\Http\AppResponse;
 use App\Session\Entity as AppSession;
 
+use Razorpay\Api\Errors\ErrorCode;
+use Razorpay\Api\Errors\BadRequestError;
+
 class GenericController extends Controller
 {
     const WHITELISTED_HEADERS = [
@@ -88,8 +91,28 @@ class GenericController extends Controller
 
     const UNSUSPEND                  = 'unsuspend';
 
-    public function handleAny($mode, $path)
+    public function handleAny($mode, $path = null)
     {
+        $app = App::getFacadeRoot();
+
+        if ($mode === null)
+        {
+            $app['trace']->info(TraceCode::OPTIONS_ROUTE_ERROR_MODE_NULL, [
+                'mode' => $mode,
+                'path' => $path,
+            ]);
+        }
+
+        else if (((str_starts_with($mode, 'live') === false) and
+                (str_starts_with($mode, 'test') === false)) or
+                ($path === null))
+        {
+            $app['trace']->info(TraceCode::OPTIONS_ROUTE_ERROR_MODE_ERROR, [
+                'mode' => $mode,
+                'path' => $path,
+            ]);
+        }
+
         // Epos App Deprecated. Blocking Signin for Epos App Users
         $mobileApp = \Request::header('X-Razorpay-App');
 
