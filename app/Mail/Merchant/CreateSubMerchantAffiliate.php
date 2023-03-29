@@ -93,7 +93,6 @@ class CreateSubMerchantAffiliate extends Mailable
             'subMerchant'        => $this->subMerchant,
             'token'              => $this->token,
             'org'                => $this->org,
-            'activationDuration' => Detail::ACTIVATION_DURATION,
         ];
 
         $this->with($data);

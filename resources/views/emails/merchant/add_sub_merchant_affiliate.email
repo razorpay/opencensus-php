@@ -90,7 +90,7 @@
 
 <h3>Activation Timeline</h3>
 
-<p>As soon as the Activation Process is completed by you, depending on the business segment, we will take you live in the upcoming {{{ $activationDuration}}}.</p>
+<p>As soon as activation process is completed by you, we will review your KYC details. Post KYC verification, we will activate your account as soon as new business onboarding resumes.</p>
 
 @if($token)
 <u>Integration: Start accepting Payments</u>

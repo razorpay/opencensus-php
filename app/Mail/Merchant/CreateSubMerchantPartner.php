@@ -47,7 +47,6 @@ class CreateSubMerchantPartner extends Mailable
         $data = [
             'merchant'           => $this->aggregator,
             'subMerchant'        => $this->subMerchant,
-            'activationDuration' => Detail::ACTIVATION_DURATION,
         ];
 
         $this->with($data);
