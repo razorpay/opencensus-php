@@ -7,7 +7,6 @@ use RZP\Exception;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Feature\Constants as APIFeaturesConstants;
-use RZP\Services\Dcs\Features\Constants as DcsConstants;
 
 class Constants
 {
@@ -300,6 +299,12 @@ class Constants
             {
                 $apiFeatureNames[$dcsFeatureNameToAPIFeatureName[$featureName]] = $value;
             }
+            else
+            {
+                $dcsFeatureName = Utility::searchAndReturnDcsNameWithCorrespondingColonSeparator($dcsFeatureNameToAPIFeatureName, $featureName);
+
+                $apiFeatureNames[$dcsFeatureNameToAPIFeatureName[$dcsFeatureName]] = $value;
+            }
         }
         return $apiFeatureNames;
     }
@@ -331,12 +336,20 @@ class Constants
         return self::$apiFeatureNameToDCSFeatureName[$name];
     }
 
-    public static function apiFeatureNameFromDcsName($name): string
+    public static function apiFeatureNameFromDcsName($name, $dcsKey = ""): string
     {
         $dcsFeatureNameToAPIFeatureName = array_flip(self::$apiFeatureNameToDCSFeatureName);
-        if (key_exists($name, $dcsFeatureNameToAPIFeatureName) === false) {
+        if (key_exists($name, $dcsFeatureNameToAPIFeatureName) === false)
+        {
+            $dcsName = Utility::searchAndReturnDcsNameWithCorrespondingColonSeparator($dcsFeatureNameToAPIFeatureName,$name,$dcsKey);
+            if ((empty($dcsName) === false) and
+                (key_exists($dcsName, $dcsFeatureNameToAPIFeatureName) === true))
+            {
+                return $dcsFeatureNameToAPIFeatureName[$dcsName];
+            }
             $ex = new Exception\ServerErrorException(
                 'Dcs feature name missing in $dcsFeatureNameToAPIFeatureName please check with dcs team',
+
                 ErrorCode::SERVER_ERROR_DCS_SERVICE_FAILURE,
                 "missing dcs feature name in the map");
 
@@ -373,9 +386,11 @@ class Constants
         return false;
     }
 
-    public static function isDcsReadEnabledFeature($featureName, $isDcsName = false): bool
+    public static function isDcsReadEnabledFeature($featureName, $isDcsName = false, $dcsKey = ""): bool
     {
-        return (key_exists($featureName, self::dcsReadEnabledFeaturesByEntityType("", $isDcsName)) === true);
+        $dcsEnabledFeatures = self::dcsReadEnabledFeaturesByEntityType("", $isDcsName);
+        return (key_exists($featureName, $dcsEnabledFeatures) === true) or
+                (empty(Utility::searchAndReturnDcsNameWithCorrespondingColonSeparator($dcsEnabledFeatures, $featureName, $dcsKey)) === false);
     }
 
 }
