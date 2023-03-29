@@ -2300,6 +2300,13 @@ class PayoutServiceTest extends TestCase
 
         $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
+        $this->fixtures->on('live')->create('credits', [
+            'merchant_id'   => '10000000000000',
+            'value'         => 500 ,
+            'type'          => 'reward_fee',
+            'product'       => 'banking'
+        ]);
+
         $this->startTest();
 
         //$payout = $this->getLastEntity('payout', true, 'live');
@@ -2322,18 +2329,6 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals($payout['transaction_id'], $txn['id']);
         $this->assertNotNull($txn['balance_id']);
         $this->assertNotNull($txn['posted_at']);
-
-        //$feesSplit = $this->getEntities('fee_breakup', ['transaction_id' => $txnId], true, 'live');
-        //
-        //$expectedBreakup = [
-        //    'name'            => "payout",
-        //    'transaction_id'  => $txnId,
-        //    'pricing_rule_id' => "Bbg7cl6t6I3XA5",
-        //    'percentage'      => null,
-        //    'amount'          => 500,
-        //];
-        //
-        //$this->assertArraySelectiveEquals($expectedBreakup, $feesSplit['items'][1]);
 
         return $payout;
     }

@@ -467,6 +467,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CREDITS_REVERSE_FOR_QUEUED_PAYOUT                     = 'CREDITS_REVERSE_FOR_QUEUED_PAYOUT';
     const CREDITS_REVERSE_FOR_PAYOUT                            = 'CREDITS_REVERSE_FOR_PAYOUT';
     const CREDITS_CONSUMPTION_REQUEST                           = 'CREDITS_CONSUMPTION_REQUEST';
+    const UNUSED_CREDITS_AVAILABILITY_CHECK                     = 'UNUSED_CREDITS_AVAILABILITY_CHECK';
+    const UNUSED_CREDITS_AVAILABILITY_CHECK_EXCEPTION           = 'UNUSED_CREDITS_AVAILABILITY_CHECK_EXCEPTION';
+    const NO_UNUSED_CREDITS_LEFT                                = 'NO_UNUSED_CREDITS_LEFT';
     const CREDITS_AVAILABLE                                     = 'CREDITS_AVAILABLE';
     const CREDITS_TO_BE_REVERSED                                = 'CREDITS_TO_BE_REVERSED';
     const NO_CREDITS_AVAILABLE_WITH_MERCHANT                    = 'NO_CREDITS_AVAILABLE_WITH_MERCHANT';

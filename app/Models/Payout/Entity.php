@@ -163,6 +163,12 @@ class Entity extends Base\PublicEntity
     //transferred_at is the timestamp when payout request is sent to fts
     const TRANSFERRED_AT                        = 'transferred_at';
 
+    // Constant for passing extra details like credits and fund_account for PS payouts.
+    const EXTRA_INFO                   = 'extra_info';
+    const CREDITS_INFO                 = 'credits_info';
+    const FETCH_UNUSED_CREDITS_SUCCESS = 'fetch_unused_credits_success';
+    const UNUSED_CREDITS               = 'unused_credits';
+    const FUND_ACCOUNT_INFO            = 'fund_account_info';
 
     // These are used while creating merchant payouts.
     // Min amount refers to the minimum amount payout has to be

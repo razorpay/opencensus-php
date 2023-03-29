@@ -599,4 +599,63 @@ class Core extends Base\Core
 
         return $creditsConsumed;
     }
+
+    /**
+     * @param Merchant\Entity $merchant
+     * @param string $creditType
+     * @param string $product
+     * We will check if the merchant has credits available. Not credits deduction will be done at here.
+     */
+    public function fetchMerchantUnusedCredits(
+        Merchant\Entity $merchant,
+        string $creditType,
+        string $product): array
+    {
+        $this->trace->info(TraceCode::UNUSED_CREDITS_AVAILABILITY_CHECK,
+            [
+                'credit_type' => $creditType,
+                'product'     => $product,
+                'merchant_id' => $merchant->getId(),
+            ]);
+
+        try {
+
+            $credits = $this->repo->credits->getCreditsForMerchant($merchant->getId(), $product, $creditType);
+
+            $creditsAvailable = 0;
+
+            foreach ($credits as $credit)
+            {
+                if ($credit->isValid() === true)
+                {
+                    $unusedCredit = $credit->getValue() - $credit->getUsed();
+
+                    $creditsAvailable += $unusedCredit;
+                }
+            }
+
+            if ($creditsAvailable <= 0) {
+                $this->trace->info(TraceCode::NO_UNUSED_CREDITS_LEFT,
+                    [
+                        'credit_type' => $creditType,
+                        'product'     => $product,
+                    ]);
+
+                return [true, 0];
+            }
+
+            return [true, $creditsAvailable];
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(
+                TraceCode::UNUSED_CREDITS_AVAILABILITY_CHECK_EXCEPTION,
+                [
+                    'error'                => $ex->getMessage()
+                ]);
+        }
+
+        // Return 0 by default in case any exception occurred while processing.
+        return [false, 0];
+    }
 }

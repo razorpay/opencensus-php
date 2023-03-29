@@ -34,7 +34,10 @@ class Create extends Base
      * @param string $merchantId
      * @return array
      */
-    public function createPayoutViaMicroservice(array $input, string $merchantId, bool $isInternal = false)
+    public function createPayoutViaMicroservice(array $input,
+                                                string $merchantId,
+                                                bool $isInternal = false,
+                                                array $creditsInfo = [])
     {
         $data = $input;
 
@@ -65,7 +68,7 @@ class Create extends Base
             }
         }
 
-        $request = $this->createRequestBody($input, $merchantId);
+        $request = $this->createRequestBody($input, $merchantId, $creditsInfo);
 
         $headers = $this->getHeadersWithJwt();
 
@@ -149,7 +152,9 @@ class Create extends Base
      * @param string $merchantId
      * @return array
      */
-    public function createRequestBody(array $input, string $merchantId): array
+    public function createRequestBody(array $input,
+                                      string $merchantId,
+                                      array $creditsInfo = []): array
     {
         $fundAccountId = PublicEntity::stripDefaultSign($input[Payout\Entity::FUND_ACCOUNT_ID]);
 
@@ -189,6 +194,17 @@ class Create extends Base
         if (isset($input[Payout\Entity::ORIGIN]) === true)
         {
             $requestBody[Payout\Entity::ORIGIN] = $input[Payout\Entity::ORIGIN];
+        }
+
+        // Passing info like credits and fund_account for PS payouts to avoid back and forth calls to API.
+        if ((isset($creditsInfo[Payout\Entity::FETCH_UNUSED_CREDITS_SUCCESS]) === true) and
+            ($creditsInfo[Payout\Entity::FETCH_UNUSED_CREDITS_SUCCESS] === true))
+        {
+            $requestBody[Payout\Entity::EXTRA_INFO] = [
+                Payout\Entity::CREDITS_INFO => [
+                    Payout\Entity::AMOUNT => (int) $creditsInfo[Payout\Entity::UNUSED_CREDITS]
+                ]
+            ];
         }
 
         return $requestBody;

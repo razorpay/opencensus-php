@@ -28,6 +28,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Settings;
+use RZP\Constants\Product;
 use Razorpay\Trace\Logger;
 use RZP\Models\BankAccount;
 use RZP\Models\FundAccount;
@@ -3999,9 +4000,18 @@ class Base extends BaseCore
 
             if ($this->balance->getAccountType() === AccountType::SHARED)
             {
+                [$fetchUnusedCreditsSuccess, $unusedCredits] =  (new Credits\Transaction\Core)->fetchMerchantUnusedCredits(
+                                                                           $this->merchant,
+                                                                           CreditType::REWARD_FEE,
+                                                                           Product::BANKING);
+
                 $response = $this->payoutCreateServiceClient->createPayoutViaMicroservice($input,
                                                                                           $this->merchant->getId(),
-                                                                                          $this->isInternal);
+                                                                                          $this->isInternal,
+                                                                                          [
+                                                                                              Payout\Entity::FETCH_UNUSED_CREDITS_SUCCESS => $fetchUnusedCreditsSuccess,
+                                                                                              Payout\Entity::UNUSED_CREDITS => $unusedCredits
+                                                                                          ]);
 
                 $this->trace->info(
                     TraceCode::PAYOUT_CREATE_RESPONSE_FROM_MICROSERVICE,
