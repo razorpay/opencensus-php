@@ -442,7 +442,7 @@ class Base
             'beneficiary_country' => $ba->getBeneficiaryCountry() ?? '',
             'beneficiary_email'   => $beneEmail,
             'beneficiary_mobile'  => $beneMobile,
-            'accepted_currency'   => $merchant === null ? $merchant->getCurrency() : Currency::INR,
+            'accepted_currency'   => $merchant !== null ? $merchant->getCurrency() : Currency::INR,
             'extra_info'          => [
                 'via' => $via
             ],
