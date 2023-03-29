@@ -835,7 +835,7 @@ class Processor
 
             if (empty($input[Payment\Entity::SAVE]) === false)
             {
-                if ($iin->getNetworkCode() === Card\Network::RUPAY)
+                if ($iin->getNetworkCode() === Card\Network::RUPAY || $iin->getNetworkCode() === Card\Network::DICL)
                 {
                     return false;
                 }
@@ -3193,9 +3193,9 @@ class Processor
             if ($tokenNotes !== null and isset($tokenNotes[TokenConstants::EMANDATE_CONFIGS]) === true)
             {
                 $emandateTokenStatus = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][TokenConstants::EMANDATE_TOKEN_STATUS] ?? null;
-        
+
                 $presentTime = Carbon::now('Asia/Kolkata')->getTimestamp();
-        
+
                 $coolDowntime = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][TokenConstants::COOLDOWN_PERIOD] ?? $presentTime;
 
                 $timeDifference = (int) $presentTime - $coolDowntime;
@@ -3203,9 +3203,9 @@ class Processor
                 if($tempErrorEnableFlag === true and ($emandateTokenStatus === TokenConstants::BLOCKED_TEMPORARILY)  and $timeDifference < 0)
                 {
                     $date = new DateTime("@$coolDowntime");
-    
+
                     $date->setTimeZone(new DateTimeZone('Asia/Kolkata'));
-                    
+
                     return
                         [
                             TokenConstants::COOLDOWN_PERIOD           => $date->format('Y-m-d H:i:s'),
