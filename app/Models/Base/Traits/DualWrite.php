@@ -214,7 +214,25 @@ trait DualWrite
      */
     protected function incrementOrDecrement($column, $amount, $extra, $method)
     {
+        $repo = $this->initialiseRepo();
+
+        $this->exists = $repo->existsInTable($this->getTable(), $this->getId());
+
         $entityExists = $this->exists;
+
+        if ($this->exists === false)
+        {
+            $originalTimeStampsValue          = $this->timestamps;
+            $originalGenerateIdOnCreateValue  = $this->generateIdOnCreate;
+
+            $this->timestamps         = false;
+            $this->generateIdOnCreate = false;
+
+            parent::saveOrFail();
+
+            $this->timestamps         = $originalTimeStampsValue;
+            $this->generateIdOnCreate = $originalGenerateIdOnCreateValue;
+        }
 
         parent::incrementOrDecrement($column, $amount, $extra, $method);
 

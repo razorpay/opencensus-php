@@ -2416,23 +2416,14 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function reload()
     {
-        $archivalFallbackEnvKey = 'ENABLE_QUERY_FALLBACK_ON_ARCHIVED_PAYMENT';
+        // Not reloading external payments. It is already handled in ExternalEntity trait
+        $payment = (new Repository)->findOrFailArchived($this->{$this->primaryKey});
 
-        $archivalFallbackEnvValue = getenv($archivalFallbackEnvKey);
+        $this->attributes = $payment->attributes;
 
-        if ($archivalFallbackEnvValue == true)
-        {
-            // Not reloading external payments. It is already handled in ExternalEntity trait
-            $payment = (new Repository)->findOrFailArchived($this->{$this->primaryKey});
+        $this->original = $payment->original;
 
-            $this->attributes = $payment->attributes;
-
-            $this->original = $payment->original;
-
-            return $this;
-        }
-
-        return parent::reload();
+        return $this;
     }
 
     public function isPartiallyRefunded()
