@@ -331,13 +331,6 @@ class Repository extends Base\Repository
 
     public function findOrFail($id, $columns = array('*'), string $connectionType = null)
     {
-        $metricData = [
-            'route' => $this->fetchRouteName(),
-            "function" => __FUNCTION__
-        ];
-
-        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
-
         $model = $this->find($id, $columns, $connectionType);
 
         if ( ! is_null($model))
@@ -355,12 +348,6 @@ class Repository extends Base\Repository
 
     public function findOrFailPublic($id, $columns = ['*'], string $connectionType = null)
     {
-        $metricData = [
-            'route' => $this->fetchRouteName(),
-            "function" => __FUNCTION__
-        ];
-
-        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $model = $this->find($id, $columns, $connectionType);
 
@@ -937,16 +924,23 @@ class Repository extends Base\Repository
 
     public function getByParams(array $params, bool $fetchWhereSubmerchant = false)
     {
+
         $metricData = [
             'route' => $this->fetchRouteName(),
             "function" => __FUNCTION__
         ];
 
-        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
+        if($this->isTestEnv())
+        {
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query = $this->buildFetchByParamsQuery($params);
 
         $terminals = $query->get();
+
+            return $terminals;
+        }
 
         try
         {
@@ -977,11 +971,6 @@ class Repository extends Base\Repository
 
                 $tsTerminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                if (Terminal\Service::compareTerminalCollection($terminals, $tsTerminals) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                }
-
                 return $tsTerminals;
             }
         }
@@ -992,9 +981,13 @@ class Repository extends Base\Repository
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
+
+            if(!$this->isTestEnv())
+            {
+                throw $ex;
+            }
         }
 
-        return $terminals;
     }
 
     public function getNonFailedNonDeactivatedByParams(array $params, $proxyTs = true)
@@ -1299,13 +1292,6 @@ class Repository extends Base\Repository
         //
 
         $newQuery = clone $query;
-
-        $metricData = [
-            'route' => $this->fetchRouteName(),
-            "function" => __FUNCTION__
-        ];
-
-        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $query->whereIn(Entity::MERCHANT_ID, $merchantIds);
 
@@ -1845,16 +1831,24 @@ class Repository extends Base\Repository
 
     public function getByTerminalIds(array $ids, bool $proxy = true)
     {
+
         $metricData = [
             'route' => $this->fetchRouteName(),
             "function" => __FUNCTION__
         ];
 
-        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
+        if($this->isTestEnv())
+        {
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $apiTerminals = $this->newQuery()
             ->whereIn(Entity::ID, $ids)
             ->get();
+
+            return $apiTerminals;
+
+        }
 
         if (($this->app->runningUnitTests() === false) and ($proxy === true) and Environment::isEnvironmentQA($this->app['env']) === false)
         {
@@ -1877,11 +1871,6 @@ class Repository extends Base\Repository
 
                 $terminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                if (Terminal\Service::compareTerminalCollection($apiTerminals, $terminals) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                }
-
                 return $terminals;
             }
             catch (\Throwable $ex)
@@ -1890,10 +1879,14 @@ class Repository extends Base\Repository
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
+
+                if(!$this->isTestEnv())
+                {
+                    throw $ex;
+                }
             }
         }
 
-        return $apiTerminals;
     }
 
     public function mockGetByTerminalIds(array $ids)
@@ -2272,17 +2265,25 @@ class Repository extends Base\Repository
 
     public function findManyEnabledByIds($ids)
     {
+
         $metricData = [
             'route' => $this->fetchRouteName(),
             "function" => __FUNCTION__
         ];
 
-        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
+        if($this->isTestEnv())
+        {
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $apiTerminals = $this->newQuery()
                     ->whereIn(Entity::ID, $ids)
                     ->enabled()
                     ->get();
+
+            return $apiTerminals;
+
+        }
 
         if ($this->app->runningUnitTests() === false and Environment::isEnvironmentQA($this->app['env']) === false)
         {
@@ -2306,10 +2307,6 @@ class Repository extends Base\Repository
 
                 $terminals = Terminal\Service::getEntityCollectionFromTerminalServiceResponse($response);
 
-                if (Terminal\Service::compareTerminalCollection($apiTerminals, $terminals) === false)
-                {
-                    $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-                }
                 return $terminals;
             }
             catch (\Throwable $ex)
@@ -2318,10 +2315,14 @@ class Repository extends Base\Repository
                 $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
 
                 $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
+
+                if(!$this->isTestEnv())
+                {
+                    throw $ex;
+                }
             }
         }
 
-        return $apiTerminals;
     }
 
     public function fetchForSyncToTerminalsService(array $input)
