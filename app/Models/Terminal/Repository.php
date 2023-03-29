@@ -727,13 +727,20 @@ class Repository extends Base\Repository
             "function" => __FUNCTION__
         ];
 
-        $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
+        if($this->isTestEnv())
+        {
+
+            $this->trace->count(Terminal\Metric::TERMINAL_REPO_READ, $metricData);
 
         $terminal =  $this->newQuery()
             ->where(Entity::GATEWAY_MERCHANT_ID, '=', $gatewayMerchantId)
             ->where(Entity::GATEWAY, '=', $gateway)
             ->where(Entity::STATUS, '=', Terminal\Status::ACTIVATED)
             ->first();
+
+            return $terminal;
+
+        }
 
         try
         {
@@ -763,12 +770,7 @@ class Repository extends Base\Repository
                 {
                     $terminal2 = Terminal\Service::getEntityFromTerminalServiceResponse($response[0]);
 
-                    if (Terminal\Service::compareTerminalEntity($terminal, $terminal2) === false)
-                    {
-                        $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_TERMINAL_MISMATCH_FUNCTION, $data);
-
                         return $terminal2;
-                    }
                 }
             }
         }
@@ -779,9 +781,13 @@ class Repository extends Base\Repository
             $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINALS_SERVICE_PROXY_CALL_ERROR, $data);
 
             $this->trace->count(Terminal\Metric::TERMINAL_PROXY_CALL_ERROR, $metricData);
+
+            if(!$this->isTestEnv())
+            {
+                throw $ex;
+            }
         }
 
-        return $terminal;
     }
 
     public function findTerminalByGatewayMerchantIdAndGatewayTerminalId(string $gatewayMerchantId, string $gatewayTerminalId, string $gateway)
@@ -2610,4 +2616,5 @@ class Repository extends Base\Repository
             return false;
         }
     }
+
 }
