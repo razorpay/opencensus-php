@@ -349,6 +349,7 @@ class Gateway
         self::WALLET_PAYUMONEY,
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
+        self::WALLET_BAJAJ,
         self::SHARP,
     ];
 
@@ -4772,7 +4773,9 @@ class Gateway
 
     public static function shouldSkipDebit($payment)
     {
-        $gateways = [];
+        $gateways = [
+            Gateway::WALLET_BAJAJ,
+        ];
 
         $gateway = $payment[Payment\Entity::GATEWAY];
 
