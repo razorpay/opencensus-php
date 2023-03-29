@@ -3492,6 +3492,15 @@ class MerchantController extends Controller
         return ApiResponse::json([]);
     }
 
+    public function updateShopify1ccCredentials($merchantId)
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\OneClickCheckout\AuthConfig\Service())->updateShopify1ccCredentials($input);
+
+        return ApiResponse::json($response, 201);
+    }
+
     public function update1ccConfig()
     {
         $input = Request::all();

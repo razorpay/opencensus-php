@@ -59,6 +59,11 @@ class Constants
     // shopify auth keys
     const STOREFRONT_ACCESS_TOKEN           = 'storefront_access_token';
     const SHOP_ID                           = 'shop_id';
+    const ACCESS_TOKEN                      = 'access_token';
+    const CLIENT_SECRET                     = 'client_secret';
+    const CLIENT_ID                         = 'client_id';
+    const DELEGATE_ACCESS_TOKEN             = 'delegate_access_token';
+    const ADMIN_ACCESS_TOKEN                = 'admin_access_token';
 
     // shopify api types
     const STOREFRONT                        = 'storefront';
@@ -88,12 +93,14 @@ class Constants
         self::OAUTH_TOKEN,
         self::STOREFRONT_ACCESS_TOKEN,
         self::SHOP_ID,
+        self::DELEGATE_ACCESS_TOKEN,
     ];
 
     const SHOPIFY_AUTH_ENCRYPT = [
         self::API_SECRET,
         self::STOREFRONT_ACCESS_TOKEN,
         self::OAUTH_TOKEN,
+        self::DELEGATE_ACCESS_TOKEN,
     ];
 
     const WOOCOMMERCE_AUTH = [

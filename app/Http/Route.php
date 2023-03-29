@@ -4163,6 +4163,7 @@ class Route
         '1cc_process_webhooks'                      => ['post',       '1cc/process_webhooks/{platform}',                                   'OneClickCheckoutController@processWebhook'              ],
         'update_shopify_1cc_config'               => ['post',         'merchant/1cc/shopify/config',                           'MerchantController@updateShopify1ccConfig'                   ],
         '1cc_fetch_analytics'                       => ['post',       '1cc/analytics/shopify',                                 'OneClickCheckoutController@getOrderAnalytics'                   ],
+        'update_shopify_1cc_credentials'            => ['post',       '1cc/merchants/{merchant_id}/shopify/credentials',       'MerchantController@updateShopify1ccCredentials'                 ],
         '1cc_address_ingestion_config_get'          => ['get',        '1cc/merchant/address_ingestion/config',    'MerchantController@get1ccAddressIngestionConfig' ],
         '1cc_address_ingestion_addresses_post'      => ['post',       '1cc/merchant/address_ingestion/addresses', 'MerchantController@push1ccAddresses' ],
 
@@ -4863,6 +4864,7 @@ class Route
     // If a route needs access from the Dashboard
     // Put it in the Admin Array instead
     public static $internal = [
+        'update_shopify_1cc_credentials',
         'refunds_reversal_create',
         'adj_transaction_create',
         'merchant_entities_info',
@@ -15277,6 +15279,7 @@ class Route
         ],
         'magic_checkout_service' => [
             'internal_1cc_configs_get',
+            'update_shopify_1cc_credentials',
         ],
         'rto_prediction_service_api_web' => [
             'internal_1cc_order_review',
