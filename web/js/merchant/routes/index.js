@@ -194,6 +194,9 @@ const PlanNew = lazy(() =>
 const ActivationContainer = lazy(() =>
   import(/* webpackChunkName: "MerchantActivation" */ 'merchant/containers/Activation'),
 );
+const EasyOnboardingWrapper = lazy(() =>
+  import(/* webpackChunkName: "MerchantActivation" */ 'merchant/components/EasyOnboardingWrapper'),
+);
 const SubmerchantActivationContainer = lazy(() =>
   import(
     /* webpackChunkName: "SubMerchantActivation" */ 'merchant/views/PartnerDashboard/SubMerchant/KYC/submerchantContainer'
@@ -496,26 +499,13 @@ const entityDetailsMap = {
  * - '/paymentlinks/new': {component: PaymentLinkCreate, featureEnabled: "randomFeature", featureEnabled: "randomFeature"}
  * */
 
-const routeEasyOnboarding = () => {
-  window.open(`${window.EASY_ONBOARDING_URL}/onboarding/l2`, '_self', 'noopener');
-  return null;
-};
-
-const isFromEasyL1 =
-  window.rzp_user?.experiments?.easy_onboarding?.result === 'on' &&
-  window.rzp_user.user?.signup_campaign === 'easy_onboarding' &&
-  (window.rzp_user?.activation_form_milestone === 'L1' ||
-    !window.rzp_user?.activation_form_milestone);
-
-// check if the request is came from x-dashboard
-const SOURCE_RAZORPAY_X = 'x';
-const urlSearchParams = new URLSearchParams(window.location.search);
-const queryParams = Object.fromEntries(urlSearchParams.entries());
-const isSourceRX = !!(queryParams?.merchant === SOURCE_RAZORPAY_X);
-
 const entityModalsMap = {
   '/activation': {
-    component: isFromEasyL1 && !isSourceRX ? routeEasyOnboarding : ActivationContainer,
+    component: () => (
+      <EasyOnboardingWrapper>
+        <ActivationContainer />
+      </EasyOnboardingWrapper>
+    ),
     additionalCondition: (user) => user.isAllowedEdit('activation'),
   },
   '/offers/new': {
@@ -647,11 +637,19 @@ const fullPageViewsMap = {
       user.isAllowedEdit('subscription_buttons') && user.isSubscriptionButtonEnabled,
   },
   '/onboarding/steps': {
-    component: isFromEasyL1 && !isSourceRX ? routeEasyOnboarding : ActivationSteps,
+    component: () => (
+      <EasyOnboardingWrapper>
+        <ActivationSteps />
+      </EasyOnboardingWrapper>
+    ),
     additionalCondition: (user) => user.isOnboardingV2Enabled,
   },
   '/onboarding/form': {
-    component: isFromEasyL1 && !isSourceRX ? routeEasyOnboarding : ActivationForm,
+    component: () => (
+      <EasyOnboardingWrapper>
+        <ActivationForm />
+      </EasyOnboardingWrapper>
+    ),
     additionalCondition: (user) => user.isOnboardingV2Enabled,
   },
   '/onboarding/api-keys': {
@@ -662,7 +660,11 @@ const fullPageViewsMap = {
         ((user.isProductLedOnboardingRZP || user.isApiKeysRevampEnabled) && user.activated)),
   },
   '/kyc': {
-    component: isFromEasyL1 && !isSourceRX ? routeEasyOnboarding : ActivationFullViewContainer,
+    component: () => (
+      <EasyOnboardingWrapper>
+        <ActivationFullViewContainer />
+      </EasyOnboardingWrapper>
+    ),
     additionalCondition: (user) => user.isActivationFormFullView,
   },
   '/app-store/:partner': {

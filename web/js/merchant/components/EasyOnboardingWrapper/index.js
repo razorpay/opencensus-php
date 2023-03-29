@@ -1,0 +1,78 @@
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { fetchModalConfigDetails } from 'merchant/reducers/ModalConfigApi';
+
+const EasyOnboardingWrapper = (props) => {
+  const { user, children } = props;
+  const [isRoutingToEasy, setIsRoutingToEasy] = useState(true);
+
+  const isEasyMerchant =
+    user?.experiments?.easy_onboarding?.result === 'on' &&
+    user?.user?.signup_campaign === 'easy_onboarding';
+  const isEasyL2InComplete =
+    isEasyMerchant &&
+    (user?.activation_form_milestone === 'L1' || !user?.activation_form_milestone);
+
+  const SOURCE_RAZORPAY_X = 'x';
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  const queryParams = Object.fromEntries(urlSearchParams.entries());
+  const isSourceRX = !!(queryParams?.merchant === SOURCE_RAZORPAY_X);
+
+  const getShouldRouteToEasy = async () => {
+    if (isSourceRX) {
+      return false;
+    }
+
+    if (user.isFtuxEnabled && isEasyMerchant) {
+      const { isTransacted, activation_status } = user;
+      if (isEasyL2InComplete) {
+        return true;
+      }
+      if (activation_status === 'needs_clarification' && !props.isNcEligibile) {
+        return false;
+      }
+      if (activation_status !== 'activated' && activation_status !== 'activated_mcc_pending') {
+        return true;
+      }
+      if (isTransacted === false) {
+        return true;
+      }
+      const res = await fetchModalConfigDetails('onboarding');
+      const showFtuxFinalScreen = res?.data?.show_ftux_final_screen;
+      return !!showFtuxFinalScreen;
+    }
+
+    return isEasyL2InComplete;
+  };
+
+  const routeToEasyOnboarding = async () => {
+    const shouldRouteToEasy = await getShouldRouteToEasy();
+    if (shouldRouteToEasy) {
+      if (user.isFtuxEnabled) {
+        window.open(`${window.EASY_ONBOARDING_URL}/onboarding/overview`, '_self', 'noopener');
+      } else {
+        window.open(`${window.EASY_ONBOARDING_URL}/onboarding`, '_self', 'noopener');
+      }
+    } else {
+      setIsRoutingToEasy(false);
+    }
+  };
+
+  useEffect(() => {
+    routeToEasyOnboarding();
+  }, []);
+
+  if (isRoutingToEasy && !isSourceRX) {
+    return null;
+  }
+
+  return <>{children}</>;
+};
+
+export default connect(
+  (state) => ({
+    user: state.session.user,
+    isNcEligibile: state.home.isNcEligibile,
+  }),
+  null,
+)(EasyOnboardingWrapper);
