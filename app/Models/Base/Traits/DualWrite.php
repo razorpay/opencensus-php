@@ -4,6 +4,7 @@ namespace RZP\Models\Base\Traits;
 
 Use App;
 
+use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Metric;
 Use RZP\Models\Base\Entity;
@@ -225,8 +226,11 @@ trait DualWrite
             $originalTimeStampsValue          = $this->timestamps;
             $originalGenerateIdOnCreateValue  = $this->generateIdOnCreate;
 
+            // on reinsert to DB, created_at should remain as the original timestamp and updated_at as the current timestamp
             $this->timestamps         = false;
             $this->generateIdOnCreate = false;
+
+            $this->{Entity::UPDATED_AT} = Carbon::now()->getTimestamp();
 
             parent::saveOrFail();
 

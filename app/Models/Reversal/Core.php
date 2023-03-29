@@ -186,6 +186,10 @@ class Core extends Base\Core
                         $sourceOrderId = $transfer->getSourceId();
 
                         $sourcePayment = $this->repo->payment->getCapturedPaymentForOrder($sourceOrderId);
+
+                        // Doing findOrFail explicitly to identify archived payment case and handle save accordingly
+                        // Else save would not happen if entity is fetched from TiDB
+                        $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
                     }
 
                     if ($reversal !== null && $sourcePayment !== null && $sourcePayment->isExternal())

@@ -38,6 +38,8 @@ trait Reversal
                                 ->payment
                                 ->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
 
+        $transferPayment = $this->repo->payment->findOrFail($transferPayment->getId());
+
         //
         // If amount is not sent in input,
         // reverse the entire transfer amount pending

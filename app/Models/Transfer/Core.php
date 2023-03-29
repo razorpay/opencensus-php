@@ -416,6 +416,8 @@ class Core extends Base\Core
                             $transfer->getId(),
                             $transfer->getToId());
 
+        $payment = $this->repo->payment->findOrFail($payment->getId());
+
         $payment->setOnHold($transferOnHold);
 
         $payment->setOnHoldUntil($transferOnHoldUntil);

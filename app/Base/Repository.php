@@ -6,7 +6,10 @@ use DB;
 use App;
 use Config;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Query\Builder;
+
 use RZP\Models;
 use RZP\Exception;
 use RZP\Jobs\EsSync;
@@ -23,6 +26,7 @@ use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicEntity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Base\Entity as BaseEntity;
 use RZP\Base\Database\ConnectionHeartbeatLagChecker;
 
 class Repository extends \Razorpay\Spine\Repository
@@ -254,16 +258,17 @@ class Repository extends \Razorpay\Spine\Repository
     {
         $reInsertArchivedEntity = false;
 
-        $originalTimeStampsValue          = $entity->timestamps;
-        $originalGenerateIdOnCreateValue  = $entity->generateIdOnCreate;
+        $originalTimeStampsValue = $entity->timestamps;
 
         if ((method_exists($entity, 'isArchived') === true) and
             ($entity->isArchived() === true))
         {
             $reInsertArchivedEntity = true;
 
-            $entity->timestamps         = false;
-            $entity->generateIdOnCreate = false;
+            // on reinsert to DB, created_at should remain as the original timestamp and updated_at as the current timestamp
+            $entity->timestamps = false;
+
+            $entity->{BaseEntity::UPDATED_AT} = Carbon::now()->getTimestamp();
         }
 
         $this->saveOrFailImplementation($entity, $options, true);
@@ -272,8 +277,7 @@ class Repository extends \Razorpay\Spine\Repository
         {
             $entity->setArchived(false);
 
-            $entity->timestamps         = $originalTimeStampsValue;
-            $entity->generateIdOnCreate = $originalGenerateIdOnCreateValue;
+            $entity->timestamps = $originalTimeStampsValue;
         }
     }
 
