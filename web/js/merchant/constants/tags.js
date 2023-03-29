@@ -61,4 +61,5 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   HolidayList: 'i18_hide_holiday_list',
   SettlementLink: 'i18_hide_settlement_link',
   SettlementGuide: 'i18_hide_settlement_guide',
+  DowntimePaymentEvents: 'i18_hide_downtime_payment_events',
 };

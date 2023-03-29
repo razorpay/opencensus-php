@@ -104,9 +104,16 @@ class webhookForm extends Component {
               if (!(eventGroupKey === 'order' || eventGroupKey === 'payment')) {
                 delete events[eventGroupKey];
               }
+              if (
+                eventGroupKey === 'payment' &&
+                this.props.userData.findTag(
+                  HIDDEN_INTERNATIONAL_FEATURES_TAGS.DowntimePaymentEvents,
+                )
+              ) {
+                this.removePaymentDowntimeEvents(events);
+              }
             });
           }
-
           this.setState(
             {
               groupedWebhooks: events,
@@ -128,6 +135,13 @@ class webhookForm extends Component {
         });
       });
   }
+
+  removePaymentDowntimeEvents = (events) => {
+    if (events?.payment && Array.isArray(events.payment) && events.payment.length > 0) {
+      const paymentEvents = events.payment.filter((event) => !event.includes('downtime'));
+      events.payment = paymentEvents;
+    }
+  };
 
   initializeEventValues = (clearAll) => {
     const { webhook } = this.props;
