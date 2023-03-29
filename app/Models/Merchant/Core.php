@@ -4105,6 +4105,7 @@ class Core extends Base\Core
             'name'         => $partner->getName(),
             'email'        => $partner->getEmail(),
             'partner_type' => $partner->getPartnerType(),
+            'country_code' => $partner->getCountry(),
         ];
 
         $email = new PartnerOnBoarded($data);

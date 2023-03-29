@@ -3,6 +3,7 @@
 namespace RZP\Mail\Base;
 
 use RZP\Models\Merchant\Preferences;
+use RZP\Models\Merchant\Constants as MERCHANT_CONSTANTS;
 
 class Constants
 {
@@ -198,6 +199,56 @@ class Constants
     const CURLEC_HEADERS = [
         self::NOREPLY                 => 'Team Curlec',
         self::SUPPORT                 => 'Team Curlec',
+    ];
+
+    const HEADERS_GLOBAL = [
+      'MY' => [
+          self::PARTNER_COMMISSIONS => 'Curlec Partnerships',
+          self::PARTNER_ON_BOARDING => 'Curlec Partner Program'
+      ],
+      'IN' => [
+          self::PARTNER_COMMISSIONS => 'Razorpay Partnerships',
+          self::PARTNER_ON_BOARDING => 'Razorpay Partner Program'
+      ]
+    ];
+
+    const MAIL_ADDRESSES_GLOBAL = [
+        'MY' => [
+            self::PARTNER_COMMISSIONS => 'success@curlec.com',
+            self::PARTNER_ON_BOARDING => 'success@curlec.com',
+            self::PARTNER_ON_BOARDING_REPLY => 'success@curlec.com'
+        ],
+        'IN' => [
+            self::PARTNER_COMMISSIONS => 'partners-commissions@razorpay.com',
+            self::PARTNER_ON_BOARDING => 'partnercommunication@razorpay.com',
+            self::PARTNER_ON_BOARDING_REPLY => 'kzgpFWFVZU@razorpay.com',
+        ]
+    ];
+
+    const PARTNER_ONBOARDER_EMAIL_TEMPLATE_MAP = [
+        'MY' => [
+            MERCHANT_CONSTANTS::AGGREGATOR => 'emails.mjml.merchant.partner.onboarded.my_aggregator',
+            MERCHANT_CONSTANTS::PURE_PLATFORM => 'emails.mjml.merchant.partner.onboarded.my_pure_platform',
+            MERCHANT_CONSTANTS::RESELLER => 'emails.mjml.merchant.partner.onboarded.my_reseller'
+        ],
+        'IN' => [
+            MERCHANT_CONSTANTS::AGGREGATOR => 'emails.mjml.merchant.partner.onboarded.aggregator',
+            MERCHANT_CONSTANTS::PURE_PLATFORM => 'emails.mjml.merchant.partner.onboarded.pure_platform',
+            MERCHANT_CONSTANTS::RESELLER => 'emails.mjml.merchant.partner.onboarded.reseller'
+        ]
+    ];
+
+    const PARTNER_ONBOARDED_SUBJECT_MAP = [
+        'MY' => [
+            MERCHANT_CONSTANTS::PURE_PLATFORM => 'You’re just a step away from becoming a Curlec Partner',
+            MERCHANT_CONSTANTS::RESELLER => 'Welcome to Curlec Partner Program',
+            MERCHANT_CONSTANTS::AGGREGATOR => 'Welcome to Curlec Partner Program',
+        ],
+        'IN' => [
+            MERCHANT_CONSTANTS::PURE_PLATFORM => 'You’re just a step away from becoming a Razorpay Partner',
+            MERCHANT_CONSTANTS::RESELLER => 'Welcome to Razorpay Partner Program',
+            MERCHANT_CONSTANTS::AGGREGATOR => 'Welcome to Razorpay Partner Program',
+        ]
     ];
 
     const DEFAULT_HEADERS = self::HEADERS;

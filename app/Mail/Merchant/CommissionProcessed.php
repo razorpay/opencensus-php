@@ -10,12 +10,15 @@ use RZP\Constants\MailTags;
 class CommissionProcessed extends Mailable
 {
     protected $data;
+    protected $countryCode;
 
     public function __construct(array $data)
     {
         parent::__construct();
 
         $this->data = $data;
+
+        $this->countryCode = $data['country_code'];
     }
 
     protected function addRecipients()
@@ -71,7 +74,14 @@ class CommissionProcessed extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.mjml.merchant.partner.commission_invoice.commission_processed');
+        if ($this->countryCode == 'MY')
+        {
+            $this->view('emails.mjml.merchant.partner.commission_invoice.my_commission_processed');
+        }
+        else
+        {
+            $this->view('emails.mjml.merchant.partner.commission_invoice.commission_processed');
+        }
 
         return $this;
     }

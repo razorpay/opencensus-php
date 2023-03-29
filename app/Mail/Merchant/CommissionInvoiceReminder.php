@@ -13,6 +13,7 @@ use RZP\Models\Partner\Commission;
 class CommissionInvoiceReminder extends Mailable
 {
     protected $data;
+    protected $countryCode;
 
     public function __construct(array $data)
     {
@@ -23,7 +24,7 @@ class CommissionInvoiceReminder extends Mailable
 
     protected function addSender()
     {
-        $this->from(Constants::MAIL_ADDRESSES[Constants::PARTNER_COMMISSIONS], Constants::HEADERS[Constants::PARTNER_COMMISSIONS]);
+        $this->from(Constants::MAIL_ADDRESSES_GLOBAL[$this->countryCode][Constants::PARTNER_COMMISSIONS], Constants::HEADERS_GLOBAL[$this->countryCode][Constants::PARTNER_COMMISSIONS]);
 
         return $this;
     }

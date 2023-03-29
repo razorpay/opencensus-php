@@ -12,18 +12,20 @@ use RZP\Models\Merchant;
 class PartnerOnBoarded extends Mailable
 {
     protected $partner;
+    protected $countryCode;
 
     public function __construct(array $partner)
     {
         parent::__construct();
 
         $this->partner = $partner;
+        $this->countryCode = $this->partner[Merchant\Entity::COUNTRY_CODE];
     }
 
     protected function addSender()
     {
-        $email  = Constants::MAIL_ADDRESSES[Constants::PARTNER_ON_BOARDING];
-        $header = Constants::HEADERS[Constants::PARTNER_ON_BOARDING];
+        $email = Constants::MAIL_ADDRESSES_GLOBAL[$this->countryCode][Constants::PARTNER_ON_BOARDING];
+        $header = Constants::HEADERS_GLOBAL[$this->countryCode][Constants::PARTNER_ON_BOARDING];
 
         $this->from($email, $header);
 
@@ -32,7 +34,7 @@ class PartnerOnBoarded extends Mailable
 
     protected function addReplyTo()
     {
-        $email = Constants::MAIL_ADDRESSES[Constants::PARTNER_ON_BOARDING_REPLY];
+        $email = Constants::MAIL_ADDRESSES_GLOBAL[$this->countryCode][Constants::PARTNER_ON_BOARDING_REPLY];
 
         $this->replyTo($email);
 
@@ -53,14 +55,7 @@ class PartnerOnBoarded extends Mailable
     {
         $partnerType = $this->partner[Merchant\Entity::PARTNER_TYPE];
 
-        if ($partnerType === Merchant\Constants::PURE_PLATFORM)
-        {
-            $this->subject('You’re just a step away from becoming a Razorpay Partner');
-        }
-        else
-        {
-            $this->subject('Welcome to Razorpay Partner Program');
-        }
+        $this->subject(Constants::PARTNER_ONBOARDED_SUBJECT_MAP[$this->countryCode][$partnerType]);
 
         return $this;
     }
@@ -92,19 +87,9 @@ class PartnerOnBoarded extends Mailable
     protected function addHtmlView()
     {
         $partnerType = $this->partner[Merchant\Entity::PARTNER_TYPE];
+        $emailTemplate = Constants::PARTNER_ONBOARDER_EMAIL_TEMPLATE_MAP[$this->countryCode][$partnerType];
 
-        if ($partnerType === Merchant\Constants::RESELLER)
-        {
-            $this->view('emails.mjml.merchant.partner.onboarded.reseller');
-        }
-        else if ($partnerType === Merchant\Constants::AGGREGATOR)
-        {
-            $this->view('emails.mjml.merchant.partner.onboarded.aggregator');
-        }
-        else if ($partnerType === Merchant\Constants::PURE_PLATFORM)
-        {
-            $this->view('emails.mjml.merchant.partner.onboarded.pure_platform');
-        }
+        $this->view($emailTemplate);
 
         return $this;
     }

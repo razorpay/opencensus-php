@@ -478,7 +478,8 @@ class Core extends Base\Core
             'activation_status'         => $activationStatus,
             'invoices'                  => $invoiceData,
             'invoice_count'             => $invoices->count(),
-            'view'                      => $this->getEmailTemplateView($partner, Constants::REMINDER, $activationStatus)
+            'view'                      => $this->getEmailTemplateView($partner, Constants::REMINDER, $activationStatus),
+            'country_code'              => $partner->getCountry()
         ];
 
         $this->trace->info(
@@ -601,6 +602,7 @@ class Core extends Base\Core
             'created_at'               => Carbon::createFromTimestamp($invoice->getCreatedAt(), Timezone::IST)->format('d-M-y'),
             'tds_percentage'           => $tdsPercentage/100,
             'activation_status'        => $activationStatus,
+            'country_code'             => $invoice->merchant->getCountry(),
         ];
 
         if (empty($pdfPath) === false)
@@ -1387,7 +1389,7 @@ class Core extends Base\Core
                 return $this->getResellerEmailTemplate($merchant, $event, $activationStatus);
 
             default:
-                return $this->getDefaultEmailTemplate($event, $activationStatus);
+                return $this->getDefaultEmailTemplate($event, $activationStatus, $merchant->getCountry());
         }
     }
 
@@ -1397,7 +1399,7 @@ class Core extends Base\Core
 
         if($isResellerPartnerWithMerchantKyc === true)
         {
-            return $this->getDefaultEmailTemplate($event, $activationStatus);
+            return $this->getDefaultEmailTemplate($event, $activationStatus, $merchant->getCountry());
         }
 
         if($event === Status::ISSUED)
@@ -1414,12 +1416,19 @@ class Core extends Base\Core
         return Constants::RESELLER_PARTNER_INVOICE_REMINDER_EMAIL_TEMPLATE_PREFIX.'.'.$templateSuffix;
     }
 
-    private function getDefaultEmailTemplate(string $event, string $activationStatus = null)
+    private function getDefaultEmailTemplate(string $event, string $activationStatus = null, $countryCode = 'IN')
     {
 
         if($event === Status::ISSUED)
         {
-            return Constants::DEFAULT_PARTNER_INVOICE_ISSUED_EMAIL_TEMPLATE;
+            if ($countryCode === 'MY')
+            {
+                return Constants::DEFAULT_PARTNER_INVOICE_ISSUED_EMAIL_TEMPLATE_MY_REGION;
+            }
+            else
+            {
+                return Constants::DEFAULT_PARTNER_INVOICE_ISSUED_EMAIL_TEMPLATE;
+            }
         }
 
         $templateSuffix =  $activationStatus;

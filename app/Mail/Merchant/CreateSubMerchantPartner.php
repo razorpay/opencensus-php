@@ -69,7 +69,16 @@ class CreateSubMerchantPartner extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.merchant.add_sub_merchant_mail_partner');
+        $countryCode = $this->aggregator['country_code'];
+
+        if ($countryCode == 'MY')
+        {
+            $this->view('emails.merchant.my_add_sub_merchant_mail_partner');
+        }
+        else
+        {
+            $this->view('emails.merchant.add_sub_merchant_mail_partner');
+        }
 
         return $this;
     }

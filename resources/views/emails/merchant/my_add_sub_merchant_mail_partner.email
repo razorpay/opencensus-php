@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body>
+    <link rel="stylesheet" type="text/css" href="ink.css">
+    <link rel="stylesheet" type="text/css" href="welcome.css">
+    <table class="row">
+      <tr>
+        <td class="wrapper">
+
+          <table class="four columns">
+            <tr>
+              <td class="center">
+                <img class="center" src="https://rzp-1415-prod-dashboard-activation.s3.ap-south-1.amazonaws.com/org_KjWRtYXwpK6VfK/email_logo/phpMmiAJj">
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Heading -->
+    <table class="row">
+      <tr>
+        <td class="wrapper last">
+
+        <table class="twelve columns" >
+          <tr>
+            <td class="center panel"  style="border-left: none; border-right: none; " >
+              <h6>
+                <center>
+                  {{{$merchant['name']}}} • ID: {{{$merchant['id']}}}
+                </center>
+              </h6>
+            </td>
+          </tr>
+        </table>
+
+          <table class="twelve columns">
+            <tr>
+              <td class="center">
+                <br />
+                <h1><center>
+                  <span style="color:#222">Congratulations!</span>
+                </center></h1>
+              </td>
+              <td class="expander"></td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+    <!-- Contact Us -->
+    <table class="container">
+      <tr>
+        <td>
+          <table class="row">
+            <tr>
+              <td class="wrapper offset-by-one">
+                <table class="ten columns">
+                  <tr>
+                    <td class="center welcome">
+
+<p>
+  {{{$subMerchant['name']}}} (ID: {{{$subMerchant['id']}}}) has been added as your affiliate account on Curlec.
+  @if($subMerchant['email'] != $merchant['email'])
+  <br>
+  We have sent an invite mail to {{{$subMerchant['email']}}} for setting up their Curlec account password.
+  @endif
+</p>
+
+<h3>Activation Timeline</h3>
+
+<p>As soon as the Activation Process is completed, depending on the business segment, we will take the account live in the upcoming {{{ $activationDuration}}}.</p>
+
+<p>
+  Cheers,
+  <br>
+  Team Curlec
+</p>
+                    </td>
+                    <td class="expander"></td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+  </body>
+</html>

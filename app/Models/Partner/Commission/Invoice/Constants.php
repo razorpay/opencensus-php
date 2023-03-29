@@ -20,6 +20,7 @@ class Constants
     const INVOICE_TNC_UPDATED_TIMESTAMP = 1672531200;
 
     const DEFAULT_PARTNER_INVOICE_ISSUED_EMAIL_TEMPLATE              = 'emails.mjml.merchant.partner.commission_invoice.issued';
+    const DEFAULT_PARTNER_INVOICE_ISSUED_EMAIL_TEMPLATE_MY_REGION    = 'emails.mjml.merchant.partner.commission_invoice.my_issued';
     const RESELLER_PARTNER_INVOICE_ISSUED_EMAIL_TEMPLATE             = 'emails.mjml.merchant.partner.commission_invoice.reseller_merchant_issued';
     const DEFAULT_PARTNER_INVOICE_REMINDER_EMAIL_TEMPLATE_PREFIX     = 'emails.mjml.merchant.partner.commission_invoice.reminder';
     const RESELLER_PARTNER_INVOICE_REMINDER_EMAIL_TEMPLATE_PREFIX    = 'emails.mjml.merchant.partner.commission_invoice.reminder.reseller';
