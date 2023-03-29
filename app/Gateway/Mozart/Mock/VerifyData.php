@@ -732,6 +732,10 @@ class VerifyData extends Base\Mock\Server
 
     public function upi_mindgate($entities)
     {
+        if ( $entities['payment']['vpa'] === "unexpectedpayment@hdfcbank" )
+        {
+            return $this->upiMozartV2($entities);
+        }
         $response = [
             'next'                  => [],
             'error'                 => null,

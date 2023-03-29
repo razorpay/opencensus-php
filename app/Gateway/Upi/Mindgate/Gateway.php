@@ -23,6 +23,7 @@ use RZP\Gateway\Upi\Base\UpiErrorCodes;
 use RZP\Models\Payment\Processor\UpiTrait;
 use RZP\Models\Feature\Constants as Feature;
 use RZP\Gateway\Upi\Base\CommonGatewayTrait;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use RZP\Models\Merchant\Repository as MerchantRepository;
 
 class Gateway extends Base\Gateway
@@ -1590,7 +1591,28 @@ class Gateway extends Base\Gateway
             );
         }
     }
+    /** Checks if duplicate unexpected payment for the recon through ART
+     * @param $input
+     * @throws Exception\LogicException
+     */
+    protected function isDuplicateUnexpectedPaymentV2($input)
+    {
+        $upiEntity = $this->upiGetRepository()->fetchByNpciReferenceIdAndGateway($input['upi']['npci_reference_id'], $this->gateway);
 
+        if (empty($upiEntity) === false)
+        {
+            if ($upiEntity->getAmount() === (int) ($input['payment']['amount']))
+            {
+                throw new Exception\LogicException(
+                    'Duplicate Unexpected payment with same amount',
+                    null,
+                    [
+                        'callbackData' => $input
+                    ]
+                );
+            }
+        }
+    }
     public function isMandateUpdateCallback($input)
     {
         if ((isset($input['mandateDtls']) === true) and ($input['mandateDtls'][0]['mandateType'] === 'UPDATE'))
@@ -1663,7 +1685,14 @@ class Gateway extends Base\Gateway
     public function validatePush($input)
     {
         parent::action($input, Action::VALIDATE_PUSH);
-
+        // It checks if the version is V2,which is request from art
+        if ((empty($input['meta']['version']) === false) and
+            ($input['meta']['version'] === 'api_v2'))
+        {
+             $this->isDuplicateUnexpectedPaymentV2($input);
+             $this->upiIsValidUnexpectedPaymentV2($input);
+             return;
+        }
         // It checks if pre process happened through common gateway trait contracts
         if ((isset($input['data']['version']) === true) and
             ($input['data']['version'] === 'v2'))
@@ -1680,10 +1709,119 @@ class Gateway extends Base\Gateway
         $this->isValidUnexpectedPayment($input);
     }
 
+    /**
+     * @param $status
+     * @return void
+     * @throws Exception\GatewayErrorException
+     * Checks the status of unexpected payments
+     */
+    protected function checkUnexpectedPaymentResponseStatus($status)
+    {
+        if ($status !== true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            );
+        }
+    }
+
+    protected function getRedactedData($data)
+    {
+        unset($data['data']['Key']);
+
+        unset($data['data']['enqinfo']['0']['Key']);
+
+        unset($data['data']['enqinfo']['0']['MOBILENO']);
+
+        unset($data['data']['MobileNo']);
+
+        unset($data['data']['valkey']);
+
+        unset($data['otp']);
+
+        unset($data['data']['_raw']);
+
+        unset($data['_raw']);
+
+        unset($data['data']['account_number']);
+
+        return $data;
+    }
+
+    /**
+     * Check if its a valid Unexpected Payment
+     * @param array $callbackData
+     * @throws Exception\LogicException
+     * @throws GatewayErrorException
+     */
+    protected function upiIsValidUnexpectedPaymentV2($callbackData)
+    {
+        //
+        // Verifies if the payload specified in the server callback is valid.
+        //
+        $input = [
+            'payment'       => [
+                'id'             => $callbackData['upi']['merchant_reference'],
+                'gateway'        => $callbackData['terminal']['gateway'],
+                'vpa'            => $callbackData['upi']['vpa'],
+                'amount'         => (int) ($callbackData['payment']['amount']),
+            ],
+            'terminal'      => $this->terminal,
+            'gateway'       => [
+                'cps_route'     => Payment\Entity::UPI_PAYMENT_SERVICE,
+            ]
+        ];
+        $this->action = Action::VERIFY;
+
+        $verify = new Verify($input['payment']['gateway'], $input);
+
+        $this->sendPaymentVerifyRequestv2($verify);
+
+        $paymentAmount = $verify->input['payment']['amount'];
+
+        $content = $verify->verifyResponseContent;
+
+        $actualAmount = $content['data']['payment']['amount_authorized'];
+
+        $this->assertAmount($paymentAmount, $actualAmount);
+
+        $status = $content['success'];
+
+        $this->checkUnexpectedPaymentResponseStatus($status);
+    }
+
+    /**
+     * @param $verify
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * This is used for verifying the unexpected payments.
+     * In normal payments verify we have upi entity but for unexpected payments we don't have, because of which used this.
+     */
+    public function sendPaymentVerifyRequestv2($verify)
+    {
+        $result               = $this->upiSendGatewayRequest(
+            $verify->input,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            'verify'
+        );
+        $traceRes = $this->getRedactedData($result);
+
+        $this->traceGatewayPaymentResponse($traceRes, $result, TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
+
+        $verify->verifyResponseContent = $result;
+
+        return $verify->verifyResponseContent;
+    }
+
     public function authorizePush($input)
     {
         list($paymentId , $callbackData) = $input;
-
+        // It checks if the version is V2,which is request from art
+        if ((empty($callbackData['meta']['version']) === false) and
+            ($callbackData['meta']['version'] === 'api_v2'))
+        {
+            return $this->authorizePushV2($input);
+        }
         // To handle if callback data was preprocessed through mozart config with v2 contracts
         if ((isset($callbackData['data']['version']) === true) and
             ($callbackData['data']['version'] === 'v2'))
@@ -1728,6 +1866,53 @@ class Gateway extends Base\Gateway
             ]
         ];
     }
+    /**
+     * AuthorizePushV2 is triggered for reconciliation happening via ART
+     * @param array $input
+     * @return array[]
+     * @throws Exception\LogicException
+     */
+    protected function authorizePushV2($input)
+    {
+        list ($paymentId, $content) = $input;
+
+        // Create attributes for upi entity.
+        $attributes = [
+            Entity::TYPE                => Base\Type::PAY,
+            Entity::RECEIVED            => 1,
+        ];
+
+        $attributes = array_merge($attributes, $content['upi']);
+
+        $payment  = $content['payment'];
+
+        $upi      = $content['upi'];
+
+        $gateway = $this->gateway;
+
+        // Create input structure for upi entity.
+        $input = [
+            'payment'    => [
+                'id'       => $paymentId,
+                'gateway'  => $gateway,
+                'vpa'      => $upi['vpa'],
+                'amount'   => $payment['amount'],
+            ],
+        ];
+
+        // Call to set the input in gateway
+        parent::action($input, Action::AUTHORIZE);
+
+        $gatewayPayment = $this->upiCreateGatewayEntity($input, $attributes);
+
+        return [
+            'acquirer' => [
+                PaymentEntity::VPA           => $gatewayPayment->getVpa(),
+                PaymentEntity::REFERENCE16   => $gatewayPayment->getNpciReferenceId(),
+            ]
+        ];
+    }
+
 
     /**
      * This function authorize the payment forcefully when verify api is not supported

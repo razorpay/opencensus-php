@@ -2,21 +2,31 @@
 
 namespace RZP\Tests\Functional\Gateway\Reconciliation\UpiHdfc;
 
+
+use RZP\Exception;
 use RZP\Models\QrCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Batch\Status;
 use RZP\Models\VirtualAccount;
+use RZP\Models\Payment\Method;
+use RZP\Models\Merchant\Account;
 use RZP\Models\Base\PublicEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Reconciliator\Base\Constants;
 use RZP\Tests\Functional\Batch\BatchTestTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Terminal;
 use RZP\Tests\Functional\Helpers\Reconciliator\ReconTrait;
 
 class UpiHdfcReconTest extends TestCase
 {
     use ReconTrait;
     use BatchTestTrait;
+
+    /**
+     * @var Terminal
+     */
+    protected $sharedTerminal;
 
     protected function setUp(): void
     {
@@ -507,6 +517,448 @@ class UpiHdfcReconTest extends TestCase
         $facade['Txn ref no. (RRN)'] = $upiEntity['npci_reference_id'];
 
         return $facade;
+    }
+
+    public function testUnexpectedPaymentCreation()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+    }
+
+    /**
+     * Tests the duplicate unexpected payment creation
+     * for recon edge cases invalid paymentId, rrn mismatch ,Multiple RRN.
+     * Amount mismatch case is handled in seperate testcase
+     */
+    public function testUnexpectedPaymentCreateForAmountMismatch()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->activate();
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+
+        $payment = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
+        $upi = $this->getDbLastUpi();
+
+        $upi->setGateway(Payment\Gateway::UPI_MINDGATE);
+
+        $this->fixtures->edit('upi', $upi['id'], ['vpa' => 'unexpectedpayment@hdfcbank']);
+
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->fixtures->edit('upi', $upiEntity['id'], ['gateway' => 'upi_mindgate']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => '123456789012']);
+
+        $content['upi']['merchant_reference'] = $upiEntity['payment_id'];
+
+        $content['upi']['vpa'] = $upiEntity['vpa'];
+
+        //Setting amount to different amount for validating payment creation for amount mismatch
+        $content['payment']['amount'] = 10000;
+        //First occurence of amount mismatch payment request with matching rrn, paymentId, differing in amount
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals($upi['npci_reference_id'], $content['upi']['npci_reference_id']);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+    }
+
+    /**
+     * Test unexpected payment request mandatory validation
+     */
+    public function testUnexpectedPaymentValidationFailure()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        // Unsetting the npci_reference_id to mimic validation failure
+        unset($content['upi']['npci_reference_id']);
+        unset($content['terminal']['gateway_merchant_id']);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url' => '/payments/create/upi/unexpected',
+                'method' => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
+        },Exception\BadRequestValidationFailureException::class);
+    }
+
+    /**
+     * Tests the payment create for multiple payments with same RRN
+     */
+    public function testUnexpectedPaymentForDuplicateRRN()
+    {
+
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->activate();
+
+        $content = $this->buildUnexpectedPaymentRequest();
+
+        $response = $this->makeUnexpectedPaymentAndGetContent($content);
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertTrue($response['success']);
+
+        $upi = $this->getDbLastEntity('upi');
+
+        $this->assertEquals($upi['npci_reference_id'], $content['upi']['npci_reference_id']);
+
+        $this->payment = $this->getDefaultUpiPaymentArray();
+
+
+        $payment = $this->doAuthPaymentViaAjaxRoute($this->payment);
+        $upiEntity = $this->getDbLastEntityToArray('upi');
+
+        $this->fixtures->edit('upi', $upiEntity['id'], ['vpa' => 'unexpectedpayment@hdfcbank']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['gateway' => 'upi_mindgate']);
+        $this->fixtures->edit('upi', $upiEntity['id'], ['npci_reference_id' => '123456789012']);
+        // Hitting the payment create again for same amount mismatch request
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/create/upi/unexpected',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+            $this->ba->appAuth();
+            $this->makeRequestAndGetContent($request);
+
+        }, Exception\BadRequestException::class,
+            'Multiple payments with same RRN');
+    }
+
+    /**
+     * Validate negative case of authorizing successful payment
+     */
+    public function testForceAuthorizeSuccessfulPayment()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->activate();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'status'              => 'captured',
+            ]);
+
+        unset($content['upi']['npci_txn_id']);
+
+        $content['upi']['gateway'] = 'upi_mindgate';
+
+        $content['payment']['id'] = substr($payment['id'], 4);
+
+        $content['meta']['force_auth_payment'] = true;
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url'     => '/payments/authorize/upi/failed',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class,
+            'Non failed payment given for authorization');
+    }
+
+    /**
+     * Checks for validation failure in case of missing payment_id
+     */
+    public function testForceAuthorizePaymentValidationFailure()
+    {
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        $this->makeRequestAndCatchException(function() use ($content) {
+            $request = [
+                'url'     => '/payments/authorize/upi/failed',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class,
+            'The payment.id field is required.');
+    }
+
+    /**
+     * Checks for validation failure in case of missing npci_reference_id
+     */
+    public function testForceAuthorizePaymentValidationFailure2()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->activate();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'status'              => 'failed',
+                'authorized_At'       => null,
+                'error_code'          => 'BAD_REQUEST_ERROR',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'   => 'Payment was not completed on time.',
+            ]);
+
+        $this->fixtures->edit('upi', $upiEntity['id'], ['status_code' => '']);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNotEquals('S', $upiEntity['status_code']);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        $content['payment']['id'] =  substr($payment['id'], 4);
+
+        $content['upi']['gateway'] = 'upi_mindgate';
+
+        $content['meta']['force_auth_payment'] = false;
+
+        // Unsetting the npci_reference_id to mimic validation failure
+        unset($content['upi']['npci_reference_id']);
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url'     => '/payments/authorize/upi/failed',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class,
+            'The upi.npci reference id field is required.');
+    }
+
+
+
+    /**
+     * @return void
+     * Tests for force authorize with mismatched amount in request.
+     */
+    public function testForceAuthorizePaymentAmountMismatch()
+    {
+        $this->setMockGatewayTrue();
+
+        $this->gateway = 'upi_mozart';
+
+        $this->setMockGatewayTrue();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_mindgate_terminal');
+
+        $this->fixtures->merchant->enableMethod(Account::TEST_ACCOUNT, Method::UPI);
+
+        $this->fixtures->merchant->activate();
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        $this->fixtures->payment->edit($payment['id'],
+            [
+                'status'              => 'failed',
+                'authorized_At'       =>  null,
+                'error_code'          => 'BAD_REQUEST_ERROR',
+                'internal_error_code' => 'BAD_REQUEST_PAYMENT_TIMED_OUT',
+                'error_description'   => 'Payment was not completed on time.',
+            ]);
+
+        $this->fixtures->edit('upi', $upiEntity['id'], ['status_code' => '']);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $this->assertNotEquals('S', $upiEntity['status_code']);
+
+        $this->assertEquals('failed', $payment['status']);
+
+        $content = $this->getDefaultUpiAuthorizeFailedPaymentArray();
+
+        $content['payment']['id'] = substr($payment['id'], 4);
+
+        $content['meta']['force_auth_payment'] = false;
+
+        // Change amount to 60000 for mismatch scenario
+        $content['payment']['amount'] = 60000;
+
+        $this->makeRequestAndCatchException(function() use ($content)
+        {
+            $request = [
+                'url'     => '/payments/authorize/upi/failed',
+                'method'  => 'POST',
+                'content' => $content,
+            ];
+
+            $this->ba->appAuth();
+
+            $this->makeRequestAndGetContent($request);
+        }, Exception\BadRequestValidationFailureException::class,
+            'The amount does not match with payment amount');
+
+    }
+
+    /**
+     * @return array
+     */
+    protected function buildUnexpectedPaymentRequest()
+    {
+        $this->fixtures->merchant->createAccount('100DemoAccount');
+        $this->fixtures->merchant->enableUpi('100DemoAccount');
+
+        $content = $this->getDefaultUpiUnexpectedPaymentArray();
+
+        // Unsetting fields which will not be present in UpiIcici MIS
+        unset($content['upi']['account_number']);
+        unset($content['upi']['ifsc']);
+        unset($content['upi']['npci_txn_id']);
+        unset($content['upi']['gateway_data']);
+        $content['upi']['vpa']='unexpectedpayment@hdfcbank';
+        $content['terminal']['gateway'] = 'upi_mindgate';
+        $content['terminal']['gateway_merchant_id'] = $this->sharedTerminal->getGatewayMerchantId();
+        $content['payment']['vpa'] = 'unexpectedpayment@hdfcbank';
+
+        return $content;
+    }
+
+    /**
+     * @param array $content
+     * @return mixed
+     */
+    protected function makeUnexpectedPaymentAndGetContent(array $content)
+    {
+        $request = [
+            'url' => '/payments/create/upi/unexpected',
+            'method' => 'POST',
+            'content' => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    /**
+     * @param array $content
+     * @return mixed
+     */
+    protected function makeAuthorizeFailedPaymentAndGetPayment(array $content)
+    {
+        $request = [
+            'url'      => '/payments/authorize/upi/failed',
+            'method'   => 'POST',
+            'content'  => $content,
+        ];
+
+        $this->ba->appAuth();
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function createUpiHdfcRefund($paymentId, $amount)
