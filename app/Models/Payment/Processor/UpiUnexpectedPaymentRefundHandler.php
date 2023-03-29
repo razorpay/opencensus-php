@@ -104,6 +104,6 @@ trait UpiUnexpectedPaymentRefundHandler
 
     public function getDelayedRefundAtValue($createdAt)
     {
-        return Carbon::createFromTimestamp($createdAt)->addDays(5)->getTimestamp();
+        return Carbon::createFromTimestamp($createdAt)->addDays(1)->getTimestamp();
     }
 }
