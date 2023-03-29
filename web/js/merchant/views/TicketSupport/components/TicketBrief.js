@@ -20,11 +20,15 @@ export default class TicketBriefRevamped extends React.Component {
     subject = subject.replace('[Merchant]', '');
     const formattedDate = moment(ticket.created_at).fromNow();
     const ticketStatus = STATUSES[ticket.status];
+
+    const { user, ticketType } = this.props;
+    const ticketConversationBaseUrl = `ticket-support/${ticket.fd_instance}/${ticket.id}/${ticketType}/conversation`;
+    const ticketConversationUrl = user.isAccountAndSettingsRevampEnabled
+      ? `/business-settings/${ticketConversationBaseUrl}`
+      : ticketConversationBaseUrl;
     // only date showed here
     return (
-      <Link
-        to={`/ticket-support/${ticket.fd_instance}/${ticket.id}/${this.props.ticketType}/conversation`}
-      >
+      <Link to={ticketConversationUrl}>
         <div className="panel ticket-row-panel revamped">
           <div className={`panel-header ${this.props.last ? 'border-solid' : 'border-auto'}`}>
             <div className="row">

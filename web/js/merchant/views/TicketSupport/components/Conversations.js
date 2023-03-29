@@ -566,6 +566,10 @@ export default class Conversations extends React.Component {
     const ticketType = ticket?.custom_fields?.cf_created_by || 'merchant';
     const isLoading = conversations?.loading || loadingTicket;
 
+    const ticketTypeUrl = user.isAccountAndSettingsRevampEnabled
+      ? `/business-settings/ticket-support/tickets/${ticketType}`
+      : `/ticket-support/tickets/${ticketType}`;
+
     return (
       <div className="content-wrapper content-sm ticket-support">
         <div className="panel">
@@ -583,7 +587,7 @@ export default class Conversations extends React.Component {
                   <div className="col-xs-12">
                     <span>
                       <Link
-                        to={`/ticket-support/tickets/${ticketType}`}
+                        to={ticketTypeUrl}
                         onClick={() => {
                           window.rzpAnalytics?.({
                             eventCategory: 'Ticket Dashboard',

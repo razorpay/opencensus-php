@@ -28,6 +28,7 @@ export enum ROUTES_INFO {
   MANAGE_TEAM_DETAILS = '/business-settings/team',
   TEAM_INVITATIONS = '/business-settings/invitations',
   SUPPORT_TICKETS_MERCHANT = '/business-settings/ticket-support/tickets/merchant',
+  SUPPORT_TICKETS_CONVERSATION = '/business-settings/ticket-support/:instance/:id/:ticketType/conversation',
   SUPPORT_TICKETS_AGENT = '/business-settings/ticket-support/tickets/agent',
   BANK_ACCOUNT_DETAILS = '/bank-accounts-settlements/bank-account-details',
   SETTLEMENT_DETAILS = '/bank-accounts-settlements/settlement-details',

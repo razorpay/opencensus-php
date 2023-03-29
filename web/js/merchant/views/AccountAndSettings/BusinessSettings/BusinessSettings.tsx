@@ -112,7 +112,17 @@ const BusinessSettings = ({ user, location }: BusinessSettingsProps): JSX.Elemen
             <NavLink to={ROUTES_INFO.TEAM_INVITATIONS}>Invitations</NavLink>
           </ShowWhen>
           <ShowWhen additionalCondition={(user) => isSupportTicketEnabled(user)}>
-            <NavLink to="/business-settings/ticket-support/tickets">
+            <NavLink
+              to="/business-settings/ticket-support/tickets"
+              isActive={() => {
+                const businessConversationRegEXP =
+                  '^/business-settings/ticket-support/([^/]+)/([^/]+)/([^/]+)/conversation$';
+                return !!(
+                  location.pathname === '/business-settings/ticket-support/tickets' ||
+                  location.pathname.match(businessConversationRegEXP)
+                );
+              }}
+            >
               {user.isMobileSignupCareActive ? `Support History` : `Support Tickets`}
             </NavLink>
           </ShowWhen>

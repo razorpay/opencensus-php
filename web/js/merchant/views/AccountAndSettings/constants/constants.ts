@@ -28,6 +28,7 @@ export const ROUTE_MAP = {
   [ROUTES_INFO.CUSTOMER_SUPPORT_DETAILS]: 'Customer support details',
   [ROUTES_INFO.MANAGE_TEAM_DETAILS]: 'Manage team',
   [ROUTES_INFO.SUPPORT_TICKETS_MERCHANT]: 'Support history',
+  [ROUTES_INFO.SUPPORT_TICKETS_CONVERSATION]: 'Support history',
   [ROUTES_INFO.SUPPORT_TICKETS_AGENT]: 'Support history',
   [ROUTES_INFO.BANK_ACCOUNT_DETAILS]: 'Bank account details',
   [ROUTES_INFO.SETTLEMENT_DETAILS]: 'Settlement details',
