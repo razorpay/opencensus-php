@@ -6597,6 +6597,63 @@ class Processor
 
         return $ba;
     }
+    
+    /**
+     * This function checks if AutoCapture timeout is set and if it is exceeded for Optimizer payments, and overrides
+     * capture decision
+     * Ref : https://docs.google.com/document/d/1FQEGHojgb74pyBtS0r7t_qWg05XsZ_636UyYYkUNKdE/edit#
+     *
+     * @param Payment\Entity $payment
+     * @param array $captureResponse
+     * @return array
+     */
+    protected function shouldAutoCaptureOptimizerExternalPgPayment(Payment\Entity $payment, array $captureResponse): array
+    {
+        // 1. If auto-capture settings are present, and authorized_at exceeds auto-capture timeout, do auto-refund
+        // 2. In all other cases capture based on existing logics present in shouldAutoCapture method.
+        $optimizerAutoCaptureResponse = [];
+        
+        $lateAuthConfig = $this->getLateAuthPaymentConfig($payment);
+        
+        if (isset($lateAuthConfig) === true)
+        {
+            $captureValue = $lateAuthConfig['capture'];
+            
+            $autoTimeoutDuration = $lateAuthConfig['capture_options']['automatic_expiry_period'];
+            
+            $difference = $this->getTimeDifferenceInAuthorizeAndCreated($payment);
+            
+            if (($captureValue === 'automatic') and
+                (isset($autoTimeoutDuration) === true) and
+                ($difference > $autoTimeoutDuration)) {
+                
+                $this->setPaymentRefundAtForConfig($payment, $autoTimeoutDuration);
+                
+                $optimizerAutoCaptureResponse['should_auto_capture'] = false;
+                
+                $optimizerAutoCaptureResponse['reason'] = Constants::OPTIMIZER_AUTO_CAPTURE_TIMEOUT_EXCEEDED;
+                
+            }
+        }
+        
+         if (empty($optimizerAutoCaptureResponse) === false)
+         {
+             $this->trace->info(
+                 TraceCode::OPTIMIZER_CAPTURE_SETTINGS_OVERRIDE,
+                 [
+                     'payment_id'                   => $payment->getId(),
+                     'merchant_id'                  => $payment->getMerchantId(),
+                     'optimizer_capture_response'   => $optimizerAutoCaptureResponse,
+                     'pg_capture_response'          => $captureResponse,
+                 ]);
+    
+             return $optimizerAutoCaptureResponse;
+    
+         }
+        
+        return $captureResponse;
+        
+    }
 
     /**
      * This function is used to identify if a payment can be auto captured or not
@@ -7070,7 +7127,7 @@ class Processor
         }
 
         $autoTimeoutDuration = $lateAuthConfig['capture_options']['automatic_expiry_period'];
-
+        
         if (isset($lateAuthConfig['capture_options']['manual_expiry_period']) === false)
         {
             $manualTimeoutDuration = $autoTimeoutDuration;

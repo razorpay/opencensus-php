@@ -11,6 +11,7 @@ use Dashboard\Payment;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\Processor\Processor;
 use RZP\Services\RazorXClient;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Traits\MocksRazorx;
@@ -2014,5 +2015,193 @@ class CaptureTest extends TestCase
         },
             Exception\BadRequestValidationFailureException::class,
             'Corresponding order already has a captured payment.');
+    }
+    
+    // Tests if Optimizer payment gets auto captured with capture settings enabled
+    public function testOptimizerExternalPgPaymentAutoCapture()
+    {
+        
+        $this->fixtures->merchant->edit(
+            '10000000000000',
+            [
+                'auto_refund_delay' => '2 days',
+                'auto_capture_late_auth' => true,
+            ]);
+            
+        $this->fixtures->merchant->addFeatures(['allow_force_terminal_id','raas']);
+        
+        $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => true,
+            'config' => '{
+                "capture": "automatic",
+                "capture_options": {
+                    "manual_expiry_period": 20,
+                    "automatic_expiry_period": 1,
+                    "refund_speed": "normal"
+                }
+            }']);
+        
+        $order = $this->fixtures->create(
+            'order',
+            [
+                'id' => '100000000order',
+                'payment_capture' => true,
+            ]);
+            
+        $terminal = $this->fixtures->create('terminal:card_payu_terminal');
+
+        $this->enableCpsConfig();
+        
+        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER, 'on');
+        
+        $payment1 = $this->getDefaultPaymentArray();
+        
+        $payment1['force_terminal_id'] = 'term_'.$terminal->getId();
+        
+        $payment1['amount'] = 1000000;
+        
+        $payment1['order_id'] = 'order_100000000order';
+        
+        $payment1 = $this->doAuthPayment($payment1);
+        
+        $payment1 = $this->getDbLastEntity('payment');
+        
+        $order = $this->getLastEntity('order', true);
+        
+        $this->assertEquals('captured', $payment1->getStatus());
+        
+        $this->assertEquals('paid', $order['status']);
+    }
+    
+    // Tests if Optimizer payment gets auto captured within timeout with capture settings enabled
+    public function testOptimizerExternalPgPaymentAutoCaptureWithinTimeout()
+    {
+        $this->fixtures->merchant->edit(
+            '10000000000000',
+            [
+                'auto_refund_delay' => '2 days',
+                'auto_capture_late_auth' => true,
+            ]);
+            
+        $this->fixtures->merchant->addFeatures(['allow_force_terminal_id','raas']);
+        
+        $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => true,
+            'config' => '{
+                "capture": "automatic",
+                "capture_options": {
+                    "manual_expiry_period": 20,
+                    "automatic_expiry_period": 10,
+                    "refund_speed": "normal"
+                }
+            }']);
+        
+        $order = $this->fixtures->create(
+            'order',
+            [
+                'id' => '100000000order',
+                'payment_capture' => true,
+            ]);
+            
+        $terminal = $this->fixtures->create('terminal:card_payu_terminal');
+
+        $this->enableCpsConfig();
+        
+        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER, 'on');
+        
+        $cardId = $this->fixtures->create('card')['id'];
+        
+        $payment1 = $this->fixtures->create('payment:failed', [
+            'email'         => 'a@b.com',
+            'amount'        => 1000000,
+            'contact'       => '9918899029',
+            'method'        => 'card',
+            'gateway'       => 'payu',
+            'order_id'      => '100000000order',
+            'terminal_id'   => $terminal->getId(),
+            'card_id'       => $cardId,
+            'cps_route'     => 2
+        ]);
+        
+         // 3 min difference --> we have set auto capture timeout to 10 above.
+        $past = Carbon::now(Timezone::IST)->subMinutes(3)->timestamp;
+        $this->fixtures->payment->edit($payment1['id'], ['created_at' => $past]);
+        
+        $this->authorizeFailedPayment($payment1->getPublicId());
+        
+        $payment1 = $this->getEntityById('payment', $payment1->getId(), true);
+        
+        $order   = $this->getLastEntity('order', true);
+        
+        $this->assertEquals('captured', $payment1['status']);
+        
+        $this->assertEquals('paid', $order['status']);
+    }
+    
+    // Tests if Optimizer payment is not captured and refund_at is set if late authorized beyond timeout
+    public function testOptimizerExternalPgPaymentAutoRefund()
+    {
+        $this->fixtures->merchant->edit(
+            '10000000000000',
+            [
+                'auto_refund_delay' => '2 days',
+                'auto_capture_late_auth' => true,
+            ]);
+            
+        $this->fixtures->merchant->addFeatures(['allow_force_terminal_id','raas']);
+        
+        $this->fixtures->create('config', ['type' => 'late_auth', 'is_default' => true,
+            'config' => '{
+                "capture": "automatic",
+                "capture_options": {
+                    "manual_expiry_period": 20,
+                    "automatic_expiry_period": 10,
+                    "refund_speed": "normal"
+                }
+            }']);
+        
+        $order = $this->fixtures->create(
+            'order',
+            [
+                'id' => '100000000order',
+                'payment_capture' => true,
+            ]);
+            
+        $terminal = $this->fixtures->create('terminal:card_payu_terminal');
+
+        $this->enableCpsConfig();
+        
+        $this->mockRazorxTreatmentV2(Merchant\RazorxTreatment::ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER, 'on');
+        
+        $cardId = $this->fixtures->create('card')['id'];
+        
+        $payment1 = $this->fixtures->create('payment:failed', [
+            'email'         => 'a@b.com',
+            'amount'        => 1000000,
+            'contact'       => '9918899029',
+            'method'        => 'card',
+            'gateway'       => 'payu',
+            'order_id'      => '100000000order',
+            'terminal_id'   => $terminal->getId(),
+            'card_id'       => $cardId,
+            'cps_route'     => 2
+        ]);
+        
+        // 15 min difference --> we have set auto capture timeout to 10 above.
+        $past = Carbon::now(Timezone::IST)->subMinutes(15)->timestamp;
+        $this->fixtures->payment->edit($payment1['id'], ['created_at' => $past]);
+        
+        $expectedRefundAt = Carbon::createFromTimestamp($past, Timezone::IST)
+                ->addMinutes(10)->getTimestamp();
+        
+        $this->authorizeFailedPayment($payment1->getPublicId());
+        
+        $payment1 = $this->getEntityById('payment', $payment1->getId(), true);
+        
+        $order   = $this->getLastEntity('order', true);
+        
+        $this->assertEquals('authorized', $payment1['status']);
+        
+        $this->assertEquals($expectedRefundAt, $payment1['refund_at']);
+        
+        $this->assertEquals('created', $order['status']);
     }
 }

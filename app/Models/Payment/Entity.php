@@ -5336,6 +5336,43 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         return ($this->getAuthType() === AuthType::SKIP);
     }
+    
+    /**
+     * This function determines if capture settings need to be honored for Optimizer merchants overriding
+     * the existing Direct settlement capture flow
+     *
+     * @param Payment\Entity $payment
+     * @return bool
+     */
+    public function isOptimizerCaptureSettingsEnabled()
+    {
+        if ($this->isOptimizerExternalPgPayment() === true) {
+            
+            $app = \App::getFacadeRoot();
+            
+            $variant = $app['razorx']->getTreatment($this->getMerchantId(),
+                RazorxTreatment::ENABLE_CAPTURE_SETTINGS_FOR_OPTIMIZER,
+                $app['rzp.mode']);
+            
+            if (strtolower($variant) === 'on') {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Returns if a payment is router via Optimizer to external PGs like Payu, Cashfree, CCAvenue, Billdesk, Paytm etc
+    public function isOptimizerExternalPgPayment()
+    {
+        if (($this->terminal != null) and
+            ($this->merchant != null) and
+            ($this->terminal->isOptimizer()) and
+            ($this->merchant->isFeatureEnabled(Feature\Constants::RAAS))) {
+            // TODO: confirm if type optimizer is only for external gateways
+            return true;
+        }
+        return false;
+    }
 
     public function isDirectSettlement()
     {

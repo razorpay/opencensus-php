@@ -1581,6 +1581,9 @@ class Validator extends Base\Validator
             $this->failIfNotPending($payment);
 
             $this->failIfRefundConfigSetLateAuth($payment);
+            
+            // For Optimizer external pg payments, we should honor auto capture timeout
+            $this->failIfRefundConfigSetLateAuthForOptimizerExternalPgPayment($payment);
 
             $this->captureAmountValidate($payment, $amount);
 
@@ -1727,6 +1730,35 @@ class Validator extends Base\Validator
         [
             'method' => $payment->getMethod(),
         ]);
+    }
+    
+    // Additional check for Optimizer
+    protected function failIfRefundConfigSetLateAuthForOptimizerExternalPgPayment($payment)
+    {
+        if (($payment->hasOrder() === true) and
+            ($payment->isLateAuthorized() === true) and
+            ($payment->isOptimizerCaptureSettingsEnabled() === true))
+        {
+            $processor = new Payment\Processor\Processor($this->entity->merchant);
+
+            $lateAuthConfig = $processor->getLateAuthPaymentConfig($payment);
+
+            if (isset($lateAuthConfig) === false)
+            {
+                return;
+            }
+
+            $autoTimeoutDuration = $lateAuthConfig['capture_options']['automatic_expiry_period'];
+
+            $difference = $processor->getTimeDifferenceInAuthorizeAndCreated($payment);
+
+            // We only support auto capture for optimizer payments
+            if ((empty($autoTimeoutDuration) === false) and ($difference > $autoTimeoutDuration))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CONFIG_MARKED_FOR_REFUND);
+            }
+        }
     }
 
     protected function failIfRefundConfigSetLateAuth($payment)

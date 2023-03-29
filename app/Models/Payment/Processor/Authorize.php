@@ -1778,7 +1778,15 @@ trait Authorize
 
     public function autoCapturePaymentIfApplicable(Payment\Entity $payment)
     {
+    
         $response = $this->shouldAutoCapture($payment);
+    
+        // For Optimizer payments, additional check
+        // Ref : https://docs.google.com/document/d/1FQEGHojgb74pyBtS0r7t_qWg05XsZ_636UyYYkUNKdE/edit#
+        if($payment->isOptimizerCaptureSettingsEnabled() === true)
+        {
+            $response = $this->shouldAutoCaptureOptimizerExternalPgPayment($payment, $response);
+        }
 
         if (isset($response) === false)
         {
