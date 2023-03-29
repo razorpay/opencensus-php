@@ -1794,6 +1794,8 @@ class Service extends Base\Service
 
             $response['org_custom_code'] =  $this->merchant->org->getCustomCode();
 
+            $response['org_name'] =  $this->merchant->org->getDisplayName();
+
             $response['brand_color'] = $this->merchant->getBrandColorOrOrgPreference();
 
             $supportDetails = $this->repo->merchant_email->getEmailByType(Merchant\Email\Type::SUPPORT, $merchant->getId());
@@ -1807,6 +1809,12 @@ class Service extends Base\Service
             $response[Entity::METHODS] = (new Methods\Core)->getUpiMethodForMerchant($merchant);
 
             $response[self::SEGMENT_DATA_MCC] = $this->merchant->getCategory();
+
+            $response['country_code'] = $this->merchant->getCountry();
+
+            $response['currency_code'] = $this->merchant->getCurrency();
+
+            $response['time_zone'] = $this->merchant->getTimeZone();
 
             if ($supportDetails !== null)
             {

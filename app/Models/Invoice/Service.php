@@ -845,7 +845,8 @@ class Service extends Base\Service
         }
 
         return [
-            'branding'  => $branding
+            'branding'  => $branding,
+            'custom_code'=> $org->getCustomCode()
         ];
     }
 

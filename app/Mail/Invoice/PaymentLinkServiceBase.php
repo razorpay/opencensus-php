@@ -21,13 +21,27 @@ class PaymentLinkServiceBase extends Mailable
 
     protected function addSender()
     {
-        $fromEmail = app()['config']->get('app.apps_default_sender_email_address') ?? Constants::MAIL_ADDRESSES[Constants::NOREPLY];
+        $fromEmail = $this->getSenderEmail();
 
         $fromHeader = $this->data[E::MERCHANT][Merchant\Entity::NAME];
 
         $this->from($fromEmail, $fromHeader);
 
         return $this;
+    }
+
+    protected function getSenderEmail(): string
+    {
+        $orgCode = $this->data['org']['custom_code'] ?? '';
+
+        return Constants::getSenderEmailForOrg($orgCode, Constants::NOREPLY);
+    }
+
+    protected function getSenderHeader(): string
+    {
+        $orgCode = $this->data['org']['custom_code'] ?? '';
+
+        return Constants::getSenderNameForOrg($orgCode, Constants::NOREPLY);
     }
 
     protected function addRecipients()
@@ -50,9 +64,10 @@ class PaymentLinkServiceBase extends Mailable
 
     protected function addReplyTo()
     {
-        $email = Constants::MAIL_ADDRESSES[Constants::NOREPLY];
 
-        $header = Constants::HEADERS[Constants::NOREPLY];
+        $email = $this->getSenderEmail();
+
+        $header = $this->getSenderHeader();
 
         $this->replyTo($email, $header);
 
