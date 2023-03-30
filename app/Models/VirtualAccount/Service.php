@@ -655,7 +655,10 @@ class Service extends Base\Service
                     'time_taken'    =>  microtime(true) - $startTime,
                 ]);
 
-            VirtualAccountsAutoCloseInactive::dispatch($this->mode, $inactiveVirtualAccountIds->toArray());
+            if(sizeof($inactiveVirtualAccountIds) > 0)
+            {
+                VirtualAccountsAutoCloseInactive::dispatch($this->mode, $inactiveVirtualAccountIds->toArray());
+            }
 
             $processedCount += sizeof($inactiveVirtualAccountIds);
         }
@@ -663,6 +666,8 @@ class Service extends Base\Service
 
         if (empty($startDate) === false)
         {
+            $newStartDate = $input['end_date'];
+
             $this->core->setDormantVaStartDate($startDate, $newStartDate);
         }
 
