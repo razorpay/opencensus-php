@@ -49,6 +49,19 @@ class TransferProcess extends Job
         {
             $this->payment = $this->getPaymentEntity($this->payment);
 
+            // if the balance is not update we would further delay the transfer processing
+            // this happens for merchants who are on aysnc balance update flow
+            $delay  = $this->checkProcessingDelay($this->payment);
+
+            if ($delay === true)
+            {
+                (new Transfer\Core)->dispatchForTransferProcessing($transfermode, $this->payment);
+
+                $this->delete();
+
+                return;
+            }
+
             $transfer = null;
 
             if ($this->transferMode === Transfer\Constant::ORDER)
@@ -80,6 +93,19 @@ class TransferProcess extends Job
         {
             $this->delete();
         }
+    }
+
+    private function checkProcessingDelay($payment)
+    {
+        $transaction =  $payment->transaction;
+
+        if ((empty($transaction) === true) or 
+            ($transaction->isBalanceUpdated() === false)) 
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private  function getPaymentEntity($paymentId)
