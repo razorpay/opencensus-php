@@ -1331,7 +1331,8 @@ return [
         ],
         'response' => [
             'content' => [
-                "count" => 1
+                'successful entries count' => 1,
+                'failed entries count' =>  0,
             ],
         ]
     ],
@@ -1346,7 +1347,8 @@ return [
         ],
         'response' => [
             'content' => [
-                "count" => 0
+                'successful entries count' => 0,
+                'failed entries count' =>  1,
             ],
         ]
     ],
@@ -1361,7 +1363,8 @@ return [
         ],
         'response' => [
             'content' => [
-                "count" => 0
+                'successful entries count' => 0,
+                'failed entries count' =>  1,
             ],
         ]
     ],
@@ -1376,7 +1379,8 @@ return [
         ],
         'response' => [
             'content' => [
-                "count" => 0
+                'successful entries count' => 0,
+                'failed entries count' =>  1,
             ],
         ]
     ],

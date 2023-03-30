@@ -2075,6 +2075,8 @@ class RefundLedgerTest extends TestCase
 
         $txn = $this->getDbEntity('transaction', ["type" => "reversal"]);
 
+        $reversal = $this->getLastEntity('reversal', true);
+
         $ledgerOutboxEntity = $this->getTrashedDbEntity('ledger_outbox', ['payload_name' => $reversalId . '-' . 'refund_reversed']);
 
         $this->assertEquals($reversalId, 'rvrsl_' . $txn['entity_id']);
@@ -2083,6 +2085,8 @@ class RefundLedgerTest extends TestCase
         $this->assertEquals($journal['ledger_entry'][1]['amount'], $txn['amount'] - $txn['fee'] - $txn['tax']);
         $this->assertEquals($ledgerOutboxEntity['is_deleted'], 1, 'outbox entry not soft deleted');
         $this->assertNotNull($ledgerOutboxEntity['deleted_at'], 'outbox entry not soft deleted');
+        $this->assertNotNull($reversal['transaction_id'], 'reversal txn should not be null');
+
     }
 
     private function getKafkaEventPayload($journal, $request = null, $msg = "")

@@ -464,7 +464,7 @@ class RefundJournalEvents
             }
             else if ($transaction->isRefundCredits() === true and $transaction->isPostpaid() === true)
             {
-                $rule[Constants::REFUND_ACCOUNTING] = Constants::REFUND_PROCESSED_WITH_CREDITS_INSTANT_POSTPAID_MODEL;
+                $rule[Constants::REFUND_ACCOUNTING] = Constants::INSTANT_REFUND_PROCESSED_WITH_CREDITS_POSTPAID_MODEL;
                 $moneyParams[Constants::REFUND_CREDITS]     = strval($amount);
                 $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
             }
@@ -476,7 +476,7 @@ class RefundJournalEvents
             }
             else if ($transaction->isRefundCredits() === false and $transaction->isPostpaid() === true)
             {
-                $rule[Constants::REFUND_ACCOUNTING] = Constants::REFUND_INSTANT_PROCESSED_POSTPAID_MODEL;
+                $rule[Constants::REFUND_ACCOUNTING] = Constants::INSTANT_REFUND_PROCESSED_POSTPAID_MODEL;
                 $moneyParams[Constants::MERCHANT_BALANCE_AMOUNT]     = strval($amount);
                 $moneyParams[Constants::MERCHANT_RECEIVABLE_AMOUNT] = strval($tax + $fee);
             }

@@ -133,6 +133,7 @@ class Metric
     const PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE                   = 'pg_ledger_outbox_cron_retry_failure';
     const PG_LEDGER_TRANSACTION_NOT_FOUND                       = 'pg_ledger_transaction_not_found';
     const PG_LEDGER_CREATE_TRANSACTION_SUCCESS                  = 'pg_ledger_create_transaction_success';
+    const PG_LEDGER_CREATE_TRANSACTION_FAILURE                  = 'pg_ledger_create_transaction_failure';
     const PG_LEDGER_OUTBOX_UPDATE_RETRY_COUNT_SUCCESS           = 'pg_ledger_outbox_update_retry_count_success';
     const PG_LEDGER_OUTBOX_UPDATE_RETRY_COUNT_FAILURE           = 'pg_ledger_outbox_update_retry_count_failure';
 
@@ -144,5 +145,6 @@ class Metric
     const PG_LEDGER_KAFKA_ACKNOWLEDGMENT_RECEIVED_FROM_LEDGER   = 'pg_ledger_kafka_acknowledgement_received_from_ledger';
     const LEDGER_JOURNAL_FETCH_TRANSACTION_ERROR_TOTAL          = 'ledger_journal_fetch_transaction_error_total';
     const REFUND_API_TXN_KAFKA_PUSH_FAILURE                     = 'refund_api_txn_kafka_push_failure';
+    const PG_LEDGER_ACK_WORKER_FAILURE                          = 'pg_ledger_ack_worker_failure';
 
 }

@@ -327,9 +327,14 @@ class Core extends Base\Core
 
         $gateway = $payment->terminal ? $payment->terminal->getGateway() : "not found";
 
-        $gatewayCommission = $reconGatewayFee;
+        $gatewayCommission = $reconGatewayFee ?? 0;
 
-        $gatewayTax = $reconGatewayServiceTax;
+        $gatewayTax = $reconGatewayServiceTax ?? 0;
+
+        if(($gatewayCommission === 0) and ($gatewayTax === 0))
+        {
+            return;
+        }
 
         $gatewayReceivableAmount = $gatewayCommission + $gatewayTax;
 

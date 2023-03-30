@@ -28,6 +28,8 @@ class Core extends Base\Core
 
     public function processLedgerAcknowledgement(array $outboxPayload)
     {
+        $this->trace->info(TraceCode::PG_LEDGER_ACK_WORKER_REQUEST_RECEIVED);
+
         $outboxPayload= $outboxPayload['after'];
 
         $serialisedPayload= $outboxPayload['payload_serialized'];
@@ -35,6 +37,8 @@ class Core extends Base\Core
         $payload = base64_decode($serialisedPayload);
 
         $payload = json_decode($payload, true);
+
+        $this->trace->info(TraceCode::PG_LEDGER_ACK_WORKER_PAYLOAD_DECODED, $payload);
 
         $request = $payload[Constants::REQUEST];
 
@@ -93,7 +97,7 @@ class Core extends Base\Core
 
             $transactorEvent = $journal[LedgerConstants::TRANSACTOR_EVENT];
 
-            $this->emitMetric($transactorId, $transactorEvent);
+            $this->emitMetric($transactorPublicId, $transactorEvent);
 
             $txn = $this->createTransactionFromJournal($journal, Constants::ACK_WORKER);
 
@@ -136,6 +140,8 @@ class Core extends Base\Core
                 Trace::CRITICAL,
                 TraceCode::PG_LEDGER_ACK_WORKER_FAILURE,
             );
+
+            $this->trace->count(Metric::PG_LEDGER_ACK_WORKER_FAILURE);
         }
     }
 
@@ -520,13 +526,17 @@ class Core extends Base\Core
     }
 
     //pg-ledger outbox cron retries journal and txn creation for non-deleted outbox entries in reverse-shadow mode
-    public function retryFailedReverseShadowTransactions($limit) : int
+    public function retryFailedReverseShadowTransactions($limit) : array
     {
         $ledgerService = $this->app['ledger'];
 
         $successful = 0;
 
+        $successfulIds = [];
+
         $failed = 0;
+
+        $failedIds = [];
 
         $now = time();
 
@@ -642,6 +652,13 @@ class Core extends Base\Core
                             ]
                         );
 
+                        $this->trace->count(Metric::PG_LEDGER_CREATE_TRANSACTION_FAILURE, [
+                            [
+                                LedgerConstants::TRANSACTOR_EVENT       => $transactorEvent,
+                                Constants::SOURCE                       => Constants::CRON
+                            ]
+                        ]);
+
                         $this->trace->count(Metric::PG_LEDGER_OUTBOX_CRON_RETRY_FAILURE, [
                             LedgerReverseShadowConstants::RETRY_COUNT => $retries
                         ]);
@@ -649,7 +666,7 @@ class Core extends Base\Core
                         $this->updateRetryCount($entry, $retries);
 
                         $failed++;
-
+                        array_push($failedIds, $transactorId);
                         continue;
                     }
 
@@ -658,10 +675,12 @@ class Core extends Base\Core
                     if ($isDeleted === true)
                     {
                         $successful++;
+                        array_push($successfulIds, $transactorId);
                     }
                     else
                     {
                         $failed++;
+                        array_push($failedIds, $transactorId);
                     }
                 }
                 catch (Exception $e)
@@ -699,11 +718,17 @@ class Core extends Base\Core
                     }
 
                     $failed++;
+                    array_push($failedIds, $transactorId);
                 }
             }
         }
 
-        return $successful;
+        return [
+            'successful entries count' => $successful,
+            'successful Ids' => $successfulIds,
+            'failed entries count' =>  $failed,
+            'failed Ids' =>  $failedIds,
+        ];
     }
 
     protected function updateRetryCount(Entity $entry, $retries)

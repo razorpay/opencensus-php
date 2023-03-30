@@ -17,6 +17,7 @@ use RZP\Jobs\Settlement\Bucket;
 use RZP\Jobs\CardsPaymentTransaction;
 use RZP\Mail\Merchant\FeeCreditsAlert;
 use RZP\Models\Base;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Ledger\SettlementJournalEvents;
 use RZP\Trace\Tracer;
 use RZP\Models\Base\PublicCollection;
@@ -763,7 +764,11 @@ class Core extends Base\Core
         // refund's payment must have transaction
         $payment = $refund->payment;
 
-        assertTrue ($payment->hasTransaction() === true);
+        // if merchant has pg_ledger_reverse_shadow enabled, we will not be asserting if payment txn exists.
+        if ($refund->merchant->isFeatureEnabled(FeatureConstants::PG_LEDGER_REVERSE_SHADOW) === false)
+        {
+            assertTrue ($payment->hasTransaction() === true);
+        }
 
         return $this->createTransactionForSource($refund, $txnId);
     }

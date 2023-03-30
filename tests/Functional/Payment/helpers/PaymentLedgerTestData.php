@@ -34,7 +34,8 @@ return [
         ],
         'response' => [
             'content' => [
-                "count" => 2
+                'successful entries count' => 2,
+                'failed entries count' =>  0,
             ],
         ]
     ],

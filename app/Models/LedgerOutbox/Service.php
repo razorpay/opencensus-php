@@ -23,13 +23,11 @@ class Service extends Base\Service
     {
         $this->increaseAllowedSystemLimits();
 
-        $count = 0;
-
         $limit = $input['limit'] ?? Constants::DEFAULT_LIMIT;
 
-        $count = $count + $this->core->retryFailedReverseShadowTransactions($limit);
+        $response = $this->core->retryFailedReverseShadowTransactions($limit);
 
-        return ['count' => $count];
+        return $response;
     }
 
     protected function increaseAllowedSystemLimits()

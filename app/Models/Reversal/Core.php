@@ -603,6 +603,10 @@ class Core extends Base\Core
 
             $txnCore->saveFeeDetails($txn, $feesSplit);
 
+            $reversal->transaction()->associate($txn);
+
+            $this->repo->saveOrFail($reversal);
+
             return $txn;
         });
 
