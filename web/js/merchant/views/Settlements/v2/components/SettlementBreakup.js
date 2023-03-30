@@ -77,7 +77,12 @@ const SettlementBreakup = (props) => {
         <tbody>
           {items.map((breakupItem, index) => {
             return breakupItem.type === 'debit' ? (
-              <ComponentRow key={index} breakupItem={breakupItem} newResponse={isBreakupNew} />
+              <ComponentRow
+                key={index}
+                breakupItem={breakupItem}
+                newResponse={isBreakupNew}
+                currency={currency}
+              />
             ) : null;
           })}
         </tbody>

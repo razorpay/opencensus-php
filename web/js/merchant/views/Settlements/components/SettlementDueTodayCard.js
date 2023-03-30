@@ -2,7 +2,7 @@ import React from 'react';
 import { Badge, ClockIcon } from '@razorpay/blade/components';
 import moment from 'moment';
 import Amount from 'common/ui/Amount';
-import { getFormattedAmount } from 'common/utils/rzp-utils';
+import { getFormattedAmount, currencySymbols } from 'common/utils/rzp-utils';
 import SettlementCard from './SettlementCard';
 import { BADGE_INFO, HEADING_INFO, SETTLEMENT_SLA_IN_HOURS, SETTLEMENT_STATUS } from './utils';
 import { FlexBetween, CardFooterIcon, TextFooter } from './styledUtils';
@@ -28,6 +28,7 @@ const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency })
     .unix(initiatedSettlements?.[0]?.created_at)
     .add(SETTLEMENT_SLA_IN_HOURS, 'hours')
     .format('DD MMM, h:mm A');
+  const currencySym = currencySymbols[currency];
 
   const content = (
     <FlexBetween>
@@ -40,7 +41,7 @@ const SettlementDueTodayCard = ({ settlementsList, settlementConfig, currency })
       {delayedTransferAmount > 0 && !isDelayedSettlement ? (
         <span>
           <Badge variant="negative" size="medium">
-            {`₹ ${getFormattedAmount(delayedTransferAmount)} Delayed`}
+            {`${currencySym} ${getFormattedAmount(delayedTransferAmount)} Delayed`}
           </Badge>
           <PopoverComponent align="top" theme="dark">
             <PopoverBody>{BADGE_INFO.DELAYED}</PopoverBody>

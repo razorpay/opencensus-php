@@ -71,6 +71,7 @@ function PaymentDetails(props) {
   const [scrolledToBottom, setScrolledToBottom] = useState(false);
   const [isUPIVisible, setUPIVisible] = useState(false);
   const currency = user.merchant.currency;
+  const isRZPOrg = user.isOrgRZP;
 
   const params = new Proxy(new URLSearchParams(window.location?.search), {
     get: (searchParams, prop) => searchParams.get(prop),
@@ -477,7 +478,8 @@ function PaymentDetails(props) {
                         <Amount value={getPaymentFees() - payment.tax} currency={currency} />
                       </span>
                       <span>
-                        GST - <Amount value={payment.tax} currency={currency} />
+                        {isRZPOrg ? 'GST' : 'Tax'} -{' '}
+                        <Amount value={payment.tax} currency={currency} />
                       </span>
                     </Definition>
                   </EntityDetailRow>
