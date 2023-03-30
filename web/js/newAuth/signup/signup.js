@@ -184,7 +184,29 @@ const SignUp = () => {
     disableSignup = false;
   }
 
-  if (!disableSignup && isSigningUpAsPartner && isNewPartnerSignup()) return <PartnerSignup />;
+  if (!disableSignup && isSigningUpAsPartner && isNewPartnerSignup())
+    return (
+      <>
+        <PartnerSignup />
+        <Modal
+          isOpen={isOpen}
+          onClose={onClose}
+          bottomsheet={isMobileAndTablet()}
+          bottomSheetHeight="265px"
+        >
+          <ModalHeader>New business onboarding is temporarily paused</ModalHeader>
+          <ModalBody>
+            Please submit your details so that your partner account can be activated at the earliest
+            when we resume onboarding.
+            <br />
+            *You can keep referring your clients in the meanwhile
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={onClose}>Continue</Button>
+          </ModalFooter>
+        </Modal>
+      </>
+    );
 
   return (
     <ThemeProvider theme={theme}>

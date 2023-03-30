@@ -1,8 +1,11 @@
+import { v4 as uuid } from 'uuid';
+import store from 'merchant/store';
 import { getMode } from 'common/services/mode';
 import getMobileDetect from 'common/utils/mobileDetect';
 import axios from 'axios';
 import errorService from '@razorpay/universe-utils/errorService';
 import { Teams, Ranks } from 'common/new-ui/ErrorBoundary';
+import { getCookie, setCookie } from 'common/utils/cookies';
 
 /* Delimiters are space / underscore */
 export const titleCase = (sentence) => {
@@ -45,12 +48,22 @@ const sendToLumberjack = ({ eventName, properties = {} }) => {
     });
 };
 
+const getClientID = () => {
+  let clientId = getCookie('clientId');
+  if (!clientId) {
+    clientId = uuid();
+    setCookie('clientId', clientId);
+  }
+  return clientId;
+};
+
 const getCommonProperties = ({ screen, properties, user }) => {
   const eventTimestamp = new Date().toISOString();
   let utm = null;
   let gclid = null; //Google click id, analytics will try to capture and save to cookie if present.
   let browser_details = {};
   const source = getMobileDetect()?.isMobile() ? 'Mobile Dashboard' : 'Dashboard';
+  const merchantID = store.getState().newAuth.merchantID;
 
   if (typeof window.razorpayAnalytics !== 'undefined') {
     utm = window.razorpayAnalytics.utils.getLandingParams();
@@ -78,7 +91,11 @@ const getCommonProperties = ({ screen, properties, user }) => {
         user_business_sub_category: user.business_subcategory,
         rzp_mode: getMode(user.id) ?? '',
       }
-    : {};
+    : {
+        clientId: getClientID(),
+        referrer: document.referrer,
+        mid: merchantID,
+      };
   const commonProperties = {
     pageUrl: window.location.href,
     slug: window.location.pathname,

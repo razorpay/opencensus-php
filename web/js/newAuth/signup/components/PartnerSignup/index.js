@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './modal.styl';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
-import { SCREEN_NAME, STEPS } from 'newAuth/signup/Constants';
+import { STEPS } from 'newAuth/signup/Constants';
 import { StyledSignupWrapper } from './styled';
-import { trackWithSegment } from 'newAuth/trackEvents';
 import {
   closeModal as closeModalFn,
   openModal as openModalFn,
@@ -22,13 +21,6 @@ const PartnerSignup = ({ openModal, closeModal, showNotification }) => {
   const [step, setStep] = useState(STEPS.MOBILE_NUMBER);
   const [contactEmail, setContactEmail] = useState(null);
   const [emailToken, setEmailToken] = useState(null);
-  useEffect(() => {
-    trackWithSegment({
-      objectName: 'Signup',
-      actionName: 'Displayed',
-      location: SCREEN_NAME[step],
-    });
-  }, [step]);
 
   const onboardAllAsResellerFlag = isOnboardAllAsResellers();
 

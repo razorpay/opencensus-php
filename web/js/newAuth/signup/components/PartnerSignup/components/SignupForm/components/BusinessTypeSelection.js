@@ -89,14 +89,15 @@ const BusinessTypeSelection = ({ setStep, closeModal, showNotification, contactN
   };
 
   const onBusinessTypeSelect = (formikProps, businessType) => {
+    if (!formikProps.touched.businessType) {
+      trackWithSegment({
+        objectName: 'Business Type',
+        actionName: 'Initiated',
+        location: SCREEN_NAME[STEPS.BUSINESS_TYPE_SELECTION],
+      });
+    }
     formikProps.setFieldTouched('businessType');
     formikProps.setFieldValue('businessType', businessType?.id);
-
-    trackWithSegment({
-      objectName: 'Business Type',
-      actionName: 'Initiated',
-      location: SCREEN_NAME[STEPS.BUSINESS_TYPE_SELECTION],
-    });
   };
 
   const noop = () => {};

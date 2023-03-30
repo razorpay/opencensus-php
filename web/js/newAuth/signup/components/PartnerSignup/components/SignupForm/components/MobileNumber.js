@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Formik } from 'formik';
 import StepFooter from './StepFooter';
 import ErrorModal from './ErrorScreens/ErrorModal';
@@ -36,6 +36,14 @@ const MobileNumber = ({
   const [showError, setShowError] = useState(false);
   const [errorCode, setErrorCode] = useState(null);
 
+  useEffect(() => {
+    trackWithSegment({
+      objectName: 'Signup',
+      actionName: 'Displayed',
+      location: SCREEN_NAME[STEPS.MOBILE_NUMBER],
+    });
+  }, []);
+
   const onCTAClick = (formikProps) => {
     setIsLoading(true);
     trackWithSegment({
@@ -43,7 +51,7 @@ const MobileNumber = ({
       actionName: 'Clicked',
       location: SCREEN_NAME[STEPS.MOBILE_NUMBER],
       properties: {
-        whatsappSelectDeselectFlag: isSendWhatsapp,
+        whatsappDeselectFlag: isSendWhatsapp,
       },
     });
     return registerMobileOTP(formikProps.values.mobileNumber)
@@ -85,7 +93,7 @@ const MobileNumber = ({
       actionName: 'Clicked',
       location: 'Mobile Number',
       properties: {
-        whatsappSelectDeselectFlag: isSendWhatsapp,
+        whatsappDeselectFlag: isSendWhatsapp,
       },
     });
     setIsSendWhatsapp(!isSendWhatsapp);

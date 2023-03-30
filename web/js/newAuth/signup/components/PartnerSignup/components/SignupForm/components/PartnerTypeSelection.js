@@ -54,16 +54,22 @@ const PartnerTypeSelection = ({ setStep, showNotification, onboardAllAsResellerF
       });
   };
 
-  const trackPartnerTypeSelect = () => {
-    trackWithSegment({
-      objectName: 'Partner Type',
-      actionName: 'Initiated',
-      location: SCREEN_NAME[STEPS.PARTNER_TYPE_SELECTION],
-      properties: {
-        onboardAllAsResellerFlag,
-      },
-    });
+  const onPartnerTypeSelect = (e, formikProps, fieldValue) => {
+    e.stopPropagation();
+    formikProps.setFieldValue('partnerType', fieldValue);
+
+    if (!formikProps.touched.partnerType)
+      trackWithSegment({
+        objectName: 'Partner Type',
+        actionName: 'Initiated',
+        location: SCREEN_NAME[STEPS.PARTNER_TYPE_SELECTION],
+        properties: {
+          onboardAllAsResellerFlag,
+          partnerType: fieldValue,
+        },
+      });
   };
+
   const noop = () => {};
   return (
     <Formik initialValues={{}} validationSchema={partnerTypeSelectionSchema} onSubmit={noop}>
@@ -80,9 +86,7 @@ const PartnerTypeSelection = ({ setStep, showNotification, onboardAllAsResellerF
                   formikProps.values.partnerType === 'reseller' ? 'active' : ''
                 }`}
                 onClick={(e) => {
-                  e.stopPropagation();
-                  formikProps.setFieldValue('partnerType', 'reseller');
-                  trackPartnerTypeSelect();
+                  onPartnerTypeSelect(e, formikProps, 'reseller');
                 }}
               >
                 <div className="pts-tile-content">
@@ -115,9 +119,7 @@ const PartnerTypeSelection = ({ setStep, showNotification, onboardAllAsResellerF
                   formikProps.values.partnerType === 'aggregator' ? 'active' : ''
                 }`}
                 onClick={(e) => {
-                  e.stopPropagation();
-                  formikProps.setFieldValue('partnerType', 'aggregator');
-                  trackPartnerTypeSelect();
+                  onPartnerTypeSelect(e, formikProps, 'aggregator');
                 }}
               >
                 <div className="pts-tile-content">

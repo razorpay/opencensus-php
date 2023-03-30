@@ -76,6 +76,7 @@ import {
   magicCODOrderInfoReducer,
 } from 'merchant/reducers/magicCheckout/codOrders/reducer';
 import paymentHandleReducer from 'merchant/reducers/paymentHandle';
+import newAuthReducer from 'merchant/reducers/newAuth';
 
 import {
   paymentsReducer,
@@ -279,4 +280,5 @@ export default combineReducers({
   paymentUploadInvoice: paymentUploadInvoiceReducer,
   leftNav: leftNavReducer,
   paymentHandle: paymentHandleReducer,
+  newAuth: newAuthReducer,
 });

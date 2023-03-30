@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TextInput, Text } from '@razorpay/blade/components';
 import { Formik } from 'formik';
+import { connect } from 'react-redux';
 import StepFooter from './StepFooter';
 import {
   StyledStepWrapper,
@@ -28,6 +29,7 @@ import isEmpty from '@universe/utils/isEmpty';
 import ErrorScreen from './ErrorScreen';
 import imageUnableToSendOTP from 'assets/partner-dashboard/error-unable-to-send-otp.svg';
 import imageTooManyAttempts from 'assets/partner-dashboard/error-too-many-attempts.svg';
+import { setMerchantID } from 'merchant/reducers/newAuth/actions';
 
 const MobileVerification = ({
   mobileNumber,
@@ -36,6 +38,7 @@ const MobileVerification = ({
   setOtpVerifyToken,
   isSendWhatsapp,
   setShowHeader,
+  setMerchantID,
 }) => {
   const { timerText, isTimerRunning, resetTimer } = useOTPCountdownTimer(
     MOBILE_RESEND_OTP_COUNTDOWN,
@@ -58,14 +61,26 @@ const MobileVerification = ({
       partner_intent: true,
       token: otpVerifyToken,
     })
-      .then(({ success }) => {
+      .then(({ success, data }) => {
         if (success) {
+          const merchantID = data?.id;
+          setMerchantID(merchantID);
           trackWithSegment({
             objectName: 'Sign up Verify OTP',
             actionName: 'Result',
             location: SCREEN_NAME[STEPS.MOBILE_VERIFICATION],
             properties: {
               status: success,
+            },
+          });
+
+          trackWithSegment({
+            objectName: 'Sign up Create Account',
+            actionName: 'Result',
+            location: SCREEN_NAME[STEPS.MOBILE_VERIFICATION],
+            properties: {
+              status: success,
+              mid: merchantID,
             },
           });
           if (isSendWhatsapp) {
@@ -221,4 +236,4 @@ const MobileVerification = ({
   );
 };
 
-export default MobileVerification;
+export default connect(null, { setMerchantID })(MobileVerification);
