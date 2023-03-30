@@ -31,7 +31,7 @@ class QueuedReasons
     const QUEUED_REASONS_WITH_DESCRIPTION = [
         self::BENE_BANK_DOWN       => 'Beneficiary bank\'s systems are not working. Payout will be processed after the system starts working else it will be failed after the pre-defined time limit.',
         self::LOW_BALANCE          => 'Payout is queued as there is insufficient balance in your account to process the payout.',
-        self::PARTNER_BANK_DEGRADED    => 'Partner bank downtime. Payout will be processed after partner bank uptime or fail after pre-defined limit'
+        self::PARTNER_BANK_DEGRADED    => 'Payout is queued as Partner bank systems are down'
       //  self::NPCI_DOWN             => 'Payout is queued as NPCI system is down',
       //  self::NEFT_LIMIT_EXHAUSTED  => 'NEFT limit exhausted for the day',
       //  self::NEFT_WINDOW_CLOSED    => 'NEFT window is closed',

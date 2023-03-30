@@ -646,5 +646,12 @@
       "reason": "server_error",
       "description": "Payout failed due to technical failure. Please retry after 30 min"
     }
+  },
+  "PARTNER_BANK_OFFLINE": {
+    "failed": {
+      "source": "gateway",
+      "reason": "gateway_technical_error",
+      "description": "Payout failed at partner bank. Please retry after 30 min"
+    }
   }
 }
