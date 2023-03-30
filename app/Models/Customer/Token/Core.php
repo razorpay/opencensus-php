@@ -190,7 +190,7 @@ class Core extends Base\Core
             //
             if ($token->getExpiredAt() === null)
             {
-                $token->setExpiredAt($card->getExpiryTimestamp());
+                $token->setExpiredAt($card->getTokenExpiryTimestamp());
             }
 
             $token->card()->associate($card);

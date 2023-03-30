@@ -721,6 +721,21 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
+        // If token expiry year or token expiry month is null then fallback to card expiry year and card expiry month.
+        //Only used in cases when token expiry year and token expiry month is not yet fetch from network.
+        if($year === null || $month === null) {
+
+            $app  = \App::getFacadeRoot();
+
+            $app['trace']->info(TraceCode::DEFAULTING_TOKEN_EXPIRY_IF_NULL, [
+                'message'  => 'Defaulting token expired at to card expiry details, as token expiry year/month are null'
+            ]);
+
+            $year = $this->getExpiryYear();
+
+            $month = $this->getExpiryMonth();
+        }
+
         return Carbon::createFromDate($year, $month, 1, Timezone::IST)
             ->endOfMonth()
             ->getTimestamp();

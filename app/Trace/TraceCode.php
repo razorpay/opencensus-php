@@ -959,6 +959,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CUSTOMER_DELETE                                       = 'CUSTOMER_DELETE';
     const CUSTOMER_EDIT                                         = 'CUSTOMER_EDIT';
     const CUSTOMER_TOKEN_CREATE                                 = 'CUSTOMER_TOKEN_CREATE';
+    const DEFAULTING_TOKEN_EXPIRY_IF_NULL                       = 'DEFAULTING_TOKEN_EXPIRY_IF_NULL';
     const SUBSCRIPTION_TOKEN_CREATE                             = 'SUBSCRIPTION_TOKEN_CREATE';
     const CUSTOMER_TOKEN_PAUSE                                  = 'CUSTOMER_TOKEN_PAUSE';
     const CUSTOMER_TOKEN_RESUME                                 = 'CUSTOMER_TOKEN_RESUME';
