@@ -35,7 +35,7 @@ export function getCustomURL(url) {
   const user = getUser();
   if (user.isOrgRZP || user.isOrgCurlec) return url;
 
-  const urlSplits = url.split('://');
+  const urlSplits = url?.split('://');
   const org = user.orgCustomCode === 'axis' ? 'axisbank' : user.orgCustomCode;
   const link =
     user.orgCustomCode !== 'axis'
