@@ -3674,7 +3674,8 @@ trait PaymentTrait
             "axb",
             "fam",
             "rapl",
-            "pinelabs"
+            "pinelabs",
+            "zoicici",
         ];
 
         return $vpaHandles;

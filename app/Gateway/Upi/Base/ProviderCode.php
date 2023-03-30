@@ -180,6 +180,7 @@ class ProviderCode
     const FAM                = 'fam';
     const RAPL               = 'rapl';
     const PINELABS           = 'pinelabs';
+    const ZOICICI            = 'zoicici';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -351,6 +352,7 @@ class ProviderCode
         self::FAM                => self::PPIW,
         self::RAPL               => IFSC::RATN,
         self::PINELABS           => self::PPIW,
+        self::ZOICICI            => IFSC::ICIC,
     ];
 
     /**
