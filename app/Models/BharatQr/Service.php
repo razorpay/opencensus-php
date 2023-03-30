@@ -372,6 +372,11 @@ class Service extends Base\Service
                 unset($gatewayResponseTrace['mpan']);
             }
 
+            /**
+             * Pushing Metric for terminal not found.
+             */
+            (new Metric())->pushBharatQrTerminalNotFoundMetrics($gatewayResponse, $this->mode);
+
             throw new Exception\LogicException(
                 'Terminal should not be null here',
                 null,
