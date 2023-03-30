@@ -8,6 +8,7 @@ use Razorpay\Dcs\Constants as DcsSdkConstants;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\ServerErrorException;
 use RZP\Services\Dcs\Features\Type;
+use RZP\Services\Dcs\Features\Utility;
 use RZP\Tests\TestCase;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Admin\ConfigKey;
@@ -313,14 +314,16 @@ class DcsServiceConstantsTest extends TestCase
             foreach ($fields as $fieldname => $getter)
             {
                 $allEligibleFields[$fieldname] = $getter;
-                $output = DataFormatter::marshal([$featureName => true], $class);
+                $actualName = Utility::extractActualDcsName($featureName);
+                $output = DataFormatter::marshal([$actualName => true], $class);
                 $this->assertNotEquals("", $output);
             }
         }
 
         foreach (DcsConstants::$apiFeatureNameToDCSFeatureName as $apiName => $dcsName)
         {
-            $this->assertTrue(key_exists($dcsName, $allEligibleFields), "name is missing in sdk fields");
+            $actualDcsName = Utility::extractActualDcsName($dcsName);
+            $this->assertTrue(key_exists($actualDcsName, $allEligibleFields), "name is missing in sdk fields");
         }
     }
 }

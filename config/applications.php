@@ -1167,7 +1167,19 @@ return [
                 'username'  => env('PG_ROUTER_KEY'),
                 'password'  => env('PG_ROUTER_SECRET'),
             ],
-        ]
+        ],
+        'capital-los' => [
+            'live'=>[
+                'url'      => env('APP_LOAN_ORIGINATION_SYSTEM_URL'),
+                'username' => 'key',
+                'password' => env('APP_LOAN_ORIGINATION_SYSTEM_SECRET'),
+            ],
+            'test'=>[
+                'url'      => env('APP_LOAN_ORIGINATION_SYSTEM_URL'),
+                'username' => 'key',
+                'password' => env('APP_LOAN_ORIGINATION_SYSTEM_SECRET'),
+            ],
+        ],
     ],
 
     'automation' => [

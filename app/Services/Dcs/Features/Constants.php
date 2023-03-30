@@ -74,6 +74,8 @@ class Constants
     const BlockSendingOnboardingSms = 'block_sending_onboarding_sms';
     const AssumeSubAccount = 'assume_sub_account';
     const AssumeMasterAccount = 'assume_master_account';
+    const CorporateCardsIsAllowedToApply = 'corporatecards:is_allowed_to_apply';
+    const CashAdvanceIsAllowedToApply = 'cashadvance:is_allowed_to_apply';
 
     /**
      * Stores the mapping of the features to their corresponding dcs keys
@@ -142,7 +144,9 @@ class Constants
         self::OnboardedViaV2ApiEnabled => 'rzp/pg/merchant/onboarding/PartnershipFeatures',
         self::BlockSendingOnboardingSms => 'rzp/pg/merchant/communication/PartnershipFeatures',
         self::AssumeSubAccount => 'rzp/x/merchant/payouts/SubAccountRoles',
-        self::AssumeMasterAccount => 'rzp/x/merchant/payouts/SubAccountRoles'
+        self::AssumeMasterAccount => 'rzp/x/merchant/payouts/SubAccountRoles',
+        self::CorporateCardsIsAllowedToApply => 'rzp/capital/merchant/onboarding/corporatecards/EligibilityFeatures',
+        self::CashAdvanceIsAllowedToApply => 'rzp/capital/merchant/onboarding/cashadvance/EligibilityFeatures',
     ];
 
     /**
@@ -214,6 +218,8 @@ class Constants
         APIFeaturesConstants::BLOCK_ONBOARDING_SMS                          => self::BlockSendingOnboardingSms,
         APIFeaturesConstants::ASSUME_SUB_ACCOUNT                            => self::AssumeSubAccount,
         APIFeaturesConstants::ASSUME_MASTER_ACCOUNT                         => self::AssumeMasterAccount,
+        APIFeaturesConstants::CAPITAL_CARDS_ELIGIBLE                        => self::CorporateCardsIsAllowedToApply,
+        APIFeaturesConstants::LOC                                           => self::CashAdvanceIsAllowedToApply,
     ];
 
     /**

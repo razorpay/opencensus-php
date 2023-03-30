@@ -18,5 +18,7 @@ class Constants
         "rzp/pg/org/payments/credits/Features" => "pg-router",
         "rzp/pg/merchant/payments/ledger/Features" => "pg-router",
         "rzp/pg/merchant/payments/refunds/Features" => "pg-router",
+        "rzp/capital/merchant/onboarding/corporatecards/EligibilityFeatures" => "capital-los",
+        "rzp/capital/merchant/onboarding/cashadvance/EligibilityFeatures" => "capital-los",
     ];
 }
