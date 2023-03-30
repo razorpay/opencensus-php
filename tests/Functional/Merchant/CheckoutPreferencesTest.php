@@ -767,6 +767,23 @@ class CheckoutPreferencesTest extends TestCase
         $this->assertArrayHasKey('earlysalary', $response['methods']['cardless_emi']);
     }
 
+    public function testGetCheckoutPreferencesWithProcessingFeePlan()
+    {
+        $this->fixtures->merchant->enableEmi();
+
+        $this->fixtures->merchant->enableDebitEmiProviders();
+
+        $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $response = $this->getPreferences();
+
+        $this->assertArrayHasKey('processing_fee_plan', $response['methods']['emi_options']['HDFC'][0]);
+
+        $this->assertArrayHasKey('processing_fee_plan', $response['methods']['emi_options']['UTIB'][0]);
+
+        $this->assertArrayHasKey('processing_fee_plan', $response['methods']['emi_options']['KKBK'][0]);
+    }
+
     public function testGetCheckoutPreferencesForDebitEmi()
     {
         $this->fixtures->merchant->enableEmi();

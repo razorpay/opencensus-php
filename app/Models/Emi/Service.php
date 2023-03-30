@@ -63,6 +63,8 @@ class Service extends Base\Service
 
             $merchant_payback = number_format($plan->getMerchantPayback()/100, 2);
 
+            $emiOptionPresent = false;
+
             if (array_key_exists($plan->getId(), $emiOfferPlans) === true)
             {
                 $minEmiAmount = Calculator::calculateMinAmount($minAmount, $plan->getMerchantPayback());
@@ -88,6 +90,8 @@ class Service extends Base\Service
                         'merchant_payback'   => $merchant_payback,
                     ];
                 }
+
+                $emiOptionPresent = true;
             }
             // If offer is forced, there's no need to show the other EMI plans
             else if ($this->shouldShowNotOfferEmiOption($offers, $order, $plan) === true)
@@ -99,7 +103,25 @@ class Service extends Base\Service
                     'min_amount'          => $minAmount,
                     'merchant_payback'    => $merchant_payback,
                 ];
+
+                $emiOptionPresent = true;
             }
+
+            if ($emiOptionPresent)
+            {
+                $processingFeePlan = (new ProcessingFeePlan())->getProcessingFeePlan($plan->getIssuer(), $plan->getType(), $duration);
+
+                if ($processingFeePlan !== [])
+                {
+                    $lastEntryOfIssuer = (count($emiOptions[$issuer]) - 1);
+
+                    // update the entry that has been added in this iteration only
+
+                    $emiOptions[$issuer][$lastEntryOfIssuer]['processing_fee_plan'] = $processingFeePlan;
+                }
+
+            }
+
         }
 
         if ((new Merchant\Service)->isSbiEmiEnabled() === false)

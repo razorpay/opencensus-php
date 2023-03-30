@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Affordability;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use RZP\Constants\Mode;
+use RZP\Models\Emi\ProcessingFeePlan;
 use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -158,6 +159,7 @@ class AffordabilityTest extends TestCase
                         'subvention' => "customer",
                         'min_amount' => 300000,
                         'merchant_payback' => "5.18",
+                        'processing_fee_plan' => (new ProcessingFeePlan())->getProcessingFeePlan('HDFC','credit' , '3')
                     ],
                 ],
             ],
@@ -205,8 +207,9 @@ class AffordabilityTest extends TestCase
                         'interest' => 12,
                         'subvention' => "customer",
                         'min_amount' => 300000,
-                        'merchant_payback' => "5.18"
-                    ],
+                        'merchant_payback' => "5.18",
+                        'processing_fee_plan' => (new ProcessingFeePlan())->getProcessingFeePlan('HDFC','credit' , '3')
+        ],
                 ],
             ],
         ];
