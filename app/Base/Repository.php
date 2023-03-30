@@ -1275,12 +1275,12 @@ class Repository extends \Razorpay\Spine\Repository
         $mode = $mode ?? $this->app['rzp.mode'];
 
         $connection = ($mode === Mode::TEST) ?
-            Connection::DATA_WAREHOUSE_ADMIN_SOURCE_API_TEST : Connection::DATA_WAREHOUSE_ADMIN_SOURCE_API_LIVE;
+            Connection::TEST : Connection::DATA_WAREHOUSE_ADMIN_SOURCE_API_LIVE;
 
         if ($cluster === ConnectionType::DATA_WAREHOUSE_MERCHANT)
         {
             $connection = ($mode === Mode::TEST) ?
-                Connection::DATA_WAREHOUSE_MERCHANT_SOURCE_API_TEST : Connection::DATA_WAREHOUSE_MERCHANT_SOURCE_API_LIVE;
+                Connection::TEST : Connection::DATA_WAREHOUSE_MERCHANT_SOURCE_API_LIVE;
         }
 
         return $connection;
