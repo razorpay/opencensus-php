@@ -139,21 +139,6 @@ return array(
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
-        'master-replica-test' => [
-            'driver'    => env('DB_TEST_DRIVER'),
-            'host'      => env('ES_DB_TEST_HOST'),
-            'port'      => env('SLAVE_DB_TEST_PORT'),
-            'database'  => env('DB_TEST_DATABASE'),
-            'username'  => env('SLAVE_DB_TEST_USERNAME'),
-            'password'  => env('SLAVE_DB_TEST_PASSWORD'),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true,
-            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
-            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
-        ],
-
         'data-warehouse-live' => [
             'read'  => [
                 'host'      => env('DB_WAREHOUSE_HOST'),
@@ -334,21 +319,6 @@ return array(
             ],
         ],
 
-        'master-replica-live' => [
-            'driver'    => env('DB_LIVE_DRIVER'),
-            'host'      => env('ES_DB_LIVE_HOST'),
-            'port'      => env('SLAVE_DB_LIVE_PORT'),
-            'database'  => env('DB_LIVE_DATABASE'),
-            'username'  => env('SLAVE_DB_LIVE_USERNAME'),
-            'password'  => env('SLAVE_DB_LIVE_PASSWORD'),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true,
-            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
-            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
-        ],
-
         'test_migration' => [
             'host'      => env('DB_TEST_HOST'),
             'port'      => env('DB_TEST_PORT'),
@@ -394,11 +364,11 @@ return array(
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
-        'reporting-replica-live' => [
-            'driver'    => env('REPORTING_DB_LIVE_DRIVER'),
-            'host'      => env('REPORTING_DB_LIVE_HOST'),
-            'port'      => env('REPORTING_DB_LIVE_PORT'),
-            'database'  => env('REPORTING_DB_LIVE_DATABASE'),
+        'payment-fetch-replica-live' => [
+            'driver'    => env('PAYMENT_FETCH_DB_LIVE_DRIVER', env('REPORTING_DB_LIVE_DRIVER')),
+            'host'      => env('PAYMENT_FETCH_DB_LIVE_HOST', env('REPORTING_DB_LIVE_HOST')),
+            'port'      => env('PAYMENT_FETCH_DB_LIVE_PORT', env('REPORTING_DB_LIVE_PORT')),
+            'database'  => env('PAYMENT_FETCH_DB_LIVE_DATABASE', env('REPORTING_DB_LIVE_DATABASE')),
             'username'  => env('SLAVE_DB_LIVE_USERNAME'),
             'password'  => env('SLAVE_DB_LIVE_PASSWORD'),
             'charset'   => 'utf8',
@@ -409,13 +379,13 @@ return array(
             'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
         ],
 
-        'payment-fetch-replica-live' => [
-            'driver'    => env('PAYMENT_FETCH_DB_LIVE_DRIVER'),
-            'host'      => env('PAYMENT_FETCH_DB_LIVE_HOST', env('REPORTING_DB_LIVE_HOST')),
-            'port'      => env('PAYMENT_FETCH_DB_LIVE_PORT', env('REPORTING_DB_LIVE_PORT')),
-            'database'  => env('PAYMENT_FETCH_DB_LIVE_DATABASE', env('REPORTING_DB_LIVE_DATABASE')),
-            'username'  => env('SLAVE_DB_LIVE_USERNAME'),
-            'password'  => env('SLAVE_DB_LIVE_PASSWORD'),
+        'payment-fetch-replica-test' => [
+            'driver'    => env('PAYMENT_FETCH_DB_TEST_DRIVER', env('REPORTING_DB_TEST_DRIVER')),
+            'host'      => env('PAYMENT_FETCH_DB_TEST_HOST', env('REPORTING_DB_TEST_HOST')),
+            'port'      => env('PAYMENT_FETCH_DB_TEST_PORT', env('REPORTING_DB_TEST_PORT')),
+            'database'  => env('PAYMENT_FETCH_DB_TEST_DATABASE', env('REPORTING_DB_TEST_DATABASE')),
+            'username'  => env('SLAVE_DB_TEST_USERNAME'),
+            'password'  => env('SLAVE_DB_TEST_PASSWORD'),
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',
@@ -431,21 +401,6 @@ return array(
             'database'  => env('PAYMENT_FETCH_DB_LIVE_DATABASE', env('REPORTING_DB_LIVE_DATABASE')),
             'username'  => env('ASV_SLAVE_DATABASE_USER'),
             'password'  => env('ASV_SLAVE_DATABASE_PASSWORD'),
-            'charset'   => 'utf8',
-            'collation' => 'utf8_bin',
-            'prefix'    => '',
-            'strict'    => true,
-            'wait_timeout'              => env('DB_WAIT_TIMEOUT'),
-            'transaction_wait_timeout'  => env('DB_TRANSACTION_WAIT_TIMEOUT'),
-        ],
-
-        'reporting-replica-test' => [
-            'driver'    => env('REPORTING_DB_TEST_DRIVER'),
-            'host'      => env('REPORTING_DB_TEST_HOST'),
-            'port'      => env('REPORTING_DB_TEST_PORT'),
-            'database'  => env('REPORTING_DB_TEST_DATABASE'),
-            'username'  => env('SLAVE_DB_TEST_USERNAME'),
-            'password'  => env('SLAVE_DB_TEST_PASSWORD'),
             'charset'   => 'utf8',
             'collation' => 'utf8_bin',
             'prefix'    => '',

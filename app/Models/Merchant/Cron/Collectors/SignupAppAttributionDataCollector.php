@@ -45,6 +45,6 @@ class SignupAppAttributionDataCollector extends TimeBoundDbDataCollector
 
     public function getFallbackConnection()
     {
-        return Connection::MASTER_REPLICA_LIVE;
+        return Connection::PAYMENT_FETCH_REPLICA_LIVE;
     }
 }

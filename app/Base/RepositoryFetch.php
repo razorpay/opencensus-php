@@ -487,7 +487,7 @@ trait RepositoryFetch
                     {
                        return $this->getDataWarehouseConnection();
                     }
-                    return $this->getMasterReplicaConnection();
+                    return $this->getPaymentFetchReplicaConnection();
                 }
 
             case ConnectionType::SLAVE:

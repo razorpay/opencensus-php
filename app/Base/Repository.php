@@ -1182,16 +1182,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function getMasterReplicaConnection(string $mode = null)
     {
-        if ($this->app['env'] === Environment::TESTING)
-        {
-            return Config::get('database.default');
-        }
-
-        $mode = ($mode ?? $this->app['rzp.mode']) ?? Mode::LIVE;
-
-        $connection = ($mode === Mode::TEST) ? Connection::MASTER_REPLICA_TEST : Connection::MASTER_REPLICA_LIVE;
-
-        return $connection;
+        return $this->getSlaveConnection($mode);
     }
 
     protected function getArchivedDataReplicaConnection(string $mode = null)
@@ -1359,21 +1350,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function getReportingReplicaConnection(string $mode = null): string
     {
-        if (in_array($this->app['env'], ['testing', 'dev', 'testing_docker', 'beta'], true) === true)
-        {
-            return Config::get('database.default');
-        }
-
-        if (isset($this->app['rzp.mode']) === false)
-        {
-            $this->app['rzp.mode'] = Mode::LIVE;
-        }
-
-        $mode = $mode ?? $this->app['rzp.mode'];
-
-        $connection = ($mode === Mode::TEST) ? Connection::REPORTING_REPLICA_TEST : Connection::REPORTING_REPLICA_LIVE;
-
-        return $connection;
+        return $this->getPaymentFetchReplicaConnection($mode);
     }
 
     public function getPaymentFetchReplicaConnection(string $mode = null)
@@ -1385,7 +1362,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $mode = $mode ?? $this->app['rzp.mode'];
 
-        $connection = ($mode === Mode::TEST) ? Connection::REPORTING_REPLICA_TEST : Connection::PAYMENT_FETCH_REPLICA_LIVE;
+        $connection = ($mode === Mode::TEST) ? Connection::PAYMENT_FETCH_REPLICA_TEST : Connection::PAYMENT_FETCH_REPLICA_LIVE;
 
         return $connection;
     }

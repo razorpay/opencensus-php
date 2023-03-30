@@ -8,17 +8,14 @@ class Connection
     const LIVE                  = 'live';
     const SLAVE_TEST            = 'slave-test';
     const SLAVE_LIVE            = 'slave-live';
-    const MASTER_REPLICA_TEST   = 'master-replica-test';
-    const MASTER_REPLICA_LIVE   = 'master-replica-live';
     const DATA_WAREHOUSE_LIVE   = 'data-warehouse-live'; // goes to admin cluster
     const DATA_WAREHOUSE_TEST   = 'data-warehouse-test';
-    const REPORTING_REPLICA_LIVE = 'reporting-replica-live';
-    const REPORTING_REPLICA_TEST = 'reporting-replica-test';
 
     const ARCHIVED_DATA_REPLICA_LIVE = 'archived-data-replica-live';
     const ARCHIVED_DATA_REPLICA_TEST = 'archived-data-replica-test';
 
     const PAYMENT_FETCH_REPLICA_LIVE = 'payment-fetch-replica-live';
+    const PAYMENT_FETCH_REPLICA_TEST = 'payment-fetch-replica-test';
     const ACCOUNT_SERVICE_REPLICA_LIVE = 'account-service-replica-live';
 
     const TABLE_PARTITION_LIVE = 'table_partition_live';

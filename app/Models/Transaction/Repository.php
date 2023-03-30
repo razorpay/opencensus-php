@@ -509,7 +509,7 @@ class Repository extends Base\Repository
 
     public function filterMerchantsWithFirstTransactionAboveTimestamp(array $merchantIdList, int $timestamp)
     {
-        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->groupBy(Entity::MERCHANT_ID)
             ->selectRaw('MIN(' . Entity::CREATED_AT . ') as first_created_at,' . Entity::MERCHANT_ID)
@@ -524,7 +524,7 @@ class Repository extends Base\Repository
     {
         if($withConnection === true)
         {
-            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
+            $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection());
         }
         else
         {
@@ -551,7 +551,7 @@ class Repository extends Base\Repository
 
         if($withConnection === true)
         {
-            $query = $this->newQueryWithConnection($this->getMasterReplicaConnection());
+            $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection());
         }
         else
         {
@@ -584,7 +584,7 @@ class Repository extends Base\Repository
     public function fetchTotalAmountByTransactionTypeAboveThreshold(
         array $merchantIdList, string $type, int $threshold): array
     {
-        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
             ->where($this->dbColumn(Entity::TYPE), '=', $type)
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->groupBy(Entity::MERCHANT_ID)
@@ -597,7 +597,7 @@ class Repository extends Base\Repository
     public function fetchTotalAmountByTransactionTypeBelowThreshold(
         array $merchantIdList, string $type, int $threshold): array
     {
-        return $this->newQueryWithConnection($this->getMasterReplicaConnection())
+        return $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
             ->where($this->dbColumn(Entity::TYPE), '=', $type)
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->groupBy(Entity::MERCHANT_ID)
@@ -610,7 +610,7 @@ class Repository extends Base\Repository
     public function fetchTotalAmountByTransactionTypeWithThresholdInRange(
         array $merchantIdList, string $type, int $threshold): array
     {
-        $query = $this->newQueryWithConnection($this->getMasterReplicaConnection())
+        $query = $this->newQueryWithConnection($this->getPaymentFetchReplicaConnection())
             ->where($this->dbColumn(Entity::TYPE), '=', $type)
             ->whereIn(Entity::MERCHANT_ID, $merchantIdList)
             ->groupBy(Entity::MERCHANT_ID)
