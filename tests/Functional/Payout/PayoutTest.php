@@ -2040,11 +2040,6 @@ class PayoutTest extends OAuthTestCase
             $count++;
         }
 
-        /** @var Payout\Entity $payout2 */
-        $payout2 = $this->getDbLastEntity('payout');
-
-        $this->assertEquals(true, $payout2->getIsPayoutService());
-
     }
 
     public function testCreatePayoutWithPayoutLimitFeatureFlagEnabled()
