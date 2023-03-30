@@ -57,9 +57,20 @@ class Formatter
     {
         $merchantDetails = $entity->merchantDetail;
 
-        $detailsResponse = $this->core->createResponse($merchantDetails);
-
         $activationDetails = Entity::ACTIVATION_DETAILS;
+
+        if ($entity->isSuspended() === true)
+        {
+            $response[$activationDetails][Entity::CAN_SUBMIT] = false;
+
+            $response[$activationDetails][BvsConstants::BANK_DETAILS_VERIFICATION_ERROR] = null;
+
+            $response[$activationDetails][Entity::FIELDS_PENDING] = [];
+
+            return $response;
+        }
+
+        $detailsResponse = $this->core->createResponse($merchantDetails);
 
         $response[$activationDetails][Entity::CAN_SUBMIT] = $detailsResponse[MerchantDetail\Entity::CAN_SUBMIT];
 

@@ -410,6 +410,12 @@ class Validator extends Base\Validator
 
     public function validateMerchantActivationStatusAndBankVerificationStatus(Merchant\Detail\Entity $merchantDetail)
     {
+        if($merchantDetail->merchant->isSuspended() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_LINKED_ACCOUNT_SUSPENDED
+            );
+        }
         if($this->isLiveMode() === false)
         {
             return;

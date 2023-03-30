@@ -732,4 +732,22 @@ class PaymentMarketplaceTransferTest extends TestCase
 
         $this->assertNotNULL($transfer['processed_at']);
     }
+
+    public function testTransferToSuspendedLinkedAccount()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->edit('merchant', '10000000000001', ['suspended_at' => 1642901927]);
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 1000,
+            'currency'=> 'INR',
+        ];
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfers)
+        {
+            $this->transferPayment($this->payment['id'], $transfers);
+        });
+    }
 }

@@ -57,6 +57,13 @@ class OrderTransferTest extends TestCase
         return $order;
     }
 
+    public function testCreateOrderTransferToSuspendedLinkedAccount()
+    {
+        $this->fixtures->edit('merchant', '10000000000001', ['suspended_at' => 1642901927]);
+
+        $this->startTest();
+    }
+
     public function testReverseOrderTransfer($order = null)
     {
         if ($order === null)

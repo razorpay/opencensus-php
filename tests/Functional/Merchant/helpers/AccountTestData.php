@@ -18,6 +18,21 @@ return [
         ],
     ],
 
+    'testRetrieveAccountViaDashboardApiWhenAccountIsSuspended' => [
+        'request'  => [
+            'url'    => '/beta/accounts/acc_10000000000001',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'id'                 => 'acc_10000000000001',
+                'activation_details' => [
+                    'status' => 'suspended'
+                ]
+            ],
+        ],
+    ],
+
     'testRetrieveAccounts' => [
         'request'  => [
             'url'    => '/beta/accounts',
@@ -50,6 +65,30 @@ return [
                 'items' => [
                     [
                         'id' => 'acc_10000000000001',
+                    ]
+                ],
+            ],
+        ],
+    ],
+
+    'testRetrieveLinkedAccountsViaDashboardApiWhenAccountIsSuspended' => [
+        'request'  => [
+            'url'    => '/linked_accounts',
+            'method' => 'get',
+            'content'   => [
+                'skip'  => 0,
+                'count' => 100
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'id'                 => 'acc_10000000000001',
+                        'activation_details' => [
+                            'status' => 'suspended'
+                        ]
                     ]
                 ],
             ],

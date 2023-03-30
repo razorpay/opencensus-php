@@ -169,6 +169,22 @@ class AccountTest extends TestCase
         $this->startTest();
     }
 
+    public function testRetrieveAccountViaDashboardApiWhenAccountIsSuspended()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account');
+
+        $this->fixtures->edit('merchant', '10000000000001', ['suspended_at' => 1642901927]);
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->startTest();
+    }
+
     public function testRetrieveAccounts()
     {
         $merchant = $this->fixtures->create('merchant:marketplace_account');
@@ -186,6 +202,28 @@ class AccountTest extends TestCase
     public function testRetrieveLinkedAccounts()
     {
         $merchant = $this->fixtures->create('merchant:marketplace_account');
+
+        $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->ba->proxyAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['email'] = $merchant->getEmail();
+
+        $this->startTest($testData);
+    }
+
+    public function testRetrieveLinkedAccountsViaDashboardApiWhenAccountIsSuspended()
+    {
+        $merchant = $this->fixtures->create('merchant:marketplace_account');
+
+        $this->fixtures->edit('merchant', '10000000000001', ['suspended_at' => 1642901927]);
 
         $this->fixtures->create('merchant_detail',
             [

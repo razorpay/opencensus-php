@@ -1968,4 +1968,18 @@ class TransferTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testLiveModeTransferToSuspendedAccount()
+    {
+        $this->fixtures->on('live')->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $this->fixtures->edit('merchant', '10000000000001', ['suspended_at' => 1642901927]);
+
+        $this->fixtures->on('live')->merchant->editBalance(20000);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
+        {
+            $this->createTransfer('account', [], 'live');
+        });
+    }
 }

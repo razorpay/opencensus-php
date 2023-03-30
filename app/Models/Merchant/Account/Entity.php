@@ -403,7 +403,11 @@ class Entity extends Merchant\Entity
         $merchant = $this->merchantDetail->merchant;
         $isLinkedAccount = $merchant->isLinkedAccount();
 
-        if(($isLinkedAccount === true) and
+        if(($isLinkedAccount === true) and ($merchant->isSuspended() === true))
+        {
+            $activationStatus = Constants::SUSPENDED;
+        }
+        else if(($isLinkedAccount === true) and
             ($merchant->isFeatureEnabledOnParentMerchant(FeatureConstants::ROUTE_LA_PENNY_TESTING) === true))
         {
             $bankDetailsVerificationStatus = $this->getBankDetailsVerificationStatus();
