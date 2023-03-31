@@ -86,6 +86,8 @@ class PGRouter
 
     const PG_ROUTER_FAILURE_STATUS_CODE = "pg_router_failure_status_code";
 
+    const PGRouterValidateAndCreatePaymentUpi = 'v1/payments/create/upi';
+
     const PG_ROUTER_REQUEST_FAILURE = "pg_router_request_failure";
 
     // Headers
@@ -155,6 +157,14 @@ class PGRouter
         return $output['body'];
     }
 
+    public function validateAndCreatePaymentUpi(array $input, bool $throwExceptionOnFailure = false): array
+    {
+        $this->updateIpandUserAgent($input, true);
+
+        $output = $this->sendRequest(self::PGRouterValidateAndCreatePaymentUpi, Requests::POST, $input, $throwExceptionOnFailure, 90);
+
+        return $output['body'];
+    }
 
     public function validateAndCreatePaymentJson(array $input, bool $throwExceptionOnFailure = false): array
     {

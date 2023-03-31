@@ -5897,8 +5897,15 @@ class Service extends Base\Service
     {
         try
         {
-            // Try to make it authorized
-            $verifyResponse = $this->verifyPayment($payment);
+            if ($payment->isExternal() === true)
+            {
+                $verifyResponse = $this->handleRearchPaymentVerification($payment);
+            }
+            else
+            {
+                // Try to make it authorized
+                $verifyResponse = $this->verifyPayment($payment);
+            }
 
             $this->trace->info(
                 TraceCode::PAYMENT_VERIFY_RESPONSE,
@@ -5909,7 +5916,19 @@ class Service extends Base\Service
                     'verify_status' => $verifyResponse,
                 ]);
 
-            if ($verifyResponse === VerifyResult::AUTHORIZED)
+            if ($verifyResponse === VerifyResult::REARCH_CAPTURED)
+            {
+                $this->trace->info(
+                    TraceCode::RECON_REARCH_PAYMENT_CAPTURED,
+                    [
+                        'message'       => 'CPS has already captured the payment and txn will get created',
+                        'payment_id'    => $payment->getId(),
+                        'amount'        => $payment->getAmount(),
+                        'gateway'       => $payment->getGateway(),
+                        'captured_at'   => $payment->getCapturedAt(),
+                    ]);
+            }
+            else if ($verifyResponse === VerifyResult::AUTHORIZED)
             {
                 $this->verifyPaymentTransaction($payment->getId());
             }
@@ -5936,6 +5955,36 @@ class Service extends Base\Service
 
             throw $ex;
         }
+    }
+
+    /**
+     * handle rearch payment verification
+     */
+    protected function handleRearchPaymentVerification(Payment\Entity $payment)
+    {
+        $status = $payment->getStatus();
+
+        $response = $this->app['pg_router']->paymentVerify($payment->getId());
+
+        $payment = $this->repo->payment->findOrFail($payment->getId());
+
+        if ($payment->hasBeenCaptured() === true)
+        {
+            return VerifyResult::REARCH_CAPTURED;
+        }
+
+        if (($status === Payment\Status::FAILED) and
+            ($payment->hasBeenAuthorized() === true))
+        {
+            return VerifyResult::AUTHORIZED;
+        }
+
+        if ($status !== $payment->getStatus())
+        {
+            return VerifyResult::UNKNOWN;
+        }
+
+        return VerifyResult::SUCCESS;
     }
 
     /**

@@ -336,6 +336,16 @@ class Processor
     const SAVED_CARD_PAYMENTS_VIA_PGROUTER = 'saved_card_payments_via_pg_router';
 
     /**
+     * Razorx flag to block merchants from re-arch flow
+     */
+    const BLOCK_MERCHANTS_ON_REARCH_UPS = 'block_merchants_on_rearch_ups';
+
+    /**
+     * Razorx flag to block merchants from re-arch flow
+     */
+    const ALLOW_MERCHANTS_ON_REARCH_UPS = 'allow_merchants_on_rearch_ups';
+
+    /**
      * Razorx flag to indicate which method and gateway are supported by barricade service
      */
     const BARRICADE_PAYMENT_METHOD = 'barricade_payment_method';
@@ -483,6 +493,11 @@ class Processor
     protected static $retryMethodsForIntl = array(
         Methods\Entity::PAYPAL
     );
+
+
+    protected static $upiRearchRoutes = [
+        'payment_create_upi'
+    ];
 
     public function __construct(Merchant\Entity $merchant)
     {
@@ -1215,21 +1230,15 @@ class Processor
             $currentRouteName = $this->route->getCurrentRouteName();
             $merchant = $this->app['basicauth']->getMerchant();
 
-            // Do not enable in prod env
-            if (app()->isEnvironmentProduction() === true)
-            {
-                return false;
-            }
-
             /*
              * Rearch criteria
-             * 1. Route should be payment/create/ajax
+             * 1. Route should be payment/create/upi
              * 2. Method should be upi
              * 3. Non recurring payment
              * 4. Non TPV payment
              * 5. Merchant shouldn't be fee bearer
              * 6. Capture queue should be implemented in the second ramp
-             * 7. Non BQR / UPIQR / OTM / GPayCard / International
+             * 7. Non BQR / UPIQR / OTM / GPayCard / International / Upi transfer
              */
 
             // test mode payments are not supported
@@ -1245,12 +1254,13 @@ class Processor
                 return false;
             }
 
-            if ($this->isRearchBVTRequest() === true)
+            if ($this->isUpiPaymentReArchBVTRequest() === true)
             {
                 return true;
             }
 
-            if (($this->route->isRearchRoute($currentRouteName) == false) or
+            if (($this->isUpiRearchRoute($currentRouteName) == false) or
+                ($this->app['basicauth']->isPrivateAuth() === false) or // only s2s is allowed
                 (empty($input[Payment\Entity::METHOD]) === true) or
                 ($input[Payment\Entity::METHOD] !== Payment\METHOD::UPI) or
                 (empty($input[Payment\Entity::RECURRING]) === false) or
@@ -1278,6 +1288,18 @@ class Processor
                 (isset($input[Payment\Entity::BILLING_ADDRESS]) === true))
             {
                 return false;
+            }
+
+            if ((isset($input['_']) === true) and
+                (isset($input['_']['library']) === true))
+            {
+                $library = $input['_']['library'];
+
+                // only s2s payments supported
+                if ($library !== Payment\Analytics\Metadata::S2S)
+                {
+                    return false;
+                }
             }
 
             if (empty($input[Payment\Entity::ORDER_ID]) === false)
@@ -1321,10 +1343,40 @@ class Processor
                 return false;
             }
 
+            /*
+            //Ultimate flag to stop re-arch traffic, merchants added in this flag will be blocked from UPS re-arch traffic
+            $result = $this->app->razorx->getTreatment($merchant->getId(), self::BLOCK_MERCHANTS_ON_REARCH_UPS,
+                $this->mode);
+            if ($result === 'on') {
+                return false;
+            }
+            */
+
+            // Allow re-arch traffic, merchants added in this flag will be routes via UPS re-arch
+            $result = $this->app->razorx->getTreatment($merchant->getId(), self::ALLOW_MERCHANTS_ON_REARCH_UPS,
+            $this->mode);
+
+            $this->trace->info(TraceCode::FINDING_PAYMENT_ID_FROM_REARCH_RESPONSE,
+            [
+                'merchant_id'           => $merchant->getId(),
+                'merchant_ramp_variant' => $result,
+            ]);
+
+            if ($result === 'on') {
+                return true;
+            }
+
+            /*
+            // Allow certain percentage of overall UPI re-arch traffic
             $result = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
                 self::UPS_PAYMENTS_VIA_PGROUTER, $this->mode);
+            if ($result === 'ups')
+            {
+                return true;
+            }
+            */
 
-            return ($result === 'ups');
+            return false;
         }
         catch(\Throwable $e)
         {
@@ -1419,6 +1471,8 @@ class Processor
                 return $this->app['pg_router']->validateAndCreatePaymentJson($input, true);
             case "payment_create_checkout":
                 return $this->app['pg_router']->validateAndCreatePaymentCheckout($input, true);
+            case "payment_create_upi":
+                return $this->app['pg_router']->validateAndCreatePaymentUpi($input, true);
         }
         return null;
     }
@@ -3738,6 +3792,18 @@ class Processor
         return $variant;
     }
 
+    protected function isUpiPaymentReArchBVTRequest(): bool
+    {
+        $rzpTestCaseID = $this->app['request']->header(RequestHeader::X_RZP_TESTCASE_ID);
+        if(empty($rzpTestCaseID) === true)
+        {
+            return false;
+        }
+
+        return ((app()->isEnvironmentQA() === true) &&
+                (str_ends_with($rzpTestCaseID,'_rearchUPSPayments')) === true);
+    }
+
     protected function setPaymentService(Payment\Entity $payment, $variant)
     {
         //TODO Use Constants Here
@@ -5448,7 +5514,7 @@ class Processor
         }
         else if ($this->isRoutedThroughUpiPaymentService($action, $gatewayData) === true)
         {
-            $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::UPI_PAYMENT_SERVICE;
+            $gatewayData[Payment\Entity::CPS_ROUTE] = $gatewayData[E::PAYMENT][Payment\Entity::CPS_ROUTE];
         }
 
         $gatewayData['merchant_detail'] = $this->repo->merchant_detail->fetchForMerchant($this->payment->merchant);
@@ -5478,6 +5544,8 @@ class Processor
                     case Payment\Entity::NB_PLUS_SERVICE:
                         return $this->callNbPlusServiceAction($this->payment, $gateway, $action, $gatewayData);
                     case Payment\Entity::UPI_PAYMENT_SERVICE:
+                        return $this->callUpiPaymentServiceAction($this->payment, $gateway, $action, $gatewayData);
+                    case Payment\Entity::REARCH_UPI_PAYMENT_SERVICE:
                         return $this->callUpiPaymentServiceAction($this->payment, $gateway, $action, $gatewayData);
                 }
             }
@@ -5631,7 +5699,8 @@ class Processor
         */
         $cpsRoute = $input[E::PAYMENT][Payment\Entity::CPS_ROUTE]?? null;
 
-        return ($cpsRoute === Payment\Entity::UPI_PAYMENT_SERVICE);
+        return (($cpsRoute === Payment\Entity::UPI_PAYMENT_SERVICE) ||
+                ($cpsRoute === Payment\Entity::REARCH_UPI_PAYMENT_SERVICE));
     }
 
     protected function persistCardDetails($gatewayName, $action, &$input , $cardArray=[])
@@ -6597,7 +6666,7 @@ class Processor
 
         return $ba;
     }
-    
+
     /**
      * This function checks if AutoCapture timeout is set and if it is exceeded for Optimizer payments, and overrides
      * capture decision
@@ -6612,30 +6681,30 @@ class Processor
         // 1. If auto-capture settings are present, and authorized_at exceeds auto-capture timeout, do auto-refund
         // 2. In all other cases capture based on existing logics present in shouldAutoCapture method.
         $optimizerAutoCaptureResponse = [];
-        
+
         $lateAuthConfig = $this->getLateAuthPaymentConfig($payment);
-        
+
         if (isset($lateAuthConfig) === true)
         {
             $captureValue = $lateAuthConfig['capture'];
-            
+
             $autoTimeoutDuration = $lateAuthConfig['capture_options']['automatic_expiry_period'];
-            
+
             $difference = $this->getTimeDifferenceInAuthorizeAndCreated($payment);
-            
+
             if (($captureValue === 'automatic') and
                 (isset($autoTimeoutDuration) === true) and
                 ($difference > $autoTimeoutDuration)) {
-                
+
                 $this->setPaymentRefundAtForConfig($payment, $autoTimeoutDuration);
-                
+
                 $optimizerAutoCaptureResponse['should_auto_capture'] = false;
-                
+
                 $optimizerAutoCaptureResponse['reason'] = Constants::OPTIMIZER_AUTO_CAPTURE_TIMEOUT_EXCEEDED;
-                
+
             }
         }
-        
+
          if (empty($optimizerAutoCaptureResponse) === false)
          {
              $this->trace->info(
@@ -6646,13 +6715,13 @@ class Processor
                      'optimizer_capture_response'   => $optimizerAutoCaptureResponse,
                      'pg_capture_response'          => $captureResponse,
                  ]);
-    
+
              return $optimizerAutoCaptureResponse;
-    
+
          }
-        
+
         return $captureResponse;
-        
+
     }
 
     /**
@@ -7127,7 +7196,7 @@ class Processor
         }
 
         $autoTimeoutDuration = $lateAuthConfig['capture_options']['automatic_expiry_period'];
-        
+
         if (isset($lateAuthConfig['capture_options']['manual_expiry_period']) === false)
         {
             $manualTimeoutDuration = $autoTimeoutDuration;
@@ -8487,4 +8556,14 @@ class Processor
         return false;
     }
 
+    /**
+     * returns if route is valid upi rearch route
+     *
+     * @param string $route
+     * @return boolean
+     */
+    public static function isUpiRearchRoute(string $route): bool
+    {
+        return (in_array($route, self::$upiRearchRoutes, true) === true);
+    }
 }
