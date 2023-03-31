@@ -2416,14 +2416,22 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function reload()
     {
-        // Not reloading external payments. It is already handled in ExternalEntity trait
-        $payment = (new Repository)->findOrFailArchived($this->{$this->primaryKey});
+        try
+        {
+            if ($this->isExternal() === false)
+            {
+                $payment = (new Repository)->findOrFailArchived($this->{$this->primaryKey});
 
-        $this->attributes = $payment->attributes;
+                $this->attributes = $payment->attributes;
 
-        $this->original = $payment->original;
+                $this->original = $payment->original;
 
-        return $this;
+                return $this;
+            }
+        }
+        catch (\Throwable $e) {}
+
+        return $this->fetchExternalEntity($this->{$this->primaryKey}, '', []);
     }
 
     public function isPartiallyRefunded()
