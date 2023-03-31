@@ -54,9 +54,10 @@ jobs:
           file: ./Dockerfile.devstackxdebug3
           build-args: |
             GIT_COMMIT_HASH=${{ github.sha }}
-            GIT_TOKEN=${{ secrets.GIT_TOKEN }}
             GIT_USERNAME=rzp
             ONGGI_IMAGE=c.rzp.io/razorpay/onggi:php-8.1-api-web
             ARMORY_IMAGE=c.rzp.io/razorpay/armory:wkhtmltopdf-v182
             OPENCENSUS_IMAGE=c.rzp.io/razorpay/onggi:opencensus-php-v2020.10.28
             CACHEBUST=${{ github.sha }}
+          secrets: |
+            git_token=${{ secrets.GIT_TOKEN }}

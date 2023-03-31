@@ -22,7 +22,6 @@ RUN apk add --update wget tar \
     && rm -rf /var/lib/apt/lists/*
 
 ARG GIT_COMMIT_HASH
-ARG GIT_TOKEN
 ARG GIT_USERNAME
 ARG CACHEBUST
 ENV GIT_COMMIT_HASH=${GIT_COMMIT_HASH}
@@ -33,10 +32,10 @@ COPY --from=wkhtmltopdf /bin/wkhtmltopdf /usr/bin/wkhtmltopdf
 
 COPY composer.json composer.lock /app/
 
-RUN set -eu && \
+RUN --mount=type=secret,id=git_token set -eu && \
     composer --version && \
     git config --global user.name ${GIT_USERNAME} && \
-    composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
+    composer config -g "github-oauth.github.com" $(cat /run/secrets/git_token) && \
     composer config -g repos.packagist composer "https://packagist.rzp.io" && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \

@@ -29,7 +29,6 @@ VOLUME ['/app']
 
 WORKDIR /app
 
-ARG GIT_TOKEN
 ARG CACHEBUST
 
 RUN apk add make git

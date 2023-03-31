@@ -1,8 +1,6 @@
 # Stage - Build & Test
 FROM --platform=linux/amd64 golang:1.17
-
-ARG GIT_TOKEN
-ARG SONAR_TOKEN
+ARG GIT_USERNAME
 ENV CGO_ENABLED 0
 
 WORKDIR /go/src/github.com/razorpay/api/slit
@@ -14,14 +12,14 @@ RUN apt-get install git
 COPY go.mod .
 COPY go.sum .
 
-RUN set -eux && \
-    echo 'exec echo ${GIT_TOKEN}' > /tmp/askpass.sh && \
-    chmod +x /tmp/askpass.sh && \
-    export GIT_ASKPASS=/tmp/askpass.sh && \
+RUN --mount=type=secret,id=git_token set -eux && \
+    echo "machine github.com login ${GIT_USERNAME} password $(cat /run/secrets/git_token)" > ~/.netrc && \
     export GOPRIVATE="github.com/razorpay/*" && \
+    export GO111MODULE="on" &&\
     export DOCKER_BUILDKIT=0 && \
     export COMPOSE_DOCKER_CLI_BUILD=0 && \
-    go mod download
+    go mod download && \
+    rm -f ~/.netrc
 
 # Copy rest of the source code
 ADD . .

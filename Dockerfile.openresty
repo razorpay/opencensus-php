@@ -4,7 +4,6 @@ ARG OPENRESTY_IMAGE=openresty/openresty:1.17.8.2-0-alpine-fat-nosse42
 FROM $ONGGI_IMAGE as php-builder
 
 ARG GIT_COMMIT_HASH
-ARG GIT_TOKEN
 ARG GIT_USERNAME
 
 COPY composer.json composer.lock /app/
@@ -13,10 +12,10 @@ WORKDIR /app
 
 COPY  . /app/
 
-RUN set -eu && \
+RUN --mount=type=secret,id=git_token set -eu && \
     composer --version && \
     git config --global user.name ${GIT_USERNAME} && \
-    composer config -g "github-oauth.github.com" ${GIT_TOKEN} && \
+    composer config -g "github-oauth.github.com" $(cat /run/secrets/git_token) && \
     composer config -g repos.packagist composer "https://packagist.rzp.io" && \
     composer install --no-dev --no-interaction --no-autoloader --no-scripts && \
     rm -rf /root/.composer && \
@@ -81,3 +80,4 @@ COPY --from=php-builder --chown=nginx:nginx /app/dockerconf/entrypoint.openresty
 EXPOSE 8080
 
 ENTRYPOINT [ "/usr/bin/dumb-init", "--single-child", "/app/entrypoint.openresty.sh"]
+
