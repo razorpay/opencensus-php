@@ -79,7 +79,7 @@ class BankingAccountStatementReconNeo extends Job
 
                 $workerStartTime = Carbon::now()->getTimestamp();
 
-                [$fetchMore, $paginationKey] = (new BAS\Core)->fetchAccountStatementWithRange($this->params);
+                [$fetchMore, $paginationKey] = (new BAS\Core)->fetchAccountStatementWithRange($this->params, true);
 
                 $workerEndTime = Carbon::now()->getTimestamp();
 
@@ -107,7 +107,7 @@ class BankingAccountStatementReconNeo extends Job
                     ($fetchMore === true) and
                     (empty($paginationKey) === false))
                 {
-                    BankingAccountStatementRecon::dispatch($this->mode, $this->params);
+                    BankingAccountStatementReconProcessNeo::dispatch($this->mode, $this->params);
                 }
                 else
                 {

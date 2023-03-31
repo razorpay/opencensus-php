@@ -364,7 +364,7 @@ class Core extends Base\Core
         }
     }
 
-    public function fetchAccountStatementWithRange(array $input)
+    public function fetchAccountStatementWithRange(array $input, $isMonitoring = false)
     {
         $channel = array_pull($input, Entity::CHANNEL);
 
@@ -381,7 +381,7 @@ class Core extends Base\Core
 
             [$fetchMore, $paginationKey] = $this->mutex->acquireAndRelease(
                 'banking_account_statement_recon_' . $accountNumber . '_' . $channel,
-                function () use ($channel, $accountNumber, $input)
+                function () use ($channel, $accountNumber, $input, $isMonitoring)
                 {
                     $basDetailEntity = $this->getBasDetails($accountNumber, $channel);
 
@@ -416,13 +416,18 @@ class Core extends Base\Core
                     {
                         $traceData = [
                             'channel'               => $channel,
+                            'merchant_id'           => $merchant->getId(),
                             'missing_records_found' => count($missingTransactions),
                             'missing_records'       => $missingTransactions,
                         ];
 
                         $this->trace->info(TraceCode::MISSING_TRANSACTIONS_FOUND, $traceData);
 
-                        $this->trace->count(Metric::MISSING_STATEMENTS_FOUND, [Metric::LABEL_CHANNEL => $channel]);
+                        //pushing the missing transaction metrics to vajra for monitoring
+//                        if ($isMonitoring === true)
+//                        {
+                            $this->trace->count(Metric::MISSING_STATEMENTS_FOUND, [Metric::LABEL_CHANNEL => $channel]);
+                      //  }
 
                         Tracer::startSpanWithAttributes(HyperTrace::MISSING_STATEMENTS_FOUND,
                             [
@@ -3454,7 +3459,7 @@ class Core extends Base\Core
                 ($isMerchantInactive === false));
     }
 
-    public function fetchMissingAccountStatementsForChannel($channel, $input, $isNewCron = false)
+    public function fetchMissingAccountStatementsForChannel($channel, $input, $isNewCron = false, $isMonitoring = false)
     {
         $this->trace->info(
             TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_INITIATED,
@@ -3526,7 +3531,7 @@ class Core extends Base\Core
                 BASConstants::EXPECTED_ATTEMPTS => $expectedAttempts,
                 BASConstants::PAGINATION_KEY => $paginationKey,
                 Entity::SAVE_IN_REDIS => $input[Entity::SAVE_IN_REDIS],
-            ])->delay($delay);
+            ], $isMonitoring)->delay($delay);
         }
 
         $this->trace->info(TraceCode::FETCH_MISSING_ACCOUNT_STATEMENTS_JOB_DISPATCHED);

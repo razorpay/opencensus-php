@@ -64,13 +64,15 @@ class Service extends Base\Service
 
         $isNewCron = ((isset($input['new_cron_setup']) === true) && ($input['new_cron_setup'] === true));
 
+        $isMonitoringCron = ((isset($input['monitoring_cron']) === true) && ($input['monitoring_cron'] === true));
+
         $maxExpectedAttempts = 0;
 
         foreach ($input[Constants::ACCOUNT_NUMBERS] as $accountNumber)
         {
             try
             {
-                if ($isNewCron === true)
+                if (($isNewCron === true) or ($isMonitoringCron === true))
                 {
                     $fetchInput = [
                         Entity::CHANNEL => $channel,
@@ -91,7 +93,7 @@ class Service extends Base\Service
                     ];
                 }
 
-                $attempts[$accountNumber] = $this->core()->fetchMissingAccountStatementsForChannel($channel, $fetchInput, $isNewCron)[Constants::EXPECTED_ATTEMPTS];
+                $attempts[$accountNumber] = $this->core()->fetchMissingAccountStatementsForChannel($channel, $fetchInput, $isNewCron, $isMonitoringCron)[Constants::EXPECTED_ATTEMPTS];
 
                 $maxExpectedAttempts = max($maxExpectedAttempts, $attempts[$accountNumber][Constants::EXPECTED_ATTEMPTS]);
 
@@ -124,12 +126,6 @@ class Service extends Base\Service
         if ($isNewCron === true)
         {
              return $response;
-        }
-
-        if (($this->app->environment('testing') === false) and
-            ($this->mode === EnvMode::LIVE))
-        {
-            sleep(Carbon::SECONDS_PER_MINUTE * 3 * $maxExpectedAttempts);
         }
 
         foreach ($attempts as $accountNumber => $expectedAttempts)

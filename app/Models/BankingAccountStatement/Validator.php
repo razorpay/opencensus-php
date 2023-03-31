@@ -63,7 +63,8 @@ class Validator extends Base\Validator
         Constants::ACCOUNT_NUMBERS . '*' => 'required|string|between:5,40',
         Constants::ACTION                => 'required|in:insert,fetch,dry_run',
         Entity::SAVE_IN_REDIS            => 'required|boolean',
-        'new_cron_setup'                 => 'sometimes|boolean'
+        'new_cron_setup'                 => 'sometimes|boolean',
+        'monitoring_cron'                => 'sometimes|boolean',
     ];
 
     protected static $accountStatementGenerateValidators = [

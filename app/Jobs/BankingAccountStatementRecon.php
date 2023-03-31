@@ -32,15 +32,22 @@ class BankingAccountStatementRecon extends Job
     protected $params;
 
     /**
+     * @var bool
+     */
+    protected $isMonitoring;
+
+    /**
      * Default timeout value for a job is 60s. Changing it to 20 mins
      * as fetching account statements for date ranges takes 10-12 mins to complete.
      * @var integer
      */
     public $timeout = 1200;
 
-    public function __construct(string $mode, array $params)
+    public function __construct(string $mode, array $params, bool $isMonitoring)
     {
         $this->params = $params;
+
+        $this->isMonitoring = $isMonitoring;
 
         parent::__construct($mode);
     }
@@ -79,7 +86,7 @@ class BankingAccountStatementRecon extends Job
 
                 $workerStartTime = Carbon::now()->getTimestamp();
 
-                [$fetchMore, $paginationKey] = (new BAS\Core)->fetchAccountStatementWithRange($this->params);
+                [$fetchMore, $paginationKey] = (new BAS\Core)->fetchAccountStatementWithRange($this->params, $this->isMonitoring);
 
                 $workerEndTime = Carbon::now()->getTimestamp();
 
@@ -107,7 +114,7 @@ class BankingAccountStatementRecon extends Job
                     ($fetchMore === true) and
                     (empty($paginationKey) === false))
                 {
-                    BankingAccountStatementRecon::dispatch($this->mode, $this->params);
+                    BankingAccountStatementRecon::dispatch($this->mode, $this->params, $this->isMonitoring);
                 }
 
                 $this->delete();
