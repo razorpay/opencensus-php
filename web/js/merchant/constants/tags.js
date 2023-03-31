@@ -62,4 +62,7 @@ export const HIDDEN_INTERNATIONAL_FEATURES_TAGS = {
   SettlementLink: 'i18_hide_settlement_link',
   SettlementGuide: 'i18_hide_settlement_guide',
   DowntimePaymentEvents: 'i18_hide_downtime_payment_events',
+  PaymentReportWithOffers: 'i18_hide_payment_report_with_offers',
+  PaymentBtnReport: 'i18_hide_payment_btn_report',
+  QRCodeReportWithPayID: 'i18_hide_qr_code_report_with_pay_id',
 };

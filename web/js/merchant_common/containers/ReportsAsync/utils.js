@@ -47,6 +47,7 @@ export const getActualLogStatus = ({ status, fileId }) => {
 };
 
 export const REPORT_CONFIG_TYPE = {
+  // hiding by type
   settlements: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Settlements,
   transactions: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Transactions,
   refunds: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds,
@@ -58,4 +59,10 @@ export const REPORT_CONFIG_TYPE = {
   contacts: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Contacts,
   payment_links: HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentLinks,
   custom: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Custom,
+  scrooge_refunds: HIDDEN_INTERNATIONAL_FEATURES_TAGS.Refunds,
+  // hiding by name
+  'Payments Report With Offers': HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentReportWithOffers,
+  'QR Code Report with Pay_Id': HIDDEN_INTERNATIONAL_FEATURES_TAGS.QRCodeReportWithPayID,
+  'Payment Button Report': HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentBtnReport,
+  'Payment page': HIDDEN_INTERNATIONAL_FEATURES_TAGS.PaymentPages,
 };
