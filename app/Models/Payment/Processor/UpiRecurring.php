@@ -665,6 +665,36 @@ trait UpiRecurring
         }
         // For Initial Recurring
 
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        $upiMandate = $token->upiMandate;
+
+        if ($upiMandate === null)
+        {
+            $upiMandate = $this->repo->upi_mandate->findByOrderId($payment->order->getId());
+
+            $upiMandateLinkedToken = $this->repo->token->findByIdAndMerchantId($upiMandate->getTokenId(), $token->getMerchantId());
+
+            if($upiMandateLinkedToken->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED)
+            {
+                $upiMandate->setTokenId($payment->localToken->getId());
+
+                $token->upiMandate()->save($upiMandate);
+
+                $token->refresh();
+
+                $this->repo->saveOrFail($upiMandate);
+
+                $this->trace->info(
+                    TraceCode::UPI_RECURRING_RELINK_UPIMANDATE_TOKEN,
+                    [
+                        'payment_id'    => $payment->getId(),
+                        'token_id'      => $token->getId(),
+                    ]
+                );
+            }
+        }
+
         // If gateway suggests that the payment is authorized, we do not need to skip the authorization
         if ($internalStatus === UpiMetadata\InternalStatus::AUTHORIZED)
         {
