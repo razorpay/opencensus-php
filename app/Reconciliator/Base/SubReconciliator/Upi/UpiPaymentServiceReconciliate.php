@@ -149,8 +149,6 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
             $this->persistGatewayReference($entity, $rowDetails[BaseReconciliate::GATEWAY_PAYMENT_ID], $dataToUpdate);
         }
 
-        $this->persistReconAt($entity, $dataToUpdate);
-
         return $dataToUpdate;
     }
     /**
@@ -254,25 +252,6 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
         {
             $dataToUpdate[Constants::CUSTOMER_REFERENCE] = $referenceNumber;
         }
-    }
-
-    /**
-     * persist reconciled at
-     *
-     * @param array $entity
-     * @param array $dataToUpdate
-     * @return void
-     */
-    protected function persistReconAt(array $entity, array &$dataToUpdate)
-    {
-        $reconciledAt = $entity[Constants::RECONCILED_AT];
-
-        if (empty($reconciledAt) === false)
-        {
-            return;
-        }
-
-        $dataToUpdate[Constants::RECONCILED_AT] = Carbon::now()->getTimestamp();
     }
 
     /**

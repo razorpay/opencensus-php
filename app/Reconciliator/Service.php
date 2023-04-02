@@ -1032,12 +1032,6 @@ class Service extends Base\Service
     {
         $gatewayEntity = $this->getUpsGatewayEntity($payment);
 
-        //payment is already reconciled
-        if(empty($gatewayEntity[UpsConstants::RECONCILED_AT]) === false)
-        {
-            return;
-        }
-
         $dataToUpdate = [];
 
         if ((empty($input['upi']['gateway_payment_id']) === false) and
@@ -1058,7 +1052,11 @@ class Service extends Base\Service
             $dataToUpdate[UpsConstants::CUSTOMER_REFERENCE] = $input['upi']['npci_reference_id'];
         }
 
-        $dataToUpdate[UpsConstants::RECONCILED_AT] = (int) $input[UpsConstants::RECONCILED_AT];
+        if (empty($dataToUpdate) === true)
+        {
+            // do not push to sqs if there is no data to update
+            return;
+        }
 
         $this->updateGatewayEntityOnUps($dataToUpdate, $payment);
     }
@@ -1088,12 +1086,6 @@ class Service extends Base\Service
                 $input);
         }
 
-        // We do not need to update the reconciled at if it is already saved
-        if (empty($gatewayPayment->getReconciledAt()) === false)
-        {
-            return;
-        }
-
         if (empty($input['upi']['gateway_payment_id']) === false)
         {
             $gatewayPayment->setGatewayPaymentId($input['upi']['gateway_payment_id']);
@@ -1110,8 +1102,6 @@ class Service extends Base\Service
         }
 
         $this->updateAccountDetails($input['upi'], $gatewayPayment);
-
-        $gatewayPayment->setReconciledAt($input['reconciled_at']);
 
         $this->repo->saveOrFail($gatewayPayment);
     }

@@ -1129,7 +1129,8 @@ class UpiIciciGatewayReconTest extends TestCase
 
         $upiEntity = $this->getDbLastEntity('upi');
 
-        $this->assertNotEmpty($upiEntity['reconciled_at']);
+        // Assert empty reconciledAt in gateway entity
+        $this->assertEmpty($upiEntity['reconciled_at']);
 
         $this->assertEquals($content['upi']['npci_reference_id'], $upiEntity['npci_reference_id']);
 
