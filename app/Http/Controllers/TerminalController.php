@@ -311,6 +311,11 @@ class TerminalController extends Controller
         if($path === 'v2/collect_info/merchant/details'){
             $path = 'v2/collect_info/merchant/'.$this->getMerchantId().'/details';
         }
+
+        if ($path == 'v1/admin/merchant/terminals'){
+            $path = 'v2/admin/merchant/terminals';
+        }
+
         $this->trace->info(TraceCode::TERMINALS_SERVICE_PROXY_V2, ["current Path" => $path]);
         // For some routes exposed on both merchant and admin, we have appended /admin in admin auth endpoints. Simply removing /admin so that it hits same endpoint on TS
         if(str_ends_with($path, '/admin'))

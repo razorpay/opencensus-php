@@ -423,6 +423,7 @@ class Route
         'merchant_create_terminal_internal'        => ['post',     'merchants/{id}/terminals/internal',              'MerchantController@postCreateTerminalWithId',                      ],
         'merchant_get_terminals'                   => ['get',      'merchants/{id}/terminals',                       'MerchantController@getTerminals'                                   ],
         'proxy_merchant_get_terminals'             => ['get',      'proxy/merchant/terminals',                       'MerchantController@proxyGetTerminals'                              ],
+        'admin_merchant_get_terminals'             => ['post',     'admin/merchant/terminals',                       'TerminalController@proxyV2TerminalService'                        ],
         'terminals_proxy_gateway_terminal_status'  => ['get',      'proxy/terminal/onboard/status',                  'TerminalController@proxyGetTerminalsGatewayStatus'                 ],
         'merchant_onboard_terminal'                => ['post',     'merchants/{id}/terminals/onboard',               'MerchantController@onboardMerchantOnGateway'                       ],
         'merchant_onboard_external_org_terminal'   => ['post',     'merchants/{id}/external_org/terminals/onboard',  'MerchantController@onboardMerchantOnGateway'                       ],
@@ -6849,6 +6850,7 @@ class Route
     // of X-Admin-Token being passed.
     //
     public static $admin = [
+        'admin_merchant_get_terminals',
         'merchant_activation_eligibilty',
         'merchant_activation_clarifications_save_admin',
         'merchant_activation_clarifications_fetch_admin',
@@ -8403,6 +8405,7 @@ class Route
         'terminal_edit'                            => Permission::EDIT_TERMINAL,
         'terminal_edit_god_mode'                   => Permission::EDIT_TERMINAL_GOD_MODE,
         'terminal_fetch_editable_fields'           => Permission::VIEW_TERMINAL,
+        'admin_merchant_get_terminals'             => Permission::VIEW_TERMINAL,
         'terminal_edit_external_org'               => Permission::CREATE_EXTERNAL_ORG_TERMINALS,
         'buy_pricing_assign_bulk'                  => Permission::EDIT_TERMINAL,
         'terminal_reassign_merchant'               => Permission::ASSIGN_MERCHANT_TERMINAL,
@@ -11763,6 +11766,7 @@ class Route
         ],
 
         'admin_dashboard' => [
+            'admin_merchant_get_terminals',
             'merchant_activation_eligibilty',
             'merchant_activation_clarifications_fetch',
             'merchant_nc_revamp_eligibility',
