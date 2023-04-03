@@ -35,7 +35,7 @@ export const CAPITAL_STATUS = {
   uw_processing: 'uw processing',
   uw_hold: 'uw hold',
   application_closed: 'application closed',
-  go_live: 'go-live',
+  go_live: 'go live',
   pre_offer_verification: 'pre offer verification',
   send_to_lender: 'send to lender',
   lender_docs_resubmission: 'lender docs resubmission',
