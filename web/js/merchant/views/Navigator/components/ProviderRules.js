@@ -88,8 +88,8 @@ export default class ProviderRules extends React.Component {
                             <div className="col-xs-12 text-left">
                               <div className="text-left expression-readonly-high greyed-out">
                                 <p>
-                                  If transaction fails in priority {providerPriority} then fallback
-                                  to priority {Number(providerPriority) + 1}
+                                  Route transaction to priority {Number(providerPriority) + 1} if
+                                  success rate of priority {providerPriority} degrades
                                 </p>
                               </div>
                             </div>
@@ -160,8 +160,8 @@ export default class ProviderRules extends React.Component {
                       <div className="col-xs-12 text-left">
                         <div className="text-left expression-readonly-high greyed-out">
                           <p className="if-tran-exp">
-                            If transaction fails in priority {provider_priority} then fallback to
-                            priority {Number(provider_priority) + 1}
+                            Route transaction to priority {Number(provider_priority) + 1} if success
+                            rate of priority {provider_priority} degrades
                           </p>
                         </div>
                       </div>
