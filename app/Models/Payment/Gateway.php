@@ -1814,6 +1814,10 @@ class Gateway
             self::NOT_SUPPORTED     => [Network::RUPAY],
             self::SUPPORTED         => [Network::RUPAY  => [self::ACQUIRER_AXIS]]
         ],
+        self::UMOBILE               => [
+            self::NOT_SUPPORTED     =>  [],
+            self::SUPPORTED         =>  []
+        ]
     ];
 
     public static $bankTransferProviderGateway = [

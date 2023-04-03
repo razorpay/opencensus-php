@@ -2817,7 +2817,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID                             => 'sometimes|string',
         Entity::STATUS                                          => 'sometimes|in:created,pending,activated,deactivated,failed',
         Entity::CURRENCY                                        => 'sometimes|array',
-        Entity::MODE                                            => 'sometimes|in:2',
+        Entity::MODE                                            => 'sometimes|in:1,2,3',
         Entity::PROCURER                                        => 'sometimes',
         Entity::TYPE                                            => 'sometimes|array',
         Entity::TYPE . Type::DIRECT_SETTLEMENT_WITH_REFUND      => 'sometimes|in:1',
