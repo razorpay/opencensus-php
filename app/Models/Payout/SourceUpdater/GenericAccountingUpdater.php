@@ -19,6 +19,11 @@ class GenericAccountingUpdater extends Base
 
     public function update()
     {
+        if (self::isGAIExperimentEnabled($this->payout->getMerchantId()) === false)
+        {
+            return null;
+        }
+
         if (($this->payout->getStatus() != Status::PROCESSED) and
             ($this->payout->getStatus() != Status::REVERSED))
         {

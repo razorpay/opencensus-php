@@ -4809,6 +4809,12 @@ class PayoutLinkTest extends TestCase
 
         $this->app->instance('payout-links', $plMock);
 
+        $gaiMock = Mockery::mock('RZP\Services\GenericAccountingIntegration\Service');
+
+        $gaiMock->shouldReceive('pushPayoutStatusUpdate');
+
+        $this->app->instance('accounting-integration-service', $gaiMock);
+
         $payout = $this->fixtures->create('payout', [
             'status' => 'processed'
         ]);

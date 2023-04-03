@@ -37,7 +37,7 @@ class Factory
 
                 case PayoutSourceEntity::PAYOUT_LINK:
 
-                    array_push($subscriberList, (new PayoutLinkUpdater($payout, $mode)));
+                    array_push($subscriberList, (new PayoutLinkUpdater($payout, $mode)), (new GenericAccountingUpdater($payout, $mode)));
 
                     break;
 
