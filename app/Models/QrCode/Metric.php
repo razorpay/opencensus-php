@@ -46,7 +46,7 @@ class Metric extends Base\Core
         $customDimensions = [
             Metric::LABEL_PROVIDER      => $input[Entity::REQ_PROVIDER],
             Metric::LABEL_USAGE_TYPE    => $input[Entity::REQ_USAGE_TYPE],
-            Metric::LABEL_ERROR_MESSAGE => $errorMessage,
+            Metric::LABEL_ERROR_MESSAGE => ($errorMessage === null) ? $errorMessage : substr($errorMessage, 0, 100),
             self::LABEL_REQUEST_SOURCE  => $requestSource,
         ];
 
