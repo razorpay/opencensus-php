@@ -99,4 +99,7 @@ export const partnerTypeSelectionSchema = Yup.object().shape({
 
 export const MOBILE_INCORRECT_OTP_ERROR_DESC = 'Verification failed because of incorrect OTP.';
 export const EMAIL_INCORRECT_OTP_ERROR_DESC = 'Verification failed because of incorrect OTP.';
+export const LOW_CAPTCHA_SCORE = 'Low captcha score';
+export const CAPTCHA_FAILED = 'Captcha Failed';
+export const V3 = 'v3';
 export const EMAIL_ALREADY_TAKEN_ERROR_DESC = 'That email is already taken.';

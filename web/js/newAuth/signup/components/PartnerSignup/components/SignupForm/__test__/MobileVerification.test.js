@@ -6,6 +6,35 @@ import * as trackWithSegment from 'newAuth/trackEvents';
 
 // TODO: detailed tests to be covered later, only basic ones added for now.
 
+jest.mock('formik', () => ({
+  __esModule: true,
+  ...jest.requireActual('formik'),
+  useFormikContext: () => {
+    return {
+      touched: {
+        otp: '',
+      },
+      errors: {},
+      status: {},
+      values: {
+        otp: '',
+      },
+      setFieldValue: jest.fn(),
+    };
+  },
+}));
+
+jest.mock('react-google-recaptcha-v3', () => ({
+  ...jest.requireActual('react-google-recaptcha-v3'),
+  useGoogleReCaptcha: () => {
+    return {
+      executeRecaptcha: (action) => {
+        return Promise.resolve(`test-v3-token-${action}`);
+      },
+    };
+  },
+}));
+
 const defaultProps = {
   mobileNumber: '8888888888',
   otpVerifyToken: 'verify token',

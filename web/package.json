@@ -57,6 +57,8 @@
     "react-datetime": "2.16.3",
     "react-dom": "17.0.2",
     "react-dragula": "1.1.17",
+    "react-google-recaptcha": "2.1.0",
+    "react-google-recaptcha-v3": "1.9.7",
     "react-is": "17.0.1",
     "react-lazyload": "3.2.0",
     "react-lottie": "1.2.3",

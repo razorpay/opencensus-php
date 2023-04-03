@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { TextInput, Text } from '@razorpay/blade/components';
-import { Formik } from 'formik';
+import ReCaptchaV2 from 'react-google-recaptcha';
+import { useGoogleReCaptcha as useReCaptchaV3 } from 'react-google-recaptcha-v3';
+import { Formik, useFormikContext } from 'formik';
 import { connect } from 'react-redux';
 import StepFooter from './StepFooter';
 import {
@@ -17,6 +19,9 @@ import {
   MOBILE_RESEND_OTP_COUNTDOWN,
   MOBILE_INCORRECT_OTP_ERROR_DESC,
   mobileVerificationSchema,
+  LOW_CAPTCHA_SCORE,
+  CAPTCHA_FAILED,
+  V3,
 } from 'newAuth/signup/Constants';
 import {
   verifyMobileOTP,
@@ -46,8 +51,19 @@ const MobileVerification = ({
   const [otpTriesLeft, setOtpTriesLeft] = useState(MOBILE_MAX_OTP_TRIES);
   const [otpError, setOTPError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { executeRecaptcha: executeRecaptchaV3 } = useReCaptchaV3();
 
-  const onCTAClick = (otp) => {
+  // if captcha v3 returns Validation Failed, we set this to true
+  const invisibleCaptchaRef = useRef(null);
+
+  const triggerV2Captcha = () => {
+    invisibleCaptchaRef.current.reset();
+    invisibleCaptchaRef.current.execute();
+  };
+
+  const onCTAClick = async (otp) => {
+    const captchaMode = V3;
+    const token = await executeRecaptchaV3('signup');
     trackWithSegment({
       objectName: 'Sign up Verify OTP',
       actionName: 'Entered',
@@ -55,7 +71,7 @@ const MobileVerification = ({
     });
     setIsLoading(true);
     return verifyMobileOTP({
-      captcha: 'Faked', // TODO: in a separate PR
+      captcha: token || 'Faked',
       contact_mobile: mobileNumber,
       otp,
       partner_intent: true,
@@ -104,11 +120,27 @@ const MobileVerification = ({
         });
         if (err.status_code === 400 || errorDescription === MOBILE_INCORRECT_OTP_ERROR_DESC)
           setOTPError('wrong_otp');
-        else {
+        else if (captchaMode === V3) {
+          if (err.message === LOW_CAPTCHA_SCORE || err.message === CAPTCHA_FAILED) {
+            // When v3 returns with low score or fails, we can't be sure whether the user is bot or human.
+            // Thus, we trigger v2 to help with the final differentiation.
+            triggerV2Captcha();
+          }
+        } else {
           setOTPError('server_error');
           setShowHeader(false);
         }
+
+        if (invisibleCaptchaRef.current) {
+          invisibleCaptchaRef.current.reset();
+        }
       });
+  };
+
+  const { setFieldValue } = useFormikContext();
+
+  const handleInvisibleCaptchaChange = (value) => {
+    setFieldValue('captcha', value);
   };
 
   const resendOTP = () => {
@@ -201,6 +233,12 @@ const MobileVerification = ({
                 }
               />
             </StyledInputWrapper>
+            <ReCaptchaV2
+              ref={invisibleCaptchaRef}
+              size="invisible"
+              sitekey={process.env.INVISIBLE_CAPTCHA_SITE_KEY}
+              onChange={handleInvisibleCaptchaChange}
+            />
 
             {isTimerRunning && !isLoading ? (
               <Text size="small" color="shade.950">
