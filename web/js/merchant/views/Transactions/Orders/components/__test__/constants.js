@@ -29,6 +29,10 @@ export const order = {
       value: 5,
     },
   ],
+  tax_details: {
+    total_tax: 1080,
+    tax_included: false,
+  },
 };
 
 export const customer_details = {

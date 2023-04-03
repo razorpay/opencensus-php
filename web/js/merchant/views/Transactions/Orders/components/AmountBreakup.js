@@ -6,8 +6,16 @@ import { truncateString } from 'common/utils/rzp-utils';
 export default ({ order }) => {
   const [isBreakupVisible, setBreakupVisible] = useState(false);
 
-  const { offer, currency, line_items_total, status, shipping_fee, promotions, amount } =
-    order || {};
+  const {
+    offer,
+    currency,
+    line_items_total,
+    status,
+    shipping_fee,
+    promotions,
+    amount,
+    tax_details,
+  } = order || {};
   const giftCardType = 'gift_card';
   const { id: offerId, name: offerName, discount } = offer || {};
   const giftCardList = [];
@@ -57,6 +65,14 @@ export default ({ order }) => {
               + <Amount value={order.cod_fee || 0} currency={currency} />
             </div>
           </div> */}
+          {tax_details?.tax_included === false ? (
+            <div className="magic-checkout-row">
+              <div>Taxes</div>
+              <div>
+                + <Amount value={tax_details.total_tax} currency={currency} />
+              </div>
+            </div>
+          ) : null}
           {coupon?.code ? (
             <div className="magic-checkout-row">
               <div className="magic-checkout-green">{coupon.code} Coupon</div>

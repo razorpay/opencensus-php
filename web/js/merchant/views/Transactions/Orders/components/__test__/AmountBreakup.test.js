@@ -51,4 +51,11 @@ describe('Orders AmountBreakup component', () => {
     expect(screen.getByText(/Coupon/i)).toBeInTheDocument();
     expect(screen.getByText(new RegExp(order.promotions[0].code, 'i'))).toBeInTheDocument();
   });
+
+  it('should show taxes code if defined', () => {
+    expandBreakupComponent({
+      shipping_fee: 0,
+    });
+    expect(screen.getByText(/Taxes/i)).toBeInTheDocument();
+  });
 });
