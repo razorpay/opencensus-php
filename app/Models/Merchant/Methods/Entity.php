@@ -416,7 +416,8 @@ class Entity extends Base\PublicEntity
             CreditEmiProvider::SCBL,
             CreditEmiProvider::YESB,
             CreditEmiProvider::ONECARD,
-            CreditEmiProvider::BAJAJ
+            CreditEmiProvider::BAJAJ,
+            CreditEmiProvider::FDRL
         ],
         self::CARDLESS_EMI => [
             CardlessEmiProvider::WALNUT369,

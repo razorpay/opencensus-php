@@ -83,6 +83,36 @@ class Repository extends Base\Repository
             ->get();
     }
 
+    public function fetchMethodsBasedOnMethodName($method,$from,$count)
+    {
+        if($method == 'credit_emi')
+        {
+            $emiColumn = $this->dbColumn('emi');
+            $emi = 1;
+            return $this->newQuery()
+                ->take($count)
+                ->where(function ($query) use ($emiColumn,$emi)
+                {
+                    $query->where($emiColumn, '=', $emi)
+                        ->orWhere($emiColumn, '=', $emi+2);
+                })
+                ->where(Common::CREATED_AT, '>', $from)
+                ->orderBy(Common::CREATED_AT,'asc')
+                ->get();
+        }
+        else if($method == 'paylater' or $method == 'cardless_emi')
+        {
+            return $this->newQuery()
+                ->take($count)
+                ->where($method, '=', 1)
+                ->where(Common::CREATED_AT, '>', $from)
+                ->orderBy(Common::CREATED_AT,'asc')
+                ->get();
+        }
+
+
+    }
+
     public function fetchBasedOnAffordabilityMethods($count,$paylater,$cardlessEmi,$emi,$from)
     {
 

@@ -65,6 +65,12 @@ class AffordabilityMigrationService extends Base\Service
     // redis key format: affordability:run_in_progress_<Method>
     const REDIS_KEY_PREVIOUS_RUN_IN_PROGRESS_PHASE2 = 'affordability:run_in_progress_%s';
 
+    // redis key format: affordability:run_in_progress_<Method>_<Instrument>
+    const REDIS_KEY_PREVIOUS_RUN_IN_PROGRESS_INSTRUMENT = 'affordability:run_in_progress_%s_%s';
+
+    // redis key format: affordability:last_created_at_<Method>_<Instrument>
+    const REDIT_KEY_LAST_MIGRATED_MERCHANT_INSTRUMENT = 'affordability:last_created_at_%s_%s';
+
     // redis key format: affordability:sub_merchants_data_cached
     const REDIS_KEY_SUB_MERCHANTS_DATA_CACHED = 'affordability:sub_merchants_data_cached_%s';
 
@@ -314,6 +320,42 @@ class AffordabilityMigrationService extends Base\Service
         return $updatedInstruments;
     }
 
+    public function getRequestBodyToUpdateSpecificInstrument($gateway,$instrument)
+    {
+        $updatedInstruments = [];
+
+        if ($gateway == 'paylater')
+        {
+            $updatedInstruments  = [
+                'paylater_providers' => [
+                    $instrument => '1'
+                ]
+            ];
+
+        }
+
+        else if($gateway == 'cardless_emi')
+        {
+            $updatedInstruments  = [
+                'cardless_emi_providers' => [
+                    $instrument => '1'
+                ]
+            ];
+        }
+
+        else if($gateway == 'credit_emi')
+        {
+            $updatedInstruments  = [
+                'credit_emi_providers' => [
+                    $instrument => '1'
+                ]
+            ];
+
+        }
+
+        return $updatedInstruments;
+    }
+
     public function updateMerchantsForDedicatedTerminals($terminal)
     {
 
@@ -361,6 +403,102 @@ class AffordabilityMigrationService extends Base\Service
             }
 
         }
+
+    }
+
+    public function updateMerchantsForSpecificInstruments($inputFrom,$method,$instrument,$count)
+    {
+
+        $redisKey = sprintf(self::REDIT_KEY_LAST_MIGRATED_MERCHANT_INSTRUMENT, $method, $instrument);
+
+        if($inputFrom != null)
+        {
+            $from = $inputFrom;
+        }
+        else
+        {
+            $from =  $this->app->cache->get($redisKey);
+
+            if($from == null)
+            {
+                $from = 0;
+            }
+        }
+
+        $createdAt = null;
+
+        $methods = $this->repo->useSlave(function() use ($method,$from,$count)
+        {
+            return $this->repo->methods->fetchMethodsBasedOnMethodName($method,$from,$count);
+        });
+
+        $updatedInstruments = $this->getRequestBodyToUpdateSpecificInstrument($method,$instrument);
+
+        $successCount = 0;
+        $failureCount = 0;
+        $totalCount = 0;
+        $success = [];
+        $failure = [];
+
+        if($updatedInstruments != [])
+        {
+            foreach($methods as $method)
+            {
+
+                $totalCount++;
+
+                try
+                {
+                    $method->setMethods($updatedInstruments);
+
+                    $this->repo->saveOrFail($method);
+
+                    $createdAt = $method->getCreatedAt();
+
+                    $success[] = $method->getMerchantId();
+
+                    $successCount++;
+
+                }
+                catch(\Throwable $ex)
+                {
+                    $data = ["merchant_id" => $method->getMerchantId()];
+
+                    $failure[] = $method->getMerchantId();
+
+                    $failureCount++;
+
+                    $this->trace->traceException($ex,
+                        Trace::ERROR,
+                        TraceCode::UPDATE_METHOD_FAILED,
+                        $data);
+
+                }
+
+            }
+
+        }
+
+        $this->trace->info(
+            TraceCode::SUCCESS_MERCHANTS,
+            $success
+        );
+
+        $this->trace->info(
+            TraceCode::FAILED_MERCHANTS,
+            $failure
+        );
+
+        $this->app->cache->set($redisKey, $createdAt, self::REDIS_KEY_TTL);
+
+        $res = [
+            'from' => $from,
+            'total count' => $totalCount,
+            'success count' => $successCount,
+            'failed count' => $failureCount,
+        ];
+
+        return $res;
 
     }
 
@@ -625,6 +763,7 @@ class AffordabilityMigrationService extends Base\Service
         $isCreditEmi = $input['credit_emi'];
         $methodName = $input['method'];
         $inputFrom = $input['from'];
+        $instrument = $input['instrument'];
 
         $res = null;
 
@@ -634,6 +773,36 @@ class AffordabilityMigrationService extends Base\Service
 
             $res = $this->migrateInstrumentsForSpecificMerchants($merchantIds);
 
+        }
+
+        else if(isset($input['instrument']))
+        {
+            $redisKey = sprintf(self::REDIS_KEY_PREVIOUS_RUN_IN_PROGRESS_INSTRUMENT, $methodName, $instrument);
+
+            $previousRunInProgress =  $this->app->cache->get($redisKey);
+
+            if($previousRunInProgress == true)
+            {
+                throw new Exception\LogicException('Previous run still in progress',
+                    ErrorCode::BAD_REQUEST_PREVIOUS_RUN_IN_PROGRESS);
+            }
+
+            $this->app->cache->set($redisKey, true, self::REDIS_KEY_TTL);
+
+            try
+            {
+                $res = $this->updateMerchantsForSpecificInstruments($inputFrom,$methodName,$instrument,$count);
+
+                $this->app->cache->set($redisKey, false, self::REDIS_KEY_TTL);
+
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->traceException($ex,
+                    Trace::ERROR,
+                    TraceCode::UPDATE_METHOD_FAILED);
+                $this->app->cache->set($redisKey, false, self::REDIS_KEY_TTL);
+            }
         }
 
         else if($sharedTerminals == true)

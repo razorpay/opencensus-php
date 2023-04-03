@@ -75,7 +75,8 @@ class Core extends Base\Core
             CreditEmiProvider::SCBL => '1',
             CreditEmiProvider::YESB => '1',
             CreditEmiProvider::ONECARD => '1',
-            CreditEmiProvider::BAJAJ => '0'
+            CreditEmiProvider::BAJAJ => '0',
+            CreditEmiProvider::FDRL => '1'
 
         ]
     ];
