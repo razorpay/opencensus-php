@@ -1270,6 +1270,21 @@ class Validator extends Base\Validator
             return;
         }
 
+        // card and cvv optional for amex and visa tokenized payments
+        if (($this->entity->card->isAmex() ||  $this->entity->card->isVisa()) && $this->entity->card->getTrivia() === '1')
+        {
+            if(empty($input['card']))
+            {
+                $this->trace->info(traceCode::CARD_CVV_OPTIONAL, []);
+                return;
+            }
+            else if(empty($input['card']['cvv']))
+            {
+                $this->trace->info(traceCode::CVV_OPTIONAL, []);
+                return;
+            }
+        }
+
         if (isset($input['card']) === false)
         {
             throw new Exception\BadRequestException(
@@ -1291,13 +1306,6 @@ class Validator extends Base\Validator
         // For few axis org merchants who need to support commercial card, cvv is optional
         if ($this->entity->skipCvvCheck() === true)
         {
-            return;
-        }
-
-        // cvv optional for amex and visa tokenized payments
-        if (($this->entity->card->isAmex() ||  $this->entity->card->isVisa()) && empty($input['card']['cvv']) && $this->entity->card->getTrivia() === '1')
-        {
-            $this->trace->info(traceCode::CVV_OPTIONAL, []);
             return;
         }
 

@@ -9322,6 +9322,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // cvv optional for amex and visa
     const CVV_OPTIONAL = "CVV_OPTIONAL";
+    const CARD_CVV_OPTIONAL = "CARD_CVV_OPTIONAL";
 
     // ------------------------------ Truecaller Authentication Tracecodes ------------------------------
     // Truecaller - request id traces

@@ -3349,6 +3349,11 @@ class Processor
                     }
                 }
 
+                if ($this->isCardAbsentforTokenisedPayment($token, $input))
+                {
+                    $input['card'] = [];
+                }
+
                 $this->trace->info(TraceCode::TRACK_TOKENISED_PAYMENT_VALIDATION, [
                     'token' => $token->getId(),
                     'isCompliant' => $token->card->isTokenisationCompliant(),
@@ -3367,6 +3372,15 @@ class Processor
                 }
             }
         }
+    }
+
+    protected function isCardAbsentforTokenisedPayment($token, $input) : bool
+    {
+        if(($token->card->isAmex() || $token->card->isVisa()) && ((array_key_exists('card', $input) === false) or (!isset($input['card']))))
+        {
+            return true;
+        }
+        return false;
     }
 
     protected function setMethodForSubscription(& $input)
