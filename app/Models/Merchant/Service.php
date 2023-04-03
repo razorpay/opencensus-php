@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+
 use ApiResponse;
 use App;
 use DB;
@@ -12,6 +13,7 @@ use Mail;
 use Cache;
 use Config;
 use Request;
+use RZP\Models\Merchant\OneClickCheckout\Constants as ShopifyConstants;
 
 use Illuminate\Support\Str;
 use RZP\Http\BasicAuth\BasicAuth;
@@ -10769,9 +10771,20 @@ class Service extends Base\Service
             $this->app['basicauth']->setMerchant($this->merchant);
         }
 
+        if($input['config'] === ShopifyConstants::ONE_CC_GUPSHUP_CREDENTIALS) {
+
+            if(isset($input['value_json']) === true) {
+                $index = 0;
+                foreach ($input['value_json'] as $credential) {
+                    $input['value_json'][$index]['password'] = $this->app['encrypter']->encrypt($credential['password']);
+                    $index++;
+                }
+            }
+        }
+
         (new Merchant\Core)->associateMerchant1ccConfig(
             $input['config'],
-            $input['value'],
+            $input['value']??'',
             $input['value_json'] ?? []
         );
     }

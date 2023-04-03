@@ -21,21 +21,23 @@ class Constants
     const SHOPIFY_TEMP_RECEIPT = 'Order Pending';
     const SHOPIFY_GC_FAILED_RECEIPT = 'GC Payment Failed';
 
-    const COD_INTELLIGENCE               = 'cod_intelligence';
-    const ONE_CLICK_CHECKOUT             = 'one_click_checkout';
-    const ONE_CC_AUTO_FETCH_COUPONS      = 'one_cc_auto_fetch_coupons';
-    const ONE_CC_BUY_NOW_BUTTON          = 'one_cc_buy_now_button';
-    const ONE_CC_INTERNATIONAL_SHIPPING  = 'one_cc_international_shipping';
-    const ONE_CC_CAPTURE_BILLING_ADDRESS = 'one_cc_capture_billing_address';
-    const ONE_CC_GA_ANALYTICS            = 'one_cc_ga_analytics';
-    const ONE_CC_FB_ANALYTICS            = 'one_cc_fb_analytics';
-    const MANUAL_CONTROL_COD_ORDER         = 'manual_control_cod_order';
-    const ONE_CC_CAPTURE_GSTIN             = 'one_cc_capture_gstin';
+    const COD_INTELLIGENCE                  = 'cod_intelligence';
+    const ONE_CLICK_CHECKOUT                = 'one_click_checkout';
+    const ONE_CC_AUTO_FETCH_COUPONS         = 'one_cc_auto_fetch_coupons';
+    const ONE_CC_BUY_NOW_BUTTON             = 'one_cc_buy_now_button';
+    const ONE_CC_INTERNATIONAL_SHIPPING     = 'one_cc_international_shipping';
+    const ONE_CC_CAPTURE_BILLING_ADDRESS    = 'one_cc_capture_billing_address';
+    const ONE_CC_GA_ANALYTICS               = 'one_cc_ga_analytics';
+    const ONE_CC_FB_ANALYTICS               = 'one_cc_fb_analytics';
+    const MANUAL_CONTROL_COD_ORDER          = 'manual_control_cod_order';
+    const ONE_CC_CAPTURE_GSTIN              = 'one_cc_capture_gstin';
     const ONE_CC_CAPTURE_ORDER_INSTRUCTIONS = 'one_cc_capture_order_instructions';
-    const ONE_CC_ADDRESS_SYNC_OFF        = 'one_cc_address_sync_off';
-    const ONE_CC_WHITELIST_COUPONS       = 'one_cc_whitelist_coupons';
-    const ONE_CC_CACHE_COUPONS           = 'one_cc_cache_coupons';
-    const ONE_CC_HANDLE_DIGITAL_PRODUCT  = 'one_cc_handle_digital_product';
+    const ONE_CC_ADDRESS_SYNC_OFF           = 'one_cc_address_sync_off';
+    const ONE_CC_WHITELIST_COUPONS          = 'one_cc_whitelist_coupons';
+    const ONE_CC_CACHE_COUPONS              = 'one_cc_cache_coupons';
+    const ONE_CC_HANDLE_DIGITAL_PRODUCT     = 'one_cc_handle_digital_product';
+    const ONE_CC_GUPSHUP_CREDENTIALS        = 'one_cc_gupshup_credentials';
+    const ONE_CC_ENABLE_GUPSHUP             = 'one_cc_enable_gupshup';
 
     // gift card configs
     const ONE_CC_GIFT_CARD                 = 'one_cc_gift_card';
@@ -150,7 +152,8 @@ class Constants
         self::ONE_CC_ADDRESS_SYNC_OFF,
         self::ONE_CC_WHITELIST_COUPONS,
         self::ONE_CC_CACHE_COUPONS,
-        self::ONE_CC_HANDLE_DIGITAL_PRODUCT
+        self::ONE_CC_HANDLE_DIGITAL_PRODUCT,
+        self::ONE_CC_ENABLE_GUPSHUP,
     ];
 
     const CONFIG_CUM_FEATURE_FLAGS = [

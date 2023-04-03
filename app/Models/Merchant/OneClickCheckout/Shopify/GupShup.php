@@ -3,7 +3,9 @@
 namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 use GuzzleHttp\Client as HttpClient;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
+use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use RZP\Trace\TraceCode;
 use GuzzleHttp\Exception\RequestException as GuzzleRequestException;
 
@@ -14,28 +16,22 @@ class GupShup extends Base\Core
 {
     const GUPSHUP_OPT_IN_USER_URL = 'https://media.smsgupshup.com/GatewayAPI/rest';
 
-    public function callGupShupConsent(string $phone)
+    public function callGupShupConsent(string $phone, array $gupshupCredentials)
     {
-        $noiseGupShupCred = [
-            [
-                'userId'   => env('NOISE_GUPSHUP_USER_ID_1')?? null,
-                'password' => env('NOISE_GUPSHUP_PASSWORD_1')?? null,
-            ],
-            [
-                'userId'   => env('NOISE_GUPSHUP_USER_ID_2')?? null,
-                'password' => env('NOISE_GUPSHUP_PASSWORD_2')?? null,
-            ],
-        ];
+        $index = 0;
 
-        // Need to send the customer consent to 2 gupshup account, need to run in loop.
-        foreach ($noiseGupShupCred  as $value) {
+        foreach($gupshupCredentials as $credential)
+        {
+            $gupshupCredentials[$index]['password'] = $this->app['encrypter']->decrypt($credential['password']);
+            $index++;
+        }
 
-            if (empty($value['userId']) || empty($value['password']))
-            {
-                continue;
-            }
+        foreach($gupshupCredentials as $credentials)
+        {
+            $userName = $credentials['username'];
+            $password = $credentials['password'];
 
-            $params = '?userid='.$value['userId'].'&password='. $value['password'].'&phone_number='.$phone.'&method=OPT_IN&auth_scheme=plain&v=1.1&channel=WHATSAPP&format=json';
+            $params = '?userid='.$userName.'&password='.$password.'&phone_number='.$phone.'&method=OPT_IN&auth_scheme=plain&v=1.1&channel=WHATSAPP&format=json';
 
             $response = $this->sendConsentRequest($params,'POST');
 
@@ -56,7 +52,7 @@ class GupShup extends Base\Core
         $headers = [
             'Content-type' => 'application/x-www-form-urlencoded',
         ];
-        
+
         try
         {
             $response = (new HttpClient)->request($method, self::GUPSHUP_OPT_IN_USER_URL.$params, [

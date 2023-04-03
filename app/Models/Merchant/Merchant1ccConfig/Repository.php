@@ -18,6 +18,16 @@ class Repository extends Base\Repository
             ->first();
     }
 
+    public function findByMerchantAndConfigArray($merchantId, $configs)
+    {
+        return $this->newQuery()
+            ->where(Entity::MERCHANT_ID, '=', $merchantId)
+            ->whereIn(Entity::CONFIG, $configs)
+            ->where(Entity::DELETED_AT, '=', null)
+            ->orderBy(Entity::UPDATED_AT, 'desc')
+            ->get();
+    }
+
     public function findAllByMerchantAndConfigType($merchantId, $config)
     {
         return $this->newQuery()

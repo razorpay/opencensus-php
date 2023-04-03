@@ -62,7 +62,7 @@ class Entity extends Base\PublicEntity
 
     public function getConfig()
     {
-        return $this->getAttributeValue(self::VALUE);
+        return $this->getAttributeValue(self::CONFIG);
     }
 
     public function getValue()

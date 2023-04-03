@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\OneClickCheckout\Shopify;
 
 use App;
+use RZP\Models\Merchant\Merchant1ccConfig\Type;
 use Throwable;
 use RZP\Exception;
 use RZP\Models\Order;
@@ -1155,9 +1156,32 @@ class Core extends Base\Core
         $merchantId = $this->merchant->getId();
 
         // Call GupShup consent API for enabled MID's
-        if (isset($merchantId) === true and in_array($merchantId, self::gupShupEnabledMids) === true and $shopifyCustomerPhone != null)
+
+        $isMerchantGupshupEnabled = false;
+
+        $gupshupCredentialsValue = null;
+
+        $gupshupConfigs = $this->repo->merchant_1cc_configs->findByMerchantAndConfigArray(
+            $this->merchant->getId(),
+            [Type::ONE_CC_GUPSHUP_CREDENTIALS, Type::ONE_CC_ENABLE_GUPSHUP]
+        );
+
+        foreach($gupshupConfigs as $config)
         {
-            (new GupShup)->callGupShupConsent($shopifyCustomerPhone);
+            if($config!=null && $config->getConfig() === Type::ONE_CC_ENABLE_GUPSHUP)
+            {
+                $isMerchantGupshupEnabled = $config->getValue() === "1";
+            }
+            else if($config!=null && $config->getConfig() === Type::ONE_CC_GUPSHUP_CREDENTIALS)
+            {
+                $gupshupCredentialsValue = $config->getValueJson();
+            }
+        }
+
+
+        if ($isMerchantGupshupEnabled && $gupshupCredentialsValue != null && $shopifyCustomerPhone != null)
+        {
+            (new GupShup)->callGupShupConsent($shopifyCustomerPhone, $gupshupCredentialsValue);
         }
     }
 
