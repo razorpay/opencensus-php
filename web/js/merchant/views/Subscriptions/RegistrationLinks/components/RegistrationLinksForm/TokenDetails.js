@@ -7,8 +7,9 @@ import { AmountTooltip } from 'common/ui/Amount';
 
 import { checkIfAmount, checkIfAmountForFirstCharge } from './PaymentDetails/utils';
 import {
-  CARD_AFA_MAX_LIMIT,
   MAX_TOKEN_AMOUNT,
+  CARD_AFA_MAX_LIMIT,
+  CARD_TOKEN_MAX_AMOUNT,
   MAX_TOKEN_AMOUNT_NACH,
 } from 'merchant/views/Subscriptions/constants';
 
@@ -90,7 +91,7 @@ export default function TokenDetailsForm({
     )})`;
   }
   if (isCardPayment) {
-    maxAmountProps.validator = cardMaxAmountValidator(CARD_AFA_MAX_LIMIT);
+    maxAmountProps.validator = cardMaxAmountValidator(CARD_TOKEN_MAX_AMOUNT);
     let maxAmount = CARD_AFA_MAX_LIMIT;
     if (mandateMaxAmount <= CARD_AFA_MAX_LIMIT) {
       maxAmount = mandateMaxAmount;

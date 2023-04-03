@@ -1,7 +1,7 @@
 import React from 'react';
 import { screen, render } from 'test-utils';
 import App from 'merchant/views/Subscriptions/RegistrationLinks/components/RegistrationLinksForm/TokenDetails';
-import { CARD_AFA_MAX_LIMIT } from 'merchant/views/Subscriptions/constants';
+import { CARD_TOKEN_MAX_AMOUNT } from 'merchant/views/Subscriptions/constants';
 
 describe('RL - Token Details Form', () => {
   const onBlurElement = jest.fn();
@@ -121,10 +121,10 @@ describe('RL - Token Details Form', () => {
       isCardPayment: true,
       mandateMethod: 'card',
       amount: 201,
-      mandateMaxAmount: 200000,
+      mandateMaxAmount: 1000001,
     });
     expect(
-      screen.getByText(`Please enter an amount below ₹${CARD_AFA_MAX_LIMIT}`),
+      screen.getByText(`Please enter an amount below ₹${CARD_TOKEN_MAX_AMOUNT}`),
     ).toBeInTheDocument();
   });
 });
