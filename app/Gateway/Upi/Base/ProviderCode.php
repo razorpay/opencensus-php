@@ -490,6 +490,7 @@ class ProviderCode
         self::PNB           => ProviderPsp::BHIM_PNB,
         self::FAM           => ProviderPsp::FAM_PAY,
         self::PINELABS      => ProviderPsp::FAVE,
+        self::OKSBI         => ProviderPsp::GOOGLE_PAY,
 
         // used only for testing
         self::RAZORPAY      => ProviderPsp::RAZORPAY,
