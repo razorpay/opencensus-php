@@ -64,6 +64,9 @@ trait Reversal
 
             $sourcePayment = $this->repo->payment->getCapturedPaymentForOrder($sourceOrderId);
 
+            // fetching payment again to get from sources configured for archived entity
+            $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
+
             $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);
         }
 

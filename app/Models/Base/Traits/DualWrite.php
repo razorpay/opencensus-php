@@ -76,6 +76,21 @@ trait DualWrite
                 $this->exists = $repo->existsInTable($this->getTable(), $this->getId());
             }
 
+            // Sometimes model is fetched from data warehouse that contain additional columns
+            // Unsetting them before saving into hot storage
+            $recordSourceAttributePresent = false;
+            $recordSourceAttributeValue   = null;
+
+            $attributes = $this->getAttributes();
+
+            if (isset($attributes[Entity::RECORD_SOURCE]) === true)
+            {
+                $recordSourceAttributePresent = true;
+                $recordSourceAttributeValue   = $attributes[Entity::RECORD_SOURCE];
+
+                $this->unsetModelAttribute(Entity::RECORD_SOURCE);
+            }
+
             $entityExists = $this->exists;
 
             parent::saveOrFail($options);
@@ -83,6 +98,11 @@ trait DualWrite
             // If env key not set for a table, dual writes will be disabled
             if ($this->isDualWriteEnabledViaEnv() !== true)
             {
+                if ($recordSourceAttributePresent === true)
+                {
+                    $this->setModelAttribute(Entity::RECORD_SOURCE, $recordSourceAttributeValue);
+                }
+
                 return;
             }
 
@@ -91,6 +111,11 @@ trait DualWrite
             $this->validateAndUpsert($strictDualWrite, $entityExists, $options);
 
             App::getFacadeRoot()['trace']->histogram(Metric::DUAL_WRITES_TIME_TAKEN, millitime() - $dualWriteStartTime);
+
+            if ($recordSourceAttributePresent === true)
+            {
+                $this->setModelAttribute(Entity::RECORD_SOURCE, $recordSourceAttributeValue);
+            }
         });
 
         // set archived value to false post successful save
@@ -221,6 +246,21 @@ trait DualWrite
 
         $entityExists = $this->exists;
 
+        // Sometimes model is fetched from data warehouse that contain additional columns
+        // Unsetting them before saving into hot storage
+        $recordSourceAttributePresent = false;
+        $recordSourceAttributeValue   = null;
+
+        $attributes = $this->getAttributes();
+
+        if (isset($attributes[Entity::RECORD_SOURCE]) === true)
+        {
+            $recordSourceAttributePresent = true;
+            $recordSourceAttributeValue   = $attributes[Entity::RECORD_SOURCE];
+
+            $this->unsetModelAttribute(Entity::RECORD_SOURCE);
+        }
+
         if ($this->exists === false)
         {
             $originalTimeStampsValue          = $this->timestamps;
@@ -242,6 +282,11 @@ trait DualWrite
 
         if ($this->isDualWriteEnabledViaEnv() !== true)
         {
+            if ($recordSourceAttributePresent === true)
+            {
+                $this->setModelAttribute(Entity::RECORD_SOURCE, $recordSourceAttributeValue);
+            }
+
             return;
         }
 
@@ -253,6 +298,11 @@ trait DualWrite
 
         // set archived value to false post successful save
         $this->setArchived(false);
+
+        if ($recordSourceAttributePresent === true)
+        {
+            $this->setModelAttribute(Entity::RECORD_SOURCE, $recordSourceAttributeValue);
+        }
     }
 
     private function isDualWriteEnabledViaEnv() : bool
@@ -316,6 +366,20 @@ trait DualWrite
         $repoName = E::getEntityRepository($this->entity);
 
         return new $repoName;
+    }
+
+    private function unsetModelAttribute(string $key)
+    {
+        unset($this->attributes[$key]);
+
+        unset($this->{$key});
+    }
+
+    private function setModelAttribute(string $key, $value)
+    {
+        $this->attributes[$key] = $value;
+
+        $this->{$key} = $value;
     }
 
     private function getOperationTypeForMetrics(bool $parentEntityExists, bool $dualEntityExists) : string
