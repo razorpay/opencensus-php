@@ -35,7 +35,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $needClarificationRules = [
-        Constants::MESSAGE_BODY       => 'required|string|max:310',
+        Constants::MESSAGE_BODY       => 'required|string|max:800',
         Constants::MESSAGE_SUBJECT    => 'required|string|max:100',
     ];
 
