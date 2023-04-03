@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\SubscriptionRegistration;
 
+use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 

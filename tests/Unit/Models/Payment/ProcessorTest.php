@@ -295,7 +295,6 @@ class ProcessorTest extends TestCase
         $payment->shouldReceive('isCard')->andReturn(true);
         $payment->shouldReceive('isInternational')->andReturn(true);
         $payment->shouldReceive('getMetadata')->withAnyArgs()->andReturn(Metadata::CHECKOUTJS);
-        $payment-
 
         $merchant->shouldReceive('isFeatureEnabled')->with(Constants::DISABLE_PAYPAL_AS_BACKUP)->andReturn(false);
         $merchant->shouldReceive('getMethods->getEnabledWallets')->andReturn($paypal);

@@ -436,8 +436,6 @@ class RouteConfigTest extends TestCase
 
         $updateResponse = $this->runRequestResponseFlow($testData);
 
-        s($updateResponse);
-
         $this->mockBVSResponse($linkedAccountId, BvsConstants::PERSONAL_PAN);
 
         $this->mockBVSResponse($linkedAccountId, BvsConstants::GSTIN, 'failed');
