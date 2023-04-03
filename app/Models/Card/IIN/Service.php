@@ -163,7 +163,7 @@ class Service extends Base\Service
 
                     throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_INVALID_IIN,
-                        null,[],'The requested IIN is a token IIN & should be 9 digits long.');
+                        null,[],'The requested IIN is not a valid token IIN');
 
                 }
             }
