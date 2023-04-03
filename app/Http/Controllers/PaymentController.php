@@ -791,7 +791,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->authorizeFailedNetbankingPayment($input);
+        $response = $this->service()->authorizeFailedNbplusPayment($input);
 
         return ApiResponse::json($response);
     }

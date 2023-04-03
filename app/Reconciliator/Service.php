@@ -22,6 +22,7 @@ use RZP\Gateway\Upi\Base\Entity;
 use RZP\Reconciliator\Base\InfoCode;
 use RZP\Reconciliator\Base\Constants;
 use RZP\Reconciliator\RequestProcessor;
+use RZP\Services\NbPlus\Wallet as Wallet;
 use RZP\Jobs\UpsRecon\UpsGatewayEntityUpdate;
 use RZP\Models\Batch\Processor\Reconciliation;
 use RZP\Reconciliator\Base\Foundation\SubReconciliate;
@@ -775,7 +776,7 @@ class Service extends Base\Service
 
         $method = $payment->getMethod();
 
-        if($method == Payment\Method::NETBANKING)
+        if($method == Payment\Method::NETBANKING or $method == Payment\Method::WALLET)
         {
             return $this->updateNetbankingReconciliationData($input, $payment);
         }
@@ -867,7 +868,16 @@ class Service extends Base\Service
      */
     public function updateNetbankingReconciliationData(array $input, Payment\Entity $payment): array
     {
-        (new Validator)->validateUpdateNetbankingReconData($input);
+
+        switch ($payment->getMethod())
+        {
+            case Payment\Method::NETBANKING;
+                (new Validator)->validateUpdateNetbankingReconData($input);
+                break;
+            case Payment\Method::WALLET:
+                (new Validator)->validateUpdateWalletReconData($input);
+                break;
+        }
 
         $paymentId = $input['payment_id'];
 
@@ -897,7 +907,15 @@ class Service extends Base\Service
             {
                 $this->updateTransactionData($input, $payment);
 
-                $this->updateNetbankingGatewayData($input, $payment);
+                switch ($payment->getMethod())
+                {
+                    case Payment\Method::NETBANKING;
+                        $this->updateNetbankingGatewayData($input, $payment);
+                        break;
+                    case Payment\Method::WALLET:
+                        $this->updateWalletGatewayData($input, $payment);
+                        break;
+                }
             });
 
             $this->core->pushSuccessPaymentReconMetrics($payment, "art");
@@ -1633,5 +1651,14 @@ class Service extends Base\Service
             $feature, $this->mode ?? Mode::LIVE);
 
        return ($variant === 'on');
+    }
+
+    private function updateWalletGatewayData(array $input, Payment\Entity $payment)
+    {
+        $data = [
+            'reference_number' => $input['wallet']['wallet_transaction_id'] ?? null
+        ];
+
+        (New NbPlusServiceRecon)->nbPlusPaymentServiceWalletDispatch($data);
     }
 }

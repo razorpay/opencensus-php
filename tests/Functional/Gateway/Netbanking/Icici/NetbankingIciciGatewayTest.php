@@ -570,7 +570,7 @@ class NetbankingIciciGatewayTest extends TestCase
     {
         $content = $this->getDefaultNetbankingAuthorizeFailedPaymentArray();
 
-        unset($content['payment']['method']);
+        unset($content['payment']['amount']);
 
         $this->makeRequestAndCatchException(function() use ($content)
         {

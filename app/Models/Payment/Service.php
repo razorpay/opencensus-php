@@ -5743,9 +5743,10 @@ class Service extends Base\Service
      * @throws BadRequestValidationFailureException
      * @throws \Exception
      */
-    public function authorizeFailedNetbankingPayment(array $input)
+    public function authorizeFailedNbplusPayment(array $input)
     {
         $fields = [
+            EntityConstants::WALLET,
             EntityConstants::NETBANKING,
             EntityConstants::PAYMENT,
             Entity::META,
@@ -5753,13 +5754,25 @@ class Service extends Base\Service
 
         $input = array_only($input, $fields);
 
-        (new Payment\Validator)->validateInput('authorize_failed_netbanking_payment', $input);
+        switch ($input['payment']['method'])
+        {
+            case Payment\Method::NETBANKING;
+                (new Payment\Validator)->validateInput('authorize_failed_netbanking_payment', $input);
+                break;
+            case Payment\Method::WALLET:
+                (new Payment\Validator)->validateInput('authorize_failed_wallet_payment', $input);
+                break;
+            default:
+                throw new Exception\BadRequestValidationFailureException(
+                    Error\PublicErrorDescription::BAD_REQUEST_INVALID_PAYMENT_METHOD
+                );
+        }
 
         $paymentId = $input['payment']['id'];
 
-        $gateway = $input['netbanking']['gateway'];
-
         $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $gateway = $payment->getGateway();
 
         if (($payment !== null) and
             ($payment->getAmount() !== (int) $input['payment']['amount']))
@@ -5777,7 +5790,7 @@ class Service extends Base\Service
         if (($input['meta']['force_auth_payment'] === true) and
             ($this->isForceAuthAllowed($gateway) === true))
         {
-            return $this->forceAuthorizeNetbankingPayment($payment, $input);
+            return $this->forceAuthorizeNbplusPayment($payment, $input);
         }
         else
         {
@@ -5793,13 +5806,21 @@ class Service extends Base\Service
      * @return array
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function forceAuthorizeNetbankingPayment(Payment\Entity $payment, array $input = [])
+    protected function forceAuthorizeNbplusPayment(Payment\Entity $payment, array $input = [])
     {
         $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         $input['acquirer'] = $this->getAcquirerData($input);
 
-        $input['gateway_payment_id'] = $input['netbanking']['bank_transaction_id'];
+        switch ($input['payment']['method'])
+        {
+            case Payment\Method::NETBANKING;
+                $input['gateway_payment_id'] = $input['netbanking']['bank_transaction_id'];
+                break;
+            case Payment\Method::WALLET:
+                $input['gateway_payment_id'] = $input['wallet']['wallet_transaction_id'];
+                break;
+        }
 
         $this->repo->transaction(function () use ($payment, $input, $merchant)
         {
@@ -6012,6 +6033,8 @@ class Service extends Base\Service
 
                 return true;
             });
+
+            return true;
         }
         catch (\Exception $ex)
         {

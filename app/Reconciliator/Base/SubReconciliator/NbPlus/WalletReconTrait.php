@@ -12,7 +12,7 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 trait WalletReconTrait
 {
-    protected function nbPlusPaymentServiceWalletDispatch(array $rowDetails)
+    public function nbPlusPaymentServiceWalletDispatch(array $rowDetails)
     {
         $pushData = [
             'entity_name' => Method::WALLET,

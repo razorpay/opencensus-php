@@ -241,12 +241,14 @@ class Validator extends Base\Core
         'reconciled_type'               => 'required|string',
         'amount'                        => 'required',
         'reconciled_at'                 => 'required|filled|epoch',
-        'netbanking'                    => 'sometimes'
+        'netbanking'                    => 'sometimes',
+        'wallet'                        => 'sometimes'
     ];
 
     const UPDATE_NETBANKING_RECON_DATA_RULES = [
         'payment_id'                                       => 'required|string|size:14',
         'netbanking'                                       => 'required|array',
+        'wallet'                                           => 'sometimes',
         'upi'                                              => 'sometimes',
         'netbanking.gateway_transaction_id'                => 'sometimes',
         'netbanking.bank_transaction_id'                   => 'sometimes',
@@ -254,6 +256,17 @@ class Validator extends Base\Core
         'netbanking.additional_data'                       => 'sometimes',
         'netbanking.additional_data.credit_account_number' => 'sometimes',
         'netbanking.additional_data.customer_id'           => 'sometimes',
+        'reconciled_type'                                  => 'required|string',
+        'amount'                                           => 'required',
+        'reconciled_at'                                    => 'required|filled|epoch',
+    ];
+
+    const UPDATE_WALLET_RECON_DATA_RULES = [
+        'payment_id'                                       => 'required|string|size:14',
+        'netbanking'                                       => 'sometimes',
+        'upi'                                              => 'sometimes',
+        'wallet'                                           => 'required|array',
+        'wallet.wallet_transaction_id'                     => 'sometimes|string',
         'reconciled_type'                                  => 'required|string',
         'amount'                                           => 'required',
         'reconciled_at'                                    => 'required|filled|epoch',
@@ -1020,6 +1033,14 @@ class Validator extends Base\Core
     public function validateUpdateNetbankingReconData(array $input)
     {
         (new JitValidator)->rules(self::UPDATE_NETBANKING_RECON_DATA_RULES)
+            ->caller($this)
+            ->input($input)
+            ->validate();
+    }
+
+    public function validateUpdateWalletReconData(array $input)
+    {
+        (new JitValidator)->rules(self::UPDATE_WALLET_RECON_DATA_RULES)
             ->caller($this)
             ->input($input)
             ->validate();
