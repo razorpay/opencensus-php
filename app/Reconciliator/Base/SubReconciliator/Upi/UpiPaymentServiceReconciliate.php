@@ -61,7 +61,8 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
     {
         parent::runPreReconciledAtCheckRecon($rowDetails);
 
-        if ($this->payment->isRoutedThroughUpiPaymentService() === false)
+        if ($this->payment->isRoutedThroughUpiPaymentService() === false and
+            $this->payment->isRoutedThroughPaymentsUpiPaymentService() === false)
         {
             return;
         }
