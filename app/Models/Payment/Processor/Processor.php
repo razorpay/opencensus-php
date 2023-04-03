@@ -2212,7 +2212,12 @@ class Processor
             return;
         }
 
-        if($payment->isPos() === true and $payment->isAuthorized() === false)
+        if($payment->isPos() === true and $payment->getMethod() === Payment\Method::UPI and $payment->isCaptured() === false)
+        {
+            return;
+        }
+
+        if($payment->isPos() === true and $payment->getMethod() === Payment\Method::CARD and $payment->isAuthorized() === false)
         {
             return;
         }

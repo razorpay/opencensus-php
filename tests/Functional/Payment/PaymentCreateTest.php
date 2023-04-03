@@ -9712,7 +9712,7 @@ class PaymentCreateTest extends TestCase
         $this->startTest();
     }
 
-    public function testCheckPaymentRetryIfAuthorisePaymentFailsFirstTime()
+    public function testCheckPaymentRetryIfAuthorisePaymentFailsFirstTimeForCard()
     {
         try{
             $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1zD0BpqeO1qqpB']);
@@ -9780,6 +9780,73 @@ class PaymentCreateTest extends TestCase
 
     }
 
+    public function testCheckPaymentRetryIfAuthorisePaymentFailsFirstTimeForUpi()
+    {
+        try{
+            $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1zD0BpqeO1qqpB']);
+
+            $this->ba->expressAuth('test', 'rzp_test_10000000000000');
+
+            $testData = $this->testData['testCreatePosPayments'];
+
+            $testData['request']['content']['method'] = 'upi';
+
+            unset($testData['request']['content']['card']);
+
+            $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+            $this->startTest($testData);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->assertNotNull($ex);
+        }
+
+        $attributes = [
+            'merchant_id'              => '10000000000000',
+            'gateway'                  => 'hdfc_ezetap',
+            'gateway_merchant_id'      => '12344',
+            'gateway_acquirer'         => 'hdfc',
+            'upi'                       => 1,
+            'type'                      => [
+                'pos' => '1',
+                'direct_settlement_with_refund' => '1',
+                'non_recurring'             => '1'
+            ],
+            'enabled'                   => 1,
+        ];
+
+        $this->fixtures->merchant->addFeatures([Feature\Constants::RULE_FILTER]);
+
+        $this->fixtures->create('terminal', $attributes);
+
+        $this->fixtures->pricing->createTestPlanForPosPayments();
+
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1zD0BpqeO1qqpB']);
+
+        $this->ba->expressAuth('test','rzp_test_10000000000000');
+
+        $testData = $this->testData['testCreatePosPayments'];
+
+        $testData['request']['content']['method'] = 'upi';
+
+        unset($testData['request']['content']['card']);
+
+        $this->fixtures->merchant->enableMethod('10000000000000', 'upi');
+
+        $response = $this->startTest($testData);
+
+        $input = $testData['request']['content'];
+
+        $paymentEntity = (new Payment\Repository())->findByPublicId($response['id']);
+
+        $terminalEntity = (new \RZP\Models\Terminal\Repository())->fetchForPayment($paymentEntity)->toArray();
+
+        $this->assertEquals($terminalEntity['gateway'],'hdfc_ezetap');
+
+        $this->assertEquals('captured', $response['status']);
+
+    }
 
     public function testCreateReminderPaymentforNonPos()
     {
