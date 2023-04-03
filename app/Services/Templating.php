@@ -21,6 +21,8 @@ class Templating
     const TEMPLATE_VIEW_PATH     = '/template_configs/view';
     const ROLE_ASSIGN_PATH       = '/user_roles/assign';
     const ROLE_REVOKE_PATH       = '/user_roles/revoke';
+    const PRE_PROCESSOR_PATH     = '/preprocessor';
+    const PRE_PROCESSOR_VIEW_PATH = '/template_configs/view/preprocessor';
 
 
     public function __construct($app)
@@ -88,6 +90,26 @@ class Templating
             'path'      => self::TEMPLATE_CONFIGS_PATH.'/'.$id,
             'method'    => 'DELETE',
         ]);
+    }
+
+    public function testPreProcessor($input)
+    {
+        return $this->sendRequest(
+            [
+                'path'      => self::PRE_PROCESSOR_PATH.'/test',
+                'data'      => $input,
+                'method'    => 'POST',
+            ]);
+    }
+
+    public function renderTemplate($input)
+    {
+        return $this->sendRequest(
+            [
+                'path'      => self::TEMPLATE_CONFIGS_PATH.'/render',
+                'data'      => $input,
+                'method'    => 'POST',
+            ]);
     }
 
     public function createTemplateConfig($input)

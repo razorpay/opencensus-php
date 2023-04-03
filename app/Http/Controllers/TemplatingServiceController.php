@@ -72,6 +72,23 @@ class TemplatingServiceController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function testPreProcessor()
+    {
+        $data = $this
+            ->templatingService()
+            ->testPreProcessor($this->input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function renderTemplate()
+    {
+        $data = $this
+            ->templatingService()
+            ->renderTemplate($this->input);
+
+        return ApiResponse::json($data);
+    }
 
     public function deleteTemplateConfig($id)
     {
