@@ -8,6 +8,7 @@ use Cache;
 use Crypt;
 use Config;
 use Route;
+use Request;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
@@ -3017,6 +3018,23 @@ trait Authorize
                          'payment' => $payment->getId(),
                          'token'   => $token->getId(),
                     ]);
+        }
+
+        // If non-recurring token is passed in subsequent recurring payment create api then we are considering
+        // initial payment flow and hence returning the html response but merchant is expecting json response,
+        // due to this they are not able to consume the response.
+        // Currently, this issue is faced in card recurring only, hence making changes specific to card method only.
+        if (($token->getMethod() === 'card') and
+            ($token->isRecurring() === false) and
+            (strpos(Request::getUri(), "/payments/create/recurring") !== false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
+                Payment\Entity::BANK,
+                [
+                    'payment' => $payment->getId(),
+                    'token'   => $token->getId(),
+                ]);
         }
     }
 
