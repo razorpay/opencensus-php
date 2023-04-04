@@ -3069,7 +3069,7 @@ class Core extends Base\Core
         ]);
 
         $bankingAccount = $this->updateBankingAccount(
-            $bankingAccount, 
+            $bankingAccount,
             [
                 Entity::STATUS      => Status::INITIATED,
                 Entity::SUB_STATUS  => Status::NONE,
@@ -3120,7 +3120,7 @@ class Core extends Base\Core
             if ($sentDocket)
             {
                 $bankingAccount = $this->updateBankingAccount(
-                    $bankingAccount, 
+                    $bankingAccount,
                     [
                         Entity::STATUS      => Status::PICKED,
                         Entity::SUB_STATUS  => Status::DOCKET_INITIATED,
@@ -3311,10 +3311,10 @@ class Core extends Base\Core
 
             /**
              * Get MCC code from business category and sub-category mapping
-             * 
+             *
              * Fallback for merchants who sign up directly on X
              * additional_details has business_details property for this
-             * 
+             *
              * This is different from Entity Type (banking_account_activation_details->business_category)
              */
             if (empty($mcc))
@@ -3399,8 +3399,8 @@ class Core extends Base\Core
 
             $otherRecipients = [
                 [
-                    'name'  => 'Hanuman S',
-                    'email' => 'hanumanth.s@lesconcierges.in',
+                    'name'  => 'Lohith M',
+                    'email' => 'lohith.m@lesconcierges.in',
                 ],
                 [
                     'name'  => 'Syed',
