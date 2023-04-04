@@ -5524,7 +5524,16 @@ class Core extends Base\Core
             // Using Self Serve Workflow Feature, Owner role will be able to bulk reject payouts using Admin action
             if ($auth->isProxyAuth() === true && array_key_exists(Entity::BULK_REJECT_AS_OWNER, $input))
             {
-                $this->rejectPendingPayout($payout);
+                if ($payout->getIsPayoutService() === true)
+                {
+                    $this->payoutWorkflowServiceClient->rejectPayoutViaMicroservice(
+                        $payout->getId()
+                    );
+                }
+                else
+                {
+                    $this->rejectPendingPayout($payout);
+                }
 
                 return $this->workflowService->createDirectAction($payout, $input);
             }
@@ -5536,9 +5545,19 @@ class Core extends Base\Core
                     ($auth->isProxyAuth() === false)) and
                     ($auth->isSlackApp() === false))
             {
-                if ($input[Entity::FORCE_REJECT] === true)
+                // casted to boolval, in case of dashboard request its coming as "1"
+                if (boolval($input[Entity::FORCE_REJECT]) === true)
                 {
-                    $this->rejectPendingPayout($payout);
+                    if ($payout->getIsPayoutService() === true)
+                    {
+                        $this->payoutWorkflowServiceClient->rejectPayoutViaMicroservice(
+                            $payout->getId()
+                        );
+                    }
+                    else
+                    {
+                        $this->rejectPendingPayout($payout);
+                    }
                 }
 
                 return $this->workflowService->createDirectAction($payout, $input);

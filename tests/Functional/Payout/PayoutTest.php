@@ -10,6 +10,7 @@ use Redis;
 use Config;
 use Mockery;
 use \WpOrg\Requests\Response;
+use Razorpay\Edge\Passport\Passport;
 
 use Carbon\Carbon;
 use Illuminate\Queue\SqsQueue;
@@ -7056,6 +7057,130 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals(Status::QUEUED, $updatedQueuedPayout2['status']);
     }
 
+    public function testAutoExpiryOfPayoutsAfterThreeMonthsForRejectedPayoutToPS()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        //create pending payouts
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id' => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' => substr($payout1["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        $pendingPayout1 = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals(Status::PENDING, $pendingPayout1['status']);
+
+        $this->fixtures->edit('payout', $pendingPayout1['id'], ['created_at' => strtotime(('-100 days'), time())]);
+
+        $this->ba->cronAuth('live');
+
+        $success = false;
+        $this->mockWorkflowDirectActionClient($success);
+
+        $this->fixtures->on('live')->edit('payout' , $pendingPayout1->getId(), [
+            'is_payout_service' => 1,
+        ]);
+
+        $this->createPsPayout($pendingPayout1->getId());
+
+        $this->mockPayoutServiceWorkflow($success, $pendingPayout1->getId());
+
+        $this->startTest();
+
+        $this->assertTrue($success);
+
+        $payoutId = $pendingPayout1->getId();
+
+        $updatedPayout = \DB::connection('test')->select("select * from ps_payouts where id = '$payoutId'")[0];
+
+        $this->assertEquals('rejected', $updatedPayout->status);
+    }
+
+    public function testScheduledPayoutProcessingAutoRejectWithWfsToPS()
+    {
+        // Timestamp of 9 AM, 2 months from current time
+        $scheduledAtTime = Carbon::now(Timezone::IST)->hour(9)->addMonths(2)->getTimestamp();
+        $scheduledAtStartOfHour = Carbon::createFromTimestamp($scheduledAtTime, Timezone::IST)->startOfHour()->getTimestamp();
+
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id' => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout1 = $this->createPayoutWithOtpWithWorkflow(
+            [
+                'scheduled_at' => $scheduledAtTime
+            ],
+            'rzp_live_10000000000000', $this->ownerRoleUser->getId());
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' => substr($payout1["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        // Calling this scheduled payout but it hasn't been approved yet
+        $scheduledPayout = $this->getDbLastEntity('payout', 'live');
+
+        $this->assertEquals(Status::PENDING, $scheduledPayout['status']);
+
+        $this->fixtures->edit('balance', $this->bankingBalance->getId(), ['balance' => 0]);
+
+        // Setting this to 1 second after the start of the time slot
+        Carbon::setTestNow(Carbon::createFromTimestamp($scheduledAtStartOfHour + 1, Timezone::IST));
+
+        $this->ba->cronAuth('live');
+
+        $success = false;
+        $this->mockWorkflowDirectActionClient($success);
+
+        $this->createPsPayout($scheduledPayout->getId());
+
+        $this->mockPayoutServiceWorkflow($success, $scheduledPayout->getId());
+
+        // ps payouts got removed while scheduling to worker
+        $result = $this->startTest();
+
+        $expectedResponse = [
+            $this->bankingBalance['id'] => [
+                'total_payout_count'        => 1,
+                'dispatched_payout_count'   => 1,
+                'dispatched_payout_amount'  => 10000
+            ]
+        ];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $result);
+
+        $this->assertTrue($success);
+
+        $payoutId = $scheduledPayout->getId();
+
+        $updatedPayout = $this->getDbLastEntity('payout', 'live');;
+
+        $this->assertEquals('rejected', $updatedPayout->status);
+    }
+
     public function testRejectPayoutWithRejectCommentInWebhookWithWFS()
     {
         $this->liveSetUp();
@@ -7393,6 +7518,76 @@ class PayoutTest extends OAuthTestCase
         $this->ba->adminAuth('live', $token);
 
         $this->startTest();
+    }
+
+
+    public function testBulkRejectPayoutWithAdminWithNWFSToPS()
+    {
+        $this->liveSetUp();
+
+        $this->setUpExperimentForNWFS();
+
+        $this->createPayoutWorkflowWithBankingUsersLiveMode();
+
+        $this->fixtures->on('live')->create(
+            'workflow_config',
+            [
+                'config_id' => 'FVLeJYoM0GPWUb',
+            ]);
+
+        $payout1 = $this->createPayoutWithWorkflow([], 'rzp_live_TheLiveAuthKey');
+
+        $this->fixtures->on('live')->create(
+            'workflow_entity_map',
+            [
+                'entity_id' => substr($payout1["id"], 5), //pout_FUj82QLoJgRcM0 => FUj82QLoJgRcM0
+            ]);
+
+        $testData = &$this->testData[__FUNCTION__];
+
+        $testData['request']['content']['payout_ids'] = [$payout1['id']];
+
+        $testData['request']['content']['force_reject'] = true;
+
+        // Need to do this for test as well because in testing env,
+        // admin authentication is done on test mode, even if live creds
+        // have been passed.
+        $adminForTest = $this->prepareAdminForPayoutWorkflow('test');
+        $adminForLive = $this->prepareAdminForPayoutWorkflow('live');
+
+        $this->app['config']->set('database.default', 'live');
+
+        $adminToken = $this->fixtures->on('test')->create('admin_token', [
+            'admin_id' => $adminForTest->getId(),
+            'token'    => Hash::make('ThisIsATokenForTest'),
+        ]);
+
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
+
+        $this->ba->adminAuth('live', $token);
+
+        $success = false;
+        $this->mockWorkflowDirectActionClient($success);
+
+        $payout = $this->getDbLastEntity('payout', 'live');
+
+        $this->fixtures->on('live')->edit('payout' , $payout->getId(), [
+            'is_payout_service' => 1,
+        ]);
+
+        $this->createPsPayout($payout->getId());
+
+        $this->mockPayoutServiceWorkflow($success,$payout->getId());
+
+        $this->startTest();
+
+        $this->assertTrue($success);
+
+        $payoutId = $payout->getId();
+
+        $updatedPayout = \DB::connection('test')->select("select * from ps_payouts where id = '$payoutId'")[0];
+
+        $this->assertEquals('rejected', $updatedPayout->status);
     }
 
     public function testBulkRetryWorkflowOnPayout()
@@ -34663,6 +34858,143 @@ class PayoutTest extends OAuthTestCase
         ];
 
         return $this->fixtures->create('workflow_state_map', $workflowStateMapParams);
+    }
+
+    public function mockWorkflowDirectActionClient(& $success)
+    {
+        $workflowServiceClientMock = Mockery::mock('RZP\Services\WorkflowService');
+
+        $this->app->instance('workflow_service', $workflowServiceClientMock);
+
+        $workflowServiceClientMock->shouldReceive('request')->with("twirp/rzp.workflows.action.v1.ActionAPI/CreateDirectOnWorkflow",
+                                                                   Mockery::on(function ( $payload) use (&$success)
+                                                                   {
+                                                                       try
+                                                                       {
+                                                                           $this->assertArraySelectiveEquals(['action' => ['workflow_id' => 'con_qwertgfdsc']], $payload);
+
+                                                                           $success =  true;
+
+                                                                           return true;
+                                                                       }
+                                                                       catch (\Throwable $e)
+                                                                       {
+                                                                           $success =  false;
+
+                                                                           return false;
+                                                                       }
+                                                                   }))->andReturn($this->sendWFCreateDirectActionMockResponse());
+    }
+
+    private function sendWFCreateDirectActionMockResponse()
+    {
+        $response = new \WpOrg\Requests\Response();
+
+        $response->body = '{"id":"FQE6Xw4ZpoM21X"}';
+
+        $response->status_code = 200;
+
+        return $response;
+    }
+
+    private function createPsPayout($id): void
+    {
+        $payoutData = [
+            'id'                   => $id,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "pending",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'scheduled_at'         => null,
+            'queued_at'            => null,
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'cancellation_user_id' => null,
+            'registered_name'      => "SUSANTA BHUYAN",
+            'queued_reason'        => "beneficiary_bank_down",
+            'on_hold_at'           => 1663092113,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+    }
+
+    public function mockPayoutServiceWorkflow(&$success,$payoutId,$rejected = true, $request = [])
+    {
+        // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
+        // are going to be sent to payout service.
+        $payoutServiceWorkflowMock = Mockery::mock('RZP\Services\PayoutService\Workflow',
+                                                   [$this->app])->makePartial();
+
+        $payoutServiceWorkflowMock->shouldReceive('sendRequest')
+                                  ->withArgs(
+                                      function($arg) use (&$success, $payoutId, $rejected) {
+                                          try
+                                          {
+                                              $this->assertNotEmpty($arg['headers'][Passport::PASSPORT_JWT_V1 ]);
+
+                                              if($rejected === true)
+                                              {
+                                                  $query = "update ps_payouts set status = 'rejected' where id = '" . $payoutId . "';";
+
+                                                  \DB::connection('test')->update($query);
+                                              }
+
+                                              $success =  true;
+
+                                              return true;
+                                          }
+                                          catch (\Throwable $e)
+                                          {
+                                              $success =  false;
+
+                                              return false;
+                                          }
+                                      }
+                                  )
+                                  ->andReturn(
+                                      $this->createResponseForPayoutServiceWorkflowMock()
+                                  );
+
+        $this->app->instance(\RZP\Services\PayoutService\Workflow::PAYOUT_SERVICE_WORKFLOW, $payoutServiceWorkflowMock);
+    }
+
+    public function createResponseForPayoutServiceWorkflowMock()
+    {
+        $response = new \WpOrg\Requests\Response();
+
+        $content = [
+        ];
+
+        $response->body = json_encode($content);
+        $response->status_code = 200;
+        $response->success = true;
+
+        return $response;
     }
 }
 

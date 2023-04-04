@@ -3528,6 +3528,21 @@ return [
         ],
     ],
 
+    'testBulkRejectPayoutWithAdminWithNWFSToPS' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/admin/payouts/cancel',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'total_count'   => 1,
+                'failed_ids'    => []
+            ],
+        ],
+    ],
+
     'testBulkRetryWorkflowOnPayout' => [
         'request'  => [
             'method'  => 'POST',
@@ -3804,6 +3819,17 @@ return [
     ],
 
     'testAutoExpiryofPayoutsAfterThreeMonths' => [
+        'request'  => [
+            'method'    => 'POST',
+            'url'       => '/payouts/auto_expire'
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testAutoExpiryOfPayoutsAfterThreeMonthsForRejectedPayoutToPS' => [
         'request'  => [
             'method'    => 'POST',
             'url'       => '/payouts/auto_expire'
@@ -11450,6 +11476,20 @@ return [
     ],
 
     'testScheduledPayoutProcessingAutoRejectWithWfs' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/payouts/scheduled/process',
+            'server' => [
+                'HTTP_X-Request-Origin' => config('applications.banking_service_url')
+            ],
+        ],
+        'response'  => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testScheduledPayoutProcessingAutoRejectWithWfsToPS' => [
         'request'  => [
             'method'  => 'POST',
             'url'     => '/payouts/scheduled/process',
