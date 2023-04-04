@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\FeeRecovery;
 
 use Carbon\Carbon;
 
+use Queue;
 use RZP\Models\Payout;
 use RZP\Models\Feature;
 use RZP\Models\Schedule;
@@ -671,6 +672,69 @@ class FeeRecoveryTest extends TestCase
         $this->assertEquals(0, $feeRecovery['attempt_number']);
         $this->assertNull($feeRecovery['recovery_payout_id']);
         $this->assertEquals($feeRecovery['type'], FeeRecovery\Type::DEBIT);
+    }
+
+    public function testFeeRecoveryPayoutCronNextAndLastRunUpdate()
+    {
+        Queue::fake();
+
+        $oldTime = Carbon::create(2020, 1, 3, null, null, null);
+
+        Carbon::setTestNow($oldTime);
+
+        $this->setUpCounterToNotAffectPayoutFeesAndTaxInManualTimeChangeTests($this->balance);
+
+        $this->setupScheduleAndScheduleTaskForMerchant();
+
+        $oldTimeStamp = $oldTime->getTimestamp();
+
+        $this->testCreateFeeRecoveryAtPayoutCreationForRBLPayouts();
+
+        $payout = $this->getDbLastEntity('payout');
+
+        $this->fixtures->edit('payout', $payout['id'], ['initiated_at' => $oldTimeStamp]);
+
+        $this->fixtures->edit('contact', '1010101contact', ['type' => 'rzp_fees']);
+
+        $newTime = Carbon::create(2020, 1, 10, null, null, null);
+
+        $task = $this->getDbLastEntity('schedule_task');
+
+        $initialNextRunAt = $task['next_run_at'];
+
+        Carbon::setTestNow($newTime);
+
+        $this->ba->cronAuth();
+
+        $this->startTest();
+
+        $task->reload();
+
+        // Assert that last run and next run is not updated when job is not invoked
+        $this->assertEquals(null, $task['last_run_at']);
+
+        $this->assertEquals($initialNextRunAt, $task['next_run_at']);
+
+        $balance = $payout->balance;
+
+        $lastRunAt = ($task->getLastRunAt() + 1) ?? $balance->getCreatedAt();
+
+        $nextRunAt = $task->getNextRunAt();
+
+        $job = new \RZP\Jobs\FeeRecovery('test', null, $balance->getId(), $lastRunAt, $nextRunAt, $task);
+
+        $job->handle();
+
+        $lastRun = Carbon::createFromTimestamp($initialNextRunAt, Timezone::IST);
+
+        $currentTime = Carbon::now(Timezone::IST);
+
+        $nextRunTime = Schedule\Library::computeFutureRun($task->schedule, $lastRun, $currentTime, true);
+
+        // Assert that last run and next run is updated when job is run
+        $this->assertEquals($nextRunAt, $task['last_run_at']);
+
+        $this->assertEquals($nextRunTime->getTimestamp(), $task['next_run_at']);
     }
 
     public function testUpdateFeeRecoveryAfterPayoutFTAReconSuccess()

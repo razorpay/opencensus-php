@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FeeRecovery\Entity;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Settlement\SlackNotification;
+use RZP\Models\Schedule\Task\Entity as TaskEntity;
 use RZP\Models\FeeRecovery\Core as FeeRecoveryCore;
 
 class FeeRecovery extends Job
@@ -41,11 +42,17 @@ class FeeRecovery extends Job
      */
     private $feeRecoveryPayoutId;
 
+    /**
+     * @var TaskEntity|null
+     */
+    private $task;
+
     public function __construct(string $mode,
                                 string $feeRecoveryPayoutId = null,
                                 string $balanceId = null,
                                 int $startTimeStamp = null,
-                                int $endTimeStamp = null)
+                                int $endTimeStamp = null,
+                                TaskEntity $task = null)
     {
         parent::__construct($mode);
 
@@ -56,6 +63,8 @@ class FeeRecovery extends Job
         $this->startTimeStamp = $startTimeStamp;
 
         $this->endTimeStamp = $endTimeStamp;
+
+        $this->task = $task;
     }
 
     public function handle()
@@ -96,6 +105,10 @@ class FeeRecovery extends Job
                     'balance_id'        => $this->balanceId,
                 ]
             );
+
+            $this->task->updateNextRunAndLastRun();
+
+            $this->repoManager->saveOrFail($this->task);
 
             $this->delete();
         }

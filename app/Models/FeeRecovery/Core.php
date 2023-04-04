@@ -305,11 +305,7 @@ class Core extends Base\Core
             $lastRunAt = ($task->getLastRunAt() + 1) ?? $balance->getCreatedAt();
             $nextRunAt = $task->getNextRunAt();
 
-            Jobs\FeeRecovery::dispatch($this->mode, null, $balanceId, $lastRunAt, $nextRunAt);
-
-            $task->updateNextRunAndLastRun();
-
-            $this->repo->saveOrFail($task);
+            Jobs\FeeRecovery::dispatch($this->mode, null, $balanceId, $lastRunAt, $nextRunAt, $task);
         }
 
         return ['success' => true];
