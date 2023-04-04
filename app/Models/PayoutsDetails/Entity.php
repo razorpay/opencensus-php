@@ -126,6 +126,11 @@ class Entity extends PublicEntity
         return $this->getAttribute(self::TDS_CATEGORY_ID);
     }
 
+    public function getTaxPaymentId()
+    {
+        return $this->getAttribute(self::TAX_PAYMENT_ID);
+    }
+
     public function getAdditionalInfo()
     {
         return json_decode($this->getAttribute(self::ADDITIONAL_INFO), true);

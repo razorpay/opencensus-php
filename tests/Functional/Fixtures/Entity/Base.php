@@ -82,6 +82,7 @@ class Base
         'config'                => \RZP\Models\Payment\Config\Entity::class,
         'counter'               => \RZP\Models\Counter\Entity::class,
         'payout_source'         => \RZP\Models\PayoutSource\Entity::class,
+        'payouts_details'       => \RZP\Models\PayoutsDetails\Entity::class,
         'banking_account_tpv'   => \RZP\Models\BankingAccountTpv\Entity::class,
         'sub_virtual_account'   => \RZP\Models\SubVirtualAccount\Entity::class,
         'payment_fraud'         => \RZP\Models\Payment\Fraud\Entity::class,
@@ -103,7 +104,6 @@ class Base
 
         'wallet_account'                   => \RZP\Models\WalletAccount\Entity::class,
         'payouts_status_details'           => \RZP\Models\PayoutsStatusDetails\Entity::class,
-        'adjustment'                       => \RZP\Models\Adjustment\Entity::class,
         'bank_transfer'                     => \RZP\Models\BankTransfer\Entity::class,
         'role_access_policy_map'            => \RZP\Models\RoleAccessPolicyMap\Entity::class,
     ];

@@ -393,6 +393,111 @@ class PayoutTest extends OAuthTestCase
         $this->assertEquals($payoutStatusDetails->getTriggeredBy(), $migratedPayoutStatusDetails[0]->triggered_by);
     }
 
+    public function testDataMigrationForCohesivePayout()
+    {
+        $this->testCohesiveCreatePayoutWithTdsSuccessForProxyAuthTdsCategoriesInCache();
+
+        /** @var Payout\Entity $payout */
+        $payout = $data = $this->getDbLastEntity('payout', 'test');
+
+        $pd = $this->getDbLastEntity('payouts_details', 'test');
+
+        $balance = $payout->balance->toArray();
+        unset($balance['last_fetched_at']);
+
+        $this->fixtures->on('live')->create('balance', $balance);
+
+        // This is done so that test connection can be used as api db and live connection as payout service db.
+        Config::set('database.default', 'test');
+
+        $this->fixtures->edit('payout', $payout->getId(),[
+            PayoutEntity::USER_ID => 'random_user123',
+            PayoutEntity::IDEMPOTENCY_KEY => 'random_key',
+            PayoutEntity::PAYOUT_LINK_ID => 'random_plinkid'
+        ]);
+
+        $this->fixtures->edit('payouts_details', $payout->getId(), [
+            PayoutsDetails\Entity::TAX_PAYMENT_ID  => 'txpy_F2qwMZe97QTGG1',
+            PayoutsDetails\Entity::ATTACHMENTS_KEY => [
+                [
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_ID   => 'file_testing',
+                    PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME => 'not-your-attachment.pdf'
+                ]
+            ]
+        ]);
+
+        $this->ba->cronAuth();
+
+        $input = [
+            Payout\DataMigration\Processor::FROM => $payout->getCreatedAt(),
+            Payout\DataMigration\Processor::TO   => $payout->getCreatedAt(),
+            PayoutEntity::BALANCE_ID             => $payout->getBalanceId()
+        ];
+
+        $testData = $this->testData['testDataMigrationOnHoldToProcessed'];
+
+        $testData['request']['content'] = [$input];
+
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->startTest();
+
+        $payout->reload();
+
+        $id = $payout->getId();
+
+        $migratedPayout = \DB::connection('live')->select("select * from ps_payouts where id = '$id'")[0];
+
+        $this->assertEquals($payout->getId(), $migratedPayout->id);
+        $this->assertEquals($payout->getFees(), $migratedPayout->fees);
+        $this->assertEquals($payout->getStatus(), $migratedPayout->status);
+        $this->assertEquals($payout->getMethod(), $migratedPayout->method);
+        $this->assertEquals($payout->getAmount(), $migratedPayout->amount);
+        $this->assertEquals($payout->getUserId(), $migratedPayout->user_id);
+        $this->assertEquals($payout->getPurpose(), $migratedPayout->purpose);
+        $this->assertEquals($payout->getFeeType(), $migratedPayout->fee_type);
+        $this->assertEquals($payout->getRemarks(), $migratedPayout->remarks);
+        $this->assertEquals($payout->getNotesJson(), $migratedPayout->notes);
+        $this->assertEquals($payout->getNarration(), $migratedPayout->narration);
+        $this->assertEquals($payout->getBalanceId(), $migratedPayout->balance_id);
+        $this->assertEquals($payout->getCreatedAt(), $migratedPayout->created_at);
+        $this->assertEquals($payout->getStatusCode(), $migratedPayout->status_code);
+        $this->assertEquals($payout->getMerchantId(), $migratedPayout->merchant_id);
+        $this->assertEquals($payout->getReferenceId(), $migratedPayout->reference_id);
+        $this->assertEquals($payout->getTransactionId(), $migratedPayout->transaction_id);
+        $this->assertEquals($payout->getPricingRuleId(), $migratedPayout->pricing_rule_id);
+        $this->assertEquals($payout->getIdempotencyKey(), $migratedPayout->idempotency_key);
+        $this->assertEquals($payout->getRegisteredName(), $migratedPayout->registered_name);
+        $this->assertEquals($payout->getPayoutLinkId(), "poutlk_" . $migratedPayout->payout_link_id);
+        $this->assertEquals($payout->getRawAttribute(PayoutEntity::ORIGIN), $migratedPayout->origin);
+
+        $migratedPayoutLogs = \DB::connection('live')->select("select * from ps_payout_logs where payout_id = '$id'");
+
+        $this->assertEquals( Payout\Status::CREATE_REQUEST_SUBMITTED, $migratedPayoutLogs[0]->from);
+        $this->assertEquals( Payout\Status::CREATED, $migratedPayoutLogs[0]->to);
+        $this->assertEquals($payout->getInitiatedAt(), $migratedPayoutLogs[0]->created_at);
+
+        foreach ($migratedPayoutLogs as $migratedPayoutLog)
+        {
+            $this->assertNotNull($migratedPayoutLog->id);
+            $this->assertEquals($migratedPayoutLog->to, $migratedPayoutLog->event);
+        }
+
+        /** @var PayoutsDetails\Entity $payoutDetails */
+        $payoutDetails = $payout->payoutsDetails;
+
+        $migratedPayoutDetails = \DB::connection('live')->select("select * from ps_payout_details where payout_id = '$id'");
+
+        $this->assertNotNull($migratedPayoutDetails[0]->id);
+        $this->assertEquals($payoutDetails->getPayoutId(), $migratedPayoutDetails[0]->payout_id);
+        $this->assertEquals($payoutDetails->getQueueIfLowBalanceFlag(), $migratedPayoutDetails[0]->queue_if_low_balance_flag);
+        $this->assertEquals($payoutDetails->getTdsCategoryId(), $migratedPayoutDetails[0]->tds_category_id);
+        $this->assertEquals($payoutDetails->getTaxPaymentId(), $migratedPayoutDetails[0]->tax_payment_id);
+        $this->assertEquals($payoutDetails->getAdditionalInfo(), json_decode($migratedPayoutDetails[0]->additional_info));
+        $this->assertEquals($payoutDetails->getCreatedAt(), $migratedPayoutDetails[0]->created_at);
+        $this->assertEquals($payoutDetails->getUpdatedAt(), $migratedPayoutDetails[0]->updated_at);
+    }
+
     public function testDualWriteForPayoutServicePayout()
     {
         $payoutData = [
@@ -1975,7 +2080,7 @@ class PayoutTest extends OAuthTestCase
         /** @var Payout\Entity $payout1 */
         $payout1 = $this->getDbLastEntity('payout');
 
-       $workflowEntityMapParams = [
+        $workflowEntityMapParams = [
             'id'              => 'IwHCToefEWVgas',
             'workflow_id'     => 'IwHCToefEWVgwo',
             'entity_id'       =>  $this ->payout -> getId(),

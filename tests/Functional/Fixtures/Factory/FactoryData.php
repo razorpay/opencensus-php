@@ -1889,6 +1889,26 @@ final class FactoryData
             'updated_at'  => $faker->timestamp,
         ]);
 
+        $factory(\RZP\Models\PayoutsDetails\Entity::class, [
+            'id'                        => $faker->uniqueid,
+            'payout_id'                 => 'factory:\RZP\Models\Payout\Entity',
+            'tax_payment_id'            => 'txpy_10000000000000',
+            'tds_category_id'           => 1,
+            'additional_info'           => [
+                'tds_amount'      => 1000,
+                'subtotal_amount' => 10000,
+                'attachments'     => [
+                    [
+                        'file_id'   => 'file_testing',
+                        'file_name' => 'not-your-attachment.pdf'
+                    ]
+                ]
+            ],
+            'queue_if_low_balance_flag' => 1,
+            'created_at'                => $faker->timestamp,
+            'updated_at'                => $faker->timestamp,
+        ]);
+
         $factory(\RZP\Models\Merchant\MerchantApplications\Entity::class, [
             'id'             => $faker->uniqueid,
             'merchant_id'    => '10000000000000',
