@@ -252,14 +252,44 @@ class Constants
         self::AdditionalFieldsHdfcOnboarding => 'direct',
     ];
 
+    public static $dcsReadEnabledFeatures = [
+        "merchant" => [
+            "eligibility_enabled"=> "client",
+            "auto_comm_inv_disabled"=> "direct",
+            "affordability_widget_set"=> "client",
+            "enable_customer_amount"=> "direct",
+            "enbl_create_own_tmpl"=> "direct",
+            "enable_merchant_expiry_pp"=> "direct",
+            "enable_merchant_expiry_pl"=> "direct",
+            "route_partnerships"=> "direct",
+            "import_settlement"=> "direct",
+            "disable_auto_refunds"=> "client",
+            "async_txn_fill_details"=> "client",
+            "async_balance_update"=> "client",
+            "payment_mails_disabled"=> "client",
+            "excess_order_amount"=> "client",
+            "disable_amount_check"=> "client",
+            "cart_api_amount_check"=> "client",
+            "order_receipt_unique"=> "client"
+        ],
+        "org" => [
+            "disable_free_credit_unreg"=> "client"
+        ]
+    ];
+
     public static function dcsReadEnabledFeaturesByEntityType(string $entityType = null,
-                                                              bool $withDcsNames = false): array
+                                                              bool $withDcsNames = false, bool $isTestCases = false): array
     {
 
         $adminService = new AdminService;
         $dcsReadEnabledOrg = [];
         $dcsReadEnabledMerchant = [];
-        $dcsReadEnabledFeatures = $adminService->getConfigKey(['key' => ConfigKey::DCS_READ_WHITELISTED_FEATURES]);
+        $dcsReadEnabledFeatures = self::$dcsReadEnabledFeatures;
+        if ($isTestCases === true)
+        {
+            $dcsReadEnabledFeatures = $adminService->getConfigKey(['key' => ConfigKey::DCS_READ_WHITELISTED_FEATURES]);
+        }
+
         if (key_exists(Type::ORG, $dcsReadEnabledFeatures) === true)
         {
             $dcsReadEnabledOrg = $dcsReadEnabledFeatures[Type::ORG];
@@ -396,7 +426,7 @@ class Constants
     {
         $dcsEnabledFeatures = self::dcsReadEnabledFeaturesByEntityType("", $isDcsName);
         return (key_exists($featureName, $dcsEnabledFeatures) === true) or
-                (empty(Utility::searchAndReturnDcsNameWithCorrespondingColonSeparator($dcsEnabledFeatures, $featureName, $dcsKey)) === false);
+                (($isDcsName === true) && (empty(Utility::searchAndReturnDcsNameWithCorrespondingColonSeparator($dcsEnabledFeatures, $featureName, $dcsKey)) === false));
     }
 
 }

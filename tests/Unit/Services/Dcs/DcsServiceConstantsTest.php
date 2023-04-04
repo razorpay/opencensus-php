@@ -36,7 +36,7 @@ class DcsServiceConstantsTest extends TestCase
 
     public function testDcsReadEnabledFeaturesByEntityType()
     {
-        $res = DcsConstants:: dcsReadEnabledFeaturesByEntityType();
+        $res = DcsConstants:: dcsReadEnabledFeaturesByEntityType(null, false, true);
         $expected = [
             "eligibility_enabled" => "client",
             "auto_comm_inv_disabled"=>"direct",
@@ -47,7 +47,7 @@ class DcsServiceConstantsTest extends TestCase
         $this->assertEquals($expected, $res,
             "read enabled config key fetch issue due to, fetching org+merchant with api names");
 
-        $res = DcsConstants:: dcsReadEnabledFeaturesByEntityType("merchant");
+        $res = DcsConstants:: dcsReadEnabledFeaturesByEntityType("merchant", false, true);
         $expected = [
             "eligibility_enabled" => "client",
             "auto_comm_inv_disabled"=>"direct",
@@ -57,14 +57,14 @@ class DcsServiceConstantsTest extends TestCase
         $this->assertEquals($expected, $res,
             "read enabled config key fetch issue, fetching merchant with api names");
 
-        $res = DcsConstants:: dcsReadEnabledFeaturesByEntityType("org");
+        $res = DcsConstants:: dcsReadEnabledFeaturesByEntityType("org", false, true);
         $expected = [
             "disable_free_credit_unreg"=>"client",
         ];
         $this->assertEquals($expected, $res,
             "read enabled config key fetch issue, fetching org with api names");
 
-        $res = DcsConstants:: dcsReadEnabledFeaturesByEntityType("", true);
+        $res = DcsConstants:: dcsReadEnabledFeaturesByEntityType("", true, true);
         $expected = [
             "eligibility_enabled" => "client",
             "auto_invoice_generation_disabled"=>"direct",

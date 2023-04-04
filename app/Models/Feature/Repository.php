@@ -185,7 +185,7 @@ class Repository extends Base\Repository
         {
             $dcsFeatures = array_intersect($featureNames, array_keys(
                 DcsFeaturesConstants::dcsReadEnabledFeaturesByEntityType(
-                    Constants::MERCHANT)
+                    Constants::MERCHANT, $this->app->runningUnitTests())
             ));
             if (sizeof($dcsFeatures) !== 0) {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
@@ -229,7 +229,7 @@ class Repository extends Base\Repository
         {
             $dcsFeatures = array_intersect($featureNames, array_keys(
                 DcsFeaturesConstants::dcsReadEnabledFeaturesByEntityType(
-                    Constants::MERCHANT)
+                    Constants::MERCHANT, $this->app->runningUnitTests())
             ));
             if (sizeof($dcsFeatures) !== 0) {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
