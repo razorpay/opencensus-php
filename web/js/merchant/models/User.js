@@ -512,6 +512,10 @@ export default class User {
     return this.getExpStatus('1cc_shopify_magic_enable');
   }
 
+  get isMagicWoocEnabled() {
+    return this.getExpStatus('1cc_wooc_magic_enable');
+  }
+
   get isPaymentPagesEnabled() {
     const { isEnabled } = getOnBoardingDataFromLocalState('payment_pages');
 

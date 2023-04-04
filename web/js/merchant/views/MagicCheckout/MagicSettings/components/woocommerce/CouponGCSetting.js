@@ -22,7 +22,7 @@ import { updateDefaultViewInStorage } from 'merchant/views/MagicCheckout/utils/s
 
 import { getGCAnalytics } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
 
-export const CouponGCSetting = ({ settings, updateSettings, merchantId }) => {
+export const CouponGCSetting = ({ settings, updateSettings, merchantId, user }) => {
   const [autoFetchCoupon, setAutoFetchCoupon] = useState({});
   const [checkoutSettings, setCheckoutSettings] = useState([]);
   const [giftCard, setGiftCard] = useState({});
@@ -43,6 +43,7 @@ export const CouponGCSetting = ({ settings, updateSettings, merchantId }) => {
 
     const payload = {
       platform,
+      one_click_checkout: true,
       [autoFetchCoupon.key]: autoFetchCoupon.value,
       [giftCard.key]: giftCard.value,
     };
@@ -102,6 +103,7 @@ export const CouponGCSetting = ({ settings, updateSettings, merchantId }) => {
           setCurrentView={setCurrentView}
           showFormView={showFormView(CHECKOUT_FORM)}
           settings={settings}
+          user={user}
         />
       )}
 
@@ -146,6 +148,7 @@ export const CouponGCSetting = ({ settings, updateSettings, merchantId }) => {
 const mapStateToProps = (state) => ({
   settings: state.magic_settings,
   merchantId: state.config?.config?.id,
+  user: state.session.user,
 });
 
 const mapDispatchToProps = (dispatch) =>

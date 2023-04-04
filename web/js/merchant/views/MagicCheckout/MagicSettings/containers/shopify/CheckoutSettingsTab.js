@@ -51,6 +51,7 @@ const CheckoutSettingsTab = ({ settings, merchantId, updateSettings, user }) => 
     const payload = {
       platform: PLATFORMS.VALUES.SHOPIFY,
       shop_id: settings?.shop_id,
+      one_click_checkout: true,
       [giftCard.key]: giftCard.value,
     };
     checkoutSettings.forEach((setting) => {

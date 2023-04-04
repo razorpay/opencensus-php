@@ -30,6 +30,8 @@ const PlatformSettings = ({
 }) => {
   const { nested_view_type, status, has_saved_config, platform } = settings;
 
+  const domain = platform === 'shopify' ? settings?.shop_id : settings?.domain_url;
+
   useEffect(() => {
     if (settings.status === FETCH_STATUS.ERROR) {
       const notifTxt = settings.error.errors.length
@@ -66,7 +68,7 @@ const PlatformSettings = ({
           properties: {
             magic_checkout_enabled: settings?.one_click_checkout,
             platform: settings?.platform,
-            store_id: settings?.shop_id || null,
+            store_id: domain || null,
             merchant_id: merchantId,
           },
         };
@@ -90,7 +92,7 @@ const PlatformSettings = ({
 
   const getNestedVerticalTab = (path) => {
     const { one_click_checkout } = settings;
-    if (!(platform === PLATFORMS.VALUES.SHOPIFY && !one_click_checkout)) {
+    if (platform === PLATFORMS.VALUES.NATIVE || one_click_checkout) {
       return <NestedVerticalTab path={path} />;
     }
     return null;

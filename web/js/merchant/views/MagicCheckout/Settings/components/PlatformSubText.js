@@ -18,7 +18,7 @@ const PlatformSubText = ({
   user,
 }) => {
   let domainSubText = shop_id;
-  const { isShopifyMagicEnabled } = user;
+  const { isShopifyMagicEnabled, isMagicWoocEnabled } = user;
 
   if (platform === PLATFORMS.VALUES.WOOCOMMERCE) {
     domainSubText = shipping_info?.split('wp-json')[0];
@@ -65,6 +65,7 @@ const PlatformSubText = ({
           <div
             className="font-12 platform-details platform-edit pointer"
             onClick={handleUpdatePage}
+            data-testid="platform-edit-icon"
           >
             <i className="i i-edit_board platform-edit-icon" />
             Edit
@@ -79,19 +80,27 @@ const PlatformSubText = ({
     );
   }
   return (
-    <div className="display-flex align-center margin-t-16">
-      <div className="font-12 platform-details">{CONTENT[platform]?.VIEW_LABEL}</div>
-      {domainSubText && platform === PLATFORMS.VALUES.WOOCOMMERCE ? (
-        <div className="font-12 platform-details">{domainSubText}</div>
-      ) : null}
-      <div
-        className="font-12 platform-details platform-edit pointer"
-        onClick={() => updatePage(NESTED_VIEW_TYPE.PLATFORM_SELECTION)}
-      >
-        <i className="i i-edit_board platform-edit-icon" />
-        Edit
+    <>
+      <div className="display-flex align-center margin-t-16">
+        <div className="font-12 platform-details">{CONTENT[platform]?.VIEW_LABEL}</div>
+        {domainSubText && platform === PLATFORMS.VALUES.WOOCOMMERCE ? (
+          <div className="font-12 platform-details">{domainSubText}</div>
+        ) : null}
+        <div
+          className="font-12 platform-details platform-edit pointer"
+          onClick={() => updatePage(NESTED_VIEW_TYPE.PLATFORM_SELECTION)}
+          data-testid="platform-edit-icon"
+        >
+          <i className="i i-edit_board platform-edit-icon" />
+          Edit
+        </div>
       </div>
-    </div>
+      {platform === PLATFORMS.VALUES.WOOCOMMERCE && isMagicWoocEnabled && (
+        <div className="display-flex align-center margin-t-16">
+          <MagicCheckoutToggle />
+        </div>
+      )}
+    </>
   );
 };
 

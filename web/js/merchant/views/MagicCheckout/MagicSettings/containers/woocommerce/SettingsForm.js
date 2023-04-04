@@ -55,6 +55,7 @@ const SettingsForm = ({ settings, updateSettings, merchantId }) => {
       apply_promotion: `${domain}/wp-json/1cc/v1/coupon/apply`,
       shipping_info: `${domain}/wp-json/1cc/v1/shipping/shipping-info`,
       domain_url: domain,
+      toggle_magic: `${domain}/wp-json/1cc/v1/magic/toggle`,
     });
     updateDefaultViewInStorage(merchantId, true);
     analyticsTrack({

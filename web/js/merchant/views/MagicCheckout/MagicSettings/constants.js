@@ -219,14 +219,12 @@ export const MANUAL_REVIEW_MODAL = {
         points: [
           {
             type: 'text',
-            text:
-              'To manually review COD orders, you will have to create a review order API. Please check ',
+            text: 'To manually review COD orders, you will have to create a review order API. Please check ',
           },
           {
             type: 'link',
             text: 'instructions',
-            url:
-              'https://docs.google.com/document/d/1wmUFOful3w_Ga01dIwcAJsAuCDVUtWLtG9-6dWjGi54/edit#heading=h.hfjqmnxzy0c2',
+            url: 'https://docs.google.com/document/d/1wmUFOful3w_Ga01dIwcAJsAuCDVUtWLtG9-6dWjGi54/edit#heading=h.hfjqmnxzy0c2',
           },
           {
             type: 'text',
@@ -286,6 +284,21 @@ export const CHECKOUT_SETTINGS_CONFIG = [
     label: 'Capture order instructions?',
     value: false,
     key: 'one_cc_capture_order_instructions',
+  },
+];
+
+export const ADDITIONAL_WOOC_SETTINGS_CONFIG = [
+  {
+    label: 'Buy now button',
+    value: false,
+    key: 'one_cc_buy_now_button',
+    description: 'Enable Magic Checkout on Buy Now',
+  },
+  {
+    label: 'Mini Cart Button',
+    value: false,
+    key: 'one_cc_mini_cart_button',
+    description: 'Enable Magic Checkout on Mini Cart',
   },
 ];
 

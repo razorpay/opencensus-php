@@ -7,6 +7,7 @@ import {
   CHECKOUT_CARD,
   CHECKOUT_SETTINGS,
   CHECKOUT_SETTINGS_CONFIG,
+  ADDITIONAL_WOOC_SETTINGS_CONFIG,
 } from 'merchant/views/MagicCheckout/MagicSettings/constants';
 import { getInitialSettings } from 'merchant/views/MagicCheckout/MagicSettings/containers/helpers';
 
@@ -17,8 +18,11 @@ const CheckoutWrapper = ({
   checkoutSettings,
   setCheckoutSettings,
   extraClass,
+  user,
 }) => {
   const { nestedTabsStatus, one_cc_capture_gstin, one_cc_capture_order_instructions } = settings;
+
+  const { isMagicWoocEnabled } = user;
 
   useEffect(() => {
     if (nestedTabsStatus !== FETCH_STATUS.LOADING) {
@@ -30,14 +34,20 @@ const CheckoutWrapper = ({
 
   useEffect(() => {
     setCheckoutSettings((prevSettings) => {
-      const tempCheckoutSettings = getInitialSettings(CHECKOUT_SETTINGS_CONFIG, prevSettings);
+      let checkoutSettings = CHECKOUT_SETTINGS_CONFIG;
+
+      if (settings.platform === 'woocommerce' && isMagicWoocEnabled) {
+        checkoutSettings = [...CHECKOUT_SETTINGS_CONFIG, ...ADDITIONAL_WOOC_SETTINGS_CONFIG];
+      }
+
+      const tempCheckoutSettings = getInitialSettings(checkoutSettings, prevSettings);
 
       tempCheckoutSettings.forEach((settingItem) => {
         settingItem.value = settings[settingItem.key];
       });
       return tempCheckoutSettings;
     });
-  }, [one_cc_capture_gstin, one_cc_capture_order_instructions]);
+  }, [one_cc_capture_gstin, one_cc_capture_order_instructions, settings]);
 
   const onToggleCheckout = useCallback((checked, label) => {
     setCheckoutSettings((prevSettings) => {

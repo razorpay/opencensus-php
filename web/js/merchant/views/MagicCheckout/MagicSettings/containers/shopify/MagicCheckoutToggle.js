@@ -31,9 +31,14 @@ const MagicCheckoutToggle = ({
   const [description, setDescription] = useState('');
   const [isFormInValid, setIsFormInValid] = useState(false);
   const showModalWithForm = showModal === MODAL_WITH_FORM;
+
+  const platform =
+    settings.platform === 'shopify' ? PLATFORMS.VALUES.SHOPIFY : PLATFORMS.VALUES.WOOCOMMERCE;
+  const domain = settings.platform === 'shopify' ? settings?.shop_id : settings?.domain_url;
+
   const analyticsProperties = {
-    platform: PLATFORMS.VALUES.SHOPIFY,
-    store_id: settings?.shop_id,
+    platform,
+    store_id: domain,
     merchant_id: merchantId,
   };
 
@@ -62,8 +67,8 @@ const MagicCheckoutToggle = ({
       if (checked) {
         setMagicSetting((prevSetting) => ({ ...prevSetting, value: checked }));
         updateSettings({
-          platform: PLATFORMS.VALUES.SHOPIFY,
-          shop_id: settings?.shop_id,
+          platform,
+          shop_id: domain,
           one_click_checkout: true,
         });
       } else {
@@ -120,8 +125,8 @@ const MagicCheckoutToggle = ({
         },
       });
       disableMagicCheckout({
-        platform: PLATFORMS.VALUES.SHOPIFY,
-        shop_id: settings?.shop_id,
+        platform,
+        shop_id: domain,
         one_click_checkout: false,
         reason,
         additional_reason: description,
