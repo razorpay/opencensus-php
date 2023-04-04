@@ -44,6 +44,7 @@ class Core extends Base\Core
                 }
             }
         );
+        return ['success' => true];
     }
 
     public function updateWoocommerce1ccAuthConfig(array $input)

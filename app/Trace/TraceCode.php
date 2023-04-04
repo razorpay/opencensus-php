@@ -8583,6 +8583,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SHOPIFY_1CC_ANALYTICS                               = 'SHOPIFY_1CC_ANALYTICS';
     const SHOPIFY_1CC_RTO_LABEL_MISSING                       = 'SHOPIFY_1CC_RTO_LABEL_MISSING';
     const SHOPIFY_1CC_SYNC_CREDENTIALS_FAILED                 = 'SHOPIFY_1CC_SYNC_CREDENTIALS_FAILED';
+    const SHOPIFY_1CC_UPDATE_CONFIG                           = 'SHOPIFY_1CC_UPDATE_CONFIG';
 
     const MAGIC_ANALYTICS_CUSTOMER_INFO                       = 'MAGIC_ANALYTICS_CUSTOMER_INFO';
 

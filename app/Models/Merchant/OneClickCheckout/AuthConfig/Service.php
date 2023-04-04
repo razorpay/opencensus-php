@@ -8,15 +8,52 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\OneClickCheckout\Constants;
+use RZP\Models\Merchant\OneClickCheckout\Shopify;
 use RZP\Models\Merchant\OneClickCheckout\MagicCheckoutProvider\MerchantProvider;
 
 class Service extends Base\Service
 {
-    public function updateShopify1ccConfig($input)
+    const SHOPIFY_UPDATE_AUTH_CONFIG = 'shopify_update_auth_config';
+    const SHOPIFY_CREATE_ACCOUNT     = 'shopify_create_account';
+
+    // updateShopify1ccConfig is used to update the access tokens locally in API monolith or create an account in
+    // the new microservice based on the "action" flag passed. This is a stop gap solution and the API will be depreacated
+    // and functionality moved to Rzp admin dashboard.
+    public function updateShopify1ccConfig($input): array
     {
-        (new Validator)->validateInput('updateShopifyConfig', $input);
-        (new Core)->updateShopify1ccConfig($input);
-        return;
+        $action = $input['action'] ?? self::SHOPIFY_UPDATE_AUTH_CONFIG;
+        $resp = ['action' => $action];
+
+        if ($action === self::SHOPIFY_UPDATE_AUTH_CONFIG)
+        {
+            $this->logUpdateConfig($action, 'updating local configs');
+            (new Validator)->setStrictFalse()->validateInput('updateShopifyConfig', $input);
+            $output = (new Core)->updateShopify1ccConfig($input);
+            $resp = array_merge($resp, $output);
+        }
+        else if ($action === self::SHOPIFY_CREATE_ACCOUNT)
+        {
+            $this->logUpdateConfig($action, 'creating account in microservice');
+            // validator is part of the below function.
+            $output = (new Shopify\Onboarding)->createNewShopifyAccount($input);
+            $resp = array_merge($resp, $output);
+        }
+        else
+        {
+            $this->logUpdateConfig($action, 'config update failed');
+            throw new Exception\BadRequestValidationFailureException(
+                'invalid action received'
+            );
+        }
+        return $resp;
+    }
+
+    protected function logUpdateConfig(string $action, string $message)
+    {
+        $this->trace->info(
+            TraceCode::SHOPIFY_1CC_UPDATE_CONFIG,
+            ['action' => $action, 'message' => $message]
+        );
     }
 
     public function updateWoocommerce1ccAuthConfig($input)

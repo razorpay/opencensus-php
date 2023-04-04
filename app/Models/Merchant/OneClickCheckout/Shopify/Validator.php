@@ -38,4 +38,12 @@ class Validator extends Base\Validator
         'cart.items'                   => 'required|array',
         'cart.token'                   => 'required|string',
     ];
+
+    protected static $createNewShopifyAccountRules = [
+       'merchant_id'       => 'required|string|size:14',
+       'shop_id'           => 'required|string|max:70',
+       'client_id'         => 'required|string|max:150',
+       'client_secret'     => 'required|string|max:150',
+       'installation_link' => 'required|string|max:100',
+    ];
 }
