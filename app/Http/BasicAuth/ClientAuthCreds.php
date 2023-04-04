@@ -35,7 +35,7 @@ class ClientAuthCreds extends AuthCreds
      * prod and the interpretation for Pure-platforms there
      * is not related to these modes from API.
      */
-    protected static $clientModes = [
+    public static $clientModes = [
         'test' => 'dev',
         'live' => 'prod',
     ];

@@ -90,7 +90,7 @@ trait PartnerTrait
 
         $client = $this->createPartnerApplicationAndGetClientByEnv($env, $attributes);
 
-        $this->fixtures->edit('merchant', $partnerId, ['partner_type' => 'fully_managed']);
+        $this->fixtures->edit('merchant', $partnerId, ['partner_type' => $partnerType]);
 
         $this->fixtures->merchant->addFeatures(['partner']);
 
@@ -424,8 +424,6 @@ trait PartnerTrait
 
     public function setUpPartnerAuthAndGetSubMerchantId($activated = true, $category = 4722)
     {
-
-
         if ($activated === true)
         {
             $subMerchant = $this->fixtures->create('merchant', ['activated' => 1, 'category' => $category]);

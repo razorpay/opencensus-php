@@ -227,12 +227,12 @@ class Core extends Base\Core
             $this->repo->transaction(function () use ($accessMaps, $applicationType)
                 {
                     foreach ($accessMaps as $accessMap)
-                    {   
+                    {
                         $this->createOutboxJobForOperation('delete', $accessMap, $applicationType);
                         $this->repo->deleteOrFail($accessMap);
                     }
                 });
-            
+
         }
     }
 

@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Transfer;
 
+use Razorpay\Trace\Logger;
+use Neves\Events\TransactionalClosureEvent;
+
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
@@ -14,17 +17,16 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger;
 use RZP\Models\Transaction;
 use RZP\Jobs\TransferProcess;
 use RZP\Models\Settlement\Bucket;
-use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\TransferProcessSlice;
 use RZP\Jobs\TransferProcessBatch;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\TransferProcessCapitalFloat;
 use RZP\Jobs\TransferProcessKeyMerchants;
 use RZP\Models\Ledger\RouteJournalEvents;
-use Neves\Events\TransactionalClosureEvent;
+use RZP\Models\Partner\Service as PartnerService;
 use RZP\Jobs\Ledger\CreateLedgerJournal as LedgerEntryJob;
 
 class Core extends Base\Core
@@ -33,6 +35,8 @@ class Core extends Base\Core
 
     protected $razorx;
 
+    protected $partner;
+
     public function __construct()
     {
         parent::__construct();
@@ -40,6 +44,8 @@ class Core extends Base\Core
         $this->mutex = $this->app['api.mutex'];
 
         $this->razorx = $this->app['razorx'];
+
+        $this->partner = $this->app['basicauth']->getPartnerMerchant();
     }
 
     protected function makeTransferTransaction($input, $merchant, $validator)
@@ -59,23 +65,26 @@ class Core extends Base\Core
     /**
      * Create a direct transfer from Merchant balance
      *
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
+     * @param array $input
+     * @param Merchant\Entity $merchant
      *
      * @return Transfer\Entity
      * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws \Throwable
      */
     public function createForMerchant(array $input, Merchant\Entity $merchant) : Entity
     {
-        $this->trace->info(
-            TraceCode::TRANSFER_CREATE_REQUEST,
-            ['input' => $input]);
+        $this->trace->info(TraceCode::TRANSFER_CREATE_REQUEST, ['input' => $input]);
+
+        $parentMerchant = $this->fetchAccountParentMerchant($merchant);
 
         if (isset($input[ToType::ACCOUNT]) === true)
         {
-            $this->checkForDirectTransferFeature($merchant);
+            $this->checkForDirectTransferFeature($parentMerchant);
         }
 
+        // here, $merchant will be sub-merchant in case of Route+ transfer & $parentMerchant will be the partner
         $this->validateMerchantForTransfer($merchant);
 
         $validator = new Validator;
@@ -88,7 +97,7 @@ class Core extends Base\Core
 
         $input = $inputArray[0];
 
-        $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $merchant);
+        $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $parentMerchant);
 
         $validator->validateInput('create', $input);
 
@@ -96,7 +105,8 @@ class Core extends Base\Core
 
         $transfer = null;
 
-        try {
+        try
+        {
             $transfer = $this->makeTransferTransaction($input, $merchant, $validator);
         }
         catch (\Throwable $ex)
@@ -105,7 +115,7 @@ class Core extends Base\Core
             // made this change as a fix for production issue SI-4668
             $causedByLostConnection = $this->app['db.connector.mysql']->checkAndReloadDBIfCausedByLostConnection($ex);
 
-            if($causedByLostConnection === true)
+            if ($causedByLostConnection === true)
             {
                 $transfer = $this->makeTransferTransaction($input, $merchant, $validator);
             }
@@ -116,6 +126,7 @@ class Core extends Base\Core
                 throw $ex;
             }
         }
+
         if ($transfer->isProcessed() === true)
         {
             $this->eventTransferProcessed($transfer);
@@ -127,16 +138,16 @@ class Core extends Base\Core
     /**
      * Create a transfer from a captured payment source
      *
-     * @param   Payment\Entity  $payment
-     * @param   array           $input
-     * @param   Merchant\Entity $merchant
+     * @param Payment\Entity $payment
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param bool $asyncTransfer
      *
      * @return  Base\PublicCollection
-     * @throws Exception\LogicException
      * @throws Exception\BadRequestException
-     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
      */
-    public function createForPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant, bool $asyncTransfer)
+    public function createForPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant, bool $asyncTransfer): Base\PublicCollection
     {
         $this->validateMerchantForTransfer($merchant);
 
@@ -149,9 +160,11 @@ class Core extends Base\Core
             $orderTransfers = $this->repo->transfer->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::ORDER, $payment->getApiOrderId(), $this->merchant);
         }
 
+        $parentMerchant = $this->fetchAccountParentMerchant($merchant);
+
         foreach ($input as $transfer)
         {
-            $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($transfer, $merchant);
+            $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($transfer, $parentMerchant);
         }
 
         (new Validator)->validateTransfers($payment, $input, $orderTransfers);
@@ -216,9 +229,22 @@ class Core extends Base\Core
         }
     }
 
-    public function createForOrder(Order\Entity $order, array $transferInput)
+    /**
+     * Create a transfer from a captured payment source
+     *
+     * @param Order\Entity $order
+     * @param array $transferInput
+     *
+     * @return  Base\PublicCollection
+     * @throws Exception\BadRequestException
+     */
+    public function createForOrder(Order\Entity $order, array $transferInput): Base\Collection
     {
         $transfers = new Base\Collection();
+
+        $parentMerchant = $this->fetchAccountParentMerchant($this->merchant, $transferInput[Order\Entity::PUBLIC_KEY] ?? null);
+
+        unset($transferInput[Order\Entity::PUBLIC_KEY]);
 
         foreach ($transferInput as $input)
         {
@@ -226,7 +252,7 @@ class Core extends Base\Core
 
             $input[Entity::ORIGIN] = Origin::ORDER_AUTOMATION;
 
-            $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $this->merchant);
+            $this->validateLinkedAccountActivationStatusAndBankVerificationStatus($input, $parentMerchant);
 
             if (isset($input[Entity::ACCOUNT_CODE]) === true)
             {
@@ -247,11 +273,9 @@ class Core extends Base\Core
                     ->balance
                     ->getMerchantBalance($this->merchant);
             }
-            else if (isset($input[ToType::ACCOUNT]) === true) {
-
-                $to = $this->repo
-                    ->account
-                    ->findByPublicIdAndMerchant($input[ToType::ACCOUNT], $this->merchant);
+            else if (isset($input[ToType::ACCOUNT]) === true)
+            {
+                $to = $this->repo->account->findByPublicIdAndMerchant($input[ToType::ACCOUNT], $parentMerchant);
 
                 // extracts linked account notes and validates.
                 $this->getLinkedAccountNotes($input);
@@ -267,6 +291,62 @@ class Core extends Base\Core
         }
 
         return $transfers;
+    }
+
+    /**
+     * Fetch parent merchant of a linked account. This function handles one specific scenario where the parent
+     * is partner but $this->merchant will return a sub-merchant (X-Razorpay-Account passed in the header)
+     * which will throw error while fetching account entity from parent id
+     *
+     * @return Merchant\Entity|null
+     * @throws Exception\BadRequestException
+     */
+    public function fetchAccountParentMerchantForMarketplaceTransfer(?Merchant\Entity $merchant): Merchant\Entity | null
+    {
+        $partner = $this->partner;
+
+        if (empty($partner) === true or $partner->isRoutePartnershipsEnabled() === false)
+        {
+            return $merchant ?? $this->merchant;
+        }
+
+        $merchant = $merchant ?? $this->merchant;
+
+        (new Merchant\Validator())->validateIsAggregatorPartner($partner);
+
+        (new Merchant\WebhookV2\Validator())->validatePartnerSubMerchantMapping($partner, $merchant);
+
+        $this->trace->info(
+            TraceCode::FETCH_ROUTE_PARTNERSHIPS_PARENT_ACCOUNT,
+            [
+                Merchant\Constants::PARTNER_ID      => $partner->getId(),
+                Merchant\Constants::SUBMERCHANT_ID  => $merchant->getId(),
+            ]
+        );
+
+        return $partner;
+    }
+
+    /**
+     * @throws Exception\BadRequestException
+     */
+    public function fetchAccountParentMerchant(?Merchant\Entity $merchant, ?string $publicKey = null): ?Merchant\Entity
+    {
+        if (empty($this->partner) === true and empty($publicKey) === false)
+        {
+            [$partner,] = (new Merchant\Core())->fetchPartnerAndMerchantFromPublicKey($publicKey);
+
+            $this->partner = $partner;
+        }
+
+        $marketplaceTransferExpEnabled = (new PartnerService())->isMarketplaceTransferExpEnabled($this->partner);
+
+        if ($marketplaceTransferExpEnabled === true)
+        {
+            return $this->fetchAccountParentMerchantForMarketplaceTransfer($merchant);
+        }
+
+        return $merchant ?? $this->merchant;
     }
 
     /**
@@ -581,24 +661,25 @@ class Core extends Base\Core
     /**
      * Transfer to a Marketplace account
      *
-     * @param string           $accountId
-     * @param  Base\Entity     $source
-     * @param  array           $input
-     * @param  Merchant\Entity $merchant
+     * @param string $accountId
+     * @param Base\Entity $source
+     * @param array $input
+     * @param Merchant\Entity $merchant
+     * @param bool $asyncTransfer
      *
      * @return Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      */
-    protected function accountTransfer(string $accountId, Base\Entity $source, array $input, Merchant\Entity $merchant, bool $aysncTransfer)
+    protected function accountTransfer(string $accountId, Base\Entity $source, array $input, Merchant\Entity $merchant, bool $asyncTransfer): Entity
     {
-        $this->trace->info(
-            TraceCode::PAYMENT_TRANSFER_TO_ACCOUNT,
-            ['transfer' => $input]);
+        $this->trace->info(TraceCode::PAYMENT_TRANSFER_TO_ACCOUNT, ['transfer' => $input]);
 
-        $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $merchant);
+        $parentMerchant = $this->fetchAccountParentMerchant($merchant, $input[Payment\Entity::PUBLIC_KEY] ?? null);
 
-        $to = $this->repo
-                   ->account
-                   ->findByPublicIdAndMerchant($accountId, $merchant);
+        $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $parentMerchant);
+
+        $to = $this->repo->account->findByPublicIdAndMerchant($accountId, $parentMerchant);
 
         $originPayment = null;
 
@@ -607,10 +688,9 @@ class Core extends Base\Core
             $originPayment = $source;
         }
 
-        $merchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
+        $parentMerchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
 
-
-        if($aysncTransfer === true)
+        if ($asyncTransfer === true)
         {
             $transfer = Tracer::inSpan(['name' => 'payment.transfer.create.make_transfer.account_transfer.build'], function() use ($source, $to, $input, $merchant)
             {
@@ -703,6 +783,10 @@ class Core extends Base\Core
         return false;
     }
 
+    /**
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\BadRequestException
+     */
     public function validateTransfersInput(int $orderAmount, array $transfers, $merchant)
     {
         if ($this->merchant === null)
@@ -713,6 +797,10 @@ class Core extends Base\Core
         $this->validateMerchantForTransfer($this->merchant);
 
         $validator = new Validator();
+
+        $publicKey = $transfers[Order\Entity::PUBLIC_KEY] ?? null;
+
+        unset($transfers[Order\Entity::PUBLIC_KEY]);
 
         $this->addAccountFromAccountCodeIfApplicable($transfers);
 
@@ -727,15 +815,15 @@ class Core extends Base\Core
         }
         else
         {
-            $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $this->merchant);
+            $parentMerchant = $this->fetchAccountParentMerchant($this->merchant, $publicKey);
+
+            $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $parentMerchant);
 
             foreach ($transfers as $transfer)
             {
-                $to = $this->repo
-                    ->account
-                    ->findByPublicIdAndMerchant($transfer[ToType::ACCOUNT], $this->merchant);
+                $to = $this->repo->account->findByPublicIdAndMerchant($transfer[ToType::ACCOUNT], $parentMerchant);
 
-                $this->merchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
+                $parentMerchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
             }
         }
     }

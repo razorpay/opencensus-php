@@ -1012,6 +1012,8 @@ class Core extends Base\Core
     {
         $preCreateHooks = new PreCreateHook($input);
 
+        $preCreateHooks->publicKey = $input['public_key'] ?? null;
+
         if (isset($input['transfers']) === true)
         {
             $merchant = $this->repo->merchant->findOrFail($input['merchant_id']);

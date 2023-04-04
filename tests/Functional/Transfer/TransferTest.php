@@ -9,10 +9,12 @@ use RZP\Models\Transfer;
 use RZP\Constants\Entity;
 use RZP\Models\User\Role;
 use RZP\Http\RequestHeader;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\RefundSource;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Services\Mock\Mutex as MockMutexService;
 use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -22,7 +24,9 @@ use RZP\Models\Admin\Permission\Name as PermissionName;
 
 class TransferTest extends TestCase
 {
+    use MocksSplitz;
     use PaymentTrait;
+    use PartnerTrait;
     use DbEntityFetchTrait;
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
@@ -1965,6 +1969,61 @@ class TransferTest extends TestCase
     public function testDebugRoute()
     {
         $this->ba->adminAuthWithPermission(PermissionName::DEBUG_TRANSFERS_ROUTES);
+
+        $this->startTest();
+    }
+
+    public function testCreateDirectTransferWithPartnerAuthForMarketplace()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = $subMerchantId;
+
+        $this->testData[__FUNCTION__]['response']['content']['source'] = 'acc_' . $subMerchantId;
+
+        $this->mockAllSplitzTreatment();
+
+        $this->startTest();
+    }
+
+    public function testCreateDirectTransferWithPartnerAuthForInvalidPartnerType()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = $subMerchantId;
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->mockAllSplitzTreatment();
+
+        $this->startTest();
+    }
+
+    public function testCreateDirectTransferWithPartnerAuthForInvalidPartnerMerchantMapping()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+
+        $this->testData[__FUNCTION__]['request']['server']['HTTP_X-Razorpay-Account'] = $subMerchantId;
+
+        $accessMap = $this->getDbLastEntity('merchant_access_map');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['merchant_id' => $merchant['id']]);
+
+        $this->mockAllSplitzTreatment();
 
         $this->startTest();
     }

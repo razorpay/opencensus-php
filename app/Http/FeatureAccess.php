@@ -8,9 +8,10 @@ use RZP\Models\Merchant;
 use Illuminate\Foundation\Application;
 
 use RZP\Models\Feature;
-use RZP\Models\Merchant\Entity;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Entity;
 use RZP\Base\RepositoryManager;
+use RZP\Models\Partner\Service as PartnerService;
 
 class FeatureAccess
 {
@@ -94,6 +95,21 @@ class FeatureAccess
         $merchantRouteFeatures = $this->getMerchantRouteFeatures($routeFeatures);
 
         $appId = $this->ba->getOAuthApplicationId();
+
+        if (empty($merchantRouteFeatures) === true)
+        {
+            if ($this->enableMarketplaceForMerchantIfApplicable() === true)
+            {
+                $merchantRouteFeatures = [Feature\Constants::MARKETPLACE];
+
+                $this->trace->info(
+                    TraceCode::ALLOW_MARKETPLACE_FEATURE_FOR_SUBMERCHANT,
+                    [
+                        Merchant\Constants::MERCHANT_ID => empty($this->merchant) === false ? $this->merchant->getId() : null
+                    ]
+                );
+            };
+        }
 
         //
         // If the merchant is directly accessing the resource, allow if it
@@ -244,6 +260,37 @@ class FeatureAccess
         ]);
 
         return array_intersect($routeFeatures, $merchantFeatures);
+    }
+
+    /**
+     * Enable Route product api (payment_transfer, transfer_create) access to sub-merchants for
+     * marketplace partners i.e. partners with route_partnerships and marketplace feature enabled
+     */
+    protected function enableMarketplaceForMerchantIfApplicable(): bool
+    {
+        if ($this->ba->isPartnerAuth() === false)
+        {
+            return false;
+        }
+
+        $currentRoute = $this->route->getCurrentRouteName();
+
+        $applicableRoutes = ['payment_transfer', 'transfer_create'];
+
+        $partner = $this->ba->getPartnerMerchant();
+
+        if (in_array($currentRoute, $applicableRoutes, true) === false or
+            empty($partner) === true or
+            $partner->isRoutePartnershipsEnabled() === false or
+            (new PartnerService())->isMarketplaceTransferExpEnabled($partner) !== true)
+        {
+            return false;
+        }
+
+        $partnerFeatures = $partner->getEnabledFeatures();
+
+        // check if the marketplace feature is enabled for the partner
+        return in_array(Feature\Constants::MARKETPLACE, $partnerFeatures, true);
     }
 
     /**

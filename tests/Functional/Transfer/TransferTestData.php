@@ -836,6 +836,114 @@ return [
         ],
     ],
 
+    'testCreateDirectTransferWithPartnerAuthForMarketplace' => [
+        'request'   => [
+            'method'   => 'POST',
+            'url'      => '/transfers',
+            'content'   => [
+                'account'       => 'acc_10000000000001',
+                'amount'        => 1000,
+                'currency'      => 'INR',
+                'notes'         => [
+                    'order_info'    => 'random_string',
+                    'version'       => 2,
+                    'roll_no'       => 'iec2011025',
+                    'student_name'  => 'student',
+                ],
+                'linked_account_notes' => ['roll_no', 'student_name'],
+                'on_hold'       => '1',
+                'on_hold_until' => 2122588614,
+            ],
+        ],
+        'response'  =>  [
+            'content' => [
+                'entity' => 'transfer',
+                'status' => 'processed',
+                'source' => 'acc_10000000000000',
+                'recipient' => 'acc_10000000000001',
+                'amount' => 1000,
+                'currency' => 'INR',
+                'notes' =>  [
+                    'order_info' => 'random_string',
+                    'version' => 2,
+                    'roll_no' => 'iec2011025',
+                    'student_name' => 'student',
+                ],
+                'linked_account_notes' =>
+                    [
+                        'roll_no',
+                        'student_name',
+                    ],
+                'on_hold' => true,
+                'on_hold_until' => 2122588614,
+            ],
+        ],
+    ],
+
+    'testCreateDirectTransferWithPartnerAuthForInvalidPartnerType' => [
+        'request'   => [
+            'method'   => 'POST',
+            'url'      => '/transfers',
+            'content'   => [
+                'account'       => 'acc_10000000000001',
+                'amount'        => 1000,
+                'currency'      => 'INR',
+                'notes'         => [
+                    'order_info'    => 'random_string',
+                    'version'       => 2,
+                    'roll_no'       => 'iec2011025',
+                    'student_name'  => 'student',
+                ],
+                'linked_account_notes' => ['roll_no', 'student_name'],
+                'on_hold'       => '1',
+                'on_hold_until' => 2122588614,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid partner action',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION
+        ],
+    ],
+
+    'testCreateDirectTransferWithPartnerAuthForInvalidPartnerMerchantMapping' => [
+        'request'   => [
+            'method'   => 'POST',
+            'url'      => '/transfers',
+            'content'   => [
+                'account'       => 'acc_10000000000001',
+                'amount'        => 1000,
+                'currency'      => 'INR',
+                'notes'         => [
+                    'order_info'    => 'random_string',
+                    'version'       => 2,
+                    'roll_no'       => 'iec2011025',
+                    'student_name'  => 'student',
+                ],
+                'linked_account_notes' => ['roll_no', 'student_name'],
+                'on_hold'       => '1',
+                'on_hold_until' => 2122588614,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The partner does not have access to the merchant',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testDebugRoute' => [
         'request' => [
             'method'  => 'POST',

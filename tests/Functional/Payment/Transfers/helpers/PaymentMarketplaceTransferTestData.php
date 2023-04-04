@@ -327,6 +327,84 @@ return [
         ],
     ],
 
+    'testCreatePaymentTransferWithPartnerAuthForMarketplace' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'account' => 'acc_10000000000001',
+                        'amount'  => 100,
+                        'currency'=> 'INR',
+                    ],
+                ]
+            ]
+        ],
+        'response'  => [
+            'content'     => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'    => 'transfer',
+                        'recipient' => 'acc_10000000000001',
+                        'amount'    => 100,
+                        'currency'  => 'INR',
+                    ],
+                ],
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testCreatePaymentTransferWithPartnerAuthForInvalidPartnerType' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'account' => 'acc_10000000000001',
+                        'amount'  => 100,
+                        'currency'=> 'INR',
+                    ],
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid partner action',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION
+        ],
+    ],
+
+    'testCreatePaymentTransferWithPartnerAuthForInvalidPartnerMerchantMapping' => [
+        'request' => [
+            'content' => [
+                'transfers' => [
+                    [
+                        'account' => 'acc_10000000000001',
+                        'amount'  => 100,
+                        'currency'=> 'INR',
+                    ],
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The partner does not have access to the merchant',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
+
     'testTransferToSuspendedLinkedAccount' => [
         'response'  => [
             'content'     => [

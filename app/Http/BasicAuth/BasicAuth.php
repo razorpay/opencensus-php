@@ -616,17 +616,22 @@ class BasicAuth
      *
      * @param string $key
      */
-    protected function checkAndSetCreds(string $key)
+    protected function checkAndSetCreds(string $key): void
     {
-        $keyRegex = '/^rzp_(test|live)_(partner)_[a-zA-Z0-9]{14}$/';
-
-        $validPartnerKey = (preg_match($keyRegex, $key, $matches) === 1);
+        $validPartnerKey = static::isValidPartnerKey($key);
 
         $this->isPartnerAuth = $validPartnerKey ?? false;
 
         $authCredsClass = $validPartnerKey ? ClientAuthCreds::class : KeyAuthCreds::class;
 
         $this->authCreds = new $authCredsClass($this->app, $key);
+    }
+
+    public static function isValidPartnerKey(string $key): bool
+    {
+        $keyRegex = '/^rzp_(test|live)_(partner)_[a-zA-Z0-9]{14}$/';
+
+        return (preg_match($keyRegex, $key, $matches) === 1);
     }
 
     /**
@@ -1767,6 +1772,18 @@ class BasicAuth
     public function getPartnerMerchantId()
     {
         return $this->partnerMerchantId;
+    }
+
+    public function getPartnerMerchant()
+    {
+        $partnerMid = $this->getPartnerMerchantId();
+
+        if (empty($partnerMid) === false)
+        {
+            return $this->repo->merchant->find($partnerMid);
+        }
+
+        return null;
     }
 
     public function getTokenScopes()

@@ -6,18 +6,21 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\User\Role;
 use RZP\Services\RazorXClient;
+use RZP\Tests\Traits\MocksSplitz;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant\FeeBearer;
 use RZP\Exception\BadRequestException;
 use RZP\Tests\Traits\TestsWebhookEvents;
+use RZP\Tests\Functional\Partner\PartnerTrait;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Tests\Functional\Payment\Transfers\TransferTrait;
 
 class PaymentMarketplaceTransferTest extends TestCase
 {
+    use MocksSplitz;
     use PaymentTrait;
+    use PartnerTrait;
     use TransferTrait;
     use DbEntityFetchTrait;
     use TestsWebhookEvents;
@@ -731,6 +734,93 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->assertEquals($paymentId, $paymentIds[0]);
 
         $this->assertNotNULL($transfer['processed_at']);
+    }
+
+    public function testCreatePaymentTransferWithPartnerAuthForMarketplace()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $this->mockAllSplitzTreatment();
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $response = $this->runRequestResponseFlow($testData);
+
+        $transfer = $this->getDbEntityById('transfer', $response['items'][0]['id']);
+
+        $this->assertEquals($subMerchantId, $transfer->getMerchantId());
+    }
+
+    public function testCreatePaymentTransferWithPartnerAuthForInvalidPartnerType()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $this->mockAllSplitzTreatment();
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $this->fixtures->edit('merchant', '10000000000000', ['partner_type' => 'fully_managed']);
+
+        $this->runRequestResponseFlow($testData);
+    }
+
+    public function testCreatePaymentTransferWithPartnerAuthForInvalidPartnerMerchantMapping()
+    {
+        $subMerchantId = $this->setUpPartnerAuthAndGetSubMerchantId();
+
+        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
+
+        $this->fixtures->merchant->addFeatures(['route_partnerships'], '10000000000000');
+
+        $this->fixtures->edit('payment', $this->payment['id'], ['merchant_id' => $subMerchantId,]);
+
+        $this->fixtures->edit('balance', '10000000000000', ['merchant_id' => $subMerchantId,]);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['server']['HTTP_X-Razorpay-Account'] = 'acc_' . $subMerchantId;
+
+        $this->mockAllSplitzTreatment();
+
+        $this->setRequestData($testData['request']);
+
+        $this->sendRequest($testData['request']);
+
+        $accessMap = $this->getDbLastEntity('merchant_access_map');
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->fixtures->edit('merchant_access_map', $accessMap['id'], ['merchant_id' => $merchant['id']]);
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testTransferToSuspendedLinkedAccount()

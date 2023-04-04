@@ -2595,6 +2595,11 @@ class Entity extends Base\PublicEntity
         return (in_array(AccountConstants::NO_DOC_PARTIALLY_ACTIVATED, array_map('strtolower', $existingTags)) === true);
     }
 
+    public function isRoutePartnershipsEnabled(): bool
+    {
+        return ($this->isFeatureEnabled(Feature\Constants::ROUTE_PARTNERSHIPS) === true);
+    }
+
     protected function setEmailAttribute($email)
     {
         $formattedEmail = ($email === null) ? null : mb_strtolower(trim($email));

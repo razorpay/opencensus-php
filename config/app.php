@@ -408,6 +408,8 @@ return array(
 
     'excluded_partners_from_providing_subm_ip_experiment_id' => env('EXCLUDED_PARTNERS_FROM_PROVIDING_SUBM_IP_EXPERIMENT_ID'),
 
+    'partnerships_for_marketplace_transfer_experiment_id'   => env('PARTNERSHIPS_FOR_MARKETPLACE_TRANSFER_EXPERIMENT_ID'),
+
     '1cc_splitz_experiment_id' => env('MAGIC_CHECKOUT_SPLITZ_EXPERIMENT_ID'),
 
     '1cc_city_autopopulate_splitz_experiment_id' => env('MAGIC_CHECKOUT_DISABLE_AUTOPOPULATE_EXP_ID'),

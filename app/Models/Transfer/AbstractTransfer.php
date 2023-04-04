@@ -11,7 +11,9 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Adjustment;
 use RZP\Exception\LogicException;
 use Illuminate\Support\Facades\App;
+use RZP\Exception\BadRequestException;
 use Razorpay\Spine\Exception\DbQueryException;
+use RZP\Models\Partner\Service as PartnerService;
 
 abstract class AbstractTransfer
 {
@@ -43,6 +45,8 @@ abstract class AbstractTransfer
 
     protected  $status;
 
+    protected $partner;
+
     /**
      * AbstractTransfer constructor.
      */
@@ -67,6 +71,7 @@ abstract class AbstractTransfer
 
         $this->repo = $this->app['repo'];
 
+        $this->partner = $this->app['basicauth']->getPartnerMerchant();
     }
 
     public function processOrderTransfers(Payment\Entity $payment)
@@ -290,9 +295,14 @@ abstract class AbstractTransfer
         }
     }
 
-    protected function createTransferredPayment($transfer, $payment)
+    /**
+     * @throws BadRequestException
+     */
+    protected function createTransferredPayment($transfer, $payment): Payment\Entity
     {
-        $to = $this->repo->account->findByIdAndMerchant($transfer->getToId(), $this->merchant);
+        $parentMerchant = (new Core())->fetchAccountParentMerchant($this->merchant, $payment->getPublicKey() ?? null);
+
+        $to = $this->repo->account->findByIdAndMerchant($transfer->getToId(), $parentMerchant);
 
         $input = $this->getTransferData($transfer);
 

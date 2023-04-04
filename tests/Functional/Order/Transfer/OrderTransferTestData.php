@@ -498,4 +498,126 @@ return [
             ]
         ],
     ],
+
+    'testCreateOrderTransferWithPartnerAuthForMarketplace' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'amount'    => '50000',
+                'currency'  => 'INR',
+                'transfers' => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => '10000',
+                        'currency' => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'amount'    => 50000,
+                'currency'  => 'INR',
+                'transfers' => [
+                    [
+                        'recipient' => 'acc_10000000000001',
+                        'amount'    => 10000,
+                        'currency'  => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testCreateOrderTransferWithPartnerAuthForInvalidPartnerType' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'amount'    => '50000',
+                'currency'  => 'INR',
+                'transfers' => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => '10000',
+                        'currency' => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid partner action',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PARTNER_ACTION
+        ],
+    ],
+
+    'testCreateOrderTransferWithPartnerAuthForInvalidPartnerMerchantMapping' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '/orders',
+            'server' => [
+                'HTTP_X-Razorpay-Account' => 'acc_10000000000000',
+            ],
+            'content' => [
+                'amount'    => '50000',
+                'currency'  => 'INR',
+                'transfers' => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => '10000',
+                        'currency' => 'INR',
+                        'notes'    => [
+                            'roll_no' => 'iec2011025'
+                        ],
+                        'linked_account_notes' => [
+                            'roll_no'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The partner does not have access to the merchant',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+    ],
 ];

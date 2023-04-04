@@ -23,11 +23,15 @@ class PostCreateHook extends Hook
      */
     protected $order;
 
+    protected $publicKey;
+
     public function __construct(array $input, Entity $order)
     {
         parent::__construct($input);
 
         $this->order = $order;
+
+        $this->publicKey = $input[Entity::PUBLIC_KEY] ?? null;
     }
 
     public function createRegistrationEntity($tokenParams)
@@ -71,13 +75,14 @@ class PostCreateHook extends Hook
 
     public function createTransfers($input)
     {
-        if (($input === null) or
-            ($input === []))
+        if (($input === null) or ($input === []))
         {
             return;
         }
 
         $order = $this->order;
+
+        $input[Entity::PUBLIC_KEY] = $this->publicKey;
 
         $this->app['trace']->info(
             TraceCode::ORDER_TRANSFER_REQUEST,

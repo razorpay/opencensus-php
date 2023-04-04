@@ -318,4 +318,19 @@ class Service extends Base\Service
             'failure_ids' => $failureIds
         ];
     }
+
+    public function isMarketplaceTransferExpEnabled(?Merchant\Entity $partner): bool
+    {
+        if (empty($partner) === true)
+        {
+            return false;
+        }
+
+        $properties = [
+            'id'            => $partner->getId(),
+            'experiment_id' => $this->app['config']->get('app.partnerships_for_marketplace_transfer_experiment_id'),
+        ];
+
+        return (new Merchant\Core())->isSplitzExperimentEnable($properties, 'enable');
+    }
 }

@@ -3,24 +3,31 @@
 namespace RZP\Models\Merchant;
 
 use App;
-use Illuminate\Support\Str;
 use Mail;
 use Config;
-use RZP\Constants\Entity as E;
-use RZP\Http\RequestHeader;
-use RZP\Constants\Environment;
-use RZP\Models\Base\UniqueIdEntity;
 use Throwable;
 use ApiResponse;
 use Carbon\Carbon;
 use Monolog\Logger;
+use Illuminate\Support\Str;
+use Illuminate\Http\JsonResponse;
+use Razorpay\Trace\Logger as Trace;
+use Razorpay\OAuth\Client\Repository as OAuthRepo;
+use \WpOrg\Requests\Exception as RequestsException;
+
+use RZP\Http\RequestHeader;
+use RZP\Constants\Entity as E;
+use RZP\Constants\Environment;
+use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\BasicAuth\ClientAuthCreds;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Http\Route;
 use RZP\Constants\HyperTrace;
 use RZP\Models\VirtualAccount;
 use RZP\Jobs\SyncStakeholder;
 use RZP\Mail\User as UserMail;
 use RZP\Jobs\CapturePartnershipConsents;
-use \RZP\Models\BankingAccount;
+use RZP\Models\BankingAccount;
 use RZP\Exception\LogicException;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -60,16 +67,12 @@ use RZP\Constants\Entity as CE;
 use RZP\Jobs\MailingListUpdate;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\FeeBearer;
 use RZP\Models\Terminal\Category;
 use RZP\Models\User\BankingRole;
 use RZP\Models\Admin\Permission;
-use Illuminate\Http\JsonResponse;
 use RZP\Models\Settlement\Bucket;
 use RZP\Models\Settings\Accessor;
 use RZP\Models\Partner\Activation;
-use RZP\Models\Settlement\Channel;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\BankingAccountService;
 use RZP\Mail\Merchant as MerchantMail;
 use RZP\Models\Merchant\Attribute;
@@ -87,7 +90,6 @@ use RZP\Mail\Payout\Payout as PayoutMail;
 use RZP\Jobs\BackFillReferredApplication;
 use RZP\Jobs\BackFillMerchantApplications;
 use RZP\Models\Comment\Core as CommentCore;
-use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Merchant\Fraud\HealthChecker;
 use RZP\Models\Merchant\MerchantApplications;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -97,7 +99,6 @@ use RZP\Models\Partner\Config as PartnerConfig;
 use RZP\Jobs\BulkMigrateAggregatorToResellerJob;
 use RZP\Models\Workflow\Action as WorkflowAction;
 use RZP\Jobs\MerchantSupportingEntitiesCreateJob;
-use \WpOrg\Requests\Exception as RequestsException;
 use RZP\Models\Feature\Service as FeatureService;
 use RZP\Models\Merchant\Request as MerchantRequest;
 use RZP\Services\Segment\EventCode as SegmentEvent;
@@ -113,19 +114,16 @@ use RZP\Mail\Merchant\SecondFactorAuth as SecondFactorAuthMail;
 use RZP\Models\RiskWorkflowAction\Constants as RiskActionConstants;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalField;
 use RZP\Models\Merchant\ProductInternational\ProductInternationalMapper;
-use RZP\Models\Merchant\Detail\Status as DetailStatus;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\BankAccount\Entity as BankAccountEntity;
 use RZP\Mail\Merchant\CreditsAdditionSuccess;
 use RZP\Mail\Merchant\ReserveBalanceAdditionSuccess;
 use RZP\Models\Merchant\AccessMap\Core as AccessMapCore;
-use RZP\Models\Merchant\MerchantApplications\Core as MerchantApplicationsCore;
 use RZP\Models\Merchant\MerchantApplications\Entity as MerchantApplicationsEntity;
 use RZP\Models\Merchant\WebhookV2\Stork;
 use RZP\Models\Partner\Config\Core as PartnerConfigCore;
 use RZP\Models\Merchant\Consent\Constants as MerchantConsentConstants;
 use RZP\Trace\Tracer;
-use RZP\Models\Merchant\Detail\BusinessCategory;
 use RZP\Models\Typeform\Core as TypeformCore;
 use RZP\Models\Typeform\Constants as TypeformConstant;
 
@@ -4997,6 +4995,7 @@ class Core extends Base\Core
         }
 
         // there will be at most two appIds here
+
         $mappings = (new AccessMap\Repository)
             ->findMerchantAccessMapOnEntityIds($merchantId, $appIds, AccessMap\Entity::APPLICATION);
 
@@ -8798,6 +8797,57 @@ class Core extends Base\Core
 
             $merchantsList[$merchantIdMapping[$merchantId]] = $merchantDetails ;
         }
+    }
+
+    /**
+     * @param string|null $publicKey
+     *
+     * @return array|null
+     */
+    public function fetchPartnerAndMerchantFromPublicKey(?string $publicKey): ?array
+    {
+        if (empty($publicKey) === true)
+        {
+            return null;
+        }
+
+        $partner = null;
+
+        $merchant = null;
+
+        $publicKeyParts = explode(BasicAuth::PARTNER_CALLBACK_KEY_DELIMITER, $publicKey);
+
+        $partnerKey = $publicKeyParts[0];
+
+        $validPartnerKey = BasicAuth::isValidPartnerKey($partnerKey);
+
+        if ($validPartnerKey === true)
+        {
+            $keyId = substr($partnerKey, -14);
+
+            $mode = substr($partnerKey, 4, 4);
+
+            $partnerClient = (new OAuthRepo())->getClientByIdAndEnv($keyId, ClientAuthCreds::$clientModes[$mode]);
+
+            $partnerId = $partnerClient->getMerchantId();
+
+            $partner = $this->repo->merchant->findOrFailPublic($partnerId);
+
+            $merchantId = Merchant\Account\Entity::verifyIdAndStripSign($publicKeyParts[1]);
+
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+        }
+
+        $this->trace->info(
+            TraceCode::FETCH_PARTNER_AND_MERCHANT_FROM_PUBLIC_KEY,
+            [
+                Constants::PARTNER_ID   => empty($partner) === false ? $partner->getId() : null,
+                Constants::MERCHANT_ID  => empty($merchant) === false ? $merchant->getId() : null,
+                'is_valid_partner_key'  => $validPartnerKey
+            ]
+        );
+
+        return [$partner, $merchant];
     }
 
     protected function getWebsiteDomainName(string $websiteUrl) : string

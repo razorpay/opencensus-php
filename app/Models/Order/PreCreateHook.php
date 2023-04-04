@@ -19,6 +19,8 @@ class PreCreateHook extends Hook
 
     public $merchant;
 
+    public string $publicKey;
+
     public function process()
     {
         foreach (array_keys($this->hooks) as $hook)
@@ -95,11 +97,12 @@ class PreCreateHook extends Hook
 
     public function validateTransferParams($input)
     {
-        if (($input === null) or
-            ($input === []))
+        if (($input === null) or ($input === []))
         {
             return;
         }
+
+        $input[Entity::PUBLIC_KEY] = $this->publicKey ?? null;
 
         try
         {
