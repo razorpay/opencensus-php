@@ -1472,5 +1472,26 @@ return [
                 ]
             ]
         ]
+    ],
+    env('APP_V2_ID_PAYMENTS_UPI')               => [
+        "name"        => "payments_upi",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_PAYMENTS_UPI'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_PAYMENTS_UPI'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.payments_upi"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_PAYMENTS_UPI'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_PAYMENTS_UPI'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.payments_upi"
+                ]
+            ]
+        ]
     ]
 ];

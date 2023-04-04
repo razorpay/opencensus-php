@@ -6566,6 +6566,17 @@ class Processor
     {
         if ($payment->isExternal() === true)
         {
+            if ($payment->isUpi() === true)
+            {
+                $lockedPayment = $this->repo->payment->findByPublicId($payment->getPublicId());
+
+                $this->payment->setRawAttributes($lockedPayment->getAttributes(), true);
+
+                $payment->setRawAttributes($lockedPayment->getAttributes(), true);
+
+                return ;
+            }
+
             return;
         }
 

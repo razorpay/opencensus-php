@@ -14991,6 +14991,11 @@ class Route
             'internal_merchant_risk_notification',
         ],
 
+        'upi_payment_service' => [
+            'internal_payment_pricing',
+            'internal_merchant_risk_notification',
+        ],
+
         'workflows' => [
             'payout_approve_internal',
             'payout_reject_internal',

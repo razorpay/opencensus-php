@@ -1293,6 +1293,7 @@ return [
         'secret'              => env('API_PG_ROUTER_SECRET'),
     ],
 
+    // This username & password already added in API is used by API to communicate with payments upi service
     'upi_payment_service' => [
         'mock'      => env('UPI_PAYMENT_SERVICE_MOCK', false),
         'username'  => env('UPI_PAYMENT_SERVICE_KEY'),
