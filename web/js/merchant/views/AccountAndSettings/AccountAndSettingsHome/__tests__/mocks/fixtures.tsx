@@ -1,5 +1,5 @@
-import store from 'merchant/store';
 import React from 'react';
+import store from 'merchant/store';
 
 jest.mock(
   'merchant/views/AccountAndSettings/AccountAndSettingsHome/sections/Profile',
@@ -14,14 +14,15 @@ jest.mock(
 
 jest.mock(
   'merchant/views/AccountAndSettings/AccountAndSettingsHome/sections/AccountAndProductSection',
-  () => ({ sections }): JSX.Element => {
-    return (
-      <div>
-        <span>Accounts and Product Sections</span>
-        <div>{sections.length} sections found</div>
-      </div>
-    );
-  },
+  () =>
+    ({ sections }): JSX.Element => {
+      return (
+        <div>
+          <span>Accounts and Product Sections</span>
+          <div>{sections?.length || 0} sections found</div>
+        </div>
+      );
+    },
 );
 
 const state = store.getState();
@@ -55,6 +56,7 @@ export const getState = ({ userData = {}, userProfile = {}, config = {} } = {}):
       isOrgAxis: undefined,
       isOrgRZP: undefined,
       isInstrumentRequestAllowed: jest.fn(),
+      isInstrumentRequestHidden: undefined,
       isWebsiteComplianceFlowEnabled: undefined,
       isFeatureEnabled: jest.fn(),
       ...userData,

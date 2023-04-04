@@ -33,7 +33,9 @@ export const isTrustedBadgeAllowed = (user: User): boolean =>
   !user.findTag(HIDDEN_INTERNATIONAL_FEATURES_TAGS.TrustedBadge);
 
 export const isPaymentMethodEnabled = (user: User, mode: string): boolean =>
-  user.isOrgRZP === true && user.isInstrumentRequestAllowed() && mode !== 'test';
+  ((user.isOrgRZP === true && user.isInstrumentRequestAllowed()) ||
+    user.isInstrumentRequestHidden) &&
+  mode !== 'test';
 
 export const shouldShowFeeBearerSelfServe = ({
   user: { isOrgRZP, isAccepted, role, isFeeBearerSelfServeOn, isPayPalEnabled, international },

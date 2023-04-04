@@ -653,14 +653,14 @@ export const initialState = {
             {
               name: 'IndusInd Bank',
               description: '',
-              status: 'Request',
+              status: 'greyed',
               slug: 'debit.indusind',
               icon: 'https://cdn.razorpay.com/bank/INDB.gif',
             },
             // {
             //   name: 'KOTAK Bank',
             //   description: '',
-            //   status: 'Request',
+            //   status: 'greyed',
             //   slug: 'debit.kotak',
             //   icon: 'https://cdn.razorpay.com/paylater-sq/kkbk.svg',
             // },
