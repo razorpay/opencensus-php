@@ -209,12 +209,12 @@ class Handler extends ExceptionHandler
 
             $context = $this->getExceptionDetails($e);
 
-            // Debugging Unauthorized exception
-            $app['trace']->info(TraceCode::ERROR_EXCEPTION, ['context' => $context]);
-
             // adding this status to push status code on prometheus
             $data['http_status_code'] = $this->getStatusCodeForUnhandledException($e);
-
+    
+            // Debugging Unauthorized exception
+            $app['trace']->info(TraceCode::ERROR_EXCEPTION, ['context' => $context, 'status_code' => $data['http_status_code']]);
+            
             $response = Response::json($data);
             AppResponse::pushDownstreamMetrics($data);
 
@@ -238,15 +238,21 @@ class Handler extends ExceptionHandler
 
     protected function getStatusCodeForUnhandledException(Throwable $e)
     {
+        $app = \App::getFacadeRoot();
+        
         if ($e->getMessage() === 'Unauthorized Access')
         {
             return 401;
         }
         else if ($e instanceof Error)
         {
+            $app['trace']->info(TraceCode::MISC_TRACE_CODE, ['context' => $e->getMessage(), 'status_code' => $e->getHttpStatusCode()]);
+
             return $e->getHttpStatusCode();
         }
-
+        
+        $app['trace']->info(TraceCode::ERROR_EXCEPTION, ['context' => $e->getMessage(), 'status_code' => 500]);
+        
         return 500;
     }
 
