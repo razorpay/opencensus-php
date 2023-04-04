@@ -12,6 +12,7 @@ use RZP\Models\Card\Type;
 use RZP\Models\Card\Issuer;
 use RZP\Models\Card\Entity;
 use RZP\Models\Card\Network;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Constants\Mode as EnvMode;
 use RZP\Models\Settlement\Channel;
@@ -536,6 +537,14 @@ class CompositePayoutTest extends TestCase
             'issuer'  => Issuer::YESB
         ]);
 
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                                 => '10000000000000',
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
+            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
+            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
+        ]);
+
         $callable = function($route, $method, $input) {
             $response = [
                 'error'   => '',
@@ -596,9 +605,12 @@ class CompositePayoutTest extends TestCase
                 ->andReturn([true, 'Dummy']);
 
         $mockRequestMetaFTSBlock = [
-            FTSConstants::TRANSACTION_PURPOSE => '08',
-            FTSConstants::PAYMENT_TYPE        => FTSConstants::BDB,
-            FTSConstants::MERCHANT_NAME       => 'testmerchant2'
+            FTSConstants::TRANSACTION_PURPOSE         => '08',
+            FTSConstants::PAYMENT_TYPE                => FTSConstants::BDB,
+            FTSConstants::MERCHANT_NAME               => 'testmerchant1',
+            FTSConstants::BUSINESS_REGISTERED_ADDRESS => 'Line 1 Address Line 2 Address',
+            FTSConstants::BUSINESS_REGISTERED_CITY    => 'Bhubaneswar',
+            FTSConstants::BUSINESS_REGISTERED_PIN     => '751490',
         ];
 
         $ftsMock->shouldReceive('createAndSendRequest')
@@ -611,7 +623,7 @@ class CompositePayoutTest extends TestCase
                     self::assertEquals('m2p', $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_CHANNEL]);
                     self::assertArrayHasKey(FTSConstants::REQUEST_META, $input[FTSConstants::TRANSFER]);
                     self::assertArraySubset($mockRequestMetaFTSBlock, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
-                    self::assertCount(3, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
+                    self::assertCount(6, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
 
                     return [
                         FTSConstants::BODY => [

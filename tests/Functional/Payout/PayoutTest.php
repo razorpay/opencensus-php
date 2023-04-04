@@ -52,6 +52,7 @@ use RZP\Services\RazorXClient;
 use RZP\Models\CreditTransfer;
 use RZP\Models\IdempotencyKey;
 use RZP\Models\PayoutsDetails;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Services\FTS\FundTransfer;
 use RZP\Models\Settlement\Channel;
@@ -8420,7 +8421,7 @@ class PayoutTest extends OAuthTestCase
                     self::assertEquals('m2p', $input[FTSConstants::TRANSFER][FTSConstants::PREFERRED_CHANNEL]);
                     self::assertArrayHasKey(FTSConstants::REQUEST_META, $input[FTSConstants::TRANSFER]);
                     self::assertArraySubset($mockRequestMetaFTSBlock, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
-                    self::assertCount(3, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
+                    self::assertCount(6, $input[FTSConstants::TRANSFER][FTSConstants::REQUEST_META]);
 
                     return [
                         FTSConstants::BODY => [
@@ -8447,10 +8448,21 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreatePayoutToCardHavingCardInputTypeForRefundsAppAndReceivedProcessedWebhookOnMCS()
     {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                                 => '10000000000000',
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
+            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
+            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
+        ]);
+
         $mockRequestMetaFTSBlock = [
-            FTSConstants::TRANSACTION_PURPOSE => '08',
-            FTSConstants::PAYMENT_TYPE        => FTSConstants::BDB,
-            FTSConstants::MERCHANT_NAME       => 'testmerchant1'
+            FTSConstants::TRANSACTION_PURPOSE         => '12',
+            FTSConstants::PAYMENT_TYPE                => FTSConstants::BDB,
+            FTSConstants::MERCHANT_NAME               => 'testmerchant1',
+            FTSConstants::BUSINESS_REGISTERED_ADDRESS => 'Line 1 Address Line 2 Address',
+            FTSConstants::BUSINESS_REGISTERED_CITY    => 'Bhubaneswar',
+            FTSConstants::BUSINESS_REGISTERED_PIN     => '751490',
         ];
 
         $this->mockFtsForMasterCardSend($mockRequestMetaFTSBlock);
@@ -8619,10 +8631,21 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreateCardPayoutWithServiceProviderTokenInputTypeForRefundsAppAndReceivedProcessedWebhookOnMCS()
     {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                                 => '10000000000000',
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
+            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
+            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
+        ]);
+
         $mockRequestMetaFTSBlock = [
-            FTSConstants::TRANSACTION_PURPOSE => '08',
-            FTSConstants::PAYMENT_TYPE        => FTSConstants::BDB,
-            FTSConstants::MERCHANT_NAME       => 'testmerchant1'
+            FTSConstants::TRANSACTION_PURPOSE         => '08',
+            FTSConstants::PAYMENT_TYPE                => FTSConstants::BDB,
+            FTSConstants::MERCHANT_NAME               => 'testmerchant1',
+            FTSConstants::BUSINESS_REGISTERED_ADDRESS => 'Line 1 Address Line 2 Address',
+            FTSConstants::BUSINESS_REGISTERED_CITY    => 'Bhubaneswar',
+            FTSConstants::BUSINESS_REGISTERED_PIN     => '751490',
         ];
 
         $this->mockFtsForMasterCardSend($mockRequestMetaFTSBlock);
@@ -8802,10 +8825,21 @@ class PayoutTest extends OAuthTestCase
 
     public function testCreateCardPayoutWithRazorpayTokenInputTypeForRefundsAppAndReceivedProcessedWebhookOnMCS()
     {
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id'                                 => '10000000000000',
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS    => "Line 1 Address",
+            Detail\Entity::BUSINESS_REGISTERED_ADDRESS_L2 => "Line 2 Address",
+            Detail\Entity::BUSINESS_REGISTERED_CITY       => "Bhubaneswar",
+            Detail\Entity::BUSINESS_REGISTERED_PIN        => "751490",
+        ]);
+
         $mockRequestMetaFTSBlock = [
-            FTSConstants::TRANSACTION_PURPOSE => '08',
-            FTSConstants::PAYMENT_TYPE        => FTSConstants::BDB,
-            FTSConstants::MERCHANT_NAME       => 'testmerchant1'
+            FTSConstants::TRANSACTION_PURPOSE         => '08',
+            FTSConstants::PAYMENT_TYPE                => FTSConstants::BDB,
+            FTSConstants::MERCHANT_NAME               => 'testmerchant1',
+            FTSConstants::BUSINESS_REGISTERED_ADDRESS => 'Line 1 Address Line 2 Address',
+            FTSConstants::BUSINESS_REGISTERED_CITY    => 'Bhubaneswar',
+            FTSConstants::BUSINESS_REGISTERED_PIN     => '751490',
         ];
 
         $this->mockFtsForMasterCardSend($mockRequestMetaFTSBlock);

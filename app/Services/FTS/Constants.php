@@ -222,6 +222,12 @@ final class Constants
 
     const OTP                            = "otp";
 
+    const BUSINESS_REGISTERED_ADDRESS    = "business_registered_address";
+
+    const BUSINESS_REGISTERED_CITY       = "business_registered_city";
+
+    const BUSINESS_REGISTERED_PIN        = "business_registered_pin";
+
     const TRANSACTION_PURPOSE            = "transaction_purpose";
 
     const PAYMENT_TYPE                   = "payment_type";
@@ -263,7 +269,7 @@ final class Constants
         ],
         // This will change after MasterCard direct integration supports Refunds
         Purpose::REFUND             => [
-            self::TRANSACTION_PURPOSE => '08',
+            self::TRANSACTION_PURPOSE => '12',
             self::PAYMENT_TYPE        => self::BDB
         ],
         // Keeping it as BDB for all other purposes which merchants select while

@@ -6,7 +6,8 @@ use App;
 use Carbon\Carbon;
 use Razorpay\Trace\Logger;
 use RZP\Exception\BadRequestException;
-use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
+use RZP\Services\Mutex;
+use RZP\Models\Address;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Entity;
@@ -14,6 +15,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Card as Card;
 use RZP\Models\Payout\Status;
 use RZP\Http\Request\Requests;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\FundTransfer\Mode;
@@ -30,6 +32,7 @@ use RZP\Models\Settlement\SlackNotification;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\BankAccount\Core as BankAccountCore;
 use RZP\Models\PayoutSource\Entity as PayoutSources;
+use RZP\Models\Merchant\PurposeCode\PurposeCodeList;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\FundTransfer\Holidays as TransferHoliday;
 use RZP\Models\Settlement\Holidays as SettlementHoliday;
@@ -348,7 +351,7 @@ class FundTransfer extends Base
             if ($bankingAcc === null)
             {
                 $bankingAcc = $this->app['banking_account_service']->fetchBankingAccountByAccountNumberAndChannel($balance->getMerchantId(), $balance->getAccountNumber(), $balance->getChannel());
-                
+
                 if ($bankingAcc !== null)
                 {
                     $onboardingTime = intdiv($bankingAcc['created_at'], 1000); // CreatedAt is in Milliseconds in BAS
@@ -482,6 +485,8 @@ class FundTransfer extends Base
 
         $requestMeta[Constants::MERCHANT_NAME] = $merchantName;
 
+        $this->addBusinessRegisteredAddressCityAndPin($payout, $requestMeta);
+
         if (isset($request[Constants::TRANSFER][Constants::REQUEST_META]) === true)
         {
             $request[Constants::TRANSFER][Constants::REQUEST_META] += $requestMeta;
@@ -543,6 +548,21 @@ class FundTransfer extends Base
         ]);
 
         return $merchantName;
+    }
+
+    protected function addBusinessRegisteredAddressCityAndPin(Payout\Entity $payout, &$requestMeta)
+    {
+        $merchant = $payout->merchant;
+
+        /* @var Detail\Entity $merchantDetails*/
+        $merchantDetails = $this->repo->merchant_detail->findByPublicId($merchant->getId());
+
+        $merchantBusinessAddress = $merchantDetails->getBusinessAddress();
+
+        $requestMeta[Constants::BUSINESS_REGISTERED_ADDRESS] =
+            $merchantBusinessAddress[Address\Entity::LINE1] . " " . $merchantBusinessAddress[Address\Entity::LINE2];
+        $requestMeta[Constants::BUSINESS_REGISTERED_PIN]     = $merchantBusinessAddress[Address\Entity::ZIPCODE];
+        $requestMeta[Constants::BUSINESS_REGISTERED_CITY]    = $merchantBusinessAddress[Address\Entity::CITY];
     }
 
     protected function addRequestMetaToTransferBlock(array &$request, Payout\Entity $payout)
