@@ -438,6 +438,8 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->mockAllSplitzTreatment();
+
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $merchantId = $merchantDetail['merchant_id'];
@@ -465,6 +467,8 @@ class MerchantDetailTest extends OAuthTestCase
     {
         $this->enableRazorXTreatmentForRazorX();
 
+        $this->mockAllSplitzTreatment();
+
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
         $merchantId = $merchantDetail['merchant_id'];
@@ -491,6 +495,8 @@ class MerchantDetailTest extends OAuthTestCase
     public function testGetClarificationReasons()
     {
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
 
         $merchantDetail = $this->fixtures->create('merchant_detail');
 
@@ -1002,11 +1008,16 @@ class MerchantDetailTest extends OAuthTestCase
         });
 
     }
+
+    // for new nc revamp
+
     public function testUnderReviewStateChange()
     {
         Mail::fake();
 
         $this->enableRazorXTreatmentForRazorX();
+
+        $this->mockAllSplitzTreatment();
 
         $merchant = $this->fixtures->create('merchant', [
             'live'       => true,
@@ -1085,7 +1096,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+        $this->mockAllSplitzTreatment();
 
         $merchant = $this->fixtures->create('merchant', [
             'live'       => true,
@@ -1767,7 +1778,7 @@ class MerchantDetailTest extends OAuthTestCase
 
         $this->enableRazorXTreatmentForRazorX();
 
-        $this->mockSplitzExperiment(["response" => ["variant" => ["name" => 'enable', ]]]);
+        $this->mockAllSplitzTreatment();
 
         $merchant = $this->fixtures->create('merchant', [
             'live'       => true,
