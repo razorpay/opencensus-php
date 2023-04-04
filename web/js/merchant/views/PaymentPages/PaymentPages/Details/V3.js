@@ -300,6 +300,8 @@ export default class PaymentPagesV3Entity extends React.Component {
     const isExpired = !isActive && statusReason?.toLowerCase() === 'expired';
     const isMagicCheckoutOrder = paymentPageEntity?.settings?.one_click_checkout === '1';
     const productBaseUrl = getProductBaseLink(isStorefrontPage, paymentPageEntity.id);
+    const isShareButtonShown = isRoleAllowedEdit && isActive && !isStorefrontPage;
+    const { isExportInProgress } = this.state;
 
     return (
       <React.Fragment>
@@ -320,7 +322,7 @@ export default class PaymentPagesV3Entity extends React.Component {
             <div className="panel-heading">
               <div className="text">{paymentPageEntity.title}</div>
               <div className="btn-toolbar">
-                {isRoleAllowedEdit && isActive && !isStorefrontPage && (
+                {isShareButtonShown && (
                   <Button className="Button--primary--invert" onClick={this.openShareView}>
                     <i className="i i-share-outline" />
                     <Tooltip theme="dark" align="top">
@@ -559,10 +561,10 @@ export default class PaymentPagesV3Entity extends React.Component {
               <div className="report-download btn-toolbar">
                 <div
                   className="btn btn-default Button--invert report-download-trigger"
-                  disabled={this.state.isExportInProgress}
+                  disabled={isExportInProgress}
                 >
                   <i className="i i-download m-r" />
-                  {this.state.isExportInProgress ? 'Downloading...' : 'Download Report'}
+                  {isExportInProgress ? 'Downloading...' : 'Download Report'}
                 </div>
                 <Popover align="bottom">
                   <PopoverBody>
@@ -571,8 +573,8 @@ export default class PaymentPagesV3Entity extends React.Component {
                         key={index}
                         type="button"
                         className="btn"
-                        onClick={() => this.downloadReport(o.name)}
-                        disabled={this.state.isExportInProgress}
+                        onClick={this.downloadReport.bind(null, o.name)}
+                        disabled={isExportInProgress}
                       >
                         {o.label}
                       </li>
