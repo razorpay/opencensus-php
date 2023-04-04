@@ -3939,6 +3939,7 @@ class Route
         'status_details_source_update'            => ['post',     'payouts_service/status_details_source_update',           'PayoutController@statusDetailsSourceUpdate'                   ],
         'payouts_service_dual_write'              => ['post',     'payouts_service/dual_write',                             'PayoutController@payoutServiceDualWrite'                      ],
         'delete_card_meta_data_and_vault_token'   => ['delete',   'payouts_service/delete_card_metadata',                   'PayoutController@payoutServiceDeleteCardMetaData'             ],
+        'rename_attachments_for_payouts'          => ['post',     'payouts_service/renameAttachments/{id}',                 'PayoutController@payoutServiceRenameAttachments'              ],
 
         // Data Consistency Checker Routes
         'initiate_payouts_consistency_check'      => ['post',     'consistency_checker',                                    'PayoutController@initiatePayoutsConsistencyCheck'             ],
@@ -5555,6 +5556,7 @@ class Route
         'payouts_service_mail_and_sms',
         'payouts_source_update',
         'status_details_source_update',
+        'rename_attachments_for_payouts',
 
         'rollback_free_payouts',
         'payouts_service_redis_key_set',
@@ -15151,6 +15153,7 @@ class Route
             'banking_account_fetch_by_balance_id',
             'create_reversal_entry',
             'create_FTA_payout_service',
+            'rename_attachments_for_payouts',
             'create_ledger_payout_service',
             'deduct_credits_via_payout_service',
             'reverse_credits_via_payout_service',

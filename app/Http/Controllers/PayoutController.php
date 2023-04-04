@@ -944,6 +944,13 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function payoutServiceRenameAttachments($payoutId)
+    {
+        $input = Request::all();
+
+        return ApiResponse::json($this->service()->payoutServiceRenameAttachments($payoutId, $input));
+    }
+
     public function initiateDataMigration()
     {
         $input = Request::all();

@@ -313,6 +313,8 @@ class Core extends Base\Core
 
     public function renameAttachments($payoutId, array $attachments)
     {
+        $responseArray = [];
+
         foreach ($attachments as $attachment)
         {
             $fileId = $attachment[Entity::ATTACHMENTS_FILE_ID];
@@ -325,8 +327,12 @@ class Core extends Base\Core
 
             $fileName = sprintf('%s_%s', $uniqueId, $fileName);
 
-            $this->getUfhService()->renameFile($fileId, $fileName);
+            $response = $this->getUfhService()->renameFile($fileId, $fileName);
+
+            $responseArray[] = $response;
         }
+
+        return $responseArray;
     }
 
     public function updateTaxPayment(string $payoutId, string $taxPaymentId)

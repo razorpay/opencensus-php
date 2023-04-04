@@ -3267,4 +3267,35 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testRenameAttachmentsForPayoutService' => [
+        'request'  => [
+            'content' => [
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_10RandomFileId',
+                        'file_name' => 'Random File.pdf',
+                    ],
+                    [
+                        'file_id'   => 'file_11RandomFileId',
+                        'file_name' => 'Random File 1.pdf',
+                    ],
+                    [
+                        'file_id'   => 'file_12RandomFileId',
+                        'file_name' => 'Random File 2.pdf',
+                    ],
+                    [
+                        'file_id'   => 'file_13RandomFileId',
+                        'file_name' => 'Random File 3.pdf',
+                    ],
+                ],
+            ],
+            'url'     => '/payouts_service/renameAttachments/10RandomPoutID',
+            'method'  => 'POST',
+        ],
+        'response' => [
+            'content'     => ['result' => [null, null, null, null]],
+            'status_code' => 200,
+        ],
+    ]
 ];

@@ -4148,6 +4148,29 @@ class Service extends Base\Service
             ->updateAttachments($payoutId, $input);
     }
 
+    public function payoutServiceRenameAttachments($payoutId, $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_RENAME_ATTACHMENTS,
+            [
+                'payout_id' => $payoutId,
+                'input'     => $input,
+            ]
+        );
+
+        $result = $this->payoutDetailsCore->renameAttachments($payoutId, $input[PayoutDetails\Entity::ATTACHMENTS]);
+
+        $this->trace->info(
+            TraceCode::PAYOUT_SERVICE_RENAME_ATTACHMENTS_COMPLETE,
+            [
+                'payout_id' => $payoutId,
+                'response'  => $result,
+            ]
+        );
+
+        return ['result' => $result];
+    }
+
     /**
      * Updates all payouts against Payout Link with the new attachments
      *

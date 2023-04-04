@@ -5871,4 +5871,11 @@ class PayoutServiceTest extends TestCase
 
         $this->assertNotContains(Feature\Constants::PAYOUT_SERVICE_ENABLED, $liveFeaturesArrayAfterTest);
     }
+
+    public function testRenameAttachmentsForPayoutService()
+    {
+        $this->ba->payoutInternalAppAuth('live');
+
+        $this->startTest();
+    }
 }

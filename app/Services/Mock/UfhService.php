@@ -179,6 +179,7 @@ class UfhService extends BaseUfhClient
         return (in_array($fileId, self::DISPUTE_EVIDENCE_FILE_IDS, true) === true);
     }
 
+    // TODO: Make mock better and improve test accordingly after checking the contract on stage
     public function renameFile(string $fileId, string $fileName)
     {
         return null;

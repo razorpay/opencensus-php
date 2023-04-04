@@ -9402,6 +9402,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     //Account <> Sub-Account trace codes
 
+    const PAYOUT_SERVICE_RENAME_ATTACHMENTS          = 'PAYOUT_SERVICE_RENAME_ATTACHMENTS';
+    const PAYOUT_SERVICE_RENAME_ATTACHMENTS_COMPLETE = 'PAYOUT_SERVICE_RENAME_ATTACHMENTS_COMPLETE';
 
     protected static $messages = [
         self::PAYMENT_NEW_REQUEST                                   => 'Request for new payment received',
