@@ -214,9 +214,6 @@ return [
         // show invoices for current FY
         'INVOICE_CURRENT_FY' => env('INVOICE_CURRENT_FY', ''),
 
-        //Frontend care Quick Link
-        'QUICK_LINKS_CARE' => env('QUICK_LINKS_CARE', ''),
-
         //migrating apis to care ,this change is for adding reply api migration
         'ADD_REPLY_MIGRATION' => env('ADD_REPLY_MIGRATION', ''),
 
@@ -254,9 +251,6 @@ return [
         'SHOW_AFFORDABILITY_WIDGET_EXP' => env('SHOW_AFFORDABILITY_WIDGET_EXP', ''),
         'SHOW_AFF_WIDGET_SHOPIFY_WAIT_LIST' => env('SHOW_AFF_WIDGET_SHOPIFY_WAIT_LIST', ''),
         'SHOW_AFF_WIDGET_WOOC_WAIT_LIST' => env('SHOW_AFF_WIDGET_WOOC_WAIT_LIST', ''),
-
-        // disable ticket creation for international activation
-        'DISABLE_INTERNATIONAL_ACTIVATION' => env('DISABLE_INTERNATIONAL_ACTIVATION', ''),
 
         // Partnership for Capital
         'PARTNERSHIP_CAPITAL' => env('PARTNERSHIP_CAPITAL', ''),

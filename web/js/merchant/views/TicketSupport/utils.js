@@ -105,16 +105,16 @@ export const raiseTicket = () => {
 };
 
 export const STATUSES = {
-  '2': 'ACTIVE',
-  '3': 'WORK_IN_PROGRESS',
-  '4': 'RESOLVED',
-  '5': 'CLOSED',
-  '6': 'AWAITING_YOUR_REPLY',
-  '8': 'WORK_IN_PROGRESS',
-  '9': 'WORK_IN_PROGRESS',
-  '10': 'WORK_IN_PROGRESS',
-  '11': 'WORK_IN_PROGRESS',
-  '14': 'WORK_IN_PROGRESS',
+  2: 'ACTIVE',
+  3: 'WORK_IN_PROGRESS',
+  4: 'RESOLVED',
+  5: 'CLOSED',
+  6: 'AWAITING_YOUR_REPLY',
+  8: 'WORK_IN_PROGRESS',
+  9: 'WORK_IN_PROGRESS',
+  10: 'WORK_IN_PROGRESS',
+  11: 'WORK_IN_PROGRESS',
+  14: 'WORK_IN_PROGRESS',
 };
 
 export const createWorkFlowTicket = (workflow, user) => {
@@ -128,15 +128,11 @@ export const createWorkFlowTicket = (workflow, user) => {
   ticketData.set('custom_fields[cf_workflow_id]', workflow.id);
   ticketData.set('custom_fields[cf_merchant_id]', user.id);
   ticketData.set('custom_fields[cf_merchant_id_dashboard]', `merchant_dashboard_${user.id}`);
-  if (user?.isNewCategoriesEnable) {
-    ticketData.set('custom_fields[cf_new_requester_category]', 'Merchant');
-    ticketData.set('custom_fields[cf_new_requester_sub_category]', workflow?.sub_category || '');
-    ticketData.set('custom_fields[cf_new_requester_item]', workflow?.item || '');
-  } else {
-    ticketData.set('custom_fields[cf_requester_category]', 'Merchant');
-    ticketData.set('custom_fields[cf_requestor_subcategory]', workflow?.sub_category || '');
-    ticketData.set('custom_fields[cf_requester_item]', workflow?.item || '');
-  }
+
+  ticketData.set('custom_fields[cf_new_requester_category]', 'Merchant');
+  ticketData.set('custom_fields[cf_new_requester_sub_category]', workflow?.sub_category || '');
+  ticketData.set('custom_fields[cf_new_requester_item]', workflow?.item || '');
+
   ticketData.set('custom_fields[cf_creation_source]', getDeviceSource());
 
   return merchantFetch({

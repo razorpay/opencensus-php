@@ -866,20 +866,6 @@ export default class User {
     return this.findTag('enable_agent_role');
   }
 
-  get isNewSupportChangesEnabled() {
-    return this.getExpStatus('TicketSystemSupport');
-  }
-
-  get isFreshChatbotLive() {
-    return this.getExpStatus('is_freshchat_chatbot_enabled');
-  }
-  get isSupportChatTimingMigrated() {
-    return this.getExpStatus('support_chat_timing');
-  }
-  get isHelpWidgetRevamped() {
-    return this.getExpStatus('help_widget_revamp');
-  }
-
   get isWorkboxEnable() {
     return this.getExpStatus('enable_workbox');
   }
@@ -889,10 +875,6 @@ export default class User {
   }
   get isSmartDashboardActive() {
     return this.getExpStatus('instrument_requests_smart_dashboard');
-  }
-
-  get isNewCategoriesEnable() {
-    return this.getExpStatus('new_categories_enable');
   }
 
   get isRazorxAnnouncementEnabled() {

@@ -423,12 +423,6 @@ export default {
     'K6GhEu6Y4tmM0X',
   ],
 
-  quick_links_care: [
-    // beta
-    'KFMLhcaHUULbo7',
-    // prod
-    'KFsZKTQ1cy3zDE',
-  ],
   add_reply_migration: [
     // beta
     'KbvmLkY2BLyxki',
@@ -511,12 +505,6 @@ export default {
     'KoBY1gZStTu3ic',
     // prod
     'KoBZA5MpwqlYfD',
-  ],
-  disable_international_activation: [
-    // beta
-    'KoAfm6A0cGXEE2',
-    // prod
-    'KoBK1DaiY2K5B3',
   ],
   fetch_tickets_migration: [
     // beta

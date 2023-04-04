@@ -231,10 +231,6 @@ const DevelopersWebhooks = lazy(() =>
   import(/* webpackChunkName: "DevelopersWebhooks" */ 'merchant/views/Developers/Webhooks'),
 );
 
-const Support = lazy(() =>
-  import(/* webpackChunkName: "Support-section" */ 'merchant/components/Support'),
-);
-
 const HelpSection = lazy(() =>
   import(/* webpackChunkName: "new-help-section" */ 'merchant/components/Support/HelpSection'),
 );
@@ -1030,7 +1026,7 @@ export default class Content extends Component {
             <MultiSlider />
             {window?.RZP?.appName !== 'businessbanking' && (
               <Suspense fallback={null}>
-                {user.isHelpWidgetRevamped ? <HelpSection user={user} /> : <Support user={user} />}
+                <HelpSection user={user} />
               </Suspense>
             )}
           </Suspense>
