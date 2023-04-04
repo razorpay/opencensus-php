@@ -1779,9 +1779,9 @@ trait Authorize
 
     public function autoCapturePaymentIfApplicable(Payment\Entity $payment)
     {
-    
+
         $response = $this->shouldAutoCapture($payment);
-    
+
         // For Optimizer payments, additional check
         // Ref : https://docs.google.com/document/d/1FQEGHojgb74pyBtS0r7t_qWg05XsZ_636UyYYkUNKdE/edit#
         if($payment->isOptimizerCaptureSettingsEnabled() === true)
@@ -5258,6 +5258,9 @@ trait Authorize
             $this->setRecurringType($payment, $input, $gatewayInput);
         }
 
+        // select token's terminal id only for upi autopay subsequent debits
+        $this->setSelectedTerminalsIdsForAutoDebit($payment, $payment->getGlobalOrLocalTokenEntity(), $gatewayInput);
+
         $this->setPreferredAuthIfApplicable($payment);
 
         // this needs to be done after we have card entity as we need to know if card is debit or credit
@@ -5589,8 +5592,6 @@ trait Authorize
         }
 
         $payment->setRecurringType($type);
-
-        $this->setSelectedTerminalsIdsForAutoDebit($payment, $token, $gatewayInput);
     }
 
     protected function setAutoRefundTimestamp(Payment\Entity $payment)
