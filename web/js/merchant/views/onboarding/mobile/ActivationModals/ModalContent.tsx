@@ -493,7 +493,6 @@ export const getModalContent = (
       image = <NCImg src={ImgNcKyc} />;
       description = (
         <>
-          {/* NOTE OE comms changes part-1 */}
           Update these details to help us activate your account faster once we resume onboarding new
           businesses
         </>

@@ -220,8 +220,9 @@ export const maxLength = (length, message = '') => {
   };
 };
 
-const makeValidator = (truthyFn, defaultMessage) => (message = defaultMessage) => (value) =>
-  truthyFn(value) ? undefined : message;
+const makeValidator = (truthyFn, defaultMessage) => (message = 
+  defaultMessage) => (value) =>
+    truthyFn(value) ? undefined : message;
 
 export const required = makeValidator(isPresent, 'Required');
 export const email = makeValidator(isEmail, 'Invalid Email');

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unsafe */
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -472,11 +473,9 @@ export default class ActivationCard extends Component {
   }
 
   get accountUnderReviewContent() {
-    const { internationalActivationFlow, kyc_clarification_reasons } = this.props;
+    const { internationalActivationFlow } = this.props;
     if (internationalActivationFlow.isGraylistFlow) {
-      return `We are reviewing your form. Expect confirmation in ${
-        kyc_clarification_reasons?.nc_count ? ' 3 ' : ' 3 - 4 '
-      } business days. You can request for international payments acceptance post KYC Verification.`;
+      return `Submit your KYC details to activate your account once new businesses onboarding resumes`;
     }
 
     return 'We are reviewing your KYC details';

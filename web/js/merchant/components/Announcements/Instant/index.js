@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import RTracking from 'react-tracking';
-import * as LocalStorageService from 'common/utils/localStorage';
 import AnnouncementBanner from 'merchant/components/Announcements/AnnouncementBanner';
 import SupportButton from 'merchant/components/Home/SupportButton';
 
@@ -224,8 +223,8 @@ export default class InstantActivationAnnouncements extends Component {
           content = (
             <div class="announcement-container">
               <div class="announcement-info">
-                Please submit your KYC details to get your account activated and start accepting
-                payments{' '}
+                Please submit your KYC details to help us activate your account faster once we
+                resume onboarding new businesses{' '}
               </div>
               <div className="big-circle-seprator" />
               <Link to={activationUrl} onClick={() => this.sendL2StartEvent()}>
@@ -478,7 +477,6 @@ export default class InstantActivationAnnouncements extends Component {
           content = (
             <div class="announcement-container">
               <div class="announcement-info">
-                {/* NOTE OE comms changes part-1 */}
                 Update these details to help us activate your account faster once we resume
                 onboarding new businesses{' '}
               </div>
@@ -1015,42 +1013,29 @@ export default class InstantActivationAnnouncements extends Component {
           </div>
         );
       } else {
-        // TODO OE comms changes part-2
-        let activation_tat = '1-2 days';
-        const clarification_submitted = LocalStorageService.getItem(
-          `rzp_onboarding--${user.current}--clarification_submitted`,
-        );
-        if (clarification_submitted) {
-          activation_tat = '4-5 days';
-        }
+        // !Note: Uncomment these once we fully resume onboarding
+        // let activation_tat = '1-2 days';
+        // const clarification_submitted = LocalStorageService.getItem(
+        //   `rzp_onboarding--${user.current}--clarification_submitted`,
+        // );
+        // if (clarification_submitted) {
+        //   activation_tat = '4-5 days';
+        // }
         title = 'KYC Under Review';
         if (user.instantActivation.isWhitelistFlow) {
           if (payments && payments.items.length > 0 && mode === 'live') {
             content = (
               <>
-                We will be reviewing your KYC details after your first transaction. Review process
-                usually takes {activation_tat}{' '}
-                <strong>from the date of the first transaction</strong>, we will reach out to you on
-                your registered email ID if we need any clarifications. Your settlements will be
-                enabled after your KYC is reviewed and approved.
+                We are reviewing your KYC details. Post KYC verification, we will activate your
+                account as soon as new business onboarding resumes.
               </>
             );
           } else {
             title = 'Accept Payments';
             content = (
               <React.Fragment>
-                You can start using our products to accept payments right away, however your
-                settlements will be enabled after your KYC is reviewed. KYC Review process usually
-                takes {activation_tat} <strong>from the date of the first transaction</strong>, we
-                will reach out to you on your registered email ID if we need any clarifications.
-                &nbsp;
-                <a
-                  href="https://razorpay.freshdesk.com/support/solutions/articles/11000092582"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  Know more
-                </a>
+                We are reviewing your KYC details. Post KYC verification, we will activate your
+                account as soon as new business onboarding resumes.
               </React.Fragment>
             );
           }
@@ -1072,9 +1057,8 @@ export default class InstantActivationAnnouncements extends Component {
         } else {
           content = (
             <React.Fragment>
-              KYC Review process usually takes{' '}
-              {user.kyc_clarification_reasons?.nc_count ? '3' : '3 - 4'} working days. We will
-              notify you if we require any clarifications on your KYC.
+              We are reviewing your KYC details. Post KYC verification, we will activate your
+              account as soon as new business onboarding resumes.
             </React.Fragment>
           );
         }

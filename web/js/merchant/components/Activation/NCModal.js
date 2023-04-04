@@ -133,7 +133,6 @@ const NCModal = ({
             <div className="modal-body">
               <div className="modal-description">
                 <div>
-                  {/* NOTE OE comms changes part-1 */}
                   <p>We need clarifications on few details to complete KYC verification</p>
                   <br />
                   <p>

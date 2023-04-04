@@ -51,8 +51,14 @@ export const kycModalContent = (args = {}) => {
         subtitle: null,
         body: (
           <div>
-            {/* TODO OE comms changes part-2 */}
-            For your business model we need a few more KYC details to alow you to accept payments
+            <p>
+              For your business model we need a few more KYC details to allow you to accept payments
+            </p>
+            <br />
+            <i>
+              Note: This will help us activate your account faster once we resume onboarding new
+              businesses
+            </i>
           </div>
         ),
         background: 'pending',
@@ -422,9 +428,14 @@ export const kycModalContent = (args = {}) => {
         body: (
           // TODO OE comms changes part-2
           <div>
-            You may experience a delay in KYC review.
+            We’ll reach out once new business onboarding resumes and your KYC verification is
+            complete or if we need any other information.
             <br />
-            We will notify you if we require any clarifications on your KYC.
+            <br />
+            <i>
+              Note: Currently new business onboarding is paused. Post KYC verification, we will
+              activate your account as soon as onboarding resumes
+            </i>
           </div>
         ),
         background: 'pending',
@@ -444,7 +455,7 @@ export const kycModalContent = (args = {}) => {
               args.onGoToDashboard();
             }}
           >
-            Back to Dashboard
+            Okay, got it
           </button>
         ),
       };

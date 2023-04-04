@@ -1,6 +1,4 @@
 import SupportButton from 'merchant/components/Home/SupportButton';
-import { activationDuration as predefinedActivationDuration } from 'merchant/helpers/data';
-
 import { Link } from 'react-router-dom';
 
 export const kycModalContent = (args = {}) => {
@@ -14,9 +12,8 @@ export const kycModalContent = (args = {}) => {
         <div>
           <p>Great, thank you for providing requested clarifications!</p>
           <p>
-            We’ll review the form and get back to you in{' '}
-            {args.activationDuration || predefinedActivationDuration}. Meanwhile, you can continue
-            using partner dashboard.
+            Thank you for submitting your updated details. We’ll verify them and share an update
+            soon.
           </p>
         </div>
       ),
