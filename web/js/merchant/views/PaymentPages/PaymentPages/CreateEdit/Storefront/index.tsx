@@ -202,12 +202,22 @@ const StoreFront = ({
   );
 
   useEffect(() => {
+    // shift the chat widget to avoid overlap with the sticky footer on mobile
+    const chatWidgetBottomSpacing = document.documentElement.style.getPropertyValue(
+      '--support-padding-bottom',
+    );
+    document.documentElement.style.setProperty('--support-padding-bottom', '60px');
+
     const debouncedResizeFunction = debounce(() => calculateLivePreviewDimensions(), 100);
     window.addEventListener('resize', debouncedResizeFunction);
     calculateLivePreviewDimensions();
     fetchInitialData();
 
     return () => {
+      document.documentElement.style.setProperty(
+        '--support-padding-bottom',
+        chatWidgetBottomSpacing,
+      );
       window.removeEventListener('resize', debouncedResizeFunction);
       resetStorefront();
     };

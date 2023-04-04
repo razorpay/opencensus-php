@@ -175,10 +175,11 @@ const StorefrontSuccess = (props: IStorefrontSuccessProps): React.ReactElement =
                   />
                   <Button.Primary class="Button--small">Copy</Button.Primary>
                 </CustomClipboard>
-                <Button.Primary class="Button--small" onClick={handleShare}>
+                {/* TODO: Add it back once backend API is done */}
+                {/* <Button.Primary class="Button--small" onClick={handleShare}>
                   <i className="i i-share-outline mr-5" />
                   Share
-                </Button.Primary>
+                </Button.Primary> */}
                 {/* TODO: Add it back once we add custom domain to storefront */}
                 {/* {props.mode === 'test' ? (
             <span>

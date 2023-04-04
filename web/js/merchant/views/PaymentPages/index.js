@@ -35,9 +35,7 @@ export default class PaymentPagesContainer extends Component {
         <div className="banner-container">
           <DashboardBanner />
         </div>
-
         {isQuickGuideOpen && <QuickGuide className="QuickGuide-v2" />}
-
         <ErrorBoundary resetOnProps>
           <Switch>
             <Route path="/paymentpages" exact component={PaymentPagesList} />

@@ -48,8 +48,12 @@ module.exports = {
       ...config.output,
       path: path.resolve(__dirname, `../public/dist`),
       publicPath: `/dist/`,
-      filename: `js/${project}/[name].[chunkhash:8].js`,
-      chunkFilename: `js/${project}/[name].[chunkhash:8].js`,
+      filename: process.env.REDIRECTOR
+        ? `js/${project}/[name].js`
+        : `js/${project}/[name].[chunkhash:8].js`,
+      chunkFilename: process.env.REDIRECTOR
+        ? `js/${project}/[name].js`
+        : `js/${project}/[name].[chunkhash:8].js`,
       hashFunction: 'xxhash64',
     };
 
@@ -146,11 +150,7 @@ module.exports = {
         version: JSON.stringify(process.env.VERSION),
         templateContent: ({ htmlWebpackPlugin }) => {
           return `(function(){
-            ${
-              process.env.REDIRECTOR === 'true'
-                ? "window.cdnDashboardUrl = 'http://localhost:8000';"
-                : ''
-            }
+            ${process.env.REDIRECTOR ? "window.cdnDashboardUrl = 'http://localhost:8000';" : ''}
             var websiteAssets = {
               js : ${JSON.stringify(htmlWebpackPlugin.files.js)},
               css : ${JSON.stringify(htmlWebpackPlugin.files.css)}

@@ -544,9 +544,7 @@ function PaymentDetails(props) {
                 <EntityDetailRow label="Notes">
                   {Object.keys(payment.notes).length
                     ? Object.keys(payment.notes).map((key, index) =>
-                        isStorefront &&
-                        key === 'line_items' &&
-                        typeof payment.notes[key] !== 'string' ? (
+                        isStorefront && key === 'line_items' ? (
                           ''
                         ) : (
                           <Definition key={index} customClass="notes">

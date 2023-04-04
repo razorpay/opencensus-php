@@ -320,7 +320,7 @@ export default class PaymentPagesV3Entity extends React.Component {
             <div className="panel-heading">
               <div className="text">{paymentPageEntity.title}</div>
               <div className="btn-toolbar">
-                {isRoleAllowedEdit && isActive && (
+                {isRoleAllowedEdit && isActive && !isStorefrontPage && (
                   <Button className="Button--primary--invert" onClick={this.openShareView}>
                     <i className="i i-share-outline" />
                     <Tooltip theme="dark" align="top">
@@ -555,30 +555,32 @@ export default class PaymentPagesV3Entity extends React.Component {
               ))}
             </div>
 
-            <div className="report-download btn-toolbar">
-              <div
-                className="btn btn-default Button--invert report-download-trigger"
-                disabled={this.state.isExportInProgress}
-              >
-                <i className="i i-download m-r" />
-                {this.state.isExportInProgress ? 'Downloading...' : 'Download Report'}
+            {!isStorefrontPage && (
+              <div className="report-download btn-toolbar">
+                <div
+                  className="btn btn-default Button--invert report-download-trigger"
+                  disabled={this.state.isExportInProgress}
+                >
+                  <i className="i i-download m-r" />
+                  {this.state.isExportInProgress ? 'Downloading...' : 'Download Report'}
+                </div>
+                <Popover align="bottom">
+                  <PopoverBody>
+                    {reportFormatOptions.map((o, index) => (
+                      <li
+                        key={index}
+                        type="button"
+                        className="btn"
+                        onClick={() => this.downloadReport(o.name)}
+                        disabled={this.state.isExportInProgress}
+                      >
+                        {o.label}
+                      </li>
+                    ))}
+                  </PopoverBody>
+                </Popover>
               </div>
-              <Popover align="bottom">
-                <PopoverBody>
-                  {reportFormatOptions.map((o, index) => (
-                    <li
-                      key={index}
-                      type="button"
-                      className="btn"
-                      onClick={() => this.downloadReport(o.name)}
-                      disabled={this.state.isExportInProgress}
-                    >
-                      {o.label}
-                    </li>
-                  ))}
-                </PopoverBody>
-              </Popover>
-            </div>
+            )}
           </div>
 
           <PaymentsList paymentPageId={paymentPageEntity.id} isStorefrontPage={isStorefrontPage} />
