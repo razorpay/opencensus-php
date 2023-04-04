@@ -27,6 +27,7 @@ class Validator extends Base\Validator
         Fields::REVIEWED_BY      => 'sometimes|email',
         Fields::REVIEW_STATUS    => 'sometimes|in:approved,canceled,hold,approval_initiated,hold_initiated,cancel_initiated',
         Fields::SHIPPING_METHOD  => 'sometimes|array|custom',
+        Fields::UTM_PARAMETERS   => 'sometimes|array|custom',
     ];
 
     protected static $editCustomerDetailsRules = [
@@ -116,6 +117,14 @@ class Validator extends Base\Validator
         Entity::ID                  => 'required|string|size:20',
     ];
 
+    protected static $utmParametersRules = [
+        Fields::UTM_SOURCE           => 'sometimes|string|max:100',
+        Fields::UTM_MEDIUM           => 'sometimes|string|max:100',
+        Fields::UTM_CAMPAIGN         => 'sometimes|string|max:100',
+        Fields::UTM_TERM             => 'sometimes|string|max:512',
+        Fields::UTM_CONTENT          => 'sometimes|string|max:512',
+    ];
+
 
     protected function validateShippingAddress($attribute, $value)
     {
@@ -133,6 +142,11 @@ class Validator extends Base\Validator
         {
             $this->validateInput('lineItem', $item);
         }
+    }
+
+    protected function validateUtmParameters($attribute, $value)
+    {
+        $this->validateInput('utmParameters', $value);
     }
 
     protected function validatePromotions($attribute, $value)

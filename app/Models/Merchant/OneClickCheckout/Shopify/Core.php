@@ -865,7 +865,7 @@ class Core extends Base\Core
 
     }
 
-    public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi): array
+    public function placeShopifyOrder(array $rzpOrder, array $rzpPayment, $fromShopifyApi,array $utmParameters=[]): array
     {
         $start = millitime();
 
@@ -877,7 +877,7 @@ class Core extends Base\Core
 
         $client = $this->getShopifyClientByMerchant();
 
-        $body = $this->getCreateOrderPayload($rzpOrder, $rzpPayment);
+        $body = $this->getCreateOrderPayload($rzpOrder, $rzpPayment, $utmParameters);
 
         $isSEwithCouponApplied = $body['script_with_coupon_applied'];
 
@@ -1216,7 +1216,7 @@ class Core extends Base\Core
         return ['customer' => $customer];
     }
 
-    protected function getCreateOrderPayload($rzpOrder, $rzpPayment): array
+    protected function getCreateOrderPayload($rzpOrder, $rzpPayment, array $utmParameters): array
     {
         $checkoutId = $rzpOrder['notes']['storefront_id'];
 
@@ -1266,6 +1266,15 @@ class Core extends Base\Core
                 'name'  => 'cart_token',
                 'value' => $rzpOrder['notes']['cart_id']
             ]);
+        }
+        // add utm parameters as notes in shopify order
+        foreach($utmParameters as $key=>$value)
+        {
+            array_push($noteAttributes,
+                [
+                    'name'  => $key,
+                    'value' => $value
+                ]);
         }
 
         $body['note_attributes'] = $noteAttributes;

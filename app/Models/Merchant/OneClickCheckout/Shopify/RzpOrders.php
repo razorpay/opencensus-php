@@ -10,6 +10,7 @@ use RZP\Models\Order;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Metric;
+use RZP\Models\Order\OrderMeta;
 
 class RzpOrders extends Base\Core
 {
@@ -43,7 +44,7 @@ class RzpOrders extends Base\Core
             {
                 $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_PG_ROUTER_ERROR_COUNT, ['error_type'  => 'order_create']);
             }
-            
+
             throw $e;
         }
     }
@@ -102,6 +103,35 @@ class RzpOrders extends Base\Core
                 ]);
             $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_PG_ROUTER_ERROR_COUNT, ['error_type'  => 'order_receipt_update']);
             throw $e;
+        }
+    }
+
+    public function updateUtmParameters(string $orderId, array $utmParameters=[]):void
+    {
+        try
+        {
+            foreach($utmParameters as $key=>$value)
+            {
+                if(is_null($value) || $value === '')
+                {
+                    unset($utmParameters[$key]);
+                }
+            }
+            if(count($utmParameters) > 0)
+            {
+                (new OrderMeta\Service)->updateUtmParametersFor1CCOrder($orderId,$utmParameters);
+            }
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->error(
+                TraceCode::SHOPIFY_1CC_PG_ROUTER_FAILED,
+                [
+                    'type'  => 'order_utm_parameter_update',
+                    'error' => $e->getMessage(),
+                ]);
+
+            $this->monitoring->addTraceCount(Metric::SHOPIFY_1CC_PG_ROUTER_ERROR_COUNT, ['error_type'  => 'order_utm_parameter_update']);
         }
     }
 }

@@ -704,4 +704,65 @@ class Service extends \RZP\Models\Base\Service
         }
 
     }
+
+
+    /**
+     * @param string $orderId
+     * @param array $utmParameters
+     * @return void
+     * @throws Throwable
+     */
+    public function updateUtmParametersFor1CCOrder(string $orderId, array $utmParameters=[])
+    {
+        if (count($utmParameters) === 0)
+        {
+            return;
+        }
+        try
+        {
+            $orderMetaInput = [];
+
+            $orderMetaInput = array_merge($orderMetaInput, [
+                Order1cc\Fields::UTM_PARAMETERS => $utmParameters,
+            ]);
+
+            (new OneClickCheckoutCore)->update1CcOrder($orderId, $orderMetaInput);
+        }
+        catch (\Exception $ex){
+
+            $this->trace->count(TraceCode::UPDATE_1CC_ORDER_UTM_PARAMETERS_ERROR_COUNT, [
+                'order_id' =>  $orderId
+            ]);
+
+            $this->trace->error(TraceCode::UPDATE_1CC_ORDER_UTM_PARAMETERS_REQUEST_ERROR,
+                [
+                    'order_id' =>  $orderId,
+                    'utm_parameters' => $utmParameters,
+                    'exception'=> $ex->getTrace()
+                ]
+            );
+            throw $ex;
+        }
+    }
+
+    public function getUtmParametersFor1CCOrder(string $orderId):array
+    {
+        $utmParameters = [];
+        $order = (new Order\Repository())->findByPublicId($orderId);
+
+        $orderMeta = array_first($order->orderMetas, function ($orderMeta)
+        {
+            return $orderMeta->getType() === Type::ONE_CLICK_CHECKOUT;
+        });
+
+        $value = $orderMeta->getValue();
+
+        if (isset($value[Order1cc\Fields::UTM_PARAMETERS]))
+        {
+            $utmParameters = $value[Order1cc\Fields::UTM_PARAMETERS];
+        }
+
+        return $utmParameters;
+    }
+
 }

@@ -243,6 +243,10 @@ class Service extends Base\Service
     {
         unset($input['ga_id'], $input['fb_analytics']);
 
+        // capture utm parameters
+        $utmParameters =(array)$input[Order1cc\Fields::UTM_PARAMETERS];
+        unset($input[Order1cc\Fields::UTM_PARAMETERS]);
+
         // To support backward compatibility of Shopify API version update from 2022-01 to 2022-10
         $input = $this->versionBasedInput($input);
 
@@ -262,7 +266,8 @@ class Service extends Base\Service
             $checkout,
             $cart,
             $preferenceParams,
-            $customerInfo
+            $customerInfo,
+            $utmParameters
         );
 
         return [
@@ -298,7 +303,8 @@ class Service extends Base\Service
         array $checkout,
         array $cart,
         array  $preferenceParams,
-        array $customerInfo
+        array $customerInfo,
+        array $utmParameters=[]
     ): array
     {
         $cartId = $cart['token'];
@@ -360,6 +366,7 @@ class Service extends Base\Service
             $preferences = (new MerchantService)->getCheckoutPreferences($preferenceParams);
             $checkoutParams = array_merge($checkoutParams, ['preferences' => $preferences]);
         }
+        (new RzpOrders)->updateUtmParameters( $order->getPublicId(),$utmParameters);
 
         (new Analytics)->storeAnalyticsCustomerInfoInCache($checkoutParams['order_id'], json_encode($customerInfo));
 
@@ -672,9 +679,24 @@ class Service extends Base\Service
     // places final order and gateway transaction to Shopify
     public function placeShopifyOrder($order, $payment, $fromShopifyApi): array
     {
+
+        $utmParameters =[];
+
+        $orderMeta = array_first($order->orderMetas, function ($orderMeta)
+        {
+            return $orderMeta->getType() === OrderMeta\Type::ONE_CLICK_CHECKOUT;
+        });
+
+        $value = $orderMeta->getValue();
+
+        if (isset($value[Order1cc\Fields::UTM_PARAMETERS]))
+        {
+            $utmParameters = $value[Order1cc\Fields::UTM_PARAMETERS];
+        }
+
         $start = millitime();
 
-        $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic(), $fromShopifyApi);
+        $shopifyOrder = (new Core)->placeShopifyOrder($order->toArrayPublic(), $payment->toArrayPublic(), $fromShopifyApi, $utmParameters);
 
         $this->trace->info(
             TraceCode::SHOPIFY_1CC_COMPLETE_ORDER_REQUEST,

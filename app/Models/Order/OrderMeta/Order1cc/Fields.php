@@ -79,6 +79,15 @@ class Fields
     const GIFT_CARD    = 'gift_card';
     const GIFT_CARD_PROMOTION = 'gift_card_promotion';
 
+    // Analytics Tracking Key
+    const UTM_PARAMETERS    = 'utm_parameters';
+    const UTM_SOURCE        = 'utm_source';
+    const UTM_MEDIUM        = 'utm_medium';
+    const UTM_CAMPAIGN      = 'utm_campaign';
+    const UTM_TERM          = 'utm_term';
+    const UTM_CONTENT       = 'utm_content';
+
+
     public static $dataFields = [
         self::LINE_ITEMS,
         self::COD_FEE,
