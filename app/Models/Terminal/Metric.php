@@ -15,4 +15,5 @@ final class Metric
     const TERMINAL_PROXY_CALL_ERROR                          =   'TERMINAL_PROXY_CALL_ERROR';
     const TERMINAL_REPO_READ                                 =   'TERMINAL_REPO_READ';
     const TERMINAL_REPO_PROXY_V1                             =   'TERMINAL_REPO_PROXY_V1';
+    const TERMINAL_CREDENTIAL_FETCH_FAILURE                  =   'TERMINAL_CREDENTIAL_FETCH_FAILURE';
 }

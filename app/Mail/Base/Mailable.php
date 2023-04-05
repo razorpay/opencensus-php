@@ -354,23 +354,11 @@ class Mailable extends BaseMailable
      */
     protected function shouldRouteEmailViaMailgun(): bool
     {
-        // 1
         if ($this->defaultEmailDriverName == self::MAILGUN_EMAIL_DRIVER)
         {
             return true;
         }
-
-        $app = App::getFacadeRoot();
-        $variant  =  app('razorx')->getTreatment($app['request']->getTaskId(),
-            Merchant\RazorxTreatment::API_EMAILS_MAILGUN_DRIVER, $this->mode ?? Mode::LIVE);
-
-        if (strtolower($variant) === 'on')
-        {
-            // 2
-            return ($this->isEmailTemplateWhitelistedForMailgun() === true);
-        }
-
-        return false;
+        return ($this->isEmailTemplateWhitelistedForMailgun() === true);
     }
 
     /**
