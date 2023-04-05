@@ -1976,7 +1976,14 @@ class Service extends Base\Service
 
         $groupIdsForFDInstance = $groupIds[$fd_instance];
 
-        $input['group_id'] = (int)$groupIdsForFDInstance[$input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]];
+        if (array_key_exists("*", $groupIdsForFDInstance) === true)
+        {
+            $input['group_id'] = (int)$groupIdsForFDInstance["*"];
+        }
+        else
+        {
+            $input['group_id'] = (int)$groupIdsForFDInstance[$input[Constants::CUSTOM_FIELDS][Constants::CF_REQUESTOR_SUBCATEGORY]];
+        }
 
         return $input['group_id'];
     }

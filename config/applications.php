@@ -409,11 +409,7 @@ return [
                 'Integrations'          => env('FRESHDESK_RZPIND_INTEGRATIONS_GROUP_ID', ''),
             ],
             'rzpcap' => [
-                'Instant Settlements'    => env('FRESHDESK_RZPCAP_INSTANT_SETTLEMENTS_GROUP_ID', ''),
-                'Cash Advance'           => env('FRESHDESK_RZPCAP_CASH_ADVANCE_GROUP_ID', ''),
-                'Working Capital Loan'   => env('FRESHDESK_RZPCAP_WORKING_CAPITAL_LOAN_GROUP_ID', ''),
-                'Corporate card related' => env('FRESHDESK_RZPCAP_CORPORATE_CARDS_GROUP_ID', ''),
-                'Corporate Cards'        => env('FRESHDESK_RZPCAP_CORPORATE_CARDS_GROUP_ID', ''),
+                '*'    => env('FRESHDESK_RZPCAP_NEW_TICKET_GROUP_ID', ''),
             ],
         ],
 
