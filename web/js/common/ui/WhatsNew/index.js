@@ -23,12 +23,12 @@ import {
   pushSlider as pushSliderx,
   emptySliderStack as emptySliderStackx,
 } from 'merchant_common/reducers/multiSlider';
-import { trackExpand, trackAnnouncement } from '../NotificationsDropdown/ga';
-import RazorpayXNitroAnnouncement from '../NotificationsDropdown/RazorpayXNitroAnnouncement';
-import ExclusiveOffer from '../ExclusiveOffer';
+import { trackExpand, trackAnnouncement } from 'common/ui/NotificationsDropdown/ga';
+import RazorpayXNitroAnnouncement from 'common/ui/NotificationsDropdown/RazorpayXNitroAnnouncement';
+import ExclusiveOffer from 'common/ui/ExclusiveOffer';
 import { showAcceptPaymentsModal } from 'merchant/reducers/home';
-import OpfinAnnouncementV2 from '../NotificationsDropdown/components/OpfinAnnouncementV2';
-import OpfinAnnouncement10L from '../NotificationsDropdown/components/OpfinAnnouncement10L';
+import OpfinAnnouncementV2 from 'common/ui/NotificationsDropdown/components/OpfinAnnouncementV2';
+import OpfinAnnouncement10L from 'common/ui/NotificationsDropdown/components/OpfinAnnouncement10L';
 import Loader from 'common/ui/Loader';
 import { analyticsTrack } from 'common/utils/analytics';
 
@@ -49,9 +49,9 @@ import debounce from 'common/utils/debounce';
 import { fetchAnnouncements } from 'merchant/reducers/growthService';
 import getSurveyForm from 'merchant/components/Announcements/CSATSurveyBanner/getSurveyForm';
 import moment from 'moment';
-import GrowthServiceModal from '../GrowthServiceModal';
-import GrowthServiceCenterCTAModal from '../GrowthServiceModal/CenterCTAModal';
-import GrowthServiceThankYouModal from '../GrowthServiceModal/ThankYouModal';
+import GrowthServiceModal from 'common/ui/GrowthServiceModal';
+import GrowthServiceCenterCTAModal from 'common/ui/GrowthServiceModal/CenterCTAModal';
+import GrowthServiceThankYouModal from 'common/ui/GrowthServiceModal/ThankYouModal';
 import growthServiceCTAHandler from 'merchant/models/GrowthService/growthServiceCTAHandler';
 
 const WhatsNewDetailsPage = lazy(() =>
@@ -622,11 +622,15 @@ const NotificationCard = ({
     }
     if (isElementXPercentInViewport(ref.current, 75, 116)) {
       const eventName = 'dashboard.click.notification.card.viewed';
+      const notificationData = {
+        id,
+        ...notification,
+      };
       tracking.trackEvent(
         window.rzpQ.merchantActions().success(eventName, {
           trackingID: id,
           position: index + 1,
-          ...getNotificationTrackingProperties(notificationRef[index], eventName),
+          ...getNotificationTrackingProperties(notificationData, eventName),
         }),
       );
     } else addOwnRef(ref, index + 1);

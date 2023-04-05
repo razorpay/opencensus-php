@@ -739,10 +739,16 @@ const NotificationCard = ({
       }
     }
     if (isElementXPercentInViewport(ref.current, 75, 116)) {
+      const eventName = 'dashboard.click.notification.card.viewed';
+      const notificationData = {
+        id,
+        ...notification,
+      };
       tracking.trackEvent(
-        window.rzpQ.merchantActions().success('dashboard.click.notification.card.viewed', {
+        window.rzpQ.merchantActions().success(eventName, {
           trackingID: id,
           position: index + 1,
+          ...getNotificationTrackingProperties(notificationData, eventName),
         }),
       );
     } else addOwnRef(ref, index + 1);
