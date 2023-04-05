@@ -9525,7 +9525,8 @@ trait Authorize
                 [
                     'custom_properties' => $customProperties,
                     'payment_id'        => $payment->getId(),
-                    'method'            => $payment->getMethod()
+                    'method'            => $payment->getMethod(),
+                    'order_id'          => $payment->order->getPublicId()?? null
                 ]);
         }
     }
