@@ -38,16 +38,18 @@ const CardHeader = ({
   const timeLeft = timeToChargeAt * 1000 - currentTime;
   const noOfDaysLeftToCharge = Math.ceil(timeLeft / 1000 / 60 / 60 / 24);
 
-  let percentDaysProgressed = Math.min(
-    Math.max(
-      Math.round(
-        ((currentTime - timeSubscriptionStarted * 1000) * 100) /
-          ((timeSubscriptionEnds - timeSubscriptionStarted) * 1000),
+  let percentDaysProgressed =
+    100 -
+    Math.min(
+      Math.max(
+        Math.round(
+          ((currentTime - timeSubscriptionStarted * 1000) * 100) /
+            ((timeSubscriptionEnds - timeSubscriptionStarted) * 1000),
+        ),
+        0,
       ),
-      0,
-    ),
-    100,
-  );
+      100,
+    );
 
   /**
    * If the progress is more than 0, normalise its value so that the starting point becomes `progressIndicatorMinWidth`.
@@ -97,14 +99,16 @@ const CardHeader = ({
             </Text>
           ) : (
             <Flex gap={4} flexDirection="column" width="100%">
-              <ProgressBarContainer data-testid="progressbarContainer">
-                <ProgressBar
-                  percentDone={percentDaysProgressed}
-                  height="8px"
-                  progressBarCompletedColor="emerald.900"
-                  progressBarBackgroundColor="grey.500"
-                />
-              </ProgressBarContainer>
+              {percentDaysProgressed >= 0 ? (
+                <ProgressBarContainer data-testid="progressbarContainer">
+                  <ProgressBar
+                    percentDone={percentDaysProgressed}
+                    height="8px"
+                    progressBarCompletedColor="emerald.900"
+                    progressBarBackgroundColor="grey.500"
+                  />
+                </ProgressBarContainer>
+              ) : null}
               <Flex gap={3} justifyContent="space-between" width="100%">
                 <Text size="small" weight="regular" type="normal">
                   {noOfDaysLeftToCharge} Days left
@@ -155,14 +159,16 @@ const CardHeader = ({
           ) : (
             <Flex gap={4} flexDirection="column" alignItems="flex-end">
               <Flex gap={3}>
-                <ProgressBarContainer data-testid="progressbarContainer">
-                  <ProgressBar
-                    percentDone={percentDaysProgressed}
-                    height="12px"
-                    progressBarCompletedColor="emerald.900"
-                    progressBarBackgroundColor="grey.500"
-                  />
-                </ProgressBarContainer>
+                {percentDaysProgressed >= 0 ? (
+                  <ProgressBarContainer data-testid="progressbarContainer">
+                    <ProgressBar
+                      percentDone={percentDaysProgressed}
+                      height="12px"
+                      progressBarCompletedColor="emerald.900"
+                      progressBarBackgroundColor="grey.500"
+                    />
+                  </ProgressBarContainer>
+                ) : null}
                 <Text size="small" type="normal" weight="regular">
                   {noOfDaysLeftToCharge} Days left
                 </Text>

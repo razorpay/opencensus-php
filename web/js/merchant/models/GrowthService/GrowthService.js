@@ -156,12 +156,16 @@ export default class GrowthService extends GenericEntity {
     return banners;
   };
   getPricingSubscription = async (fromWhere) => {
-    const gsPricingSub = await this.fetchAssetData(
-      getChannelID(fromWhere, this.user?.isOrgRZP),
-      assetNames.JSON_SCHEMA,
-      'pricing_bundle',
+    const gsPricingSub =
+      (await this.fetchAssetData(
+        getChannelID(fromWhere, this.user?.isOrgRZP),
+        assetNames.JSON_SCHEMA,
+        'pricing_bundle',
+      )) || [];
+    const validGsPricingSub = gsPricingSub.filter((pricingBundle) =>
+      isValidAssetData(pricingBundle, assetNames.PRICING_BUNDLE),
     );
-    return gsPricingSub;
+    return validGsPricingSub;
   };
 
   getExclusiveOfferModal = async (fromWhere) => {

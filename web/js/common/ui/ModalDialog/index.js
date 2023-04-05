@@ -68,6 +68,7 @@ class ModalDialog extends Component {
 
   render() {
     const props = this.props;
+    const { closeOnOverLay = false } = props;
 
     // to apply the styles passed as props
     Object.assign(Modal.defaultStyles.overlay, props.overlayStyles);
@@ -88,7 +89,7 @@ class ModalDialog extends Component {
           isOpen={!!props.component}
           onRequestClose={props.disableClose ? null : props.closeModal}
           closeTimeoutMS={300}
-          shouldCloseOnOverlayClick={false}
+          shouldCloseOnOverlayClick={closeOnOverLay}
           class={`${props.org?.custom_code} Modal ${props.size ? `Modal--${props.size}` : ''}${
             props.className ? ` ${props.className}` : ''
           }`}

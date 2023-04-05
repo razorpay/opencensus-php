@@ -577,4 +577,115 @@ export const growthAssetSchema = {
       }),
     tracking_data: trackingDataSchema,
   }),
+  [assetNames.PRICING_BUNDLE]: yup.object().shape({
+    featureIdOrder: yup.array().of(yup.string()).required().strict(true),
+    featureIdToFeatureCopyMap: yup.object().required().strict(true).shape({
+      f1: yup.string(),
+      f2: yup.string(),
+      f3: yup.string(),
+      f4: yup.string(),
+      f5: yup.string(),
+      f6: yup.string(),
+      f7: yup.string(),
+      f8: yup.string(),
+      f9: yup.string(),
+    }),
+    header: yup
+      .object()
+      .required()
+      .strict(true)
+      .shape({
+        icon: yup
+          .object()
+          .required()
+          .strict(true)
+          .shape({
+            alt: yup.string().required().strict(true),
+            src: yup.string().required().strict(true),
+          }),
+        pillText: yup.string().required().strict(true),
+        title: yup.string().required().strict(true),
+      }),
+    heroImage: yup
+      .object()
+      .required()
+      .strict(true)
+      .shape({
+        alt: yup.string().required().strict(true),
+        src: yup.string().required().strict(true),
+      }),
+    pricingPlans: yup
+      .array()
+      .required()
+      .strict(true)
+      .of(
+        yup
+          .object()
+          .required()
+          .strict(true)
+          .shape({
+            annualPrice: yup.number().required().strict(true),
+            button: yup
+              .object()
+              .required()
+              .strict(true)
+              .shape({
+                label: yup.string().required().strict(true),
+                variant: yup.string().required().strict(true),
+              }),
+            description: yup.string().required().strict(true),
+            f1: yup.object().required().strict(true).shape({
+              annual: yup.string(),
+              monthly: yup.string(),
+            }),
+            f2: yup.object().required().strict(true).shape({
+              annual: yup.string(),
+              monthly: yup.string(),
+            }),
+            f3: yup.object().required().strict(true).shape({
+              annual: yup.string(),
+              monthly: yup.string(),
+            }),
+            f4: yup.object().required().strict(true).shape({
+              annual: yup.string(),
+              monthly: yup.string(),
+            }),
+            f5: yup.object().required().strict(true).shape({
+              annual: yup.string(),
+              monthly: yup.string(),
+            }),
+            f6: yup.object().required().strict(true).shape({
+              annual: yup.string(),
+              monthly: yup.string(),
+            }),
+            f7: yup.object().required().strict(true).shape({
+              annual: yup.string(),
+              monthly: yup.string(),
+            }),
+            f8: yup.object().required().strict(true).shape({
+              annual: yup.string(),
+              monthly: yup.string(),
+            }),
+            f9: yup.object().required().strict(true).shape({
+              annual: yup.string(),
+              monthly: yup.string(),
+            }),
+            icon: yup
+              .object()
+              .required()
+              .strict(true)
+              .shape({
+                alt: yup.string().required().strict(true),
+                src: yup.string().required().strict(true),
+              }),
+            id: yup.string().required().strict(true),
+            isRecommended: yup.boolean(),
+            monthlyPrice: yup.number().required().strict(true),
+            notIncludedFeatureOfferings: yup.array().of(yup.string()),
+            title: yup.string().required().strict(true),
+          }),
+      ),
+    theme: yup.string().required().strict(true),
+    tracking_data: trackingDataSchema,
+  }),
 };

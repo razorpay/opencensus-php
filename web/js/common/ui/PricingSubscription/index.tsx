@@ -41,10 +41,11 @@ export const PricingBundle = ({
 
   const openPricingSubcriptionModal = async (loading) => {
     if (isAllowedToFetch && !loading && pricing_bundles && Object.keys(pricing_bundles).length) {
-      const lazyPricingSubscriptionImport = await lazyRetry(() =>
-        import(
-          /* webpackChunkName: 'PricingSubscriptionComponent' */ './PricingSubscriptionComponent'
-        ),
+      const lazyPricingSubscriptionImport = await lazyRetry(
+        () =>
+          import(
+            /* webpackChunkName: 'PricingSubscriptionComponent' */ 'common/ui/PricingSubscription/PricingSubscriptionComponent'
+          ),
       );
 
       const LazyPricingSubscriptionComponent = lazy(
@@ -52,6 +53,7 @@ export const PricingBundle = ({
       );
 
       openModal({
+        closeOnOverLay: true,
         component: (
           <Suspense fallback={null}>
             <LazyPricingSubscriptionComponent pricingSubscription={pricing_bundles} />

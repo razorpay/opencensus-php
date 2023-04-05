@@ -32,7 +32,15 @@ interface PlansType {
 interface PricingSubscriptionProps {
   pricingSubscription: pricingBundleAsset;
   closeModal: () => void;
-  showNotificationToast: ({ type, message }: { type: string; message: string | any }) => void;
+  showNotificationToast: ({
+    type,
+    message,
+    closeTimeout,
+  }: {
+    type: string;
+    message: string | any;
+    closeTimeout?: number;
+  }) => void;
   user: {
     current: string;
     isAllowedMultiple: (string) => boolean;

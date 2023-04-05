@@ -266,6 +266,7 @@ const PricingSubscriptionComponent = ({
     showNotificationToast({
       type: 'success',
       message: RedirectToast,
+      closeTimeout: 15000,
     });
     trackInstrumentation('paymentSuccess', {
       value: 'success',
