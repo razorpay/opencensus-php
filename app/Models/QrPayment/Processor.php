@@ -121,34 +121,44 @@ class Processor extends Base\Core
     {
         $paymentProcessor = $this->getPaymentProcessor();
 
+        $isUpiQrV1Hdfc = $this->merchant->isFeatureEnabled(Constants::UPIQR_V1_HDFC);
+
+        $payment = null;
+
+        $paymentInput = [];
+
+        $shouldCreateQrPayment = ($isUpiQrV1Hdfc === false) and (isset($this->gatewayInput['payment_id']) === false);
+        if ($shouldCreateQrPayment === true)
+        {
+            $paymentInput = $this->getPaymentArray($qrPayment);
+
+            // This is being done because we want
+            // to skip terminal selection on payment
+            // creation and use this terminal instead
+            // as the payment has already gone through
+            // this terminal.
+            $this->callbackData[Payment\Entity::TERMINAL_ID] = $this->getTerminal()->getId();
+        }
+        else
+        {
+            try
+            {
+                $payment = $this->repo->payment->findOrFail($this->gatewayInput['payment_id']);
+            }
+            catch (\Throwable $exception)
+            {
+                $this->trace->traceException($exception);
+            }
+        }
+
         $this->repo->transaction(
-            function() use ($qrPayment, $paymentProcessor) {
+            function() use ($qrPayment, $paymentProcessor, $paymentInput, $payment, $shouldCreateQrPayment) {
 
-                if($this->merchant->isFeatureEnabled(Constants::UPIQR_V1_HDFC) === false
-                    and isset($this->gatewayInput['payment_id']) === false)
+                if ($shouldCreateQrPayment === true)
                 {
-                    $paymentInput = $this->getPaymentArray($qrPayment);
-
-                    // This is being done because we want
-                    // to skip terminal selection on payment
-                    // creation and use this terminal instead
-                    // as the payment has already gone through
-                    // this terminal.
-                    $this->callbackData[Payment\Entity::TERMINAL_ID] = $this->getTerminal()->getId();
-
                     $this->createPayment($paymentInput, $this->callbackData);
 
                     $payment = $paymentProcessor->getPayment();
-                }
-                else
-                {
-                    $payment = null;
-
-                    try
-                    {
-                        $payment = $this->repo->payment->findOrFail($this->gatewayInput['payment_id']);
-                    }
-                    catch (\Throwable $exception){}
                 }
 
                 $qrPayment->payment()->associate($payment);
@@ -167,7 +177,7 @@ class Processor extends Base\Core
                 $this->updateQrCode($qrPayment);
 
                 return $payment;
-            });
+            }, 3);
 
         if (
             $qrPayment->qrCode->isCheckoutQrCode() &&
