@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Theme } from '@razorpay/blade/components';
 
 const StyledDiv = styled.div(
   ({ theme, fullView }: { theme; fullView: boolean }) => `
@@ -19,7 +20,7 @@ const StyledTable = styled.table(
   display: table;
   border-collapse: separate;
   border-spacing: 15px 0;
-  padding: 16px 0;
+  padding: ${theme.spacing[7]}px 0 ${theme.spacing[5]}px 0;
   background-color: ${theme.colors.surface.background.level2.lowContrast};
   & > :first-child {
     & > *::after {
@@ -92,15 +93,28 @@ const StyledTr = styled.tr<any>`
   }
 `;
 const StyledTh = styled.th<any>`
+  position: relative;
   text-align: center;
   position: relative;
   border-radius: 8px 8px 0 0;
   margin-right: ${({ addRightMargin }) => (addRightMargin ? '12px' : 'unset')};
 `;
 const StyleHeroImage = styled.div`
+  > div:first-of-type img {
+    position: absolute;
+    top: -15px;
+    left: -43px;
+  }
+  > div:last-of-type img {
+    margin-top: ${({ theme }) => theme.spacing[10]}px;
+    max-width: unset;
+  }
   @media screen and (max-width: ${({ theme }) => theme.breakpoints.xl}px) {
-    > img {
+    > div img {
       width: 168px;
+    }
+    > div:first-of-type img {
+      left: -39px;
     }
   }
 `;
@@ -295,6 +309,28 @@ const StyleToastLink = styled.div`
     }
   }
 `;
+const StyleInfo = styled.div(
+  ({ theme }: { theme: Theme }) => `
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: ${theme.spacing[6]}px;
+  > p {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: ${theme.colors.surface.text.muted.lowContrast};
+    > div {
+      width: 8px;
+      height: 8px;
+      border-radius: ${theme.border.radius.round};
+      background: ${theme.colors.surface.action.icon.default.highContrast};
+      margin: 0 ${theme.spacing[4]}px;
+    }
+  } 
+
+`,
+);
 export {
   StyledDiv,
   StyledTable,
@@ -321,4 +357,5 @@ export {
   PlanLeftSection,
   StyleFireImage,
   StyledModalClose,
+  StyleInfo,
 };

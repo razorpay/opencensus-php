@@ -8,6 +8,7 @@ import { getAssetTrackingProperties } from 'merchant/models/GrowthService/common
 import { showNotification } from 'merchant_common/reducers/notifications';
 import { ROUTES_INFO } from 'merchant/views/AccountAndSettings/typings/routes';
 import { Button } from '@razorpay/blade/components';
+import Image from 'common/ui/Image';
 import {
   StyledDiv,
   StyledTable,
@@ -28,7 +29,8 @@ import type {
 } from 'common/ui/PricingSubscription/PricingSubscriptionProps.type';
 
 import { PRICING_BUNDLE_TYPE } from 'merchant/models/GrowthService/growthServiceCTAHandler';
-import rzpLogo from '../../../../css/assets/rzp_logo.jpg';
+import rzpLogo from 'assets/rzp_logo.jpg';
+import pricingTag from 'assets/pricing-bundle/pricingTag.svg';
 import {
   FooterButton,
   plansDetailsForViewMore,
@@ -37,6 +39,7 @@ import {
   getPlanPrice,
   TogglePlanValue,
   ModalLoader,
+  PricingTncInfo,
 } from './PricingBundleCommon';
 
 let outsidePlanSectionTimer;
@@ -321,7 +324,8 @@ const PricingSubscriptionComponent = ({
           const options = {
             key: subscription?.account_key,
             subscription_id: subscription?.payment_subscription_id,
-            name: `Razorpay - ${togglePlan} ${plans?.title}`,
+            name: `Razorpay Pricing Package`,
+            description: '18% GST included',
             image: rzpLogo,
             // eslint-disable-next-line func-names
             handler: function (response) {
@@ -429,7 +433,8 @@ const PricingSubscriptionComponent = ({
         <StyledTr headerHeight>
           <StyledTh removeCss>
             <StyleHeroImage>
-              <img src={heroSrc} alt={heroAlt} />
+              <Image src={pricingTag} alt="Pricing Tag" />
+              <Image src={heroSrc} alt={heroAlt} />
             </StyleHeroImage>
           </StyledTh>
           {pricingPlans.map((plans, index) => {
@@ -479,6 +484,7 @@ const PricingSubscriptionComponent = ({
             })}
         </StyledTr>
       </StyledTable>
+      {isFullView && <PricingTncInfo />}
       <FooterButton handleToggle={handleToggle} isFullView={isFullView} handleClose={handleClose} />
     </StyledDiv>
   );

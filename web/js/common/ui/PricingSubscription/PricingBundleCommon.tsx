@@ -21,6 +21,7 @@ import {
   StyleSwitchContainer,
   PlanLeftSection,
   StyleFireImage,
+  StyleInfo,
 } from './PricingStyled';
 import Loader from 'common/ui/Loader';
 import {
@@ -32,6 +33,7 @@ import {
   CloseIcon,
   Heading,
   Link,
+  Box,
 } from '@razorpay/blade/components';
 import Image from 'common/ui/Image';
 import {
@@ -241,6 +243,20 @@ const ModalLoader = ({ closeModal }: { closeModal: () => void }): JSX.Element =>
     </>
   );
 };
+
+const PricingTncInfo = (): JSX.Element => {
+  return (
+    <StyleInfo>
+      <Text>
+        Auto Renewal Plans. No Refunds <Box /> *Prices mentioned are exclusive of GST
+      </Text>
+      {/* Full{' '}
+      <Link onClick={function noRefCheck() {}} variant="button">
+        Terms & Conditions
+      </Link> */}
+    </StyleInfo>
+  );
+};
 export {
   FooterButton,
   plansDetailsForViewMore,
@@ -249,4 +265,5 @@ export {
   TogglePlanValue,
   getPlanPrice,
   ModalLoader,
+  PricingTncInfo,
 };
