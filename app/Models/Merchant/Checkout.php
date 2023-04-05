@@ -213,8 +213,6 @@ class Checkout
 
         $this->fillPrivacyAndTerms($merchant,$data);
 
-        $this->fill1ccEnableScriptEditorExperiment($merchant, $data);
-
         return $data;
     }
 
@@ -444,33 +442,6 @@ class Checkout
     protected function fillCheckoutExperiments(array $input, array &$data, Entity $merchant): void
     {
         $data['experiments'] = (new CheckoutExperiment($input, $merchant->getId()))->getCheckoutExperimentsResults();
-        $this->fill1ccExistingExperiments($data, $merchant);
-    }
-
-    protected function fill1ccExistingExperiments(array &$data, Entity $merchant): void
-    {
-        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
-        {
-            return;
-        }
-
-        $data['1cc_experiment'] = $this->oneCCExperimentsDefaultValueForCompatibility($data['experiments']['1cc_experiment']);
-        $data['1cc_address_flow_exp'] = $this->oneCCExperimentsDefaultValueForCompatibility($data['experiments']['1cc_address_flow_exp']);
-        $data['1cc_city_autopopulate_disable'] = $this->oneCCExperimentsDefaultValueForCompatibility($data['experiments']['1cc_city_autopopulate_disable']);
-        $data['1cc_coupon_drop_off_exp'] = $this->oneCCExperimentsDefaultValueForCompatibility($data['experiments']['1cc_coupon_drop_off_exp']);
-        $data['1cc_multiple_shipping'] = $this->oneCCExperimentsDefaultValueForCompatibility($data['experiments']['1cc_multiple_shipping']);
-    }
-
-    protected function oneCCExperimentsDefaultValueForCompatibility(string $expValue)
-    {
-        if ($expValue == 'test') {
-            return 'true';
-        }
-        else if ($expValue == 'control') {
-            return null;
-        }
-
-        return $expValue;
     }
 
     protected function shouldDisplayTruecaller(array $input): bool
@@ -2360,33 +2331,6 @@ class Checkout
         $this->checkAndAddCustomProviders($data);
 
         $this->filterMethodBasedOnRecurring($data, $input);
-    }
-
-    protected function fill1ccEnableScriptEditorExperiment(Entity $merchant, array &$data): void
-    {
-        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
-        {
-            return;
-        }
-        try
-        {
-            $properties = [
-                'id'            => UniqueIdEntity::generateUniqueId(),
-                'experiment_id' => $this->app['config']->get('app.1cc_coupons_with_se_splitz_experiment_id'),
-                'request_data'  => json_encode(
-                    [
-                        'merchant_id' =>  $merchant->getId(),
-                    ]),
-            ];
-
-            $response = $this->app['splitzService']->evaluateRequest($properties);
-
-            $data['experiments']['1cc_coupons_with_se_exp'] = $response['response']['variant']['name'] ?? null;
-        }
-        catch (\Throwable $e)
-        {
-            $data['experiments']['1cc_coupons_with_se_exp'] = null;
-        }
     }
 
     public function getCountryCodesForAlternatePaymentMethods(string $paymentInstrument) {

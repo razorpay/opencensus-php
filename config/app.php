@@ -505,11 +505,7 @@ return array(
 
     'checkout_redesign_v1_5_splitz_experiment_id' => env('CHECKOUT_REDESIGN_V1_5_SPLITZ_EXPERIMENT_ID'),
 
-    'checkout_upi_ux_splitz_experiment_id'        => env('CHECKOUT_UPI_UX_SPLITZ_EXPERIMENT_ID'),
-
     'checkout_upi_qr_v2_splitz_experiment_id'     => env('CHECKOUT_UPI_QR_V2_SPLITZ_EXPERIMENT_ID'),
-
-    'checkout_cb_redesign_v1_5_splitz_experiment_id'  => env('CHECKOUT_CB_REDESIGN_V1_5_SPLITZ_EXPERIMENT_ID'),
 
     'checkout_recurring_redesign_v1_5_splitz_experiment_id' => env('CHECKOUT_RECURRING_REDESIGN_V1_5_SPLITZ_EXPERIMENT_ID'),
 
@@ -529,8 +525,6 @@ return array(
 
     'checkout_banking_redesign_v1_5_splitz_experiment_id' => env('CHECKOUT_BANKING_REDESIGN_V1_5_SPLITZ_EXPERIMENT_ID'),
 
-    'checkout_remove_default_tokenization_flag_splitz_experiment_id' => env('CHECKOUT_REMOVE_DEFAULT_TOKENIZATION_FLAG_SPLITZ_EXPERIMENT_ID'),
-
     'truecaller_standard_checkout_for_prefill_splitz_experiment_id'    => env('TRUECALLER_STANDARD_CHECKOUT_FOR_PREFILL_SPLITZ_EXPERIMENT_ID'),
 
     'truecaller_standard_checkout_for_non_prefill_splitz_experiment_id'    => env('TRUECALLER_STANDARD_CHECKOUT_FOR_NON_PREFILL_SPLITZ_EXPERIMENT_ID'),
@@ -548,8 +542,6 @@ return array(
     'send_submerchant_first_transaction_segment_event' => env('SEND_SUBMERCHANT_FIRST_TRANSACTION_SEGMENT_EVENT'),
 
     'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),
-
-    'checkout_emi_ui_revamp_splitz_experiment_id' => env('CHECKOUT_EMI_UI_REVAMP_SPLITZ_EXPERIMENT_ID'),
 
     'dcc_recurring_on_auto_direct_experiment_id' => env('DCC_RECURRING_ON_AUTO_DIRECT_EXPERIMENT_ID'),
 
@@ -605,4 +597,8 @@ return array(
     'add_payment_acceptance_fields_to_account_v2_response' => env('ADD_PAYMENT_ACCEPTANCE_FIELDS_TO_ACCOUNT_V2_RESPONSE'),
 
     'enable_kyc_qualified_unactivated' => env('ENABLE_KYC_QUALIFIED_UNACTIVATED_EXP_ID'),
+
+    'magic_enable_shopify_taxes_experiment_id'  => env('MAGIC_ENABLE_SHOPIFY_TAXES_EXP_ID'),
+
+    'magic_qr_v2_experiment_id'  => env('MAGIC_QR_V2_EXP_ID'),
 );

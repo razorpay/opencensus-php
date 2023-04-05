@@ -25,6 +25,8 @@ class CheckoutExperiment
     /** @var string */
     protected $merchantId;
 
+    protected $merchant;
+
     protected $experimentsData;
 
     protected $experimentResults;
@@ -42,10 +44,10 @@ class CheckoutExperiment
         // initialise with default values which we want to see if experiment fails for some reason
         $this->experimentResults = [
             'checkout_redesign_v1_5'                             => false,
-            'upi_ux'                                             => 'existing_variant',
-            'emi_ux_revamp'                                      => false,
+            'upi_ux'                                             => 'variant_1',
+            'emi_ux_revamp'                                      => true,
             'upi_qr_v2'                                          => false,
-            'cb_redesign_v1_5'                                   => false,
+            'cb_redesign_v1_5'                                   => true,
             'recurring_redesign_v1_5'                            => false,
             'reuse_upi_paymentId'                                => false,
             'recurring_upi_intent'                               => false,
@@ -54,7 +56,7 @@ class CheckoutExperiment
             'recurring_payment_method_configuration'             => false,
             'recurring_upi_all_psp'                              => false,
             'banking_redesign_v15'                               => false,
-            'remove_default_tokenization_flag'                   => false,
+            'remove_default_tokenization_flag'                   => true,
             'truecaller_standard_checkout_for_prefill'           => 'control',
             'truecaller_standard_checkout_for_non_prefill'       => 'control',
             'truecaller_1cc_for_prefill'                         => 'control',
@@ -63,20 +65,16 @@ class CheckoutExperiment
             'enable_rudderstack_plugin'                          => false,
             'checkout_downtime'                                  => 'control',
             'upi_number'                                         => 'control',
-            '1cc_offers_fix_exp'                                 => 'control',
-            '1cc_enable_v165_exp'                                => 'control',
-            '1cc_address_flow_exp'                               => 'control',
-            '1cc_coupon_drop_off_exp'                            => 'control',
-            '1cc_experiment'                                     => 'control',
-            '1cc_multiple_shipping'                              => 'control',
-            '1cc_city_autopopulate_disable'                      => 'control',
-            '1cc_show_coupon_callout_exp'                        => 'control',
             'cvv_less'                                           => false,
         ];
 
         $this->input = $input;
 
         $this->merchantId = $merchantId;
+
+        $this->merchant = $this->app['basicauth']->getMerchant();
+
+        $this->fillDefaultValuesForOneCc();
     }
 
     /**
@@ -137,22 +135,6 @@ class CheckoutExperiment
             ['merchant_id' => $this->merchantId]
         );
 
-        $this->fillExperimentData(
-            UniqueIdEntity::generateUniqueId(),
-            'app.checkout_upi_ux_splitz_experiment_id',
-            'UpiUx',
-            'upi_ux',
-            ['merchant_id' => $this->merchantId]
-        );
-
-        $this->fillExperimentData(
-            UniqueIdEntity::generateUniqueId(),
-            'app.checkout_emi_ui_revamp_splitz_experiment_id',
-            'EmiUxRevamp',
-            'emi_ux_revamp',
-            ['merchant_id' => $this->merchantId]
-        );
-
         if ($this->shouldIncludeUpiQrV2Experiment())
         {
             $this->fillExperimentData(
@@ -163,14 +145,6 @@ class CheckoutExperiment
                 ['merchant_id' => $this->merchantId]
             );
         }
-
-        $this->fillExperimentData(
-            UniqueIdEntity::generateUniqueId(),
-            'app.checkout_cb_redesign_v1_5_splitz_experiment_id',
-            'CrossBorderRedesign',
-            'cb_redesign_v1_5',
-            ['merchant_id' => $this->merchantId]
-        );
 
         $this->fillExperimentData(
             UniqueIdEntity::generateUniqueId(),
@@ -233,14 +207,6 @@ class CheckoutExperiment
             'app.checkout_banking_redesign_v1_5_splitz_experiment_id',
             'BankingRedesign',
             'banking_redesign_v15',
-            ['merchant_id' => $this->merchantId]
-        );
-
-        $this->fillExperimentData(
-            UniqueIdEntity::generateUniqueId(),
-            'app.checkout_remove_default_tokenization_flag_splitz_experiment_id',
-            'RemoveDefaultTokenizationFlag',
-            'remove_default_tokenization_flag',
             ['merchant_id' => $this->merchantId]
         );
 
@@ -320,9 +286,7 @@ class CheckoutExperiment
 
     private function fill1CcExperimentData(): void
     {
-        $merchant = $this->app['basicauth']->getMerchant();
-
-        if ($merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
         {
             return;
         }
@@ -332,30 +296,6 @@ class CheckoutExperiment
             'app.1cc_multiple_shipping_splitz_experiment_id',
             'MagicGeneralExperiment',
             '1cc_multiple_shipping',
-            ['merchant_id' => $this->merchantId]
-        );
-
-        $this->fillExperimentData(
-            UniqueIdEntity::generateUniqueId(),
-            'app.1cc_coupon_drop_off_splitz_experiment_id',
-            'MagicGeneralExperiment',
-            '1cc_coupon_drop_off_exp',
-            ['merchant_id' => $this->merchantId]
-        );
-
-        $this->fillExperimentData(
-            UniqueIdEntity::generateUniqueId(),
-            'app.1cc_splitz_experiment_id',
-            'MagicGeneralExperiment',
-            '1cc_experiment',
-            ['merchant_id' => $this->merchantId]
-        );
-
-        $this->fillExperimentData(
-            UniqueIdEntity::generateUniqueId(),
-            'app.1cc_city_autopopulate_splitz_experiment_id',
-            'MagicGeneralExperiment',
-            '1cc_city_autopopulate_disable',
             ['merchant_id' => $this->merchantId]
         );
 
@@ -389,6 +329,30 @@ class CheckoutExperiment
             'app.magic_show_coupon_callout_experiment_id',
             'MagicGeneralExperiment',
             '1cc_show_coupon_callout_exp',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.1cc_coupons_with_se_splitz_experiment_id',
+            'MagicGeneralExperiment',
+            '1cc_coupons_with_se_exp',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.magic_enable_shopify_taxes_experiment_id',
+            'MagicGeneralExperiment',
+            '1cc_enable_shopify_taxes',
+            ['merchant_id' => $this->merchantId]
+        );
+
+        $this->fillExperimentData(
+            UniqueIdEntity::generateUniqueId(),
+            'app.magic_qr_v2_experiment_id',
+            'MagicGeneralExperiment',
+            '1cc_upi_qr_v2',
             ['merchant_id' => $this->merchantId]
         );
     }
@@ -443,6 +407,30 @@ class CheckoutExperiment
         return $this->experimentResults;
     }
 
+    /**
+     *  initialise one cc values which we want to see if experiment fails for some reason
+     */
+    private function fillDefaultValuesForOneCc()
+    {
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::ONE_CLICK_CHECKOUT) === false)
+        {
+            return;
+        }
+
+        $oneCcExperiments = [
+            '1cc_offers_fix_exp'                                 => 'control',
+            '1cc_enable_v165_exp'                                => 'control',
+            '1cc_address_flow_exp'                               => 'control',
+            '1cc_multiple_shipping'                              => 'control',
+            '1cc_show_coupon_callout_exp'                        => 'control',
+            '1cc_coupons_with_se_exp'                            => 'control',
+            '1cc_enable_shopify_taxes'                           => 'control',
+            '1cc_upi_qr_v2'                                      => 'control',
+        ];
+
+        $this->experimentResults = array_merge($this->experimentResults, $oneCcExperiments);
+    }
+
     private function handleCheckoutRedesignResponse($response): bool
     {
         $variant = $response['variant']['name'] ?? '';
@@ -450,26 +438,7 @@ class CheckoutExperiment
         return $variant === 'variant_on';
     }
 
-    private function handleUpiUxResponse($response): string
-    {
-        return $response['variant']['name'] ?? 'existing_variant';
-    }
-
-    private function handleEmiUxRevampResponse($response): bool
-    {
-        $variant = $response['variant']['name'] ?? '';
-
-        return $variant === 'variant_on';
-    }
-
     private function handleUpiQrV2Response($response): bool
-    {
-        $variant = $response['variant']['name'] ?? '';
-
-        return $variant === 'variant_on';
-    }
-
-    private function handleCrossBorderRedesignResponse($response): bool
     {
         $variant = $response['variant']['name'] ?? '';
 
@@ -526,13 +495,6 @@ class CheckoutExperiment
     }
 
     private function handleBankingRedesignResponse($response): bool
-    {
-        $variant = $response['variant']['name'] ?? '';
-
-        return $variant === 'variant_on';
-    }
-
-    private function handleRemoveDefaultTokenizationFlagResponse($response): bool
     {
         $variant = $response['variant']['name'] ?? '';
 
