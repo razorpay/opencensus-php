@@ -19,9 +19,7 @@ const WebsiteDetailsSections = ({ history, closeModal, websiteInfo: { websitesDa
           {websitesData.map((each, index) => (
             <ListItem key={`details-${index}`}>
               <Order />
-              <Text size="small" type="subdued">
-                {each}
-              </Text>
+              <Text type="subdued">{each}</Text>
             </ListItem>
           ))}
         </Content>

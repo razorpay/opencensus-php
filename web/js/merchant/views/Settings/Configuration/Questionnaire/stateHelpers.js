@@ -6,7 +6,7 @@ export const initialState = {
   isLoading: true,
   isSavingForm: LOADING.INITIAL,
   initialValues: formInitialValues,
-  tabsValidity: [false, false, false, false, false],
+  tabsValidity: [false, false, false, false],
 };
 
 export const reducer = (state, action) => {

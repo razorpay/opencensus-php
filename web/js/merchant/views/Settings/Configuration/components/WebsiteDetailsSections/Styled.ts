@@ -1,10 +1,14 @@
 import styled from 'styled-components';
+import { Theme } from '@razorpay/blade/components';
 
-export const Content = styled.div`
+export const Content = styled.div(
+  ({ theme }: { theme: Theme }) => `
   display: flex;
   flex-direction: column;
-  gap: 8px;
-`;
+  gap: ${theme.spacing[3]}px;
+  padding-top: 5px;
+`,
+);
 
 export const ListItem = styled.div`
   display: flex;

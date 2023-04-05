@@ -1,8 +1,9 @@
 import React from 'react';
 import MultiSelect from './MultiSelect';
 import { useFormikContext } from 'formik';
+import { riskChecksOptionsV2, riskChecksOptions } from './utils';
 
-const SupportingDetails = ({ disabled }) => {
+const SupportingDetails = ({ disabled, isRevampFlow }) => {
   const formikProps = useFormikContext();
   const getError = (name) =>
     (formikProps.touched[name] ? formikProps.errors[name] : '') ||
@@ -21,14 +22,10 @@ const SupportingDetails = ({ disabled }) => {
         disabled={disabled}
         label="Risk Checks Currently in Place"
         name="existing_risk_checks"
-        options={[
-          'None',
-          'We differentiate between domestic and international customers',
-          'We have set up an upper threshold on transactions / cart value',
-          'We maintain a blacklist for the suspicious /  confirmed fraud orders',
-        ]}
+        options={isRevampFlow ? riskChecksOptionsV2 : riskChecksOptions}
         additionalFieldMaxLength={500}
         error={getError('existing_risk_checks')}
+        showSpecifyOthersOption={!isRevampFlow}
       />
     </div>
   );

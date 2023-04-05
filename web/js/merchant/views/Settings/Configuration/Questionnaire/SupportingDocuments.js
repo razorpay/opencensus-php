@@ -1,24 +1,21 @@
+import React, { useState, useEffect } from 'react';
+import { PowerSelect } from 'react-power-select';
 import Input from 'common/new-ui/Input';
+import MultiFileUpload from './MultiFileUpload';
 import { useFormikContext } from 'formik';
 import { merchantFetch } from 'merchant/utils/ajax';
-import { showNotification } from 'merchant_common/reducers/notifications';
-import React, { useEffect, useState } from 'react';
-import { PowerSelect } from 'react-power-select';
 import { connect } from 'react-redux';
-import MultiFileUpload from './MultiFileUpload';
-import {
-  defaultFileTypes,
-  getAdditionalDocumentsBasedOnSubCategory,
-  getAvailableFileTypes,
-} from './utils';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import { defaultFileTypes, getAvailableFileTypes } from './utils';
+import SupportingDocumentsV2 from 'merchant/views/Settings/Configuration/Questionnaire/SupportingDocumentsV2';
 
 // eslint-disable-next-line no-shadow
-const SupportingDocuments = ({ disabled, saveFormData, showNotification, user }) => {
+const SupportingDocuments = ({ disabled, saveFormData, showNotification, isRevampFlow }) => {
   const formikProps = useFormikContext();
   const [availableFileTypes, preUploadedDocuments] = getAvailableFileTypes(formikProps);
   const [documents, setDocuments] = useState(preUploadedDocuments);
   const [fileTypes, setFileTypes] = useState(availableFileTypes);
-  const [additionalDocument, setAdditionalDocument] = useState([]);
+
   const getError = (name) =>
     (formikProps.touched[name] ? formikProps.errors[name] : '') ||
     (!!formikProps.status ? formikProps.status[name] : '');
@@ -28,14 +25,6 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification, user })
     setFileTypes(_availableFileTypes);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formikProps.values.accepts_intl_txns]);
-
-  useEffect(() => {
-    const { business_category, business_subcategory, isIERevampEnabled } = user;
-    if (isIERevampEnabled && business_category && business_subcategory) {
-      const mandatoryFile = getAdditionalDocumentsBasedOnSubCategory(user);
-      mandatoryFile && setAdditionalDocument([mandatoryFile]);
-    }
-  }, [user.business_category, user.business_subcategory, user.isIERevampEnabled]);
 
   const handleAddDocument = (event) => {
     if (!event.option) return;
@@ -145,6 +134,10 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification, user })
 
   const formikDocuments = formikProps.values.documents;
 
+  if (isRevampFlow) {
+    return <SupportingDocumentsV2 disabled={disabled} saveFormData={saveFormData} />;
+  }
+
   return (
     <div class="supporting-documents">
       <div class="main-title pb-20">SUPPORTING DOCUMENTS</div>
@@ -201,25 +194,6 @@ const SupportingDocuments = ({ disabled, saveFormData, showNotification, user })
           />
         </>
       )}
-
-      {additionalDocument.map((doc) => (
-        <MultiFileUpload
-          key={doc.name}
-          name={doc.name}
-          label={doc.label}
-          removeFileType={removeFileType}
-          onFileChange={(file, progressTracker) =>
-            handleFileUpload(doc.name, file, progressTracker)
-          }
-          required={doc.isRequired}
-          disabled={disabled}
-          onFileRemove={handleFileRemoval}
-          defaultFiles={
-            formikDocuments[doc.name] ||
-            (formikDocuments.others && formikDocuments.others[doc.name])
-          }
-        />
-      ))}
 
       {documents.map((doc) => {
         if (
@@ -322,8 +296,4 @@ const AddOtherDoc = ({
   );
 };
 
-const mapStateToProps = (state) => ({
-  user: state.session.user,
-});
-
-export default connect(mapStateToProps, { showNotification })(SupportingDocuments);
+export default connect(null, { showNotification })(SupportingDocuments);

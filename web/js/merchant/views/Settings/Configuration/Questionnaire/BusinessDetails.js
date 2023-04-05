@@ -8,6 +8,9 @@ import { connect } from 'react-redux';
 import { getProductOptions, getProductValue, getWebsiteDetailsInfo } from './utils';
 import { trackIEEvent } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/utils/track';
 import { getPreferredProduct } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/utils';
+import { StyledProductOption } from 'merchant/views/AccountAndSettings/PaymentMethods/Tabs/International/components/InternationalCards/Styled';
+import { Tooltip } from 'merchant/views/Settings/Configuration/Questionnaire/Tooltip';
+import { Text, ExternalLinkIcon } from '@razorpay/blade/components';
 
 const BusinessDetails = ({
   user,
@@ -73,17 +76,49 @@ const BusinessDetails = ({
         >
           <div class="Input-content">
             {productOptions.map((each, index) => (
-              <Input.Check
-                key={`check-${index}`}
-                autoRender
-                required
-                fieldLabel={each.label}
-                className="Input--vTop"
-                checked={formikProps.values.products.includes(each.value[0])}
-                onChange={(e) => handleCheckboxChange(e.target.value, each.value)}
-                disabled={disabled || each.disabled}
-                description={each.disabled ? 'Registered website required' : ''}
-              />
+              <StyledProductOption key={`check-${index}`}>
+                <Input.Check
+                  autoRender
+                  required
+                  fieldLabel={each.label}
+                  className="Input--vTop"
+                  checked={formikProps.values.products.includes(each.value[0])}
+                  onChange={(e) => handleCheckboxChange(e.target.value, each.value)}
+                  disabled={disabled || each.disabled}
+                  description={each.disabled ? 'Registered website required' : ''}
+                  onBlur={handleChange}
+                />
+
+                <Tooltip
+                  content={
+                    each.label === 'Payment Gateway' ? (
+                      <Text type="subtle" contrast="high">
+                        Collect payments on your website
+                      </Text>
+                    ) : (
+                      <div>
+                        <Text type="subtle" contrast="high">
+                          These are no code apps where you can collect payments without using a
+                          website
+                        </Text>
+                        <a
+                          href="https://razorpay.com/payment-links"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <Text type="subtle" contrast="high" weight="bold">
+                            Know more
+                            <ExternalLinkIcon
+                              size="medium"
+                              color="surface.text.subtle.highContrast"
+                            />
+                          </Text>
+                        </a>
+                      </div>
+                    )
+                  }
+                />
+              </StyledProductOption>
             ))}
           </div>
         </Input.Group>
@@ -130,7 +165,7 @@ const BusinessDetails = ({
         onBlur={handleChange}
         mature={formikProps.touched.business_use_case}
         propagatedError={getError('business_use_case')}
-        showCharacterLength={(val) => (val?.length ? val.length : null)}
+        showCharacterLength={isRevampFlow ? undefined : (val) => (val?.length ? val.length : null)}
       />
 
       <Input.Select

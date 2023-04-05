@@ -13,6 +13,7 @@ const MultiSelect = ({
   className = '',
   disabled,
   additionalFieldMaxLength,
+  showSpecifyOthersOption = true,
 }) => {
   const [ignored, meta, helpers] = useField(name);
   const { value: fieldValue, touched } = meta;
@@ -98,43 +99,45 @@ const MultiSelect = ({
               setAdditionalField(e.target.value);
             };
             return (
-              <div>
-                <div class="more-item">
-                  {takeInput ? (
-                    <input
-                      type="text"
-                      placeholder="Enter details here"
-                      name={`${name}_extra`}
-                      defaultValue={additionalField}
-                      onChange={handleInputChange}
-                      autoFocus
-                      maxLength={additionalFieldMaxLength}
-                    />
-                  ) : additionalField ? (
-                    <div>
-                      <span>{additionalField}</span>
-                      <span onClick={() => setTakeInput(true)}>
-                        <i class="i i-edit" />
-                      </span>
-                    </div>
-                  ) : (
-                    <button class="btn btn-link" onClick={() => setTakeInput(true)}>
-                      {'+Others Specify'}
+              showSpecifyOthersOption && (
+                <div>
+                  <div class="more-item">
+                    {takeInput ? (
+                      <input
+                        type="text"
+                        placeholder="Enter details here"
+                        name={`${name}_extra`}
+                        defaultValue={additionalField}
+                        onChange={handleInputChange}
+                        autoFocus
+                        maxLength={additionalFieldMaxLength}
+                      />
+                    ) : additionalField ? (
+                      <div>
+                        <span>{additionalField}</span>
+                        <span onClick={() => setTakeInput(true)}>
+                          <i class="i i-edit" />
+                        </span>
+                      </div>
+                    ) : (
+                      <button class="btn btn-link" onClick={() => setTakeInput(true)}>
+                        {'+Others Specify'}
+                      </button>
+                    )}
+                  </div>
+                  <div class="after-options">
+                    <button
+                      class="btn btn-primary m-l"
+                      onClick={() => {
+                        select.actions.close();
+                        setTakeInput(false);
+                      }}
+                    >
+                      Done
                     </button>
-                  )}
+                  </div>
                 </div>
-                <div class="after-options">
-                  <button
-                    class="btn btn-primary m-l"
-                    onClick={() => {
-                      select.actions.close();
-                      setTakeInput(false);
-                    }}
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
+              )
             );
           }}
         />

@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from 'react';
+import React, { useCallback, useEffect, useReducer } from 'react';
 import { Formik, Form } from 'formik';
 import { connect } from 'react-redux';
 
@@ -25,6 +25,7 @@ import {
   modelFormData,
   getProductValue,
   modelFormDataBeforeSave,
+  getAdditionalDocumentsBasedOnSubCategory,
 } from './utils';
 
 //Analytics
@@ -36,6 +37,7 @@ import {
   trackModalClosed,
   trackModalOpened,
 } from './analytics';
+import FormWrapper from './FormWrapper';
 
 // eslint-disable-next-line no-shadow
 const Questionnaire = ({
@@ -84,27 +86,38 @@ const Questionnaire = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const validateTab = (formikProps, validateAll, tabIdx) => {
-    const tabVal = [...tabsValidity];
-    if (!validateAll) {
-      tabVal[tabIdx] = true;
-    }
-    Object.keys(formikProps.errors).forEach((item) => {
-      if (fieldToTabMap[item] === tabIdx) {
-        tabVal[fieldToTabMap[item]] = false;
+  const validateTab = useCallback(
+    (formikProps, validateAll, tabIdx) => {
+      const tabVal = [...tabsValidity];
+      if (!validateAll) {
+        tabVal[tabIdx] = true;
       }
-    });
-    // check required files
-    if (
-      formikProps.values.accepts_intl_txns === 'true' &&
-      !formikProps.values.documents.current_payment_partner_settlement_record &&
-      !formikProps.values.documents.bank_statement_inward_remittance
-    ) {
-      tabVal[3] = false;
-    }
-    tabVal[4] = false; // always false, no field on this tab
-    dispatch({ type: 'TAB_VALIDITY', payload: tabVal });
-  };
+      Object.keys(formikProps.errors).forEach((item) => {
+        if (fieldToTabMap[item] === tabIdx) {
+          tabVal[fieldToTabMap[item]] = false;
+        }
+      });
+
+      const mandatoryFile =
+        user.business_category && user.business_subcategory
+          ? getAdditionalDocumentsBasedOnSubCategory(user)
+          : null;
+      // check required files
+      if (
+        formikProps.values.accepts_intl_txns === 'true' &&
+        !formikProps.values.documents.current_payment_partner_settlement_record
+      ) {
+        tabVal[2] = false;
+      }
+      // Additional document validation
+      if (mandatoryFile?.name && !formikProps.values.documents.others?.[mandatoryFile.name]) {
+        tabVal[2] = false;
+      }
+      tabVal[3] = false; // always false, no field on this tab
+      dispatch({ type: 'TAB_VALIDITY', payload: tabVal });
+    },
+    [dispatch, tabsValidity],
+  );
 
   const transformErrorsFromAPI = (errors, switchTab, validateTabb) => {
     const tabVal = [true, true, true, true, false];
@@ -158,7 +171,11 @@ const Questionnaire = ({
 
     // remove fields whose validation failed and removing files & fileInput-* fields
     Object.keys(formikProps.values).forEach((item) => {
-      if (!formikProps.errors[item] && item !== 'files' && item.indexOf('fileInput-') === -1) {
+      const addField =
+        item !== 'files' &&
+        item.indexOf('fileInput-') === -1 &&
+        (isRevampFlow ? true : !formikProps.errors[item]);
+      if (addField) {
         formData[item] = formikProps.values[item];
       }
     });
@@ -180,6 +197,7 @@ const Questionnaire = ({
         // save the data back to formik
         const data = modelFormData(res.data);
         formikProps.setValues(data);
+        formikProps.validateForm();
         trackDataSaveSuccess(tabsData?.[activeTab]?.name);
       })
       .catch((err) => {
@@ -285,33 +303,34 @@ const Questionnaire = ({
   const handleOnSubmit = (e, formikProps) => {
     e.preventDefault();
     trackFormButtonClicked(tabsData?.[activeTab]?.name, 'Submit & Verify');
-    formikProps.validateForm().then((err) => {
-      // set tabs validity. Last tab is set to false since it doesn't contain any field (submit form)
-      const tabVal = [true, true, true, true, false];
-      Object.keys(err).forEach((item) => {
-        tabVal[fieldToTabMap[item]] = false;
+    if (!isRevampFlow) {
+      formikProps.validateForm().then((err) => {
+        // set tabs validity. Last tab is set to false since it doesn't contain any field (submit form)
+        const tabVal = [true, true, true, true, false];
+        Object.keys(err).forEach((item) => {
+          tabVal[fieldToTabMap[item]] = false;
+        });
+        dispatch({ type: 'TAB_VALIDITY', payload: tabVal });
+        if (Object.keys(err).length) {
+          showNotification({
+            type: 'error',
+            message: 'Please fix the errors',
+          });
+        } else if (
+          formikProps.values.accepts_intl_txns === 'true' &&
+          !formikProps.values.documents.current_payment_partner_settlement_record
+        ) {
+          showNotification({
+            type: 'error',
+            message: 'Please upload required documents',
+            closeTimeout: 7000,
+          });
+          dispatch({ type: 'ACTIVE_TAB', payload: 3 });
+          tabsValidity[3] = false;
+          dispatch({ type: 'TAB_VALIDITY', payload: tabsValidity });
+        }
       });
-      dispatch({ type: 'TAB_VALIDITY', payload: tabVal });
-      if (Object.keys(err).length) {
-        showNotification({
-          type: 'error',
-          message: 'Please fix the errors',
-        });
-      } else if (
-        formikProps.values.accepts_intl_txns === 'true' &&
-        !formikProps.values.documents.current_payment_partner_settlement_record &&
-        !formikProps.values.documents.bank_statement_inward_remittance
-      ) {
-        showNotification({
-          type: 'error',
-          message: 'Please upload required documents',
-          closeTimeout: 7000,
-        });
-        dispatch({ type: 'ACTIVE_TAB', payload: 3 });
-        tabsValidity[3] = false;
-        dispatch({ type: 'TAB_VALIDITY', payload: tabsValidity });
-      }
-    });
+    }
     formikProps.handleSubmit();
   };
 
@@ -320,7 +339,9 @@ const Questionnaire = ({
       tabsData?.[activeTab]?.name,
       activeTab === tabsData.length - 1 ? 'Submit & Verify' : 'Next',
     );
-    validateTab(formikProps, false, activeTab);
+    if (!isRevampFlow) {
+      validateTab(formikProps, false, activeTab);
+    }
     if (activeTab < tabsData.length - 1) dispatch({ type: 'NEXT_TAB' });
     saveFormData(formikProps);
   };
@@ -365,6 +386,8 @@ const Questionnaire = ({
 
   const schema = getFormSchema(isRevampFlow);
 
+  const isNextDisabled = !tabsValidity[activeTab];
+
   return (
     <Formik
       initialValues={initialValues}
@@ -373,6 +396,7 @@ const Questionnaire = ({
       onSubmit={(values, bag) => {
         submitForm(values, bag);
       }}
+      validateOnMount={isRevampFlow}
     >
       {(formikProps) => {
         return (
@@ -389,6 +413,7 @@ const Questionnaire = ({
                     tabClickHandler={(e) => tabClickHandler(e, formikProps)}
                     activeTab={activeTab}
                     tabsValidity={tabsValidity}
+                    disableTabCondition={(tabIdx) => tabIdx > activeTab}
                   />
                   <Form
                     onChange={formikProps.handleChange}
@@ -410,13 +435,19 @@ const Questionnaire = ({
                           />
                         ) : null}
                       </div>
-                      {React.cloneElement(tabsData[activeTab].component, {
-                        triggerSource,
-                        disabled: isDisabled,
-                        saveFormData,
-                        isRevampFlow,
-                        closeModal,
-                      })}
+                      <FormWrapper
+                        activeTab={activeTab}
+                        validateTab={validateTab}
+                        isRevampFlow={isRevampFlow}
+                      >
+                        {React.cloneElement(tabsData[activeTab].component, {
+                          triggerSource,
+                          disabled: isDisabled,
+                          saveFormData,
+                          isRevampFlow,
+                          closeModal,
+                        })}
+                      </FormWrapper>
                     </main>
                     <footer>
                       <div className="left">
@@ -458,6 +489,7 @@ const Questionnaire = ({
                             type="button"
                             onClick={() => handleNext(formikProps)}
                             iconAfter="chevron-right"
+                            disabled={isNextDisabled}
                           >
                             Next
                           </Button.Primary>

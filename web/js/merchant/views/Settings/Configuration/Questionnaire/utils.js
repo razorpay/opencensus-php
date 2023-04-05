@@ -7,7 +7,7 @@ import SupportingDetails from './SupportingDetails';
 import SupportingDocuments from './SupportingDocuments';
 
 export const formInitialValues = {
-  products: ['payment_gateway'],
+  products: [],
   goods_type: '',
   business_use_case: '',
   business_txn_size: '',
@@ -29,6 +29,7 @@ export const fieldToTabMap = {
   existing_risk_checks: 1,
   accepts_intl_txns: 2,
   import_export_code: 2,
+  documents: 2,
   submit: 3,
 };
 
@@ -54,7 +55,7 @@ export const tabsData = [
 export const getWebsiteDetailsInfo = ({ business_website, additional_websites = [] }) => {
   return {
     isWebsiteDetails: !!business_website,
-    websitesData: [business_website, ...additional_websites],
+    websitesData: [business_website, ...additional_websites].filter(Boolean),
   };
 };
 
@@ -82,6 +83,19 @@ export const getProductOptions = (isRevampFlow, isWebsiteDetailsAvailable) => {
   ];
 };
 
+export const riskChecksOptions = [
+  'None',
+  'We differentiate between domestic and international customers',
+  'We have set up an upper threshold on transactions / cart value',
+  'We maintain a blacklist for the suspicious /  confirmed fraud orders',
+];
+
+export const riskChecksOptionsV2 = [
+  'We differentiate between the customers who pay in INR or any other currency',
+  'We maintain a blacklist for the suspicious /  confirmed fraud orders',
+  'None',
+];
+
 export const modelFormData = (data, user) => {
   if (data.business_txn_size_min != undefined && data.business_txn_size_max != undefined) {
     data.business_txn_size = `${data.business_txn_size_min}=${data.business_txn_size_max}`;
@@ -93,6 +107,9 @@ export const modelFormData = (data, user) => {
   data.accepts_intl_txns = String(data.accepts_intl_txns);
 
   if (user) {
+    data.existing_risk_checks = data.existing_risk_checks.filter((check) =>
+      riskChecksOptionsV2.includes(check),
+    );
     // user exists - IERevamp flow
     const websiteDetails = getWebsiteDetailsInfo(user);
 
@@ -132,6 +149,10 @@ export const modelFormDataBeforeSave = (formData) => {
     formData.business_txn_size_min = business_txn_size_min;
     formData.business_txn_size_max = business_txn_size_max;
     delete formData.business_txn_size;
+  } else {
+    formData.business_txn_size_min = null;
+    formData.business_txn_size_max = null;
+    delete formData.business_txn_size;
   }
 
   if (formData.products) {
@@ -149,6 +170,29 @@ export const modelFormDataBeforeSave = (formData) => {
 
   return formData;
 };
+
+export const defaultFileTypesIERevamp = [
+  {
+    label: 'Bank Statement for Inward Remittance',
+    name: 'bank_statement_inward_remittance',
+    isRequired: true,
+    tooltipContent:
+      'Document to ensure that your bank statement is matching with the invoices shared with us',
+  },
+  {
+    label: 'Invoices',
+    name: 'invoices',
+    isRequired: true,
+    tooltipContent: 'Invoice for purchases made by customers on your website',
+  },
+  {
+    label: 'Forward inward remittance statement',
+    name: 'firc',
+    isRequired: false,
+    tooltipContent:
+      'Document to validate if you are already receiving international payments from another payment partner',
+  },
+];
 
 export const defaultFileTypes = [
   { label: 'Bank Statement for Inward Remittance', name: 'bank_statement_inward_remittance' },
@@ -314,13 +358,13 @@ export const getFormSchema = (isIERevamp) => {
     business_use_case: Yup.string()
       .nullable()
       .trim()
-      .min(50, 'Min 50 characters required')
+      .min(50, 'Business use case must be at least 50 characters')
       .required('Business use case is a required field'),
     business_txn_size: Yup.string().nullable().required('This is a required field'),
 
     existing_risk_checks: Yup.string().nullable().required('This is a required field'),
     accepts_intl_txns: Yup.string().nullable().required('This is a required field'),
-    import_export_code: Yup.string().nullable(),
+    import_export_code: Yup.string().nullable().length(10, 'Must be 10 characters only'),
     submit: Yup.array().required('Please accept the terms and condition'),
   });
 
@@ -328,6 +372,12 @@ export const getFormSchema = (isIERevamp) => {
     return schema.concat(
       Yup.object().shape({
         about_us_link: Yup.string().nullable(),
+        documents: Yup.object().shape({
+          bank_statement_inward_remittance: Yup.array().required().nullable(false),
+          invoices: Yup.array().required().nullable(false),
+          current_payment_partner_settlement_record: Yup.array().nullable(),
+          firc: Yup.array().nullable(),
+        }),
       }),
     );
   } else {
@@ -337,4 +387,11 @@ export const getFormSchema = (isIERevamp) => {
       }),
     );
   }
+};
+
+export const getIsOtherDocumentInRevampFlow = (docType) => {
+  return (
+    !!defaultFileTypesIERevamp.find((_fileTypes) => _fileTypes.name === docType) &&
+    docType !== 'current_payment_partner_settlement_record'
+  );
 };

@@ -1,6 +1,6 @@
 import { Theme } from '@razorpay/blade/components';
 import { Link } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 export const StyledDisabledInternationalCardsSection = styled.div(
   ({ theme }: { theme: Theme }) => `
@@ -198,4 +198,59 @@ export const StyledUpdateBusinessDetailsContent = styled.div(
     color: ${theme.colors.surface.text.subtle.lowContrast};
   }
 `,
+);
+
+export const StyledProductOption = styled.div(
+  ({ theme }: { theme: Theme }) => `
+  display: flex;
+  align-items: center;
+
+  && {
+    .Input.Input--checkbox .Input-content {
+      padding-right: ${theme.spacing[2]}px;
+    }
+
+    svg {
+      margin-top: 6px;
+    }
+  }
+`,
+);
+
+export const StyledLabelWithToolTip = styled.div(
+  ({ theme, required }: { theme: Theme; required: boolean }) => `
+    display: flex;
+    justify-content: flex-end;
+    column-gap: ${theme.spacing[2]}px;
+    
+    ${
+      required
+        ? css`
+            && {
+              span:nth-child(1)::after {
+                content: '*';
+                font-size: 0.75rem;
+                position: absolute;
+                margin-left: 1px;
+                top: 0;
+                color: #f05050;
+              }
+
+              &::after {
+                content: '';
+                display: none;
+              }
+            }
+          `
+        : ''
+    }  
+
+    span:nth-child(2) {
+      margin-left: ${theme.spacing[2]}px;
+    }
+
+    @media screen and (max-width: 768px) {
+      justify-content: flex-start;
+    }
+  `,
 );
