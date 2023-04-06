@@ -36,6 +36,23 @@ import imageUnableToSendOTP from 'assets/partner-dashboard/error-unable-to-send-
 import imageTooManyAttempts from 'assets/partner-dashboard/error-too-many-attempts.svg';
 import { setMerchantID } from 'merchant/reducers/newAuth/actions';
 
+const Captcha = ({ invisibleCaptchaRef }) => {
+  const { setFieldValue } = useFormikContext();
+
+  const handleInvisibleCaptchaChange = (value) => {
+    setFieldValue('captcha', value);
+  };
+
+  return (
+    <ReCaptchaV2
+      ref={invisibleCaptchaRef}
+      size="invisible"
+      sitekey={window.INVISIBLE_CAPTCHA_SITE_KEY}
+      onChange={handleInvisibleCaptchaChange}
+    />
+  );
+};
+
 const MobileVerification = ({
   mobileNumber,
   setStep,
@@ -137,12 +154,6 @@ const MobileVerification = ({
       });
   };
 
-  const { setFieldValue } = useFormikContext();
-
-  const handleInvisibleCaptchaChange = (value) => {
-    setFieldValue('captcha', value);
-  };
-
   const resendOTP = () => {
     trackWithSegment({
       objectName: 'Resend OTP CTA',
@@ -233,13 +244,7 @@ const MobileVerification = ({
                 }
               />
             </StyledInputWrapper>
-            <ReCaptchaV2
-              ref={invisibleCaptchaRef}
-              size="invisible"
-              sitekey={process.env.INVISIBLE_CAPTCHA_SITE_KEY}
-              onChange={handleInvisibleCaptchaChange}
-            />
-
+            <Captcha invisibleCaptchaRef={invisibleCaptchaRef} />
             {isTimerRunning && !isLoading ? (
               <Text size="small" color="shade.950">
                 {otpError !== 'wrong_otp' && (

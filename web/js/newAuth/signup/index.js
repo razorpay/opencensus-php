@@ -15,7 +15,7 @@ const SignupWrap = () => {
     <Provider store={store}>
       <Router basename="/app">
         <LayerProvider>
-          <ReCaptchaV3Provider reCaptchaKey={process.env.RECAPTCHA_V3_SITE_KEY}>
+          <ReCaptchaV3Provider reCaptchaKey={window.RECAPTCHA_V3_SITE_KEY}>
             <BladeProvider themeTokens={paymentTheme} colorScheme="light">
               <Signup />
               <ModalDialog />
