@@ -3868,10 +3868,10 @@
     react-native-svg "12.1.0"
     react-native-tab-view "2.15.1"
 
-"@razorpay/blade@6.5.2":
-  version "6.5.2"
-  resolved "https://npm.pkg.github.com/download/@razorpay/blade/6.5.2/55b8f160b0d8e9accca132679216ebb11df4b664#55b8f160b0d8e9accca132679216ebb11df4b664"
-  integrity sha512-F60if4FLlA3kp0ORZ63vDwRga3y0VSkIFVidEjHCDxvzSE+op5I5Z3ca5oX5FEyDBazQVL4kHCi7XPLy/V4hrQ==
+"@razorpay/blade@6.7.0":
+  version "6.7.0"
+  resolved "https://npm.pkg.github.com/download/@razorpay/blade/6.7.0/d67de4e1cd186bd547bc9bcfaf254adc585bb172#d67de4e1cd186bd547bc9bcfaf254adc585bb172"
+  integrity sha512-BuVP0B+mnx++Xos9rukwx/2uEDpIMd+DheIjKBzZRlpsbGif0+2FDUspW4WYBHgjFJoGep3/GGP66na95zhkdg==
   dependencies:
     "@babel/runtime" "7.16.5"
     use-presence "1.1.0"
