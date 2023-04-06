@@ -9302,6 +9302,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_WDA_RESULTS_MISMATCH                        = 'ES_WDA_RESULTS_MISMATCH';
     const WDA_HANDLE_EXTERNAL_ENTITY                     = 'WDA_HANDLE_EXTERNAL_ENTITY';
     const WDA_ROUTE_VALIDATION_ERROR                     = 'WDA_ROUTE_VALIDATION_ERROR';
+    const WDA_BASE_QUERY_INFO                            = 'WDA_BASE_QUERY_INFO';
 
     //3DS2.0 callback view experiment
     const CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR            = "CALLBACK_VIEW_ON_3DS_PAYMENT_ERROR";

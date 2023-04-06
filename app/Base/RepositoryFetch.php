@@ -261,6 +261,32 @@ trait RepositoryFetch
         // result.
         $query = $this->buildFetchQuery($query, $mysqlParams);
 
+        $isWda = false;
+
+        try
+        {
+            if($this->checkWdaRoute($expands, $baseQueryPresent, $connectionType) === true)
+            {
+                $wdaQueryBuilder = $this->buildWdaQueryBuilder($query, $mysqlParams, $merchantId, $connectionType);
+
+                $isWda = true;
+            }
+            elseif ($baseQueryPresent === true)
+            {
+                $this->trace->info(TraceCode::WDA_BASE_QUERY_INFO, [
+                    'base_query' => $this->baseQuery->toSql(),
+                    'route_name' => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+               'wda_query_builder_error' => $ex->getMessage(),
+               'route_name' => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
         //
         // For now, we want to expose this only for proxy auth.
         // We would want to expose this to private auth as well
@@ -273,6 +299,30 @@ trait RepositoryFetch
         if ($this->auth->isProxyAuth() === true)
         {
             $paginatedResult = $this->getPaginated($query, $params);
+
+            try
+            {
+                if($isWda === true)
+                {
+                    $wdaStartTimeMs = round(microtime(true) * 1000);
+
+                    $wdaResult = $this->getPaginatedFromWDA($wdaQueryBuilder, $query, $params);
+
+                    $difference = $this->compareAndLogEntitiesInShadowMode($wdaResult, $paginatedResult, $wdaStartTimeMs);
+
+                    if($difference === false)
+                    {
+                        return $wdaResult;
+                    }
+                }
+            }
+            catch(\Throwable $ex)
+            {
+                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                    'wda_migration_error_pagination' => $ex->getMessage(),
+                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+                ]);
+            }
 
             $endTimeMs = round(microtime(true) * 1000);
 
@@ -289,63 +339,32 @@ trait RepositoryFetch
             return $paginatedResult;
         }
 
-        $isWdaRoute = $this->checkIfWDARoute($connectionType);
-
-        if(!$baseQueryPresent and $isWdaRoute)
-        {
-            try
-            {
-                $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
-                    'method_name' => __FUNCTION__,
-                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
-                ]);
-
-                $startTimeMs = round(microtime(true) * 1000);
-
-                $collection = $this->wdaFetch($query, $mysqlParams, $connectionType);
-
-                $endTimeMs = round(microtime(true) * 1000);
-
-                $queryDuration = $endTimeMs - $startTimeMs;
-
-                $this->trace->info(TraceCode::WDA_SERVICE_RESPONSE, [
-                    'method_name'   => __FUNCTION__,
-                    'duration_ms'    => $queryDuration,
-                    'response size' => $collection->count(),
-                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
-                ]);
-
-                return $collection;
-            }
-            catch(\Throwable $ex)
-            {
-                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
-                    'wda_migration_error' => $ex->getMessage(),
-                    'route_name'    => $this->app['api.route']->getCurrentRouteName(),
-                ]);
-            }
-
-        }
-        elseif ($isWdaRoute and $baseQueryPresent)
-        {
-            try
-            {
-                $this->trace->info(TraceCode::WDA_SERVICE, [
-                    "Base Query" => $this->baseQuery->toSql(),
-                ]);
-            }
-            catch(\Throwable $ex)
-            {
-                $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
-                    "WDA Logging Error" => $ex->getMessage(),
-                ]);
-            }
-
-        }
-
         $startTimeMs = round(microtime(true) * 1000);
 
         $entities = $query->get();
+
+        try
+        {
+            if ($isWda === true)
+            {
+                $wdaStartTimeMs = round(microtime(true) * 1000);
+
+                $wdaEntities = $this->getEntitiesFromWda($wdaQueryBuilder, $query);
+
+                $difference = $this->compareAndLogEntitiesInShadowMode($wdaEntities, $entities, $wdaStartTimeMs);
+
+                if ($difference === false) {
+                    return $wdaEntities;
+                }
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'wda_migration_error' => $ex->getMessage(),
+                'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
 
         $endTimeMs = round(microtime(true) * 1000);
 
@@ -364,6 +383,60 @@ trait RepositoryFetch
         }
 
         return $entities;
+    }
+
+    public function checkWdaRoute($expands, $baseQueryPresent, $connectionType)
+    {
+        try
+        {
+            return ((sizeof($expands) === 0) and ($baseQueryPresent === false)
+                   and ($this->checkIfWDARoute($connectionType) === true));
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'route_name'                 =>      $this->app['api.route']->getCurrentRouteName(),
+                'wda_route_validation_error' => $ex->getMessage(),
+            ]);
+        }
+
+        return false;
+    }
+
+    public function buildWdaQueryBuilder($query, $mysqlParams, $merchantId, $connectionType = null)
+    {
+        $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
+            'method_name' => __FUNCTION__,
+            'route_name'  =>  $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        $wdaQueryBuilder = new WDAQueryBuilder();
+
+        $wdaQueryBuilder->addQuery($this->getTableName(), '*')
+            ->resources($this->getTableName());
+        $wdaQueryBuilder->namespace($query->getConnection()->getDatabaseName());
+
+        if ($this->app['env'] === Environment::PRODUCTION)
+        {
+            if($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT)
+            {
+                $wdaQueryBuilder->cluster(WDAService::MERCHANT_CLUSTER);
+            }
+            else
+            {
+                $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+            }
+        }
+        else
+        {
+            $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+        }
+
+        $this->addCommonWDAQueryParamMerchantId($wdaQueryBuilder, $merchantId);
+
+        $this->buildWDAFetchQuery($wdaQueryBuilder, $mysqlParams);
+
+        return $wdaQueryBuilder;
     }
 
     public function wdaFetch($query, $mysqlParams, $connectionType)
@@ -869,9 +942,16 @@ trait RepositoryFetch
 
         $this->addCommonWDAQueryParamMerchantId($wdaQueryBuilder, $merchantId);
 
-        if($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT)
+        if ($this->app['env'] === Environment::PRODUCTION)
         {
-            $wdaQueryBuilder->cluster(WDAService::MERCHANT_CLUSTER);
+            if($connectionType === ConnectionType::DATA_WAREHOUSE_MERCHANT)
+            {
+                $wdaQueryBuilder->cluster(WDAService::MERCHANT_CLUSTER);
+            }
+            else
+            {
+                $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+            }
         }
         else
         {
