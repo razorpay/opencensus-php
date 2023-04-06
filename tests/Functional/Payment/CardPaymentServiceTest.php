@@ -2467,7 +2467,7 @@ class CardPaymentServiceTest extends TestCase
                     case 'action/authorize':
 
                         $payment = $input['payment'];
-                        $this->assertEquals('123', $input['card']['cvv']);
+                        $this->assertEquals('566', $input['card']['cvv']);
                         $this->assertEquals('test', $input['card']['cryptogram_value']);
                         $this->assertTrue($input['card']['tokenised']);
                         $this->assertEquals('PayU', $input['card']['token_provider']);
@@ -2518,7 +2518,7 @@ class CardPaymentServiceTest extends TestCase
                             ],
                         ];
                     case 'action/callback':
-                        $this->assertEquals('123', $input['card']['cvv']);
+                        $this->assertEquals('566', $input['card']['cvv']);
                         $this->assertEquals('test', $input['card']['cryptogram_value']);
                         $this->assertTrue($input['card']['tokenised']);
                         $this->assertEquals('PayU', $input['card']['token_provider']);
@@ -3133,7 +3133,7 @@ class CardPaymentServiceTest extends TestCase
                     case 'action/authorize':
 
                         $payment = $input['payment'];
-                        $this->assertEquals('123', $input['card']['cvv']);
+                        $this->assertEquals('566', $input['card']['cvv']);
                         $this->assertEquals('test', $input['card']['cryptogram_value']);
                         $this->assertTrue($input['card']['tokenised']);
                         $this->assertEquals('Razorpay', $input['card']['token_provider']);
@@ -3184,7 +3184,7 @@ class CardPaymentServiceTest extends TestCase
                             ],
                         ];
                     case 'action/callback':
-                        $this->assertEquals('123', $input['card']['cvv']);
+                        $this->assertEquals('566', $input['card']['cvv']);
                         $this->assertEquals('test', $input['card']['cryptogram_value']);
                         $this->assertTrue($input['card']['tokenised']);
                         $this->assertEquals('Razorpay', $input['card']['token_provider']);
