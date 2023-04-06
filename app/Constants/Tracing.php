@@ -144,6 +144,9 @@ class Tracing
             'vendor_payment_list_vendors',
             'vendor_sign_up_create_business_info',
             'vendor_sign_up_get_business_info_status',
+            'vendor_payment_create_file_upload',
+            'vendor_payment_get_file_upload',
+            'vendor_payment_delete_file_upload',
 
             'vendor_invoices_list',
             'vendor_invoice_get_by_id',

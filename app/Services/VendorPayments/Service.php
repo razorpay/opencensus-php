@@ -77,6 +77,9 @@ class Service
     const CREATE_BUSINESS_INFO          = 'CreateBusinessInfo';
     const GET_BUSINESS_INFO_STATUS      = 'GetBusinessInfoStatus';
     const CHECK_IF_INVOICE_EXIST        = 'CheckIfInvoiceExist';
+    const CREATE_FILE_UPLOAD            = 'CreateFileUpload';
+    const GET_FILE_UPLOAD               = 'GetFileUpload';
+    const DELETE_FILE_UPLOAD            = 'DeleteFileUpload';
 
     const GET_VENDOR_FUND_ACCOUNT      = 'GetVendorFundAccount';
 
@@ -927,4 +930,28 @@ class Service
         return $this->makeRequest($merchant, $url, $data);
     }
 
+    public function createFileUpload(MerchantEntity $merchant, array $input)
+    {
+        $input['file'] = base64_encode(file_get_contents($_FILES['file']['tmp_name']));
+
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::CREATE_FILE_UPLOAD);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function getFileUpload(MerchantEntity $merchant, array $input)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::GET_FILE_UPLOAD);
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
+
+    public function deleteFileUpload(MerchantEntity $merchant, string $ufhFileId)
+    {
+        $url = sprintf('%s/%s/%s', $this->config['url'], self::BASE_PATH, self::DELETE_FILE_UPLOAD);
+
+        $input = ['ufh_file_id' => $ufhFileId];
+
+        return $this->makeRequest($merchant, $url, $input);
+    }
 }

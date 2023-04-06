@@ -337,4 +337,19 @@ class VendorPaymentController extends Controller
     {
         return $this->service->checkIfInvoiceExistForVendor($this->ba->getMerchant(), $this->input);
     }
+
+    public function createFileUpload()
+    {
+        return $this->service->createFileUpload($this->ba->getMerchant(), $this->input);
+    }
+
+    public function getFileUpload()
+    {
+        return $this->service->getFileUpload($this->ba->getMerchant(), $this->input);
+    }
+
+    public function deleteFileUpload(string $ufhFileId)
+    {
+        return $this->service->deleteFileUpload($this->ba->getMerchant(), $ufhFileId);
+    }
 }
