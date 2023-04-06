@@ -21903,20 +21903,21 @@ return [
             ],
         ],
     ],
+
     'testDashboardSummaryWithPartnerBankOnHoldPayout' => [
         'request'  => [
-            'method'  => 'GET',
-            'url'     => '/payouts/_meta/summary',
+            'method' => 'GET',
+            'url'    => '/payouts/_meta/summary',
         ],
         'response' => [
             'content' => [
                 'bacc_xba00000000000' => [
-                    'queued' =>  [
+                    'queued' => [
                         'partner_bank_degraded' => [
-                            'balance'       => 10000000,
-                            'count'         => 1,
-                            'total_amount'  => 2000000,
-                            'total_fees'    => 0,
+                            'balance'      => 10000000,
+                            'count'        => 1,
+                            'total_amount' => 2000000,
+                            'total_fees'   => 0,
                         ],
                     ],
                 ],
@@ -21954,5 +21955,46 @@ return [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
-    ]
+    ],
+
+    'testGetAttachmentSignedUrlForPayoutOnlyPresentOnPayoutService' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/payouts/{payout_id}/attachment/{attachment_id}',
+        ],
+        'response' => [
+            'content' => [
+                'id'            => 'file_testing',
+                'type'          => 'delivery_proof',
+                'name'          => 'myfile2.pdf',
+                'bucket'        => 'test_bucket',
+                'mime'          => 'text/csv',
+                'extension'     => 'csv',
+                'merchant_id'   => '10000000000000',
+                'store'         => 's3',
+                'signed_url'    => 'paper-mandate/generated/ppm_DczOAf1V7oqaDA_DczOEhobMkq2Do.pdf'
+            ],
+        ],
+    ],
+
+    'testGetAttachmentSignedUrlForAttachmentNotLinkedToPayout' => [
+        'request'   => [
+            'method' => 'GET',
+            'url'    => '/payouts/{payout_id}/attachment/{attachment_id}',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => ErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'BAD_REQUEST_ATTACHMENT_NOT_LINKED_TO_PAYOUT',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'description'         => 'Attachment not linked to payout',
+        ],
+    ],
 ];

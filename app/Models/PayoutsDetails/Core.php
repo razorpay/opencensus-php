@@ -13,6 +13,7 @@ use RZP\Exception\ServerErrorException;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
+use RZP\Models\Payout\DualWrite\PayoutDetails as PayoutDetailsDualWrite;
 
 class Core extends Base\Core
 {
@@ -218,7 +219,14 @@ class Core extends Base\Core
 
     public function getPayoutDetailsById(string $payoutId)
     {
-        return $this->repo->payouts_details->getPayoutDetailsByPayoutId($payoutId)->first();
+        $payoutDetails = $this->repo->payouts_details->getPayoutDetailsByPayoutId($payoutId)->first();
+
+        if (empty($payoutDetails) === true)
+        {
+            $payoutDetails = (new PayoutDetailsDualWrite)->getAPIPayoutsDetailsFromPayoutService($payoutId);
+        }
+
+        return $payoutDetails;
     }
 
     public function getAttachmentSignedUrl(string $attachmentId)
