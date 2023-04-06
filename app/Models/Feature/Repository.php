@@ -171,6 +171,25 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    /**
+     * @param string $featureName
+     * @param int    $skip
+     * @param int    $limit
+     *
+     * @return array
+     */
+    public function fetchPaginatedPartnerIdsWithFeature(string $featureName, int $skip, int $limit): array
+    {
+        return $this->newQuery()
+                    ->where(Entity::NAME, $featureName)
+                    ->where(Entity::ENTITY_TYPE, Constants::MERCHANT)
+                    ->orderBy(Entity::ID)
+                    ->skip($skip)
+                    ->take($limit)
+                    ->pluck(Entity::ENTITY_ID)
+                    ->toArray();
+    }
+
     public function findMerchantWithFeatures(string $merchantId, array $featureNames)
     {
         $dcsRes = collect();

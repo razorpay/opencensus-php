@@ -1473,6 +1473,27 @@ return [
             ]
         ]
     ],
+    env('APP_V2_ID_PARTNERSHIPS')                     => [
+        "name"        => "partnerships",
+        "credentials" => [
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_LIVE_PARTNERSHIPS'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_LIVE_PARTNERSHIPS'),
+                "mode"     => "live",
+                "roles"    => [
+                    "app.partnerships"
+                ]
+            ],
+            [
+                "username" => env('APP_V2_CREDENTIAL_USERNAME_TEST_PARTNERSHIPS'),
+                "password" => env('APP_V2_CREDENTIAL_PASSWORD_TEST_PARTNERSHIPS'),
+                "mode"     => "test",
+                "roles"    => [
+                    "app.partnerships"
+                 ]
+             ]
+         ]
+    ],
     env('APP_V2_ID_PAYMENTS_UPI')               => [
         "name"        => "payments_upi",
         "credentials" => [

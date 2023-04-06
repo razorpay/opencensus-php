@@ -1772,6 +1772,32 @@ class CommissionCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testPartnerFetchWithCommissionInvoiceFeature()
+    {
+        $this->fixtures->merchant->addFeatures('generate_partner_invoice', Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->addFeatures('generate_partner_invoice', Constants::DEFAULT_MERCHANT_ID);
+
+         $this->fixtures->merchant->addFeatures('generate_partner_invoice', Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->ba->partnershipServiceAuth();
+
+        $this->startTest();
+    }
+
+    public function testPartnerFetchWithCommissionInvoiceFeatureWithOffset()
+    {
+        $this->fixtures->merchant->addFeatures('generate_partner_invoice', Constants::DEFAULT_PLATFORM_MERCHANT_ID);
+
+        $this->fixtures->merchant->addFeatures('generate_partner_invoice', Constants::DEFAULT_MERCHANT_ID);
+
+         $this->fixtures->merchant->addFeatures('generate_partner_invoice', Constants::DEFAULT_NON_PLATFORM_MERCHANT_ID);
+
+        $this->ba->partnershipServiceAuth();
+
+        $this->startTest();
+    }
+
     public function testFetchCommissionConfigByPaymentForMerchant()
     {
         $this->createPurePlatFormMerchantAndSubMerchant();

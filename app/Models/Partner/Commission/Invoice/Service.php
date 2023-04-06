@@ -23,6 +23,22 @@ class Service extends Base\Service
         return (new Core)->queueCreateInvoiceEntities($input);
     }
 
+    /**
+     * returns all the partners with commission invoice feature with pagination
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function fetchPartnersWithCommissionInvoiceFeature(array $input) : array
+    {
+        $limit = $input['limit'] ?? 500;
+
+        $offset = $input['offset'] ?? 0;
+
+        return  (new Core)->fetchPartnersWithCommissionInvoiceFeature($limit,$offset);
+    }
+
     public function changeStatus($id, array $input)
     {
         $invoice = $this->repo->commission_invoice->findByIdAndMerchant($id, $this->merchant);

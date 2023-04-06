@@ -3027,7 +3027,8 @@ class Route
         'merchant_sync_stakeholder'                => ['post',     'merchants/stakeholders/sync',                    'MerchantController@syncStakeholderFromMerchant'                    ],
 
         //partnership service usecase routes
-        'fetch_commission_configs'                 => ['get',     'commission_configs',         'CommissionController@fetchCommissionConfigsForPayment'                     ],
+        'fetch_commission_configs'                 => ['get',     'commission_configs',                       'CommissionController@fetchCommissionConfigsForPayment'                    ],
+        'fetch_partner_commission_invoice_feature' => ['get',     'partner/commission_invoice_feature',       'CommissionInvoiceController@fetchPartnersWithCommissionInvoiceFeature'    ],
 
         'commissions_get_multiple'                 => ['get',      'commissions',                                    'CommissionController@list'                                         ],
         'commissions_get'                          => ['get',      'commissions/{id}',                               'CommissionController@get'                                          ],
@@ -5748,6 +5749,7 @@ class Route
 
         // partnership service dependent routes
         'fetch_commission_configs',
+        'fetch_partner_commission_invoice_feature',
 
         'create_ledger_journal_batch',
 
@@ -14952,7 +14954,8 @@ class Route
         ],
 
         'partnerships' => [
-            'fetch_commission_configs'
+            'fetch_commission_configs',
+            'fetch_partner_commission_invoice_feature'
         ],
 
         'terminals_service' => [

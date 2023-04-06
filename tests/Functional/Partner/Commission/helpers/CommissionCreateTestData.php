@@ -787,6 +787,29 @@ return [
             'status_code' => 200,
         ],
     ],
+
+    'testPartnerFetchWithCommissionInvoiceFeature' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/partner/commission_invoice_feature',
+        ],
+        'response' => [
+            'content'     => ['1000000000plat','10000000000000','100nonplatform'],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testPartnerFetchWithCommissionInvoiceFeatureWithOffset' => [
+        'request'  => [
+            'method' => 'GET',
+            'url'    => '/partner/commission_invoice_feature?limit=1&offset=0',
+        ],
+        'response' => [
+            'content'     => ['1000000000plat'],
+            'status_code' => 200,
+        ],
+    ],
+
     'testInvoiceFetchForResellerActivatedPartner' => $autoApprovalCaptureRequestResponse,
     'testInvoiceFetchForActivatedResellerPartnerWithMerchantKYC' => $autoApprovalCaptureRequestResponse,
 ];

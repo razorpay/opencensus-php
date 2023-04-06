@@ -110,6 +110,17 @@ class Core extends Base\Core
         return [];
     }
 
+    /**
+     * @param int $limit
+     * @param int $offset
+     *
+     * @return array
+     */
+    public function fetchPartnersWithCommissionInvoiceFeature(int $limit, int $offset) : array
+    {
+         return $this->repo->feature->fetchPaginatedPartnerIdsWithFeature(Feature\Constants::GENERATE_PARTNER_INVOICE,$offset,$limit);
+    }
+
     public function changeInvoiceStatus(Entity $invoice, $input)
     {
         $merchant = $invoice->merchant;

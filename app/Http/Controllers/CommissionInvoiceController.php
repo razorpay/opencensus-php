@@ -83,4 +83,13 @@ class CommissionInvoiceController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function fetchPartnersWithCommissionInvoiceFeature()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->fetchPartnersWithCommissionInvoiceFeature($input);
+
+        return ApiResponse::json($data);
+    }
 }
