@@ -246,39 +246,6 @@ class TerminalRotatorTest extends TestCase
         $this->assertEquals($payment['order_id'], $order['id']);
     }
 
-    public function testNetbankingRepeatOnSameTerminal()
-    {
-        $data = $this->testData['testNetbankingRepeatOnSameTerminal'];
-
-        $amount = 30000;
-
-        $order = $this->createTestOrder($amount);
-
-        $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
-
-        $this->fixtures->create('terminal:shared_billdesk_terminal');
-
-        $payment1 = $this->getDefaultNetbankingPaymentArray();
-        $payment1['amount'] = $amount;
-        $payment1['bank'] = 'UTIB';
-
-        $payment1['order_id'] = $order['id'];
-
-        $this->ba->publicAuth();
-
-        foreach (range(0,2) as $value)
-        {
-            $this->runRequestResponseFlow( $data, function() use ($payment1)
-            {
-                    $this->doAuthPayment($payment1);
-            });
-
-            $payment = $this->getLastPayment(true);
-
-            $this->assertEquals($payment['terminal_id'], '100NbAxisTrmnl');
-        }
-    }
-
     //-- helpers----
 
     protected function getPaymentArray()

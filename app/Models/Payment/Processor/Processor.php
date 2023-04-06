@@ -5524,6 +5524,8 @@ class Processor
         {
             $gatewayData[Payment\Entity::CPS_ROUTE] = Payment\Entity::NB_PLUS_SERVICE;
 
+            $gatewayData['callbackUrl'] = $this->getCallbackUrl();
+
             // netbanking flow doesn't have any debit action
             // TODO: handle when migrating wallets flow
             if ($action === Action::DEBIT)

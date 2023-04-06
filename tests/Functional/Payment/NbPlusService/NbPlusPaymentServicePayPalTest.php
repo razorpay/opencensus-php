@@ -38,6 +38,7 @@ class NbPlusPaymentServicePayPalTest extends TestCase
     ];
 
     const CALLBACK_ACTION_INPUT = [
+        'callbackUrl',
         'payment',
         'gateway',
         'terminal',
@@ -121,11 +122,11 @@ class NbPlusPaymentServicePayPalTest extends TestCase
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
 
         $responseContent = json_decode($response->getContent(), true);
-        
+
         $currencyRequestId = $responseContent['currency_request_id'];
-        
+
         $this->payment['dcc_currency'] = 'USD';
-        
+
         $this->payment['currency_request_id'] = $currencyRequestId;
 
         $this->payment['contact'] = "8448720400";
@@ -147,11 +148,11 @@ class NbPlusPaymentServicePayPalTest extends TestCase
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
 
         $responseContent = json_decode($response->getContent(), true);
-        
+
         $currencyRequestId = $responseContent['currency_request_id'];
-        
+
         $this->payment['dcc_currency'] = 'USD';
-        
+
         $this->payment['currency_request_id'] = $currencyRequestId;
 
         $this->payment['contact'] = "8448720400";
@@ -190,11 +191,11 @@ class NbPlusPaymentServicePayPalTest extends TestCase
         $response = $this->sendRequest($this->getDefaultPaymentFlowsRequestData());
 
         $responseContent = json_decode($response->getContent(), true);
-        
+
         $currencyRequestId = $responseContent['currency_request_id'];
-        
+
         $this->payment['dcc_currency'] = 'USD';
-        
+
         $this->payment['currency_request_id'] = $currencyRequestId;
 
         $this->payment['contact'] = "8448720400";

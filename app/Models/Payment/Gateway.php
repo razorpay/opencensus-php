@@ -4624,6 +4624,7 @@ class Gateway
                 self::NETBANKING_IDFC,
                 self::NETBANKING_PNB,
                 self::NETBANKING_SBI,
+                self::NETBANKING_AXIS,
             ],
             Method::WALLET => [
                 self::WALLET_AMAZONPAY,

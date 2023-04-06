@@ -34,6 +34,7 @@ class NbplusPaymentServiceCardlessEmiTest extends TestCase
     ];
 
     const CALLBACK_ACTION_INPUT = [
+        'callbackUrl',
         'payment',
         'gateway',
         'terminal',

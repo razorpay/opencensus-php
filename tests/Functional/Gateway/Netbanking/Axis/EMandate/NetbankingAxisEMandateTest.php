@@ -712,4 +712,12 @@ class NetbankingAxisEMandateTest extends TestCase
         ];
         return $this->makeRequestAndGetContent($request);
     }
+
+    protected function runPaymentCallbackFlowNetbanking($response, &$callback = null, $gateway)
+    {
+        list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
+        $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+        $result = $this->submitPaymentCallbackRedirect($data);
+        return $result;
+    }
 }

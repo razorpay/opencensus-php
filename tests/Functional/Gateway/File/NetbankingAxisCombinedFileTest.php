@@ -5,8 +5,11 @@ namespace RZP\Tests\Functional\Gateway\File;
 use Mail;
 use Carbon\Carbon;
 
+use Mockery;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
+use RZP\Services\Mock\BeamService;
 use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
@@ -34,6 +37,10 @@ class NetbankingAxisCombinedFileTest extends TestCase
         $connector = $this->mockSqlConnectorWithReplicaLag(0);
 
         $this->app->instance('db.connector.mysql', $connector);
+
+        $this->app['rzp.mode'] = Mode::TEST;
+        $nbPlusService = Mockery::mock('RZP\Services\Mock\NbPlus\Netbanking', [$this->app])->makePartial();
+        $this->app->instance('nbplus.payments', $nbPlusService);
     }
 
     public function testNetbankingAxisCombinedFile()

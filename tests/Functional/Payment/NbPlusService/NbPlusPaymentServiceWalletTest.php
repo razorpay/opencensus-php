@@ -55,6 +55,7 @@ class NbPlusPaymentServiceWalletTest extends TestCase
     ];
 
     const CALLBACK_ACTION_INPUT = [
+        'callbackUrl',
         'payment',
         'gateway',
         'terminal',
@@ -65,6 +66,7 @@ class NbPlusPaymentServiceWalletTest extends TestCase
     ];
 
     const CALLBACK_ACTION_INPUT_DEBIT = [
+        'callbackUrl',
         'payment',
         'gateway',
         'terminal',

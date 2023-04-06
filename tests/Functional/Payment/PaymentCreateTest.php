@@ -11096,4 +11096,12 @@ class PaymentCreateTest extends TestCase
 
         $this->doAuthPayment($payment);
     }
+
+    protected function runPaymentCallbackFlowNetbanking($response, &$callback = null, $gateway)
+    {
+        list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
+        $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+        $result = $this->submitPaymentCallbackRedirect($data);
+        return $result;
+    }
 }

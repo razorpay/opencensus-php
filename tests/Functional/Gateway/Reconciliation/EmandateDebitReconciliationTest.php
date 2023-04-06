@@ -442,4 +442,12 @@ class EmandateDebitReconciliationTest extends TestCase
 
         $this->assertEquals('REJECTED', $gatewayPayment['status']);
     }
+
+    protected function runPaymentCallbackFlowNetbanking($response, &$callback = null, $gateway)
+    {
+        list ($url, $method, $values) = $this->getDataForGatewayRequest($response, $callback);
+        $data = $this->makeFirstGatewayPaymentMockRequest($url, $method, $values);
+        $result = $this->submitPaymentCallbackRedirect($data);
+        return $result;
+    }
 }
