@@ -4,6 +4,8 @@ namespace RZP\Models\Merchant\InternationalEnablement;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\InternationalEnablement\Document\Constants as DocConstants;
+use RZP\Models\Merchant\InternationalEnablement\Document\Repository as IEDocumentRepository;
 
 class Core extends Base\Core
 {
@@ -190,6 +192,56 @@ class Core extends Base\Core
         ]);
 
         return ($variant === Constants::RAZORX_VARIANT_NEW_FLOW);
+    }
+
+    public function deleteCancelledDocs(Detail\Entity $detailEntity, array $input)
+    {
+        $inputDocs = [];
+
+        $inputCustomDocs = [];
+
+        $merchantId = $this->merchant->getId();
+
+        if (array_key_exists(Detail\Entity::DOCUMENTS, $input) === true)
+        {
+            $inputDocs = $input[Detail\Entity::DOCUMENTS];
+
+            if ($inputDocs !== null)
+            {
+                if (array_key_exists(DocConstants::OTHERS, $inputDocs) === true)
+                {
+                    $inputCustomDocs = $inputDocs[DocConstants::OTHERS];
+
+                    unset($inputDocs[DocConstants::OTHERS]);
+                }
+
+                foreach ($inputDocs as $docType => $docDetail)
+                {
+                    if ($docDetail === null)
+                    {
+                        $docEntity = (new IEDocumentRepository())->fetchDocumentByMerchantIdAndIEDetailIdAndType($merchantId, $detailEntity->getId(), $docType);
+
+                        if ($docEntity !== null)
+                        {
+                            (new IEDocumentRepository())->deleteOrFail($docEntity);
+                        }
+                    }
+                }
+
+                foreach ($inputCustomDocs as $customDocType => $customDocDetail)
+                {
+                    if ($customDocDetail === null)
+                    {
+                        $docEntity = (new IEDocumentRepository())->fetchOtherDocumentByMerchantIdAndIEDetailIdAndCustomType($merchantId, $detailEntity->getId(), $customDocType);
+
+                        if ($docEntity !== null)
+                        {
+                            (new IEDocumentRepository())->deleteOrFail($docEntity);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public function convertToExternalFormat(Detail\Entity $detailEntity)

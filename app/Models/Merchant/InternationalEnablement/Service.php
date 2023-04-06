@@ -61,12 +61,12 @@ class Service extends Base\Service
     public function draft(array $input): array
     {
         $version = 'v1';
-        
+
         if (((isset($input[Constants::VERSION])) === true) and
             ($input[Constants::VERSION] === 'v2'))
         {
             $version = $input[Constants::VERSION];
-        
+
             unset($input[Constants::VERSION]);
         }
 
@@ -93,18 +93,20 @@ class Service extends Base\Service
                 return $this->core()->upsert($input, Detail\Constants::ACTION_DRAFT, $version);
             });
 
+        $this->core()->deleteCancelledDocs($entity, $input);
+
         return $this->core()->convertToExternalFormat($entity);
     }
 
     public function submit(array $input): array
     {
         $version = 'v1';
-    
+
         if (((isset($input[Constants::VERSION])) === true) and
             ($input[Constants::VERSION] === 'v2'))
         {
             $version = $input[Constants::VERSION];
-    
+
             unset($input[Constants::VERSION]);
         }
 

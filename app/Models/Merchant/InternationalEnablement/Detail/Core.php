@@ -15,6 +15,14 @@ class Core extends Base\Core
 
     private function create(array $input, string $action): Entity
     {
+        if (array_key_exists(Entity::PRODUCTS, $input) === true)
+        {
+            if ($input[Entity::PRODUCTS] === null)
+            {
+                $input[Entity::PRODUCTS] = [];
+            }
+        }
+
         $entity = new Entity;
 
         $createOperation = sprintf(Constants::VALIDATOR_CREATE_ACTION_KEY, $action);

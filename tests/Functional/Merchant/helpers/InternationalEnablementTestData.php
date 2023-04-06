@@ -407,7 +407,20 @@ return [
                 'products' => [
                    'payment_gateway',
                 ],
-                'documents' => null,
+                'documents' => [
+                    'bank_statement_inward_remittance' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                    'invoices' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                ],
             ],
         ],
     ],
@@ -476,7 +489,20 @@ return [
                 'products' => [
                    'payment_gateway',
                 ],
-                'documents' => null,
+                'documents' => [
+                    'bank_statement_inward_remittance' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                    'invoices' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                ],
             ],
         ],
         'response'  => [
@@ -507,7 +533,20 @@ return [
                 'products' => [
                    'payment_gateway',
                 ],
-                'documents' => null,
+                'documents' => [
+                    'bank_statement_inward_remittance' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                    'invoices' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                ],
             ],
         ],
     ],
@@ -557,6 +596,12 @@ return [
                             'display_name' => 'display_name_1',
                         ],
                     ],
+                    'invoices' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
                 ],
             ],
         ],
@@ -598,6 +643,12 @@ return [
                         ],
                     ],
                     'current_payment_partner_settlement_record' => [
+                        [
+                            'id'           => 'doc_10000011111111',
+                            'display_name' => 'display_name_1',
+                        ],
+                    ],
+                    'invoices' => [
                         [
                             'id'           => 'doc_10000011111111',
                             'display_name' => 'display_name_1',
@@ -682,7 +733,7 @@ return [
                             '_internal' => [
                                 'documents' => [
                                     'bank_statement_inward_remittance' => [
-                                        'The bank statement inward remittance field is required when accepts intl txns is true.'
+                                        'The bank statement inward remittance field is required.'
                                     ],
                                     'current_payment_partner_settlement_record' => [
                                         'The current payment partner settlement record field is required when accepts intl txns is true.'

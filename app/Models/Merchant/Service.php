@@ -8780,7 +8780,10 @@ class Service extends Base\Service
     {
         $validator = (new Validator);
 
-        $validator->validateInput('request_international_product', $input);
+        if ($draft === false)
+        {
+            $validator->validateInput('request_international_product', $input);
+        }
 
         $validator->validateMerchantForProductInternational($this->merchant);
 

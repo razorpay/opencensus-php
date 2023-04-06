@@ -41,8 +41,8 @@ class Validator extends Base\Validator
 
         Entity::ACCEPTS_INTL_TXNS                   => 'sometimes|boolean',
         Entity::IMPORT_EXPORT_CODE                  => 'nullable|sometimes|alpha_num|size:10',
-        Entity::PRODUCTS                            => 'required|array|filled|between:1,4',
-        Entity::PRODUCTS . '.*'                     => 'required|string|in:' . Constants::PRODUCTS_VALIDATOR_CSV,
+        Entity::PRODUCTS                            => 'sometimes|array|between:0,4',
+        Entity::PRODUCTS . '.*'                     => 'required_with:' . Entity::PRODUCTS . '|string|in:' . Constants::PRODUCTS_VALIDATOR_CSV,
         'documents'                                 => 'nullable|sometimes|array',
     ];
 

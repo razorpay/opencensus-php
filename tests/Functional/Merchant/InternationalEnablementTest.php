@@ -246,26 +246,31 @@ class InternationalEnablementTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testDraftWithValidationError()
-    {
-        $merchant = $this->createFixtures();
+    /* Commenting this test as the validations from draft API has been temporarily removed.
+      * Will uncomment it once the condition is added.
+      *
+      *
+        public function testDraftWithValidationError()
+        {
+            $merchant = $this->createFixtures();
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+            $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+            $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
 
-        $testData = $this->testData['testDraftWithValidationErrorCase1'];
+            $testData = $this->testData['testDraftWithValidationErrorCase1'];
 
-        $this->startTest($testData);
+            $this->startTest($testData);
 
-        $testData = $this->testData['testDraftWithValidationErrorCase2'];
+            $testData = $this->testData['testDraftWithValidationErrorCase2'];
 
-        $this->startTest($testData);
+            $this->startTest($testData);
 
-        $testData = $this->testData['testDraftWithValidationErrorCase3'];
+            $testData = $this->testData['testDraftWithValidationErrorCase3'];
 
-        $this->startTest($testData);
-    }
+            $this->startTest($testData);
+        }
+    */
 
     public function testGetCases()
     {
@@ -463,34 +468,39 @@ class InternationalEnablementTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testDraftV2WithValidationError()
-    {
-        $merchant = $this->createFixtures([
-             Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED  => 'toggle_international_revamped',
-        ], 'test');
+    /* Commenting this test as the validations from draft API has been temporarily removed.
+      * Will uncomment it once the condition is added.
+      *
+      *
+        public function testDraftV2WithValidationError()
+        {
+            $merchant = $this->createFixtures([
+                 Permission\Name::TOGGLE_INTERNATIONAL_REVAMPED  => 'toggle_international_revamped',
+            ], 'test');
 
-        $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
+            $merchantUser = $this->fixtures->user->createUserForMerchant($merchant->getId());
 
-        $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
+            $this->ba->proxyAuth('rzp_test_' . $merchant->getId(), $merchantUser['id']);
 
-        $testData = $this->testData['testDraftWithValidationErrorCase1'];
+            $testData = $this->testData['testDraftWithValidationErrorCase1'];
 
-        $testData['request']['content'] = array_merge($testData['request']['content'], ['version' => 'v2']);
+            $testData['request']['content'] = array_merge($testData['request']['content'], ['version' => 'v2']);
 
-        $this->startTest($testData);
+            $this->startTest($testData);
 
-        $testData = $this->testData['testDraftWithValidationErrorCase2'];
+            $testData = $this->testData['testDraftWithValidationErrorCase2'];
 
-        $testData['request']['content'] = array_merge($testData['request']['content'], ['version' => 'v2']);
+            $testData['request']['content'] = array_merge($testData['request']['content'], ['version' => 'v2']);
 
-        $this->startTest($testData);
+            $this->startTest($testData);
 
-        $testData = $this->testData['testDraftWithValidationErrorCase3'];
+            $testData = $this->testData['testDraftWithValidationErrorCase3'];
 
-        $testData['request']['content'] = array_merge($testData['request']['content'], ['version' => 'v2']);
+            $testData['request']['content'] = array_merge($testData['request']['content'], ['version' => 'v2']);
 
-        $this->startTest($testData);
-    }
+            $this->startTest($testData);
+        }
+     */
 
     public function testSubmitV2ValidationError()
     {

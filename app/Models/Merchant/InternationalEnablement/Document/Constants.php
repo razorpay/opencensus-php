@@ -27,7 +27,7 @@ class Constants
     const RERA                                      = 'rera';
     const GAMING_ADDENDUM_CERTIFICATE               = 'gaming_addendum_certificate';
     const HALLMARK_GII                              = 'hallmark_gii';
-    
+
     const OTHERS = 'others';
 
     const MAX_DOCUMENTS_PER_TYPE = 3;
@@ -42,7 +42,7 @@ class Constants
         self::HALLMARK_925,
         self::GII,
     ];
-    
+
     const DOCUMENT_TYPES = [
         self::FIRC,
         self::IE_CODE,
@@ -73,7 +73,7 @@ class Constants
         self::RERA . ',' .
         self::GAMING_ADDENDUM_CERTIFICATE . ',' .
         self::OTHERS;
-    
+
     const BUSINESS_CATEGORY_SUBCATEGORY_DOCUMENT_TYPE_MAP = [
         Category::TOURS_AND_TRAVEL => [
             Subcategory::AVIATION                           => self::IATA,
@@ -125,7 +125,7 @@ class Constants
             Subcategory::GAMING_MARKETPLACE                 => self::GAMING_ADDENDUM_CERTIFICATE,
         ],
     ];
-    
+
     public static function isMandatoryDocumentType(string $documentType): bool
     {
         return (in_array($documentType, self::MANDATORY_DOCUMENT_TYPES) === true);

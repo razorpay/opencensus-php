@@ -11,4 +11,22 @@ class Repository extends Base\Repository
     protected $adminFetchParamRules = [
         Entity::INTERNATIONAL_ENABLEMENT_DETAIL_ID => 'sometimes|string|size:14',
     ];
+
+    public function fetchDocumentByMerchantIdAndIEDetailIdAndType($merchantId, $IEDetailId, $type)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::INTERNATIONAL_ENABLEMENT_DETAIL_ID, $IEDetailId)
+            ->where(Entity::TYPE, $type)
+            ->first();
+    }
+
+    public function fetchOtherDocumentByMerchantIdAndIEDetailIdAndCustomType($merchantId, $IEDetailId, $customType)
+    {
+        return $this->newQueryWithConnection($this->getSlaveConnection())
+            ->where(Entity::MERCHANT_ID, $merchantId)
+            ->where(Entity::INTERNATIONAL_ENABLEMENT_DETAIL_ID, $IEDetailId)
+            ->where(Entity::CUSTOM_TYPE, $customType)
+            ->first();
+    }
 }
