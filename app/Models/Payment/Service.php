@@ -3003,6 +3003,25 @@ class Service extends Base\Service
         // Fetch all the authorized payments whose refund_at is on or before current time.
         $payments = $this->repo->payment->getAuthorizedPaymentsToBeRefundedUsingRefundAt($ts, $limit);
 
+        // Re fetch by payment id to reload entity if fetched from warm storage
+        $reloadedPayments = New Base\PublicCollection();
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                $reloadedPayment = $this->repo->payment->findOrFail($payment->getId());
+
+                $reloadedPayments->push($reloadedPayment);
+            }
+            catch (Throwable $exception)
+            {
+                $this->trace->traceException($exception, Trace::INFO, TraceCode::PAYMENT_FETCH_EXCEPTION);
+            }
+        }
+
+        $payments = $reloadedPayments;
+
         // Counts for determining the unsetting refund_at work and rejections
         $initialCount = $payments->count();
         $updatedRefundAt = 0;
@@ -3751,6 +3770,9 @@ class Service extends Base\Service
         {
             try
             {
+                // Re fetch by payment id to reload entity fetched from warm storage
+                $payment = $this->repo->payment->findOrFail($payment->getId());
+
                 $txn = $this->repo->transaction(
                     function() use ($payment)
                     {

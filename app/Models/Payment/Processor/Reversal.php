@@ -65,6 +65,8 @@ trait Reversal
             $sourcePayment = $this->repo->payment->getCapturedPaymentForOrder($sourceOrderId);
 
             // fetching payment again to get from sources configured for archived entity
+            // As of now, archived payment fetch with findOrFail happens on fallback replica
+            // This will also prevent columns like _record_source from warm storage to be present in entity attributes
             $sourcePayment = $this->repo->payment->findOrFail($sourcePayment->getId());
 
             $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);

@@ -512,6 +512,9 @@ trait RepositoryFetch
 
                 return $this->getPaymentFetchReplicaConnection();
 
+            case ConnectionType::PAYMENT_FETCH_REPLICA:
+                return $this->getPaymentFetchReplicaConnection();
+
             case ConnectionType::RX_DATA_WAREHOUSE_MERCHANT:
                 return $this->getDataWarehouseConnection(ConnectionType::RX_DATA_WAREHOUSE_MERCHANT);
 

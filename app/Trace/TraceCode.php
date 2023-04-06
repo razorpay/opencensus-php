@@ -971,6 +971,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_NUMBER_SCRUBBED                                  = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS                    = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                                      = 'REFUND_EXCEPTION';
+    const PAYMENT_FETCH_EXCEPTION                               = 'PAYMENT_FETCH_EXCEPTION';
     const GATEWAY_TOKEN_TOO_MANY_PRESENT                        = 'GATEWAY_TOKEN_TOO_MANY_PRESENT';
     const CUSTOMER_DIRECT_TOKEN_CREATE                          = 'CUSTOMER_DIRECT_TOKEN_CREATE';
     const CUSTOMER_TOKENS_UPI_VPA_BULK                          = 'CUSTOMER_TOKENS_UPI_VPA_BULK';

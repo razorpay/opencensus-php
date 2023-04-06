@@ -756,14 +756,28 @@ class Service extends Base\Service
 
         $payments = Tracer::inSpan(['name' => HyperTrace::VIRTUAL_ACCOUNTS_FETCH_PAYMENTS], function() use(&$input, $merchantId)
         {
-            if ($this->repo->payment->isExperimentEnabledForId(\RZP\Base\Repository::PAYMENT_QUERIES_TIDB_MIGRATION, 'virtualAccountsFetchPayments') === true)
+            $variant = $this->app['razorx']->getTreatment(
+                'virtualAccountsFetchPayments',
+                'va_payment_fetch_query_migration',
+                $this->mode ?? Mode::LIVE);
+
+            $this->trace->info(TraceCode::ARCHIVAL_EXPERIMENTS_REPOSITORY_VARIANT, [
+                'variant'    => $variant,
+                'feature'    => 'va_payment_fetch_query_migration',
+                'context_id' => 'virtualAccountsFetchPayments',
+            ]);
+
+            if ($variant === "tidb")
             {
                 return $this->repo->payment->fetch($input, $merchantId, ConnectionType::DATA_WAREHOUSE_MERCHANT);
             }
-            else
+
+            if ($variant === "replica")
             {
-                return $this->repo->payment->fetch($input, $merchantId, ConnectionType::SLAVE);
+                return $this->repo->payment->fetch($input, $merchantId, ConnectionType::PAYMENT_FETCH_REPLICA);
             }
+
+            return $this->repo->payment->fetch($input, $merchantId, ConnectionType::SLAVE);
         });
 
         return $payments->toArrayPublic();
