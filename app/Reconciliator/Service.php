@@ -941,63 +941,6 @@ class Service extends Base\Service
     }
 
     /**
-     * publish message to metro topic
-     *
-     * @param array $dataToUpdate
-     * @param Payment\Entity $payment
-     * @return void
-     */
-    protected function publishToMetro(array $dataToUpdate, Payment\Entity $payment)
-    {
-        $metroHandler = (new MetroHandler());
-
-        $topic = UpsConstants::ART_RECON_ENTITY_UPDATE . '-'. $this->mode;
-
-        // Skip the metro call for bvt and automation env
-        if ($this->app['env'] === 'bvt' or $this->app['env'] === 'automation')
-        {
-            return;
-        }
-
-        $data = [
-            UpsConstants::PAYMENT_ID   => $payment->getId(),
-            UpsConstants::GATEWAY_DATA => $dataToUpdate,
-            UpsConstants::GATEWAY      => $payment->getGateway(),
-            UpsConstants::MODEL        => UpsConstants::AUTHORIZE
-        ];
-
-        $publishData['data'] = json_encode($data);
-
-        $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PUBLISH_TO_METRO, $data);
-
-        try
-        {
-            $response = $metroHandler->publish($topic, $publishData);
-
-            $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_METRO_MESSAGE_PUBLISHED,
-                [
-                    'topic'    => $topic,
-                    'response' => $response,
-                    'payment_id' => $payment->getId()
-                ]);
-
-        }
-        catch (Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::UPI_PAYMENT_SERVICE_METRO_MESSAGE_PUBLISH_ERROR,
-                [
-                    'topic'    => $topic,
-                    'payment_id' => $payment->getId()
-                ]);
-
-            throw $e;
-        }
-    }
-
-    /**
      * Retrive required field of UPS gateway entity
      * @param Payment\Entity $payment
      * @return array
@@ -1076,7 +1019,7 @@ class Service extends Base\Service
             return;
         }
 
-        $this->updateGatewayEntityOnUps($dataToUpdate, $payment);
+        $this->dispatchToUpsReconQueue($dataToUpdate, $payment);
     }
 
     /** Persist/update gateway data post recon
@@ -1587,24 +1530,6 @@ class Service extends Base\Service
         (New NbPlusServiceRecon)->dispatchToNbplusServiceQueue($data);
     }
 
-    /** Update gateway entity on Ups
-     * @param array $data
-     * @param Payment\Entity $payment
-     * @throws \Exception
-     */
-    protected function updateGatewayEntityOnUps(array $data, Payment\Entity $payment)
-    {
-        $updateEntityViaSqs = $this->shouldUpdateGatewayEntityViaSqs($payment);
-
-        if ($updateEntityViaSqs === true)
-        {
-            $this->dispatchToUpsReconQueue($data, $payment);
-            return;
-        }
-
-        $this->publishToMetro($data, $payment);
-    }
-
     /** Dispatch the entity update message to sqs queue
      * @param array $data
      * @param Payment\Entity $payment
@@ -1634,23 +1559,6 @@ class Service extends Base\Service
 
             throw $ex;
         }
-    }
-
-    /** Check if the entity updates to UPS are pushed through SQS
-     * @param Payment\Entity $payment
-     * @return bool
-     */
-    protected function shouldUpdateGatewayEntityViaSqs(Payment\Entity $payment)
-    {
-        $gateway = $payment->getGateway();
-
-        $feature = 'ups_recon_sqs_update_' . $gateway;
-
-        // The experiment to route the traffic to update entities through sqs
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, $this->mode ?? Mode::LIVE);
-
-       return ($variant === 'on');
     }
 
     private function updateWalletGatewayData(array $input, Payment\Entity $payment)

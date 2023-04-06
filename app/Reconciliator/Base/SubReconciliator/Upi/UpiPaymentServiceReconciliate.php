@@ -98,7 +98,7 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
         }
 
         // update gateway entity asynchronously
-        $this->updateEntityAsynchronously($data);
+        $this->dispatchToUpsReconQueue($data);
     }
 
     protected  function shouldUpdateInSync()
@@ -278,43 +278,6 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
         if (empty($dbGatewayReference) === true)
         {
             $dataToUpdate[Constants::GATEWAY_REFERENCE] = $gatewayPaymentId;
-        }
-    }
-
-    /**
-     * publish message to metro topic
-     *
-     * @param array $dataToUpdate
-     * @return void
-     */
-    protected function publishToMetro(array $data)
-    {
-        // publish to metro
-        $metroHandler = (new MetroHandler());
-
-        $topic = Constants::RECON_ENTITY_UPDATE . '-'. $this->mode;
-
-        $publishData['data'] = json_encode($data);
-
-        try {
-            $response = $metroHandler->publish($topic, $publishData);
-
-            $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_METRO_MESSAGE_PUBLISHED,
-            [
-                'topic'    => $topic,
-                'response' => $response,
-            ]);
-
-        } catch (Throwable $e) {
-            $this->trace->traceException(
-                $e,
-                Trace::CRITICAL,
-                TraceCode::UPI_PAYMENT_SERVICE_METRO_MESSAGE_PUBLISH_ERROR,
-                [
-                    'topic'    => $topic,
-                ]);
-
-            throw $e;
         }
     }
 
@@ -535,36 +498,5 @@ class UpiPaymentServiceReconciliate extends SubReconciliator\PaymentReconciliate
     {
         // to be implemented by gateway payment reconciliation file
         return;
-    }
-
-    /** Check if the entity updates to UPS are pushed through SQS
-     * @return bool
-     */
-    protected function shouldUpdateEntityViaSqs()
-    {
-        $gateway = $this->payment->getGateway();
-
-        $feature = 'ups_recon_sqs_update_' . $gateway;
-
-        // The experiment to route the traffic to update entities through sqs
-        $variant = $this->app->razorx->getTreatment($this->app['request']->getTaskId(),
-            $feature, $this->mode ?? Mode::LIVE);
-
-        return ($variant === 'on');
-    }
-
-    /** Update gateway entity asynchronously via SQS
-     * @param array $data
-     * @throws Throwable
-     */
-    protected function updateEntityAsynchronously(array $data)
-    {
-        if ($this->shouldUpdateEntityViaSqs() === true)
-        {
-            $this->dispatchToUpsReconQueue($data);
-            return;
-        }
-
-        $this->publishToMetro($data);
     }
 }
