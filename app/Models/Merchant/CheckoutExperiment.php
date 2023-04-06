@@ -271,7 +271,9 @@ class CheckoutExperiment
             'app.checkout_upi_number_splitz_experiment_id',
             'UpiNumber',
             'upi_number',
-            ['merchant_id' => $this->merchantId]
+            [
+                'merchant_id' => $this->merchantId,
+            ]
         );
 
         $this->fillExperimentData(

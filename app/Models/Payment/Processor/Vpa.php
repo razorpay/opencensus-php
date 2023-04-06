@@ -11,6 +11,8 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\PaymentsUpi;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Error\PublicErrorDescription;
 
 trait Vpa
 {
@@ -20,10 +22,54 @@ trait Vpa
     /**
      * @param array $input
      *
-     * @return array
-     * @throws Exception\GatewayErrorException
-     * @throws Exception\RuntimeException
+     * @throws Exception\BadRequestException
      */
+    public function checkoutValidateContactUpiNumber(array $input): void
+    {
+        $properties = [
+            'id' => UniqueIdEntity::generateUniqueId(),
+            'experiment_id' => $this->app['config']->get('app.checkout_upi_number_contact_blacklist_splitz_experiment_id'),
+            'request_data' => json_encode(
+                [
+                    'merchant_id' => $this->merchant->getId(),
+                    'contact' => $input['vpa'],
+                ]
+            ),
+        ];
+
+        try
+        {
+            $response = $this->app['splitzService']->evaluateRequest($properties);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                null,
+                TraceCode::SPLITZ_ERROR
+            );
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                'vpa',
+                null,
+                PublicErrorDescription::BAD_REQUEST_PAYMENT_UPI_INVALID_UPI_NUMBER
+            );
+        }
+
+        $variant = $response['response']['variant']['name'] ?? '';
+
+        if ($variant !== 'variant_on')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ERROR,
+                "vpa",
+                null,
+                PublicErrorDescription::BAD_REQUEST_PAYMENT_UPI_INVALID_UPI_NUMBER
+            );
+        }
+    }
+
     public function validateVpa(array $input)
     {
         $action = Payment\Action::VALIDATE_VPA;
@@ -38,6 +84,11 @@ trait Vpa
          // Redirect Standard Checkout UPI Number request to UPS
         if ($this->shouldValidateVpaThroughUpiPaymentService($input) === true)
         {
+            if(isset($input[Payment\Analytics\Entity::LIBRARY]) &&
+                $input[Payment\Analytics\Entity::LIBRARY] === Payment\Analytics\Metadata::CHECKOUTJS)
+            {
+                $this->checkoutValidateContactUpiNumber($input);
+            }
             try
             {
                 $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_VALIDATE_VPA,
