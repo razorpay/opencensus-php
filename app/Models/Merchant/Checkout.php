@@ -1122,23 +1122,16 @@ class Checkout
                     $data['customer']['1cc_customer_consent'] = $response['1cc_customer_consent'];
                 }
             }
-            $treatment = $this->app->razorx->getTreatment(
-                $merchant->getId(),
-                Merchant\RazorxTreatment::BLOCK_CUSTOMER_PREFILL_IN_AUTHLINK,
-                $mode
-            );
 
-            if ($treatment === 'on')
+            // Unsets Customer email, name and contact if block_customer_prefill experiment is enabled
+            if ((isset($data['customer']) === true)
+                and (isset($input[Payment\Entity::RECURRING]) === true)
+                and (($input[Payment\Entity::RECURRING]) === '1'))
             {
-                // Unsets Customer email, name and contact if block_customer_prefill experiment is enabled
-                if ((isset($data['customer']) === true)
-                    and (isset($input[Payment\Entity::RECURRING]) === true)
-                    and (($input[Payment\Entity::RECURRING]) === '1'))
-                {
-                    $data['customer']['email']   = '';
-                    $data['customer']['contact'] = '';
-                }
+                $data['customer']['email']   = '';
+                $data['customer']['contact'] = '';
             }
+
         }
         catch (\Exception $ex)
         {

@@ -12,7 +12,7 @@ final class RazorxTreatment
     const PAR_ASYNC_FOR_CARD_FINGERPRINT = 'par_async_for_card_fingerprint';
 
     const DISABLE_RZP_TOKENISED_PAYMENT        = 'disable_rzp_tokenised_payment';
-    
+
     const EMANDATE_NET_REVENUE_IMPROVEMENT  = 'emandate_net_revenue_improvement';
 
     //Razorx treatment constant, whether to make sync call or not
@@ -483,9 +483,6 @@ final class RazorxTreatment
     //Experiment for showing status details in timeline view on dashboard
     const STATUS_DETAILS_TIMELINE_VIEW = 'status_details_timeline_view';
 
-    // Experiment to block customer prefill on authlink checkout
-    const BLOCK_CUSTOMER_PREFILL_IN_AUTHLINK = 'block_customer_prefill_in_authlink';
-
     //Experiment for enabling dcc on various libraries
     const DCC_ON_INTERNATIONAL = 'dcc_on_international';
 
@@ -758,7 +755,7 @@ final class RazorxTreatment
 
     // If true, it will select Optimizer mandate hub for card recurring payments.
     const ALLOW_OPTIMIZER_CARD_MANDATE_HUB = 'allow_optimizer_card_mandate_hub';
-    
+
      /**
      * Razorx flag to enable capture settings for optimizer merchants overriding the Direct settlement capture flow
      */
