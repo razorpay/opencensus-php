@@ -108,7 +108,7 @@ const SettlementsHeaderV2 = ({
     fetchPreviousSettlements(prevSettlementParams);
     fetchSettlementAmount();
     fetchSettlementConfig();
-    fetchBankAccountChangeStatus();
+    fetchBankAccountChangeStatus(user?.id);
     fetchOnDemandBlocked();
     setFetchedAt(moment());
     setTimeDiff(0);
