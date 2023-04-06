@@ -181,6 +181,7 @@ class ProviderCode
     const RAPL               = 'rapl';
     const PINELABS           = 'pinelabs';
     const ZOICICI            = 'zoicici';
+    const GOAXB              = 'goaxb';
 
     //Only for test Upi
     const RAZORPAY         = 'razorpay';
@@ -353,6 +354,7 @@ class ProviderCode
         self::RAPL               => IFSC::RATN,
         self::PINELABS           => self::PPIW,
         self::ZOICICI            => IFSC::ICIC,
+        self::GOAXB              => IFSC::UTIB,
     ];
 
     /**
