@@ -183,6 +183,7 @@ class Handler extends ExceptionHandler
         }
         else if ($e instanceof UnexpectedValueException and
                 (preg_match('/Untrusted Host/', $e->getMessage()) or
+                preg_match('/Invalid method override/', $e->getMessage()) or
                 preg_match('/Invalid Host/', $e->getMessage())))
         {
             $response = response(self::RESPONSE_403, 403)

@@ -103,6 +103,14 @@ class GenericController extends Controller
             ]);
         }
 
+        else if ($mode === "null")
+        {
+            $app['trace']->info(TraceCode::OPTIONS_ROUTE_MODE_AS_NULL_ERROR, [
+                'mode' => $mode,
+                'path' => $path,
+            ]);
+        }
+
         else if (((str_starts_with($mode, 'live') === false) and
                 (str_starts_with($mode, 'test') === false)) or
                 ($path === null))

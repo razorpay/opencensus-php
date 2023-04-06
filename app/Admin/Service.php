@@ -1637,6 +1637,10 @@ class Service extends Base\Service
         }
         catch (Exception $e)
         {
+            Trace::info(TraceCode::REDIS_CONNECTION_ERROR, [
+                'message' => $e->getMessage()
+            ]);
+
             $response['statusMessage'] = 'Redis Connection Error';
 
             $response['statusCode'] = $e->getCode();

@@ -39,6 +39,8 @@ class TraceCode
     const API_SLOW_RESPONSE_CALL                    = 'API_SLOW_RESPONSE_CALL';
     const API_RESPONSE_METRIC                       = 'API_RESPONSE_METRIC';
 
+    const REDIS_CONNECTION_ERROR                    = 'REDIS_CONNECTION_ERROR';
+
     const API_GRACEFUL_SHUTDOWN_HAPPENING           = 'API_GRACEFUL_SHUTDOWN_HAPPENING';
     const ADMIN_LOGIN_DEBUG                         = 'ADMIN_LOGIN_DEBUG';
 
@@ -230,6 +232,7 @@ class TraceCode
 
     const OPTIONS_ROUTE_ERROR_MODE_NULL             = 'OPTIONS_ROUTE_ERROR_MODE_NULL';
     const OPTIONS_ROUTE_ERROR_MODE_ERROR            = 'OPTIONS_ROUTE_ERROR_MODE_ERROR';
+    const OPTIONS_ROUTE_MODE_AS_NULL_ERROR          = 'OPTIONS_ROUTE_MODE_AS_NULL_ERROR';
     const FETCH_ORG_DETAILS_ERROR                   = 'FETCH_ORG_DETAILS_ERROR';
     const FETCH_USER_DETAILS_ERROR                  = 'FETCH_USER_DETAILS_ERROR';
 
