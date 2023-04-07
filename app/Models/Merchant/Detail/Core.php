@@ -3891,6 +3891,8 @@ class Core extends Base\Core
         if (empty($needsClarificationsProperties) === false)
         {
             $properties['nc_fields'] = $needsClarificationsProperties;
+
+            $properties['nc_revamp'] = true;
         }
 
         $this->trace->info(TraceCode::MERCHANT_UPDATE_ACTIVATION_STATUS_INTERNAL, [
@@ -5036,22 +5038,9 @@ class Core extends Base\Core
 
     protected function shouldSkipPOADocuments(Entity $merchantDetails): bool
     {
-        if ($this->isAadhaarEsignVerificationRequired($merchantDetails) === false)
-        {
-            return false;
-        }
-
         $stakeholder = $merchantDetails->stakeholder;
 
         if (empty($stakeholder) === true)
-        {
-            return false;
-        }
-
-        $experimentEnabled = $this->mcore->isRazorxExperimentEnable($merchantDetails->getMerchantId(),
-            RazorxTreatment::SKIP_POA_DOCUMENT_FUNCTIONALITY);
-
-        if ($experimentEnabled === false)
         {
             return false;
         }

@@ -13,6 +13,8 @@ use RZP\Models\Merchant\Document;
 use RZP\Models\Merchant\Detail\Status;
 use RZP\Models\Merchant\RazorxTreatment;
 use RZP\Models\Feature\Core as FeatureCore;
+use RZP\Models\DeviceDetail\Constants as DDConstants;
+use RZP\Models\ClarificationDetail\Service as ClarificationService;
 use RZP\Models\Merchant\Core as MerchantCore;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\Constants as MerchantConstant;
@@ -45,8 +47,13 @@ class Core extends Base\Core
      */
     public function shouldTriggerNeedsClarification(Base\PublicEntity $entity): bool
     {
+        if ($entity->merchant->isSignupCampaign(DDConstants::EASY_ONBOARDING) === true)
+        {
+            return false;
+        }
+
         $statusChangeLogs = ($entity->getEntityName() === E::PARTNER_ACTIVATION) ? $entity->getActivationStatusChangeLog() :
-                                                    (new MerchantCore)->getActivationStatusChangeLog($entity->merchant);
+            (new MerchantCore)->getActivationStatusChangeLog($entity->merchant);
 
         $needsClarificationCount = (new MerchantDetailCore())->getStatusChangeCount($statusChangeLogs, Status::NEEDS_CLARIFICATION);
 
@@ -63,6 +70,7 @@ class Core extends Base\Core
         /*
            If all statuses are verified then don't trigger needs clarification request
         */
+
         return (new UpdateContextRequirements())->shouldTriggerNeedsClarification($entity);
     }
 
