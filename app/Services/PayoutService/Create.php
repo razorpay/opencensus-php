@@ -10,6 +10,7 @@ use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Models\IdempotencyKey;
+use RZP\Models\PayoutsDetails;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\RazorxTreatment;
@@ -205,6 +206,21 @@ class Create extends Base
                     Payout\Entity::AMOUNT => (int) $creditsInfo[Payout\Entity::UNUSED_CREDITS]
                 ]
             ];
+        }
+
+        if (empty($input[PayoutsDetails\Entity::ATTACHMENTS]) === false)
+        {
+            $requestBody[PayoutsDetails\Entity::ATTACHMENTS] = $input[PayoutsDetails\Entity::ATTACHMENTS];
+        }
+
+        if (empty($input[PayoutsDetails\Entity::TDS]) === false)
+        {
+            $requestBody[PayoutsDetails\Entity::TDS] = $input[PayoutsDetails\Entity::TDS];
+        }
+
+        if (empty($input[PayoutsDetails\Entity::SUBTOTAL_AMOUNT]) === false)
+        {
+            $requestBody[PayoutsDetails\Entity::SUBTOTAL_AMOUNT] = $input[PayoutsDetails\Entity::SUBTOTAL_AMOUNT];
         }
 
         return $requestBody;

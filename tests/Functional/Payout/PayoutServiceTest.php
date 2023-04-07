@@ -101,6 +101,8 @@ class PayoutServiceTest extends TestCase
         $this->setUpMerchantForBusinessBankingLive(false, 10000000);
 
         $this->app['config']->set('applications.banking_account_service.mock', true);
+
+        $this->mockTaxPaymentsGetTdsCategories();
     }
 
     public function mockPayoutServiceCreate($fail = false,
@@ -155,6 +157,92 @@ class PayoutServiceTest extends TestCase
                                 );
 
         $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
+    }
+
+    public function mockPayoutServiceCreateForPayoutAttachments($fail = false,
+                                            $metadata = [],
+                                            &$request = [],
+                                            $status = 'processing',
+                                            $insufficient_balance = false,
+                                            $newBankingError = false)
+    {
+        // Not mocking this method like mockPayoutServiceStatus because we need to assert for the request headers that
+        // are going to be sent to payout service.
+        $payoutServiceCreateMock = Mockery::mock('RZP\Services\PayoutService\Create',
+            [$this->app])->makePartial();
+
+        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
+
+        $request = array_merge($defaultRequest, $request);
+
+        $payoutServiceCreateMock->shouldReceive('sendRequest')
+                                ->withArgs(
+                                    function($arg) use (&$request, $status) {
+                                        try
+                                        {
+                                            // Using this method only here as we want to check if the keys in the
+                                            // request are coming properly or not.
+                                            $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                                            foreach ($request['headers'] as $header => $headerValue)
+                                            {
+                                                if (empty($headerValue) === false)
+                                                {
+                                                    if ($arg['headers'][$header] != $headerValue)
+                                                    {
+                                                        return false;
+                                                    }
+                                                }
+                                            }
+
+                                            $request = $arg;
+                                            return true;
+                                        }
+                                        catch (\Throwable $e)
+                                        {
+                                            $request = $arg;
+                                            return false;
+                                        }
+                                    }
+                                )
+                                ->andReturn(
+                                // We are returning this response only as we don't have a use case of supporting
+                                // response based on $request, if needed, that can also be added here using
+                                // andReturnUsing method instead of andReturn
+                                    $this->createResponseForPayoutServiceMock($fail, $status, $insufficient_balance, $newBankingError, $metadata)
+                                );
+
+        $this->app->instance(PayoutServiceCreate::PAYOUT_SERVICE_CREATE, $payoutServiceCreateMock);
+    }
+
+    protected function mockTaxPaymentsGetTdsCategories()
+    {
+        $tpMock = Mockery::mock('RZP\Services\TaxPayments\Service');
+
+        $tdsCategories = [
+            [
+                'id'              => 1,
+                'name'            => 'Test Category - 1',
+                'extern_goi_code' => '6CK',
+                'slab'            => 3.75,
+            ],
+            [
+                'id'              => 2,
+                'name'            => 'Test Category - 2',
+                'extern_goi_code' => '206CA',
+                'slab'            => 4,
+            ],
+            [
+                'id'              => 17,
+                'name'            => 'Test Category - 3',
+                'extern_goi_code' => '94F',
+                'slab'            => 4.25,
+            ],
+        ];
+
+        $tpMock->shouldReceive('getTdsCategories')->andReturn($tdsCategories);
+
+        $this->app['tax-payments'] = $tpMock;
     }
 
     public function mockPayoutServiceFetch($fail = false, $request = [], $errorDescription = 'Service Failure')
@@ -2013,6 +2101,33 @@ class PayoutServiceTest extends TestCase
         $this->assertEquals("test Merchant Fund Transfer", $response[Entity::NARRATION]);
         $this->assertEquals(1614325830, $response[Entity::INITIATED_AT]);
         $this->assertEquals("10000000000000", $response[Entity::MERCHANT_ID]);
+    }
+
+    public function testCreatePayoutWithAttachmentsViaDashboard()
+    {
+        $requestReceivedByMock = [];
+        $this->mockPayoutServiceCreateForPayoutAttachments(false, [], $requestReceivedByMock);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+
+        $testData = $this->testData['testCreatePayoutWithAttachments'];
+        $testData['request']['url']              = '/payouts_with_otp';
+        $testData['request']['content']['otp']   = '0007';
+        $testData['request']['content']['token'] = 'BUIj3m2Nx2VvVj';
+        $this->testData[__FUNCTION__] = $testData;
+
+        $this->ba->proxyAuthLive();
+        $response = $this->startTest();
+
+        $this->assertEquals("test Merchant Fund Transfer", $response[Entity::NARRATION]);
+        $this->assertEquals(1614325830, $response[Entity::INITIATED_AT]);
+        $this->assertEquals("10000000000000", $response[Entity::MERCHANT_ID]);
+
+        $requestReceivedByMock = json_decode($requestReceivedByMock['content'], true);
+
+        $this->assertArrayHasKey('tds', $requestReceivedByMock);
+        $this->assertArrayHasKey('attachments', $requestReceivedByMock);
+        $this->assertArrayHasKey('subtotal_amount', $requestReceivedByMock);
     }
 
     // TODO add mocks to verify if correct status updates were pushed
