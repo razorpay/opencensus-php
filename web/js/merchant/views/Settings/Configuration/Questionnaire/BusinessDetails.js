@@ -133,6 +133,7 @@ const BusinessDetails = ({
           disabled={disabled}
           className="Input--vTop"
           propagatedError={getError('products')}
+          autoRender
         />
       )}
 

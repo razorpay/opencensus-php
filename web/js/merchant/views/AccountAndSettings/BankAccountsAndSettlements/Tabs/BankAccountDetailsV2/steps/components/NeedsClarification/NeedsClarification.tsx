@@ -257,9 +257,8 @@ const NeedsClarification = ({
     return <LoadingStep type={LoadingStateMap[workflowType]} lottieClass={['mb-20']} />;
   }
 
-  const { loading: isWorkflowLoading, needs_clarification: needsClarificationResponse } = workflows[
-    workflowType
-  ];
+  const { loading: isWorkflowLoading, needs_clarification: needsClarificationResponse } =
+    workflows[workflowType];
 
   if (isWorkflowLoading) return <NcShimmer />;
 
@@ -282,7 +281,7 @@ const NeedsClarification = ({
         placeholder="Add a note"
         value={replyNote.note}
         name="note"
-        maxCharacters={232}
+        maxCharacters={800}
         numberOfLines={5}
         onChange={handleNoteChange}
         necessityIndicator="required"

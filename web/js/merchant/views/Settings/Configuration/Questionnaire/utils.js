@@ -391,7 +391,7 @@ export const getFormSchema = (isIERevamp) => {
 
 export const getIsOtherDocumentInRevampFlow = (docType) => {
   return (
-    !!defaultFileTypesIERevamp.find((_fileTypes) => _fileTypes.name === docType) &&
+    !defaultFileTypesIERevamp.find((_fileTypes) => _fileTypes.name === docType) &&
     docType !== 'current_payment_partner_settlement_record'
   );
 };
