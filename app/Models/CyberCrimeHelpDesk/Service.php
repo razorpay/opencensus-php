@@ -185,6 +185,9 @@ class Service extends Base\Service
                     $payment = $this->repo->payment->findOrFail($paymentId);
 
                     $this->createPaymentFraudEntity($payment, $reportedToRazorpayAt, $fraudType);
+
+                    $this->pushSegmentEventForCyberHelpDeskFraudPayments($paymentId, $fdTicketId,
+                        Constants::SEGMENT_EVENT_CYBER_CRIME_FRAUD_PAYMENTS);
                 }
             }
         }
@@ -333,13 +336,15 @@ class Service extends Base\Service
                     //if the details were fetched by cyber_helpdesk service then it might be possible that settlement status is changed b/w workflow creation and approval
                     $ticketDetails[Constants::TICKET_DATA][Constants::TICKET][$i][Constants::DETAILS][Constants::PAYMENT][Payment\Entity::STATUS] =
                         $this->repo->payment->findOrFail($query['details']['payment']['id'])->getStatus();
+
+                    $this->pushSegmentEventForCyberHelpDeskPayment($approvedDetail[Constants::PAYMENT_ID] ,$ticketDetails[Constants::TICKET_DATA][Constants::FD_TICKET_ID], Constants::SEGMENT_EVENT_CYBER_CRIME_FETCHED_PAYMENTS);
                 }
                 else
                 {
                     //if the details weren't fetched by cyber_helpdesk and payment_id was provided by workflow approver then fetch the details
                     $ticketDetails[Constants::TICKET_DATA][Constants::TICKET][$i][Constants::DETAILS] = $this->getDetailsUsingPaymentId($approvedDetail[Constants::PAYMENT_ID], $query[Constants::REQUEST]);
 
-                    $this->pushSegmentEventForCyberHelpDeskPayment($approvedDetail[Constants::PAYMENT_ID] ,$ticketDetails[Constants::TICKET_DATA][Constants::FD_TICKET_ID]);
+                    $this->pushSegmentEventForCyberHelpDeskPayment($approvedDetail[Constants::PAYMENT_ID] ,$ticketDetails[Constants::TICKET_DATA][Constants::FD_TICKET_ID], Constants::SEGMENT_EVENT_CYBER_CRIME_NON_FETCHED_PAYMENTS);
                 }
 
                 $ticketDetails[Constants::TICKET_DATA][Constants::TICKET][$i][Constants::HOLD_SETTLEMENT]                   = $approvedDetail[Constants::PUT_SETTLEMENT_ON_HOLD];
@@ -350,7 +355,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function pushSegmentEventForCyberHelpDeskPayment($paymentId, $fdTicketId)
+    protected function pushSegmentEventForCyberHelpDeskPayment($paymentId, $fdTicketId, $event)
     {
         $payment = $this->repo->payment->findOrFail($paymentId);
 
@@ -365,7 +370,27 @@ class Service extends Base\Service
 
         $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant,
             $eventData,
-            Constants::SEGMENT_EVENT_CYBER_CRIME_NON_FETCHED_PAYMENTS,
+            $event,
+        );
+    }
+
+    protected function pushSegmentEventForCyberHelpDeskFraudPayments($paymentId, $fdTicketId, $event)
+    {
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $merchant = $payment->merchant;
+
+        $workflowActionId = $this->getOpenWorkflowActionIdForFreshdeskTicket($fdTicketId);
+
+        $eventData = [
+            'payment_id' => $paymentId,
+            'workflow_action_id' => $workflowActionId,
+            'method' => $payment->getMethod(),
+        ];
+
+        $this->app['segment-analytics']->pushIdentifyAndTrackEvent($merchant,
+            $eventData,
+            $event,
         );
     }
 
