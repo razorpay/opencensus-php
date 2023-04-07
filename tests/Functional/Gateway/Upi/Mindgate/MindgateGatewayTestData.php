@@ -299,6 +299,37 @@ return [
         ]
     ],
 
+    'testCreateUpiQRVirtualAccount' => [
+        'request' => [
+            'url'     => '/virtual_accounts',
+            'method'  => 'POST',
+            'content' => [
+                "usage"=> "single_use",
+                "description"=> "QR Description",
+                "name"=> "TestName",
+                "notes"=> [
+                    "test"=> "Notes",
+                    "test2"=> "Notes2"
+                ],
+                "receivers"=> [
+                    "types"=> [
+                        "qr_code"
+                    ],
+                    "qr_code"=> [
+                        "method"=> [
+                            "card"=> false,
+                            "upi"=> true,
+                        ]
+                    ]
+                ]
+            ],
+        ],
+        'response' => [
+            'status_code' => 200,
+            'content' => [],
+        ]
+    ],
+
     'testCreateUpiQRVirtualAccountWithCloseBy' => [
         'request' => [
             'url'     => '/virtual_accounts',

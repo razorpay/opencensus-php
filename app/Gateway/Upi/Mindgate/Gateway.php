@@ -450,6 +450,61 @@ class Gateway extends Base\Gateway
     }
 
     /**
+     * Function to identify if callback is for static qr, where payment id would be qr code
+     * Conditons - QR code to be present and merchant with feature flag - UPIQR_V1_HDFC
+     * @param $input
+     * @param $response
+     * @return bool
+     */
+    protected function isStaticQrForHDFCMindgate($input, $response)
+    {
+        if (isset($response['payment_id']) === false)
+        {
+            return false;
+        }
+
+        $paymentId = $response['payment_id'];
+
+        if ((strlen($paymentId) > 14) and 
+            (starts_with($paymentId, 'STQ') === true) and
+            ($this->action !== Action::VALIDATE_PUSH) and 
+            ($this->action !== Action::VERIFY))
+       {
+            $paymentId = substr($paymentId, 3, 14);
+        }
+
+        try
+        {
+            $this->app['repo']->qr_code->findOrFail($paymentId);
+        }
+        catch(\Throwable $e)
+        {
+            return false;
+        }
+
+        $terminal = $this->terminal;
+
+        if (isset($terminal) === false)
+        {
+            if (isset($input['pgMerchantId']) === false)
+            {
+                return false;
+            }
+
+            $terminal = $this->app['repo']->terminal->findByGatewayMerchantId($input['pgMerchantId'], Payment\Gateway::UPI_MINDGATE);
+        }
+
+        $merchant = (new MerchantRepository())->find($terminal['merchant_id']);
+
+        if ($merchant->isFeatureEnabled(Feature::UPIQR_V1_HDFC) === false)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * Takes in S2S request input array
      * and returns the parsed response as an array
      *
@@ -468,8 +523,19 @@ class Gateway extends Base\Gateway
 
         // We are passing gateway driver as second parameter from GatewayController
         // In that case, isBharatQr will be equals to upi_mindgate
+
+        $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY] ?? null;
+
+        $response = $this->parseGatewayResponse($encryptedResponse, Action::CALLBACK);
+
+        //Static QR does not go via UPI V2 rearch route through mozart. All handling happens in api only
+        $isStaticQR = $this->isStaticQrForHDFCMindgate($input, $response);
+
+        $useUpiPreProcess = $this->shouldUseUpiPreProcess(Payment\Gateway::UPI_MINDGATE);
+
         if (($isBharatQr !== true) and
-            ($this->shouldUseUpiPreProcess(Payment\Gateway::UPI_MINDGATE) === true))
+            ($useUpiPreProcess === true) and
+            ($isStaticQR === false))
         {
             $data = $this->getInputForMozartPreProcess($input);
 
@@ -490,10 +556,6 @@ class Gateway extends Base\Gateway
 
             return $response;
         }
-
-        $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY];
-
-        $response = $this->parseGatewayResponse($encryptedResponse, Action::CALLBACK);
 
         $response[ResponseFields::CALLBACK_RESPONSE_PGMID] = $input[ResponseFields::CALLBACK_RESPONSE_PGMID];
 

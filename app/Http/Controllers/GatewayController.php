@@ -189,22 +189,6 @@ class GatewayController extends Controller
 
                 $terminal = $terminal->toArrayWithPassword();
 
-                if (empty($terminal[Terminal\Entity::GATEWAY_SECURE_SECRET]) === true)
-                {
-                    $merchant = (new MerchantRepository())->find($terminal->getMerchantId());
-
-                    if ($merchant->isFeatureEnabled(RZP\Models\Feature\Constants::UPIQR_V1_HDFC) === true)
-                    {
-                        $terminal = (new Terminal\Service())->getEntityFromTerminalServiceResponse($terminal);
-
-                        $this->trace->info(
-                            TraceCode::TERMINALS_SERVICE_PROXY_CREDENTIAL_FETCH_REQUEST,
-                            [
-                                'terminal' => $terminal->getId(),
-                            ]);
-                    }
-                }
-
                 $gateway->setTerminal($terminal);
 
                 return $gateway->preProcessServerCallback($input);

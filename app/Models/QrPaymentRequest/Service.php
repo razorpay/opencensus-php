@@ -108,7 +108,13 @@ class Service extends Base\Service
                 break;
 
             case Type::UPI_QR:
-                $input[Entity::QR_CODE_ID]            = $qrData[Entity::QR_CODE_ID];
+                $qrId = $qrData[Entity::QR_CODE_ID];
+
+                if(strlen($qrId) > 14 and starts_with($qrId,'STQ') === true) {
+                    $qrId = substr($qrId, 3, 14);
+                }
+
+                $input[Entity::QR_CODE_ID]            = $qrId;
                 $input[Entity::TRANSACTION_REFERENCE] = $qrData[Entity::TRANSACTION_REFERENCE];
                 break;
 
