@@ -1,0 +1,487 @@
+import React, { useState, useEffect } from 'react';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
+import { connect } from 'react-redux';
+import {
+  getSelfServeDetailForSettlementDetails,
+  sanitizeTabName,
+} from 'merchant/views/Settlements/v2/util';
+import Pagination from 'merchant/views/Settlements/v2/components/Pagination';
+import TableBody from 'common/ui/TableBody';
+import EntityItemRow from 'merchant/containers/EntityItemRow';
+import Amount from 'common/ui/Amount';
+import Time from 'common/ui/Time';
+import { merchantFetch } from 'merchant/utils/ajax';
+import { titleCase, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { showNotification } from 'merchant_common/reducers/notifications';
+import {
+  handleAnalytics,
+  propertiesPayload,
+} from 'merchant/views/Settlements/Settlements/analytics';
+import PaymentOptimizerProvider from 'merchant/views/Transactions/Payments/components/PaymentOptimizerProvider';
+import { selfServeTrackInitiate } from 'common/utils/selfServeAnalytics';
+import { Text, Spinner, Link, ChevronRightIcon, CopyIcon } from '@razorpay/blade/components';
+// eslint-disable-next-line
+import CustomClipboard from 'common/ui/Clipboard/Custom';
+import { StyledTd, StyledSpinner } from './styled';
+import { analyticsTrack } from 'common/utils/analytics';
+import { BreakupDetailsInterface } from 'merchant/views/Settlements/v3/typings';
+
+const DEFAULT_SKIP = 0;
+const DEFAULT_COUNT = 10;
+
+const ENTITY_COLUMNS = {
+  payment: ['Date', 'Payment ID', 'Gross amount', 'Deductions', 'Net amount', ''],
+  reversal: ['Date', 'Reversal ID', 'Gross amount', 'Deductions', 'Net amount', ''],
+  refund: ['Date', 'Refund ID', 'Gross amount', 'Deductions', 'Net amount', ''],
+  transfer: ['Date', 'Transfer ID', 'Gross amount', 'Deductions', 'Net amount', ''],
+  adjustment: ['Date', 'Adjustment ID', 'Gross amount', 'Deductions', 'Net amount', ''],
+  dispute: ['Date', 'Dispute ID', 'Gross amount', 'Deductions', 'Net amount', ''],
+  'settlement.ondemand': ['Date', 'Settlement ID', 'Gross amount', 'Deductions', 'Net amount', ''],
+  funds: ['Date', 'Dispute ID', 'Gross amount', 'Deductions', 'Net amount', ''],
+};
+
+const keys = ['date', 'entity_id', 'gross_amount', 'deductions', 'net_amount', 'id'];
+
+const ListItem = ({
+  item,
+  source,
+  user,
+  terminalProviders,
+  history,
+  isMobileResolution,
+  onIdCopied,
+  onItemClick,
+}) => {
+  const { selfServeActionName, page, INIT_POINT, INIT_PAGE } =
+    getSelfServeDetailForSettlementDetails(source);
+
+  const selfServeInitiateData = {
+    selfServeAction: selfServeActionName,
+    screen: 'Settlements',
+    page,
+    props: {
+      initiatePoint: INIT_POINT,
+      sessionId: '',
+    },
+  };
+  // Render links
+  const analyticsHandler = () => {
+    const objectName = 'settlement details payment id';
+    const actionName = 'clicked';
+    const screen = 'settlement details';
+    const properties = propertiesPayload('payment', item);
+    handleAnalytics(objectName, actionName, properties, screen);
+  };
+
+  const highlightLink = (rowItem, key, idx, history, isMobileResolution) => {
+    if (source === 'payment' || source === 'refund' || source === 'dispute') {
+      if (isMobileResolution) {
+        return (
+          <Link
+            variant="button"
+            onClick={() => {
+              const pathname =
+                source === 'payment' || source === 'refund'
+                  ? `/${source}s/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`
+                  : `/${source}s/${rowItem[key]}`;
+
+              history.push({
+                pathname,
+                state: { openedFrom: 'settlement-details', settlement_id: rowItem[key] },
+              });
+
+              if (['payment', 'refund'].includes(source)) {
+                if (window?.session_id) selfServeInitiateData.props.sessionId = window.session_id;
+                selfServeTrackInitiate(selfServeInitiateData);
+                return analyticsHandler();
+              }
+              return true;
+            }}
+            icon={ChevronRightIcon}
+            iconPosition="right"
+          />
+        );
+      } else {
+        return (
+          <Link
+            variant="button"
+            onClick={() => {
+              const pathname =
+                source === 'payment' || source === 'refund'
+                  ? `/${source}s/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`
+                  : `/${source}s/${rowItem[key]}`;
+
+              history.push({
+                pathname,
+                state: { openedFrom: 'settlement-details', settlement_id: rowItem[key] },
+              });
+
+              if (['payment', 'refund'].includes(source)) {
+                if (window?.session_id) selfServeInitiateData.props.sessionId = window.session_id;
+                selfServeTrackInitiate(selfServeInitiateData);
+                return analyticsHandler();
+              }
+              return true;
+            }}
+            icon={ChevronRightIcon}
+            iconPosition="right"
+          >
+            Details
+          </Link>
+        );
+      }
+    } else if (source === 'transfer' || source === 'reversal') {
+      if (isMobileResolution) {
+        return (
+          <Link
+            variant="button"
+            icon={ChevronRightIcon}
+            iconPosition="right"
+            onClick={() => {
+              history.push(
+                `/route/${source}s/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`,
+              );
+            }}
+          />
+        );
+      } else {
+        return (
+          <Link
+            variant="button"
+            icon={ChevronRightIcon}
+            iconPosition="right"
+            onClick={() => {
+              history.push(
+                `/route/${source}s/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`,
+              );
+            }}
+          >
+            Details
+          </Link>
+        );
+      }
+    } else if (source === 'payment_domestic' || source === 'payment_international') {
+      if (isMobileResolution) {
+        return (
+          <Link
+            variant="button"
+            onClick={() => {
+              history.push(
+                `/payments/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`,
+              );
+              selfServeTrackInitiate(selfServeInitiateData);
+            }}
+            icon={ChevronRightIcon}
+            iconPosition="right"
+          />
+        );
+      } else {
+        return (
+          <Link
+            variant="button"
+            onClick={() => {
+              history.push(
+                `/payments/${rowItem[key]}?init_point=${INIT_POINT}&init_page=${INIT_PAGE}`,
+              );
+              selfServeTrackInitiate(selfServeInitiateData);
+            }}
+            icon={ChevronRightIcon}
+            iconPosition="right"
+          >
+            Details
+          </Link>
+        );
+      }
+    } else {
+      return <td key={idx} />;
+    }
+  };
+
+  const { id, amount, fee, tax, created_at, optimizer_provider, settled_by } = item;
+  const currency = user.merchant.currency;
+  const deductions = fee + tax;
+  const grossAmount = amount + deductions;
+  let columnKeys: Array<string>;
+
+  if (isMobileResolution) {
+    columnKeys = keys.filter((key) => {
+      if (key === 'date' || key === 'net_amount' || key === 'id') return true;
+      else return false;
+    });
+  } else {
+    columnKeys = keys;
+  }
+
+  return (
+    <EntityItemRow id={id}>
+      {columnKeys.map((key, idx) => {
+        let row: any = null;
+
+        switch (key) {
+          case `entity_id`:
+            row = (
+              <StyledTd key={idx}>
+                <Text type="subtle" size="medium">
+                  {id}
+                </Text>
+                <CustomClipboard value={id} onCopy={onIdCopied.bind(null, id)}>
+                  <CopyIcon size="medium" color="feedback.icon.neutral.lowContrast" />
+                </CustomClipboard>
+              </StyledTd>
+            );
+            break;
+          case 'gross_amount':
+            row = (
+              <td key={idx}>
+                <Text type="subtle" size="medium">
+                  <Amount value={grossAmount} currency={currency} />
+                </Text>
+              </td>
+            );
+            break;
+          case 'deductions':
+            row = (
+              <td key={idx}>
+                <Text weight="regular" color="surface.text.subtle.lowContrast" size="medium">
+                  <Amount value={deductions} currency={currency} />
+                </Text>
+              </td>
+            );
+            break;
+          case 'net_amount':
+            row = (
+              <td key={idx}>
+                <Text weight="regular" color="surface.text.subtle.lowContrast" size="medium">
+                  <Amount value={amount} currency={currency} />
+                </Text>
+              </td>
+            );
+            break;
+          case 'date':
+            row = (
+              <td key={idx}>
+                <Text type="subtle">
+                  <Time value={created_at} format="DD MMM YYYY, hh:mm:ss a" />
+                </Text>
+                {isMobileResolution ? (
+                  <Text type="subdued" size="small">
+                    {id}
+                  </Text>
+                ) : null}
+              </td>
+            );
+            break;
+          case 'optimizer_provider':
+            row = user?.isSingleReconEnabled && user?.isOptimizerEnabled && (
+              <td key={idx}>
+                <PaymentOptimizerProvider
+                  terminal_id={optimizer_provider}
+                  settled_by={settled_by}
+                  terminalProviders={terminalProviders}
+                  hideExternalLink={true}
+                />
+              </td>
+            );
+            break;
+          default: {
+            row = (
+              <td onClick={onItemClick.bind(null, id)}>
+                {highlightLink(item, key, idx, history, isMobileResolution)}
+              </td>
+            );
+          }
+        }
+
+        return row;
+      })}
+    </EntityItemRow>
+  );
+};
+
+type Props = {
+  entityType: 'debit' | 'credit';
+  breakupDetails: BreakupDetailsInterface;
+  activeTab: string;
+  settlementId: string;
+} & RouteComponentProps;
+
+const EntityList = (props) => {
+  const [listData, setlistData] = useState<null | []>(null);
+  const [error, seterror] = useState(null);
+  const [skip, setskip] = useState(DEFAULT_SKIP);
+  const [count, setcount] = useState(DEFAULT_COUNT);
+
+  const { settlementId, showNotification, activeTab, user, terminalProviders } = props;
+
+  const fetchData = (skipVal, countVal, type) => {
+    const tab = sanitizeTabName(type);
+    const source = tab === 'ondemand settlement' ? 'settlement.ondemand' : tab;
+
+    return merchantFetch({
+      url: `settlements/${settlementId}/transaction_source_details`,
+      method: 'POST',
+      data: {
+        source_type: source,
+        skip: skipVal,
+        limit: countVal,
+      },
+    }).catch(({ errors }) => {
+      seterror(errors.join(''));
+      showNotification({
+        type: 'error',
+        message: errors.join(''),
+      });
+    });
+  };
+
+  // Effect runs whenever active tab is changed
+  useEffect(() => {
+    // fetch with defaults
+    fetchData(DEFAULT_SKIP, DEFAULT_COUNT, activeTab).then((res) => {
+      /* istanbul ignore else */
+      if (res?.data) {
+        setlistData(res.data);
+        setskip(DEFAULT_SKIP);
+        setcount(DEFAULT_COUNT);
+      }
+    });
+  }, [activeTab]);
+
+  // handles next page click
+  const next = React.useCallback(() => {
+    const skipValue = skip + count;
+    fetchData(skipValue, count, activeTab).then(({ data }) => {
+      setlistData(data);
+      setskip(skipValue);
+    });
+  }, [activeTab, count, skip]);
+
+  // handles previous page click
+  const prev = React.useCallback(() => {
+    const skipValue = skip - count;
+    fetchData(skipValue, count, activeTab).then(({ data }) => {
+      setlistData(data);
+      setskip(skipValue);
+    });
+  }, [activeTab, count, skip]);
+
+  const renderColumnsHeaders = (list) => {
+    if (list.length === 0) return null;
+
+    const tab = sanitizeTabName(activeTab);
+    let entityColums = [];
+
+    if (props.isMobileResolution) {
+      entityColums = ENTITY_COLUMNS[tab].filter((col) => {
+        if (col === 'Date' || col === 'Net amount' || col === '') return true;
+        else return false;
+      });
+    } else {
+      entityColums = ENTITY_COLUMNS[tab];
+    }
+
+    return entityColums.map((key, idx) => {
+      return (
+        <th key={idx} style={{ backgroundColor: '#F8F9FB', border: 'none' }}>
+          <Text variant="body" size="medium" color="surface.text.subtle.lowContrast" weight="bold">
+            {titleCase(key)}
+          </Text>
+        </th>
+      );
+    });
+  };
+
+  const onItemClick = (entityId) => {
+    const { settlement } = props;
+    const entity = activeTab.split('_')[0].trim();
+    const entityType = props.entityType === 'credit' ? 'Gross Settlements' : 'Deductions';
+
+    analyticsTrack({
+      objectName: 'Merchant clicked',
+      actionName: `Details for ${titleCase(entity)}s in ${entityType} tab`,
+      screen: 'Settlements',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        page: 'Details View',
+        settlements_experiment_name: 'v2',
+        settlementId: settlement.id,
+        settlementStatus: settlement.status,
+        sessionId: window?.session_id ? window.session_id : undefined,
+        entityId,
+        component: `${titleCase(entity)}s`,
+      },
+    });
+  };
+
+  const onIdCopied = (entityId) => {
+    const { settlement } = props;
+    const entity = activeTab.split('_')[0].trim();
+    const entityType = props.entityType === 'credit' ? 'Gross Settlements' : 'Deductions';
+
+    analyticsTrack({
+      objectName: 'Merchant copied',
+      actionName: `${titleCase(entity)} ID from ${entityType} tab`,
+      screen: 'Settlements',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        page: 'Details View',
+        settlements_experiment_name: 'v2',
+        settlementId: settlement.id,
+        settlementStatus: settlement.status,
+        sessionId: window?.session_id ? window.session_id : undefined,
+        entityId,
+        component: `${titleCase(entity)}s`,
+      },
+    });
+  };
+
+  return (
+    <div className="content-wrapper" style={{ backgroundColor: '#FFFFFF' }}>
+      {listData ? (
+        <React.Fragment>
+          <div className="table-responsive">
+            <table className="table table-hover">
+              <thead>
+                <tr>{renderColumnsHeaders(listData)}</tr>
+              </thead>
+              <TableBody rows={listData} emptyTableMsg={`No ${sanitizeTabName(activeTab)} found`}>
+                {listData &&
+                  listData.map((item: any) => (
+                    <ListItem
+                      key={item.id}
+                      item={item}
+                      source={activeTab.split('_')[0].trim()}
+                      user={user}
+                      terminalProviders={terminalProviders}
+                      history={props.history}
+                      isMobileResolution={props.isMobileResolution}
+                      onIdCopied={onIdCopied}
+                      onItemClick={onItemClick}
+                    />
+                  ))}
+              </TableBody>
+            </table>
+          </div>
+          <Pagination next={next} prev={prev} listData={listData} skip={skip} count={count} />
+        </React.Fragment>
+      ) : error ? null : (
+        <StyledSpinner>
+          <Text>Loading {props.entityType === 'credit' ? 'gross settlements' : 'deductions'}</Text>
+          <Spinner accessibilityLabel="Loading" size="medium" />
+        </StyledSpinner>
+      )}
+    </div>
+  );
+};
+
+const mapStateToProps = (state) => {
+  const { session, navigator } = state;
+  return {
+    user: session.user,
+    settlement: state.settlement.settlement,
+    terminalProviders: navigator.terminalProviders,
+    isMobileResolution: state.app.isMobileResolution,
+  };
+};
+
+export default withRouter<Props, any>(connect(mapStateToProps, { showNotification })(EntityList));

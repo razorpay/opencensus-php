@@ -19,9 +19,8 @@ const PaymentHandleListFilter: React.FC<PaymentHandleListFilterPropTypes> = ({
   handleInfo,
 }) => {
   const [isTestMode] = useState(getIsTestMode(mode));
-  const [paymentHandleEntity, setPaymentPageEntity] = useState<PaymentPageEntity>(
-    PAYMENT_INITIAL_VALUE,
-  );
+  const [paymentHandleEntity, setPaymentPageEntity] =
+    useState<PaymentPageEntity>(PAYMENT_INITIAL_VALUE);
 
   useEffect(() => {
     const getListItems = async (data) => {

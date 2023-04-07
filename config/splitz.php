@@ -232,6 +232,9 @@ return [
          // Bank Account update Revamp
         'BANK_ACCOUNT_UPDATE_REVAMP'  => env('BANK_ACCOUNT_UPDATE_REVAMP', ''),
 
+        // Settlement Revamp
+        'SETTLEMENT_V3_REVAMP' => env('SETTLEMENT_V3_REVAMP', ''), 
+
          // Payment Handle Onboarding
          'PAYMENT_HANDLE_ONBOARDING'  => env('PAYMENT_HANDLE_ONBOARDING', ''),
 

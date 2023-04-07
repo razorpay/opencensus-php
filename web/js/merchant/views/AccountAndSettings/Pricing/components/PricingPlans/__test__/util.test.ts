@@ -8,14 +8,14 @@ describe('Tests for `getStatusData` function', () => {
     const subscriptionPlanData = getSubscriptionDataRes({
       subscriptionStatus: 'processing',
     }).subscription;
-    const result = getStatusData((subscriptionPlanData as unknown) as SubscriptionPlanDataT);
+    const result = getStatusData(subscriptionPlanData as unknown as SubscriptionPlanDataT);
 
     expect(result).toMatchObject(STATUS_DATA.IN_PROGRESS);
   });
 
   test('Should return `Live` status when such as data is passed', () => {
     const subscriptionPlanData = getSubscriptionDataRes().subscription;
-    const result = getStatusData((subscriptionPlanData as unknown) as SubscriptionPlanDataT);
+    const result = getStatusData(subscriptionPlanData as unknown as SubscriptionPlanDataT);
 
     expect(result).toMatchObject(STATUS_DATA.LIVE);
   });
@@ -24,7 +24,7 @@ describe('Tests for `getStatusData` function', () => {
     const subscriptionPlanData = getSubscriptionDataRes({
       subscriptionStatus: 'anything',
     }).subscription;
-    const result = getStatusData((subscriptionPlanData as unknown) as SubscriptionPlanDataT);
+    const result = getStatusData(subscriptionPlanData as unknown as SubscriptionPlanDataT);
 
     expect(result).toBe(null);
   });

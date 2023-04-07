@@ -15,10 +15,11 @@ import DashboardBanner from 'common/ui/DashboardBanner';
 import { Badge, OffersIcon } from '@razorpay/blade/components';
 import { StyledNavLink } from 'merchant/views/AccountAndSettings/Pricing/Pricing.styles';
 
-const PricingPlans = lazy(() =>
-  import(
-    /* webpackChunkName: "PricingPlans" */ 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans'
-  ),
+const PricingPlans = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "PricingPlans" */ 'merchant/views/AccountAndSettings/Pricing/components/PricingPlans'
+    ),
 );
 
 const Pricing = ({ location }): JSX.Element => {

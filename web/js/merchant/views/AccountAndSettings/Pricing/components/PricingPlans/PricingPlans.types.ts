@@ -60,6 +60,6 @@ type SubscriptionPlanDataT = {
   };
 };
 
-type StatusDataT = typeof STATUS_DATA[keyof typeof STATUS_DATA];
+type StatusDataT = (typeof STATUS_DATA)[keyof typeof STATUS_DATA];
 
 export { PricingPlansProps, SubscriptionPlanDataT, StatusDataT };

@@ -91,8 +91,7 @@ export const pricing_bundle = {
       f6: '1. Industry trends 2. Peer product adoption',
       f7: 'Free worth Rs 20,000',
       f8: '1.9% (5% Off)',
-      f9:
-        '10% off on Google Workspace on recurring billing 2. Shiprocket 100% cash-back up to Rs. 1000',
+      f9: '10% off on Google Workspace on recurring billing 2. Shiprocket 100% cash-back up to Rs. 1000',
       icon: {
         alt: 'Trend Up',
         src: 'https://betacdn.np.razorpay.in/static/assets/pricing-bundle/growth.svg',
@@ -116,8 +115,7 @@ export const pricing_bundle = {
       f6: '1. Industry trends 2. Peer product adoption 3. Success Rate Report',
       f7: 'Free worth Rs 20,000',
       f8: '1.85% (7.5% Off)',
-      f9:
-        '10% off on Google Workspace on recurring billing 2. Shiprocket 100% cash-back up to Rs. 1000',
+      f9: '10% off on Google Workspace on recurring billing 2. Shiprocket 100% cash-back up to Rs. 1000',
       icon: {
         alt: 'Jet',
         src: 'https://betacdn.np.razorpay.in/static/assets/pricing-bundle/rocket.svg',
@@ -139,12 +137,10 @@ export const pricing_bundle = {
       f3: 'INSTANT | Same Day',
       f4: 'ELITE On Call Resolution',
       f5: 'Dedicated Account Manager',
-      f6:
-        '1. Industry trends 2. Peer product adoption 3. Success Rate Report 4. 1:1 monthly session for Settlement report debrief',
+      f6: '1. Industry trends 2. Peer product adoption 3. Success Rate Report 4. 1:1 monthly session for Settlement report debrief',
       f7: 'Free worth Rs 20,000',
       f8: '1.75% (12.5% Off)',
-      f9:
-        '10% off on Google Workspace on recurring billing 2. $1,000 in credits for Notion Team Plan 3. Shiprocket 100% cash-back up to Rs. 1000',
+      f9: '10% off on Google Workspace on recurring billing 2. $1,000 in credits for Notion Team Plan 3. Shiprocket 100% cash-back up to Rs. 1000',
       icon: {
         alt: 'Spaceship',
         src: 'https://betacdn.np.razorpay.in/static/assets/pricing-bundle/spaceship.svg',

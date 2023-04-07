@@ -33,6 +33,9 @@ import {
 import { getNoOfDaysAfterEsPartialEnable } from 'merchant/views/Settlements/Settlements/components/Modals/ScheduledModal/utils';
 import { trackSettlementsPageRendered } from './Settlements/components/Modals/ScheduledModal/analytics';
 import RouteOndemandSettlements from './RouteOndemandSettlements';
+import EmptySettlementState from 'merchant/views/Settlements/v3/components/EmptyState';
+import SettlementsBannerV2 from 'merchant/views/Settlements/components/SettlementsBannerV2';
+import { StyledEmptySettlementsContainer } from 'merchant/views/Settlements/v3/components/EmptyState/styled';
 
 const Settlements = ({
   user,
@@ -50,6 +53,16 @@ const Settlements = ({
   const isPartialOndemandSettlementEnabled =
     isOndemandSettlementEnabled && isOndemandSettlementsRestricted;
 
+  useEffect(() => {
+    trackSettlementsPageRendered({
+      settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : ' v1',
+      state: user.isTransacted ? 'Complete' : 'Empty',
+      activation_status: user.activation_status,
+      sessionId: window?.session_id ? window.session_id : undefined,
+      isL2Completed: user.isActivated && true,
+    });
+  }, []);
+
   const checkIfFirstEverSettlement = (callbackSettlementStatus) => {
     const settlementStatus = getSettlementStatus(user.current, callbackSettlementStatus);
     const isDisabled =
@@ -60,7 +73,13 @@ const Settlements = ({
   const onInstantSettlementsClick = () => {
     checkIfFirstEverSettlement();
     trackOnDemandTabClick();
-    trackIS.goToTabIS();
+    trackIS.goToTabIS({
+      settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : ' v1',
+      state: user.isTransacted ? 'Complete' : 'Empty',
+      activation_status: user.activation_status,
+      sessionId: window?.session_id ? window.session_id : undefined,
+      isL2Completed: user.isActivated && true,
+    });
   };
 
   const openEsAutomaticModalIfRoute = () => {
@@ -91,7 +110,6 @@ const Settlements = ({
 
     // opens scheduled modal if pathname is /settlements/enable_automatic
     openEsAutomaticModalIfRoute();
-    trackSettlementsPageRendered();
   }, []);
 
   const handleSettlementUnlockStatusClick = () => {
@@ -116,7 +134,14 @@ const Settlements = ({
     !user.isAutomaticSettlementEnabled &&
     user.isAutomaticSettlementRestricted;
 
-  return (
+  const showSettlementsEmptyState = !user.isTransacted && user.isSettlementV3RevampEnabled;
+
+  return showSettlementsEmptyState ? (
+    <StyledEmptySettlementsContainer>
+      <SettlementsBannerV2 />
+      <EmptySettlementState />
+    </StyledEmptySettlementsContainer>
+  ) : (
     <>
       {/* instant settlements banner */}
       <div className="settlements-banner-container">

@@ -17,6 +17,8 @@ jest.mock('merchant/views/TicketSupport/utils', () => ({
   },
 }));
 
+window.session_id = `12345`;
+
 describe('SettlementsHeaderV2', () => {
   const fetchOnDemandFnSpy = jest.spyOn(details, 'fetchOnDemandBlocked');
   const fetchSettlementConfigSpy = jest.spyOn(details, 'fetchSettlementConfig');
@@ -76,7 +78,10 @@ describe('SettlementsHeaderV2', () => {
         eventLabel: `Settlements`,
       });
       expect(analyticsSpy).toHaveBeenCalledTimes(1);
-      expect(analyticsSpy).toHaveBeenCalledWith('settlement cycle', 'clicked');
+      expect(analyticsSpy).toHaveBeenCalledWith('settlement cycle', 'clicked', {
+        settlements_experiment_name: 'v1',
+        sessionId: `12345`,
+      });
     });
     expect(screen.getByText('Documentation')).toBeInTheDocument();
     expect(screen.getByRole('link')).toHaveAttribute('href', 'http://razorpay.com/settlement');

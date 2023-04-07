@@ -12,6 +12,8 @@ import PaymentSchedule from './PaymentSchedule';
 import EntitySchedule from './EntitySchedule';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const paymentTypes = ['domestic', 'international'];
 const specialScheduleNames = ['instant']; // these schedules names doesn't have T in their name so we don't want to communicate the info on T
@@ -29,7 +31,25 @@ const SettlementScheduleV2 = (props) => {
   const transferSchedule = schedules?.transfer?.default;
 
   const toggleExample = () => {
+    const { user } = props;
     setShowExample(!showExample);
+
+    // instrument only view clicks
+    if (showExample === false)
+      analyticsTrack({
+        objectName: 'Merchant clicks',
+        actionName: 'View example',
+        screen: 'Settlements',
+        properties: {
+          ...getCommonAnalyticsProperties(window.rzp_user),
+          page: 'Home Screen',
+          settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
+          state: user.isTransacted ? 'Complete' : 'Empty',
+          activation_status: user.activation_status,
+          sessionId: window?.session_id ? window.session_id : undefined,
+          isL2Completed: user.isActivated && true,
+        },
+      });
   };
 
   const viewHolidayList = () => {

@@ -40,7 +40,7 @@ export default class Pager extends Component {
 
     return (
       <div
-        class="clearfix text-center"
+        class="clearfix text-center pager"
         style={{
           margin: '20px',
         }}

@@ -125,7 +125,7 @@ const initialState = {
   },
 };
 
-const isBreakupNew = (obj) => {
+export const isBreakupNew = (obj) => {
   delete obj.amountInINR;
   delete obj.resourceUrl;
   delete obj.resourceIdField;

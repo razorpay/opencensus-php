@@ -1,0 +1,159 @@
+import { titleCase } from 'common/utils/rzp-utils';
+import {
+  BreakupComponentInterface,
+  BreakupDetailsInterface,
+  BreakUpDetailsResponse,
+  BreakupItems,
+} from 'merchant/views/Settlements/v3/typings';
+
+// TODO: update this data after getting value from BE.
+const InstrumentMapper = {
+  payment_domestic: {
+    displayName: 'Payment',
+    tooltipInfo:
+      'Amount collected from customers for products or services purchased or availed on your website or app',
+  },
+  tax: {
+    displayName: 'Tax',
+    tooltipInfo: 'Goods and Service Tax (GST)',
+  },
+  fee: {
+    displayName: 'Fee',
+    tooltipInfo: 'Platform fees charged by Razorpay',
+  },
+  dispute: {
+    displayName: 'Disputes',
+    tooltipInfo:
+      'Amount adjusted for customer disputes (like unauthorised charges or failure to deliver the promised merchandise)',
+  },
+  transfer: {
+    displayName: 'Transfers',
+    tooltipInfo: 'Amount transferred to your linked account(s)',
+  },
+  transfer_international: {
+    displayName: 'Transfers',
+    tooltipInfo: 'Amount transferred to your linked account(s)',
+  },
+  settlement_transfer: {
+    displayName: 'Transfers',
+    tooltipInfo: 'Amount transferred to your linked account(s)',
+  },
+  refund: {
+    displayName: 'Refunds',
+    tooltipInfo: 'Amount reversed to customer(s) bank account',
+  },
+  refund_domestic: {
+    displayName: 'Refunds',
+    tooltipInfo: 'Amount reversed to customer(s) bank account',
+  },
+  refund_credits: {
+    displayName: 'Refunds',
+    tooltipInfo: 'Amount reversed to customer(s) bank account',
+  },
+  refund_international: {
+    displayName: 'Refunds',
+    tooltipInfo: 'Amount reversed to customer(s) bank account',
+  },
+  payment: {
+    displayName: 'Payment',
+    tooltipInfo:
+      'Amount collected from customers for products or services purchased or availed on your website or app',
+  },
+  payment_international: {
+    displayName: 'Payment',
+    tooltipInfo:
+      'Amount collected from customers for products or services purchased or availed on your website or app',
+  },
+  reversal: {
+    displayName: 'Reversals',
+    tooltipInfo: 'Amount transferred to your bank account from linked account(s)',
+  },
+  fund_account_validation: {
+    displayName: 'Funds',
+    tooltipInfo:
+      "Validation to ensure that your customer's fund account is the right account number",
+  },
+  adjustment: {
+    displayName: 'Adjustments',
+    tooltipInfo: 'Amount adjusted due to database inconsistencies or technical issues',
+  },
+  credit_repayment: {
+    displayName: 'Credit repayment',
+    tooltipInfo:
+      'Amount deducted from the settlement as this amount was deposited in your bank account previously as a credit',
+  },
+  'settlement.ondemand': {
+    displayName: 'On demand settlement',
+    tooltipInfo:
+      'Amount deducted from the settlement as this was deposited in your bank account previously as an on-demand settlement',
+  },
+};
+
+const getBreakupComponentWise = ({
+  item,
+}: {
+  item: Pick<BreakupItems, 'amount' | 'component'>;
+}): BreakupComponentInterface => {
+  return {
+    id: item.component,
+    name: InstrumentMapper[item.component]?.displayName || titleCase(item.component),
+    amount: item.amount,
+    tooltipInfo: InstrumentMapper[item.component]?.tooltipInfo,
+  };
+};
+
+export const getBreakUpDetails = ({
+  items,
+  isBreakupNew,
+}: Pick<BreakupDetailsInterface, 'items' | 'isBreakupNew'>): BreakUpDetailsResponse => {
+  const deductions = {
+    tax: 0,
+    fee: 0,
+  };
+  let netSettlements = 0;
+  return items.reduce(
+    (accumulator, each, index) => {
+      const entryItem: BreakupComponentInterface = getBreakupComponentWise({ item: each });
+      if (each.type === 'credit') {
+        netSettlements = netSettlements + each.amount;
+        accumulator.grossSettlements.amount = accumulator.grossSettlements.amount + each.amount;
+        accumulator.grossSettlements.entries.push(entryItem);
+      }
+      if (each.type === 'debit') {
+        netSettlements = netSettlements - each.amount;
+        accumulator.deductions.amount = accumulator.deductions.amount + each.amount;
+        accumulator.deductions.entries.push(entryItem);
+      }
+      if (isBreakupNew) {
+        netSettlements = netSettlements - each.tax - each.fee;
+        accumulator.deductions.amount += each.tax + each.fee;
+        deductions.tax = deductions.tax + each.tax;
+        deductions.fee = deductions.fee + each.fee;
+      }
+      if (index === items.length - 1) {
+        if (isBreakupNew) {
+          Object.keys(deductions).forEach((each) => {
+            accumulator.deductions.entries.push(
+              getBreakupComponentWise({ item: { component: each, amount: deductions[each] } }),
+            );
+          });
+        }
+        accumulator.netSettlements.amount = netSettlements;
+      }
+      return accumulator;
+    },
+    {
+      grossSettlements: {
+        amount: 0,
+        entries: [],
+      },
+      deductions: {
+        amount: 0,
+        entries: [],
+      },
+      netSettlements: {
+        amount: 0,
+      },
+    } as BreakUpDetailsResponse,
+  );
+};

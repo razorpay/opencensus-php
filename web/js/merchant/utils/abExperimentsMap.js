@@ -447,6 +447,14 @@ export default {
     // prod experiment ids
     'Kmd4oqDWnxSFe8',
   ],
+
+  settlement_v3_revamp: [
+    // beta experiment ids
+    'LaOawyVhmVnwnL',
+    // prod experiment ids
+    'LaOXeB0tkQtvIc',
+  ],
+
   account_settings_revamp: [
     // beta experiment ids
     'L2orMNISKsZShh',

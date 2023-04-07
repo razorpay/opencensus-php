@@ -61,6 +61,9 @@ const InstantSettlementPayoutDetails = lazy(() =>
 const SettlementDetailsV2 = lazy(() =>
   import(/* webpackChunkName: "SettlementDetails" */ 'merchant/views/Settlements/v2/Details'),
 );
+const SettlementDetailsV3 = lazy(() =>
+  import(/* webpackChunkName: "SettlementDetails" */ 'merchant/views/Settlements/v3'),
+);
 const PaymentLinks = lazy(() =>
   import(/* webpackChunkName: "PaymentLinks" */ 'merchant/views/PaymentLinks/Index'),
 );
@@ -427,7 +430,7 @@ export default class Content extends Component {
 
           <ShowWhenRoute
             path="/settlements/:id(setl_.+)/"
-            component={SettlementDetailsV2}
+            component={user.isSettlementV3RevampEnabled ? SettlementDetailsV3 : SettlementDetailsV2}
             additionalCondition={(user) =>
               user.isAllowedView('settlements') && user.hideForNIASupportRole
             }

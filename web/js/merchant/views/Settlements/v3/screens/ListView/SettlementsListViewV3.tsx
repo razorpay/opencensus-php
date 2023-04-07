@@ -1,0 +1,107 @@
+import React from 'react';
+import {
+  StyledSettlementListTable,
+  StyledSettlementListTableHeaderCell,
+  StyledLoaderCell,
+} from './styled';
+import { Text, Box, useTheme, InfoIcon, Spinner } from '@razorpay/blade/components';
+import { SettlementsCollectionReducerState, User } from 'common/typings';
+import { settlementListViewHeaders, settlementListViewMobileHeaders } from './constants';
+import TableBody from 'common/ui/TableBody';
+import SettlementListItem from './ListItem';
+import SettlementListItemMobile from './ListItemMobile';
+import { useBreakpoint } from '@razorpay/blade/utils';
+import PopoverComponent, { PopoverBody } from 'common/ui/Popover';
+
+type Props = SettlementsCollectionReducerState & {
+  user: User;
+  terminalProviders: any;
+  selfServeActionsPage: string;
+  settlements: SettlementsCollectionReducerState['items'];
+  isLoading: boolean;
+};
+
+const SettlementsListViewV3 = ({
+  user,
+  settlements,
+  isLoading,
+  terminalProviders,
+  selfServeActionsPage = 'Settlements.Settlements',
+}: Props): JSX.Element => {
+  const { theme } = useTheme();
+  const { matchedDeviceType } = useBreakpoint({
+    breakpoints: theme.breakpoints,
+  });
+
+  const isMobile = matchedDeviceType === 'mobile';
+  const headersToShow = isMobile ? settlementListViewMobileHeaders : settlementListViewHeaders;
+  const SettlementListItemComponent = isMobile ? SettlementListItemMobile : SettlementListItem;
+  const colSpan = isMobile ? 2 : 7;
+
+  return (
+    <Box overflowX="auto">
+      <StyledSettlementListTable>
+        <thead>
+          <tr>
+            {headersToShow.map((header, idx) => {
+              const shouldShowHeader = header.condition ? header.condition(user) : true;
+
+              return (
+                <React.Fragment key={idx + header.title}>
+                  {shouldShowHeader ? (
+                    <StyledSettlementListTableHeaderCell hasToolTip={!!header.tooltip}>
+                      <Text weight="bold" type="subtle">
+                        {header.title}
+                        {header.tooltip && (
+                          <>
+                            <InfoIcon
+                              marginLeft="spacing.2"
+                              size="medium"
+                              color="surface.text.normal.lowContrast"
+                            />
+                            <PopoverComponent
+                              align="right"
+                              theme="dark"
+                              parentQuerySelector="content-wrapper"
+                            >
+                              <PopoverBody>{header.tooltip}</PopoverBody>
+                            </PopoverComponent>
+                          </>
+                        )}
+                      </Text>
+                    </StyledSettlementListTableHeaderCell>
+                  ) : null}
+                </React.Fragment>
+              );
+            })}
+          </tr>
+        </thead>
+        <TableBody
+          isLoading={isLoading}
+          rows={settlements}
+          emptyTableMsg="No Settlements found!"
+          colSpan={colSpan}
+          SpinnerComponent={() => (
+            <tr>
+              <StyledLoaderCell colSpan={colSpan}>
+                <Spinner size="large" accessibilityLabel="" />
+              </StyledLoaderCell>
+            </tr>
+          )}
+        >
+          {settlements.map((settlement) => (
+            <SettlementListItemComponent
+              key={settlement.id}
+              settlement={settlement}
+              user={user}
+              terminalProviders={terminalProviders}
+              initiatePage={selfServeActionsPage}
+            />
+          ))}
+        </TableBody>
+      </StyledSettlementListTable>
+    </Box>
+  );
+};
+
+export default SettlementsListViewV3;

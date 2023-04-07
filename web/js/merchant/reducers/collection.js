@@ -1,4 +1,5 @@
 import { set, merge, unshift, remove } from 'common/utils/immutable';
+import omit from 'lodash/omit';
 import createReducer from 'merchant_common/reducers/createReducer';
 
 import QRPayment from 'merchant/models/QRPayment';
@@ -187,7 +188,9 @@ export const refundsReducer = makeCollectionReducer(
   { ...defaultInitialState, blacklistQueryParams: ['ref'] },
 );
 
-export const fetchSettlements = (params) => fetchAll(params, Settlement, 'SETTLEMENTS');
+export const fetchSettlements = (params) =>
+  fetchAll(params.status === 'all' ? omit(params, 'status') : params, Settlement, 'SETTLEMENTS');
+
 export const settlementsReducer = makeCollectionReducer('SETTLEMENTS');
 
 export const fetchInstantSettlements = (params) =>

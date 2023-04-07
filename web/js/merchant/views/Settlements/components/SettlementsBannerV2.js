@@ -12,9 +12,10 @@ import SettlementMessage from 'merchant/views/Settlements/InstantSettlements/Ins
 import { Alert } from '@razorpay/blade/components';
 import { ALERT_INTENT, SETTLEMENT_RETRY_SLA_IN_HOURS, SETTLEMENT_STATUS } from './utils';
 import moment from 'moment/moment';
-import { getFormattedAmount } from 'common/utils/rzp-utils';
+import { getFormattedAmount, getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
-const BannerWrapper = styled.div(
+export const BannerWrapper = styled.div(
   ({ theme }) => `
     padding: ${theme.spacing[6]}px;
     padding-bottom: ${theme.spacing[1]}px;;
@@ -67,7 +68,7 @@ const SettlementsBannerV2 = ({
     moment().diff(moment.unix(previousSettlement?.created_at), 'hours') >
     SETTLEMENT_RETRY_SLA_IN_HOURS;
 
-  const handleContactSupport = () => {
+  const handleContactSupport = (title) => {
     closeModal();
 
     window.rzpAnalytics?.({
@@ -79,6 +80,20 @@ const SettlementsBannerV2 = ({
     if (window.rzpTicketSystem) {
       CreateTicketEmitter.emit('create-ticket', 'tickets');
     }
+
+    analyticsTrack({
+      objectName: 'Create Ticket',
+      actionName: 'Clicked',
+      screen: 'Settlements',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        page: 'Home Screen',
+        settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
+        source_widget: 'Settlements main screen',
+        title,
+        sessionId: window?.session_id ? window.session_id : undefined,
+      },
+    });
   };
 
   let title, subTitle, actions, intent;
@@ -116,6 +131,22 @@ const SettlementsBannerV2 = ({
         text: 'Complete KYC',
         onClick: () => {
           history.push(activationFormUrl);
+          analyticsTrack({
+            objectName: 'Complete KYC',
+            actionName: 'Clicked',
+            screen: 'Settlements',
+            properties: {
+              ...getCommonAnalyticsProperties(window.rzp_user),
+              page: 'Home Screen',
+              settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
+              source_widget: 'Settlements main screen',
+              title,
+              state: user.isTransacted ? 'Complete' : 'Empty',
+              activation_status: user.activation_status,
+              sessionId: window?.session_id ? window.session_id : undefined,
+              isL2Completed: user.isActivated && true,
+            },
+          });
         },
       },
     };
@@ -127,7 +158,9 @@ const SettlementsBannerV2 = ({
     actions = {
       primary: {
         text: 'Contact support',
-        onClick: handleContactSupport,
+        onClick: () => {
+          handleContactSupport(title);
+        },
       },
     };
     intent = ALERT_INTENT.NEGATIVE;
@@ -158,7 +191,9 @@ const SettlementsBannerV2 = ({
     actions = {
       primary: {
         text: 'Contact support',
-        onClick: handleContactSupport,
+        onClick: () => {
+          handleContactSupport(title);
+        },
       },
     };
     intent = ALERT_INTENT.NEGATIVE;
@@ -177,7 +212,9 @@ const SettlementsBannerV2 = ({
     actions = retrySlaBreached && {
       primary: {
         text: 'Contact support',
-        onClick: handleContactSupport,
+        onClick: () => {
+          handleContactSupport(title);
+        },
       },
     };
     intent = retrySlaBreached ? ALERT_INTENT.NEGATIVE : ALERT_INTENT.NOTICE;
@@ -189,7 +226,9 @@ const SettlementsBannerV2 = ({
     actions = {
       primary: {
         text: 'Contact support',
-        onClick: handleContactSupport,
+        onClick: () => {
+          handleContactSupport(title);
+        },
       },
     };
     intent = ALERT_INTENT.NEGATIVE;
@@ -201,7 +240,9 @@ const SettlementsBannerV2 = ({
     actions = {
       primary: {
         text: 'Contact support',
-        onClick: handleContactSupport,
+        onClick: () => {
+          handleContactSupport(title);
+        },
       },
     };
     intent = ALERT_INTENT.NOTICE;

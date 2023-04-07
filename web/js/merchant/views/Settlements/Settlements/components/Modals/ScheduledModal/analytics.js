@@ -81,11 +81,12 @@ export const trackExploreNowClicked = () => {
   });
 };
 
-export const trackSettlementsPageRendered = () => {
+export const trackSettlementsPageRendered = (properties) => {
   trackEvent({
     objectName: 'Settlements Page',
     actionName: EVENT_TYPES.RENDERED,
-    screen: 'Settlements Page',
+    screen: 'Home Screen',
+    properties,
   });
 };
 

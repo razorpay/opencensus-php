@@ -131,11 +131,15 @@ class ListFilter extends Component {
   };
 
   render() {
-    const { handleSubmit, form } = this.props;
+    const { handleSubmit, form, isNewFilter } = this.props;
     const { hasMoreFilters, showAllFilters, maxFilterLength } = this.state;
 
     const filters = this.props.children;
     const visibleFilters = showAllFilters ? filters : filters.slice(0, maxFilterLength);
+    const DivButtonWrapper = ({ children }) => (
+      <div className="filter-buttons-wrapper">{children}</div>
+    );
+    const ButtonWrapper = isNewFilter ? DivButtonWrapper : React.Fragment;
 
     return (
       <form
@@ -159,8 +163,10 @@ class ListFilter extends Component {
               <i class={`m-l i i-chevron-${showAllFilters ? 'up' : 'down'}`} />
             </button>
           )}
-          <button class="btn btn-primary btn-sm">Search</button>
-          <AsyncButton class="btn btn-sm btn-text" onClick={this.resetForm} text="Clear" />
+          <ButtonWrapper>
+            <button class="btn btn-primary btn-sm">Search</button>
+            <AsyncButton class="btn btn-sm btn-text" onClick={this.resetForm} text="Clear" />
+          </ButtonWrapper>
         </div>
       </form>
     );

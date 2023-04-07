@@ -84,7 +84,7 @@ test('should trigger correct analytics event for trackSettlementsPageRendered', 
       es_automatic_restricted: false,
       ...getCommonSegmentProperties(),
     },
-    screen: 'Settlements Page',
+    screen: 'Home Screen',
   });
 });
 

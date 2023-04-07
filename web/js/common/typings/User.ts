@@ -37,6 +37,9 @@ type Getters = {
   isIERevampEnabled: boolean;
   isAccepted: boolean;
   isUnregisteredBusiness: boolean;
+  isSettlementV3RevampEnabled: boolean;
+  isSingleReconEnabled: boolean;
+  isOptimizerEnabled: boolean;
 };
 
 type UserProperties = {
@@ -48,8 +51,10 @@ type UserProperties = {
   merchant: {
     hold_funds: boolean;
     max_payment_amount: number;
+    currency: string;
   };
   business_subcategory: BUSINESS_SUBCATEGORIES | string;
+  isTransacted: boolean;
 };
 
 // as user properties are not available initially

@@ -35,6 +35,15 @@ import SettlementGuideText from 'merchant_common/components/SettlementGuideText'
 import { handleAnalytics } from './analytics';
 import { fetchTerminalProviders } from 'merchant/reducers/navigator/details';
 import { SelfServeActionPages } from 'common/constant/enums';
+import SettlementsListViewV3, {
+  StyledWrapper,
+} from 'merchant/views/Settlements/v3/screens/ListView';
+import SettlementListFilterV3 from 'merchant/views/Settlements/v3/components/SettlementListFilter';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
+import moment from 'moment';
+
+const DEFAULT_PAGE_SIZE_SETTLEMENTS_V3 = 25;
 
 class SettlementsListContainer extends ListContainer {
   state = {
@@ -65,12 +74,8 @@ class SettlementsListContainer extends ListContainer {
   get settleNowRestrictionMsg() {
     if (!this.settlementRestricted) return;
 
-    const {
-      attempts_left,
-      settlable_amount,
-      max_amount_limit,
-      settlements_count_limit,
-    } = this.props.ondemand_restrictions.data;
+    const { attempts_left, settlable_amount, max_amount_limit, settlements_count_limit } =
+      this.props.ondemand_restrictions.data;
     if (this.isOnDemandDisabled) {
       const restrictedItem = this.restrictedFeatures
         .filter((feat) => this.props.user.isFeatureEnabled(feat))
@@ -352,6 +357,44 @@ class SettlementsListContainer extends ListContainer {
     this.paginate(params, type);
     handleAnalytics('pagination', 'clicked', properties);
   };
+
+  getDuration = (from, to) => {
+    const fromDate = new Date(from * 1000);
+    const toDate = new Date(to * 1000);
+
+    const diffDays = moment(toDate).startOf('day').diff(moment(fromDate).startOf('day'), 'days');
+
+    if (diffDays === 7) {
+      return 'Past 10 days';
+    } else if (diffDays === 30) {
+      return 'Past 30 Days';
+    } else if (diffDays === 90) {
+      return 'Past 90 Days';
+    } else {
+      return 'custom';
+    }
+  };
+
+  handleV3Search = (args) => {
+    this.search(args);
+
+    analyticsTrack({
+      objectName: 'Merchant clicked',
+      actionName: 'Search button',
+      screen: 'Settlements',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        page: 'Home Screen',
+        settlements_experiment_name: 'v2',
+        duration: args.from && args.to ? this.getDuration(args.from, args.to) : undefined,
+        utr_number: args.utr ? args.utr : undefined,
+        settlement_id: args.id ? args.id : undefined,
+        status: args.status ? args.status : undefined,
+        sessionId: window?.session_id ? window.session_id : undefined,
+      },
+    });
+  };
+
   render() {
     const {
       loading,
@@ -372,37 +415,64 @@ class SettlementsListContainer extends ListContainer {
     return (
       <content>
         <div class="content-wrapper">
-          <SettlementsListFilter
-            form="settlementsListFilter"
-            count={this.state.count}
-            onSubmit={this.handleSearch}
-            onSearchAnalytics={this.onSearchAnalytics}
-            onClearAnalytics={this.onClearAnalytics}
-            user={user}
-            terminalProviders={terminalProviders}
-          />
+          {user.isSettlementV3RevampEnabled ? (
+            <StyledWrapper>
+              <SettlementListFilterV3
+                user={user}
+                terminalProviders={terminalProviders}
+                onSubmit={this.handleV3Search}
+              />
+              <SettlementsListViewV3
+                settlements={items}
+                isLoading={loading}
+                showBreakup={this.showBreakup}
+                user={user}
+                terminalProviders={terminalProviders}
+                selfServeActionsPage={selfServeActionsPage}
+              />
 
-          <div className="clearfix" />
+              <Pager
+                count={DEFAULT_PAGE_SIZE_SETTLEMENTS_V3}
+                skip={this.state.skip}
+                length={items.length}
+                onClick={this.handlePagination}
+              />
+            </StyledWrapper>
+          ) : (
+            <>
+              <SettlementsListFilter
+                form="settlementsListFilter"
+                count={this.state.count}
+                onSubmit={this.handleSearch}
+                onSearchAnalytics={this.onSearchAnalytics}
+                onClearAnalytics={this.onClearAnalytics}
+                user={user}
+                terminalProviders={terminalProviders}
+              />
 
-          {error && <Alert type="error" message={error} />}
+              <div className="clearfix" />
 
-          <SettlementsList
-            settlements={items}
-            isLoading={loading}
-            showBreakup={this.showBreakup}
-            user={user}
-            terminalProviders={terminalProviders}
-            selfServeActionsPage={selfServeActionsPage}
-          />
+              {error && <Alert type="error" message={error} />}
 
-          <Pager
-            count={this.state.count}
-            skip={this.state.skip}
-            length={items.length}
-            onClick={this.handlePagination}
-          />
+              <SettlementsList
+                settlements={items}
+                isLoading={loading}
+                showBreakup={this.showBreakup}
+                user={user}
+                terminalProviders={terminalProviders}
+                selfServeActionsPage={selfServeActionsPage}
+              />
 
-          <SettlementGuideText />
+              <Pager
+                count={this.state.count}
+                skip={this.state.skip}
+                length={items.length}
+                onClick={this.handlePagination}
+              />
+
+              <SettlementGuideText />
+            </>
+          )}
         </div>
       </content>
     );

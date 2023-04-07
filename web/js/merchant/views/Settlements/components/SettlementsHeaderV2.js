@@ -44,6 +44,8 @@ import {
 } from './styledUtils';
 import { HIDDEN_INTERNATIONAL_FEATURES_TAGS } from 'merchant/constants/tags';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { getCommonAnalyticsProperties } from 'common/utils/rzp-utils';
+import { analyticsTrack } from 'common/utils/analytics';
 
 const SettlementsHeaderV2 = ({
   user,
@@ -91,7 +93,11 @@ const SettlementsHeaderV2 = ({
       eventAction: 'View Settlement Cycle',
       eventLabel: `Settlements`,
     });
-    handleAnalytics('settlement cycle', 'clicked');
+
+    handleAnalytics('settlement cycle', 'clicked', {
+      settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
+      sessionId: window?.session_id ? window.session_id : undefined,
+    });
   };
 
   useEffect(() => {
@@ -103,6 +109,23 @@ const SettlementsHeaderV2 = ({
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    analyticsTrack({
+      objectName: 'Settlement help Banner',
+      actionName: 'Displayed',
+      screen: 'Settlements',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        page: 'Home Screen',
+        settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
+        state: user.isTransacted ? 'Complete' : 'Empty',
+        activation_status: user.activation_status,
+        sessionId: window?.session_id ? window.session_id : undefined,
+        isL2Completed: user.isActivated && true,
+      },
+    });
+  }, []);
+
   const onRefreshClick = () => {
     fetchCurrentBalance();
     fetchPreviousSettlements(prevSettlementParams);
@@ -112,6 +135,35 @@ const SettlementsHeaderV2 = ({
     fetchOnDemandBlocked();
     setFetchedAt(moment());
     setTimeDiff(0);
+
+    // instrumentation
+    analyticsTrack({
+      objectName: 'Merchant clicked',
+      actionName: 'Refresh on top',
+      screen: 'Settlements',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        page: 'Home Screen',
+        settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
+        sessionId: window?.session_id ? window.session_id : undefined,
+      },
+    });
+  };
+
+  const instrumentDocumentationLinkClick = () => {
+    analyticsTrack({
+      objectName: 'Merchant clicked',
+      actionName: 'Documentation on Top',
+      screen: 'Settlements',
+      properties: {
+        ...getCommonAnalyticsProperties(window.rzp_user),
+        page: 'Home Screen',
+        settlements_experiment_name: user.isSettlementV3RevampEnabled ? 'v2' : 'v1',
+        state: user.isTransacted ? 'Complete' : 'Empty',
+        activation_status: user.activation_status,
+        sessionId: window?.session_id ? window.session_id : undefined,
+      },
+    });
   };
 
   return (
@@ -168,6 +220,7 @@ const SettlementsHeaderV2 = ({
                   href="http://razorpay.com/settlement"
                   target="_blank"
                   rel="noreferrer noopener"
+                  onClick={instrumentDocumentationLinkClick}
                 >
                   Documentation
                 </Link>

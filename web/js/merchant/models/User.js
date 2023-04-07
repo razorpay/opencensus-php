@@ -1917,6 +1917,13 @@ export default class User {
     return variant?.name === 'enable';
   }
 
+  get isSettlementV3RevampEnabled() {
+    return (
+      getSplitzExperimentVariant('settlement_v3_revamp')?.variables?.result === 'on' &&
+      this.isOrgRZP
+    );
+  }
+
   get isPartnershipForPhantomEnabled() {
     const variant = getSplitzExperimentVariant('partnership_for_phantom');
     return variant?.name === 'enable';

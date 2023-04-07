@@ -1,6 +1,7 @@
 import React from 'react';
 import { sanitizeTabName, removeUnreconciledEntity } from 'merchant/views/Settlements/v2/util';
 import { titleCase } from 'common/utils/rzp-utils';
+import { connect } from 'react-redux';
 
 const Tabs = (props) => {
   let { items } = props.breakupDetails;
@@ -8,6 +9,7 @@ const Tabs = (props) => {
 
   const renderTabNames = () => {
     items = removeUnreconciledEntity(items);
+
     const tabNamesObj = items.reduce((acc, tab) => {
       if (!tab.count) return acc;
 
@@ -36,4 +38,6 @@ const Tabs = (props) => {
   return <div class="entity-tabs">{renderTabNames()}</div>;
 };
 
-export default Tabs;
+const mapStateToProps = (state) => ({ user: state.session.user });
+
+export default connect(mapStateToProps, null)(Tabs);

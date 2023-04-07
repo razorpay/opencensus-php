@@ -42,8 +42,7 @@ const getSubscriptionDataRes = ({
         monthly_plan_amount: '9900',
         details: {
           icon: {
-            src:
-              'https://betacdn.np.razorpay.in/static/assets/growth-assets/pricing-bundle/growth.svg',
+            src: 'https://betacdn.np.razorpay.in/static/assets/growth-assets/pricing-bundle/growth.svg',
             alt: 'Growth Package',
           },
           feature: [
