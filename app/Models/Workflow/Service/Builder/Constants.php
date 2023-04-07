@@ -52,7 +52,7 @@ class Constants{
     const PAYLOAD = 'payload';
     const PRICING_PLAN_ID = 'pricing_plan_id';
     const PRICING_PLAN = 'pricing_plan';
-    const SPR_ASSIGNED = 'spr_assigned';
+    const SPR_APPROVED = 'spr_approved';
     const RESPONSE_HANDLER = 'response_handler';
     const SUCCESS_STATUS_CODES = 'success_status_codes';
     const POST = 'post';

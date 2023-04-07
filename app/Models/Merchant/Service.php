@@ -2328,9 +2328,16 @@ class Service extends Base\Service
             ['pricing_plan' => $plan->first()->getPlanName()],
         ];
 
+        if(isset($input[WorkflowService\Builder\Constants::SPR_APPROVED]) === false ||
+            $input[WorkflowService\Builder\Constants::SPR_APPROVED] === false)
+        {
+
         $this->app['workflow']
              ->setEntity($merchant->getEntity())
              ->handle($original, $dirty);
+
+        }
+
 
         $merchant->setPricingPlan($input['pricing_plan_id']);
 

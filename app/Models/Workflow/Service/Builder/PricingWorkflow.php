@@ -67,7 +67,7 @@ class PricingWorkflow
         $input[Constants::WORKFLOW][Constants::DIFF][Constants::NEW][Constants::CREATED_BY_EMAIL] = $this->ba->getAdmin()->getEmail();
 
         if (empty($merchant->pricing) === false) {
-            $input[Constants::WORKFLOW][Constants::DIFF][Constants::OLD][Constants::PRICING_PLAN_ID] = $merchant->pricing->getId();
+            $input[Constants::WORKFLOW][Constants::DIFF][Constants::OLD][Constants::PRICING_PLAN_ID] = $merchant->getPricingPlanId();
             $input[Constants::WORKFLOW][Constants::DIFF][Constants::OLD][Constants::PRICING_PLAN] = $merchant->pricing->getPlanName();
         } else {
             $input[Constants::WORKFLOW][Constants::DIFF][Constants::OLD][Constants::PRICING_PLAN_ID] = "";
@@ -99,7 +99,7 @@ class PricingWorkflow
                             Constants::HEADERS => json_decode ("{}"),
                             Constants::PAYLOAD => [
                                 Constants::PRICING_PLAN_ID => $pricingPlanID,
-                                Constants::SPR_ASSIGNED => true
+                                Constants::SPR_APPROVED => true
                             ],
                             Constants::RESPONSE_HANDLER => [
                                 Constants::TYPE => Constants::SUCCESS_STATUS_CODES,
@@ -129,9 +129,9 @@ class PricingWorkflow
         $input[Constants::WORKFLOW][Constants::DIFF][Constants::NEW][Constants::MCC] = $merchant->getCategory();
         $input[Constants::WORKFLOW][Constants::DIFF][Constants::NEW][Constants::CATEGORY2] = $merchant->getCategory2();
         $input[Constants::WORKFLOW][Constants::DIFF][Constants::NEW][Constants::BUSINESS_CATEGORY]
-            = isset($merchant->getMerchantDetail()['business_category'])?$merchant->getMerchantDetail()['business_category']:"";
+            = $merchant->merchantDetail->getBusinessCategory();
         $input[Constants::WORKFLOW][Constants::DIFF][Constants::NEW][Constants::BUSINESS_SUB_CATEGORY]
-            = isset($merchant->getMerchantDetail()['business_subcategory'])?$merchant->getMerchantDetail()['business_subcategory']:"";
+            = $merchant->merchantDetail->getBusinessSubcategory();
         $input[Constants::WORKFLOW][Constants::DIFF][Constants::NEW][Constants::ACTIVATION_STATUS]
             = $merchant->merchantDetail->getActivationStatus();
 
