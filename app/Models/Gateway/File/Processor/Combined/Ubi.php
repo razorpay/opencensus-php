@@ -29,6 +29,11 @@ class Ubi extends Base
             'total'   => 0,
         ];
 
+        $count = [
+            'claims'  => 0,
+            'refunds' => 0,
+        ];
+
         if (isset($data['refunds']) === true)
         {
             $amount['refunds'] = array_reduce($data['refunds'], function ($sum, $item)
@@ -37,6 +42,8 @@ class Ubi extends Base
 
                 return $sum;
             });
+
+            $count['refunds'] = count($data['refunds']);
         }
 
         if (isset($data['claims']) === true)
@@ -47,6 +54,8 @@ class Ubi extends Base
 
                 return $sum;
             });
+
+            $count['claims'] = count($data['claims']);
         }
 
         $amount['total'] = $amount['claims'] - $amount['refunds'];
@@ -69,6 +78,7 @@ class Ubi extends Base
         return [
             'bankName'    => self::BANK_NAME,
             'amount'      => $amount,
+            'count'       => $count,
             'emails'      => $this->gatewayFile->getRecipients(),
             'account'     => $account,
         ];

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\File;
 
+use Mail;
 use Excel;
 use Queue;
 use Carbon\Carbon;
@@ -12,6 +13,7 @@ use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Constants\Entity as ConstantsEntity;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Payment\NbPlusPaymentServiceNetbankingTest;
 
 class NbplusNetbankingUbiCombinedFileTest extends NbPlusPaymentServiceNetbankingTest
@@ -32,6 +34,8 @@ class NbplusNetbankingUbiCombinedFileTest extends NbPlusPaymentServiceNetbanking
     public function testNetbankingUbiCombinedFile()
     {
         Queue::fake();
+
+        Mail::fake();
 
         $refunds = $this->createRefundForFileGeneration();
 
@@ -76,6 +80,27 @@ class NbplusNetbankingUbiCombinedFileTest extends NbPlusPaymentServiceNetbanking
 
         Queue::assertPushedOn('beam_test', BeamJob::class);
 
+        Mail::assertSent(DailyFileMail::class, function ($mail) {
+            $date = Carbon::today(Timezone::IST)->format('d-m-Y');
+
+            $testData = [
+                'subject' => 'Ubi Netbanking claims and refund files for '.$date,
+                'amount' => [
+                    'claims'  =>  '1500.00',
+                    'refunds' =>  '1100.00',
+                    'total'   =>  '400.00'
+                ],
+                'count' => [
+                    'claims'  => 3,
+                    'refunds' => 3
+                ],
+            ];
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            $this->assertCount(0, $mail->attachments);
+
+            return true;
+        });
     }
 
     protected function createRefundForFileGeneration()

@@ -23,6 +23,7 @@
                                     <th style="border: 1px solid grey">Sr. No.</th>
                                     <th style="border: 1px solid grey">Particulars</th>
                                     <th style="border: 1px solid grey">Amount (Rs.)</th>
+                                    <th style="border: 1px solid grey">No of Txns.</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -30,16 +31,19 @@
                                     <td style="border: 1px solid grey">1</td>
                                     <td style="border: 1px solid grey">Claims</td>
                                     <td style="border: 1px solid grey">{{{$amount['claims']}}}</td>
+                                    <td style="border: 1px solid grey">{{{$count['claims']}}}</td>
                                 </tr>
                                 <tr style="border: 1px solid grey">
                                     <td style="border: 1px solid grey">2</td>
                                     <td style="border: 1px solid grey">Refunds</td>
                                     <td style="border: 1px solid grey">{{{$amount['refunds']}}}</td>
+                                    <td style="border: 1px solid grey">{{{$count['refunds']}}}</td>
                                 </tr>
                                 <tr style="border: 1px solid grey">
                                     <td style="border: 1px solid grey"></td>
                                     <td style="border: 1px solid grey">Amount to be remitted to Nodal A/c</td>
                                     <td style="border: 1px solid grey">{{{$amount['total']}}}</td>
+                                    <td style="border: 1px solid grey"></td>
                                 </tr>
                                 </tbody>
                             </table>
