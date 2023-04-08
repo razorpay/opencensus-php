@@ -351,9 +351,11 @@ class VirtualAccountController extends Controller
 
     public function getMerchantDefaultVirtualAccountExpiry()
     {
-        $response = $this->service()->getMerchantDefaultVirtualAccountExpiry();
+        $input = Request::all();
 
-        return ApiResponse::json($response);
+        $response = $this->service()->getMerchantDefaultVirtualAccountExpiry($input);
+
+        return ApiResponse::json(["expiry" => $response]);
     }
 
     public function addAllowedPayer(string $id)

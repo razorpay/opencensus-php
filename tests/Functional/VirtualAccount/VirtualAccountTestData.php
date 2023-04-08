@@ -246,7 +246,59 @@ return [
             'method'  => 'get'
         ],
         'response' => [
-            'content' => 24,
+            'content' => [
+                'expiry' => 24
+            ],
+        ],
+    ],
+
+    'testVirtualAccountExpirySettingForAdminDashboard' => [
+        'request'  => [
+            'url'     => '/admins/virtual_accounts/setting/expiry',
+            'method'  => 'post',
+            'content' => [
+                'va_expiry_offset'  => 24,
+                'merchant_id' => 10000000000000
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testVirtualAccountExpirySettingForAdminDashboardNegative' => [
+        'request'  => [
+            'url'     => '/admins/virtual_accounts/setting/expiry',
+            'method'  => 'post',
+            'content' => [
+                'va_expiry_offset'  => 24,
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testVirtualAccountExpirySettingFetchForAdminDashboard' => [
+        'request'  => [
+            'url'     => '/admins/virtual_accounts/setting/expiry',
+            'method'  => 'get',
+            'content' => [
+                'merchant_id' => 10000000000000
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "expiry" => 12
+            ],
         ],
     ],
 

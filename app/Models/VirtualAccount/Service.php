@@ -1377,16 +1377,39 @@ class Service extends Base\Service
         return $virtualAccount;
     }
 
+    public function getMerchantForAdminDashboardRequests($input)
+    {
+        if ($this->auth->isAdminAuth() === true)
+        {
+            if (($input !== null) and (isset($input[Entity::MERCHANT_ID]) === true))
+            {
+                $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+            }
+            else
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Merchant id is mandatory parameter');
+            }
+        }
+        else
+        {
+            $merchant = $this->merchant;
+        }
+
+        return $merchant;
+    }
 
     public function addDefaultVirtualAccountExpiry($input)
     {
+        $merchant = $this->getMerchantForAdminDashboardRequests($input);
+
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_UPSERT_REQUEST, $input);
 
         (new Validator())->validateInput('defaultVAExpiry', $input);
 
         try
         {
-            (new Settings\Service())->upsert(Module::VIRTUAL_ACCOUNT, $input);
+            (new Settings\Service())->upsert(Module::VIRTUAL_ACCOUNT, $input, $merchant);
         }
         catch (\Exception $ex)
         {
@@ -1395,7 +1418,7 @@ class Service extends Base\Service
                 Trace::ERROR,
                 TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_UPSERT_FAILED,
                 [
-                    'merchant_id' => $this->merchant->getPublicId(),
+                    'merchant_id' => $merchant->getPublicId(),
                     'input'       => $input,
                 ]
             );
@@ -1405,7 +1428,7 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_UPSERT_SUCCESS,
                            [
-                               'merchant_id' => $this->merchant->getPublicId(),
+                               'merchant_id' => $merchant->getPublicId(),
                                'success'     => true,
                                'input'       => $input
                            ]);
@@ -1446,12 +1469,15 @@ class Service extends Base\Service
        return ['success' => true];
    }
 
-    public function getMerchantDefaultVirtualAccountExpiry()
+    public function getMerchantDefaultVirtualAccountExpiry($input = null)
     {
         try
         {
+            $merchant = $this->getMerchantForAdminDashboardRequests($input);
+
             $response = (new Settings\Service())->get(Module::VIRTUAL_ACCOUNT,
-                                                      Constant::VA_EXPIRY_OFFSET);
+                                                      Constant::VA_EXPIRY_OFFSET, $merchant);
+
         }
         catch (\Exception $ex)
         {
@@ -1460,7 +1486,7 @@ class Service extends Base\Service
                 Trace::ERROR,
                 TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_FETCH_FAILED,
                 [
-                    'merchant_id' => $this->merchant->getPublicId(),
+                    'merchant_id' => $merchant->getPublicId(),
                 ]
             );
 
@@ -1469,7 +1495,7 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::VIRTUAL_ACCOUNT_MERCHANT_EXPIRY_SETTING_GET_RESPONSE,
                            [
-                               'merchant_id' => $this->merchant->getPublicId(),
+                               'merchant_id' => $merchant->getPublicId(),
                                'response'    => $response
                            ]);
 

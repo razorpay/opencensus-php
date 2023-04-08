@@ -10,11 +10,13 @@ use Razorpay\Spine\DataTypes\Dictionary;
 
 class Service extends Base\Service
 {
-    public function get(string $module, string $key): array
+    public function get(string $module, string $key, Merchant\Entity $merchant = null): array
     {
-        $settings = Accessor::for($this->merchant, $module)
-                            ->get($key);
+        $merchant = $merchant ?? $this->merchant;
 
+        $settings = Accessor::for($merchant, $module)
+                            ->get($key);
+        
         return ['settings' => $settings];
     }
 

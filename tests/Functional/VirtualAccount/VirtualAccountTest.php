@@ -153,7 +153,6 @@ class VirtualAccountTest extends TestCase
 
         $vaCloseByDate = Carbon::createFromTimestamp($virtualAccount['close_by'], Timezone::IST)->toDateString();
 
-
         $this->assertEquals($closeBy, $vaCloseByDate);
     }
 
@@ -179,14 +178,74 @@ class VirtualAccountTest extends TestCase
         $request = $this->testData['testVirtualAccountExpirySettingFetch']['request'];
 
         $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals(24, $response);
+        
+        $this->assertEquals(24, $response["expiry"]);
 
         $this->ba->proxyAuth('rzp_test_10000000000000');
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(-1, $response);
+        $this->assertEquals(-1, $response["expiry"]);
+    }
+
+    public function testVirtualAccountExpirySettingForAdminDashboard()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testVirtualAccountExpirySettingForAdminDashboardNegative()
+    {
+        $this->ba->adminAuth();
+
+        $this->startTest();
+    }
+
+    public function testVirtualAccountExpirySettingFetchForAdminDashboard()
+    {
+        $this->ba->adminAuth();
+
+        $request = $this->testData['testVirtualAccountExpirySettingForAdminDashboard']['request'];
+
+        $request['content']['va_expiry_offset'] = 12;
+
+        $this->makeRequestAndGetContent($request);
+
+        $this->startTest();
+    }
+
+    // createVirtualAccountForOrder
+    public function testVirtualAccountExpiryFromConfig()
+    {
+        $this->ba->adminAuth();
+
+        $request = $this->testData['testVirtualAccountExpirySettingForAdminDashboard']['request'];
+
+        $request['content']['va_expiry_offset'] = 6;
+
+        $order = $this->fixtures->create('order');
+
+        $this->makeRequestAndGetContent($request);
+
+        $request = $this->testData['testVirtualAccountExpirySettingFetchForAdminDashboard']['request'];
+
+        $res = $this->makeRequestAndGetContent($request);
+
+        $currentTime = Carbon::now(Timezone::IST)->getTimestamp();
+
+        $this->fixtures->create('feature', [
+            'name'        => Feature\Constants::SET_VA_DEFAULT_EXPIRY,
+            'entity_id'   => 10000000000000,
+            'entity_type' => 'merchant',
+        ]);
+
+        $virtualAccount = $this->createVirtualAccountForOrder($order);
+
+        $hourDiff = ($virtualAccount["close_by"] - $currentTime) / 3600;
+
+        $this->assertTrue($hourDiff < 7 and $hourDiff > 5);
+
     }
 
     /**
@@ -722,7 +781,7 @@ class VirtualAccountTest extends TestCase
     }
 
     public function testPayVirtualAccountWithPastCloseBy()
-    {     
+    {
         $closeTimeStamp = Carbon::now()->timestamp + 1000;
 
         $this->testData[__FUNCTION__]['close_by'] = $closeTimeStamp;

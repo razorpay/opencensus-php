@@ -97,6 +97,7 @@ class Validator extends Base\Validator
 
     public static $defaultVAExpiryRules = [
         Constant::VA_EXPIRY_OFFSET => 'required|integer',
+        Entity::MERCHANT_ID => 'sometimes|string'
     ];
 
     public static $addCustomAccountNumberSettingRules = [
