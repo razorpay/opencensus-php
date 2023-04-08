@@ -139,7 +139,7 @@ class Core extends Base\Core
                 {
                     $this->repo->payment_page_record->findByPaymentPageAndPrimaryRefIdOrFail($id, $input[$udf[PaymentLink::TITLE]]);
                 }
-                catch (\Exception $e)
+                catch (\Throwable $e)
                 {
                     $isUnique = true;
                 }

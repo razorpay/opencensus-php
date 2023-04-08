@@ -462,6 +462,15 @@ class PaymentLinkController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function fetchRecordsForPL(string $paymentLinkId)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchRecordsForPL($input, $paymentLinkId);
+
+        return ApiResponse::json($response);
+    }
+
     public function handleExists(string $slug)
     {
         $exists = $this->service()->paymentHandleExists($slug);

@@ -1180,6 +1180,114 @@ return [
         ],
     ],
 
+    'testFetchRecordsForPL' => [
+        'request' => [
+            'url' => '/payment_pages/{pl_id}/fetch_records',
+            'method' => 'post',
+            'content' => [
+                'Phone' => '1234567890',
+                'contact' => '0987654321',
+            ],
+        ],
+        'response'=> [
+            'status_code' => 200,
+            'content' => [
+                'Email' => 'paridhi.jain@rzp.com',
+                'Phone'   => '1234567890',
+                'amount' => '101'
+            ]
+        ],
+    ],
+
+    'testFetchRecordsForPLIdFailure' => [
+        'request' => [
+            'url' => '/payment_pages/{pl_id}/fetch_records',
+            'method' => 'post',
+            'content' => [
+                'Phone' => '1234567890',
+                'contact' => '0987654321',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID,
+        ],
+    ],
+
+    'testFetchRecordsForPLWithOnlyPrimaryRefId' => [
+        'request' => [
+            'url' => '/payment_pages/{pl_id}/fetch_records',
+            'method' => 'post',
+            'content' => [
+                'Phone' => '1234567890'
+            ],
+        ],
+        'response'=> [
+            'status_code' => 200,
+            'content' => [
+                'Email' => 'paridhi.jain@rzp.com',
+                'Phone'   => '1234567890',
+                'amount' => '101'
+            ]
+        ],
+    ],
+
+    'testFetchRecordsForPLWithOnlyPrimaryRefIdFailure' => [
+        'request' => [
+            'url' => '/payment_pages/{pl_id}/fetch_records',
+            'method' => 'post',
+            'content' => [
+                'Phone' => '1234567890',
+                'contact' => '0987654320',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Secondary Reference Id\'s Mismatch.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testFetchRecordsForPLFailure' => [
+        'request' => [
+            'url' => '/payment_pages/{pl_id}/fetch_records',
+            'method' => 'post',
+            'content' => [
+                'Phone' => '1234567890'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Secondary Reference Id\'s missing.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testInactivePaymentLinkSendNotification' => [
         'request'  => [
             'url'     => '/payment_pages/pl_100000000000pl/notify',
@@ -5756,7 +5864,7 @@ return [
             'content' => [
                 'title'         => 'Sample title',
                 "settings" => [
-                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"sec__ref__id1\",\"required\":false,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}]",
+                    "udf_schema"    => "[{\"name\":\"email\",\"required\":true,\"title\":\"Email\",\"type\":\"string\",\"pattern\":\"email\",\"settings\":{\"position\":1}},{\"name\":\"pri__ref__id\",\"title\":\"Phone\",\"required\":true,\"type\":\"number\",\"pattern\":\"phone\",\"minLength\":\"8\",\"options\":{},\"settings\":{\"position\":2}},{\"name\":\"sec__ref__id_1\",\"required\":true,\"title\":\"contact\",\"type\":\"number\",\"pattern\":\"phone\",\"settings\":{\"position\":3}}]",
                 ],
                 'description'   => '[{"insert":"Sample description"},{"insert":"\\n"}]',
                 'view_type' => 'file_upload_page',

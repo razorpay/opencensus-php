@@ -361,6 +361,7 @@ class UserRolesScope
             'payment_button_get_invoice_details'       => Role::WRITER_ROLES,
             'payment_button_set_merchant_details'      => Role::WRITER_ROLES,
             'payment_button_fetch_merchant_details'    => Role::WRITER_ROLES,
+            'payement_page_fetch'                      => Role::WRITER_ROLES,
             'payment_page_notify_all'                  => Role::WRITER_ROLES,
 
             // Store

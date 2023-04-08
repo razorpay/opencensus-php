@@ -624,9 +624,10 @@ class PaymentLinkTest extends TestCase
         $this->startTest();
 
     }
-    public function setUpCreateRecordForFileUpload()
+
+    public function setUpCreateRecordForFileUpload($setupFunctionName="setUpPaymentPageForFileUpload")
     {
-        $id = $this->setUpPaymentPageForFileUpload();
+        $id = $this->$setupFunctionName();
 
         $batch_id = 'batch_KoGILWQCoVkOz5';
 
@@ -745,6 +746,87 @@ class PaymentLinkTest extends TestCase
         $this->ba->proxyAuth();
         $this->startTest();
 
+    }
+
+    public function setUpPaymentPageWithSecRefIdForFileUpload()
+    {
+
+        $this->fixtures->merchant->addFeatures([Constants::FILE_UPLOAD_PP]);
+
+        $testdata = $this->testData['testPaymentPageCreateForFileUploadWithSecRefId'];
+
+        $resp = $this->startTest($testdata);
+
+        $entity = $this->getDbLastEntity("payment_link");
+
+        return $resp['id'];
+
+    }
+
+    public function testFetchRecordsForPL()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $res = $this->setUpCreateRecordForFileUpload("setUpPaymentPageWithSecRefIdForFileUpload");
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $res . '/fetch_records';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
+    }
+
+    public function testFetchRecordsForPLIdFailure()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $res = 'pl_1000000000001l';
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $res . '/fetch_records';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
+    }
+
+    public function testFetchRecordsForPLWithOnlyPrimaryRefId()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $res = $this->setUpCreateRecordForFileUpload();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $res . '/fetch_records';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
+    }
+
+
+    public function testFetchRecordsForPLWithOnlyPrimaryRefIdFailure()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $res = $this->setUpCreateRecordForFileUpload("setUpPaymentPageWithSecRefIdForFileUpload");
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $res . '/fetch_records';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
+    }
+
+    public function testFetchRecordsForPLFailure()
+    {
+        $this->createPaymentLinkWithMultipleItem();
+
+        $res = $this->setUpCreateRecordForFileUpload("setUpPaymentPageWithSecRefIdForFileUpload");
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payment_pages/'. $res . '/fetch_records';
+
+        $this->ba->proxyAuth();
+
+        $this->startTest($this->testData[__FUNCTION__]);
     }
 
     public function testFetchPaymentLink()
@@ -4854,7 +4936,7 @@ class PaymentLinkTest extends TestCase
                               }));
 
         // test for fee_in_mcc as zero value
-        // 
+        //
         $payment = $this->fixtures->create('payment', ['merchant_id' => self::TEST_MID]);
 
         $fetchPaymentDetails = [
@@ -4875,7 +4957,7 @@ class PaymentLinkTest extends TestCase
 
         // test for fee_in_mcc as non zero value and
         // no payment meta
-        // 
+        //
         $card = $this->fixtures->create('card', [
             'network'           =>  'Visa',
             'country'           =>  'US',
@@ -4921,7 +5003,7 @@ class PaymentLinkTest extends TestCase
 
         // test for fee_in_mcc as non zero value and
         // payment meta set as zero value
-        // 
+        //
         $metaAttributes = [
             'payment_id'        => $payment['id'],
             'mcc_forex_rate'    => '0',
@@ -4950,7 +5032,7 @@ class PaymentLinkTest extends TestCase
 
         // test for fee_in_mcc as non zero value and
         // payment meta set as non-zero value
-        // 
+        //
         $metaAttributes = [
             'mcc_forex_rate' => '82.609197',
         ];

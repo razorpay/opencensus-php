@@ -26,6 +26,7 @@ use RZP\Models\PaymentLink\Template\Pattern;
 use RZP\Models\PaymentLink\Template\OptionCmp;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\PaymentLink\Template\UdfSchema;
+use RZP\Models\PaymentLink\PaymentPageRecord\Entity as PPI;
 
 /**
  * Class Validator
@@ -304,6 +305,15 @@ class Validator extends Base\Validator
      */
     protected static $encryptAmountForPaymentHandleRules = [
         Entity::AMOUNT => 'required|mysql_unsigned_int'
+    ];
+
+    protected static $fetchRecordsForPLRules = [
+        PPI::PRIMARY_REF_ID => 'required|string|max:50',
+        PPI::SECONDARY_1    => 'sometimes|string',
+        PPI::SECONDARY_2    => 'sometimes|string',
+        PPI::SECONDARY_3    => 'sometimes|string',
+        PPI::SECONDARY_4    => 'sometimes|string',
+        PPI::SECONDARY_5    => 'sometimes|string',
     ];
 
     /**

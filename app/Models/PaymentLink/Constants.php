@@ -9,6 +9,8 @@ class Constants
     // Used as file type in ufh for images uplaoded in payment's page description.
     const PAYMENT_LINK_DESCRIPTION = 'payment_link_description';
 
+    const PAYMENT_LINK = 'payment_link';
+
     // payment page V3 experiment
     const PAYMENT_PAGE_V3 = 'paymentpages_v3';
 

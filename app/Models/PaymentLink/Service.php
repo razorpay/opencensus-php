@@ -373,6 +373,186 @@ class Service extends Base\Service
         }
     }
 
+
+    /**
+     * @throws BadRequestException
+     */
+    public function fetchRecordsForPL($input, $paymentLinkId)
+    {
+        $paymentPage = $this->repo->payment_link->findByPublicId($paymentLinkId);
+
+        $udfSchema = $paymentPage->getSettingsAccessor()->get(Entity::UDF_SCHEMA);
+
+        $udfSchema = json_decode($udfSchema, true);
+
+        $input = $this->transformInput($input, $udfSchema);
+
+        $this->validateInputForFetchPL($input, $udfSchema);
+
+        $priRefId = $input[PaymentPageRecord\Entity::PRIMARY_REF_ID];
+
+        $paymentPageRecord = $this->repo->payment_page_record->findByPaymentPageAndPrimaryRefIdOrFail($paymentLinkId,$priRefId);
+
+        $valid = $this->checkSecondaryRefIds($input,$paymentPageRecord, $udfSchema);
+
+        if($valid === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Secondary Reference Id\'s Mismatch.');
+        }
+
+        $value = $udfSchema;
+
+        $nameToTitle = [];
+
+        foreach ($value as $val)
+        {
+            $nameToTitle[$val['name']] = $val['title'];
+        }
+
+        $names = array_column($value, 'name');
+
+        $response = $this->buildResponse($paymentPageRecord, $names, $value, $nameToTitle);
+
+        return $response;
+
+    }
+
+    /*
+     * This function transforms the i/p to generic format
+     * where generic format is the one with pri__ref__id and
+     * sec__ref__id's
+     * */
+
+    protected function transformInput($input, $udfSchema): array
+    {
+        $values = $udfSchema;
+
+        $genericInput = [];
+
+        //$genericInput can only have pri_ref_id and sec_ref_id's
+
+        $genericKeys = array_merge([PaymentPageRecord\Entity::PRIMARY_REF_ID],
+            PaymentPageRecord\Entity::$secondary_ref_ids);
+
+        foreach ($values as $value)
+        {
+            if(array_key_exists($value['title'], $input) === true
+                and in_array($value['name'], $genericKeys) === true)
+            {
+                $genericInput[$value['name']] = $input[$value['title']];
+            }
+        }
+
+        return $genericInput;
+    }
+
+    /*
+     * This validates if the pri_ref_id is present and also
+     * if sec_ref_id's are present in udf_schema and if required
+     * is true then they should be present in $input else throws
+     * the BadRequestValidationFailureException
+     * */
+
+    protected function validateInputForFetchPL($input, $udfSchema)
+    {
+        $validator = (new Validator);
+
+        $validator->validateInput('fetchRecordsForPL',$input);
+
+        //check secondary ref id's are mandatory
+
+        $value = $udfSchema;
+
+        $names = array_column($value, 'name');
+
+        $nameToRequiredMap = [];
+
+        foreach ($value as $val)
+        {
+            if(in_array($val['name'], PaymentPageRecord\Entity::$secondary_ref_ids) === true
+                and ($val['required'] === true))
+            {
+                $nameToRequiredMap[$val['name']] = $val['required'];
+            }
+        }
+
+        $diff = array_diff_key($nameToRequiredMap ,$input);
+
+        if(count($diff) !== 0)
+        {
+            throw new BadRequestValidationFailureException(
+                'Secondary Reference Id\'s missing.');
+        }
+
+    }
+
+    /*
+     * This function fetches the secondary ref id's titles from
+     * udfSchema and then gets the value for those from other_details of
+     * payment_page_record and then verifies it against the input specified
+     * */
+
+    protected function checkSecondaryRefIds($input,$paymentPageRecord, $udfSchema): bool
+    {
+        unset($input[PaymentPageRecord\Entity::PRIMARY_REF_ID]);
+
+        $value = $udfSchema;
+
+        $valueMap = [];
+
+        $paymentPageRecord = $paymentPageRecord->toArray();
+
+        $details = json_decode($paymentPageRecord['other_details'],true);
+
+        foreach ($value as $val)
+        {
+            if(in_array($val['name'], PaymentPageRecord\Entity::$secondary_ref_ids) === true
+                and ($val['required'] === true))
+            {
+                $valueMap[$val['name']] = $details[$val['title']];
+            }
+        }
+
+        if($input == $valueMap)
+            return true;
+
+        return false;
+    }
+
+    protected function buildResponse($paymentPageRecord,$keys, $udfSchema, $nameToTitle)
+    {
+        $response = [];
+
+        $fields = [
+            PaymentPageRecord\Entity::EMAIL,
+            PaymentPageRecord\Entity::PHONE,
+            PaymentPageRecord\Entity::PRIMARY_REF_ID
+        ];
+
+        $intersection = array_values(array_uintersect($keys,$fields,'strcasecmp'));
+
+        $paymentPageRecord = $paymentPageRecord->toArray();
+
+        foreach ($intersection as $key)
+        {
+            $responseKey = $nameToTitle[$key];
+
+            if($key === 'pri__ref__id')
+                $key = 'primary_reference_id';
+
+            if((isset($paymentPageRecord[strtolower($key)]) === true) and
+                ($paymentPageRecord[strtolower($key)] !== null))
+                $response[$responseKey] = $paymentPageRecord[strtolower($key)];
+        }
+
+        $otherDetails = json_decode($paymentPageRecord['other_details'],true);
+
+        $otherDetails = array_diff_key($otherDetails,$response);
+
+        return array_merge($otherDetails,$response);
+    }
+
     public function createOrder(string $id, array $input)
     {
         $paymentLink = Tracer::inSpan(['name' => 'payment_page.order.create.get_payment_link'], function() use($id)
