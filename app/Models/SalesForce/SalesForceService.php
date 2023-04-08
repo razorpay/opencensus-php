@@ -82,9 +82,13 @@ class SalesForceService extends Base\Service {
 
         $repo = new MerchantAttributeRepository();
 
-        $merchantAttribute = $repo->getKeyValues($merchant->getId(), ProductType::BANKING, Group::X_MERCHANT_PREFERENCES, ['x_signup_platform'])->first();
+        // if source detail is not present in payload, fetch from merchant_attributes / assign default value
+        if (empty($eventPayload[BankingAccountServiceConstants::SOURCE_DETAIL]))
+        {
+            $merchantAttribute = $repo->getKeyValues($merchant->getId(), ProductType::BANKING, Group::X_MERCHANT_PREFERENCES, ['x_signup_platform'])->first();
 
-        $eventPayload[BankingAccountServiceConstants::SOURCE_DETAIL] = $merchantAttribute[MerchantAttributeEntity::VALUE] ?? BankingAccountServiceConstants::X_DASHBOARD;
+            $eventPayload[BankingAccountServiceConstants::SOURCE_DETAIL] = $merchantAttribute[MerchantAttributeEntity::VALUE] ?? BankingAccountServiceConstants::X_DASHBOARD;
+        }
 
         $merchantAttributeOnboardingFlow = $repo->getKeyValues($merchant->getId(), ProductType::BANKING, Group::X_MERCHANT_CURRENT_ACCOUNTS, [MerchantAttributeType::CA_ONBOARDING_FLOW])->first();
 

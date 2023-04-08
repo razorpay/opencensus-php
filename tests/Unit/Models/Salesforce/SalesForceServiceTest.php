@@ -382,6 +382,53 @@ class SalesForceServiceTest extends OAuthTestCase {
         $this->salesForceService->raiseEvent($merchant, $salesForceRequestDTO);
     }
 
+    /*
+     * Test scenario: If source detail is sent as part of event_payload from client, use it directly
+     * instead of looking in merchant_attributes
+     */
+    public function testSalesforceRequestWithSourceDetailSentFromClient() {
+        //Given
+        $merchantData = $this->getMerchantData();
+        $merchant = $this->createConfiguredMock(Entity::class, $merchantData);
+
+        $this->fixtures->create('merchant_attribute', // create merchant_attribute entry to validate this is not picked for request
+            [
+                'merchant_id'   => $merchant->getId(),
+                'product'       => 'banking',
+                'group'         => 'x_merchant_preferences',
+                'type'          => 'x_signup_platform',
+                'value'         => 'x_mobile',
+                'updated_at'    => time(),
+                'created_at'    => time()
+            ]);
+
+        $salesForceRequestDTO = new SalesForceEventRequestDTO();
+        $salesForceRequestDTO->setEventType(new SalesForceEventRequestType('CURRENT_ACCOUNT_INTEREST'));
+        $salesForceRequestDTO->setEventProperties(
+            array_merge($this->getEventProperties() , [
+                'source_detail' => 'x_lms'
+            ]));
+
+        $expectedPayload = [
+            'merchant_id' => '1DefeDEQE',
+            'name' => 'Aditya',
+            'email' => 'aditya@example.com',
+            'activated' => 1,
+            'signup_date' => '2020-08-19',
+            'event_submission_date' => date('Y-m-d'),
+            'interested_in_current_account' => 1,
+            'pin_code' => '560079',
+            'average_monthly_balance' => '5000',
+            'current_ca' => 'HDFC',
+            'use_case' => 'Salary',
+            'source_detail' => 'x_lms',
+        ];
+
+        $this->salesForceClient->expects($this->once())->method('sendEventToSalesForce')->with($expectedPayload);
+
+        $this->salesForceService->raiseEvent($merchant, $salesForceRequestDTO);
+    }
+
     private function createTraceMock() :\Razorpay\Trace\Logger
     {
         $webProcessor = $this->app['trace']->processor('web');
