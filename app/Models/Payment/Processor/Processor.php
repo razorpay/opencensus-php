@@ -1356,7 +1356,7 @@ class Processor
             $result = $this->app->razorx->getTreatment($merchant->getId(), self::ALLOW_MERCHANTS_ON_REARCH_UPS,
             $this->mode);
 
-            $this->trace->info(TraceCode::FINDING_PAYMENT_ID_FROM_REARCH_RESPONSE,
+            $this->trace->info(TraceCode::UPI_PAYMENT_SERVICE_PAYMENTS_RAZORX_VARIANT,
             [
                 'merchant_id'           => $merchant->getId(),
                 'merchant_ramp_variant' => $result,
