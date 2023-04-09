@@ -132,6 +132,13 @@ class Constants
         self::PASSWORD,
     ];
 
+    /**
+     * Note: Any new 1CC configs added also need to be added into the proto
+     *       files & `internal/preferences/transformer/one_cc_config.go` of
+     *       checkout service.
+     *
+     * @var string[]
+     */
     const CONFIG_FLAGS = [
         self::COD_INTELLIGENCE,
         self::ONE_CLICK_CHECKOUT,
@@ -156,6 +163,13 @@ class Constants
         self::ONE_CC_ENABLE_GUPSHUP,
     ];
 
+    /**
+     * Note: Any new configs added in this list would also need adding business
+     *       logic to override features response in
+     *       `internal/preferences/transformer/one_cc_config.go` of checkout-service.
+     *
+     * @var string[]
+     */
     const CONFIG_CUM_FEATURE_FLAGS = [
         self::ONE_CLICK_CHECKOUT,
         self::ONE_CC_GA_ANALYTICS,

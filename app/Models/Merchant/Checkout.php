@@ -247,18 +247,27 @@ class Checkout
             'card_networks',
             'card_subtype',
             'cardless_emi',
+            'custom_text',
             'debit_emi_providers',
             'emi_options',
             'emi_plans',
+            'emi_types',
+            'fpx',
+            'intl_bank_transfer',
             'netbanking',
             'paylater',
+            'recurring',
+            'upi_type',
+            'wallet',
         ];
 
         foreach ($expectedAsDictionaries as $key) {
             // Type-casting these to objects to ensure that empty values go as
             // `{}` instead of `[]` as these are declared as maps in checkout-service
             // proto files.
-            $data['methods'][$key] = (object) ($data['methods'][$key] ?? []);
+            if (array_key_exists($key, $data['methods'])) {
+                $data['methods'][$key] = (object) ($data['methods'][$key] ?? []);
+            }
         }
 
         return $data;

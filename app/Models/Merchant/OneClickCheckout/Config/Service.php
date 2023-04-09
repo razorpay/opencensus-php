@@ -636,7 +636,15 @@ class Service extends Base\Service
 
     }
 
-
+    /**
+     * Note: Any new configs added / returned from this method also need to be
+     *       added into the proto files & transformer of checkout service.
+     *
+     * @param Merchant\Entity $merchant
+     * @param bool            $internal
+     *
+     * @return array
+     */
     public function get1ccConfigFlagsStatus(Merchant\Entity $merchant, $internal = false) {
         $response = [];
         $merchantId = $merchant->getId();

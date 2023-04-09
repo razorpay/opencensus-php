@@ -1859,6 +1859,14 @@ class Service extends Base\Service
 
         $languageCode = App::getLocale();
 
+        $orgId = $merchant->getOrgId();
+
+        $org = null;
+
+        if (!empty($orgId)) {
+            $org = $this->repo->org->find($orgId);
+        }
+
         $checkoutExtraFields = [
             'brand_name' => $merchant->getFilteredDba(),
             'checkout_logo_size_image_url' => $merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
@@ -1866,6 +1874,7 @@ class Service extends Base\Service
             'is_fee_bearer' => $merchant->isFeeBearerCustomerOrDynamic(),
             'key' => optional($keyEntity)->getPublicKey(),
             'language_code' => $languageCode,
+            'org_checkout_logo_url' => optional($org)->getCheckoutLogo() ?? '',
         ];
 
         $optionalInputConfig = $merchant->getOptionalInputConfig();
@@ -1878,7 +1887,6 @@ class Service extends Base\Service
         return array_merge(
             $merchant->toArray(),
             $checkoutExtraFields,
-            (new CheckoutView())->addOrgInformationInResponse($merchant)
         );
     }
 
