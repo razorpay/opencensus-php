@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use DateTime;
+use DateTimeZone;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -274,6 +276,32 @@ trait EmandateRecurring
         }
     }
     
+    public function getCurrentMonthIST($timestamp=null)
+    {
+        try {
+            $timezone = new DateTimeZone('Asia/Kolkata');
+    
+            if($timestamp !== null)
+            {
+                $datetime = new DateTime("@$timestamp");
+        
+                $datetime->setTimezone($timezone);
+        
+                return $datetime->format('M');
+            }
+    
+            $now = new DateTime('now', $timezone);
+    
+            return $now->format('M');
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::CURRENT_MONTH_FETCH_ERROR);
+        }
+        
+        return null;
+    }
+    
     public function updateEmandateToken(Entity $payment, $nrErrorCode)
     {
         // dcs config fetch
@@ -283,16 +311,32 @@ trait EmandateRecurring
                 'payment_id'      => $payment->getId(),
                 'token_id'        => $payment->getTokenId(),
                 'global_token_id' => $payment->getGlobalTokenId(),
-                'nr_error_code'   => $nrErrorCode
+                'nr_error_code'   => $nrErrorCode,
+                "merchant_id"     => $payment->getMerchantId()
             ]);
+        
+        $paymentCreatedMonth = $this->getCurrentMonthIST($payment->getCreatedAt());
+        
+        $currentMonth = $this->getCurrentMonthIST();
+    
+        // if payment created and response received are different months we ignore them
+        if ($paymentCreatedMonth !== $currentMonth)
+        {
+            $this->trace->info(TraceCode::EMANDATE_PAYMENT_CREATED_MONTH,
+                [
+                    "payment_created_month" => $paymentCreatedMonth,
+                    "current_month"         => $currentMonth,
+                    "payment_created_at"    => $payment->getCreatedAt(),
+                    'token_id'              => $payment->getTokenId(),
+                    "merchant_id"           => $payment->getMerchantId()
+                ]);
+    
+            return [];
+        }
         
         $merchantConfig = $this->fetchEmandateDcsConfigs($payment->getMerchantId());
     
-        $this->trace->info(
-            TraceCode::EMANDATE_FETCH_MERCHANT_CONFIG,
-            [
-                "merchant_config" => $merchantConfig
-            ]);
+        $this->trace->info(TraceCode::EMANDATE_FETCH_MERCHANT_CONFIG, [ "merchant_config" => $merchantConfig ]);
         
         $token = $payment->getGlobalOrLocalTokenEntity();
         
@@ -302,12 +346,15 @@ trait EmandateRecurring
         }
         
         $emandateConfig = $this->fetchConfigsForToken($token, $merchantConfig, $nrErrorCode);
+        
+        $configArray = [
+            "emandate_new_configs"      => $emandateConfig,
+            "emandate_previous_configs" => $token->getNotes()[Token\Constants::EMANDATE_CONFIGS] ?? [],
+            "token_id"                  => $token->getId(),
+            "merchant_id"               => $payment->getMerchantId()
+        ];
     
-        $this->trace->info(
-            TraceCode::EMANDATE_CONFIG_DETAILS,
-            [
-                "emandate_configs" => $emandateConfig
-            ]);
+        $this->trace->info(TraceCode::EMANDATE_CONFIG_SET_DETAILS,  $configArray);
         
         if($emandateConfig === null)
         {
@@ -321,6 +368,8 @@ trait EmandateRecurring
         if(isset($emandateConfig[Token\Constants::EMANDATE_TOKEN_STATUS]) === true and
             $emandateConfig[Token\Constants::EMANDATE_TOKEN_STATUS] === Token\Constants::BLOCKED_TEMPORARILY)
         {
+            $this->trace->info(TraceCode::EMANDATE_TOKEN_BLOCKED, $configArray);
+            
             $this->emandateDescError = " The token has been put on hold temporarily for raising recurring payments.";
         }
         
@@ -362,16 +411,24 @@ trait EmandateRecurring
             ($retriesAllowed !== null and $retriesAllowed > 0) and
             ($coolDownPeriod !== null and $coolDownPeriod > 0))
         {
+            $lastUpdatedMonth = $emandateConfig[Token\Constants::LAST_UPDATED_MONTH] ?? '';
+    
+            $currentMonth = $this->getCurrentMonthIST();
+            
             $previousError = $emandateConfig[Token\Constants::GATEWAY_ERROR] ?? null;
             
             $temporaryErrorCode = $nrErrorCode["temporary_error_code"] ?? null;
             
             // Case 2: Previous error doesn't match with present error, reset with new error
             // Case 3: Previously no error present, start new retry
-            if($previousError === null or $previousError !== $temporaryErrorCode)
+            // Edge Case: If update attempt in token month doesn't match with present month restart again
+            if($previousError === null or
+                $previousError !== $temporaryErrorCode or
+                $currentMonth !== $lastUpdatedMonth)
             {
                 return [
                     Token\Constants::RETRY_ATTEMPTS                 => 1,
+                    Token\Constants::LAST_UPDATED_MONTH             => $currentMonth,
                     Token\Constants::GATEWAY_ERROR                  => $nrErrorCode["temporary_error_code"]
                 ];
                 
@@ -384,12 +441,14 @@ trait EmandateRecurring
                         Token\Constants::RETRY_ATTEMPTS             => $retriesAttempted + 1,
                         Token\Constants::COOLDOWN_PERIOD            => $this->calculateBlockPeriod($coolDownPeriod),
                         Token\Constants::EMANDATE_TOKEN_STATUS      => Token\Constants::BLOCKED_TEMPORARILY,
+                        Token\Constants::LAST_UPDATED_MONTH         => $currentMonth,
                         Token\Constants::GATEWAY_ERROR              => $nrErrorCode["temporary_error_code"]
                     ];
                 }
                 else {
                     return [
                         Token\Constants::RETRY_ATTEMPTS             => $retriesAttempted + 1,
+                        Token\Constants::LAST_UPDATED_MONTH         => $currentMonth,
                         Token\Constants::GATEWAY_ERROR              => $nrErrorCode["temporary_error_code"]
                     ];
                 }

@@ -7472,7 +7472,10 @@ trait Authorize
         }
         catch(\Throwable $ex)
         {
-            $this->trace->traceException($ex);
+            $this->trace->traceException($ex, null, TraceCode::EMANDATE_NR_TOKEN_UPDATE_ERROR, [
+                "merchant_id" => $payment->getMerchantId(),
+                "payment_id"  => $payment->getId()
+            ]);
         }
     }
 

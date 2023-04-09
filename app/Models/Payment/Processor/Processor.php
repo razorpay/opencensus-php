@@ -3234,6 +3234,10 @@ class Processor
         {
             $msg = "token_" . $token->getId() . " has been put on hold temporarily for creating recurring payments.".
                 "The next recurring payment can be created on the token after " . $coolDownPeriod;
+            
+            $this->trace->info(TraceCode::EMANDATE_TOKEN_BLOCK_ERROR, [
+                "msg" => $msg
+            ]);
 
             throw new Exception\BadRequestValidationFailureException($msg, 'token');
         }
@@ -3251,6 +3255,13 @@ class Processor
 
             if ($tokenNotes !== null and isset($tokenNotes[TokenConstants::EMANDATE_CONFIGS]) === true)
             {
+                $this->trace->info(TraceCode::EMANDATE_FETCH_TOKEN_CONFIGS,
+                    [
+                        "emandate_token_configs" => $tokenNotes[TokenConstants::EMANDATE_CONFIGS],
+                        "token_id"               => $token->getId(),
+                        "merchant_id"            => $merchant->getId()
+                    ]);
+                
                 $emandateTokenStatus = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][TokenConstants::EMANDATE_TOKEN_STATUS] ?? null;
 
                 $presentTime = Carbon::now('Asia/Kolkata')->getTimestamp();
@@ -3258,6 +3269,29 @@ class Processor
                 $coolDowntime = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][TokenConstants::COOLDOWN_PERIOD] ?? $presentTime;
 
                 $timeDifference = (int) $presentTime - $coolDowntime;
+    
+                $lastUpdatedMonth = $tokenNotes[TokenConstants::EMANDATE_CONFIGS][Token\Constants::LAST_UPDATED_MONTH] ?? '';
+    
+                $currentMonth = $this->getCurrentMonthIST();
+    
+                // resetting if blocked time is completed or current time time doesn't match blocked/counter data
+                if(($currentMonth !== $lastUpdatedMonth) or
+                    ($emandateTokenStatus === TokenConstants::BLOCKED_TEMPORARILY and $timeDifference >= 0))
+                {
+                    $this->trace->info(TraceCode::EMANDATE_TOKEN_CONFIG_RESET, [
+                        "current_month"         => $currentMonth,
+                        "last_updated_month"    => $lastUpdatedMonth,
+                        "emandate_config"       => $tokenNotes[TokenConstants::EMANDATE_CONFIGS],
+                        "token_id"              => $token->getId(),
+                        "merchant_id"           => $merchant->getId()
+                    ]);
+                    
+                    $token->setNotes([]);
+        
+                    $this->repo->save($token);
+    
+                    return [];
+                }
 
                 if($tempErrorEnableFlag === true and ($emandateTokenStatus === TokenConstants::BLOCKED_TEMPORARILY)  and $timeDifference < 0)
                 {
@@ -3271,18 +3305,14 @@ class Processor
                             TokenConstants::EMANDATE_TOKEN_STATUS     => TokenConstants::BLOCKED_TEMPORARILY
                         ];
                 }
-
-                if($emandateTokenStatus === TokenConstants::BLOCKED_TEMPORARILY and $timeDifference >= 0)
-                {
-                    $token->setNotes([]);
-
-                    $this->repo->save($token);
-                }
             }
         }
-        catch(\Exception $ex)
+        catch(\Throwable $ex)
         {
-            $this->trace->traceException($ex);
+            $this->trace->traceException($ex, null, TraceCode::EMANDATE_TOKEN_VALIDATION_ERROR, [
+                "merchant_id" => $merchant->getId(),
+                "token_id"    => $token->getId()
+            ]);
         }
 
         return [];
@@ -3300,9 +3330,11 @@ class Processor
 
             return $dcsConfigService->fetchConfiguration($key, $merchantId, $fields, $this->mode);
         }
-        catch (\Exception $ex) {
-
-            $this->trace->traceException($ex);
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, null, TraceCode::EMANDATE_DCS_CONFIG_FETCH_ERROR, [
+                "merchant_id" => $merchantId
+            ]);
         }
 
         return [

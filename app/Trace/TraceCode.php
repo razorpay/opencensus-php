@@ -1305,7 +1305,20 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const EMANDATE_DEBIT_ENTITY_CREATE                          = 'EMANDATE_DEBIT_ENTITY_CREATE';
     const EMANDATE_FILE_DATA                                    = 'EMANDATE_FILE_DATA';
     const EMANDATE_FILE_NAME                                    = 'EMANDATE_FILE_NAME';
-
+    
+    const EMANDATE_TOKEN_VALIDATION_ERROR                       = 'EMANDATE_TOKEN_VALIDATION_ERROR';
+    const EMANDATE_NR_TOKEN_UPDATE_ERROR                        = 'EMANDATE_NR_TOKEN_UPDATE_ERROR';
+    const EMANDATE_DCS_CONFIG_FETCH_ERROR                       = 'EMANDATE_DCS_CONFIG_FETCH_ERROR';
+    const EMANDATE_TOKEN_BLOCK_ERROR                            = 'EMANDATE_TOKEN_BLOCK_ERROR';
+    const EMANDATE_PAYMENT_UPDATE_TOKEN                         = 'EMANDATE_PAYMENT_UPDATE_TOKEN';
+    const EMANDATE_FETCH_MERCHANT_CONFIG                        = 'EMANDATE_FETCH_MERCHANT_CONFIG';
+    const EMANDATE_CONFIG_SET_DETAILS                           = 'EMANDATE_CONFIG_SET_DETAILS';
+    const EMANDATE_PAYMENT_CREATED_MONTH                        = 'EMANDATE_PAYMENT_CREATED_MONTH';
+    const EMANDATE_FETCH_TOKEN_CONFIGS                          = 'EMANDATE_FETCH_TOKEN_CONFIGS';
+    const EMANDATE_TOKEN_BLOCKED                                = 'EMANDATE_TOKEN_BLOCKED';
+    const EMANDATE_TOKEN_CONFIG_RESET                           = 'EMANDATE_TOKEN_CONFIG_RESET';
+    const CURRENT_MONTH_FETCH_ERROR                             = 'CURRENT_MONTH_FETCH_ERROR';
+    
     const EMANDATE_CONFIG_FETCH_REQUEST                         = 'EMANDATE_CONFIG_FETCH_REQUEST';
     const EMANDATE_CONFIG_FETCH_ERROR                           = 'EMANDATE_CONFIG_FETCH_ERROR';
 
@@ -1482,9 +1495,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const UPDATED_IIN_AND_CARD_ENTITY                           = 'UPDATED_IIN_AND_CARD_ENTITY';
     const UPI_RECURRING_SET_TERMINAL_FROM_TOKEN                 = 'UPI_RECURRING_SET_TERMINAL_FROM_TOKEN';
     const CARD_META_DATA_EVENT                                  = 'CARD_META_DATA_EVENT';
-    const EMANDATE_PAYMENT_UPDATE_TOKEN                         = 'EMANDATE_PAYMENT_UPDATE_TOKEN';
-    const EMANDATE_FETCH_MERCHANT_CONFIG                        = 'EMANDATE_FETCH_MERCHANT_CONFIG';
-    const EMANDATE_CONFIG_DETAILS                               = 'EMANDATE_CONFIG_DETAILS';
 
     //Pricing
     const PRICING_RULE_SELECTION                                = 'PRICING_RULE_SELECTION';

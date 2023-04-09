@@ -33,4 +33,5 @@ class Constants
     const BLOCKED_TEMPORARILY = 'blocked_temporarily';
     const BLOCKED_PERMANENTLY = 'blocked_permanently';
     const GATEWAY_ERROR = "gateway_error";
+    const LAST_UPDATED_MONTH = "last_updated_month";
 }
