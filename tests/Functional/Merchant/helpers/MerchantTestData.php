@@ -41,6 +41,21 @@ return [
         ],
     ],
 
+    'testPartnerAuthInternal' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/internal/checkout/auth',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '100000Razorpay',
+                'merchant_key' => '',
+                'mode' => 'test',
+            ],
+        ],
+    ],
+
     'testPublicAuthInternalKeyless' => [
         'request' => [
             'method' => 'GET',

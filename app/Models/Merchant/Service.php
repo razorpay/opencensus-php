@@ -17,6 +17,7 @@ use RZP\Models\Merchant\OneClickCheckout\Constants as ShopifyConstants;
 
 use Illuminate\Support\Str;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Http\OAuth;
 use RZP\Http\Controllers\CareProxyController;
 use RZP\Http\Controllers\MerchantController;
 use RZP\Jobs\CapturePartnershipConsents;
@@ -11664,13 +11665,29 @@ class Service extends Base\Service
         /** @var BasicAuth $ba */
         $ba = $this->app['basicauth'];
 
+        $oauth = (new OAuth());
+
+        if ($oauth->hasOAuthPublicToken() === true)
+        {
+            $response = $oauth->resolvePublicToken();
+
+            // Any not null $response (e.g. 401, 403 etc) means the request was not authenticated.
+            return $response ?? ApiResponse::json([
+                'merchant_id' => optional($ba->getMerchant())->getId() ?? '',
+                'merchant_key' => $ba->getPublicKey() ?? '',
+                'mode' => $ba->getMode() ?? '',
+            ]);
+        }
+
+        $request->merge(['account_id' => $request->input('merchant_account_id', '')]);
+
         $response = $ba->publicAuth();
 
         // Any not null $response (e.g. 401, 403 etc) means the request was not authenticated.
         return $response ?? ApiResponse::json([
-            'merchant_id' => optional($ba->getMerchant())->getId(),
-            'merchant_key' => optional($ba->getKeyEntity())->getPublicKey(),
-            'mode' => $ba->getMode(),
+            'merchant_id' => optional($ba->getMerchant())->getId() ?? '',
+            'merchant_key' => optional($ba->getKeyEntity())->getPublicKey() ?? '',
+            'mode' => $ba->getMode() ?? '',
         ]);
     }
 

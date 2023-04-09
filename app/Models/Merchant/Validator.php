@@ -741,7 +741,8 @@ class Validator extends Base\Validator
      * @see Service::validatePublicAuthOverInternalAuth()
      */
     protected static array $publicAuthOverInternalAuthRules = [
-        'merchant_public_key' => 'sometimes|size:23',
+        'merchant_public_key' => 'sometimes|string|max:31',
+        'merchant_account_id' => 'sometimes|filled|string|max:18',
         'x_entity_id'  => 'sometimes|filled|string|max:21',
         'order_id' => 'sometimes|filled|string|max:20',
         'invoice_id' => 'sometimes|filled|string|max:18',

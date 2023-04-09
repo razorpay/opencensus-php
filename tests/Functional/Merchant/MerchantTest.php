@@ -18177,6 +18177,29 @@ The same has been enabled for the account.
         $this->startTest();
     }
 
+    public function testPartnerAuthInternal(): void
+    {
+        $client = $this->setUpPartnerMerchantAppAndGetClient('dev');
+
+        $this->fixtures->create(
+            'merchant_access_map',
+            [
+                'entity_id'   => $client->getApplicationId(),
+                'merchant_id' => '100000Razorpay'
+            ]
+        );
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_public_key'] = 'rzp_test_partner_' . $client->getId();
+
+        $testData['request']['content']['merchant_account_id'] = 'acc_100000Razorpay';
+
+        $this->ba->checkoutServiceInternalAuth();
+
+        $this->startTest($testData);
+    }
+
     /**
      * @dataProvider providePublicAuthInternalKeyless
      */
