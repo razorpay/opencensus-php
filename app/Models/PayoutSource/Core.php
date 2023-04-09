@@ -7,6 +7,7 @@ use RZP\Models\Payout;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Models\Payout\DualWrite\PayoutSource as PayoutSourceDualWrite;
 
 class Core extends Base\Core
 {
@@ -95,6 +96,16 @@ class Core extends Base\Core
         /** @var Entity $payoutSource */
         $payoutSource = $this->repo->payout_source->getPayoutSourceByPayoutIdAndPriority(
             $payoutId, 1);
+
+        if (empty($payoutSource) === true)
+        {
+            $payoutSources = (new PayoutSourceDualWrite)->getAPIPayoutSourcesFromPayoutService($payoutId);
+
+            if (empty($payoutSources) === false)
+            {
+                $payoutSource = array_values($payoutSources)[0];
+            }
+        }
 
         return $payoutSource;
     }

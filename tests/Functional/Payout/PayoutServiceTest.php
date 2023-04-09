@@ -19,6 +19,7 @@ use RZP\Http\RequestHeader;
 use RZP\Constants\Timezone;
 use RZP\Models\Payout\Entity;
 use RZP\Models\Payout\Status;
+use RZP\Models\PayoutsDetails;
 use RZP\Services\RazorXClient;
 use RZP\Models\Payout\Validator;
 use RZP\Models\Feature\Constants;
@@ -45,6 +46,7 @@ use RZP\Tests\Functional\Helpers\DbEntityFetchTrait;
 use RZP\Tests\Functional\Helpers\Payout\PayoutTrait;
 use RZP\Tests\Functional\Helpers\TestsBusinessBanking;
 use RZP\Services\PayoutService\DataConsistencyChecker;
+use RZP\Tests\Functional\Helpers\PayoutAttachmentTrait;
 use RZP\Services\PayoutService\Get as PayoutServiceGet;
 use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Models\Payout\SourceUpdater\Core as SourceUpdater;
@@ -60,6 +62,7 @@ use RZP\Services\PayoutService\PayoutsUpdateFailureProcessingCron;
 use RZP\Services\PayoutService\FreePayout as PayoutServiceFreePayout;
 use RZP\Services\PayoutService\QueuedInitiate as PayoutServiceQueuedInitiate;
 use RZP\Services\PayoutService\MerchantConfig as PayoutServiceMerchantConfig;
+use RZP\Services\PayoutService\UpdateAttachments as PayoutServiceUpdateAttachments;
 use RZP\Services\PayoutService\DashboardScheduleTimeSlots as PayoutServiceDashboardScheduleTimeSlots;
 
 // Todo:: Change all the client mocks to be same as mockPayoutServiceQueuedInitiate
@@ -70,6 +73,7 @@ class PayoutServiceTest extends TestCase
     use DbEntityFetchTrait;
     use TestsBusinessBanking;
     use RequestResponseFlowTrait;
+    use PayoutAttachmentTrait;
 
     public function setUp(): void
     {
@@ -286,7 +290,7 @@ class PayoutServiceTest extends TestCase
                                    }
                                );
 
-        $this->app->instance(PayoutServiceFetch::PAYOUT_SERVICE__FETCH, $payoutServiceFetchMock);
+        $this->app->instance(PayoutServiceFetch::PAYOUT_SERVICE_FETCH, $payoutServiceFetchMock);
     }
 
     public function mockPayoutServiceFetchShouldNotBeInvoked()
@@ -298,7 +302,20 @@ class PayoutServiceTest extends TestCase
 
         $payoutServiceFetchMock->shouldNotReceive('fetchMultiple');
 
-        $this->app->instance(PayoutServiceFetch::PAYOUT_SERVICE__FETCH, $payoutServiceFetchMock);
+        $this->app->instance(PayoutServiceFetch::PAYOUT_SERVICE_FETCH, $payoutServiceFetchMock);
+    }
+
+    public function mockPayoutServiceUpdateAttachmentsShouldNotBeInvoked()
+    {
+        $payoutServiceUpdateAttachmentsMock = Mockery::mock('RZP\Services\PayoutService\UpdateAttachments',
+                                                [$this->app])->makePartial();
+
+        $payoutServiceUpdateAttachmentsMock->shouldNotReceive('updateAttachments');
+
+        $payoutServiceUpdateAttachmentsMock->shouldNotReceive('bulkUpdateAttachments');
+
+        $this->app->instance(PayoutServiceUpdateAttachments::PAYOUT_SERVICE_UPDATE_ATTACHMENTS,
+                             $payoutServiceUpdateAttachmentsMock);
     }
 
     public function mockPayoutServiceGet($fail = false, $request = [])
@@ -528,6 +545,87 @@ class PayoutServiceTest extends TestCase
                                          ->willReturn($this->createResponseForPayoutServiceMock($fail,
                                                                                                 Status::CANCELLED));
     }
+
+    public function mockPayoutServiceUpdateAttachments($fail = false, $request = [], &$success = [])
+    {
+        $payoutServiceUpdateAttachmentsMock = Mockery::mock('RZP\Services\PayoutService\UpdateAttachments',
+                                                         [$this->app])->makePartial();
+
+        $defaultRequest['content']['attachments'] = [];
+
+        $defaultRequest['content']['payout_ids'] = [];
+
+        $defaultRequest['content']['update_request'] = [];
+
+        $defaultRequest['headers']['X-Passport-JWT-V1'] = "";
+
+        $request = array_merge($defaultRequest, $request);
+
+        $payoutServiceUpdateAttachmentsMock->shouldReceive('sendRequest')
+                                        ->withArgs(
+                                            function($arg) use ($request, &$success) {
+                                                try
+                                                {
+                                                    // json decoding the content so that we can assert the keys of content.
+                                                    $arg['content'] = json_decode($arg['content'], true);
+
+                                                    // Using this method only here as we want to check if the keys in the
+                                                    // request are coming properly or not.
+                                                    $this->assertArrayKeySelectiveEquals($request, $arg);
+
+                                                    if (empty($request['content']['attachments']) === false)
+                                                    {
+                                                        if ($request['content']['attachments'] ===
+                                                                    $arg['content']['attachments'])
+                                                        {
+                                                            $success[] = "attachment_success";
+                                                        }
+                                                    }
+
+                                                    if (empty($request['url']) === false)
+                                                    {
+                                                        if (substr($arg['url'], -1 * strlen($request['url'])) ===
+                                                                $request['url'])
+                                                        {
+                                                            $success[] = "url_success";
+                                                        }
+
+                                                    }
+
+                                                    if (empty($request['content']['payout_ids']) === false)
+                                                    {
+                                                        if ($request['content']['payout_ids'] ===
+                                                            $arg['content']['payout_ids'])
+                                                        {
+                                                            $success[] = "payout_ids_success";
+                                                        }
+                                                    }
+
+                                                    if (empty($request['content']['update_request']) === false)
+                                                    {
+                                                        if ($request['content']['update_request'] ===
+                                                            $arg['content']['update_request'])
+                                                        {
+                                                            $success[] = "update_request_success";
+                                                        }
+                                                    }
+
+                                                    return true;
+                                                }
+                                                catch (\Throwable $e)
+                                                {
+                                                    return false;
+                                                }
+                                            }
+                                        )
+                                        ->andReturn(
+                                            $this->createResponseForPayoutServiceUpdateAttachmentsMock($fail)
+                                        );
+
+        $this->app->instance(PayoutServiceUpdateAttachments::PAYOUT_SERVICE_UPDATE_ATTACHMENTS,
+                             $payoutServiceUpdateAttachmentsMock);
+    }
+
 
     public function createResponseForPayoutServiceMock($fail, $status = 'processing', $insufficient_balance = false, $newBankingError = false, $metadata = [])
     {
@@ -773,6 +871,40 @@ class PayoutServiceTest extends TestCase
                         ]
                     ]
                 ]);
+            $response->status_code = 200;
+            $response->success     = true;
+        }
+
+        return $response;
+    }
+
+    public function createResponseForPayoutServiceUpdateAttachmentsMock($fail,
+                                                                        $errorDescription = 'Service Failure')
+    {
+        $response = new \WpOrg\Requests\Response();
+
+        if ($fail === true)
+        {
+            $response->body = json_encode(
+                [
+                    "error" =>
+                        [
+                            "code"        => ErrorCode::BAD_REQUEST_ERROR,
+                            "description" => $errorDescription,
+                            "field"       => null
+                        ]
+                ]);
+
+            $response->status_code = 400;
+            $response->success     = true;
+        }
+        else
+        {
+            $response->body = json_encode(
+                [
+                    'status' => 'SUCCESS'
+                ]);
+
             $response->status_code = 200;
             $response->success     = true;
         }
@@ -5805,10 +5937,10 @@ class PayoutServiceTest extends TestCase
         $this->fixtures->on('live')->create(
             'balance',
             [
-                'account_type' => 'direct',
-                'merchant_id' => $this->bankingBalance->getMerchantId(),
-                'type' => 'banking',
-                'account_number' =>  $this->bankingBalance->getAccountNumber() + 2,
+                'account_type'   => 'direct',
+                'merchant_id'    => $this->bankingBalance->getMerchantId(),
+                'type'           => 'banking',
+                'account_number' => $this->bankingBalance->getAccountNumber() + 2,
             ]
         );
 
@@ -5992,5 +6124,1258 @@ class PayoutServiceTest extends TestCase
         $this->ba->payoutInternalAppAuth('live');
 
         $this->startTest();
+    }
+
+    public function testUpdateAttachmentWithProxyAuthForPayoutServicePayout()
+    {
+        $payoutId = 'randomid111121';
+
+        $payoutData = [
+            'id'                   => $payoutId,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        // uploading attachment
+        $fileName = 'k.png';
+
+        $localFilePath = $this->createNewFile($fileName);
+
+        $uploadAttachmentRequest = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $uploadAttachmentResponse = $this->makeRequestAndGetContent($uploadAttachmentRequest);
+
+        //asserting that response has file_id, file_name, and file_hash
+        $this->assertArrayHasKey('file_id', $uploadAttachmentResponse);
+
+        $this->assertArrayHasKey('file_name', $uploadAttachmentResponse);
+
+        $this->assertArrayHasKey('file_hash', $uploadAttachmentResponse);
+
+        $attachmentsDataInRequest = [
+            [
+                'file_id'   => $uploadAttachmentResponse['file_id'],
+                'file_name' => $uploadAttachmentResponse['file_name'],
+                'file_hash' => $uploadAttachmentResponse['file_hash'],
+            ]
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf('/payouts/%s/attachments',
+                                                                  Entity::getSignedId($payoutId));
+
+        $this->testData[__FUNCTION__]['request']['content']['attachments'] = $attachmentsDataInRequest;
+
+        $success = [];
+
+        $request['content']['attachments'] = $attachmentsDataInRequest;
+
+        $request['url'] = 'payouts/' . Entity::getSignedId($payoutId) . '/attachments';
+
+        $this->mockPayoutServiceUpdateAttachments(false, $request, $success);
+
+        $this->startTest();
+
+        $expectedSuccess = ['attachment_success', 'url_success'];
+
+        $this->assertEquals($expectedSuccess, $success);
+    }
+
+    public function testUpdateAttachmentWithProxyAuthForPayoutServicePayoutWithPayoutSourceNotNull()
+    {
+        $payoutId = 'randomid111121';
+
+        $payoutData = [
+            'id'                   => $payoutId,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => $payoutId,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'refund',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        // uploading attachment
+        $fileName = 'k.png';
+
+        $localFilePath = $this->createNewFile($fileName);
+
+        $uploadAttachmentRequest = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $uploadAttachmentResponse = $this->makeRequestAndGetContent($uploadAttachmentRequest);
+
+        //asserting that response has file_id, file_name, and file_hash
+        $this->assertArrayHasKey('file_id', $uploadAttachmentResponse);
+
+        $this->assertArrayHasKey('file_name', $uploadAttachmentResponse);
+
+        $this->assertArrayHasKey('file_hash', $uploadAttachmentResponse);
+
+        $attachmentsDataInRequest = [
+            [
+                'file_id'   => $uploadAttachmentResponse['file_id'],
+                'file_name' => $uploadAttachmentResponse['file_name'],
+                'file_hash' => $uploadAttachmentResponse['file_hash'],
+            ]
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf('/payouts/%s/attachments',
+                                                                  Entity::getSignedId($payoutId));
+
+        $this->testData[__FUNCTION__]['request']['content']['attachments'] = $attachmentsDataInRequest;
+
+        $request['content']['attachments'] = $attachmentsDataInRequest;
+
+        $request['url'] = 'payouts/' . Entity::getSignedId($payoutId) . '/attachments';
+
+        $this->mockPayoutServiceUpdateAttachmentsShouldNotBeInvoked();
+
+        $this->startTest();
+    }
+
+    public function testUpdateAttachmentWithProxyAuthForPayoutServicePayoutWithErrorFromPayoutService()
+    {
+        $payoutId = 'randomid111121';
+
+        $payoutData = [
+            'id'                   => $payoutId,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        // uploading attachment
+        $fileName = 'k.png';
+
+        $localFilePath = $this->createNewFile($fileName);
+
+        $uploadAttachmentRequest = $this->createUploadFileRequest($fileName, $localFilePath);
+
+        $this->ba->proxyAuth('rzp_live_10000000000000');
+
+        $uploadAttachmentResponse = $this->makeRequestAndGetContent($uploadAttachmentRequest);
+
+        //asserting that response has file_id, file_name, and file_hash
+        $this->assertArrayHasKey('file_id', $uploadAttachmentResponse);
+
+        $this->assertArrayHasKey('file_name', $uploadAttachmentResponse);
+
+        $this->assertArrayHasKey('file_hash', $uploadAttachmentResponse);
+
+        $attachmentsDataInRequest = [
+            [
+                'file_id'   => $uploadAttachmentResponse['file_id'],
+                'file_name' => $uploadAttachmentResponse['file_name'],
+                'file_hash' => $uploadAttachmentResponse['file_hash'],
+            ]
+        ];
+
+        $this->testData[__FUNCTION__]['request']['url'] = sprintf('/payouts/%s/attachments',
+                                                                  Entity::getSignedId($payoutId));
+
+        $this->testData[__FUNCTION__]['request']['content']['attachments'] = $attachmentsDataInRequest;
+
+        $success = [];
+
+        $request['content']['attachments'] = $attachmentsDataInRequest;
+
+        $request['url'] = 'payouts/' . Entity::getSignedId($payoutId) . '/attachments';
+
+        $this->mockPayoutServiceUpdateAttachments(true, $request, $success);
+
+        $this->startTest();
+
+        $expectedSuccess = ['attachment_success', 'url_success'];
+
+        $this->assertEquals($expectedSuccess, $success);
+    }
+
+    public function testUpdateAttachmentForPayoutLinkForPayoutServicePayout()
+    {
+        $payoutId = 'randomid111121';
+
+        $payoutData = [
+            'id'                   => $payoutId,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $payoutId2 = 'randomid111122';
+
+        $payoutData2 = [
+            'id'                   => $payoutId2,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTN",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData2);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => $payoutId,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'payout_links',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        $payoutSourcesData2 = [
+            [
+                'id'          => 'randomid111125',
+                'payout_id'   => $payoutId2,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'payout_links',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData2);
+
+        $this->ba->appAuthLive($this->config['applications.payout_links.secret']);
+
+        // file_hash is not required via Internal App Auth
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'payout_ids'     => [
+                $payoutId,
+                $payoutId2
+            ],
+            'update_request' => [
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_123456',
+                        'file_name' => 'file_name.pdf'
+                    ]
+                ]
+            ]
+        ];
+
+        $success = [];
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/attachments';
+
+        $this->mockPayoutServiceUpdateAttachments(false, $request, $success);
+
+        $this->startTest();
+
+        $expectedSuccess = ['url_success', 'payout_ids_success', 'update_request_success'];
+
+        $this->assertEquals($expectedSuccess, $success);
+    }
+
+    public function testUpdateAttachmentForPayoutLinkForPayoutServicePayoutWithEmptySource()
+    {
+        $payoutId = 'randomid111121';
+
+        $payoutData = [
+            'id'                   => $payoutId,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $payoutId2 = 'randomid111122';
+
+        $payoutData2 = [
+            'id'                   => $payoutId2,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTN",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData2);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => $payoutId,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'payout_links',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        $this->ba->appAuthLive($this->config['applications.payout_links.secret']);
+
+        // file_hash is not required via Internal App Auth
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'payout_ids'     => [
+                $payoutId,
+                $payoutId2
+            ],
+            'update_request' => [
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_123456',
+                        'file_name' => 'file_name.pdf'
+                    ]
+                ]
+            ]
+        ];
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/attachments';
+
+        $this->mockPayoutServiceUpdateAttachmentsShouldNotBeInvoked();
+
+        $this->startTest();
+    }
+
+    public function testUpdateAttachmentForPayoutLinkForPayoutServicePayoutWithIncorrectSource()
+    {
+        $payoutId = 'randomid111121';
+
+        $payoutData = [
+            'id'                   => $payoutId,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $payoutId2 = 'randomid111122';
+
+        $payoutData2 = [
+            'id'                   => $payoutId2,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTN",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData2);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => $payoutId,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'payout_links',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        $payoutSourcesData2 = [
+            [
+                'id'          => 'randomid111125',
+                'payout_id'   => $payoutId2,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'refunds',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData2);
+
+        $this->ba->appAuthLive($this->config['applications.payout_links.secret']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateAttachmentForPayoutLinkForPayoutServicePayoutWithEmptySource'];
+
+        // file_hash is not required via Internal App Auth
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'payout_ids'     => [
+                $payoutId,
+                $payoutId2
+            ],
+            'update_request' => [
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_123456',
+                        'file_name' => 'file_name.pdf'
+                    ]
+                ]
+            ]
+        ];
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/attachments';
+
+        $this->mockPayoutServiceUpdateAttachmentsShouldNotBeInvoked();
+
+        $this->startTest();
+    }
+
+    public function testUpdateAttachmentForPayoutLinkForPSAndNonPSPayouts()
+    {
+        $payoutId = 'randomid111121';
+
+        $payoutData = [
+            'id'                   => $payoutId,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $payoutId2 = 'randomid111122';
+
+        $payoutData2 = [
+            'id'                   => $payoutId2,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTN",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData2);
+
+        $payoutId3 = 'randomid111123';
+
+        $payoutData3 = [
+            'id'                   => $payoutId3,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTO",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('live')->table('payouts')->insert($payoutData3);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => $payoutId,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'payout_links',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        $payoutSourcesData2 = [
+            [
+                'id'          => 'randomid111125',
+                'payout_id'   => $payoutId2,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'payout_links',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData2);
+
+        $payoutSourcesData3 = [
+            [
+                'id'          => 'randomid111127',
+                'payout_id'   => $payoutId3,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'payout_links',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('live')->table('payout_sources')->insert($payoutSourcesData3);
+
+        $this->ba->appAuthLive($this->config['applications.payout_links.secret']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateAttachmentForPayoutLinkForPayoutServicePayout'];
+
+        // file_hash is not required via Internal App Auth
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'payout_ids'     => [
+                $payoutId,
+                $payoutId2,
+                $payoutId3,
+            ],
+            'update_request' => [
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_123456',
+                        'file_name' => 'file_name.pdf'
+                    ]
+                ]
+            ]
+        ];
+
+        $success = [];
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/attachments';
+
+        $request['content'] = [
+            'payout_ids'     => [
+                $payoutId,
+                $payoutId2,
+            ],
+            'update_request' => [
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_123456',
+                        'file_name' => 'file_name.pdf'
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockPayoutServiceUpdateAttachments(false, $request, $success);
+
+        $this->startTest();
+
+        $expectedSuccess = ['url_success', 'payout_ids_success', 'update_request_success'];
+
+        $this->assertEquals($expectedSuccess, $success);
+
+        $payoutDetails = $this->getDbLastEntity(EntityConstants::PAYOUTS_DETAILS, 'live');
+
+        $this->assertNotNull($payoutDetails);
+
+        $this->assertFalse($payoutDetails[PayoutsDetails\Entity::QUEUE_IF_LOW_BALANCE_FLAG]);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TDS_CATEGORY_ID]);
+
+        $this->assertNull($payoutDetails[PayoutsDetails\Entity::TAX_PAYMENT_ID]);
+
+        $this->assertNotNull($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO]);
+
+        $additionalInfo = json_decode($payoutDetails[PayoutsDetails\Entity::ADDITIONAL_INFO], true);
+
+        $this->assertNotNull($additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY]);
+
+        $this->assertEquals('file_123456', $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_ID]);
+
+        $this->assertEquals('file_name.pdf', $additionalInfo[PayoutsDetails\Entity::ATTACHMENTS_KEY][0][PayoutsDetails\Entity::ATTACHMENTS_FILE_NAME]);
+    }
+
+    public function testUpdateAttachmentForPayoutLinkForPayoutServicePayoutWithFailureFromPayoutService()
+    {
+        $payoutId = 'randomid111121';
+
+        $payoutData = [
+            'id'                   => $payoutId,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $payoutId2 = 'randomid111122';
+
+        $payoutData2 = [
+            'id'                   => $payoutId2,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTN",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData2);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => $payoutId,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'payout_links',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        $payoutSourcesData2 = [
+            [
+                'id'          => 'randomid111125',
+                'payout_id'   => $payoutId2,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'payout_links',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData2);
+
+        $this->ba->appAuthLive($this->config['applications.payout_links.secret']);
+
+        // file_hash is not required via Internal App Auth
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'payout_ids'     => [
+                $payoutId,
+                $payoutId2
+            ],
+            'update_request' => [
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_123456',
+                        'file_name' => 'file_name.pdf'
+                    ]
+                ]
+            ]
+        ];
+
+        $success = [];
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/attachments';
+
+        $this->mockPayoutServiceUpdateAttachments(true, $request, $success);
+
+        $this->startTest();
+
+        $expectedSuccess = ['url_success', 'payout_ids_success', 'update_request_success'];
+
+        $this->assertEquals($expectedSuccess, $success);
+    }
+
+    public function testUpdateAttachmentForPayoutLinkForPSAndNonPSPayoutsWithFailureFromPayoutService()
+    {
+        $payoutId = 'randomid111121';
+
+        $payoutData = [
+            'id'                   => $payoutId,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTM",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData);
+
+        $payoutId2 = 'randomid111122';
+
+        $payoutData2 = [
+            'id'                   => $payoutId2,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTN",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('test')->table('ps_payouts')->insert($payoutData2);
+
+        $payoutId3 = 'randomid111123';
+
+        $payoutData3 = [
+            'id'                   => $payoutId3,
+            'merchant_id'          => "10000000000000",
+            'fund_account_id'      => "100000000000fa",
+            'method'               => "fund_transfer",
+            'reference_id'         => null,
+            'balance_id'           => "KHTaUGgTXc0dhH",
+            'user_id'              => "random_user123",
+            'batch_id'             => null,
+            'idempotency_key'      => "random_key",
+            'purpose'              => "refund",
+            'narration'            => "Batman",
+            'purpose_type'         => "refund",
+            'amount'               => 2000000,
+            'currency'             => "INR",
+            'notes'                => "{}",
+            'fees'                 => 10,
+            'tax'                  => 33,
+            'status'               => "initiated",
+            'fts_transfer_id'      => 60,
+            'transaction_id'       => "KHTaWqqBKwrVTO",
+            'channel'              => "yesbank",
+            'utr'                  => "933815383814",
+            'failure_reason'       => null,
+            'remarks'              => "Check the status by calling getStatus API.",
+            'pricing_rule_id'      => "Bbg7cl6t6I3XA9",
+            'mode'                 => "IMPS",
+            'fee_type'             => "free_payout",
+            'workflow_feature'     => null,
+            'origin'               => 1,
+            'status_code'          => null,
+            'created_at'           => 1000000000,
+            'updated_at'           => 1000000002,
+        ];
+
+        \DB::connection('live')->table('payouts')->insert($payoutData3);
+
+        $payoutSourcesData = [
+            [
+                'id'          => 'randomid111122',
+                'payout_id'   => $payoutId,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'payout_links',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData);
+
+        $payoutSourcesData2 = [
+            [
+                'id'          => 'randomid111125',
+                'payout_id'   => $payoutId2,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'payout_links',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('test')->table('ps_payout_sources')->insert($payoutSourcesData2);
+
+        $payoutSourcesData3 = [
+            [
+                'id'          => 'randomid111127',
+                'payout_id'   => $payoutId3,
+                'source_id'   => 'randomid111123',
+                'source_type' => 'payout_links',
+                'priority'    => 1,
+                'created_at'  => 1000000002,
+                'updated_at'  => 1000000001
+            ],
+        ];
+
+        \DB::connection('live')->table('payout_sources')->insert($payoutSourcesData3);
+
+        $this->ba->appAuthLive($this->config['applications.payout_links.secret']);
+
+        $this->testData[__FUNCTION__] = $this->testData['testUpdateAttachmentForPayoutLinkForPayoutServicePayoutWithFailureFromPayoutService'];
+
+        // file_hash is not required via Internal App Auth
+        $this->testData[__FUNCTION__]['request']['content'] = [
+            'payout_ids'     => [
+                $payoutId,
+                $payoutId2,
+                $payoutId3,
+            ],
+            'update_request' => [
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_123456',
+                        'file_name' => 'file_name.pdf'
+                    ]
+                ]
+            ]
+        ];
+
+        $success = [];
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payouts/attachments';
+
+        $request['content'] = [
+            'payout_ids'     => [
+                $payoutId,
+                $payoutId2,
+            ],
+            'update_request' => [
+                'attachments' => [
+                    [
+                        'file_id'   => 'file_123456',
+                        'file_name' => 'file_name.pdf'
+                    ]
+                ]
+            ]
+        ];
+
+        $this->mockPayoutServiceUpdateAttachments(true, $request, $success);
+
+        $this->startTest();
+
+        $expectedSuccess = ['url_success', 'payout_ids_success', 'update_request_success'];
+
+        $this->assertEquals($expectedSuccess, $success);
     }
 }

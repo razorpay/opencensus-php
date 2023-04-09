@@ -10,7 +10,7 @@ class Fetch extends Base
     const FETCH_PAYOUT_URI = '/payouts';
 
     // payout fetch service name for singleton class
-    const PAYOUT_SERVICE__FETCH = 'payout_service_fetch';
+    const PAYOUT_SERVICE_FETCH = 'payout_service_fetch';
 
     const ARRAY_ENCODING_REGEX_PATTERN_TO_BE_REPLACED = '/%5B[0-9]+%5D/simU';
 

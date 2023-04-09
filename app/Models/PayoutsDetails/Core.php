@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Services\UfhService;
 use RZP\Models\FileStore\Type;
 use RZP\Exception\ServerErrorException;
+use RZP\Models\Payout\Core as PayoutCore;
 use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Payout\Entity as PayoutEntity;
 use RZP\Models\Merchant\Entity as MerchantEntity;
@@ -97,6 +98,13 @@ class Core extends Base\Core
 
         try
         {
+            $payoutServicePayout = $this->repo->payout->getPayoutServicePayout($payoutId);
+
+            if (empty($payoutServicePayout) === false)
+            {
+                return (new PayoutCore)->updateAttachmentsForPayoutServicePayout($payoutId, $input);
+            }
+
             /** @var Base\PublicCollection $payoutDetails */
             $payoutDetails = $this->repo->payouts_details->getPayoutDetailsByPayoutId($payoutId);
 
@@ -131,7 +139,7 @@ class Core extends Base\Core
                 Entity::STATUS => Entity::SUCCESS,
             ];
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             throw new ServerErrorException(
                 'Could not update attachment for Payout',
@@ -148,7 +156,7 @@ class Core extends Base\Core
         {
             $this->renameAttachments($payoutId, $attachments);
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $this->trace->error(
                 TraceCode::PAYOUT_ATTACHMENT_RENAME_FAILURE,
@@ -166,6 +174,21 @@ class Core extends Base\Core
     {
         try
         {
+            $payoutServicePayoutIds = $this->repo->payout->getPayoutServicePayoutIds($validPayoutIds);
+
+            if (empty($payoutServicePayoutIds) === false)
+            {
+                $validPayoutIds = array_diff($validPayoutIds, $payoutServicePayoutIds);
+
+                $response = (new PayoutCore)->bulkUpdateAttachmentsForPayoutServicePayout($payoutServicePayoutIds,
+                                                                                     $updateRequest);
+
+                if (empty($validPayoutIds) === true)
+                {
+                    return $response;
+                }
+            }
+
             // used to store the Payout Ids with existing rows in payouts_details
             $existingPayoutIds = array();
 
@@ -203,7 +226,7 @@ class Core extends Base\Core
 
             return $this->response;
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             throw new ServerErrorException(
                 'Could not update attachment for Payout',

@@ -777,6 +777,8 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
         $this->registerPayoutServiceFetch();
 
+        $this->registerPayoutServiceUpdateAttachments();
+
         $this->registerFTSChannelNotification();
 
         $this->registerSettlementsPayout();
@@ -1958,9 +1960,17 @@ class ApiServiceProvider extends BaseServiceProvider implements DeferrableProvid
 
     protected function registerPayoutServiceFetch()
     {
-        $this->app->singleton(PayoutService\Fetch::PAYOUT_SERVICE__FETCH, function($app)
+        $this->app->singleton(PayoutService\Fetch::PAYOUT_SERVICE_FETCH, function($app)
         {
             return new PayoutService\Fetch($app);
+        });
+    }
+
+    protected function registerPayoutServiceUpdateAttachments()
+    {
+        $this->app->singleton(PayoutService\UpdateAttachments::PAYOUT_SERVICE_UPDATE_ATTACHMENTS, function($app)
+        {
+            return new PayoutService\UpdateAttachments($app);
         });
     }
 

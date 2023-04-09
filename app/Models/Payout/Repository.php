@@ -48,11 +48,12 @@ class Repository extends Base\Repository
     const  ID                      = 'id';
     const  LIMIT                   = 'limit';
 
-    const QUEUED_PAYOUTS_FETCH_LIMIT    = 5000;
-    const PENDING_PAYOUTS_FETCH_LIMIT   = 5000;
-    const BATCH_PAYOUTS_FETCH_LIMIT     = 300;
-    const SCHEDULED_PAYOUTS_FETCH_LIMIT = 5000;
-    const PENDING_PAYOUT_COUNT          = 10;
+    const QUEUED_PAYOUTS_FETCH_LIMIT         = 5000;
+    const PENDING_PAYOUTS_FETCH_LIMIT        = 5000;
+    const BATCH_PAYOUTS_FETCH_LIMIT          = 300;
+    const SCHEDULED_PAYOUTS_FETCH_LIMIT      = 5000;
+    const PENDING_PAYOUT_COUNT               = 10;
+    const PAYOUT_SERVICE_PAYOUTS_FETCH_LIMIT = 2000;
 
     protected $entity = 'payout';
 
@@ -2830,6 +2831,34 @@ class Repository extends Base\Repository
 
         return \DB::connection($this->getPayoutsServiceConnection())
                   ->select("select * from $tableName where id = '$id' limit 1");
+    }
+
+    public function getPayoutServicePayoutIds(array $ids)
+    {
+        $tableName = Table::PAYOUT;
+
+        if (in_array($this->app['env'], ['testing', 'testing_docker'], true) === true)
+        {
+            $tableName = 'ps_payouts';
+        }
+
+        $payoutServicePayoutIds = [];
+
+        while (empty($ids) === false)
+        {
+            $limitIds = array_slice($ids, 0, self::PAYOUT_SERVICE_PAYOUTS_FETCH_LIMIT);
+
+            $payoutIdsToFetch = implode("','", $limitIds);
+
+            $psPayoutIds = \DB::connection($this->getPayoutsServiceConnection())
+                                           ->select("select id from $tableName where id in ('$payoutIdsToFetch')");
+
+            $payoutServicePayoutIds = array_merge($payoutServicePayoutIds, array_column($psPayoutIds, 'id'));
+
+            $ids = array_diff($ids, $limitIds);
+        }
+
+        return $payoutServicePayoutIds;
     }
 
     public function getPayoutServiceIdempotencyKey(string $idempotencyKey, string $merchantId)

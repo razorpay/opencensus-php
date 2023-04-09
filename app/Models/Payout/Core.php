@@ -257,6 +257,9 @@ class Core extends Base\Core
     /** @var PayoutService\DataConsistencyChecker */
     protected $payoutServiceDataConsistencyCheckerClient;
 
+    /** @var PayoutService\UpdateAttachments */
+    protected $payoutServiceUpdateAttachmentsClient;
+
     /** @var TdsProcessor\Processor*/
     protected $tdsProcessor;
 
@@ -293,7 +296,9 @@ class Core extends Base\Core
         $this->payoutServiceQueuedInitiateClient =
             $this->app[PayoutService\QueuedInitiate::PAYOUT_SERVICE_QUEUED_INITIATE];
 
-        $this->payoutServiceFetchClient = $this->app[PayoutService\Fetch::PAYOUT_SERVICE__FETCH];
+        $this->payoutServiceFetchClient = $this->app[PayoutService\Fetch::PAYOUT_SERVICE_FETCH];
+
+        $this->payoutServiceUpdateAttachmentsClient = $this->app[PayoutService\UpdateAttachments::PAYOUT_SERVICE_UPDATE_ATTACHMENTS];
 
         $this->workflowService = new Workflow\Service\Client;
 
@@ -8324,5 +8329,15 @@ class Core extends Base\Core
             return true;
         }
         return false;
+    }
+
+    public function updateAttachmentsForPayoutServicePayout(string $payoutId, array $input)
+    {
+        return $this->payoutServiceUpdateAttachmentsClient->updateAttachments($payoutId, $input);
+    }
+
+    public function bulkUpdateAttachmentsForPayoutServicePayout(array $payoutIds, array $updateRequest)
+    {
+        return $this->payoutServiceUpdateAttachmentsClient->bulkUpdateAttachments($payoutIds, $updateRequest);
     }
 }

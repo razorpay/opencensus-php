@@ -3343,5 +3343,117 @@ return [
             'content'     => ['result' => [null, null, null, null]],
             'status_code' => 200,
         ],
-    ]
+    ],
+
+    'testUpdateAttachmentWithProxyAuthForPayoutServicePayout' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/pout_JLYXwEbdcktqV1/attachments',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'SUCCESS'
+            ]
+        ],
+    ],
+
+    'testUpdateAttachmentWithProxyAuthForPayoutServicePayoutWithPayoutSourceNotNull' => [
+        'request'   => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/pout_JLYXwEbdcktqV1/attachments',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid Payout Source for attachments update',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PAYOUT_SOURCE_FOR_UPDATE,
+        ],
+    ],
+
+    'testUpdateAttachmentWithProxyAuthForPayoutServicePayoutWithErrorFromPayoutService' => [
+        'request'   => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts/pout_JLYXwEbdcktqV1/attachments',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'Failed to update attachment for payout',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ServerErrorException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_ATTACHMENT_UPDATE_FAILURE,
+            'description'         => 'Could not update attachment for Payout'
+        ],
+    ],
+
+    'testUpdateAttachmentForPayoutLinkForPayoutServicePayout' => [
+        'request'  => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts_internal/attachments',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'SUCCESS'
+            ]
+        ],
+    ],
+
+    'testUpdateAttachmentForPayoutLinkForPayoutServicePayoutWithEmptySource' => [
+        'request'   => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts_internal/attachments',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Failed to update payouts',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UPDATE_PAYOUT_ATTACHMENTS,
+        ],
+    ],
+
+    'testUpdateAttachmentForPayoutLinkForPayoutServicePayoutWithFailureFromPayoutService' => [
+        'request'   => [
+            'method'  => 'PATCH',
+            'url'     => '/payouts_internal/attachments',
+            'content' => [],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'Failed to update attachment for payout',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\ServerErrorException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_ATTACHMENT_UPDATE_FAILURE,
+            'description'         => 'Could not update attachment for Payout'
+        ],
+    ],
 ];
