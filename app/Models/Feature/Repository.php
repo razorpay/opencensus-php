@@ -55,7 +55,7 @@ class Repository extends Base\Repository
 
     public function findByEntityTypeEntityIdAndNameOrFail(string $entityType, string $entityId, string $featureName)
     {
-        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName) === true)
+        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "", $this->app->isEnvironmentProduction()) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -94,7 +94,7 @@ class Repository extends Base\Repository
 
     public function findByEntityTypeEntityIdAndName(string $entityType, string $entityId, string $featureName)
     {
-        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName) === true)
+        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "", $this->app->isEnvironmentProduction()) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -124,7 +124,7 @@ class Repository extends Base\Repository
 
     public function findByEntityIdAndNameOnConnection(string $entityId, string $featureName, string $mode)
     {
-        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName) === true)
+        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "", $this->app->isEnvironmentProduction()) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,
@@ -204,7 +204,7 @@ class Repository extends Base\Repository
         {
             $dcsFeatures = array_intersect($featureNames, array_keys(
                 DcsFeaturesConstants::dcsReadEnabledFeaturesByEntityType(
-                    Constants::MERCHANT, $this->app->runningUnitTests())
+                    Constants::MERCHANT, $this->app->runningUnitTests(), $this->app->isEnvironmentProduction())
             ));
             if (sizeof($dcsFeatures) !== 0) {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
@@ -248,7 +248,7 @@ class Repository extends Base\Repository
         {
             $dcsFeatures = array_intersect($featureNames, array_keys(
                 DcsFeaturesConstants::dcsReadEnabledFeaturesByEntityType(
-                    Constants::MERCHANT, $this->app->runningUnitTests())
+                    Constants::MERCHANT, $this->app->runningUnitTests(), $this->app->isEnvironmentProduction())
             ));
             if (sizeof($dcsFeatures) !== 0) {
                 $this->trace->count(FeatureMetric::DCS_FEATURE_FETCH_TOTAL, $dimension);
@@ -347,7 +347,7 @@ class Repository extends Base\Repository
     public function getMerchantIdsHavingFeature(string $featureName, array $merchantIds)
     {
         $dcsRes = collect();
-        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName) === true)
+        if (DcsFeaturesConstants::isDcsReadEnabledFeature($featureName, false, "", $this->app->isEnvironmentProduction()) === true)
         {
             $dimension = [
                 'feature_name' => $featureName,

@@ -278,14 +278,14 @@ class Constants
     ];
 
     public static function dcsReadEnabledFeaturesByEntityType(string $entityType = null,
-                                                              bool $withDcsNames = false, bool $isTestCases = false): array
+                                                              bool $withDcsNames = false, bool $isTestCases = false, bool $isProduction = false): array
     {
 
         $adminService = new AdminService;
         $dcsReadEnabledOrg = [];
         $dcsReadEnabledMerchant = [];
         $dcsReadEnabledFeatures = self::$dcsReadEnabledFeatures;
-        if ($isTestCases === true)
+        if ($isTestCases === true || $isProduction === false)
         {
             $dcsReadEnabledFeatures = $adminService->getConfigKey(['key' => ConfigKey::DCS_READ_WHITELISTED_FEATURES]);
         }
@@ -422,9 +422,9 @@ class Constants
         return false;
     }
 
-    public static function isDcsReadEnabledFeature($featureName, $isDcsName = false, $dcsKey = ""): bool
+    public static function isDcsReadEnabledFeature($featureName, $isDcsName = false, $dcsKey = "", $isProduction = false): bool
     {
-        $dcsEnabledFeatures = self::dcsReadEnabledFeaturesByEntityType("", $isDcsName);
+        $dcsEnabledFeatures = self::dcsReadEnabledFeaturesByEntityType("", $isDcsName, false, $isProduction);
         return (key_exists($featureName, $dcsEnabledFeatures) === true) or
                 (($isDcsName === true) && (empty(Utility::searchAndReturnDcsNameWithCorrespondingColonSeparator($dcsEnabledFeatures, $featureName, $dcsKey)) === false));
     }
