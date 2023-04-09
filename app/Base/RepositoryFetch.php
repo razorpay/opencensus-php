@@ -1594,7 +1594,7 @@ trait RepositoryFetch
         {
             if(array_key_exists($wdaResponse->getId(), $warmDbMap) === true)
             {
-                $diffStatus = $this->compareWDAEntityAndLogDifference($dbResponse->getId(), $wdaResponse->toArray(), $warmDbMap[$wdaResponse->getId()]->toArray(), $extraTrace);
+                $diffStatus = $this->compareWDAEntityAndLogDifference($wdaResponse->getId(), $wdaResponse->toArray(), $warmDbMap[$wdaResponse->getId()]->toArray(), $extraTrace);
 
                 if($diffStatus)
                 {
