@@ -446,10 +446,19 @@ class PGRouter
                 $card->setExternal(true);
 
                 unset($response['body']['data']['payment']['card']);
-            }
+            }   
 
             $payment = (new Payment\Entity)->forceFill($response['body']['data']['payment']);
 
+            if ($payment->isUpi() === true)
+            {
+                $input = $response['body']['data']['payment'];
+                
+                (new Payment\Entity)->modifyInput($input);
+
+                $payment = (new Payment\Entity)->forceFill($input);
+            }
+            
             if ($card !== null)
             {
                 $payment->card()->associate($card);

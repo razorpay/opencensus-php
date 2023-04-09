@@ -688,6 +688,9 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         self::MCC,
         self::SETTLED_BY,
         self::OPTIMIZER_PROVIDER,
+        self::INTERNATIONAL,
+        self::FEE,
+        self::TAX,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA, self::GATEWAY_PROVIDER];
@@ -4064,6 +4067,7 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
     {
         if ($this->getCurrency() === $this->merchant->getCurrency())
         {
+            unset($array[self::BASE_CURRENCY]);
             return;
         }
 
@@ -4072,10 +4076,47 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
 
     public function setPublicOrderIdAttribute(array & $array)
     {
-        if (isset($array[self::ORDER_ID]))
+        if (isset($array[self::ORDER_ID]) and $array[self::ORDER_ID] != "")
         {
             $array[self::ORDER_ID] = Order\Entity::getSignedId($array[self::ORDER_ID]);
         }
+
+        if (isset($array[self::ORDER_ID]) and $array[self::ORDER_ID] == "")
+        {
+            $array[self::ORDER_ID] = null;   
+        }
+    }
+
+    public function setPublicInternationalAttribute(array & $array)
+    {
+       if (($this->isUpi() === true) and  
+            ($this->isExternal() === true) and
+            (is_bool($array[self::INTERNATIONAL]) === false))
+       {
+            $array[self::INTERNATIONAL] =  (bool) $array[self::INTERNATIONAL];
+       }
+    }
+
+    public function setPublicFeeAttribute(array & $array)
+    {
+       if (($this->isUpi() === true) and  
+            ($this->isExternal() === true) and
+            (($this->isCaptured() === false) and 
+             ($this->isPartiallyOrFullyRefunded() === false)))
+       {
+            $array[self::FEE] =  null;
+       }
+    }
+
+    public function setPublicTaxAttribute(array & $array)
+    {
+       if (($this->isUpi() === true) and  
+            ($this->isExternal() === true) and
+            (($this->isCaptured() === false) and 
+             ($this->isPartiallyOrFullyRefunded() === false)))
+       {
+            $array[self::TAX] =  null;
+       }
     }
 
     public function setPublicProviderAttribute(array & $array)
@@ -6374,5 +6415,16 @@ class Entity extends Base\PublicEntity implements CommissionSourceInterface
         }
 
         return (int)ceil($fee);
+    }
+
+    public function modifyInput(& $input) 
+    {
+        foreach ($this->public as $key)
+        {
+            if (isset($input[$key]) === false)
+            {
+                $input[$key] = null;
+            }
+        }
     }
 }
