@@ -2,11 +2,9 @@ import React from 'react';
 import Input from 'common/new-ui/Input';
 import Amount from 'common/ui/Amount';
 
-import { PAYMENT_NETWORK_MAP, ISSUERS } from 'merchant/views/Offers/constants';
 import { rupeesToPaise } from 'common/utils/rzp-utils';
 import { DocLink } from 'merchant/components/DocsLink';
-
-const NetworksAndIssuers = { ...PAYMENT_NETWORK_MAP, ...ISSUERS };
+import { getIssuerLabel } from 'merchant/views/Offers/utils';
 
 // TODO: Fix EMI Tenure validations
 export default class ApplicableOn extends React.Component {
@@ -26,7 +24,7 @@ export default class ApplicableOn extends React.Component {
       if (!isCobrandingPartner && issuerData.min_amount <= rupeesToPaise(props.minAmount)) {
         this.ISSUERS_OPTIONS.push({
           name: issuer,
-          label: NetworksAndIssuers[issuer] || issuer,
+          label: getIssuerLabel(issuer),
         });
       }
     });
