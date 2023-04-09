@@ -4,13 +4,13 @@ namespace RZP\Models\Merchant\Cron\Collectors;
 
 use Carbon\Carbon;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
 use Illuminate\Support\Str;
 use RZP\Models\Admin\ConfigKey;
 use RZP\Models\Admin\Service as AdminService;
 use RZP\Models\Merchant\Cron\Dto\CollectorDto;
 use RZP\Models\Feature\Service as FeatureService;
-use RZP\Models\Admin\Permission\Name as Permission;
 use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Models\Merchant\AutoKyc\Escalations\Constants;
 use RZP\Models\Workflow\Constants as WorkflowConstants;
@@ -49,7 +49,12 @@ class FOHRemovalDataCollector extends DbDataCollector
     const RISK_LEA_TAGS = array("RISK_LEA_DEBIT-FREEZE_",
                                 "RISK_LEA_FREEZING-ORDER_",
                                 "RISK_LEA_PROVISIONAL-ATTACHMENT-ORDER_",
-                                "RISK_LEA_CONFISICATED-FUNDS_");
+                                "RISK_LEA_CONFISICATED-FUNDS_",
+                                "RISK_CHINESE_BLOCKED",
+                                "CHINESE_MERCHANT",
+                                "POWERBANK_FRAUD",
+                                "BR_REFUND_RECOVERY",
+                                "RISK_BOAT_CHECK");
 
     const CAPITAL_PRODUCTS_FEATURE_FLAGS = array(FeatureConstants::WITHDRAW_LOC,
                                                  FeatureConstants::WITHDRAWAL_ES_AMAZON,
@@ -141,7 +146,13 @@ class FOHRemovalDataCollector extends DbDataCollector
             'capital_products_merchants'    => $capitalProductsMerchants
         ]);
 
-        $finalMerchantIdList = $capitalProductsMerchants;
+        $negativeBalanceMerchants = $this->filterNegativePrimaryBalanceMerchants($capitalProductsMerchants);
+
+        $this->app["trace"]->info(TraceCode::FOH_REMOVAL_NEGATIVE_BALANCE_MERCHANTS, [
+            'negative_balance_merchants'    => $negativeBalanceMerchants
+        ]);
+
+        $finalMerchantIdList = $negativeBalanceMerchants;
 
         $this->app["trace"]->info(TraceCode::FOH_REMOVAL_DATA_COLLECTOR, [
             'final_merchant_id_list'    => $finalMerchantIdList
@@ -318,6 +329,28 @@ class FOHRemovalDataCollector extends DbDataCollector
             if(empty(array_intersect($featureFlags, $assignedFeatures)) === false)
             {
                 $excludeIds[] = $merchantId;
+            }
+        }
+
+        return array_diff($merchantIdList, $excludeIds);
+    }
+
+    private function filterNegativePrimaryBalanceMerchants(array $merchantIdList) : array
+    {
+        $excludeIds = [];
+
+        foreach ($merchantIdList as $merchantId)
+        {
+            $balance = $this->repo->balance->getMerchantBalanceByType($merchantId, Merchant\Balance\Type::PRIMARY)->toArrayPublic();
+
+            if ($balance !== null)
+            {
+                $balanceAmount = $balance[Merchant\Balance\Entity::BALANCE];
+
+                if ($balanceAmount < 0)
+                {
+                    $excludeIds[] = $merchantId;
+                }
             }
         }
 
