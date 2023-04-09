@@ -30,11 +30,4 @@ class CardController extends Controller
 
         return ApiResponse::json($data);
     }
-
-    public function pingVault()
-    {
-        $vaultServiceStatus = $this->app['card.cardVault']->ping();
-
-        return ApiResponse::json(['status' => $vaultServiceStatus]);
-    }
 }

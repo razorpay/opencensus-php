@@ -2,11 +2,9 @@
 
 namespace RZP\Tests\Functional\Payment;
 
-use App;
 use Mockery;
 
 use RZP\Models\Feature\Constants;
-use RZP\Services\CardVault;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -411,39 +409,5 @@ class CardTest extends TestCase
         $this->replaceDefaultValues($testData['request']['content']);
 
         return $this->runRequestResponseFlow($testData);
-    }
-
-    public function testVaultPingSuccess(): void
-    {
-        $this->ba->checkoutServiceInternalAuth();
-
-        parent::startTest();
-    }
-
-    public function testVaultPingFailure(): void
-    {
-        $this->ba->checkoutServiceInternalAuth();
-
-        $app = App::getFacadeRoot();
-
-        $cardVault = Mockery::mock(CardVault::class, [$app])->makePartial();
-
-        $this->app->instance('card.cardVault', $cardVault);
-
-        $callable = function ($route, $method, $input)
-        {
-            $response = [
-                'error' => 'abcd',
-                'success' => false,
-            ];
-
-            return $response;
-        };
-
-        $cardVault->shouldReceive('sendRequest')
-            ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-            ->andReturnUsing($callable);
-
-        parent::startTest();
     }
 }

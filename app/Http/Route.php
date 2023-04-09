@@ -3180,7 +3180,6 @@ class Route
         // API Route for Vault
         'vault_token_create'                       => ['post',     'vault_token_create',                             'AdminController@createVaultToken'                                  ],
         'vault_token_renewal'                      => ['post',     'vault_token_renew',                              'AdminController@renewVaultToken'                                   ],
-        'vault_ping'                               => ['get',      'vault_ping',                                     'CardController@pingVault'                                          ],
 
         'entity_origin_create'                     => ['post',     'entity_origins',                                 'EntityOriginController@create'                                     ],
         'create_credit_note'                       => ['post',     'creditnote',                                     'CreditNoteController@create'                                       ],
@@ -5791,7 +5790,6 @@ class Route
 
         'internal_1cc_order_review',
         'ledger_outbox_partition_cron',
-        'vault_ping',
     ];
 
     // The below routes needs X-Dashboard-User-Id in case of any authentication except private and admin.
@@ -15287,7 +15285,6 @@ class Route
             'internal_feature_bulk_fetch',
             'customer_fetch_internal_for_checkout',
             'checkout_1cc_configs_get',
-            'vault_ping',
         ],
 
         'trusted_badge' => [
