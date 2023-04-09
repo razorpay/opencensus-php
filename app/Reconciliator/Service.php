@@ -1075,7 +1075,14 @@ class Service extends Base\Service
      */
     protected function updateTransactionData(array $input, Payment\Entity $payment)
     {
-        $transaction = $payment->transaction;
+        if ($payment->isExternal() === true)
+        {
+            $transaction = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
+        }
+        else
+        {
+            $transaction = $payment->transaction;
+        }
 
         if (empty($transaction) === true)
         {
@@ -1102,6 +1109,13 @@ class Service extends Base\Service
         }
 
         $this->repo->saveOrFail($transaction);
+
+        if (($payment->isExternal() === true) and
+            ($payment->isUpi() === true) and
+            ($payment->isRoutedThroughPaymentsUpiPaymentService() === true))
+        {
+            (new Transaction\Core)->dispatchUpdatedTransactionToCPS($transaction, $payment);
+        }
     }
 
     /**
