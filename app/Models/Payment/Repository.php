@@ -56,6 +56,7 @@ use RZP\Models\Gateway\Downtime\DowntimeDetection;
 use RZP\Models\Merchant\Invoice\Type as InvoiceType;
 use RZP\Models\QrCode\NonVirtualAccountQrCode as QrV2;
 use RZP\Models\Merchant\Detail as MerchantDetail;
+use Rzp\Wda_php\SortOrder;
 use Rzp\Wda_php\Symbol;
 use Rzp\Wda_php\WDAQueryBuilder;
 
@@ -303,12 +304,93 @@ EOT;
 
     public function fetchPaymentsFailureAnalysisData($from, $to, $merchantId)
     {
+        try
+        {
+            if(($this->app['api.route']->isWDAServiceRoute() === true) and
+                ($this->isExperimentEnabled($this->app['api.route']->getWdaRouteExperimentName()) === true))
+            {
+                $wdaFailureAnalysis = $this->fetchPaymentsFailureAnalysisDataFromWda($from, $to, $merchantId);
+
+                if(sizeof($wdaFailureAnalysis) > 0)
+                {
+                    return $wdaFailureAnalysis;
+                }
+            }
+        }
+        catch(\Throwable $ex)
+        {
+            $this->trace->error(TraceCode::WDA_MIGRATION_ERROR, [
+                'wda_migration_error' => $ex->getMessage(),
+                'route_name'          => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
         return $this->newQueryWithConnection($this->getConnectionFromType(ConnectionType::DATA_WAREHOUSE_MERCHANT))
             ->selectRaw(Entity::STATUS . ', '. Entity::INTERNAL_ERROR_CODE . ', ' . Entity::METHOD . ', COUNT(*) as count')
             ->where(Entity::MERCHANT_ID, '=', $merchantId)
             ->whereBetween(Entity::CREATED_AT, [$from, $to])
             ->groupBy(Entity::STATUS, Entity::INTERNAL_ERROR_CODE, Entity::METHOD)
             ->get();
+    }
+
+    public function fetchPaymentsFailureAnalysisDataFromWda($from, $to, $merchantId)
+    {
+        $this->trace->info(TraceCode::WDA_SERVICE_REQUEST, [
+            'function'          => __FUNCTION__,
+            'merchant_id'       => $merchantId,
+            'from'              => $from,
+            'to'                => $to,
+            'route_name'        => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        $wdaQueryBuilder = new WDAQueryBuilder();
+
+        $wdaQueryBuilder->addQuery($this->getTableName(), Entity::STATUS)
+            ->addQuery($this->getTableName(), Entity::INTERNAL_ERROR_CODE)
+            ->addQuery($this->getTableName(), Entity::METHOD)
+            ->addQuery($this->getTableName(), '*', 'COUNT', 'count');
+        $wdaQueryBuilder->resources($this->getTableName());
+        $wdaQueryBuilder->filters($this->getTableName(), Entity::MERCHANT_ID, [$merchantId], Symbol::EQ)
+            ->filters($this->getTableName(), Entity::CREATED_AT, [$from, $to], Symbol::BETWEEN);
+        $wdaQueryBuilder->group($this->getTableName(), Entity::STATUS, SortOrder::DESC)
+            ->group($this->getTableName(), Entity::INTERNAL_ERROR_CODE, SortOrder::DESC)
+            ->group($this->getTableName(), Entity::METHOD, SortOrder::DESC);
+        $wdaQueryBuilder->namespace($this->getEntityObject()->getConnection()->getDatabaseName());
+
+        if ($this->app['env'] === Environment::PRODUCTION)
+        {
+            $wdaQueryBuilder->cluster(WDAService::MERCHANT_CLUSTER);
+        }
+        else
+        {
+            $wdaQueryBuilder->cluster(WDAService::ADMIN_CLUSTER);
+        }
+
+        $this->trace->info(TraceCode::WDA_SERVICE_QUERY, [
+            'wda_query_builder' => $wdaQueryBuilder->build()->serializeToJsonString(),
+            'route_name'    => $this->app['api.route']->getCurrentRouteName(),
+        ]);
+
+        $wdaClient = $this->app['wda-client']->wdaClient;
+
+        $response = $wdaClient->fetchEntities($wdaQueryBuilder->build(), $this->newQuery()->getModel());
+
+        $collection = new PublicCollection();
+
+        foreach ($response as $arr)
+        {
+            $collection->push($arr);
+        }
+
+        if(sizeof($collection) > 0)
+        {
+            $this->trace->info(TraceCode::WDA_SERVICE_RESPONSE, [
+                'size'          => $collection->count(),
+                'route_name'        => $this->app['api.route']->getCurrentRouteName(),
+            ]);
+        }
+
+        return $collection;
     }
 
     public function fetchCreatedPaymentsWithStatus($from, $to, $gateway, $status)
