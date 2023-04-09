@@ -378,7 +378,6 @@ class RepositoryManager extends Illuminate\Support\Manager
             return Mode::TEST;
         }
 
-        // Handles archived entities
         $variant = $this->app['razorx']->getTreatment(
             __FUNCTION__,
             Repository::PAYMENT_QUERIES_TIDB_MIGRATION,
@@ -392,7 +391,9 @@ class RepositoryManager extends Illuminate\Support\Manager
 
         if ($variant === 'on')
         {
-            $obj = $repo->connection(Connection::DATA_WAREHOUSE_MERCHANT_LIVE)->find($id);
+            // Check id in archived data replica as the entity might be archived
+            // Note : Add _record_source = 'api' filter if moving to aggregated warm storage (tidb)
+            $obj = $repo->connection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->find($id);
 
             if ($obj !== null)
             {

@@ -3585,10 +3585,10 @@ EOT;
             return Mode::TEST;
         }
 
-        // Check id in TiDB as the entity might be archived
+        // Check id in archived data replica as the entity might be archived
         if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
         {
-            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_ADMIN_LIVE)->where(Entity::GATEWAY, $gateway)->find($id);
+            $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->where(Entity::GATEWAY, $gateway)->find($id);
 
             if ($obj !== null)
             {
@@ -3637,7 +3637,7 @@ EOT;
         // Check id in TiDB as the entity might be archived
         if ($this->isExperimentEnabledForId(self::PAYMENT_QUERIES_TIDB_MIGRATION, __FUNCTION__) === true)
         {
-            $obj = $this->newQueryWithConnection(Connection::DATA_WAREHOUSE_ADMIN_LIVE)->newQuery()->find($id);
+            $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_LIVE)->find($id);
 
             if (($obj !== null) and
                 ($obj->getAuthenticationGateway() !== null))
@@ -3645,7 +3645,7 @@ EOT;
                 return Mode::LIVE;
             }
 
-            $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_TEST)->newQuery()->find($id);
+            $obj = $this->newQueryWithConnection(Connection::ARCHIVED_DATA_REPLICA_TEST)->find($id);
 
             if (($obj !== null) and
                 ($obj->getAuthenticationGateway() !== null))
