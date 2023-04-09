@@ -127,12 +127,17 @@ class Service extends Base\Service
      * @param array $input
      *
      * @return array
+     * @throws BadRequestException
      */
     public function getCustomerDetailsForCheckout(array $input): array
     {
-        $input[Payment\Entity::APP_TOKEN] = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
-
         $isGlobalCustomer = empty($input['customer_id']);
+
+        if ($isGlobalCustomer) {
+            $input[Payment\Entity::APP_TOKEN] = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+
+            $this->setCheckCookieInSession();
+        }
 
         /** @var Entity $customer */
         $customer = null;
@@ -156,7 +161,7 @@ class Service extends Base\Service
         }
 
         if ($customer === null) {
-            return $customerData;
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INVALID_CUSTOMER_ID);
         }
 
         $customerData['email'] = $customer->getEmail();
@@ -1169,5 +1174,40 @@ class Service extends Base\Service
     public function recordCustomerConsent1cc($input)
     {
         return $this->core->recordCustomerConsent1cc($input);
+    }
+
+    /**
+     * We set `<mode>_checkcookie` key in the session in preferences request
+     * so that in subsequent calls we can identify if the browser has cookies
+     * enabled & accordingly we provide saved tokens/flash-checkout functionality.
+     *
+     * NOTE: This is a legacy but inefficient solution. We are unnecessarily
+     * creating sessions & storing them in redis in preferences even for guest
+     * checkout (where customer doesn't log in) which has a share of >50% of
+     * all std. checkout sessions where this session will never be of any use.
+     *
+     * @return void
+     */
+    protected function setCheckCookieInSession(): void
+    {
+        // Other checks like pinging card-vault are done in parallel in checkout-service
+        if (!$this->merchant->isFeatureEnabled(Constants::NOFLASHCHECKOUT)) {
+            $key = $this->mode . '_checkcookie';
+
+            $session = null;
+
+            try {
+                $session = optional($this->app['request']->session());
+            } catch (\Exception $ex) {
+                $this->trace->traceException($ex, Trace::ERROR, TraceCode::NO_SESSION_FOUND_EXCEPTION, []);
+            }
+
+            // If Laravel wasn't able to start/retrieve session due to Redis infra failure then return
+            if ($session === null) {
+                return;
+            }
+
+            $session->put($key, '1');
+        }
     }
 }
