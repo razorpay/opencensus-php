@@ -460,11 +460,6 @@ class Service extends Base\Service
 
                     $provider =  $plan->getIssuer();
 
-                    if($provider === IFSC::FDRL)
-                    {
-                        return false;
-                    }
-
                     return (isset($enabledProviders[$provider]) == false or ($enabledProviders[$provider] === 0));
                 }
                 return $plan->type !== $emiType;
@@ -481,11 +476,6 @@ class Service extends Base\Service
                     }
 
                     $provider =  $plan->getIssuer();
-
-                    if($provider === IFSC::FDRL)
-                    {
-                        return false;
-                    }
 
                     return (isset($enabledProviders[$provider]) == false  or ($enabledProviders[$provider] === 0));
                 }
