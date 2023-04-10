@@ -40,6 +40,9 @@ class CardVault
 
     const REQUEST_TIMEOUT = 20;
 
+    // This is for internal routes in vault - tokenize/detokenize
+    const INTERNAL_REQUEST_TIMEOUT = 5;
+
     const MAX_RETRY_COUNT = 1;
 
     // card-vault namespaces
@@ -416,7 +419,7 @@ class CardVault
         $headers['X-Razorpay-Mode'] =  $this->app['rzp.mode'] ?? Mode::LIVE;
 
         $options = [
-            'timeout' => self::REQUEST_TIMEOUT,
+            'timeout' => $this->getTimeOut($url),
             'auth' => [
                 $this->key,
                 $this->secret
@@ -522,6 +525,16 @@ class CardVault
         $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
 
         return $hooks;
+    }
+
+    protected function getTimeOut($url)
+    {
+        if($url === Card\Constants::TOKENIZE || $url === Card\Constants::DETOKENIZE)
+        {
+            return self::INTERNAL_REQUEST_TIMEOUT;
+        }
+
+        return self::REQUEST_TIMEOUT;
     }
 
     public function setCurlOptions($curl)

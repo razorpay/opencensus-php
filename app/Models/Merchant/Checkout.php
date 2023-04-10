@@ -85,8 +85,6 @@ class Checkout
      */
     protected $order;
 
-    protected $isCardVaultUp;
-
     /**
      * @var array[]
      */
@@ -139,8 +137,6 @@ class Checkout
         Locale::setLocale($input, $merchant->getId());
 
         $this->tracePreferencesRequest($merchant, $mode, $input);
-
-        $this->isCardVaultUp = $this->app['card.cardVault']->ping();
 
         $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
 
@@ -1348,7 +1344,7 @@ class Checkout
         $isEmailOrContactOptional = (($merchant->isFeatureEnabled(Feature\Constants::EMAIL_OPTIONAL) === true) or
                                      ($merchant->isFeatureEnabled(Feature\Constants::CONTACT_OPTIONAL) === true));
 
-        $rememberCustomer = (($merchant->isFeatureEnabled(Feature\Constants::NOFLASHCHECKOUT) === false) and ($this->isCardVaultUp == true));
+        $rememberCustomer = !$merchant->isFeatureEnabled(Feature\Constants::NOFLASHCHECKOUT);
 
         // if card saving is enabled, create a session and set a key
         if ($rememberCustomer === true)
