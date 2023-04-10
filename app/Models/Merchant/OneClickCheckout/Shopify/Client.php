@@ -179,6 +179,7 @@ class Client
                         [
                            'type'      => $type,
                            'api_type'  => $apiType,
+                           'response'  => $responseArr,
                         ]);
                     throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_ACCESS_DENIED);
                 }

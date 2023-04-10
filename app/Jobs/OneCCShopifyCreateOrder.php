@@ -15,7 +15,7 @@ class OneCCShopifyCreateOrder extends Job
 {
     const BASE_RETRY_INTERVAL_SEC = 60;
     const BACKOFF_FACTOR = 5;
-    const MAX_RETRY_ATTEMPTS = 9;
+    const MAX_RETRY_ATTEMPTS = 7;
 
     /**
      * @var string
@@ -58,6 +58,7 @@ class OneCCShopifyCreateOrder extends Job
         }
     }
 
+    // processWebhook is used to process incoming webhooks received from Shopify for auto refunds.
     protected function processWebhook()
     {
         $this->trace->info(
@@ -68,8 +69,24 @@ class OneCCShopifyCreateOrder extends Job
             (new ShopifyWebhooks())->processWebhookWithLock($this->data);
             $this->delete();
         }
+        catch (BadRequestException $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::SHOPIFY_1CC_PROCESS_WEBHOOK_JOB_EXCEPTION,
+                ['error' => 'bad_request', 'code' => $e->getCode()]);
+            // In case we do not have access to the account there is no use in retrying the job as it will always fail.
+            if ($e->getCode() === ErrorCode::BAD_REQUEST_ERROR_MERCHANT_SHOPIFY_ACCOUNT_ACCESS_DENIED)
+            {
+                $this->delete();
+            }
+            // This scenario covers cases of Shopify downtime or getting rate limited in which retrying can succeed.
+            $this->checkRetry('webhook');
+        }
         catch (\Throwable $e)
         {
+            $this->trace->count(Metric::SHOPIFY_1CC_WEBHOOK_ISSUE_REFUND_COUNT, ['status' => 'failed']);
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
