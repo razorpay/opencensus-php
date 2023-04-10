@@ -30,11 +30,11 @@ class IrctcBatch extends Job
     protected $batches;
 
     /**
-     * Increasing timeout to 2 hrs to avoid
+     * Increasing timeout to 4 hrs to avoid
      * termination of batches.
      * @var int
      */
-    public $timeout = 7200;
+    public $timeout = 14400;
 
     public function __construct(string $mode, array $batches)
     {
@@ -85,6 +85,17 @@ class IrctcBatch extends Job
                         BatchModel\Entity::ID   => $batchId,
                         'time_taken'            => $timeTaken,
                     ]);
+
+                // IRCTC batch processing matrix
+                $metricDimensions = $batch->getMetricDimensions(['status' => $batch->getStatus()]);
+
+                $timeTakenMilliSeconds = (int)$timeTaken*1000;
+
+                $this->trace->histogram(BatchModel\Metric::BATCH_REQUEST_PROCESS_TIME_MS, $timeTakenMilliSeconds, $metricDimensions);
+
+                $totalTimeTaken = millitime() - (int)$batch->getCreatedAt()*1000 ;
+
+                $this->trace->histogram(BatchModel\Metric::BATCH_CREATE_TOTAL_PROCESS_TIME_MS, $totalTimeTaken, $metricDimensions);
             }
         }
         catch (\Throwable $e)
